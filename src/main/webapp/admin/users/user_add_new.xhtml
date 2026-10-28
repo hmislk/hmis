@@ -15,237 +15,312 @@
                 </h:panelGroup>
 
                 <h:panelGroup rendered="#{webUserController.hasPrivilege('AdminManagingUsers') or sessionController.firstLogin }" >
+                    <style>
+                        .user-form-row {
+                            display: flex;
+                            align-items: center;
+                            margin-bottom: 0.6rem;
+                        }
+                        .user-form-row > .user-form-label {
+                            flex: 0 0 11rem;
+                            font-weight: 600;
+                        }
+                        .user-form-row > .user-form-field {
+                            flex: 1 1 auto;
+                            min-width: 0;
+                        }
+                        .user-form-field .ui-selectonemenu,
+                        .user-form-field .ui-autocomplete,
+                        .user-form-field .ui-inputfield,
+                        .user-form-field .ui-password {
+                            width: 100%;
+                        }
+                    </style>
 
                     <h:form>
-                        <p:panel header="Add New User" >
-                            <f:facet name="header" >
-                                <i class="fa fa-user-plus mx-2" aria-hidden="true"></i>
-                                <h:outputText value="Add New User" ></h:outputText>
-                                <p:commandButton
-                                    style="float: right;"
-                                    id="btnCreateUser" 
-                                    icon="fas fa-save"
-                                    value="Save User" 
-                                    class="ui-button-success"
-                                    action="#{webUserController.saveNewUser()}" ajax="false" >
-                                </p:commandButton>
+                        <p:panel>
+                            <f:facet name="header">
+                                <div class="d-flex align-items-center justify-content-between w-100">
+                                    <div class="d-flex align-items-center">
+                                        <i class="fa fa-user-plus mx-2" aria-hidden="true"></i>
+                                        <h:outputText value="Add New User" />
+                                    </div>
+                                    <p:commandButton
+                                        id="btnCreateUser"
+                                        icon="fas fa-save"
+                                        value="Save User"
+                                        class="ui-button-success"
+                                        title="Create the user"
+                                        action="#{webUserController.saveNewUser()}" ajax="false" />
+                                </div>
                             </f:facet>
 
-                            <p:tabView >
-                                <p:tab title="Basic" >
-                                    <h:panelGrid id="pg0" columns="2" class="w-100 p-1">
-                                        <p:outputLabel for="txtName" value="Name" rendered="#{!webUserController.createOnlyUserForExsistingUser}"></p:outputLabel>
-                                        <h:panelGroup class="w-100">
-                                            <div class="row" >
-                                                <div class="col-3" >
-                                                    <p:selectOneMenu 
-                                                        id="acTitle" 
-                                                        filter="true"
-                                                        filterMatchMode="conatins"
-                                                        class="w-100"
-                                                        required="false" 
-                                                        rendered="#{!webUserController.createOnlyUserForExsistingUser}"
-                                                        value="#{webUserController.current.webUserPerson.title}"
-                                                        requiredMessage="Please enter a Title">
-                                                        <f:selectItem itemLabel="Select Title" ></f:selectItem>
-                                                        <f:selectItems value="#{enumController.titleDoctor}" ></f:selectItems>
-                                                    </p:selectOneMenu>
-                                                </div>
-                                                <div class="col-9" >
-                                                    <p:inputText 
-                                                        id="txtName" 
-                                                        class="w-100"
-                                                        autocomplete="off" 
-                                                        required="true" 
-                                                        rendered="#{!webUserController.createOnlyUserForExsistingUser}"
-                                                        value="#{webUserController.current.webUserPerson.name}"
-                                                        requiredMessage="Please enter a Name"
-                                                        >
-                                                    </p:inputText>
+                            <!-- Mode first: these options change which fields below apply -->
+                            <p:fieldset legend="User Type" class="mb-3">
+                                <div class="d-flex flex-wrap gap-4">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <p:selectBooleanCheckbox id="chkOnlyUser" value="#{webUserController.createOnlyUser}">
+                                            <p:ajax process="@this" update="userFormBody" listener="#{webUserController.onlyAddStaffListner()}" />
+                                        </p:selectBooleanCheckbox>
+                                        <p:outputLabel for="chkOnlyUser" value="Add Only User" />
+                                    </div>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <p:selectBooleanCheckbox id="chkExistingStaff" value="#{webUserController.createOnlyUserForExsistingUser}">
+                                            <p:ajax process="@this" update="userFormBody" listener="#{webUserController.onlyAddStaffForExsistingUserListner()}" />
+                                        </p:selectBooleanCheckbox>
+                                        <p:outputLabel for="chkExistingStaff" value="Add User To Exsisting Staff" />
+                                    </div>
+                                </div>
+                            </p:fieldset>
+
+                            <h:panelGroup id="userFormBody" layout="block">
+                                <div class="row">
+                                    <!-- Left column: person / staff and organisation -->
+                                    <div class="col-lg-6">
+
+                                        <p:fieldset legend="Existing Staff" class="mb-3" rendered="#{webUserController.createOnlyUserForExsistingUser}">
+                                            <div class="user-form-row">
+                                                <p:outputLabel value="Staff" class="user-form-label" />
+                                                <div class="user-form-field">
+                                                    <autocomplete:completeStaff value="#{webUserController.staff}" />
                                                 </div>
                                             </div>
-                                        </h:panelGroup>
-                                        <p:outputLabel for="txtAddress" value="Address"
-                                                       rendered="#{!webUserController.createOnlyUserForExsistingUser}"></p:outputLabel>
-                                        <p:inputText autocomplete="off" 
-                                                     id="txtAddress"
-                                                     class="w-100 mt-1"
-                                                     required="true" rendered="#{!webUserController.createOnlyUserForExsistingUser}"
-                                                     value="#{webUserController.current.webUserPerson.address}"
-                                                     requiredMessage="Please enter an address."></p:inputText>
-                                        <p:outputLabel for="txtPhone" 
-                                                       class="w-100"
-                                                       value="Mobile" rendered="#{!webUserController.createOnlyUserForExsistingUser}"></p:outputLabel>
-                                        <p:inputText id="txtPhone" 
-                                                     class="w-100 mt-1"
-                                                     required="true" rendered="#{!webUserController.createOnlyUserForExsistingUser}"
-                                                     value="#{webUserController.current.webUserPerson.mobile}"
-                                                     requiredMessage="Plase enter a phone number"
-                                                     ></p:inputText>
-                                        <p:outputLabel value="Speciality" rendered="#{!webUserController.createOnlyUserForExsistingUser}" ></p:outputLabel>                                            
-                                        <p:autoComplete   forceSelection="true" id="speciality"
-                                                          value="#{webUserController.speciality}"
-                                                          completeMethod="#{specialityController.completeSpeciality}" 
-                                                          var="mys" 
-                                                          class="w-100 mt-1"
-                                                          inputStyleClass="form-control"
-                                                          itemLabel="#{mys.name}" 
-                                                          itemValue="#{mys}"
-                                                          disabled="#{webUserController.createOnlyUser}" 
-                                                          rendered="#{!webUserController.createOnlyUserForExsistingUser}"
-                                                          >              
-                                        </p:autoComplete> 
+                                        </p:fieldset>
 
+                                        <p:fieldset legend="Personal Details" class="mb-3" rendered="#{!webUserController.createOnlyUserForExsistingUser}">
+                                            <div class="user-form-row">
+                                                <p:outputLabel for="txtName" value="Name" class="user-form-label" />
+                                                <div class="user-form-field d-flex gap-2">
+                                                    <p:selectOneMenu
+                                                        id="acTitle"
+                                                        filter="true"
+                                                        filterMatchMode="contains"
+                                                        style="flex: 0 0 9rem; width: 9rem;"
+                                                        required="false"
+                                                        value="#{webUserController.current.webUserPerson.title}"
+                                                        requiredMessage="Please enter a Title">
+                                                        <f:selectItem itemLabel="Title" />
+                                                        <f:selectItems 
+                                                            value="#{enumController.titleDoctor}" 
+                                                            var="title" 
+                                                            itemLabel="#{title.label}" 
+                                                            itemValue="#{title}"/>
+                                                    </p:selectOneMenu>
+                                                    <p:inputText
+                                                        id="txtName"
+                                                        class="flex-grow-1"
+                                                        autocomplete="off"
+                                                        required="true"
+                                                        placeholder="Full name"
+                                                        value="#{webUserController.current.webUserPerson.name}"
+                                                        requiredMessage="Please enter a Name" />
+                                                </div>
+                                            </div>
 
-                                        <p:outputLabel value="Institution" rendered="#{!webUserController.createOnlyUserForExsistingUser}" />
-                                        <p:selectOneMenu
-                                            id="userIns"
-                                            styleClass="w-100 form-control"
-                                            value="#{webUserController.institution}"
-                                            rendered="#{!webUserController.createOnlyUserForExsistingUser}"
-                                            filter="true">
-                                            <f:selectItem itemLabel="Select Institution" />
-                                            <f:selectItems value="#{institutionController.companies}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}" />
-                                            <p:ajax process="@this" update="userSite userDept" />
-                                        </p:selectOneMenu>
+                                            <div class="user-form-row">
+                                                <p:outputLabel for="txtAddress" value="Address" class="user-form-label" />
+                                                <div class="user-form-field">
+                                                    <p:inputText
+                                                        id="txtAddress"
+                                                        autocomplete="off"
+                                                        required="true"
+                                                        value="#{webUserController.current.webUserPerson.address}"
+                                                        requiredMessage="Please enter an address." />
+                                                </div>
+                                            </div>
 
-                                        <p:outputLabel value="Site" rendered="#{!webUserController.createOnlyUserForExsistingUser}" />
-                                        <p:selectOneMenu
-                                            id="userSite"
-                                            styleClass="w-100 form-control"
-                                            value="#{webUserController.site}"
-                                            rendered="#{!webUserController.createOnlyUserForExsistingUser}"
-                                            filter="true">
-                                            <f:selectItem itemLabel="Select Site" />
-                                            <f:selectItems value="#{institutionController.sites}" var="site" itemLabel="#{site.name}" itemValue="#{site}" />
-                                            <p:ajax process="@this" update="userDept" />
-                                        </p:selectOneMenu>
+                                            <div class="user-form-row">
+                                                <p:outputLabel for="txtPhone" value="Mobile" class="user-form-label" />
+                                                <div class="user-form-field">
+                                                    <p:inputText
+                                                        id="txtPhone"
+                                                        required="true"
+                                                        value="#{webUserController.current.webUserPerson.mobile}"
+                                                        requiredMessage="Plase enter a phone number" />
+                                                </div>
+                                            </div>
 
-                                        <p:outputLabel value="Department" rendered="#{!webUserController.createOnlyUserForExsistingUser}" />
-                                        <h:panelGroup id="userDept">
-                                            <p:selectOneMenu
-                                                rendered="#{webUserController.institution eq null and webUserController.site eq null}"
-                                                styleClass="w-100 form-control"
-                                                value="#{webUserController.department}"
-                                                filter="true" filterMatchMode="contains">
-                                                <f:selectItem itemLabel="Select Department" />
-                                                <f:selectItems value="#{departmentController.getDepartmentsOfInstitutionAndSite()}" var="d" itemLabel="#{d.name}" itemValue="#{d}" />
-                                            </p:selectOneMenu>
+                                            <div class="user-form-row">
+                                                <p:outputLabel for="speciality" value="Speciality" class="user-form-label" />
+                                                <div class="user-form-field">
+                                                    <p:autoComplete
+                                                        forceSelection="true" id="speciality"
+                                                        value="#{webUserController.speciality}"
+                                                        completeMethod="#{specialityController.completeSpeciality}"
+                                                        var="mys"
+                                                        class="w-100"
+                                                        inputStyleClass="w-100"
+                                                        placeholder="#{webUserController.createOnlyUser ? 'Not needed for Add Only User' : 'Search speciality'}"
+                                                        itemLabel="#{mys.name}"
+                                                        itemValue="#{mys}"
+                                                        disabled="#{webUserController.createOnlyUser}" />
+                                                </div>
+                                            </div>
+                                        </p:fieldset>
 
-                                            <p:selectOneMenu
-                                                rendered="#{webUserController.institution eq null and webUserController.site ne null}"
-                                                styleClass="w-100 form-control"
-                                                value="#{webUserController.department}"
-                                                filter="true" filterMatchMode="contains">
-                                                <f:selectItem itemLabel="Select Department" />
-                                                <f:selectItems value="#{departmentController.getDepartmentsOfInstitutionAndSite(webUserController.site)}" var="d" itemLabel="#{d.name}" itemValue="#{d}" />
-                                            </p:selectOneMenu>
+                                        <p:fieldset legend="Organisation" class="mb-3" rendered="#{!webUserController.createOnlyUserForExsistingUser}">
+                                            <div class="user-form-row">
+                                                <p:outputLabel for="userIns" value="Institution" class="user-form-label" />
+                                                <div class="user-form-field">
+                                                    <p:selectOneMenu
+                                                        id="userIns"
+                                                        value="#{webUserController.institution}"
+                                                        filter="true"
+                                                        filterMatchMode="contains">
+                                                        <f:selectItem itemLabel="Select Institution" />
+                                                        <f:selectItems value="#{institutionController.companies}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}" />
+                                                        <p:ajax process="@this" update="userSite userDept" />
+                                                    </p:selectOneMenu>
+                                                </div>
+                                            </div>
 
-                                            <p:selectOneMenu
-                                                rendered="#{webUserController.institution ne null and webUserController.site eq null}"
-                                                styleClass="w-100 form-control"
-                                                value="#{webUserController.department}"
-                                                filter="true" filterMatchMode="contains">
-                                                <f:selectItem itemLabel="Select Department" />
-                                                <f:selectItems value="#{departmentController.getDepartmentsOfInstitutionAndSiteForInstitution(webUserController.institution)}" var="d" itemLabel="#{d.name}" itemValue="#{d}" />
-                                            </p:selectOneMenu>
+                                            <div class="user-form-row">
+                                                <p:outputLabel for="userSite" value="Site" class="user-form-label" />
+                                                <div class="user-form-field">
+                                                    <p:selectOneMenu
+                                                        id="userSite"
+                                                        value="#{webUserController.site}"
+                                                        filter="true"
+                                                        filterMatchMode="contains">
+                                                        <f:selectItem itemLabel="Select Site" />
+                                                        <f:selectItems value="#{institutionController.sites}" var="site" itemLabel="#{site.name}" itemValue="#{site}" />
+                                                        <p:ajax process="@this" update="userDept" />
+                                                    </p:selectOneMenu>
+                                                </div>
+                                            </div>
 
-                                            <p:selectOneMenu
-                                                rendered="#{webUserController.institution ne null and webUserController.site ne null}"
-                                                styleClass="w-100 form-control"
-                                                value="#{webUserController.department}"
-                                                filter="true" filterMatchMode="contains">
-                                                <f:selectItem itemLabel="Select Department" />
-                                                <f:selectItems value="#{departmentController.getDepartmentsOfInstitutionAndSite(webUserController.institution, webUserController.site)}" var="d" itemLabel="#{d.name}" itemValue="#{d}" />
-                                            </p:selectOneMenu>
-                                        </h:panelGroup>
+                                            <!-- Department list depends on the selected Institution and Site -->
+                                            <div class="user-form-row">
+                                                <p:outputLabel value="Department" class="user-form-label" />
+                                                <h:panelGroup id="userDept" layout="block" class="user-form-field">
+                                                    <p:selectOneMenu
+                                                        rendered="#{webUserController.institution eq null and webUserController.site eq null}"
+                                                        value="#{webUserController.department}"
+                                                        filter="true" filterMatchMode="contains">
+                                                        <f:selectItem itemLabel="Select Department" />
+                                                        <f:selectItems value="#{departmentController.getDepartmentsOfInstitutionAndSite()}" var="d" itemLabel="#{d.name}" itemValue="#{d}" />
+                                                    </p:selectOneMenu>
 
+                                                    <p:selectOneMenu
+                                                        rendered="#{webUserController.institution eq null and webUserController.site ne null}"
+                                                        value="#{webUserController.department}"
+                                                        filter="true" filterMatchMode="contains">
+                                                        <f:selectItem itemLabel="Select Department" />
+                                                        <f:selectItems value="#{departmentController.getDepartmentsOfInstitutionAndSite(webUserController.site)}" var="d" itemLabel="#{d.name}" itemValue="#{d}" />
+                                                    </p:selectOneMenu>
 
-                                        <p:outputLabel for="loginPage" value="Login Page" />
-                                        <p:selectOneMenu 
-                                            id="loginPage"
-                                            filterMatchMode="contains"
-                                            styleClass="w-100 mt-1 form-control"
-                                            value="#{webUserController.loginPage}"
-                                            rendered="#{!webUserController.createOnlyUserForExsistingUser}">
-                                            <f:selectItem itemLabel="-- Select Login Page --" itemValue="" />
-                                            <f:selectItems value="#{enumController.loginPages}"
-                                                           var="lp"
-                                                           itemLabel="#{lp.label}"
-                                                           itemValue="#{lp}" />
-                                        </p:selectOneMenu>
+                                                    <p:selectOneMenu
+                                                        rendered="#{webUserController.institution ne null and webUserController.site eq null}"
+                                                        value="#{webUserController.department}"
+                                                        filter="true" filterMatchMode="contains">
+                                                        <f:selectItem itemLabel="Select Department" />
+                                                        <f:selectItems value="#{departmentController.getDepartmentsOfInstitutionAndSiteForInstitution(webUserController.institution)}" var="d" itemLabel="#{d.name}" itemValue="#{d}" />
+                                                    </p:selectOneMenu>
 
+                                                    <p:selectOneMenu
+                                                        rendered="#{webUserController.institution ne null and webUserController.site ne null}"
+                                                        value="#{webUserController.department}"
+                                                        filter="true" filterMatchMode="contains">
+                                                        <f:selectItem itemLabel="Select Department" />
+                                                        <f:selectItems value="#{departmentController.getDepartmentsOfInstitutionAndSite(webUserController.institution, webUserController.site)}" var="d" itemLabel="#{d.name}" itemValue="#{d}" />
+                                                    </p:selectOneMenu>
+                                                </h:panelGroup>
+                                            </div>
 
-                                        <p:outputLabel value="User Role" rendered="#{!webUserController.createOnlyUserForExsistingUser}" ></p:outputLabel>
-                                        <p:selectOneMenu
-                                            id="role"
-                                            styleClass="w-100 mt-1 form-control"
-                                            value="#{webUserController.webUserRole}"
-                                            rendered="#{!webUserController.createOnlyUserForExsistingUser}">
-                                            <f:selectItem itemLabel="-- Select Role --" itemValue="" />
-                                            <f:selectItems value="#{webUserRoleController.activatediItems}"
-                                                           var="role"
-                                                           itemLabel="#{role.name}"
-                                                           itemValue="#{role}" />
-                                            <f:attribute name="selectedInstitution" value="#{webUserController.institution}" />
-                                        </p:selectOneMenu>
+                                            <div class="user-form-row">
+                                                <p:outputLabel for="loginPage" value="Login Page" class="user-form-label" />
+                                                <div class="user-form-field">
+                                                    <p:selectOneMenu
+                                                        id="loginPage"
+                                                        filterMatchMode="contains"
+                                                        value="#{webUserController.loginPage}">
+                                                        <f:selectItem itemLabel="-- Select Login Page --" itemValue="" />
+                                                        <f:selectItems value="#{enumController.loginPages}"
+                                                                       var="lp"
+                                                                       itemLabel="#{lp.label}"
+                                                                       itemValue="#{lp}" />
+                                                    </p:selectOneMenu>
+                                                </div>
+                                            </div>
 
+                                            <div class="user-form-row">
+                                                <p:outputLabel for="role" value="User Role" class="user-form-label" />
+                                                <div class="user-form-field">
+                                                    <p:selectOneMenu
+                                                        id="role"
+                                                        value="#{webUserController.webUserRole}">
+                                                        <f:selectItem itemLabel="-- Select Role --" itemValue="" />
+                                                        <f:selectItems value="#{webUserRoleController.activatediItems}"
+                                                                       var="role"
+                                                                       itemLabel="#{role.name}"
+                                                                       itemValue="#{role}" />
+                                                        <f:attribute name="selectedInstitution" value="#{webUserController.institution}" />
+                                                    </p:selectOneMenu>
+                                                </div>
+                                            </div>
+                                        </p:fieldset>
+                                    </div>
 
-                                        <p:outputLabel for="txtUsername" value="User Name"></p:outputLabel>
-                                        <p:inputText id="txtUsername" class="w-100"
-                                                     autocomplete="off" required="true" maxlength="50" 
-                                                     value="#{webUserController.current.name}" >
-                                        </p:inputText>
+                                    <!-- Right column: login credentials -->
+                                    <div class="col-lg-6">
+                                        <p:fieldset legend="Login Credentials" class="mb-3">
+                                            <div class="user-form-row">
+                                                <p:outputLabel for="txtUsername" value="User Name" class="user-form-label" />
+                                                <div class="user-form-field">
+                                                    <p:inputText id="txtUsername"
+                                                                 autocomplete="off" required="true" maxlength="50"
+                                                                 value="#{webUserController.current.name}" />
+                                                </div>
+                                            </div>
 
-                                        <p:outputLabel for="pw1" value="Password" ></p:outputLabel>
-                                        <p:password 
-                                            toggleMask="true" 
-                                            id="pw1" 
-                                            validatorMessage="Passwords are NOT matching." 
-                                            match="pw2" 
-                                            feedback="true" 
-                                            required="true" 
-                                            maxlength="15" 
-                                            value="#{webUserController.current.webUserPassword}" 
-                                            class="w-100"
-                                            />
+                                            <div class="user-form-row">
+                                                <p:outputLabel for="pw1" value="Password" class="user-form-label" />
+                                                <div class="user-form-field">
+                                                    <p:password
+                                                        toggleMask="true"
+                                                        id="pw1"
+                                                        validatorMessage="Passwords are NOT matching."
+                                                        match="pw2"
+                                                        feedback="true"
+                                                        required="true"
+                                                        maxlength="15"
+                                                        value="#{webUserController.current.webUserPassword}"
+                                                        class="w-100"
+                                                        inputStyleClass="w-100" />
+                                                </div>
+                                            </div>
 
-                                        <p:outputLabel value="Re-enter password" for="pw2" ></p:outputLabel>
-                                        <p:password
-                                            toggleMask="true" 
-                                            id="pw2" 
-                                            required="true"
-                                            maxlength="15" 
-                                            value="#{webUserController.current.webUserPassword}" 
-                                            class="w-100"/>
-                                    </h:panelGrid>
-                                </p:tab>
-                                <p:tab title="Advance" >
-                                    <h:panelGrid id="pg1" columns="2" style="text-align: left;" >
-                                        <p:outputLabel value="User is Active" class=" m-1"></p:outputLabel>
-                                        <p:selectBooleanCheckbox value="#{webUserController.current.activated}" >
-                                        </p:selectBooleanCheckbox>
+                                            <div class="user-form-row">
+                                                <p:outputLabel for="pw2" value="Re-enter Password" class="user-form-label" />
+                                                <div class="user-form-field">
+                                                    <p:password
+                                                        toggleMask="true"
+                                                        id="pw2"
+                                                        required="true"
+                                                        maxlength="15"
+                                                        value="#{webUserController.current.webUserPassword}"
+                                                        class="w-100"
+                                                        inputStyleClass="w-100" />
+                                                </div>
+                                            </div>
 
+                                            <h:panelGroup layout="block" class="user-form-row" rendered="#{!webUserController.createOnlyUserForExsistingUser}">
+                                                <p:outputLabel for="txtCode" value="Code" class="user-form-label" />
+                                                <div class="user-form-field">
+                                                    <p:inputText id="txtCode" autocomplete="off" value="#{webUserController.current.code}" maxlength="10" />
+                                                </div>
+                                            </h:panelGroup>
 
-                                        <p:outputLabel value="Add Only User" style="width: 250px" class=" mb-1"></p:outputLabel>
-                                        <p:selectBooleanCheckbox value="#{webUserController.createOnlyUser}" >
-                                            <p:ajax process="@this" update="pg1" listener="#{webUserController.onlyAddStaffListner()}" />
-                                        </p:selectBooleanCheckbox>
-
-                                        <p:outputLabel value="Add User To Exsisting Staff" style="width: 250px" class=" mb-1"></p:outputLabel>
-                                        <p:selectBooleanCheckbox value="#{webUserController.createOnlyUserForExsistingUser}" >
-                                            <p:ajax process="@this" update="pg1" listener="#{webUserController.onlyAddStaffForExsistingUserListner()}" />
-                                        </p:selectBooleanCheckbox>
-
-                                        <p:outputLabel value="Staff" style="width: 250px" class=" mb-1" rendered="#{webUserController.createOnlyUserForExsistingUser}" ></p:outputLabel>
-                                        <autocomplete:completeStaff value="#{webUserController.staff}" rendered="#{webUserController.createOnlyUserForExsistingUser}" />
-
-                                        <h:outputLabel value="Code" style="width: 250px" rendered="#{!webUserController.createOnlyUserForExsistingUser}"></h:outputLabel>
-                                        <p:inputText autocomplete="off" value="#{webUserController.current.code}" maxlength="10" rendered="#{!webUserController.createOnlyUserForExsistingUser}" style="width: 700px"></p:inputText>
-
-                                    </h:panelGrid>
-                                </p:tab>
-                            </p:tabView>
+                                            <div class="user-form-row">
+                                                <p:outputLabel for="chkActive" value="User is Active" class="user-form-label" />
+                                                <div class="user-form-field">
+                                                    <p:selectBooleanCheckbox id="chkActive" value="#{webUserController.current.activated}" />
+                                                </div>
+                                            </div>
+                                        </p:fieldset>
+                                    </div>
+                                </div>
+                            </h:panelGroup>
                         </p:panel>
                     </h:form>
                 </h:panelGroup>
