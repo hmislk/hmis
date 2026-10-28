@@ -11,94 +11,266 @@
     <cc:implementation>
         <style>
             .tfl {
-                text-align: center;
-                max-width: 26rem;
+                --tfl-red: #e11d48;
+                --tfl-red-soft: #fff1f2;
+                --tfl-red-line: #fecdd3;
+                --tfl-ink: #0f172a;
+                --tfl-muted: #64748b;
+                --tfl-line: #e2e8f0;
+                max-width: 25rem;
                 margin: 0 auto;
+                padding: 0.5rem 0;
+                text-align: center;
+                color: var(--tfl-ink);
             }
-            .tfl-icon {
-                width: 4.2rem;
-                height: 4.2rem;
-                margin: 0.75rem auto 1rem auto;
+            /* Header */
+            .tfl-badge {
+                position: relative;
+                width: 4.5rem;
+                height: 4.5rem;
+                margin: 0.25rem auto 1.25rem auto;
+                border-radius: 22px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 1.75rem;
+                color: var(--tfl-red);
+                background: var(--tfl-red-soft);
+                border: 1px solid var(--tfl-red-line);
+            }
+            .tfl-badge::after {
+                content: "";
+                position: absolute;
+                inset: -7px;
+                border-radius: 28px;
+                border: 1px solid var(--tfl-red-line);
+                opacity: 0.6;
+                animation: tfl-breathe 2.6s ease-in-out infinite;
+            }
+            @keyframes tfl-breathe {
+                0%, 100% { transform: scale(1); opacity: 0.6; }
+                50% { transform: scale(1.06); opacity: 0.15; }
+            }
+            @media (prefers-reduced-motion: reduce) {
+                .tfl-badge::after {
+                    animation: none;
+                }
+            }
+            .tfl-eyebrow {
+                display: block;
+                font-size: 0.72rem;
+                font-weight: 700;
+                letter-spacing: 0.12em;
+                text-transform: uppercase;
+                color: var(--tfl-red);
+                margin-bottom: 0.35rem;
+            }
+            .tfl-title {
+                display: block;
+                font-size: 1.6rem;
+                font-weight: 800;
+                letter-spacing: -0.02em;
+                line-height: 1.15;
+                margin-bottom: 0.5rem;
+            }
+            .tfl-message {
+                display: block;
+                font-size: 0.9rem;
+                line-height: 1.55;
+                color: var(--tfl-muted);
+                margin: 0 auto 1.25rem auto;
+                max-width: 22rem;
+            }
+            /* User and attempts */
+            .tfl-meta {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 0.75rem;
+                padding: 0.7rem 0.9rem;
+                margin-bottom: 1rem;
+                border-radius: 14px;
+                background: #f8fafc;
+                border: 1px solid var(--tfl-line);
+                text-align: left;
+            }
+            .tfl-user {
+                display: flex;
+                align-items: center;
+                gap: 0.55rem;
+                min-width: 0;
+                font-size: 0.875rem;
+                font-weight: 600;
+            }
+            .tfl-avatar {
+                flex: 0 0 2rem;
+                height: 2rem;
                 border-radius: 50%;
                 display: flex;
                 align-items: center;
                 justify-content: center;
-                font-size: 1.8rem;
-                color: #fff;
-                background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%);
-                box-shadow: 0 0 0 8px rgba(239, 68, 68, 0.12), 0 10px 24px rgba(185, 28, 28, 0.3);
-            }
-            .tfl-title {
-                display: block;
-                font-size: 1.35rem;
-                font-weight: 700;
-                color: #b91c1c;
-                margin-bottom: 0.4rem;
-            }
-            .tfl-user {
-                display: inline-flex;
-                align-items: center;
-                gap: 0.4rem;
-                padding: 0.25rem 0.75rem;
-                margin-bottom: 1rem;
-                border-radius: 999px;
                 font-size: 0.85rem;
-                font-weight: 600;
-                background: var(--surface-ground, #f1f5f9);
+                color: var(--tfl-muted);
+                background: #fff;
+                border: 1px solid var(--tfl-line);
             }
-            .tfl-message {
+            .tfl-user-name {
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+            }
+            .tfl-attempts {
+                flex: 0 0 auto;
+                text-align: right;
+            }
+            .tfl-bar {
+                display: flex;
+                gap: 3px;
+                width: 6.5rem;
+                margin-bottom: 0.3rem;
+            }
+            .tfl-bar span {
+                flex: 1 1 0;
+                height: 6px;
+                border-radius: 99px;
+                background: var(--tfl-red);
+            }
+            .tfl-attempts-label {
                 display: block;
-                font-size: 0.92rem;
-                line-height: 1.5;
-                color: var(--text-color, #1f2937);
-                margin-bottom: 1.1rem;
+                font-size: 0.72rem;
+                font-weight: 600;
+                color: var(--tfl-red);
             }
-            .tfl-info {
+            /* Next steps */
+            .tfl-card {
+                text-align: left;
+                padding: 1rem 1.1rem;
+                border-radius: 16px;
+                background: #fff;
+                border: 1px solid var(--tfl-line);
+                box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04), 0 8px 24px rgba(15, 23, 42, 0.06);
+            }
+            .tfl-card-head {
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+                margin-bottom: 0.9rem;
+                font-size: 0.8rem;
+                font-weight: 700;
+                letter-spacing: 0.06em;
+                text-transform: uppercase;
+                color: var(--tfl-muted);
+            }
+            .tfl-card-head i {
+                color: var(--tfl-red);
+            }
+            .tfl-steps {
+                margin: 0;
+                padding: 0;
+                list-style: none;
+            }
+            .tfl-step {
                 display: flex;
                 align-items: flex-start;
-                gap: 0.6rem;
-                text-align: left;
-                padding: 0.75rem 0.9rem;
-                border-radius: 12px;
+                gap: 0.75rem;
+            }
+            .tfl-step + .tfl-step {
+                margin-top: 0.85rem;
+            }
+            .tfl-step-num {
+                flex: 0 0 1.6rem;
+                height: 1.6rem;
+                border-radius: 8px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 0.75rem;
+                font-weight: 700;
+                color: var(--tfl-red);
+                background: var(--tfl-red-soft);
+            }
+            .tfl-step-text {
                 font-size: 0.85rem;
-                color: #7f1d1d;
-                background: #fef2f2;
-                border: 1px solid #fecaca;
+                line-height: 1.45;
+                color: var(--tfl-muted);
             }
-            .tfl-info i {
-                margin-top: 0.15rem;
+            .tfl-step-text b {
+                display: block;
+                font-weight: 700;
+                color: var(--tfl-ink);
             }
+            /* Action */
             .tfl-back.ui-button {
                 width: 100%;
                 margin-top: 1.25rem;
-                padding: 0.4rem 0;
+                padding: 0.5rem 0;
+                border: none;
                 border-radius: 12px;
                 font-weight: 600;
+                color: #fff;
+                background: var(--tfl-ink);
+                box-shadow: 0 6px 16px rgba(15, 23, 42, 0.18);
+                transition: transform 0.15s, box-shadow 0.15s;
+            }
+            .tfl-back.ui-button:hover {
+                background: #1e293b;
+                transform: translateY(-1px);
+                box-shadow: 0 10px 22px rgba(15, 23, 42, 0.22);
             }
         </style>
 
         <h:form id="frmTwoFactorLocked">
             <div class="tfl">
-                <div class="tfl-icon">
-                    <i class="fa fa-lock"></i>
-                </div>
+                <div class="tfl-badge"><i class="fa fa-lock"></i></div>
 
+                <span class="tfl-eyebrow">Security lock</span>
                 <h:outputText value="Account Locked" class="tfl-title" />
-
-                <h:panelGroup class="tfl-user" rendered="#{not empty twoFactorAuthController.lockedUserName}">
-                    <i class="fa fa-user-circle"></i>
-                    <h:outputText value="#{twoFactorAuthController.lockedUserName}" />
-                </h:panelGroup>
-
                 <h:outputText value="#{twoFactorAuthController.lockedMessage}" class="tfl-message" />
 
-                <div class="tfl-info">
-                    <i class="fa fa-user-shield"></i>
-                    <h:outputText value="For your security, only a system administrator can unlock this account. Once it is unlocked you can log in again." />
+                <div class="tfl-meta">
+                    <div class="tfl-user">
+                        <span class="tfl-avatar"><i class="fa fa-user"></i></span>
+                        <h:outputText value="#{empty twoFactorAuthController.lockedUserName ? 'Your account' : twoFactorAuthController.lockedUserName}"
+                                      class="tfl-user-name" />
+                    </div>
+                    <div class="tfl-attempts">
+                        <div class="tfl-bar"><span></span><span></span><span></span><span></span><span></span></div>
+                        <span class="tfl-attempts-label">5 / 5 attempts used</span>
+                    </div>
+                </div>
+
+                <div class="tfl-card">
+                    <div class="tfl-card-head">
+                        <i class="fa fa-user-shield"></i>
+                        <span>For your security</span>
+                    </div>
+                    <ul class="tfl-steps">
+                        <li class="tfl-step">
+                            <span class="tfl-step-num">1</span>
+                            <span class="tfl-step-text">
+                                <b>Contact your system administrator</b>
+                                Only an administrator can unlock this account.
+                            </span>
+                        </li>
+                        <li class="tfl-step">
+                            <span class="tfl-step-num">2</span>
+                            <span class="tfl-step-text">
+                                <b>Wait for the unlock</b>
+                                The administrator unlocks it from Manage Users.
+                            </span>
+                        </li>
+                        <li class="tfl-step">
+                            <span class="tfl-step-num">3</span>
+                            <span class="tfl-step-text">
+                                <b>Log in again</b>
+                                Use your password and a fresh code from your authenticator app.
+                            </span>
+                        </li>
+                    </ul>
                 </div>
 
                 <p:commandButton
-                    class="tfl-back ui-button-secondary"
+                    class="tfl-back"
                     value="Back to Login"
                     icon="fa fa-arrow-left"
                     ajax="false"
