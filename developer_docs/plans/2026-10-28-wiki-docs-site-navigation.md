@@ -1,7 +1,7 @@
 # Wiki Docs Site — Master Plan & Progress
 
 **Phase 1 (menu):** issue [#24864](https://github.com/hmislk/hmis/issues/24864), PR [#24865](https://github.com/hmislk/hmis/pull/24865), merged
-**Phase 2 (content rendering):** issue [#24866](https://github.com/hmislk/hmis/issues/24866), branch `24866-wiki-site-content-rendering` · **Site:** https://hmislk.github.io/hmis/
+**Phase 2 (content rendering):** issue [#24866](https://github.com/hmislk/hmis/issues/24866), PR [#24867](https://github.com/hmislk/hmis/pull/24867), branch `24866-wiki-site-content-rendering` · **Site:** https://hmislk.github.io/hmis/
 
 > **New session? Start here.** Read "Progress" and resume at the first unchecked item. Update the checkbox, the log, and "Next step" before you stop.
 
@@ -37,7 +37,8 @@ The menu is generated from the wiki's own **`Wiki-Article-Index.md`** on every b
 - [x] 8. Commit, push, open PR to `development` (`Closes #24864`): [#24865](https://github.com/hmislk/hmis/pull/24865)
 - [x] 9. After merge: run the workflow (`workflow_dispatch`) and check the live site (2026-10-28: new menu live)
 - [x] 11. Phase 2 (#24866): fix broken links between pages, run-on lists, 2-space nested lists, missing logo/favicon; keep redirect stubs out of the menu
-- [ ] 12. Open the phase 2 PR. After merge, run the workflow and check the live site
+- [x] 12a. Open the phase 2 PR (#24867)
+- [ ] 12b. After merge, run the workflow and check the live site
 - [ ] 10. Wiki content follow-up: use the job-summary report to add orphan pages to `Wiki-Article-Index.md`, fix broken index links, and link the Article Index / Video Library from `Home.md`
 
 ## Verification result (step 7, 2026-10-28)
@@ -74,4 +75,4 @@ Local build against the current wiki, compared with the phase 1 converter:
 
 ## Next step
 
-Step 12: wait for the phase 2 PR CI and merge (manual, by the developer). Then run `gh workflow run publish-wiki-docs.yml --repo hmislk/hmis --ref development` and check https://hmislk.github.io/hmis/. After that, step 10 (wiki content, using the job-summary report and the 40 broken targets above).
+Step 12b: wait for PR #24867 CI and merge (manual, by the developer). Then run `gh workflow run publish-wiki-docs.yml --repo hmislk/hmis --ref development` and check https://hmislk.github.io/hmis/. After that, step 10 (wiki content, using the job-summary report and the 40 broken targets above).
