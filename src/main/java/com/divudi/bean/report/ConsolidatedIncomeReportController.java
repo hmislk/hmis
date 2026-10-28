@@ -1,6 +1,7 @@
 package com.divudi.bean.report;
 
 import com.divudi.bean.common.ControllerWithReportFilters;
+import com.divudi.bean.common.WebUserController;
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.ReportViewType;
 import com.divudi.core.data.inward.InwardChargeType;
@@ -20,9 +21,11 @@ import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
+import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
 
@@ -66,6 +69,8 @@ public class ConsolidatedIncomeReportController implements Serializable, Control
 
     @EJB
     private BillFacade billFacade;
+    @Inject
+    private WebUserController webUserController;
 
     private Date fromDate;
     private Date toDate;
@@ -103,6 +108,10 @@ public class ConsolidatedIncomeReportController implements Serializable, Control
 
     public void processReport() {
         clearResults();
+        if (!webUserController.hasPrivilege("ReportsIncomeBreakdownByCategory")) {
+            JsfUtil.addErrorMessage("You are not authorized to view this report");
+            return;
+        }
         if (fromDate == null || toDate == null) {
             JsfUtil.addErrorMessage("Please select From and To dates");
             return;
@@ -118,6 +127,10 @@ public class ConsolidatedIncomeReportController implements Serializable, Control
         grandTotal = serviceTotal + channelRow.getHospitalFee() + wardNetTotal + collectingCentreTotal;
     }
 
+    /**
+     * Also called when a filter changes, so the page and the Excel export
+     * never show rows calculated with earlier filters.
+     */
     private void clearResults() {
         serviceRows = null;
         channelRow = null;
@@ -471,6 +484,9 @@ public class ConsolidatedIncomeReportController implements Serializable, Control
 
     @Override
     public void setFromDate(Date fromDate) {
+        if (!Objects.equals(this.fromDate, fromDate)) {
+            clearResults();
+        }
         this.fromDate = fromDate;
     }
 
@@ -481,6 +497,9 @@ public class ConsolidatedIncomeReportController implements Serializable, Control
 
     @Override
     public void setToDate(Date toDate) {
+        if (!Objects.equals(this.toDate, toDate)) {
+            clearResults();
+        }
         this.toDate = toDate;
     }
 
@@ -491,6 +510,9 @@ public class ConsolidatedIncomeReportController implements Serializable, Control
 
     @Override
     public void setInstitution(Institution institution) {
+        if (!Objects.equals(this.institution, institution)) {
+            clearResults();
+        }
         this.institution = institution;
     }
 
@@ -501,6 +523,9 @@ public class ConsolidatedIncomeReportController implements Serializable, Control
 
     @Override
     public void setSite(Institution site) {
+        if (!Objects.equals(this.site, site)) {
+            clearResults();
+        }
         this.site = site;
     }
 
@@ -511,6 +536,9 @@ public class ConsolidatedIncomeReportController implements Serializable, Control
 
     @Override
     public void setDepartment(Department department) {
+        if (!Objects.equals(this.department, department)) {
+            clearResults();
+        }
         this.department = department;
     }
 
