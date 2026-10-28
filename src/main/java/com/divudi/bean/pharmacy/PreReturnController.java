@@ -265,6 +265,10 @@ public class PreReturnController implements Serializable {
     public void onEdit(BillItem tmp) {
         //    PharmaceuticalBillItem tmp = (PharmaceuticalBillItem) event.getObject();
 
+        if (tmp == null) {
+            return;
+        }
+
         if (tmp.getQty() < 0) {
             tmp.setQty(0.0);
             JsfUtil.addErrorMessage("Returning quantity cannot be negative. The returning quantity was set to 0.");
@@ -274,6 +278,10 @@ public class PreReturnController implements Serializable {
             tmp.setQty(0.0);
             JsfUtil.addErrorMessage("You cant return over than ballanced Qty ");
         }
+
+        double val = tmp.getNetRate() * tmp.getQty();
+        tmp.setNetValue(val);
+        tmp.setGrossValue(val);
 
         calTotal();
         //   getPharmacyController().setPharmacyItem(tmp.getPharmaceuticalBillItem().getBillItem().getItem());
@@ -502,6 +510,8 @@ public class PreReturnController implements Serializable {
             bi.setReferanceBillItem(i.getBillItem());
             bi.copy(i.getBillItem());
             bi.setQty(0.0);
+            bi.setGrossValue(0.0);
+            bi.setNetValue(0.0);
 
             PharmaceuticalBillItem tmp = new PharmaceuticalBillItem();
             tmp.setBillItem(bi);
