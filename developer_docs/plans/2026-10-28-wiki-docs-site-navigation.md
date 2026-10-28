@@ -1,6 +1,6 @@
 # Wiki Docs Site Navigation — Master Plan & Progress
 
-**Issue:** [#24864](https://github.com/hmislk/hmis/issues/24864) · **Branch:** `24864-wiki-site-nav-from-article-index` · **Site:** https://hmislk.github.io/hmis/
+**Issue:** [#24864](https://github.com/hmislk/hmis/issues/24864) · **Branch:** `24864-wiki-site-nav-from-article-index` · **PR:** [#24865](https://github.com/hmislk/hmis/pull/24865) · **Site:** https://hmislk.github.io/hmis/
 
 > **New session? Start here.** Read "Progress" and resume at the first unchecked item. Update the checkbox, the log, and "Next step" before you stop.
 
@@ -33,7 +33,7 @@ The menu is generated from the wiki's own **`Wiki-Article-Index.md`** on every b
 - [x] 5. Remove static `nav:` from `mkdocs.yml`; add `mkdocs.generated.yml` to `.gitignore`
 - [x] 6. Update `publish-wiki-docs.yml` (generate step + `-f mkdocs.generated.yml`)
 - [x] 7. Verify locally: convert the wiki in `tmp/`, generate the nav, `mkdocs build`, check every index section and its pages appear, and every wiki page is in the nav
-- [ ] 8. Commit, push, open PR to `development` (`Closes #24864`)
+- [x] 8. Commit, push, open PR to `development` (`Closes #24864`): [#24865](https://github.com/hmislk/hmis/pull/24865)
 - [ ] 9. After merge: run the workflow (`workflow_dispatch`) and check the live site
 - [ ] 10. Wiki content follow-up: use the job-summary report to add orphan pages to `Wiki-Article-Index.md`, fix broken index links, and link the Article Index / Video Library from `Home.md`
 
@@ -59,7 +59,8 @@ Local build in `tmp/wikisite` against the current wiki:
 
 - 2026-10-28 — Investigated, filed #24864, created branch and this plan.
 - 2026-10-28 — Wrote `tools/generate-wiki-nav.py`; removed static nav; updated workflow and `.gitignore`; verified locally (see above).
+- 2026-10-28 — Opened PR #24865.
 
 ## Next step
 
-Step 8: commit, push, open the PR.
+Step 9: wait for PR #24865 CI and merge (manual, by the developer). Then run **Publish Wiki Documentation** (`gh workflow run publish-wiki-docs.yml --repo hmislk/hmis`), read the job summary, and check https://hmislk.github.io/hmis/. Then step 10.
