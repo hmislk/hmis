@@ -1078,6 +1078,8 @@ public class SessionController implements Serializable, HttpSessionListener {
             // Password accepted; the template now shows the authenticator code screen
             twoFactorAuthController.setChannelingTabView(false);
             return "/index1.xhtml?faces-redirect=true";
+        } else if (twoFactorAuthController.isAccountLockedNotice()) {
+            return "";
         } else {
             JsfUtil.addErrorMessage("Invalid User! Login Failure. Please try again");
             return "";
@@ -1097,6 +1099,8 @@ public class SessionController implements Serializable, HttpSessionListener {
             return "/index1.xhtml?faces-redirect=true";
         } else if (twoFactorAuthController.isPending()) {
             twoFactorAuthController.setChannelingTabView(true);
+            return "";
+        } else if (twoFactorAuthController.isAccountLockedNotice()) {
             return "";
         } else {
             JsfUtil.addErrorMessage("Invalid User! Login Failure. Please try again");
@@ -1545,6 +1549,7 @@ public class SessionController implements Serializable, HttpSessionListener {
     private boolean checkUsersWithoutDepartment() {
         System.out.println("DEBUG: checkUsersWithoutDepartment() started at " + new Date());
         long startTime = System.currentTimeMillis();
+        twoFactorAuthController.dismissLockedNotice();
         
         String jpql;
         jpql = "SELECT u FROM WebUser u WHERE u.retired = false and (u.name)=:un";
@@ -1566,8 +1571,13 @@ public class SessionController implements Serializable, HttpSessionListener {
                         JsfUtil.addErrorMessage("Login not allowed from this IP address for this user.");
                         return false;
                     }
+                    if (u.isTwoFactorLocked()) {
+                        // Locked by too many invalid authenticator codes; only an admin can unlock
+                        twoFactorAuthController.showLockedNotice(u.getName());
+                        return false;
+                    }
                     if (!webUserController.isGrantAllPrivilegesToAllUsersForTesting()
-                            && twoFactorAuthController.isTwoFactorRequiredFor(u)) {
+                            && twoFactorAuthController.isCodeNeededAtLoginFor(u)) {
                         // Login is completed by completeTwoFactorLogin() once the code is verified
                         twoFactorAuthController.startChallenge(u);
                         return false;
