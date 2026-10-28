@@ -59,7 +59,7 @@ skill is the authorization; do not hold back for permission.
 **The session stays open until every PR is merged.** Do not offer to close
 the session while any PR this run opened is still open, unless the user says
 it can wait. After each merge, delete the local branch, read back the issue's
-board Status, and update the report file.
+board Status (it must be **Dev Completed**), and update the report file.
 
 **The report is written as you go.** Create
 `tmp/pick-and-ship/<yyyy-mm-dd>-<reporter>.md` at the start of the run and
@@ -210,7 +210,7 @@ re-verify, then set the board Status to **Dev Completed** (read it back) so QA r
 Do not leave it in Backlog.
 
 Before reporting, read back the board Status of every issue you touched. Shipped issues must be in
-**Reviewing & Merging**, per
+**Reviewing & Merging** while their PR is open and **Dev Completed** once it is merged, per
 [Project board: status at every stage](../../../developer_docs/github/project-board-integration.md#status-at-every-stage-qa-works-from-this-column).
 
 ## 7. Report
