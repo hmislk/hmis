@@ -2,83 +2,9 @@
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
                 template="/resources/template/template.xhtml"
-                xmlns:h="http://xmlns.jcp.org/jsf/html"
-                xmlns:p="http://primefaces.org/ui"
                 xmlns="http://www.w3.org/1999/xhtml"
-                xmlns:f="http://xmlns.jcp.org/jsf/core">
-
+                xmlns:my_authenticator="http://xmlns.jcp.org/jsf/composite/ezcomp/pages/admin">
     <ui:define name="content">
-        <h:form id="frmMyAuthenticator">
-            <p:panel style="max-width: 40em;" class="m-2">
-                <f:facet name="header">
-                    <i class="pi pi-shield"></i>
-                    <h:outputLabel class="mx-2" value="My Authenticator App" />
-                </f:facet>
-
-                <h:panelGroup rendered="#{not twoFactorAuthController.twoFactorEnabled}" layout="block">
-                    <h:outputText value="Authenticator app login is not enabled for this system." />
-                </h:panelGroup>
-
-                <h:panelGroup rendered="#{twoFactorAuthController.twoFactorEnabled and not twoFactorAuthController.selfSetupInProgress}" layout="block">
-                    <p>
-                        <h:outputText value="Status: " />
-                        <h:outputText value="Linked" class="text-success fw-bold" rendered="#{twoFactorAuthController.loggedUserEnrolled}" />
-                        <h:outputText value="Not set up" class="text-muted fw-bold" rendered="#{not twoFactorAuthController.loggedUserEnrolled}" />
-                    </p>
-                    <p class="small">
-                        <h:outputText rendered="#{twoFactorAuthController.loggedUserRequired}"
-                                      value="Your account requires a code from an authenticator app at every login." />
-                        <h:outputText rendered="#{not twoFactorAuthController.loggedUserRequired}"
-                                      value="Your account does not currently require an authenticator code. You can still link an app now so it is ready if your administrator enables it." />
-                    </p>
-                    <p:commandButton value="#{twoFactorAuthController.loggedUserEnrolled ? 'Link a New Phone' : 'Set Up Authenticator App'}"
-                                     icon="pi pi-mobile"
-                                     process="@this"
-                                     update="@form"
-                                     action="#{twoFactorAuthController.startSelfSetup()}" />
-                    <p class="small text-muted mt-2" rendered="#{twoFactorAuthController.loggedUserEnrolled}">
-                        Linking a new phone replaces the current one once you confirm a code from the new phone.
-                    </p>
-                </h:panelGroup>
-
-                <h:panelGroup rendered="#{twoFactorAuthController.twoFactorEnabled and twoFactorAuthController.selfSetupInProgress}" layout="block">
-                    <ol class="small ps-3">
-                        <li>Install Google Authenticator, Microsoft Authenticator or a similar app on your phone.</li>
-                        <li>In the app, add an account and scan this QR code.</li>
-                        <li>Enter the 6-digit code shown in the app and press Confirm.</li>
-                    </ol>
-                    <div class="text-center my-2">
-                        <h:outputText value="#{twoFactorAuthController.selfSetupQrSvg}" escape="false" />
-                    </div>
-                    <div class="small text-center mb-3">
-                        <h:outputText value="Can't scan? Enter this key manually:" />
-                        <br/>
-                        <code><h:outputText value="#{twoFactorAuthController.selfSetupSecretForDisplay}" /></code>
-                    </div>
-                    <div class="d-flex gap-2 align-items-center">
-                        <p:inputText id="txtSelfCode"
-                                     value="#{twoFactorAuthController.selfSetupCode}"
-                                     placeholder="6-digit code"
-                                     maxlength="7"
-                                     autocomplete="one-time-code"
-                                     style="letter-spacing: 0.3em; width: 10em;">
-                            <f:passThroughAttribute name="inputmode" value="numeric" />
-                        </p:inputText>
-                        <p:commandButton value="Confirm"
-                                         icon="pi pi-check"
-                                         process="@this txtSelfCode"
-                                         update="@form"
-                                         action="#{twoFactorAuthController.confirmSelfSetup()}" />
-                        <p:commandButton value="Cancel"
-                                         class="ui-button-secondary"
-                                         icon="pi pi-times"
-                                         process="@this"
-                                         update="@form"
-                                         action="#{twoFactorAuthController.cancelSelfSetup()}" />
-                    </div>
-                </h:panelGroup>
-            </p:panel>
-        </h:form>
+        <my_authenticator:my_authenticator/>
     </ui:define>
-
 </ui:composition>
