@@ -31,6 +31,66 @@
                         .user-form-field .ui-inputfield {
                             width: 100%;
                         }
+                        /* Authenticator status and lock cards */
+                        .tfa-card {
+                            display: flex;
+                            align-items: center;
+                            gap: 0.85rem;
+                            padding: 0.8rem 1rem;
+                            margin-bottom: 0.6rem;
+                            border-radius: 12px;
+                            border: 1px solid var(--tfa-border);
+                            background: var(--tfa-bg);
+                        }
+                        .tfa-card.linked { --tfa-accent: #16a34a; --tfa-bg: #f0fdf4; --tfa-border: #bbf7d0; }
+                        .tfa-card.pending { --tfa-accent: #d97706; --tfa-bg: #fffbeb; --tfa-border: #fde68a; }
+                        .tfa-card.off { --tfa-accent: #64748b; --tfa-bg: #f8fafc; --tfa-border: #e2e8f0; }
+                        .tfa-card.locked { --tfa-accent: #dc2626; --tfa-bg: #fef2f2; --tfa-border: #fecaca; }
+                        .tfa-card-icon {
+                            flex: 0 0 2.6rem;
+                            height: 2.6rem;
+                            border-radius: 50%;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            font-size: 1.1rem;
+                            color: #fff;
+                            background: var(--tfa-accent);
+                        }
+                        .tfa-card-text {
+                            flex: 1 1 auto;
+                            min-width: 0;
+                        }
+                        .tfa-card-title {
+                            display: block;
+                            font-weight: 700;
+                            color: var(--tfa-accent);
+                        }
+                        .tfa-card-sub {
+                            display: block;
+                            font-size: 0.85rem;
+                            color: #475569;
+                        }
+                        .tfa-card-note {
+                            flex: 0 0 auto;
+                            display: inline-flex;
+                            align-items: center;
+                            gap: 0.4rem;
+                            padding: 0.35rem 0.8rem;
+                            border-radius: 999px;
+                            font-size: 0.8rem;
+                            font-weight: 600;
+                            white-space: nowrap;
+                            color: #b91c1c;
+                            background: #fff;
+                            border: 1px dashed #fca5a5;
+                            cursor: help;
+                        }
+                        .tfa-section-title {
+                            display: block;
+                            font-weight: 600;
+                            margin: 0.4rem 0 0.5rem 0;
+                        }
                     </style>
 
                     <p:panel>
@@ -263,59 +323,96 @@
                                             </div>
                                         </div>
 
-                                        <div class="user-form-row">
-                                            <p:outputLabel value="Authenticator Status" class="user-form-label" />
-                                            <h:panelGroup id="twoFactorStatusBlock" layout="block" class="user-form-field d-flex align-items-center flex-wrap gap-2">
-                                                <h:panelGroup rendered="#{webUserController.current.twoFactorEnrolled}">
-                                                    <i class="fa fa-check-circle text-success"></i>
-                                                    <h:outputText value=" Linked" class="text-success fw-bold" />
-                                                    <h:outputText value=" since " rendered="#{webUserController.current.twoFactorEnrolledAt ne null}" />
-                                                    <h:outputText value="#{webUserController.current.twoFactorEnrolledAt}" rendered="#{webUserController.current.twoFactorEnrolledAt ne null}">
-                                                        <f:convertDateTime pattern="dd-MM-yyyy HH:mm" />
-                                                    </h:outputText>
+                                        <h:outputText value="Authenticator Status" class="tfa-section-title" />
+                                        <h:panelGroup id="twoFactorStatusBlock" layout="block" class="tfa-status-area">
+                                            <!-- Linked -->
+                                            <h:panelGroup layout="block" class="tfa-card linked" rendered="#{webUserController.current.twoFactorEnrolled}">
+                                                <div class="tfa-card-icon"><i class="fa fa-shield-alt"></i></div>
+                                                <div class="tfa-card-text">
+                                                    <h:outputText value="Authenticator app linked" class="tfa-card-title" />
+                                                    <h:panelGroup class="tfa-card-sub">
+                                                        <h:outputText value="Linked on " rendered="#{webUserController.current.twoFactorEnrolledAt ne null}" />
+                                                        <h:outputText value="#{webUserController.current.twoFactorEnrolledAt}" rendered="#{webUserController.current.twoFactorEnrolledAt ne null}">
+                                                            <f:convertDateTime pattern="dd MMM yyyy, HH:mm" />
+                                                        </h:outputText>
+                                                        <h:outputText value=" · " rendered="#{webUserController.current.twoFactorEnrolledAt ne null}" />
+                                                        <h:outputText value="A 6-digit code is asked at every login." />
+                                                    </h:panelGroup>
+                                                </div>
+                                                <!-- No reset while locked: the lock must be cleared first -->
+                                                <h:panelGroup rendered="#{webUserController.current.twoFactorLocked}" class="tfa-card-note"
+                                                              title="Reset is available after the account is unlocked (see below)">
+                                                    <i class="fa fa-lock"></i>
+                                                    <h:outputText value="Unlock to reset" />
                                                 </h:panelGroup>
-                                                <h:panelGroup rendered="#{not webUserController.current.twoFactorEnrolled}">
-                                                    <i class="fa fa-circle text-muted"></i>
-                                                    <h:outputText value=" Not set up (user will be asked at next login)" class="text-muted" />
-                                                </h:panelGroup>
-                                                <p:commandButton value="Reset Authenticator"
-                                                                 class="ui-button-danger"
+                                                <p:commandButton value="Reset"
+                                                                 class="ui-button-danger ui-button-outlined"
                                                                  icon="fa fa-sync"
+                                                                 rendered="#{not webUserController.current.twoFactorLocked}"
                                                                  process="@this"
                                                                  update="twoFactorStatusBlock"
                                                                  title="Unlink the user's authenticator app (e.g. lost phone)"
-                                                                 rendered="#{webUserController.current.twoFactorEnrolled}"
                                                                  action="#{twoFactorAuthController.resetAuthenticator(webUserController.current)}">
                                                     <p:confirm header="Reset Authenticator"
                                                                message="The user's linked authenticator app will stop working and they must set it up again at next login. Continue?"
                                                                icon="pi pi-exclamation-triangle" />
                                                 </p:commandButton>
                                             </h:panelGroup>
-                                        </div>
+                                            <!-- Required but not linked yet -->
+                                            <h:panelGroup layout="block" class="tfa-card pending"
+                                                          rendered="#{not webUserController.current.twoFactorEnrolled and twoFactorAuthController.isTwoFactorRequiredFor(webUserController.current)}">
+                                                <div class="tfa-card-icon"><i class="fa fa-hourglass-half"></i></div>
+                                                <div class="tfa-card-text">
+                                                    <h:outputText value="Setup pending" class="tfa-card-title" />
+                                                    <h:outputText value="After the next login the user must link an authenticator app before using the system." class="tfa-card-sub" />
+                                                </div>
+                                            </h:panelGroup>
+                                            <!-- Not required and not linked -->
+                                            <h:panelGroup layout="block" class="tfa-card off"
+                                                          rendered="#{not webUserController.current.twoFactorEnrolled and not twoFactorAuthController.isTwoFactorRequiredFor(webUserController.current)}">
+                                                <div class="tfa-card-icon"><i class="fa fa-mobile-alt"></i></div>
+                                                <div class="tfa-card-text">
+                                                    <h:outputText value="Not set up" class="tfa-card-title" />
+                                                    <h:outputText value="Not required for this user. Tick Require Authenticator App (2FA) and save to enforce it." class="tfa-card-sub" />
+                                                </div>
+                                            </h:panelGroup>
+                                        </h:panelGroup>
                                     </h:panelGroup>
 
                                     <!-- Shown even if 2FA is later switched off, so a locked user can still be unlocked -->
                                     <h:panelGroup id="twoFactorLockBlock" layout="block">
-                                        <h:panelGroup layout="block" class="user-form-row" rendered="#{webUserController.current.twoFactorLocked}">
-                                            <p:outputLabel value="Account Lock" class="user-form-label" />
-                                            <div class="user-form-field d-flex align-items-center flex-wrap gap-2">
-                                                <i class="fa fa-lock text-danger"></i>
-                                                <h:outputText value=" Locked (too many invalid authenticator codes)" class="text-danger fw-bold" />
-                                                <h:outputText value=" since " rendered="#{webUserController.current.twoFactorLockedAt ne null}" />
-                                                <h:outputText value="#{webUserController.current.twoFactorLockedAt}" rendered="#{webUserController.current.twoFactorLockedAt ne null}">
-                                                    <f:convertDateTime pattern="dd-MM-yyyy HH:mm" />
-                                                </h:outputText>
-                                                <p:commandButton value="Unlock Account"
-                                                                 class="ui-button-warning"
-                                                                 icon="fa fa-unlock"
-                                                                 process="@this"
-                                                                 update="twoFactorLockBlock"
-                                                                 title="Let the user log in and enter authenticator codes again"
-                                                                 action="#{twoFactorAuthController.unlockAccount(webUserController.current)}">
-                                                    <p:confirm header="Unlock Account"
-                                                               message="The user will be able to log in again. Continue?"
-                                                               icon="pi pi-exclamation-triangle" />
-                                                </p:commandButton>
+                                        <h:panelGroup layout="block" class="tfa-card locked" rendered="#{webUserController.current.twoFactorLocked}">
+                                            <div class="tfa-card-icon"><i class="fa fa-lock"></i></div>
+                                            <div class="tfa-card-text">
+                                                <h:outputText value="Account locked" class="tfa-card-title" />
+                                                <h:panelGroup class="tfa-card-sub">
+                                                    <h:outputText value="Too many invalid authenticator codes" />
+                                                    <h:outputText value=" · since " rendered="#{webUserController.current.twoFactorLockedAt ne null}" />
+                                                    <h:outputText value="#{webUserController.current.twoFactorLockedAt}" rendered="#{webUserController.current.twoFactorLockedAt ne null}">
+                                                        <f:convertDateTime pattern="dd MMM yyyy, HH:mm" />
+                                                    </h:outputText>
+                                                    <h:outputText value=". The user cannot log in until unlocked." />
+                                                </h:panelGroup>
+                                            </div>
+                                            <p:commandButton value="Unlock"
+                                                             class="ui-button-success"
+                                                             icon="fa fa-unlock"
+                                                             process="@this"
+                                                             update="twoFactorLockBlock @(.tfa-status-area)"
+                                                             title="Let the user log in and enter authenticator codes again"
+                                                             action="#{twoFactorAuthController.unlockAccount(webUserController.current)}">
+                                                <p:confirm header="Unlock Account"
+                                                           message="The user will be able to log in again. Continue?"
+                                                           icon="pi pi-exclamation-triangle" />
+                                            </p:commandButton>
+                                        </h:panelGroup>
+                                        <!-- Some invalid codes, not locked yet -->
+                                        <h:panelGroup layout="block" class="tfa-card pending"
+                                                      rendered="#{not webUserController.current.twoFactorLocked and webUserController.current.twoFactorFailedAttempts gt 0}">
+                                            <div class="tfa-card-icon"><i class="fa fa-exclamation"></i></div>
+                                            <div class="tfa-card-text">
+                                                <h:outputText value="#{webUserController.current.twoFactorFailedAttempts} invalid code(s) since the last successful login" class="tfa-card-title" />
+                                                <h:outputText value="The account locks after 5. A valid code resets the count." class="tfa-card-sub" />
                                             </div>
                                         </h:panelGroup>
                                     </h:panelGroup>
