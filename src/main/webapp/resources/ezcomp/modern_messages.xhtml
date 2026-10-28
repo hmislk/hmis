@@ -1,0 +1,155 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:cc="http://xmlns.jcp.org/jsf/composite"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html">
+
+    <!-- Toast-style FacesMessages without PrimeFaces. Place inside the area your ajax
+         call updates (e.g. the form) so new messages appear after each request. -->
+    <cc:interface>
+        <!-- milliseconds before a toast hides itself; 0 keeps it until closed -->
+        <cc:attribute name="life" default="5000" type="java.lang.Integer" />
+    </cc:interface>
+
+    <cc:implementation>
+        <style>
+            .mm-stack {
+                position: fixed;
+                top: 1rem;
+                right: 1rem;
+                z-index: 2000;
+                display: flex;
+                flex-direction: column;
+                gap: 0.6rem;
+                width: min(24rem, calc(100vw - 2rem));
+                pointer-events: none;
+            }
+            .mm-toast {
+                pointer-events: auto;
+                display: flex;
+                align-items: flex-start;
+                gap: 0.75rem;
+                padding: 0.85rem 0.9rem 0.85rem 1rem;
+                border-radius: 14px;
+                background: var(--surface-card, #fff);
+                color: var(--text-color, #1f2937);
+                border-left: 5px solid var(--mm-accent);
+                box-shadow: 0 12px 28px rgba(0, 0, 0, 0.12), 0 2px 6px rgba(0, 0, 0, 0.06);
+                animation: mm-in 0.25s ease-out;
+                transition: opacity 0.25s, transform 0.25s;
+            }
+            .mm-toast.mm-hide {
+                opacity: 0;
+                transform: translateX(110%);
+            }
+            .mm-icon {
+                flex: 0 0 2rem;
+                height: 2rem;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: #fff;
+                background: var(--mm-accent);
+                font-size: 0.95rem;
+            }
+            .mm-text {
+                flex: 1 1 auto;
+                min-width: 0;
+            }
+            .mm-title {
+                display: block;
+                font-weight: 700;
+                font-size: 0.9rem;
+                margin-bottom: 0.1rem;
+            }
+            .mm-detail {
+                display: block;
+                font-size: 0.875rem;
+                color: var(--text-color-secondary, #4b5563);
+                word-wrap: break-word;
+            }
+            .mm-close {
+                flex: 0 0 auto;
+                border: none;
+                background: transparent;
+                color: var(--text-color-secondary, #6b7280);
+                font-size: 1rem;
+                line-height: 1;
+                padding: 0.25rem;
+                border-radius: 6px;
+                cursor: pointer;
+            }
+            .mm-close:hover {
+                background: rgba(0, 0, 0, 0.06);
+            }
+            .mm-info {
+                --mm-accent: #22c55e;
+            }
+            .mm-warn {
+                --mm-accent: #f59e0b;
+            }
+            .mm-error {
+                --mm-accent: #ef4444;
+            }
+            @keyframes mm-in {
+                from {
+                    opacity: 0;
+                    transform: translateX(40%);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateX(0);
+                }
+            }
+        </style>
+
+        <div id="#{cc.clientId}" class="mm-stack" data-life="#{cc.attrs.life}">
+            <ui:repeat value="#{facesContext.messageList}" var="m">
+                <!-- severity ordinal: 0 INFO, 1 WARN, 2 ERROR, 3 FATAL -->
+                <div class="mm-toast #{m.severity.ordinal eq 0 ? 'mm-info' : (m.severity.ordinal eq 1 ? 'mm-warn' : 'mm-error')}"
+                     role="#{m.severity.ordinal ge 2 ? 'alert' : 'status'}">
+                    <div class="mm-icon">
+                        <i class="fa #{m.severity.ordinal eq 0 ? 'fa-check' : (m.severity.ordinal eq 1 ? 'fa-exclamation' : 'fa-times')}"></i>
+                    </div>
+                    <div class="mm-text">
+                        <h:outputText class="mm-title"
+                                      value="#{m.severity.ordinal eq 0 ? 'Success' : (m.severity.ordinal eq 1 ? 'Warning' : 'Error')}" />
+                        <h:outputText class="mm-detail" value="#{m.summary}" />
+                        <h:outputText class="mm-detail" value="#{m.detail}"
+                                      rendered="#{not empty m.detail and m.detail ne m.summary}" />
+                    </div>
+                    <button type="button" class="mm-close" aria-label="Close" title="Close">
+                        <i class="fa fa-times"></i>
+                    </button>
+                </div>
+            </ui:repeat>
+            <script>
+                //<![CDATA[
+                (function () {
+                    var stacks = document.querySelectorAll('.mm-stack:not([data-ready])');
+                    Array.prototype.forEach.call(stacks, function (stack) {
+                        stack.setAttribute('data-ready', 'true');
+                        var life = parseInt(stack.getAttribute('data-life'), 10) || 0;
+                        Array.prototype.forEach.call(stack.querySelectorAll('.mm-toast'), function (toast, i) {
+                            var hide = function () {
+                                toast.classList.add('mm-hide');
+                                setTimeout(function () {
+                                    if (toast.parentNode) {
+                                        toast.parentNode.removeChild(toast);
+                                    }
+                                }, 260);
+                            };
+                            toast.querySelector('.mm-close').addEventListener('click', hide);
+                            if (life > 0) {
+                                setTimeout(hide, life + i * 400);
+                            }
+                        });
+                    });
+                })();
+                //]]>
+            </script>
+        </div>
+    </cc:implementation>
+</html>
