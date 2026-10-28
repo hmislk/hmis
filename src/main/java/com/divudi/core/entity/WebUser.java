@@ -113,6 +113,16 @@ public class WebUser implements Serializable {
     private boolean restrictLoginByIp = false;
     private String allowedIpAddresses;
 
+    // Authenticator app (TOTP) two-factor login
+    private boolean twoFactorRequired = false;
+    private boolean twoFactorEnrolled = false;
+    @JsonIgnore
+    private String twoFactorSecret;
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    private Date twoFactorEnrolledAt;
+    @JsonIgnore
+    private Long twoFactorLastUsedStep;
+
     public Staff getStaff() {
         return staff;
     }
@@ -430,6 +440,46 @@ public class WebUser implements Serializable {
             }
         }
         return false;
+    }
+
+    public boolean isTwoFactorRequired() {
+        return twoFactorRequired;
+    }
+
+    public void setTwoFactorRequired(boolean twoFactorRequired) {
+        this.twoFactorRequired = twoFactorRequired;
+    }
+
+    public boolean isTwoFactorEnrolled() {
+        return twoFactorEnrolled;
+    }
+
+    public void setTwoFactorEnrolled(boolean twoFactorEnrolled) {
+        this.twoFactorEnrolled = twoFactorEnrolled;
+    }
+
+    public String getTwoFactorSecret() {
+        return twoFactorSecret;
+    }
+
+    public void setTwoFactorSecret(String twoFactorSecret) {
+        this.twoFactorSecret = twoFactorSecret;
+    }
+
+    public Date getTwoFactorEnrolledAt() {
+        return twoFactorEnrolledAt;
+    }
+
+    public void setTwoFactorEnrolledAt(Date twoFactorEnrolledAt) {
+        this.twoFactorEnrolledAt = twoFactorEnrolledAt;
+    }
+
+    public Long getTwoFactorLastUsedStep() {
+        return twoFactorLastUsedStep;
+    }
+
+    public void setTwoFactorLastUsedStep(Long twoFactorLastUsedStep) {
+        this.twoFactorLastUsedStep = twoFactorLastUsedStep;
     }
 
     public Institution getSite() {
