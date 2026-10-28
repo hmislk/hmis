@@ -220,6 +220,15 @@ def collect_paths(items, into: set) -> None:
             into.add(value)
 
 
+def is_redirect_stub(path: Path) -> bool:
+    """True for a short "This page has moved" page left behind after a rename.
+
+    The page still builds, so old links keep working, but it stays out of
+    the menu."""
+    text = path.read_text(encoding="utf-8", errors="ignore")
+    return len(text) < 600 and "this page has moved" in text.lower()
+
+
 def page_title(path: str) -> str:
     return Path(path).stem.replace("-", " ").replace("_", " ").strip()
 
@@ -308,6 +317,7 @@ def build_nav(docs_dir: Path):
         path for path in files
         if path not in reached
         and Path(path).stem.lower() not in EXCLUDED_PAGES
+        and not is_redirect_stub(docs_dir / path)
     )
     if remaining:
         nav.append(("More Articles", more_articles(remaining)))
@@ -318,6 +328,7 @@ def build_nav(docs_dir: Path):
         path for path in files
         if path not in indexed
         and Path(path).stem.lower() not in EXCLUDED_PAGES
+        and not is_redirect_stub(docs_dir / path)
     )
     return nav, broken, not_indexed, len(files)
 

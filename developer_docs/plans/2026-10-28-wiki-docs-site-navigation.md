@@ -1,6 +1,7 @@
-# Wiki Docs Site Navigation — Master Plan & Progress
+# Wiki Docs Site — Master Plan & Progress
 
-**Issue:** [#24864](https://github.com/hmislk/hmis/issues/24864) · **Branch:** `24864-wiki-site-nav-from-article-index` · **PR:** [#24865](https://github.com/hmislk/hmis/pull/24865) · **Site:** https://hmislk.github.io/hmis/
+**Phase 1 (menu):** issue [#24864](https://github.com/hmislk/hmis/issues/24864), PR [#24865](https://github.com/hmislk/hmis/pull/24865), merged
+**Phase 2 (content rendering):** issue [#24866](https://github.com/hmislk/hmis/issues/24866), PR [#24867](https://github.com/hmislk/hmis/pull/24867), branch `24866-wiki-site-content-rendering` · **Site:** https://hmislk.github.io/hmis/
 
 > **New session? Start here.** Read "Progress" and resume at the first unchecked item. Update the checkbox, the log, and "Next step" before you stop.
 
@@ -34,7 +35,10 @@ The menu is generated from the wiki's own **`Wiki-Article-Index.md`** on every b
 - [x] 6. Update `publish-wiki-docs.yml` (generate step + `-f mkdocs.generated.yml`)
 - [x] 7. Verify locally: convert the wiki in `tmp/`, generate the nav, `mkdocs build`, check every index section and its pages appear, and every wiki page is in the nav
 - [x] 8. Commit, push, open PR to `development` (`Closes #24864`): [#24865](https://github.com/hmislk/hmis/pull/24865)
-- [ ] 9. After merge: run the workflow (`workflow_dispatch`) and check the live site
+- [x] 9. After merge: run the workflow (`workflow_dispatch`) and check the live site (2026-10-28: new menu live)
+- [x] 11. Phase 2 (#24866): fix broken links between pages, run-on lists, 2-space nested lists, missing logo/favicon; keep redirect stubs out of the menu
+- [x] 12a. Open the phase 2 PR (#24867)
+- [ ] 12b. After merge, run the workflow and check the live site
 - [ ] 10. Wiki content follow-up: use the job-summary report to add orphan pages to `Wiki-Article-Index.md`, fix broken index links, and link the Article Index / Video Library from `Home.md`
 
 ## Verification result (step 7, 2026-10-28)
@@ -47,20 +51,28 @@ Local build in `tmp/wikisite` against the current wiki:
 - `mkdocs build` warnings: 189, the same as the old config. All of them come from links inside page content, none from the nav.
 - Browser check: the tabs, all 9 index groups, Finance → Cashier Operations → pages, and More Articles groups all render.
 
+## Phase 2 verification (2026-10-28)
+
+Local build against the current wiki, compared with the phase 1 converter:
+
+- Links in page content that resolve: 4,098 of 4,138 (was 1,289 of 4,126). The 40 still broken point to pages or images that are not in the wiki. They belong to step 10 (e.g. `Pharmacy-Batch-Management`, `Privileges-and-Access-Control`, `Scope/*`, LIMS `images/*.png`).
+- `mkdocs build` warnings: 52 (was 189).
+- Lists render as lists (e.g. User Manual); 2-space nested lists render nested.
+- The logo shows a Material icon; the favicon is the theme default; no console errors.
+- 28 redirect stubs are left out of More Articles. They still build, so old links keep working.
+- The link check script is `tmp/linkcheck.py <site-dir> [top-N]`. It is untracked, and easy to recreate: walk the `<article>` hrefs and check that each target exists.
+
 ## Known follow-ups (out of scope)
 
-- Pages inside wiki sub-folders (`Pharmacy/`, `OPD/`, `Lab/` …) link to other pages with root-relative names, so the converter's relative links break inside those pages. Fix: make `convert-wiki-for-mkdocs.py` resolve link targets by page name and write paths relative to the linking file.
-- The site logo and favicon (`images/hmis-logo.png`, `images/favicon.png`) return 404. They are not in the wiki. Add them to the wiki `images/` folder or to `mkdocs-extra/images/`.
-- Wiki pages with a list right after a text line, with no blank line in between (e.g. `User-Manual.md`), render as one paragraph in MkDocs. GitHub renders them as lists. The converter could insert the blank line.
-- Redirect stubs ("This page has moved…") show up under More Articles. Delete them from the wiki, or have the generator skip them.
 - Duplicate page names exist in two folders (e.g. `Cost-of-Goods-Sold-Report`). The generator uses the root-level copy, then the first found.
 
 ## Log
 
 - 2026-10-28 — Investigated, filed #24864, created branch and this plan.
 - 2026-10-28 — Wrote `tools/generate-wiki-nav.py`; removed static nav; updated workflow and `.gitignore`; verified locally (see above).
-- 2026-10-28 — Opened PR #24865.
+- 2026-10-28 — Opened PR #24865; merged; ran the workflow; new menu live.
+- 2026-10-28 — Phase 2: filed #24866. Converter now resolves links by page name and fixes lists; Material icon logo; stubs left out of the menu. Verified locally.
 
 ## Next step
 
-Step 9: wait for PR #24865 CI and merge (manual, by the developer). Then run **Publish Wiki Documentation** (`gh workflow run publish-wiki-docs.yml --repo hmislk/hmis`), read the job summary, and check https://hmislk.github.io/hmis/. Then step 10.
+Step 12b: wait for PR #24867 CI and merge (manual, by the developer). Then run `gh workflow run publish-wiki-docs.yml --repo hmislk/hmis --ref development` and check https://hmislk.github.io/hmis/. After that, step 10 (wiki content, using the job-summary report and the 40 broken targets above).
