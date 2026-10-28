@@ -507,6 +507,10 @@
                                                          title="Copy key"
                                                          onclick="navigator.clipboard &amp;&amp; navigator.clipboard.writeText(document.getElementById('authSecretText').innerText.replace(/\s/g, ''));" />
                                     </div>
+                                    <div class="auth-meta mt-2">
+                                        <i class="fa fa-exclamation-circle me-1"></i>
+                                        <h:outputText value="Scanned an earlier QR code for this account? Delete that entry from your app and scan this one." />
+                                    </div>
                                 </div>
 
                                 <div class="col-md-7 auth-code-col">
