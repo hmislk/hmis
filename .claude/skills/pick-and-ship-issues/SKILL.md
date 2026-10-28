@@ -240,3 +240,6 @@ agrees) and put its link at the top of the report file's retrospective section.
 | Picking from a reporter's issues that another developer is assigned to | Skip them unless the user named that assignee. |
 | Filing a follow-up issue and leaving it open ("needs a careful review") | It is part of the target. Ship it to a mergeable PR in this run. |
 | Leaving the wiki edit in `../hmis.wiki` "pending approval" | Commit and push it before the PR; link the published page. |
+| Screenshots left in `tmp/` and only described in the PR | Redact them, put them on the wiki page, and embed them in the PR body (`dev-issue-unattended` step 13). |
+| "No wiki change" for a new message, filter or total | Users see it, so the page needs it (`dev-issue-unattended` step 10). |
+| Shipping with only "self-review (inline)" while the bots are rate-limited | Run the review agent on the PR diff and post its findings (`dev-issue-unattended` step 14). |
