@@ -17285,11 +17285,15 @@ public class SearchController implements Serializable {
 
         if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
             try {
-                Double netTotalValue = Double.parseDouble(getSearchKeyword().getNetTotal().trim());
-                sql += " and  ((b.netTotal) = :netTotal )";
+                Double netTotalValue = Double.parseDouble(getSearchKeyword().getNetTotal().trim().replace(",", ""));
+                if (netTotalValue.isNaN() || netTotalValue.isInfinite()) {
+                    throw new NumberFormatException();
+                }
+                sql += " and abs(b.netTotal - :netTotal) < 0.01 ";
                 temMap.put("netTotal", netTotalValue);
             } catch (NumberFormatException e) {
                 JsfUtil.addErrorMessage("Invalid Net Total value. Please enter a valid number.");
+                bills = new ArrayList<>(); // don't show results that ignore the filter the user typed
                 return;
             }
         }
@@ -17339,11 +17343,15 @@ public class SearchController implements Serializable {
 
         if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
             try {
-                Double netTotalValue = Double.parseDouble(getSearchKeyword().getNetTotal().trim());
-                sql += " and  ((b.netTotal) = :netTotal )";
+                Double netTotalValue = Double.parseDouble(getSearchKeyword().getNetTotal().trim().replace(",", ""));
+                if (netTotalValue.isNaN() || netTotalValue.isInfinite()) {
+                    throw new NumberFormatException();
+                }
+                sql += " and abs(b.netTotal - :netTotal) < 0.01 ";
                 temMap.put("netTotal", netTotalValue);
             } catch (NumberFormatException e) {
                 JsfUtil.addErrorMessage("Invalid Net Total value. Please enter a valid number.");
+                bills = new ArrayList<>(); // don't show results that ignore the filter the user typed
                 return;
             }
         }
