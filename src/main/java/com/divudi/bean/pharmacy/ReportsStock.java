@@ -114,6 +114,7 @@ public class ReportsStock implements Serializable, ControllerWithReportFilters {
     double stockPurchaseValue;
     double stockCostValue;
     List<PharmacyStockRow> pharmacyStockRows;
+    private Department zeroStockReportDepartment;
     List<StockReportRecord> records;
     Date fromDate;
     Date toDate;
@@ -1582,6 +1583,7 @@ public class ReportsStock implements Serializable, ControllerWithReportFilters {
             if (department == null) {
                 JsfUtil.addErrorMessage("Please select a department");
                 pharmacyStockRows = new ArrayList<>();
+                zeroStockReportDepartment = null;
                 return;
             }
             Map m = new HashMap();
@@ -1613,6 +1615,7 @@ public class ReportsStock implements Serializable, ControllerWithReportFilters {
                 stockSaleValue += r.getSaleValue();
             }
             pharmacyStockRows = lsts;
+            zeroStockReportDepartment = department;
         }, PharmacyReports.STOCK_REPORT_BY_ITEM, sessionController.getLoggedUser());
     }
 
@@ -1629,7 +1632,7 @@ public class ReportsStock implements Serializable, ControllerWithReportFilters {
         List<String[]> filterPairs = new ArrayList<>();
         filterPairs.add(new String[]{"Institution", institution != null ? institution.getName() : "All"});
         filterPairs.add(new String[]{"Site", site != null ? site.getName() : "All"});
-        filterPairs.add(new String[]{"Department", department != null ? department.getName() : "All"});
+        filterPairs.add(new String[]{"Department", zeroStockReportDepartment != null ? zeroStockReportDepartment.getName() : "-"});
         int mergeCol = 2;
         excelController.insertExcelReportHeader(sheet, "Zero Stock Item Report", filterPairs, mergeCol);
         excelController.appendExcelPrintedByFooter(sheet, mergeCol);
@@ -3112,6 +3115,14 @@ public class ReportsStock implements Serializable, ControllerWithReportFilters {
 
     public void setTotalRetailSaleValue(double totalRetailSaleValue) {
         this.totalRetailSaleValue = totalRetailSaleValue;
+    }
+
+    /**
+     * The department the Zero Stock Item Report was last generated for, so the
+     * export and print headers match the rows even if the filter changes later (#20010).
+     */
+    public Department getZeroStockReportDepartment() {
+        return zeroStockReportDepartment;
     }
 
     public List<PharmacyStockRow> getPharmacyStockRows() {
