@@ -745,6 +745,7 @@ public class WebUserController implements Serializable {
 
     public String navigateToListUsers() {
         fillLightUsers();
+        selectedLight = null;
         return "/admin/users/user_list?faces-redirect=true";
     }
 
