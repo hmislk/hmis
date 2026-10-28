@@ -2774,7 +2774,9 @@ public class PharmacyAdjustmentController implements Serializable {
             return;
         }
 
-        if (stock.getStaff() == null) {
+        // Check the current row, not the session copy, before any bill is saved
+        Stock currentStock = stock.getId() == null ? null : getStockFacade().findWithoutCache(stock.getId());
+        if (currentStock == null || currentStock.getStaff() == null) {
             JsfUtil.addErrorMessage("Select a staff stock..");
             return;
         }
@@ -2789,7 +2791,10 @@ public class PharmacyAdjustmentController implements Serializable {
 //        getDeptAdjustmentPreBill().getBillItems().add(getBillItem());
 //        getBillFacade().edit(getDeptAdjustmentPreBill());
         deptAdjustmentPreBill = getBillFacade().find(getDeptAdjustmentPreBill().getId());
-        getPharmacyBean().resetStaffStock(ph, stock, qty);
+        if (!getPharmacyBean().resetStaffStock(ph, stock, qty)) {
+            JsfUtil.addErrorMessage("The staff stock could not be updated. Check the stock before adjusting again.");
+            return;
+        }
 
         printPreview = true;
 
