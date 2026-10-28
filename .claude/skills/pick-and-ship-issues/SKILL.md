@@ -56,6 +56,11 @@ to a skill, `CLAUDE.md` or doc (own branch from `origin/development`, PR to
 end with a "loose ends" list of things you chose not to push. Invoking this
 skill is the authorization; do not hold back for permission.
 
+**The session stays open until every PR is merged.** Do not offer to close
+the session while any PR this run opened is still open, unless the user says
+it can wait. After each merge, delete the local branch, read back the issue's
+board Status, and update the report file.
+
 **The report is written as you go.** Create
 `tmp/pick-and-ship/<yyyy-mm-dd>-<reporter>.md` at the start of the run and
 append one line after every issue outcome (picked, PR opened, needs-info,
