@@ -20,8 +20,10 @@ docs_dir: docs
 theme:
   name: material
   language: en
-  logo: images/hmis-logo.png
-  favicon: images/favicon.png
+  # No logo image ships with the wiki; use a Material icon and the theme's
+  # default favicon.
+  icon:
+    logo: material/hospital-building
   custom_dir: overrides
 
   # Navigation

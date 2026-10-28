@@ -14,10 +14,16 @@ Handles:
 6. Wrap links containing ( ) in <angle brackets> so the Markdown parser
    doesn't truncate them
 7. Fix image references (images/ folder preserved as-is)
+8. Resolve every internal page link by page name (the Wiki namespace is
+   flat) and rewrite it relative to the linking file, so bare names like
+   ``[Login](Login)`` and links from sub-folder pages work
+9. Adapt GitHub-style lists to Python-Markdown (blank line before a list,
+   4-space nesting)
 """
 
 from pathlib import Path
 from urllib.parse import quote, unquote
+import os
 import re
 import shutil
 import sys
@@ -196,8 +202,12 @@ def _fix_hybrid_gollum_markdown(text: str) -> str:
 def _convert_wiki_url_links(text: str) -> str:
     """Convert ``[label](wiki_url)`` links to internal relative links."""
 
+    # The page name may hold one level of balanced parentheses, e.g.
+    # "Health-Level-Seven(HL7)". The link's closing ")" is consumed so that
+    # text after it, such as ")." in "(see [x](url)).", stays outside.
     wiki_url_pattern = re.compile(
-        r"\[([^\]]*)\]\((https?://github\.com/hmislk/hmis/wiki/([^\s\"<>]+))"
+        r"\[([^\]]*)\]\((https?://github\.com/hmislk/hmis/wiki/?"
+        r"((?:[^\s\"<>()]|\([^\s\"<>()]*\))*))\)"
     )
 
     def replace(m: re.Match) -> str:
@@ -305,7 +315,170 @@ def convert_markdown_files(docs_dir: Path) -> None:
 
 
 # ---------------------------------------------------------------------------
-# Step 5: Index
+# Step 5: Resolve internal links by page name
+# ---------------------------------------------------------------------------
+
+def build_page_map(docs_dir: Path) -> dict:
+    """Map lower-cased page name -> docs file.
+
+    The GitHub Wiki namespace is flat: ``[x](Login)`` finds Login.md in any
+    folder. Root-level files win over sub-folder copies."""
+    pages = {}
+    files = sorted(
+        docs_dir.rglob("*.md"),
+        key=lambda p: (len(p.relative_to(docs_dir).parts), str(p)),
+    )
+    for path in files:
+        pages.setdefault(path.stem.lower(), path)
+    # Step 2 renamed Home.md to index.md
+    if "index" in pages:
+        pages.setdefault("home", pages["index"])
+    return pages
+
+
+def _resolve_link_target(target: str, source: Path, pages: dict):
+    """Return the rewritten link target, or None to leave it unchanged."""
+    raw = target.strip()
+    if raw.startswith("<") and raw.endswith(">"):
+        raw = raw[1:-1].strip()
+    if not raw or raw.startswith(("#", "/")) or " " in raw:
+        return None
+    if re.match(r"^[a-z][a-z0-9+.-]*:", raw, re.I):
+        return None
+
+    anchor = ""
+    if "#" in raw:
+        raw, frag = raw.split("#", 1)
+        anchor = "#" + frag
+
+    name = unquote(raw).rstrip("/").rsplit("/", 1)[-1]
+    if name.lower().endswith((".md", ".markdown")):
+        name = name.rsplit(".", 1)[0]
+    elif re.search(r"\.[A-Za-z0-9]{2,5}$", name) and name.lower() not in pages:
+        return None  # an image or attachment, not a page
+
+    page = pages.get(name.lower())
+    if page is None:
+        return None
+
+    rel = Path(os.path.relpath(page, source.parent)).as_posix()
+    # Keep non-ASCII characters (e.g. "‐") as-is: MkDocs matches link
+    # targets against file names without percent-decoding them.
+    safe = rel.replace(" ", "%20")
+    if needs_angle_brackets(rel):
+        safe = f"<{safe}>"
+    return safe + anchor
+
+
+def resolve_internal_links(text: str, source: Path, pages: dict) -> str:
+    """Rewrite ``[label](target)`` page links to paths relative to *source*.
+
+    Link targets are scanned with balanced parentheses because page names
+    such as ``Health-Level-Seven(HL7)`` contain them. Image links and fenced
+    code blocks are left untouched."""
+    out_lines = []
+    in_fence = False
+    for line in text.split("\n"):
+        if line.lstrip().startswith(("```", "~~~")):
+            in_fence = not in_fence
+        if in_fence or "](" not in line:
+            out_lines.append(line)
+            continue
+
+        result = []
+        i = 0
+        while True:
+            mid = line.find("](", i)
+            if mid < 0:
+                break
+            start = line.rfind("[", i, mid)
+            depth = 0
+            end = mid + 2
+            while end < len(line):
+                ch = line[end]
+                if ch == "(":
+                    depth += 1
+                elif ch == ")":
+                    if depth == 0:
+                        break
+                    depth -= 1
+                end += 1
+            if end >= len(line):
+                break
+            is_image = start > 0 and line[start - 1] == "!"
+            new_target = None
+            if not is_image:
+                new_target = _resolve_link_target(
+                    line[mid + 2 : end], source, pages
+                )
+            result.append(line[i : mid + 2])
+            result.append(new_target if new_target else line[mid + 2 : end])
+            i = end
+        result.append(line[i:])
+        out_lines.append("".join(result))
+    return "\n".join(out_lines)
+
+
+# ---------------------------------------------------------------------------
+# Step 6: Lists (GitHub Markdown -> Python-Markdown)
+# ---------------------------------------------------------------------------
+
+LIST_ITEM = re.compile(r"^(\s*)([-*+]|\d+[.)])\s")
+
+
+def fix_lists(text: str) -> str:
+    """Adapt GitHub-style lists to Python-Markdown.
+
+    - GitHub starts a list straight after a line of text; Python-Markdown
+      needs a blank line first, otherwise the items merge into a paragraph.
+    - GitHub nests with 2-space indents; Python-Markdown needs 4, otherwise
+      nested items are flattened. Indents are doubled inside list blocks."""
+    out = []
+    in_fence = False
+    in_list = False
+    for line in text.split("\n"):
+        if line.lstrip().startswith(("```", "~~~")):
+            in_fence = not in_fence
+            out.append(line)
+            continue
+        if in_fence:
+            out.append(line)
+            continue
+
+        m = LIST_ITEM.match(line)
+        if m and not m.group(1):
+            prev = out[-1] if out else ""
+            if prev.strip() and not LIST_ITEM.match(prev) and not in_list:
+                out.append("")
+            in_list = True
+        elif m and in_list:
+            indent = len(m.group(1).expandtabs(4))
+            if indent % 4:
+                line = " " * (indent * 2) + line.lstrip()
+        elif not line.strip():
+            pass  # a blank line may sit between items of one list
+        elif not line.startswith((" ", "\t")):
+            in_list = False
+        out.append(line)
+    return "\n".join(out)
+
+
+def postprocess_markdown_files(docs_dir: Path) -> None:
+    pages = build_page_map(docs_dir)
+    for path in docs_dir.rglob("*"):
+        if not path.is_file():
+            continue
+        if path.suffix.lower() not in {".md", ".markdown"}:
+            continue
+
+        text = path.read_text(encoding="utf-8", errors="ignore")
+        text = resolve_internal_links(text, path, pages)
+        text = fix_lists(text)
+        path.write_text(text, encoding="utf-8")
+
+
+# ---------------------------------------------------------------------------
+# Step 7: Index
 # ---------------------------------------------------------------------------
 
 def create_index_if_missing(docs_dir: Path) -> None:
@@ -354,6 +527,7 @@ def main() -> int:
     copy_wiki(source_dir, docs_dir)
     normalise_home_page(docs_dir)
     convert_markdown_files(docs_dir)
+    postprocess_markdown_files(docs_dir)
     create_index_if_missing(docs_dir)
 
     print(f"Wiki converted successfully: {source_dir} -> {docs_dir}")
