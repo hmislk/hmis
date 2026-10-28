@@ -755,4 +755,4 @@ Picking the option that is already selected raises no `change` event, so `<p:aja
 
 ## 172. Cashier and payment pages repeat form buttons in the left sidebar
 
-On `cashier/*` and `payments/*` pages the left accordion repeats labels such as *Start Shift* and *Settle IOUs*. `getByRole('button', {name}).first()` can hit the sidebar link, which reopens the page and silently discards the form. Scope the locator to the form: `button[id^='<formId>:']`.
+On `cashier/*` and `payments/*` pages the left accordion repeats labels such as *Start Shift* and *Settle IOUs*. `getByRole('button', {name}).first()` can hit the sidebar link, which reopens the page and silently discards the form. Scope the locator to the page's own form. If the form has an explicit `id`, use `button[id^='<formId>:']`. If it has none (e.g. `cashier/initial_fund_bill.xhtml`), anchor on text only that form contains: `page.locator('form', { has: page.getByText('Funds List') }).getByRole('button', { name: 'Start Shift' })`. Give any new page's form an explicit `id`.
