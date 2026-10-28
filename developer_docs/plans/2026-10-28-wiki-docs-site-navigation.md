@@ -47,9 +47,9 @@ The menu is generated from the wiki's own **`Wiki-Article-Index.md`** on every b
 - [x] 15. Generator: write the landing page (`docs/index.md`) with audience cards and module cards; enable `pymdownx.emoji` in `mkdocs.yml`
 - [x] 16. Classify every wiki page: tab / module / sub-section. Working table: `tmp/wiki-page-classification.tsv`
 - [x] 17. Write the new `Wiki-Article-Index.md` from the table (local wiki checkout, not pushed yet)
-- [x] 18. Build locally with the new index + generator; check the menu, landing page and report; get the developer's review (preview built; review pending)
-- [ ] 19. Open the PR (generator + mkdocs.yml); after merge push the new index to the wiki (the push triggers the publish workflow)
-- [ ] 20. Check the live site
+- [x] 18. Build locally with the new index + generator; check the menu, landing page and report; get the developer's review
+- [x] 19. Open the PR (generator + mkdocs.yml); after merge push the new index to the wiki (the push triggers the publish workflow) — PR #24889
+- [x] 20. Check the live site (8 tabs, 6 + 13 landing cards, `/Pharmacy/` shows the Pharmacy Module page, 1,200 pages in the sitemap)
 - [ ] 21. Fix the 40 links that point to pages missing from the wiki (content)
 
 ## Phase 3 design (agreed 2026-10-28)
@@ -135,8 +135,9 @@ Local build against the current wiki, compared with the phase 1 converter:
 - 2026-10-28 — Phase 3: generator reads 3-level index + writes landing page; all 1,162 pages classified; new index written to the local wiki checkout (not pushed); verified locally.
 - 2026-10-28 — Phase 2 merged and live.
 - 2026-10-28 — Phase 3: competitor review; design agreed; filed #24888; branch created.
+- 2026-10-28 — Phase 3: PR #24889 merged; new index pushed to the wiki; publish workflow ran (gollum + manual); live site checked.
 - 2026-10-28 — Phase 2: filed #24866. Converter now resolves links by page name and fixes lists; Material icon logo; stubs left out of the menu. Verified locally.
 
 ## Next step
 
-Step 18: developer reviews the local preview (`tmp/wikisite/site`, served with `python3 -m http.server 8765`) and the new `../hmis.wiki/Wiki-Article-Index.md`. Then step 19: open the PR, and after it merges push the wiki index (`git -C ../hmis.wiki commit -am ... && git push`).
+Step 21 (wiki content, no code): fix the 40 links that point to pages missing from the wiki, then the clean-up list — merge the `Pharmacy/` folder duplicates and the 8 "(older page)" pairs, and fill or remove the ~55 near-empty pages. When you add or rename a wiki page, add it to `Wiki-Article-Index.md`.
