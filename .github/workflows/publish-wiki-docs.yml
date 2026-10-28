@@ -46,9 +46,13 @@ jobs:
         run: |
           cp -r mkdocs-extra/. docs/
 
+      - name: Generate navigation from Wiki Article Index
+        run: |
+          python tools/generate-wiki-nav.py docs mkdocs.yml mkdocs.generated.yml
+
       - name: Build MkDocs site
         run: |
-          mkdocs build --site-dir site
+          mkdocs build -f mkdocs.generated.yml --site-dir site
 
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
