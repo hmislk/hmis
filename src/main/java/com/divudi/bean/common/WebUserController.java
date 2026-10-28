@@ -261,6 +261,8 @@ public class WebUserController implements Serializable {
             getFacade().create(current);
             JsfUtil.addSuccessMessage("Saved");
         } else {
+            // Authenticator enrollment is written only by TwoFactorAuthController; don't let a stale copy overwrite it
+            TwoFactorAuthController.copyEnrollment(getFacade().find(current.getId()), current);
             getFacade().edit(current);
             JsfUtil.addSuccessMessage("Updated");
         }
