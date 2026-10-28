@@ -12179,8 +12179,10 @@ public class PharmacyController implements Serializable {
         Map<String, Double> institutionStocks = new LinkedHashMap<>();
         if (departmentStockDtos != null) {
             for (com.divudi.core.data.dto.PharmacyDepartmentStockDTO dto : departmentStockDtos) {
-                if (dto.getInstitutionName() != null && !dto.getInstitutionName().isEmpty() && dto.getQty() != null) {
-                    institutionStocks.merge(dto.getInstitutionName(), dto.getQty(), Double::sum);
+                if (dto.getQty() != null) {
+                    String institutionName = dto.getInstitutionName() == null || dto.getInstitutionName().isEmpty()
+                            ? "Unassigned" : dto.getInstitutionName();
+                    institutionStocks.merge(institutionName, dto.getQty(), Double::sum);
                 }
             }
         }
