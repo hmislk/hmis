@@ -318,6 +318,49 @@
                                                 </div>
                                             </div>
                                         </p:fieldset>
+
+                                        <p:fieldset legend="Login Security" class="mb-3">
+                                            <div class="user-form-row">
+                                                <p:outputLabel for="restrictLoginByIp" value="Restrict Login By IP" class="user-form-label" />
+                                                <div class="user-form-field">
+                                                    <p:selectBooleanCheckbox id="restrictLoginByIp" value="#{webUserController.current.restrictLoginByIp}">
+                                                        <p:ajax update="allowedIpAddressesBlock" process="@this" />
+                                                    </p:selectBooleanCheckbox>
+                                                </div>
+                                            </div>
+
+                                            <!-- Wrapper is always rendered so the ajax update can show/hide the label and input together -->
+                                            <h:panelGroup id="allowedIpAddressesBlock" layout="block">
+                                                <h:panelGroup layout="block" class="user-form-row" rendered="#{webUserController.current.restrictLoginByIp}">
+                                                    <p:outputLabel for="allowedIpAddresses" value="Allowed IP Addresses" class="user-form-label" />
+                                                    <div class="user-form-field">
+                                                        <p:inputText
+                                                            id="allowedIpAddresses"
+                                                            value="#{webUserController.current.allowedIpAddresses}"
+                                                            placeholder="e.g. 192.168.1.10, 192.168.1.11"
+                                                            title="Comma-separated IP addresses" />
+                                                    </div>
+                                                </h:panelGroup>
+                                            </h:panelGroup>
+
+                                            <h:panelGroup rendered="#{twoFactorAuthController.twoFactorEnabled}">
+                                                <hr class="my-2" />
+                                                <div class="user-form-row">
+                                                    <p:outputLabel for="twoFactorRequired" value="Require Authenticator App (2FA)" class="user-form-label" />
+                                                    <div class="user-form-field">
+                                                        <p:selectBooleanCheckbox id="twoFactorRequired"
+                                                                                 value="#{webUserController.current.twoFactorRequired}"
+                                                                                 disabled="#{configOptionApplicationController.authenticatorAppTwoFactorLoginRequiredForAllUsers}" />
+                                                        <h:outputText class="small text-muted mx-2"
+                                                                      rendered="#{configOptionApplicationController.authenticatorAppTwoFactorLoginRequiredForAllUsers}"
+                                                                      value="Required for all users by configuration" />
+                                                    </div>
+                                                </div>
+                                                <p class="small text-muted mb-0">
+                                                    The user links their authenticator app at their first login.
+                                                </p>
+                                            </h:panelGroup>
+                                        </p:fieldset>
                                     </div>
                                 </div>
                             </h:panelGroup>
