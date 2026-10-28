@@ -107,6 +107,14 @@ def normalise_home_page(docs_dir: Path) -> None:
     if home.exists() and not index.exists():
         home.rename(index)
 
+    # MkDocs builds a README.md as its folder's index page: Pharmacy/README.md
+    # would take the /Pharmacy/ URL from Pharmacy.md, and the root README.md
+    # is dropped next to index.md. MkDocs matches "README" case-sensitively,
+    # while wiki links resolve by page name ignoring case, so "Readme.md"
+    # builds as an ordinary page and links to it keep working.
+    for readme in docs_dir.rglob("README.md"):
+        readme.rename(readme.with_name("Readme.md"))
+
 
 # ---------------------------------------------------------------------------
 # Step 3: Link conversion
