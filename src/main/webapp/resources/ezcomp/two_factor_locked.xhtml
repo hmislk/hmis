@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:cc="http://xmlns.jcp.org/jsf/composite"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui">
+
+    <!-- Shown in place of the login form when an account is locked by too many invalid authenticator codes (see TwoFactorAuthController) -->
+    <cc:interface>
+    </cc:interface>
+
+    <cc:implementation>
+        <style>
+            .tfl {
+                text-align: center;
+                max-width: 26rem;
+                margin: 0 auto;
+            }
+            .tfl-icon {
+                width: 4.2rem;
+                height: 4.2rem;
+                margin: 0.75rem auto 1rem auto;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 1.8rem;
+                color: #fff;
+                background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%);
+                box-shadow: 0 0 0 8px rgba(239, 68, 68, 0.12), 0 10px 24px rgba(185, 28, 28, 0.3);
+            }
+            .tfl-title {
+                display: block;
+                font-size: 1.35rem;
+                font-weight: 700;
+                color: #b91c1c;
+                margin-bottom: 0.4rem;
+            }
+            .tfl-user {
+                display: inline-flex;
+                align-items: center;
+                gap: 0.4rem;
+                padding: 0.25rem 0.75rem;
+                margin-bottom: 1rem;
+                border-radius: 999px;
+                font-size: 0.85rem;
+                font-weight: 600;
+                background: var(--surface-ground, #f1f5f9);
+            }
+            .tfl-message {
+                display: block;
+                font-size: 0.92rem;
+                line-height: 1.5;
+                color: var(--text-color, #1f2937);
+                margin-bottom: 1.1rem;
+            }
+            .tfl-info {
+                display: flex;
+                align-items: flex-start;
+                gap: 0.6rem;
+                text-align: left;
+                padding: 0.75rem 0.9rem;
+                border-radius: 12px;
+                font-size: 0.85rem;
+                color: #7f1d1d;
+                background: #fef2f2;
+                border: 1px solid #fecaca;
+            }
+            .tfl-info i {
+                margin-top: 0.15rem;
+            }
+            .tfl-back.ui-button {
+                width: 100%;
+                margin-top: 1.25rem;
+                padding: 0.4rem 0;
+                border-radius: 12px;
+                font-weight: 600;
+            }
+        </style>
+
+        <h:form id="frmTwoFactorLocked">
+            <div class="tfl">
+                <div class="tfl-icon">
+                    <i class="fa fa-lock"></i>
+                </div>
+
+                <h:outputText value="Account Locked" class="tfl-title" />
+
+                <h:panelGroup class="tfl-user" rendered="#{not empty twoFactorAuthController.lockedUserName}">
+                    <i class="fa fa-user-circle"></i>
+                    <h:outputText value="#{twoFactorAuthController.lockedUserName}" />
+                </h:panelGroup>
+
+                <h:outputText value="#{twoFactorAuthController.lockedMessage}" class="tfl-message" />
+
+                <div class="tfl-info">
+                    <i class="fa fa-user-shield"></i>
+                    <h:outputText value="For your security, only a system administrator can unlock this account. Once it is unlocked you can log in again." />
+                </div>
+
+                <p:commandButton
+                    class="tfl-back ui-button-secondary"
+                    value="Back to Login"
+                    icon="fa fa-arrow-left"
+                    ajax="false"
+                    immediate="true"
+                    title="Return to the login screen"
+                    action="#{twoFactorAuthController.dismissLockedNotice()}" />
+            </div>
+        </h:form>
+    </cc:implementation>
+</html>
