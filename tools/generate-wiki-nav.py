@@ -328,6 +328,7 @@ def build_nav(docs_dir: Path):
         path for path in files
         if path not in indexed
         and Path(path).stem.lower() not in EXCLUDED_PAGES
+        and not is_redirect_stub(docs_dir / path)
     )
     return nav, broken, not_indexed, len(files)
 

@@ -71,10 +71,11 @@ def wiki_page_to_relative(page_name: str) -> str:
     # URL-quote special characters (keep / # - _ %)
     safe = quote(page_name, safe="/.#-_%")
 
+    safe += anchor
     if use_brackets:
         safe = f"<{safe}>"
 
-    return safe + anchor
+    return safe
 
 
 # ---------------------------------------------------------------------------
@@ -325,7 +326,8 @@ def build_page_map(docs_dir: Path) -> dict:
     folder. Root-level files win over sub-folder copies."""
     pages = {}
     files = sorted(
-        docs_dir.rglob("*.md"),
+        (p for p in docs_dir.rglob("*")
+         if p.is_file() and p.suffix.lower() in {".md", ".markdown"}),
         key=lambda p: (len(p.relative_to(docs_dir).parts), str(p)),
     )
     for path in files:
@@ -339,9 +341,12 @@ def build_page_map(docs_dir: Path) -> dict:
 def _resolve_link_target(target: str, source: Path, pages: dict):
     """Return the rewritten link target, or None to leave it unchanged."""
     raw = target.strip()
-    if raw.startswith("<") and raw.endswith(">"):
+    bracketed = raw.startswith("<") and raw.endswith(">")
+    if bracketed:
         raw = raw[1:-1].strip()
-    if not raw or raw.startswith(("#", "/")) or " " in raw:
+    elif " " in raw:
+        return None  # a link title (`url "title"`) or not a link at all
+    if not raw or raw.startswith(("#", "/")):
         return None
     if re.match(r"^[a-z][a-z0-9+.-]*:", raw, re.I):
         return None
@@ -364,10 +369,36 @@ def _resolve_link_target(target: str, source: Path, pages: dict):
     rel = Path(os.path.relpath(page, source.parent)).as_posix()
     # Keep non-ASCII characters (e.g. "‐") as-is: MkDocs matches link
     # targets against file names without percent-decoding them.
-    safe = rel.replace(" ", "%20")
+    safe = rel.replace(" ", "%20") + anchor
     if needs_angle_brackets(rel):
         safe = f"<{safe}>"
-    return safe + anchor
+    return safe
+
+
+FENCE = re.compile(r"^\s*(`{3,}|~{3,})(.*)$")
+
+
+class FenceTracker:
+    """Track fenced code blocks by CommonMark rules: a block closes only on a
+    fence of the same character, at least as long, with nothing after it, so
+    a line of ``` inside a ```` block stays code."""
+
+    def __init__(self):
+        self.fence = None
+
+    def in_code(self, line: str) -> bool:
+        """Feed one line; return True if it is a fence or inside a block."""
+        m = FENCE.match(line)
+        if self.fence is None:
+            if m and not (m.group(1)[0] == "`" and "`" in m.group(2)):
+                self.fence = m.group(1)
+                return True
+            return False
+        if (m and m.group(1)[0] == self.fence[0]
+                and len(m.group(1)) >= len(self.fence)
+                and not m.group(2).strip()):
+            self.fence = None
+        return True
 
 
 def resolve_internal_links(text: str, source: Path, pages: dict) -> str:
@@ -377,11 +408,9 @@ def resolve_internal_links(text: str, source: Path, pages: dict) -> str:
     such as ``Health-Level-Seven(HL7)`` contain them. Image links and fenced
     code blocks are left untouched."""
     out_lines = []
-    in_fence = False
+    fences = FenceTracker()
     for line in text.split("\n"):
-        if line.lstrip().startswith(("```", "~~~")):
-            in_fence = not in_fence
-        if in_fence or "](" not in line:
+        if fences.in_code(line) or "](" not in line:
             out_lines.append(line)
             continue
 
@@ -434,14 +463,10 @@ def fix_lists(text: str) -> str:
     - GitHub nests with 2-space indents; Python-Markdown needs 4, otherwise
       nested items are flattened. Indents are doubled inside list blocks."""
     out = []
-    in_fence = False
+    fences = FenceTracker()
     in_list = False
     for line in text.split("\n"):
-        if line.lstrip().startswith(("```", "~~~")):
-            in_fence = not in_fence
-            out.append(line)
-            continue
-        if in_fence:
+        if fences.in_code(line):
             out.append(line)
             continue
 
