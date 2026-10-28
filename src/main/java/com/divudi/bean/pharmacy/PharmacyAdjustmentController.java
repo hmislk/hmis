@@ -1045,7 +1045,10 @@ public class PharmacyAdjustmentController implements Serializable {
         bfd.setTotalAfterAdjustmentValue(prevAfter.add(afterVal));
 
         // A quantity change moves stock value at the purchase rate too (as the API path records)
-        java.math.BigDecimal purchaseChangeValue = java.math.BigDecimal.valueOf(changingQty * batch.getPurcahseRate());
+        // Decimal arithmetic: fractional quantities x rates must not pick up double rounding error
+        java.math.BigDecimal purchaseChangeValue = java.math.BigDecimal.valueOf(newQty)
+                .subtract(java.math.BigDecimal.valueOf(stockQty))
+                .multiply(java.math.BigDecimal.valueOf(batch.getPurcahseRate()));
         java.math.BigDecimal prevPurchase = bfd.getTotalPurchaseValue() == null ? java.math.BigDecimal.ZERO : bfd.getTotalPurchaseValue();
         bfd.setTotalPurchaseValue(prevPurchase.add(purchaseChangeValue));
         if (bfd.getTotalWholesaleValue() == null) {
@@ -2744,7 +2747,9 @@ public class PharmacyAdjustmentController implements Serializable {
             bfd.setTotalQuantity(java.math.BigDecimal.valueOf(Math.abs(changingQtyForBfd)));
             bfd.setTotalBeforeAdjustmentValue(java.math.BigDecimal.valueOf(stockQtyBeforeAdjustmentForBfd * retailRateForBfd));
             bfd.setTotalAfterAdjustmentValue(java.math.BigDecimal.valueOf(qty * retailRateForBfd));
-            bfd.setTotalPurchaseValue(java.math.BigDecimal.valueOf(changingQtyForBfd * stock.getItemBatch().getPurcahseRate()));
+            bfd.setTotalPurchaseValue(java.math.BigDecimal.valueOf(qty)
+                    .subtract(java.math.BigDecimal.valueOf(stockQtyBeforeAdjustmentForBfd))
+                    .multiply(java.math.BigDecimal.valueOf(stock.getItemBatch().getPurcahseRate())));
             bfd.setTotalWholesaleValue(java.math.BigDecimal.ZERO);
             billFinanceDetailsFacade.create(bfd);
             deptAdjustmentPreBill.setBillFinanceDetails(bfd);
