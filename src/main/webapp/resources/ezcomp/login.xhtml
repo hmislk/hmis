@@ -2,7 +2,8 @@
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:cc="http://xmlns.jcp.org/jsf/composite"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
-      xmlns:p="http://primefaces.org/ui">
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:ez="http://xmlns.jcp.org/jsf/composite/ezcomp">
 
     <!-- INTERFACE -->
     <cc:interface>
@@ -37,7 +38,10 @@
                                                     />
 
                                             </div>
-                                            <h:form>
+                                            <h:panelGroup rendered="#{twoFactorAuthController.pending}">
+                                                <ez:two_factor_challenge/>
+                                            </h:panelGroup>
+                                            <h:form rendered="#{not twoFactorAuthController.pending}">
                                                 <div class="form-outline mb-4">
                                                     <label class="form-label m-1" for="txtUserName">User Name</label>
                                                     <p:inputText id="txtUserName"
