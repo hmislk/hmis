@@ -9678,13 +9678,18 @@ public class PharmacyController implements Serializable {
         }
 
         // Simplified approach: use constructor query directly
+        // Scalar names only: the history view must not lazy-load Department.institution and Department.site per row.
+        // Institution and site are optional on a department, hence the explicit LEFT JOINs.
         String sql = "SELECT new com.divudi.core.data.dto.PharmacyDepartmentStockDTO("
-                + "i.department, SUM(i.stock)) "
+                + "d.name, COALESCE(ins.name, ''), COALESCE(site.name, ''), SUM(i.stock)) "
                 + "FROM Stock i "
+                + "JOIN i.department d "
+                + "LEFT JOIN d.institution ins "
+                + "LEFT JOIN d.site site "
                 + "WHERE i.itemBatch.item = :i "
-                + "GROUP BY i.department "
+                + "GROUP BY d.id, d.name, ins.name, site.name "
                 + "HAVING SUM(i.stock) > 0 "
-                + "ORDER BY i.department.institution.name, i.department.name";
+                + "ORDER BY ins.name, d.name";
         Map<String, Object> parameters = new HashMap<>();
         parameters.put("i", stockItem);
         try {
@@ -12181,13 +12186,14 @@ public class PharmacyController implements Serializable {
      *
      * @return Map of Institution to total stock quantity
      */
-    public Map<com.divudi.core.entity.Institution, Double> getInstitutionStockAggregated() {
-        Map<com.divudi.core.entity.Institution, Double> institutionStocks = new LinkedHashMap<>();
+    public Map<String, Double> getInstitutionStockAggregated() {
+        Map<String, Double> institutionStocks = new LinkedHashMap<>();
         if (departmentStockDtos != null) {
             for (com.divudi.core.data.dto.PharmacyDepartmentStockDTO dto : departmentStockDtos) {
-                if (dto.getDepartment() != null && dto.getDepartment().getInstitution() != null && dto.getQty() != null) {
-                    com.divudi.core.entity.Institution institution = dto.getDepartment().getInstitution();
-                    institutionStocks.merge(institution, dto.getQty(), Double::sum);
+                if (dto.getQty() != null) {
+                    String institutionName = dto.getInstitutionName() == null || dto.getInstitutionName().isEmpty()
+                            ? "Unassigned" : dto.getInstitutionName();
+                    institutionStocks.merge(institutionName, dto.getQty(), Double::sum);
                 }
             }
         }
@@ -12199,13 +12205,12 @@ public class PharmacyController implements Serializable {
      *
      * @return Map of Institution (site) to total stock quantity
      */
-    public Map<com.divudi.core.entity.Institution, Double> getSiteStocks() {
-        Map<com.divudi.core.entity.Institution, Double> siteStocks = new LinkedHashMap<>();
+    public Map<String, Double> getSiteStocks() {
+        Map<String, Double> siteStocks = new LinkedHashMap<>();
         if (departmentStockDtos != null) {
             for (com.divudi.core.data.dto.PharmacyDepartmentStockDTO dto : departmentStockDtos) {
-                if (dto.getDepartment() != null && dto.getDepartment().getSite() != null && dto.getQty() != null) {
-                    com.divudi.core.entity.Institution site = dto.getDepartment().getSite();
-                    siteStocks.merge(site, dto.getQty(), Double::sum);
+                if (dto.getSiteName() != null && !dto.getSiteName().isEmpty() && dto.getQty() != null) {
+                    siteStocks.merge(dto.getSiteName(), dto.getQty(), Double::sum);
                 }
             }
         }
