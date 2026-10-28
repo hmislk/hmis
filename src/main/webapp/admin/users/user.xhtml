@@ -293,11 +293,37 @@
                                             </h:panelGroup>
                                         </div>
                                     </h:panelGroup>
+
+                                    <!-- Shown even if 2FA is later switched off, so a locked user can still be unlocked -->
+                                    <h:panelGroup id="twoFactorLockBlock" layout="block">
+                                        <h:panelGroup layout="block" class="user-form-row" rendered="#{webUserController.current.twoFactorLocked}">
+                                            <p:outputLabel value="Account Lock" class="user-form-label" />
+                                            <div class="user-form-field d-flex align-items-center flex-wrap gap-2">
+                                                <i class="fa fa-lock text-danger"></i>
+                                                <h:outputText value=" Locked (too many invalid authenticator codes)" class="text-danger fw-bold" />
+                                                <h:outputText value=" since " rendered="#{webUserController.current.twoFactorLockedAt ne null}" />
+                                                <h:outputText value="#{webUserController.current.twoFactorLockedAt}" rendered="#{webUserController.current.twoFactorLockedAt ne null}">
+                                                    <f:convertDateTime pattern="dd-MM-yyyy HH:mm" />
+                                                </h:outputText>
+                                                <p:commandButton value="Unlock Account"
+                                                                 class="ui-button-warning"
+                                                                 icon="fa fa-unlock"
+                                                                 process="@this"
+                                                                 update="twoFactorLockBlock"
+                                                                 title="Let the user log in and enter authenticator codes again"
+                                                                 action="#{twoFactorAuthController.unlockAccount(webUserController.current)}">
+                                                    <p:confirm header="Unlock Account"
+                                                               message="The user will be able to log in again. Continue?"
+                                                               icon="pi pi-exclamation-triangle" />
+                                                </p:commandButton>
+                                            </div>
+                                        </h:panelGroup>
+                                    </h:panelGroup>
                                 </p:fieldset>
                             </div>
                         </div>
 
-                        <p:confirmDialog global="true" showEffect="fade" hideEffect="fade" rendered="#{twoFactorAuthController.twoFactorEnabled}">
+                        <p:confirmDialog global="true" showEffect="fade" hideEffect="fade" rendered="#{twoFactorAuthController.twoFactorEnabled or webUserController.current.twoFactorLocked}">
                             <p:commandButton value="Yes" type="button" styleClass="ui-confirmdialog-yes ui-button-danger" icon="fa fa-check" />
                             <p:commandButton value="No" type="button" styleClass="ui-confirmdialog-no ui-button-secondary" icon="fa fa-times" />
                         </p:confirmDialog>
