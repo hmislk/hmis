@@ -2,7 +2,8 @@
 
 **Phase 1 (menu):** issue [#24864](https://github.com/hmislk/hmis/issues/24864), PR [#24865](https://github.com/hmislk/hmis/pull/24865), merged
 **Phase 2 (content rendering):** issue [#24866](https://github.com/hmislk/hmis/issues/24866), PR [#24867](https://github.com/hmislk/hmis/pull/24867), merged
-**Phase 3 (User Guide structure + landing page):** issue [#24888](https://github.com/hmislk/hmis/issues/24888), branch `24888-wiki-site-user-guide-structure`
+**Phase 3 (User Guide structure + landing page):** issue [#24888](https://github.com/hmislk/hmis/issues/24888), PR [#24889](https://github.com/hmislk/hmis/pull/24889), merged
+**Phase 4 (user manual first + wiki clean-up):** issue [#24891](https://github.com/hmislk/hmis/issues/24891), branch `24891-docs-user-manual-first`
 **Site:**  https://hmislk.github.io/hmis/
 
 > **New session? Start here.** Read "Progress" and resume at the first unchecked item. Update the checkbox, the log, and "Next step" before you stop.
@@ -50,7 +51,16 @@ The menu is generated from the wiki's own **`Wiki-Article-Index.md`** on every b
 - [x] 18. Build locally with the new index + generator; check the menu, landing page and report; get the developer's review
 - [x] 19. Open the PR (generator + mkdocs.yml); after merge push the new index to the wiki (the push triggers the publish workflow) — PR #24889
 - [x] 20. Check the live site (8 tabs, 6 + 13 landing cards, `/Pharmacy/` shows the Pharmacy Module page, 1,200 pages in the sitemap)
-- [ ] 21. Fix the 40 links that point to pages missing from the wiki (content)
+- [x] 21. Fix the links that point to pages missing from the wiki (content): done in phase 4, step 23
+- [x] 22. Phase 4 (#24891): User Guide becomes the first tab (Get Started folded in as its first module, "Getting Started"); the home page shows module cards first and the other tabs as a short "Other resources" list (generator change)
+- [x] 23. Wiki links: every link to a missing page repointed or the page written (`Inward-Report-Timed-Service`, `Document-Templates` — the app's "View Template Examples" button opens it); missing images removed; sub-folder pages' root-relative images resolved by the converter
+- [x] 24. Duplicates merged into the kept page, then deleted: the 8 same-title pairs and the 3 `Pharmacy/` copies (unique sections such as troubleshooting and privileges moved over)
+- [x] 25. Unnecessary pages deleted after repointing their links: 31 "page has moved" stubs, 2 test pages, 16 empty screen-reference stubs, empty developer stubs, the Institutions / Major Stock Adjustment hubs
+- [x] 26. Skeleton pages written from the code: Suppliers (absorbs Manufacturers, Importers, Item Suppliers), Wholesale Transactions, Referral Reports, Revenue Reports, Lab Report Templates, Lab Setup Tools, Notification System, EHR Settings, Change Log
+- [x] 27. Outdated content fixed: privilege names that no longer exist (transfer privileges → `PharmacyDisbursement*`, room details, role example), Department Preferences screen option list, composite component names in the disposal-return developer page
+- [x] 28. Verify locally: 0 broken index links, 0 broken page links (4,920 checked), 0 `mkdocs build` warnings (was 51), More Articles holds only `Pharmacy/Readme`
+- [ ] 29. Merge the phase 4 PR (generator + converter); push the wiki commit (deletions included); check the live site
+- [ ] 30. Later, module by module: review page content against the current screens (accuracy, screenshots). The checks so far were automatic (links, privilege names, screen files) plus the pages touched above
 
 ## Phase 3 design (agreed 2026-10-28)
 
@@ -136,8 +146,11 @@ Local build against the current wiki, compared with the phase 1 converter:
 - 2026-10-28 — Phase 2 merged and live.
 - 2026-10-28 — Phase 3: competitor review; design agreed; filed #24888; branch created.
 - 2026-10-28 — Phase 3: PR #24889 merged; new index pushed to the wiki; publish workflow ran (gollum + manual); live site checked.
+- 2026-10-28 — Phase 4: filed #24891; generator + converter changes; wiki clean-up committed locally in `../hmis.wiki` (not pushed); verified locally (steps 22–28).
 - 2026-10-28 — Phase 2: filed #24866. Converter now resolves links by page name and fixes lists; Material icon logo; stubs left out of the menu. Verified locally.
 
 ## Next step
 
-Step 21 (wiki content, no code): fix the 40 links that point to pages missing from the wiki, then the clean-up list — merge the `Pharmacy/` folder duplicates and the 8 "(older page)" pairs, and fill or remove the ~55 near-empty pages. When you add or rename a wiki page, add it to `Wiki-Article-Index.md`.
+Step 29: after the phase 4 PR merges, push `../hmis.wiki` (`git -C ../hmis.wiki push`). The push triggers the publish workflow by itself; then check the live site (home page module cards, User Guide first tab, a deleted page's old link now lands on its replacement). Then step 30.
+
+Working scripts (untracked, `tmp/`): `wiki_audit.py` (broken links, near-empty pages, duplicates), `fix_wiki_links.py`, `delete_wiki_pages.py` (deletes pages and repoints links; lists in `wiki-deleted-pages-batch*.txt`), `build_site.sh` (local build mirroring the workflow).
