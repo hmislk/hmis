@@ -122,6 +122,11 @@ public class WebUser implements Serializable {
     private Date twoFactorEnrolledAt;
     @JsonIgnore
     private Long twoFactorLastUsedStep;
+    // Invalid authenticator codes since the last valid one; reaching the limit locks the account until an admin unlocks it
+    private int twoFactorFailedAttempts = 0;
+    private boolean twoFactorLocked = false;
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    private Date twoFactorLockedAt;
 
     public Staff getStaff() {
         return staff;
@@ -480,6 +485,30 @@ public class WebUser implements Serializable {
 
     public void setTwoFactorLastUsedStep(Long twoFactorLastUsedStep) {
         this.twoFactorLastUsedStep = twoFactorLastUsedStep;
+    }
+
+    public int getTwoFactorFailedAttempts() {
+        return twoFactorFailedAttempts;
+    }
+
+    public void setTwoFactorFailedAttempts(int twoFactorFailedAttempts) {
+        this.twoFactorFailedAttempts = twoFactorFailedAttempts;
+    }
+
+    public boolean isTwoFactorLocked() {
+        return twoFactorLocked;
+    }
+
+    public void setTwoFactorLocked(boolean twoFactorLocked) {
+        this.twoFactorLocked = twoFactorLocked;
+    }
+
+    public Date getTwoFactorLockedAt() {
+        return twoFactorLockedAt;
+    }
+
+    public void setTwoFactorLockedAt(Date twoFactorLockedAt) {
+        this.twoFactorLockedAt = twoFactorLockedAt;
     }
 
     public Institution getSite() {
