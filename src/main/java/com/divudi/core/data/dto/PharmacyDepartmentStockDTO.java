@@ -12,6 +12,9 @@ public class PharmacyDepartmentStockDTO implements Serializable {
 
     private Department department;
     private Double qty;
+    private String departmentName;
+    private String institutionName;
+    private String siteName;
 
     // Default constructor
     public PharmacyDepartmentStockDTO() {
@@ -23,6 +26,14 @@ public class PharmacyDepartmentStockDTO implements Serializable {
         this.qty = qty;
     }
 
+    // Constructor for display queries: scalar names only, so showing the row never lazy-loads the Department
+    public PharmacyDepartmentStockDTO(String departmentName, String institutionName, String siteName, Double qty) {
+        this.departmentName = departmentName;
+        this.institutionName = institutionName;
+        this.siteName = siteName;
+        this.qty = qty;
+    }
+
     // Getters and setters
     public Department getDepartment() {
         return department;
@@ -30,6 +41,18 @@ public class PharmacyDepartmentStockDTO implements Serializable {
 
     public void setDepartment(Department department) {
         this.department = department;
+    }
+
+    public String getDepartmentName() {
+        return departmentName;
+    }
+
+    public String getInstitutionName() {
+        return institutionName;
+    }
+
+    public String getSiteName() {
+        return siteName;
     }
 
     public Double getQty() {
@@ -43,7 +66,7 @@ public class PharmacyDepartmentStockDTO implements Serializable {
     @Override
     public String toString() {
         return "PharmacyDepartmentStockDTO{" +
-                "department=" + (department != null ? department.getName() : "null") +
+                "department=" + (department != null ? department.getName() : departmentName) +
                 ", qty=" + qty +
                 '}';
     }
