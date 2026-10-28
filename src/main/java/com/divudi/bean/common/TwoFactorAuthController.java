@@ -1,11 +1,18 @@
 package com.divudi.bean.common;
 
+import com.divudi.core.entity.AuditEvent;
 import com.divudi.core.entity.WebUser;
+import com.divudi.core.facade.AuditEventFacade;
 import com.divudi.core.facade.WebUserFacade;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.util.TotpUtil;
+import com.divudi.service.AuditService;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import javax.ejb.EJB;
 import javax.faces.context.FacesContext;
 import javax.enterprise.context.SessionScoped;
@@ -37,8 +44,25 @@ public class TwoFactorAuthController implements Serializable {
     public static final String LOCKED_MESSAGE = "Your account is locked after " + MAX_FAILED_ATTEMPTS
             + " invalid authenticator codes. Please contact an administrator to unlock it.";
 
+    // Audit events: entityType is AUDIT_ENTITY_TYPE, objectId is the affected user, webUserId is who did it
+    public static final String AUDIT_ENTITY_TYPE = "TwoFactorAuth";
+    public static final String EVENT_REQUIRED_ON = "2FA Required Turned On";
+    public static final String EVENT_REQUIRED_OFF = "2FA Required Turned Off";
+    public static final String EVENT_SELF_SETUP = "2FA Self Setup";
+    public static final String EVENT_FIRST_LOGIN_SETUP = "2FA First Login Setup";
+    public static final String EVENT_ACCOUNT_LOCKED = "2FA Account Locked";
+    public static final String EVENT_ACCOUNT_UNLOCKED = "2FA Account Unlocked";
+    public static final String EVENT_AUTHENTICATOR_RESET = "2FA Authenticator Reset";
+    public static final String EVENT_LOGIN_SUCCESS = "2FA Login Success";
+    public static final String EVENT_LOGIN_FAILED = "2FA Login Failed";
+    private static final int AUTH_LOG_LIMIT = 15;
+
     @EJB
     private WebUserFacade webUserFacade;
+    @EJB
+    private AuditEventFacade auditEventFacade;
+    @EJB
+    private AuditService auditService;
 
     @Inject
     private SessionController sessionController;
@@ -61,6 +85,9 @@ public class TwoFactorAuthController implements Serializable {
     // Self-service setup / reset from the user's menu
     private String selfSetupSecret;
     private String selfSetupCode;
+
+    // Authentication log popup on Manage User
+    private List<AuditEvent> authLogs;
 
     public boolean isTwoFactorEnabled() {
         return configOptionApplicationController.isAuthenticatorAppTwoFactorLoginEnabled();
@@ -129,10 +156,15 @@ public class TwoFactorAuthController implements Serializable {
             // Counted on the user, not the session, so logging in again does not give fresh attempts
             int failedAttempts = u.getTwoFactorFailedAttempts() + 1;
             u.setTwoFactorFailedAttempts(failedAttempts);
+            Map<String, Object> attempt = new HashMap<>();
+            attempt.put("failedAttempts", failedAttempts);
+            // Nobody is logged in yet, so the user trying to log in is recorded as the actor
+            logTwoFactorEvent(u, u, EVENT_LOGIN_FAILED, null, attempt, "Failed");
             if (failedAttempts >= MAX_FAILED_ATTEMPTS) {
                 u.setTwoFactorLocked(true);
                 u.setTwoFactorLockedAt(new Date());
                 webUserFacade.edit(u);
+                logTwoFactorEvent(u, u, EVENT_ACCOUNT_LOCKED);
                 cancelLogin();
                 showLockedNotice(u.getName());
             } else {
@@ -151,7 +183,11 @@ public class TwoFactorAuthController implements Serializable {
         webUserFacade.edit(u);
         boolean channeling = channelingTabView;
         clearChallenge();
-        return sessionController.completeTwoFactorLogin(u, channeling);
+        String outcome = sessionController.completeTwoFactorLogin(u, channeling);
+        if (outcome != null && !outcome.isEmpty()) {
+            logTwoFactorEvent(u, u, enrolling ? EVENT_FIRST_LOGIN_SETUP : EVENT_LOGIN_SUCCESS);
+        }
+        return outcome;
     }
 
     public String cancelLogin() {
@@ -218,6 +254,7 @@ public class TwoFactorAuthController implements Serializable {
         u.setTwoFactorEnrolledAt(new Date());
         u.setTwoFactorLastUsedStep(step);
         webUserFacade.edit(u);
+        logTwoFactorEvent(u, u, wasForcedSetup ? EVENT_FIRST_LOGIN_SETUP : EVENT_SELF_SETUP);
         // Keep the session copy in step so a later edit(loggedUser) does not restore the old secret
         copyEnrollment(u, sessionController.getLoggedUser());
         selfSetupSecret = null;
@@ -274,6 +311,7 @@ public class TwoFactorAuthController implements Serializable {
         }
         clearEnrollment(u);
         webUserFacade.edit(u);
+        logTwoFactorEvent(sessionController.getLoggedUser(), u, EVENT_AUTHENTICATOR_RESET);
         copyEnrollment(u, user);
         WebUser lu = sessionController.getLoggedUser();
         if (lu != null && user.getId().equals(lu.getId())) {
@@ -296,9 +334,74 @@ public class TwoFactorAuthController implements Serializable {
         u.setTwoFactorLockedAt(null);
         u.setTwoFactorFailedAttempts(0);
         webUserFacade.edit(u);
+        logTwoFactorEvent(sessionController.getLoggedUser(), u, EVENT_ACCOUNT_UNLOCKED);
         copyEnrollment(u, user);
         JsfUtil.addSuccessMessage("Account unlocked.");
     }
+
+    // <editor-fold defaultstate="collapsed" desc="Audit log">
+    /**
+     * Records an admin turning "Require Authenticator App (2FA)" on or off
+     * for a user.
+     */
+    public void logRequiredChange(WebUser subject, boolean wasRequired) {
+        if (subject == null) {
+            return;
+        }
+        Map<String, Object> before = new HashMap<>();
+        before.put("twoFactorRequired", wasRequired);
+        Map<String, Object> after = new HashMap<>();
+        after.put("twoFactorRequired", subject.isTwoFactorRequired());
+        logTwoFactorEvent(sessionController.getLoggedUser(), subject,
+                subject.isTwoFactorRequired() ? EVENT_REQUIRED_ON : EVENT_REQUIRED_OFF, before, after);
+    }
+
+    private void logTwoFactorEvent(WebUser actor, WebUser subject, String trigger) {
+        logTwoFactorEvent(actor, subject, trigger, null, null);
+    }
+
+    private void logTwoFactorEvent(WebUser actor, WebUser subject, String trigger, Object before, Object after) {
+        logTwoFactorEvent(actor, subject, trigger, before, after, null);
+    }
+
+    private void logTwoFactorEvent(WebUser actor, WebUser subject, String trigger, Object before, Object after, String eventStatus) {
+        if (actor == null || subject == null || subject.getId() == null) {
+            return;
+        }
+        auditService.logAudit(before, after, actor, AUDIT_ENTITY_TYPE, trigger, subject.getId(), eventStatus);
+    }
+
+    /**
+     * Loads the latest authentication events of a user for the popup on
+     * Manage User.
+     */
+    public void loadAuthLogs(WebUser user) {
+        authLogs = new ArrayList<>();
+        if (user == null || user.getId() == null) {
+            return;
+        }
+        String jpql = "select a from AuditEvent a"
+                + " where a.entityType=:et"
+                + " and a.objectId=:uid"
+                + " order by a.eventDataTime desc";
+        Map<String, Object> m = new HashMap<>();
+        m.put("et", AUDIT_ENTITY_TYPE);
+        m.put("uid", user.getId());
+        authLogs = auditEventFacade.findByJpql(jpql, m, AUTH_LOG_LIMIT);
+    }
+
+    public String userNameOf(Long webUserId) {
+        if (webUserId == null) {
+            return "";
+        }
+        WebUser u = webUserFacade.find(webUserId);
+        return u == null ? "" : u.getName();
+    }
+
+    public List<AuditEvent> getAuthLogs() {
+        return authLogs;
+    }
+    // </editor-fold>
 
     private void clearEnrollment(WebUser u) {
         u.setTwoFactorSecret(null);
