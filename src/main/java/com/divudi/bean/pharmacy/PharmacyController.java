@@ -13948,6 +13948,11 @@ public class PharmacyController implements Serializable {
                 createCell(totalRow, colIndex++, ( totalSummary.getGoodInTransistAmount()), mainRowCellStyle);
             }
 
+            int totalCols = costingEnabled ? 8 : 7;
+            for (int i = 0; i < totalCols; i++) {
+                sheet.autoSizeColumn(i);
+            }
+
             workbook.write(out);
             context.responseComplete();
         } catch (Exception e) {
