@@ -29,6 +29,20 @@ go-ahead. Workload is bounded by the caps below, not by asking. Ask only if
 
 **Cap:** `count` above **5** is reduced to 5; say so in the report.
 
+**The aim is fewer open issues.** Every issue this run files (a defect
+found along the way, a split-off part, anything from
+`dev-issue-unattended` step 14a) is added to the target and goes through
+`dev-issue-unattended` until it has a mergeable PR. The target is
+`count` + the number of issues filed, so `count=5` with 2 filed issues means
+7 mergeable PRs. A filed issue leaves the target only through a hard-limit
+stop or a step 2–5 outcome posted on it. The cap applies to `count`, not to
+filed issues.
+
+**The wiki push is mandatory.** Every PR's wiki change is committed and
+pushed to `../hmis.wiki` before the PR opens, and the PR links the published
+page (`dev-issue-unattended` step 10). A wiki edit left only on disk is an
+unfinished run.
+
 **Never stop early.** Keep triaging until either `count` issues have a PR
 (or a recorded `dev-issue-unattended` stop) or the matching issues run out.
 Never end a run with candidates "not yet triaged" or a PR "not yet done".
@@ -181,6 +195,11 @@ outcome on GitHub and does **not** count toward `count`. Take the next
 candidate and run `dev-issue-unattended` again. Repeat until `count` PRs are
 open or the matching issues run out; only then report any shortfall.
 
+Then ship every issue the run filed, even when the reporter's candidates ran
+out: run `dev-issue-unattended` on each until it has a mergeable PR (see "The
+aim is fewer open issues" above). Filed issues need no triage gate; you wrote
+them. They still need the same end-to-end proof.
+
 If triage finds the defect **already fixed on `development`**, comment asking the reporter to
 re-verify, then set the board Status to **Dev Completed** (read it back) so QA re-checks it.
 Do not leave it in Backlog.
@@ -196,7 +215,9 @@ appending to, and give the same summary in chat:
 
 1. **Needs your intervention**: every open `triage: needs-human` issue from
    this reporter, this run's first, each with a one-line reason.
-2. **Shipped**: the `dev-issue-unattended` step 15 summary.
+2. **Shipped**: the `dev-issue-unattended` step 15 summary, with the target
+   (`count` + filed issues) against the number of mergeable PRs, and the
+   published wiki page for each PR.
 3. **Waiting for the reporter**: needs-info issues with comment links.
 4. **Closed, could not demonstrate**: with comment links.
 5. **Skipped**: issue numbers with a reason (open PR, owned by someone else).
@@ -217,3 +238,5 @@ agrees) and put its link at the top of the report file's retrospective section.
 | Asking for everything in a fixed template | Ask only for what is missing. |
 | Reporting an issue as shipped while its board Status is still Backlog or a sprint | QA never sees it. Set and read back the Status. |
 | Picking from a reporter's issues that another developer is assigned to | Skip them unless the user named that assignee. |
+| Filing a follow-up issue and leaving it open ("needs a careful review") | It is part of the target. Ship it to a mergeable PR in this run. |
+| Leaving the wiki edit in `../hmis.wiki` "pending approval" | Commit and push it before the PR; link the published page. |

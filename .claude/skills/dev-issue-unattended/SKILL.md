@@ -413,6 +413,13 @@ and linking the updated page(s) in the issue comment. Publishing an image
 without wiring it into a page leaves it orphaned; that is not a completed
 step 10.
 
+**The wiki push is mandatory.** Commit and push `../hmis.wiki` before you
+open the PR. A wiki change left uncommitted or unpushed in `../hmis.wiki`
+means step 10 is not done; never report it as "prepared locally" or "pending
+approval". Invoking this skill authorizes the push. The PR's Documentation
+section links the published page, never a local file. If the push itself
+fails, fix the cause (pull/rebase, retry) and push before the run ends.
+
 Two additions for unattended runs:
 
 - **Extra weight on redaction**, since no human reviews the screenshots
@@ -502,7 +509,7 @@ Before Notify:
 2. **Search first**: `gh issue list --state all --search "<keywords>"`. If an open issue matches, comment on it. If a closed one fixed the same bug on another page, cite it in the new issue.
 3. **File one issue per defect**, following step 0's public-content rules: symptom, cause with `file:line`, steps, expected, fix direction, and honest impact (say so if it is unreachable or low).
 4. **List the new issue links** in Notify.
-5. **Fix the follow-ups in the same run.** Run steps 1–14 on each filed issue (its own branch and PR), unless it hits a hard limit: in batch mode add it to the batch; in a single free-text run, process it after the main issue. Never merge, so the session stays open: in Notify, list every follow-up without a merged PR under **Open follow-ups** and ask the user to merge them or say they will be handled in another session.
+5. **Fix every follow-up in the same run, until it has a mergeable PR.** The aim is fewer open issues; an issue this run files and leaves open makes the count go up. Run steps 1–14 on each filed issue (its own branch and PR) until step 14 shows it mergeable: in batch mode add it to the batch; in a single free-text run, process it after the main issue. "It touches a money path" or "it needs care" is not a reason to leave it; take that care. Only a hard limit (step 0) or a step 2–5 outcome ends a follow-up without a PR, and that outcome is posted on the follow-up issue like any other. Never merge: in Notify, list every follow-up with its PR under **Follow-ups**, and any that stopped with the reason.
 
 ## 15. Notify
 
