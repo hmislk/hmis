@@ -168,7 +168,7 @@ public class WebUserController implements Serializable {
     private String output;
 
     public String navigateToRemoveMultipleUsers() {
-        return "/admin/users/user_remove_multiple";
+        return "/admin/users/user_remove_multiple?faces-redirect=true";
     }
 
     public String navigateToManageUsersWithoutStaff() {
