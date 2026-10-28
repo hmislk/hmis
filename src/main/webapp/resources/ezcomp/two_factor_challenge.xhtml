@@ -2,71 +2,196 @@
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:cc="http://xmlns.jcp.org/jsf/composite"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
-      xmlns:f="http://xmlns.jcp.org/jsf/core"
-      xmlns:p="http://primefaces.org/ui">
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:ez="http://xmlns.jcp.org/jsf/composite/ezcomp">
 
     <!-- Authenticator app code screen shown after the password is accepted (see TwoFactorAuthController) -->
     <cc:interface>
     </cc:interface>
 
     <cc:implementation>
+        <style>
+            .tfa {
+                text-align: center;
+                max-width: 26rem;
+                margin: 0 auto;
+            }
+            .tfa-icon {
+                width: 3.6rem;
+                height: 3.6rem;
+                margin: 0.5rem auto 0.9rem auto;
+                border-radius: 16px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 1.6rem;
+                color: #fff;
+                background: linear-gradient(135deg, var(--primary-color, #3b82f6) 0%, #6366f1 100%);
+                box-shadow: 0 8px 20px rgba(99, 102, 241, 0.3);
+            }
+            .tfa-title {
+                display: block;
+                font-size: 1.3rem;
+                font-weight: 700;
+                margin-bottom: 0.3rem;
+            }
+            .tfa-sub {
+                display: block;
+                font-size: 0.9rem;
+                color: var(--text-color-secondary, #6c757d);
+                margin-bottom: 1.2rem;
+            }
+            .tfa-user {
+                display: inline-flex;
+                align-items: center;
+                gap: 0.4rem;
+                padding: 0.25rem 0.75rem;
+                margin-bottom: 1.2rem;
+                border-radius: 999px;
+                font-size: 0.85rem;
+                font-weight: 600;
+                background: var(--surface-ground, #f1f5f9);
+            }
+            .tfa-steps {
+                display: flex;
+                justify-content: center;
+                gap: 0.4rem;
+                flex-wrap: wrap;
+                margin-bottom: 1rem;
+            }
+            .tfa-step {
+                display: inline-flex;
+                align-items: center;
+                gap: 0.35rem;
+                padding: 0.25rem 0.65rem;
+                border-radius: 999px;
+                font-size: 0.78rem;
+                border: 1px solid var(--surface-border, #e5e7eb);
+            }
+            .tfa-step b {
+                width: 1.2rem;
+                height: 1.2rem;
+                border-radius: 50%;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 0.7rem;
+                color: #fff;
+                background: var(--primary-color, #3b82f6);
+            }
+            .tfa-qr {
+                display: inline-block;
+                padding: 0.75rem;
+                border-radius: 16px;
+                background: #fff;
+                box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+            }
+            .tfa-secret-box {
+                display: inline-flex;
+                align-items: center;
+                gap: 0.4rem;
+                margin: 0.75rem 0 1.25rem 0;
+                padding: 0.4rem 0.4rem 0.4rem 0.75rem;
+                border-radius: 10px;
+                background: var(--surface-ground, #f1f5f9);
+            }
+            .tfa-secret {
+                font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+                font-size: 0.85rem;
+                letter-spacing: 0.05em;
+                word-break: break-all;
+            }
+            .tfa-hint {
+                display: block;
+                font-size: 0.8rem;
+                color: var(--text-color-secondary, #6c757d);
+                margin-top: 0.75rem;
+            }
+            .tfa-verify.ui-button {
+                width: 100%;
+                margin-top: 1.25rem;
+                padding: 0.4rem 0;
+                border-radius: 12px;
+                font-weight: 600;
+            }
+            .tfa-back.ui-button {
+                margin-top: 0.5rem;
+            }
+        </style>
+
         <h:form id="frmTwoFactor">
+            <div class="tfa">
 
-            <h:panelGroup rendered="#{twoFactorAuthController.enrollmentNeeded}" layout="block" class="mb-3">
-                <h5 class="mb-2">Set up your authenticator app</h5>
-                <ol class="small ps-3 mb-2">
-                    <li>Install Google Authenticator, Microsoft Authenticator or a similar app on your phone.</li>
-                    <li>In the app, add an account and scan this QR code.</li>
-                    <li>Enter the 6-digit code shown in the app.</li>
-                </ol>
-                <div class="text-center my-2">
-                    <h:outputText value="#{twoFactorAuthController.setupQrSvg}" escape="false" />
+                <div class="tfa-icon">
+                    <i class="fa #{twoFactorAuthController.enrollmentNeeded ? 'fa-qrcode' : 'fa-shield-alt'}"></i>
                 </div>
-                <div class="small text-center">
-                    <h:outputText value="Can't scan? Enter this key manually:" />
-                    <br/>
-                    <code><h:outputText value="#{twoFactorAuthController.setupSecretForDisplay}" /></code>
+
+                <!-- First login with 2FA: link the authenticator app -->
+                <h:panelGroup rendered="#{twoFactorAuthController.enrollmentNeeded}" layout="block">
+                    <h:outputText value="Set up your authenticator app" class="tfa-title" />
+                    <h:outputText value="Your account needs two-step verification. Link an authenticator app to continue." class="tfa-sub" />
+
+                    <div class="tfa-steps">
+                        <span class="tfa-step"><b>1</b>Install an app</span>
+                        <span class="tfa-step"><b>2</b>Scan the QR code</span>
+                        <span class="tfa-step"><b>3</b>Enter the code</span>
+                    </div>
+
+                    <div class="tfa-qr">
+                        <h:outputText value="#{twoFactorAuthController.setupQrSvg}" escape="false" />
+                    </div>
+                    <div>
+                        <span class="tfa-secret-box">
+                            <span id="tfaSecretText" class="tfa-secret">
+                                <h:outputText value="#{twoFactorAuthController.setupSecretForDisplay}" />
+                            </span>
+                            <p:commandButton type="button"
+                                             icon="fa fa-copy"
+                                             class="ui-button-secondary ui-button-flat rounded-button"
+                                             title="Copy key (for manual entry)"
+                                             onclick="navigator.clipboard &amp;&amp; navigator.clipboard.writeText(document.getElementById('tfaSecretText').innerText.replace(/\s/g, ''));" />
+                        </span>
+                    </div>
+                </h:panelGroup>
+
+                <!-- Already linked: just ask for the code -->
+                <h:panelGroup rendered="#{not twoFactorAuthController.enrollmentNeeded}" layout="block">
+                    <h:outputText value="Two-step verification" class="tfa-title" />
+                    <h:outputText value="Open your authenticator app and enter the 6-digit code." class="tfa-sub" />
+                    <span class="tfa-user">
+                        <i class="fa fa-user-circle"></i>
+                        <h:outputText value="#{twoFactorAuthController.pendingUserName}" />
+                    </span>
+                </h:panelGroup>
+
+                <div class="d-flex justify-content-center">
+                    <ez:otp_input id="txtTwoFactorCode"
+                                  value="#{twoFactorAuthController.code}"
+                                  required="true"
+                                  requiredMessage="Enter the 6-digit code" />
                 </div>
-            </h:panelGroup>
+                <span class="tfa-hint">
+                    <i class="fa fa-clock me-1"></i>
+                    <h:outputText value="Codes refresh every 30 seconds." />
+                </span>
 
-            <h:panelGroup rendered="#{not twoFactorAuthController.enrollmentNeeded}" layout="block" class="mb-3">
-                <h5 class="mb-2">Two-step verification</h5>
-                <p class="small mb-0">
-                    <h:outputText value="Enter the 6-digit code from the authenticator app linked to " />
-                    <strong><h:outputText value="#{twoFactorAuthController.pendingUserName}" /></strong>
-                    <h:outputText value="." />
-                </p>
-            </h:panelGroup>
-
-            <div class="form-outline mb-3">
-                <label class="form-label m-1" for="txtTwoFactorCode">Authenticator Code</label>
-                <p:inputText id="txtTwoFactorCode"
-                             value="#{twoFactorAuthController.code}"
-                             required="true"
-                             requiredMessage="Enter the 6-digit code"
-                             maxlength="7"
-                             autocomplete="one-time-code"
-                             class="form-control w-100 text-center"
-                             style="letter-spacing: 0.3em; font-size: 1.3em;">
-                    <f:passThroughAttribute name="inputmode" value="numeric" />
-                    <f:passThroughAttribute name="autofocus" value="autofocus" />
-                </p:inputText>
-            </div>
-
-            <div class="text-center pt-1 mb-3">
                 <p:commandButton
-                    class="btn m-1 w-75 shadow-sm"
+                    id="btnVerifyTwoFactor"
+                    class="tfa-verify"
                     value="Verify"
-                    icon="pi pi-check"
+                    icon="fa fa-check"
                     ajax="false"
+                    title="Verify the code and log in"
                     action="#{twoFactorAuthController.verifyLoginCode()}" />
                 <p:commandButton
-                    class="ui-button-secondary m-1 w-75"
+                    class="tfa-back ui-button-secondary ui-button-flat"
                     value="Back to Login"
-                    icon="pi pi-arrow-left"
+                    icon="fa fa-arrow-left"
                     ajax="false"
                     immediate="true"
+                    title="Use a different account"
                     action="#{twoFactorAuthController.cancelLogin()}" />
+                <p:defaultCommand target="btnVerifyTwoFactor" />
             </div>
         </h:form>
     </cc:implementation>
