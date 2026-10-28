@@ -7,6 +7,7 @@ import com.divudi.core.util.TotpUtil;
 import java.io.Serializable;
 import java.util.Date;
 import javax.ejb.EJB;
+import javax.faces.context.FacesContext;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -74,15 +75,24 @@ public class TwoFactorAuthController implements Serializable {
     }
 
     /**
-     * Whether the login must stop for an authenticator code: users who must
-     * use 2FA, and also users who linked an app themselves without being
-     * required to.
+     * Whether the login must stop for an authenticator code: every user with
+     * a linked app, required or not. A required user without one logs in and
+     * is held on the setup screen instead (see {@link #isSetupRequiredNow()}).
      */
     public boolean isCodeNeededAtLoginFor(WebUser u) {
         if (u == null || !isTwoFactorEnabled()) {
             return false;
         }
-        return isTwoFactorRequiredFor(u) || u.isTwoFactorEnrolled();
+        return u.isTwoFactorEnrolled();
+    }
+
+    /**
+     * True while the logged user must use 2FA but has not linked an app; the
+     * templates then show only the setup screen, whatever page is opened.
+     */
+    public boolean isSetupRequiredNow() {
+        WebUser u = sessionController.getLoggedUser();
+        return u != null && !u.isTwoFactorEnrolled() && isTwoFactorRequiredFor(u);
     }
 
     public void startChallenge(WebUser u) {
@@ -190,18 +200,19 @@ public class TwoFactorAuthController implements Serializable {
         selfSetupCode = null;
     }
 
-    public void confirmSelfSetup() {
+    public String confirmSelfSetup() {
         WebUser u = loggedUserFromDb();
         if (u == null || selfSetupSecret == null) {
             JsfUtil.addErrorMessage("Start the setup again.");
-            return;
+            return null;
         }
         long step = TotpUtil.verify(selfSetupSecret, selfSetupCode, null);
         selfSetupCode = null;
         if (step < 0) {
             JsfUtil.addErrorMessage("Invalid authenticator code. Check the time on your phone and try again.");
-            return;
+            return null;
         }
+        boolean wasForcedSetup = isSetupRequiredNow();
         u.setTwoFactorSecret(securityController.encrypt(selfSetupSecret));
         u.setTwoFactorEnrolled(true);
         u.setTwoFactorEnrolledAt(new Date());
@@ -211,6 +222,17 @@ public class TwoFactorAuthController implements Serializable {
         copyEnrollment(u, sessionController.getLoggedUser());
         selfSetupSecret = null;
         JsfUtil.addSuccessMessage("Authenticator app linked.");
+        if (wasForcedSetup) {
+            // The templates were showing only this screen; open the user's home page now
+            FacesContext.getCurrentInstance().getExternalContext().getFlash().setKeepMessages(true);
+            String home = sessionController.navigateToLoginPageByUsersDefaultLoginPage();
+            if (home == null || home.isEmpty()) {
+                home = "/index1";
+            }
+            // Redirect so the whole template renders again, not just this ajax form
+            return home.contains("faces-redirect") ? home : home + (home.contains("?") ? "&" : "?") + "faces-redirect=true";
+        }
+        return null;
     }
 
     public boolean isSelfSetupInProgress() {
@@ -246,6 +268,10 @@ public class TwoFactorAuthController implements Serializable {
             return;
         }
         WebUser u = webUserFacade.find(user.getId());
+        if (u.isTwoFactorLocked()) {
+            JsfUtil.addErrorMessage("Unlock the account before resetting the authenticator.");
+            return;
+        }
         clearEnrollment(u);
         webUserFacade.edit(u);
         copyEnrollment(u, user);
