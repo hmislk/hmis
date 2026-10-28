@@ -91,6 +91,15 @@
                             font-weight: 600;
                             margin: 0.4rem 0 0.5rem 0;
                         }
+                        /* !important: the theme's "body .ui-datatable ... td" padding rule is more specific */
+                        .auth-log-table.ui-datatable thead th,
+                        .auth-log-table.ui-datatable tbody td {
+                            padding: 0.3rem 0.6rem !important;
+                            line-height: 1.3;
+                        }
+                        .auth-log-table .auth-log-failed td {
+                            color: #b91c1c;
+                        }
                     </style>
 
                     <p:panel>
@@ -416,6 +425,17 @@
                                             </div>
                                         </h:panelGroup>
                                     </h:panelGroup>
+
+                                    <div class="mt-2">
+                                        <p:commandButton value="View Authentication Log"
+                                                         class="ui-button-secondary"
+                                                         icon="fa fa-history"
+                                                         process="@this"
+                                                         update="authLogDialogContent"
+                                                         title="Last 15 authenticator app (2FA) events of this user"
+                                                         action="#{twoFactorAuthController.loadAuthLogs(webUserController.current)}"
+                                                         oncomplete="PF('authLogDialog').show()" />
+                                    </div>
                                 </p:fieldset>
                             </div>
                         </div>
@@ -424,6 +444,38 @@
                             <p:commandButton value="Yes" type="button" styleClass="ui-confirmdialog-yes ui-button-danger" icon="fa fa-check" />
                             <p:commandButton value="No" type="button" styleClass="ui-confirmdialog-no ui-button-secondary" icon="fa fa-times" />
                         </p:confirmDialog>
+
+                        <p:dialog header="Authentication Log - Last 15 Events"
+                                  widgetVar="authLogDialog"
+                                  modal="true"
+                                  resizable="false"
+                                  responsive="true"
+                                  width="1100"
+                                  height="560"
+                                  fitViewport="true">
+                            <h:panelGroup id="authLogDialogContent" layout="block">
+                                <p:dataTable value="#{twoFactorAuthController.authLogs}"
+                                             var="log"
+                                             emptyMessage="No authentication events recorded for this user."
+                                             styleClass="w-100 auth-log-table"
+                                             rowStyleClass="#{log.eventStatus eq 'Failed' ? 'auth-log-failed' : null}">
+                                    <p:column headerText="Date &amp; Time" width="200">
+                                        <h:outputText value="#{log.eventDataTime}">
+                                            <f:convertDateTime pattern="dd MMM yyyy, HH:mm:ss" />
+                                        </h:outputText>
+                                    </p:column>
+                                    <p:column headerText="Event">
+                                        <h:outputText value="#{log.eventTrigger}" />
+                                    </p:column>
+                                    <p:column headerText="Done By" width="200">
+                                        <h:outputText value="#{twoFactorAuthController.userNameOf(log.webUserId)}" />
+                                    </p:column>
+                                    <p:column headerText="IP Address" width="180">
+                                        <h:outputText value="#{log.ipAddress}" />
+                                    </p:column>
+                                </p:dataTable>
+                            </h:panelGroup>
+                        </p:dialog>
                     </p:panel>
                 </f:view>
             </ui:define>
