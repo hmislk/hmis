@@ -182,14 +182,14 @@
                                              class="text-center return-qty-input"
                                              style="width: 100px;">
                                     <f:ajax event="blur" 
-                                            render="@this returnStatus :#{p:resolveFirstComponentWithId('total',view).clientId}"
+                                            render="@this returnValue returnStatus :#{p:resolveFirstComponentWithId('total',view).clientId}"
                                             execute="@this" 
                                             listener="#{preReturnController.onEdit(ph)}" />
                                 </p:inputText>
                             </p:column>
 
                             <p:column headerText="Return Value" styleClass="text-end">
-                                <h:outputText value="#{ph.netValue}" >
+                                <h:outputText id="returnValue" value="#{ph.netValue}" >
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
                             </p:column>
