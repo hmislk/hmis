@@ -7420,7 +7420,7 @@ public class PharmacyController implements Serializable {
                     mainSummary.setTotalRetailSaleValue(BigDecimal.ZERO);
                     mainSummary.setSummeriesMap(new LinkedHashMap<>());
                     departmentMap.put(keyDepartment, mainSummary);
-                    departmentDetailsMap.put(keyDepartment, new HashMap<>());
+                    departmentDetailsMap.put(keyDepartment, new LinkedHashMap<>());
                 }
 
                 // Add to main totals
@@ -13459,11 +13459,11 @@ public class PharmacyController implements Serializable {
             document.add(new Paragraph(" "));
 
             boolean costingEnabled = configOptionApplicationController.getBooleanValueByKey("Manage Costing", true);
-            int columnCount = costingEnabled ? 5 : 4;
+            int columnCount = costingEnabled ? 8 : 7;
 
             Map<String, Object> filters = getFiltersForStockTrasnferReport();
             PdfPTable infoTable = createInfoTablePdfExport(sdf, filters);
-            if (infoTable != null) {    
+            if (infoTable != null) {
                 document.add(infoTable);
             }
 
@@ -13473,12 +13473,13 @@ public class PharmacyController implements Serializable {
             float[] columnWidths;
             String[] headers;
 
+            // Category / From Department / To Department carry the row-expansion breakdown shown on screen
             if (costingEnabled) {
-                columnWidths = new float[]{6f, 4f, 4f, 4f, 4};
-                headers = new String[]{"Store", "Purchase Value", "Cost Value", "Retail Sale Value", "Good In Transit Amount"};
+                columnWidths = new float[]{5f, 4f, 5f, 5f, 3.5f, 3.5f, 3.5f, 3.5f};
+                headers = new String[]{"Store", "Category", "From Department", "To Department", "Purchase Value", "Cost Value", "Retail Sale Value", "Good In Transit Amount"};
             } else {
-                columnWidths = new float[]{6f, 4f, 4f, 4f};
-                headers = new String[]{"Store", "Purchase Value", "Retail Sale Value", "Good In Transit Amount"};
+                columnWidths = new float[]{5f, 4f, 5f, 5f, 3.5f, 3.5f, 3.5f};
+                headers = new String[]{"Store", "Category", "From Department", "To Department", "Purchase Value", "Retail Sale Value", "Good In Transit Amount"};
             }
 
             table.setWidths(columnWidths);
@@ -13486,10 +13487,14 @@ public class PharmacyController implements Serializable {
             for (String header : headers) {
                 addCellToPdfTable(table, header, FontFactory.getFont(FontFactory.HELVETICA_BOLD, 9), BaseColor.LIGHT_GRAY, Element.ALIGN_LEFT);
             }
+            table.setHeaderRows(1);
 
             for (PharmacySummery deptEntry : departmentSummaries) {
 
                 addCellToPdfTable(table, deptEntry.getIssuedDeptName() != null ? deptEntry.getIssuedDeptName() : "", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 9), mainRow, Element.ALIGN_LEFT);
+                addCellToPdfTable(table, "", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 9), mainRow, Element.ALIGN_LEFT);
+                addCellToPdfTable(table, "", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 9), mainRow, Element.ALIGN_LEFT);
+                addCellToPdfTable(table, "", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 9), mainRow, Element.ALIGN_LEFT);
                 addCellToPdfTable(table, deptEntry.getTotalPurchaseValue() != null ? String.format("%,.2f", deptEntry.getTotalPurchaseValue()) : "", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 9), mainRow, Element.ALIGN_RIGHT);
 
                 if (costingEnabled) {
@@ -13516,7 +13521,10 @@ public class PharmacyController implements Serializable {
                     }
 
                     for (PharmacySummery summery : sumList) {
-                        addCellToPdfTable(table, " " + (categoryName != null ? categoryName : ""), FontFactory.getFont(FontFactory.HELVETICA, 8));
+                        addCellToPdfTable(table, "", FontFactory.getFont(FontFactory.HELVETICA, 8));
+                        addCellToPdfTable(table, categoryName != null ? categoryName : "", FontFactory.getFont(FontFactory.HELVETICA, 8));
+                        addCellToPdfTable(table, summery.getIssuedDeptName() != null ? summery.getIssuedDeptName() : "", FontFactory.getFont(FontFactory.HELVETICA, 8));
+                        addCellToPdfTable(table, summery.getReceivedDeptName() != null ? summery.getReceivedDeptName() : "", FontFactory.getFont(FontFactory.HELVETICA, 8));
                         addCellToPdfTable(table, summery.getTotalPurchaseValue() != null ? String.format("%,.2f", summery.getTotalPurchaseValue()) : "", FontFactory.getFont(FontFactory.HELVETICA, 8), null, Element.ALIGN_RIGHT);
 
                         if (costingEnabled) {
@@ -13847,26 +13855,39 @@ public class PharmacyController implements Serializable {
             
             // Create header row
             Row headerRow = sheet.createRow(rowIndex++);
+            // Category / From Department / To Department carry the row-expansion breakdown shown on screen
             createCell(headerRow, 0, "Store", headerCellStyle);
-            createCell(headerRow, 1, "Purchase Value", headerCellStyle);
+            createCell(headerRow, 1, "Category", headerCellStyle);
+            createCell(headerRow, 2, "From Department", headerCellStyle);
+            createCell(headerRow, 3, "To Department", headerCellStyle);
+            createCell(headerRow, 4, "Purchase Value", headerCellStyle);
 
             boolean costingEnabled = configOptionApplicationController.getBooleanValueByKey("Manage Costing", true);
             if (costingEnabled) {
-                createCell(headerRow, 2, "Cost Value", headerCellStyle);
-                createCell(headerRow, 3, "Retail Sale Value", headerCellStyle);
-                createCell(headerRow, 4, "Good In Transit Amount", headerCellStyle);
+                createCell(headerRow, 5, "Cost Value", headerCellStyle);
+                createCell(headerRow, 6, "Retail Sale Value", headerCellStyle);
+                createCell(headerRow, 7, "Good In Transit Amount", headerCellStyle);
             } else {
-                createCell(headerRow, 2, "Retail Sale Value", headerCellStyle);
-                createCell(headerRow, 3, "Good In Transit Amount", headerCellStyle);
+                createCell(headerRow, 5, "Retail Sale Value", headerCellStyle);
+                createCell(headerRow, 6, "Good In Transit Amount", headerCellStyle);
             }
 
             PharmacySummery totalSummary = null;
 
             for (PharmacySummery deptEntry : departmentSummaries) {
+                // The "Total" entry is written once, as the Grand Total row after the loop
+                if (deptEntry.getDepartmentName() != null && deptEntry.getDepartmentName().equals("Total")) {
+                    totalSummary = deptEntry;
+                    continue;
+                }
+
                 Row dataRow = sheet.createRow(rowIndex++);
                 int colIndex = 0;
 
                 createCell(dataRow, colIndex++, (deptEntry.getDepartmentName() != null ? deptEntry.getDepartmentName() : "-"), mainRowCellStyle);
+                createCell(dataRow, colIndex++, "", mainRowCellStyle);
+                createCell(dataRow, colIndex++, "", mainRowCellStyle);
+                createCell(dataRow, colIndex++, "", mainRowCellStyle);
                 createCell(dataRow, colIndex++, (deptEntry.getTotalPurchaseValue() != null ? deptEntry.getTotalPurchaseValue().doubleValue() : 0), mainRowCellStyle);
 
                 if (costingEnabled) {
@@ -13875,11 +13896,6 @@ public class PharmacyController implements Serializable {
 
                 createCell(dataRow, colIndex++, (deptEntry.getTotalRetailSaleValue() != null ? deptEntry.getTotalRetailSaleValue().doubleValue() : 0), mainRowCellStyle);
                 createCell(dataRow, colIndex++, ( deptEntry.getGoodInTransistAmount()), mainRowCellStyle);
-
-                if (deptEntry.getDepartmentName() != null && deptEntry.getDepartmentName().equals("Total")) {
-                    totalSummary = deptEntry;
-                    continue;
-                }
 
                 // Summary breakdown
                 if (deptEntry.getSummeriesMap() == null || deptEntry.getSummeriesMap().isEmpty()) {
@@ -13898,7 +13914,10 @@ public class PharmacyController implements Serializable {
                         Row summaryRow = sheet.createRow(rowIndex++);
                         int summaryColIndex = 0;
 
+                        createCell(summaryRow, summaryColIndex++, "", null);
                         createCell(summaryRow, summaryColIndex++, categoryName != null ? categoryName : "", null);
+                        createCell(summaryRow, summaryColIndex++, summery.getIssuedDeptName() != null ? summery.getIssuedDeptName() : "", null);
+                        createCell(summaryRow, summaryColIndex++, summery.getReceivedDeptName() != null ? summery.getReceivedDeptName() : "", null);
                         createCell(summaryRow, summaryColIndex++, (summery.getTotalPurchaseValue() != null ? summery.getTotalPurchaseValue().doubleValue() : 0), null);
 
                         if (costingEnabled) {
@@ -13916,6 +13935,9 @@ public class PharmacyController implements Serializable {
                 int colIndex = 0;
 
                 createCell(totalRow, colIndex++, "Grand Total", mainRowCellStyle);
+                createCell(totalRow, colIndex++, "", mainRowCellStyle);
+                createCell(totalRow, colIndex++, "", mainRowCellStyle);
+                createCell(totalRow, colIndex++, "", mainRowCellStyle);
                 createCell(totalRow, colIndex++, (totalSummary.getTotalPurchaseValue() != null ? totalSummary.getTotalPurchaseValue().doubleValue() : 0), mainRowCellStyle);
 
                 if (costingEnabled) {
@@ -13924,6 +13946,11 @@ public class PharmacyController implements Serializable {
 
                 createCell(totalRow, colIndex++, (totalSummary.getTotalRetailSaleValue() != null ? totalSummary.getTotalRetailSaleValue().doubleValue() : 0), mainRowCellStyle);
                 createCell(totalRow, colIndex++, ( totalSummary.getGoodInTransistAmount()), mainRowCellStyle);
+            }
+
+            int totalCols = costingEnabled ? 8 : 7;
+            for (int i = 0; i < totalCols; i++) {
+                sheet.autoSizeColumn(i);
             }
 
             workbook.write(out);
