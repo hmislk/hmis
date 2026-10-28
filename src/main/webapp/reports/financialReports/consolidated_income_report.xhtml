@@ -1,0 +1,222 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:common="http://xmlns.jcp.org/jsf/composite/ezcomp/common">
+
+    <h:body>
+
+        <ui:composition template="/reports/index.xhtml">
+            <ui:define name="subcontent">
+                <h:form id="frm">
+                    <p:panel header="Consolidated Income Report" styleClass="w-100">
+
+                        <h:panelGroup layout="block" styleClass="container-fluid">
+                            <h:panelGroup layout="block" styleClass="row">
+                                <h:panelGroup layout="block" styleClass="col-lg-4 col-md-6 col-sm-12 mb-3">
+                                    <h:outputLabel value="From" for="fromDate" styleClass="d-block mb-2"/>
+                                    <p:calendar id="fromDate" styleClass="w-100" inputStyleClass="w-100 form-control"
+                                                value="#{consolidatedIncomeReportController.fromDate}"
+                                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                </h:panelGroup>
+                                <h:panelGroup layout="block" styleClass="col-lg-4 col-md-6 col-sm-12 mb-3">
+                                    <h:outputLabel value="To" for="toDate" styleClass="d-block mb-2"/>
+                                    <p:calendar id="toDate" styleClass="w-100" inputStyleClass="w-100 form-control"
+                                                value="#{consolidatedIncomeReportController.toDate}"
+                                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                </h:panelGroup>
+                            </h:panelGroup>
+                        </h:panelGroup>
+
+                        <common:institution_site_department_filter controller="#{consolidatedIncomeReportController}"/>
+
+                        <p:fieldset styleClass="my-2" legend="About this report">
+                            <p>
+                                Billed income for the period, by bill date, net of cancellations and refunds.
+                                <b>Services</b> are OPD bills grouped by the department that performs each service (Laboratory, ECG, X-Ray, Dressing, ...).
+                                <b>Channelling</b> shows the doctor fee and hospital fee; only the hospital fee counts toward the grand total.
+                                <b>Wards</b> is taken from the final bills of patients discharged in the period, by admitting department.
+                                <b>Collecting Centres</b> shows the bill value per centre.
+                                Institution, Site and Department filter the billing department (for Wards, the admitting department).
+                            </p>
+                        </p:fieldset>
+
+                        <h:panelGroup layout="block" styleClass="d-flex gap-2 my-2">
+                            <p:commandButton id="btnProcess" value="Process" icon="fas fa-cogs" styleClass="ui-button-warning"
+                                             ajax="false" action="#{consolidatedIncomeReportController.processReport()}"/>
+                            <p:commandButton id="btnExcel" value="Download Excel" icon="fas fa-file-excel" styleClass="ui-button-success"
+                                             ajax="false" rendered="#{consolidatedIncomeReportController.processed}">
+                                <p:dataExporter type="xlsx" target="tblSummary,tblServices,tblChannel,tblWards,tblCc" fileName="consolidated_income_report"/>
+                            </p:commandButton>
+                            <p:commandButton id="btnPrint" value="Print" icon="fas fa-print" styleClass="ui-button-info"
+                                             ajax="false" rendered="#{consolidatedIncomeReportController.processed}">
+                                <p:printer target="gpReport"/>
+                            </p:commandButton>
+                        </h:panelGroup>
+
+                        <h:panelGroup id="gpReport" layout="block" rendered="#{consolidatedIncomeReportController.processed}">
+
+                            <h3>Consolidated Income Report</h3>
+                            <h:panelGroup layout="block" styleClass="mb-2" style="font-size: 12px;">
+                                <h:outputText value="From "/>
+                                <h:outputText value="#{consolidatedIncomeReportController.fromDate}">
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" timeZone="Asia/Colombo"/>
+                                </h:outputText>
+                                <h:outputText value=" to "/>
+                                <h:outputText value="#{consolidatedIncomeReportController.toDate}">
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" timeZone="Asia/Colombo"/>
+                                </h:outputText>
+                                <h:outputText value="   |   Institution: #{not empty consolidatedIncomeReportController.institution ? consolidatedIncomeReportController.institution.name : 'All'}"/>
+                                <h:outputText value="   |   Site: #{not empty consolidatedIncomeReportController.site ? consolidatedIncomeReportController.site.name : 'All'}"/>
+                                <h:outputText value="   |   Department: #{not empty consolidatedIncomeReportController.department ? consolidatedIncomeReportController.department.name : 'All'}"/>
+                            </h:panelGroup>
+
+                            <!-- Summary -->
+                            <p:dataTable id="tblSummary" widgetVar="tblSummary" styleClass="mb-4"
+                                         value="#{[
+                                                  ['Services (OPD, Laboratory, ECG, X-Ray, Dressing, ...)', consolidatedIncomeReportController.serviceTotal],
+                                                  ['Channelling (hospital fee)', consolidatedIncomeReportController.channelHospitalFee],
+                                                  ['Wards', consolidatedIncomeReportController.wardNetTotal],
+                                                  ['Collecting Centres', consolidatedIncomeReportController.collectingCentreTotal]
+                                                  ]}"
+                                         var="s" rowKey="#{s[0]}">
+                                <f:facet name="header">Summary</f:facet>
+                                <p:column headerText="Section">
+                                    <h:outputText value="#{s[0]}"/>
+                                </p:column>
+                                <p:column headerText="Income" styleClass="text-end">
+                                    <h:outputText value="#{s[1]}"><f:convertNumber pattern="#,##0.00"/></h:outputText>
+                                </p:column>
+                                <p:columnGroup type="footer">
+                                    <p:row>
+                                        <p:column footerText="Grand Total" style="text-align: left"/>
+                                        <p:column styleClass="text-end">
+                                            <f:facet name="footer">
+                                                <h:outputText value="#{consolidatedIncomeReportController.grandTotal}"><f:convertNumber pattern="#,##0.00"/></h:outputText>
+                                            </f:facet>
+                                        </p:column>
+                                    </p:row>
+                                </p:columnGroup>
+                            </p:dataTable>
+
+                            <!-- Services -->
+                            <p:dataTable id="tblServices" widgetVar="tblServices" styleClass="mb-4"
+                                         value="#{consolidatedIncomeReportController.serviceRows}" var="r" rowKey="#{r.name}"
+                                         emptyMessage="No service income in this period">
+                                <f:facet name="header">Services by Performing Department</f:facet>
+                                <p:column headerText="Department">
+                                    <h:outputText value="#{r.name}"/>
+                                </p:column>
+                                <p:column headerText="Income" styleClass="text-end">
+                                    <h:outputText value="#{r.netTotal}"><f:convertNumber pattern="#,##0.00"/></h:outputText>
+                                </p:column>
+                                <p:columnGroup type="footer">
+                                    <p:row>
+                                        <p:column footerText="Total" style="text-align: left"/>
+                                        <p:column styleClass="text-end">
+                                            <f:facet name="footer">
+                                                <h:outputText value="#{consolidatedIncomeReportController.serviceTotal}"><f:convertNumber pattern="#,##0.00"/></h:outputText>
+                                            </f:facet>
+                                        </p:column>
+                                    </p:row>
+                                </p:columnGroup>
+                            </p:dataTable>
+
+                            <!-- Channelling -->
+                            <p:dataTable id="tblChannel" widgetVar="tblChannel" styleClass="mb-4"
+                                         value="#{[consolidatedIncomeReportController.channelRow]}" var="r" rowKey="#{r.name}">
+                                <f:facet name="header">Channelling</f:facet>
+                                <p:column headerText="Section">
+                                    <h:outputText value="#{r.name}"/>
+                                </p:column>
+                                <p:column headerText="Doctor Fee" styleClass="text-end">
+                                    <h:outputText value="#{r.doctorFee}"><f:convertNumber pattern="#,##0.00"/></h:outputText>
+                                </p:column>
+                                <p:column headerText="Hospital Fee" styleClass="text-end">
+                                    <h:outputText value="#{r.hospitalFee}"><f:convertNumber pattern="#,##0.00"/></h:outputText>
+                                </p:column>
+                                <p:column headerText="Total Billed" styleClass="text-end">
+                                    <h:outputText value="#{r.netTotal}"><f:convertNumber pattern="#,##0.00"/></h:outputText>
+                                </p:column>
+                            </p:dataTable>
+
+                            <!-- Wards -->
+                            <p:dataTable id="tblWards" widgetVar="tblWards" styleClass="mb-4"
+                                         value="#{consolidatedIncomeReportController.wardRows}" var="r" rowKey="#{r.name}"
+                                         emptyMessage="No discharges with a completed final bill in this period">
+                                <f:facet name="header">Wards (patients discharged in the period)</f:facet>
+                                <p:column headerText="Admitting Department">
+                                    <h:outputText value="#{r.name}"/>
+                                </p:column>
+                                <p:column headerText="Discharges" styleClass="text-end">
+                                    <h:outputText value="#{r.count}"/>
+                                </p:column>
+                                <p:column headerText="Professional Fee" styleClass="text-end">
+                                    <h:outputText value="#{r.professionalFee}"><f:convertNumber pattern="#,##0.00"/></h:outputText>
+                                </p:column>
+                                <p:column headerText="Medicine &amp; Pharmacy" styleClass="text-end">
+                                    <h:outputText value="#{r.medicine}"><f:convertNumber pattern="#,##0.00"/></h:outputText>
+                                </p:column>
+                                <p:column headerText="Other" styleClass="text-end">
+                                    <h:outputText value="#{r.other}"><f:convertNumber pattern="#,##0.00"/></h:outputText>
+                                </p:column>
+                                <p:column headerText="Discount" styleClass="text-end">
+                                    <h:outputText value="#{r.discount}"><f:convertNumber pattern="#,##0.00"/></h:outputText>
+                                </p:column>
+                                <p:column headerText="Net Income" styleClass="text-end">
+                                    <h:outputText value="#{r.netTotal}"><f:convertNumber pattern="#,##0.00"/></h:outputText>
+                                </p:column>
+                                <p:columnGroup type="footer">
+                                    <p:row>
+                                        <p:column footerText="Total" colspan="2" style="text-align: left"/>
+                                        <p:column styleClass="text-end">
+                                            <f:facet name="footer"><h:outputText value="#{consolidatedIncomeReportController.wardProfessionalTotal}"><f:convertNumber pattern="#,##0.00"/></h:outputText></f:facet>
+                                        </p:column>
+                                        <p:column styleClass="text-end">
+                                            <f:facet name="footer"><h:outputText value="#{consolidatedIncomeReportController.wardMedicineTotal}"><f:convertNumber pattern="#,##0.00"/></h:outputText></f:facet>
+                                        </p:column>
+                                        <p:column styleClass="text-end">
+                                            <f:facet name="footer"><h:outputText value="#{consolidatedIncomeReportController.wardOtherTotal}"><f:convertNumber pattern="#,##0.00"/></h:outputText></f:facet>
+                                        </p:column>
+                                        <p:column styleClass="text-end">
+                                            <f:facet name="footer"><h:outputText value="#{consolidatedIncomeReportController.wardDiscountTotal}"><f:convertNumber pattern="#,##0.00"/></h:outputText></f:facet>
+                                        </p:column>
+                                        <p:column styleClass="text-end">
+                                            <f:facet name="footer"><h:outputText value="#{consolidatedIncomeReportController.wardNetTotal}"><f:convertNumber pattern="#,##0.00"/></h:outputText></f:facet>
+                                        </p:column>
+                                    </p:row>
+                                </p:columnGroup>
+                            </p:dataTable>
+
+                            <!-- Collecting Centres -->
+                            <p:dataTable id="tblCc" widgetVar="tblCc" styleClass="mb-4"
+                                         value="#{consolidatedIncomeReportController.collectingCentreRows}" var="r" rowKey="#{r.name}"
+                                         emptyMessage="No collecting centre bills in this period">
+                                <f:facet name="header">Collecting Centres</f:facet>
+                                <p:column headerText="Collecting Centre">
+                                    <h:outputText value="#{r.name}"/>
+                                </p:column>
+                                <p:column headerText="Income" styleClass="text-end">
+                                    <h:outputText value="#{r.netTotal}"><f:convertNumber pattern="#,##0.00"/></h:outputText>
+                                </p:column>
+                                <p:columnGroup type="footer">
+                                    <p:row>
+                                        <p:column footerText="Total" style="text-align: left"/>
+                                        <p:column styleClass="text-end">
+                                            <f:facet name="footer">
+                                                <h:outputText value="#{consolidatedIncomeReportController.collectingCentreTotal}"><f:convertNumber pattern="#,##0.00"/></h:outputText>
+                                            </f:facet>
+                                        </p:column>
+                                    </p:row>
+                                </p:columnGroup>
+                            </p:dataTable>
+                        </h:panelGroup>
+                    </p:panel>
+                </h:form>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>
