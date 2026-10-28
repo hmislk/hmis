@@ -431,9 +431,13 @@
                                 <i class="fa fa-lock"></i>
                                 <h:outputText value=" Your account requires a code from an authenticator app at every login." />
                             </h:panelGroup>
-                            <h:panelGroup rendered="#{not twoFactorAuthController.loggedUserRequired}" class="auth-status-chip">
+                            <h:panelGroup rendered="#{not twoFactorAuthController.loggedUserRequired and not twoFactorAuthController.loggedUserEnrolled}" class="auth-status-chip">
                                 <i class="fa fa-info-circle"></i>
-                                <h:outputText value=" Not required for your account yet. Linking an app now keeps you ready if your administrator enables it." />
+                                <h:outputText value=" Not required for your account. After you link an app, a 6-digit code will be asked at every login." />
+                            </h:panelGroup>
+                            <h:panelGroup rendered="#{not twoFactorAuthController.loggedUserRequired and twoFactorAuthController.loggedUserEnrolled}" class="auth-status-chip">
+                                <i class="fa fa-info-circle"></i>
+                                <h:outputText value=" A 6-digit code from your authenticator app is asked at every login." />
                             </h:panelGroup>
 
                             <h:panelGroup rendered="#{not twoFactorAuthController.loggedUserEnrolled}" layout="block" class="auth-status-action">
