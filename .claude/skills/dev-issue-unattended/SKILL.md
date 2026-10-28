@@ -344,6 +344,9 @@ or open a PR: end the issue as a stop and report why.
 
 Same as `dev-issue` step 7: exercise the feature with the department/records
 from step 4, screenshot each meaningful stage into `tmp/`, verify in the DB.
+On a DB copied from production, blank patient, doctor and staff names and
+bill/BHT numbers before each screenshot, or crop them out right after, so
+every screenshot can be published in step 10 without another pass.
 **Reach every page through the menus, never by URL** — a URL-loaded page renders
 against uninitialised session state and produces false findings
 (`playwright-e2e` §2). Record the menu path in the PR. With no user to correct
@@ -395,7 +398,9 @@ step 9/11.
      13) so a human can look later.
 4. **Document the pass** in that same PR section — which findings came up,
    which bucket each landed in, and why — the same judgment-call-logging
-   convention already used for steps 3 and 13.
+   convention already used for steps 3 and 13. Name what ran (`/code-review
+   <level>` or the `java-health-code-reviewer` agent). "Self-review (inline)",
+   meaning you re-read your own diff, is not this step.
 
 Step 14's CodeRabbit/Codex loop is unchanged by this step — this is an
 earlier, additional layer, not a replacement.
@@ -412,6 +417,19 @@ text the change makes wrong, or create/skip the page with the reason stated),
 and linking the updated page(s) in the issue comment. Publishing an image
 without wiring it into a page leaves it orphaned; that is not a completed
 step 10.
+
+**The wiki push is mandatory.** Commit and push `../hmis.wiki` before you
+open the PR. A wiki change left uncommitted or unpushed in `../hmis.wiki`
+means step 10 is not done; never report it as "prepared locally" or "pending
+approval". Invoking this skill authorizes the push. The PR's Documentation
+section links the published page, never a local file. If the push itself
+fails, fix the cause (pull/rebase, retry) and push before the run ends.
+
+**"No wiki change" needs a reason a user would accept.** It fits only a
+change users cannot see (refactor, log line, internal guard with no
+message). A new or changed message, filter, total, column or screen
+behaviour gets a page edit with its screenshot. If the screen has no page,
+create one.
 
 Two additions for unattended runs:
 
@@ -455,6 +473,15 @@ limit above before writing it, same as an issue or PR body.
 Precondition: the step 7 end-to-end test passed and its evidence is in the
 PR body. Without it, do not create the PR. Base is `development`.
 
+The PR body must contain:
+- at least one redacted screenshot for each changed screen, embedded from
+  the wiki (`https://raw.githubusercontent.com/wiki/hmislk/hmis/images/<file>.png`),
+  with the menu path and DB read-back in text. API-only changes post the
+  redacted request/response instead;
+- the step 8a review line naming what ran and its findings.
+
+A body with test steps in prose but no image is missing its evidence.
+
 Same as `dev-issue` step 13 — including its required **Documentation**
 section linking the wiki page(s) updated in step 10 (or stating that none was
 needed, and why) — plus a **"Decisions made without approval"** section up
@@ -479,6 +506,14 @@ Repeat, up to **3 cycles**:
 2. If checks fail: investigate, fix, push, go to 1.
 3. Once checks pass: run the `review-pr` skill. Auto-apply fixes matching its
    documented false-positive/valid-fix patterns.
+   **If CodeRabbit or Codex is rate-limited or out of usage** (its check or
+   comment says "rate limited", "usage limit" or similar), the PR has no
+   independent review. Dispatch the `java-health-code-reviewer` agent
+   (`model: sonnet`) on `gh pr diff <PR#>` (several PRs can go to one agent).
+   Post its findings and what you did with each as a PR comment. Fix the
+   valid ones on the branch, then re-run step 7 for anything you changed.
+   Do this before reporting the PR mergeable; don't wait for the bot's limit
+   to reset.
 4. A genuinely ambiguous review comment is a hard-limit stop, same as step 3
    — post your assessment as a reply and end the run rather than guess.
 5. Checks passing and no unresolved comments are necessary but not
@@ -502,7 +537,7 @@ Before Notify:
 2. **Search first**: `gh issue list --state all --search "<keywords>"`. If an open issue matches, comment on it. If a closed one fixed the same bug on another page, cite it in the new issue.
 3. **File one issue per defect**, following step 0's public-content rules: symptom, cause with `file:line`, steps, expected, fix direction, and honest impact (say so if it is unreachable or low).
 4. **List the new issue links** in Notify.
-5. **Fix the follow-ups in the same run.** Run steps 1–14 on each filed issue (its own branch and PR), unless it hits a hard limit: in batch mode add it to the batch; in a single free-text run, process it after the main issue. Never merge, so the session stays open: in Notify, list every follow-up without a merged PR under **Open follow-ups** and ask the user to merge them or say they will be handled in another session.
+5. **Fix every follow-up in the same run, until it has a mergeable PR.** The aim is fewer open issues; an issue this run files and leaves open makes the count go up. Run steps 1–14 on each filed issue (its own branch and PR) until step 14 shows it mergeable: in batch mode add it to the batch; in a single free-text run, process it after the main issue. "It touches a money path" or "it needs care" is not a reason to leave it; take that care. Only a hard limit (step 0) or a step 2–5 outcome ends a follow-up without a PR, and that outcome is posted on the follow-up issue like any other. Never merge: in Notify, list every follow-up with its PR under **Follow-ups**, and any that stopped with the reason.
 
 ## 15. Notify
 

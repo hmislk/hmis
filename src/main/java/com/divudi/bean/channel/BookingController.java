@@ -91,6 +91,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
@@ -761,6 +762,12 @@ public class BookingController implements Serializable, ControllerWithPatient, C
     public void markSessionInstanceAsStarted() {
         if (selectedSessionInstance == null) {
             JsfUtil.addErrorMessage("No session selected");
+            return;
+        }
+        // Re-read the flag: another user may have cancelled the session after this page was opened
+        SessionInstance latestSessionInstance = selectedSessionInstance.getId() == null ? null : sessionInstanceFacade.find(selectedSessionInstance.getId());
+        if (selectedSessionInstance.isCancelled() || (latestSessionInstance != null && latestSessionInstance.isCancelled())) {
+            JsfUtil.addErrorMessage("This session has been cancelled and cannot be started.");
             return;
         }
 
@@ -4137,13 +4144,29 @@ public class BookingController implements Serializable, ControllerWithPatient, C
     }
 
     public void onEditItem(RowEditEvent event) {
-        ServiceSession tmp = (ServiceSession) event.getObject();
-        ServiceSession ss = getServiceSessionFacade().find(tmp.getId());
-        if (ss.getMaxNo() != tmp.getMaxNo()) {
-            tmp.setEditedAt(new Date());
-            tmp.setEditer(getSessionController().getLoggedUser());
+        SessionInstance tmp = (SessionInstance) event.getObject();
+        SessionInstance si = sessionInstanceFacade.find(tmp.getId());
+        if (si == null) {
+            JsfUtil.addErrorMessage("This session no longer exists. Please search again.");
+            return;
         }
-        getServiceSessionFacade().edit(tmp);
+        // Copy only the fields editable on this page, so booking counts updated elsewhere are not overwritten by the row held in the session
+        boolean changed = si.getMaxNo() != tmp.getMaxNo()
+                || si.getStartingNo() != tmp.getStartingNo()
+                || !Objects.equals(si.getStartingTime(), tmp.getStartingTime())
+                || si.isRetired() != tmp.isRetired();
+        if (!changed) {
+            return;
+        }
+        si.setMaxNo(tmp.getMaxNo());
+        si.setStartingNo(tmp.getStartingNo());
+        si.setStartingTime(tmp.getStartingTime());
+        si.setRetired(tmp.isRetired());
+        si.setEditedAt(new Date());
+        si.setEditer(getSessionController().getLoggedUser());
+        sessionInstanceFacade.edit(si);
+        tmp.setEditedAt(si.getEditedAt());
+        tmp.setEditer(si.getEditer());
     }
 
     public void listnerStaffListForRowSelect() {
@@ -4152,6 +4175,11 @@ public class BookingController implements Serializable, ControllerWithPatient, C
         sessionInstances = new ArrayList<>();
         selectedBillSession = null;
         billSessions = null;
+    }
+
+    public void listnerSpecialityChangeForAppointmentCount() {
+        setStaff(null);
+        listnerStaffListForRowSelect();
     }
 
     public void listnerStaffRowSelect() {

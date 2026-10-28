@@ -4801,10 +4801,23 @@ public class BhtSummeryController implements Serializable {
             patientItems = new ArrayList<>();
         }
 
+        // A stopped service shows its saved charge, the figure on its bill. Only a
+        // running one is re-priced (in memory, as of now), through the same tiered,
+        // foreigner-aware path as a manual stop, so the tab never shows a rate the
+        // patient is not charged (#24655).
+        Date now = new Date();
         for (PatientItem pi : patientItems) {
-            TimedItemFee timedItemFee = getInwardBean().getTimedItemFee((TimedItem) pi.getItem());
-            double count = getInwardBean().calCount(timedItemFee, pi.getFromTime(), pi.getToTime());
-            pi.setServiceValue(count * timedItemFee.getFee());
+            if (pi.getToTime() != null || pi.getFromTime() == null || now.before(pi.getFromTime())) {
+                continue;
+            }
+            if (!(pi.getItem() instanceof TimedItem)
+                    || getInwardBean().getAllTimedItemFees((TimedItem) pi.getItem()).isEmpty()) {
+                continue;
+            }
+            PatientEncounter owner = pi.getPatientEncounter() != null
+                    ? pi.getPatientEncounter() : getPatientEncounter();
+            pi.setServiceValue(getInwardBean().calTotalTimedChargeForItem(
+                    (TimedItem) pi.getItem(), pi.getFromTime(), now, owner.isForiegner()));
         }
 
         return patientItems;
@@ -4830,9 +4843,10 @@ public class BhtSummeryController implements Serializable {
             patientItem.setToTime(Calendar.getInstance().getTime());
         }
 
-        TimedItemFee timedItemFee = getInwardBean().getTimedItemFee((TimedItem) patientItem.getItem());
-        double count = getInwardBean().calCount(timedItemFee, patientItem.getFromTime(), patientItem.getToTime());
-        patientItem.setServiceValue(count * timedItemFee.getFee());
+        PatientEncounter owner = patientItem.getPatientEncounter() != null
+                ? patientItem.getPatientEncounter() : getPatientEncounter();
+        patientItem.setServiceValue(getInwardBean().calTotalTimedChargeForItem(
+                (TimedItem) patientItem.getItem(), patientItem.getFromTime(), patientItem.getToTime(), owner.isForiegner()));
 
         getPatientItemFacade().edit(patientItem);
         syncTimedServiceCharge(patientItem);

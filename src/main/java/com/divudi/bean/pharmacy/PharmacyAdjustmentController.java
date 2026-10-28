@@ -2774,6 +2774,11 @@ public class PharmacyAdjustmentController implements Serializable {
             return;
         }
 
+        if (stock.getStaff() == null) {
+            JsfUtil.addErrorMessage("Select a staff stock..");
+            return;
+        }
+
         if (requiresApproval() && fulfillingApprovedRequest == null) {
             submitStaffStockAdjustmentForApproval();
             return;
@@ -2784,7 +2789,7 @@ public class PharmacyAdjustmentController implements Serializable {
 //        getDeptAdjustmentPreBill().getBillItems().add(getBillItem());
 //        getBillFacade().edit(getDeptAdjustmentPreBill());
         deptAdjustmentPreBill = getBillFacade().find(getDeptAdjustmentPreBill().getId());
-        getPharmacyBean().resetStock(ph, stock, qty, getSessionController().getDepartment());
+        getPharmacyBean().resetStaffStock(ph, stock, qty);
 
         printPreview = true;
 

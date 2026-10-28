@@ -23,7 +23,7 @@ When Claude pushes commits that complete an issue, automatically include the app
 ## Branch Naming Conventions
 
 ### Hotfix Branches
-When creating hotfix branches targeting production branches (e.g., `rh-production`), the branch name **must** end with `-hotfix`. CI (`check-branch`) enforces this only for the retired `*-prod` targets; for `*-production` / `*-staging` it is a team rule until #24453 lands.
+When creating hotfix branches targeting production branches (e.g., `rh-production`), the branch name **must** end with `-hotfix`. CI (`check-branch`) flags any other head on `*-production` / `*-staging` as a warning (QA-tested `home-qa*` branches are also accepted).
 
 **Format:** `<issue-number>-<description>-hotfix`
 

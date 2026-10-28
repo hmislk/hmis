@@ -145,8 +145,9 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 
     // Striped JVM-wide locks for settleCredit(), keyed by the booking bill id.
     // Static so a double-submit, a second tab and a second cashier all contend on
-    // the same lock; striped so the set stays bounded (issue #23776).
-    private static final Object[] SETTLE_LOCKS = new Object[64];
+    // the same lock; striped so the set stays bounded (issue #23776). Package-private:
+    // the By Month page settles the same bookings and shares these locks (#24724).
+    static final Object[] SETTLE_LOCKS = new Object[64];
 
     static {
         for (int i = 0; i < SETTLE_LOCKS.length; i++) {
@@ -1975,6 +1976,12 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     public void markSessionInstanceAsStarted() {
         if (selectedSessionInstance == null) {
             JsfUtil.addErrorMessage("No session selected");
+            return;
+        }
+        // Re-read the flag: another user may have cancelled the session after this page was opened
+        SessionInstance latestSessionInstance = selectedSessionInstance.getId() == null ? null : sessionInstanceFacade.find(selectedSessionInstance.getId());
+        if (selectedSessionInstance.isCancelled() || (latestSessionInstance != null && latestSessionInstance.isCancelled())) {
+            JsfUtil.addErrorMessage("This session has been cancelled and cannot be started.");
             return;
         }
 

@@ -182,27 +182,30 @@
                                              class="text-center return-qty-input"
                                              style="width: 100px;">
                                     <f:ajax event="blur" 
-                                            render="@this :#{p:resolveFirstComponentWithId('total',view).clientId}"  
+                                            render="@this returnValue returnStatus :#{p:resolveFirstComponentWithId('total',view).clientId}"
                                             execute="@this" 
                                             listener="#{preReturnController.onEdit(ph)}" />
                                 </p:inputText>
                             </p:column>
 
                             <p:column headerText="Return Value" styleClass="text-end">
-                                <h:outputText value="#{ph.netValue}" >
+                                <h:outputText id="returnValue" value="#{ph.netValue}" >
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
                             </p:column>
 
                             <p:column headerText="Status" styleClass="text-center">
-                                <p:tag icon="pi pi-check" 
-                                       severity="success" 
-                                       value="To Return" 
-                                       rendered="#{ph.qty gt 0}" />
-                                <p:tag icon="pi pi-minus" 
-                                       severity="secondary" 
-                                       value="Not Selected" 
-                                       rendered="#{ph.qty eq 0 or ph.qty eq null}" />
+                                <!-- Re-rendered by the Return Qty blur so the status follows the quantity -->
+                                <h:panelGroup id="returnStatus">
+                                    <p:tag icon="pi pi-check"
+                                           severity="success"
+                                           value="To Return"
+                                           rendered="#{ph.qty gt 0}" />
+                                    <p:tag icon="pi pi-minus"
+                                           severity="secondary"
+                                           value="Not Selected"
+                                           rendered="#{ph.qty eq 0 or ph.qty eq null}" />
+                                </h:panelGroup>
                             </p:column>
 
                         </p:dataTable>

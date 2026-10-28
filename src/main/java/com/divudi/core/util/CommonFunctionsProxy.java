@@ -1,6 +1,9 @@
 package com.divudi.core.util;
 
 import com.divudi.core.entity.channel.SessionInstance;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.text.DecimalFormatSymbols;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 
@@ -8,6 +11,7 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Named;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 @Named
 @ApplicationScoped
@@ -118,6 +122,40 @@ public class CommonFunctionsProxy {
             return date;
         }
         return CommonFunctions.getAddedDate(date, days.intValue());
+    }
+
+    /**
+     * PrimeFaces {@code filterFunction} that matches a numeric column by value.
+     * The built-in "exact" mode compares strings, so typing {@code 100} never
+     * matches a stored {@code 100.0} and {@code 12.50} never matches {@code 12.5}.
+     * The typed text is read with the view locale's grouping and decimal
+     * separators. It matches when it equals the stored value, or the stored
+     * value rounded to two decimals the way {@code f:convertNumber} displays it.
+     *
+     * @param value the row's numeric value
+     * @param filter the text typed into the column filter
+     * @param locale the view locale, used for the separators
+     * @return true if the filter is blank or equals the value
+     */
+    public boolean filterByNumberEquals(Object value, Object filter, Locale locale) {
+        String text = filter == null ? "" : filter.toString().trim();
+        if (text.isEmpty()) {
+            return true;
+        }
+        if (!(value instanceof Number)) {
+            return false;
+        }
+        DecimalFormatSymbols symbols = DecimalFormatSymbols.getInstance(locale == null ? Locale.getDefault() : locale);
+        String normalised = text.replace(String.valueOf(symbols.getGroupingSeparator()), "")
+                .replace(symbols.getDecimalSeparator(), '.');
+        try {
+            BigDecimal typed = new BigDecimal(normalised);
+            BigDecimal actual = new BigDecimal(value.toString());
+            return typed.compareTo(actual) == 0
+                    || typed.compareTo(actual.setScale(2, RoundingMode.HALF_EVEN)) == 0;
+        } catch (NumberFormatException e) {
+            return false;
+        }
     }
 
 }
