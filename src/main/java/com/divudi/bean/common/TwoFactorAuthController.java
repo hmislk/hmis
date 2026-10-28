@@ -33,6 +33,8 @@ public class TwoFactorAuthController implements Serializable {
     private static final long serialVersionUID = 1L;
     private static final int MAX_FAILED_ATTEMPTS = 5;
     private static final int QR_SIZE_PX = 200;
+    public static final String LOCKED_MESSAGE = "Your account is locked after " + MAX_FAILED_ATTEMPTS
+            + " invalid authenticator codes. Please contact an administrator to unlock it.";
 
     @EJB
     private WebUserFacade webUserFacade;
@@ -48,7 +50,9 @@ public class TwoFactorAuthController implements Serializable {
     private Long pendingUserId;
     private String pendingUserName;
     private boolean channelingTabView;
-    private int failedAttempts;
+    // Shown on the login card when the account is locked (a growl disappears too quickly)
+    private boolean accountLockedNotice;
+    private String lockedUserName;
     // Plain secret shown during first-time setup; saved only after a code confirms it
     private String setupSecret;
     private String code;
@@ -69,10 +73,21 @@ public class TwoFactorAuthController implements Serializable {
                 || u.isTwoFactorRequired();
     }
 
+    /**
+     * Whether the login must stop for an authenticator code: users who must
+     * use 2FA, and also users who linked an app themselves without being
+     * required to.
+     */
+    public boolean isCodeNeededAtLoginFor(WebUser u) {
+        if (u == null || !isTwoFactorEnabled()) {
+            return false;
+        }
+        return isTwoFactorRequiredFor(u) || u.isTwoFactorEnrolled();
+    }
+
     public void startChallenge(WebUser u) {
         pendingUserId = u.getId();
         pendingUserName = u.getName();
-        failedAttempts = 0;
         code = null;
         if (!u.isTwoFactorEnrolled() || u.getTwoFactorSecret() == null) {
             setupSecret = TotpUtil.generateSecret();
@@ -91,16 +106,27 @@ public class TwoFactorAuthController implements Serializable {
             JsfUtil.addErrorMessage("Login Failure. Please try again");
             return "";
         }
+        if (u.isTwoFactorLocked()) {
+            cancelLogin();
+            showLockedNotice(u.getName());
+            return "";
+        }
         boolean enrolling = setupSecret != null;
         String secret = enrolling ? setupSecret : securityController.decrypt(u.getTwoFactorSecret());
         long step = TotpUtil.verify(secret, code, enrolling ? null : u.getTwoFactorLastUsedStep());
         code = null;
         if (step < 0) {
-            failedAttempts++;
+            // Counted on the user, not the session, so logging in again does not give fresh attempts
+            int failedAttempts = u.getTwoFactorFailedAttempts() + 1;
+            u.setTwoFactorFailedAttempts(failedAttempts);
             if (failedAttempts >= MAX_FAILED_ATTEMPTS) {
+                u.setTwoFactorLocked(true);
+                u.setTwoFactorLockedAt(new Date());
+                webUserFacade.edit(u);
                 cancelLogin();
-                JsfUtil.addErrorMessage("Too many invalid codes. Please log in again.");
+                showLockedNotice(u.getName());
             } else {
+                webUserFacade.edit(u);
                 JsfUtil.addErrorMessage("Invalid authenticator code. " + (MAX_FAILED_ATTEMPTS - failedAttempts) + " attempt(s) left.");
             }
             return "";
@@ -110,6 +136,7 @@ public class TwoFactorAuthController implements Serializable {
             u.setTwoFactorEnrolled(true);
             u.setTwoFactorEnrolledAt(new Date());
         }
+        u.setTwoFactorFailedAttempts(0);
         u.setTwoFactorLastUsedStep(step);
         webUserFacade.edit(u);
         boolean channeling = channelingTabView;
@@ -125,7 +152,6 @@ public class TwoFactorAuthController implements Serializable {
     private void clearChallenge() {
         pendingUserId = null;
         pendingUserName = null;
-        failedAttempts = 0;
         setupSecret = null;
         code = null;
         channelingTabView = false;
@@ -230,6 +256,24 @@ public class TwoFactorAuthController implements Serializable {
         JsfUtil.addSuccessMessage("Authenticator reset. The user will set it up again at next login.");
     }
 
+    /**
+     * Admin action: unlocks an account locked by too many invalid
+     * authenticator codes.
+     */
+    public void unlockAccount(WebUser user) {
+        if (user == null || user.getId() == null) {
+            JsfUtil.addErrorMessage("Select a user");
+            return;
+        }
+        WebUser u = webUserFacade.find(user.getId());
+        u.setTwoFactorLocked(false);
+        u.setTwoFactorLockedAt(null);
+        u.setTwoFactorFailedAttempts(0);
+        webUserFacade.edit(u);
+        copyEnrollment(u, user);
+        JsfUtil.addSuccessMessage("Account unlocked.");
+    }
+
     private void clearEnrollment(WebUser u) {
         u.setTwoFactorSecret(null);
         u.setTwoFactorEnrolled(false);
@@ -238,8 +282,9 @@ public class TwoFactorAuthController implements Serializable {
     }
 
     /**
-     * Copies the enrollment fields, which only this controller writes, from
-     * the database copy onto another in-memory copy of the same user.
+     * Copies the enrollment and lock fields, which only this controller
+     * writes, from the database copy onto another in-memory copy of the same
+     * user.
      */
     public static void copyEnrollment(WebUser from, WebUser to) {
         if (from == null || to == null) {
@@ -249,6 +294,9 @@ public class TwoFactorAuthController implements Serializable {
         to.setTwoFactorEnrolled(from.isTwoFactorEnrolled());
         to.setTwoFactorEnrolledAt(from.getTwoFactorEnrolledAt());
         to.setTwoFactorLastUsedStep(from.getTwoFactorLastUsedStep());
+        to.setTwoFactorFailedAttempts(from.getTwoFactorFailedAttempts());
+        to.setTwoFactorLocked(from.isTwoFactorLocked());
+        to.setTwoFactorLockedAt(from.getTwoFactorLockedAt());
     }
 
     private WebUser loggedUserFromDb() {
@@ -269,6 +317,29 @@ public class TwoFactorAuthController implements Serializable {
 
     public String getPendingUserName() {
         return pendingUserName;
+    }
+
+    public boolean isAccountLockedNotice() {
+        return accountLockedNotice;
+    }
+
+    public void showLockedNotice(String userName) {
+        accountLockedNotice = true;
+        lockedUserName = userName;
+    }
+
+    public String dismissLockedNotice() {
+        accountLockedNotice = false;
+        lockedUserName = null;
+        return "";
+    }
+
+    public String getLockedUserName() {
+        return lockedUserName;
+    }
+
+    public String getLockedMessage() {
+        return LOCKED_MESSAGE;
     }
 
     public boolean isChannelingTabView() {
