@@ -55,6 +55,8 @@ public class TwoFactorAuthController implements Serializable {
     public static final String EVENT_AUTHENTICATOR_RESET = "2FA Authenticator Reset";
     public static final String EVENT_LOGIN_SUCCESS = "2FA Login Success";
     public static final String EVENT_LOGIN_FAILED = "2FA Login Failed";
+    public static final String EVENT_SETUP_FAILED = "2FA Setup Failed";
+    public static final String EVENT_SETUP_QR_RENEWED = "2FA Setup QR Renewed";
     private static final int AUTH_LOG_LIMIT = 15;
 
     @EJB
@@ -256,10 +258,14 @@ public class TwoFactorAuthController implements Serializable {
         selfSetupCode = null;
         if (step < 0) {
             selfSetupFailedAttempts++;
+            Map<String, Object> attempt = new HashMap<>();
+            attempt.put("failedAttempts", selfSetupFailedAttempts);
+            logTwoFactorEvent(u, u, EVENT_SETUP_FAILED, null, attempt, "Failed");
             if (selfSetupFailedAttempts >= MAX_FAILED_ATTEMPTS) {
                 // The password is already verified, so the account is not locked; the guessed QR is replaced instead
                 selfSetupSecret = TotpUtil.generateSecret();
                 selfSetupFailedAttempts = 0;
+                logTwoFactorEvent(u, u, EVENT_SETUP_QR_RENEWED);
                 JsfUtil.addErrorMessage("Too many invalid codes. A new QR code has been created. "
                         + "Delete the old entry for this account from your app and scan the new QR code.");
             } else {
