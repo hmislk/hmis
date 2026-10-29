@@ -147,11 +147,11 @@ Local build against the current wiki, compared with the phase 1 converter:
 - 2026-10-28 — Phase 3: competitor review; design agreed; filed #24888; branch created.
 - 2026-10-28 — Phase 3: PR #24889 merged; new index pushed to the wiki; publish workflow ran (gollum + manual); live site checked.
 - 2026-10-28 — Phase 4: filed #24891; generator + converter changes; wiki clean-up committed locally in `../hmis.wiki` (not pushed); verified locally (steps 22–28).
-- 2026-10-29 — Phase 4: PR #24897 merged (with redirects for removed pages); wiki commit pushed; gollum publish run succeeded; live site checked (User Guide first tab, module cards then "Other resources", old URLs redirect, new pages live).
 - 2026-10-28 — Phase 2: filed #24866. Converter now resolves links by page name and fixes lists; Material icon logo; stubs left out of the menu. Verified locally.
+- 2026-10-29 — Phase 4: PR #24897 merged (with redirects for removed pages); wiki commit pushed; gollum publish run succeeded; live site checked (User Guide first tab, module cards then "Other resources", old URLs redirect, new pages live).
 
 ## Next step
 
-Step 30: review content accuracy module by module against the current screens (paths, button labels, privileges, screenshots), starting with the most-used modules. Rebuild locally with `tmp/build_site.sh` after each batch and push the wiki.
+Step 30: review content accuracy module by module against the current screens (paths, button labels, privileges, screenshots), starting with the most-used modules. Rebuild locally with `tools/build-docs-site-locally.sh` after each batch and push the wiki.
 
-Working scripts (untracked, `tmp/`): `wiki_audit.py` (broken links, near-empty pages, duplicates), `fix_wiki_links.py`, `delete_wiki_pages.py` (deletes pages and repoints links; lists in `wiki-deleted-pages-batch*.txt`), `build_site.sh` (local build mirroring the workflow).
+Local build: `tools/build-docs-site-locally.sh` (needs `../hmis.wiki`; set `MKDOCS` to pick the mkdocs binary). Ad-hoc working scripts (untracked, `tmp/`): `wiki_audit.py` (broken links, near-empty pages, duplicates), `fix_wiki_links.py`, `delete_wiki_pages.py` (deletes pages and repoints links; lists in `wiki-deleted-pages-batch*.txt`).
