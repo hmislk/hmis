@@ -101,6 +101,8 @@ public class WebUserController implements Serializable {
     @Inject
     UserIconController userIconController;
     @Inject
+    private TwoFactorAuthController twoFactorAuthController;
+    @Inject
     TriggerSubscriptionController triggerSubscriptionController;
     @Inject
     UserNotificationController userNotificationController;
@@ -168,7 +170,7 @@ public class WebUserController implements Serializable {
     private String output;
 
     public String navigateToRemoveMultipleUsers() {
-        return "/admin/users/user_remove_multiple";
+        return "/admin/users/user_remove_multiple?faces-redirect=true";
     }
 
     public String navigateToManageUsersWithoutStaff() {
@@ -261,7 +263,14 @@ public class WebUserController implements Serializable {
             getFacade().create(current);
             JsfUtil.addSuccessMessage("Saved");
         } else {
+            WebUser saved = getFacade().find(current.getId());
+            boolean wasTwoFactorRequired = saved != null && saved.isTwoFactorRequired();
+            // Authenticator enrollment is written only by TwoFactorAuthController; don't let a stale copy overwrite it
+            TwoFactorAuthController.copyEnrollment(saved, current);
             getFacade().edit(current);
+            if (wasTwoFactorRequired != current.isTwoFactorRequired()) {
+                twoFactorAuthController.logRequiredChange(current, wasTwoFactorRequired);
+            }
             JsfUtil.addSuccessMessage("Updated");
         }
     }
@@ -640,6 +649,9 @@ public class WebUserController implements Serializable {
         getCurrent().setName((getCurrent().getName()));
         getCurrent().setWebUserPassword(getSecurityController().hashAndCheck(getCurrent().getWebUserPassword()));
         getFacade().create(getCurrent());
+        if (getCurrent().isTwoFactorRequired()) {
+            twoFactorAuthController.logRequiredChange(getCurrent(), false);
+        }
         if (createOnlyUser) {
             JsfUtil.addSuccessMessage("Add New User Only");
         } else if (createOnlyUserForExsistingUser) {
@@ -743,6 +755,7 @@ public class WebUserController implements Serializable {
 
     public String navigateToListUsers() {
         fillLightUsers();
+        selectedLight = null;
         return "/admin/users/user_list?faces-redirect=true";
     }
 

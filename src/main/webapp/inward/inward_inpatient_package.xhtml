@@ -17,7 +17,7 @@
         <h:panelGroup rendered="#{webUserController.hasPrivilege('InwardPackageAdministration')}" layout="block">
 
         <h:form id="formInpatientPackage">
-            <p:growl/>
+            <p:growl id="growl"/>
             <p:focus id="selectFocus" for="lstSelectPackage"/>
             <p:focus id="detailFocus" for="txtPackageName"/>
 
@@ -39,7 +39,7 @@
                                     action="#{inpatientPackageController.prepareAdd()}"
                                     class="w-25 ui-button-success"
                                     process="btnAddPackage"
-                                    update="lstSelectPackage gpPackageDetail">
+                                    update="lstSelectPackage gpPackageDetail growl">
                                 </p:commandButton>
                                 <p:commandButton
                                     id="btnDeletePackage"
@@ -50,7 +50,7 @@
                                     title="Delete Inpatient Package"
                                     icon="fa fa-trash"
                                     process="btnDeletePackage"
-                                    update="lstSelectPackage gpPackageDetail">
+                                    update="lstSelectPackage gpPackageDetail growl">
                                 </p:commandButton>
                             </div>
                         </div>
@@ -88,7 +88,7 @@
                                     class="ui-button-warning"
                                     process="btnSavePackage gpPackageDetail"
                                     style="float: right"
-                                    update="lstSelectPackage gpPackageDetail">
+                                    update="lstSelectPackage gpPackageDetail growl">
                                 </p:commandButton>
                                 <p:defaultCommand target="btnSavePackage"/>
                             </f:facet>

@@ -1,0 +1,551 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:cc="http://xmlns.jcp.org/jsf/composite"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:ez="http://xmlns.jcp.org/jsf/composite/ezcomp">
+
+    <!-- My Authenticator App: self-service link / relink of the logged user's
+         authenticator app (TwoFactorAuthController). Used by /user_authenticator.xhtml -->
+    <cc:interface>
+    </cc:interface>
+
+    <cc:implementation>
+        <style>
+            .auth-wrap {
+                max-width: 56rem;
+                margin: 1.5rem auto;
+                padding: 0 1rem;
+            }
+            .auth-card {
+                background: var(--surface-card, #fff);
+                color: var(--text-color, #212529);
+                border-radius: 16px;
+                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08), 0 2px 6px rgba(0, 0, 0, 0.05);
+                overflow: hidden;
+            }
+            .auth-hero {
+                display: flex;
+                align-items: center;
+                gap: 1rem;
+                flex-wrap: wrap;
+                padding: 1.5rem 1.75rem;
+                color: #fff;
+                background: linear-gradient(135deg, var(--primary-color, #3b82f6) 0%, #6366f1 100%);
+            }
+            .auth-hero-icon {
+                width: 3.5rem;
+                height: 3.5rem;
+                border-radius: 14px;
+                background: rgba(255, 255, 255, 0.18);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 1.6rem;
+                flex: 0 0 auto;
+            }
+            .auth-hero-title {
+                font-size: 1.35rem;
+                font-weight: 700;
+                line-height: 1.2;
+            }
+            .auth-hero-sub {
+                opacity: 0.85;
+                font-size: 0.9rem;
+            }
+            .auth-pill {
+                margin-left: auto;
+                display: inline-flex;
+                align-items: center;
+                gap: 0.4rem;
+                padding: 0.35rem 0.85rem;
+                border-radius: 999px;
+                font-size: 0.85rem;
+                font-weight: 600;
+                background: rgba(255, 255, 255, 0.2);
+                color: #fff;
+                white-space: nowrap;
+            }
+            .auth-pill-dot {
+                width: 0.55rem;
+                height: 0.55rem;
+                border-radius: 50%;
+                background: #fbbf24;
+            }
+            .auth-pill.linked .auth-pill-dot {
+                background: #4ade80;
+            }
+            .auth-body {
+                padding: 1.75rem;
+            }
+            .auth-info {
+                display: flex;
+                gap: 0.85rem;
+                align-items: flex-start;
+                padding: 1rem 1.1rem;
+                border-radius: 12px;
+                background: var(--surface-ground, #f5f7fb);
+                margin-bottom: 1.25rem;
+            }
+            .auth-info i {
+                font-size: 1.25rem;
+                color: var(--primary-color, #3b82f6);
+                margin-top: 0.1rem;
+            }
+            .auth-meta {
+                color: var(--text-color-secondary, #6c757d);
+                font-size: 0.875rem;
+            }
+            .auth-steps {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+                gap: 0.75rem;
+                margin-bottom: 1.5rem;
+            }
+            .auth-step {
+                display: flex;
+                gap: 0.75rem;
+                align-items: flex-start;
+                padding: 0.9rem;
+                border-radius: 12px;
+                border: 1px solid var(--surface-border, #e5e7eb);
+            }
+            .auth-step-num {
+                flex: 0 0 2rem;
+                height: 2rem;
+                border-radius: 10px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-weight: 700;
+                color: #fff;
+                background: linear-gradient(135deg, var(--primary-color, #3b82f6) 0%, #6366f1 100%);
+            }
+            .auth-step-title {
+                font-weight: 600;
+                margin-bottom: 0.15rem;
+            }
+            .auth-step-text {
+                font-size: 0.85rem;
+                color: var(--text-color-secondary, #6c757d);
+            }
+            .auth-qr-card {
+                display: inline-block;
+                padding: 0.9rem;
+                border-radius: 16px;
+                background: #fff;
+                box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+            }
+            .auth-secret-box {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 0.5rem;
+                margin-top: 0.9rem;
+                padding: 0.55rem 0.75rem;
+                border-radius: 10px;
+                background: var(--surface-ground, #f5f7fb);
+            }
+            .auth-secret {
+                font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+                font-size: 0.95rem;
+                letter-spacing: 0.06em;
+                word-break: break-all;
+            }
+            .auth-label {
+                display: block;
+                font-weight: 600;
+                margin-bottom: 0.4rem;
+            }
+            .auth-actions .ui-button {
+                border-radius: 10px;
+            }
+            /* Code entry column: label, boxes, hint and buttons all centred */
+            .auth-code-col {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                text-align: center;
+            }
+            .auth-code-col .auth-label {
+                width: 100%;
+                text-align: center;
+            }
+            .auth-code-col .auth-actions {
+                display: flex;
+                justify-content: center;
+                width: 100%;
+            }
+            /* Forced setup banner */
+            .auth-forced {
+                position: relative;
+                display: flex;
+                align-items: center;
+                gap: 1rem;
+                padding: 1rem 1.1rem 1rem 1.35rem;
+                margin-bottom: 1.25rem;
+                border-radius: 14px;
+                overflow: hidden;
+                color: #7c2d12;
+                background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%);
+                border: 1px solid #fed7aa;
+                box-shadow: 0 6px 18px rgba(234, 88, 12, 0.10);
+            }
+            .auth-forced::before {
+                content: "";
+                position: absolute;
+                left: 0;
+                top: 0;
+                bottom: 0;
+                width: 5px;
+                background: linear-gradient(180deg, #f97316 0%, #ea580c 100%);
+            }
+            .auth-forced-icon {
+                flex: 0 0 2.9rem;
+                height: 2.9rem;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 1.25rem;
+                color: #fff;
+                background: linear-gradient(135deg, #fb923c 0%, #ea580c 100%);
+                box-shadow: 0 0 0 5px rgba(249, 115, 22, 0.15);
+            }
+            .auth-forced-text {
+                flex: 1 1 auto;
+                min-width: 0;
+            }
+            .auth-forced-title {
+                display: flex;
+                align-items: center;
+                flex-wrap: wrap;
+                gap: 0.5rem;
+                font-size: 1rem;
+                font-weight: 700;
+                margin-bottom: 0.2rem;
+            }
+            .auth-forced-tag {
+                padding: 0.1rem 0.55rem;
+                border-radius: 999px;
+                font-size: 0.7rem;
+                font-weight: 700;
+                letter-spacing: 0.04em;
+                text-transform: uppercase;
+                color: #fff;
+                background: #ea580c;
+            }
+            .auth-forced-sub {
+                display: block;
+                font-size: 0.875rem;
+                line-height: 1.45;
+                color: #9a3412;
+            }
+            .auth-forced-logout.ui-button {
+                flex: 0 0 auto;
+                border-radius: 10px;
+                background: #fff;
+            }
+            @media (max-width: 576px) {
+                .auth-forced {
+                    flex-wrap: wrap;
+                }
+                .auth-forced-logout.ui-button {
+                    width: 100%;
+                }
+            }
+            /* Status panel: everything centred, accent colour by state */
+            .auth-status {
+                --auth-accent: #d97706;
+                --auth-soft: #fffbeb;
+                --auth-line: #fde68a;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+                gap: 0.6rem;
+                padding: 1.75rem 1.25rem 1.5rem 1.25rem;
+                margin-bottom: 1.25rem;
+                border-radius: 16px;
+                border: 1px solid var(--surface-border, #e5e7eb);
+                background: var(--surface-card, #fff);
+            }
+            .auth-status.linked {
+                --auth-accent: #16a34a;
+                --auth-soft: #f0fdf4;
+                --auth-line: #bbf7d0;
+            }
+            .auth-status-icon {
+                width: 4.2rem;
+                height: 4.2rem;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 1.8rem;
+                color: #fff;
+                background: var(--auth-accent);
+                box-shadow: 0 0 0 8px var(--auth-soft), 0 10px 22px rgba(0, 0, 0, 0.12);
+                margin-bottom: 0.4rem;
+            }
+            .auth-status-title {
+                font-size: 1.2rem;
+                font-weight: 700;
+            }
+            .auth-status-date {
+                font-size: 0.875rem;
+                color: var(--text-color-secondary, #6c757d);
+            }
+            .auth-status-chip {
+                display: inline-block;
+                max-width: 30rem;
+                padding: 0.45rem 0.9rem;
+                border-radius: 999px;
+                font-size: 0.85rem;
+                color: var(--text-color-secondary, #475569);
+                background: var(--surface-ground, #f5f7fb);
+            }
+            .auth-status-chip.required {
+                font-weight: 600;
+                color: var(--auth-accent);
+                background: var(--auth-soft);
+                border: 1px solid var(--auth-line);
+            }
+            .auth-status-action {
+                margin: 0.6rem 0 0.2rem 0;
+            }
+            .auth-status-action .ui-button {
+                padding: 0.35rem 1.4rem;
+                border-radius: 12px;
+                font-weight: 600;
+            }
+            .auth-reset-help {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 0.5rem;
+                width: 100%;
+                max-width: 30rem;
+                margin-top: 0.6rem;
+                padding: 0.9rem 1rem;
+                text-align: center;
+                border-radius: 12px;
+                background: #eff6ff;
+                border: 1px solid #bfdbfe;
+            }
+            .auth-reset-help-icon {
+                flex: 0 0 2.2rem;
+                width: 2.2rem;
+                height: 2.2rem;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: #fff;
+                background: #2563eb;
+            }
+            .auth-reset-help-title {
+                font-weight: 600;
+                color: #1e3a8a;
+            }
+            .auth-reset-help-text {
+                font-size: 0.85rem;
+                color: #1e40af;
+            }
+        </style>
+
+        <h:form id="frmMyAuthenticator">
+            <div class="auth-wrap">
+                <div class="auth-card">
+
+                    <!-- Hero: title and current status -->
+                    <div class="auth-hero">
+                        <div class="auth-hero-icon"><i class="fa fa-shield-alt"></i></div>
+                        <div>
+                            <div class="auth-hero-title">
+                                <h:outputText value="My Authenticator App" />
+                            </div>
+                            <div class="auth-hero-sub">
+                                <h:outputText value="Two-step verification keeps your account safe even if your password is stolen." />
+                            </div>
+                        </div>
+                        <h:panelGroup rendered="#{twoFactorAuthController.twoFactorEnabled}"
+                                      class="auth-pill #{twoFactorAuthController.loggedUserEnrolled ? 'linked' : ''}">
+                            <span class="auth-pill-dot"></span>
+                            <h:outputText value="#{twoFactorAuthController.loggedUserEnrolled ? 'Linked' : 'Not set up'}" />
+                        </h:panelGroup>
+                    </div>
+
+                    <div class="auth-body">
+                        <!-- Messages live inside the form so ajax updates of @form show them -->
+                        <ez:modern_messages id="msgAuthenticator" />
+
+                        <!-- Forced setup: the templates show only this screen until an app is linked -->
+                        <h:panelGroup rendered="#{twoFactorAuthController.setupRequiredNow}" layout="block" class="auth-forced">
+                            <div class="auth-forced-icon"><i class="fa fa-user-shield"></i></div>
+                            <div class="auth-forced-text">
+                                <div class="auth-forced-title">
+                                    <h:outputText value="Two-step verification setup required" />
+                                    <span class="auth-forced-tag">Required</span>
+                                </div>
+                                <h:outputText value="Your administrator requires an authenticator app for your account. Set it up below to continue using the system."
+                                              class="auth-forced-sub" />
+                            </div>
+                            <p:commandButton value="Log Out"
+                                             icon="pi pi-sign-out"
+                                             class="auth-forced-logout ui-button-secondary ui-button-outlined"
+                                             ajax="false"
+                                             immediate="true"
+                                             title="Log out without setting up"
+                                             action="#{sessionController.logout}" />
+                        </h:panelGroup>
+
+                        <!-- Feature switched off -->
+                        <h:panelGroup rendered="#{not twoFactorAuthController.twoFactorEnabled}" layout="block" class="auth-info mb-0">
+                            <i class="fa fa-info-circle"></i>
+                            <h:outputText value="Authenticator app login is not enabled for this system." />
+                        </h:panelGroup>
+
+                        <!-- Current status -->
+                        <h:panelGroup rendered="#{twoFactorAuthController.twoFactorEnabled and not twoFactorAuthController.selfSetupInProgress}" layout="block"
+                                      class="auth-status #{twoFactorAuthController.loggedUserEnrolled ? 'linked' : 'unlinked'}">
+                            <div class="auth-status-icon">
+                                <h:panelGroup rendered="#{twoFactorAuthController.loggedUserEnrolled}"><i class="fa fa-check"></i></h:panelGroup>
+                                <h:panelGroup rendered="#{not twoFactorAuthController.loggedUserEnrolled}"><i class="fa fa-mobile-alt"></i></h:panelGroup>
+                            </div>
+                            <h:outputText rendered="#{twoFactorAuthController.loggedUserEnrolled}" value="Your authenticator app is linked" class="auth-status-title" />
+                            <h:outputText rendered="#{not twoFactorAuthController.loggedUserEnrolled}" value="No authenticator app linked yet" class="auth-status-title" />
+
+                            <h:panelGroup rendered="#{twoFactorAuthController.loggedUserEnrolled and sessionController.loggedUser.twoFactorEnrolledAt ne null}" class="auth-status-date">
+                                <i class="fa fa-calendar-check"></i>
+                                <h:outputText value=" Linked on " />
+                                <h:outputText value="#{sessionController.loggedUser.twoFactorEnrolledAt}">
+                                    <f:convertDateTime pattern="dd MMM yyyy, HH:mm" />
+                                </h:outputText>
+                            </h:panelGroup>
+
+                            <h:panelGroup rendered="#{twoFactorAuthController.loggedUserRequired}" class="auth-status-chip required">
+                                <i class="fa fa-lock"></i>
+                                <h:outputText value=" Your account requires a code from an authenticator app at every login." />
+                            </h:panelGroup>
+                            <h:panelGroup rendered="#{not twoFactorAuthController.loggedUserRequired and not twoFactorAuthController.loggedUserEnrolled}" class="auth-status-chip">
+                                <i class="fa fa-info-circle"></i>
+                                <h:outputText value=" Not required for your account. After you link an app, a 6-digit code will be asked at every login." />
+                            </h:panelGroup>
+                            <h:panelGroup rendered="#{not twoFactorAuthController.loggedUserRequired and twoFactorAuthController.loggedUserEnrolled}" class="auth-status-chip">
+                                <i class="fa fa-info-circle"></i>
+                                <h:outputText value=" A 6-digit code from your authenticator app is asked at every login." />
+                            </h:panelGroup>
+
+                            <h:panelGroup rendered="#{not twoFactorAuthController.loggedUserEnrolled}" layout="block" class="auth-status-action">
+                                <p:commandButton value="Set Up Authenticator App"
+                                                 icon="fa fa-qrcode"
+                                                 class="ui-button-success"
+                                                 title="Show a QR code to link your authenticator app"
+                                                 process="@this"
+                                                 update="@form"
+                                                 action="#{twoFactorAuthController.startSelfSetup()}" />
+                            </h:panelGroup>
+                            <h:panelGroup rendered="#{twoFactorAuthController.loggedUserEnrolled}" layout="block" class="auth-reset-help">
+                                <div class="auth-reset-help-icon"><i class="fa fa-user-shield"></i></div>
+                                <div class="auth-reset-help-body">
+                                    <div class="auth-reset-help-title">Changed or lost your phone?</div>
+                                    <div class="auth-reset-help-text">
+                                        Contact your system administrator to reset your authenticator.
+                                    </div>
+                                </div>
+                            </h:panelGroup>
+                            <h:panelGroup rendered="#{not twoFactorAuthController.loggedUserEnrolled}" class="auth-meta">
+                                <h:outputText value="Takes about a minute: install Google or Microsoft Authenticator, scan the QR code, enter the code." />
+                            </h:panelGroup>
+                        </h:panelGroup>
+
+                        <!-- Setup -->
+                        <h:panelGroup rendered="#{twoFactorAuthController.twoFactorEnabled and twoFactorAuthController.selfSetupInProgress}" layout="block">
+                            <div class="auth-steps">
+                                <div class="auth-step">
+                                    <div class="auth-step-num">1</div>
+                                    <div>
+                                        <div class="auth-step-title">Install an app</div>
+                                        <div class="auth-step-text">Google Authenticator, Microsoft Authenticator or similar.</div>
+                                    </div>
+                                </div>
+                                <div class="auth-step">
+                                    <div class="auth-step-num">2</div>
+                                    <div>
+                                        <div class="auth-step-title">Scan the QR code</div>
+                                        <div class="auth-step-text">In the app, tap <b>+</b> and choose scan a QR code.</div>
+                                    </div>
+                                </div>
+                                <div class="auth-step">
+                                    <div class="auth-step-num">3</div>
+                                    <div>
+                                        <div class="auth-step-title">Enter the code</div>
+                                        <div class="auth-step-text">Type the 6-digit code from the app and confirm.</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row g-4 align-items-center">
+                                <div class="col-md-5 text-center">
+                                    <div class="auth-qr-card">
+                                        <h:outputText value="#{twoFactorAuthController.selfSetupQrSvg}" escape="false" />
+                                    </div>
+                                    <div class="auth-meta mt-3">
+                                        <h:outputText value="Can't scan? Enter this key manually" />
+                                    </div>
+                                    <div class="auth-secret-box">
+                                        <span id="authSecretText" class="auth-secret">
+                                            <h:outputText value="#{twoFactorAuthController.selfSetupSecretForDisplay}" />
+                                        </span>
+                                        <p:commandButton type="button"
+                                                         icon="fa fa-copy"
+                                                         class="ui-button-secondary ui-button-flat rounded-button"
+                                                         title="Copy key"
+                                                         onclick="navigator.clipboard &amp;&amp; navigator.clipboard.writeText(document.getElementById('authSecretText').innerText.replace(/\s/g, ''));" />
+                                    </div>
+                                    <div class="auth-meta mt-2">
+                                        <i class="fa fa-exclamation-circle me-1"></i>
+                                        <h:outputText value="Scanned an earlier QR code for this account? Delete that entry from your app and scan this one." />
+                                    </div>
+                                </div>
+
+                                <div class="col-md-7 auth-code-col">
+                                    <h:outputText value="Authenticator Code" class="auth-label" />
+                                    <ez:otp_input id="txtSelfCode" value="#{twoFactorAuthController.selfSetupCode}" />
+                                    <div class="auth-meta mt-2">
+                                        <i class="fa fa-clock me-1"></i>
+                                        <h:outputText value="Codes change every 30 seconds. Make sure your phone's time is set automatically." />
+                                    </div>
+
+                                    <div class="auth-actions d-flex justify-content-center gap-2 mt-4">
+                                        <p:commandButton id="btnConfirmSelfCode"
+                                                         value="Confirm &amp; Link"
+                                                         icon="fa fa-check"
+                                                         class="ui-button-success"
+                                                         title="Verify the code and link this phone"
+                                                         process="@this txtSelfCode"
+                                                         update="@form"
+                                                         action="#{twoFactorAuthController.confirmSelfSetup()}" />
+                                        <p:commandButton value="Cancel"
+                                                         class="ui-button-danger ui-button-outlined"
+                                                         icon="fa fa-times"
+                                                         title="Cancel without changing your linked app"
+                                                         process="@this"
+                                                         update="@form"
+                                                         action="#{twoFactorAuthController.cancelSelfSetup()}" />
+                                    </div>
+                                    <p:defaultCommand target="btnConfirmSelfCode" />
+                                </div>
+                            </div>
+                        </h:panelGroup>
+                    </div>
+                </div>
+            </div>
+        </h:form>
+    
+    </cc:implementation>
+</html>

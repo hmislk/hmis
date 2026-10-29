@@ -4,6 +4,7 @@
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:p="http://primefaces.org/ui"
       xmlns:ez="http://xmlns.jcp.org/jsf/composite/ezcomp"
+      xmlns:my_authenticator="http://xmlns.jcp.org/jsf/composite/ezcomp/pages/admin"
       xmlns:change_password="http://xmlns.jcp.org/jsf/composite/ezcomp/pages/admin"
       xmlns:f="http://xmlns.jcp.org/jsf/core">
     <h:head >
@@ -149,7 +150,7 @@
 
                     <div class="companyWaterMark d-flex align-items-center">
                         <div class="mx-2">
-                            <img src="../../resources/image/CompanyLogo/companyLogo.png" width="50px"/>
+                            <h:graphicImage library="image" name="CompanyLogo/companyLogo.png" width="50" alt="CareCode logo"/>
                         </div>
                         <div>
                             <h6><h:outputLabel class="text-left" value="Powered by"/></h6>
@@ -163,14 +164,21 @@
                         style=" padding: 0 !important;
                         margin: 0 !important;
                         border: none !important;">
-                        <ez:menu />
+                        <!-- No menu during forced 2FA setup; the setup screen has its own Log Out -->
+                        <h:panelGroup rendered="#{not twoFactorAuthController.setupRequiredNow}" >
+                            <ez:menu />
+                        </h:panelGroup>
                         <ez:user_icon_bar rendered="false"/>
-                        <h:panelGroup rendered="#{sessionController.passwordRequirementsFulfilled}" >
+                        <h:panelGroup rendered="#{sessionController.passwordRequirementsFulfilled and not twoFactorAuthController.setupRequiredNow}" >
                             <ui:insert name="content" class="m-0 p-0 borderless" >
                             </ui:insert>
                         </h:panelGroup>
                         <h:panelGroup rendered="#{not sessionController.passwordRequirementsFulfilled}" >
                             <change_password:change_password/>
+                        </h:panelGroup>
+                        <!-- 2FA is required but no app is linked: nothing else opens until setup is done -->
+                        <h:panelGroup rendered="#{sessionController.passwordRequirementsFulfilled and twoFactorAuthController.setupRequiredNow}" >
+                            <my_authenticator:my_authenticator/>
                         </h:panelGroup>
 
                     </p:panel>

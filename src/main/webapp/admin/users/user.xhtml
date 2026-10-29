@@ -10,150 +10,472 @@
 
         <ui:composition template="/admin/users/user_list.xhtml">
 
-            <ui:define name="users"> 
+            <ui:define name="users">
                 <f:view>
-                    <p:panel >
-                        <f:facet name="header" >
-                            <i class="fa fa-user-cog"></i>
-                            <h:outputLabel class="mx-2 mt-2" value="Manage User"/>
-                            <p:commandButton 
-                                ajax="false" value="Save" style="float: right;" 
-                                action="#{webUserController.saveUser()}" 
-                                icon="fa fa-save"
-                                class="ui-button-warning">
-                            </p:commandButton>
+                    <style>
+                        .user-form-row {
+                            display: flex;
+                            align-items: center;
+                            margin-bottom: 0.6rem;
+                        }
+                        .user-form-row > .user-form-label {
+                            flex: 0 0 11rem;
+                            font-weight: 600;
+                        }
+                        .user-form-row > .user-form-field {
+                            flex: 1 1 auto;
+                            min-width: 0;
+                        }
+                        .user-form-field .ui-selectonemenu,
+                        .user-form-field .ui-autocomplete,
+                        .user-form-field .ui-inputfield {
+                            width: 100%;
+                        }
+                        /* Authenticator status and lock cards */
+                        .tfa-card {
+                            display: flex;
+                            align-items: center;
+                            gap: 0.85rem;
+                            padding: 0.8rem 1rem;
+                            margin-bottom: 0.6rem;
+                            border-radius: 12px;
+                            border: 1px solid var(--tfa-border);
+                            background: var(--tfa-bg);
+                        }
+                        .tfa-card.linked { --tfa-accent: #16a34a; --tfa-bg: #f0fdf4; --tfa-border: #bbf7d0; }
+                        .tfa-card.pending { --tfa-accent: #d97706; --tfa-bg: #fffbeb; --tfa-border: #fde68a; }
+                        .tfa-card.off { --tfa-accent: #64748b; --tfa-bg: #f8fafc; --tfa-border: #e2e8f0; }
+                        .tfa-card.locked { --tfa-accent: #dc2626; --tfa-bg: #fef2f2; --tfa-border: #fecaca; }
+                        .tfa-card-icon {
+                            flex: 0 0 2.6rem;
+                            height: 2.6rem;
+                            border-radius: 50%;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            font-size: 1.1rem;
+                            color: #fff;
+                            background: var(--tfa-accent);
+                        }
+                        .tfa-card-text {
+                            flex: 1 1 auto;
+                            min-width: 0;
+                        }
+                        .tfa-card-title {
+                            display: block;
+                            font-weight: 700;
+                            color: var(--tfa-accent);
+                        }
+                        .tfa-card-sub {
+                            display: block;
+                            font-size: 0.85rem;
+                            color: #475569;
+                        }
+                        .tfa-card-note {
+                            flex: 0 0 auto;
+                            display: inline-flex;
+                            align-items: center;
+                            gap: 0.4rem;
+                            padding: 0.35rem 0.8rem;
+                            border-radius: 999px;
+                            font-size: 0.8rem;
+                            font-weight: 600;
+                            white-space: nowrap;
+                            color: #b91c1c;
+                            background: #fff;
+                            border: 1px dashed #fca5a5;
+                            cursor: help;
+                        }
+                        .tfa-section-title {
+                            display: block;
+                            font-weight: 600;
+                            margin: 0.4rem 0 0.5rem 0;
+                        }
+                        /* !important: the theme's "body .ui-datatable ... td" padding rule is more specific */
+                        .auth-log-table.ui-datatable thead th,
+                        .auth-log-table.ui-datatable tbody td {
+                            padding: 0.3rem 0.6rem !important;
+                            line-height: 1.3;
+                        }
+                        .auth-log-table .auth-log-failed td {
+                            color: #b91c1c;
+                        }
+                    </style>
+
+                    <p:panel>
+                        <f:facet name="header">
+                            <div class="d-flex align-items-center justify-content-between w-100">
+                                <div class="d-flex align-items-center">
+                                    <i class="fa fa-user-cog"></i>
+                                    <h:outputText class="mx-2" value="Manage User" />
+                                    <h:outputText class="mx-1 text-muted" style="font-weight: normal;"
+                                                  value="(#{webUserController.current.name})"
+                                                  rendered="#{not empty webUserController.current.name}" />
+                                </div>
+                                <p:commandButton
+                                    ajax="false"
+                                    value="Save"
+                                    action="#{webUserController.saveUser()}"
+                                    icon="fa fa-save"
+                                    class="ui-button-success"
+                                    title="Save user details" />
+                            </div>
                         </f:facet>
 
-                        <h:panelGrid columns="3">
+                        <div class="row">
+                            <!-- Left column: account and organisation -->
+                            <div class="col-lg-6">
+                                <p:fieldset legend="Account" class="mb-3">
+                                    <div class="user-form-row">
+                                        <p:outputLabel value="User Name" for="name" class="user-form-label" />
+                                        <div class="user-form-field">
+                                            <p:outputLabel id="name" value="#{webUserController.current.name}" class="form-control bg-light" />
+                                        </div>
+                                    </div>
 
-                            <p:outputLabel value="User Name " style="width: 100px;" for="name" class="mb-2" />
-                            <p:outputLabel value=":" style="width: 20px;" class="mb-2"/>
-                            <p:outputLabel  id="name" value="#{webUserController.current.name}" class="mb-2 form-control" style="width: 300px;"/>
+                                    <div class="user-form-row">
+                                        <p:outputLabel value="Staff" for="staff" class="user-form-label" />
+                                        <div class="user-form-field">
+                                            <p:autoComplete
+                                                forceSelection="true" id="staff"
+                                                value="#{webUserController.current.staff}"
+                                                completeMethod="#{staffController.completeStaff}"
+                                                var="mys"
+                                                class="w-100"
+                                                inputStyleClass="w-100"
+                                                placeholder="Search staff"
+                                                itemLabel="#{mys.person.nameWithTitle}"
+                                                itemValue="#{mys}" />
+                                        </div>
+                                    </div>
 
-                            <p:outputLabel value="Staff " style="width: 100px;" for="staff" />
-                            <p:outputLabel value=":" style="width: 20px;"/>
-                            <p:autoComplete  forceSelection="true" id="staff"
-                                             value="#{webUserController.current.staff}" 
-                                             completeMethod="#{staffController.completeStaff}" 
-                                             var="mys" class="w-100" inputStyleClass="w-100"
-                                             itemLabel="#{mys.person.nameWithTitle}" 
-                                             itemValue="#{mys}"
-                                             >
-                            </p:autoComplete>
+                                    <div class="user-form-row">
+                                        <p:outputLabel value="Code" for="code" class="user-form-label" />
+                                        <div class="user-form-field">
+                                            <p:inputText id="code" value="#{webUserController.current.code}" title="Code" />
+                                        </div>
+                                    </div>
 
-                            <!-- Institution Row -->
-                            <p:outputLabel value="Institution" style="width: 100px;" for="institution" />
-                            <p:outputLabel value=":" style="width: 20px;" />
-                            <p:selectOneMenu id="institution"
-                                             value="#{webUserController.current.institution}"
-                                             style="width: 300px;" filter="true">
-                                <f:selectItem itemLabel="Select Institution" />
-                                <f:selectItems value="#{institutionController.companies}" var="ins"
-                                               itemLabel="#{ins.name}" itemValue="#{ins}" />
-                                <p:ajax update="site departmentBlock" process="@this" />
-                            </p:selectOneMenu>
+                                    <div class="user-form-row">
+                                        <p:outputLabel value="User is Active" for="activated" class="user-form-label" />
+                                        <div class="user-form-field">
+                                            <p:selectBooleanCheckbox id="activated" value="#{webUserController.current.activated}" />
+                                        </div>
+                                    </div>
+                                </p:fieldset>
 
-                            <!-- Site Row -->
-                            <p:outputLabel value="Site" style="width: 100px;" for="site" />
-                            <p:outputLabel value=":" style="width: 20px;" />
-                            <p:selectOneMenu id="site"
-                                             value="#{webUserController.current.site}"
-                                             style="width: 300px;" filter="true">
-                                <f:selectItem itemLabel="Select Site" />
-                                <f:selectItems value="#{institutionController.sites}" var="s"
-                                               itemLabel="#{s.name}" itemValue="#{s}" />
-                                <p:ajax update="departmentBlock" process="@this" />
-                            </p:selectOneMenu>
+                                <p:fieldset legend="Organisation" class="mb-3">
+                                    <div class="user-form-row">
+                                        <p:outputLabel value="Institution" for="institution" class="user-form-label" />
+                                        <div class="user-form-field">
+                                            <p:selectOneMenu
+                                                id="institution"
+                                                value="#{webUserController.current.institution}"
+                                                filter="true"
+                                                filterMatchMode="contains">
+                                                <f:selectItem itemLabel="Select Institution" />
+                                                <f:selectItems
+                                                    value="#{institutionController.companies}"
+                                                    var="ins"
+                                                    itemLabel="#{ins.name}"
+                                                    itemValue="#{ins}" />
+                                                <p:ajax update="site departmentBlock" process="@this" />
+                                            </p:selectOneMenu>
+                                        </div>
+                                    </div>
 
-                            <!-- Department Row (Rendered Depending on Institution and Site) -->
-                            <p:outputLabel value="Department" style="width: 100px;" />
-                            <p:outputLabel value=":" style="width: 20px;" />
-                            <h:panelGroup id="departmentBlock">
+                                    <div class="user-form-row">
+                                        <p:outputLabel value="Site" for="site" class="user-form-label" />
+                                        <div class="user-form-field">
+                                            <p:selectOneMenu
+                                                id="site"
+                                                value="#{webUserController.current.site}"
+                                                filter="true"
+                                                filterMatchMode="contains">
+                                                <f:selectItem itemLabel="Select Site" />
+                                                <f:selectItems
+                                                    value="#{institutionController.sites}" var="s"
+                                                    itemLabel="#{s.name}" itemValue="#{s}" />
+                                                <p:ajax update="departmentBlock" process="@this" />
+                                            </p:selectOneMenu>
+                                        </div>
+                                    </div>
 
-                                <p:selectOneMenu rendered="#{webUserController.current.institution eq null and webUserController.current.site eq null}"
-                                                 value="#{webUserController.current.department}"
-                                                 style="width: 300px;" filter="true" filterMatchMode="contains">
-                                    <f:selectItem itemLabel="Select Department" />
-                                    <f:selectItems value="#{departmentController.getDepartmentsOfInstitutionAndSite()}" var="d"
-                                                   itemLabel="#{d.name}" itemValue="#{d}" />
-                                </p:selectOneMenu>
+                                    <!-- Department list depends on the selected Institution and Site -->
+                                    <div class="user-form-row">
+                                        <p:outputLabel value="Department" class="user-form-label" />
+                                        <h:panelGroup id="departmentBlock" layout="block" class="user-form-field">
 
-                                <p:selectOneMenu rendered="#{webUserController.current.institution eq null and webUserController.current.site ne null}"
-                                                 value="#{webUserController.current.department}"
-                                                 style="width: 300px;" filter="true" filterMatchMode="contains">
-                                    <f:selectItem itemLabel="Select Department" />
-                                    <f:selectItems value="#{departmentController.getDepartmentsOfInstitutionAndSite(webUserController.current.site)}" var="d"
-                                                   itemLabel="#{d.name}" itemValue="#{d}" />
-                                </p:selectOneMenu>
+                                            <p:selectOneMenu
+                                                rendered="#{webUserController.current.institution eq null and webUserController.current.site eq null}"
+                                                value="#{webUserController.current.department}"
+                                                filter="true"
+                                                filterMatchMode="contains">
+                                                <f:selectItem itemLabel="Select Department" />
+                                                <f:selectItems
+                                                    value="#{departmentController.getDepartmentsOfInstitutionAndSite()}" var="d"
+                                                    itemLabel="#{d.name}"
+                                                    itemValue="#{d}" />
+                                            </p:selectOneMenu>
 
-                                <p:selectOneMenu rendered="#{webUserController.current.institution ne null and webUserController.current.site eq null}"
-                                                 value="#{webUserController.current.department}"
-                                                 style="width: 300px;" filter="true" filterMatchMode="contains">
-                                    <f:selectItem itemLabel="Select Department" />
-                                    <f:selectItems value="#{departmentController.getDepartmentsOfInstitutionAndSiteForInstitution(webUserController.current.institution)}" var="d"
-                                                   itemLabel="#{d.name}" itemValue="#{d}" />
-                                </p:selectOneMenu>
+                                            <p:selectOneMenu
+                                                rendered="#{webUserController.current.institution eq null and webUserController.current.site ne null}"
+                                                value="#{webUserController.current.department}"
+                                                filter="true"
+                                                filterMatchMode="contains">
+                                                <f:selectItem itemLabel="Select Department" />
+                                                <f:selectItems
+                                                    value="#{departmentController.getDepartmentsOfInstitutionAndSite(webUserController.current.site)}" var="d"
+                                                    itemLabel="#{d.name}"
+                                                    itemValue="#{d}" />
+                                            </p:selectOneMenu>
 
-                                <p:selectOneMenu rendered="#{webUserController.current.institution ne null and webUserController.current.site ne null}"
-                                                 value="#{webUserController.current.department}"
-                                                 style="width: 300px;" filter="true" filterMatchMode="contains">
-                                    <f:selectItem itemLabel="Select Department" />
-                                    <f:selectItems value="#{departmentController.getDepartmentsOfInstitutionAndSite(webUserController.current.institution, webUserController.current.site)}" var="d"
-                                                   itemLabel="#{d.name}" itemValue="#{d}" />
-                                </p:selectOneMenu>
+                                            <p:selectOneMenu
+                                                rendered="#{webUserController.current.institution ne null and webUserController.current.site eq null}"
+                                                value="#{webUserController.current.department}"
+                                                filter="true"
+                                                filterMatchMode="contains">
+                                                <f:selectItem itemLabel="Select Department" />
+                                                <f:selectItems
+                                                    value="#{departmentController.getDepartmentsOfInstitutionAndSiteForInstitution(webUserController.current.institution)}" var="d"
+                                                    itemLabel="#{d.name}"
+                                                    itemValue="#{d}" />
+                                            </p:selectOneMenu>
 
+                                            <p:selectOneMenu
+                                                rendered="#{webUserController.current.institution ne null and webUserController.current.site ne null}"
+                                                value="#{webUserController.current.department}"
+                                                filter="true"
+                                                filterMatchMode="contains">
+                                                <f:selectItem itemLabel="Select Department" />
+                                                <f:selectItems
+                                                    value="#{departmentController.getDepartmentsOfInstitutionAndSite(webUserController.current.institution, webUserController.current.site)}" var="d"
+                                                    itemLabel="#{d.name}"
+                                                    itemValue="#{d}" />
+                                            </p:selectOneMenu>
+
+                                        </h:panelGroup>
+                                    </div>
+
+                                    <h:panelGroup layout="block" class="user-form-row" rendered="#{!webUserController.createOnlyUserForExsistingUser}">
+                                        <p:outputLabel value="Login Page" for="loginPage" class="user-form-label" />
+                                        <div class="user-form-field">
+                                            <p:selectOneMenu
+                                                id="loginPage"
+                                                filterMatchMode="contains"
+                                                value="#{webUserController.current.loginPage}">
+                                                <f:selectItem itemLabel="-- Select Login Page --" itemValue="" />
+                                                <f:selectItems
+                                                    value="#{enumController.loginPages}"
+                                                    var="lp"
+                                                    itemLabel="#{lp.label}"
+                                                    itemValue="#{lp}" />
+                                            </p:selectOneMenu>
+                                        </div>
+                                    </h:panelGroup>
+                                </p:fieldset>
+                            </div>
+
+                            <!-- Right column: contact and security -->
+                            <div class="col-lg-6">
+                                <p:fieldset legend="Contact" class="mb-3">
+                                    <div class="user-form-row">
+                                        <p:outputLabel value="Email" for="email" class="user-form-label" />
+                                        <div class="user-form-field">
+                                            <p:inputText id="email" value="#{webUserController.current.email}" title="Email" />
+                                        </div>
+                                    </div>
+
+                                    <div class="user-form-row">
+                                        <p:outputLabel value="Mobile" for="telNo" class="user-form-label" />
+                                        <div class="user-form-field">
+                                            <p:inputText id="telNo" value="#{webUserController.current.telNo}" title="Mobile number" />
+                                        </div>
+                                    </div>
+                                </p:fieldset>
+
+                                <p:fieldset legend="Login Security" class="mb-3">
+                                    <div class="user-form-row">
+                                        <p:outputLabel value="Restrict Login By IP" for="restrictLoginByIp" class="user-form-label" />
+                                        <div class="user-form-field">
+                                            <p:selectBooleanCheckbox id="restrictLoginByIp" value="#{webUserController.current.restrictLoginByIp}">
+                                                <p:ajax update="allowedIpAddressesBlock" process="@this" />
+                                            </p:selectBooleanCheckbox>
+                                        </div>
+                                    </div>
+
+                                    <!-- Wrapper is always rendered so the ajax update can show/hide the label and input together -->
+                                    <h:panelGroup id="allowedIpAddressesBlock" layout="block">
+                                        <h:panelGroup layout="block" class="user-form-row" rendered="#{webUserController.current.restrictLoginByIp}">
+                                            <p:outputLabel value="Allowed IP Addresses" for="allowedIpAddresses" class="user-form-label" />
+                                            <div class="user-form-field">
+                                                <p:inputText
+                                                    id="allowedIpAddresses"
+                                                    value="#{webUserController.current.allowedIpAddresses}"
+                                                    placeholder="e.g. 192.168.1.10, 192.168.1.11"
+                                                    title="Comma-separated IP addresses" />
+                                            </div>
+                                        </h:panelGroup>
+                                    </h:panelGroup>
+
+                                    <h:panelGroup rendered="#{twoFactorAuthController.twoFactorEnabled}">
+                                        <hr class="my-2" />
+                                        <div class="user-form-row">
+                                            <p:outputLabel value="Require Authenticator App (2FA)" for="twoFactorRequired" class="user-form-label" />
+                                            <div class="user-form-field">
+                                                <p:selectBooleanCheckbox id="twoFactorRequired"
+                                                                         value="#{webUserController.current.twoFactorRequired}"
+                                                                         disabled="#{configOptionApplicationController.authenticatorAppTwoFactorLoginRequiredForAllUsers}" />
+                                                <h:outputText class="small text-muted mx-2"
+                                                              rendered="#{configOptionApplicationController.authenticatorAppTwoFactorLoginRequiredForAllUsers}"
+                                                              value="Required for all users by configuration" />
+                                            </div>
+                                        </div>
+
+                                        <h:outputText value="Authenticator Status" class="tfa-section-title" />
+                                        <h:panelGroup id="twoFactorStatusBlock" layout="block" class="tfa-status-area">
+                                            <!-- Linked -->
+                                            <h:panelGroup layout="block" class="tfa-card linked" rendered="#{webUserController.current.twoFactorEnrolled}">
+                                                <div class="tfa-card-icon"><i class="fa fa-shield-alt"></i></div>
+                                                <div class="tfa-card-text">
+                                                    <h:outputText value="Authenticator app linked" class="tfa-card-title" />
+                                                    <h:panelGroup class="tfa-card-sub">
+                                                        <h:outputText value="Linked on " rendered="#{webUserController.current.twoFactorEnrolledAt ne null}" />
+                                                        <h:outputText value="#{webUserController.current.twoFactorEnrolledAt}" rendered="#{webUserController.current.twoFactorEnrolledAt ne null}">
+                                                            <f:convertDateTime pattern="dd MMM yyyy, HH:mm" />
+                                                        </h:outputText>
+                                                        <h:outputText value=" · " rendered="#{webUserController.current.twoFactorEnrolledAt ne null}" />
+                                                        <h:outputText value="A 6-digit code is asked at every login." />
+                                                    </h:panelGroup>
+                                                </div>
+                                                <!-- No reset while locked: the lock must be cleared first -->
+                                                <h:panelGroup rendered="#{webUserController.current.twoFactorLocked}" class="tfa-card-note"
+                                                              title="Reset is available after the account is unlocked (see below)">
+                                                    <i class="fa fa-lock"></i>
+                                                    <h:outputText value="Unlock to reset" />
+                                                </h:panelGroup>
+                                                <p:commandButton value="Reset"
+                                                                 class="ui-button-danger ui-button-outlined"
+                                                                 icon="fa fa-sync"
+                                                                 rendered="#{not webUserController.current.twoFactorLocked}"
+                                                                 process="@this"
+                                                                 update="twoFactorStatusBlock"
+                                                                 title="Unlink the user's authenticator app (e.g. lost phone)"
+                                                                 action="#{twoFactorAuthController.resetAuthenticator(webUserController.current)}">
+                                                    <p:confirm header="Reset Authenticator"
+                                                               message="The user's linked authenticator app will stop working and they must set it up again at next login. Continue?"
+                                                               icon="pi pi-exclamation-triangle" />
+                                                </p:commandButton>
+                                            </h:panelGroup>
+                                            <!-- Required but not linked yet -->
+                                            <h:panelGroup layout="block" class="tfa-card pending"
+                                                          rendered="#{not webUserController.current.twoFactorEnrolled and twoFactorAuthController.isTwoFactorRequiredFor(webUserController.current)}">
+                                                <div class="tfa-card-icon"><i class="fa fa-hourglass-half"></i></div>
+                                                <div class="tfa-card-text">
+                                                    <h:outputText value="Setup pending" class="tfa-card-title" />
+                                                    <h:outputText value="After the next login the user must link an authenticator app before using the system." class="tfa-card-sub" />
+                                                </div>
+                                            </h:panelGroup>
+                                            <!-- Not required and not linked -->
+                                            <h:panelGroup layout="block" class="tfa-card off"
+                                                          rendered="#{not webUserController.current.twoFactorEnrolled and not twoFactorAuthController.isTwoFactorRequiredFor(webUserController.current)}">
+                                                <div class="tfa-card-icon"><i class="fa fa-mobile-alt"></i></div>
+                                                <div class="tfa-card-text">
+                                                    <h:outputText value="Not set up" class="tfa-card-title" />
+                                                    <h:outputText value="Not required for this user. Tick Require Authenticator App (2FA) and save to enforce it." class="tfa-card-sub" />
+                                                </div>
+                                            </h:panelGroup>
+                                        </h:panelGroup>
+                                    </h:panelGroup>
+
+                                    <!-- Shown even if 2FA is later switched off, so a locked user can still be unlocked -->
+                                    <h:panelGroup id="twoFactorLockBlock" layout="block">
+                                        <h:panelGroup layout="block" class="tfa-card locked" rendered="#{webUserController.current.twoFactorLocked}">
+                                            <div class="tfa-card-icon"><i class="fa fa-lock"></i></div>
+                                            <div class="tfa-card-text">
+                                                <h:outputText value="Account locked" class="tfa-card-title" />
+                                                <h:panelGroup class="tfa-card-sub">
+                                                    <h:outputText value="Too many invalid authenticator codes" />
+                                                    <h:outputText value=" · since " rendered="#{webUserController.current.twoFactorLockedAt ne null}" />
+                                                    <h:outputText value="#{webUserController.current.twoFactorLockedAt}" rendered="#{webUserController.current.twoFactorLockedAt ne null}">
+                                                        <f:convertDateTime pattern="dd MMM yyyy, HH:mm" />
+                                                    </h:outputText>
+                                                    <h:outputText value=". The user cannot log in until unlocked." />
+                                                </h:panelGroup>
+                                            </div>
+                                            <p:commandButton value="Unlock"
+                                                             class="ui-button-success"
+                                                             icon="fa fa-unlock"
+                                                             process="@this"
+                                                             update="twoFactorLockBlock @(.tfa-status-area)"
+                                                             title="Let the user log in and enter authenticator codes again"
+                                                             action="#{twoFactorAuthController.unlockAccount(webUserController.current)}">
+                                                <p:confirm header="Unlock Account"
+                                                           message="The user will be able to log in again. Continue?"
+                                                           icon="pi pi-exclamation-triangle" />
+                                            </p:commandButton>
+                                        </h:panelGroup>
+                                        <!-- Some invalid codes, not locked yet -->
+                                        <h:panelGroup layout="block" class="tfa-card pending"
+                                                      rendered="#{not webUserController.current.twoFactorLocked and webUserController.current.twoFactorFailedAttempts gt 0}">
+                                            <div class="tfa-card-icon"><i class="fa fa-exclamation"></i></div>
+                                            <div class="tfa-card-text">
+                                                <h:outputText value="#{webUserController.current.twoFactorFailedAttempts} invalid code(s) since the last successful login" class="tfa-card-title" />
+                                                <h:outputText value="The account locks after 5. A valid code resets the count." class="tfa-card-sub" />
+                                            </div>
+                                        </h:panelGroup>
+                                    </h:panelGroup>
+
+                                    <div class="mt-2">
+                                        <p:commandButton value="View Authentication Log"
+                                                         class="ui-button-secondary"
+                                                         icon="fa fa-history"
+                                                         process="@this"
+                                                         update="authLogDialogContent"
+                                                         title="Last 15 authenticator app (2FA) events of this user"
+                                                         action="#{twoFactorAuthController.loadAuthLogs(webUserController.current)}"
+                                                         oncomplete="PF('authLogDialog').show()" />
+                                    </div>
+                                </p:fieldset>
+                            </div>
+                        </div>
+
+                        <p:confirmDialog global="true" showEffect="fade" hideEffect="fade" rendered="#{twoFactorAuthController.twoFactorEnabled or webUserController.current.twoFactorLocked}">
+                            <p:commandButton value="Yes" type="button" styleClass="ui-confirmdialog-yes ui-button-danger" icon="fa fa-check" />
+                            <p:commandButton value="No" type="button" styleClass="ui-confirmdialog-no ui-button-secondary" icon="fa fa-times" />
+                        </p:confirmDialog>
+
+                        <p:dialog header="Authentication Log - Last 15 Events"
+                                  widgetVar="authLogDialog"
+                                  modal="true"
+                                  resizable="false"
+                                  responsive="true"
+                                  width="1100"
+                                  height="560"
+                                  fitViewport="true">
+                            <h:panelGroup id="authLogDialogContent" layout="block">
+                                <p:dataTable value="#{twoFactorAuthController.authLogs}"
+                                             var="log"
+                                             emptyMessage="No authentication events recorded for this user."
+                                             styleClass="w-100 auth-log-table"
+                                             rowStyleClass="#{log.eventStatus eq 'Failed' ? 'auth-log-failed' : null}">
+                                    <p:column headerText="Date &amp; Time" width="200">
+                                        <h:outputText value="#{log.eventDataTime}">
+                                            <f:convertDateTime pattern="dd MMM yyyy, HH:mm:ss" />
+                                        </h:outputText>
+                                    </p:column>
+                                    <p:column headerText="Event">
+                                        <h:outputText value="#{log.eventTrigger}" />
+                                    </p:column>
+                                    <p:column headerText="Done By" width="200">
+                                        <h:outputText value="#{twoFactorAuthController.userNameOf(log.webUserId)}" />
+                                    </p:column>
+                                    <p:column headerText="IP Address" width="180">
+                                        <h:outputText value="#{log.ipAddress}" />
+                                    </p:column>
+                                </p:dataTable>
                             </h:panelGroup>
-
-
-                            <p:outputLabel for="loginPage" value="Login Page" />
-                            <p:outputLabel value=":" style="width: 20px;"/>
-                            <p:selectOneMenu 
-                                id="loginPage"
-                                filterMatchMode="contains"
-                                styleClass="w-100 mt-1 form-control"
-                                value="#{webUserController.current.loginPage}"
-                                rendered="#{!webUserController.createOnlyUserForExsistingUser}">
-                                <f:selectItem itemLabel="-- Select Login Page --" itemValue="" />
-                                <f:selectItems value="#{enumController.loginPages}"
-                                               var="lp"
-                                               itemLabel="#{lp.label}"
-                                               itemValue="#{lp}" />
-                            </p:selectOneMenu>
-
-                            <p:outputLabel value="Email " style="width: 100px;" for="email" />
-                            <p:outputLabel value=":" style="width: 20px;"/>
-                            <p:inputText id="email" value="#{webUserController.current.email}" title="Email" style="width: 300px;"/>
-
-                            <p:outputLabel value="Mobile " style="width: 100px;" for="telNo" />
-                            <p:outputLabel value=":" style="width: 20px;"/>
-                            <p:inputText id="telNo" value="#{webUserController.current.telNo}" title="TelNo" style="width: 300px;"/>
-
-                            <p:outputLabel value="Code " style="width: 100px;" for="code" />
-                            <p:outputLabel value=":" style="width: 20px;"/>
-                            <p:inputText id="code" value="#{webUserController.current.code}" title="Code" style="width: 300px;" />
-
-                            <p:outputLabel value="User is Active" class=" m-1"></p:outputLabel>
-                            <p:outputLabel value=":" style="width: 20px;"/>
-                            <p:selectBooleanCheckbox value="#{webUserController.current.activated}" >
-                            </p:selectBooleanCheckbox>
-
-                            <p:outputLabel value="Restrict Login By IP" class=" m-1"></p:outputLabel>
-                            <p:outputLabel value=":" style="width: 20px;"/>
-                            <p:selectBooleanCheckbox value="#{webUserController.current.restrictLoginByIp}">
-                                <p:ajax update="allowedIpAddressesBlock" process="@this" />
-                            </p:selectBooleanCheckbox>
-
-                            <p:outputLabel value="Allowed IP Addresses " style="width: 100px;" for="allowedIpAddresses" rendered="#{webUserController.current.restrictLoginByIp}" />
-                            <p:outputLabel value=":" style="width: 20px;" rendered="#{webUserController.current.restrictLoginByIp}"/>
-                            <h:panelGroup id="allowedIpAddressesBlock">
-                                <p:inputText id="allowedIpAddresses"
-                                             value="#{webUserController.current.allowedIpAddresses}"
-                                             rendered="#{webUserController.current.restrictLoginByIp}"
-                                             title="Comma-separated IP addresses"
-                                             style="width: 300px;" />
-                            </h:panelGroup>
-
-                        </h:panelGrid>
+                        </p:dialog>
                     </p:panel>
                 </f:view>
             </ui:define>

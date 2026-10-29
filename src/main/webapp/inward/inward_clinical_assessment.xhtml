@@ -87,12 +87,13 @@
                                         <div class="row p-2">
                                             <div class="col-12">
                                                 <p:outputLabel value="Assessment Date/Time: " />
-                                                <p:inputText
+                                                <p:calendar
                                                     value="#{inpatientClinicalDataController.current.encounterDateTime}"
                                                     disabled="#{inpatientClinicalDataController.viewOnly}"
+                                                    pattern="dd/MM/yyyy HH:mm"
+                                                    navigator="true"
                                                     style="width:180px;">
-                                                    <f:convertDateTime pattern="dd/MM/yyyy HH:mm" />
-                                                </p:inputText>
+                                                </p:calendar>
                                             </div>
                                             <div class="col-12 mt-2">
                                                 <p:outputLabel value="Complaints &amp; History:" />
@@ -228,17 +229,15 @@
                                                             </p:autoComplete>
                                                         </div>
                                                         <div class="col-md-3">
-                                                            <!-- Disabled when current is unsaved (id==null) to prevent persisting
-                                                                 a ClinicalFindingValue against a transient PatientEncounter. -->
+                                                            <!-- addDx() saves a new assessment first, so this works before Save. -->
                                                             <p:commandButton
                                                                 ajax="true"
                                                                 id="btnAddDx"
                                                                 action="#{inpatientClinicalDataController.addDx}"
                                                                 process="acDx txtDx btnAddDx"
-                                                                update="acDx txtDx gpDx"
+                                                                update="acDx txtDx gpDx :growl"
                                                                 icon="pi pi-plus"
-                                                                disabled="#{inpatientClinicalDataController.current.id eq null}"
-                                                                title="Save the assessment first before adding diagnoses">
+                                                                title="Add diagnosis">
                                                             </p:commandButton>
                                                         </div>
                                                     </div>
@@ -266,7 +265,7 @@
                                                                 value=" (X)"
                                                                 process="clRemoveDx"
                                                                 action="#{inpatientClinicalDataController.removeEncounterDiagnoses()}"
-                                                                update=":#{p:resolveFirstComponentWithId('tblDx',view).clientId}"
+                                                                update=":#{p:resolveFirstComponentWithId('gpDx',view).clientId}"
                                                                 rendered="#{not inpatientClinicalDataController.viewOnly}">
                                                                 <f:setPropertyActionListener value="#{edx}" target="#{inpatientClinicalDataController.removingCfv}" />
                                                             </p:commandLink>
@@ -300,17 +299,14 @@
                                                             </p:autoComplete>
                                                         </div>
                                                         <div class="col-md-3">
-                                                            <!-- Disabled when current is unsaved (id==null) to prevent persisting
-                                                                 a ClinicalFindingValue against a transient PatientEncounter. -->
+                                                            <!-- addEncounterProcedure() saves a new assessment first, so this works before Save. -->
                                                             <p:commandButton
                                                                 ajax="true"
                                                                 id="btnSx"
                                                                 action="#{inpatientClinicalDataController.addEncounterProcedure}"
                                                                 process="acSx txtSx btnSx"
-                                                                update="acSx txtSx gpSx"
-                                                                icon="pi pi-plus"
-                                                                disabled="#{inpatientClinicalDataController.current.id eq null}"
-                                                                title="Save the assessment first before adding procedures">
+                                                                update="acSx txtSx gpSx :growl"
+                                                                icon="pi pi-plus">
                                                             </p:commandButton>
                                                             <p:tooltip value="Add a procedure" for="btnSx" />
                                                         </div>
@@ -341,7 +337,7 @@
                                                                 ajax="true"
                                                                 action="#{inpatientClinicalDataController.removeEncounterProcedure()}"
                                                                 process="btnRemoveSx"
-                                                                update="gpSx"
+                                                                update=":#{p:resolveFirstComponentWithId('gpSx',view).clientId}"
                                                                 rendered="#{not inpatientClinicalDataController.viewOnly}">
                                                                 <f:setPropertyActionListener value="#{sx}" target="#{inpatientClinicalDataController.removingCfv}" />
                                                                 <h:outputText value=" (X)" />

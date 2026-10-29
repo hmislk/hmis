@@ -84,6 +84,10 @@ public class PharmacyAdjustmentApiService implements Serializable {
 
         Stock stock = loadAndValidateStock(request.getStockId());
         Department department = loadAndValidateDepartment(request.getDepartmentId());
+        if (stock.getStaff() != null || stock.getDepartment() == null
+                || !department.getId().equals(stock.getDepartment().getId())) {
+            throw new Exception("Stock " + stock.getId() + " is not a stock of department " + department.getId());
+        }
 
         double currentQuantity = stock.getStock();
         double newQuantity = request.getNewQuantity();

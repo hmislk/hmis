@@ -28,6 +28,7 @@ import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CashTransactionBean;
 
 import com.divudi.ejb.EjbApplication;
+import com.divudi.core.entity.PatientItem;
 import com.divudi.core.entity.*;
 import com.divudi.core.entity.inward.Admission;
 import com.divudi.core.entity.inward.AdmissionType;
@@ -40,6 +41,7 @@ import com.divudi.core.facade.BillItemFacade;
 import com.divudi.core.facade.EncounterComponentFacade;
 import com.divudi.core.facade.PatientEncounterFacade;
 import com.divudi.core.facade.PatientInvestigationFacade;
+import com.divudi.core.facade.PatientItemFacade;
 import com.divudi.core.facade.PersonFacade;
 import com.divudi.core.util.FinalBillPdfSnapshotCacheEntry;
 import com.divudi.core.util.JsfUtil;
@@ -106,6 +108,8 @@ public class InwardSearch implements Serializable {
     PaymentService paymentService;
     @EJB
     private com.divudi.service.AuditService auditService;
+    @EJB
+    private PatientItemFacade patientItemFacade;
     @Inject
     private NotificationController notificationController;
     @Inject
@@ -2677,6 +2681,7 @@ public class InwardSearch implements Serializable {
         }
 
         cancelBillItems(cb, source);
+        retireTimedServicesOfCancelledBill(source);
 
         source.setCancelled(true);
         source.setCancelledBill(cb);
@@ -2690,6 +2695,46 @@ public class InwardSearch implements Serializable {
         getBillBean().updateBatchBill(source.getForwardReferenceBill());
 
         return cb;
+    }
+
+    /**
+     * Retires the timed services whose charge sits on a bill being cancelled,
+     * the same way the Timed Services page's Remove does. The bill and its
+     * contra-bill already net the charge to zero; without this the service
+     * itself kept running, so the interim bill and the Invoice Journal added
+     * live accrual for it, nursing discharge was blocked by it, and the
+     * discharge auto-stop re-priced it onto the cancelled bill (#24548).
+     */
+    private void retireTimedServicesOfCancelledBill(Bill source) {
+        String jpql = "select i from PatientItem i"
+                + " where i.retired = false"
+                + " and type(i.item) = :cls"
+                + " and i.billItem.bill = :bill";
+        Map<String, Object> params = new HashMap<>();
+        params.put("cls", com.divudi.core.entity.inward.TimedItem.class);
+        params.put("bill", source);
+        List<PatientItem> items = patientItemFacade.findByJpql(jpql, params);
+        if (items == null) {
+            return;
+        }
+        Date now = new Date();
+        for (PatientItem pi : items) {
+            Map<String, Object> before = new java.util.LinkedHashMap<>();
+            before.put("item", pi.getItem() != null ? pi.getItem().getName() : null);
+            before.put("fromTime", pi.getFromTime());
+            before.put("toTime", pi.getToTime());
+            before.put("serviceValue", pi.getServiceValue());
+            pi.setRetired(true);
+            pi.setRetiredAt(now);
+            pi.setRetirer(getSessionController().getLoggedUser());
+            pi.setRetireComments("Bill " + source.getDeptId() + " cancelled");
+            patientItemFacade.edit(pi);
+            Map<String, Object> after = new java.util.LinkedHashMap<>();
+            after.put("retired", true);
+            after.put("cancelledBill", source.getDeptId());
+            auditService.logEncounterAudit(pi.getPatientEncounter(), "Timed Service Retired With Cancelled Bill",
+                    before, after, getSessionController().getLoggedUser(), "PatientItem", pi.getId());
+        }
     }
 
     /**
@@ -2881,7 +2926,7 @@ public class InwardSearch implements Serializable {
                 return;
             }
 
-            CancelledBill cb = createCancelBill();
+            CancelledBill cb = createCancelBill(getBill(), comment, paymentMethod, BillTypeAtomic.INWARD_PROFESSIONAL_FEE_BILL_CANCELLATION);
 
             //Copy & paste
             if (cb.getId() == null) {

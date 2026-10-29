@@ -157,11 +157,12 @@
                                 <h:outputLabel value="Report Type" for="reportTypeMenu" class="mx-3"/>
                             </h:panelGroup>
                             <p:selectOneMenu id="reportTypeMenu" styleClass="w-100 form-control"
+                                             title="Post Final Bill Payments: payments collected after the final bill to settle the balance due. Deposits and deposit refunds made after the final bill are listed under Inpatient Deposits."
                                              value="#{bhtDepositDetailWithCreditCompaniesReportController.reportType}">
                                 <f:selectItem itemValue="ALL" itemLabel="All" />
                                 <f:selectItem itemValue="DEPOSIT" itemLabel="Inpatient Deposits" />
                                 <f:selectItem itemValue="PAYMENT" itemLabel="Inpatient Payment" />
-                                <f:selectItem itemValue="POST_FINAL" itemLabel="Post Discharge Payments" />
+                                <f:selectItem itemValue="POST_FINAL" itemLabel="Post Final Bill Payments" />
                             </p:selectOneMenu>
 
                         </h:panelGrid>

@@ -10,18 +10,22 @@
 - **🚨 No worktrees.** Never use `isolation: "worktree"`; edit in the main checkout. If you are under `.claude/worktrees/*`, stop and move there. (Worktrees desync the developer's branch.)
 - **🚨 No Artifact tool for deliverables.** Recipients can't open them without a Claude account. Write `.md` in `tmp/` (working), `developer_docs/` (tracked) or `../hmis.wiki/` (wiki; never inside this repo).
 - **🚨 Discuss uncertainties** about the implementation approach with the user before coding.
+- **🚨 Removing or hiding a feature? Check production usage first.** Run a read-only query of its bill types/tables on every production DB before coding, not at merge. Keep the results in `tmp/`.
 - **🚨 Live config: apply agreed values exactly**, check the deployed branch has the code, then verify a newly created record, not the config row. See [app-configuration skill](.claude/skills/app-configuration/SKILL.md).
 - **🚨 Retrospect after nontrivial work.** If a documented fact would have prevented a mistake, propose the CLAUDE.md/doc/skill fix and ask before opening a PR. Write it as a short rule, not a story. See [Retrospective](developer_docs/process/continuous-improvement-retrospective.md).
 
 ### Code
+- Line endings differ by machine (many files are CRLF on Windows). Edit with the Edit tool; if you script a replacement, match the file's line endings and check the diff for whole-file changes.
 - **🚨 No mock data** or temporary workarounds in business logic.
 - **🚨 Never "fix" intentional typos** (e.g. `purcahseRate`); they are DB column names.
 - **🚨 Never rename composite components** without checking every usage.
 - **🚨 Never modify or remove existing constructors.** Only add new ones, delegating via `this(...)`. See [DTO Guidelines](developer_docs/dto/implementation-guidelines.md).
 - **🚨 JPQL first.** Native SQL only for a demonstrated performance need JPQL can't meet.
 - **🚨 `COUNT(...)` queries use `findLongByJpql`**, never `findDoubleByJpql` (silently returns 0.0).
+- **🚨 Business errors thrown from a `@Stateless` service use an `@ApplicationException(rollback = true)` exception.** A plain `IllegalStateException`/`IllegalArgumentException` reaches the JSF controller or REST class as `EJBException`, so its `catch` never fires and the user sees no message.
 - **🚨 New report buttons on a Favorites-enabled index page** (e.g. `reports/index.xhtml`) go in both the category tab and the ⭐ Favorites tab. Read [Report Favorites](developer_docs/feature/report-favorites.md) first.
 - **🚨 Never change the meaning of an existing config key** (no added/removed `!`, no new default). Hospitals store a value per key; create a new key whose name says what `true` does. CI `config-semantics-guard` fails PRs that do this. See [Changing existing options](developer_docs/configuration/application-options.md#changing-existing-options).
+- **🚨 Never change a bean's scope** (`@SessionScoped` → `@ViewScoped` etc.) without discussing it with the lead developer first. Fix the issue within the current scope. CI `bean-scope-guard` fails such PRs unless the lead developer adds the label `scope-change-approved`. See [Bean Scope Policy](developer_docs/jsf/bean-scope-policy.md).
 - **🚨 Never gate behavior on a hospital's name** (`applicationInstitution eq 'Ruhuna'` etc.). Use a `ConfigOption`. See [Institution-Specific Behavior](developer_docs/configuration/institution-specific-behavior.md). Fix existing violations only when already touching that code.
 - **🚨 Cancellation is whole-bill only.** Never build item-level cancellation; reversing some items is a Return/Refund, which most bill types already have. See [Cancellation vs. Return](developer_docs/billing/cancellation-vs-return-policy.md).
 
@@ -44,9 +48,10 @@
 - Commit messages include `Closes #N`. See [Commit Conventions](developer_docs/git/commit-conventions.md).
 - **🚨 Branch from `origin/development`** and target PRs at `development`, never `master`. Check for existing code against `origin/development`.
 - **🚨 Deploy branches are `<hospital>-production` / `<hospital>-staging`** (India estate). Never target `*-prod`, `*-stg` or `*-migrated`; they were retired 2026-10-11. See [Deployment map](developer_docs/deployment/ci-cd-pipeline-overview.md).
-- **🚨 Branches targeting a production/staging branch end in `-hotfix`** (CI enforces this only for the retired `*-prod` names until #24453). Use the `/hotfix-deploy` skill. Exception: `rh-local-staging` accepts only `development` as the PR head (CI `branch_merge_validation.yml`).
-- **🚨 One open PR per production/staging branch.** Check `gh pr list --state open --base <branch>`; if one exists, add to its branch and update its title/body.
+- **🚨 Branches targeting a production/staging branch end in `-hotfix`** (CI `check-branch` warns otherwise; QA-tested `home-qa*` heads are also accepted). Use the `/hotfix-deploy` skill. Exception: `rh-local-staging` accepts only `development` as the PR head (CI `branch_merge_validation.yml`).
+- **🚨 One open PR per production/staging branch.** Check `gh pr list --state open --base <branch>`; if one exists, add to its branch (even another developer's) and update its title/body. CI `single-deploy-pr` fails the newer PR.
 - **🚨 Mirror every merged hotfix into `development`** unless its commits were cherry-picked from `development` (hotfix-deploy Step 9a).
+- **🚨 Dependabot PRs: green CI isn't enough.** Triage them with the [dependabot-triage skill](.claude/skills/dependabot-triage/SKILL.md): bytecode ≤ Java 11, no `jakarta.*`, sibling artifacts on one version (e.g. `poi`/`poi-ooxml`), no `pom.xml` pin holding back a transitive (e.g. `commons-io`), release notes read, a combined JDK 11 build, and a local Payara smoke test of each runtime jar. Close a rejected bump with the evidence and add a `.github/dependabot.yml` ignore rule. CI compile catches none of these runtime failures.
 - **🚨 After applying a CodeRabbit/Codex fix**, verify the getter names exist on the entity (e.g. `isCompleted()`, not `getCompleted()`). See [PR Review §4a](developer_docs/git/pr-review-workflow.md).
 
 ## Reference (read when relevant)
@@ -54,5 +59,5 @@
 - Migrations must detect table-name case: [Migration Guide § case sensitivity](developer_docs/database/migration-development-guide.md#cross-deployment-case-sensitivity-must)
 - Excel export of HTML tables: [guide](developer_docs/feature/excel-export-html-table.md)
 - Inward: [navigation](developer_docs/navigation/inward_navigation.md) · [CC settlement](developer_docs/billing/inward-cc-settlement-tracking.md)
-- User docs go to `../hmis.wiki`, written for end users (pharmacy staff, nurses, doctors, admins).
+- User docs go to `../hmis.wiki`, written for end users (pharmacy staff, nurses, doctors, admins). The top menu is icons only: start menu paths with the module name from the wiki's How-to-Navigate page and name the tab when a step is a tab, e.g. `Administration → Manage Institutions → Preferences → Application Options`. Copy labels from the XHTML, never guess.
 - "TIA" = Thanks In Advance.

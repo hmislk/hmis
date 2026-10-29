@@ -1044,9 +1044,13 @@ public class PharmacyAdjustmentController implements Serializable {
         bfd.setTotalBeforeAdjustmentValue(prevBefore.add(beforeVal));
         bfd.setTotalAfterAdjustmentValue(prevAfter.add(afterVal));
 
-        if (bfd.getTotalPurchaseValue() == null) {
-            bfd.setTotalPurchaseValue(java.math.BigDecimal.ZERO);
-        }
+        // A quantity change moves stock value at the purchase rate too (as the API path records)
+        // Decimal arithmetic: fractional quantities x rates must not pick up double rounding error
+        java.math.BigDecimal purchaseChangeValue = java.math.BigDecimal.valueOf(newQty)
+                .subtract(java.math.BigDecimal.valueOf(stockQty))
+                .multiply(java.math.BigDecimal.valueOf(batch.getPurcahseRate()));
+        java.math.BigDecimal prevPurchase = bfd.getTotalPurchaseValue() == null ? java.math.BigDecimal.ZERO : bfd.getTotalPurchaseValue();
+        bfd.setTotalPurchaseValue(prevPurchase.add(purchaseChangeValue));
         if (bfd.getTotalWholesaleValue() == null) {
             bfd.setTotalWholesaleValue(java.math.BigDecimal.ZERO);
         }
@@ -2743,7 +2747,9 @@ public class PharmacyAdjustmentController implements Serializable {
             bfd.setTotalQuantity(java.math.BigDecimal.valueOf(Math.abs(changingQtyForBfd)));
             bfd.setTotalBeforeAdjustmentValue(java.math.BigDecimal.valueOf(stockQtyBeforeAdjustmentForBfd * retailRateForBfd));
             bfd.setTotalAfterAdjustmentValue(java.math.BigDecimal.valueOf(qty * retailRateForBfd));
-            bfd.setTotalPurchaseValue(java.math.BigDecimal.ZERO);
+            bfd.setTotalPurchaseValue(java.math.BigDecimal.valueOf(qty)
+                    .subtract(java.math.BigDecimal.valueOf(stockQtyBeforeAdjustmentForBfd))
+                    .multiply(java.math.BigDecimal.valueOf(stock.getItemBatch().getPurcahseRate())));
             bfd.setTotalWholesaleValue(java.math.BigDecimal.ZERO);
             billFinanceDetailsFacade.create(bfd);
             deptAdjustmentPreBill.setBillFinanceDetails(bfd);
@@ -2774,6 +2780,13 @@ public class PharmacyAdjustmentController implements Serializable {
             return;
         }
 
+        // Check the current row, not the session copy, before any bill is saved
+        Stock currentStock = stock.getId() == null ? null : getStockFacade().findWithoutCache(stock.getId());
+        if (currentStock == null || currentStock.getStaff() == null) {
+            JsfUtil.addErrorMessage("Select a staff stock..");
+            return;
+        }
+
         if (requiresApproval() && fulfillingApprovedRequest == null) {
             submitStaffStockAdjustmentForApproval();
             return;
@@ -2784,7 +2797,10 @@ public class PharmacyAdjustmentController implements Serializable {
 //        getDeptAdjustmentPreBill().getBillItems().add(getBillItem());
 //        getBillFacade().edit(getDeptAdjustmentPreBill());
         deptAdjustmentPreBill = getBillFacade().find(getDeptAdjustmentPreBill().getId());
-        getPharmacyBean().resetStock(ph, stock, qty, getSessionController().getDepartment());
+        if (!getPharmacyBean().resetStaffStock(ph, stock, qty)) {
+            JsfUtil.addErrorMessage("The staff stock could not be updated. Check the stock before adjusting again.");
+            return;
+        }
 
         printPreview = true;
 

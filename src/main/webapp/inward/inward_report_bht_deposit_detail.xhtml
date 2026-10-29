@@ -11,6 +11,52 @@
             <ui:define name="subcontent">
                 <h:form id="frm">
 
+                    <style>
+                        @media screen {
+                            .printOnlyReport { display: none; }
+                        }
+                        @media print {
+                            @page { size: A4 landscape; }
+                            .printOnlyReport { display: block; font-size: 10px; padding-right: 2px; }
+                            .printOnlyReport .printTitle {
+                                text-align: center;
+                                font-weight: bold;
+                                font-size: 13px;
+                                margin-bottom: 2px;
+                            }
+                            .printOnlyReport .printSubTitle {
+                                text-align: center;
+                                margin-bottom: 6px;
+                            }
+                            .printOnlyReport table {
+                                width: 99.5%;
+                                max-width: 99.5%;
+                                box-sizing: border-box;
+                                border-collapse: collapse;
+                                font-size: 10px;
+                            }
+                            .printOnlyReport thead { display: table-header-group; }
+                            .printOnlyReport tfoot { display: table-row-group; }
+                            .printOnlyReport tr { page-break-inside: avoid; }
+                            .printOnlyReport th, .printOnlyReport td {
+                                border: 1px solid #000;
+                                padding: 2px 4px;
+                                text-align: left;
+                                vertical-align: top;
+                                word-wrap: break-word;
+                                overflow-wrap: anywhere;
+                            }
+                            .printOnlyReport th { background-color: #e9ecef; font-weight: bold; }
+                            .printOnlyReport .num { text-align: right; white-space: nowrap; }
+                            .printOnlyReport tfoot td { font-weight: bold; }
+                            .printOnlyReport .negative { color: #dc3545; }
+                            .printOnlyReport .printFooter {
+                                margin-top: 8px;
+                                page-break-inside: avoid;
+                            }
+                        }
+                    </style>
+
                     <p:panel header="BHT Deposit Detail" class="m-1">
 
                         <h:panelGrid columns="8" styleClass="w-100 form-grid" columnClasses="label-icon-column, input-column">
@@ -19,10 +65,12 @@
                                 <h:outputText value="&#xf073;" styleClass="fa ml-5" />
                                 <h:outputLabel value="From" for="fromDate" class="mx-3"/>
                             </h:panelGroup>
-                            <p:calendar styleClass="w-100" inputStyleClass="w-100 form-control"
-                                        id="fromDate"
-                                        value="#{bhtDepositDetailReportController.fromDate}"
-                                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                            <p:calendar 
+                                styleClass="w-100" 
+                                inputStyleClass="w-100 form-control"
+                                id="fromDate"
+                                value="#{bhtDepositDetailReportController.fromDate}"
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
 
                             <p:spacer width="50" />
 
@@ -30,10 +78,12 @@
                                 <h:outputText value="&#xf073;" styleClass="fa mr-2" />
                                 <h:outputLabel value="To" for="toDate" class="mx-3"/>
                             </h:panelGroup>
-                            <p:calendar styleClass="w-100" inputStyleClass="w-100 form-control"
-                                        id="toDate"
-                                        value="#{bhtDepositDetailReportController.toDate}"
-                                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                            <p:calendar 
+                                styleClass="w-100" 
+                                inputStyleClass="w-100 form-control"
+                                id="toDate"
+                                value="#{bhtDepositDetailReportController.toDate}"
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
 
                             <p:spacer width="50" />
 
@@ -41,8 +91,10 @@
                                 <h:outputText value="&#xf017;" styleClass="fa mr-2" />
                                 <h:outputLabel value="Date Basis" for="dateBasisMenu" class="mx-3"/>
                             </h:panelGroup>
-                            <p:selectOneMenu id="dateBasisMenu" styleClass="w-100 form-control"
-                                             value="#{bhtDepositDetailReportController.dateBasis}">
+                            <p:selectOneMenu 
+                                id="dateBasisMenu" 
+                                styleClass="w-100 form-control"
+                                value="#{bhtDepositDetailReportController.dateBasis}">
                                 <f:selectItem itemValue="dischargeDate" itemLabel="Discharge Date" />
                                 <f:selectItem itemValue="admissionDate" itemLabel="Admission Date" />
                                 <f:selectItem itemValue="paymentDate" itemLabel="Payment Date" />
@@ -52,8 +104,10 @@
                                 <h:outputText value="&#xf05a;" styleClass="fa mr-2" />
                                 <h:outputLabel value="Admission Status" for="admStatusMenu" class="mx-3"/>
                             </h:panelGroup>
-                            <p:selectOneMenu id="admStatusMenu" styleClass="w-100 form-control"
-                                             value="#{bhtDepositDetailReportController.admissionStatus}">
+                            <p:selectOneMenu 
+                                id="admStatusMenu" 
+                                styleClass="w-100 form-control"
+                                value="#{bhtDepositDetailReportController.admissionStatus}">
                                 <f:selectItems value="#{enumController.admissionStatuses}"
                                                var="s" itemValue="#{s}" itemLabel="#{s.label}" />
                             </p:selectOneMenu>
@@ -64,8 +118,10 @@
                                 <h:outputText value="&#xf0f0;" styleClass="fa mr-2" />
                                 <h:outputLabel value="Admission Type" for="admTypeMenu" class="mx-3"/>
                             </h:panelGroup>
-                            <p:selectOneMenu id="admTypeMenu" styleClass="w-100 form-control"
-                                             value="#{bhtDepositDetailReportController.admissionType}">
+                            <p:selectOneMenu 
+                                id="admTypeMenu" 
+                                styleClass="w-100 form-control"
+                                value="#{bhtDepositDetailReportController.admissionType}">
                                 <f:selectItem itemLabel="All" itemValue="#{null}" />
                                 <f:selectItems value="#{admissionTypeController.items}"
                                                var="at" itemValue="#{at}" itemLabel="#{at.name}" />
@@ -77,8 +133,10 @@
                                 <h:outputText value="&#xf09d;" styleClass="fa mr-2" />
                                 <h:outputLabel value="Payment Method" for="pmMenu" class="mx-3"/>
                             </h:panelGroup>
-                            <p:selectOneMenu id="pmMenu" styleClass="w-100 form-control"
-                                             value="#{bhtDepositDetailReportController.paymentMethod}">
+                            <p:selectOneMenu 
+                                id="pmMenu" 
+                                styleClass="w-100 form-control"
+                                value="#{bhtDepositDetailReportController.paymentMethod}">
                                 <f:selectItem itemLabel="All Methods" itemValue="#{null}" />
                                 <f:selectItems value="#{enumController.paymentMethodsWithoutCredit}" />
                             </p:selectOneMenu>
@@ -87,8 +145,10 @@
                                 <h:outputText value="&#xf19c;" styleClass="fa mr-2" />
                                 <h:outputLabel value="Institution" for="cmbIns" class="mx-3"/>
                             </h:panelGroup>
-                            <p:selectOneMenu id="cmbIns" styleClass="w-100 form-control"
-                                             value="#{bhtDepositDetailReportController.institution}" filter="true">
+                            <p:selectOneMenu 
+                                id="cmbIns" 
+                                styleClass="w-100 form-control"
+                                value="#{bhtDepositDetailReportController.institution}" filter="true">
                                 <f:selectItem itemLabel="All Institutions" />
                                 <f:selectItems value="#{institutionController.companies}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}" />
                                 <p:ajax process="cmbIns" update="cmbDept" />
@@ -100,8 +160,10 @@
                                 <h:outputText value="&#xf3c5;" styleClass="fa mr-2" />
                                 <h:outputLabel value="Site" for="siteMenu" class="mx-3"/>
                             </h:panelGroup>
-                            <p:selectOneMenu id="siteMenu" styleClass="w-100 form-control"
-                                             value="#{bhtDepositDetailReportController.site}" filter="true">
+                            <p:selectOneMenu 
+                                id="siteMenu" 
+                                styleClass="w-100 form-control"
+                                value="#{bhtDepositDetailReportController.site}" filter="true">
                                 <f:selectItem itemLabel="All Sites" />
                                 <f:selectItems value="#{institutionController.sites}" var="site" itemLabel="#{site.name}" itemValue="#{site}" />
                                 <p:ajax process="siteMenu" update="cmbDept" />
@@ -156,12 +218,15 @@
                                 <h:outputText value="&#xf1ec;" styleClass="fa mr-2" />
                                 <h:outputLabel value="Report Type" for="reportTypeMenu" class="mx-3"/>
                             </h:panelGroup>
-                            <p:selectOneMenu id="reportTypeMenu" styleClass="w-100 form-control"
-                                             value="#{bhtDepositDetailReportController.reportType}">
+                            <p:selectOneMenu 
+                                id="reportTypeMenu" 
+                                styleClass="w-100 form-control"
+                                title="Post Final Bill Payments: payments collected after the final bill to settle the balance due. Deposits and deposit refunds made after the final bill are listed under Inpatient Deposits."
+                                value="#{bhtDepositDetailReportController.reportType}">
                                 <f:selectItem itemValue="ALL" itemLabel="All" />
                                 <f:selectItem itemValue="DEPOSIT" itemLabel="Inpatient Deposits" />
                                 <f:selectItem itemValue="PAYMENT" itemLabel="Inpatient Payment" />
-                                <f:selectItem itemValue="POST_FINAL" itemLabel="Post Discharge Payments" />
+                                <f:selectItem itemValue="POST_FINAL" itemLabel="Post Final Bill Payments" />
                             </p:selectOneMenu>
 
                         </h:panelGrid>
@@ -184,7 +249,7 @@
                                 <div>
                                     <p:commandButton value="Print" icon="fas fa-print"
                                                      class="ui-button-info me-1" ajax="false">
-                                        <p:printer target="tblReport" />
+                                        <p:printer target="printReport" />
                                     </p:commandButton>
                                     <p:commandButton value="Excel" icon="fas fa-file-excel"
                                                      class="ui-button-success" ajax="false">
@@ -247,16 +312,19 @@
                             </p:panel>
                         </div>
 
-                        <p:dataTable id="tblReport"
-                                     value="#{bhtDepositDetailReportController.reportRows}"
-                                     var="row"
-                                     emptyMessage="No records found"
-                                     paginator="true" rows="20"
-                                     paginatorAlwaysVisible="false" paginatorPosition="bottom"
-                                     paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                     currentPageReportTemplate="{startRecord}-{endRecord} of {totalRecords} records"
-                                     rowsPerPageTemplate="10,20,50,{ShowAll|'All'}"
-                                     styleClass="w-100">
+                        <p:dataTable 
+                            id="tblReport"
+                            value="#{bhtDepositDetailReportController.reportRows}"
+                            var="row"
+                            emptyMessage="No records found"
+                            paginator="true" 
+                            rows="20"
+                            paginatorAlwaysVisible="false" 
+                            paginatorPosition="bottom"
+                            paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                            currentPageReportTemplate="{startRecord}-{endRecord} of {totalRecords} records"
+                            rowsPerPageTemplate="10,20,50,{ShowAll|'All'}"
+                            styleClass="w-100">
 
                             <p:column headerText="Bill No" style="white-space:nowrap;"
                                       rendered="#{userSettingsController.inwardBhtDepositDetailBillNoVisible}">
@@ -350,6 +418,114 @@
                             </f:facet>
 
                         </p:dataTable>
+
+                        <!-- Print view: plain table with every row (the screen table is paginated) -->
+                        <h:panelGroup layout="block" id="printReport" styleClass="printOnlyReport">
+                            <div class="printTitle">BHT Deposit Detail</div>
+                            <div class="printSubTitle">
+                                <h:outputText value="#{bhtDepositDetailReportController.fromDate}">
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                </h:outputText>
+                                <h:outputText value=" to " />
+                                <h:outputText value="#{bhtDepositDetailReportController.toDate}">
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                </h:outputText>
+                                <h:outputText value=" | Date Basis: #{bhtDepositDetailReportController.dateBasis eq 'admissionDate' ? 'Admission Date' : (bhtDepositDetailReportController.dateBasis eq 'paymentDate' ? 'Payment Date' : 'Discharge Date')}" />
+                                <h:outputText value=" | Report Type: #{bhtDepositDetailReportController.reportType eq 'DEPOSIT' ? 'Inpatient Deposits' : (bhtDepositDetailReportController.reportType eq 'PAYMENT' ? 'Inpatient Payment' : (bhtDepositDetailReportController.reportType eq 'POST_FINAL' ? 'Post Final Bill Payments' : 'All'))}" />
+                            </div>
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Bill No</th>
+                                        <th>Bill Type</th>
+                                        <th>BHT No</th>
+                                        <th>Patient Name</th>
+                                        <th>Admission Type</th>
+                                        <th>Admitted</th>
+                                        <th>Discharged</th>
+                                        <th>Date / Time</th>
+                                        <th>Payment Method</th>
+                                        <th class="num">Amount</th>
+                                        <ui:repeat value="#{bhtDepositDetailReportController.usedPaymentMethods}" var="pm">
+                                            <th class="num"><h:outputText value="#{pm.label}" /></th>
+                                        </ui:repeat>
+                                        <th>Reference No</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <ui:repeat value="#{bhtDepositDetailReportController.reportRows}" var="row">
+                                        <tr>
+                                            <td class="nowrap"><h:outputText value="#{row.billNo}" /></td>
+                                            <td class="nowrap"><h:outputText value="#{row.billType}" styleClass="#{row.amount lt 0 ? 'negative' : ''}" /></td>
+                                            <td class="nowrap"><h:outputText value="#{row.bhtNo}" /></td>
+                                            <td><h:outputText value="#{row.patientName}" /></td>
+                                            <td><h:outputText value="#{row.admissionType != null ? row.admissionType.name : ''}" /></td>
+                                            <td class="nowrap">
+                                                <h:outputText value="#{row.dateOfAdmission}">
+                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" />
+                                                </h:outputText>
+                                            </td>
+                                            <td class="nowrap">
+                                                <h:outputText value="#{row.dateOfDischarge}">
+                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" />
+                                                </h:outputText>
+                                            </td>
+                                            <td class="nowrap">
+                                                <h:outputText value="#{row.createdAt}">
+                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                                </h:outputText>
+                                            </td>
+                                            <td class="nowrap"><h:outputText value="#{row.paymentMethod != null ? row.paymentMethod.label : ''}" /></td>
+                                            <td class="num">
+                                                <h:outputText value="#{row.amount}" styleClass="#{row.amount lt 0 ? 'negative' : ''}">
+                                                    <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
+                                                </h:outputText>
+                                            </td>
+                                            <ui:repeat value="#{bhtDepositDetailReportController.usedPaymentMethods}" var="pm">
+                                                <td class="num">
+                                                    <h:outputText value="#{bhtDepositDetailReportController.getRowAmountForMethod(row, pm)}"
+                                                                  styleClass="#{row.amount lt 0 ? 'negative' : ''}">
+                                                        <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
+                                                    </h:outputText>
+                                                </td>
+                                            </ui:repeat>
+                                            <td><h:outputText value="#{row.referenceNo}" /></td>
+                                        </tr>
+                                    </ui:repeat>
+                                </tbody>
+                                <tfoot>
+                                    <tr>
+                                        <td class="num" colspan="9">Total</td>
+                                        <td class="num">
+                                            <h:outputText value="#{bhtDepositDetailReportController.grandTotal}"
+                                                          styleClass="#{bhtDepositDetailReportController.grandTotal lt 0 ? 'negative' : ''}">
+                                                <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
+                                            </h:outputText>
+                                        </td>
+                                        <ui:repeat value="#{bhtDepositDetailReportController.usedPaymentMethods}" var="pm">
+                                            <td class="num">
+                                                <h:outputText value="#{bhtDepositDetailReportController.getTotalForMethod(pm)}"
+                                                              styleClass="#{bhtDepositDetailReportController.getTotalForMethod(pm) lt 0 ? 'negative' : ''}">
+                                                    <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
+                                                </h:outputText>
+                                            </td>
+                                        </ui:repeat>
+                                        <td></td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                            <div class="printFooter">
+                                <div>
+                                    <h:outputText value="Processing Time : " />
+                                    <h:outputText value="#{bhtDepositDetailReportController.processedAt}">
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                    </h:outputText>
+                                </div>
+                                <div>
+                                    <h:outputText value="Processing By : #{sessionController.loggedUser.webUserPerson.nameWithTitle}" />
+                                </div>
+                            </div>
+                        </h:panelGroup>
 
                     </p:panel>
 

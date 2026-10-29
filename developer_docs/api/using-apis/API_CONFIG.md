@@ -28,6 +28,13 @@ Content types vary by endpoint:
 
 Used to read and set application configuration options at runtime without redeployment.
 
+> **Production branches can lag `development`.** Some deployed branches still
+> have only `setBoolean`/`setLongText`/`setInteger`. Every other endpoint below
+> returns a Payara HTML **404** there, which means it doesn't exist, not that
+> the key is wrong. Check that branch's `ConfigResource.java` first. To read
+> config on such a deployment, use *Administration → Manage Institutions →
+> Application Options*.
+
 ## Endpoints
 
 ### GET `/api/config?scope={tag}` — List config options by scope tag
@@ -92,6 +99,16 @@ Header: Config: YOUR_CONFIG_API_KEY
 POST /api/config/setLongText/AI%20Chat%20-%20Claude%20Model/claude-sonnet-4-6
 Header: Config: YOUR_CONFIG_API_KEY
 ```
+
+> **Don't use this for short-text keys.** A new key is stored as `LONG_TEXT`.
+> `getShortTextValueByKey` still returns that row's value, but the row keeps
+> the wrong type. The value is also HTML-sanitised (`&` becomes `&amp;`), and a
+> path segment can't carry `/`, so a URL can't be set this way. For short-text
+> keys use `setShortText` (below); it also retags an existing row to
+> `SHORT_TEXT`. If the branch has no `setShortText`, use
+> *Application Options → Import* with a CSV row of type `SHORT_TEXT` and
+> **Import Missing Only** to create a new key. That mode skips existing keys,
+> so it can't change an existing `LONG_TEXT` row.
 
 ---
 

@@ -12,6 +12,15 @@ Every hospital already has a stored value for each existing key (the row is crea
 
 The CI workflow `config-semantics-guard` (`.github/scripts/check_config_semantics.py`) fails a pull request that flips the negation or default of an existing key, or reads a key with conflicting defaults. If a change of meaning is truly intended, add the PR label `config-meaning-change` and explain in the PR description how each hospital is affected.
 
+## Reading and writing keys from a settings dialog
+
+`ConfigOptionController` and `ConfigOptionApplicationController` store a key differently:
+
+- `ConfigOptionApplicationController` reads and writes the plain key, for the whole application.
+- `ConfigOptionController` reads and writes `"<current department name> - <key>"` first and falls back to the plain key when no department row exists.
+
+A print or settings dialog must use the **same** controller as the page or template that reads the key. If a dialog saves through `ConfigOptionController` but the template reads through `ConfigOptionApplicationController`, the saved department-prefixed row is never read and the checkbox appears to do nothing. Check how the template reads the key before binding a dialog checkbox to it. Keys that other pages also read with a different default (for example the `Pharmacy Disbursement Reports - Display ...` keys, which transfer issue reports treat as true when unset) should be written only when the user changes them.
+
 ## Pharmacy Transfer Issue
 
 | Key                                                              | Type      | Default | Description                                                                                             |
@@ -109,6 +118,7 @@ Inactive items are excluded in all four modes.
 | ---------------------------------------------------------------- | --------- | ------- | ------------------------------------------------------------------------------------------------------- |
 | `Pharmacy - Allow Cross-Department PO Receiving`                | Boolean   | `false` | Institution-wide toggle. When `true`, the Purchase Orders for Receiving list (and its wholesale/with-approval/DTO variants) drops the same-department restriction, so a PO created in one department (e.g. Pharmacy) can be received/GRN'd from any other department in the same institution (e.g. Store). Institution isolation is unaffected — POs from a different institution never appear. Added for RMH Hambantota, which creates POs in Pharmacy but receives into Store. See issue #21848. |
 | `Pharmacy - List Packs (AMPPs) in Item Selection`               | Boolean   | `true`  | When `false`, Packs (AMPPs) are excluded from every pharmacy item autocomplete that offers them — Purchase Order Request (JPA and native), Direct Purchase, Purchase, Donation, Batch Create and Transfer Request — so only AMPs (plus VMPs/VMPPs on Transfer Request) can be chosen. On the Purchase Order page the supplier-item dropdown and the *Add All Supplier Items* / *Below ROL* buttons also drop AMPPs from the supplier's item list (`ItemController.removeAmppsIfNotListed()`). GRN, Issue and Transfer Issue have no AMPP picker of their own (they take items from the PO, the request or stock), so they follow automatically. Bills that already contain AMPPs are unaffected. Implemented in `ItemController.isAmppListedInItemSelection()`. See issue #24164. |
+| `Print Profit % in GRN Bill`                                    | Boolean   | `true`  | Prints the profit column on GRN prints: Profit % on *A4 Paper Format Two* (`grn_with_costing_new`, shown after Finalize/Approve and on the costing reprint) and GP Profit% on `grn.xhtml` (no-costing layout, used by GRN reprint) and `grn_wholesale.xhtml`. Set `false` to leave the column out (e.g. when the GRN print goes to the supplier). Independent of `Show Profit Percentage in GRN`, which controls the column on the GRN entry screen. See issue #24357. |
 
 ### GRN Item Table Columns (native GRN page)
 

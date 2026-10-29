@@ -568,9 +568,17 @@ public class ChannelBean {
             return sessionInstances;
         }
 
+        Calendar cToday = Calendar.getInstance();
+        cToday.set(Calendar.HOUR_OF_DAY, 0);
+        cToday.set(Calendar.MINUTE, 0);
+        cToday.set(Calendar.SECOND, 0);
+        cToday.set(Calendar.MILLISECOND, 0);
+        Date today = cToday.getTime();
+
         for (ServiceSession ss : inputSessions) {
-            Date startDate = new Date();
+            Date startDate = d != null ? d : new Date();
             Calendar cToDate = Calendar.getInstance();
+            cToDate.setTime(startDate);
             int numberOfDaysInAdvance;
             if (ss.getNumberOfDaysForAutomaticInstanceCreation() == null) {
                 numberOfDaysInAdvance = 30;
@@ -629,6 +637,12 @@ public class ChannelBean {
                     m.put("sd", workingDate);
 
                     SessionInstance si = sessionInstanceFacade.findFirstByJpql(jpql, m, TemporalType.DATE);
+
+                    // Past days list only existing instances; never create new ones for them
+                    if (si == null && workingDate.before(today)) {
+                        cWorkingDate.add(Calendar.DATE, 1);
+                        continue;
+                    }
 
                     if (si == null) {
                         si = createSessionInstancesForServiceSession(ss, workingDate);

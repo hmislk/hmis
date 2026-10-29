@@ -16,7 +16,7 @@
         <!-- One version for ALL Jackson artifacts. Never bump a single Jackson artifact on its own:
              jackson-databind needs jackson-core and jackson-annotations of the same minor version,
              otherwise it fails at runtime (NoClassDefFoundError) even though compilation passes. -->
-        <jackson.version>2.18.11</jackson.version>
+        <jackson.version>2.19.4</jackson.version>
     </properties>
 
     <!-- Dependency Management removed - using explicit versions for better reliability in CI/CD -->
@@ -123,7 +123,7 @@
         <dependency>
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
-            <version>2.15.0</version>
+            <version>2.21.0</version>
         </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>
@@ -167,7 +167,7 @@
         <dependency>
             <groupId>com.google.zxing</groupId>
             <artifactId>core</artifactId>
-            <version>3.4.1</version>
+            <version>3.5.4</version>
         </dependency>
        
 
@@ -177,7 +177,7 @@
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-api</artifactId>
-            <version>2.25.5</version>
+            <version>2.26.1</version>
         </dependency>
 
         <!-- Bridge log4j-api to SLF4J - prevents log4j-core from being loaded -->
@@ -205,7 +205,7 @@
         <dependency>
             <groupId>org.apache.poi</groupId>
             <artifactId>poi</artifactId>
-            <version>5.2.5</version>
+            <version>5.5.1</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.apache.logging.log4j</groupId>
@@ -218,7 +218,7 @@
         <dependency>
             <groupId>org.apache.poi</groupId>
             <artifactId>poi-ooxml</artifactId>
-            <version>5.2.5</version>
+            <version>5.5.1</version>
             <exclusions>
                 <exclusion>
                     <groupId>com.github.virtuald</groupId>
@@ -330,7 +330,7 @@
         <dependency>
             <groupId>org.omnifaces</groupId>
             <artifactId>omnifaces</artifactId>
-            <version>3.14.23</version>
+            <version>3.14.28</version>
         </dependency>
 
         <!-- JFreeChart -->
@@ -423,7 +423,7 @@
         <dependency>
             <groupId>org.keycloak</groupId>
             <artifactId>keycloak-common</artifactId>
-            <version>22.0.1</version>
+            <version>22.0.5</version>
             <type>jar</type>
             <exclusions>
                 <exclusion>
@@ -446,7 +446,7 @@
         <dependency>
             <groupId>com.itextpdf</groupId>
             <artifactId>itextpdf</artifactId>
-            <version>5.5.13.4</version>
+            <version>5.5.13.6</version>
             <type>jar</type>
         </dependency>
         <dependency>
@@ -465,7 +465,7 @@
         <dependency>
             <groupId>org.eclipse.persistence</groupId>
             <artifactId>org.eclipse.persistence.jpa</artifactId>
-            <version>2.7.12</version>
+            <version>2.7.16</version>
             <scope>provided</scope>
             <type>jar</type>
         </dependency>
@@ -495,7 +495,7 @@
         <dependency>
             <groupId>org.apache.tomcat</groupId>
             <artifactId>tomcat-catalina</artifactId>
-            <version>9.0.121</version> <!-- or the version compatible with your setup -->
+            <version>9.0.123</version> <!-- or the version compatible with your setup -->
         </dependency>
         <dependency>
             <groupId>com.github.hmislk</groupId>
@@ -505,7 +505,7 @@
         <dependency>
             <groupId>com.google.code.gson</groupId>
             <artifactId>gson</artifactId>
-            <version>2.8.9</version>
+            <version>2.14.0</version>
             <type>jar</type>
         </dependency>
         <dependency>
@@ -529,7 +529,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.10.1</version>
+                <version>3.16.0</version>
                 <configuration>
                     <release>11</release> <!-- Compile with Java 8 compatibility -->
                     <debug>false</debug>
@@ -568,7 +568,7 @@
                     <dependency>
                         <groupId>org.codehaus.mojo</groupId>
                         <artifactId>extra-enforcer-rules</artifactId>
-                        <version>1.8.0</version>
+                        <version>1.12.1</version>
                     </dependency>
                 </dependencies>
             </plugin>
@@ -640,12 +640,6 @@
 
 
     <repositories>
-        <repository>
-            <url>https://download.eclipse.org/rt/eclipselink/maven.repo/</url>
-            <id>eclipselink</id>
-            <layout>default</layout>
-            <name>Repository for library EclipseLink (JPA 2.1)</name>
-        </repository>
         <repository>
             <id>central</id>
             <name>Central Repository</name>

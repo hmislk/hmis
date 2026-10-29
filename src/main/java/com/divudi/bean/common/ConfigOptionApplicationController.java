@@ -281,6 +281,7 @@ public class ConfigOptionApplicationController implements Serializable {
         getBooleanValueByKey("Purchase Return by Quantity and Free Quantity", true);
         getBooleanValueByKey("Purchase Return by Total Quantity", false);
         getBooleanValueByKey("Show Profit Percentage in GRN", true);
+        getBooleanValueByKey("Print Profit % in GRN Bill", true);
         getBooleanValueByKey("Display Colours for Stock Autocomplete Items", true);
         getBooleanValueByKey("Enable Consignment in Pharmacy Purchasing", true);
         getBooleanValueByKey("Consignment Option is checked in new Pharmacy Purchasing Bills", false);
@@ -1063,6 +1064,12 @@ public class ConfigOptionApplicationController implements Serializable {
         getBooleanValueByKey("prevent_password_reuse", false);
         // Admin-triggered JPA L2 cache clear is disabled by default
         getBooleanValueByKey("Allow manual JPA cache clear", false);
+        // Authenticator app (TOTP) two-factor login. Master switch off by default;
+        // when on, users flagged "Require 2FA" (or everyone, if the second key is true)
+        // must enter a 6-digit authenticator code after their password.
+        getBooleanValueByKey("Enable authenticator app two-factor login", false);
+        getBooleanValueByKey("Require authenticator app two-factor login for all users", false);
+        getShortTextValueByKey("Authenticator app issuer name", "HMIS");
     }
 
     private void loadPharmacyAnalyticsConfigurationDefaults() {
@@ -1940,6 +1947,18 @@ public class ConfigOptionApplicationController implements Serializable {
 
     public int getPasswordHistoryLimit() {
         return getIntegerValueByKey("password_history_limit", 5);
+    }
+
+    public boolean isAuthenticatorAppTwoFactorLoginEnabled() {
+        return getBooleanValueByKey("Enable authenticator app two-factor login", false);
+    }
+
+    public boolean isAuthenticatorAppTwoFactorLoginRequiredForAllUsers() {
+        return getBooleanValueByKey("Require authenticator app two-factor login for all users", false);
+    }
+
+    public String getAuthenticatorAppIssuerName() {
+        return getShortTextValueByKey("Authenticator app issuer name", "HMIS");
     }
 
     public void setIntegerValueByKey(String key, int value) {
