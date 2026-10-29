@@ -51,6 +51,13 @@ This document lists the configuration options used in the application and their 
 | ---------------------------------------------------------------- | --------- | ------- | ------------------------------------------------------------------------------------------------------- |
 | `Inward Administrative Discharge - Require Nursing Discharge`   | Boolean   | `true`  | Controls whether `BhtSummeryController.checkDischargeTime()` requires `PatientEncounter.isNursingDischarged()` before allowing administrative discharge (the "Discharge" action on the Interim Bill) for room-charged admissions. Some hospitals do not use the nursing discharge workflow; setting this to `false` for those institutions lets administrative discharge proceed without it. See issue #22607. |
 
+## Inpatient Reports
+
+| Key                                                              | Type      | Default | Description                                                                                             |
+| ---------------------------------------------------------------- | --------- | ------- | ------------------------------------------------------------------------------------------------------- |
+| `Inpatient Reports - Show Gross Value, Discount and Service Charge` | Boolean | `true` | Shows the Gross Value, Discount and Service Charge columns on the Inpatient Pharmacy Issue Summary and Inpatient Pharmacy Net Summary. Does not affect the Inpatient Invoice Journal. See issue #22689. |
+| `Inpatient Invoice Journal - Show Gross Total, Discount and Service Charge Columns` | Boolean | `true` | Shows the Discount, Charge Type Discount, Bill Level Discount, Service Charge and Gross Total columns on the Inpatient Invoice Journal (screen and export). Net Total always includes them; with this off, the charge columns don't add up to Net Total. The two final-bill discount columns appear only when a row has a non-zero value. See issues #24935 and #24937. |
+
 ## Pharmacy Procurement
 
 | Key                                                              | Type      | Default | Description                                                                                             |
