@@ -568,6 +568,8 @@ Do NOT use `dropdown="true"` on `p:autoComplete`. It renders a dropdown toggle b
 
 This applies to all entity-backed autocompletes: `Institution`, `Department`, `Item`, `Patient`, etc.
 
+> **Rule:** Never use `var="cc"` in `f:selectItems`, `p:autoComplete`, or any EL loop; `cc` is reserved by JSF for the composite component implicit object.
+
 **Never use `cc` as an EL `var` name** (`f:selectItems`, `p:autoComplete`, `ui:repeat`, `p:dataTable`). `cc` is the JSF composite-component implicit object, so `#{cc.name}` renders blank or as `Institution[ id=... ]`.
 
 ---
