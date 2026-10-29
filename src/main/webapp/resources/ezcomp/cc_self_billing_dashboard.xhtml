@@ -73,6 +73,20 @@
                             </span>
                             <h:outputText styleClass="fas fa-chevron-right cc-user-menu-arrow"/>
                         </h:commandLink>
+                        <h:commandLink id="lnkCcAuthenticator"
+                                       styleClass="cc-user-menu-item"
+                                       pt:role="menuitem"
+                                       rendered="#{twoFactorAuthController.twoFactorEnabled}"
+                                       action="#{collectingCentreSelfCommonController.navigateToCollectingCentreSelfAuthenticator()}">
+                            <span class="cc-detail-icon cc-c-green">
+                                <h:outputText styleClass="fas fa-shield-alt"/>
+                            </span>
+                            <span class="cc-user-menu-item-text">
+                                <h:outputText styleClass="cc-user-menu-item-title" value="Authenticator App"/>
+                                <h:outputText styleClass="cc-user-menu-item-desc" value="Two-step verification at sign-in"/>
+                            </span>
+                            <h:outputText styleClass="fas fa-chevron-right cc-user-menu-arrow"/>
+                        </h:commandLink>
                         <h:commandLink id="lnkCcAbout"
                                        styleClass="cc-user-menu-item"
                                        pt:role="menuitem"
