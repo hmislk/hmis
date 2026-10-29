@@ -409,12 +409,34 @@ class FenceTracker:
         return True
 
 
-def resolve_internal_links(text: str, source: Path, pages: dict) -> str:
+def _resolve_image_target(target: str, source: Path, docs_dir: Path):
+    """Return the rewritten image target, or None to leave it unchanged.
+
+    GitHub resolves a relative image path such as ``images/x.png`` from the
+    wiki root, even on a page in a sub-folder; MkDocs resolves it from the
+    page's folder. Point such links at the root copy when only that exists."""
+    raw = target.strip()
+    if " " in raw or not raw or raw.startswith(("#", "/", "<")):
+        return None
+    if re.match(r"^[a-z][a-z0-9+.-]*:", raw, re.I):
+        return None
+    if (source.parent / unquote(raw)).exists():
+        return None
+    root_copy = docs_dir / unquote(raw)
+    if not root_copy.is_file():
+        return None
+    return Path(os.path.relpath(root_copy, source.parent)).as_posix()
+
+
+def resolve_internal_links(text: str, source: Path, pages: dict,
+                           docs_dir: Path = None) -> str:
     """Rewrite ``[label](target)`` page links to paths relative to *source*.
 
     Link targets are scanned with balanced parentheses because page names
-    such as ``Health-Level-Seven(HL7)`` contain them. Image links and fenced
-    code blocks are left untouched."""
+    such as ``Health-Level-Seven(HL7)`` contain them. Fenced code blocks are
+    left untouched, and so are image links, except root-relative ones on
+    sub-folder pages (see ``_resolve_image_target``) when *docs_dir* is
+    given."""
     out_lines = []
     fences = FenceTracker()
     for line in text.split("\n"):
@@ -444,7 +466,11 @@ def resolve_internal_links(text: str, source: Path, pages: dict) -> str:
                 break
             is_image = start > 0 and line[start - 1] == "!"
             new_target = None
-            if not is_image:
+            if is_image and docs_dir is not None:
+                new_target = _resolve_image_target(
+                    line[mid + 2 : end], source, docs_dir
+                )
+            elif not is_image:
                 new_target = _resolve_link_target(
                     line[mid + 2 : end], source, pages
                 )
@@ -505,7 +531,7 @@ def postprocess_markdown_files(docs_dir: Path) -> None:
             continue
 
         text = path.read_text(encoding="utf-8", errors="ignore")
-        text = resolve_internal_links(text, path, pages)
+        text = resolve_internal_links(text, path, pages, docs_dir)
         text = fix_lists(text)
         path.write_text(text, encoding="utf-8")
 

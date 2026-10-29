@@ -22,8 +22,8 @@ Index format (Wiki-Article-Index.md):
   "User Guide"
 
 Menu layout:
-- Home: a generated landing page (docs/index.md) with one card per tab and
-  one per User Guide module
+- Home: a generated landing page (docs/index.md) with one card per User
+  Guide module, then a short list linking the other tabs
 - one tab per index ``#`` heading, in index order
 - Videos, About: fixed pages, unless the index already lists them
 - More Articles: every page not reached above, grouped by sub-folder or
@@ -49,8 +49,8 @@ MIN_GROUP_SIZE = 5
 LANDING_TITLE = "CareCode HMIS Documentation"
 LANDING_INTRO = (
     "CareCode HMIS is an open-source hospital management information system. "
-    "Pick where you want to start, or use the search box above to find a "
-    "page by name."
+    "Pick the part of the hospital you work in, or use the search box above "
+    "to find a page by name."
 )
 EXCLUDED_PAGES = {"index", "_footer", "_sidebar"}
 
@@ -420,7 +420,8 @@ def cards(nodes) -> list:
 
 def write_landing_page(docs_dir: Path, tabs) -> None:
     """Replace docs/index.md (the converted wiki Home.md) with a landing page:
-    one card per tab, then one card per module of the User Guide tab."""
+    one card per module of the User Guide tab, then a short list linking the
+    other tabs (administration, knowledge base, developer guide...)."""
     lines = [
         "---",
         "hide:",
@@ -432,10 +433,8 @@ def write_landing_page(docs_dir: Path, tabs) -> None:
         "",
         LANDING_INTRO,
         "",
-        "## Start here",
-        "",
     ]
-    lines += cards(tabs)
+    others = []
     for tab in tabs:
         modules = [m for m in tab.items if isinstance(m, Node) and m.first_page()]
         if tab.title.lower() == DEFAULT_TAB.lower() and modules:
@@ -443,6 +442,14 @@ def write_landing_page(docs_dir: Path, tabs) -> None:
             if tab.description:
                 lines += [tab.description, ""]
             lines += cards(modules)
+        elif tab.first_page():
+            others.append(tab)
+    if others:
+        lines += ["## Other resources", ""]
+        for tab in others:
+            entry = f"- {shortcode(tab.icon)} **[{tab.title}]({md_link(tab.first_page())})**"
+            lines.append(f"{entry}: {tab.description}" if tab.description else entry)
+        lines.append("")
     (docs_dir / "index.md").write_text("\n".join(lines), encoding="utf-8")
 
 
