@@ -59,5 +59,5 @@
 - Migrations must detect table-name case: [Migration Guide § case sensitivity](developer_docs/database/migration-development-guide.md#cross-deployment-case-sensitivity-must)
 - Excel export of HTML tables: [guide](developer_docs/feature/excel-export-html-table.md)
 - Inward: [navigation](developer_docs/navigation/inward_navigation.md) · [CC settlement](developer_docs/billing/inward-cc-settlement-tracking.md)
-- User docs go to `../hmis.wiki`, written for end users (pharmacy staff, nurses, doctors, admins).
+- User docs go to `../hmis.wiki`, written for end users (pharmacy staff, nurses, doctors, admins). The top menu is icons only: start menu paths with the module name from the wiki's How-to-Navigate page and name the tab when a step is a tab, e.g. `Administration → Manage Institutions → Preferences → Application Options`. Copy labels from the XHTML, never guess.
 - "TIA" = Thanks In Advance.
