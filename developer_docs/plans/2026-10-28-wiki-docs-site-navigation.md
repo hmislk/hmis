@@ -149,9 +149,10 @@ Local build against the current wiki, compared with the phase 1 converter:
 - 2026-10-28 — Phase 4: filed #24891; generator + converter changes; wiki clean-up committed locally in `../hmis.wiki` (not pushed); verified locally (steps 22–28).
 - 2026-10-28 — Phase 2: filed #24866. Converter now resolves links by page name and fixes lists; Material icon logo; stubs left out of the menu. Verified locally.
 - 2026-10-29 — Phase 4: PR #24897 merged (with redirects for removed pages); wiki commit pushed; gollum publish run succeeded; live site checked (User Guide first tab, module cards then "Other resources", old URLs redirect, new pages live).
+- 2026-10-29 — Step 30 batch 1 (wiki pushed, live): menu-bar icon guide in How-to-Navigate; Pharmacy Navigation Guide rebuilt from the menu; Application Options / Preferences-tab paths normalised; guessed privileges, procurement and Store admin paths fixed; stale `configuration_keys` / `privileges` lists removed (redirected). CLAUDE.md rule for wiki menu paths.
 
 ## Next step
 
-Step 30: review content accuracy module by module against the current screens (paths, button labels, privileges, screenshots), starting with the most-used modules. Rebuild locally with `tools/build-docs-site-locally.sh` after each batch and push the wiki.
+Step 30: review content accuracy module by module against the current screens (paths, button labels, privileges, screenshots), starting with the most-used modules. Batch 1 (automated checks of privileges, config keys, screen files and Path lines across the wiki; Pharmacy navigation) is done; next, module-by-module screenshots and step text, starting with Pharmacy and Inpatient. Rebuild locally with `tools/build-docs-site-locally.sh` after each batch and push the wiki.
 
 Local build: `tools/build-docs-site-locally.sh` (needs `../hmis.wiki`; set `MKDOCS` to pick the mkdocs binary). Ad-hoc working scripts (untracked, `tmp/`): `wiki_audit.py` (broken links, near-empty pages, duplicates), `fix_wiki_links.py`, `delete_wiki_pages.py` (deletes pages and repoints links; lists in `wiki-deleted-pages-batch*.txt`).
