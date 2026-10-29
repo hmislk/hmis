@@ -16,6 +16,8 @@ import com.divudi.core.data.CssTextAlign;
 import com.divudi.core.data.CssTextDecoration;
 import com.divudi.core.data.CssVerticalAlign;
 import com.divudi.core.data.InvestigationItemType;
+import com.divudi.core.data.lab.ReportPageSettings;
+import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.core.data.InvestigationItemValueType;
 import com.divudi.core.data.ItemType;
 import com.divudi.core.entity.Department;
@@ -98,6 +100,8 @@ public class InvestigationItemController implements Serializable {
      */
     @Inject
     SessionController sessionController;
+    @Inject
+    private ConfigOptionApplicationController configOptionApplicationController;
     @Inject
     InvestigationController investigationController;
     @Inject
@@ -381,6 +385,11 @@ public class InvestigationItemController implements Serializable {
 
                 nii.setName(ii.getName());
                 nii.setReportItemType(ii.getReportItemType());
+                nii.setPageNo(ii.getPageNo());
+                if (ReportPageSettings.isSettingsItem(ii)) {
+                    // the page's background, common-report and page-number settings
+                    nii.setHtmltext(ii.getHtmltext());
+                }
 
                 List<InvestigationItemValue> niivs = new ArrayList<>();
                 for (InvestigationItemValue iiv : ii.getInvestigationItemValues()) {
@@ -1516,6 +1525,175 @@ public class InvestigationItemController implements Serializable {
         listInvestigationItem();
     }
 
+    // ---- Pages of a multi-page template -------------------------------------
+    private int designerPage = 1;
+    private boolean previewBackground;
+    private ReportPageSettings designerPageSettings;
+
+    public boolean isMultiPageEnabled() {
+        return configOptionApplicationController.getBooleanValueByKey(ReportPageSettings.CONFIG_KEY_ENABLED, false);
+    }
+
+    /**
+     * Pages of the template being designed: the highest page of any non-retired
+     * item (settings items included), at least 1.
+     */
+    public int getDesignerPageCount() {
+        int pages = 1;
+        for (InvestigationItem ii : getItems()) {
+            pages = Math.max(pages, ReportPageSettings.pageOf(ii));
+        }
+        return pages;
+    }
+
+    public List<Integer> getDesignerPageItems() {
+        List<Integer> pages = new ArrayList<>();
+        int count = getDesignerPageCount();
+        for (int p = 1; p <= count; p++) {
+            pages.add(p);
+        }
+        return pages;
+    }
+
+    public int getDesignerPage() {
+        return designerPage;
+    }
+
+    public void setDesignerPage(int designerPage) {
+        this.designerPage = designerPage < 1 ? 1 : designerPage;
+        designerPageSettings = null;
+    }
+
+    public boolean isPreviewBackground() {
+        return previewBackground;
+    }
+
+    public void setPreviewBackground(boolean previewBackground) {
+        this.previewBackground = previewBackground;
+    }
+
+    /**
+     * New template items go to the page being designed. Page 1 keeps the
+     * stored value 0 that every existing item has.
+     */
+    private void applyDesignerPage(InvestigationItem item) {
+        if (designerPage > 1) {
+            item.setPageNo(designerPage);
+        }
+    }
+
+    private InvestigationItem findPageSettingsItem(int page) {
+        for (InvestigationItem ii : getItems()) {
+            if (ReportPageSettings.isSettingsItem(ii) && ReportPageSettings.pageOf(ii) == page) {
+                return ii;
+            }
+        }
+        return null;
+    }
+
+    private InvestigationItem findOrCreatePageSettingsItem(int page) {
+        InvestigationItem ii = findPageSettingsItem(page);
+        if (ii == null) {
+            ii = new InvestigationItem();
+            ii.setName(ReportPageSettings.SETTINGS_ITEM_NAME);
+            ii.setItem(currentInvestigation);
+            ii.setIxItemType(InvestigationItemType.Css);
+            ii.setPageNo(page > 1 ? page : 0);
+            ii.setHtmltext(new ReportPageSettings().toJson());
+            ii.setCreatedAt(new Date());
+            ii.setCreater(getSessionController().getLoggedUser());
+            currentInvestigation.getReportItems().add(ii);
+            getIxFacade().edit(currentInvestigation);
+            listInvestigationItem();
+            ii = findPageSettingsItem(page);
+        }
+        return ii;
+    }
+
+    public ReportPageSettings getDesignerPageSettings() {
+        if (designerPageSettings == null) {
+            InvestigationItem ii = findPageSettingsItem(designerPage);
+            designerPageSettings = ii == null ? new ReportPageSettings() : ReportPageSettings.fromJson(ii.getHtmltext());
+        }
+        return designerPageSettings;
+    }
+
+    /**
+     * "Page n of N" as it will print on the page being designed, for the preview.
+     */
+    public String getDesignerPageNumberText() {
+        return getDesignerPageSettings().formatPageNumber(designerPage, getDesignerPageCount());
+    }
+
+    public String getDesignerPageNumberStyle() {
+        InvestigationItem ii = findPageSettingsItem(designerPage);
+        if (ii != null && (ii.getRiLeft() != 0 || ii.getRiTop() != 0)) {
+            // nowrap: a narrow positioned box must not split "Page n of N" over two lines
+            return ii.getCssStyle() + "; position:absolute; z-index:1000; white-space:nowrap;";
+        }
+        return "position:absolute; bottom:8mm; left:0; width:100%; text-align:center; font-size:9pt; z-index:1000; white-space:nowrap;";
+    }
+
+    public void saveDesignerPageSettings() {
+        if (currentInvestigation == null || currentInvestigation.getId() == null) {
+            JsfUtil.addErrorMessage("Please select an investigation");
+            return;
+        }
+        InvestigationItem ii = findOrCreatePageSettingsItem(designerPage);
+        ii.setHtmltext(getDesignerPageSettings().toJson());
+        getFacade().edit(ii);
+        JsfUtil.addSuccessMessage("Page " + designerPage + " settings saved");
+    }
+
+    /**
+     * Select the hidden settings item of the page being designed, so the
+     * Positioning and Font tabs place the "Page n of N" text.
+     */
+    public void editPageNumberPlacement() {
+        current = findOrCreatePageSettingsItem(designerPage);
+        // rebuild the item list so the dropdown includes the selected settings item;
+        // otherwise a later full-form Save would submit "no selection" and save a blank item
+        listInvestigationItem();
+    }
+
+    public void addPage() {
+        if (currentInvestigation == null || currentInvestigation.getId() == null) {
+            JsfUtil.addErrorMessage("Please select an investigation");
+            return;
+        }
+        int newPage = getDesignerPageCount() + 1;
+        findOrCreatePageSettingsItem(newPage);
+        setDesignerPage(newPage);
+        JsfUtil.addSuccessMessage("Page " + newPage + " added");
+    }
+
+    public boolean isLastDesignerPageEmpty() {
+        int last = getDesignerPageCount();
+        if (last < 2) {
+            return false;
+        }
+        for (InvestigationItem ii : getItems()) {
+            if (ReportPageSettings.pageOf(ii) == last && !ReportPageSettings.isSettingsItem(ii)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public void removeLastPage() {
+        if (!isLastDesignerPageEmpty()) {
+            JsfUtil.addErrorMessage("Only an empty last page can be removed");
+            return;
+        }
+        int last = getDesignerPageCount();
+        InvestigationItem ii = findPageSettingsItem(last);
+        if (ii != null) {
+            removeSingleItem(ii);
+        }
+        listInvestigationItem();
+        setDesignerPage(Math.min(designerPage, getDesignerPageCount()));
+    }
+
     public void addNewLabel() {
         if (currentInvestigation == null) {
             JsfUtil.addErrorMessage("Please select an investigation");
@@ -1524,6 +1702,7 @@ public class InvestigationItemController implements Serializable {
         current = new InvestigationItem();
         current.setName("Label");
         current.setItem(currentInvestigation);
+        applyDesignerPage(current);
         current.setIxItemType(InvestigationItemType.Label);
         current.setCreatedAt(new Date());
         current.setCreater(getSessionController().getLoggedUser());
@@ -1618,6 +1797,7 @@ public class InvestigationItemController implements Serializable {
         current = new InvestigationItem();
         current.setName("New Value");
         current.setItem(currentInvestigation);
+        applyDesignerPage(current);
         current.setIxItemType(InvestigationItemType.Value);
 
         InvestigationItem lastItem = getLastReportItem();
@@ -1641,6 +1821,7 @@ public class InvestigationItemController implements Serializable {
         current = new InvestigationItem();
         current.setName("New Calculation");
         current.setItem(currentInvestigation);
+        applyDesignerPage(current);
         current.setIxItemType(InvestigationItemType.Calculation);
         InvestigationItem lastItem = getLastReportItem();
         if (lastItem != null) {
@@ -1672,6 +1853,7 @@ public class InvestigationItemController implements Serializable {
         current = new InvestigationItem();
         current.setName("New Flag");
         current.setItem(currentInvestigation);
+        applyDesignerPage(current);
         current.setIxItemType(InvestigationItemType.Flag);
         InvestigationItem lastItem = getLastReportItem();
         if (lastItem != null) {
@@ -1695,6 +1877,7 @@ public class InvestigationItemController implements Serializable {
         current = new InvestigationItem();
         current.setName("New Image");
         current.setItem(currentInvestigation);
+        applyDesignerPage(current);
         current.setIxItemType(InvestigationItemType.Image);
         InvestigationItem lastItem = getLastReportItem();
         if (lastItem != null) {
@@ -1710,6 +1893,23 @@ public class InvestigationItemController implements Serializable {
         listInvestigationItem();
     }
 
+    public void addNewReportImage() {
+        if (currentInvestigation == null) {
+            JsfUtil.addErrorMessage("Please select an investigation");
+            return;
+        }
+        current = new InvestigationItem();
+        current.setName("Analyzer Image");
+        current.setItem(currentInvestigation);
+        applyDesignerPage(current);
+        current.setIxItemType(InvestigationItemType.ReportImage);
+        current.setCreatedAt(new Date());
+        current.setCreater(getSessionController().getLoggedUser());
+        currentInvestigation.getReportItems().add(current);
+        getIxFacade().edit(currentInvestigation);
+        listInvestigationItem();
+    }
+
     public void addNewHtml() {
         if (currentInvestigation == null) {
             JsfUtil.addErrorMessage("Please select an investigation");
@@ -1718,6 +1918,7 @@ public class InvestigationItemController implements Serializable {
         current = new InvestigationItem();
         current.setName("Html Template");
         current.setItem(currentInvestigation);
+        applyDesignerPage(current);
         current.setIxItemType(InvestigationItemType.Html);
         current.setIxItemValueType(InvestigationItemValueType.Memo);
         current.setCreatedAt(new Date());
@@ -1902,6 +2103,13 @@ public class InvestigationItemController implements Serializable {
 
     public void setCurrentInvestigation(Investigation currentInvestigation) {
         this.currentInvestigation = currentInvestigation;
+        designerPage = 1;
+        designerPageSettings = null;
+        // a page-settings item of the previous investigation must not stay selected
+        if (current != null && ReportPageSettings.isSettingsItem(current)
+                && (current.getItem() == null || !current.getItem().equals(currentInvestigation))) {
+            current = null;
+        }
         listInvestigationItem();
     }
 
@@ -2252,6 +2460,12 @@ public class InvestigationItemController implements Serializable {
         l.add(InvestigationItemType.MeasurementUnit);
 
         userChangableItems = listInvestigationItemsFilteredByItemTypes(currentInvestigation, l);
+        userChangableItems.removeIf(ReportPageSettings::isSettingsItem);
+        if (current != null && ReportPageSettings.isSettingsItem(current)
+                && current.getItem() != null && current.getItem().equals(currentInvestigation)
+                && !userChangableItems.contains(current)) {
+            userChangableItems.add(current);
+        }
         return userChangableItems;
     }
 

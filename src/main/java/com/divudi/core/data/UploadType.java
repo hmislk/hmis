@@ -34,7 +34,8 @@ public enum UploadType {
     Web_Image("Web Image"),
     Report_background_image("Report Background Image"),
     Background_Image("Background Image"),
-    Diagnosis_Card_Template("Diagnosis Card Template");
+    Diagnosis_Card_Template("Diagnosis Card Template"),
+    Lab_Report_Page_Background("Lab Report Page Background");
 
     private final String label;
 
