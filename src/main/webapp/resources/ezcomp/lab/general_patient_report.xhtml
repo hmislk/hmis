@@ -34,6 +34,24 @@
                     escape="false"/>
             </div>
 
+            <!-- Inline copy of the lab.css rules for pages 2..N. p:printer copies this
+                 markup into its print frame, so printing does not depend on a freshly
+                 loaded lab.css (a cached old copy put every page's items onto page 1). -->
+            <h:panelGroup rendered="#{patientReportController.currentReportMultiPage}">
+                <style>
+                    .labReport.labReportNext{
+                        page-break-before: always;
+                        break-before: page;
+                        box-sizing: border-box;
+                    }
+                    @media print {
+                        .labReport.labReportNext{
+                            position: relative !important;
+                        }
+                    }
+                </style>
+            </h:panelGroup>
+
             <!-- Pages 2..N of a multi-page report; nothing is drawn for a single-page report. -->
             <ui:repeat value="#{patientReportController.extraPageNumbers}" var="pg">
                 <div id="divReport_p#{pg}" class="labReport labReportNext" style="height: 297mm;" >
