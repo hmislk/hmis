@@ -262,6 +262,7 @@ public class InwardBhtChargeAggregationService implements Serializable {
                 + " where i.retired = false"
                 + " and type(i.item) = :cls"
                 + " and i.billItem is null"
+                + " and i.item.inwardChargeType is not null"
                 + " and enc in :encs"
                 + " group by enc.id, i.item.inwardChargeType";
 
