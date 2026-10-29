@@ -356,8 +356,10 @@
 
                     <div class="printingOnly" >
 
+                        <!-- Format routing mirrors inward_bill_service.xhtml (bill print preview) so a reprint matches the original print.
+                             The "and not ..." guards on the FiveFivePaper branch are the existing fallback from that page, not a new key meaning. -->
                         <h:panelGroup id="gpBillPreview" layout="block" styleClass="m-3 reprintBillPreview">
-                            
+
                             <h:panelGroup rendered="#{sessionController.departmentPreference.inwardServiceBillPaperType eq 'PosPaper'
                                                       or (configOptionApplicationController.getBooleanValueByKey('Inward Servise Bill size is POS Paper')
                                                           and sessionController.departmentPreference.inwardServiceBillPaperType eq 'FiveFivePaper')}">
@@ -369,7 +371,7 @@
                                                        and not configOptionApplicationController.getBooleanValueByKey('Inward Servise Bill size is A4Printed Paper')
                                                        and not configOptionApplicationController.getBooleanValueByKey('Inward Servise Bill size is FiveFiveCustom3 Paper')
                                                        and not configOptionApplicationController.getBooleanValueByKey('Inward Servise Bill size is 5x8 inch Paper')
-                                                       and not configOptionApplicationController.getBooleanValueByKey('Inward Servise Bill size is FiveFivePrinted paper')}">
+                                                       and not configOptionApplicationController.getBooleanValueByKey('Inward Servise Bill size is FiveFivePrinted paper', true)}">
                                 <print:five_five_paper_with_headings_inward_service bill="#{inwardSearch.bill}"/>  
                             </h:panelGroup>
 
@@ -431,7 +433,7 @@
                                                        and not configOptionApplicationController.getBooleanValueByKey('Inward Servise Bill size is A4Printed Paper')
                                                        and not configOptionApplicationController.getBooleanValueByKey('Inward Servise Bill size is FiveFiveCustom3 Paper')
                                                        and not configOptionApplicationController.getBooleanValueByKey('Inward Servise Bill size is 5x8 inch Paper')
-                                                       and not configOptionApplicationController.getBooleanValueByKey('Inward Servise Bill size is FiveFivePrinted paper')}">
+                                                       and not configOptionApplicationController.getBooleanValueByKey('Inward Servise Bill size is FiveFivePrinted paper', true)}">
                                 <ui:repeat value="#{inwardSearch.bill.refundBills}" var="bill" rendered="#{!inwardSearch.bill.cancelled}">
                                     <bill:inwardBillPrintPos bill="#{bill}" duplicate="false"/>
                                 </ui:repeat>
