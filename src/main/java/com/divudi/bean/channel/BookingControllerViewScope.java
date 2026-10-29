@@ -98,6 +98,7 @@ import com.divudi.core.facade.OnlineBookingFacade;
 import com.divudi.core.facade.PaymentFacade;
 import com.divudi.core.facade.SessionInstanceFacade;
 import com.divudi.core.util.CommonFunctions;
+import com.divudi.core.util.SessionBookingLock;
 import com.divudi.service.ChannelService;
 
 import java.io.Serializable;
@@ -144,8 +145,9 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 
     // Striped JVM-wide locks for settleCredit(), keyed by the booking bill id.
     // Static so a double-submit, a second tab and a second cashier all contend on
-    // the same lock; striped so the set stays bounded (issue #23776).
-    private static final Object[] SETTLE_LOCKS = new Object[64];
+    // the same lock; striped so the set stays bounded (issue #23776). Package-private:
+    // the By Month page settles the same bookings and shares these locks (#24724).
+    static final Object[] SETTLE_LOCKS = new Object[64];
 
     static {
         for (int i = 0; i < SETTLE_LOCKS.length; i++) {
@@ -866,36 +868,38 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         List<Integer> lastSessionReservedNumbers = CommonFunctions.convertStringToIntegerList(getSelectedSessionInstance().getOriginatingSession().getReserveNumbers());
         List<Integer> reservedNumbers = CommonFunctions.convertStringToIntegerList(getSelectedSessionInstanceForRechedule().getOriginatingSession().getReserveNumbers());
 
-        Integer count = null;
-        boolean reservedSession;
+        try (SessionBookingLock.Hold hold = SessionBookingLock.acquire(getSelectedSessionInstanceForRechedule())) {
+            Integer count = null;
+            boolean reservedSession;
 
-        if (reservedBooking) {
-            if (lastSessionReservedNumbers.isEmpty()) {
-                JsfUtil.addErrorMessage("No Reserved Numbers FInd !");
-                return;
-            }
-            for (Integer rn : lastSessionReservedNumbers) {
-//                System.out.println("rn = " + rn);
-                if (bs.getSerialNo() == rn) {
-                    count = serviceSessionBean.getNextAvailableReservedNumber(getSelectedSessionInstanceForRechedule(), reservedNumbers, selectedReserverdBookingNumber);
-                    if (count == null) {
-                        count = serviceSessionBean.getNextNonReservedSerialNumber(getSelectedSessionInstanceForRechedule(), reservedNumbers);
-                        JsfUtil.addErrorMessage("No reserved numbers available. Normal number is given");
+            if (reservedBooking) {
+                if (lastSessionReservedNumbers.isEmpty()) {
+                    JsfUtil.addErrorMessage("No Reserved Numbers FInd !");
+                    return;
+                }
+                for (Integer rn : lastSessionReservedNumbers) {
+    //                System.out.println("rn = " + rn);
+                    if (bs.getSerialNo() == rn) {
+                        count = serviceSessionBean.getNextAvailableReservedNumber(getSelectedSessionInstanceForRechedule(), reservedNumbers, selectedReserverdBookingNumber);
+                        if (count == null) {
+                            count = serviceSessionBean.getNextNonReservedSerialNumber(getSelectedSessionInstanceForRechedule(), reservedNumbers);
+                            JsfUtil.addErrorMessage("No reserved numbers available. Normal number is given");
+                        }
                     }
                 }
-            }
 
-        } else {
-            count = serviceSessionBean.getNextNonReservedSerialNumber(getSelectedSessionInstanceForRechedule(), reservedNumbers);
+            } else {
+                count = serviceSessionBean.getNextNonReservedSerialNumber(getSelectedSessionInstanceForRechedule(), reservedNumbers);
+            }
+            if (count != null) {
+                newBillSession.setSerialNo(count);
+    //            System.out.println("count = " + count);
+            } else {
+                newBillSession.setSerialNo(1);
+    //            System.out.println("count serial number= " + bs.getSerialNo());
+            }
+            getBillSessionFacade().edit(newBillSession);
         }
-        if (count != null) {
-            newBillSession.setSerialNo(count);
-//            System.out.println("count = " + count);
-        } else {
-            newBillSession.setSerialNo(1);
-//            System.out.println("count serial number= " + bs.getSerialNo());
-        }
-        getBillSessionFacade().edit(newBillSession);
         bs.setRecheduledSession(true);
         bs.setRescheduledToBillSession(newBillSession);
         getBillSessionFacade().edit(bs);
@@ -1972,6 +1976,12 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     public void markSessionInstanceAsStarted() {
         if (selectedSessionInstance == null) {
             JsfUtil.addErrorMessage("No session selected");
+            return;
+        }
+        // Re-read the flag: another user may have cancelled the session after this page was opened
+        SessionInstance latestSessionInstance = selectedSessionInstance.getId() == null ? null : sessionInstanceFacade.find(selectedSessionInstance.getId());
+        if (selectedSessionInstance.isCancelled() || (latestSessionInstance != null && latestSessionInstance.isCancelled())) {
+            JsfUtil.addErrorMessage("This session has been cancelled and cannot be started.");
             return;
         }
 
@@ -4332,18 +4342,23 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             }
 
         }
-        if (getAssignedReleasedAppoinmentNumber() != 0L) {
-            Long num = getAssignedReleasedAppoinmentNumber();
-            boolean checkNumber = checkApoinmentNumberIsAvailable(num.intValue());
+        // A staff-chosen released number must still be free when the booking row is inserted,
+        // so hold the lock from the check until the bill (and its BillSession) is saved (#24785).
+        try (SessionBookingLock.Hold hold = getAssignedReleasedAppoinmentNumber() != 0L
+                ? SessionBookingLock.acquire(getSelectedSessionInstance()) : null) {
+            if (getAssignedReleasedAppoinmentNumber() != 0L) {
+                Long num = getAssignedReleasedAppoinmentNumber();
+                boolean checkNumber = checkApoinmentNumberIsAvailable(num.intValue());
 
-            if (!checkNumber) {
-                JsfUtil.addErrorMessage("No is already Booked by Online Booking now. Change Number ");
-                return;
+                if (!checkNumber) {
+                    JsfUtil.addErrorMessage("No is already Booked by Online Booking now. Change Number ");
+                    return;
+                }
             }
-        }
 
-        saveSelected(patient);
-        printingBill = saveBilledBill(reservedBooking);
+            saveSelected(patient);
+            printingBill = saveBilledBill(reservedBooking);
+        }
 
         if (printingBill.getBillTypeAtomic()
                 .getBillFinanceType() == BillFinanceType.CASH_IN) {
@@ -6465,17 +6480,19 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         bs.setStaff(getSelectedSessionInstance().getStaff());
 
         List<Integer> reservedNumbers = CommonFunctions.convertStringToIntegerList(getSelectedSessionInstance().getOriginatingSession().getReserveNumbers());
-        Integer count;
+        try (SessionBookingLock.Hold hold = SessionBookingLock.acquire(getSelectedSessionInstance())) {
+            Integer count;
 
-        count = serviceSessionBean.getNextNonReservedSerialNumber(getSelectedSessionInstance(), reservedNumbers);
+            count = serviceSessionBean.getNextNonReservedSerialNumber(getSelectedSessionInstance(), reservedNumbers);
 
-        if (count != null) {
-            bs.setSerialNo(count);
-        } else {
-            bs.setSerialNo(1);
+            if (count != null) {
+                bs.setSerialNo(count);
+            } else {
+                bs.setSerialNo(1);
+            }
+
+            getBillSessionFacade().create(bs);
         }
-
-        getBillSessionFacade().create(bs);
 
         List<BillFee> savingBillFees = new ArrayList<>();
 
@@ -7417,28 +7434,30 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         bs.setStaff(getSelectedSessionInstance().getStaff());
 
         List<Integer> reservedNumbers = CommonFunctions.convertStringToIntegerList(getSelectedSessionInstance().getOriginatingSession().getReserveNumbers());
-        Integer count;
+        try (SessionBookingLock.Hold hold = SessionBookingLock.acquire(getSelectedSessionInstance())) {
+            Integer count;
 
-        if (forReservedNumbers) {
-            // Pass the selectedReservedBookingNumber to the service method
-            count = serviceSessionBean.getNextAvailableReservedNumber(getSelectedSessionInstance(), reservedNumbers, selectedReserverdBookingNumber);
-            if (count == null) {
+            if (forReservedNumbers) {
+                // Pass the selectedReservedBookingNumber to the service method
+                count = serviceSessionBean.getNextAvailableReservedNumber(getSelectedSessionInstance(), reservedNumbers, selectedReserverdBookingNumber);
+                if (count == null) {
+                    count = serviceSessionBean.getNextNonReservedSerialNumber(getSelectedSessionInstance(), reservedNumbers);
+                    JsfUtil.addErrorMessage("No reserved numbers available. Normal number is given");
+                }
+            } else if (assignedReleasedAppoinmentNumber != null && assignedReleasedAppoinmentNumber != 0L) {
+                count = assignedReleasedAppoinmentNumber.intValue();
+            } else {
                 count = serviceSessionBean.getNextNonReservedSerialNumber(getSelectedSessionInstance(), reservedNumbers);
-                JsfUtil.addErrorMessage("No reserved numbers available. Normal number is given");
             }
-        } else if (assignedReleasedAppoinmentNumber != null && assignedReleasedAppoinmentNumber != 0L) {
-            count = assignedReleasedAppoinmentNumber.intValue();
-        } else {
-            count = serviceSessionBean.getNextNonReservedSerialNumber(getSelectedSessionInstance(), reservedNumbers);
-        }
 
-        if (count != null) {
-            bs.setSerialNo(count);
-        } else {
-            bs.setSerialNo(1);
-        }
+            if (count != null) {
+                bs.setSerialNo(count);
+            } else {
+                bs.setSerialNo(1);
+            }
 
-        getBillSessionFacade().create(bs);
+            getBillSessionFacade().create(bs);
+        }
 
         return bs;
     }

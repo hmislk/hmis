@@ -308,6 +308,13 @@ public class TransferIssueDirectController implements Serializable {
     }
 
     private void saveBill() {
+        // A blank prefix gives numbers starting with "/" under the prefix-based
+        // strategies; store the default "DI" as other bill types do (#24806)
+        String billSuffix = configOptionApplicationController.getLongTextValueByKey("Bill Number Suffix for " + BillTypeAtomic.PHARMACY_DIRECT_ISSUE, "");
+        if (billSuffix == null || billSuffix.trim().isEmpty()) {
+            configOptionApplicationController.setLongTextValueByKey("Bill Number Suffix for " + BillTypeAtomic.PHARMACY_DIRECT_ISSUE, "DI");
+        }
+
         // Only generate deptId if not already set
         if (issuedBill.getDeptId() == null || issuedBill.getDeptId().isEmpty()) {
             String deptId;

@@ -499,19 +499,8 @@ public class TransferReceiveNativeSqlService {
                     .setParameter(2, issuedBillId)
                     .executeUpdate();
 
-            // Insert into the Bill.forwardReferenceBills join table
-            try {
-                String fwdTable = resolveTable("BILL_FORWARDREFERENCEBILLS");
-                em.createNativeQuery(
-                    "INSERT IGNORE INTO " + fwdTable
-                    + " (Bill_ID, forwardReferenceBills_ID) VALUES (?,?)")
-                    .setParameter(1, issuedBillId)
-                    .setParameter(2, billId)
-                    .executeUpdate();
-            } catch (Exception ex) {
-                LOGGER.log(Level.WARNING, "[TRNativeSettle] Could not insert forwardReferenceBill link: {0}",
-                        ex.getMessage());
-            }
+            // Bill.forwardReferenceBills is mappedBy backwardReferenceBill, so the
+            // backwardReferenceBill_ID set above is the link; there is no join table (#24807).
 
             // Step 9: Update fullyIssued if all items are now received
             updateFullyIssuedIfComplete(issuedBillId,

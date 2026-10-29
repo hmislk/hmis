@@ -153,7 +153,7 @@
                                             <ui:repeat value="#{pharmacyController.institutionStockAggregated.entrySet().toArray()}" var="instEntry" rendered="#{not empty pharmacyController.institutionStockAggregated}">
                                                 <tr>
                                                     <td>
-                                                        <h:outputText value="#{instEntry.key.name}"/>
+                                                        <h:outputText value="#{instEntry.key}"/>
                                                     </td>
                                                     <td class="text-end">
                                                         <h:outputText value="#{instEntry.value}">
@@ -657,20 +657,20 @@
                                     </div>
                                 </h:panelGroup>
                                 <p:dataTable styleClass="noBorder" value="#{pharmacyController.pendingGrns}" var="pendingGrn" rendered="#{not empty pharmacyController.pendingGrns}">
-                                    <p:column headerText="GRN No">#{pendingGrn.bill.deptId}</p:column>
+                                    <p:column headerText="GRN No">#{pendingGrn.billDeptId}</p:column>
                                     <p:column headerText="GRN Date">
-                                        <h:outputLabel value="#{pendingGrn.bill.createdAt}">
+                                        <h:outputLabel value="#{pendingGrn.billCreatedAt}">
                                             <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateFormat}" />
                                         </h:outputLabel>
                                     </p:column>
-                                    <p:column headerText="Supplier">#{pendingGrn.bill.fromInstitution.name}</p:column>
+                                    <p:column headerText="Supplier">#{pendingGrn.fromInstitutionName}</p:column>
                                     <p:column headerText="Qty Received" class="text-end">
-                                        <h:outputText value="#{pendingGrn.pharmaceuticalBillItem.qty}">
+                                        <h:outputText value="#{pendingGrn.qty}">
                                             <f:convertNumber integerOnly="true" />
                                         </h:outputText>
                                     </p:column>
                                     <p:column headerText="Status">
-                                        <h:outputText value="#{pendingGrn.bill.billTypeAtomic == 'PHARMACY_GRN_PRE' ? 'Saved' : 'Awaiting Approval'}" />
+                                        <h:outputText value="#{pendingGrn.billTypeAtomic == 'PHARMACY_GRN_PRE' ? 'Saved' : 'Awaiting Approval'}" />
                                     </p:column>
                                 </p:dataTable>
 
@@ -770,13 +770,13 @@
                                                 <ui:repeat value="#{pharmacyController.departmentStockDtos}" var="deptStock" rendered="#{not empty pharmacyController.departmentStockDtos}">
                                                     <tr>
                                                         <td>
-                                                            <h:outputText value="#{deptStock.department.name}"/>
+                                                            <h:outputText value="#{deptStock.departmentName}"/>
                                                         </td>
                                                         <td>
-                                                            <h:outputText value="#{deptStock.department.institution.name}"/>
+                                                            <h:outputText value="#{deptStock.institutionName}"/>
                                                         </td>
                                                         <td>
-                                                            <h:outputText value="#{deptStock.department.site.name}"/>
+                                                            <h:outputText value="#{deptStock.siteName}"/>
                                                         </td>
                                                         <td class="text-end">
                                                             <h:outputText value="#{deptStock.qty}">
@@ -812,7 +812,7 @@
                                                 <ui:repeat value="#{pharmacyController.institutionStockAggregated.entrySet().toArray()}" var="instEntry" rendered="#{not empty pharmacyController.institutionStockAggregated}">
                                                     <tr>
                                                         <td>
-                                                            <h:outputText value="#{instEntry.key.name}"/>
+                                                            <h:outputText value="#{instEntry.key}"/>
                                                         </td>
                                                         <td class="text-end">
                                                             <h:outputText value="#{instEntry.value}">
@@ -848,7 +848,7 @@
                                                 <ui:repeat value="#{pharmacyController.siteStocks.entrySet().toArray()}" var="siteEntry" rendered="#{not empty pharmacyController.siteStocks}">
                                                     <tr>
                                                         <td>
-                                                            <h:outputText value="#{siteEntry.key.name}"/>
+                                                            <h:outputText value="#{siteEntry.key}"/>
                                                         </td>
                                                         <td class="text-end">
                                                             <h:outputText value="#{siteEntry.value}">
@@ -1404,34 +1404,34 @@
                                         <ui:repeat value="#{pharmacyController.pendingGrns}" var="pendingGrnRow">
                                             <tr>
                                                 <td>
-                                                    <h:outputText value="#{pendingGrnRow.bill.referenceBill.deptId}"/>
+                                                    <h:outputText value="#{pendingGrnRow.referenceBillDeptId}"/>
                                                 </td>
                                                 <td>
-                                                    <h:outputText value="#{pendingGrnRow.bill.department.name}"/>
+                                                    <h:outputText value="#{pendingGrnRow.departmentName}"/>
                                                 </td>
                                                 <td>
-                                                    <h:outputText value="#{pendingGrnRow.bill.createdAt}">
+                                                    <h:outputText value="#{pendingGrnRow.billCreatedAt}">
                                                         <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}" />
                                                     </h:outputText>
                                                 </td>
                                                 <td>
-                                                    <h:outputText value="#{pendingGrnRow.bill.fromInstitution.name}"/>
+                                                    <h:outputText value="#{pendingGrnRow.fromInstitutionName}"/>
                                                 </td>
                                                 <td>
-                                                    <h:outputText value="#{pendingGrnRow.item.name}"/>
+                                                    <h:outputText value="#{pendingGrnRow.itemName}"/>
                                                 </td>
                                                 <td class="text-end">
-                                                    <h:outputText value="#{pendingGrnRow.pharmaceuticalBillItem.qty}">
+                                                    <h:outputText value="#{pendingGrnRow.qty}">
                                                         <f:convertNumber integerOnly="true" />
                                                     </h:outputText>
                                                 </td>
                                                 <td class="text-end">
-                                                    <h:outputText value="#{pendingGrnRow.pharmaceuticalBillItem.freeQty}">
+                                                    <h:outputText value="#{pendingGrnRow.freeQty}">
                                                         <f:convertNumber integerOnly="true" />
                                                     </h:outputText>
                                                 </td>
                                                 <td>
-                                                    <h:outputText value="#{pendingGrnRow.bill.billTypeAtomic == 'PHARMACY_GRN_PRE' ? 'Saved' : 'Awaiting Approval'}"/>
+                                                    <h:outputText value="#{pendingGrnRow.billTypeAtomic == 'PHARMACY_GRN_PRE' ? 'Saved' : 'Awaiting Approval'}"/>
                                                 </td>
                                             </tr>
                                         </ui:repeat>

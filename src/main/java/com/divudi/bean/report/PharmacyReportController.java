@@ -14601,7 +14601,8 @@ public class PharmacyReportController implements Serializable {
         response.setContentType("application/pdf");
         response.setHeader("Content-Disposition", "attachment; filename=Pharmacy_Sales_Report_" + dates + ".pdf");
 
-        SimpleDateFormat sdf = new SimpleDateFormat("dd MMMM yyyy");
+        // Bill date and the generated-on line carry the time, as the app's other report exports do
+        SimpleDateFormat sdf = new SimpleDateFormat(sessionController.getApplicationPreference().getLongDateTimeFormat());
 
         try (OutputStream out = response.getOutputStream()) {
             Document document = new Document(PageSize.A4.rotate());
@@ -14610,7 +14611,7 @@ public class PharmacyReportController implements Serializable {
             String institutionName = sessionController.getInstitution() != null ? sessionController.getInstitution().getName() : "No Logged Institution";
             document.add(new Paragraph(institutionName, FontFactory.getFont(FontFactory.HELVETICA_BOLD, 18)));
             document.add(new Paragraph("Pharmacy Sales Report", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 18)));
-            document.add(new Paragraph("Date: " + sdf.format(new Date()), FontFactory.getFont(FontFactory.HELVETICA, 12)));
+            document.add(new Paragraph("Generated On: " + sdf.format(new Date()), FontFactory.getFont(FontFactory.HELVETICA, 12)));
             document.add(new Paragraph(" "));
 
             if (cogsBillDtos == null || cogsBillDtos.isEmpty()) {
@@ -14631,7 +14632,7 @@ public class PharmacyReportController implements Serializable {
             table.setSpacingBefore(10);
             // COST VALUE and PURCHASE VALUE carry the grand totals, which wrap onto
             // two lines at 1.5f, so those two columns are given a little more room.
-            float[] columnWidths = {1.2f, 1.8f, 3.5f, 1.5f, 2.2f, 1f, 1.5f, 1.9f, 1.5f, 1.9f, 2f, 3.5f, 1.5f, 2f, 1.5f};
+            float[] columnWidths = {1.8f, 1.8f, 3.5f, 1.5f, 2.2f, 1f, 1.5f, 1.9f, 1.5f, 1.9f, 2f, 3.5f, 1.5f, 2f, 1.5f};
             table.setWidths(columnWidths);
 
             addHeaderRow(table);
@@ -16677,6 +16678,7 @@ public class PharmacyReportController implements Serializable {
      */
     private int populateDataRows(Sheet sheet, List<CostOfGoodSoldBillDTO> bills, int startRow) {
         AtomicInteger rowNum = new AtomicInteger(startRow);
+        SimpleDateFormat sdf = new SimpleDateFormat(sessionController.getApplicationPreference().getLongDateTimeFormat());
         for (CostOfGoodSoldBillDTO bill : bills) {
             List<BillItemDTO> billItems = bill.getBillItems();
             if (billItems == null || billItems.isEmpty()) {
@@ -16688,7 +16690,7 @@ public class PharmacyReportController implements Serializable {
                 Row row = sheet.createRow(rowNum.getAndIncrement());
 
                 if (i == 0) {
-                    row.createCell(0).setCellValue(bill.getBillCreatedAt() != null ? bill.getBillCreatedAt().toString() : "");
+                    row.createCell(0).setCellValue(bill.getBillCreatedAt() != null ? sdf.format(bill.getBillCreatedAt()) : "");
                     row.createCell(1).setCellValue(bill.getBillDeptId() != null ? bill.getBillDeptId() : "");
                 }
 

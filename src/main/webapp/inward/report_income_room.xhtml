@@ -39,8 +39,8 @@
                             <h:outputLabel value="Credit Company : " ></h:outputLabel>
                             <p:selectOneMenu class="w-100 mx-4" id="lstCc"   value="#{inwardReportController1.institution}" >
                                 <f:selectItem itemLabel="All Credit Companies"/>
-                                <f:selectItems  value="#{creditCompanyController.creditCompanies}" var="cc" 
-                                                itemValue="#{ccc}" itemLabel="#{ccc.name}"></f:selectItems>
+                                <f:selectItems  value="#{creditCompanyController.creditCompanies}" var="crCo" 
+                                                itemValue="#{crCo}" itemLabel="#{crCo.name}"></f:selectItems>
                             </p:selectOneMenu>
 
                         </h:panelGrid>

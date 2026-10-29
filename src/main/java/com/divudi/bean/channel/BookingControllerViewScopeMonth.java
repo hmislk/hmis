@@ -85,6 +85,7 @@ import com.divudi.core.facade.AgentReferenceBookFacade;
 import com.divudi.core.facade.PaymentFacade;
 import com.divudi.core.facade.SessionInstanceFacade;
 import com.divudi.core.util.CommonFunctions;
+import com.divudi.core.util.SessionBookingLock;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
@@ -498,33 +499,35 @@ public class BookingControllerViewScopeMonth implements Serializable {
         List<Integer> lastSessionReservedNumbers = CommonFunctions.convertStringToIntegerList(getSelectedSessionInstance().getOriginatingSession().getReserveNumbers());
         List<Integer> reservedNumbers = CommonFunctions.convertStringToIntegerList(getSelectedSessionInstanceForRechedule().getOriginatingSession().getReserveNumbers());
 
-        Integer count = null;
-        boolean reservedSession;
+        try (SessionBookingLock.Hold hold = SessionBookingLock.acquire(getSelectedSessionInstanceForRechedule())) {
+            Integer count = null;
+            boolean reservedSession;
 
-        if (reservedBooking) {
-            if (lastSessionReservedNumbers.isEmpty()) {
-                JsfUtil.addErrorMessage("No Reserved Numbers FInd !");
-                return;
-            }
-            for (Integer rn : lastSessionReservedNumbers) {
-                if (bs.getSerialNo() == rn) {
-                    count = serviceSessionBean.getNextAvailableReservedNumber(getSelectedSessionInstanceForRechedule(), reservedNumbers, selectedReserverdBookingNumber);
-                    if (count == null) {
-                        count = serviceSessionBean.getNextNonReservedSerialNumber(getSelectedSessionInstanceForRechedule(), reservedNumbers);
-                        JsfUtil.addErrorMessage("No reserved numbers available. Normal number is given");
+            if (reservedBooking) {
+                if (lastSessionReservedNumbers.isEmpty()) {
+                    JsfUtil.addErrorMessage("No Reserved Numbers FInd !");
+                    return;
+                }
+                for (Integer rn : lastSessionReservedNumbers) {
+                    if (bs.getSerialNo() == rn) {
+                        count = serviceSessionBean.getNextAvailableReservedNumber(getSelectedSessionInstanceForRechedule(), reservedNumbers, selectedReserverdBookingNumber);
+                        if (count == null) {
+                            count = serviceSessionBean.getNextNonReservedSerialNumber(getSelectedSessionInstanceForRechedule(), reservedNumbers);
+                            JsfUtil.addErrorMessage("No reserved numbers available. Normal number is given");
+                        }
                     }
                 }
-            }
 
-        } else {
-            count = serviceSessionBean.getNextNonReservedSerialNumber(getSelectedSessionInstanceForRechedule(), reservedNumbers);
+            } else {
+                count = serviceSessionBean.getNextNonReservedSerialNumber(getSelectedSessionInstanceForRechedule(), reservedNumbers);
+            }
+            if (count != null) {
+                newBillSession.setSerialNo(count);
+            } else {
+                newBillSession.setSerialNo(1);
+            }
+            getBillSessionFacade().edit(newBillSession);
         }
-        if (count != null) {
-            newBillSession.setSerialNo(count);
-        } else {
-            newBillSession.setSerialNo(1);
-        }
-        getBillSessionFacade().edit(newBillSession);
         bs.setRecheduledSession(true);
         bs.setRescheduledToBillSession(newBillSession);
         // bs.setReferenceBillSession(newBillSession);
@@ -1296,6 +1299,12 @@ public class BookingControllerViewScopeMonth implements Serializable {
     public void markSessionInstanceAsStarted() {
         if (selectedSessionInstance == null) {
             JsfUtil.addErrorMessage("No session selected");
+            return;
+        }
+        // Re-read the flag: another user may have cancelled the session after this page was opened
+        SessionInstance latestSessionInstance = selectedSessionInstance.getId() == null ? null : sessionInstanceFacade.find(selectedSessionInstance.getId());
+        if (selectedSessionInstance.isCancelled() || (latestSessionInstance != null && latestSessionInstance.isCancelled())) {
+            JsfUtil.addErrorMessage("This session has been cancelled and cannot be started.");
             return;
         }
         if (!selectedSessionInstance.isArrived()) {
@@ -4982,17 +4991,19 @@ public class BookingControllerViewScopeMonth implements Serializable {
         bs.setStaff(getSelectedSessionInstance().getStaff());
 
         List<Integer> reservedNumbers = CommonFunctions.convertStringToIntegerList(getSelectedSessionInstance().getOriginatingSession().getReserveNumbers());
-        Integer count;
+        try (SessionBookingLock.Hold hold = SessionBookingLock.acquire(getSelectedSessionInstance())) {
+            Integer count;
 
-        count = serviceSessionBean.getNextNonReservedSerialNumber(getSelectedSessionInstance(), reservedNumbers);
+            count = serviceSessionBean.getNextNonReservedSerialNumber(getSelectedSessionInstance(), reservedNumbers);
 
-        if (count != null) {
-            bs.setSerialNo(count);
-        } else {
-            bs.setSerialNo(1);
+            if (count != null) {
+                bs.setSerialNo(count);
+            } else {
+                bs.setSerialNo(1);
+            }
+
+            getBillSessionFacade().create(bs);
         }
-
-        getBillSessionFacade().create(bs);
 
         List<BillFee> savingBillFees = new ArrayList<>();
 
@@ -5800,26 +5811,28 @@ public class BookingControllerViewScopeMonth implements Serializable {
         bs.setStaff(getSelectedSessionInstance().getStaff());
 
         List<Integer> reservedNumbers = CommonFunctions.convertStringToIntegerList(getSelectedSessionInstance().getOriginatingSession().getReserveNumbers());
-        Integer count;
+        try (SessionBookingLock.Hold hold = SessionBookingLock.acquire(getSelectedSessionInstance())) {
+            Integer count;
 
-        if (forReservedNumbers) {
-            // Pass the selectedReservedBookingNumber to the service method
-            count = serviceSessionBean.getNextAvailableReservedNumber(getSelectedSessionInstance(), reservedNumbers, selectedReserverdBookingNumber);
-            if (count == null) {
+            if (forReservedNumbers) {
+                // Pass the selectedReservedBookingNumber to the service method
+                count = serviceSessionBean.getNextAvailableReservedNumber(getSelectedSessionInstance(), reservedNumbers, selectedReserverdBookingNumber);
+                if (count == null) {
+                    count = serviceSessionBean.getNextNonReservedSerialNumber(getSelectedSessionInstance(), reservedNumbers);
+                    JsfUtil.addErrorMessage("No reserved numbers available. Normal number is given");
+                }
+            } else {
                 count = serviceSessionBean.getNextNonReservedSerialNumber(getSelectedSessionInstance(), reservedNumbers);
-                JsfUtil.addErrorMessage("No reserved numbers available. Normal number is given");
             }
-        } else {
-            count = serviceSessionBean.getNextNonReservedSerialNumber(getSelectedSessionInstance(), reservedNumbers);
-        }
 
-        if (count != null) {
-            bs.setSerialNo(count);
-        } else {
-            bs.setSerialNo(1);
-        }
+            if (count != null) {
+                bs.setSerialNo(count);
+            } else {
+                bs.setSerialNo(1);
+            }
 
-        getBillSessionFacade().create(bs);
+            getBillSessionFacade().create(bs);
+        }
 
         return bs;
     }
@@ -6371,6 +6384,14 @@ public class BookingControllerViewScopeMonth implements Serializable {
             return true;
         }
 
+        // Fresh DB read; runs inside settleCredit()'s per-bill lock, so a concurrent
+        // settle of the same booking has either fully saved its paid bill or not started.
+        Bill currentBookingBill = getBillFacade().findWithoutCache(getBillSession().getBill().getId());
+        if (currentBookingBill != null && (currentBookingBill.getPaidAmount() != 0 || currentBookingBill.getPaidBill() != null)) {
+            JsfUtil.addErrorMessage("Payment Already Settled.");
+            return true;
+        }
+
         if (settlePaymentMethod == paymentMethod.OnCall) {
             JsfUtil.addErrorMessage("Settlement using 'On Call' is not allowed. Please select a different payment method.");
             return true;
@@ -6394,6 +6415,21 @@ public class BookingControllerViewScopeMonth implements Serializable {
     }
 
     public void settleCredit() {
+        if (getBillSession() == null || getBillSession().getBill() == null || getBillSession().getBill().getId() == null) {
+            JsfUtil.addErrorMessage("No booking selected to settle.");
+            return;
+        }
+        // Hold the lock across the already-paid check AND every settlement write,
+        // otherwise two submits can both pass the check before either saves (#23776).
+        // Shares BookingControllerViewScope's locks, so a By Date and a By Month
+        // settle of the same booking also serialize.
+        Long bookingBillId = getBillSession().getBill().getId();
+        synchronized (BookingControllerViewScope.SETTLE_LOCKS[(int) Math.floorMod(bookingBillId, (long) BookingControllerViewScope.SETTLE_LOCKS.length)]) {
+            settleCreditUnderLock();
+        }
+    }
+
+    private void settleCreditUnderLock() {
         if (errorCheckForSettle()) {
             return;
         }

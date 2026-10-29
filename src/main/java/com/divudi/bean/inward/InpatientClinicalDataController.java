@@ -1773,6 +1773,7 @@ public class InpatientClinicalDataController implements Serializable {
             JsfUtil.addErrorMessage("Please select a procedure");
             return;
         }
+        saveNewClinicalAssessmentBeforeAddingFindings();
         if (encounterProcedure.getId() == null) {
             clinicalFindingValueFacade.create(encounterProcedure);
         } else {
@@ -1860,6 +1861,7 @@ public class InpatientClinicalDataController implements Serializable {
             JsfUtil.addErrorMessage("Please select a visit");
             return;
         }
+        saveNewClinicalAssessmentBeforeAddingFindings();
         ClinicalFindingValue dx = new ClinicalFindingValue();
         dx.setItemValue(diagnosis);
 //        dx.setClinicalEntity(diagnosis);
@@ -2329,6 +2331,24 @@ public class InpatientClinicalDataController implements Serializable {
         fillCurrentPatientLists(current.getPatient());
         fillCurrentEncounterLists(current);
         return "/inward/inward_clinical_assessment?faces-redirect=true";
+    }
+
+    /**
+     * A diagnosis or procedure is saved against the assessment, so a new
+     * assessment is saved first when one is added before the user clicks
+     * Save. Only clinical assessments are saved this way.
+     */
+    private void saveNewClinicalAssessmentBeforeAddingFindings() {
+        if (current == null || current.getId() != null) {
+            return;
+        }
+        if (current.getPatientEncounterType() != PatientEncounterType.ClinicalAssessment) {
+            return;
+        }
+        current.setDepartment(sessionController.getDepartment());
+        current.setCreatedAt(new Date());
+        current.setCreater(sessionController.getLoggedUser());
+        getFacade().create(current);
     }
 
     public String saveClinicalAssessment() {
@@ -3477,6 +3497,12 @@ public class InpatientClinicalDataController implements Serializable {
             return;
         }
         current.getClinicalFindingValues().remove(removingCfv);
+        // Removing it from the list alone leaves the row in the database, so retire it
+        // (same as PatientEncounterController.removeCfv).
+        if (removingCfv.getId() != null) {
+            removingCfv.setRetired(true);
+            clinicalFindingValueFacade.edit(removingCfv);
+        }
         saveSelected();
         getEncounterFindingValues().remove(removingCfv);
         JsfUtil.addSuccessMessage("Removed");
