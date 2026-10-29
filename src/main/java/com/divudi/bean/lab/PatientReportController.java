@@ -3238,9 +3238,10 @@ public class PatientReportController implements Serializable {
     public String getPageNumberStyle(int page) {
         InvestigationItem ii = getPageSettingsItem(page);
         if (ii != null && (ii.getRiLeft() != 0 || ii.getRiTop() != 0)) {
-            return ii.getCssStyle() + "; position:absolute; z-index:1000;";
+            // nowrap: a narrow positioned box must not split "Page n of N" over two lines
+            return ii.getCssStyle() + "; position:absolute; z-index:1000; white-space:nowrap;";
         }
-        return "position:absolute; bottom:8mm; left:0; width:100%; text-align:center; font-size:9pt; z-index:1000;";
+        return "position:absolute; bottom:8mm; left:0; width:100%; text-align:center; font-size:9pt; z-index:1000; white-space:nowrap;";
     }
 
     public PatientReport getLastPatientReport(Investigation ix) {
