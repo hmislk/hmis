@@ -110,6 +110,8 @@ public class InwardInvoiceJournalController implements Serializable {
     private double grandTotalGross;
     private double grandTotalDiscount;
     private double grandTotalServiceCharge;
+    private double grandTotalChargeTypeDiscount;
+    private double grandTotalBillLevelDiscount;
     private double grandTotalCharges;
     private double grandTotalFinalPayment;
     private double grandTotalDeposit;
@@ -133,6 +135,8 @@ public class InwardInvoiceJournalController implements Serializable {
         grandTotalGross          = 0;
         grandTotalDiscount       = 0;
         grandTotalServiceCharge  = 0;
+        grandTotalChargeTypeDiscount = 0;
+        grandTotalBillLevelDiscount  = 0;
         grandTotalCharges        = 0;
         grandTotalFinalPayment   = 0;
         grandTotalDeposit        = 0;
@@ -149,6 +153,9 @@ public class InwardInvoiceJournalController implements Serializable {
 
         // --- bulk fetch discount / service-charge totals per encounter ---
         Map<Long, double[]> discountMarginMap = chargeAggregationService.fetchDiscountAndMarginByEncounter(encounters);
+
+        // --- bulk fetch charge-type / bill-level discounts entered on the final bill ---
+        Map<Long, double[]> finalBillDiscountMap = fetchFinalBillDiscountsByEncounter(encounters);
 
         // --- bulk fetch "Make a Payment" (final payment) totals for all encounters at once ---
         Map<Long, Double> finalPaymentMap = fetchFinalPaymentTotalsByEncounter(encounters);
@@ -167,8 +174,8 @@ public class InwardInvoiceJournalController implements Serializable {
 
         // --- build one row per encounter ---
         for (PatientEncounter enc : encounters) {
-            InwardInvoiceJournalRowDto row = buildRow(enc, chargeMap, discountMarginMap, finalPaymentMap, depositMap,
-                    creditCompanyDueMap, creditMap, creditCompanyNamesMap);
+            InwardInvoiceJournalRowDto row = buildRow(enc, chargeMap, discountMarginMap, finalBillDiscountMap,
+                    finalPaymentMap, depositMap, creditCompanyDueMap, creditMap, creditCompanyNamesMap);
             reportRows.add(row);
 
             // accumulate column totals and active types
@@ -182,7 +189,9 @@ public class InwardInvoiceJournalController implements Serializable {
             grandTotalGross            += row.getGrossTotal();
             grandTotalDiscount         += row.getTotalDiscount();
             grandTotalServiceCharge    += row.getTotalServiceCharge();
-            grandTotalCharges          += row.getGrandTotal();
+            grandTotalChargeTypeDiscount += row.getChargeTypeDiscount();
+            grandTotalBillLevelDiscount  += row.getBillLevelDiscount();
+            grandTotalCharges         += row.getGrandTotal();
             grandTotalFinalPayment     += row.getTotalFinalPayment();
             grandTotalDeposit          += row.getTotalDeposit();
             grandTotalCreditCompanyDue += row.getCreditCompanyDue();
@@ -208,6 +217,68 @@ public class InwardInvoiceJournalController implements Serializable {
     // -------------------------------------------------------------------------
     // Query helpers
     // -------------------------------------------------------------------------
+
+    /**
+     * Charge-type and bill-level discounts entered on the Final Bill page, read
+     * from each encounter's current final bill (issue #24937).
+     *
+     * Since the three-level final bill discount (July 2026) these two are
+     * stored only on the final bill: the bill-level discount in
+     * {@code BillFinanceDetails.billDiscount}, the charge-type discounts in the
+     * final bill's own {@code BillItem.chargeTypeDiscount} rows (see
+     * {@code BhtSummeryController.writeDiscountBreakdownToFinanceDetails()} and
+     * {@code saveBillItem()}). Neither reaches the service, issue or fee bills
+     * that {@link InwardBhtChargeAggregationService} reads, so without this the
+     * journal's Net Total stays above the final bill's. Older final bills pushed
+     * charge-type discounts down onto the fees and had no bill-level discount;
+     * both fields are null or 0 on them, so nothing is counted twice.
+     * Returns Map&lt;encounterId, double[]{chargeTypeDiscount, billLevelDiscount}&gt;.
+     */
+    private Map<Long, double[]> fetchFinalBillDiscountsByEncounter(List<PatientEncounter> encounters) {
+        Map<Long, double[]> result = new HashMap<>();
+
+        // Bound as ids, not entities: EclipseLink serialises the Bill objects
+        // themselves into the SQL for "b in :bills" on a root variable, which
+        // then matches nothing.
+        List<Long> finalBillIds = new ArrayList<>();
+        for (PatientEncounter enc : encounters) {
+            if (enc.getFinalBill() != null && enc.getFinalBill().getId() != null) {
+                finalBillIds.add(enc.getFinalBill().getId());
+            }
+        }
+        if (finalBillIds.isEmpty()) {
+            return result;
+        }
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("billIds", finalBillIds);
+
+        String chargeTypeJpql = "select bi.bill.patientEncounter.id, sum(bi.chargeTypeDiscount)"
+                + " from BillItem bi"
+                + " where bi.retired = false"
+                + " and bi.bill.id in :billIds"
+                + " group by bi.bill.patientEncounter.id";
+        List<Object[]> chargeTypeRows = billFacade.findObjectArrayByJpql(chargeTypeJpql, params, TemporalType.TIMESTAMP);
+        if (chargeTypeRows != null) {
+            for (Object[] r : chargeTypeRows) {
+                if (r[1] != null) {
+                    result.computeIfAbsent((Long) r[0], k -> new double[2])[0] = ((Number) r[1]).doubleValue();
+                }
+            }
+        }
+
+        String billLevelJpql = "select b.patientEncounter.id, bfd.billDiscount"
+                + " from Bill b join b.billFinanceDetails bfd"
+                + " where b.id in :billIds"
+                + " and bfd.billDiscount is not null";
+        List<Object[]> billLevelRows = billFacade.findObjectArrayByJpql(billLevelJpql, params, TemporalType.TIMESTAMP);
+        if (billLevelRows != null) {
+            for (Object[] r : billLevelRows) {
+                result.computeIfAbsent((Long) r[0], k -> new double[2])[1] = ((Number) r[1]).doubleValue();
+            }
+        }
+        return result;
+    }
 
     /**
      * Single bulk query: sum of "Make a Payment" totals grouped by encounter.
@@ -441,6 +512,7 @@ public class InwardInvoiceJournalController implements Serializable {
             PatientEncounter enc,
             Map<Long, Map<InwardChargeType, Double>> chargeMap,
             Map<Long, double[]> discountMarginMap,
+            Map<Long, double[]> finalBillDiscountMap,
             Map<Long, Double> finalPaymentMap,
             Map<Long, Double> depositMap,
             Map<Long, Double> creditCompanyDueMap,
@@ -471,6 +543,13 @@ public class InwardInvoiceJournalController implements Serializable {
         if (dm != null) {
             row.setTotalDiscount(dm[0]);
             row.setTotalServiceCharge(dm[1]);
+        }
+
+        // charge-type / bill-level discounts from the final bill
+        double[] fbd = finalBillDiscountMap.get(enc.getId());
+        if (fbd != null) {
+            row.setChargeTypeDiscount(fbd[0]);
+            row.setBillLevelDiscount(fbd[1]);
         }
 
         // final payment / deposit / credit company due
@@ -545,6 +624,7 @@ public class InwardInvoiceJournalController implements Serializable {
         columnTotals     = new EnumMap<>(InwardChargeType.class);
         activeChargeTypes = EnumSet.noneOf(InwardChargeType.class);
         grandTotalGross = grandTotalDiscount = grandTotalServiceCharge = 0;
+        grandTotalChargeTypeDiscount = grandTotalBillLevelDiscount = 0;
         grandTotalCharges = grandTotalCreditSettlement = 0;
         grandTotalFinalPayment = grandTotalDeposit = grandTotalCreditCompanyDue = 0;
     }
@@ -599,6 +679,8 @@ public class InwardInvoiceJournalController implements Serializable {
     public double getGrandTotalGross() { return grandTotalGross; }
     public double getGrandTotalDiscount() { return grandTotalDiscount; }
     public double getGrandTotalServiceCharge() { return grandTotalServiceCharge; }
+    public double getGrandTotalChargeTypeDiscount() { return grandTotalChargeTypeDiscount; }
+    public double getGrandTotalBillLevelDiscount() { return grandTotalBillLevelDiscount; }
     public double getGrandTotalCharges() { return grandTotalCharges; }
     public double getGrandTotalFinalPayment() { return grandTotalFinalPayment; }
     public double getGrandTotalDeposit() { return grandTotalDeposit; }

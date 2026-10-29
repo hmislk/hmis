@@ -46,6 +46,13 @@ public class InwardInvoiceJournalRowDto implements Serializable {
     private double totalServiceCharge;
 
     // -------------------------------------------------------------------------
+    // Discounts entered only on the Final Bill page, stored only on the final
+    // bill and not on any service, issue or fee bill (issue #24937)
+    // -------------------------------------------------------------------------
+    private double chargeTypeDiscount;
+    private double billLevelDiscount;
+
+    // -------------------------------------------------------------------------
     // Deposit / settlement summary
     // -------------------------------------------------------------------------
     /** "Make a Payment" total (BillTypeAtomic.INWARD_PAYMENT) — despite the old name, not a deposit. */
@@ -77,7 +84,7 @@ public class InwardInvoiceJournalRowDto implements Serializable {
     }
 
     public double getGrandTotal() {
-        return getGrossTotal() - totalDiscount + totalServiceCharge;
+        return getGrossTotal() - totalDiscount + totalServiceCharge - chargeTypeDiscount - billLevelDiscount;
     }
 
     // -------------------------------------------------------------------------
@@ -112,6 +119,12 @@ public class InwardInvoiceJournalRowDto implements Serializable {
 
     public double getTotalServiceCharge() { return totalServiceCharge; }
     public void setTotalServiceCharge(double totalServiceCharge) { this.totalServiceCharge = totalServiceCharge; }
+
+    public double getChargeTypeDiscount() { return chargeTypeDiscount; }
+    public void setChargeTypeDiscount(double chargeTypeDiscount) { this.chargeTypeDiscount = chargeTypeDiscount; }
+
+    public double getBillLevelDiscount() { return billLevelDiscount; }
+    public void setBillLevelDiscount(double billLevelDiscount) { this.billLevelDiscount = billLevelDiscount; }
 
     public double getTotalFinalPayment() { return totalFinalPayment; }
     public void setTotalFinalPayment(double totalFinalPayment) { this.totalFinalPayment = totalFinalPayment; }
