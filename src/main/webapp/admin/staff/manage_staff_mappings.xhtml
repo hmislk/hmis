@@ -1,0 +1,70 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                template="/admin/staff/admin_manage_staff_index.xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui">
+
+    <ui:define name="subcontent">
+        <h:form id="frmMappings">
+            <p:growl id="msg" />
+            <p:panel header="Staff Mappings">
+                <h:panelGroup layout="block" style="margin-bottom: 1em;">
+                    <p:outputLabel styleClass="text-muted"
+                                   value="Choose a mapping type, then add the staff who should be offered for it. For Sample Transporter, the lists only use these staff when the application option 'Sample Transporter List Is Limited To Staff Mapped As Sample Transporters' is on." />
+                </h:panelGroup>
+
+                <div class="row mb-2">
+                    <div class="col-md-4">
+                        <p:outputLabel value="Mapping Type" for="selType" />
+                        <p:selectOneMenu id="selType" value="#{staffMappingController.mappingType}" styleClass="w-100">
+                            <f:selectItems value="#{staffMappingController.mappingTypes}" var="mt" itemLabel="#{mt.label}" itemValue="#{mt}" />
+                            <p:ajax event="change" listener="#{staffMappingController.fillMappings}" update="tblMappings" />
+                        </p:selectOneMenu>
+                    </div>
+                    <div class="col-md-5">
+                        <p:outputLabel value="Staff" for="acStaff" />
+                        <p:autoComplete id="acStaff"
+                                        value="#{staffMappingController.staff}"
+                                        completeMethod="#{staffController.completeStaff}"
+                                        var="s"
+                                        itemLabel="#{s.person.nameWithTitle}"
+                                        itemValue="#{s}"
+                                        maxResults="20"
+                                        styleClass="w-100"
+                                        inputStyleClass="form-control"
+                                        placeholder="Search staff by name or code">
+                            <p:column headerText="Code" style="padding: 6px;">#{s.code}</p:column>
+                            <p:column headerText="Name" style="padding: 6px;">#{s.person.nameWithTitle}</p:column>
+                        </p:autoComplete>
+                    </div>
+                    <div class="col-md-3 d-flex align-items-end">
+                        <p:commandButton value="Add" icon="fa-solid fa-plus" class="ui-button-success w-100"
+                                         action="#{staffMappingController.addMapping}"
+                                         process="@form" update="@form" />
+                    </div>
+                </div>
+
+                <p:dataTable id="tblMappings" value="#{staffMappingController.mappings}" var="m"
+                             rowKey="#{m.id}" emptyMessage="No staff mapped for this type" rows="15" paginator="true" paginatorPosition="bottom">
+                    <p:column headerText="Code" width="120">
+                        <h:outputText value="#{m.staff.code}" />
+                    </p:column>
+                    <p:column headerText="Staff">
+                        <h:outputText value="#{m.staff.person.nameWithTitle}" />
+                    </p:column>
+                    <p:column headerText="Type">
+                        <h:outputText value="#{m.mappingType.label}" />
+                    </p:column>
+                    <p:column headerText="Remove" width="100">
+                        <p:commandButton icon="fa-solid fa-trash" class="ui-button-danger"
+                                         action="#{staffMappingController.removeMapping(m)}"
+                                         process="@this" update="@form" />
+                    </p:column>
+                </p:dataTable>
+            </p:panel>
+        </h:form>
+    </ui:define>
+</ui:composition>
