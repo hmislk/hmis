@@ -75,6 +75,8 @@ plugins:
   # search results land on the page that replaced them.
   - redirects:
       redirect_maps:
+        'privileges.md': 'Pharmacy-Configuration-and-Privileges.md'
+        'configuration_keys.md': 'Pharmacy-Configuration-and-Privileges.md'
         'Add-Doctor-Specialities.md': 'Admin-Doctor-Specialities-Catalog.md'
         'Add-a-Consultant.md': 'Practitioner-Register-Consultant.md'
         'Add-a-Doctor.md': 'Practitioner-Register-Doctor.md'

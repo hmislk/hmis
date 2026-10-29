@@ -59,7 +59,7 @@ The menu is generated from the wiki's own **`Wiki-Article-Index.md`** on every b
 - [x] 26. Skeleton pages written from the code: Suppliers (absorbs Manufacturers, Importers, Item Suppliers), Wholesale Transactions, Referral Reports, Revenue Reports, Lab Report Templates, Lab Setup Tools, Notification System, EHR Settings, Change Log
 - [x] 27. Outdated content fixed: privilege names that no longer exist (transfer privileges → `PharmacyDisbursement*`, room details, role example), Department Preferences screen option list, composite component names in the disposal-return developer page
 - [x] 28. Verify locally: 0 broken index links, 0 broken page links (4,920 checked), 0 `mkdocs build` warnings (was 51), More Articles holds only `Pharmacy/Readme`
-- [ ] 29. Merge the phase 4 PR (generator + converter); push the wiki commit (deletions included); check the live site
+- [x] 29. Merge the phase 4 PR (generator + converter); push the wiki commit (deletions included); check the live site
 - [ ] 30. Later, module by module: review page content against the current screens (accuracy, screenshots). The checks so far were automatic (links, privilege names, screen files) plus the pages touched above
 
 ## Phase 3 design (agreed 2026-10-28)
@@ -148,9 +148,10 @@ Local build against the current wiki, compared with the phase 1 converter:
 - 2026-10-28 — Phase 3: PR #24889 merged; new index pushed to the wiki; publish workflow ran (gollum + manual); live site checked.
 - 2026-10-28 — Phase 4: filed #24891; generator + converter changes; wiki clean-up committed locally in `../hmis.wiki` (not pushed); verified locally (steps 22–28).
 - 2026-10-28 — Phase 2: filed #24866. Converter now resolves links by page name and fixes lists; Material icon logo; stubs left out of the menu. Verified locally.
+- 2026-10-29 — Phase 4: PR #24897 merged (with redirects for removed pages); wiki commit pushed; gollum publish run succeeded; live site checked (User Guide first tab, module cards then "Other resources", old URLs redirect, new pages live).
 
 ## Next step
 
-Step 29: after the phase 4 PR merges, push `../hmis.wiki` (`git -C ../hmis.wiki push`). The push triggers the publish workflow by itself; then check the live site (home page module cards, User Guide first tab, a deleted page's old link now lands on its replacement). Then step 30.
+Step 30: review content accuracy module by module against the current screens (paths, button labels, privileges, screenshots), starting with the most-used modules. Rebuild locally with `tools/build-docs-site-locally.sh` after each batch and push the wiki.
 
-Working scripts (untracked, `tmp/`): `wiki_audit.py` (broken links, near-empty pages, duplicates), `fix_wiki_links.py`, `delete_wiki_pages.py` (deletes pages and repoints links; lists in `wiki-deleted-pages-batch*.txt`), `build_site.sh` (local build mirroring the workflow).
+Local build: `tools/build-docs-site-locally.sh` (needs `../hmis.wiki`; set `MKDOCS` to pick the mkdocs binary). Ad-hoc working scripts (untracked, `tmp/`): `wiki_audit.py` (broken links, near-empty pages, duplicates), `fix_wiki_links.py`, `delete_wiki_pages.py` (deletes pages and repoints links; lists in `wiki-deleted-pages-batch*.txt`).
