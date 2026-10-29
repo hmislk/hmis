@@ -4,6 +4,7 @@
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:p="http://primefaces.org/ui"
       xmlns:ez="http://xmlns.jcp.org/jsf/composite/ezcomp"
+      xmlns:my_authenticator="http://xmlns.jcp.org/jsf/composite/ezcomp/pages/admin"
       xmlns:f="http://xmlns.jcp.org/jsf/core">
     <h:head >
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
@@ -113,9 +114,15 @@
                     margin: 0 !important;
                     border: none !important;">
                     <ez:user_icon_bar rendered="false"/>
-                    <ui:insert name="content" class="m-0 p-0 borderless" >
+                    <h:panelGroup rendered="#{not twoFactorAuthController.setupRequiredNow}" >
+                        <ui:insert name="content" class="m-0 p-0 borderless" >
 
-                    </ui:insert>
+                        </ui:insert>
+                    </h:panelGroup>
+                    <!-- 2FA is required but no app is linked: nothing else opens until setup is done -->
+                    <h:panelGroup rendered="#{twoFactorAuthController.setupRequiredNow}" >
+                        <my_authenticator:my_authenticator/>
+                    </h:panelGroup>
                 </h:panelGroup>
             </h:panelGroup>
             <h:panelGroup rendered="#{sessionController.logged and sessionController.department eq null}" class="w-100">

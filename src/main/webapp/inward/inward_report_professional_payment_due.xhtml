@@ -54,8 +54,8 @@
                             <h:outputLabel value="Institution"/>
                             <p:selectOneMenu  class="mx-4 w-100" id="lstCc"   value="#{searchController.searchKeyword.ins}" >
                                 <f:selectItem itemLabel="All Credit Companies"/>
-                                <f:selectItems  value="#{creditCompanyController.creditCompanies}" var="cc"
-                                                itemValue="#{cc}" itemLabel="#{cc.name}"></f:selectItems>
+                                <f:selectItems  value="#{creditCompanyController.creditCompanies}" var="crCo"
+                                                itemValue="#{crCo}" itemLabel="#{crCo.name}"></f:selectItems>
                             </p:selectOneMenu>
                             <h:outputLabel value="Date Basis" />
                             <p:selectOneMenu class="mx-4 w-100" value="#{searchController.dateBasis}">

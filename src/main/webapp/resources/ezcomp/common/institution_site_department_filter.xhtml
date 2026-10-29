@@ -8,6 +8,7 @@
 
     <cc:interface>
         <cc:attribute name="controller" required="true" type="com.divudi.bean.common.ControllerWithReportFilters" />
+        <cc:attribute name="departmentRequired" type="java.lang.Boolean" default="false" shortDescription="When true, the empty department option reads Select Department instead of All Departments" />
     </cc:interface>
 
     <cc:implementation>
@@ -53,19 +54,19 @@
                         </h:panelGroup>
                         <h:panelGroup id="cmbDept">
                             <p:selectOneMenu rendered="#{cc.attrs.controller.institution eq null and cc.attrs.controller.site eq null}" styleClass="w-100" value="#{cc.attrs.controller.department}" filter="true" filterMatchMode="contains">
-                                <f:selectItem itemLabel="All Departments" />
+                                <f:selectItem itemLabel="#{cc.attrs.departmentRequired ? 'Select Department' : 'All Departments'}" />
                                 <f:selectItems value="#{departmentController.getDepartmentsOfInstitutionAndSite()}" var="d" itemLabel="#{d.name}" itemValue="#{d}" />
                             </p:selectOneMenu>
                             <p:selectOneMenu rendered="#{cc.attrs.controller.institution eq null and cc.attrs.controller.site ne null}" styleClass="w-100" value="#{cc.attrs.controller.department}" filter="true" filterMatchMode="contains">
-                                <f:selectItem itemLabel="All Departments" />
+                                <f:selectItem itemLabel="#{cc.attrs.departmentRequired ? 'Select Department' : 'All Departments'}" />
                                 <f:selectItems value="#{departmentController.getDepartmentsOfInstitutionAndSite(cc.attrs.controller.site)}" var="d" itemLabel="#{d.name}" itemValue="#{d}" />
                             </p:selectOneMenu>
                             <p:selectOneMenu rendered="#{cc.attrs.controller.institution ne null and cc.attrs.controller.site eq null}" styleClass="w-100" value="#{cc.attrs.controller.department}" filter="true" filterMatchMode="contains">
-                                <f:selectItem itemLabel="All Departments" />
+                                <f:selectItem itemLabel="#{cc.attrs.departmentRequired ? 'Select Department' : 'All Departments'}" />
                                 <f:selectItems value="#{departmentController.getDepartmentsOfInstitutionAndSiteForInstitution(cc.attrs.controller.institution)}" var="d" itemLabel="#{d.name}" itemValue="#{d}" />
                             </p:selectOneMenu>
                             <p:selectOneMenu rendered="#{cc.attrs.controller.institution ne null and cc.attrs.controller.site ne null}" styleClass="w-100" value="#{cc.attrs.controller.department}" filter="true" filterMatchMode="contains">
-                                <f:selectItem itemLabel="All Departments" />
+                                <f:selectItem itemLabel="#{cc.attrs.departmentRequired ? 'Select Department' : 'All Departments'}" />
                                 <f:selectItems value="#{departmentController.getDepartmentsOfInstitutionAndSite(cc.attrs.controller.institution, cc.attrs.controller.site)}" var="d" itemLabel="#{d.name}" itemValue="#{d}" />
                             </p:selectOneMenu>
                         </h:panelGroup>
