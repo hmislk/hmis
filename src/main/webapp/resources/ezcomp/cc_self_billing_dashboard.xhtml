@@ -4,7 +4,8 @@
       xmlns:cc="http://xmlns.jcp.org/jsf/composite"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:f="http://xmlns.jcp.org/jsf/core"
-      xmlns:p="http://primefaces.org/ui">
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:pt="http://xmlns.jcp.org/jsf/passthrough">
 
     <!-- INTERFACE -->
     <cc:interface>
@@ -12,10 +13,13 @@
 
     <!-- IMPLEMENTATION -->
     <cc:implementation>
+        <h:outputScript library="js" name="cc_self_user_menu.js" target="body"/>
 
         <div class="cc-dash">
 
             <div class="cc-hero">
+                <!-- Decorative circles live in their own clipped layer so the user menu can drop below the hero. -->
+                <div class="cc-hero-bg"></div>
                 <div class="cc-hero-left">
                     <h:outputText styleClass="cc-hero-title" value="Collecting Centre Self Billing"/>
                     <h:outputText 
@@ -24,17 +28,65 @@
                         rendered="#{sessionController.institution != null}"/>
                 </div>
                 <div class="cc-hero-right" rendered="#{sessionController.loggedUser != null}">
-                    <div class="cc-hero-chip">
-                        <div class="cc-avatar">
+                    <!-- User chip: click opens the user settings menu below it. -->
+                    <div class="cc-user-menu">
+                    <button type="button"
+                            class="cc-hero-chip cc-user-menu-toggle"
+                            title="User settings"
+                            aria-haspopup="true"
+                            aria-expanded="false">
+                        <span class="cc-avatar">
                             <h:outputText styleClass="fas fa-user"/>
-                        </div>
-                        <div class="cc-hero-chip-text">
-                            <h:outputText 
+                        </span>
+                        <span class="cc-hero-chip-text">
+                            <h:outputText
                                 styleClass="cc-user-name"
                                 value="#{sessionController.loggedUser.webUserPerson.name}"
                                 rendered="#{sessionController.loggedUser.webUserPerson != null}"/>
                             <h:outputText styleClass="cc-user-role" value="#{sessionController.loggedUser.name}"/>
+                        </span>
+                        <h:outputText styleClass="fas fa-chevron-down cc-user-menu-caret"/>
+                    </button>
+                    <div class="cc-user-menu-panel" role="menu">
+                        <div class="cc-user-menu-head">
+                            <div class="cc-user-menu-avatar">
+                                <h:outputText styleClass="fas fa-user"/>
+                            </div>
+                            <div>
+                                <h:outputText styleClass="cc-user-menu-name"
+                                              value="#{sessionController.loggedUser.webUserPerson.name}"
+                                              rendered="#{sessionController.loggedUser.webUserPerson != null}"/>
+                                <h:outputText styleClass="cc-user-menu-sub" value="#{sessionController.loggedUser.name}"/>
+                            </div>
                         </div>
+                        <span class="cc-user-menu-label">User Settings</span>
+                        <h:commandLink id="lnkCcChangePassword"
+                                       styleClass="cc-user-menu-item"
+                                       pt:role="menuitem"
+                                       action="#{collectingCentreSelfCommonController.navigateToCollectingCentreSelfChangePassword()}">
+                            <span class="cc-detail-icon cc-c-red">
+                                <h:outputText styleClass="fas fa-lock"/>
+                            </span>
+                            <span class="cc-user-menu-item-text">
+                                <h:outputText styleClass="cc-user-menu-item-title" value="Change Password"/>
+                                <h:outputText styleClass="cc-user-menu-item-desc" value="Update your sign-in password"/>
+                            </span>
+                            <h:outputText styleClass="fas fa-chevron-right cc-user-menu-arrow"/>
+                        </h:commandLink>
+                        <h:commandLink id="lnkCcAbout"
+                                       styleClass="cc-user-menu-item"
+                                       pt:role="menuitem"
+                                       action="#{collectingCentreSelfCommonController.navigateToCollectingCentreSelfAbout()}">
+                            <span class="cc-detail-icon cc-c-indigo">
+                                <h:outputText styleClass="fas fa-info-circle"/>
+                            </span>
+                            <span class="cc-user-menu-item-text">
+                                <h:outputText styleClass="cc-user-menu-item-title" value="About"/>
+                                <h:outputText styleClass="cc-user-menu-item-desc" value="Software version and your account"/>
+                            </span>
+                            <h:outputText styleClass="fas fa-chevron-right cc-user-menu-arrow"/>
+                        </h:commandLink>
+                    </div>
                     </div>
                     <h:panelGroup id="ccHeroActions" layout="block" styleClass="cc-hero-actions">
                         <!-- Notifications open in a popup; the full notifications page uses the
