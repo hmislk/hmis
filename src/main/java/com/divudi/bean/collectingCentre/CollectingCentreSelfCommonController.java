@@ -1,6 +1,7 @@
 package com.divudi.bean.collectingCentre;
 
 import com.divudi.bean.common.SessionController;
+import com.divudi.bean.common.TwoFactorAuthController;
 import com.divudi.bean.common.UserNotificationController;
 import com.divudi.bean.common.WebUserController;
 import com.divudi.bean.lab.PatientInvestigationController;
@@ -65,6 +66,8 @@ public class CollectingCentreSelfCommonController implements Serializable {
     private WebUserController webUserController;
     @Inject
     private UserNotificationController userNotificationController;
+    @Inject
+    private TwoFactorAuthController twoFactorAuthController;
 
     @EJB
     private BillFacade billFacade;
@@ -167,6 +170,17 @@ public class CollectingCentreSelfCommonController implements Serializable {
 
     public String navigateToCollectingCentreSelfAbout() {
         return "/collecting_centre/cc_self_about?faces-redirect=true";
+    }
+
+    /**
+     * Opens the self-service Authenticator App page. The main menu's My
+     * Authenticator App page uses the menu template, which collecting centre
+     * self-billing users don't get, so this page reuses TwoFactorAuthController
+     * inside the self-service layout.
+     */
+    public String navigateToCollectingCentreSelfAuthenticator() {
+        twoFactorAuthController.cancelSelfSetup();
+        return "/collecting_centre/cc_self_authenticator?faces-redirect=true";
     }
     // </editor-fold>
 
