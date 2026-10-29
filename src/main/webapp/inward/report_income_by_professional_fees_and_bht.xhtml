@@ -35,7 +35,7 @@
                             <p:selectOneMenu  id="lstCc"   value="#{inwardReportController1.institution}" >
                                 <f:selectItem itemLabel="All Credit Companies"/>
                                 <f:selectItems  value="#{creditCompanyController.creditCompanies}" var="crCo" 
-                                                itemValue="#{ccc}" itemLabel="#{ccc.name}"></f:selectItems>
+                                                itemValue="#{crCo}" itemLabel="#{crCo.name}"></f:selectItems>
                             </p:selectOneMenu>
                             <h:outputLabel value="Speciality : " ></h:outputLabel>
                             <p:autoComplete value="#{inwardReportController1.speciality}" 
