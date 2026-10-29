@@ -752,3 +752,7 @@ A `page.once('dialog', d => d.accept())` handler inside `browser_run_code` does 
 ## 161. Re-selecting the already-selected `p:selectOneMenu` option fires no `p:ajax` — the listener never runs
 
 Picking the option that is already selected raises no `change` event, so `<p:ajax listener=...>` and its `update` do not run. When testing a listener that resets dependent fields, select a *different* option (e.g. "All Institutions" instead of the default institution).
+
+## 172. Cashier and payment pages repeat form buttons in the left sidebar
+
+On `cashier/*` and `payments/*` pages the left accordion repeats labels such as *Start Shift* and *Settle IOUs*. `getByRole('button', {name}).first()` can hit the sidebar link, which reopens the page and silently discards the form. Scope the locator to the page's own form. If the form has an explicit `id`, use `button[id^='<formId>:']`. If it has none (e.g. `cashier/initial_fund_bill.xhtml`), anchor on text only that form contains: `page.locator('form', { has: page.getByText('Funds List') }).getByRole('button', { name: 'Start Shift' })`. Give any new page's form an explicit `id`.

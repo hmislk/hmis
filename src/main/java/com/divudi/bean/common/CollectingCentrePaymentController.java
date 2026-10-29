@@ -1007,7 +1007,7 @@ public class CollectingCentrePaymentController implements Serializable {
             return;
         }
 
-        if (comment == null || comment.isEmpty()) {
+        if (comment == null || comment.trim().isEmpty()) {
             ccPaymentSettlingStarted = false;
             JsfUtil.addErrorMessage("Comment is Missing");
             return;

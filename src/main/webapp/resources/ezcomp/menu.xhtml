@@ -2042,8 +2042,15 @@
                         ajax="false"  
                         rendered="#{webUserController.hasPrivilege('ChangeMyPassword')}" 
                         action="#{sessionController.navigateToChangePasswordByUser}" 
-                        value="Change My Password" 
+                        value="Change My Password"
                         icon="pi pi-lock">
+                    </p:menuitem>
+                    <p:menuitem
+                        ajax="false"
+                        rendered="#{twoFactorAuthController.twoFactorEnabled}"
+                        action="#{twoFactorAuthController.navigateToMyAuthenticator()}"
+                        value="My Authenticator App"
+                        icon="pi pi-shield">
                     </p:menuitem>
                     <p:menuitem 
                         ajax="false"  

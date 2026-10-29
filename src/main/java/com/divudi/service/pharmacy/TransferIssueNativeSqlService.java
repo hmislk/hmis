@@ -653,7 +653,8 @@ public class TransferIssueNativeSqlService {
                 .setParameter(3, billId)
                 .executeUpdate();
 
-        // Step 8: Link backwardReferenceBill and forwardReferenceBills join table
+        // Step 8: Link backwardReferenceBill. Bill.forwardReferenceBills is mappedBy
+        // backwardReferenceBill, so this column is the link; there is no join table (#24807).
         long requestedBillId = -1L;
         if (bill.getBackwardReferenceBill() != null && bill.getBackwardReferenceBill().getId() != null) {
             requestedBillId = bill.getBackwardReferenceBill().getId();
@@ -662,19 +663,6 @@ public class TransferIssueNativeSqlService {
                     .setParameter(1, requestedBillId)
                     .setParameter(2, billId)
                     .executeUpdate();
-
-            try {
-                String fwdTable = resolveTable("BILL_FORWARDREFERENCEBILLS");
-                em.createNativeQuery(
-                    "INSERT IGNORE INTO " + fwdTable
-                    + " (Bill_ID, forwardReferenceBills_ID) VALUES (?,?)")
-                    .setParameter(1, requestedBillId)
-                    .setParameter(2, billId)
-                    .executeUpdate();
-            } catch (Exception ex) {
-                LOGGER.log(Level.WARNING, "[TINativeSettle] Could not insert forwardReferenceBill link: {0}",
-                        ex.getMessage());
-            }
         }
 
         // Step 9: Update remainingQty on each requested BillItem atomically.

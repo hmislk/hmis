@@ -234,6 +234,18 @@
 
                                     <p:separator style="margin: 2rem 0;"/>
 
+                                    <div class="d-flex align-items-center mb-2">
+                                        <p:outputLabel for="sortOrder" value="Sort by:" style="font-weight: bold; margin-right: 8px;"/>
+                                        <p:selectOneMenu id="sortOrder" value="#{pharmacyStockTakeController.snapshotSortOrder}">
+                                            <f:selectItems value="#{pharmacyStockTakeController.snapshotSortOrders}"
+                                                           var="so" itemValue="#{so}" itemLabel="#{so.label}"/>
+                                            <p:ajax listener="#{pharmacyStockTakeController.applySnapshotSortOrder}"
+                                                    process="@this" update="tbl" oncomplete="PF('tbl').filter()"/>
+                                        </p:selectOneMenu>
+                                        <h:outputText value="Applies to this table, Print, Export PDF and all sheet downloads."
+                                                      styleClass="text-muted" style="font-size: 0.9rem; margin-left: 12px;"/>
+                                    </div>
+
                                     <p:dataTable id="tbl"
                                                  widgetVar="tbl"
                                                  value="#{pharmacyStockTakeController.snapshotItems}"
@@ -244,45 +256,44 @@
                                                  paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                                  rowsPerPageTemplate="10,25,50,100"
                                                  styleClass="ui-datatable-striped ui-datatable-gridlines"
-                                                 emptyMessage="No stock items found for this bill."
-                                                 sortMode="multiple">
+                                                 emptyMessage="No stock items found for this bill.">
 
-                                        <p:column headerText="Bill Item ID" sortBy="#{bi.billItemId}"
+                                        <p:column headerText="Bill Item ID"
                                                   filterBy="#{bi.billItemId}" filterMatchMode="exact"
                                                   style="width: 110px; text-align: right;">
                                             <h:outputText value="#{bi.billItemId}"
                                                           style="color: #6c757d; font-family: monospace;"/>
                                         </p:column>
 
-                                        <p:column headerText="Category" sortBy="#{bi.categoryName}"
+                                        <p:column headerText="Category"
                                                   filterBy="#{bi.categoryName}" filterMatchMode="contains"
                                                   style="width: 120px;">
                                             <h:outputText value="#{bi.categoryName}"
                                                           style="color: #495057;"/>
                                         </p:column>
 
-                                        <p:column headerText="Dosage Form" sortBy="#{bi.dosageForm}"
+                                        <p:column headerText="Dosage Form"
                                                   filterBy="#{bi.dosageForm}" filterMatchMode="contains"
                                                   style="width: 120px;">
                                             <h:outputText value="#{bi.dosageForm}"
                                                           style="color: #6c757d;"/>
                                         </p:column>
 
-                                        <p:column headerText="Item Description" sortBy="#{bi.itemName}"
+                                        <p:column headerText="Item Description"
                                                   filterBy="#{bi.itemName}" filterMatchMode="contains"
                                                   style="min-width: 200px;">
                                             <h:outputText value="#{bi.itemNameWithCode}"
                                                           style="color: #495057; font-weight: 500;"/>
                                         </p:column>
 
-                                        <p:column headerText="Batch No." sortBy="#{bi.batchNo}"
+                                        <p:column headerText="Batch No."
                                                   filterBy="#{bi.batchNo}" filterMatchMode="contains"
                                                   style="width: 100px; text-align: center;">
                                             <h:outputText value="#{bi.batchNo}"
                                                           style="color: #6c757d; font-family: monospace;"/>
                                         </p:column>
 
-                                        <p:column headerText="Expiry Date" sortBy="#{bi.expiryDate}"
+                                        <p:column headerText="Expiry Date"
                                                   style="width: 110px; text-align: center;">
                                             <h:outputText value="#{bi.expiryDate}"
                                                           style="color: #6c757d;">
@@ -290,7 +301,7 @@
                                             </h:outputText>
                                         </p:column>
 
-                                        <p:column headerText="Quantity" sortBy="#{bi.qty}"
+                                        <p:column headerText="Quantity"
                                                   filterBy="#{bi.qty}" filterMatchMode="exact"
                                                   style="width: 80px; text-align: right;">
                                             <h:outputText value="#{bi.qty}"
@@ -299,7 +310,7 @@
                                             </h:outputText>
                                         </p:column>
 
-                                        <p:column headerText="Purchase Rate" sortBy="#{bi.purchaseRate}"
+                                        <p:column headerText="Purchase Rate"
                                                   filterBy="#{bi.purchaseRate}" filterMatchMode="exact"
                                                   style="width: 110px; text-align: right;">
                                             <h:outputText value="#{bi.purchaseRate}"
@@ -308,7 +319,7 @@
                                             </h:outputText>
                                         </p:column>
 
-                                        <p:column headerText="Retail Rate" sortBy="#{bi.retailRate}"
+                                        <p:column headerText="Retail Rate"
                                                   filterBy="#{bi.retailRate}" filterMatchMode="exact"
                                                   style="width: 110px; text-align: right;">
                                             <h:outputText value="#{bi.retailRate}"
@@ -317,7 +328,7 @@
                                             </h:outputText>
                                         </p:column>
 
-                                        <p:column headerText="Cost Rate" sortBy="#{bi.costRate}"
+                                        <p:column headerText="Cost Rate"
                                                   filterBy="#{bi.costRate}" filterMatchMode="exact"
                                                   style="width: 110px; text-align: right;">
                                             <h:outputText value="#{bi.costRate}"

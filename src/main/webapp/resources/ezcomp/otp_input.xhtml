@@ -1,0 +1,158 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:cc="http://xmlns.jcp.org/jsf/composite"
+      xmlns:h="http://xmlns.jcp.org/jsf/html">
+
+    <!-- 6-digit one-time code entry as individual digit boxes. The digits are joined into a
+         hidden input bound to "value", so process this composite's id to submit it. -->
+    <cc:interface>
+        <cc:attribute name="value" required="true" />
+        <cc:attribute name="autofocus" default="true" type="java.lang.Boolean" />
+        <cc:attribute name="required" default="false" type="java.lang.Boolean" />
+        <cc:attribute name="requiredMessage" default="Enter the 6-digit code" />
+    </cc:interface>
+
+    <cc:implementation>
+        <style>
+            .otp-wrap {
+                display: block;
+                width: 100%;
+            }
+            .otp-boxes {
+                display: flex;
+                justify-content: center;
+                gap: 0.5rem;
+                flex-wrap: nowrap;
+            }
+            .otp-boxes .otp-digit {
+                width: 3rem;
+                height: 3.5rem;
+                text-align: center;
+                font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+                font-size: 1.6rem;
+                font-weight: 600;
+                color: var(--text-color, #212529);
+                background: var(--surface-card, #fff);
+                /* explicit colour + !important so theme/global input styles can't hide the box outline */
+                border: 2px solid #94a3b8 !important;
+                border-radius: 12px !important;
+                box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+                outline: none;
+                transition: border-color 0.15s, box-shadow 0.15s;
+            }
+            .otp-boxes .otp-digit:hover {
+                border-color: #64748b !important;
+            }
+            .otp-boxes .otp-digit:focus {
+                border-color: var(--primary-color, #3b82f6) !important;
+                box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25);
+            }
+            .otp-boxes .otp-digit.otp-filled {
+                border-color: var(--primary-color, #3b82f6) !important;
+            }
+            @media (max-width: 400px) {
+                .otp-boxes .otp-digit {
+                    width: 2.4rem;
+                    height: 3rem;
+                    font-size: 1.3rem;
+                }
+            }
+        </style>
+
+        <span id="#{cc.clientId}" class="otp-wrap">
+            <h:inputHidden id="code" value="#{cc.attrs.value}"
+                           required="#{cc.attrs.required}"
+                           requiredMessage="#{cc.attrs.requiredMessage}" />
+            <div class="otp-boxes" data-autofocus="#{cc.attrs.autofocus}">
+                <input type="text" class="otp-digit" maxlength="1" inputmode="numeric" pattern="[0-9]*" autocomplete="off" aria-label="Digit 1" />
+                <input type="text" class="otp-digit" maxlength="1" inputmode="numeric" pattern="[0-9]*" autocomplete="off" aria-label="Digit 2" />
+                <input type="text" class="otp-digit" maxlength="1" inputmode="numeric" pattern="[0-9]*" autocomplete="off" aria-label="Digit 3" />
+                <input type="text" class="otp-digit" maxlength="1" inputmode="numeric" pattern="[0-9]*" autocomplete="off" aria-label="Digit 4" />
+                <input type="text" class="otp-digit" maxlength="1" inputmode="numeric" pattern="[0-9]*" autocomplete="off" aria-label="Digit 5" />
+                <input type="text" class="otp-digit" maxlength="1" inputmode="numeric" pattern="[0-9]*" autocomplete="off" aria-label="Digit 6" />
+            </div>
+            <script>
+                //<![CDATA[
+                (function () {
+                    var wraps = document.querySelectorAll('.otp-boxes:not([data-ready])');
+                    Array.prototype.forEach.call(wraps, function (wrap) {
+                        wrap.setAttribute('data-ready', 'true');
+                        var hidden = wrap.parentNode.querySelector('input[type=hidden]');
+                        var boxes = wrap.querySelectorAll('input.otp-digit');
+                        var last = boxes.length - 1;
+
+                        function sync() {
+                            var v = '';
+                            Array.prototype.forEach.call(boxes, function (b) {
+                                v += b.value;
+                                b.classList.toggle('otp-filled', b.value !== '');
+                            });
+                            if (hidden) {
+                                hidden.value = v;
+                            }
+                        }
+
+                        function fill(text, from) {
+                            var digits = text.replace(/\D/g, '').split('');
+                            var i = from;
+                            while (digits.length > 0 && i <= last) {
+                                boxes[i].value = digits.shift();
+                                i++;
+                            }
+                            sync();
+                            boxes[Math.min(i, last)].focus();
+                        }
+
+                        Array.prototype.forEach.call(boxes, function (b, i) {
+                            b.addEventListener('input', function () {
+                                var digits = b.value.replace(/\D/g, '');
+                                if (digits.length > 1) {
+                                    // autofill / fast typing put several digits in one box
+                                    b.value = '';
+                                    fill(digits, i);
+                                    return;
+                                }
+                                b.value = digits;
+                                sync();
+                                if (digits && i < last) {
+                                    boxes[i + 1].focus();
+                                }
+                            });
+                            b.addEventListener('keydown', function (e) {
+                                if (e.key === 'Backspace' && b.value === '' && i > 0) {
+                                    boxes[i - 1].value = '';
+                                    boxes[i - 1].focus();
+                                    sync();
+                                    e.preventDefault();
+                                } else if (e.key === 'ArrowLeft' && i > 0) {
+                                    boxes[i - 1].focus();
+                                    e.preventDefault();
+                                } else if (e.key === 'ArrowRight' && i < last) {
+                                    boxes[i + 1].focus();
+                                    e.preventDefault();
+                                }
+                            });
+                            b.addEventListener('paste', function (e) {
+                                var text = (e.clipboardData || window.clipboardData).getData('text');
+                                if (text && /\d/.test(text)) {
+                                    e.preventDefault();
+                                    fill(text, i);
+                                }
+                            });
+                            b.addEventListener('focus', function () {
+                                b.select();
+                            });
+                        });
+
+                        sync();
+                        if (wrap.getAttribute('data-autofocus') === 'true') {
+                            boxes[0].focus();
+                        }
+                    });
+                })();
+                //]]>
+            </script>
+        </span>
+    </cc:implementation>
+</html>

@@ -4,7 +4,8 @@
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:f="http://xmlns.jcp.org/jsf/core">
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:of="http://omnifaces.org/functions">
 
     <h:body>
         <ui:composition template="index.xhtml">
@@ -122,6 +123,12 @@
                                 <ui:repeat value="#{bs.bill.billItems}" var="bi" varStatus="loop">
                                     <p:outputLabel value="#{bi.netValue}" style="font-size: 12px;" rendered="#{not loop.first}" /><br/>
                                 </ui:repeat>
+                            </p:column>
+
+                            <p:column headerText="Remarks" style="font-size: 12px; width: 12%!important; padding: 1px"
+                                      exportValue="#{bs.recheduledSession ? 'Rescheduled' : ''}#{bs.recheduledSession and bs.rescheduledFromBillSession ne null ? ', ' : ''}#{bs.rescheduledFromBillSession ne null ? 'Rescheduled From No. ' += bs.rescheduledFromBillSession.serialNo += ' (' += of:formatDate(bs.rescheduledFromBillSession.sessionInstance.sessionDate, 'EEE dd-MM-yyyy') += ')' : ''}">
+                                <p:outputLabel rendered="#{bs.recheduledSession}" value="Rescheduled" style="color: red;font-size: 12px;font-weight: bold"/>
+                                <p:outputLabel rendered="#{bs.rescheduledFromBillSession ne null}" value="Rescheduled From No. #{bs.rescheduledFromBillSession.serialNo} (#{of:formatDate(bs.rescheduledFromBillSession.sessionInstance.sessionDate, 'EEE dd-MM-yyyy')})" style="margin-left: 6px; color: #b8860b;font-size: 12px;font-weight: bold"/>
                             </p:column>
                             
 <!--                             <p:column headerText="Status" style="font-size: 12px; width: 18%!important; padding: 1px">
