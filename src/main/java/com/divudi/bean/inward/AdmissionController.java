@@ -3213,7 +3213,6 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             getCurrent().setInstitution(sessionController.getInstitution());
             getCurrent().setDepartment(sessionController.getDepartment());
             getFacade().create(getCurrent());
-            JsfUtil.addSuccessMessage("Patient admitted successfully with BHT No: " + getCurrent().getBhtNo());
         }
 
         // Logged after create()/edit() so getCurrent().getId() is populated and the
@@ -3363,6 +3362,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         }
 
         if (isNewAdmission) {
+            JsfUtil.addSuccessMessage("Patient admitted successfully with BHT No: " + getCurrent().getBhtNo());
             String auditTrigger = getCurrent().getParentEncounter() != null
                     ? "Baby Admission Created" : "Admission Created";
             auditService.logEncounterAudit(getCurrent(), auditTrigger,
@@ -3410,7 +3410,6 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             getCurrent().setInstitution(sessionController.getInstitution());
             getCurrent().setDepartment(sessionController.getDepartment());
             getFacade().create(getCurrent());
-            JsfUtil.addSuccessMessage("Patient admitted successfully with BHT No: " + getCurrent().getBhtNo());
         }
 
         // Held outside the room block so the automatic admission charges below can
@@ -3452,6 +3451,8 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         if (!applyAutomaticAdmissionCharges(createdPatientRoom)) {
             return;
         }
+
+        JsfUtil.addSuccessMessage("Patient admitted successfully with BHT No: " + getCurrent().getBhtNo());
 
         getCurrentNonBht().setParentEncounter(current);
         getCurrentNonBht().setDischarged(true);
