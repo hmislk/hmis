@@ -4,7 +4,8 @@
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:f="http://xmlns.jcp.org/jsf/core">
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:of="http://omnifaces.org/functions">
 
     <h:body>
         <ui:composition template="index.xhtml">
@@ -111,11 +112,12 @@
                             <p:column headerText="Mobile Number" style="font-size: 12px; width: 28%!important; padding: 1px">
                                 <p:outputLabel value="#{bs.bill.patient.person.phone}" style="font-size: 12px;" />
                             </p:column>
-                            <p:column headerText="Remarks" style="font-size: 12px; width: 20%!important; padding: 1px" >
+                            <p:column headerText="Remarks" style="font-size: 12px; width: 20%!important; padding: 1px"
+                                      exportValue="#{(bs.bill.balance ne 0.0 or bs.bill.paymentMethod eq 'OnCall') ? 'Not Paid' : 'Paid'}#{bs.recheduledSession ? ', Rescheduled' : ''}#{bs.rescheduledFromBillSession ne null ? ', Rescheduled From No. ' += bs.rescheduledFromBillSession.serialNo += ' (' += of:formatDate(bs.rescheduledFromBillSession.sessionInstance.sessionDate, 'EEE dd-MM-yyyy') += ')' : ''}" >
                                 <p:outputLabel rendered="#{bs.bill.balance ne 0.0 or bs.bill.paymentMethod eq 'OnCall'}" value="Not Paid" style="color: red;font-size: 12px;font-weight: bold" />
                                 <p:outputLabel rendered="#{bs.bill.balance eq 0.0 and bs.bill.paymentMethod ne 'OnCall' }" value="Paid" style="color: green;font-size: 12px;font-weight: bold"/>
                                 <p:outputLabel rendered="#{bs.recheduledSession}" value="Rescheduled" style="margin-left: 6px; color: red;font-size: 12px;font-weight: bold"/>
-                                <p:outputLabel rendered="#{bs.rescheduledFromBillSession ne null}" value="Rescheduled From No. #{bs.rescheduledFromBillSession.serialNo}" style="margin-left: 6px; color: #b8860b;font-size: 12px;font-weight: bold"/>
+                                <p:outputLabel rendered="#{bs.rescheduledFromBillSession ne null}" value="Rescheduled From No. #{bs.rescheduledFromBillSession.serialNo} (#{of:formatDate(bs.rescheduledFromBillSession.sessionInstance.sessionDate, 'EEE dd-MM-yyyy')})" style="margin-left: 6px; color: #b8860b;font-size: 12px;font-weight: bold"/>
                             </p:column>
 <!--                            <p:column headerText="Billed By" style="font-size: 12px;width: 15%!important;" >
                                 <p:outputLabel value="#{bs.bill.creater.name}" style="font-size: 11px;font-weight: bold" />

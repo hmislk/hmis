@@ -4,7 +4,8 @@
                 template="/resources/template/template.xhtml"
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:f="http://xmlns.jcp.org/jsf/core"
-                xmlns:h="http://xmlns.jcp.org/jsf/html">
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:of="http://omnifaces.org/functions">
 
     <ui:define name="content">
         <h:form>
@@ -117,7 +118,7 @@
                         <p:outputLabel rendered="#{bs.bill.paidAmount eq 0}" value="Credit" style="color: red;"/>
                         <p:outputLabel rendered="#{bs.bill.paidAmount ne 0 and bs.bill.paymentMethod ne 'OnCall'}" value="Paid" style="color: green;"/>
                         <p:outputLabel rendered="#{bs.recheduledSession}" value="Rescheduled" style="margin-left: 6px; color: red;"/>
-                        <p:outputLabel rendered="#{bs.rescheduledFromBillSession ne null}" value="Rescheduled From No. #{bs.rescheduledFromBillSession.serialNo}" style="margin-left: 6px; color: #b8860b;"/>
+                        <p:outputLabel rendered="#{bs.rescheduledFromBillSession ne null}" value="Rescheduled From No. #{bs.rescheduledFromBillSession.serialNo} (#{of:formatDate(bs.rescheduledFromBillSession.sessionInstance.sessionDate, 'EEE dd-MM-yyyy')})" style="margin-left: 6px; color: #b8860b;"/>
                     </p:column>
 
 

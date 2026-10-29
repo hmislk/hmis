@@ -5,7 +5,8 @@
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:p="http://primefaces.org/ui"
       xmlns:f="http://xmlns.jcp.org/jsf/core"
-      xmlns:c="http://xmlns.jcp.org/jsp/jstl/core">
+      xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
+      xmlns:of="http://omnifaces.org/functions">
 
     <h:body>
 
@@ -538,14 +539,14 @@
                                             </p:column>
 
                                             <p:column headerText="Patient Name" style="font-size: 12px; width: 70%; padding: 1px"
-                                                      exportValue="#{bs.bill.billTypeAtomic eq 'CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT' ? bs.bill.referenceBill.onlineBooking.patientName : bs.bill.patient.person.nameWithTitle}#{bs.recheduledSession ? ' (Rescheduled)' : ''}#{bs.rescheduledFromBillSession ne null ? ' (Rescheduled From No. ' += bs.rescheduledFromBillSession.serialNo += ')' : ''}" >
+                                                      exportValue="#{bs.bill.billTypeAtomic eq 'CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT' ? bs.bill.referenceBill.onlineBooking.patientName : bs.bill.patient.person.nameWithTitle}#{bs.recheduledSession ? ' (Rescheduled)' : ''}#{bs.rescheduledFromBillSession ne null ? ' (Rescheduled From No. ' += bs.rescheduledFromBillSession.serialNo += ', ' += of:formatDate(bs.rescheduledFromBillSession.sessionInstance.sessionDate, 'EEE dd-MM-yyyy') += ')' : ''}" >
                                                 <div class="d-flex align-items-center justify-content-between">
                                                     <p:outputLabel rendered="#{bs.bill.billTypeAtomic ne 'CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT'}" value="#{bs.bill.patient.person.nameWithTitle}" style="font-size: 12px;" />
                                                     <p:outputLabel rendered="#{bs.bill.billTypeAtomic eq 'CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT'}" value="#{bs.bill.referenceBill.onlineBooking.patientName}" style="font-size: 12px;" />
-                                                    <p:badge rendered="#{bs.recheduledSession}" value="Resheduled" class="m-1" severity="warning">
+                                                    <p:badge rendered="#{bs.recheduledSession}" value="Rescheduled" class="m-1" severity="warning">
 
                                                     </p:badge>
-                                                    <p:badge rendered="#{bs.rescheduledFromBillSession ne null}" value="Rescheduled From No. #{bs.rescheduledFromBillSession.serialNo}" class="m-1" severity="info">
+                                                    <p:badge rendered="#{bs.rescheduledFromBillSession ne null}" value="Rescheduled From No. #{bs.rescheduledFromBillSession.serialNo} (#{of:formatDate(bs.rescheduledFromBillSession.sessionInstance.sessionDate, 'EEE dd-MM-yyyy')})" class="m-1" severity="info">
 
                                                     </p:badge>
                                                 </div>
@@ -669,14 +670,14 @@
                                             </p:column>
 
                                             <p:column headerText="Patient Name" style="font-size: 12px; width: 30%; padding: 1px"
-                                                      exportValue="#{bs.bill.billTypeAtomic eq 'CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT' ? bs.bill.referenceBill.onlineBooking.patientName : bs.bill.patient.person.nameWithTitle}#{bs.recheduledSession ? ' (Rescheduled)' : ''}#{bs.rescheduledFromBillSession ne null ? ' (Rescheduled From No. ' += bs.rescheduledFromBillSession.serialNo += ')' : ''}" >
+                                                      exportValue="#{bs.bill.billTypeAtomic eq 'CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT' ? bs.bill.referenceBill.onlineBooking.patientName : bs.bill.patient.person.nameWithTitle}#{bs.recheduledSession ? ' (Rescheduled)' : ''}#{bs.rescheduledFromBillSession ne null ? ' (Rescheduled From No. ' += bs.rescheduledFromBillSession.serialNo += ', ' += of:formatDate(bs.rescheduledFromBillSession.sessionInstance.sessionDate, 'EEE dd-MM-yyyy') += ')' : ''}" >
                                                 <div class="d-flex align-items-center justify-content-between">
                                                     <p:outputLabel rendered="#{bs.bill.billTypeAtomic ne 'CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT'}" value="#{bs.bill.patient.person.nameWithTitle}" style="font-size: 12px;" />
                                                     <p:outputLabel rendered="#{bs.bill.billTypeAtomic eq 'CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT'}" value="#{bs.bill.referenceBill.onlineBooking.patientName}" style="font-size: 12px;" />
-                                                    <p:badge rendered="#{bs.recheduledSession}" value="Resheduled" class="m-1" severity="warning">
+                                                    <p:badge rendered="#{bs.recheduledSession}" value="Rescheduled" class="m-1" severity="warning">
 
                                                     </p:badge>
-                                                    <p:badge rendered="#{bs.rescheduledFromBillSession ne null}" value="Rescheduled From No. #{bs.rescheduledFromBillSession.serialNo}" class="m-1" severity="info">
+                                                    <p:badge rendered="#{bs.rescheduledFromBillSession ne null}" value="Rescheduled From No. #{bs.rescheduledFromBillSession.serialNo} (#{of:formatDate(bs.rescheduledFromBillSession.sessionInstance.sessionDate, 'EEE dd-MM-yyyy')})" class="m-1" severity="info">
 
                                                     </p:badge>
                                                 </div>
