@@ -13,7 +13,7 @@
             <p:panel header="Staff Mappings">
                 <h:panelGroup layout="block" style="margin-bottom: 1em;">
                     <p:outputLabel styleClass="text-muted"
-                                   value="Choose a mapping type, then add the staff who should be offered for it. For Sample Transporter, the lists only use these staff when the application option 'Sample Transporter List Is Limited To Staff Mapped As Sample Transporters' is on." />
+                                   value="Choose a mapping type, pick the staff member, then pick a Route (for a collecting centre) or an Institution (for any other institution) and click Add. For Sample Transporter, a logged-in collecting centre is offered the staff mapped to its route, and any other institution is offered the staff mapped to it. The lists only use these mappings when the application option 'Sample Transporter List Is Limited To Staff Mapped As Sample Transporters' is on." />
                 </h:panelGroup>
 
                 <div class="row mb-2">
@@ -40,6 +40,26 @@
                             <p:column headerText="Name" style="padding: 6px;">#{s.person.nameWithTitle}</p:column>
                         </p:autoComplete>
                     </div>
+                </div>
+                <div class="row mb-2">
+                    <div class="col-md-4">
+                        <p:outputLabel value="Route (when mapping for a collecting centre)" for="acRoute" />
+                        <p:autoComplete id="acRoute"
+                                        value="#{staffMappingController.route}"
+                                        completeMethod="#{routeController.completeRoute}"
+                                        var="rt" itemLabel="#{rt.name}" itemValue="#{rt}"
+                                        forceSelection="true" maxResults="20"
+                                        styleClass="w-100" inputStyleClass="form-control" />
+                    </div>
+                    <div class="col-md-5">
+                        <p:outputLabel value="Institution (when mapping for any other institution)" for="acInstitution" />
+                        <p:autoComplete id="acInstitution"
+                                        value="#{staffMappingController.institution}"
+                                        completeMethod="#{institutionController.completeIns}"
+                                        var="ins" itemLabel="#{ins.name}" itemValue="#{ins}"
+                                        forceSelection="true" maxResults="20"
+                                        styleClass="w-100" inputStyleClass="form-control" />
+                    </div>
                     <div class="col-md-3 d-flex align-items-end">
                         <p:commandButton value="Add" icon="fa-solid fa-plus" class="ui-button-success w-100"
                                          action="#{staffMappingController.addMapping}"
@@ -54,6 +74,12 @@
                     </p:column>
                     <p:column headerText="Staff">
                         <h:outputText value="#{m.staff.person.nameWithTitle}" />
+                    </p:column>
+                    <p:column headerText="Route">
+                        <h:outputText value="#{m.route.name}" />
+                    </p:column>
+                    <p:column headerText="Institution">
+                        <h:outputText value="#{m.institution.name}" />
                     </p:column>
                     <p:column headerText="Type">
                         <h:outputText value="#{m.mappingType.label}" />

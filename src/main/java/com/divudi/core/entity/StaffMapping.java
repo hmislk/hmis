@@ -32,6 +32,13 @@ public class StaffMapping implements Serializable {
     @Enumerated(EnumType.STRING)
     private StaffMappingType mappingType;
 
+    // Where the staff member is mapped for: a collecting centre's route, or any other institution.
+    @ManyToOne
+    private Route route;
+
+    @ManyToOne
+    private Institution institution;
+
     @ManyToOne
     private WebUser creater;
 
@@ -68,6 +75,22 @@ public class StaffMapping implements Serializable {
 
     public void setMappingType(StaffMappingType mappingType) {
         this.mappingType = mappingType;
+    }
+
+    public Route getRoute() {
+        return route;
+    }
+
+    public void setRoute(Route route) {
+        this.route = route;
+    }
+
+    public Institution getInstitution() {
+        return institution;
+    }
+
+    public void setInstitution(Institution institution) {
+        this.institution = institution;
     }
 
     public WebUser getCreater() {
