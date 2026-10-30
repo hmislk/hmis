@@ -344,7 +344,7 @@
                                             <h:outputLabel value="Sample Transporter" for="acTransporter"/>
                                             <p:autoComplete
                                                 id="acTransporter"
-                                                completeMethod="#{staffController.completeStaff}"
+                                                completeMethod="#{staffMappingController.completeSampleTransporter}"
                                                 value="#{patientInvestigationController.sampleTransportedToLabByStaff}"
                                                 var="mys"
                                                 class="w-100"
