@@ -7,6 +7,7 @@ import com.divudi.core.data.PaymentMethod;
 import com.divudi.core.data.inward.AdmissionStatus;
 import com.divudi.core.data.inward.CalculationMethod;
 import com.divudi.core.data.inward.InwardChargeType;
+import com.divudi.core.data.inward.InwardMedicineBillTypes;
 import com.divudi.core.entity.Consultant;
 import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Institution;
@@ -178,8 +179,8 @@ public class InwardBhtChargeAggregationService implements Serializable {
         mergeChargeMaps(result, fetchServiceItemsUnderOtherChargeTypes(encounters));
         mergeChargeMaps(result, fetchProfessionalFeeCharges(encounters));
         mergeChargeMaps(result, fetchAssistingFeeCharges(encounters));
-        mergeChargeMaps(result, fetchPharmacyBillCharges(encounters));
-        mergeChargeMaps(result, fetchStoreBillCharges(encounters));
+        mergeChargeMaps(result, fetchIssueBillGross(encounters, InwardMedicineBillTypes.ALL, null, InwardChargeType.Medicine));
+        mergeChargeMaps(result, fetchIssueBillGross(encounters, null, BillType.StoreBhtPre, InwardChargeType.GeneralIssuing));
 
         return result;
     }
@@ -441,67 +442,79 @@ public class InwardBhtChargeAggregationService implements Serializable {
         return result;
     }
 
-    /** PHARMACY_BILL (Medicine): same BillTypeAtomic whitelist used elsewhere in the app for BHT medicine issues. */
-    private Map<Long, Map<InwardChargeType, Double>> fetchPharmacyBillCharges(List<PatientEncounter> encounters) {
-        List<InwardChargeType> types = chargeTypesByCalculationMethod(CalculationMethod.PHARMACY_BILL);
-        if (types.isEmpty()) {
-            return new HashMap<>();
+    /**
+     * Medicine and store issues to the patient: gross ({@code Bill.total}) per
+     * encounter under the given charge type. The interim bill takes these from
+     * the bills, not the items ({@code calCostOfIssueByBill},
+     * {@code calNetCostOfIssue}): a return item's value is stored positive, so
+     * summing items counted returns as charges. The margin
+     * ({@code netTotal - total}) is added to the service charge by
+     * addIssueMargins.
+     *
+     * @param btas     bill type atomics to include, or null to use billType
+     * @param billType bill type to include when btas is null
+     */
+    private Map<Long, Map<InwardChargeType, Double>> fetchIssueBillGross(List<PatientEncounter> encounters,
+            List<BillTypeAtomic> btas, BillType billType, InwardChargeType chargeType) {
+        Map<Long, Map<InwardChargeType, Double>> result = new HashMap<>();
+        for (Map.Entry<Long, double[]> e : fetchIssueBillTotals(encounters, btas, billType).entrySet()) {
+            double total = e.getValue()[0];
+            if (total != 0.0) {
+                result.computeIfAbsent(e.getKey(), k -> new EnumMap<>(InwardChargeType.class))
+                      .merge(chargeType, total, Double::sum);
+            }
         }
-
-        List<BillTypeAtomic> btas = new ArrayList<>();
-        btas.add(BillTypeAtomic.PHARMACY_DIRECT_ISSUE);
-        btas.add(BillTypeAtomic.PHARMACY_DIRECT_ISSUE_CANCELLED);
-        btas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE);
-        btas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN);
-        btas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION);
-        btas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE);
-        btas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_RETURN);
-        btas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_CANCELLATION);
-        btas.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD);
-        btas.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN);
-        btas.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_CANCELLATION);
-
-        String jpql = "select enc.id, bi.inwardChargeType, sum(bi.grossValue)"
-                + " from BillItem bi join bi.bill b join b.patientEncounter enc"
-                + " where bi.retired = false"
-                + " and b.retired = false"
-                + " and b.billTypeAtomic in :btas"
-                + " and enc in :encs"
-                + " and bi.inwardChargeType in :types"
-                + " group by enc.id, bi.inwardChargeType";
-
-        Map<String, Object> params = new HashMap<>();
-        params.put("btas", btas);
-        params.put("encs", encounters);
-        params.put("types", types);
-
-        List<Object[]> rows = patientEncounterFacade.findObjectArrayByJpql(jpql, params, TemporalType.TIMESTAMP);
-        return collectChargeTypeRows(rows);
+        return result;
     }
 
-    /** STORE_BILL (GeneralIssuing): same BillType.StoreBhtPre filter used elsewhere in the app. */
-    private Map<Long, Map<InwardChargeType, Double>> fetchStoreBillCharges(List<PatientEncounter> encounters) {
-        List<InwardChargeType> types = chargeTypesByCalculationMethod(CalculationMethod.STORE_BILL);
-        if (types.isEmpty()) {
-            return new HashMap<>();
-        }
-
-        String jpql = "select enc.id, bi.inwardChargeType, sum(bi.grossValue)"
-                + " from BillItem bi join bi.bill b join b.patientEncounter enc"
-                + " where bi.retired = false"
-                + " and b.retired = false"
-                + " and b.billType = :btp"
-                + " and enc in :encs"
-                + " and bi.inwardChargeType in :types"
-                + " group by enc.id, bi.inwardChargeType";
-
+    /** Per encounter: {sum(Bill.total), sum(Bill.netTotal)} of the given issue bills. */
+    private Map<Long, double[]> fetchIssueBillTotals(List<PatientEncounter> encounters,
+            List<BillTypeAtomic> btas, BillType billType) {
+        Map<Long, double[]> result = new HashMap<>();
         Map<String, Object> params = new HashMap<>();
-        params.put("btp", BillType.StoreBhtPre);
+        String jpql = "select b.patientEncounter.id, sum(b.total), sum(b.netTotal)"
+                + " from Bill b"
+                + " where b.retired = false"
+                + " and b.patientEncounter in :encs";
+        if (btas != null) {
+            jpql += " and b.billTypeAtomic in :btas";
+            params.put("btas", btas);
+        } else {
+            jpql += " and b.billType = :btp";
+            params.put("btp", billType);
+        }
+        jpql += " group by b.patientEncounter.id";
         params.put("encs", encounters);
-        params.put("types", types);
 
         List<Object[]> rows = patientEncounterFacade.findObjectArrayByJpql(jpql, params, TemporalType.TIMESTAMP);
-        return collectChargeTypeRows(rows);
+        if (rows != null) {
+            for (Object[] r : rows) {
+                double total = r[1] == null ? 0.0 : ((Number) r[1]).doubleValue();
+                double net = r[2] == null ? 0.0 : ((Number) r[2]).doubleValue();
+                result.put((Long) r[0], new double[]{total, net});
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Adds each encounter's medicine and store issue margin
+     * ({@code Bill.netTotal - Bill.total}) to the service charge at
+     * {@code index}. Issue bills carry no BillFee rows, so the BillFee
+     * queries never see this margin.
+     */
+    private void addIssueMargins(Map<Long, double[]> result, List<PatientEncounter> encounters, int size, int index) {
+        List<Map<Long, double[]>> sources = Arrays.asList(
+                fetchIssueBillTotals(encounters, InwardMedicineBillTypes.ALL, null),
+                fetchIssueBillTotals(encounters, null, BillType.StoreBhtPre));
+        for (Map<Long, double[]> issueTotals : sources) {
+            for (Map.Entry<Long, double[]> e : issueTotals.entrySet()) {
+                double margin = e.getValue()[1] - e.getValue()[0];
+                if (margin != 0.0) {
+                    result.computeIfAbsent(e.getKey(), k -> new double[size])[index] += margin;
+                }
+            }
+        }
     }
 
     // -------------------------------------------------------------------------
@@ -539,6 +552,7 @@ public class InwardBhtChargeAggregationService implements Serializable {
                 result.put(encId, new double[]{disc, marg});
             }
         }
+        addIssueMargins(result, encounters, 2, 1);
         return result;
     }
 
@@ -628,6 +642,7 @@ public class InwardBhtChargeAggregationService implements Serializable {
             }
         }
 
+        addIssueMargins(result, encounters, 4, 3);
         return result;
     }
 }
