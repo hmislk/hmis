@@ -38,6 +38,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import javax.ejb.EJB;
@@ -448,119 +449,45 @@ public class CreditSummeryController implements Serializable {
         return dailyCash;
     }
 
-    private List<Bill> findBills(Department dep) {
-        String sql;
-        Map temMap = new HashMap();
-        if (dep == null) {
-            return new ArrayList<>();
+    private List<Bill> findCreditBillsByBill() {
+        Map<String, Object> temMap = new HashMap<>();
+        String sql = "select b FROM Bill b "
+                + " left join b.toDepartment d "
+                + " where b.retired=false "
+                + " and b.billType=:bTp "
+                + " and b.createdAt between :fromDate and :toDate "
+                + " and b.paymentMethod=:pm ";
+        if (getInstitution() != null) {
+            sql += " and b.creditCompany=:credit ";
+            temMap.put("credit", getInstitution());
         }
-        sql = "select bi FROM Bill bi "
-                + " where bi.toDepartment=:dep "
-                + " and  bi.billType= :bTp  "
-                + " and  bi.createdAt between :fromDate and :toDate "
-                + "and  bi.paymentMethod = :pm "
-                + "and bi.creditCompany=:credit ";
+        sql += " order by d.name, b.createdAt ";
         temMap.put("toDate", getToDate());
         temMap.put("fromDate", getFromDate());
-        //     temMap.put("ins", getSessionController().getInstitution());
-        temMap.put("dep", dep);
-        // temMap.put("cat", d);
         temMap.put("bTp", BillType.OpdBill);
         temMap.put("pm", PaymentMethod.Credit);
-        temMap.put("credit", getInstitution());
-        List<Bill> list = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
-
-        return list;
-        //     return tmp;
-    }
-
-    private double getDiscount(Department dep) {
-        String sql;
-        Map temMap = new HashMap();
-        if (dep == null) {
-            return 0;
-        }
-        sql = "select sum(bi.discount) FROM Bill bi where bi.toDepartment=:dep "
-                + " and  bi.billType= :bTp  "
-                + " and  bi.createdAt between :fromDate and :toDate "
-                + "and  bi.paymentMethod = :pm and bi.creditCompany=:credit ";
-        temMap.put("toDate", getToDate());
-        temMap.put("fromDate", getFromDate());
-        //     temMap.put("ins", getSessionController().getInstitution());
-        temMap.put("dep", dep);
-        // temMap.put("cat", d);
-        temMap.put("bTp", BillType.OpdBill);
-        temMap.put("pm", PaymentMethod.Credit);
-        temMap.put("credit", getInstitution());
-        return getBillFacade().findDoubleByJpql(sql, temMap, TemporalType.TIMESTAMP);
-
-        //     return tmp;
-    }
-
-    private double getNetTotal(Department dep) {
-        String sql;
-        Map temMap = new HashMap();
-        if (dep == null) {
-            return 0;
-        }
-        sql = "select sum(bi.netTotal) FROM Bill bi where bi.toDepartment=:dep "
-                + " and  bi.billType= :bTp  "
-                + " and  bi.createdAt between :fromDate and :toDate "
-                + "and  bi.paymentMethod = :pm and bi.creditCompany=:credit ";
-        temMap.put("toDate", getToDate());
-        temMap.put("fromDate", getFromDate());
-        //     temMap.put("ins", getSessionController().getInstitution());
-        temMap.put("dep", dep);
-        // temMap.put("cat", d);
-        temMap.put("bTp", BillType.OpdBill);
-        temMap.put("pm", PaymentMethod.Credit);
-        temMap.put("credit", getInstitution());
-        return getBillFacade().findDoubleByJpql(sql, temMap, TemporalType.TIMESTAMP);
-
-        //     return tmp;
-    }
-
-    private double getVatTotal(Department dep) {
-        String sql;
-        Map temMap = new HashMap();
-        if (dep == null) {
-            return 0;
-        }
-        sql = "select sum(bi.vat) FROM Bill bi where bi.toDepartment=:dep "
-                + " and  bi.billType= :bTp  "
-                + " and  bi.createdAt between :fromDate and :toDate "
-                + "and  bi.paymentMethod = :pm and bi.creditCompany=:credit ";
-        temMap.put("toDate", getToDate());
-        temMap.put("fromDate", getFromDate());
-        //     temMap.put("ins", getSessionController().getInstitution());
-        temMap.put("dep", dep);
-        // temMap.put("cat", d);
-        temMap.put("bTp", BillType.OpdBill);
-        temMap.put("pm", PaymentMethod.Credit);
-        temMap.put("credit", getInstitution());
-        return getBillFacade().findDoubleByJpql(sql, temMap, TemporalType.TIMESTAMP);
-
-        //     return tmp;
+        return getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
     }
 
     public List<DailyCredit> getDailyCreditByBill() {
-        // //////// // System.out.println("Starting : ");
         if (dailyCredit == null) {
-            dailyCredit = new ArrayList<>();
-
-            for (Department d : findDepartment()) {
-                DailyCredit tmp = new DailyCredit();
-                tmp.setDepartment(d);
-                dailyCredit.add(tmp);
+            // Group by the bill's own department so every listed bill is counted
+            // and department totals always equal the sum of the bills shown.
+            Map<Department, DailyCredit> creditsByDepartment = new LinkedHashMap<>();
+            for (Bill b : findCreditBillsByBill()) {
+                DailyCredit d = creditsByDepartment.get(b.getToDepartment());
+                if (d == null) {
+                    d = new DailyCredit();
+                    d.setDepartment(b.getToDepartment());
+                    d.setBills(new ArrayList<>());
+                    creditsByDepartment.put(b.getToDepartment(), d);
+                }
+                d.getBills().add(b);
+                d.setDiscountTotal(d.getDiscountTotal() + b.getDiscount());
+                d.setNetTotal(d.getNetTotal() + b.getNetTotal());
+                d.setVatTotal(d.getVatTotal() + b.getVat());
             }
-
-            for (DailyCredit d : dailyCredit) {
-                d.setBills(findBills(d.getDepartment()));
-                d.setDiscountTotal(getDiscount(d.getDepartment()));
-                d.setNetTotal(getNetTotal((d.getDepartment())));
-                d.setVatTotal(getVatTotal((d.getDepartment())));
-            }
-
+            dailyCredit = new ArrayList<>(creditsByDepartment.values());
         }
 
         return dailyCredit;
@@ -1010,10 +937,11 @@ public class CreditSummeryController implements Serializable {
                         billRow.createCell(0).setCellValue(b.getDeptId() != null ? b.getDeptId() : "");
 
                         String refBill = "";
-                        if (b.getBilledBill() != null) {
-                            refBill = b.getBilledBill().getDeptId() != null ? b.getBilledBill().getDeptId() : "";
-                            if (b.getBilledBill().getCreatedAt() != null) {
-                                refBill += " - " + displaySdf.format(b.getBilledBill().getCreatedAt());
+                        Bill originalBill = b.getBilledBill() != null ? b.getBilledBill() : b.getReferenceBill();
+                        if (originalBill != null) {
+                            refBill = originalBill.getDeptId() != null ? originalBill.getDeptId() : "";
+                            if (originalBill.getCreatedAt() != null) {
+                                refBill += " - " + displaySdf.format(originalBill.getCreatedAt());
                             }
                         }
                         billRow.createCell(1).setCellValue(refBill);
