@@ -5,6 +5,7 @@ import com.divudi.core.entity.lab.Investigation;
 import com.divudi.core.entity.lab.PatientInvestigation;
 import com.divudi.core.entity.lab.PatientReport;
 import com.divudi.core.entity.lab.PatientSample;
+import com.divudi.core.entity.lab.PatientSampleComponant;
 import org.junit.jupiter.api.Test;
 
 import java.text.SimpleDateFormat;
@@ -50,6 +51,56 @@ public class LabSampleLockServiceTest {
         List<PatientSample> fetchActiveSamples(PatientInvestigation pi) {
             return samples;
         }
+    }
+
+    private static class ComponentStubService extends LabSampleLockService {
+
+        List<PatientSampleComponant> components = new ArrayList<>();
+
+        @Override
+        List<PatientSampleComponant> fetchComponentsOfInvestigation(PatientInvestigation pi) {
+            return components;
+        }
+    }
+
+    private PatientSampleComponant component(long sampleId, PatientSample ps, boolean separated) {
+        ps.setId(sampleId);
+        PatientSampleComponant c = new PatientSampleComponant();
+        c.setPatientSample(ps);
+        c.setSeparated(separated);
+        return c;
+    }
+
+    @Test
+    public void separatedFromAcceptedSampleAndRejectedIsNotLocked() {
+        ComponentStubService s = new ComponentStubService();
+        PatientSample original = sample(false);
+        original.setSampleReceivedAtLab(true);
+        original.setStatus(PatientInvestigationStatus.SAMPLE_ACCEPTED);
+        s.components.add(component(1L, original, true));
+        s.components.add(component(2L, sample(true), false));
+        assertFalse(s.isAcceptedByLab(pi(true)));
+        assertTrue(s.allSamplesRejected(pi(true)));
+    }
+
+    @Test
+    public void investigationStillOnAcceptedSampleIsLocked() {
+        ComponentStubService s = new ComponentStubService();
+        PatientSample original = sample(false);
+        original.setSampleReceivedAtLab(true);
+        original.setStatus(PatientInvestigationStatus.SAMPLE_ACCEPTED);
+        s.components.add(component(1L, original, false));
+        assertTrue(s.isAcceptedByLab(pi(true)));
+    }
+
+    @Test
+    public void separatedSampleNotYetRejectedIsNotCountedAsAccepted() {
+        ComponentStubService s = new ComponentStubService();
+        PatientSample original = sample(false);
+        original.setSampleReceivedAtLab(true);
+        s.components.add(component(1L, original, true));
+        s.components.add(component(2L, sample(false), false));
+        assertFalse(s.isAcceptedByLab(pi(true)));
     }
 
     private PatientInvestigation pi(boolean collected) {
