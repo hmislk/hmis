@@ -114,9 +114,13 @@ public class LabSampleLockService {
                 return false;
             }
         }
-        if (Boolean.TRUE.equals(pi.getReceived()) || Boolean.TRUE.equals(pi.getDataEntered())
-                || Boolean.TRUE.equals(pi.getApproved()) || Boolean.TRUE.equals(pi.getPrinted())
-                || ACCEPTED_OR_LATER.contains(pi.getStatus())) {
+        if (Boolean.TRUE.equals(pi.getDataEntered()) || Boolean.TRUE.equals(pi.getApproved())
+                || Boolean.TRUE.equals(pi.getPrinted()) || ACCEPTED_OR_LATER.contains(pi.getStatus())) {
+            return true;
+        }
+        // Separation keeps pi.received from the original sample, so a separated
+        // investigation is judged by the state of its new sample below.
+        if (Boolean.TRUE.equals(pi.getReceived()) && !(hasSamples && hasSeparatedComponent(pi))) {
             return true;
         }
         if (hasSamples) {
@@ -158,6 +162,19 @@ public class LabSampleLockService {
             }
         }
         return result;
+    }
+
+    private boolean hasSeparatedComponent(PatientInvestigation pi) {
+        List<PatientSampleComponant> components = fetchComponentsOfInvestigation(pi);
+        if (components == null) {
+            return false;
+        }
+        for (PatientSampleComponant c : components) {
+            if (c.isSeparated()) {
+                return true;
+            }
+        }
+        return false;
     }
 
     List<PatientSampleComponant> fetchComponentsOfInvestigation(PatientInvestigation pi) {
