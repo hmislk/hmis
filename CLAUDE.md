@@ -22,6 +22,7 @@
 - **🚨 Never modify or remove existing constructors.** Only add new ones, delegating via `this(...)`. See [DTO Guidelines](developer_docs/dto/implementation-guidelines.md).
 - **🚨 JPQL first.** Native SQL only for a demonstrated performance need JPQL can't meet.
 - **🚨 `COUNT(...)` queries use `findLongByJpql`**, never `findDoubleByJpql` (silently returns 0.0).
+- **🚨 Bind id lists, not entity lists, for a root entity in JPQL.** EclipseLink serialises the entities for `b in :bills`, so the query silently matches nothing. Use `b.id in :billIds`.
 - **🚨 Business errors thrown from a `@Stateless` service use an `@ApplicationException(rollback = true)` exception.** A plain `IllegalStateException`/`IllegalArgumentException` reaches the JSF controller or REST class as `EJBException`, so its `catch` never fires and the user sees no message.
 - **🚨 New report buttons on a Favorites-enabled index page** (e.g. `reports/index.xhtml`) go in both the category tab and the ⭐ Favorites tab. Read [Report Favorites](developer_docs/feature/report-favorites.md) first.
 - **🚨 Never change the meaning of an existing config key** (no added/removed `!`, no new default). Hospitals store a value per key; create a new key whose name says what `true` does. CI `config-semantics-guard` fails PRs that do this. See [Changing existing options](developer_docs/configuration/application-options.md#changing-existing-options).
