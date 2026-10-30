@@ -229,9 +229,15 @@ public class InwardInvoiceJournalController implements Serializable {
      * {@code BhtSummeryController.writeDiscountBreakdownToFinanceDetails()} and
      * {@code saveBillItem()}). Neither reaches the service, issue or fee bills
      * that {@link InwardBhtChargeAggregationService} reads, so without this the
-     * journal's Net Total stays above the final bill's. Older final bills pushed
-     * charge-type discounts down onto the fees and had no bill-level discount;
-     * both fields are null or 0 on them, so nothing is counted twice.
+     * journal's Net Total stays above the final bill's.
+     *
+     * Older final bills have no {@code BillFinanceDetails}. They pushed
+     * charge-type discounts down onto the fees, which the service already
+     * reads, and copied them to {@code BillItem.discount}. Their
+     * {@code Bill.discount} started as the sum of those amounts, and the old
+     * Discount Amount box overwrote it without reaching the fees. So the
+     * bill-level discount of an older final bill is {@code Bill.discount} less
+     * its items' discounts, and nothing is counted twice (issue #24965).
      * Returns Map&lt;encounterId, double[]{chargeTypeDiscount, billLevelDiscount}&gt;.
      */
     private Map<Long, double[]> fetchFinalBillDiscountsByEncounter(List<PatientEncounter> encounters) {
@@ -275,6 +281,24 @@ public class InwardInvoiceJournalController implements Serializable {
         if (billLevelRows != null) {
             for (Object[] r : billLevelRows) {
                 result.computeIfAbsent((Long) r[0], k -> new double[2])[1] = ((Number) r[1]).doubleValue();
+            }
+        }
+
+        String olderBillJpql = "select b.patientEncounter.id, b.discount, sum(bi.discount)"
+                + " from BillItem bi join bi.bill b left join b.billFinanceDetails bfd"
+                + " where bi.retired = false"
+                + " and b.id in :billIds"
+                + " and b.discount <> 0"
+                + " and bfd.billDiscount is null"
+                + " group by b.patientEncounter.id, b.discount";
+        List<Object[]> olderBillRows = billFacade.findObjectArrayByJpql(olderBillJpql, params, TemporalType.TIMESTAMP);
+        if (olderBillRows != null) {
+            for (Object[] r : olderBillRows) {
+                double itemDiscounts = r[2] == null ? 0 : ((Number) r[2]).doubleValue();
+                double billLevelDiscount = ((Number) r[1]).doubleValue() - itemDiscounts;
+                if (billLevelDiscount > 0.005) {
+                    result.computeIfAbsent((Long) r[0], k -> new double[2])[1] = billLevelDiscount;
+                }
             }
         }
         return result;
