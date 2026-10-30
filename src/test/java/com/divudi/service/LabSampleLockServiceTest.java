@@ -51,6 +51,11 @@ public class LabSampleLockServiceTest {
         List<PatientSample> fetchActiveSamples(PatientInvestigation pi) {
             return samples;
         }
+
+        @Override
+        List<PatientSampleComponant> fetchComponentsOfInvestigation(PatientInvestigation pi) {
+            return new ArrayList<>();
+        }
     }
 
     private static class ComponentStubService extends LabSampleLockService {
@@ -101,6 +106,57 @@ public class LabSampleLockServiceTest {
         s.components.add(component(1L, original, true));
         s.components.add(component(2L, sample(false), false));
         assertFalse(s.isAcceptedByLab(pi(true)));
+    }
+
+    private PatientSampleComponant acceptedOriginal() {
+        PatientSample original = sample(false);
+        original.setSampleReceivedAtLab(true);
+        original.setStatus(PatientInvestigationStatus.SAMPLE_ACCEPTED);
+        return component(1L, original, true);
+    }
+
+    @Test
+    public void receivedFlagLeftBySeparationDoesNotLockUnacceptedReplacement() {
+        ComponentStubService s = new ComponentStubService();
+        s.components.add(acceptedOriginal());
+        s.components.add(component(2L, sample(false), false));
+        PatientInvestigation p = pi(true);
+        p.setReceived(true);
+        assertFalse(s.isAcceptedByLab(p));
+    }
+
+    @Test
+    public void acceptedReplacementSampleIsLocked() {
+        ComponentStubService s = new ComponentStubService();
+        PatientSample replacement = sample(false);
+        replacement.setSampleReceivedAtLab(true);
+        s.components.add(acceptedOriginal());
+        s.components.add(component(2L, replacement, false));
+        PatientInvestigation p = pi(true);
+        p.setReceived(true);
+        assertTrue(s.isAcceptedByLab(p));
+    }
+
+    @Test
+    public void separatedInvestigationWithResultsIsLocked() {
+        ComponentStubService s = new ComponentStubService();
+        s.components.add(acceptedOriginal());
+        s.components.add(component(2L, sample(false), false));
+        PatientInvestigation entered = pi(true);
+        entered.setDataEntered(true);
+        assertTrue(s.isAcceptedByLab(entered));
+        PatientInvestigation approved = pi(true);
+        approved.setStatus(PatientInvestigationStatus.REPORT_APPROVED);
+        assertTrue(s.isAcceptedByLab(approved));
+    }
+
+    @Test
+    public void receivedWithOnlySeparatedComponentsIsLocked() {
+        ComponentStubService s = new ComponentStubService();
+        s.components.add(acceptedOriginal());
+        PatientInvestigation p = pi(true);
+        p.setReceived(true);
+        assertTrue(s.isAcceptedByLab(p));
     }
 
     private PatientInvestigation pi(boolean collected) {
