@@ -39,6 +39,7 @@ Part of the [Playwright E2E Workflow](../playwright-e2e-workflow.md). Read only 
 - [150. Interim Bill room charges are stale on the first open — open it twice before comparing totals](#150-interim-bill-room-charges-are-stale-on-the-first-open--open-it-twice-before-comparing-totals)
 - [153. Transfer request: issue and cancel act on the approved bill, not the PRE bill](#153-transfer-request-issue-and-cancel-act-on-the-approved-bill-not-the-pre-bill)
 - [157. Handover: the "Hand over to" autocomplete matches full names, and the accept list holds old handovers](#157-handover-the-hand-over-to-autocomplete-matches-full-names-and-the-accept-list-holds-old-handovers)
+- [173. Channel session page: no "Complete Appointment" button until the session is started and a config key is on](#173-channel-session-page-no-complete-appointment-button-until-the-session-is-started-and-a-config-key-is-on)
 
 ---
 
@@ -773,3 +774,8 @@ bill's `CANCELLED`.
 ## 171. Cost of Goods Sold: run the landing page for one day, then set the real range on the drill-down
 
 The landing *Process* aggregates about 20 bill types plus opening and closing stock, and can take tens of minutes on a full local copy even for one day. The Sale, BHT and other drill-downs open only from its result rows, and each has its own fast *Process*. Run the landing page for a single day, open the drill-down, then set the date range you need there.
+
+## 173. Channel session page: no "Complete Appointment" button until the session is started and a config key is on
+
+To mark a channel booking completed, go to *Channelling → Channel Booking - By Dates → (session) → Manage Booking*. Click **Start Session** (accept the confirm), then open the session again from the list, because the page keeps its pre-start state. The *Manage* column with **Complete Appoinment** appears only when `Enable Appoinment Status manage from session Instance` is true (§26).
+The By Dates *Search* box keeps its session-scoped text, so `fill('')` it before typing, or the filter becomes `RoshanRoshan` and hides every session.
