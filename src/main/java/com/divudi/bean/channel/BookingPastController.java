@@ -8,6 +8,7 @@ import com.divudi.bean.common.DoctorSpecialityController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.data.BillType;
+import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.FeeType;
 import com.divudi.core.data.PersonInstitutionType;
 import com.divudi.core.data.Title;
@@ -351,11 +352,13 @@ public class BookingPastController implements Serializable {
                 + " and bs.serviceSession=:ss "
                 + " and bs.bill.billType in :bt"
                 + " and type(bs.bill)=:class "
+                + " and (bs.bill.billTypeAtomic is null or bs.bill.billTypeAtomic != :bta) "
                 + " and bs.sessionDate= :ssDate "
                 + " order by bs.serialNo ";
         HashMap hh = new HashMap();
         hh.put("bt", bts);
         hh.put("class", BilledBill.class);
+        hh.put("bta", BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_PENDING_PAYMENT);
         hh.put("ssDate", getSelectedServiceSession().getSessionDate());
         hh.put("ss", getSelectedServiceSession());
         billSessions = getBillSessionFacade().findByJpql(sql, hh, TemporalType.TIMESTAMP);

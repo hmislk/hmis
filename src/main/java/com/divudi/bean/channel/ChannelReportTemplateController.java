@@ -661,11 +661,13 @@ public class ChannelReportTemplateController implements Serializable {
                 + " where bs.retired=false"
                 + " and bs.bill.billType in :bts"
                 + " and type(bs.bill)=:class "
+                + " and (bs.bill.billTypeAtomic is null or bs.bill.billTypeAtomic != :bta) "
                 + " and bs.sessionInstance=:ss "
                 + " order by bs.serialNo ";
         HashMap<String, Object> hh = new HashMap<>();
         hh.put("bts", bts);
         hh.put("class", BilledBill.class);
+        hh.put("bta", BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_PENDING_PAYMENT);
         hh.put("ss", sessionInstance);
         billSessions = getBillSessionFacade().findByJpql(sql, hh, TemporalType.DATE);
 
@@ -704,7 +706,11 @@ public class ChannelReportTemplateController implements Serializable {
                 completedPatientCount++;
             }
 
-            if (bs.getPaidBillSession() != null) {
+            // An API booking is counted by its completed bill, which has no paidBillSession of its own (#24927)
+            boolean apiCompleted = bs.getBill() != null
+                    && bs.getBill().getBillTypeAtomic() == BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT;
+
+            if (bs.getPaidBillSession() != null || apiCompleted) {
                 paidPatientCount++;
             }
 
@@ -717,7 +723,7 @@ public class ChannelReportTemplateController implements Serializable {
                     refundedPatientCount++;
                 }
 
-                if (bs.getPaidBillSession() == null && !Boolean.TRUE.equals(bs.getBill().isCancelled())) {
+                if (bs.getPaidBillSession() == null && !Boolean.TRUE.equals(bs.getBill().isCancelled()) && !apiCompleted) {
                     onCallPatientCount++;
                 }
             }

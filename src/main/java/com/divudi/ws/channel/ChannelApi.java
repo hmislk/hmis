@@ -1489,26 +1489,47 @@ public class ChannelApi {
 
         //Bill temporarySavedBill = bookingData.getBill();
         Bill temporarySavedBill = channelService.findBillFromOnlineBooking(bookingData);
-
-        try {
-            validateBillForCompleteBooking(temporarySavedBill);
-            validateChannelingSession(temporarySavedBill.getSingleBillSession().getSessionInstance());
-        } catch (ValidationException e) {
-            JSONObject response = commonFunctionToErrorResponse(e.getField() + e.getMessage());
-            return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
-        }
-        if (temporarySavedBill.getSingleBillSession().getSessionInstance().isDoctorHoliday()) {
-            JSONObject response = commonFunctionToErrorResponse("Doctor is on Holiday.");
-            return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
-        } else if (!temporarySavedBill.getSingleBillSession().getSessionInstance().isAcceptOnlineBookings()) {
-            JSONObject response = commonFunctionToErrorResponse("Session is hold for online bookings");
-            return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
-        } else if (channelService.isFullyBookedSession(temporarySavedBill.getSingleBillSession().getSessionInstance())) {
-            JSONObject response = commonFunctionToErrorResponse("Session is Full. Can't add online bookings");
+        if (temporarySavedBill == null || temporarySavedBill.getSingleBillSession() == null) {
+            JSONObject response = commonFunctionToErrorResponse("No Appoinment available for the RefNo : " + clientsReferanceNo);
             return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
         }
 
-        Bill completedBill = channelService.settleOnlineAgentInitialBooking(temporarySavedBill.getSingleBillSession(), clientsReferanceNo, agencyCharge);
+        Bill completedBill;
+        long settleStartedAt = System.currentTimeMillis();
+        // Taken outside ChannelService's transaction so the settle is committed before the next request
+        // for the same session proceeds; the bill is re-read and re-validated under the lock so two
+        // concurrent /complete calls for the same ref no cannot both settle it.
+        try (SessionBookingLock.Hold hold = SessionBookingLock.acquire(temporarySavedBill.getSingleBillSession().getSessionInstance())) {
+            temporarySavedBill = channelService.findBillFromOnlineBooking(bookingData);
+            if (temporarySavedBill == null || temporarySavedBill.getSingleBillSession() == null) {
+                JSONObject response = commonFunctionToErrorResponse("No Appoinment available for the RefNo : " + clientsReferanceNo);
+                return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
+            }
+            try {
+                validateBillForCompleteBooking(temporarySavedBill);
+                validateChannelingSession(temporarySavedBill.getSingleBillSession().getSessionInstance());
+            } catch (ValidationException e) {
+                JSONObject response = commonFunctionToErrorResponse(e.getField() + e.getMessage());
+                return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
+            }
+            if (temporarySavedBill.getPaidBill() != null) {
+                JSONObject response = commonFunctionToErrorResponse("Booking is already completed for RefNo : " + clientsReferanceNo);
+                return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
+            }
+            if (temporarySavedBill.getSingleBillSession().getSessionInstance().isDoctorHoliday()) {
+                JSONObject response = commonFunctionToErrorResponse("Doctor is on Holiday.");
+                return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
+            } else if (!temporarySavedBill.getSingleBillSession().getSessionInstance().isAcceptOnlineBookings()) {
+                JSONObject response = commonFunctionToErrorResponse("Session is hold for online bookings");
+                return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
+            } else if (channelService.isFullyBookedSession(temporarySavedBill.getSingleBillSession().getSessionInstance())) {
+                JSONObject response = commonFunctionToErrorResponse("Session is Full. Can't add online bookings");
+                return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
+            }
+
+            completedBill = channelService.settleOnlineAgentInitialBooking(temporarySavedBill.getSingleBillSession(), clientsReferanceNo, agencyCharge);
+        }
+        LOGGER.log(Level.FINE, "Online booking complete: settle took {0} ms", System.currentTimeMillis() - settleStartedAt);
 
         OnlineBooking bookingDetails = bookingData;
         SessionInstance session = completedBill.getSingleBillSession().getSessionInstance();
@@ -2803,9 +2824,11 @@ public class ChannelApi {
                 + " and bs.serviceSession.id=:ss "
                 + " and bs.bill.billType in :bt"
                 + " and type(bs.bill)=:class "
+                + " and (bs.bill.billTypeAtomic is null or bs.bill.billTypeAtomic != :bta)"
                 //                + " and bs.sessionDate= :ssDate "
                 + " order by bs.serialNo ";
         m.put("bt", bts);
+        m.put("bta", BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_PENDING_PAYMENT);
         m
                 .put("class", BilledBill.class
                 );

@@ -1750,18 +1750,53 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 
     public void refreshSessionsForUpdates(SessionInstance selectSession) {
 
-        if (selectSession == null || sessionInstancesFiltered.size() > 1) {
-            loadSessionInstances();
+        // Remember the session the user is currently working on, so a background refresh does not switch it
+        SessionInstance previouslySelected = selectedSessionInstance;
+        Long previouslySelectedId = previouslySelected != null ? previouslySelected.getId() : null;
+
+        if (selectSession == null || sessionInstancesFiltered == null || sessionInstancesFiltered.size() > 1) {
+            loadSessionInstances(false);
             addBillSessionData();
+            if (!restoreSelectedSessionAfterRefresh(previouslySelectedId)
+                    && sessionInstancesFiltered != null && !sessionInstancesFiltered.isEmpty()) {
+                selectedSessionInstance = sessionInstancesFiltered.get(0);
+                sessionInstanceSelected();
+            }
         } else {
-            listAndFilterSessionInstances();
-            selectedSessionInstance = selectSession;
-            sessionInstanceSelected();
+            loadSessionInstances(false);
+            addBillSessionData();
+            if (!restoreSelectedSessionAfterRefresh(previouslySelectedId)) {
+                selectedSessionInstance = selectSession;
+                sessionInstanceSelected();
+            }
             fillBillSessions();
             sessionInstancesFiltered = new ArrayList<>();
-            sessionInstancesFiltered.add(selectSession);
+            sessionInstancesFiltered.add(selectedSessionInstance != null ? selectedSessionInstance : selectSession);
         }
 
+    }
+
+    /**
+     * After a background reload, points selectedSessionInstance back at the
+     * session the user was working on (matched by id) without clearing the
+     * items, fees or patient already entered.
+     *
+     * @return true if the session was found in the reloaded list and restored.
+     */
+    private boolean restoreSelectedSessionAfterRefresh(Long previouslySelectedId) {
+        if (previouslySelectedId == null || sessionInstancesFiltered == null) {
+            return false;
+        }
+        for (SessionInstance si : sessionInstancesFiltered) {
+            if (si != null && previouslySelectedId.equals(si.getId())) {
+                selectedSessionInstance = si;
+                if (si.getOriginatingSession() != null) {
+                    fillBillSessions();
+                }
+                return true;
+            }
+        }
+        return false;
     }
 
     private SessionInstance refetchSessionInstance(SessionInstance session) {
@@ -1782,6 +1817,10 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     }
 
     public void loadSessionInstances() {
+        loadSessionInstances(true);
+    }
+
+    public void loadSessionInstances(boolean selectFirstSession) {
         sessionInstancesFiltered = new ArrayList<>();
         StringBuilder jpql = new StringBuilder("select i from SessionInstance i where i.retired=:ret and i.originatingSession.retired=:ret");
 
@@ -1847,7 +1886,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         sessionInstancesFiltered = sessionInstanceFacade.findByJpql(jpql.toString(), params, TemporalType.DATE, numberOfSessionToLoad.intValue());
 
         // Select the first item if the filtered list is not empty
-        if (sessionInstancesFiltered != null && !sessionInstancesFiltered.isEmpty()) {
+        if (selectFirstSession && sessionInstancesFiltered != null && !sessionInstancesFiltered.isEmpty()) {
             selectedSessionInstance = sessionInstancesFiltered.get(0);
             sessionInstanceSelected();
         }
@@ -2256,6 +2295,10 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             listAndFilterSessionInstances();
         } else {
             sessionInstancesFiltered = viewScopeDataTransferController.getSessionsFiltered();
+            if (sessionInstancesFiltered == null) {
+                // Transfer controller carried no list (e.g. navigation back from a bill session); load it normally
+                listAndFilterSessionInstances();
+            }
         }
 
         selectedSessionInstance = viewScopeDataTransferController.getSelectedSessionInstance();
@@ -4218,6 +4261,9 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             JsfUtil.addErrorMessage("Please select a patient");
             return;
         }
+        if (patient.getPerson() != null) {
+            patient.getPerson().fillDobFromAgeComponentsIfMissing();
+        }
         if (patientErrorPresent(patient)) {
             JsfUtil.addErrorMessage("Please Enter Patient Details.");
             settleSucessFully = false;
@@ -5895,8 +5941,8 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         long sessionStartingNumber = 0;
         long nextAvailableAppointmentNumber = 0;
 
-        if (selectedSessionInstance.getOriginatingSession()
-                .getSessionStartingNumber() != null
+        if (selectedSessionInstance != null && selectedSessionInstance.getOriginatingSession() != null
+                && selectedSessionInstance.getOriginatingSession().getSessionStartingNumber() != null
                 && !selectedSessionInstance.getOriginatingSession().getSessionStartingNumber().trim().equals("")) {
 
             int ssn = Integer.parseInt(selectedSessionInstance.getOriginatingSession().getSessionStartingNumber().trim());
@@ -6039,20 +6085,23 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             return;
         }
 
+        // An API booking is counted once, by its completed bill, which has no paidBillSession of its own (#24927)
+        String apiCompleted = "'" + BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT.name() + "'";
         // Prepare the SQL query
         String sql = "SELECT bs.SESSIONINSTANCE_ID, "
                 + "COUNT(bs.ID) AS bookedPatientCount, "
-                + "SUM(CASE WHEN (bs.PAIDBILLSESSION_ID IS NOT NULL and bs.RESCHEDULEDTOBILLSESSION_ID is NULL) THEN 1 ELSE 0 END) AS paidPatientCount, "
+                + "SUM(CASE WHEN ((bs.PAIDBILLSESSION_ID IS NOT NULL OR b.BILLTYPEATOMIC = " + apiCompleted + ") and bs.RESCHEDULEDTOBILLSESSION_ID is NULL) THEN 1 ELSE 0 END) AS paidPatientCount, "
                 + "SUM(CASE WHEN bs.COMPLETED = TRUE THEN 1 ELSE 0 END) AS completedPatientCount, "
                 + "SUM(CASE WHEN b.CANCELLED = TRUE THEN 1 ELSE 0 END) AS cancelPatientCount, "
                 + "SUM(CASE WHEN b.REFUNDED = TRUE THEN 1 ELSE 0 END) AS refundedPatientCount, "
-                + "SUM(CASE WHEN bs.PAIDBILLSESSION_ID IS NULL AND b.CANCELLED = FALSE THEN 1 ELSE 0 END) AS onCallPatientCount, "
+                + "SUM(CASE WHEN bs.PAIDBILLSESSION_ID IS NULL AND b.CANCELLED = FALSE AND (b.BILLTYPEATOMIC IS NULL OR b.BILLTYPEATOMIC <> " + apiCompleted + ") THEN 1 ELSE 0 END) AS onCallPatientCount, "
                 + "SUM(CASE WHEN bs.RESERVEDBOOKING = TRUE THEN 1 ELSE 0 END) AS reservedBookingCount "
                 + "FROM billsession bs "
                 + "JOIN bill b ON bs.BILL_ID = b.ID "
                 + "WHERE bs.RETIRED = FALSE "
                 + "AND b.BILLTYPE IN ('ChannelAgent', 'ChannelCash', 'ChannelOnCall', 'ChannelStaff', 'ChannelCredit', 'ChannelResheduleWithPayment', 'ChannelResheduleWithOutPayment') "
                 + "AND b.DTYPE = 'BilledBill' "
+                + "AND (b.BILLTYPEATOMIC IS NULL OR b.BILLTYPEATOMIC <> '" + BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_PENDING_PAYMENT.name() + "') "
                 + "AND bs.SESSIONINSTANCE_ID IN (:ids) "
                 + "GROUP BY bs.SESSIONINSTANCE_ID";
 
@@ -9160,6 +9209,9 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     public void calculateSelectedBillSessionTotal() {
         SessionInstance session = getSelectedSessionInstance() != null ? getSelectedSessionInstance() : getBillSession() != null ? getBillSession().getSessionInstance() : null;
         if (session == null) {
+            return;
+        }
+        if (session.getOriginatingSession() == null) {
             return;
         }
         PaymentSchemeDiscount paymentSchemeDiscount = priceMatrixController.fetchChannellingMemberShipDiscount(paymentMethod, paymentScheme, session.getOriginatingSession().getCategory());

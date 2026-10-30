@@ -137,9 +137,10 @@
                                 action="#{bookingController.navigateToManageBooking()}"
                                 icon="fa-solid fa-bars-progress" />
 
-                            <p:commandButton 
-                                ajax="false" 
-                                value="Add Channel Booking" 
+                            <p:commandButton
+                                ajax="false"
+                                immediate="true"
+                                value="Add Channel Booking"
                                 class="ui-button-warning mx-1"
                                 action="#{bookingControllerViewScope.sessionInstanceFetchFromChannelBooking()}"
                                 rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable channel booking by date navigations from channel booking view', false)}"
@@ -650,7 +651,7 @@
                                          styleClass="ws-trigger"
                                          update="acBookings "
                                          style="display:none"/>
-                        <p:poll interval="15" update="acBookings" listener="#{bookingController.fillBillSessions}"></p:poll>
+                        <p:poll interval="15" process="@this" update="acBookings" listener="#{bookingController.fillBillSessions}"></p:poll>
                     </div>
                 </div>
 
