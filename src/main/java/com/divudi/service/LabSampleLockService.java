@@ -138,9 +138,29 @@ public class LabSampleLockService {
     }
 
     /**
-     * Non-retired, non-cancelled samples linked to the investigation.
+     * Non-retired, non-cancelled samples linked to the investigation. A
+     * component that has been separated stays on the original sample with
+     * separated=true, but the investigation now belongs to the new sample.
      */
     List<PatientSample> fetchActiveSamples(PatientInvestigation pi) {
+        List<PatientSampleComponant> components = fetchComponentsOfInvestigation(pi);
+        List<PatientSample> result = new ArrayList<>();
+        if (components == null) {
+            return result;
+        }
+        for (PatientSampleComponant c : components) {
+            if (c.isSeparated()) {
+                continue;
+            }
+            PatientSample ps = c.getPatientSample();
+            if (ps != null && !ps.isRetired() && !Boolean.TRUE.equals(ps.getCancelled()) && !result.contains(ps)) {
+                result.add(ps);
+            }
+        }
+        return result;
+    }
+
+    List<PatientSampleComponant> fetchComponentsOfInvestigation(PatientInvestigation pi) {
         String jpql = "select c "
                 + " from PatientSampleComponant c "
                 + " where c.retired=false "
@@ -148,18 +168,7 @@ public class LabSampleLockService {
                 + " and c.patientSample is not null ";
         Map<String, Object> params = new HashMap<>();
         params.put("pi", pi);
-        List<PatientSampleComponant> components = patientSampleComponantFacade.findByJpql(jpql, params);
-        List<PatientSample> result = new ArrayList<>();
-        if (components == null) {
-            return result;
-        }
-        for (PatientSampleComponant c : components) {
-            PatientSample ps = c.getPatientSample();
-            if (ps != null && !ps.isRetired() && !Boolean.TRUE.equals(ps.getCancelled()) && !result.contains(ps)) {
-                result.add(ps);
-            }
-        }
-        return result;
+        return patientSampleComponantFacade.findByJpql(jpql, params);
     }
 
     /**
@@ -333,12 +342,13 @@ public class LabSampleLockService {
 
     /**
      * Non-retired investigations linked to the sample through non-retired
-     * sample components.
+     * sample components that have not been separated from it.
      */
     List<PatientInvestigation> fetchInvestigationsOfSample(PatientSample sample) {
         String jpql = "select distinct c.patientInvestigation "
                 + " from PatientSampleComponant c "
                 + " where c.retired=false "
+                + " and c.separated=false "
                 + " and c.patientSample=:ps "
                 + " and c.patientInvestigation is not null ";
         Map<String, Object> params = new HashMap<>();
