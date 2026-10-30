@@ -3,7 +3,8 @@
 }
 .cc-hero {
     position: relative;
-    overflow: hidden;
+    /* Not overflow:hidden, so the user menu can drop below the hero; .cc-hero-bg clips the circles */
+    z-index: 5;
     border-radius: 0 0 14px 14px;
     background: linear-gradient(135deg, #1565C0 0%, #1E88E5 55%, #29B6F6 100%);
     color: #fff;
@@ -16,7 +17,14 @@
     gap: 1rem;
     box-shadow: 0 8px 22px rgba(21, 101, 192, 0.28);
 }
-.cc-hero:before {
+.cc-hero-bg {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    border-radius: inherit;
+    pointer-events: none;
+}
+.cc-hero-bg:before {
     content: "";
     position: absolute;
     right: -40px;
@@ -26,7 +34,7 @@
     border-radius: 50%;
     background: rgba(255,255,255,0.08);
 }
-.cc-hero:after {
+.cc-hero-bg:after {
     content: "";
     position: absolute;
     right: 60px;
@@ -83,6 +91,172 @@
 }
 .cc-hero-chip-text {
     text-align: left;
+    display: block;
+}
+
+/* ---------- User menu (chip click → User Settings dropdown) ---------- */
+.cc-user-menu {
+    position: relative;
+}
+button.cc-hero-chip.cc-user-menu-toggle {
+    color: #fff;
+    font: inherit;
+    cursor: pointer;
+    padding-right: 0.85rem;
+    transition: background 0.15s ease, border-color 0.15s ease;
+}
+button.cc-hero-chip.cc-user-menu-toggle:hover,
+.cc-user-menu.open button.cc-hero-chip.cc-user-menu-toggle {
+    background: rgba(255,255,255,0.26);
+    border-color: rgba(255,255,255,0.45);
+}
+button.cc-hero-chip.cc-user-menu-toggle:focus-visible {
+    outline: 2px solid #fff;
+    outline-offset: 2px;
+}
+button.cc-user-menu-toggle .cc-hero-chip-text {
+    flex: 1 1 auto;
+}
+/* Caret sits at the chip's right edge */
+.cc-user-menu-caret {
+    font-size: 0.7rem;
+    opacity: 0.85;
+    margin-left: auto;
+    padding-left: 0.6rem;
+    transition: transform 0.2s ease;
+}
+.cc-user-menu.open .cc-user-menu-caret {
+    transform: rotate(180deg);
+}
+.cc-user-menu-panel {
+    position: absolute;
+    top: calc(100% + 10px);
+    right: 0;
+    width: 290px;
+    max-width: calc(100vw - 32px);
+    background: var(--surface-a, #fff);
+    color: var(--text-color, #212529);
+    border: 1px solid var(--surface-d, #e9ecef);
+    border-radius: 16px;
+    box-shadow: 0 18px 40px rgba(17, 38, 80, 0.18);
+    padding: 0.5rem;
+    z-index: 1000;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-6px) scale(0.98);
+    transform-origin: top right;
+    transition: opacity 0.15s ease, transform 0.15s ease, visibility 0.15s;
+}
+.cc-user-menu-panel:before {
+    content: "";
+    position: absolute;
+    top: -6px;
+    right: 26px;
+    width: 12px;
+    height: 12px;
+    background: var(--surface-a, #fff);
+    border-left: 1px solid var(--surface-d, #e9ecef);
+    border-top: 1px solid var(--surface-d, #e9ecef);
+    transform: rotate(45deg);
+}
+.cc-user-menu.open .cc-user-menu-panel {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0) scale(1);
+}
+.cc-user-menu-head {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    padding: 0.65rem 0.65rem 0.8rem;
+    margin-bottom: 0.35rem;
+    border-bottom: 1px solid var(--surface-d, #eef0f2);
+}
+.cc-user-menu-avatar {
+    width: 40px;
+    height: 40px;
+    min-width: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    background: linear-gradient(135deg, #1565C0 0%, #29B6F6 100%);
+}
+.cc-user-menu-name {
+    display: block;
+    font-weight: 700;
+    font-size: 0.92rem;
+    line-height: 1.2;
+}
+.cc-user-menu-sub {
+    display: block;
+    font-size: 0.78rem;
+    color: var(--text-color-secondary, #6c757d);
+}
+.cc-user-menu-label {
+    display: block;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-color-secondary, #8a94a6);
+    padding: 0.35rem 0.65rem;
+}
+a.cc-user-menu-item {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    padding: 0.6rem 0.65rem;
+    border-radius: 11px;
+    text-decoration: none;
+    color: inherit;
+    transition: background 0.15s ease;
+}
+a.cc-user-menu-item:hover,
+a.cc-user-menu-item:focus-visible {
+    background: var(--surface-c, #f1f4f8);
+    color: inherit;
+    outline: none;
+}
+a.cc-user-menu-item .cc-detail-icon {
+    width: 32px;
+    height: 32px;
+    min-width: 32px;
+    border-radius: 10px;
+}
+.cc-user-menu-item-text {
+    flex: 1 1 auto;
+    text-align: left;
+}
+.cc-user-menu-item-title {
+    display: block;
+    font-weight: 600;
+    font-size: 0.88rem;
+}
+.cc-user-menu-item-desc {
+    display: block;
+    font-size: 0.75rem;
+    color: var(--text-color-secondary, #6c757d);
+}
+.cc-user-menu-arrow {
+    font-size: 0.7rem;
+    color: var(--text-color-secondary, #8a94a6);
+    transition: transform 0.15s ease;
+}
+a.cc-user-menu-item:hover .cc-user-menu-arrow {
+    transform: translateX(3px);
+}
+@media (max-width: 576px) {
+    .cc-user-menu-panel {
+        right: auto;
+        left: 0;
+        transform-origin: top left;
+    }
+    .cc-user-menu-panel:before {
+        right: auto;
+        left: 26px;
+    }
 }
 .cc-hero-right {
     position: relative;
@@ -442,8 +616,8 @@ a.cc-action-card {
 }
 
 @media (max-width: 576px) {
-    .cc-hero:before,
-    .cc-hero:after { display: none; }
+    .cc-hero-bg:before,
+    .cc-hero-bg:after { display: none; }
 
     /* Two small stat tiles per row reads better than four tall ones */
     .cc-stat-grid { grid-template-columns: repeat(2, 1fr); }

@@ -14,7 +14,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.ejb.EJB;
-import javax.faces.context.FacesContext;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -89,6 +88,8 @@ public class TwoFactorAuthController implements Serializable {
     private String selfSetupCode;
     // Invalid codes against the current setup QR; the QR is replaced when it reaches MAX_FAILED_ATTEMPTS
     private int selfSetupFailedAttempts;
+    // Set when a required setup is confirmed; the user must log out and sign in again with a code
+    private boolean reloginRequired;
 
     // Authentication log popup on Manage User
     private List<AuditEvent> authLogs;
@@ -118,12 +119,20 @@ public class TwoFactorAuthController implements Serializable {
     }
 
     /**
-     * True while the logged user must use 2FA but has not linked an app; the
-     * templates then show only the setup screen, whatever page is opened.
+     * True while the logged user must use 2FA but has not linked an app, and
+     * after that required setup until the user logs out; the templates then
+     * show only the setup screen, whatever page is opened.
      */
     public boolean isSetupRequiredNow() {
+        if (reloginRequired) {
+            return true;
+        }
         WebUser u = sessionController.getLoggedUser();
         return u != null && !u.isTwoFactorEnrolled() && isTwoFactorRequiredFor(u);
+    }
+
+    public boolean isReloginRequired() {
+        return reloginRequired;
     }
 
     public void startChallenge(WebUser u) {
@@ -285,17 +294,13 @@ public class TwoFactorAuthController implements Serializable {
         // Keep the session copy in step so a later edit(loggedUser) does not restore the old secret
         copyEnrollment(u, sessionController.getLoggedUser());
         selfSetupSecret = null;
-        JsfUtil.addSuccessMessage("Authenticator app linked.");
         if (wasForcedSetup) {
-            // The templates were showing only this screen; open the user's home page now
-            FacesContext.getCurrentInstance().getExternalContext().getFlash().setKeepMessages(true);
-            String home = sessionController.navigateToLoginPageByUsersDefaultLoginPage();
-            if (home == null || home.isEmpty()) {
-                home = "/index1";
-            }
-            // Redirect so the whole template renders again, not just this ajax form
-            return home.contains("faces-redirect") ? home : home + (home.contains("?") ? "&" : "?") + "faces-redirect=true";
+            // The templates keep showing only this screen, which now logs the user out so the
+            // first login with the new app is a full password and code login
+            reloginRequired = true;
+            return null;
         }
+        JsfUtil.addSuccessMessage("Authenticator app linked.");
         return null;
     }
 
