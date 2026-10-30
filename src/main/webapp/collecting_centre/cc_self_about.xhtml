@@ -1,0 +1,143 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:ez="http://xmlns.jcp.org/jsf/composite/ezcomp">
+    <h:head>
+        <title>Collecting Centre Self Billing - About</title>
+    </h:head>
+    <h:body>
+        <ui:composition template="/resources/template/template_without_menu.xhtml">
+            <ui:define name="content">
+                <h:panelGroup rendered="#{not collectingCentreSelfCommonController.collectingCentreDepartment}">
+                    <h:outputStylesheet library="css" name="collecting_centre_self_billing_not_available.css"/>
+                    <h:form id="ccNotAvailableForm">
+                        <ez:cc_self_billing_not_available/>
+                    </h:form>
+                </h:panelGroup>
+
+                <h:panelGroup rendered="#{collectingCentreSelfCommonController.collectingCentreDepartment}">
+                    <h:outputStylesheet library="css" name="collecting_centre_self_settings.css"/>
+                    <div class="cc-set-page">
+                        <h:form id="form">
+                            <ez:cc_self_billing_header
+                                pageTitle="About Software"
+                                highlightCode="#{sessionController.institution.code}"
+                                highlightName="#{sessionController.institution.name}"
+                                pageIcon="fa-solid fa-circle-info"
+                                backAction="#{collectingCentreSelfCommonController.navigateToCollectingCentreSelfBillingHome}"
+                                backLabel="Back to Dashboard"/>
+
+                            <div class="cc-set-wrap">
+
+                                <div class="cc-about-hero cc-set-gradient">
+                                    <div class="cc-about-logo">
+                                        <p:graphicImage library="image" name="CompanyLogo/companyLogo.png"
+                                                        title="CareCode Company Logo - Hospital Management Information System"
+                                                        alt="CareCode Company Logo"/>
+                                    </div>
+                                    <div class="cc-about-hero-text">
+                                        <span class="cc-about-eyebrow">Collecting Centre Self Service</span>
+                                        <h:outputText styleClass="cc-about-title" value="Hospital Management Information System"/>
+                                        <h:outputText styleClass="cc-about-subtitle" value="Powered by CareCode (Pvt) Ltd."/>
+                                        <div class="cc-about-links">
+                                            <a href="https://carecode.lk" target="_blank" rel="noopener" title="Visit CareCode official website">
+                                                <i class="fas fa-globe"></i> carecode.lk
+                                            </a>
+                                            <a href="https://youtube.com/@CareCode" target="_blank" rel="noopener" title="Watch CareCode tutorials on YouTube">
+                                                <i class="fab fa-youtube"></i> Tutorials
+                                            </a>
+                                            <a href="mailto:info@carecode.org" title="Contact CareCode support team">
+                                                <i class="fas fa-envelope"></i> info@carecode.org
+                                            </a>
+                                        </div>
+                                    </div>
+                                    <div class="cc-about-version">
+                                        <span class="cc-about-version-label">Version</span>
+                                        <h:outputText styleClass="cc-about-version-value" value="#{versionController.systemVersion}"/>
+                                    </div>
+                                </div>
+
+                                <div class="cc-about-grid">
+                                    <div class="cc-set-card">
+                                        <div class="cc-set-card-body">
+                                            <div class="cc-set-card-title">
+                                                <span class="cc-set-icon cc-c-blue"><i class="fa-solid fa-laptop-medical"></i></span>
+                                                <span>System Information</span>
+                                            </div>
+                                            <div class="cc-about-tiles">
+                                                <div class="cc-about-tile">
+                                                    <span class="cc-set-icon cc-c-blue"><i class="fa-solid fa-code-branch"></i></span>
+                                                    <div>
+                                                        <span class="cc-about-tile-label">Current Version</span>
+                                                        <h:outputText styleClass="cc-about-tile-value" value="#{versionController.systemVersion}"/>
+                                                    </div>
+                                                </div>
+                                                <div class="cc-about-tile">
+                                                    <span class="cc-set-icon cc-c-purple"><i class="fa-solid fa-code-commit"></i></span>
+                                                    <div>
+                                                        <span class="cc-about-tile-label">Last Commit</span>
+                                                        <h:outputText styleClass="cc-about-tile-value" value="#{versionController.gitCommitIdAbbrev}"/>
+                                                        <h:outputText styleClass="cc-about-tile-sub" value="#{versionController.gitBranch}"/>
+                                                    </div>
+                                                </div>
+                                                <div class="cc-about-tile">
+                                                    <span class="cc-set-icon cc-c-orange"><i class="fa-solid fa-hammer"></i></span>
+                                                    <div>
+                                                        <span class="cc-about-tile-label">Build Time</span>
+                                                        <h:outputText styleClass="cc-about-tile-value" value="#{versionController.gitBuildTime}"/>
+                                                        <h:outputText styleClass="cc-about-tile-sub" value="#{versionController.gitBuildTimeElapsed}"
+                                                                      rendered="#{versionController.gitBuildTimeElapsed != null}"/>
+                                                    </div>
+                                                </div>
+                                                <div class="cc-about-tile">
+                                                    <span class="cc-set-icon cc-c-teal"><i class="fa-solid fa-power-off"></i></span>
+                                                    <div>
+                                                        <span class="cc-about-tile-label">Last Restart</span>
+                                                        <h:outputText styleClass="cc-about-tile-value" value="#{versionController.applicationStartupTime}"/>
+                                                        <h:outputText styleClass="cc-about-tile-sub" value="#{versionController.applicationStartupTimeElapsed}"
+                                                                      rendered="#{versionController.applicationStartupTimeElapsed != null}"/>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="cc-set-card">
+                                        <h:panelGroup layout="block" styleClass="cc-set-card-body" rendered="#{sessionController.loggedUser != null}">
+                                            <div class="cc-about-user-head">
+                                                <div class="cc-about-avatar"><i class="fa-solid fa-user"></i></div>
+                                                <div>
+                                                    <h:outputText styleClass="cc-about-user-name"
+                                                                  value="#{sessionController.loggedUser.webUserPerson.name}"
+                                                                  rendered="#{sessionController.loggedUser.webUserPerson != null}"/>
+                                                    <h:outputText styleClass="cc-about-user-sub" value="Signed in as #{sessionController.loggedUser.name}"/>
+                                                </div>
+                                            </div>
+                                            <div class="cc-about-row">
+                                                <span class="cc-about-row-label"><i class="fa-solid fa-id-badge"></i> Username</span>
+                                                <h:outputText styleClass="cc-about-row-value" value="#{sessionController.loggedUser.name}"/>
+                                            </div>
+                                            <div class="cc-about-row">
+                                                <span class="cc-about-row-label"><i class="fa-solid fa-hashtag"></i> User Code</span>
+                                                <h:outputText styleClass="cc-about-row-value" value="#{sessionController.loggedUser.code}"/>
+                                            </div>
+                                            <div class="cc-about-row">
+                                                <span class="cc-about-row-label"><i class="fa-solid fa-city"></i> Collecting Centre</span>
+                                                <h:outputText styleClass="cc-about-row-value" value="#{sessionController.institution.name}"/>
+                                            </div>
+                                        </h:panelGroup>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </h:form>
+                    </div>
+                </h:panelGroup>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

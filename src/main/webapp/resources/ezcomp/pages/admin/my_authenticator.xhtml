@@ -384,7 +384,7 @@
                         <ez:modern_messages id="msgAuthenticator" />
 
                         <!-- Forced setup: the templates show only this screen until an app is linked -->
-                        <h:panelGroup rendered="#{twoFactorAuthController.setupRequiredNow}" layout="block" class="auth-forced">
+                        <h:panelGroup rendered="#{twoFactorAuthController.setupRequiredNow and not twoFactorAuthController.reloginRequired}" layout="block" class="auth-forced">
                             <div class="auth-forced-icon"><i class="fa fa-user-shield"></i></div>
                             <div class="auth-forced-text">
                                 <div class="auth-forced-title">
@@ -409,8 +409,48 @@
                             <h:outputText value="Authenticator app login is not enabled for this system." />
                         </h:panelGroup>
 
+                        <!-- Required setup confirmed: the user is logged out to sign in again with a code -->
+                        <h:panelGroup rendered="#{twoFactorAuthController.reloginRequired}" layout="block" class="auth-status linked">
+                            <div class="auth-status-icon"><i class="fa fa-check"></i></div>
+                            <h:outputText value="Authenticator app linked" class="auth-status-title" />
+                            <h:panelGroup class="auth-status-chip required">
+                                <i class="fa fa-sign-in-alt"></i>
+                                <h:outputText value=" Sign in again with your password and the 6-digit code from your app." />
+                            </h:panelGroup>
+                            <h:panelGroup layout="block" class="auth-status-action">
+                                <p:commandButton id="btnRelogin"
+                                                 widgetVar="wvReloginAfterSetup"
+                                                 value="Sign In Again"
+                                                 icon="pi pi-sign-out"
+                                                 class="ui-button-success"
+                                                 ajax="false"
+                                                 immediate="true"
+                                                 title="Log out and sign in with your authenticator code"
+                                                 action="#{sessionController.logout}" />
+                            </h:panelGroup>
+                            <div class="auth-meta">
+                                You will be logged out in <span id="authReloginSeconds">10</span> seconds.
+                            </div>
+                            <script>
+                                (function () {
+                                    var seconds = 10;
+                                    var timer = setInterval(function () {
+                                        seconds--;
+                                        var el = document.getElementById('authReloginSeconds');
+                                        if (el) {
+                                            el.textContent = seconds;
+                                        }
+                                        if (seconds &lt;= 0) {
+                                            clearInterval(timer);
+                                            PF('wvReloginAfterSetup').jq.click();
+                                        }
+                                    }, 1000);
+                                })();
+                            </script>
+                        </h:panelGroup>
+
                         <!-- Current status -->
-                        <h:panelGroup rendered="#{twoFactorAuthController.twoFactorEnabled and not twoFactorAuthController.selfSetupInProgress}" layout="block"
+                        <h:panelGroup rendered="#{twoFactorAuthController.twoFactorEnabled and not twoFactorAuthController.selfSetupInProgress and not twoFactorAuthController.reloginRequired}" layout="block"
                                       class="auth-status #{twoFactorAuthController.loggedUserEnrolled ? 'linked' : 'unlinked'}">
                             <div class="auth-status-icon">
                                 <h:panelGroup rendered="#{twoFactorAuthController.loggedUserEnrolled}"><i class="fa fa-check"></i></h:panelGroup>
