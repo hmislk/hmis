@@ -463,3 +463,4 @@ A page opens only if the logged-in user holds its privilege for the department s
 ## 174. Edit Option dialog: read the switch state from `aria-label` (On/Off), not `aria-checked`
 
 In the Application Options **Edit Option** dialog, the boolean switch's hidden checkbox has `aria-checked="aria-checked"` whether it is on or off, so `getAttribute('aria-checked') === 'true'` is never true and a "turn it off if on" script silently saves the old value. Read `aria-label` (`On`/`Off`) or the `checked` property, click `.ui-toggleswitch-slider`, then confirm Yes/No in the list row after **Save**.
+On *Manage Institutions*, wait for `networkidle` plus about 1 s before clicking **Preferences**. An early click is ignored, and the **Application Options** button never appears.
