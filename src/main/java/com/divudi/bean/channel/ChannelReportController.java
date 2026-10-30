@@ -4737,6 +4737,9 @@ public class ChannelReportController implements Serializable {
         bts.add(BillType.ChannelCash);
         bts.add(BillType.ChannelOnCall);
         bts.add(BillType.ChannelStaff);
+        bts.add(BillType.ChannelCredit);
+        bts.add(BillType.ChannelResheduleWithPayment);
+        bts.add(BillType.ChannelResheduleWithOutPayment);
         hh.put("tbs", bts);
         nurseViewSessions = getBillSessionFacade().findByJpql(sql, hh, TemporalType.TIMESTAMP);
 
