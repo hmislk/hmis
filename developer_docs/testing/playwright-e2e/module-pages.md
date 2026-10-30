@@ -779,4 +779,5 @@ The landing *Process* aggregates about 20 bill types plus opening and closing st
 
 To mark a channel booking completed, go to *Channelling → Channel Booking - By Dates → (session) → Manage Booking*. Click **Start Session** (accept the confirm), then open the session again from the list, because the page keeps its pre-start state. The *Manage* column with **Complete Appoinment** appears only when `Enable Appoinment Status manage from session Instance` is true (§26).
 The By Dates *Search* box keeps its session-scoped text, so `fill('')` it before typing, or the filter becomes `RoshanRoshan` and hides every session.
+By Dates lists only ongoing/pending sessions by default; after **Complete Session**, click the **Completed** button to see the session again (its **Pay Session** button appears only on a completed session).
 Staff autocompletes (Pay Doctor etc.) can list two staff with the same name. Check `STAFF`/`PERSON` for duplicates first and pick the suggestion whose dues match the DB, not the first one.
