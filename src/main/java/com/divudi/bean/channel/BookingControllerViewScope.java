@@ -4349,31 +4349,11 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             }
         }
 
-        if (selectedSessionInstance.getMaxNo() != 0 && configOptionApplicationController.getBooleanValueByKey("Limited appoinments session can't get appoinement more than max amount.")) {
-            if (selectedSessionInstance.getBookedPatientCount() != null) {
-                int maxNo = selectedSessionInstance.getMaxNo();
-                long bookedPatientCount = selectedSessionInstance.getBookedPatientCount();
-                long reservedNumberCount = selectedSessionInstance.getReservedBookingCount() != null ? selectedSessionInstance.getReservedBookingCount() : 0L;
-                long totalPatientCount;
-
-                List<Integer> reservedNumbers = CommonFunctions.convertStringToIntegerList(selectedSessionInstance.getReserveNumbers());
-                if (reservedBooking) {
-                    bookedPatientCount = bookedPatientCount;
-                } else {
-                    bookedPatientCount = bookedPatientCount + reservedNumbers.size() - reservedNumberCount;
-                }
-
-                if (selectedSessionInstance.getCancelPatientCount() != null) {
-                    long canceledPatientCount = selectedSessionInstance.getCancelPatientCount();
-                    totalPatientCount = bookedPatientCount - canceledPatientCount;
-                } else {
-                    totalPatientCount = bookedPatientCount;
-                }
-                if (maxNo <= totalPatientCount) {
-                    JsfUtil.addErrorMessage("Error: The maximum number of bookings (" + maxNo + ") has been Reached.");
-                    return;
-                }
-            }
+        boolean limitToMaxNo = selectedSessionInstance.getMaxNo() != 0 && configOptionApplicationController.getBooleanValueByKey("Limited appoinments session can't get appoinement more than max amount.");
+        if (limitToMaxNo && selectedSessionInstance.getBookedPatientCount() != null
+                && isMaxNoReached(reservedBooking, selectedSessionInstance.getBookedPatientCount(),
+                        selectedSessionInstance.getReservedBookingCount(), selectedSessionInstance.getCancelPatientCount())) {
+            return;
         }
 
         if (configOptionApplicationController.getBooleanValueByKey("Allow Tenderd amount for channel booking")) {
@@ -4408,10 +4388,17 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             }
 
         }
-        // A staff-chosen released number must still be free when the booking row is inserted,
-        // so hold the lock from the check until the bill (and its BillSession) is saved (#24785).
-        try (SessionBookingLock.Hold hold = getAssignedReleasedAppoinmentNumber() != 0L
-                ? SessionBookingLock.acquire(getSelectedSessionInstance()) : null) {
+        // A staff-chosen released number must still be free, and the session must still have room, when the
+        // booking row is inserted, so hold the lock from the checks until the bill (and its BillSession) is saved (#24785).
+        // The lock is re-entrant, so createBillSession taking it again is safe.
+        try (SessionBookingLock.Hold hold = SessionBookingLock.acquire(getSelectedSessionInstance())) {
+            if (limitToMaxNo) {
+                // The stored counts can be stale (another counter or an online booking); count the rows now
+                long[] fresh = countBookingsForCapacity(getSelectedSessionInstance());
+                if (isMaxNoReached(reservedBooking, fresh[0], fresh[1], fresh[2])) {
+                    return;
+                }
+            }
             if (getAssignedReleasedAppoinmentNumber() != 0L) {
                 Long num = getAssignedReleasedAppoinmentNumber();
                 boolean checkNumber = checkApoinmentNumberIsAvailable(num.intValue());
@@ -6184,6 +6171,53 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
                 }
             }
         }
+    }
+
+    private boolean isMaxNoReached(boolean reservedBooking, Long booked, Long reservedBookings, Long cancelled) {
+        int maxNo = selectedSessionInstance.getMaxNo();
+        long bookedPatientCount = booked != null ? booked : 0L;
+        long reservedNumberCount = reservedBookings != null ? reservedBookings : 0L;
+        if (!reservedBooking) {
+            List<Integer> reservedNumbers = CommonFunctions.convertStringToIntegerList(selectedSessionInstance.getReserveNumbers());
+            bookedPatientCount = bookedPatientCount + reservedNumbers.size() - reservedNumberCount;
+        }
+        long totalPatientCount = cancelled != null ? bookedPatientCount - cancelled : bookedPatientCount;
+        if (maxNo <= totalPatientCount) {
+            JsfUtil.addErrorMessage("Error: The maximum number of bookings (" + maxNo + ") has been Reached.");
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Booked, reserved and cancelled counts for the session read from the
+     * booking rows, with the same rules as the stored counts.
+     */
+    private long[] countBookingsForCapacity(SessionInstance si) {
+        String jpql = "select count(bs), "
+                + " sum(case when bs.reservedBooking = true then 1 else 0 end), "
+                + " sum(case when b.cancelled = true then 1 else 0 end) "
+                + " from BillSession bs join bs.bill b "
+                + " where bs.retired=false"
+                + " and bs.sessionInstance=:si"
+                + " and b.billType in :bt"
+                + " and type(b)=:class"
+                + " and (b.billTypeAtomic is null or b.billTypeAtomic <> :bta)";
+        Map<String, Object> params = new HashMap<>();
+        params.put("si", si);
+        params.put("bt", Arrays.asList(BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelOnCall, BillType.ChannelStaff,
+                BillType.ChannelCredit, BillType.ChannelResheduleWithPayment, BillType.ChannelResheduleWithOutPayment));
+        params.put("class", BilledBill.class);
+        params.put("bta", BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_PENDING_PAYMENT);
+        List<Object[]> rows = billSessionFacade.findObjectsArrayByJpql(jpql, params, TemporalType.TIMESTAMP);
+        long[] counts = new long[3];
+        if (rows != null && !rows.isEmpty() && rows.get(0) != null) {
+            for (int i = 0; i < 3; i++) {
+                Object v = rows.get(0)[i];
+                counts[i] = v == null ? 0L : ((Number) v).longValue();
+            }
+        }
+        return counts;
     }
 
     private long countCountedBillSessions(SessionInstance si) {
