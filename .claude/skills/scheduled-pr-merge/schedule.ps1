@@ -10,7 +10,9 @@
 # state: if either changes before the merge, the job will not merge.
 param(
     [Parameter(Position = 0, Mandatory = $true)][ValidateSet('add', 'test', 'list', 'cancel')][string]$Command,
-    [string]$Repo, [int]$Pr, [string]$At, [int]$WindowMinutes = 30, [string]$Method = 'merge', [string]$TaskName
+    [ValidatePattern('^[\w.-]+/[\w.-]+$')][string]$Repo, [int]$Pr, [string]$At,
+    [ValidateRange(1, 1440)][int]$WindowMinutes = 30,
+    [ValidateSet('merge', 'squash', 'rebase')][string]$Method = 'merge', [string]$TaskName
 )
 $ErrorActionPreference = 'Stop'
 $share = Join-Path $env:USERPROFILE '.local\share\hmis-scheduled-merge'
@@ -34,6 +36,7 @@ switch ($Command) {
         $p = Read-Pr
         & powershell.exe -NoProfile -ExecutionPolicy Bypass -File (Join-Path $PSScriptRoot 'scheduled-merge.ps1') `
             -Repo $Repo -Pr $Pr -Base $p.baseRefName -Sha $p.headRefOid -At (Get-Date -Format 'yyyy-MM-dd HH:mm') -DryRun
+        if ($LASTEXITCODE -ne 0) { throw 'The runner failed; no result.' }
         $log = Join-Path $env:USERPROFILE ".local\state\hmis-scheduled-merge\pr-$Pr.log"
         Get-Content $log -Tail 1
     }
