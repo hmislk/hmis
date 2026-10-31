@@ -1731,7 +1731,8 @@ public class ChannelReportController implements Serializable {
         String sql = "SELECT b FROM BillSession b "
                 + "  where type(b.bill)=:class "
                 + " and b.bill.billType in :bt "
-                + " and b.bill.retired=false ";
+                + " and b.bill.retired=false "
+                + " and (b.bill.billTypeAtomic is null or b.bill.billTypeAtomic != :bta) ";
 
         if (reportKeyWord.getSpeciality() != null) {
             sql += " and b.staff.speciality=:sp";
@@ -1787,6 +1788,7 @@ public class ChannelReportController implements Serializable {
 
         }
         hm.put("bt", bts);
+        hm.put("bta", BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_PENDING_PAYMENT);
         hm.put("frm", getFromDate());
         hm.put("to", getToDate());
         hm.put("class", bill.getClass());
@@ -1803,7 +1805,8 @@ public class ChannelReportController implements Serializable {
                 + " FROM BillSession b "
                 + "  where type(b.bill)=:class "
                 + " and b.bill.billType in :bt "
-                + " and b.bill.retired=false ";
+                + " and b.bill.retired=false "
+                + " and (b.bill.billTypeAtomic is null or b.bill.billTypeAtomic != :bta) ";
 
         if (reportKeyWord.getSpeciality() != null) {
             sql += " and b.staff.speciality=:sp ";
@@ -1863,6 +1866,7 @@ public class ChannelReportController implements Serializable {
                 + " order by b.bill.billType ";
 
         hm.put("bt", bts);
+        hm.put("bta", BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_PENDING_PAYMENT);
         hm.put("frm", getFromDate());
         hm.put("to", getToDate());
         hm.put("class", bill.getClass());
@@ -2050,7 +2054,8 @@ public class ChannelReportController implements Serializable {
         String sql = "SELECT sum(b.bill.netTotal) FROM BillSession b "
                 + "  where type(b.bill)=:class "
                 + " and b.bill.billType in :bt "
-                + " and b.bill.retired=false ";
+                + " and b.bill.retired=false "
+                + " and (b.bill.billTypeAtomic is null or b.bill.billTypeAtomic != :bta) ";
 
         if (reportKeyWord.getSpeciality() != null) {
             sql += " and b.staff.speciality=:sp";
@@ -2106,6 +2111,7 @@ public class ChannelReportController implements Serializable {
 
         }
         hm.put("bt", bts);
+        hm.put("bta", BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_PENDING_PAYMENT);
         hm.put("frm", getFromDate());
         hm.put("to", getToDate());
         hm.put("class", bill.getClass());
@@ -2279,10 +2285,12 @@ public class ChannelReportController implements Serializable {
                 + " where b.billType in :bt "
                 + " and b.retired=false "
                 + " and type(b)=:class "
+                + " and (b.billTypeAtomic is null or b.billTypeAtomic != :bta) "
                 + " and b.createdAt between :fDate and :tDate "
                 + " order by b.singleBillSession.sessionDate ";
 
         hm.put("bt", bts);
+        hm.put("bta", BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_PENDING_PAYMENT);
         hm.put("class", bill.getClass());
         hm.put("fDate", getFromDate());
         hm.put("tDate", getToDate());
@@ -2412,11 +2420,13 @@ public class ChannelReportController implements Serializable {
         String sql = " select b from Bill b "
                 + " where b.billType in :bt "
                 + " and b.retired=false "
+                + " and (b.billTypeAtomic is null or b.billTypeAtomic != :bta) "
                 + " and b.department=:dep "
                 + " and b.createdAt between :fDate and :tDate "
                 + " order by b.singleBillSession.sessionDate ";
 
         hm.put("bt", bts);
+        hm.put("bta", BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_PENDING_PAYMENT);
         hm.put("dep", dep);
         hm.put("fDate", getFromDate());
         hm.put("tDate", getToDate());
@@ -3030,6 +3040,7 @@ public class ChannelReportController implements Serializable {
                 + " and bf.bill.singleBillSession.sessionDate between :fd and :td "
                 + " and bf.bill.billType in :bt "
                 + " and type(bf.bill)=:class "
+                + " and (bf.bill.billTypeAtomic is null or bf.bill.billTypeAtomic != :bta) "
                 + " and bf.fee.feeType in :ft ";
 
         if (getWebUser() != null) {
@@ -3044,6 +3055,7 @@ public class ChannelReportController implements Serializable {
         m.put("class", bill.getClass());
         m.put("ft", fts);
         m.put("bt", bts);
+        m.put("bta", BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_PENDING_PAYMENT);
 
         billFeeList = getBillFeeFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
 
@@ -3104,6 +3116,7 @@ public class ChannelReportController implements Serializable {
                 + " and bf.bill.singleBillSession.sessionDate between :fd and :td "
                 + " and bf.bill.billType in :bt "
                 + " and type(bf.bill)=:class "
+                + " and (bf.bill.billTypeAtomic is null or bf.bill.billTypeAtomic != :bta) "
                 + " and bf.fee.feeType =:ft ";
 
         if (getWebUser() != null) {
@@ -3118,6 +3131,7 @@ public class ChannelReportController implements Serializable {
         m.put("class", bill.getClass());
         m.put("ft", feeType);
         m.put("bt", bts);
+        m.put("bta", BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_PENDING_PAYMENT);
 
         billFeeList = getBillFeeFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
 
@@ -3134,6 +3148,7 @@ public class ChannelReportController implements Serializable {
                 + " bf.bill.retired=false "
                 + " and bf.bill.billType=:bt "
                 + " and type(bf.bill)=:class "
+                + " and (bf.bill.billTypeAtomic is null or bf.bill.billTypeAtomic != :bta) "
                 + " and bf.fee.feeType =:ft "
                 + " and bf.feeValue>0 ";
 
@@ -3150,8 +3165,10 @@ public class ChannelReportController implements Serializable {
         }
 
         if (paid) {
-            sql += " and bf.bill.paidBill is not null "
+            // A completed online booking has no paidBill link of its own; its pending bill carries it (#24927)
+            sql += " and (bf.bill.paidBill is not null or bf.bill.billTypeAtomic = :apiCompleted) "
                     + " and bf.bill.paidAmount!=0 ";
+            m.put("apiCompleted", BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT);
         }
         if (sessoinDate) {
             sql += " and bf.bill.singleBillSession.sessionDate between :fd and :td ";
@@ -3164,6 +3181,7 @@ public class ChannelReportController implements Serializable {
         m.put("class", BilledBill.class);
         m.put("ft", ft);
         m.put("bt", bt);
+        m.put("bta", BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_PENDING_PAYMENT);
 //        m.put("fn", "Scan Fee");
 
         double d = getBillFeeFacade().findAggregateLong(sql, m, TemporalType.TIMESTAMP);
@@ -3180,6 +3198,7 @@ public class ChannelReportController implements Serializable {
                 + " bf.bill.retired=false "
                 + " and bf.bill.billType=:bt "
                 + " and type(bf.bill)=:class "
+                + " and (bf.bill.billTypeAtomic is null or bf.bill.billTypeAtomic != :bta) "
                 + " and bf.fee.feeType =:ft "
                 + " and bf.feeValue>0 ";
 
@@ -3191,8 +3210,10 @@ public class ChannelReportController implements Serializable {
         }
 
         if (paid) {
-            sql += " and bf.bill.paidBill is not null "
+            // A completed online booking has no paidBill link of its own; its pending bill carries it (#24927)
+            sql += " and (bf.bill.paidBill is not null or bf.bill.billTypeAtomic = :apiCompleted) "
                     + " and bf.bill.paidAmount!=0 ";
+            m.put("apiCompleted", BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT);
         }
         if (sessoinDate) {
             sql += " and bf.bill.singleBillSession.sessionDate between :fd and :td ";
@@ -3205,6 +3226,7 @@ public class ChannelReportController implements Serializable {
         m.put("class", BilledBill.class);
         m.put("ft", fts);
         m.put("bt", bt);
+        m.put("bta", BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_PENDING_PAYMENT);
 //        m.put("fn", "Scan Fee");
 
         List<Bill> b = getBillFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
@@ -3272,7 +3294,8 @@ public class ChannelReportController implements Serializable {
         Map m = new HashMap();
 
         sql = " select count(distinct(bi.bill)) from BillItem  bi  "
-                + " where bi.retired=false ";
+                + " where bi.retired=false "
+                + " and (bi.bill.billTypeAtomic is null or bi.bill.billTypeAtomic != :bta) ";
 
         if (sessoinDate) {
             sql += " and bi.bill.singleBillSession.sessionDate between :fd and :td ";
@@ -3296,6 +3319,7 @@ public class ChannelReportController implements Serializable {
         }
 
         m.put("fd", getFromDate());
+        m.put("bta", BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_PENDING_PAYMENT);
         m.put("td", getToDate());
 
         double d = getBillFeeFacade().findAggregateLong(sql, m, TemporalType.TIMESTAMP);
@@ -4365,6 +4389,7 @@ public class ChannelReportController implements Serializable {
                 + " and bf.bill.singleBillSession.sessionDate between :fd and :td "
                 + " and bf.bill.billType in :bt "
                 + " and type(bf.bill)=:class "
+                + " and (bf.bill.billTypeAtomic is null or bf.bill.billTypeAtomic != :bta) "
                 + " and bf.fee.feeType in :ft ";
 
         if (getWebUser() != null) {
@@ -4379,6 +4404,7 @@ public class ChannelReportController implements Serializable {
         m.put("class", bill.getClass());
         m.put("ft", fts);
         m.put("bt", bts);
+        m.put("bta", BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_PENDING_PAYMENT);
 
         return getBillFeeFacade().findDoubleByJpql(sql, m, TemporalType.TIMESTAMP);
     }
@@ -4525,7 +4551,8 @@ public class ChannelReportController implements Serializable {
 
         String sql = " select b from Bill b "
                 + " where b.billType in :bt "
-                + " and b.retired=false ";
+                + " and b.retired=false "
+                + " and (b.billTypeAtomic is null or b.billTypeAtomic != :bta) ";
         if (createdDate) {
             sql += " and b.createdAt between :fDate and :tDate ";
         } else {
@@ -4534,6 +4561,7 @@ public class ChannelReportController implements Serializable {
         sql += " order by b.singleBillSession.sessionDate,b.singleBillSession.serviceSession.startingTime ";
 
         hm.put("bt", bts);
+        hm.put("bta", BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_PENDING_PAYMENT);
         hm.put("fDate", getFromDate());
         hm.put("tDate", getToDate());
 
@@ -4726,17 +4754,22 @@ public class ChannelReportController implements Serializable {
                 + " where bs.retired=false "
                 + " and type(bs.bill)=:class "
                 + " and bs.bill.billType in :tbs "
+                + " and (bs.bill.billTypeAtomic is null or bs.bill.billTypeAtomic != :bta) "
                 + " and bs.sessionInstance=:si"
                 + " order by bs.serialNo";
         HashMap hh = new HashMap();
         hh.put("class", BilledBill.class);
         hh.put("si", sessionInstance);
+        hh.put("bta", BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_PENDING_PAYMENT);
 
         List<BillType> bts = new ArrayList<>();
         bts.add(BillType.ChannelAgent);
         bts.add(BillType.ChannelCash);
         bts.add(BillType.ChannelOnCall);
         bts.add(BillType.ChannelStaff);
+        bts.add(BillType.ChannelCredit);
+        bts.add(BillType.ChannelResheduleWithPayment);
+        bts.add(BillType.ChannelResheduleWithOutPayment);
         hh.put("tbs", bts);
         nurseViewSessions = getBillSessionFacade().findByJpql(sql, hh, TemporalType.TIMESTAMP);
 
@@ -4749,12 +4782,14 @@ public class ChannelReportController implements Serializable {
                     + " From BillSession bs "
                     + " where bs.retired=false "
                     + " and bs.bill.billType in :tbs "
+                    + " and (bs.bill.billTypeAtomic is null or bs.bill.billTypeAtomic != :bta) "
                     + " and bs.sessionInstance=:si"
                     + " and bs.sessionDate= :ssDate"
                     + " order by bs.serialNo";
             HashMap hh = new HashMap();
             hh.put("ssDate", sessionInstance.getSessionDate());
             hh.put("si", sessionInstance);
+            hh.put("bta", BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_PENDING_PAYMENT);
             List<BillType> bts = new ArrayList<>();
             bts.add(BillType.ChannelAgent);
             bts.add(BillType.ChannelCash);
@@ -4949,10 +4984,12 @@ public class ChannelReportController implements Serializable {
                     + " bs.bill.cancelled=false and "
                     + " bs.bill.refunded=false and "
                     + " bs.bill.billType in :tbs and "
+                    + " (bs.bill.billTypeAtomic is null or bs.bill.billTypeAtomic != :bta) and "
                     + " bs.serviceSession.id=" + serviceSession.getId() + " and bs.sessionDate= :ssDate"
                     + " order by bs.serialNo";
             HashMap hh = new HashMap();
             hh.put("ssDate", serviceSession.getSessionDate());
+            hh.put("bta", BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_PENDING_PAYMENT);
             List<BillType> bts = new ArrayList<>();
             bts.add(BillType.ChannelAgent);
             bts.add(BillType.ChannelCash);

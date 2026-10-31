@@ -1388,7 +1388,7 @@ public class ChannelService {
         bill.setPaidBill(null);
         bill.setBillType(BillType.ChannelOnCall);
         bill.setBillTypeAtomic(BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_PENDING_PAYMENT);
-        String deptId = billNumberBean.departmentBillNumberGeneratorYearly(session.getDepartment(), BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_PENDING_PAYMENT);
+        String deptId = billNumberBean.departmentBillNumberGeneratorYearlyInNewTransaction(session.getDepartment(), BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_PENDING_PAYMENT);
 
         if (deptId.equals("")) {
             return null;
@@ -1575,24 +1575,25 @@ public class ChannelService {
             BillType.ChannelResheduleWithOutPayment,};
 
         List<BillType> bts = Arrays.asList(billTypes);
-        String sql = "Select bs "
+        // One projection query instead of loading BillSession entities and lazily touching bill/paidBillSession per row (#24923)
+        String sql = "Select bs.serialNo, bs.reservedBooking, bs.completed, b.billTypeAtomic, b.cancelled, b.refunded, pbs.id "
                 + " From BillSession bs "
+                + " join bs.bill b "
+                + " left join bs.paidBillSession pbs "
                 + " where bs.retired=false"
-                + " and bs.bill.billType in :bts"
-                + " and type(bs.bill)=:class "
-                + " and bs.bill.billTypeAtomic != :bta"
+                + " and b.billType in :bts"
+                + " and type(b)=:class "
+                + " and b.billTypeAtomic != :bta"
                 + " and bs.sessionInstance=:ss "
                 + " order by bs.serialNo ";
         HashMap<String, Object> hh = new HashMap<>();
 
-        Bill b = new Bill();
-        b.getBillTypeAtomic();
         hh.put("bts", bts);
         hh.put("bta", BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_PENDING_PAYMENT);
         hh.put("class", BilledBill.class);
         hh.put("ss", session);
 
-        List<BillSession> billSessions = getBillSessionFacade().findByJpql(sql, hh, TemporalType.DATE);
+        List<Object[]> billSessions = getBillSessionFacade().findObjectArrayByJpql(sql, hh, TemporalType.DATE);
 
         // Initialize counts
         long bookedPatientCount = 0;
@@ -1626,71 +1627,40 @@ public class ChannelService {
         }
         List<Integer> serialnumbersBySelectedSessionInstance = new ArrayList<>();
         // Loop through billSessions to calculate counts
-        for (BillSession bs : billSessions) {
-            if (bs != null) {
-                bookedPatientCount++; // Always increment if bs is not null
-                serialnumbersBySelectedSessionInstance.add(bs.getSerialNo());
-                // Additional check for reserved status
-                try {
-                    if (bs.isReservedBooking()) {
-                        reservedBookingCount++;
-                    }
-                } catch (NullPointerException npe) {
-                    // Log or handle the fact that there was an NPE checking completion status
+        for (Object[] row : billSessions) {
+            if (row == null) {
+                continue;
+            }
+            Integer serialNo = (Integer) row[0];
+            boolean reservedBooking = row[1] != null && (Boolean) row[1];
+            boolean completed = row[2] != null && (Boolean) row[2];
+            BillTypeAtomic billTypeAtomic = (BillTypeAtomic) row[3];
+            boolean cancelled = row[4] != null && (Boolean) row[4];
+            boolean refunded = row[5] != null && (Boolean) row[5];
+            boolean hasPaidBillSession = row[6] != null;
 
-                }
-
-                // Additional check for completion status
-                try {
-                    if (bs.isCompleted()) {
-                        completedPatientCount++;
-                    }
-                } catch (NullPointerException npe) {
-                    // Log or handle the fact that there was an NPE checking completion status
-
-                }
-
-                // Additional check for paid status
-                try {
-                    if (bs.getBill().getBillTypeAtomic() == BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT) {
-                        paidPatientCount++;
-                    }
-                    if (bs.getPaidBillSession() != null) {
-                        paidPatientCount++;
-                    }
-                } catch (NullPointerException npe) {
-                    // Log or handle the fact that there was an NPE checking paid status
-
-                }
-                // Additional check for cancel status
-                try {
-                    if (bs.getBill().isCancelled()) {
-                        cancelPatientCount++;
-                    }
-                } catch (NullPointerException npe) {
-                    // Log or handle the fact that there was an NPE checking paid status
-
-                }
-
-                // Additional check for refund status
-                try {
-                    if (bs.getBill().isRefunded()) {
-                        refundedPatientCount++;
-                    }
-                } catch (NullPointerException npe) {
-                    // Log or handle the fact that there was an NPE checking paid status
-
-                }
-
-                // Additional check for Oncall status
-                try {
-                    if (bs.getPaidBillSession() == null && !bs.getBill().isCancelled() && bs.getBill().getBillTypeAtomic() != BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT) {
-                        onCallPatientCount++;
-                    }
-                } catch (NullPointerException npe) {
-                    // Log or handle the fact that there was an NPE checking paid status
-
-                }
+            bookedPatientCount++;
+            serialnumbersBySelectedSessionInstance.add(serialNo);
+            if (reservedBooking) {
+                reservedBookingCount++;
+            }
+            if (completed) {
+                completedPatientCount++;
+            }
+            if (billTypeAtomic == BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT) {
+                paidPatientCount++;
+            }
+            if (hasPaidBillSession) {
+                paidPatientCount++;
+            }
+            if (cancelled) {
+                cancelPatientCount++;
+            }
+            if (refunded) {
+                refundedPatientCount++;
+            }
+            if (!hasPaidBillSession && !cancelled && billTypeAtomic != BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT) {
+                onCallPatientCount++;
             }
         }
 
@@ -3295,7 +3265,7 @@ public class ChannelService {
         completedOnlineBookingBill.setBillType(BillType.ChannelAgent);
         completedOnlineBookingBill.setBillTypeAtomic(BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT);
 
-        String deptId = billNumberBean.departmentBillNumberGeneratorYearly(bs.getDepartment(), BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT);
+        String deptId = billNumberBean.departmentBillNumberGeneratorYearlyInNewTransaction(bs.getDepartment(), BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT);
 
         completedOnlineBookingBill.setInsId(deptId);
         completedOnlineBookingBill.setDeptId(deptId);

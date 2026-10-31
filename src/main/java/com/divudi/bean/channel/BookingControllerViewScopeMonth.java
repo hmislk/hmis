@@ -2956,6 +2956,9 @@ public class BookingControllerViewScopeMonth implements Serializable {
             JsfUtil.addErrorMessage("Please select a patient");
             return;
         }
+        if (patient.getPerson() != null) {
+            patient.getPerson().fillDobFromAgeComponentsIfMissing();
+        }
         if (patientErrorPresent(patient)) {
             JsfUtil.addErrorMessage("Please Enter Patient Details.");
             settleSucessFully = false;
@@ -4463,6 +4466,12 @@ public class BookingControllerViewScopeMonth implements Serializable {
         return "/channel/channel_session_activities?faces-redirect=true";
     }
 
+    // An API booking is counted by its completed bill, which has no paidBillSession of its own (#24927)
+    private boolean isApiCompletedBooking(BillSession bs) {
+        return bs.getBill() != null
+                && bs.getBill().getBillTypeAtomic() == BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT;
+    }
+
     public void fillBillSessions() {
         selectedBillSession = null;
         BillType[] billTypes = {
@@ -4480,11 +4489,13 @@ public class BookingControllerViewScopeMonth implements Serializable {
                 + " where bs.retired=false"
                 + " and bs.bill.billType in :bts"
                 + " and type(bs.bill)=:class "
+                + " and (bs.bill.billTypeAtomic is null or bs.bill.billTypeAtomic != :bta) "
                 + " and bs.sessionInstance=:ss "
                 + " order by bs.serialNo ";
         HashMap<String, Object> hh = new HashMap<>();
         hh.put("bts", bts);
         hh.put("class", BilledBill.class);
+        hh.put("bta", BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_PENDING_PAYMENT);
         hh.put("ss", getSelectedSessionInstance());
         billSessions = getBillSessionFacade().findByJpql(sql, hh, TemporalType.DATE);
 
@@ -4533,7 +4544,7 @@ public class BookingControllerViewScopeMonth implements Serializable {
 
                 // Additional check for paid status
                 try {
-                    if (bs.getPaidBillSession() != null) {
+                    if (bs.getPaidBillSession() != null || isApiCompletedBooking(bs)) {
                         paidPatientCount++;
                     }
                 } catch (NullPointerException npe) {
@@ -4562,7 +4573,7 @@ public class BookingControllerViewScopeMonth implements Serializable {
 
                 // Additional check for Oncall status
                 try {
-                    if (bs.getPaidBillSession() == null && !bs.getBill().isCancelled()) {
+                    if (bs.getPaidBillSession() == null && !bs.getBill().isCancelled() && !isApiCompletedBooking(bs)) {
                         onCallPatientCount++;
                     }
                 } catch (NullPointerException npe) {
@@ -4603,11 +4614,13 @@ public class BookingControllerViewScopeMonth implements Serializable {
                 + " where bs.retired=false"
                 + " and bs.bill.billType in :bts"
                 + " and type(bs.bill)=:class "
+                + " and (bs.bill.billTypeAtomic is null or bs.bill.billTypeAtomic != :bta) "
                 + " and bs.sessionInstance=:ss "
                 + " order by bs.serialNo ";
         HashMap<String, Object> hh = new HashMap<>();
         hh.put("bts", bts);
         hh.put("class", BilledBill.class);
+        hh.put("bta", BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_PENDING_PAYMENT);
         hh.put("ss", s);
         tempBillSessions = getBillSessionFacade().findByJpql(sql, hh, TemporalType.DATE);
 
@@ -4656,7 +4669,7 @@ public class BookingControllerViewScopeMonth implements Serializable {
 
                 // Additional check for paid status
                 try {
-                    if (bs.getPaidBillSession() != null) {
+                    if (bs.getPaidBillSession() != null || isApiCompletedBooking(bs)) {
                         paidPatientCount++;
                     }
                 } catch (NullPointerException npe) {
@@ -4685,7 +4698,7 @@ public class BookingControllerViewScopeMonth implements Serializable {
 
                 // Additional check for Oncall status
                 try {
-                    if (bs.getPaidBillSession() == null && !bs.getBill().isCancelled()) {
+                    if (bs.getPaidBillSession() == null && !bs.getBill().isCancelled() && !isApiCompletedBooking(bs)) {
                         onCallPatientCount++;
                     }
                 } catch (NullPointerException npe) {
