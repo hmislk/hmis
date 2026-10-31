@@ -112,6 +112,26 @@
                                     </p:commandButton>
                                     <p:commandButton
                                         icon="fas fa-print"
+                                        value="Original(Cancel/Refund)"
+                                        title="Print the cancellation/refund slip without the Duplicate marker"
+                                        ajax="false"
+                                        action="#"
+                                        rendered="#{(inwardSearch.bill.refundBills.size()>0 or inwardSearch.bill.cancelled) and webUserController.hasPrivilege('OpdReprintOriginalBill')}"
+                                        styleClass="ui-button-info ui-button-outlined" >
+                                        <p:printer target="gpBillPreview2Original" ></p:printer>
+                                    </p:commandButton>
+                                    <p:commandButton
+                                        icon="fas fa-print"
+                                        value="Print Original"
+                                        title="Print the bill without the Duplicate marker"
+                                        ajax="false"
+                                        action="#"
+                                        rendered="#{webUserController.hasPrivilege('OpdReprintOriginalBill')}"
+                                        styleClass="ui-button-success ui-button-outlined" >
+                                        <p:printer target="gpBillPreviewOriginal" ></p:printer>
+                                    </p:commandButton>
+                                    <p:commandButton
+                                        icon="fas fa-print"
                                         value="Reprint"
                                         ajax="false"
                                         action="#"
@@ -354,159 +374,35 @@
 
                     </p:panel>
 
+                    <!-- Print-only previews. Reprints carry the **Duplicate** marker; the Original previews omit it and
+                         are rendered only for users with the OpdReprintOriginalBill privilege. -->
                     <div class="printingOnly" >
 
-                        <!-- Format routing mirrors inward_bill_service.xhtml (bill print preview) so a reprint matches the original print.
-                             The "and not ..." guards on the FiveFivePaper branch are the existing fallback from that page, not a new key meaning. -->
-                        <h:panelGroup id="gpBillPreview" layout="block" styleClass="m-3 reprintBillPreview">
-
-                            <h:panelGroup rendered="#{sessionController.departmentPreference.inwardServiceBillPaperType eq 'PosPaper'
-                                                      or (configOptionApplicationController.getBooleanValueByKey('Inward Servise Bill size is POS Paper')
-                                                          and sessionController.departmentPreference.inwardServiceBillPaperType eq 'FiveFivePaper')}">
-                            <print:posOpdBill_inward_service bill="#{inwardSearch.bill}" duplicate="false"/>
-                            </h:panelGroup>
-                            <h:panelGroup rendered="#{sessionController.departmentPreference.inwardServiceBillPaperType eq 'FiveFivePaper'
-                                                       and not configOptionApplicationController.getBooleanValueByKey('Inward Servise Bill size is POS Paper')
-                                                       and not configOptionApplicationController.getBooleanValueByKey('Inward Servise Bill size is A4 Paper')
-                                                       and not configOptionApplicationController.getBooleanValueByKey('Inward Servise Bill size is A4Printed Paper')
-                                                       and not configOptionApplicationController.getBooleanValueByKey('Inward Servise Bill size is FiveFiveCustom3 Paper')
-                                                       and not configOptionApplicationController.getBooleanValueByKey('Inward Servise Bill size is 5x8 inch Paper')
-                                                       and not configOptionApplicationController.getBooleanValueByKey('Inward Servise Bill size is FiveFivePrinted paper', true)}">
-                                <print:five_five_paper_with_headings_inward_service bill="#{inwardSearch.bill}"/>  
-                            </h:panelGroup>
-
-                            <h:panelGroup rendered="#{sessionController.departmentPreference.inwardServiceBillPaperType eq 'FiveFiveCustom3'
-                                                      or (configOptionApplicationController.getBooleanValueByKey('Inward Servise Bill size is FiveFiveCustom3 Paper')
-                                                          and sessionController.departmentPreference.inwardServiceBillPaperType eq 'FiveFivePaper')}">
-                            <print:five_five_custom_3_inward bill="#{inwardSearch.bill}" duplicate="false" payments="1"/>
-                            </h:panelGroup>
-
-                            <h:panelGroup rendered="#{sessionController.departmentPreference.inwardServiceBillPaperType eq 'FiveEightInchPaper'
-                                                      or (configOptionApplicationController.getBooleanValueByKey('Inward Servise Bill size is 5x8 inch Paper')
-                                                          and sessionController.departmentPreference.inwardServiceBillPaperType eq 'FiveFivePaper')}">
-                            <print:five_eight_opd_bill_inward bill="#{inwardSearch.bill}" duplicate="false" payments="1"/>
-                            </h:panelGroup>
-
-                            <h:panelGroup rendered="#{sessionController.departmentPreference.inwardServiceBillPaperType eq 'FiveFivePrintedPaper'
-                                                      or (configOptionApplicationController.getBooleanValueByKey('Inward Servise Bill size is FiveFivePrinted paper', true)
-                                                          and sessionController.departmentPreference.inwardServiceBillPaperType eq 'FiveFivePaper')}">
-                            <print:five_five_paper_without_headings_inward_service bill="#{inwardSearch.bill}" dup="false"/>
-                            </h:panelGroup>
-
-                            <h:panelGroup rendered="#{sessionController.departmentPreference.inwardServiceBillPaperType eq 'A4Paper'
-                                                      or (configOptionApplicationController.getBooleanValueByKey('Inward Servise Bill size is A4 Paper')
-                                                          and sessionController.departmentPreference.inwardServiceBillPaperType eq 'FiveFivePaper')}">
-                              <print:A4_paper_with_headings bill="#{inwardSearch.bill}" duplicate="false"/>
-                            </h:panelGroup>
-
-                            <h:panelGroup rendered="#{sessionController.departmentPreference.inwardServiceBillPaperType eq 'A4PrintedPaper'
-                                                      or (configOptionApplicationController.getBooleanValueByKey('Inward Servise Bill size is A4Printed Paper')
-                                                          and sessionController.departmentPreference.inwardServiceBillPaperType eq 'FiveFivePaper')}">
-                                <print:A4_paper_without_headings bill="#{inwardSearch.bill}" duplicate="false"/>
-                            </h:panelGroup>
-                            
-                            <h:panelGroup rendered="#{sessionController.departmentPreference.inwardServiceBillPaperType eq 'FiveFivePaperCoustom1'
-                                                      or configOptionController.getBooleanValueByKeyReadOnly('Inward Service Bill - Show Custom 1 Format', false)}">
-                                <print:five_five_paper_custom_1_inward_bill_service
-                                    bill="#{inwardSearch.bill}"
-                                    duplicate="false"
-                                    cancelled="false"/>
-                            </h:panelGroup>
+                        <h:panelGroup id="gpBillPreview" layout="block" styleClass="m-3">
+                            <ui:include src="/inward/service_bill_reprint/bill_preview.xhtml">
+                                <ui:param name="duplicate" value="#{true}"/>
+                            </ui:include>
                         </h:panelGroup>
 
-                        <!-- Same effective-format routing as gpBillPreview, so a bill and its cancellation/refund print on the same paper -->
-                        <p:panel id="gpBillPreview2" class="m-3">
-                            <h:panelGroup rendered="#{sessionController.departmentPreference.inwardServiceBillPaperType eq 'PosPaper'
-                                                      or (configOptionApplicationController.getBooleanValueByKey('Inward Servise Bill size is POS Paper')
-                                                          and sessionController.departmentPreference.inwardServiceBillPaperType eq 'FiveFivePaper')}">
-                                <ui:repeat value="#{inwardSearch.bill.refundBills}" var="bill" rendered="#{!inwardSearch.bill.cancelled}">
-                                    <bill:inwardBillPrintPos bill="#{bill}" duplicate="false"/>
-                                </ui:repeat>
-                                <ui:repeat value="#{inwardSearch.bill.cancelledBill}" var="bill" rendered="#{inwardSearch.bill.cancelled}">
-                                    <bill:inwardBillPrintPos bill="#{bill}" duplicate="false"/>
-                                </ui:repeat>
-                            </h:panelGroup>
+                        <h:panelGroup id="gpBillPreviewOriginal" layout="block" styleClass="m-3"
+                                      rendered="#{webUserController.hasPrivilege('OpdReprintOriginalBill')}">
+                            <ui:include src="/inward/service_bill_reprint/bill_preview.xhtml">
+                                <ui:param name="duplicate" value="#{false}"/>
+                            </ui:include>
+                        </h:panelGroup>
 
-                            <h:panelGroup rendered="#{sessionController.departmentPreference.inwardServiceBillPaperType eq 'FiveFivePaper'
-                                                       and not configOptionApplicationController.getBooleanValueByKey('Inward Servise Bill size is POS Paper')
-                                                       and not configOptionApplicationController.getBooleanValueByKey('Inward Servise Bill size is A4 Paper')
-                                                       and not configOptionApplicationController.getBooleanValueByKey('Inward Servise Bill size is A4Printed Paper')
-                                                       and not configOptionApplicationController.getBooleanValueByKey('Inward Servise Bill size is FiveFiveCustom3 Paper')
-                                                       and not configOptionApplicationController.getBooleanValueByKey('Inward Servise Bill size is 5x8 inch Paper')
-                                                       and not configOptionApplicationController.getBooleanValueByKey('Inward Servise Bill size is FiveFivePrinted paper', true)}">
-                                <ui:repeat value="#{inwardSearch.bill.refundBills}" var="bill" rendered="#{!inwardSearch.bill.cancelled}">
-                                    <bill:inwardBillPrintPos bill="#{bill}" duplicate="false"/>
-                                </ui:repeat>
-                                <ui:repeat value="#{inwardSearch.bill.cancelledBill}" var="bill" rendered="#{inwardSearch.bill.cancelled}">
-                                    <bill:inwardBillPrintPos bill="#{bill}" duplicate="false"/>
-                                </ui:repeat>
-                            </h:panelGroup>
+                        <h:panelGroup id="gpBillPreview2" layout="block" styleClass="m-3">
+                            <ui:include src="/inward/service_bill_reprint/cancel_refund_preview.xhtml">
+                                <ui:param name="duplicate" value="#{true}"/>
+                            </ui:include>
+                        </h:panelGroup>
 
-                            <h:panelGroup rendered="#{sessionController.departmentPreference.inwardServiceBillPaperType eq 'FiveFivePrintedPaper'
-                                                      or (configOptionApplicationController.getBooleanValueByKey('Inward Servise Bill size is FiveFivePrinted paper', true)
-                                                          and sessionController.departmentPreference.inwardServiceBillPaperType eq 'FiveFivePaper')}">
-                                <ui:repeat value="#{inwardSearch.bill.refundBills}" var="bill" rendered="#{!inwardSearch.bill.cancelled}">
-                                    <print:five_five_paper_without_headings_inward_service bill="#{bill}" dup="false"/>
-                                </ui:repeat>
-                                <ui:repeat value="#{inwardSearch.bill.cancelledBill}" var="bill" rendered="#{inwardSearch.bill.cancelled}">
-                                    <print:five_five_paper_without_headings_inward_service bill="#{bill}" dup="false"/>
-                                </ui:repeat>
-                            </h:panelGroup>
-
-                            <h:panelGroup rendered="#{sessionController.departmentPreference.inwardServiceBillPaperType eq 'A4Paper'
-                                                      or (configOptionApplicationController.getBooleanValueByKey('Inward Servise Bill size is A4 Paper')
-                                                          and sessionController.departmentPreference.inwardServiceBillPaperType eq 'FiveFivePaper')}">
-                                <ui:repeat value="#{inwardSearch.bill.refundBills}" var="bill" rendered="#{!inwardSearch.bill.cancelled}">
-                                    <print:A4_paper_with_headings bill="#{bill}" duplicate="false"/>
-                                </ui:repeat>
-                                <ui:repeat value="#{inwardSearch.bill.cancelledBill}" var="bill" rendered="#{inwardSearch.bill.cancelled}">
-                                    <print:A4_paper_with_headings bill="#{bill}" duplicate="false"/>
-                                </ui:repeat>
-                            </h:panelGroup>
-
-                            <h:panelGroup rendered="#{sessionController.departmentPreference.inwardServiceBillPaperType eq 'A4PrintedPaper'
-                                                      or (configOptionApplicationController.getBooleanValueByKey('Inward Servise Bill size is A4Printed Paper')
-                                                          and sessionController.departmentPreference.inwardServiceBillPaperType eq 'FiveFivePaper')}">
-                                <ui:repeat value="#{inwardSearch.bill.refundBills}" var="bill" rendered="#{!inwardSearch.bill.cancelled}">
-                                    <print:A4_paper_without_headings bill="#{bill}" duplicate="false"/>
-                                </ui:repeat>
-                                <ui:repeat value="#{inwardSearch.bill.cancelledBill}" var="bill" rendered="#{inwardSearch.bill.cancelled}">
-                                    <print:A4_paper_without_headings bill="#{bill}" duplicate="false"/>
-                                </ui:repeat>
-                            </h:panelGroup>
-
-                            <h:panelGroup rendered="#{sessionController.departmentPreference.inwardServiceBillPaperType eq 'FiveFiveCustom3'
-                                                      or (configOptionApplicationController.getBooleanValueByKey('Inward Servise Bill size is FiveFiveCustom3 Paper')
-                                                          and sessionController.departmentPreference.inwardServiceBillPaperType eq 'FiveFivePaper')}">
-                                <ui:repeat value="#{inwardSearch.bill.refundBills}" var="bill" rendered="#{!inwardSearch.bill.cancelled}">
-                                    <print:five_five_custom_3_inward bill="#{bill}" duplicate="false" payments="#{inwardSearch.bill.refundBills.size()}"/>
-                                </ui:repeat>
-                                <ui:repeat value="#{inwardSearch.bill.cancelledBill}" var="bill" rendered="#{inwardSearch.bill.cancelled}">
-                                    <print:five_five_custom_3_inward bill="#{bill}" duplicate="false" payments="#{inwardSearch.bill.cancelledBill.size()}"/>
-                                </ui:repeat>
-                            </h:panelGroup>
-
-                            <h:panelGroup rendered="#{sessionController.departmentPreference.inwardServiceBillPaperType eq 'FiveEightInchPaper'
-                                                      or (configOptionApplicationController.getBooleanValueByKey('Inward Servise Bill size is 5x8 inch Paper')
-                                                          and sessionController.departmentPreference.inwardServiceBillPaperType eq 'FiveFivePaper')}">
-                                <ui:repeat value="#{inwardSearch.bill.refundBills}" var="bill" rendered="#{!inwardSearch.bill.cancelled}">
-                                    <print:five_eight_opd_bill_inward bill="#{bill}" duplicate="false" payments="#{inwardSearch.bill.refundBills.size()}"/>
-                                </ui:repeat>
-                                <ui:repeat value="#{inwardSearch.bill.cancelledBill}" var="bill" rendered="#{inwardSearch.bill.cancelled}">
-                                    <print:five_eight_opd_bill_inward bill="#{bill}" duplicate="false" payments="#{inwardSearch.bill.cancelledBill.size()}"/>
-                                </ui:repeat>
-                            </h:panelGroup>
-
-                            <h:panelGroup rendered="#{sessionController.departmentPreference.inwardServiceBillPaperType eq 'FiveFivePaperCoustom1'
-                                                      or configOptionController.getBooleanValueByKeyReadOnly('Inward Service Bill - Show Custom 1 Format', false)}">
-                                <ui:repeat value="#{inwardSearch.bill.refundBills}" var="bill" rendered="#{!inwardSearch.bill.cancelled}">
-                                    <print:five_five_paper_custom_1_inward_bill_service bill="#{bill}" duplicate="false" cancelled="false"/>
-                                </ui:repeat>
-                                <ui:repeat value="#{inwardSearch.bill.cancelledBill}" var="bill" rendered="#{inwardSearch.bill.cancelled}">
-                                    <print:five_five_paper_custom_1_inward_bill_service bill="#{bill}" duplicate="false" cancelled="true"/>
-                                </ui:repeat>
-                            </h:panelGroup>
-                        </p:panel>
+                        <h:panelGroup id="gpBillPreview2Original" layout="block" styleClass="m-3"
+                                      rendered="#{webUserController.hasPrivilege('OpdReprintOriginalBill')}">
+                            <ui:include src="/inward/service_bill_reprint/cancel_refund_preview.xhtml">
+                                <ui:param name="duplicate" value="#{false}"/>
+                            </ui:include>
+                        </h:panelGroup>
                     </div>
 
                 </h:form>
