@@ -863,16 +863,20 @@ public class InwardSearch implements Serializable {
 
         Long previousFinalBillId = pe.getFinalBill() != null ? pe.getFinalBill().getId() : null;
 
-        getInwardBean().unconfirmOtherFinalBills(pe, newConfirmed);
+        // Same lock as a final bill save, so one confirmed version can't race another.
+        getBillNumberBean().withFinalBillVersionLock(pe, () -> {
+            getInwardBean().unconfirmOtherFinalBills(pe, newConfirmed);
 
-        newConfirmed.setConfirmedFinalBill(true);
-        getBillFacade().edit(newConfirmed);
+            newConfirmed.setConfirmedFinalBill(true);
+            getBillFacade().edit(newConfirmed);
 
-        pe.setFinalBill(newConfirmed);
-        pe.setGrantTotal(newConfirmed.getGrantTotal());
-        pe.setDiscount(newConfirmed.getDiscount());
-        pe.setNetTotal(newConfirmed.getNetTotal());
-        getPatientEncounterFacade().edit(pe);
+            pe.setFinalBill(newConfirmed);
+            pe.setGrantTotal(newConfirmed.getGrantTotal());
+            pe.setDiscount(newConfirmed.getDiscount());
+            pe.setNetTotal(newConfirmed.getNetTotal());
+            getPatientEncounterFacade().edit(pe);
+            return null;
+        });
 
         relinkPaymentBillsToConfirmedVersion(pe, newConfirmed);
 

@@ -2688,9 +2688,6 @@ public class BhtSummeryController implements Serializable {
         }
         saveBillItem();
 
-        getInwardBean().unconfirmOtherFinalBills(getPatientEncounter(), getCurrent());
-        getBillFacade().edit(getCurrent());
-
         if (getPatientEncounter().getPaymentMethod() == PaymentMethod.Credit) {
             for (CreditCompanyAllocation alloc : creditCompanyAllocations) {
                 if (alloc.getAllocatedAmount() > 0) {
@@ -2699,19 +2696,27 @@ public class BhtSummeryController implements Serializable {
             }
         }
 
-        getPatientEncounter().setFinalBill(getCurrent());
-        getPatientEncounter().setGrantTotal(getCurrent().getGrantTotal());
-        getPatientEncounter().setDiscount(getCurrent().getDiscount());
-        getPatientEncounter().setNetTotal(getCurrent().getNetTotal());
-        getPatientEncounter().setPaymentFinalized(true);
-        getPatientEncounterFacade().edit(getPatientEncounter());
-        // After the commitment bills exist and this bill is the encounter's final
-        // bill, so creditUsedAmount is taken from the cashier's allocation.
-        if (getPatientEncounter().getPaymentMethod() == PaymentMethod.Credit) {
-            getInwardBean().updateCreditDetail(getPatientEncounter(), getCurrent().getNetTotal());
-        }
-        getCurrent().setReferenceBill(originalBill);
-        getBillFacade().edit(getCurrent());
+        // The last write of this bill, under the lock: every edit(getCurrent())
+        // re-saves the session's confirmed flag, so a later one could undo the
+        // unconfirming done by a concurrent save of another version.
+        getBillNumberBean().withFinalBillVersionLock(getPatientEncounter(), () -> {
+            getCurrent().setReferenceBill(originalBill);
+            getInwardBean().unconfirmOtherFinalBills(getPatientEncounter(), getCurrent());
+            getBillFacade().edit(getCurrent());
+
+            getPatientEncounter().setFinalBill(getCurrent());
+            getPatientEncounter().setGrantTotal(getCurrent().getGrantTotal());
+            getPatientEncounter().setDiscount(getCurrent().getDiscount());
+            getPatientEncounter().setNetTotal(getCurrent().getNetTotal());
+            getPatientEncounter().setPaymentFinalized(true);
+            getPatientEncounterFacade().edit(getPatientEncounter());
+            // After the commitment bills exist and this bill is the encounter's final
+            // bill, so creditUsedAmount is taken from the cashier's allocation.
+            if (getPatientEncounter().getPaymentMethod() == PaymentMethod.Credit) {
+                getInwardBean().updateCreditDetail(getPatientEncounter(), getCurrent().getNetTotal());
+            }
+            return null;
+        });
 
         updatePaymentBillList();
 
@@ -2779,9 +2784,29 @@ public class BhtSummeryController implements Serializable {
 
         setPatientEncounter(b.getPatientEncounter());
 
-        if (isFinalizedInDatabase()) {
+        boolean settled = getBillNumberBean().withFinalBillVersionLock(getPatientEncounter(), () -> convertProvisionalToFinalBill(b));
+        if (!settled) {
             JsfUtil.addErrorMessage(PAYMENT_FINALIZED_MESSAGE);
             return "";
+        }
+
+        updatePaymentBillList();
+        JsfUtil.addSuccessMessage("Bill Saved");
+
+        showOrginalBill = false;
+        printPreview = true;
+        originalBill = null;
+
+        return "inward_bill_final?faces-redirect=true";
+    }
+
+    /**
+     * Must run under the final bill version lock, so that the check and the
+     * confirmation cannot interleave with another final bill save.
+     */
+    private boolean convertProvisionalToFinalBill(Bill b) {
+        if (isFinalizedInDatabase()) {
+            return false;
         }
 
         originalBill = b.getBackwardReferenceBill();
@@ -2846,15 +2871,7 @@ public class BhtSummeryController implements Serializable {
         }
         getCurrent().setReferenceBill(originalBill);
         getBillFacade().edit(getCurrent());
-
-        updatePaymentBillList();
-        JsfUtil.addSuccessMessage("Bill Saved");
-
-        showOrginalBill = false;
-        printPreview = true;
-        originalBill = null;
-
-        return "inward_bill_final?faces-redirect=true";
+        return true;
     }
 
     /**
