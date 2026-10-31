@@ -2302,9 +2302,8 @@ public class ChannelBillController implements Serializable {
             e.setInstitution(getSessionController().getLoggedUser().getInstitution());
             e.setSmsType(MessageType.ChannelBooking);
             getSmsFacade().create(e);
-            boolean sent = smsManagerEjb.sendSms(e);
-            e.setSentSuccessfully(sent);
-            getSmsFacade().edit(e);
+            // Sent after this request returns, so the settle does not wait for the SMS gateway (#24970)
+            smsManagerEjb.sendSavedSmsAsync(e.getId());
         } catch (Exception e) {
         }
     }

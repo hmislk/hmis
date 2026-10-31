@@ -21,6 +21,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import javax.ejb.Asynchronous;
 import javax.ejb.EJB;
 import javax.ejb.Schedule;
 import javax.ejb.Stateless;
@@ -541,6 +542,32 @@ public class SmsManagerEjb {
 
     public SmsFacade getSmsFacade() {
         return smsFacade;
+    }
+
+    /**
+     * Sends an already saved SMS on a container thread, so the request that
+     * saved it (e.g. a channel booking settle) does not wait for the gateway
+     * (#24970). Call it through the injected EJB, not from inside this bean.
+     */
+    @Asynchronous
+    public void sendSavedSmsAsync(Long smsId) {
+        if (smsId == null) {
+            return;
+        }
+        try {
+            Sms sms = smsFacade.find(smsId);
+            if (sms == null) {
+                return;
+            }
+            boolean sent = sendSms(sms);
+            sms.setSentSuccessfully(sent);
+            if (sent) {
+                sms.setSentAt(new Date());
+            }
+            smsFacade.edit(sms);
+        } catch (Exception e) {
+            Logger.getLogger(SmsManagerEjb.class.getName()).log(Level.SEVERE, "Failed to send SMS ID: " + smsId, e);
+        }
     }
 
     public boolean sendSms(Sms sms) {
