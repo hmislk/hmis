@@ -1251,6 +1251,10 @@ public class SurgeryBillController implements Serializable {
             return true;
         }
 
+        if (inwardBean.blockIfDischarged(getSurgeryBill().getPatientEncounter())) {
+            return true;
+        }
+
         if (getSurgeryBill().getPatientEncounter().isNursingDischarged()
                 && !webUserController.hasPrivilege("InwardAddChargesAfterNursingDischarge")) {
             JsfUtil.addErrorMessage("Cannot add charges: nursing discharge has been confirmed for this patient.");

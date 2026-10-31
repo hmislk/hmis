@@ -244,6 +244,10 @@ public class InwardTimedItemController implements Serializable {
             return true;
         }
 
+        if (inwardBean.blockIfDischarged(getBatchBill().getPatientEncounter())) {
+            return true;
+        }
+
         if (getBatchBill().getPatientEncounter().isNursingDischarged()
                 && !webUserController.hasPrivilege("InwardAddChargesAfterNursingDischarge")) {
             JsfUtil.addErrorMessage("Cannot add charges: nursing discharge has been confirmed for this patient.");
