@@ -3705,6 +3705,11 @@ public class BhtSummeryController implements Serializable {
             return;
         }
 
+        if (isFinalizedInDatabase()) {
+            JsfUtil.addErrorMessage("Cancel all final bills before cancelling the discharge.");
+            return;
+        }
+
         if (getPatientEncounter().getCurrentPatientRoom() != null) {
             if (getPatientEncounter().getCurrentPatientRoom().getDischargedAt() == getPatientEncounter().getDateOfDischarge()) {
                 getPatientEncounter().getCurrentPatientRoom().setDischargedAt(null);
