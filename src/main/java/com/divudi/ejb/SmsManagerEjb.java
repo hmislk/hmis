@@ -563,10 +563,16 @@ public class SmsManagerEjb {
     }
 
     /**
-     * Sends a pending SMS once and records the result; the row stops being
-     * pending whatever the outcome, so it is never sent twice.
+     * Sends a pending SMS once and records the result. The row is claimed
+     * first (pending true to false in one update), so only one sender sends it,
+     * even when two applications share this database.
      */
     private void sendPendingSms(Sms sms) {
+        Map<String, Object> claim = new HashMap<>();
+        claim.put("id", sms.getId());
+        if (smsFacade.updateByJpql("update Sms e set e.pending=false where e.id=:id and e.pending=true", claim, null) != 1) {
+            return;
+        }
         try {
             boolean sent = sendSms(sms);
             sms.setSentSuccessfully(sent);
