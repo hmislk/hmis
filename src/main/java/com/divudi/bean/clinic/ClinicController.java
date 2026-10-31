@@ -70,6 +70,7 @@ import com.divudi.core.facade.ServiceSessionFacade;
 import com.divudi.core.facade.SmsFacade;
 import com.divudi.core.facade.StaffFacade;
 import com.divudi.core.util.JsfUtil;
+import com.divudi.core.util.SessionBookingLock;
 import com.divudi.bean.hr.StaffController;
 import com.divudi.bean.membership.PaymentSchemeController;
 import com.divudi.bean.opd.OpdBillController;
@@ -3286,6 +3287,9 @@ public class ClinicController implements Serializable, ControllerWithPatientView
             JsfUtil.addErrorMessage("Please select a patient");
             return;
         }
+        if (patient.getPerson() != null) {
+            patient.getPerson().fillDobFromAgeComponentsIfMissing();
+        }
         if (patientErrorPresent(patient)) {
             JsfUtil.addErrorMessage("Please Enter Patient Details.");
             settleSucessFully = false;
@@ -3411,7 +3415,15 @@ public class ClinicController implements Serializable, ControllerWithPatientView
         }
 
         saveSelected(patient);
-        printingBill = saveBilledBill(reservedBooking, firstVisit);
+        // Capacity re-check and the booking insert must not interleave with another booking for the same session (#24929).
+        try (SessionBookingLock.Hold hold = SessionBookingLock.acquire(selectedSessionInstance)) {
+            if (isMaxBookingsForVisitTypeReached(firstVisit)) {
+                JsfUtil.addErrorMessage("The maximum number of bookings for this visit type has been reached.");
+                settleSucessFully = false;
+                return;
+            }
+            printingBill = saveBilledBill(reservedBooking, firstVisit);
+        }
         if (!configOptionApplicationController.getBooleanValueByKey("No Payments for Clinic Booking")) {
             if (printingBill.getBillTypeAtomic()
                     .getBillFinanceType() == BillFinanceType.CASH_IN) {
@@ -3438,6 +3450,43 @@ public class ClinicController implements Serializable, ControllerWithPatientView
 
         JsfUtil.addSuccessMessage(
                 "Channel Booking Added.");
+    }
+
+    /**
+     * Fresh DB count of the active bookings of the selected session for the given
+     * visit type, compared with the configured maximum (0 means no limit). Call
+     * it under SessionBookingLock so the count includes bookings just saved.
+     */
+    private boolean isMaxBookingsForVisitTypeReached(boolean firstVisit) {
+        int maxNo = firstVisit ? selectedSessionInstance.getMaxNoForFirstVisits() : selectedSessionInstance.getMaxNoForSubsequentVisits();
+        if (maxNo <= 0) {
+            return false;
+        }
+        BillType[] billTypes = {
+            BillType.ChannelAgent,
+            BillType.ChannelCash,
+            BillType.ChannelOnCall,
+            BillType.ChannelStaff,
+            BillType.ChannelCredit,
+            BillType.ChannelResheduleWithOutPayment,
+            BillType.ChannelResheduleWithPayment
+        };
+        String jpql = "select count(bs) from BillSession bs "
+                + " where bs.retired=false"
+                + " and bs.sessionInstance=:si"
+                + " and bs.bill.billType in :bt"
+                + " and type(bs.bill)=:class"
+                + " and (bs.bill.billTypeAtomic is null or bs.bill.billTypeAtomic != :bta)"
+                + " and bs.bill.cancelled=false"
+                + " and bs.firstVisit=:fv";
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("si", selectedSessionInstance);
+        params.put("bt", Arrays.asList(billTypes));
+        params.put("class", BilledBill.class);
+        params.put("bta", BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_PENDING_PAYMENT);
+        params.put("fv", firstVisit);
+        long booked = getBillSessionFacade().findLongByJpql(jpql, params);
+        return booked >= maxNo;
     }
 
     public long totalReservedNumberCount(SessionInstance s) {
@@ -5442,15 +5491,17 @@ public class ClinicController implements Serializable, ControllerWithPatientView
         List<Integer> reservedNumbers = CommonFunctions.convertStringToIntegerList(getSelectedSessionInstance().getOriginatingSession().getReserveNumbers());
         Integer count;
 
-        count = clinicService.getNextNonReservedSerialNumber(getSelectedSessionInstance(), reservedNumbers, false);
+        try (SessionBookingLock.Hold hold = SessionBookingLock.acquire(getSelectedSessionInstance())) {
+            count = clinicService.getNextNonReservedSerialNumber(getSelectedSessionInstance(), reservedNumbers, false);
 
-        if (count != null) {
-            bs.setSerialNo(count);
-        } else {
-            bs.setSerialNo(1);
+            if (count != null) {
+                bs.setSerialNo(count);
+            } else {
+                bs.setSerialNo(1);
+            }
+
+            getBillSessionFacade().create(bs);
         }
-
-        getBillSessionFacade().create(bs);
 
         List<BillFee> savingBillFees = new ArrayList<>();
 
@@ -6376,24 +6427,27 @@ public class ClinicController implements Serializable, ControllerWithPatientView
         List<Integer> reservedNumbers = CommonFunctions.convertStringToIntegerList(reserverNumberString);
         Integer count;
 
-        if (forReservedNumbers) {
-            // Pass the selectedReservedBookingNumber to the service method
-            count = clinicService.getNextAvailableReservedNumber(getSelectedSessionInstance(), reservedNumbers, selectedReserverdBookingNumber, firstVisit);
-            if (count == null) {
+        // Serial allocation and the insert must not interleave with another booking for the same session (#24929).
+        try (SessionBookingLock.Hold hold = SessionBookingLock.acquire(getSelectedSessionInstance())) {
+            if (forReservedNumbers) {
+                // Pass the selectedReservedBookingNumber to the service method
+                count = clinicService.getNextAvailableReservedNumber(getSelectedSessionInstance(), reservedNumbers, selectedReserverdBookingNumber, firstVisit);
+                if (count == null) {
+                    count = clinicService.getNextNonReservedSerialNumber(getSelectedSessionInstance(), reservedNumbers, firstVisit);
+                    JsfUtil.addErrorMessage("No reserved numbers available. Normal number is given");
+                }
+            } else {
                 count = clinicService.getNextNonReservedSerialNumber(getSelectedSessionInstance(), reservedNumbers, firstVisit);
-                JsfUtil.addErrorMessage("No reserved numbers available. Normal number is given");
             }
-        } else {
-            count = clinicService.getNextNonReservedSerialNumber(getSelectedSessionInstance(), reservedNumbers, firstVisit);
-        }
 
-        if (count != null) {
-            bs.setSerialNo(count);
-        } else {
-            bs.setSerialNo(1);
-        }
+            if (count != null) {
+                bs.setSerialNo(count);
+            } else {
+                bs.setSerialNo(1);
+            }
 
-        getBillSessionFacade().create(bs);
+            getBillSessionFacade().create(bs);
+        }
 
         return bs;
     }
