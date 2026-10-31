@@ -140,6 +140,7 @@
                             <p:commandButton
                                 ajax="false"
                                 immediate="true"
+                                onclick="return clickWhenAjaxIdle(this);"
                                 value="Add Channel Booking"
                                 class="ui-button-warning mx-1"
                                 action="#{bookingControllerViewScope.sessionInstanceFetchFromChannelBooking()}"
@@ -580,6 +581,24 @@
                         </div>
 
                         <script>
+                            // Add Channel Booking is immediate, so it reads the session chosen by the last ajax
+                            // selection; wait for any pending selection request before submitting (#24925)
+                            function clickWhenAjaxIdle(btn) {
+                                if (PrimeFaces.ajax.Queue.isEmpty()) {
+                                    return true;
+                                }
+                                if (!btn.dataset.waitingForAjax) {
+                                    btn.dataset.waitingForAjax = 'true';
+                                    const timer = setInterval(function () {
+                                        if (PrimeFaces.ajax.Queue.isEmpty()) {
+                                            clearInterval(timer);
+                                            delete btn.dataset.waitingForAjax;
+                                            btn.click();
+                                        }
+                                    }, 100);
+                                }
+                                return false;
+                            }
 
                             function initializeWebSocket() {
                                 console.log("start connection");

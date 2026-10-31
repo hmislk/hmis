@@ -685,6 +685,12 @@ public class ChannelReportTemplateController implements Serializable {
             sessionInstance.setBookedPatientCount(0L);
             sessionInstance.setPaidPatientCount(0L);
             sessionInstance.setCompletedPatientCount(0L);
+            sessionInstance.setCancelOnCallPatientCount(0L);
+            sessionInstance.setCancelPaidPatientCount(0L);
+            sessionInstance.setRefundedPatientCount(0L);
+            sessionInstance.setOnCallPatientCount(0L);
+            sessionInstance.setReservedBookingCount(0L);
+            sessionInstance.setPaidToDoctorPatientCount(calculateSessionDoneFees(sessionInstance));
             sessionInstance.setRemainingPatientCount(0L);
             sessionInstanceFacade.edit(sessionInstance);
             return;

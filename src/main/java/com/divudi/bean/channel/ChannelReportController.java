@@ -3165,8 +3165,10 @@ public class ChannelReportController implements Serializable {
         }
 
         if (paid) {
-            sql += " and bf.bill.paidBill is not null "
+            // A completed online booking has no paidBill link of its own; its pending bill carries it (#24927)
+            sql += " and (bf.bill.paidBill is not null or bf.bill.billTypeAtomic = :apiCompleted) "
                     + " and bf.bill.paidAmount!=0 ";
+            m.put("apiCompleted", BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT);
         }
         if (sessoinDate) {
             sql += " and bf.bill.singleBillSession.sessionDate between :fd and :td ";
@@ -3208,8 +3210,10 @@ public class ChannelReportController implements Serializable {
         }
 
         if (paid) {
-            sql += " and bf.bill.paidBill is not null "
+            // A completed online booking has no paidBill link of its own; its pending bill carries it (#24927)
+            sql += " and (bf.bill.paidBill is not null or bf.bill.billTypeAtomic = :apiCompleted) "
                     + " and bf.bill.paidAmount!=0 ";
+            m.put("apiCompleted", BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT);
         }
         if (sessoinDate) {
             sql += " and bf.bill.singleBillSession.sessionDate between :fd and :td ";

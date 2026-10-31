@@ -1717,6 +1717,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 
     public String sessionInstanceFetchFromChannelBooking() {
         if (selectedSessionInstance == null) {
+            JsfUtil.addErrorMessage("Please select a session.");
             return "";
         }
 
@@ -2296,8 +2297,10 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         } else {
             sessionInstancesFiltered = viewScopeDataTransferController.getSessionsFiltered();
             if (sessionInstancesFiltered == null) {
-                // Transfer controller carried no list (e.g. navigation back from a bill session); load it normally
-                listAndFilterSessionInstances();
+                // Transfer controller carried no list (e.g. navigation back from a bill session); load it
+                // without selecting the first row, so the transferred session set below is the one used
+                loadSessionInstances(false);
+                addBillSessionData();
             }
         }
 
@@ -6141,7 +6144,35 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 
                 sessionInstanceController.save(sessionInstance);
             }
+            sessionInstanceMap.remove(sessionInstanceId);
         }
+
+        // A session with no counted bill (e.g. only pending online bills) has no result row; clear stale stored counts
+        for (SessionInstance sessionInstance : sessionInstanceMap.values()) {
+            if (hasNonZeroBookingCount(sessionInstance)) {
+                sessionInstance.setBookedPatientCount(0L);
+                sessionInstance.setPaidPatientCount(0L);
+                sessionInstance.setCompletedPatientCount(0L);
+                sessionInstance.setCancelPatientCount(0L);
+                sessionInstance.setRefundedPatientCount(0L);
+                sessionInstance.setOnCallPatientCount(0L);
+                sessionInstance.setReservedBookingCount(0L);
+                sessionInstance.setRemainingPatientCount(0L);
+                sessionInstanceController.save(sessionInstance);
+            }
+        }
+    }
+
+    private boolean hasNonZeroBookingCount(SessionInstance si) {
+        Long[] counts = {si.getBookedPatientCount(), si.getPaidPatientCount(), si.getCompletedPatientCount(),
+            si.getCancelPatientCount(), si.getRefundedPatientCount(), si.getOnCallPatientCount(),
+            si.getReservedBookingCount(), si.getRemainingPatientCount()};
+        for (Long c : counts) {
+            if (c != null && c != 0L) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private boolean errorCheckForAddingNewBooking() {
