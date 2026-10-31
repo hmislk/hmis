@@ -664,6 +664,7 @@ public class BookingController implements Serializable, ControllerWithPatient, C
         newBillSession.setBill(bs.getBill());
         newBillSession.setBillItem(bs.getBillItem());
         newBillSession.setReferenceBillSession(bs);
+        newBillSession.setRescheduledFromBillSession(bs);
         newBillSession.setCreatedAt(new Date());
         newBillSession.setCreater(getSessionController().getLoggedUser());
         newBillSession.setSessionInstance(getSelectedSessionInstanceForRechedule());
@@ -704,6 +705,7 @@ public class BookingController implements Serializable, ControllerWithPatient, C
         }
         bs.setRecheduledSession(true);
         bs.setReferenceBillSession(newBillSession);
+        bs.setRescheduledToBillSession(newBillSession);
         getBillSessionFacade().edit(bs);
         recheduledBillSession = newBillSession;
 
