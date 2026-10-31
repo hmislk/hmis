@@ -152,6 +152,8 @@ public class InwardSearch implements Serializable {
     InwardPaymentController inwardPaymentController;
     @Inject
     InwardDepositController inwardDepositController;
+    @Inject
+    private AdmissionController admissionController;
 
     /**
      * Properties
@@ -725,6 +727,10 @@ public class InwardSearch implements Serializable {
         // here first makes this method self-contained regardless of
         // listener ordering.
         this.bill = selectedBill;
+        if (selectedBill != null && selectedBill.getPatientEncounter() instanceof Admission) {
+            admissionController.setCurrent((Admission) selectedBill.getPatientEncounter());
+            admissionController.setPatient(selectedBill.getPatientEncounter().getPatient());
+        }
         refreshFinalBillBackwordReferenceBills();
         refreshFinalBillPdfSnapshot();
     }
