@@ -84,8 +84,8 @@
                                 <h:outputLabel value="#{b.deptId}" rendered="#{(!b.cancelled and !b.refunded)}" />
                             </p:column>                      
                             <p:column>
-                                <h:outputLabel value="#{b.billedBill.deptId} - " />
-                                <h:outputLabel value="#{b.billedBill.createdAt}" >
+                                <h:outputLabel value="#{b.billedBill ne null ? b.billedBill.deptId : b.referenceBill.deptId} - " rendered="#{b.billedBill ne null or b.referenceBill ne null}" />
+                                <h:outputLabel value="#{b.billedBill ne null ? b.billedBill.createdAt : b.referenceBill.createdAt}" rendered="#{b.billedBill ne null or b.referenceBill ne null}" >
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
                                 </h:outputLabel>
                             </p:column>                      
