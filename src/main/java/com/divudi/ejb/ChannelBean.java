@@ -1049,11 +1049,15 @@ public class ChannelBean {
 
     /**
      * Runs in its own transaction so the created row is committed before
-     * {@link #findOrCreateSessionInstanceSerialised} releases the lock. Call it
+     * {@link #findOrCreateSessionInstanceSerialised} releases the lock, and
+     * holds a row lock on the service session for the same span. Call it
      * through the business object, not directly, or REQUIRES_NEW is ignored.
      */
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     public SessionInstance findOrCreateSessionInstance(ServiceSession ss, Date sessionDate) {
+        // Row lock on the service session until this transaction commits; it also serialises
+        // a second application that shares this database, which the JVM lock cannot see
+        serviceSessionFacade.findWithLock(ss.getId());
         String jpql = "select i "
                 + " from SessionInstance i "
                 + " where i.originatingSession=:os "

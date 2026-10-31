@@ -14,7 +14,9 @@ import java.util.concurrent.locks.ReentrantLock;
  * (REQUIRES_NEW) transaction, so the new row is committed before the lock is
  * released and the next holder finds it.
  *
- * Only correct while the application runs as a single server instance.
+ * It only reduces contention inside one server: two applications that share
+ * a database are serialised by the row lock that findOrCreateSessionInstance
+ * takes on the service session.
  */
 public final class SessionInstanceCreationLock {
 
