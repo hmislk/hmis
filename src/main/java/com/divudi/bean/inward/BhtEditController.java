@@ -738,10 +738,13 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
         // Save Person FIRST (correct order - was backwards before!)
         Person person = getCurrent().getPatient().getPerson();
         if (person != null) {
-            if (person.getId() == null) {
-                getPersonFacade().create(person);
-            } else {
+            if (person.getId() != null) {
                 getPersonFacade().edit(person);
+            } else if (getCurrent().getPatient().getId() != null) {
+                // Existing patient: the patient is merged below, so a new person is persisted here.
+                // A new patient's create saves its person (Patient.person is cascade = ALL); persisting
+                // it here as well wrote a second PERSON row (#23900).
+                getPersonFacade().create(person);
             }
         }
 

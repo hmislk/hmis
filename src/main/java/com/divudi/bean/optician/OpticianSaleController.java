@@ -524,7 +524,9 @@ public class OpticianSaleController implements Serializable, ControllerWithPatie
             getPatient().setCreatedAt(new Date());
             getPatient().getPerson().setCreater(getSessionController().getLoggedUser());
             getPatient().getPerson().setCreatedAt(new Date());
-            if (getPatient().getPerson().getId() == null) {
+            // Patient.person is cascade = ALL, so creating a new patient below also saves its person.
+            // Persisting the person separately here wrote a second, unreferenced PERSON row (#23900).
+            if (getPatient().getPerson().getId() == null && getPatient().getId() != null) {
                 getPersonFacade().create(getPatient().getPerson());
             }
             if (getPatient().getId() == null) {
