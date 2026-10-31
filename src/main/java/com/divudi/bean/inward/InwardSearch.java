@@ -863,11 +863,7 @@ public class InwardSearch implements Serializable {
 
         Long previousFinalBillId = pe.getFinalBill() != null ? pe.getFinalBill().getId() : null;
 
-        if (pe.getFinalBill() != null && !pe.getFinalBill().getId().equals(newConfirmed.getId())) {
-            Bill oldConfirmed = pe.getFinalBill();
-            oldConfirmed.setConfirmedFinalBill(false);
-            getBillFacade().edit(oldConfirmed);
-        }
+        getInwardBean().unconfirmOtherFinalBills(pe, newConfirmed);
 
         newConfirmed.setConfirmedFinalBill(true);
         getBillFacade().edit(newConfirmed);

@@ -1961,6 +1961,32 @@ public class InwardBeanController implements Serializable {
         return getPatientItemFacade().findByJpql(sql, hm);
     }
 
+    /**
+     * Unconfirms every final bill of the admission except {@code keep}. Found
+     * by query, not through {@code pe.getFinalBill()}: a session's copy of the
+     * admission can predate the bill that has to be unconfirmed, which would
+     * leave two confirmed final bills for reports to count (issue #24966).
+     */
+    public void unconfirmOtherFinalBills(PatientEncounter pe, Bill keep) {
+        String jpql = "select b from Bill b"
+                + " where b.patientEncounter.id = :peId"
+                + " and b.billTypeAtomic = :bta"
+                + " and b.confirmedFinalBill = true"
+                + " and b.id <> :keepId";
+        Map<String, Object> params = new HashMap<>();
+        params.put("peId", pe.getId());
+        params.put("bta", BillTypeAtomic.INWARD_FINAL_BILL);
+        params.put("keepId", keep.getId());
+        List<Bill> others = getBillFacade().findByJpql(jpql, params);
+        if (others == null) {
+            return;
+        }
+        for (Bill other : others) {
+            other.setConfirmedFinalBill(false);
+            getBillFacade().edit(other);
+        }
+    }
+
     public List<Bill> fetchPaymentBill(PatientEncounter patientEncounter, List<PatientEncounter> cpts) {
 
         HashMap hm = new HashMap();
