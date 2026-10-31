@@ -67,6 +67,11 @@ stored in the shared database, so they apply to both apps. Until the code
 claims each record atomically before sending, the only way to stop the
 duplicates is to disable one of the two apps in Payara.
 
+The JVM locks (`SessionBookingLock`, `SessionInstanceCreationLock`) don't span
+the two apps either, so simultaneous channel bookings made in both can get the
+same serial number or overbook a session. This setup is temporary and won't be
+fixed in code (#25015).
+
 Each pipeline's workflow file lives **only on its own branch**, not on
 `development`.
 

@@ -409,6 +409,9 @@ Repeat, up to **3 cycles**:
 
 1. `gh pr checks <PR#>` — if checks are still pending, `ScheduleWakeup` for
    ~270s and recheck (don't block with `--watch` past a few minutes).
+   If CodeRabbit is the only check listed, run
+   `gh pr view <PR#> --json mergeStateStatus`: `DIRTY` means a conflict
+   kept the workflows from starting. Merge `origin/development`, push, recheck.
 2. If checks fail: investigate the failure, fix, push, go to 1.
 3. Once checks pass: run the `review-pr` skill for `<PR#>`.
    - Auto-apply fixes for comments matching `review-pr`'s documented
@@ -420,6 +423,10 @@ Repeat, up to **3 cycles**:
      says "Review limit reached", it reviewed nothing: say so in
      Notify, and wait for the limit reset or ask the user before
      treating the PR as reviewed.
+   - The free tier allows 2 reviews per window, and every push starts
+     one. Push all fixes before asking for a review; after "Review
+     limit reached", wait the minutes it states, then comment
+     `@coderabbitai review`.
    - A Codex summary with status **Failed** plus a "You have reached
      your Codex usage limits" comment reviewed nothing, even though its
      hidden state says `has_unresolved_findings: true`. Treat it like
