@@ -2136,14 +2136,11 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             e.setInstitution(getSessionController().getLoggedUser().getInstitution());
             e.setPending(false);
             getSmsFacade().create(e);
-
-            Boolean sent = smsManager.sendSms(e);
-            e.setSentSuccessfully(sent);
-            getSmsFacade().edit(e);
+            smsManager.sendSmsAsync(e);
 
         }
 
-        JsfUtil.addSuccessMessage("SMS Sent");
+        JsfUtil.addSuccessMessage("SMS Queued");
     }
 
     public String smsBody(BillSession r) {
@@ -4508,15 +4505,9 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         e.setPending(false);
         e.setSmsType(MessageType.ChannelBooking);
         getSmsFacade().create(e);
-        Boolean sent = smsManager.sendSms(e);
-        e.setSentSuccessfully(sent);
-        getSmsFacade().edit(e);
-
-        if (sent) {
-            JsfUtil.addSuccessMessage("SMS Sent");
-        } else {
-            JsfUtil.addSuccessMessage("SMS Failed");
-        }
+        // Sent on a background thread so the settle does not wait for the SMS gateway (#24970)
+        smsManager.sendSmsAsync(e);
+        JsfUtil.addSuccessMessage("SMS Queued");
 
     }
 

@@ -3121,15 +3121,9 @@ public class BookingControllerViewScopeMonth implements Serializable {
         e.setPending(false);
         e.setSmsType(MessageType.ChannelBooking);
         getSmsFacade().create(e);
-        Boolean sent = smsManager.sendSms(e);
-        e.setSentSuccessfully(sent);
-        getSmsFacade().edit(e);
-
-        if (sent) {
-            JsfUtil.addSuccessMessage("SMS Sent");
-        } else {
-            JsfUtil.addSuccessMessage("SMS Failed");
-        }
+        // Sent on a background thread so the settle does not wait for the SMS gateway (#24970)
+        smsManager.sendSmsAsync(e);
+        JsfUtil.addSuccessMessage("SMS Queued");
 
     }
 

@@ -21,6 +21,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import javax.ejb.Asynchronous;
 import javax.ejb.EJB;
 import javax.ejb.Schedule;
 import javax.ejb.Stateless;
@@ -541,6 +542,30 @@ public class SmsManagerEjb {
 
     public SmsFacade getSmsFacade() {
         return smsFacade;
+    }
+
+    /**
+     * Sends a persisted {@link Sms} row on a container-managed async thread and
+     * records the result, so a booking settle does not wait for the SMS gateway
+     * (#24970). Must never throw: an escaping exception would be invisible to
+     * the caller.
+     */
+    @Asynchronous
+    public void sendSmsAsync(Sms sms) {
+        try {
+            if (sms == null) {
+                return;
+            }
+            boolean sent = sendSms(sms);
+            sms.setSentSuccessfully(sent);
+            if (sent) {
+                sms.setSentAt(new Date());
+            }
+            smsFacade.edit(sms);
+        } catch (Exception e) {
+            Logger.getLogger(SmsManagerEjb.class.getName()).log(Level.WARNING,
+                    "Unexpected error while sending SMS ID: " + (sms != null ? sms.getId() : "unknown"), e);
+        }
     }
 
     public boolean sendSms(Sms sms) {
