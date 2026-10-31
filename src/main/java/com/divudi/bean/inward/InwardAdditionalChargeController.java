@@ -150,6 +150,10 @@ public class InwardAdditionalChargeController implements Serializable {
             return true;
         }
 
+        if (inwardBean.blockIfDischarged(getCurrent().getPatientEncounter())) {
+            return true;
+        }
+
         if (getCurrent().getPatientEncounter().isNursingDischarged()
                 && !webUserController.hasPrivilege("InwardAddChargesAfterNursingDischarge")) {
             JsfUtil.addErrorMessage("Cannot add charges: nursing discharge has been confirmed for this patient.");
