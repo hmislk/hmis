@@ -80,8 +80,6 @@
                                     >
                                     <p:column>
                                         <p:commandButton ajax="false" value="View Bill" action="inward_reprint_bill_final" actionListener="#{inwardSearch.prepareFinalBillReprintFromSearch(bb)}"  >
-                                            <f:setPropertyActionListener value="#{bb.patientEncounter.patient}" target="#{admissionController.patient}"/>
-                                            <f:setPropertyActionListener value="#{bb.patientEncounter}" target="#{admissionController.current}"/>
                                         </p:commandButton>
                                     </p:column>
 
