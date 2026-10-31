@@ -632,7 +632,12 @@ public class ChannelStaffPaymentBillController implements Serializable {
         m.put("ftp", FeeType.Staff);
         m.put("class", BilledBill.class);
         List<BillFee> nonRefundableBillFees = billFeeFacade.findByJpql(sql, m, TemporalType.TIMESTAMP);
-        dueBillFees.addAll(nonRefundableBillFees);
+        // Without the completed-only filter the first query already returns absent bookings
+        for (BillFee bf : nonRefundableBillFees) {
+            if (!dueBillFees.contains(bf)) {
+                dueBillFees.add(bf);
+            }
+        }
 
     }
 
