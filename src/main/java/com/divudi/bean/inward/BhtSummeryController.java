@@ -230,6 +230,8 @@ public class BhtSummeryController implements Serializable {
     private static final String DEFAULT_STAY_WINDOW_PATTERN = "dd MMM yyyy HH:mm";
     private List<CreditCompanyAllocation> creditCompanyAllocations;
     private EncounterCreditCompany newEncounterCreditCompany;
+    private static final String PAYMENT_FINALIZED_MESSAGE = "Payment is Finalized U need to cancel Previuios Final Bill of This Bht";
+
     private boolean creatingNewVersion;
     //////////////////////////
     private double grantTotal = 0.0;
@@ -2878,20 +2880,28 @@ public class BhtSummeryController implements Serializable {
         originalBill.setNetTotal(originalBill.getGrantTotal() - discount);
         getBillFacade().edit(originalBill);
 
-        saveBill();
-        saveBillItem();
-
-        // Scoped here (not in the shared saveBill()) because saveBill() is also called by
+        // Checked, saved and confirmed under one lock, so a double submit cannot
+        // get past errorCheck() twice (issue #24966). A saved current means the
+        // same session has already submitted this bill; saving it again would
+        // double its bill items, and a new version skips the finalized check.
+        // Confirmed here (not in the shared saveBill()) because saveBill() is also called by
         // saveProvisionalBill() for a bill that is about to become BillType.InwardProvisionalBill,
         // not a final bill — flipping confirmedFinalBill there would wrongly unconfirm the real
         // confirmed version on every provisional save.
-        getCurrent().setConfirmedFinalBill(true);
-        if (getPatientEncounter().getFinalBill() != null && !getPatientEncounter().getFinalBill().getId().equals(getCurrent().getId())) {
-            Bill oldConfirmed = getPatientEncounter().getFinalBill();
-            oldConfirmed.setConfirmedFinalBill(false);
-            getBillFacade().edit(oldConfirmed);
+        boolean saved = getBillNumberBean().withFinalBillVersionLock(getPatientEncounter(), () -> {
+            if (getCurrent().getId() != null || (!creatingNewVersion && isFinalizedInDatabase())) {
+                return false;
+            }
+            saveBill();
+            getCurrent().setConfirmedFinalBill(true);
+            getBillFacade().edit(getCurrent());
+            return true;
+        });
+        if (!saved) {
+            JsfUtil.addErrorMessage(getCurrent().getId() != null ? "This Final Bill is already saved" : PAYMENT_FINALIZED_MESSAGE);
+            return;
         }
-        getBillFacade().edit(getCurrent());
+        saveBillItem();
 
         if (getPatientEncounter().getPaymentMethod() == PaymentMethod.Credit) {
             for (CreditCompanyAllocation alloc : creditCompanyAllocations) {
@@ -2901,19 +2911,27 @@ public class BhtSummeryController implements Serializable {
             }
         }
 
-        getPatientEncounter().setFinalBill(getCurrent());
-        getPatientEncounter().setGrantTotal(getCurrent().getGrantTotal());
-        getPatientEncounter().setDiscount(getCurrent().getDiscount());
-        getPatientEncounter().setNetTotal(getCurrent().getNetTotal());
-        getPatientEncounter().setPaymentFinalized(true);
-        getPatientEncounterFacade().edit(getPatientEncounter());
-        // After the commitment bills exist and this bill is the encounter's final
-        // bill, so creditUsedAmount is taken from the cashier's allocation.
-        if (getPatientEncounter().getPaymentMethod() == PaymentMethod.Credit) {
-            getInwardBean().updateCreditDetail(getPatientEncounter(), getCurrent().getNetTotal());
-        }
-        getCurrent().setReferenceBill(originalBill);
-        getBillFacade().edit(getCurrent());
+        // The last write of this bill, under the lock: every edit(getCurrent())
+        // re-saves the session's confirmed flag, so a later one could undo the
+        // unconfirming done by a concurrent save of another version.
+        getBillNumberBean().withFinalBillVersionLock(getPatientEncounter(), () -> {
+            getCurrent().setReferenceBill(originalBill);
+            getInwardBean().unconfirmOtherFinalBills(getPatientEncounter(), getCurrent());
+            getBillFacade().edit(getCurrent());
+
+            getPatientEncounter().setFinalBill(getCurrent());
+            getPatientEncounter().setGrantTotal(getCurrent().getGrantTotal());
+            getPatientEncounter().setDiscount(getCurrent().getDiscount());
+            getPatientEncounter().setNetTotal(getCurrent().getNetTotal());
+            getPatientEncounter().setPaymentFinalized(true);
+            getPatientEncounterFacade().edit(getPatientEncounter());
+            // After the commitment bills exist and this bill is the encounter's final
+            // bill, so creditUsedAmount is taken from the cashier's allocation.
+            if (getPatientEncounter().getPaymentMethod() == PaymentMethod.Credit) {
+                getInwardBean().updateCreditDetail(getPatientEncounter(), getCurrent().getNetTotal());
+            }
+            return null;
+        });
 
         updatePaymentBillList();
 
@@ -2989,6 +3007,32 @@ public class BhtSummeryController implements Serializable {
 
         setPatientEncounter(b.getPatientEncounter());
 
+        boolean settled = getBillNumberBean().withFinalBillVersionLock(getPatientEncounter(), () -> convertProvisionalToFinalBill(b));
+        if (!settled) {
+            JsfUtil.addErrorMessage(PAYMENT_FINALIZED_MESSAGE);
+            return "";
+        }
+
+        updatePaymentBillList();
+        JsfUtil.addSuccessMessage("Bill Saved");
+
+        showOrginalBill = false;
+        printPreview = true;
+        originalBill = null;
+
+        refreshFinalBillPdfSnapshot();
+        return "inward_bill_final?faces-redirect=true";
+    }
+
+    /**
+     * Must run under the final bill version lock, so that the check and the
+     * confirmation cannot interleave with another final bill save.
+     */
+    private boolean convertProvisionalToFinalBill(Bill b) {
+        if (isFinalizedInDatabase()) {
+            return false;
+        }
+
         originalBill = b.getBackwardReferenceBill();
         originalBill.setDiscount(b.getDiscount());
         originalBill.setNetTotal(originalBill.getGrantTotal() - b.getDiscount());
@@ -3036,11 +3080,7 @@ public class BhtSummeryController implements Serializable {
         }
 
         getCurrent().setConfirmedFinalBill(true);
-        if (getPatientEncounter().getFinalBill() != null && !getPatientEncounter().getFinalBill().getId().equals(getCurrent().getId())) {
-            Bill oldConfirmed = getPatientEncounter().getFinalBill();
-            oldConfirmed.setConfirmedFinalBill(false);
-            getBillFacade().edit(oldConfirmed);
-        }
+        getInwardBean().unconfirmOtherFinalBills(getPatientEncounter(), getCurrent());
 
         getPatientEncounter().setFinalBill(getCurrent());
         getPatientEncounter().setGrantTotal(getCurrent().getGrantTotal());
@@ -3055,16 +3095,7 @@ public class BhtSummeryController implements Serializable {
         }
         getCurrent().setReferenceBill(originalBill);
         getBillFacade().edit(getCurrent());
-
-        updatePaymentBillList();
-        JsfUtil.addSuccessMessage("Bill Saved");
-
-        showOrginalBill = false;
-        printPreview = true;
-        originalBill = null;
-
-        refreshFinalBillPdfSnapshot();
-        return "inward_bill_final?faces-redirect=true";
+        return true;
     }
 
     /**
@@ -3794,13 +3825,36 @@ public class BhtSummeryController implements Serializable {
         createTables();
     }
 
+    /**
+     * Whether the admission already has a final bill, read from the database.
+     * The session's copy of the admission can predate a final bill saved from
+     * another session, and trusting it let a second confirmed final bill
+     * through (issue #24966).
+     */
+    private boolean isFinalizedInDatabase() {
+        Map<String, Object> params = new HashMap<>();
+        params.put("id", getPatientEncounter().getId());
+        long finalized = getPatientEncounterFacade().findLongByJpql(
+                "select count(pe) from PatientEncounter pe where pe.id = :id and pe.paymentFinalized = true", params);
+        if (finalized > 0) {
+            return true;
+        }
+        params.put("bta", BillTypeAtomic.INWARD_FINAL_BILL);
+        return getBillFacade().findLongByJpql("select count(b) from Bill b"
+                + " where b.patientEncounter.id = :id"
+                + " and b.billTypeAtomic = :bta"
+                + " and b.confirmedFinalBill = true"
+                + " and b.retired = false"
+                + " and b.cancelled = false", params) > 0;
+    }
+
     private boolean errorCheck() {
         if (getPatientEncounter() == null) {
             return true;
         }
 
-        if (getPatientEncounter().isPaymentFinalized() && !creatingNewVersion) {
-            JsfUtil.addErrorMessage("Payment is Finalized U need to cancel Previuios Final Bill of This Bht");
+        if (!creatingNewVersion && isFinalizedInDatabase()) {
+            JsfUtil.addErrorMessage(PAYMENT_FINALIZED_MESSAGE);
             return true;
         }
 
@@ -4033,6 +4087,10 @@ public class BhtSummeryController implements Serializable {
         if (getPatientEncounter() == null) {
             return "";
         }
+
+        // A New Version that was started and abandoned must not lift the
+        // finalized guard for this ordinary settle.
+        creatingNewVersion = false;
 
         if (!getPatientEncounter().isDischarged()) {
             JsfUtil.addErrorMessage(" Please Discharge This Patient ");
