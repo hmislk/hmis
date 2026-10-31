@@ -5068,31 +5068,32 @@ public class ClinicController implements Serializable, ControllerWithPatientView
             return;
         }
 
-        // Prepare the SQL query
-        String sql = "SELECT bs.SESSIONINSTANCE_ID, "
-                + "COUNT(bs.ID) AS bookedPatientCount, "
-                + "SUM(CASE WHEN (bs.PAIDBILLSESSION_ID IS NOT NULL and bs.RESCHEDULEDTOBILLSESSION_ID is NULL) THEN 1 ELSE 0 END) AS paidPatientCount, "
-                + "SUM(CASE WHEN bs.COMPLETED = TRUE THEN 1 ELSE 0 END) AS completedPatientCount, "
-                + "SUM(CASE WHEN b.CANCELLED = TRUE THEN 1 ELSE 0 END) AS cancelPatientCount, "
-                + "SUM(CASE WHEN b.REFUNDED = TRUE THEN 1 ELSE 0 END) AS refundedPatientCount, "
-                + "SUM(CASE WHEN bs.PAIDBILLSESSION_ID IS NULL AND b.CANCELLED = FALSE THEN 1 ELSE 0 END) AS onCallPatientCount, "
-                + "SUM(CASE WHEN bs.RESERVEDBOOKING = TRUE THEN 1 ELSE 0 END) AS reservedBookingCount "
-                + "FROM billsession bs "
-                + "JOIN bill b ON bs.BILL_ID = b.ID "
-                + "WHERE bs.RETIRED = FALSE "
-                + "AND b.BILLTYPE IN ('ChannelAgent', 'ChannelCash', 'ChannelOnCall', 'ChannelStaff', 'ChannelCredit', 'ChannelResheduleWithPayment', 'ChannelResheduleWithOutPayment') "
-                + "AND b.DTYPE = 'BilledBill' "
-                + "AND bs.SESSIONINSTANCE_ID IN (:ids) "
-                + "GROUP BY bs.SESSIONINSTANCE_ID";
+        // JPQL, not native SQL: native table names break on case-sensitive MySQL (#25001)
+        String jpql = "select bs.sessionInstance.id, "
+                + " count(bs), "
+                + " sum(case when (bs.paidBillSession is not null and bs.rescheduledToBillSession is null) then 1 else 0 end), "
+                + " sum(case when bs.completed = true then 1 else 0 end), "
+                + " sum(case when b.cancelled = true then 1 else 0 end), "
+                + " sum(case when b.refunded = true then 1 else 0 end), "
+                + " sum(case when bs.paidBillSession is null and b.cancelled = false then 1 else 0 end), "
+                + " sum(case when bs.reservedBooking = true then 1 else 0 end) "
+                + " from BillSession bs join bs.bill b "
+                + " where bs.retired = false "
+                + " and b.billType in :bts "
+                + " and type(b) = :class "
+                + " and bs.sessionInstance.id in :ids "
+                + " group by bs.sessionInstance.id";
 
-        // Prepare the parameters
         List<Long> sessionInstanceIds = sessionInstances.stream()
                 .map(SessionInstance::getId)
                 .collect(Collectors.toList());
         Map<String, Object> parameters = new HashMap<>();
+        parameters.put("bts", Arrays.asList(BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelOnCall, BillType.ChannelStaff,
+                BillType.ChannelCredit, BillType.ChannelResheduleWithPayment, BillType.ChannelResheduleWithOutPayment));
+        parameters.put("class", BilledBill.class);
+        parameters.put("ids", sessionInstanceIds);
 
-        // Execute the query
-        List<Object[]> results = billSessionFacade.findObjectsArrayByNativeQuery(sql, parameters, sessionInstanceIds);
+        List<Object[]> results = billSessionFacade.findObjectsArrayByJpql(jpql, parameters, TemporalType.TIMESTAMP);
 
         // Process the results
         Map<Long, SessionInstance> sessionInstanceMap = sessionInstances.stream()
