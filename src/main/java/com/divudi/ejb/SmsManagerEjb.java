@@ -565,6 +565,16 @@ public class SmsManagerEjb {
         } catch (Exception e) {
             Logger.getLogger(SmsManagerEjb.class.getName()).log(Level.WARNING,
                     "Unexpected error while sending SMS ID: " + (sms != null ? sms.getId() : "unknown"), e);
+            // Record the failure so the SMS appears in the failed-SMS lists
+            try {
+                if (sms != null) {
+                    sms.setSentSuccessfully(false);
+                    smsFacade.edit(sms);
+                }
+            } catch (Exception ex) {
+                Logger.getLogger(SmsManagerEjb.class.getName()).log(Level.WARNING,
+                        "Could not record SMS failure for ID: " + (sms != null ? sms.getId() : "unknown"), ex);
+            }
         }
     }
 
@@ -679,6 +689,8 @@ public class SmsManagerEjb {
                 conn.setRequestMethod("POST");
                 conn.setRequestProperty("Content-Type", "application/json");
                 conn.setDoOutput(true);
+                conn.setConnectTimeout(10000);
+                conn.setReadTimeout(30000);
                 try (OutputStream os = conn.getOutputStream()) {
                     byte[] input = payload.toString().getBytes("utf-8");
                     os.write(input, 0, input.length);
