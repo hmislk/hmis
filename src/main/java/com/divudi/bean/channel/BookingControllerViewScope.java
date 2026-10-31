@@ -1758,17 +1758,29 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         if (selectSession == null || sessionInstancesFiltered == null || sessionInstancesFiltered.size() > 1) {
             loadSessionInstances(false);
             addBillSessionData();
-            if (!restoreSelectedSessionAfterRefresh(previouslySelectedId)
-                    && sessionInstancesFiltered != null && !sessionInstancesFiltered.isEmpty()) {
-                selectedSessionInstance = sessionInstancesFiltered.get(0);
-                sessionInstanceSelected();
+            if (!restoreSelectedSessionAfterRefresh(previouslySelectedId)) {
+                if (previouslySelected != null) {
+                    // The selected session is outside the reloaded (capped) list; keep it listed and selected
+                    // rather than switch the booking target to the first row
+                    sessionInstancesFiltered = sessionInstancesFiltered == null
+                            ? new ArrayList<>() : new ArrayList<>(sessionInstancesFiltered);
+                    sessionInstancesFiltered.add(previouslySelected);
+                    selectedSessionInstance = previouslySelected;
+                } else if (sessionInstancesFiltered != null && !sessionInstancesFiltered.isEmpty()) {
+                    selectedSessionInstance = sessionInstancesFiltered.get(0);
+                    sessionInstanceSelected();
+                }
             }
         } else {
             loadSessionInstances(false);
             addBillSessionData();
             if (!restoreSelectedSessionAfterRefresh(previouslySelectedId)) {
-                selectedSessionInstance = selectSession;
-                sessionInstanceSelected();
+                if (previouslySelected != null) {
+                    selectedSessionInstance = previouslySelected;
+                } else {
+                    selectedSessionInstance = selectSession;
+                    sessionInstanceSelected();
+                }
             }
             fillBillSessions();
             sessionInstancesFiltered = new ArrayList<>();
@@ -2331,6 +2343,11 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         if (viewScopeDataTransferController.getNeedToFillMembershipDetails() != null && viewScopeDataTransferController.getNeedToFillMembershipDetails()) {
             patient = viewScopeDataTransferController.getPatient();
             paymentScheme = viewScopeDataTransferController.getPaymentScheme();
+        }
+
+        if ((needToFillSessionInstanceDetails == null || needToFillSessionInstanceDetails) && selectedSessionInstance != null) {
+            // Totals (including the net total used for validation) must come from the transferred session's own fees
+            calculateSelectedBillSessionTotal();
         }
 
         if (viewScopeDataTransferController.getNeedToFillFeeTotalsByBillFees() != null && viewScopeDataTransferController.getNeedToFillFeeTotalsByBillFees()) {
@@ -6149,7 +6166,8 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 
         // A session with no counted bill (e.g. only pending online bills) has no result row; clear stale stored counts
         for (SessionInstance sessionInstance : sessionInstanceMap.values()) {
-            if (hasNonZeroBookingCount(sessionInstance)) {
+            // Re-check just before writing, so a booking saved after the aggregate query is not overwritten with zero
+            if (hasNonZeroBookingCount(sessionInstance) && countCountedBillSessions(sessionInstance) == 0) {
                 sessionInstance.setBookedPatientCount(0L);
                 sessionInstance.setPaidPatientCount(0L);
                 sessionInstance.setCompletedPatientCount(0L);
@@ -6161,6 +6179,22 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
                 sessionInstanceController.save(sessionInstance);
             }
         }
+    }
+
+    private long countCountedBillSessions(SessionInstance si) {
+        String jpql = "select count(bs) from BillSession bs "
+                + " where bs.retired=false"
+                + " and bs.sessionInstance=:si"
+                + " and bs.bill.billType in :bt"
+                + " and type(bs.bill)=:class"
+                + " and (bs.bill.billTypeAtomic is null or bs.bill.billTypeAtomic <> :bta)";
+        Map<String, Object> params = new HashMap<>();
+        params.put("si", si);
+        params.put("bt", Arrays.asList(BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelOnCall, BillType.ChannelStaff,
+                BillType.ChannelCredit, BillType.ChannelResheduleWithPayment, BillType.ChannelResheduleWithOutPayment));
+        params.put("class", BilledBill.class);
+        params.put("bta", BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_PENDING_PAYMENT);
+        return billSessionFacade.findLongByJpql(jpql, params);
     }
 
     private boolean hasNonZeroBookingCount(SessionInstance si) {
