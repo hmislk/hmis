@@ -23,6 +23,8 @@ import com.divudi.core.facade.ServiceSessionFacade;
 import com.divudi.core.facade.ServiceSessionLeaveFacade;
 import com.divudi.core.facade.SessionInstanceFacade;
 import com.divudi.core.facade.SessionNumberGeneratorFacade;
+import com.divudi.core.util.SessionInstanceCreationLock;
+import com.divudi.service.SessionInstanceCreationService;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -57,6 +59,8 @@ public class ChannelBean {
     private ServiceSessionFacade serviceSessionFacade;
     @EJB
     SessionNumberGeneratorFacade sessionNumberGeneratorFacade;
+    @EJB
+    private SessionInstanceCreationService sessionInstanceCreationService;
     @EJB
     SessionInstanceFacade sessionInstanceFacade;
     @Inject
@@ -645,11 +649,9 @@ public class ChannelBean {
                     }
 
                     if (si == null) {
-                        si = createSessionInstancesForServiceSession(ss, workingDate);
-                        if (si.getId() == null) {
-                            sessionInstanceFacade.create(si);
-                        } else {
-                            sessionInstanceFacade.edit(si);
+                        // Re-check and create under a per-session lock, committed before release (#24972)
+                        try (SessionInstanceCreationLock.Hold hold = SessionInstanceCreationLock.acquire(ss.getId())) {
+                            si = sessionInstanceCreationService.findOrCreateInNewTransaction(ss, workingDate);
                         }
                     }
 
@@ -756,11 +758,9 @@ public class ChannelBean {
                     SessionInstance si = sessionInstanceFacade.findFirstByJpql(jpql, m, TemporalType.DATE);
 
                     if (si == null) {
-                        si = createSessionInstancesForServiceSession(ss, workingDate);
-                        if (si.getId() == null) {
-                            sessionInstanceFacade.create(si);
-                        } else {
-                            sessionInstanceFacade.edit(si);
+                        // Re-check and create under a per-session lock, committed before release (#24972)
+                        try (SessionInstanceCreationLock.Hold hold = SessionInstanceCreationLock.acquire(ss.getId())) {
+                            si = sessionInstanceCreationService.findOrCreateInNewTransaction(ss, workingDate);
                         }
                     }
 
