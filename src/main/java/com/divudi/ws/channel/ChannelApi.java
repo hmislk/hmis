@@ -1461,6 +1461,9 @@ public class ChannelApi {
 
         try {
             totalPaid = Double.parseDouble(totalPaidString);
+            if (!Double.isFinite(totalPaid)) {
+                throw new NumberFormatException("price is not a finite number");
+            }
         } catch (Exception e) {
             JSONObject response = commonFunctionToErrorResponse("There is a error in the payment amount. Please check price field.");
             return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
