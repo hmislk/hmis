@@ -2881,13 +2881,15 @@ public class BhtSummeryController implements Serializable {
         getBillFacade().edit(originalBill);
 
         // Checked, saved and confirmed under one lock, so a double submit cannot
-        // get past errorCheck() twice (issue #24966).
+        // get past errorCheck() twice (issue #24966). A saved current means the
+        // same session has already submitted this bill; saving it again would
+        // double its bill items, and a new version skips the finalized check.
         // Confirmed here (not in the shared saveBill()) because saveBill() is also called by
         // saveProvisionalBill() for a bill that is about to become BillType.InwardProvisionalBill,
         // not a final bill — flipping confirmedFinalBill there would wrongly unconfirm the real
         // confirmed version on every provisional save.
         boolean saved = getBillNumberBean().withFinalBillVersionLock(getPatientEncounter(), () -> {
-            if (!creatingNewVersion && isFinalizedInDatabase()) {
+            if (getCurrent().getId() != null || (!creatingNewVersion && isFinalizedInDatabase())) {
                 return false;
             }
             saveBill();
@@ -2896,7 +2898,7 @@ public class BhtSummeryController implements Serializable {
             return true;
         });
         if (!saved) {
-            JsfUtil.addErrorMessage(PAYMENT_FINALIZED_MESSAGE);
+            JsfUtil.addErrorMessage(getCurrent().getId() != null ? "This Final Bill is already saved" : PAYMENT_FINALIZED_MESSAGE);
             return;
         }
         saveBillItem();
