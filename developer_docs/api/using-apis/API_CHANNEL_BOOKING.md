@@ -449,7 +449,9 @@ Same structure as `/save` response with `"status": "unpaid"`.
 
 Finalizes a temporary booking, converting it to a paid confirmed appointment.
 
-> **Warning:** This is a financial transaction. Use the exact `refNo` from `/save` and confirm the `price` amount matches expectations before calling.
+> **Warning:** This is a financial transaction. Use the exact `refNo` from `/save`.
+>
+> **`price` is informational only.** The bill is always priced from the session's fee setup (the amounts `/save` returns in its `price` object), never from `price`. A `price` that differs from the session fees is not rejected and does not change the bill. Agents should charge the patient the `price.totalAmount` returned by `/save`.
 
 ### Request Body
 ```json
@@ -468,7 +470,7 @@ Finalizes a temporary booking, converting it to a paid confirmed appointment.
 |-----------------------|--------|----------|-------------------------------------------|
 | refNo                 | String | Yes      | Client reference number from `/save`      |
 | statusId              | Integer| Yes      | Must be `1` (success); `0` = failure      |
-| price                 | String | Yes      | Amount paid as a string (e.g., `"1500.00"`) |
+| price                 | String | Yes      | Amount the agent collected, as a string (e.g., `"1500.00"`). Informational only: not used to price the bill |
 | payment.paymentChannel| String | Yes      | Booking agent code                        |
 | payment.paymentMode   | String | No       | Booking agent name                        |
 
