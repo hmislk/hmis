@@ -17,6 +17,7 @@ import com.divudi.core.facade.SessionInstanceFacade;
 import com.divudi.core.facade.SmsFacade;
 import com.divudi.core.util.CommonFunctions;
 import java.io.UnsupportedEncodingException;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
@@ -554,19 +555,61 @@ public class SmsManagerEjb {
         if (smsId == null) {
             return;
         }
+        Sms sms = smsFacade.find(smsId);
+        if (sms == null || !sms.isPending()) {
+            return;
+        }
+        sendPendingSms(sms);
+    }
+
+    /**
+     * Sends a pending SMS once and records the result; the row stops being
+     * pending whatever the outcome, so it is never sent twice.
+     */
+    private void sendPendingSms(Sms sms) {
         try {
-            Sms sms = smsFacade.find(smsId);
-            if (sms == null) {
-                return;
-            }
             boolean sent = sendSms(sms);
             sms.setSentSuccessfully(sent);
             if (sent) {
                 sms.setSentAt(new Date());
+            } else {
+                sms.setSendingFailed(true);
             }
-            smsFacade.edit(sms);
         } catch (Exception e) {
-            Logger.getLogger(SmsManagerEjb.class.getName()).log(Level.SEVERE, "Failed to send SMS ID: " + smsId, e);
+            Logger.getLogger(SmsManagerEjb.class.getName()).log(Level.SEVERE, "Failed to send SMS ID: " + sms.getId(), e);
+            sms.setSentSuccessfully(false);
+            sms.setSendingFailed(true);
+            sms.setReceivedMessage("Exception: " + e.getMessage());
+        }
+        sms.setPending(false);
+        smsFacade.edit(sms);
+    }
+
+    /**
+     * Sends channel SMS that are still pending two minutes after they were
+     * saved, e.g. when the server stopped before sendSavedSmsAsync ran (#24970).
+     */
+    @Schedule(second = "30", minute = "*/2", hour = "*", persistent = false)
+    public void sendPendingChannelSmsQueue() {
+        // Swallow everything so the non-persistent timer keeps firing (see processPendingLabReportApprovalSmsQueue)
+        try {
+            Calendar to = Calendar.getInstance();
+            to.add(Calendar.MINUTE, -2);
+            Calendar from = Calendar.getInstance();
+            from.add(Calendar.HOUR_OF_DAY, -24);
+            String jpql = "select e from Sms e where e.pending=true and e.retired=false "
+                    + " and e.smsType in :types and (e.sendingFailed = false or e.sendingFailed is null) "
+                    + " and e.createdAt between :from and :to";
+            Map<String, Object> params = new HashMap<>();
+            params.put("types", Arrays.asList(MessageType.ChannelBooking, MessageType.ChannelStatusUpdate));
+            params.put("from", from.getTime());
+            params.put("to", to.getTime());
+            for (Sms sms : smsFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP)) {
+                sendPendingSms(sms);
+            }
+        } catch (Throwable t) {
+            Logger.getLogger(SmsManagerEjb.class.getName()).log(Level.SEVERE,
+                    "sendPendingChannelSmsQueue failed; timer will retry", t);
         }
     }
 
@@ -678,6 +721,9 @@ public class SmsManagerEjb {
             StringBuilder response = new StringBuilder();
             int responseCode;
             try {
+                // Bounded, so a gateway that stops answering cannot hold a sender thread (#24970)
+                conn.setConnectTimeout(10000);
+                conn.setReadTimeout(30000);
                 conn.setRequestMethod("POST");
                 conn.setRequestProperty("Content-Type", "application/json");
                 conn.setDoOutput(true);
