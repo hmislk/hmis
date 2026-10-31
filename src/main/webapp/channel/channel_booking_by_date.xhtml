@@ -125,7 +125,9 @@
                             <div class="row" >
                                 <div class="col-7" >
                                     <h:panelGroup id="groupFilteredSessions" >
-                                        <p:dataTable 
+                                        <p:dataTable
+                                            id="tblSessions"
+                                            widgetVar="tblSessions"
                                             value="#{bookingControllerViewScope.sessionInstancesFiltered}"
                                             var="s"
                                             selectionMode="single"
@@ -328,13 +330,17 @@
                                                         const sendSessionId = messageParts[1];
                                                         const sendMessage = messageParts[0];
 
-                                                        if (sendMessage === "Online Booking Completed" || sendMessage === "Online Temporary Booking Added" || sendMessage === "Online Booking Cancelled") {
-                                                            document.querySelector(".ws-trigger").click();
-                                                         
+                                                        // Only react to bookings for a session this page shows, and at most once per
+                                                        // refresh window; remote commands avoid a DOM click that closes open menus (#24969)
+                                                        const sessionRow = document.querySelector('[id$="tblSessions"] tr[data-rk="' + sendSessionId + '"]');
 
+                                                        if (sessionRow &amp;&amp; (sendMessage === "Online Booking Completed" || sendMessage === "Online Temporary Booking Added" || sendMessage === "Online Booking Cancelled")) {
+                                                            scheduleSocketRefresh("sessions", refreshSessionsFromSocket);
                                                         }
-                                                        if (sendMessage === "Temporary Booking Retired" || sendMessage === "Online Temporary Booking Added") {
-                                                            document.querySelector(".ws-triggers").click();
+                                                        if (sessionRow &amp;&amp; sessionRow.classList.contains("ui-state-highlight")
+                                                                &amp;&amp; (sendMessage === "Temporary Booking Retired" || sendMessage === "Online Temporary Booking Added")
+                                                                &amp;&amp; typeof refreshReleasedNumbersFromSocket === "function") {
+                                                            scheduleSocketRefresh("released", refreshReleasedNumbersFromSocket);
                                                         }
 
                                                     } catch (e) {
@@ -360,17 +366,27 @@
 
                                             }
 
+                                            // Runs the refresh once, 2 s after the first message, however many arrive meanwhile
+                                            function scheduleSocketRefresh(key, refresh) {
+                                                window.socketRefreshTimers = window.socketRefreshTimers || {};
+                                                if (window.socketRefreshTimers[key]) {
+                                                    return;
+                                                }
+                                                window.socketRefreshTimers[key] = setTimeout(function () {
+                                                    delete window.socketRefreshTimers[key];
+                                                    refresh();
+                                                }, 2000);
+                                            }
+
                                             initializeWebSocket();
 
 
                                         </script>
 
-                                        <p:commandButton id="ws"
+                                        <p:remoteCommand name="refreshSessionsFromSocket"
                                                          action="#{bookingControllerViewScope.refreshSessionsForUpdates(bookingControllerViewScope.selectedSessionInstance)}"
                                                          process="@this"
-                                                         styleClass="ws-trigger"
-                                                         update="groupFilteredSessions"
-                                                         style="display:none"/>
+                                                         update="groupFilteredSessions"/>
 
 
 
@@ -493,12 +509,10 @@
 
                                                     </p:row>
 
-                                                    <p:commandButton id="ws-2"
+                                                    <p:remoteCommand name="refreshReleasedNumbersFromSocket"
                                                                      action="#{bookingControllerViewScope.getReleasedAppoinmentNumbers}"
                                                                      process="@this"
-                                                                     styleClass="ws-triggers"
-                                                                     update="row1"
-                                                                     style="display:none"/>
+                                                                     update="row1"/>
 
                                                     <p:commandButton
                                                         id="btnAdd"
