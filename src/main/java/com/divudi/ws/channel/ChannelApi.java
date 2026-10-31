@@ -1454,14 +1454,15 @@ public class ChannelApi {
         Map<String, String> paymentDetails = (Map<String, String>) requestBody.get("payment");
         String agencyCode = paymentDetails.get("paymentChannel");
         String agencyName = paymentDetails.get("paymentMode");
-        // price is the total the patient paid: session fees plus the agency's own charge (#24968)
-        String totalPaidString = (String) requestBody.get("price");
+        // price is the agency's own charge, added on top of the session fees. Doc990 and
+        // eChannelling send it this way, so its meaning must not change (#24968).
+        String agentChargeString = (String) requestBody.get("price");
 
-        double totalPaid;
+        double agencyCharge = 0;
 
         try {
-            totalPaid = Double.parseDouble(totalPaidString);
-            if (!Double.isFinite(totalPaid)) {
+            agencyCharge = Double.parseDouble(agentChargeString);
+            if (!Double.isFinite(agencyCharge)) {
                 throw new NumberFormatException("price is not a finite number");
             }
         } catch (Exception e) {
@@ -1499,7 +1500,6 @@ public class ChannelApi {
         }
 
         Bill completedBill;
-        double agencyCharge;
         long settleStartedAt = System.currentTimeMillis();
         // Taken outside ChannelService's transaction so the settle is committed before the next request
         // for the same session proceeds; the bill is re-read and re-validated under the lock so two
@@ -1531,15 +1531,6 @@ public class ChannelApi {
                 JSONObject response = commonFunctionToErrorResponse("Session is Full. Can't add online bookings");
                 return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
             }
-
-            double sessionTotal = temporarySavedBill.getNetTotal();
-            if (totalPaid < sessionTotal - 0.005) {
-                JSONObject response = commonFunctionToErrorResponse("The price " + totalPaidString
-                        + " is less than the session fees " + String.format("%.2f", sessionTotal)
-                        + ". Send the total amount the patient paid.");
-                return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
-            }
-            agencyCharge = Math.max(0, totalPaid - sessionTotal);
 
             completedBill = channelService.settleOnlineAgentInitialBooking(temporarySavedBill.getSingleBillSession(), clientsReferanceNo, agencyCharge);
         }
