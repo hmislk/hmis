@@ -5476,34 +5476,6 @@ public class ClinicController implements Serializable, ControllerWithPatientView
         BillSession savingBillSession;
         savingBillSession = createBillSession(savingBill, savingBillItem, true, false);
 
-        BillSession bs = new BillSession();
-        bs.setAbsent(false);
-        bs.setBill(savingBill);
-        bs.setBillItem(savingBillItem);
-        bs.setCreatedAt(new Date());
-        bs.setDepartment(getSelectedSessionInstance().getOriginatingSession().getDepartment());
-        bs.setInstitution(getSelectedSessionInstance().getOriginatingSession().getInstitution());
-        bs.setItem(getSelectedSessionInstance().getOriginatingSession());
-        bs.setSessionInstance(getSelectedSessionInstance());
-        bs.setSessionDate(getSelectedSessionInstance().getSessionDate());
-        bs.setSessionTime(getSelectedSessionInstance().getSessionTime());
-        bs.setStaff(getSelectedSessionInstance().getStaff());
-
-        List<Integer> reservedNumbers = CommonFunctions.convertStringToIntegerList(getSelectedSessionInstance().getOriginatingSession().getReserveNumbers());
-        Integer count;
-
-        try (SessionBookingLock.Hold hold = SessionBookingLock.acquire(getSelectedSessionInstance())) {
-            count = clinicService.getNextNonReservedSerialNumber(getSelectedSessionInstance(), reservedNumbers, false);
-
-            if (count != null) {
-                bs.setSerialNo(count);
-            } else {
-                bs.setSerialNo(1);
-            }
-
-            getBillSessionFacade().create(bs);
-        }
-
         List<BillFee> savingBillFees = new ArrayList<>();
 
         List<BillFee> savingBillFeesFromSession = createBillFeeForSessionsForPatientPortal(savingBill, savingBillItem, false);
