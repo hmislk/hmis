@@ -7754,7 +7754,14 @@ public class BookingControllerViewScopeMonth implements Serializable {
         if (patient.getPerson().getId() == null) {
             patient.getPerson().setCreatedAt(new Date());
             patient.getPerson().setCreater(sessionController.getLoggedUser());
-            personFacade.create(patient.getPerson());
+            if (patient.getId() != null) {
+                // Existing patient: the patient is merged below, which cascades a merge, so a
+                // brand-new person still has to be persisted here.
+                personFacade.create(patient.getPerson());
+            }
+            // New patient: the person is persisted by the cascade from Patient.person
+            // (cascade = ALL) in patientFacade.create below. Persisting it here too leaves an
+            // unreferenced duplicate PERSON row (#23900).
         } else {
             personFacade.edit(patient.getPerson());
         }

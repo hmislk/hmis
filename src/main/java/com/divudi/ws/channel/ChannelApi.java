@@ -3324,7 +3324,8 @@ public class ChannelApi {
         p.setPerson(new Person());
         p.getPerson().setName(name);
         p.getPerson().setPhone(phone.substring(0, 3) + "-" + phone.substring(3, 10));
-        getPersonFacade().create(p.getPerson());
+        // The person is persisted by the cascade from Patient.person (cascade = ALL);
+        // persisting it separately leaves an unreferenced duplicate PERSON row (#23900).
         bill.setPatient(p);
         getPatientFacade().create(p);
 
