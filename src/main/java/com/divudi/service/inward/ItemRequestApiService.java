@@ -271,7 +271,7 @@ public class ItemRequestApiService implements Serializable {
         Bill requestBill = fetchRequestBillOrThrow(requestBillId);
         assertRequestBelongsToDepartment(requestBill, rejectingDepartment, "reject");
         if (requestBill.isCancelled()) {
-            throw new IllegalStateException("Request is cancelled, cannot reject lines");
+            throw new ItemRequestException("Request is cancelled, cannot reject lines");
         }
 
         for (BillItem line : linesToReject) {
@@ -313,7 +313,7 @@ public class ItemRequestApiService implements Serializable {
         if (actingDepartment == null || actingDepartment.getId() == null
                 || requestBill.getToDepartment() == null
                 || !actingDepartment.getId().equals(requestBill.getToDepartment().getId())) {
-            throw new IllegalStateException("Request belongs to another department's queue, cannot " + action);
+            throw new ItemRequestException("Request belongs to another department's queue, cannot " + action);
         }
     }
 
