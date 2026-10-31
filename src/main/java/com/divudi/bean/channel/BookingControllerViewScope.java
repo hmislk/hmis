@@ -6166,17 +6166,22 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 
         // A session with no counted bill (e.g. only pending online bills) has no result row; clear stale stored counts
         for (SessionInstance sessionInstance : sessionInstanceMap.values()) {
-            // Re-check just before writing, so a booking saved after the aggregate query is not overwritten with zero
-            if (hasNonZeroBookingCount(sessionInstance) && countCountedBillSessions(sessionInstance) == 0) {
-                sessionInstance.setBookedPatientCount(0L);
-                sessionInstance.setPaidPatientCount(0L);
-                sessionInstance.setCompletedPatientCount(0L);
-                sessionInstance.setCancelPatientCount(0L);
-                sessionInstance.setRefundedPatientCount(0L);
-                sessionInstance.setOnCallPatientCount(0L);
-                sessionInstance.setReservedBookingCount(0L);
-                sessionInstance.setRemainingPatientCount(0L);
-                sessionInstanceController.save(sessionInstance);
+            if (!hasNonZeroBookingCount(sessionInstance)) {
+                continue;
+            }
+            // Re-check and write under the booking lock, so a booking cannot commit between the count and the zero save
+            try (SessionBookingLock.Hold hold = SessionBookingLock.acquire(sessionInstance)) {
+                if (countCountedBillSessions(sessionInstance) == 0) {
+                    sessionInstance.setBookedPatientCount(0L);
+                    sessionInstance.setPaidPatientCount(0L);
+                    sessionInstance.setCompletedPatientCount(0L);
+                    sessionInstance.setCancelPatientCount(0L);
+                    sessionInstance.setRefundedPatientCount(0L);
+                    sessionInstance.setOnCallPatientCount(0L);
+                    sessionInstance.setReservedBookingCount(0L);
+                    sessionInstance.setRemainingPatientCount(0L);
+                    sessionInstanceController.save(sessionInstance);
+                }
             }
         }
     }
