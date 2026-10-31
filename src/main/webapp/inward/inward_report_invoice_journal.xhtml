@@ -432,6 +432,20 @@
                             </p:column>
 
                             <!-- ===== Net total of charges (gross - discount + service charge) ===== -->
+                            <!-- ===== Adjustment typed on the final bill; part of Net Total, so not tied to a column option ===== -->
+                            <p:column headerText="Final Bill Adjustment"
+                                      style="text-align:right; white-space:nowrap;"
+                                      rendered="#{inwardInvoiceJournalController.anyAdjustment}">
+                                <h:outputText value="#{row.adjustment}">
+                                    <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
+                                </h:outputText>
+                                <f:facet name="footer">
+                                    <h:outputText value="#{inwardInvoiceJournalController.grandTotalAdjustment}">
+                                        <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
+                                    </h:outputText>
+                                </f:facet>
+                            </p:column>
+
                             <p:column headerText="Net Total"
                                       style="text-align:right; white-space:nowrap; font-weight:bold;">
                                 <h:outputText value="#{row.grandTotal}">
@@ -528,6 +542,13 @@
                                         <ui:fragment rendered="#{inwardInvoiceJournalController.grandTotalBillLevelDiscount ne 0}">
                                             <h:outputText value="Grand Total Bill Level Discount: " styleClass="fw-bold" />
                                             <h:outputText value="#{inwardInvoiceJournalController.grandTotalBillLevelDiscount}">
+                                                <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
+                                            </h:outputText>
+                                            &#160;&#160;&#160;
+                                        </ui:fragment>
+                                        <ui:fragment rendered="#{inwardInvoiceJournalController.anyAdjustment}">
+                                            <h:outputText value="Grand Total Final Bill Adjustment: " styleClass="fw-bold" />
+                                            <h:outputText value="#{inwardInvoiceJournalController.grandTotalAdjustment}">
                                                 <f:convertNumber minFractionDigits="2" maxFractionDigits="2" />
                                             </h:outputText>
                                             &#160;&#160;&#160;
