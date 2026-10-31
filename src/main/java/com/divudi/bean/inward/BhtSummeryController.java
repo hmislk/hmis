@@ -3705,25 +3705,32 @@ public class BhtSummeryController implements Serializable {
             return;
         }
 
-        if (isFinalizedInDatabase()) {
+        Map<String, Object> before = new LinkedHashMap<>();
+        // Under the lock, so a final bill can't be saved while the discharge is cancelled.
+        boolean cancelled = getBillNumberBean().withFinalBillVersionLock(getPatientEncounter(), () -> {
+            if (isFinalizedInDatabase()) {
+                return false;
+            }
+
+            if (getPatientEncounter().getCurrentPatientRoom() != null) {
+                if (getPatientEncounter().getCurrentPatientRoom().getDischargedAt() == getPatientEncounter().getDateOfDischarge()) {
+                    getPatientEncounter().getCurrentPatientRoom().setDischargedAt(null);
+                    getPatientRoomFacade().edit(getPatientEncounter().getCurrentPatientRoom());
+                }
+            }
+
+            before.put("discharged", patientEncounter.isDischarged());
+            before.put("dateOfDischarge", patientEncounter.getDateOfDischarge());
+
+            patientEncounter.setDischarged(false);
+            patientEncounter.setDateOfDischarge(null);
+            getPatientEncounterFacade().edit(patientEncounter);
+            return true;
+        });
+        if (!cancelled) {
             JsfUtil.addErrorMessage("Cancel all final bills before cancelling the discharge.");
             return;
         }
-
-        if (getPatientEncounter().getCurrentPatientRoom() != null) {
-            if (getPatientEncounter().getCurrentPatientRoom().getDischargedAt() == getPatientEncounter().getDateOfDischarge()) {
-                getPatientEncounter().getCurrentPatientRoom().setDischargedAt(null);
-                getPatientRoomFacade().edit(getPatientEncounter().getCurrentPatientRoom());
-            }
-        }
-
-        Map<String, Object> before = new LinkedHashMap<>();
-        before.put("discharged", patientEncounter.isDischarged());
-        before.put("dateOfDischarge", patientEncounter.getDateOfDischarge());
-
-        patientEncounter.setDischarged(false);
-        patientEncounter.setDateOfDischarge(null);
-        getPatientEncounterFacade().edit(patientEncounter);
 
         Map<String, Object> after = new LinkedHashMap<>();
         after.put("discharged", patientEncounter.isDischarged());
