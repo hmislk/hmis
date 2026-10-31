@@ -2223,7 +2223,8 @@ public class ChannelBillController implements Serializable {
                 getNewPatient().getPerson().setCreater(getSessionController().getLoggedUser());
                 getNewPatient().getPerson().setCreatedAt(new Date());
                 getNewPatient().setRegistrationSource(resolveRegistrationSource());
-                getPersonFacade().create(getNewPatient().getPerson());
+                // The person is persisted by the cascade from Patient.person (cascade = ALL);
+                // persisting it separately leaves an unreferenced duplicate PERSON row (#23900).
                 getPatientFacade().create(getNewPatient());
                 break;
             case "tabSearchPt":

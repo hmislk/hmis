@@ -2062,10 +2062,13 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             person.setCreatedAt(Calendar.getInstance().getTime());
             person.setCreater(getSessionController().getLoggedUser());
 
-            if (person.getId() == null) {
-                getPersonFacade().create(person);
-            } else {
+            if (person.getId() != null) {
                 getPersonFacade().edit(person);
+            } else if (getPatient().getId() != null) {
+                // Existing patient: the patient is merged below, so a new person is persisted here.
+                // For a new patient, Patient.person is cascade = ALL and the patient's create saves
+                // the person; persisting it here as well wrote a second PERSON row (#23900).
+                getPersonFacade().create(person);
             }
         }
 
@@ -2850,7 +2853,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             return;
         }
         Person p = new Person();
-        getPersonFacade().create(p);
+        // Saved by the patient's create below (Patient.person is cascade = ALL, #23900).
         Patient pt = new Patient();
         patientDetailsEditable = true;
         pt.setPerson(p);

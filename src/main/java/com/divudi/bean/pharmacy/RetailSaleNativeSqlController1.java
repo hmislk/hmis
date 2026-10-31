@@ -559,9 +559,8 @@ public class RetailSaleNativeSqlController1 implements Serializable, ControllerW
                 patient.setPhoneNumberStringTransient(patient.getPhoneNumberStringTransient());
             }
             if (patient.getId() == null) {
-                if (patient.getPerson() != null) {
-                    personFacade.create(patient.getPerson());
-                }
+                // Patient.person is cascade = ALL, so creating the patient also saves its person.
+                // Persisting the person separately wrote a second, unreferenced PERSON row (#23900).
                 patientFacade.create(patient);
             } else {
                 if (patient.getPerson() != null) {

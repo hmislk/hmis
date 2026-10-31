@@ -1960,7 +1960,7 @@ public class DataUploadController implements Serializable {
                 patients = readPatientDataFromExcel(inputStream);
                 int i = 0;
                 for (Patient p : patients) {
-                    personFacade.create(p.getPerson());
+                    // Patient.person is cascade = ALL, so this also saves the person (#23900).
                     patientFacade.create(p);
                     i++;
                 }
