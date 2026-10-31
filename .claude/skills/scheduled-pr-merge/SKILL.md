@@ -10,9 +10,16 @@ description: >
 
 # Scheduled PR Merge
 
-A **cron** job merges the PR within the agreed window, by default 30
-minutes from the start time. It does not need a Claude session, only this
-machine on with cron running.
+A scheduled job merges the PR within the agreed window, by default 30
+minutes from the start time. It does not need a Claude session.
+
+| Machine | Scheduler | Needs |
+|---|---|---|
+| Linux | cron, `schedule.sh` | Machine on, cron running |
+| Windows (no cron) | Task Scheduler, `schedule.ps1` | Machine on, **this user logged on** |
+
+Check with `command -v crontab`. Both follow the rules below; the steps give
+the Linux commands, and [On Windows](#on-windows) gives the differences.
 
 The merge is essential, so the job keeps trying. Cron starts it every minute
 of the window, and anything temporary is retried the next minute. A start
@@ -103,12 +110,32 @@ so without that the job would fire again next year.
    mirror the change into `development` unless it was cherry-picked from
    there.
 
+## On Windows
+
+Run these from PowerShell in the repo. They replace `schedule.sh` in the steps
+above, and the rest of the workflow is the same.
+
+```powershell
+.claude\skills\scheduled-pr-merge\schedule.ps1 test -Repo hmislk/hmis -Pr <N>
+.claude\skills\scheduled-pr-merge\schedule.ps1 add -Repo hmislk/hmis -Pr <N> -At "2026-10-05 03:00" -WindowMinutes 30
+.claude\skills\scheduled-pr-merge\schedule.ps1 list
+.claude\skills\scheduled-pr-merge\schedule.ps1 cancel -TaskName <task-name>
+```
+
+- **Token:** skip step 2. The task runs as the logged-on user, so `gh` uses its normal login.
+- **Task name:** `<owner>-<repo>-pr<N>`, e.g. `hmislk-hmis-pr24958`.
+- **Runner:** `add` copies `scheduled-merge.ps1` to `~/.local/share/hmis-scheduled-merge/`, and the task runs from there.
+- **Rescheduling:** `add` refuses if a task for that PR exists. Cancel it first.
+- **Logged off:** the task only runs while the user is logged on. A logon that comes after the window ends gives up with a PR comment.
+- **Log:** `%USERPROFILE%\.local\state\hmis-scheduled-merge\pr-<N>.log`.
+
 ## Common mistakes
 
 | Mistake | Fix |
 |---|---|
 | Scheduling before the last fix is pushed | The job aborts because the head changed. Push first, then `add`. |
 | `systemd-run --user` timer or `at` | A user timer dies at logout without linger, and `at` isn't installed. Use cron. |
+| Running `schedule.sh` on Windows | There is no cron. Use `schedule.ps1`. |
 | Relying on the keyring | Cron gets HTTP 401. Use the token file. |
 | Time given without a zone | `--at` is read in the machine's zone (Asia/Colombo). Repeat the window back with its zone. |
 | Window ends too early | Give the full customer window with `--window-minutes`. The job never merges after it ends. |
