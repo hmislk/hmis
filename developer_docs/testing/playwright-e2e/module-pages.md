@@ -781,3 +781,9 @@ To mark a channel booking completed, go to *Channelling → Channel Booking - By
 The By Dates *Search* box keeps its session-scoped text, so `fill('')` it before typing, or the filter becomes `RoshanRoshan` and hides every session.
 By Dates lists only ongoing/pending sessions by default; after **Complete Session**, click the **Completed** button to see the session again (its **Pay Session** button appears only on a completed session).
 Staff autocompletes (Pay Doctor etc.) can list two staff with the same name. Check `STAFF`/`PERSON` for duplicates first and pick the suggestion whose dues match the DB, not the first one.
+
+## 177. Patient Admit form: click Admission Type to enable Room No; the patient Title needs the hidden select
+
+- *Inpatient → Admissions → Patient Admit*: **Room No** (`cmbDoc`) stays disabled until **Admission Type** (`lstSelect`) is picked with a real click on the menu and its item. Setting the widget value doesn't fire the ajax that enables it. For a free room, see §111.
+- The patient **Title** (`…:cmbTitle`, inside the patient panel) has no clickable item list in a script. Set `option.selected` on its hidden `select`, call the widget's `selectValue`, and dispatch `change`. Option texts have a dot (`Mr.`).
+- **Admit** also needs Gender, Address, Consultant, Medical Officer and Payment Method.
