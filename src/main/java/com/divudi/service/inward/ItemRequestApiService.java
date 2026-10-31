@@ -142,7 +142,7 @@ public class ItemRequestApiService implements Serializable {
         requestBill.setCreatedAt(new Date());
         requestBill.setCreater(apiUser);
 
-        String deptId = billNumberBean.departmentBillNumberGeneratorYearly(targetDepartment, BillTypeAtomic.INWARD_SERVICE_ITEM_REQUEST);
+        String deptId = billNumberBean.departmentBillNumberGeneratorYearlyInNewTransaction(targetDepartment, BillTypeAtomic.INWARD_SERVICE_ITEM_REQUEST);
         requestBill.setDeptId(deptId);
         requestBill.setInsId(deptId);
 
