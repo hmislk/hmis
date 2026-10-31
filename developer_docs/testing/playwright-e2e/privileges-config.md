@@ -17,6 +17,7 @@ Part of the [Playwright E2E Workflow](../playwright-e2e-workflow.md). Read only 
 - [124. A report's menu button can be privilege-gated per the *session department*, not the department whose data the report covers — switch department, not the report's own filter](#124-a-reports-menu-button-can-be-privilege-gated-per-the-session-department-not-the-department-whose-data-the-report-covers--switch-department-not-the-reports-own-filter)
 - [135. A brand-new `Privileges` enum value is invisible in Manage Users → Manage Privileges until it's also registered in `UserPrivilageController`'s hand-built tree — and a mid-session grant needs a fresh login to take effect](#135-a-brand-new-privileges-enum-value-is-invisible-in-manage-users--manage-privileges-until-its-also-registered-in-userprivilagecontrollers-hand-built-tree--and-a-mid-session-grant-needs-a-fresh-login-to-take-effect)
 - [138. Menu shows only Home and Request Manager after login on an older branch](#138-menu-shows-only-home-and-request-manager-after-login-on-an-older-branch)
+- [174. Edit Option dialog: read the switch state from `aria-label` (On/Off), not `aria-checked`](#174-edit-option-dialog-read-the-switch-state-from-aria-label-onoff-not-aria-checked)
 
 ---
 
@@ -458,3 +459,8 @@ To make them grantable in the UI, also wire them into `UserPrivilageController` 
 ## 162. Local test user: grant the page's privileges for the session department, and expect hidden errors
 
 A page opens only if the logged-in user holds its privilege for the department selected at login (§20, §124), so before testing a page, check the user's `Privileges` rows for that department and insert any that are missing (local DB only), then log in again (§135). Likewise set any `ConfigOption` the flow depends on (§107). Some pages have no `p:messages`/`p:growl`, so a failed action looks like a no-op; read `server.log` and the DB instead of the screen.
+
+## 174. Edit Option dialog: read the switch state from `aria-label` (On/Off), not `aria-checked`
+
+In the Application Options **Edit Option** dialog, the boolean switch's hidden checkbox has `aria-checked="aria-checked"` whether it is on or off, so `getAttribute('aria-checked') === 'true'` is never true and a "turn it off if on" script silently saves the old value. Read `aria-label` (`On`/`Off`) or the `checked` property, click `.ui-toggleswitch-slider`, then confirm Yes/No in the list row after **Save**.
+On *Manage Institutions*, wait for `networkidle` plus about 1 s before clicking **Preferences**. An early click is ignored, and the **Application Options** button never appears.
