@@ -1388,16 +1388,14 @@ public class BookingControllerViewScopeMonth implements Serializable {
             e.setSendingMessage(smsBody(methodBillSession));
             e.setDepartment(getSessionController().getLoggedUser().getDepartment());
             e.setInstitution(getSessionController().getLoggedUser().getInstitution());
-            e.setPending(false);
+            e.setPending(true);
             getSmsFacade().create(e);
 
-            Boolean sent = smsManager.sendSms(e);
-            e.setSentSuccessfully(sent);
-            getSmsFacade().edit(e);
+            // Sent after this request returns, so the settle does not wait for the SMS gateway (#24970)
+            smsManager.sendSavedSmsAsync(e.getId());
 
         }
 
-        JsfUtil.addSuccessMessage("SMS Sent");
     }
 
     public String smsBody(BillSession r) {
@@ -3118,18 +3116,11 @@ public class BookingControllerViewScopeMonth implements Serializable {
         e.setSendingMessage(createChanellBookingSms(printingBill));
         e.setDepartment(getSessionController().getLoggedUser().getDepartment());
         e.setInstitution(getSessionController().getLoggedUser().getInstitution());
-        e.setPending(false);
+        e.setPending(true);
         e.setSmsType(MessageType.ChannelBooking);
         getSmsFacade().create(e);
-        Boolean sent = smsManager.sendSms(e);
-        e.setSentSuccessfully(sent);
-        getSmsFacade().edit(e);
-
-        if (sent) {
-            JsfUtil.addSuccessMessage("SMS Sent");
-        } else {
-            JsfUtil.addSuccessMessage("SMS Failed");
-        }
+        // Sent after this request returns, so the settle does not wait for the SMS gateway (#24970)
+        smsManager.sendSavedSmsAsync(e.getId());
 
     }
 
