@@ -946,11 +946,16 @@ public class InwardSearch implements Serializable {
             JsfUtil.addErrorMessage("Cannot retire the only remaining final bill version");
             return;
         }
+        if (hasPaidCreditCompanyBill(b)) {
+            JsfUtil.addErrorMessage("Cannot retire: a credit company has paid against this final bill version");
+            return;
+        }
 
         b.setRetired(true);
         b.setRetirer(sessionController.getLoggedUser());
         b.setRetiredAt(new Date());
         getBillFacade().edit(b);
+        retireCreditCompanyBills(b);
 
         auditService.logEncounterAudit(b.getPatientEncounter(), "Final Bill Version Retired",
                 b.getId(), null, sessionController.getLoggedUser(),
@@ -958,6 +963,38 @@ public class InwardSearch implements Serializable {
 
         JsfUtil.addSuccessMessage("Final Bill Version Retired");
         finalBillVersions = null;
+    }
+
+    private List<Bill> fetchCreditCompanyBills(Bill finalBill) {
+        String jpql = "select b from Bill b where b.referenceBill.id = :billId and b.billTypeAtomic = :bta"
+                + " and b.retired = false and (b.cancelled = false or b.cancelled is null)";
+        Map<String, Object> params = new HashMap<>();
+        params.put("billId", finalBill.getId());
+        params.put("bta", BillTypeAtomic.INWARD_FINAL_BILL_PAYMENT_BY_CREDIT_COMPANY);
+        return getBillFacade().findByJpql(jpql, params);
+    }
+
+    private boolean hasPaidCreditCompanyBill(Bill finalBill) {
+        for (Bill ccBill : fetchCreditCompanyBills(finalBill)) {
+            if (Math.abs(ccBill.getPaidAmount()) > 0.005) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * A retired or cancelled final bill version no longer claims anything from
+     * the credit company, so its commitment bills must not stay selectable for
+     * settlement or be listed by reports that do not check the version.
+     */
+    private void retireCreditCompanyBills(Bill finalBill) {
+        for (Bill ccBill : fetchCreditCompanyBills(finalBill)) {
+            ccBill.setRetired(true);
+            ccBill.setRetirer(sessionController.getLoggedUser());
+            ccBill.setRetiredAt(new Date());
+            getBillFacade().edit(ccBill);
+        }
     }
 
     private String emailRecipient;
@@ -2152,6 +2189,11 @@ public class InwardSearch implements Serializable {
                 return;
             }
 
+            if (hasPaidCreditCompanyBill(getBill())) {
+                JsfUtil.addErrorMessage("Cannot cancel: a credit company has paid against this final bill");
+                return;
+            }
+
             boolean wasConfirmedFinalBill = getBill().isConfirmedFinalBill();
 
             CancelledBill cb = createCancelBill();
@@ -2164,6 +2206,7 @@ public class InwardSearch implements Serializable {
             getBill().setCancelledBill(cb);
             getBill().setConfirmedFinalBill(false);
             getBillFacade().edit((BilledBill) getBill());
+            retireCreditCompanyBills(getBill());
 
             // Only the cancellation of the *confirmed* version affects the encounter's
             // totals/paymentFinalized/finalBill — cancelling an already-superseded,
