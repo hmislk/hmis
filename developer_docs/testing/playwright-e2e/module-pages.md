@@ -786,4 +786,4 @@ Staff autocompletes (Pay Doctor etc.) can list two staff with the same name. Che
 
 - *Inpatient → Admissions → Patient Admit*: **Room No** (`cmbDoc`) stays disabled until **Admission Type** (`lstSelect`) is picked with a real click on the menu and its item. Setting the widget value doesn't fire the ajax that enables it. For a free room, see §111.
 - The patient **Title** (`…:cmbTitle`, inside the patient panel) has no clickable item list in a script. Set `option.selected` on its hidden `select`, call the widget's `selectValue`, and dispatch `change`. Option texts have a dot (`Mr.`).
-- **Admit** also needs Gender, Address, Consultant, Medical Officer and Payment Method.
+- **Admit** needs Consultant, Medical Officer and Payment Method. When `Patient Details Required in Patient Admission` is on, it also checks each enabled patient-detail option (Title, Gender, Address, etc.); the error growl names the missing one. Rapid/Temp A&E admissions skip these patient checks.

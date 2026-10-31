@@ -655,4 +655,4 @@ Pages with a ⭐ Favorites tab (e.g. *Inpatient Analytics*) render every favouri
 
 ## 176. Selecting the login department in a script: set the PrimeFaces widget, not the list item
 
-On the "Select Department" screen, clicking a list item by text or typing in the filter often times out. Pick it through the widget, then click **Select**: find the `option` in `select[id$='formDept'] select` whose text is the department name, and call `selectValue(option.value)` on the matching `PrimeFaces.widgets` entry.
+On the "Select Department" screen, clicking a list item by text or typing in the filter often times out. Pick it through the widget, then click **Select**: find the `option` in `form[id$='formDept'] select` whose text is the department name, and call `selectValue(option.value)` on the matching `PrimeFaces.widgets` entry.
