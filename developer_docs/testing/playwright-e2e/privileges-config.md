@@ -464,3 +464,8 @@ A page opens only if the logged-in user holds its privilege for the department s
 
 In the Application Options **Edit Option** dialog, the boolean switch's hidden checkbox has `aria-checked="aria-checked"` whether it is on or off, so `getAttribute('aria-checked') === 'true'` is never true and a "turn it off if on" script silently saves the old value. Read `aria-label` (`On`/`Off`) or the `checked` property, click `.ui-toggleswitch-slider`, then confirm Yes/No in the list row after **Save**.
 On *Manage Institutions*, wait for `networkidle` plus about 1 s before clicking **Preferences**. An early click is ignored, and the **Application Options** button never appears.
+
+## 175. A row changed by SQL keeps showing its old value: clear the cache from Admin Functions
+
+An `UPDATE` to a row the app has already loaded is hidden by the EclipseLink shared cache (§26), and a recount that matches the cached value writes nothing. Instead of a redeploy, go to *Administration → Manage Metadata → System Administrator Functions → Admin Functions → Clear JPA Shared Cache* (Admin privilege), then reload the page. The *Manage Metadata* menu item is not reachable by hover, so trigger it with `dispatch_event("click")` on its `<a>`.
+*Channel Booking - By Dates* loads at most 30 sessions (option `Maximum Number of Sessions to Load during channel booking by dates page.`), so a fixture on a session outside those 30 is never recounted. Pick one from the list the page shows.
