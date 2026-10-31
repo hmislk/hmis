@@ -1226,6 +1226,7 @@ public class InwardSearch implements Serializable {
             cancelBillItems(cb);
             getBill().setCancelled(true);
             getBill().setCancelledBill(cb);
+            getBill().setConfirmedFinalBill(false);
             getBillFacade().edit((BilledBill) getBill());
 
             getBill().getPatientEncounter().setGrantTotal(0);

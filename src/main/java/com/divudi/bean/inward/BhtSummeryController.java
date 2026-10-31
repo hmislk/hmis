@@ -1359,6 +1359,9 @@ public class BhtSummeryController implements Serializable {
         getPatientEncounter().setPaymentFinalized(true);
         getPatientEncounterFacade().edit(getPatientEncounter());
         getCurrent().setReferenceBill(originalBill);
+        // rmh-staging shares this database and reads only confirmed final bills.
+        getCurrent().setConfirmedFinalBill(true);
+        getCurrent().setFinalBillVersionSerial(1);
         getBillFacade().edit(getCurrent());
 
         updatePaymentBillList();
@@ -1452,6 +1455,9 @@ public class BhtSummeryController implements Serializable {
         getPatientEncounter().setPaymentFinalized(true);
         getPatientEncounterFacade().edit(getPatientEncounter());
         getCurrent().setReferenceBill(originalBill);
+        // rmh-staging shares this database and reads only confirmed final bills.
+        getCurrent().setConfirmedFinalBill(true);
+        getCurrent().setFinalBillVersionSerial(1);
         getBillFacade().edit(getCurrent());
 
         updatePaymentBillList();

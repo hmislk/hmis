@@ -193,6 +193,8 @@ public class Bill implements Serializable, RetirableEntity {
 
     private double billTotal;
     private double paidAmount;
+    private Integer finalBillVersionSerial;
+    private boolean confirmedFinalBill;
     private double settledAmountByPatient;
     private double settledAmountBySponsor;
     private double refundAmount;
@@ -1695,6 +1697,22 @@ public class Bill implements Serializable, RetirableEntity {
     public void calGrnNetTotal() {
         this.grnNetTotal = total + tax + discount;
 
+    }
+
+    public Integer getFinalBillVersionSerial() {
+        return finalBillVersionSerial;
+    }
+
+    public void setFinalBillVersionSerial(Integer finalBillVersionSerial) {
+        this.finalBillVersionSerial = finalBillVersionSerial;
+    }
+
+    public boolean isConfirmedFinalBill() {
+        return confirmedFinalBill;
+    }
+
+    public void setConfirmedFinalBill(boolean confirmedFinalBill) {
+        this.confirmedFinalBill = confirmedFinalBill;
     }
 
     public double getPaidAmount() {
