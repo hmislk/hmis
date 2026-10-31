@@ -951,11 +951,14 @@ public class InwardSearch implements Serializable {
             return;
         }
 
+        // Before the bill itself: a retired bill can't be retired again, so a
+        // failure here would otherwise leave credit bills active with no retry.
+        retireCreditCompanyBills(b);
+
         b.setRetired(true);
         b.setRetirer(sessionController.getLoggedUser());
         b.setRetiredAt(new Date());
         getBillFacade().edit(b);
-        retireCreditCompanyBills(b);
 
         auditService.logEncounterAudit(b.getPatientEncounter(), "Final Bill Version Retired",
                 b.getId(), null, sessionController.getLoggedUser(),
@@ -2196,6 +2199,8 @@ public class InwardSearch implements Serializable {
 
             boolean wasConfirmedFinalBill = getBill().isConfirmedFinalBill();
 
+            retireCreditCompanyBills(getBill());
+
             CancelledBill cb = createCancelBill();
             //Copy & paste
             if (cb.getId() == null) {
@@ -2206,7 +2211,6 @@ public class InwardSearch implements Serializable {
             getBill().setCancelledBill(cb);
             getBill().setConfirmedFinalBill(false);
             getBillFacade().edit((BilledBill) getBill());
-            retireCreditCompanyBills(getBill());
 
             // Only the cancellation of the *confirmed* version affects the encounter's
             // totals/paymentFinalized/finalBill — cancelling an already-superseded,
