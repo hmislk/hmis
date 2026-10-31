@@ -446,7 +446,7 @@ public class PharmacyAdjustmentApiService implements Serializable {
         bill.setCreatedAt(Calendar.getInstance().getTime());
         bill.setCreater(user);
 
-        String deptId = billNumberGenerator.departmentBillNumberGeneratorYearly(department, BillTypeAtomic.PHARMACY_STOCK_ADJUSTMENT);
+        String deptId = billNumberGenerator.departmentBillNumberGeneratorYearlyInNewTransaction(department, BillTypeAtomic.PHARMACY_STOCK_ADJUSTMENT);
         bill.setDeptId(deptId);
         bill.setInsId(deptId);
         bill.setBillType(BillType.PharmacyAdjustmentDepartmentStock);
@@ -469,7 +469,7 @@ public class PharmacyAdjustmentApiService implements Serializable {
         bill.setCreatedAt(Calendar.getInstance().getTime());
         bill.setCreater(user);
 
-        String deptId = billNumberGenerator.departmentBillNumberGeneratorYearly(department, BillTypeAtomic.PHARMACY_RETAIL_RATE_ADJUSTMENT);
+        String deptId = billNumberGenerator.departmentBillNumberGeneratorYearlyInNewTransaction(department, BillTypeAtomic.PHARMACY_RETAIL_RATE_ADJUSTMENT);
         bill.setDeptId(deptId);
         bill.setInsId(deptId);
         bill.setBillType(BillType.PharmacyAdjustmentSaleRate);
@@ -492,7 +492,7 @@ public class PharmacyAdjustmentApiService implements Serializable {
         bill.setCreatedAt(Calendar.getInstance().getTime());
         bill.setCreater(user);
 
-        String deptId = billNumberGenerator.departmentBillNumberGeneratorYearly(department, BillTypeAtomic.PHARMACY_STOCK_EXPIRY_DATE_AJUSTMENT);
+        String deptId = billNumberGenerator.departmentBillNumberGeneratorYearlyInNewTransaction(department, BillTypeAtomic.PHARMACY_STOCK_EXPIRY_DATE_AJUSTMENT);
         bill.setDeptId(deptId);
         bill.setInsId(deptId);
         bill.setBillType(BillType.PharmacyAdjustmentExpiryDate);
@@ -515,7 +515,7 @@ public class PharmacyAdjustmentApiService implements Serializable {
         bill.setCreatedAt(Calendar.getInstance().getTime());
         bill.setCreater(user);
 
-        String deptId = billNumberGenerator.departmentBillNumberGeneratorYearly(department, BillTypeAtomic.PHARMACY_PURCHASE_RATE_ADJUSTMENT);
+        String deptId = billNumberGenerator.departmentBillNumberGeneratorYearlyInNewTransaction(department, BillTypeAtomic.PHARMACY_PURCHASE_RATE_ADJUSTMENT);
         bill.setDeptId(deptId);
         bill.setInsId(deptId);
         bill.setBillType(BillType.PharmacyAdjustmentPurchaseRate);
