@@ -1462,8 +1462,8 @@ public class ChannelApi {
 
         try {
             agencyCharge = Double.parseDouble(agentChargeString);
-            if (!Double.isFinite(agencyCharge)) {
-                throw new NumberFormatException("price is not a finite number");
+            if (!Double.isFinite(agencyCharge) || agencyCharge < 0) {
+                throw new NumberFormatException("price is not a finite, non-negative number");
             }
         } catch (Exception e) {
             JSONObject response = commonFunctionToErrorResponse("There is a error in the payment amount. Please check price field.");
@@ -1566,7 +1566,7 @@ public class ChannelApi {
 
         sessionDetails.put("hosId", completedBill.getToInstitution().getId());
         sessionDetails.put("docname", session.getStaff().getPerson().getNameWithTitle());
-        sessionDetails.put("amount", completedBill.getNetTotal() + agencyCharge);
+        sessionDetails.put("amount", CommonFunctions.roundToTwoDecimals(completedBill.getNetTotal() + agencyCharge));
         sessionDetails.put("hosAmount", completedBill.getHospitalFee());
         sessionDetails.put("docAmount", completedBill.getStaffFee());
         sessionDetails.put("specialization", i.getStaff().getSpeciality().getName());
@@ -1589,7 +1589,7 @@ public class ChannelApi {
         patientDetails.put("nid", bookingDetails.getNic());
 
         Map<String, Object> priceDetails = new HashMap<>();
-        priceDetails.put("totalAmount", completedBill.getNetTotal() + agencyCharge);
+        priceDetails.put("totalAmount", CommonFunctions.roundToTwoDecimals(completedBill.getNetTotal() + agencyCharge));
         priceDetails.put("docCharge", completedBill.getStaffFee());
         priceDetails.put("hosCharge", completedBill.getHospitalFee());
 

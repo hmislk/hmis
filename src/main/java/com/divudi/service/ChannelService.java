@@ -3174,7 +3174,7 @@ public class ChannelService {
         bookingDetails.setOnlineBookingPayment(agencyCharge);
         bookingDetails.setHospitalFee(paidBill.getHospitalFee());
         bookingDetails.setDoctorFee(paidBill.getStaffFee());
-        bookingDetails.setNetTotalForOnlineBooking(paidBill.getNetTotal() + agencyCharge);
+        bookingDetails.setNetTotalForOnlineBooking(CommonFunctions.roundToTwoDecimals(paidBill.getNetTotal() + agencyCharge));
         bookingDetails.setOnlineBookingStatus(OnlineBookingStatus.ACTIVE);
         bookingDetails.setAppoinmentTotalAmount(paidBill.getNetTotal());
 

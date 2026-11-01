@@ -468,7 +468,7 @@ Finalizes a temporary booking, converting it to a paid confirmed appointment.
 |-----------------------|--------|----------|-------------------------------------------|
 | refNo                 | String | Yes      | Client reference number from `/save`      |
 | statusId              | Integer| Yes      | Must be `1` (success); `0` = failure      |
-| price                 | String | Yes      | The agency's own charge as a string (e.g., `"299.00"`), **not** the session fee. It is added on top of the session fees; send `"0"` if there is none. |
+| price                 | String | Yes      | The agency's own charge as a string (e.g., `"299.00"`), **not** the session fee. It is added on top of the session fees; send `"0"` if there is none. A negative or non-numeric value is rejected. |
 | payment.paymentChannel| String | Yes      | Booking agent code                        |
 | payment.paymentMode   | String | No       | Booking agent name                        |
 
