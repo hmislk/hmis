@@ -3032,6 +3032,7 @@ public class OpdBatchBillCancellationController implements Serializable, Control
         individualCancelltionBill.setDepartment(getSessionController().getDepartment());
         individualCancelltionBill.setInstitution(getSessionController().getInstitution());
         individualCancelltionBill.setForwardReferenceBill(cancellationBatchBill);
+        individualCancelltionBill.setReferenceBill(originalBill);
         individualCancelltionBill.setComments(comment);
         billService.saveBill(individualCancelltionBill);
 
