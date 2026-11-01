@@ -132,6 +132,7 @@ public class CreditSummeryController implements Serializable {
         sql = "select distinct(bi.item.department) "
                 + " FROM BillItem bi "
                 + " where  bi.bill.billType= :bTp "
+                + " and bi.bill.retired=false "
                 + " and  bi.bill.createdAt between :fromDate and :toDate "
                 + " and bi.bill.paymentMethod = :pm ";
 
@@ -162,6 +163,7 @@ public class CreditSummeryController implements Serializable {
             return new ArrayList<>();
         }
         sql = "select distinct(bi.item.category) FROM BillItem bi where bi.bill.billType= :bTp "
+                + " and bi.bill.retired=false "
                 + " and bi.item.department=:dep and  bi.bill.createdAt between :fromDate and :toDate "
                 + " and bi.bill.paymentMethod = :pm ";
         temMap.put("toDate", getToDate());
@@ -194,6 +196,7 @@ public class CreditSummeryController implements Serializable {
         }
         sql = "select distinct(bi.item) FROM BillItem bi where bi.item.department=:dep "
                 + " and  bi.bill.billType= :bTp  "
+                + " and bi.bill.retired=false "
                 + " and bi.item.category=:cat and  bi.bill.createdAt between :fromDate and :toDate "
                 + "and  bi.bill.paymentMethod = :pm ";
         temMap.put("toDate", getToDate());
@@ -228,6 +231,7 @@ public class CreditSummeryController implements Serializable {
         sql = "select count(bi) FROM BillItem bi where bi.item=:itm "
                 + " and bi.bill.paymentMethod = :pm "
                 + "and bi.bill.billType=:btp and type(bi.bill)=:billClass "
+                + "and bi.bill.retired=false "
                 + "and bi.bill.createdAt between :fromDate and :toDate ";
 
         temMap.put("toDate", getToDate());
@@ -255,6 +259,7 @@ public class CreditSummeryController implements Serializable {
     private double getFee(ItemWithFee i, FeeType feeType) {
         String sql = "SELECT sum(bf.feeValue) FROM BillFee bf WHERE "
                 + " bf.bill.billType=:bTp and bf.fee.feeType=:ftp "
+                + " and bf.bill.retired=false "
                 + " and bf.bill.createdAt between :fromDate and :toDate "
                 + " and bf.billItem.item=:itm "
                 + " and bf.bill.paymentMethod = :pm ";
@@ -285,6 +290,7 @@ public class CreditSummeryController implements Serializable {
     private double getFeeWithOut(ItemWithFee i, FeeType feeType) {
         String sql = "SELECT sum(bf.feeValue) FROM BillFee bf WHERE "
                 + " bf.bill.billType=:bTp "
+                + " and bf.bill.retired=false "
                 + " and bf.fee.feeType!=:ftp "
                 + " and bf.bill.createdAt between :fromDate and :toDate "
                 + " and bf.billItem.item=:itm"
@@ -316,6 +322,7 @@ public class CreditSummeryController implements Serializable {
     private double getFeeVatTotal() {
         String sql = "SELECT sum(bf.feeValue) FROM BillFee bf WHERE "
                 + " bf.bill.billType=:bTp "
+                + " and bf.bill.retired=false "
                 + " and bf.fee.feeType is not null "
                 + " and bf.bill.createdAt between :fromDate and :toDate "
                 + " and bf.bill.paymentMethod = :pm ";
@@ -467,6 +474,20 @@ public class CreditSummeryController implements Serializable {
         temMap.put("bTp", BillType.OpdBill);
         temMap.put("pm", PaymentMethod.Credit);
         return getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
+    }
+
+    /**
+     * The bill a cancellation or refund row reverses, shown as Ref. Bill.
+     * Batch cancellations keep the batch cancellation bill in billedBill and
+     * the original bill in referenceBill, so referenceBill is checked first.
+     * Ordinary bills have no Ref. Bill; a bill settled at the cashier keeps its
+     * pre-bill in referenceBill, which must not be shown.
+     */
+    public Bill getOriginalBillOf(Bill b) {
+        if (b == null || !(b instanceof CancelledBill || b instanceof RefundBill)) {
+            return null;
+        }
+        return b.getReferenceBill() != null ? b.getReferenceBill() : b.getBilledBill();
     }
 
     public List<DailyCredit> getDailyCreditByBill() {
@@ -937,7 +958,7 @@ public class CreditSummeryController implements Serializable {
                         billRow.createCell(0).setCellValue(b.getDeptId() != null ? b.getDeptId() : "");
 
                         String refBill = "";
-                        Bill originalBill = b.getBilledBill() != null ? b.getBilledBill() : b.getReferenceBill();
+                        Bill originalBill = getOriginalBillOf(b);
                         if (originalBill != null) {
                             refBill = originalBill.getDeptId() != null ? originalBill.getDeptId() : "";
                             if (originalBill.getCreatedAt() != null) {
