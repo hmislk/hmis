@@ -61,7 +61,7 @@ public class FormApiService {
     public FormTemplateDto getFormTemplateWithFields(Long id) {
         DesignComponent dc = designComponentFacade.find(id);
         if (dc == null || dc.isRetired() || dc.getComponentPresentationType() != ComponentPresentationType.DataEntryForm) {
-            throw new IllegalArgumentException("Form template not found: " + id);
+            throw new FormApiException("Form template not found: " + id);
         }
         FormTemplateDto dto = toTemplateDto(dc, countFields(dc));
         return dto;
@@ -69,7 +69,7 @@ public class FormApiService {
 
     public FormTemplateDto createFormTemplate(String name, String description, String formCssClass, WebUser user) {
         if (name == null || name.trim().isEmpty()) {
-            throw new IllegalArgumentException("name is required");
+            throw new FormApiException("name is required");
         }
         DesignComponent dc = new DesignComponent();
         dc.setName(name.trim());
@@ -85,7 +85,7 @@ public class FormApiService {
     public FormTemplateDto updateFormTemplate(Long id, String name, String description, String formCssClass, WebUser user) {
         DesignComponent dc = designComponentFacade.find(id);
         if (dc == null || dc.isRetired() || dc.getComponentPresentationType() != ComponentPresentationType.DataEntryForm) {
-            throw new IllegalArgumentException("Form template not found: " + id);
+            throw new FormApiException("Form template not found: " + id);
         }
         if (name != null && !name.trim().isEmpty()) {
             dc.setName(name.trim());
@@ -103,7 +103,7 @@ public class FormApiService {
     public void retireFormTemplate(Long id, String retireComments, WebUser user) {
         DesignComponent dc = designComponentFacade.find(id);
         if (dc == null || dc.isRetired() || dc.getComponentPresentationType() != ComponentPresentationType.DataEntryForm) {
-            throw new IllegalArgumentException("Form template not found: " + id);
+            throw new FormApiException("Form template not found: " + id);
         }
         dc.setRetired(true);
         designComponentFacade.edit(dc);
@@ -116,7 +116,7 @@ public class FormApiService {
     public List<FormFieldDto> listFormFields(Long formId) {
         DesignComponent form = designComponentFacade.find(formId);
         if (form == null || form.isRetired()) {
-            throw new IllegalArgumentException("Form template not found: " + formId);
+            throw new FormApiException("Form template not found: " + formId);
         }
         String jpql = "SELECT d FROM DesignComponent d WHERE d.retired = false AND d.dataEntryForm = :form ORDER BY d.orderNo";
         Map<String, Object> params = new HashMap<>();
@@ -132,11 +132,11 @@ public class FormApiService {
     public FormFieldDto addFormField(Long formId, Map<String, Object> body, WebUser user) {
         DesignComponent form = designComponentFacade.find(formId);
         if (form == null || form.isRetired()) {
-            throw new IllegalArgumentException("Form template not found: " + formId);
+            throw new FormApiException("Form template not found: " + formId);
         }
         String name = (String) body.get("name");
         if (name == null || name.trim().isEmpty()) {
-            throw new IllegalArgumentException("name is required");
+            throw new FormApiException("name is required");
         }
         DesignComponent field = new DesignComponent();
         field.setName(name.trim());
@@ -150,7 +150,7 @@ public class FormApiService {
             try {
                 field.setComponentPresentationType(ComponentPresentationType.valueOf(cpt.trim()));
             } catch (IllegalArgumentException ex) {
-                throw new IllegalArgumentException("Invalid componentPresentationType: " + cpt.trim());
+                throw new FormApiException("Invalid componentPresentationType: " + cpt.trim());
             }
         }
         String cdt = (String) body.get("componentDataType");
@@ -158,7 +158,7 @@ public class FormApiService {
             try {
                 field.setComponentDataType(ComponentDataType.valueOf(cdt.trim()));
             } catch (IllegalArgumentException ex) {
-                throw new IllegalArgumentException("Invalid componentDataType: " + cdt.trim());
+                throw new FormApiException("Invalid componentDataType: " + cdt.trim());
             }
         }
         if (body.get("orderNo") != null) {
@@ -184,12 +184,12 @@ public class FormApiService {
     public FormFieldDto updateFormField(Long fieldId, Map<String, Object> body, WebUser user) {
         DesignComponent field = designComponentFacade.find(fieldId);
         if (field == null || field.isRetired() || field.getDataEntryForm() == null) {
-            throw new IllegalArgumentException("Field not found: " + fieldId);
+            throw new FormApiException("Field not found: " + fieldId);
         }
         if (body.containsKey("name") && body.get("name") != null) {
             String updatedName = body.get("name").toString().trim();
             if (updatedName.isEmpty()) {
-                throw new IllegalArgumentException("name is required");
+                throw new FormApiException("name is required");
             }
             field.setName(updatedName);
         }
@@ -203,14 +203,14 @@ public class FormApiService {
             try {
                 field.setComponentPresentationType(ComponentPresentationType.valueOf(body.get("componentPresentationType").toString().trim()));
             } catch (IllegalArgumentException ex) {
-                throw new IllegalArgumentException("Invalid componentPresentationType: " + body.get("componentPresentationType"));
+                throw new FormApiException("Invalid componentPresentationType: " + body.get("componentPresentationType"));
             }
         }
         if (body.containsKey("componentDataType") && body.get("componentDataType") != null) {
             try {
                 field.setComponentDataType(ComponentDataType.valueOf(body.get("componentDataType").toString().trim()));
             } catch (IllegalArgumentException ex) {
-                throw new IllegalArgumentException("Invalid componentDataType: " + body.get("componentDataType"));
+                throw new FormApiException("Invalid componentDataType: " + body.get("componentDataType"));
             }
         }
         if (body.containsKey("orderNo")) {
@@ -253,7 +253,7 @@ public class FormApiService {
     public void retireFormField(Long fieldId, WebUser user) {
         DesignComponent field = designComponentFacade.find(fieldId);
         if (field == null || field.isRetired() || field.getDataEntryForm() == null) {
-            throw new IllegalArgumentException("Field not found: " + fieldId);
+            throw new FormApiException("Field not found: " + fieldId);
         }
         field.setRetired(true);
         designComponentFacade.edit(field);
@@ -266,7 +266,7 @@ public class FormApiService {
     public List<FormChoiceDto> listChoices(Long fieldId) {
         DesignComponent field = designComponentFacade.find(fieldId);
         if (field == null || field.isRetired()) {
-            throw new IllegalArgumentException("Field not found: " + fieldId);
+            throw new FormApiException("Field not found: " + fieldId);
         }
         String jpql = "SELECT c FROM DesignComponentChoice c WHERE c.retired = false AND c.designComponent = :field ORDER BY c.orderNo";
         Map<String, Object> params = new HashMap<>();
@@ -282,10 +282,10 @@ public class FormApiService {
     public FormChoiceDto addChoice(Long fieldId, String label, String value, Integer orderNo, WebUser user) {
         DesignComponent field = designComponentFacade.find(fieldId);
         if (field == null || field.isRetired()) {
-            throw new IllegalArgumentException("Field not found: " + fieldId);
+            throw new FormApiException("Field not found: " + fieldId);
         }
         if (label == null || label.trim().isEmpty()) {
-            throw new IllegalArgumentException("label is required");
+            throw new FormApiException("label is required");
         }
         DesignComponentChoice ch = new DesignComponentChoice();
         ch.setDesignComponent(field);
@@ -301,7 +301,7 @@ public class FormApiService {
     public FormChoiceDto updateChoice(Long choiceId, String label, String value, Integer orderNo, WebUser user) {
         DesignComponentChoice ch = designComponentChoiceFacade.find(choiceId);
         if (ch == null || ch.isRetired()) {
-            throw new IllegalArgumentException("Choice not found: " + choiceId);
+            throw new FormApiException("Choice not found: " + choiceId);
         }
         if (label != null && !label.trim().isEmpty()) {
             ch.setLabel(label.trim());
@@ -319,7 +319,7 @@ public class FormApiService {
     public void retireChoice(Long choiceId, WebUser user) {
         DesignComponentChoice ch = designComponentChoiceFacade.find(choiceId);
         if (ch == null || ch.isRetired()) {
-            throw new IllegalArgumentException("Choice not found: " + choiceId);
+            throw new FormApiException("Choice not found: " + choiceId);
         }
         ch.setRetired(true);
         designComponentChoiceFacade.edit(ch);
@@ -344,7 +344,7 @@ public class FormApiService {
     public List<FormValueDto> listValuesForEntry(Long entryId) {
         PatientFormEntry entry = patientFormEntryFacade.find(entryId);
         if (entry == null || entry.isRetired()) {
-            throw new IllegalArgumentException("Entry not found: " + entryId);
+            throw new FormApiException("Entry not found: " + entryId);
         }
         String jpql = "SELECT cc FROM CaptureComponent cc WHERE cc.retired = false AND cc.patientFormEntry = :entry ORDER BY cc.id";
         Map<String, Object> params = new HashMap<>();
