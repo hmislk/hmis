@@ -863,20 +863,20 @@ public class InwardSearch implements Serializable {
 
         Long previousFinalBillId = pe.getFinalBill() != null ? pe.getFinalBill().getId() : null;
 
-        if (pe.getFinalBill() != null && !pe.getFinalBill().getId().equals(newConfirmed.getId())) {
-            Bill oldConfirmed = pe.getFinalBill();
-            oldConfirmed.setConfirmedFinalBill(false);
-            getBillFacade().edit(oldConfirmed);
-        }
+        // Same lock as a final bill save, so one confirmed version can't race another.
+        getBillNumberBean().withFinalBillVersionLock(pe, () -> {
+            getInwardBean().unconfirmOtherFinalBills(pe, newConfirmed);
 
-        newConfirmed.setConfirmedFinalBill(true);
-        getBillFacade().edit(newConfirmed);
+            newConfirmed.setConfirmedFinalBill(true);
+            getBillFacade().edit(newConfirmed);
 
-        pe.setFinalBill(newConfirmed);
-        pe.setGrantTotal(newConfirmed.getGrantTotal());
-        pe.setDiscount(newConfirmed.getDiscount());
-        pe.setNetTotal(newConfirmed.getNetTotal());
-        getPatientEncounterFacade().edit(pe);
+            pe.setFinalBill(newConfirmed);
+            pe.setGrantTotal(newConfirmed.getGrantTotal());
+            pe.setDiscount(newConfirmed.getDiscount());
+            pe.setNetTotal(newConfirmed.getNetTotal());
+            getPatientEncounterFacade().edit(pe);
+            return null;
+        });
 
         relinkPaymentBillsToConfirmedVersion(pe, newConfirmed);
 
@@ -946,6 +946,14 @@ public class InwardSearch implements Serializable {
             JsfUtil.addErrorMessage("Cannot retire the only remaining final bill version");
             return;
         }
+        if (hasPaidCreditCompanyBill(b)) {
+            JsfUtil.addErrorMessage("Cannot retire: a credit company has paid against this final bill version");
+            return;
+        }
+
+        // Before the bill itself: a retired bill can't be retired again, so a
+        // failure here would otherwise leave credit bills active with no retry.
+        retireCreditCompanyBills(b);
 
         b.setRetired(true);
         b.setRetirer(sessionController.getLoggedUser());
@@ -958,6 +966,38 @@ public class InwardSearch implements Serializable {
 
         JsfUtil.addSuccessMessage("Final Bill Version Retired");
         finalBillVersions = null;
+    }
+
+    private List<Bill> fetchCreditCompanyBills(Bill finalBill) {
+        String jpql = "select b from Bill b where b.referenceBill.id = :billId and b.billTypeAtomic = :bta"
+                + " and b.retired = false and (b.cancelled = false or b.cancelled is null)";
+        Map<String, Object> params = new HashMap<>();
+        params.put("billId", finalBill.getId());
+        params.put("bta", BillTypeAtomic.INWARD_FINAL_BILL_PAYMENT_BY_CREDIT_COMPANY);
+        return getBillFacade().findByJpql(jpql, params);
+    }
+
+    private boolean hasPaidCreditCompanyBill(Bill finalBill) {
+        for (Bill ccBill : fetchCreditCompanyBills(finalBill)) {
+            if (Math.abs(ccBill.getPaidAmount()) > 0.005) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * A retired or cancelled final bill version no longer claims anything from
+     * the credit company, so its commitment bills must not stay selectable for
+     * settlement or be listed by reports that do not check the version.
+     */
+    private void retireCreditCompanyBills(Bill finalBill) {
+        for (Bill ccBill : fetchCreditCompanyBills(finalBill)) {
+            ccBill.setRetired(true);
+            ccBill.setRetirer(sessionController.getLoggedUser());
+            ccBill.setRetiredAt(new Date());
+            getBillFacade().edit(ccBill);
+        }
     }
 
     private String emailRecipient;
@@ -2152,7 +2192,14 @@ public class InwardSearch implements Serializable {
                 return;
             }
 
+            if (hasPaidCreditCompanyBill(getBill())) {
+                JsfUtil.addErrorMessage("Cannot cancel: a credit company has paid against this final bill");
+                return;
+            }
+
             boolean wasConfirmedFinalBill = getBill().isConfirmedFinalBill();
+
+            retireCreditCompanyBills(getBill());
 
             CancelledBill cb = createCancelBill();
             //Copy & paste

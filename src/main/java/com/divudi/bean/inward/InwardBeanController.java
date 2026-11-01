@@ -61,6 +61,7 @@ import com.divudi.core.facade.RoomFacade;
 import com.divudi.core.facade.TimedItemFeeFacade;
 import com.divudi.core.util.CommonFunctions;
 import java.io.Serializable;
+import com.divudi.core.util.JsfUtil;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -1959,6 +1960,56 @@ public class InwardBeanController implements Serializable {
         }
         hm.put("pe", pts);
         return getPatientItemFacade().findByJpql(sql, hm);
+    }
+
+    /**
+     * Nothing can be added to an admission after administrative discharge. The
+     * discharge is read from the database, because the session's copy of the
+     * admission can predate it. A baby's charges go on the mother's bill, so her
+     * discharge closes the baby's admission too.
+     *
+     * @return true, after showing the error, when the admission is discharged
+     */
+    public boolean blockIfDischarged(PatientEncounter encounter) {
+        if (encounter == null || encounter.getId() == null) {
+            return false;
+        }
+        Map<String, Object> params = new HashMap<>();
+        params.put("id", encounter.getId());
+        long discharged = patientEncounterFacade.findLongByJpql("select count(pe) from PatientEncounter pe"
+                + " left join pe.parentEncounter parent"
+                + " where pe.id = :id and (pe.discharged = true or parent.discharged = true)", params);
+        if (discharged == 0) {
+            return false;
+        }
+        JsfUtil.addErrorMessage("This patient has been discharged. To add anything, first cancel all final bills, then cancel the discharge on the Interim Bill page.");
+        return true;
+    }
+
+    /**
+     * Unconfirms every final bill of the admission except {@code keep}. Found
+     * by query, not through {@code pe.getFinalBill()}: a session's copy of the
+     * admission can predate the bill that has to be unconfirmed, which would
+     * leave two confirmed final bills for reports to count (issue #24966).
+     */
+    public void unconfirmOtherFinalBills(PatientEncounter pe, Bill keep) {
+        String jpql = "select b from Bill b"
+                + " where b.patientEncounter.id = :peId"
+                + " and b.billTypeAtomic = :bta"
+                + " and b.confirmedFinalBill = true"
+                + " and b.id <> :keepId";
+        Map<String, Object> params = new HashMap<>();
+        params.put("peId", pe.getId());
+        params.put("bta", BillTypeAtomic.INWARD_FINAL_BILL);
+        params.put("keepId", keep.getId());
+        List<Bill> others = getBillFacade().findByJpql(jpql, params);
+        if (others == null) {
+            return;
+        }
+        for (Bill other : others) {
+            other.setConfirmedFinalBill(false);
+            getBillFacade().edit(other);
+        }
     }
 
     public List<Bill> fetchPaymentBill(PatientEncounter patientEncounter, List<PatientEncounter> cpts) {

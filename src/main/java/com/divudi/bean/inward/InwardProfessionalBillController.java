@@ -210,6 +210,10 @@ public class InwardProfessionalBillController implements Serializable {
             return true;
         }
 
+        if (inwardBean.blockIfDischarged(getBatchBill().getPatientEncounter())) {
+            return true;
+        }
+
         if (getBatchBill().getPatientEncounter().isNursingDischarged()
                 && !webUserController.hasPrivilege("InwardAddChargesAfterNursingDischarge")) {
             JsfUtil.addErrorMessage("Cannot add charges: nursing discharge has been confirmed for this patient.");
@@ -725,6 +729,10 @@ public class InwardProfessionalBillController implements Serializable {
             return;
         }
 
+        if (inwardBean.blockIfDischarged(getCurrent().getPatientEncounter())) {
+            return;
+        }
+
         if (currentBillFee == null) {
             JsfUtil.addErrorMessage("Nothing to add");
             return;
@@ -858,6 +866,10 @@ public class InwardProfessionalBillController implements Serializable {
     private boolean errorCheck() {
         if (getCurrent().getPatientEncounter() == null) {
             JsfUtil.addErrorMessage("Selct Patient Encounter");
+            return true;
+        }
+
+        if (inwardBean.blockIfDischarged(getCurrent().getPatientEncounter())) {
             return true;
         }
 
