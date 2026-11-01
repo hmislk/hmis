@@ -171,15 +171,16 @@ flows) — don't ask when the diff makes the affected flow obvious.
 
 ### 2a. Build and local redeploy
 
-Per `playwright-e2e` §0a / `dev-issue` §6:
+Follow [Playwright E2E §0a](../../../developer_docs/testing/playwright-e2e-workflow.md#0a-rebuild-and-redeploy-local-code-changes-before-testing).
+Take the JDK, Maven and Payara locations from this machine's Claude memory, and the
+app name from `asadmin list-applications`. Paths differ between machines.
 
-```powershell
-$env:JAVA_HOME="C:\Program Files\Eclipse Adoptium\jdk-11.0.23.9-hotspot"
-& "D:\Program Files\NetBeans-18\netbeans\java\maven\bin\mvn.cmd" clean package -DskipTests
-& "D:\Payara\bin\asadmin.bat" redeploy --name rh "D:\Development\2024\hmis\target\rh-3.0.0.war"
-```
+Check the server log for deployment errors before proceeding.
 
-Check the server log for deployment errors before proceeding. **If `mvn
+**A failed `redeploy` can remove the app.** If the next `redeploy` says the app "is not
+deployed", use `deploy --name <app> --contextroot rh <war>`. Errors such as Hazelcast
+"all nodes in the cluster are lite members" come from the local server, not from the PR:
+restart the domain on JDK 11 (`AS_JAVA` set) and deploy again before deciding the build failed. **If `mvn
 clean package` fails, `asadmin redeploy` fails, or the server log shows
 deployment errors, stop this PR here**: capture the failure output, redact
 it of credentials/connection strings/hostnames (same rule as § Phase 3's
@@ -222,6 +223,12 @@ inline — report it and discuss next steps (per CLAUDE.md "discuss
 uncertainties"); fixing is separate `dev-issue` work. Post the PR status
 comment (see § PR status comment) describing what failed, with the
 evidence redacted.
+
+Before posting `PASSED`, check that CodeRabbit has reviewed the PR's current head commit.
+`gh pr checks` doesn't show this. Run `gh api repos/hmislk/hmis/commits/<head-sha>/status --jq .state`
+(it must not be `pending`) and check that CodeRabbit's summary comment no longer says "review in progress".
+Handle any new threads it posts the same way as Phase 1 findings. The `development` ruleset
+blocks merge while a thread is unresolved.
 
 All three pass → record `PASSED` and post the PR status comment (see
 § PR status comment).
