@@ -8,6 +8,7 @@ import com.divudi.core.data.dto.forms.FormTemplateDto;
 import com.divudi.core.data.dto.forms.FormValueDto;
 import com.divudi.core.entity.ApiKey;
 import com.divudi.core.entity.WebUser;
+import com.divudi.service.forms.FormApiException;
 import com.divudi.service.forms.FormApiService;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -76,6 +77,8 @@ public class FormApi {
             if (user == null) return errorResponse("Not a valid key", 401);
             FormTemplateDto dto = formApiService.getFormTemplateWithFields(id);
             return successResponse(dto);
+        } catch (FormApiException e) {
+            return errorResponse(e.getMessage(), e.getStatus());
         } catch (IllegalArgumentException e) {
             return errorResponse(e.getMessage(), 404);
         } catch (Exception e) {
@@ -104,6 +107,8 @@ public class FormApi {
                     safeGetString(body, "formCssClass"),
                     user);
             return createdResponse(dto);
+        } catch (FormApiException e) {
+            return errorResponse(e.getMessage(), e.getStatus());
         } catch (IllegalArgumentException e) {
             return errorResponse(e.getMessage(), 400);
         } catch (Exception e) {
@@ -133,6 +138,8 @@ public class FormApi {
                     safeGetString(body, "formCssClass"),
                     user);
             return successResponse(dto);
+        } catch (FormApiException e) {
+            return errorResponse(e.getMessage(), e.getStatus());
         } catch (IllegalArgumentException e) {
             return errorResponse(e.getMessage(), e.getMessage().contains("not found") ? 404 : 400);
         } catch (Exception e) {
@@ -154,6 +161,8 @@ public class FormApi {
             if (user == null) return errorResponse("Not a valid key", 401);
             formApiService.retireFormTemplate(id, null, user);
             return successResponse("Form template retired");
+        } catch (FormApiException e) {
+            return errorResponse(e.getMessage(), e.getStatus());
         } catch (IllegalArgumentException e) {
             return errorResponse(e.getMessage(), 404);
         } catch (Exception e) {
@@ -179,6 +188,8 @@ public class FormApi {
             if (user == null) return errorResponse("Not a valid key", 401);
             List<FormFieldDto> list = formApiService.listFormFields(id);
             return successResponse(list);
+        } catch (FormApiException e) {
+            return errorResponse(e.getMessage(), e.getStatus());
         } catch (IllegalArgumentException e) {
             return errorResponse(e.getMessage(), 404);
         } catch (Exception e) {
@@ -203,6 +214,8 @@ public class FormApi {
             if (body == null) return errorResponse("Request body is required", 400);
             FormFieldDto dto = formApiService.addFormField(id, body, user);
             return createdResponse(dto);
+        } catch (FormApiException e) {
+            return errorResponse(e.getMessage(), e.getStatus());
         } catch (IllegalArgumentException e) {
             return errorResponse(e.getMessage(), e.getMessage().contains("not found") ? 404 : 400);
         } catch (Exception e) {
@@ -227,6 +240,8 @@ public class FormApi {
             if (body == null) return errorResponse("Request body is required", 400);
             FormFieldDto dto = formApiService.updateFormField(id, body, user);
             return successResponse(dto);
+        } catch (FormApiException e) {
+            return errorResponse(e.getMessage(), e.getStatus());
         } catch (IllegalArgumentException e) {
             return errorResponse(e.getMessage(), e.getMessage().contains("not found") ? 404 : 400);
         } catch (Exception e) {
@@ -248,6 +263,8 @@ public class FormApi {
             if (user == null) return errorResponse("Not a valid key", 401);
             formApiService.retireFormField(id, user);
             return successResponse("Field retired");
+        } catch (FormApiException e) {
+            return errorResponse(e.getMessage(), e.getStatus());
         } catch (IllegalArgumentException e) {
             return errorResponse(e.getMessage(), 404);
         } catch (Exception e) {
@@ -273,6 +290,8 @@ public class FormApi {
             if (user == null) return errorResponse("Not a valid key", 401);
             List<FormChoiceDto> list = formApiService.listChoices(id);
             return successResponse(list);
+        } catch (FormApiException e) {
+            return errorResponse(e.getMessage(), e.getStatus());
         } catch (IllegalArgumentException e) {
             return errorResponse(e.getMessage(), 404);
         } catch (Exception e) {
@@ -303,6 +322,8 @@ public class FormApi {
                     orderNo,
                     user);
             return createdResponse(dto);
+        } catch (FormApiException e) {
+            return errorResponse(e.getMessage(), e.getStatus());
         } catch (IllegalArgumentException e) {
             return errorResponse(e.getMessage(), e.getMessage().contains("not found") ? 404 : 400);
         } catch (Exception e) {
@@ -333,6 +354,8 @@ public class FormApi {
                     orderNo,
                     user);
             return successResponse(dto);
+        } catch (FormApiException e) {
+            return errorResponse(e.getMessage(), e.getStatus());
         } catch (IllegalArgumentException e) {
             return errorResponse(e.getMessage(), e.getMessage().contains("not found") ? 404 : 400);
         } catch (Exception e) {
@@ -354,6 +377,8 @@ public class FormApi {
             if (user == null) return errorResponse("Not a valid key", 401);
             formApiService.retireChoice(id, user);
             return successResponse("Choice retired");
+        } catch (FormApiException e) {
+            return errorResponse(e.getMessage(), e.getStatus());
         } catch (IllegalArgumentException e) {
             return errorResponse(e.getMessage(), 404);
         } catch (Exception e) {
@@ -398,6 +423,8 @@ public class FormApi {
             if (user == null) return errorResponse("Not a valid key", 401);
             List<FormValueDto> list = formApiService.listValuesForEntry(entryId);
             return successResponse(list);
+        } catch (FormApiException e) {
+            return errorResponse(e.getMessage(), e.getStatus());
         } catch (IllegalArgumentException e) {
             return errorResponse(e.getMessage(), 404);
         } catch (Exception e) {
