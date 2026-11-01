@@ -243,7 +243,7 @@ public class BillPackageMedicalController implements Serializable, ControllerWit
             getPatient().getPerson().setCreater(getSessionController().getLoggedUser());
             getPatient().getPerson().setCreatedAt(new Date());
 
-            getPersonFacade().create(getPatient().getPerson());
+            // Patient.person is cascade = ALL, so creating the patient also saves its person (#23900).
             getPatientFacade().create(getPatient());
             tmpPatient = getPatient();
 
@@ -264,7 +264,11 @@ public class BillPackageMedicalController implements Serializable, ControllerWit
         if (p.getPerson().getId() == null) {
             p.getPerson().setCreater(sessionController.getLoggedUser());
             p.getPerson().setCreatedAt(new Date());
-            personFacade.create(p.getPerson());
+            // A new patient's create below saves its person through the cascade on Patient.person;
+            // persisting it here as well wrote a second, unreferenced PERSON row (#23900).
+            if (p.getId() != null) {
+                personFacade.create(p.getPerson());
+            }
         } else {
             personFacade.edit(p.getPerson());
         }

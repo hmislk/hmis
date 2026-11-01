@@ -1458,16 +1458,14 @@ public class ClinicController implements Serializable, ControllerWithPatientView
             e.setSendingMessage(smsBody(methodBillSession));
             e.setDepartment(getSessionController().getLoggedUser().getDepartment());
             e.setInstitution(getSessionController().getLoggedUser().getInstitution());
-            e.setPending(false);
+            e.setPending(true);
             getSmsFacade().create(e);
 
-            Boolean sent = smsManager.sendSms(e);
-            e.setSentSuccessfully(sent);
-            getSmsFacade().edit(e);
+            // Sent after this request returns, so the settle does not wait for the SMS gateway (#24970)
+            smsManager.sendSavedSmsAsync(e.getId());
 
         }
 
-        JsfUtil.addSuccessMessage("SMS Sent");
     }
 
     public String smsBody(BillSession r) {
@@ -3535,18 +3533,11 @@ public class ClinicController implements Serializable, ControllerWithPatientView
         e.setSendingMessage(createChanellBookingSms(printingBill));
         e.setDepartment(getSessionController().getLoggedUser().getDepartment());
         e.setInstitution(getSessionController().getLoggedUser().getInstitution());
-        e.setPending(false);
+        e.setPending(true);
         e.setSmsType(MessageType.ChannelBooking);
         getSmsFacade().create(e);
-        Boolean sent = smsManager.sendSms(e);
-        e.setSentSuccessfully(sent);
-        getSmsFacade().edit(e);
-
-        if (sent) {
-            JsfUtil.addSuccessMessage("SMS Sent");
-        } else {
-            JsfUtil.addSuccessMessage("SMS Failed");
-        }
+        // Sent after this request returns, so the settle does not wait for the SMS gateway (#24970)
+        smsManager.sendSavedSmsAsync(e.getId());
 
     }
 
@@ -5475,34 +5466,6 @@ public class ClinicController implements Serializable, ControllerWithPatientView
 
         BillSession savingBillSession;
         savingBillSession = createBillSession(savingBill, savingBillItem, true, false);
-
-        BillSession bs = new BillSession();
-        bs.setAbsent(false);
-        bs.setBill(savingBill);
-        bs.setBillItem(savingBillItem);
-        bs.setCreatedAt(new Date());
-        bs.setDepartment(getSelectedSessionInstance().getOriginatingSession().getDepartment());
-        bs.setInstitution(getSelectedSessionInstance().getOriginatingSession().getInstitution());
-        bs.setItem(getSelectedSessionInstance().getOriginatingSession());
-        bs.setSessionInstance(getSelectedSessionInstance());
-        bs.setSessionDate(getSelectedSessionInstance().getSessionDate());
-        bs.setSessionTime(getSelectedSessionInstance().getSessionTime());
-        bs.setStaff(getSelectedSessionInstance().getStaff());
-
-        List<Integer> reservedNumbers = CommonFunctions.convertStringToIntegerList(getSelectedSessionInstance().getOriginatingSession().getReserveNumbers());
-        Integer count;
-
-        try (SessionBookingLock.Hold hold = SessionBookingLock.acquire(getSelectedSessionInstance())) {
-            count = clinicService.getNextNonReservedSerialNumber(getSelectedSessionInstance(), reservedNumbers, false);
-
-            if (count != null) {
-                bs.setSerialNo(count);
-            } else {
-                bs.setSerialNo(1);
-            }
-
-            getBillSessionFacade().create(bs);
-        }
 
         List<BillFee> savingBillFees = new ArrayList<>();
 
@@ -8422,7 +8385,14 @@ public class ClinicController implements Serializable, ControllerWithPatientView
         if (patient.getPerson().getId() == null) {
             patient.getPerson().setCreatedAt(new Date());
             patient.getPerson().setCreater(sessionController.getLoggedUser());
-            personFacade.create(patient.getPerson());
+            if (patient.getId() != null) {
+                // Existing patient: the patient is merged below, which cascades a merge, so a
+                // brand-new person still has to be persisted here.
+                personFacade.create(patient.getPerson());
+            }
+            // New patient: the person is persisted by the cascade from Patient.person
+            // (cascade = ALL) in patientFacade.create below. Persisting it here too leaves an
+            // unreferenced duplicate PERSON row (#23900).
         } else {
             personFacade.edit(patient.getPerson());
         }

@@ -48,9 +48,11 @@
 ### Git
 - Commit messages include `Closes #N`. See [Commit Conventions](developer_docs/git/commit-conventions.md).
 - **🚨 Branch from `origin/development`** and target PRs at `development`, never `master`. Check for existing code against `origin/development`.
+- **🚨 Before opening a PR for issue #N**, run `gh pr list --state all --search N`. If one is open, add to it; if one is merged, the fix is already in `development`. Never open a second PR for the same issue.
 - **🚨 Deploy branches are `<hospital>-production` / `<hospital>-staging`** (India estate). Never target `*-prod`, `*-stg` or `*-migrated`; they were retired 2026-10-11. See [Deployment map](developer_docs/deployment/ci-cd-pipeline-overview.md).
 - **🚨 Branches targeting a production/staging branch end in `-hotfix`** (CI `check-branch` warns otherwise; QA-tested `home-qa*` heads are also accepted). Use the `/hotfix-deploy` skill. Exception: `rh-local-staging` accepts only `development` as the PR head (CI `branch_merge_validation.yml`).
 - **🚨 One open PR per production/staging branch.** Check `gh pr list --state open --base <branch>`; if one exists, add to its branch (even another developer's) and update its title/body. CI `single-deploy-pr` fails the newer PR.
+- **🚨 Before pushing to an existing PR's branch, run `gh pr view <N> --json state`.** If it is MERGED, put the commit on a new branch from `origin/development` and open a new PR; a push to a merged branch never reaches `development`.
 - **🚨 Mirror every merged hotfix into `development`** unless its commits were cherry-picked from `development` (hotfix-deploy Step 9a).
 - **🚨 Dependabot PRs: green CI isn't enough.** Triage them with the [dependabot-triage skill](.claude/skills/dependabot-triage/SKILL.md): bytecode ≤ Java 11, no `jakarta.*`, sibling artifacts on one version (e.g. `poi`/`poi-ooxml`), no `pom.xml` pin holding back a transitive (e.g. `commons-io`), release notes read, a combined JDK 11 build, and a local Payara smoke test of each runtime jar. Close a rejected bump with the evidence and add a `.github/dependabot.yml` ignore rule. CI compile catches none of these runtime failures.
 - **🚨 After applying a CodeRabbit/Codex fix**, verify the getter names exist on the entity (e.g. `isCompleted()`, not `getCompleted()`). See [PR Review §4a](developer_docs/git/pr-review-workflow.md).

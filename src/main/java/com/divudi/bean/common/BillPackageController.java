@@ -239,7 +239,7 @@ public class BillPackageController implements Serializable, ControllerWithPatien
                 getPatient().getPerson().setCreater(getSessionController().getLoggedUser());
                 getPatient().getPerson().setCreatedAt(new Date());
 //                getPatientFacade().create(getPatient());
-                getPersonFacade().create(getPatient().getPerson());
+                // Patient.person is cascade = ALL, so creating the patient below also saves its person (#23900).
             }
             try {
                 getPatientFacade().create(getPatient());

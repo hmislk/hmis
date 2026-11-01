@@ -468,9 +468,17 @@ Finalizes a temporary booking, converting it to a paid confirmed appointment.
 |-----------------------|--------|----------|-------------------------------------------|
 | refNo                 | String | Yes      | Client reference number from `/save`      |
 | statusId              | Integer| Yes      | Must be `1` (success); `0` = failure      |
-| price                 | String | Yes      | Amount paid as a string (e.g., `"1500.00"`) |
+| price                 | String | Yes      | Total the patient paid, as a string (e.g., `"1500.00"`): doctor fee + hospital fee + the agency's own charge |
 | payment.paymentChannel| String | Yes      | Booking agent code                        |
 | payment.paymentMode   | String | No       | Booking agent name                        |
+
+**`price` rules**
+
+- The session fees are the `totalAmount` returned by `/save`.
+- `price` minus the session fees is recorded as the agency charge.
+- A `price` lower than the session fees is rejected with `NOT_ACCEPTABLE`, and the booking stays unpaid.
+- The response `price.totalAmount` and `sessionDetails.amount` equal the `price` sent.
+- Do not send only the agency charge: a value below the session fees is rejected.
 
 ### Response
 ```json

@@ -781,3 +781,13 @@ To mark a channel booking completed, go to *Channelling → Channel Booking - By
 The By Dates *Search* box keeps its session-scoped text, so `fill('')` it before typing, or the filter becomes `RoshanRoshan` and hides every session.
 By Dates lists only ongoing/pending sessions by default; after **Complete Session**, click the **Completed** button to see the session again (its **Pay Session** button appears only on a completed session).
 Staff autocompletes (Pay Doctor etc.) can list two staff with the same name. Check `STAFF`/`PERSON` for duplicates first and pick the suggestion whose dues match the DB, not the first one.
+
+## 177. Patient Admit form: click Admission Type to enable Room No; the patient Title needs the hidden select
+
+- *Inpatient → Admissions → Patient Admit*: **Room No** (`cmbDoc`) stays disabled until **Admission Type** (`lstSelect`) is picked with a real click on the menu and its item. Setting the widget value doesn't fire the ajax that enables it. For a free room, see §111.
+- The patient **Title** (`…:cmbTitle`, inside the patient panel) has no clickable item list in a script. Set `option.selected` on its hidden `select`, call the widget's `selectValue`, and dispatch `change`. Option texts have a dot (`Mr.`).
+- **Admit** needs Consultant, Medical Officer and Payment Method. When `Patient Details Required in Patient Admission` is on, it also checks each enabled patient-detail option (Title, Gender, Address, etc.); the error growl names the missing one. Rapid/Temp A&E admissions skip these patient checks.
+
+## 178. Timing a settle: wait for the success message, not `networkidle`
+
+The receipt page keeps loading after the bill is saved, so `networkidle` overstates settle time (10 s measured vs 1.6 s real). Start the timer at the click and stop it at `getByText('Channel Booking Added.').waitFor()` (or the module's own success growl).

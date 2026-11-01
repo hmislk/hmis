@@ -61,10 +61,9 @@
                                        rendered="#{cc.attrs.bill.refundedBill.deptId ne null 
                                     and cc.attrs.bill.refunded eq true}"/> -->
 
-                        <h:outputLabel value="#{cc.attrs.bill.deptId} *Duplicate" 
-                                       rendered="#{cc.attrs.bill.refundedBill.deptId eq null and
-                                                   cc.attrs.bill.cancelledBill.deptId eq null 
-                                                   and cc.attrs.dup eq true}"/>
+                        <!-- A reprint always shows its own bill number as Duplicate, also for a cancelled or refunded bill -->
+                        <h:outputLabel value="#{cc.attrs.bill.deptId} *Duplicate"
+                                       rendered="#{cc.attrs.dup eq true}"/>
 
                         <h:outputLabel value="*Refunded" 
                                        rendered="#{cc.attrs.bill.billClassType eq 'RefundBill'}"/>

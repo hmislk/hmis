@@ -81,6 +81,9 @@ privilege-gated buttons render correctly without a full app redeploy.
 
 ## 19. Some `confirm()`-guarded `type="submit"` buttons never reach the server — prefer existing data
 
+**Update:** Settle on this page does submit when a `dialog` handler that accepts the confirm is registered before the click (Python Playwright: `page.on("dialog", lambda d: d.accept())`, then a plain `click`), with a stock item added, a new patient filled in and **Paid** above the total. Try that before falling back to existing data.
+
+
 On `pharmacy/pharmacy_bill_retail_sale_native.xhtml` ("Pharmacy Retail Sale"), the
 **Settle** button is a PrimeFaces `p:commandButton` with `ajax="false"` and a
 `confirm(...)` guard. Across several approaches — real `browser_click` +
@@ -649,3 +652,7 @@ Check the patient name or BHT on the page before reading figures.
 ## 169. Report buttons have a hidden twin in the Favorites tab — click only `:visible` buttons
 
 Pages with a ⭐ Favorites tab (e.g. *Inpatient Analytics*) render every favourited report button twice. `.first()` on a name match can pick the hidden Favorites copy and wait until the timeout without an error. Use `page.locator('button:visible').filter({ hasText: /^\s*Report Name\s*$/ })`.
+
+## 176. Selecting the login department in a script: set the PrimeFaces widget, not the list item
+
+On the "Select Department" screen, clicking a list item by text or typing in the filter often times out. Pick it through the widget, then click **Select**: find the `option` in `form[id$='formDept'] select` whose text is the department name, and call `selectValue(option.value)` on the matching `PrimeFaces.widgets` entry.

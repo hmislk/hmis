@@ -2223,7 +2223,8 @@ public class ChannelBillController implements Serializable {
                 getNewPatient().getPerson().setCreater(getSessionController().getLoggedUser());
                 getNewPatient().getPerson().setCreatedAt(new Date());
                 getNewPatient().setRegistrationSource(resolveRegistrationSource());
-                getPersonFacade().create(getNewPatient().getPerson());
+                // The person is persisted by the cascade from Patient.person (cascade = ALL);
+                // persisting it separately leaves an unreferenced duplicate PERSON row (#23900).
                 getPatientFacade().create(getNewPatient());
                 break;
             case "tabSearchPt":
@@ -2301,10 +2302,10 @@ public class ChannelBillController implements Serializable {
             e.setDepartment(getSessionController().getLoggedUser().getDepartment());
             e.setInstitution(getSessionController().getLoggedUser().getInstitution());
             e.setSmsType(MessageType.ChannelBooking);
+            e.setPending(true);
             getSmsFacade().create(e);
-            boolean sent = smsManagerEjb.sendSms(e);
-            e.setSentSuccessfully(sent);
-            getSmsFacade().edit(e);
+            // Sent after this request returns, so the settle does not wait for the SMS gateway (#24970)
+            smsManagerEjb.sendSavedSmsAsync(e.getId());
         } catch (Exception e) {
         }
     }

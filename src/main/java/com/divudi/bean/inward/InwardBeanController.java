@@ -64,6 +64,7 @@ import com.divudi.core.facade.TimedItemFeeFacade;
 import com.divudi.core.util.CommonFunctions;
 import com.divudi.service.inward.TimedItemPricingService;
 import java.io.Serializable;
+import com.divudi.core.util.JsfUtil;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -2357,6 +2358,30 @@ public class InwardBeanController implements Serializable {
         }
         hm.put("pe", pts);
         return getPatientItemFacade().findByJpql(sql, hm);
+    }
+
+    /**
+     * Nothing can be added to an admission after administrative discharge. The
+     * discharge is read from the database, because the session's copy of the
+     * admission can predate it. A baby's charges go on the mother's bill, so her
+     * discharge closes the baby's admission too.
+     *
+     * @return true, after showing the error, when the admission is discharged
+     */
+    public boolean blockIfDischarged(PatientEncounter encounter) {
+        if (encounter == null || encounter.getId() == null) {
+            return false;
+        }
+        Map<String, Object> params = new HashMap<>();
+        params.put("id", encounter.getId());
+        long discharged = patientEncounterFacade.findLongByJpql("select count(pe) from PatientEncounter pe"
+                + " left join pe.parentEncounter parent"
+                + " where pe.id = :id and (pe.discharged = true or parent.discharged = true)", params);
+        if (discharged == 0) {
+            return false;
+        }
+        JsfUtil.addErrorMessage("This patient has been discharged. To add anything, first cancel all final bills, then cancel the discharge on the Interim Bill page.");
+        return true;
     }
 
     /**

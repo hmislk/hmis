@@ -1454,12 +1454,16 @@ public class ChannelApi {
         Map<String, String> paymentDetails = (Map<String, String>) requestBody.get("payment");
         String agencyCode = paymentDetails.get("paymentChannel");
         String agencyName = paymentDetails.get("paymentMode");
-        String agentChargeString = (String) requestBody.get("price");
+        // price is the total the patient paid: session fees plus the agency's own charge (#24968)
+        String totalPaidString = (String) requestBody.get("price");
 
-        double agencyCharge = 0;
+        double totalPaid;
 
         try {
-            agencyCharge = Double.parseDouble(agentChargeString);
+            totalPaid = Double.parseDouble(totalPaidString);
+            if (!Double.isFinite(totalPaid)) {
+                throw new NumberFormatException("price is not a finite number");
+            }
         } catch (Exception e) {
             JSONObject response = commonFunctionToErrorResponse("There is a error in the payment amount. Please check price field.");
             return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
@@ -1495,6 +1499,7 @@ public class ChannelApi {
         }
 
         Bill completedBill;
+        double agencyCharge;
         long settleStartedAt = System.currentTimeMillis();
         // Taken outside ChannelService's transaction so the settle is committed before the next request
         // for the same session proceeds; the bill is re-read and re-validated under the lock so two
@@ -1526,6 +1531,15 @@ public class ChannelApi {
                 JSONObject response = commonFunctionToErrorResponse("Session is Full. Can't add online bookings");
                 return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
             }
+
+            double sessionTotal = temporarySavedBill.getNetTotal();
+            if (totalPaid < sessionTotal - 0.005) {
+                JSONObject response = commonFunctionToErrorResponse("The price " + totalPaidString
+                        + " is less than the session fees " + String.format("%.2f", sessionTotal)
+                        + ". Send the total amount the patient paid.");
+                return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
+            }
+            agencyCharge = Math.max(0, totalPaid - sessionTotal);
 
             completedBill = channelService.settleOnlineAgentInitialBooking(temporarySavedBill.getSingleBillSession(), clientsReferanceNo, agencyCharge);
         }
@@ -3324,7 +3338,8 @@ public class ChannelApi {
         p.setPerson(new Person());
         p.getPerson().setName(name);
         p.getPerson().setPhone(phone.substring(0, 3) + "-" + phone.substring(3, 10));
-        getPersonFacade().create(p.getPerson());
+        // The person is persisted by the cascade from Patient.person (cascade = ALL);
+        // persisting it separately leaves an unreferenced duplicate PERSON row (#23900).
         bill.setPatient(p);
         getPatientFacade().create(p);
 

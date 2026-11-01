@@ -409,7 +409,15 @@ Repeat, up to **3 cycles**:
 
 1. `gh pr checks <PR#>` — if checks are still pending, `ScheduleWakeup` for
    ~270s and recheck (don't block with `--watch` past a few minutes).
-2. If checks fail: investigate the failure, fix, push, go to 1.
+   If CodeRabbit is the only check listed, run
+   `gh pr view <PR#> --json mergeStateStatus,baseRefName`: `DIRTY` means a
+   conflict kept the workflows from starting. Merge `origin/<baseRefName>`
+   (never `development` into a `-hotfix` PR), push, recheck. `UNKNOWN` means
+   GitHub is still computing it; recheck. `CLEAN` means path filters skipped
+   the workflows (e.g. a docs-only PR), so the checks are done.
+2. If checks fail: investigate the failure and fix it. Push once the CI
+   fixes and any pending review fixes are all in (see the CodeRabbit limit
+   below), then go to 1.
 3. Once checks pass: run the `review-pr` skill for `<PR#>`.
    - Auto-apply fixes for comments matching `review-pr`'s documented
      false-positive/valid-fix patterns.
@@ -420,6 +428,12 @@ Repeat, up to **3 cycles**:
      says "Review limit reached", it reviewed nothing: say so in
      Notify, and wait for the limit reset or ask the user before
      treating the PR as reviewed.
+   - Every push starts a CodeRabbit review, and its plan caps reviews per
+     time window. Batch fixes into as few pushes as possible. After
+     "Review limit reached", `ScheduleWakeup` for the minutes it states
+     (the wait doesn't count as a cycle), then comment
+     `@coderabbitai review`. If the wait is longer than about 30 minutes,
+     ask the user instead.
    - A Codex summary with status **Failed** plus a "You have reached
      your Codex usage limits" comment reviewed nothing, even though its
      hidden state says `has_unresolved_findings: true`. Treat it like

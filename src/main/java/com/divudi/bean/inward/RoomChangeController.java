@@ -661,6 +661,9 @@ public class RoomChangeController implements Serializable {
     }
 
     public void addNewRoom() {
+        if (getInwardBean().blockIfDischarged(current)) {
+            return;
+        }
         if (sessionController.getApplicationPreference().isInwardMoChargeCalculateInitialTime()) {
             if (errorCheck()) {
                 return;
@@ -739,6 +742,9 @@ public class RoomChangeController implements Serializable {
     }
 
     public void addNewGuardianRoom() {
+        if (getInwardBean().blockIfDischarged(current)) {
+            return;
+        }
         if (getNewRoomFacilityCharge() == null) {
             JsfUtil.addErrorMessage("Please select a room facility");
             return;
