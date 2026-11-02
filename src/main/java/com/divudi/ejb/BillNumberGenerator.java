@@ -43,6 +43,8 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 import javax.ejb.EJB;
 import javax.ejb.Singleton;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
 import javax.persistence.TemporalType;
 import java.util.concurrent.ConcurrentHashMap;
 import javax.inject.Inject;
@@ -2868,6 +2870,18 @@ public class BillNumberGenerator {
         billNumber.setLastBillNumber(dd);
         billNumberFacade.edit(billNumber);
         return result;
+    }
+
+    /**
+     * Same as {@link #departmentBillNumberGeneratorYearly(Department, BillTypeAtomic)}
+     * but the counter is incremented and committed in its own transaction.
+     * Callers already inside a container transaction would otherwise hold the
+     * incremented counter uncommitted until their own transaction ends, and a
+     * concurrent caller would read the old value and get a duplicate number (#24922).
+     */
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+    public String departmentBillNumberGeneratorYearlyInNewTransaction(Department dep, BillTypeAtomic billType) {
+        return departmentBillNumberGeneratorYearly(dep, billType);
     }
 
     public String departmentBillNumberGeneratorYearly(Department dep, BillTypeAtomic billType) {

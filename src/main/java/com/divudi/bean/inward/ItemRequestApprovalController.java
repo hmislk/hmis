@@ -15,6 +15,7 @@ import com.divudi.core.facade.BillFacade;
 import com.divudi.core.facade.BillItemFacade;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.service.inward.ItemRequestApiService;
+import com.divudi.service.inward.ItemRequestException;
 
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
@@ -170,7 +171,7 @@ public class ItemRequestApprovalController implements Serializable {
         try {
             itemRequestApiService.rejectRemainingLines(request.getId(), remaining, reason, sessionController.getLoggedUser(), sessionController.getDepartment());
             JsfUtil.addSuccessMessage("Remaining lines rejected.");
-        } catch (IllegalStateException e) {
+        } catch (ItemRequestException | IllegalStateException e) {
             JsfUtil.addErrorMessage(e.getMessage());
         } catch (Exception e) {
             JsfUtil.addErrorMessage("Rejection failed: " + e.getMessage());
