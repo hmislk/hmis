@@ -584,6 +584,20 @@ public class BhtPaymentSummaryReportController implements Serializable {
         int mergeCol = 10;
         excelController.insertExcelReportHeader(sheet, "BHT Deposit and Credit Settlement Detail", filterPairs, mergeCol);
         excelController.appendExcelPrintedByFooter(sheet, mergeCol);
+
+        // PrimeFaces sized column A to the first table column (e.g. BHT No)
+        // before this runs; widen it if needed so the filter labels the
+        // header writes there ("Admission Status:" etc.) are not clipped.
+        int longestLabel = 0;
+        for (String[] pair : filterPairs) {
+            if (pair[0] != null) {
+                longestLabel = Math.max(longestLabel, pair[0].length() + 1);
+            }
+        }
+        int labelWidth = Math.min((longestLabel + 2) * 256, 255 * 256);
+        if (sheet.getColumnWidth(0) < labelWidth) {
+            sheet.setColumnWidth(0, labelWidth);
+        }
     }
 
     /**
@@ -594,8 +608,12 @@ public class BhtPaymentSummaryReportController implements Serializable {
         String dateFormat = sessionController.getApplicationPreference().getLongDateTimeFormat();
         SimpleDateFormat sdf = new SimpleDateFormat(dateFormat);
         List<String[]> pairs = new ArrayList<>();
-        pairs.add(new String[]{"From", fromDate != null ? sdf.format(fromDate) : "-"});
-        pairs.add(new String[]{"To", toDate != null ? sdf.format(toDate) : "-"});
+        // fetchEncounters() applies the date range only when both dates are
+        // set; with either one missing no date filter is applied at all, so
+        // show both as unbounded rather than imply the remaining date filtered.
+        boolean dateRangeApplied = fromDate != null && toDate != null;
+        pairs.add(new String[]{"From", dateRangeApplied ? sdf.format(fromDate) : "Any"});
+        pairs.add(new String[]{"To", dateRangeApplied ? sdf.format(toDate) : "Any"});
         pairs.add(new String[]{"Date Basis", "admissionDate".equals(dateBasis) ? "Admission Date" : "Discharge Date"});
         pairs.add(new String[]{"Admission Status", admissionStatus != null ? admissionStatus.getLabel() : "All"});
         pairs.add(new String[]{"Admission Type", admissionType != null ? admissionType.getName() : "All"});
