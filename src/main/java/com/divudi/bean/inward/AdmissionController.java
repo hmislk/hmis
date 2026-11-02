@@ -54,6 +54,7 @@ import com.divudi.core.facade.PatientRoomFacade;
 import com.divudi.core.facade.PatientTransferRequestFacade;
 import com.divudi.core.entity.inward.PatientTransferRequest;
 import com.divudi.core.data.inward.EncounterRegistrationFlag;
+import com.divudi.service.inward.AdmissionGuardianRules;
 import com.divudi.core.data.inward.TransferRequestStatus;
 import com.divudi.core.facade.PersonFacade;
 import com.divudi.core.facade.RoomFacade;
@@ -365,6 +366,37 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         metadata.addConfigOption(new ConfigOptionInfo(
                 "Guardian Relationship is Required in Patient Admission",
                 "When Guardian Details are required, also require the guardian's relationship to the patient (default true)",
+                "inward/inward_admission",
+                OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Inward Admission - Require Patient NIC or Guardian NIC",
+                "Block the admission when both the patient NIC and the guardian NIC are blank; either one is enough. "
+                + "Not applied to Provisional Emergency admissions at admit time. Turn off 'Guardian NIC is Required in Patient Admission' "
+                + "if the guardian NIC should only be needed when the patient has none (default false)",
+                "inward/inward_admission",
+                OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Inward Admission - Enforce Guardian Checks When Marking Provisional Emergency Complete",
+                "Apply the guardian checks (and the patient/guardian NIC rule, if on) when a Provisional Emergency admission is marked as verified (default false)",
+                "inward/inward_admission",
+                OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Inward Admission - Enforce Guardian Checks in Edit Admission Details",
+                "Apply the guardian checks (and the patient/guardian NIC rule, if on) when saving Edit Admission Details, so the fields cannot be cleared after admission. "
+                + "Provisional Emergency admissions are exempt (default false)",
+                "inward/inward_admission",
+                OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Inward Admission - Guardian Checks Treat Whitespace-Only Values as Missing",
+                "A guardian name, NIC, address or phone containing only spaces counts as missing in every guardian check (default false)",
                 "inward/inward_admission",
                 OptionScope.APPLICATION
         ));
@@ -2444,59 +2476,17 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             }
         }
 
-        if (!isRapidTempAe() && configOptionApplicationController.getBooleanValueByKey("Guardian Details Required in Patient Admission")) {
-            if (getCurrent().getGuardian() == null) {
-                JsfUtil.addErrorMessage("Guardian is Required");
-                return true;
-            }
-            // Each sub-field check below is independent of the others, so all of
-            // them are evaluated and reported together instead of stopping at the
-            // first miss — otherwise a form missing several guardian fields takes
-            // one submit/fix round-trip per field. (Issue #24564)
-            boolean guardianHasError = false;
-            if (configOptionApplicationController.getBooleanValueByKey("Guardian Title is Required in Patient Admission", true)) {
-                if (getCurrent().getGuardian().getTitle() == null) {
-                    JsfUtil.addErrorMessage("Guardian Title is Required");
-                    guardianHasError = true;
+        // Guardian per-field checks and the "patient NIC, else guardian NIC" rule live in
+        // AdmissionGuardianRules so Edit Admission Details and "Mark as Verified" enforce
+        // exactly the same configuration. Provisional Emergency admissions are exempt
+        // here and are checked when the registration is marked complete. All problems are
+        // reported together. (Issues #24564, #25032)
+        if (!isRapidTempAe()) {
+            List<String> guardianErrors = AdmissionGuardianRules.validate(getCurrent(), configOptionApplicationController);
+            if (!guardianErrors.isEmpty()) {
+                for (String guardianError : guardianErrors) {
+                    JsfUtil.addErrorMessage(guardianError);
                 }
-            }
-            if (configOptionApplicationController.getBooleanValueByKey("Guardian Name is Required in Patient Admission", true)) {
-                if (getCurrent().getGuardian().getName() == null || getCurrent().getGuardian().getName().isEmpty()) {
-                    JsfUtil.addErrorMessage("Guardian Name is Required");
-                    guardianHasError = true;
-                }
-            }
-            if (configOptionApplicationController.getBooleanValueByKey("Guardian NIC is Required in Patient Admission", true)) {
-                if (getCurrent().getGuardian().getNic() == null || getCurrent().getGuardian().getNic().isEmpty()) {
-                    JsfUtil.addErrorMessage("Guardian NIC is Required");
-                    guardianHasError = true;
-                }
-            }
-            if (configOptionApplicationController.getBooleanValueByKey("Guardian Address is Required in Patient Admission", true)) {
-                if (getCurrent().getGuardian().getAddress() == null || getCurrent().getGuardian().getAddress().isEmpty()) {
-                    JsfUtil.addErrorMessage("Guardian Address is Required");
-                    guardianHasError = true;
-                }
-            }
-            if (configOptionApplicationController.getBooleanValueByKey("Guardian Mobile Number is Required in Patient Admission", true)) {
-                if (getCurrent().getGuardian().getMobile() == null || getCurrent().getGuardian().getMobile().isEmpty()) {
-                    JsfUtil.addErrorMessage("Guardian Mobile Number is Required");
-                    guardianHasError = true;
-                }
-            }
-            if (configOptionApplicationController.getBooleanValueByKey("Guardian Home Phone Number is Required in Patient Admission", false)) {
-                if (getCurrent().getGuardian().getPhone() == null || getCurrent().getGuardian().getPhone().isEmpty()) {
-                    JsfUtil.addErrorMessage("Guardian Home Phone Number is Required");
-                    guardianHasError = true;
-                }
-            }
-            if (configOptionApplicationController.getBooleanValueByKey("Guardian Relationship is Required in Patient Admission", true)) {
-                if (getCurrent().getGuardianRelationshipToPatient() == null) {
-                    JsfUtil.addErrorMessage("Guardian Relationship is Required");
-                    guardianHasError = true;
-                }
-            }
-            if (guardianHasError) {
                 return true;
             }
         }
@@ -3066,6 +3056,21 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         if (getCurrent() == null) {
             JsfUtil.addErrorMessage("No admission selected");
             return;
+        }
+        // A provisional admission skips the guardian checks at admit time so the emergency
+        // path stays fast. When this option is on, they are enforced here, before the
+        // registration can be marked complete. (Issue #25032)
+        if (configOptionApplicationController.getBooleanValueByKey(
+                "Inward Admission - Enforce Guardian Checks When Marking Provisional Emergency Complete", false)) {
+            List<String> guardianErrors = AdmissionGuardianRules.validate(getCurrent(), configOptionApplicationController);
+            if (!guardianErrors.isEmpty()) {
+                for (String guardianError : guardianErrors) {
+                    JsfUtil.addErrorMessage(guardianError);
+                }
+                JsfUtil.addErrorMessage("The registration was not marked as complete. "
+                        + "Add the missing details (Edit Admission Details) and try again.");
+                return;
+            }
         }
         Map<String, Object> before = new LinkedHashMap<>();
         before.put("registrationFlag", getCurrent().getEncounterRegistrationFlag());

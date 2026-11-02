@@ -449,7 +449,7 @@ Same structure as `/save` response with `"status": "unpaid"`.
 
 Finalizes a temporary booking, converting it to a paid confirmed appointment.
 
-> **Warning:** This is a financial transaction. Use the exact `refNo` from `/save` and confirm the `price` amount matches expectations before calling.
+> **Warning:** This is a financial transaction. Use the exact `refNo` from `/save`. `price` is only the agency's own charge: the recorded total is the session fees plus `price`, so sending the full amount the patient paid records it twice. Existing agents (Doc990, eChannelling) rely on this meaning; do not change it.
 
 ### Request Body
 ```json
@@ -468,17 +468,9 @@ Finalizes a temporary booking, converting it to a paid confirmed appointment.
 |-----------------------|--------|----------|-------------------------------------------|
 | refNo                 | String | Yes      | Client reference number from `/save`      |
 | statusId              | Integer| Yes      | Must be `1` (success); `0` = failure      |
-| price                 | String | Yes      | Total the patient paid, as a string (e.g., `"1500.00"`): doctor fee + hospital fee + the agency's own charge |
+| price                 | String | Yes      | The agency's own charge as a string (e.g., `"299.00"`), **not** the session fee. It is added on top of the session fees; send `"0"` if there is none. A negative or non-numeric value is rejected. |
 | payment.paymentChannel| String | Yes      | Booking agent code                        |
 | payment.paymentMode   | String | No       | Booking agent name                        |
-
-**`price` rules**
-
-- The session fees are the `totalAmount` returned by `/save`.
-- `price` minus the session fees is recorded as the agency charge.
-- A `price` lower than the session fees is rejected with `NOT_ACCEPTABLE`, and the booking stays unpaid.
-- The response `price.totalAmount` and `sessionDetails.amount` equal the `price` sent.
-- Do not send only the agency charge: a value below the session fees is rejected.
 
 ### Response
 ```json

@@ -14,12 +14,14 @@ import com.divudi.bean.common.ControllerWithPatient;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.WebUserController;
 import com.divudi.core.util.JsfUtil;
+import com.divudi.service.inward.AdmissionGuardianRules;
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.PaymentMethod;
 import com.divudi.core.data.Sex;
 import com.divudi.core.data.Title;
 import com.divudi.core.data.clinical.ClinicalFindingValueType;
 import com.divudi.core.data.dataStructure.YearMonthDay;
+import com.divudi.core.data.inward.EncounterRegistrationFlag;
 import com.divudi.core.data.inward.SurgeryBillType;
 
 import com.divudi.core.entity.Bill;
@@ -703,6 +705,22 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
         if (getCurrent().getPaymentMethod() == PaymentMethod.Credit && getCurrent().getCreditCompany() == null) {
             JsfUtil.addErrorMessage("Please add a credit company before saving a Credit admission");
             return;
+        }
+
+        // Re-apply the guardian / NIC configuration so the fields cannot be cleared after
+        // admission. Opt-in (existing hospitals have old admissions with blank guardians).
+        // Provisional Emergency admissions are filled in step by step on this screen, so
+        // they are checked when marked complete instead. (Issue #25032)
+        if (getCurrent().getEncounterRegistrationFlag() != EncounterRegistrationFlag.RAPID_TEMP_AE
+                && configOptionApplicationController.getBooleanValueByKey(
+                        "Inward Admission - Enforce Guardian Checks in Edit Admission Details", false)) {
+            List<String> guardianErrors = AdmissionGuardianRules.validate(getCurrent(), configOptionApplicationController);
+            if (!guardianErrors.isEmpty()) {
+                for (String guardianError : guardianErrors) {
+                    JsfUtil.addErrorMessage(guardianError);
+                }
+                return;
+            }
         }
 
         boolean showClaimable = configOptionApplicationController.getBooleanValueByKey(
