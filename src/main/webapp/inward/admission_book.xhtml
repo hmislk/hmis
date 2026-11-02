@@ -14,7 +14,7 @@
             <ui:define name="subcontent">
                 <h:form>
 
-                    <p:panel header="BHT Addmission Details" >
+                    <p:panel header="BHT Admission Details" >
 
                         <h:panelGrid columns="2" >
 
@@ -27,7 +27,7 @@
                                         navigator="true" pattern="yyyy-MMM-dd hh:mm:ss a" ></p:calendar>
 
                             <p:outputLabel value="Admission Type"/>
-                            <p:selectOneMenu value="#{inwardReportController.admissionType}">
+                            <p:selectOneMenu value="#{inwardReportController.admissionType}" styleClass="w-100">
                                 <f:selectItem itemLabel="All Admission Type"/>
                                 <f:selectItems  value="#{inwardReportController.admissionty}" var="myItem" 
                                                 itemValue="#{myItem}" itemLabel="#{myItem.name}"></f:selectItems>
@@ -36,7 +36,7 @@
                             <p:outputLabel value="Without Canceled BHT" />
                             <p:selectBooleanCheckbox value="#{inwardReportController.withoutCancelBHT}" />
                             
-                            <p:outputLabel value="Selection Methord" />
+                            <p:outputLabel value="Selection Method" />
                             <p:selectOneRadio value="#{inwardReportController.reportKeyWord.string}" >
                                 <f:selectItem itemLabel="All" itemValue="0" />
                                 <f:selectItem itemLabel="Not Discharged &amp; Payment Not Finalized" itemValue="1" />
@@ -46,26 +46,26 @@
                             </p:selectOneRadio>
                         </h:panelGrid>
 
-                        <h:panelGrid columns="3">
-                            <p:commandButton ajax="false" value="Process" action="#{inwardReportController.fillAdmissionBookNew()}"  ></p:commandButton>
+                        <h:panelGrid columns="3" class="my-4">
+                            <p:commandButton ajax="false" value="Process" icon="fas fa-cogs" class="ui-button-warning mx-1" action="#{inwardReportController.fillAdmissionBookNew()}" />
 <!--                            <p:commandButton ajax="false" value="Fill All " action="#{inwardReportController.fillAdmissionBook()}"  ></p:commandButton>
                             <p:commandButton ajax="false" value="Fill UnDischarged Only " action="#{inwardReportController.fillAdmissionBookOnlyInward()}"  ></p:commandButton>
                             <p:commandButton ajax="false" value="Fill Discharged Only " action="#{inwardReportController.fillAdmissionBookOnlyDischarged()}"  ></p:commandButton>
                             <p:commandButton ajax="false" value="Fill Discharged and Payment Not Finalized " action="#{inwardReportController.fillAdmissionBookOnlyDischargedNotFinalized()}"  ></p:commandButton>
                             <p:commandButton ajax="false" value="Fill Discharged and Payment Finalized" action="#{inwardReportController.fillAdmissionBookOnlyDischargedFinalized()}"  ></p:commandButton>-->
 
-                            <p:commandButton value="Print" ajax="false" action="#" >
+                            <p:commandButton value="Print" icon="fas fa-print" class="ui-button-info mx-1" ajax="false" action="#" >
                                 <p:printer target="gpBillPreview" ></p:printer>
                             </p:commandButton>
 
-                            <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;"  >
+                            <p:commandButton ajax="false" value="Excel" icon="fas fa-file-excel" class="ui-button-success mx-1 noPrintButton" >
                                 <p:dataExporter type="xlsx" target="tbl" fileName="Admission_Detail_by_Admitted_Date"  />
                             </p:commandButton>  
                         </h:panelGrid>
                         <h:panelGrid columns="4">
                             <p:outputLabel value="BHT No" />
                             <p:selectBooleanCheckbox value="#{inwardReportController.bhtNo}" />
-                            <p:outputLabel value="Payment Methord" />
+                            <p:outputLabel value="Payment Method" />
                             <p:selectBooleanCheckbox value="#{inwardReportController.paymentMethord}" />
                             <p:outputLabel value="Credit Company" />
                             <p:selectBooleanCheckbox value="#{inwardReportController.creditCompany}" />
@@ -75,7 +75,7 @@
                             <p:selectBooleanCheckbox value="#{inwardReportController.guardian}" />
                             <p:outputLabel value="Room" />
                             <p:selectBooleanCheckbox value="#{inwardReportController.room}" />
-                            <p:outputLabel value="Refering Doctor" />
+                            <p:outputLabel value="Referring Doctor" />
                             <p:selectBooleanCheckbox value="#{inwardReportController.refDoctor}" />
                             <p:outputLabel value="Admit Date" />
                             <p:selectBooleanCheckbox value="#{inwardReportController.addmitDetails}" />
