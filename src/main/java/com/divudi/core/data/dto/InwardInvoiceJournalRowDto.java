@@ -51,6 +51,7 @@ public class InwardInvoiceJournalRowDto implements Serializable {
     // -------------------------------------------------------------------------
     private double chargeTypeDiscount;
     private double billLevelDiscount;
+    private double adjustment;
 
     // -------------------------------------------------------------------------
     // Deposit / settlement summary
@@ -84,7 +85,7 @@ public class InwardInvoiceJournalRowDto implements Serializable {
     }
 
     public double getGrandTotal() {
-        return getGrossTotal() - totalDiscount + totalServiceCharge - chargeTypeDiscount - billLevelDiscount;
+        return getGrossTotal() - totalDiscount + totalServiceCharge - chargeTypeDiscount - billLevelDiscount + adjustment;
     }
 
     // -------------------------------------------------------------------------
@@ -125,6 +126,9 @@ public class InwardInvoiceJournalRowDto implements Serializable {
 
     public double getBillLevelDiscount() { return billLevelDiscount; }
     public void setBillLevelDiscount(double billLevelDiscount) { this.billLevelDiscount = billLevelDiscount; }
+
+    public double getAdjustment() { return adjustment; }
+    public void setAdjustment(double adjustment) { this.adjustment = adjustment; }
 
     public double getTotalFinalPayment() { return totalFinalPayment; }
     public void setTotalFinalPayment(double totalFinalPayment) { this.totalFinalPayment = totalFinalPayment; }

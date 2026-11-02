@@ -1322,10 +1322,27 @@ public class SessionController implements Serializable, HttpSessionListener {
         }
     }
 
-    private boolean isFirstVisit() {
-        String j = "Select w from WebUser w order by w.id";
-        WebUser ws = getFacede().findFirstByJpql(j);
-        if (ws == null) {
+    /**
+     * Counts ids only, so a WebUser column missing from the database (a new
+     * field not yet added via Add Missing Fields) cannot fail the login page.
+     *
+     * findLongByJpql is not used because it returns 0 on failure, which would
+     * be mistaken for "no users yet".
+     *
+     * @return null when the check itself fails, so the caller does not cache it
+     */
+    private Boolean isFirstVisit() {
+        List<Long> counts;
+        try {
+            counts = getFacede().findLongList("select count(w.id) from WebUser w", new HashMap<>());
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+        if (counts == null || counts.isEmpty() || counts.get(0) == null) {
+            return null;
+        }
+        if (counts.get(0) == 0L) {
             JsfUtil.addSuccessMessage("First Visit");
             return true;
         } else {
@@ -2792,7 +2809,11 @@ public class SessionController implements Serializable, HttpSessionListener {
     public Boolean getFirstLogin() {
         if (firstLogin == null) {
             if (applicationController.getFirstLogin() == null) {
-                firstLogin = isFirstVisit();
+                Boolean firstVisit = isFirstVisit();
+                if (firstVisit == null) {
+                    return false;
+                }
+                firstLogin = firstVisit;
                 applicationController.setFirstLogin(firstLogin);
             } else {
                 firstLogin = applicationController.getFirstLogin();

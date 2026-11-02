@@ -244,7 +244,7 @@ public class PaymentSettlementService {
         settlementBill.setTotal(total);
         settlementBill.setNetTotal(total);
 
-        String deptId = billNumberGenerator.departmentBillNumberGeneratorYearly(
+        String deptId = billNumberGenerator.departmentBillNumberGeneratorYearlyInNewTransaction(
                 settlementDepartment, BillTypeAtomic.PAYMENT_SETTLEMENT_BILL);
         settlementBill.setDeptId(deptId);
         settlementBill.setInsId(deptId);
@@ -356,7 +356,7 @@ public class PaymentSettlementService {
         cancellationBill.setNetTotal(-settlementBill.getNetTotal());
 
         if (settlementBill.getDepartment() != null) {
-            String cancelDeptId = billNumberGenerator.departmentBillNumberGeneratorYearly(
+            String cancelDeptId = billNumberGenerator.departmentBillNumberGeneratorYearlyInNewTransaction(
                     settlementBill.getDepartment(), BillTypeAtomic.PAYMENT_SETTLEMENT_BILL_CANCELLED);
             cancellationBill.setDeptId(cancelDeptId);
             cancellationBill.setInsId(cancelDeptId);

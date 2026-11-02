@@ -32,6 +32,7 @@ import com.divudi.core.facade.SessionNumberGeneratorFacade;
 import com.divudi.core.facade.StaffFacade;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.data.BillType;
+import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.MessageType;
 import com.divudi.core.data.OptionScope;
 import com.divudi.core.data.channel.ChannelScheduleEvent;
@@ -334,11 +335,13 @@ public class ChannelScheduleController implements Serializable {
                 + " where bs.retired=false"
                 + " and bs.bill.billType in :bts"
                 + " and type(bs.bill)=:class "
+                + " and (bs.bill.billTypeAtomic is null or bs.bill.billTypeAtomic != :bta) "
                 + " and bs.sessionInstance=:ss "
                 + " order by bs.serialNo ";
         HashMap<String, Object> hh = new HashMap<>();
         hh.put("bts", bts);
         hh.put("class", BilledBill.class);
+        hh.put("bta", BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_PENDING_PAYMENT);
         hh.put("ss", currentSessionInstance);
         billSessions = billSessionFacade.findByJpql(sql, hh);
     }

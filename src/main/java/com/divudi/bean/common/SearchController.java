@@ -16192,6 +16192,11 @@ public class SearchController implements Serializable {
             hm.put("staff", "%" + getSearchKeyword().getStaffName().trim().toUpperCase() + "%");
         }
 
+        if (configOptionApplicationController.getBooleanValueByKey("Only Show Completed Channel Bookings On Doctor Payments")) {
+            sql += " and b.bill.singleBillSession.completed=:com ";
+            hm.put("com", true);
+        }
+
         sql += " order by b.speciality.name ";
 
         //hm.put("ins", sessionController.getInstitution());

@@ -346,7 +346,9 @@ public class PharmacyFastRetailSaleForCashierController extends PharmacyFastReta
         pat.getPerson().setCreater(sessionController.getLoggedUser());
         pat.getPerson().setCreatedAt(new Date());
 
-        if (pat.getPerson().getId() == null) {
+        // Patient.person is cascade = ALL, so creating a new patient below also saves its person.
+        // Persisting the person separately here wrote a second, unreferenced PERSON row (#23900).
+        if (pat.getPerson().getId() == null && pat.getId() != null) {
             personFacade.create(pat.getPerson());
         }
         if (pat.getId() == null) {

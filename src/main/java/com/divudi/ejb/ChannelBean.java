@@ -17,6 +17,7 @@ import com.divudi.core.entity.ServiceSessionLeave;
 import com.divudi.core.entity.SessionNumberGenerator;
 import com.divudi.core.entity.Staff;
 import com.divudi.core.entity.channel.SessionInstance;
+import com.divudi.core.util.SessionInstanceCreationLock;
 import com.divudi.core.facade.BillFeeFacade;
 import com.divudi.core.facade.BillSessionFacade;
 import com.divudi.core.facade.ServiceSessionFacade;
@@ -32,8 +33,12 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import javax.annotation.Resource;
 import javax.ejb.EJB;
+import javax.ejb.SessionContext;
 import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
 import javax.inject.Inject;
 import javax.persistence.TemporalType;
 
@@ -44,6 +49,8 @@ import javax.persistence.TemporalType;
 @Stateless
 public class ChannelBean {
 
+    @Resource
+    private SessionContext sessionContext;
     @EJB
     private FinalVariables finalVariables;
     ////////
@@ -645,12 +652,7 @@ public class ChannelBean {
                     }
 
                     if (si == null) {
-                        si = createSessionInstancesForServiceSession(ss, workingDate);
-                        if (si.getId() == null) {
-                            sessionInstanceFacade.create(si);
-                        } else {
-                            sessionInstanceFacade.edit(si);
-                        }
+                        si = findOrCreateSessionInstanceSerialised(ss, workingDate);
                     }
 
 //                    si.setDisplayCount(getBillSessionsCount(si));
@@ -756,12 +758,7 @@ public class ChannelBean {
                     SessionInstance si = sessionInstanceFacade.findFirstByJpql(jpql, m, TemporalType.DATE);
 
                     if (si == null) {
-                        si = createSessionInstancesForServiceSession(ss, workingDate);
-                        if (si.getId() == null) {
-                            sessionInstanceFacade.create(si);
-                        } else {
-                            sessionInstanceFacade.edit(si);
-                        }
+                        si = findOrCreateSessionInstanceSerialised(ss, workingDate);
                     }
 
 //                    si.setDisplayCount(getBillSessionsCount(si));
@@ -1036,6 +1033,45 @@ public class ChannelBean {
         newSs.setRoomNo(rIndex);
         createdSessions.add(newSs);
 
+    }
+
+    /**
+     * Finds or creates the instance of a service session for a day, one caller
+     * at a time per service session, and commits it before letting the next
+     * caller look (#24972). Two users opening the same doctor together would
+     * otherwise both create an instance for the day.
+     */
+    private SessionInstance findOrCreateSessionInstanceSerialised(ServiceSession ss, Date sessionDate) {
+        try (SessionInstanceCreationLock.Hold hold = SessionInstanceCreationLock.acquire(ss.getId())) {
+            return sessionContext.getBusinessObject(ChannelBean.class).findOrCreateSessionInstance(ss, sessionDate);
+        }
+    }
+
+    /**
+     * Runs in its own transaction so the created row is committed before
+     * {@link #findOrCreateSessionInstanceSerialised} releases the lock, and
+     * holds a row lock on the service session for the same span. Call it
+     * through the business object, not directly, or REQUIRES_NEW is ignored.
+     */
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+    public SessionInstance findOrCreateSessionInstance(ServiceSession ss, Date sessionDate) {
+        // Row lock on the service session until this transaction commits; it also serialises
+        // a second application that shares this database, which the JVM lock cannot see
+        serviceSessionFacade.findWithLock(ss.getId());
+        String jpql = "select i "
+                + " from SessionInstance i "
+                + " where i.originatingSession=:os "
+                + " and i.retired=:ret "
+                + " and i.sessionDate=:sd";
+        Map m = new HashMap();
+        m.put("ret", false);
+        m.put("os", ss);
+        m.put("sd", sessionDate);
+        SessionInstance si = sessionInstanceFacade.findFirstByJpql(jpql, m, TemporalType.DATE);
+        if (si == null) {
+            si = createSessionInstancesForServiceSession(ss, sessionDate);
+        }
+        return si;
     }
 
     public SessionInstance createSessionInstancesForServiceSession(ServiceSession ss, Date d) {

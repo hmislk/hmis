@@ -817,7 +817,9 @@ public class PharmacySimpleRetailSaleController implements Serializable, Control
         pat.getPerson().setCreater(getSessionController().getLoggedUser());
         pat.getPerson().setCreatedAt(new Date());
 
-        if (pat.getPerson().getId() == null) {
+        // Patient.person is cascade = ALL, so creating a new patient below also saves its person.
+        // Persisting the person separately here wrote a second, unreferenced PERSON row (#23900).
+        if (pat.getPerson().getId() == null && pat.getId() != null) {
             getPersonFacade().create(pat.getPerson());
         }
         if (pat.getId() == null) {

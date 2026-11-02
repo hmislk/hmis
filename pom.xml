@@ -493,11 +493,6 @@
             <version>0.10.2</version>
         </dependency>
         <dependency>
-            <groupId>org.apache.tomcat</groupId>
-            <artifactId>tomcat-catalina</artifactId>
-            <version>9.0.123</version> <!-- or the version compatible with your setup -->
-        </dependency>
-        <dependency>
             <groupId>com.github.hmislk</groupId>
             <artifactId>lims-middleware-libraries</artifactId>
             <version>1.1.4</version>

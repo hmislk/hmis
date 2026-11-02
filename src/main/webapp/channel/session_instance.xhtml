@@ -693,13 +693,15 @@
                                                 <p:outputLabel rendered="#{bs.bill.billTypeAtomic eq 'CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT'}" value="#{bs.bill.referenceBill.onlineBooking.phoneNo}" style="font-size: 12px;" />
                                             </p:column>
 
-                                            <p:column headerText="Items" style="font-size: 12px; width: 50%!important; padding: 1px">
+                                            <p:column headerText="Items" style="font-size: 12px; width: 50%!important; padding: 1px"
+                                                      exportValue="#{bs.bill.billItems.stream().map(bi -&gt; bi.item.name).reduce((a, b) -&gt; a += ', ' += b).orElse('')}">
                                                 <ui:repeat value="#{bs.bill.billItems}" var="bi" varStatus="loop">
                                                     <p:outputLabel value="#{bi.item.name}" style="font-size: 12px;" /><br/>
                                                 </ui:repeat>
                                             </p:column>
 
-                                            <p:column headerText="Value" style="font-size: 12px; width: 10%!important; padding: 1px">
+                                            <p:column headerText="Value" style="font-size: 12px; width: 10%!important; padding: 1px"
+                                                      exportValue="#{bs.bill.billItems.stream().map(bi -&gt; bi.netValue).reduce((a, b) -&gt; a += ', ' += b).orElse('')}">
                                                 <ui:repeat value="#{bs.bill.billItems}" var="bi" varStatus="loop">
                                                     <p:outputLabel value="#{bi.netValue}" style="font-size: 12px;"  /><br/>
                                                 </ui:repeat>

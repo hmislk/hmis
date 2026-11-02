@@ -112,6 +112,8 @@ public class InwardInvoiceJournalController implements Serializable {
     private double grandTotalServiceCharge;
     private double grandTotalChargeTypeDiscount;
     private double grandTotalBillLevelDiscount;
+    private double grandTotalAdjustment;
+    private boolean anyAdjustment;
     private double grandTotalCharges;
     private double grandTotalFinalPayment;
     private double grandTotalDeposit;
@@ -137,6 +139,8 @@ public class InwardInvoiceJournalController implements Serializable {
         grandTotalServiceCharge  = 0;
         grandTotalChargeTypeDiscount = 0;
         grandTotalBillLevelDiscount  = 0;
+        grandTotalAdjustment = 0;
+        anyAdjustment = false;
         grandTotalCharges        = 0;
         grandTotalFinalPayment   = 0;
         grandTotalDeposit        = 0;
@@ -191,6 +195,8 @@ public class InwardInvoiceJournalController implements Serializable {
             grandTotalServiceCharge    += row.getTotalServiceCharge();
             grandTotalChargeTypeDiscount += row.getChargeTypeDiscount();
             grandTotalBillLevelDiscount  += row.getBillLevelDiscount();
+            grandTotalAdjustment += row.getAdjustment();
+            anyAdjustment = anyAdjustment || row.getAdjustment() != 0;
             grandTotalCharges         += row.getGrandTotal();
             grandTotalFinalPayment     += row.getTotalFinalPayment();
             grandTotalDeposit          += row.getTotalDeposit();
@@ -229,10 +235,20 @@ public class InwardInvoiceJournalController implements Serializable {
      * {@code BhtSummeryController.writeDiscountBreakdownToFinanceDetails()} and
      * {@code saveBillItem()}). Neither reaches the service, issue or fee bills
      * that {@link InwardBhtChargeAggregationService} reads, so without this the
-     * journal's Net Total stays above the final bill's. Older final bills pushed
-     * charge-type discounts down onto the fees and had no bill-level discount;
-     * both fields are null or 0 on them, so nothing is counted twice.
-     * Returns Map&lt;encounterId, double[]{chargeTypeDiscount, billLevelDiscount}&gt;.
+     * journal's Net Total stays above the final bill's.
+     *
+     * Older final bills have no {@code BillFinanceDetails}. They pushed
+     * charge-type discounts down onto the fees, which the service already
+     * reads, and copied them to {@code BillItem.discount}. Their
+     * {@code Bill.discount} started as the sum of those amounts, and the old
+     * Discount Amount box overwrote it without reaching the fees. So the
+     * bill-level discount of an older final bill is {@code Bill.discount} less
+     * its items' discounts, and nothing is counted twice (issue #24965).
+     * With the option "Allow Final Bill Total Without Restrictions &amp; Price
+     * Difference" the bill total is the sum of the adjusted values, while its
+     * items keep the charges in grossValue, so the difference is the adjustment
+     * typed on the final bill. It is zero when the option is off.
+     * Returns Map&lt;encounterId, double[]{chargeTypeDiscount, billLevelDiscount, adjustment}&gt;.
      */
     private Map<Long, double[]> fetchFinalBillDiscountsByEncounter(List<PatientEncounter> encounters) {
         Map<Long, double[]> result = new HashMap<>();
@@ -262,7 +278,7 @@ public class InwardInvoiceJournalController implements Serializable {
         if (chargeTypeRows != null) {
             for (Object[] r : chargeTypeRows) {
                 if (r[1] != null) {
-                    result.computeIfAbsent((Long) r[0], k -> new double[2])[0] = ((Number) r[1]).doubleValue();
+                    result.computeIfAbsent((Long) r[0], k -> new double[3])[0] = ((Number) r[1]).doubleValue();
                 }
             }
         }
@@ -274,7 +290,41 @@ public class InwardInvoiceJournalController implements Serializable {
         List<Object[]> billLevelRows = billFacade.findObjectArrayByJpql(billLevelJpql, params, TemporalType.TIMESTAMP);
         if (billLevelRows != null) {
             for (Object[] r : billLevelRows) {
-                result.computeIfAbsent((Long) r[0], k -> new double[2])[1] = ((Number) r[1]).doubleValue();
+                result.computeIfAbsent((Long) r[0], k -> new double[3])[1] = ((Number) r[1]).doubleValue();
+            }
+        }
+
+        String olderBillJpql = "select b.patientEncounter.id, b.discount, sum(bi.discount)"
+                + " from BillItem bi join bi.bill b left join b.billFinanceDetails bfd"
+                + " where bi.retired = false"
+                + " and b.id in :billIds"
+                + " and b.discount <> 0"
+                + " and bfd.billDiscount is null"
+                + " group by b.patientEncounter.id, b.discount";
+        List<Object[]> olderBillRows = billFacade.findObjectArrayByJpql(olderBillJpql, params, TemporalType.TIMESTAMP);
+        if (olderBillRows != null) {
+            for (Object[] r : olderBillRows) {
+                double itemDiscounts = r[2] == null ? 0 : ((Number) r[2]).doubleValue();
+                double billLevelDiscount = ((Number) r[1]).doubleValue() - itemDiscounts;
+                if (billLevelDiscount > 0.005) {
+                    result.computeIfAbsent((Long) r[0], k -> new double[3])[1] = billLevelDiscount;
+                }
+            }
+        }
+
+        String adjustmentJpql = "select b.patientEncounter.id, b.total, sum(bi.grossValue)"
+                + " from BillItem bi join bi.bill b"
+                + " where bi.retired = false"
+                + " and b.id in :billIds"
+                + " group by b.patientEncounter.id, b.total";
+        List<Object[]> adjustmentRows = billFacade.findObjectArrayByJpql(adjustmentJpql, params, TemporalType.TIMESTAMP);
+        if (adjustmentRows != null) {
+            for (Object[] r : adjustmentRows) {
+                double itemGross = r[2] == null ? 0 : ((Number) r[2]).doubleValue();
+                double adjustment = ((Number) r[1]).doubleValue() - itemGross;
+                if (Math.abs(adjustment) > 0.005) {
+                    result.computeIfAbsent((Long) r[0], k -> new double[3])[2] = adjustment;
+                }
             }
         }
         return result;
@@ -550,6 +600,7 @@ public class InwardInvoiceJournalController implements Serializable {
         if (fbd != null) {
             row.setChargeTypeDiscount(fbd[0]);
             row.setBillLevelDiscount(fbd[1]);
+            row.setAdjustment(fbd[2]);
         }
 
         // final payment / deposit / credit company due
@@ -624,7 +675,8 @@ public class InwardInvoiceJournalController implements Serializable {
         columnTotals     = new EnumMap<>(InwardChargeType.class);
         activeChargeTypes = EnumSet.noneOf(InwardChargeType.class);
         grandTotalGross = grandTotalDiscount = grandTotalServiceCharge = 0;
-        grandTotalChargeTypeDiscount = grandTotalBillLevelDiscount = 0;
+        grandTotalChargeTypeDiscount = grandTotalBillLevelDiscount = grandTotalAdjustment = 0;
+        anyAdjustment = false;
         grandTotalCharges = grandTotalCreditSettlement = 0;
         grandTotalFinalPayment = grandTotalDeposit = grandTotalCreditCompanyDue = 0;
     }
@@ -681,6 +733,8 @@ public class InwardInvoiceJournalController implements Serializable {
     public double getGrandTotalServiceCharge() { return grandTotalServiceCharge; }
     public double getGrandTotalChargeTypeDiscount() { return grandTotalChargeTypeDiscount; }
     public double getGrandTotalBillLevelDiscount() { return grandTotalBillLevelDiscount; }
+    public double getGrandTotalAdjustment() { return grandTotalAdjustment; }
+    public boolean isAnyAdjustment() { return anyAdjustment; }
     public double getGrandTotalCharges() { return grandTotalCharges; }
     public double getGrandTotalFinalPayment() { return grandTotalFinalPayment; }
     public double getGrandTotalDeposit() { return grandTotalDeposit; }

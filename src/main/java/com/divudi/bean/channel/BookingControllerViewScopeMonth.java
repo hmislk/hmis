@@ -1388,16 +1388,14 @@ public class BookingControllerViewScopeMonth implements Serializable {
             e.setSendingMessage(smsBody(methodBillSession));
             e.setDepartment(getSessionController().getLoggedUser().getDepartment());
             e.setInstitution(getSessionController().getLoggedUser().getInstitution());
-            e.setPending(false);
+            e.setPending(true);
             getSmsFacade().create(e);
 
-            Boolean sent = smsManager.sendSms(e);
-            e.setSentSuccessfully(sent);
-            getSmsFacade().edit(e);
+            // Sent after this request returns, so the settle does not wait for the SMS gateway (#24970)
+            smsManager.sendSavedSmsAsync(e.getId());
 
         }
 
-        JsfUtil.addSuccessMessage("SMS Sent");
     }
 
     public String smsBody(BillSession r) {
@@ -2956,6 +2954,9 @@ public class BookingControllerViewScopeMonth implements Serializable {
             JsfUtil.addErrorMessage("Please select a patient");
             return;
         }
+        if (patient.getPerson() != null) {
+            patient.getPerson().fillDobFromAgeComponentsIfMissing();
+        }
         if (patientErrorPresent(patient)) {
             JsfUtil.addErrorMessage("Please Enter Patient Details.");
             settleSucessFully = false;
@@ -3115,18 +3116,11 @@ public class BookingControllerViewScopeMonth implements Serializable {
         e.setSendingMessage(createChanellBookingSms(printingBill));
         e.setDepartment(getSessionController().getLoggedUser().getDepartment());
         e.setInstitution(getSessionController().getLoggedUser().getInstitution());
-        e.setPending(false);
+        e.setPending(true);
         e.setSmsType(MessageType.ChannelBooking);
         getSmsFacade().create(e);
-        Boolean sent = smsManager.sendSms(e);
-        e.setSentSuccessfully(sent);
-        getSmsFacade().edit(e);
-
-        if (sent) {
-            JsfUtil.addSuccessMessage("SMS Sent");
-        } else {
-            JsfUtil.addSuccessMessage("SMS Failed");
-        }
+        // Sent after this request returns, so the settle does not wait for the SMS gateway (#24970)
+        smsManager.sendSavedSmsAsync(e.getId());
 
     }
 
@@ -4463,6 +4457,12 @@ public class BookingControllerViewScopeMonth implements Serializable {
         return "/channel/channel_session_activities?faces-redirect=true";
     }
 
+    // An API booking is counted by its completed bill, which has no paidBillSession of its own (#24927)
+    private boolean isApiCompletedBooking(BillSession bs) {
+        return bs.getBill() != null
+                && bs.getBill().getBillTypeAtomic() == BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT;
+    }
+
     public void fillBillSessions() {
         selectedBillSession = null;
         BillType[] billTypes = {
@@ -4480,11 +4480,13 @@ public class BookingControllerViewScopeMonth implements Serializable {
                 + " where bs.retired=false"
                 + " and bs.bill.billType in :bts"
                 + " and type(bs.bill)=:class "
+                + " and (bs.bill.billTypeAtomic is null or bs.bill.billTypeAtomic != :bta) "
                 + " and bs.sessionInstance=:ss "
                 + " order by bs.serialNo ";
         HashMap<String, Object> hh = new HashMap<>();
         hh.put("bts", bts);
         hh.put("class", BilledBill.class);
+        hh.put("bta", BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_PENDING_PAYMENT);
         hh.put("ss", getSelectedSessionInstance());
         billSessions = getBillSessionFacade().findByJpql(sql, hh, TemporalType.DATE);
 
@@ -4533,7 +4535,7 @@ public class BookingControllerViewScopeMonth implements Serializable {
 
                 // Additional check for paid status
                 try {
-                    if (bs.getPaidBillSession() != null) {
+                    if (bs.getPaidBillSession() != null || isApiCompletedBooking(bs)) {
                         paidPatientCount++;
                     }
                 } catch (NullPointerException npe) {
@@ -4562,7 +4564,7 @@ public class BookingControllerViewScopeMonth implements Serializable {
 
                 // Additional check for Oncall status
                 try {
-                    if (bs.getPaidBillSession() == null && !bs.getBill().isCancelled()) {
+                    if (bs.getPaidBillSession() == null && !bs.getBill().isCancelled() && !isApiCompletedBooking(bs)) {
                         onCallPatientCount++;
                     }
                 } catch (NullPointerException npe) {
@@ -4603,11 +4605,13 @@ public class BookingControllerViewScopeMonth implements Serializable {
                 + " where bs.retired=false"
                 + " and bs.bill.billType in :bts"
                 + " and type(bs.bill)=:class "
+                + " and (bs.bill.billTypeAtomic is null or bs.bill.billTypeAtomic != :bta) "
                 + " and bs.sessionInstance=:ss "
                 + " order by bs.serialNo ";
         HashMap<String, Object> hh = new HashMap<>();
         hh.put("bts", bts);
         hh.put("class", BilledBill.class);
+        hh.put("bta", BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_PENDING_PAYMENT);
         hh.put("ss", s);
         tempBillSessions = getBillSessionFacade().findByJpql(sql, hh, TemporalType.DATE);
 
@@ -4656,7 +4660,7 @@ public class BookingControllerViewScopeMonth implements Serializable {
 
                 // Additional check for paid status
                 try {
-                    if (bs.getPaidBillSession() != null) {
+                    if (bs.getPaidBillSession() != null || isApiCompletedBooking(bs)) {
                         paidPatientCount++;
                     }
                 } catch (NullPointerException npe) {
@@ -4685,7 +4689,7 @@ public class BookingControllerViewScopeMonth implements Serializable {
 
                 // Additional check for Oncall status
                 try {
-                    if (bs.getPaidBillSession() == null && !bs.getBill().isCancelled()) {
+                    if (bs.getPaidBillSession() == null && !bs.getBill().isCancelled() && !isApiCompletedBooking(bs)) {
                         onCallPatientCount++;
                     }
                 } catch (NullPointerException npe) {
@@ -4976,34 +4980,6 @@ public class BookingControllerViewScopeMonth implements Serializable {
 
         BillSession savingBillSession;
         savingBillSession = createBillSession(savingBill, savingBillItem, false);
-
-        BillSession bs = new BillSession();
-        bs.setAbsent(false);
-        bs.setBill(savingBill);
-        bs.setBillItem(savingBillItem);
-        bs.setCreatedAt(new Date());
-        bs.setDepartment(getSelectedSessionInstance().getOriginatingSession().getDepartment());
-        bs.setInstitution(getSelectedSessionInstance().getOriginatingSession().getInstitution());
-        bs.setItem(getSelectedSessionInstance().getOriginatingSession());
-        bs.setSessionInstance(getSelectedSessionInstance());
-        bs.setSessionDate(getSelectedSessionInstance().getSessionDate());
-        bs.setSessionTime(getSelectedSessionInstance().getSessionTime());
-        bs.setStaff(getSelectedSessionInstance().getStaff());
-
-        List<Integer> reservedNumbers = CommonFunctions.convertStringToIntegerList(getSelectedSessionInstance().getOriginatingSession().getReserveNumbers());
-        try (SessionBookingLock.Hold hold = SessionBookingLock.acquire(getSelectedSessionInstance())) {
-            Integer count;
-
-            count = serviceSessionBean.getNextNonReservedSerialNumber(getSelectedSessionInstance(), reservedNumbers);
-
-            if (count != null) {
-                bs.setSerialNo(count);
-            } else {
-                bs.setSerialNo(1);
-            }
-
-            getBillSessionFacade().create(bs);
-        }
 
         List<BillFee> savingBillFees = new ArrayList<>();
 
@@ -7741,7 +7717,14 @@ public class BookingControllerViewScopeMonth implements Serializable {
         if (patient.getPerson().getId() == null) {
             patient.getPerson().setCreatedAt(new Date());
             patient.getPerson().setCreater(sessionController.getLoggedUser());
-            personFacade.create(patient.getPerson());
+            if (patient.getId() != null) {
+                // Existing patient: the patient is merged below, which cascades a merge, so a
+                // brand-new person still has to be persisted here.
+                personFacade.create(patient.getPerson());
+            }
+            // New patient: the person is persisted by the cascade from Patient.person
+            // (cascade = ALL) in patientFacade.create below. Persisting it here too leaves an
+            // unreferenced duplicate PERSON row (#23900).
         } else {
             personFacade.edit(patient.getPerson());
         }

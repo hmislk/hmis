@@ -8,6 +8,7 @@ import com.divudi.core.entity.PatientMergeRecord;
 import com.divudi.core.facade.PatientFacade;
 import com.divudi.core.facade.PatientMergeRecordFacade;
 import com.divudi.core.util.JsfUtil;
+import com.divudi.service.patient.PatientMergeException;
 import com.divudi.service.patient.PatientMergeService;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -469,7 +470,7 @@ public class PatientMergeController implements Serializable {
             patientMergeService.unmerge(selectedMergeRecord, sessionController.getLoggedUser());
             JsfUtil.addSuccessMessage("Merge reversed successfully.");
             searchHistory();
-        } catch (IllegalStateException e) {
+        } catch (PatientMergeException | IllegalStateException e) {
             JsfUtil.addErrorMessage(e.getMessage());
         } catch (Exception e) {
             JsfUtil.addErrorMessage("Unmerge failed: " + e.getMessage());

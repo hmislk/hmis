@@ -100,7 +100,7 @@ public class GrnApprovingNativeSqlService {
                 .setParameter(3, BillTypeAtomic.PHARMACY_GRN_PRE.toString())
                 .executeUpdate();
         if (claimed == 0) {
-            throw new IllegalStateException(
+            throw new GrnApprovalException(
                     "GRN approve: bill " + request.getBillId() + " is not in PHARMACY_GRN_PRE state (already approved or invalid).");
         }
 
