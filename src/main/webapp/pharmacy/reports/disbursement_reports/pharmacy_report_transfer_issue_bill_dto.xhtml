@@ -116,10 +116,14 @@
                                                     <i class="fas fa-exchange-alt mr-2"></i>Transfer Details
                                                 </h6>
                                                 <small class="text-muted">
-                                                    <strong>From:</strong>
-                                                    <span class="badge badge-secondary mr-2">#{reportsTransfer.fromDepartment.name}</span>
-                                                    <strong>To:</strong>
-                                                    <span class="badge badge-secondary">#{reportsTransfer.toDepartment.name}</span>
+                                                    <h:panelGroup rendered="#{reportsTransfer.fromDepartment != null}">
+                                                        <strong>From:</strong>
+                                                        <span class="badge badge-secondary mr-2">#{reportsTransfer.fromDepartment.name}</span>
+                                                    </h:panelGroup>
+                                                    <h:panelGroup rendered="#{reportsTransfer.toDepartment != null}">
+                                                        <strong>To:</strong>
+                                                        <span class="badge badge-secondary">#{reportsTransfer.toDepartment.name}</span>
+                                                    </h:panelGroup>
                                                 </small>
                                                 <br/>
                                                 <small class="text-muted">
@@ -354,10 +358,14 @@
                                                     <i class="fas fa-exchange-alt mr-2"></i>Transfer Details
                                                 </h6>
                                                 <small class="text-muted">
-                                                    <strong>From:</strong>
-                                                    <span class="badge badge-secondary mr-2">#{reportsTransfer.fromDepartment.name}</span>
-                                                    <strong>To:</strong>
-                                                    <span class="badge badge-secondary">#{reportsTransfer.toDepartment.name}</span>
+                                                    <h:panelGroup rendered="#{reportsTransfer.fromDepartment != null}">
+                                                        <strong>From:</strong>
+                                                        <span class="badge badge-secondary mr-2">#{reportsTransfer.fromDepartment.name}</span>
+                                                    </h:panelGroup>
+                                                    <h:panelGroup rendered="#{reportsTransfer.toDepartment != null}">
+                                                        <strong>To:</strong>
+                                                        <span class="badge badge-secondary">#{reportsTransfer.toDepartment.name}</span>
+                                                    </h:panelGroup>
                                                 </small>
                                                 <br/>
                                                 <small class="text-muted">
