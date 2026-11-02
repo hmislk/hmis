@@ -1027,3 +1027,25 @@ root {
     border:none!important;
 
 }
+
+/* 28th Oct 2026: Adjust Doctor Appointments table for printing. */
+@media print {
+    .doctor-appointments-print-table .ui-datatable-tablewrapper {
+        overflow: visible !important;
+        width: 100% !important;
+    }
+
+    .doctor-appointments-print-table table {
+        width: 100% !important;
+        min-width: 0 !important;
+        table-layout: fixed !important;
+    }
+
+    .doctor-appointments-print-table th,
+    .doctor-appointments-print-table td {
+        white-space: normal !important;
+        overflow-wrap: anywhere;
+        word-wrap: break-word;
+        font-size: 8pt !important;
+    }
+}
