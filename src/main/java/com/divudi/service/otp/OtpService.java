@@ -217,9 +217,7 @@ public class OtpService {
      * True when the number is valid and in an allowed country.
      */
     public boolean isMobileAcceptable(String mobile) {
-        boolean a = OtpCodeUtil.normalizeMobile(mobile, allowedCountryCodes()) != null;
-        System.out.println("a = " + a);
-        return a;
+        return OtpCodeUtil.normalizeMobile(mobile, allowedCountryCodes()) != null;
     }
 
     /**
