@@ -199,9 +199,12 @@ Tablet, Capsule, ml).
   "departmentType": "Pharmacy",
   "ampId": 404,
   "dblValue": 100.0,
-  "packUnitId": 303
+  "packUnitId": 303,
+  "vmppId": 505
 }
 ```
+
+*Note:* `vmppId` is optional. When omitted and the AMP has a VMP, a matching VMPP is automatically found or created for (VMP, `dblValue`, `packUnitId`). Response `AmppDto` returns `vmpId`, `vmpName`, `vmppId`, and `vmppName`.
 
 **Example - Create VTM:**
 ```bash
@@ -233,6 +236,8 @@ only unique among non-retired rows of that type.
 **PUT** `/api/pharmaceutical_items/{type}/{id}`
 
 Only provided fields are updated (null fields are ignored).
+
+*AMPP VMPP Update Behavior:* When updating an AMPP, `vmppId` can be explicitly provided (validated against the AMP's VMP). If omitted and `dblValue`, `packUnitId`, or `ampId` changes, the matching VMPP is automatically re-resolved or created; if the updated pack fields or AMP no longer permit resolution, the stale VMPP association is cleared.
 
 **Example:**
 ```bash
@@ -408,7 +413,7 @@ write to confirm what was saved.
 - `id`, `name`, `code`, `retired`, `inactive`, `vmpId`, `vmpName`
 
 ### AMPP Response
-- `id`, `name`, `code`, `retired`, `inactive`, `dblValue`, `packUnitName`, `ampId`, `ampName`
+- `id`, `name`, `code`, `retired`, `inactive`, `dblValue`, `packUnitName`, `ampId`, `ampName`, `vmpId`, `vmpName`, `vmppId`, `vmppName`
 
 ### Category / Dosage Form Response
 - `id`, `name`, `code`, `description`, `retired`

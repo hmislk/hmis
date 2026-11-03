@@ -15,6 +15,7 @@ public class AmppRequestDTO extends PharmaceuticalItemBaseRequestDTO implements 
     private Long ampId;
     private Double dblValue;
     private Long packUnitId;
+    private Long vmppId;
 
     public AmppRequestDTO() {
     }
@@ -41,5 +42,13 @@ public class AmppRequestDTO extends PharmaceuticalItemBaseRequestDTO implements 
 
     public void setPackUnitId(Long packUnitId) {
         this.packUnitId = packUnitId;
+    }
+
+    public Long getVmppId() {
+        return vmppId;
+    }
+
+    public void setVmppId(Long vmppId) {
+        this.vmppId = vmppId;
     }
 }
