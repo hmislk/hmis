@@ -542,8 +542,28 @@ public class BhtPaymentSummaryReportController implements Serializable {
                 + "   Date Basis: " + ("admissionDate".equals(reportDateBasis) ? "Admission Date" : "Discharge Date");
         com.lowagie.text.Paragraph subPara = new com.lowagie.text.Paragraph(range, subFont);
         subPara.setAlignment(com.lowagie.text.Element.ALIGN_CENTER);
-        subPara.setSpacingAfter(10f);
+        subPara.setSpacingAfter(2f);
         pdf.add(subPara);
+
+        // Remaining filters (issue #24946), from the same Generate-time
+        // snapshot the Excel export uses, so the PDF header always matches
+        // the exported rows. The date range is already on the line above.
+        StringBuilder filters = new StringBuilder();
+        if (reportFilterPairs != null) {
+            for (String[] pair : reportFilterPairs) {
+                if ("From".equals(pair[0]) || "To".equals(pair[0]) || "Date Basis".equals(pair[0])) {
+                    continue;
+                }
+                if (filters.length() > 0) {
+                    filters.append("   ");
+                }
+                filters.append(pair[0]).append(": ").append(pair[1]);
+            }
+        }
+        com.lowagie.text.Paragraph filterPara = new com.lowagie.text.Paragraph(filters.toString(), subFont);
+        filterPara.setAlignment(com.lowagie.text.Element.ALIGN_CENTER);
+        filterPara.setSpacingAfter(10f);
+        pdf.add(filterPara);
     }
 
     /**
