@@ -259,6 +259,15 @@ public class WebUserController implements Serializable {
         if (current == null) {
             return;
         }
+        // webUserPerson has no cascade, so Contact fields (email, mobile) must be saved on the Person itself
+        Person person = current.getWebUserPerson();
+        if (person != null) {
+            if (person.getId() == null) {
+                getPersonFacade().create(person);
+            } else {
+                getPersonFacade().edit(person);
+            }
+        }
         if (current.getId() == null || current.getId() == 0) {
             getFacade().create(current);
             JsfUtil.addSuccessMessage("Saved");
