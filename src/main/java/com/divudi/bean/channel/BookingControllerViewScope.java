@@ -4393,7 +4393,8 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         try (SessionBookingLock.Hold hold = SessionBookingLock.acquire(getSelectedSessionInstance())) {
             if (limitToMaxNo) {
                 // The stored counts can be stale (another counter or an online booking); the shared check
-                // locks the session row, recounts the rows and adds open agent holds (#25074)
+                // recounts the rows and adds open agent holds (#25074). Its database row lock is released when
+                // it returns, so it is SessionBookingLock above that serialises this check and the save.
                 if (channelService.isSessionFullForNewBooking(getSelectedSessionInstance(), reservedBooking)) {
                     JsfUtil.addErrorMessage("Error: The maximum number of bookings (" + getSelectedSessionInstance().getMaxNo() + ") has been Reached.");
                     return;
