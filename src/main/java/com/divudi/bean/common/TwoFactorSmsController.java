@@ -78,6 +78,8 @@ public class TwoFactorSmsController implements Serializable {
     // Mobile verification from My Authenticator App (change number)
     private boolean mobileVerificationInProgress;
     private boolean mobileCodeSent;
+    // Masked number the last verification code went to (shown in the "Code sent" banner)
+    private String mobileSentToMasked;
     private String mobileInput;
     private String mobileCode;
     private long mobileCodeExpiresAtMs;
@@ -313,6 +315,7 @@ public class TwoFactorSmsController implements Serializable {
     public void cancelMobileVerification() {
         mobileVerificationInProgress = false;
         mobileCodeSent = false;
+        mobileSentToMasked = null;
         mobileCode = null;
         mobileInput = null;
         mobileCodeExpiresAtMs = 0;
@@ -403,11 +406,12 @@ public class TwoFactorSmsController implements Serializable {
                     resendAvailableAtMs = nowMs + r.getRetryAfterSeconds() * 1000L;
                 } else {
                     mobileCodeSent = true;
+                    mobileSentToMasked = OtpCodeUtil.maskMobile(sentTo);
                     mobileCodeExpiresAtMs = r.getExpiresAt().getTime();
                     mobileResendAvailableAtMs = nowMs + r.getRetryAfterSeconds() * 1000L;
                 }
                 twoFactorAuthController.logSmsEvent(u, u, TwoFactorAuthController.EVENT_SMS_CODE_SENT, details, null);
-                JsfUtil.addSuccessMessage("A 6-digit code was sent to " + OtpCodeUtil.maskMobile(sentTo) + ".");
+                // No pop-up message: the screen shows a "Code sent" banner while the code is active
                 break;
             case RATE_LIMITED:
                 if (login) {
@@ -537,6 +541,10 @@ public class TwoFactorSmsController implements Serializable {
 
     public boolean isMobileVerificationInProgress() {
         return mobileVerificationInProgress;
+    }
+
+    public String getMobileSentToMasked() {
+        return mobileSentToMasked;
     }
 
     public boolean isMobileCodeSent() {
