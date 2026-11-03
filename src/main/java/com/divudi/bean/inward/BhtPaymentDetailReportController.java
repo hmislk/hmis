@@ -49,6 +49,11 @@ import javax.faces.context.FacesContext;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
 
 /**
  * Controller for BHT Deposit and Credit Settlement Detail Report. One row per
@@ -142,6 +147,13 @@ public class BhtPaymentDetailReportController implements Serializable {
         usedPaymentMethods = new ArrayList<>();
         postPaymentTotalByMethod = new LinkedHashMap<>();
         usedPostPaymentMethods = new ArrayList<>();
+
+        // Snapshot the filters that produced reportRows - see the field
+        // javadoc on reportFilterDescription for why this must not be
+        // recomputed from the (possibly since-changed) live filter fields.
+        // Taken before the empty-result return below so an empty report never
+        // carries the previous run's filter description into its exports.
+        reportFilterDescription = buildFilterDescription(new SimpleDateFormat("dd/MM/yyyy hh:mm a"));
 
         List<PatientEncounter> encounters = fetchEncounters();
         if (encounters == null || encounters.isEmpty()) {
@@ -272,11 +284,6 @@ public class BhtPaymentDetailReportController implements Serializable {
         usedDepositMethods = new ArrayList<>(depositTotalByMethod.keySet());
         usedPaymentMethods = new ArrayList<>(paymentTotalByMethod.keySet());
         usedPostPaymentMethods = new ArrayList<>(postPaymentTotalByMethod.keySet());
-
-        // Snapshot the filters that produced reportRows - see the field
-        // javadoc on reportFilterDescription for why this must not be
-        // recomputed from the (possibly since-changed) live filter fields.
-        reportFilterDescription = buildFilterDescription(new SimpleDateFormat("dd/MM/yyyy hh:mm a"));
     }
 
     public double getTotalForDepositMethod(PaymentMethod pm) {
@@ -672,6 +679,63 @@ public class BhtPaymentDetailReportController implements Serializable {
         } catch (Exception e) {
             Logger.getLogger(BhtPaymentDetailReportController.class.getName()).log(Level.SEVERE, "Error exporting BHT payment summary to PDF", e);
             JsfUtil.addErrorMessage("Failed to generate PDF: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Excel ({@code p:dataExporter type="xlsx"}) post-processor (issue
+     * #24945). The default exporter writes only the table, so the downloaded
+     * file did not say which filters (period, status, payment method,
+     * department, etc.) produced its rows - unlike the PDF export. This
+     * inserts the same title and filter lines the PDF prints above the table,
+     * and the same totals line below it, using the
+     * {@link #reportFilterDescription} snapshot so the header always matches
+     * the exported rows.
+     */
+    public void postProcessXLSBhtPaymentSummary(Object document) {
+        if (!(document instanceof Workbook)) {
+            return;
+        }
+        Workbook workbook = (Workbook) document;
+        if (workbook.getNumberOfSheets() == 0) {
+            return;
+        }
+        Sheet sheet = workbook.getSheetAt(0);
+
+        org.apache.poi.ss.usermodel.Font boldFont = workbook.createFont();
+        boldFont.setBold(true);
+        CellStyle boldStyle = workbook.createCellStyle();
+        boldStyle.setFont(boldFont);
+
+        List<String> headerLines = new ArrayList<>();
+        headerLines.add("BHT Deposit and Credit Settlement Summary");
+        if (reportFilterDescription != null) {
+            for (String part : reportFilterDescription.split("\\s+\\|\\s+")) {
+                headerLines.add(part.trim());
+            }
+        }
+        headerLines.add("Generated: " + new SimpleDateFormat("dd/MM/yyyy hh:mm a").format(new Date()));
+
+        // One blank row between the header block and the table.
+        int headerRowCount = headerLines.size() + 1;
+        int lastRow = sheet.getLastRowNum();
+        if (sheet.getPhysicalNumberOfRows() > 0) {
+            sheet.shiftRows(0, lastRow, headerRowCount);
+        }
+
+        for (int i = 0; i < headerLines.size(); i++) {
+            Cell cell = sheet.createRow(i).createCell(0);
+            cell.setCellValue(headerLines.get(i));
+            if (i == 0) {
+                cell.setCellStyle(boldStyle);
+            }
+        }
+
+        if (reportRows != null && !reportRows.isEmpty()) {
+            Row totalsRow = sheet.createRow(sheet.getLastRowNum() + 2);
+            Cell totalsCell = totalsRow.createCell(0);
+            totalsCell.setCellValue(buildTotalsFooter(new DecimalFormat("#,##0.00")));
+            totalsCell.setCellStyle(boldStyle);
         }
     }
 
