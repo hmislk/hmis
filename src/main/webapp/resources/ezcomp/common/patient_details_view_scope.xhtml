@@ -83,7 +83,7 @@
                                 update="ptImp selectPatient editPatient viewPatient"
                                 ajax="false"
                                 styleClass="btn-sm mx-1"/>
-                            <p:defaultCommand target="btnSearchbyPhoneNo"> </p:defaultCommand>
+                            <p:defaultCommand target="btnSearchbyPhoneNo" scope="quickSearch"> </p:defaultCommand>
                             <p:commandButton 
                                 id="btnAddNewPatient"
                                 icon="fa fa-plus-circle" 
@@ -152,7 +152,7 @@
                                             <c:if test="#{not empty sessionController.applicationPreference.nameRegex}">
                                                 <f:validateRegex pattern="#{sessionController.applicationPreference.nameRegex}"/>
                                             </c:if>
-
+                                            <p:ajax event="blur" process="@this" />
                                         </p:inputText>
                                     </div>
                                 </div>
@@ -228,6 +228,7 @@
                                             <c:if test="#{not empty sessionController.applicationPreference.mobileRegex}">
                                                 <f:validateRegex pattern="#{sessionController.applicationPreference.mobileRegex}"/>
                                             </c:if>
+                                            <p:ajax event="blur" process="@this" />
                                         </p:inputText>
                                     </div>
                                     <div class="col-md-3 p-1">
@@ -240,6 +241,7 @@
                                             <c:if test="#{not empty sessionController.applicationPreference.mobileRegex}">
                                                 <f:validateRegex pattern="#{sessionController.applicationPreference.mobileRegex}"/>
                                             </c:if>
+                                            <p:ajax event="blur" process="@this" />
                                         </p:inputText>
                                     </div>
                                     <div class="col-md-3 p-1">
