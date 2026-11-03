@@ -203,9 +203,14 @@ public class OpdBillItemDTO implements Serializable {
         }
         Calendar dob = Calendar.getInstance();
         dob.setTime(patientDob);
-        Calendar now = Calendar.getInstance();
-        int years = now.get(Calendar.YEAR) - dob.get(Calendar.YEAR);
-        if (now.get(Calendar.DAY_OF_YEAR) < dob.get(Calendar.DAY_OF_YEAR)) {
+        // Age at the bill date so a historical bill shows a stable age; today only if billedAt is missing.
+        Calendar reference = Calendar.getInstance();
+        reference.setTime(billedAt != null ? billedAt : new Date());
+        int years = reference.get(Calendar.YEAR) - dob.get(Calendar.YEAR);
+        int refMonth = reference.get(Calendar.MONTH);
+        int dobMonth = dob.get(Calendar.MONTH);
+        if (refMonth < dobMonth
+                || (refMonth == dobMonth && reference.get(Calendar.DAY_OF_MONTH) < dob.get(Calendar.DAY_OF_MONTH))) {
             years--;
         }
         return years + " Y";
