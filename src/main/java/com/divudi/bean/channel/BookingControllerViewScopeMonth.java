@@ -7746,6 +7746,8 @@ public class BookingControllerViewScopeMonth implements Serializable {
 //    @Override
     public void saveSelectedPatient() {
         saveSelected(patient);
+        setPatientDetailsEditable(false);
+        JsfUtil.addSuccessMessage("Patient details saved successfully.");
     }
 
 //    @Override
