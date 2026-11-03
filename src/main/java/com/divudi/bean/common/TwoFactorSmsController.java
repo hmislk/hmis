@@ -337,6 +337,12 @@ public class TwoFactorSmsController implements Serializable {
             JsfUtil.addErrorMessage("SMS codes are not enabled for your account. Contact your administrator.");
             return;
         }
+        if (u.isTwoFactorMobileVerified()) {
+            // Another session may have verified a number since this one started; only an administrator changes it
+            cancelMobileVerification();
+            JsfUtil.addErrorMessage("Your mobile number is already verified. If it has changed, inform your system administrator.");
+            return;
+        }
         if (mobileInput == null || mobileInput.trim().isEmpty()) {
             JsfUtil.addErrorMessage("Enter your mobile number.");
             return;
@@ -355,6 +361,12 @@ public class TwoFactorSmsController implements Serializable {
         WebUser u = loggedUserFromDb();
         if (u == null || !twoFactorAuthController.isSmsAllowedFor(u)) {
             JsfUtil.addErrorMessage("SMS codes are not enabled for your account. Contact your administrator.");
+            return;
+        }
+        if (u.isTwoFactorMobileVerified()) {
+            // Another session may have verified a number since this one started; only an administrator changes it
+            cancelMobileVerification();
+            JsfUtil.addErrorMessage("Your mobile number is already verified. If it has changed, inform your system administrator.");
             return;
         }
         if (OtpCodeUtil.cleanCode(mobileCode) == null) {
