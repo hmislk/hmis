@@ -87,8 +87,14 @@ public abstract class AbstractFacade<T> {
     private static final java.util.regex.Pattern QUERY_PATTERN
             = java.util.regex.Pattern.compile("(^|\\s)Query:.*?(?=\\s*bind\\s*=>|\\sCall:|\\z)",
                     java.util.regex.Pattern.DOTALL);
+    /**
+     * Quoted MySQL values such as {@code Duplicate entry 'x'} are also
+     * matched over the whole message: {@code [^']*} spans newlines, so a
+     * value that contains a line break is removed in full.
+     */
     private static final java.util.regex.Pattern QUOTED_VALUE_PATTERN
-            = java.util.regex.Pattern.compile("(Duplicate entry |value: ?)'[^']*'");
+            = java.util.regex.Pattern.compile("(Duplicate entry |value: ?)'[^']*'",
+                    java.util.regex.Pattern.DOTALL);
 
     /**
      * Describes a throwable and its causes as "Class: message" items joined
@@ -119,10 +125,11 @@ public abstract class AbstractFacade<T> {
      * Removes parameter values from an exception message. Across the whole
      * message (values may span lines) it replaces an EclipseLink
      * {@code bind => [...]} segment with {@code bind => [redacted]} and the
-     * {@code Call:} and {@code Query:} text with {@code [redacted]}; per line
-     * it then replaces quoted MySQL values such as {@code Duplicate entry 'x'}
-     * with {@code '[redacted]'}. Lines are joined with " / " so the log entry
-     * stays on one line. Package-private for unit testing.
+     * {@code Call:} and {@code Query:} text with {@code [redacted]}, and
+     * quoted MySQL values such as {@code Duplicate entry 'x'} with
+     * {@code '[redacted]'}. Only then is the message split into lines, which
+     * are joined with " / " so the log entry stays on one line.
+     * Package-private for unit testing.
      */
     static String redactBoundValues(String message) {
         if (message == null) {
@@ -131,10 +138,10 @@ public abstract class AbstractFacade<T> {
         String redacted = BIND_PATTERN.matcher(message).replaceAll("bind => [redacted]");
         redacted = CALL_PATTERN.matcher(redacted).replaceAll("$1Call: [redacted]");
         redacted = QUERY_PATTERN.matcher(redacted).replaceAll("$1Query: [redacted]");
+        redacted = QUOTED_VALUE_PATTERN.matcher(redacted).replaceAll("$1'[redacted]'");
         StringBuilder sb = new StringBuilder();
         for (String line : redacted.split("\\r?\\n")) {
-            String cleaned = QUOTED_VALUE_PATTERN.matcher(line).replaceAll("$1'[redacted]'");
-            cleaned = cleaned.trim();
+            String cleaned = line.trim();
             if (cleaned.isEmpty()) {
                 continue;
             }

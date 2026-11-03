@@ -73,6 +73,18 @@ public class AbstractFacadeLogSanitizerTest {
     }
 
     @Test
+    public void redactBoundValues_removesMultiLineQuotedMysqlValues() {
+        String result = AbstractFacade.redactBoundValues(
+                "Duplicate entry 'v\nw' for key 'K'\nIncorrect integer value: 'a\r\nb' for column 'AGE'");
+        assertFalse(result.contains("v / w"), result);
+        assertFalse(result.contains("'v"), result);
+        assertFalse(result.contains("w'"), result);
+        assertFalse(result.contains("'a"), result);
+        assertFalse(result.contains("b'"), result);
+        assertEquals("Duplicate entry '[redacted]' for key 'K' / Incorrect integer value: '[redacted]' for column 'AGE'", result);
+    }
+
+    @Test
     public void redactBoundValues_handlesNull() {
         assertNull(AbstractFacade.redactBoundValues(null));
     }
