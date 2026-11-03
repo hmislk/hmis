@@ -590,6 +590,8 @@ public class PharmacyStockTakeController implements Serializable {
             return null;
         }
         Department dept = snapshotBill.getDepartment();
+        // Capture before the in-memory item list is cleared after the batch persist
+        Long settledItemsCount = (long) snapshotBill.getBillItems().size();
         if (snapshotBill.getId() == null) {
             String deptId = billNumberBean.departmentBillNumberGenerator(dept, BillType.PharmacySnapshotBill, BillClassType.BilledBill, BillNumberSuffix.NONE);
             snapshotBill.setInsId(deptId);
@@ -622,7 +624,7 @@ public class PharmacyStockTakeController implements Serializable {
                 snapshotBill.getCreatedAt(),
                 snapshotBill.getInstitution() != null ? snapshotBill.getInstitution().getName() : null,
                 snapshotBill.getDepartment() != null ? snapshotBill.getDepartment().getName() : null,
-                0L,
+                settledItemsCount,
                 snapshotBill.getNetTotal(),
                 Boolean.FALSE
         );
@@ -3530,12 +3532,18 @@ public class PharmacyStockTakeController implements Serializable {
      */
     public int getSnapshotBillItemsCount() {
         // Use cached count from DTO first (no database hit)
-        if (snapshotBillDisplay != null && snapshotBillDisplay.getItemsCount() != null) {
+        if (snapshotBillDisplay != null && snapshotBillDisplay.getItemsCount() != null
+                && snapshotBillDisplay.getItemsCount() > 0L) {
             return snapshotBillDisplay.getItemsCount().intValue();
         }
 
-        // Fallback to DTO list size
-        return getSnapshotItems().size();
+        // Fallback to DTO list size (a zero cached count is not trusted)
+        List<com.divudi.core.data.dto.SnapshotBillItemDTO> items = getSnapshotItems();
+        int count = items != null ? items.size() : 0;
+        if (snapshotBillDisplay != null && count > 0) {
+            snapshotBillDisplay.setItemsCount((long) count);
+        }
+        return count;
     }
 
     public double getSnapshotRetailTotal() {
