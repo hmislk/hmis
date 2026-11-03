@@ -1259,7 +1259,7 @@ public class ChannelReportTemplateController implements Serializable {
         }
         
         j2 += " order by s.person.name ";
-        m2.put("fd", fromDate);
+        m2.put("fd", getFromDate());
 
         channelConsultantCountDTOs = (List<ChannelConsultantCountDTO>) billFacade.findLightsByJpql(j2, m2, TemporalType.DATE);
 
@@ -1341,7 +1341,7 @@ public class ChannelReportTemplateController implements Serializable {
         m.put("bta", btaList);
         m.put("canClass", CancelledBill.class);
         m.put("bta", btaList);
-        m.put("fd", fromDate);
+        m.put("fd", getFromDate());
 
         List<ChannelConsultantCountDTO> billSessions = (List<ChannelConsultantCountDTO>) billFacade.findLightsByJpql(j, m, TemporalType.DATE);
 
