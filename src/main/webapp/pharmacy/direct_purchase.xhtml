@@ -696,7 +696,9 @@
                                             id="editDoe"
                                             inputStyleClass="w-100"
                                             pattern="dd MM yy"
-                                            value="#{pharmacyDirectPurchaseController.editingBillItem.pharmaceuticalBillItem.doe}" />
+                                            value="#{pharmacyDirectPurchaseController.editingBillItem.pharmaceuticalBillItem.doe}">
+                                            <p:ajax event="dateSelect" process="@this editBatch" update="editBatch" listener="#{pharmacyDirectPurchaseController.setEditingBatch}" />
+                                        </p:calendar>
 
                                         <p:outputLabel for="editBatch" value="Batch No" />
                                         <p:inputText

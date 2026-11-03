@@ -850,23 +850,47 @@ public class PharmacyDirectPurchaseController implements Serializable {
     public PharmacyDirectPurchaseController() {
     }
 
+    /**
+     * Batch value last derived automatically from an expiry date, and the bill
+     * item it was derived for. Used so a batch typed by hand is never
+     * overwritten when the expiry date changes.
+     */
+    private String lastAutoBatch;
+    private BillItem lastAutoBatchOwner;
+
     public void setBatch() {
-        if (getCurrentBillItem() != null) {
-            PharmaceuticalBillItem pharmaceuticalBillItem = getCurrentBillItem().getPharmaceuticalBillItem();
+        deriveBatchFromExpiry(getCurrentBillItem());
+    }
 
-            if (pharmaceuticalBillItem != null) {
-                String stringValue = pharmaceuticalBillItem.getStringValue();
+    public void setEditingBatch() {
+        deriveBatchFromExpiry(editingBillItem);
+    }
 
-                if (stringValue != null && stringValue.trim().isEmpty()) {
-                    Date date = pharmaceuticalBillItem.getDoe();
+    private static String batchFromExpiry(Date date) {
+        return date == null ? null : new SimpleDateFormat("ddMMyyyy").format(date);
+    }
 
-                    if (date != null) {
-                        DateFormat df = new SimpleDateFormat("ddMMyyyy");
-                        String reportDate = df.format(date);
-                        pharmaceuticalBillItem.setStringValue(reportDate);
-                    }
-                }
-            }
+    private void deriveBatchFromExpiry(BillItem billItem) {
+        if (billItem == null) {
+            return;
+        }
+        PharmaceuticalBillItem pharmaceuticalBillItem = billItem.getPharmaceuticalBillItem();
+        if (pharmaceuticalBillItem == null) {
+            return;
+        }
+        Date date = pharmaceuticalBillItem.getDoe();
+        if (date == null) {
+            return;
+        }
+        String batch = pharmaceuticalBillItem.getStringValue();
+        String previousAuto = (lastAutoBatchOwner == billItem) ? lastAutoBatch : null;
+        boolean empty = batch == null || batch.trim().isEmpty();
+        boolean wasAutoDerived = previousAuto != null && previousAuto.equals(batch);
+        if (empty || wasAutoDerived) {
+            String derived = batchFromExpiry(date);
+            pharmaceuticalBillItem.setStringValue(derived);
+            lastAutoBatch = derived;
+            lastAutoBatchOwner = billItem;
         }
     }
 
@@ -1226,6 +1250,13 @@ public class PharmacyDirectPurchaseController implements Serializable {
 
     public void prepareEditBillItem(BillItem bi) {
         this.editingBillItem = bi;
+        // A batch already on the saved row is treated as the user's own unless it
+        // equals the value derived from its current expiry date.
+        PharmaceuticalBillItem pbi = bi == null ? null : bi.getPharmaceuticalBillItem();
+        if (pbi != null) {
+            lastAutoBatch = batchFromExpiry(pbi.getDoe());
+            lastAutoBatchOwner = bi;
+        }
     }
 
     public void updateBillItem() {
