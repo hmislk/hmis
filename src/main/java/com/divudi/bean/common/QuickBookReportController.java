@@ -1191,7 +1191,7 @@ public class QuickBookReportController implements Serializable {
             String trnsMemo;
             if (isReturnTransaction) {
                 trnsDocNum = b.getDeptId();
-                trnsMemo = originalGrn != null ? originalGrn.getInvoiceNumber() : "";
+                trnsMemo = originalGrn != null && originalGrn.getInvoiceNumber() != null ? originalGrn.getInvoiceNumber() : "";
             } else {
                 trnsDocNum = b.getInvoiceNumber();
                 trnsMemo = b.getDeptId();
@@ -1330,7 +1330,7 @@ public class QuickBookReportController implements Serializable {
             }
 
             String trnsMemo = isReturnTransaction
-                    ? (originalGrn != null ? originalGrn.getInvoiceNumber() : "")
+                    ? (originalGrn != null && originalGrn.getInvoiceNumber() != null ? originalGrn.getInvoiceNumber() : "")
                     : b.getInvoiceNumber();
             qbf = new QuickBookFormat("TRNS", trnsType, sdf.format(approvalDate), "Accounts Payable:Trade Creditor-" + b.getDepartment().getName(), supplierName, "", "", transAmount, b.getDeptId(), b.getDeptId(), b.getDepartment().getName(), trnsMemo, "", "", "", "", "");
             quickBookFormats.add(qbf);
