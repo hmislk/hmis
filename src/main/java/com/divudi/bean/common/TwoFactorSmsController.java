@@ -269,6 +269,14 @@ public class TwoFactorSmsController implements Serializable {
         return mobileSetup && !loginCodeSent;
     }
 
+    /**
+     * True when the mobile saved in the user's staff record is a valid number
+     * from an allowed country, so a first SMS login can send a code to it.
+     */
+    public boolean hasUsableStaffMobile(WebUser u) {
+        return otpService.normalizeMobile(staffMobileOf(u)) != null;
+    }
+
     private static String staffMobileOf(WebUser u) {
         if (u == null || u.getWebUserPerson() == null || u.getWebUserPerson().getMobile() == null) {
             return null;
