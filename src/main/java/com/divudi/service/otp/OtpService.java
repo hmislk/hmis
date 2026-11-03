@@ -127,10 +127,8 @@ public class OtpService {
         }
         smsFacade.create(sms);
 
-        // TEMPORARY: no SMS gateway is configured yet, so the code is printed to the console.
-        // Remove this before the feature goes to any hospital (codes must never be logged).
-        System.out.println("[TEMP OTP] user=" + user.getName() + " purpose=" + purpose + " mobile=" + sendTo + " code=" + code);
-        boolean devLog = true || Boolean.getBoolean(DEV_LOG_PROPERTY);
+        // Codes are logged only on a developer machine started with -Dhmis.otp.devLogCode=true
+        boolean devLog = Boolean.getBoolean(DEV_LOG_PROPERTY);
         if (devLog) {
             LOG.log(Level.WARNING, "[DEV ONLY - hmis.otp.devLogCode] OTP for user {0} ({1}): {2}",
                     new Object[]{user.getName(), purpose, code});
