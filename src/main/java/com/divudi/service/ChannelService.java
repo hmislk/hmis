@@ -1101,6 +1101,44 @@ public class ChannelService {
         }
     }
 
+    /**
+     * Locks the session row in the database, recounts its bookings and, only if it still has room,
+     * reserves the agent booking, all in one transaction. The row lock keeps the maximum when more
+     * than one application server books against the same database, which SessionBookingLock alone
+     * cannot (#25050).
+     *
+     * @throws ChannelSessionFullException when the session has reached its maximum
+     */
+    public Bill reserveAgentBookingThroughApiWithinCapacity(OnlineBooking newBooking, SessionInstance session, String refNo, Institution creditCompany) {
+        SessionInstance locked = lockAndRecountSession(session);
+        if (isFullyBookedSession(locked)) {
+            throw new ChannelSessionFullException("Session is Full. Can't add online bookings");
+        }
+        return addToReserveAgentBookingThroughApi(false, newBooking, locked, refNo, null, creditCompany);
+    }
+
+    /**
+     * Locks the session row, recounts its bookings and settles the held agent booking only if the
+     * session still has room, all in one transaction (#25050).
+     *
+     * @throws ChannelSessionFullException when the session has reached its maximum
+     */
+    public Bill settleOnlineAgentInitialBookingWithinCapacity(BillSession preBillSession, String refNo, double agencyCharge) {
+        SessionInstance locked = lockAndRecountSession(preBillSession.getSessionInstance());
+        if (isFullyBookedSession(locked)) {
+            throw new ChannelSessionFullException("Session is Full. Can't add online bookings");
+        }
+        return settleOnlineAgentInitialBooking(preBillSession, refNo, agencyCharge);
+    }
+
+    // Must be the first database access of the transaction: MySQL's consistent reads that follow
+    // then see every booking another server committed before it released the row lock.
+    private SessionInstance lockAndRecountSession(SessionInstance session) {
+        SessionInstance locked = sessionInstanceFacade.findWithLock(session.getId());
+        fillBillSessionsAndUpdateBookingsCountInSessionInstance(locked);
+        return locked;
+    }
+
     public Bill addToReserveAgentBookingThroughApi(boolean forReservedNumbers, OnlineBooking newBooking, SessionInstance session, String refNo, WebUser user, Institution creditCompany) {
         //saveOrUpdatePatientDetails(patient);
         updateAndSaveOnlineBooking(newBooking, session);

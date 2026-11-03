@@ -62,6 +62,7 @@ import com.divudi.core.facade.SpecialityFacade;
 import com.divudi.core.facade.StaffFacade;
 import com.divudi.core.util.CommonFunctions;
 import com.divudi.core.util.SessionBookingLock;
+import com.divudi.service.ChannelSessionFullException;
 import com.divudi.service.ChannelService;
 import com.divudi.service.PatientService;
 import com.divudi.service.WebSocketService;
@@ -1115,13 +1116,11 @@ public class ChannelApi {
         // Serial number allocation and the booking insert must not interleave with another
         // booking for the same session; re-check capacity under the same lock (#24785).
         try (SessionBookingLock.Hold hold = SessionBookingLock.acquire(session)) {
-            // The booked count is a stored figure; recompute it under the lock so the check sees bookings just saved.
-            channelService.fillBillSessionsAndUpdateBookingsCountInSessionInstance(session);
-            if (channelService.isFullyBookedSession(session)) {
-                JSONObject response = commonFunctionToErrorResponse("Session is Full. Can't add online bookings");
-                return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
-            }
-            bill = channelService.addToReserveAgentBookingThroughApi(false, newBooking, session, clientsReferanceNo, null, bookingAgency);
+            // The service recounts under a database row lock, so the maximum holds across servers too (#25050).
+            bill = channelService.reserveAgentBookingThroughApiWithinCapacity(newBooking, session, clientsReferanceNo, bookingAgency);
+        } catch (ChannelSessionFullException e) {
+            JSONObject response = commonFunctionToErrorResponse(e.getMessage());
+            return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
         }
 
         try {
@@ -1527,12 +1526,13 @@ public class ChannelApi {
             } else if (!temporarySavedBill.getSingleBillSession().getSessionInstance().isAcceptOnlineBookings()) {
                 JSONObject response = commonFunctionToErrorResponse("Session is hold for online bookings");
                 return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
-            } else if (channelService.isFullyBookedSession(temporarySavedBill.getSingleBillSession().getSessionInstance())) {
-                JSONObject response = commonFunctionToErrorResponse("Session is Full. Can't add online bookings");
-                return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
             }
 
-            completedBill = channelService.settleOnlineAgentInitialBooking(temporarySavedBill.getSingleBillSession(), clientsReferanceNo, agencyCharge);
+            // The stored booked count can be stale; the service recounts under a database row lock (#25050).
+            completedBill = channelService.settleOnlineAgentInitialBookingWithinCapacity(temporarySavedBill.getSingleBillSession(), clientsReferanceNo, agencyCharge);
+        } catch (ChannelSessionFullException e) {
+            JSONObject response = commonFunctionToErrorResponse(e.getMessage());
+            return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
         }
         LOGGER.log(Level.FINE, "Online booking complete: settle took {0} ms", System.currentTimeMillis() - settleStartedAt);
 
