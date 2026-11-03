@@ -30,6 +30,15 @@ git checkout <branch-name>
 
 Always fetch first — Codex may have auto-pushed fixes you don't have locally.
 
+### 1a. Contributor PR opened against `master`
+Run `git fetch origin pull/<N>/head:pr-<N>` and
+`git rev-list --count origin/development..pr-<N>`.
+If the count is more than the PR's own commits, the branch was cut
+from `master`: retargeting alone pulls master-only commits into the
+diff. Ask the author to rebase onto `origin/development`, or rebuild
+the branch from `origin/development` with only their fix commits
+(keep authorship), then retarget.
+
 ### 2. Investigate Comments
 
 - Read the PR link and each reviewer comment carefully
