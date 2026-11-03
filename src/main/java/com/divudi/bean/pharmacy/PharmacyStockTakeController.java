@@ -2582,7 +2582,7 @@ public class PharmacyStockTakeController implements Serializable {
         // Same constructor as the print page (includes departmentType), then patch departmentId
         String jpql = "select new com.divudi.core.light.common.PharmacySnapshotBillLight("
                 + "b.id, b.deptId, b.createdAt, ins.name, dept.name, "
-                + "(select count(bi) from BillItem bi where bi.bill = b), b.netTotal, b.completed, b.departmentType) "
+                + "0L, b.netTotal, b.completed, b.departmentType) "
                 + "from Bill b left join b.institution ins left join b.department dept where b.id = :billId";
 
         HashMap<String, Object> params = new HashMap<>();
