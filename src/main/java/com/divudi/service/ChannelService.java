@@ -1101,6 +1101,66 @@ public class ChannelService {
         }
     }
 
+    /**
+     * Locks the session row in the database, recounts its bookings and, only if it still has room,
+     * reserves the agent booking, all in one transaction. The row lock keeps the maximum when more
+     * than one application server books against the same database, which SessionBookingLock alone
+     * cannot (#25050).
+     *
+     * @throws ChannelSessionFullException when the session has reached its maximum
+     */
+    public Bill reserveAgentBookingThroughApiWithinCapacity(OnlineBooking newBooking, SessionInstance session, String refNo, Institution creditCompany) {
+        SessionInstance locked = lockAndRecountSession(session);
+        if (isFullyBookedSession(locked)) {
+            throw new ChannelSessionFullException("Session is Full. Can't add online bookings");
+        }
+        return addToReserveAgentBookingThroughApi(false, newBooking, locked, refNo, null, creditCompany);
+    }
+
+    /**
+     * Locks the session row, recounts its bookings and settles the held agent booking only if the
+     * session still has room, all in one transaction (#25050).
+     *
+     * @throws ChannelSessionFullException when the session has reached its maximum
+     */
+    public Bill settleOnlineAgentInitialBookingWithinCapacity(BillSession preBillSession, String refNo, double agencyCharge) {
+        SessionInstance locked = lockAndRecountSession(preBillSession.getSessionInstance());
+        // A /complete for the same hold on another server may have settled it while this one waited for the lock
+        rejectIfHoldNoLongerOpen(preBillSession);
+        if (isFullyBookedSession(locked)) {
+            throw new ChannelSessionFullException("Session is Full. Can't add online bookings");
+        }
+        return settleOnlineAgentInitialBooking(preBillSession, refNo, agencyCharge);
+    }
+
+    // A projection reads the database row, not an entity another server may have left stale in this server's cache
+    private void rejectIfHoldNoLongerOpen(BillSession preBillSession) {
+        String jpql = "select b.paid, b.cancelled, b.refunded, b.retired, bs.retired, pb.id "
+                + " from BillSession bs join bs.bill b left join b.paidBill pb "
+                + " where bs.id=:id";
+        Map<String, Object> params = new HashMap<>();
+        params.put("id", preBillSession.getId());
+        List<Object[]> rows = getBillSessionFacade().findObjectArrayByJpql(jpql, params, TemporalType.TIMESTAMP);
+        if (rows == null || rows.isEmpty() || rows.get(0) == null) {
+            throw new ChannelBookingNotAvailableException("Appoinment : No Appoinment available for the ref no.");
+        }
+        Object[] row = rows.get(0);
+        if (Boolean.TRUE.equals(row[0]) || row[5] != null) {
+            throw new ChannelBookingNotAvailableException("Appoinment : Appoinment Booking for the ref no is already completed.");
+        }
+        if (Boolean.TRUE.equals(row[1]) || Boolean.TRUE.equals(row[2]) || Boolean.TRUE.equals(row[3]) || Boolean.TRUE.equals(row[4])) {
+            throw new ChannelBookingNotAvailableException("Appoinment : Appoinment is no longer available. Cant complete the booking.");
+        }
+    }
+
+    // Must be the first database access of the transaction: MySQL's consistent reads that follow
+    // then see every booking another server committed before it released the row lock.
+    private SessionInstance lockAndRecountSession(SessionInstance session) {
+        SessionInstance locked = sessionInstanceFacade.findWithLock(session.getId());
+        fillBillSessionsAndUpdateBookingsCountInSessionInstance(locked);
+        return locked;
+    }
+
     public Bill addToReserveAgentBookingThroughApi(boolean forReservedNumbers, OnlineBooking newBooking, SessionInstance session, String refNo, WebUser user, Institution creditCompany) {
         //saveOrUpdatePatientDetails(patient);
         updateAndSaveOnlineBooking(newBooking, session);
