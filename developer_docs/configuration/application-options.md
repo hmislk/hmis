@@ -12,6 +12,15 @@ Every hospital already has a stored value for each existing key (the row is crea
 
 The CI workflow `config-semantics-guard` (`.github/scripts/check_config_semantics.py`) fails a pull request that flips the negation or default of an existing key, or reads a key with conflicting defaults. If a change of meaning is truly intended, add the PR label `config-meaning-change` and explain in the PR description how each hospital is affected.
 
+## Reading and writing keys from a settings dialog
+
+`ConfigOptionController` and `ConfigOptionApplicationController` store a key differently:
+
+- `ConfigOptionApplicationController` reads and writes the plain key, for the whole application.
+- `ConfigOptionController` reads and writes `"<current department name> - <key>"` first and falls back to the plain key when no department row exists.
+
+A print or settings dialog must use the **same** controller as the page or template that reads the key. If a dialog saves through `ConfigOptionController` but the template reads through `ConfigOptionApplicationController`, the saved department-prefixed row is never read and the checkbox appears to do nothing. Check how the template reads the key before binding a dialog checkbox to it. Keys that other pages also read with a different default (for example the `Pharmacy Disbursement Reports - Display ...` keys, which transfer issue reports treat as true when unset) should be written only when the user changes them.
+
 ## Pharmacy Transfer Issue
 
 | Key                                                              | Type      | Default | Description                                                                                             |
@@ -67,6 +76,13 @@ The CI workflow `config-semantics-guard` (`.github/scripts/check_config_semantic
 | ---------------------------------------------------------------- | --------- | ------- | ------------------------------------------------------------------------------------------------------- |
 | `Inward Administrative Discharge - Require Nursing Discharge`   | Boolean   | `true`  | Controls whether `BhtSummeryController.checkDischargeTime()` requires `PatientEncounter.isNursingDischarged()` before allowing administrative discharge (the "Discharge" action on the Interim Bill) for room-charged admissions. Some hospitals do not use the nursing discharge workflow; setting this to `false` for those institutions lets administrative discharge proceed without it. See issue #22607. |
 
+## Inpatient Reports
+
+| Key                                                              | Type      | Default | Description                                                                                             |
+| ---------------------------------------------------------------- | --------- | ------- | ------------------------------------------------------------------------------------------------------- |
+| `Inpatient Reports - Show Gross Value, Discount and Service Charge` | Boolean | `true` | Shows the Gross Value, Discount and Service Charge columns on the Inpatient Pharmacy Issue Summary and Inpatient Pharmacy Net Summary. Does not affect the Inpatient Invoice Journal. See issue #22689. |
+| `Inpatient Invoice Journal - Show Gross Total, Discount and Service Charge Columns` | Boolean | `true` | Shows the Discount, Charge Type Discount, Bill Level Discount, Service Charge and Gross Total columns on the Inpatient Invoice Journal (screen and export). Net Total always includes them; with this off, the charge columns don't add up to Net Total. The two final-bill discount columns appear only when a row has a non-zero value. See issues #24935 and #24937. |
+
 ## Theatre
 
 The theatre surgery service bill (`theater/inward_bill_surgery_service.xhtml`) chooses its item
@@ -108,6 +124,7 @@ Inactive items are excluded in all four modes.
 | Key                                                              | Type      | Default | Description                                                                                             |
 | ---------------------------------------------------------------- | --------- | ------- | ------------------------------------------------------------------------------------------------------- |
 | `Pharmacy - Allow Cross-Department PO Receiving`                | Boolean   | `false` | Institution-wide toggle. When `true`, the Purchase Orders for Receiving list (and its wholesale/with-approval/DTO variants) drops the same-department restriction, so a PO created in one department (e.g. Pharmacy) can be received/GRN'd from any other department in the same institution (e.g. Store). Institution isolation is unaffected — POs from a different institution never appear. Added for RMH Hambantota, which creates POs in Pharmacy but receives into Store. See issue #21848. |
+| `Pharmacy - PO Item Search for GRN Shows Only POs with the Item Not Fully Received` | Boolean | `false` | Affects the *Item Name* filter on *Approved POs to Create GRN (Optimized)* (`pharmacy_purchase_order_list_for_recieve_dto.xhtml`). When `false`, every PO containing the item is listed. When `true`, a PO is listed only while approved, non-cancelled GRNs (normal or wholesale) have not yet received the item's full ordered qty or free qty. Saved or finalized but unapproved GRNs (`PHARMACY_GRN_PRE`) do not count. Implemented in `SearchController.createPoTablePharmacyDto()`. |
 | `Pharmacy - List Packs (AMPPs) in Item Selection`               | Boolean   | `true`  | When `false`, Packs (AMPPs) are excluded from every pharmacy item autocomplete that offers them — Purchase Order Request (JPA and native), Direct Purchase, Purchase, Donation, Batch Create and Transfer Request — so only AMPs (plus VMPs/VMPPs on Transfer Request) can be chosen. On the Purchase Order page the supplier-item dropdown and the *Add All Supplier Items* / *Below ROL* buttons also drop AMPPs from the supplier's item list (`ItemController.removeAmppsIfNotListed()`). GRN, Issue and Transfer Issue have no AMPP picker of their own (they take items from the PO, the request or stock), so they follow automatically. Bills that already contain AMPPs are unaffected. Implemented in `ItemController.isAmppListedInItemSelection()`. See issue #24164. |
 | `Print Profit % in GRN Bill`                                    | Boolean   | `true`  | Prints the profit column on GRN prints: Profit % on *A4 Paper Format Two* (`grn_with_costing_new`, shown after Finalize/Approve and on the costing reprint) and GP Profit% on `grn.xhtml` (no-costing layout, used by GRN reprint) and `grn_wholesale.xhtml`. Set `false` to leave the column out (e.g. when the GRN print goes to the supplier). Independent of `Show Profit Percentage in GRN`, which controls the column on the GRN entry screen. See issue #24357. |
 
@@ -145,3 +162,16 @@ Columns of the added-items table on `pharmacy/pharmacy_grn_costing_native.xhtml`
 | Key | Type | Default | Description |
 | --- | --- | --- | --- |
 | `Block cancellation and refund of OPD, package and collecting centre bills once the laboratory has accepted a sample` | Boolean (application scope) | `true` | When true, `LabSampleLockService` blocks cancel, refund and return of OPD (individual, batch, package) and Collecting Centre bills once the laboratory has accepted a sample of any investigation on the bill (received at the lab or processed further; a sample that is only collected or sent does not lock; rejected samples do not count). No privilege overrides it; the lab must first revert the sample collection. The older keys `Enable the Special Privilege of Canceling OPD Bills` and `Enable the Special Privilege of Canceling CC Bills` are no longer read by these paths. |
+
+## Inward Admission: Guardian and NIC Checks
+
+All rules live in `AdmissionGuardianRules` (`com.divudi.service.inward`) and return the list of missing-field messages. Callers decide whether to apply them and show the messages: `AdmissionController.errorCheck()` (admit; Provisional Emergency exempt), `AdmissionController.markRapidTempAdmissionComplete()` ("Mark as Verified"), and `BhtEditController.saveCurrent()` (Edit Admission Details; Provisional Emergency exempt). Per-field keys (`Guardian ... is Required in Patient Admission`) are only read when `Guardian Details Required in Patient Admission` is on. `PatientEncounter.getGuardian()` never returns null (it creates a `Person`). See issue #25032.
+
+| Key | Type | Default | Description |
+| --- | --- | --- | --- |
+| `Inward Admission - Require Patient NIC or Guardian NIC` | Boolean | `false` | Blocks when both the patient NIC and the guardian NIC are blank (always trimmed). Independent of the guardian master switch. Applies to baby admissions; skipped for Provisional Emergency at admit time. With `Guardian NIC is Required in Patient Admission` on, the guardian NIC is still always demanded, so hospitals wanting "either one" turn that key off. |
+| `Inward Admission - Enforce Guardian Checks When Marking Provisional Emergency Complete` | Boolean | `false` | Runs the guardian checks and the NIC rule in `markRapidTempAdmissionComplete()` before the flag is cleared. |
+| `Inward Admission - Enforce Guardian Checks in Edit Admission Details` | Boolean | `false` | Runs the guardian checks and the NIC rule in `BhtEditController.saveCurrent()` before anything is saved. Skipped when the admission is still Provisional Emergency. A new key rather than the existing guardian keys, because those hospitals hold old admissions with blank guardians. |
+| `Inward Admission - Guardian Checks Treat Whitespace-Only Values as Missing` | Boolean | `false` | Uses `trim()` for guardian name, NIC, address, mobile and home phone in every place the guardian checks run. Off keeps the original `isEmpty()` behaviour (a single space passes). |
+
+**Shared database, two servers:** each server caches config in memory, so a key changed through one server reaches the other only after **Reload Config** (Application Options page) or its next cache reload. A key with no stored row is created with the default of whichever server reads it first; `Guardian Home Phone Number is Required in Patient Admission` defaulted to `true` in older deployed code and is `false` in current `development`. Before enabling the guardian check at a hospital, save every per-field row explicitly.

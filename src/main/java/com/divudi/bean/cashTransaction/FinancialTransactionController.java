@@ -3472,6 +3472,12 @@ public class FinancialTransactionController implements Serializable {
             JsfUtil.addErrorMessage("Error");
             return "";
         }
+        // An amount entered (or set by the denomination Update button) is only part of the
+        // shift start after Add puts it in the Funds List; starting without it would drop it silently.
+        if (currentPayment != null && currentPayment.getPaidValue() != 0) {
+            JsfUtil.addErrorMessage("The entered fund has not been added to the Funds List. Click Add to include it, or clear the amount, before starting the shift.");
+            return "";
+        }
         currentBill.setDepartment(sessionController.getDepartment());
         currentBill.setInstitution(sessionController.getInstitution());
         currentBill.setStaff(sessionController.getLoggedUser().getStaff());

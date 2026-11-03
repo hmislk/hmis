@@ -72,7 +72,7 @@ public class StockTakeApprovalService {
         adjustmentBill.setBillTime(now);
         adjustmentBill.setCreatedAt(now);
         adjustmentBill.setCreater(approver);
-        String deptId = billNumberBean.departmentBillNumberGeneratorYearly(dept, BillTypeAtomic.PHARMACY_STOCK_ADJUSTMENT_BILL);
+        String deptId = billNumberBean.departmentBillNumberGeneratorYearlyInNewTransaction(dept, BillTypeAtomic.PHARMACY_STOCK_ADJUSTMENT_BILL);
         adjustmentBill.setDeptId(deptId);
         adjustmentBill.setInsId(deptId);
         adjustmentBill.setBillTypeAtomic(BillTypeAtomic.PHARMACY_STOCK_ADJUSTMENT_BILL);

@@ -39,6 +39,7 @@ Part of the [Playwright E2E Workflow](../playwright-e2e-workflow.md). Read only 
 - [150. Interim Bill room charges are stale on the first open — open it twice before comparing totals](#150-interim-bill-room-charges-are-stale-on-the-first-open--open-it-twice-before-comparing-totals)
 - [153. Transfer request: issue and cancel act on the approved bill, not the PRE bill](#153-transfer-request-issue-and-cancel-act-on-the-approved-bill-not-the-pre-bill)
 - [157. Handover: the "Hand over to" autocomplete matches full names, and the accept list holds old handovers](#157-handover-the-hand-over-to-autocomplete-matches-full-names-and-the-accept-list-holds-old-handovers)
+- [173. Channel session page: no "Complete Appointment" button until the session is started and a config key is on](#173-channel-session-page-no-complete-appointment-button-until-the-session-is-started-and-a-config-key-is-on)
 
 ---
 
@@ -769,3 +770,24 @@ bill's `CANCELLED`.
 - On a copied production DB, *Shift Handovers to Accept* can list thousands of old pending rows. Pick the row by its date or bill number, never the first row.
 - The *Shift* section of the Financial Transaction Manager is open on load; clicking its header closes it.
 - An OPD payment sits on the batch bill, whose to-department is empty, so the cash book entry written at accept takes the receiver's logged-in department as its "to" side.
+
+## 171. Cost of Goods Sold: run the landing page for one day, then set the real range on the drill-down
+
+The landing *Process* aggregates about 20 bill types plus opening and closing stock, and can take tens of minutes on a full local copy even for one day. The Sale, BHT and other drill-downs open only from its result rows, and each has its own fast *Process*. Run the landing page for a single day, open the drill-down, then set the date range you need there.
+
+## 173. Channel session page: no "Complete Appointment" button until the session is started and a config key is on
+
+To mark a channel booking completed, go to *Channelling → Channel Booking - By Dates → (session) → Manage Booking*. Click **Start Session** (accept the confirm), then open the session again from the list, because the page keeps its pre-start state. The *Manage* column with **Complete Appoinment** appears only when `Enable Appoinment Status manage from session Instance` is true (§26).
+The By Dates *Search* box keeps its session-scoped text, so `fill('')` it before typing, or the filter becomes `RoshanRoshan` and hides every session.
+By Dates lists only ongoing/pending sessions by default; after **Complete Session**, click the **Completed** button to see the session again (its **Pay Session** button appears only on a completed session).
+Staff autocompletes (Pay Doctor etc.) can list two staff with the same name. Check `STAFF`/`PERSON` for duplicates first and pick the suggestion whose dues match the DB, not the first one.
+
+## 177. Patient Admit form: click Admission Type to enable Room No; the patient Title needs the hidden select
+
+- *Inpatient → Admissions → Patient Admit*: **Room No** (`cmbDoc`) stays disabled until **Admission Type** (`lstSelect`) is picked with a real click on the menu and its item. Setting the widget value doesn't fire the ajax that enables it. For a free room, see §111.
+- The patient **Title** (`…:cmbTitle`, inside the patient panel) has no clickable item list in a script. Set `option.selected` on its hidden `select`, call the widget's `selectValue`, and dispatch `change`. Option texts have a dot (`Mr.`).
+- **Admit** needs Consultant, Medical Officer and Payment Method. When `Patient Details Required in Patient Admission` is on, it also checks each enabled patient-detail option (Title, Gender, Address, etc.); the error growl names the missing one. Rapid/Temp A&E admissions skip these patient checks.
+
+## 178. Timing a settle: wait for the success message, not `networkidle`
+
+The receipt page keeps loading after the bill is saved, so `networkidle` overstates settle time (10 s measured vs 1.6 s real). Start the timer at the click and stop it at `getByText('Channel Booking Added.').waitFor()` (or the module's own success growl).

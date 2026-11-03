@@ -41,6 +41,7 @@ import com.divudi.core.util.BigDecimalUtil;
 import com.divudi.core.util.CommonFunctions;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.ejb.BillNumberGenerator;
+import com.divudi.service.pharmacy.GrnApprovalException;
 import com.divudi.service.pharmacy.GrnApprovingNativeSqlService;
 import com.divudi.service.pharmacy.GrnCostingNativeSqlService;
 import java.io.Serializable;
@@ -784,7 +785,7 @@ public class GrnCostingNativeSqlController implements Serializable {
         // Javadoc for why this must be one EJB call rather than a per-item loop here.
         try {
             grnApprovingNativeSqlService.approveGrn(request);
-        } catch (IllegalStateException ex) {
+        } catch (GrnApprovalException | IllegalStateException ex) {
             // Last-resort race guard inside approveGrn() itself -- the
             // billTypeAtomic==PHARMACY_GRN check above already blocks the
             // normal double-click case, this only fires for a genuine

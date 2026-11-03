@@ -288,6 +288,7 @@ public class ConfigOptionApplicationController implements Serializable {
         getBooleanValueByKey("GRN Returns is only after Approval", true);
         getBooleanValueByKey("GRN Return can be done without Approval", true);
         getBooleanValueByKey("Pharmacy - Allow Cross-Department PO Receiving", false);
+        getBooleanValueByKey("Pharmacy - PO Item Search for GRN Shows Only POs with the Item Not Fully Received", false);
 
         // Stock Upload Configuration
         getBooleanValueByKey("Allow Expired Items in Direct Purchase Stock Upload", false);
@@ -1064,6 +1065,12 @@ public class ConfigOptionApplicationController implements Serializable {
         getBooleanValueByKey("prevent_password_reuse", false);
         // Admin-triggered JPA L2 cache clear is disabled by default
         getBooleanValueByKey("Allow manual JPA cache clear", false);
+        // Authenticator app (TOTP) two-factor login. Master switch off by default;
+        // when on, users flagged "Require 2FA" (or everyone, if the second key is true)
+        // must enter a 6-digit authenticator code after their password.
+        getBooleanValueByKey("Enable authenticator app two-factor login", false);
+        getBooleanValueByKey("Require authenticator app two-factor login for all users", false);
+        getShortTextValueByKey("Authenticator app issuer name", "HMIS");
     }
 
     private void loadPharmacyAnalyticsConfigurationDefaults() {
@@ -1941,6 +1948,57 @@ public class ConfigOptionApplicationController implements Serializable {
 
     public int getPasswordHistoryLimit() {
         return getIntegerValueByKey("password_history_limit", 5);
+    }
+
+    public boolean isAuthenticatorAppTwoFactorLoginEnabled() {
+        return getBooleanValueByKey("Enable authenticator app two-factor login", false);
+    }
+
+    public boolean isAuthenticatorAppTwoFactorLoginRequiredForAllUsers() {
+        return getBooleanValueByKey("Require authenticator app two-factor login for all users", false);
+    }
+
+    public String getAuthenticatorAppIssuerName() {
+        return getShortTextValueByKey("Authenticator app issuer name", "HMIS");
+    }
+
+    // SMS code as the other two-factor login option (TwoFactorSmsController / OtpService)
+    public boolean isTwoFactorSmsLoginEnabled() {
+        return getBooleanValueByKey("Allow SMS code as an alternative to the authenticator app at login", false);
+    }
+
+    public int getTwoFactorSmsValiditySeconds() {
+        return Math.max(30, integerOrDefault(getIntegerValueByKey("Two-factor SMS code - validity seconds", 120), 120));
+    }
+
+    public int getTwoFactorSmsResendCooldownSeconds() {
+        return Math.max(0, integerOrDefault(getIntegerValueByKey("Two-factor SMS code - resend cooldown seconds", 60), 60));
+    }
+
+    public int getTwoFactorSmsMaxCodesPerUserPerHour() {
+        return Math.max(1, integerOrDefault(getIntegerValueByKey("Two-factor SMS code - max codes per user per hour", 5), 5));
+    }
+
+    public int getTwoFactorSmsMaxPerHourForAllUsers() {
+        return Math.max(1, integerOrDefault(getIntegerValueByKey("Two-factor SMS code - max SMS per hour for all users", 200), 200));
+    }
+
+    // A cleared or non-numeric option value comes back as null; use the default instead of unboxing it
+    private static int integerOrDefault(Integer value, int defaultValue) {
+        return value == null ? defaultValue : value;
+    }
+
+    public String getTwoFactorSmsAllowedCountryCodes() {
+        return getShortTextValueByKey("Two-factor SMS code - allowed country codes", "+94");
+    }
+
+    public String getTwoFactorSmsMessageTemplate() {
+        String t = getLongTextValueByKey("Two-factor SMS code - message template",
+                "{code} is your {app_name} login code. Valid for {minutes} minutes. Do not share this code with anyone. Our staff will never ask for it.");
+        if (t == null || !t.contains("{code}")) {
+            return "{code} is your {app_name} login code. Valid for {minutes} minutes. Do not share this code with anyone.";
+        }
+        return t;
     }
 
     public void setIntegerValueByKey(String key, int value) {

@@ -61,6 +61,9 @@ import com.divudi.core.facade.SessionInstanceFacade;
 import com.divudi.core.facade.SpecialityFacade;
 import com.divudi.core.facade.StaffFacade;
 import com.divudi.core.util.CommonFunctions;
+import com.divudi.core.util.SessionBookingLock;
+import com.divudi.service.ChannelBookingNotAvailableException;
+import com.divudi.service.ChannelSessionFullException;
 import com.divudi.service.ChannelService;
 import com.divudi.service.PatientService;
 import com.divudi.service.WebSocketService;
@@ -1110,7 +1113,16 @@ public class ChannelApi {
         newBooking.setEmail(email);
         newBooking.setAddress(address);
 
-        Bill bill = channelService.addToReserveAgentBookingThroughApi(false, newBooking, session, clientsReferanceNo, null, bookingAgency);
+        Bill bill;
+        // Serial number allocation and the booking insert must not interleave with another
+        // booking for the same session; re-check capacity under the same lock (#24785).
+        try (SessionBookingLock.Hold hold = SessionBookingLock.acquire(session)) {
+            // The service recounts under a database row lock, so the maximum holds across servers too (#25050).
+            bill = channelService.reserveAgentBookingThroughApiWithinCapacity(newBooking, session, clientsReferanceNo, bookingAgency);
+        } catch (ChannelSessionFullException e) {
+            JSONObject response = commonFunctionToErrorResponse(e.getMessage());
+            return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
+        }
 
         try {
             WebSocketService.broadcastToSessions("Online Temporary Booking Added - " + session.getId());
@@ -1442,12 +1454,17 @@ public class ChannelApi {
         Map<String, String> paymentDetails = (Map<String, String>) requestBody.get("payment");
         String agencyCode = paymentDetails.get("paymentChannel");
         String agencyName = paymentDetails.get("paymentMode");
+        // price is the agency's own charge, added on top of the session fees. Doc990 and
+        // eChannelling send it this way, so its meaning must not change (#24968).
         String agentChargeString = (String) requestBody.get("price");
 
         double agencyCharge = 0;
 
         try {
             agencyCharge = Double.parseDouble(agentChargeString);
+            if (!Double.isFinite(agencyCharge) || agencyCharge < 0) {
+                throw new NumberFormatException("price is not a finite, non-negative number");
+            }
         } catch (Exception e) {
             JSONObject response = commonFunctionToErrorResponse("There is a error in the payment amount. Please check price field.");
             return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
@@ -1477,26 +1494,48 @@ public class ChannelApi {
 
         //Bill temporarySavedBill = bookingData.getBill();
         Bill temporarySavedBill = channelService.findBillFromOnlineBooking(bookingData);
-
-        try {
-            validateBillForCompleteBooking(temporarySavedBill);
-            validateChannelingSession(temporarySavedBill.getSingleBillSession().getSessionInstance());
-        } catch (ValidationException e) {
-            JSONObject response = commonFunctionToErrorResponse(e.getField() + e.getMessage());
-            return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
-        }
-        if (temporarySavedBill.getSingleBillSession().getSessionInstance().isDoctorHoliday()) {
-            JSONObject response = commonFunctionToErrorResponse("Doctor is on Holiday.");
-            return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
-        } else if (!temporarySavedBill.getSingleBillSession().getSessionInstance().isAcceptOnlineBookings()) {
-            JSONObject response = commonFunctionToErrorResponse("Session is hold for online bookings");
-            return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
-        } else if (channelService.isFullyBookedSession(temporarySavedBill.getSingleBillSession().getSessionInstance())) {
-            JSONObject response = commonFunctionToErrorResponse("Session is Full. Can't add online bookings");
+        if (temporarySavedBill == null || temporarySavedBill.getSingleBillSession() == null) {
+            JSONObject response = commonFunctionToErrorResponse("No Appoinment available for the RefNo : " + clientsReferanceNo);
             return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
         }
 
-        Bill completedBill = channelService.settleOnlineAgentInitialBooking(temporarySavedBill.getSingleBillSession(), clientsReferanceNo, agencyCharge);
+        Bill completedBill;
+        long settleStartedAt = System.currentTimeMillis();
+        // Taken outside ChannelService's transaction so the settle is committed before the next request
+        // for the same session proceeds; the bill is re-read and re-validated under the lock so two
+        // concurrent /complete calls for the same ref no cannot both settle it.
+        try (SessionBookingLock.Hold hold = SessionBookingLock.acquire(temporarySavedBill.getSingleBillSession().getSessionInstance())) {
+            temporarySavedBill = channelService.findBillFromOnlineBooking(bookingData);
+            if (temporarySavedBill == null || temporarySavedBill.getSingleBillSession() == null) {
+                JSONObject response = commonFunctionToErrorResponse("No Appoinment available for the RefNo : " + clientsReferanceNo);
+                return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
+            }
+            try {
+                validateBillForCompleteBooking(temporarySavedBill);
+                validateChannelingSession(temporarySavedBill.getSingleBillSession().getSessionInstance());
+            } catch (ValidationException e) {
+                JSONObject response = commonFunctionToErrorResponse(e.getField() + e.getMessage());
+                return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
+            }
+            if (temporarySavedBill.getPaidBill() != null) {
+                JSONObject response = commonFunctionToErrorResponse("Booking is already completed for RefNo : " + clientsReferanceNo);
+                return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
+            }
+            if (temporarySavedBill.getSingleBillSession().getSessionInstance().isDoctorHoliday()) {
+                JSONObject response = commonFunctionToErrorResponse("Doctor is on Holiday.");
+                return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
+            } else if (!temporarySavedBill.getSingleBillSession().getSessionInstance().isAcceptOnlineBookings()) {
+                JSONObject response = commonFunctionToErrorResponse("Session is hold for online bookings");
+                return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
+            }
+
+            // The stored booked count can be stale; the service recounts under a database row lock (#25050).
+            completedBill = channelService.settleOnlineAgentInitialBookingWithinCapacity(temporarySavedBill.getSingleBillSession(), clientsReferanceNo, agencyCharge);
+        } catch (ChannelSessionFullException | ChannelBookingNotAvailableException e) {
+            JSONObject response = commonFunctionToErrorResponse(e.getMessage());
+            return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
+        }
+        LOGGER.log(Level.FINE, "Online booking complete: settle took {0} ms", System.currentTimeMillis() - settleStartedAt);
 
         OnlineBooking bookingDetails = bookingData;
         SessionInstance session = completedBill.getSingleBillSession().getSessionInstance();
@@ -1528,7 +1567,7 @@ public class ChannelApi {
 
         sessionDetails.put("hosId", completedBill.getToInstitution().getId());
         sessionDetails.put("docname", session.getStaff().getPerson().getNameWithTitle());
-        sessionDetails.put("amount", completedBill.getNetTotal() + agencyCharge);
+        sessionDetails.put("amount", CommonFunctions.roundToTwoDecimals(completedBill.getNetTotal() + agencyCharge));
         sessionDetails.put("hosAmount", completedBill.getHospitalFee());
         sessionDetails.put("docAmount", completedBill.getStaffFee());
         sessionDetails.put("specialization", i.getStaff().getSpeciality().getName());
@@ -1551,7 +1590,7 @@ public class ChannelApi {
         patientDetails.put("nid", bookingDetails.getNic());
 
         Map<String, Object> priceDetails = new HashMap<>();
-        priceDetails.put("totalAmount", completedBill.getNetTotal() + agencyCharge);
+        priceDetails.put("totalAmount", CommonFunctions.roundToTwoDecimals(completedBill.getNetTotal() + agencyCharge));
         priceDetails.put("docCharge", completedBill.getStaffFee());
         priceDetails.put("hosCharge", completedBill.getHospitalFee());
 
@@ -2791,9 +2830,11 @@ public class ChannelApi {
                 + " and bs.serviceSession.id=:ss "
                 + " and bs.bill.billType in :bt"
                 + " and type(bs.bill)=:class "
+                + " and (bs.bill.billTypeAtomic is null or bs.bill.billTypeAtomic != :bta)"
                 //                + " and bs.sessionDate= :ssDate "
                 + " order by bs.serialNo ";
         m.put("bt", bts);
+        m.put("bta", BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_PENDING_PAYMENT);
         m
                 .put("class", BilledBill.class
                 );
@@ -3289,7 +3330,8 @@ public class ChannelApi {
         p.setPerson(new Person());
         p.getPerson().setName(name);
         p.getPerson().setPhone(phone.substring(0, 3) + "-" + phone.substring(3, 10));
-        getPersonFacade().create(p.getPerson());
+        // The person is persisted by the cascade from Patient.person (cascade = ALL);
+        // persisting it separately leaves an unreferenced duplicate PERSON row (#23900).
         bill.setPatient(p);
         getPatientFacade().create(p);
 

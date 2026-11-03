@@ -56,7 +56,12 @@ git fetch origin
 gh pr list --state open --base $0 --json number,headRefName,headRepositoryOwner,isCrossRepository,title
 ```
 
-- **An open PR exists:** reuse it. Check out its head branch
+- **An open PR exists:** reuse it, even when another developer opened it.
+  Another author is not a reason to open a parallel PR: add your fix to their
+  branch and tell them. Only stop and ask if the open PR is not ready to take
+  more fixes (e.g. it is mid-review or scheduled to merge at a fixed time).
+  CI enforces this: `single-deploy-pr` fails every PR except the oldest open
+  one per deploy branch. Check out its head branch
   (`git checkout -B <headRefName> origin/<headRefName>`), skip Step 2, apply
   the fix (Steps 3–6, pushing to `<headRefName>`), then in Step 7 run
   `gh pr edit <number> --title ... --body ...` instead of `gh pr create`, so
@@ -205,7 +210,7 @@ added/renamed, and similarly-named branches are NOT interchangeable.
 |----------------------|--------|-------|
 | COOP — pharmacy | `coop-production` | |
 | COOP — inward | `coop-staging` | Despite the "staging" name, COOP inward users run against it day to day (production DB). |
-| Ruhunu hospital | `rh-production` | The `rh-staging` app is undeployed (not required); don't target it. |
+| Ruhunu hospital | `rh-production` | `rh-staging` is live again (since 2026-10-28) and writes to the same production DB. |
 | Southern Lanka | `southernlanka-staging` | **Live users are here.** `southernlanka-production` is live too (since 2026-10-15), on the same DB. |
 | RMH | `rmh-production` | `rmh-staging` writes to the same production DB. |
 | Others | `suwani-production`, `asiripharmacy-production`, `digasiri-production`, `horizon-production`, `mp-production`, `mpold-production`, `roseth-production`, `ewc-production` | |

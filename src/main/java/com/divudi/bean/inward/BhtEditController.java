@@ -14,12 +14,14 @@ import com.divudi.bean.common.ControllerWithPatient;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.WebUserController;
 import com.divudi.core.util.JsfUtil;
+import com.divudi.service.inward.AdmissionGuardianRules;
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.PaymentMethod;
 import com.divudi.core.data.Sex;
 import com.divudi.core.data.Title;
 import com.divudi.core.data.clinical.ClinicalFindingValueType;
 import com.divudi.core.data.dataStructure.YearMonthDay;
+import com.divudi.core.data.inward.EncounterRegistrationFlag;
 import com.divudi.core.data.inward.SurgeryBillType;
 
 import com.divudi.core.entity.Bill;
@@ -705,6 +707,22 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
             return;
         }
 
+        // Re-apply the guardian / NIC configuration so the fields cannot be cleared after
+        // admission. Opt-in (existing hospitals have old admissions with blank guardians).
+        // Provisional Emergency admissions are filled in step by step on this screen, so
+        // they are checked when marked complete instead. (Issue #25032)
+        if (getCurrent().getEncounterRegistrationFlag() != EncounterRegistrationFlag.RAPID_TEMP_AE
+                && configOptionApplicationController.getBooleanValueByKey(
+                        "Inward Admission - Enforce Guardian Checks in Edit Admission Details", false)) {
+            List<String> guardianErrors = AdmissionGuardianRules.validate(getCurrent(), configOptionApplicationController);
+            if (!guardianErrors.isEmpty()) {
+                for (String guardianError : guardianErrors) {
+                    JsfUtil.addErrorMessage(guardianError);
+                }
+                return;
+            }
+        }
+
         boolean showClaimable = configOptionApplicationController.getBooleanValueByKey(
                 "Inward Admission - Show Claimable Field", true);
         if (showClaimable) {
@@ -738,10 +756,13 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
         // Save Person FIRST (correct order - was backwards before!)
         Person person = getCurrent().getPatient().getPerson();
         if (person != null) {
-            if (person.getId() == null) {
-                getPersonFacade().create(person);
-            } else {
+            if (person.getId() != null) {
                 getPersonFacade().edit(person);
+            } else if (getCurrent().getPatient().getId() != null) {
+                // Existing patient: the patient is merged below, so a new person is persisted here.
+                // A new patient's create saves its person (Patient.person is cascade = ALL); persisting
+                // it here as well wrote a second PERSON row (#23900).
+                getPersonFacade().create(person);
             }
         }
 

@@ -275,6 +275,8 @@ public class PreReturnController implements Serializable {
             JsfUtil.addErrorMessage("You cant return over than ballanced Qty ");
         }
 
+        // Return Value column shows the value being returned for this row
+        tmp.setNetValue(tmp.getNetRate() * tmp.getQty());
         calTotal();
         //   getPharmacyController().setPharmacyItem(tmp.getPharmaceuticalBillItem().getBillItem().getItem());
     }
@@ -502,6 +504,7 @@ public class PreReturnController implements Serializable {
             bi.setReferanceBillItem(i.getBillItem());
             bi.copy(i.getBillItem());
             bi.setQty(0.0);
+            bi.setNetValue(0.0);
 
             PharmaceuticalBillItem tmp = new PharmaceuticalBillItem();
             tmp.setBillItem(bi);

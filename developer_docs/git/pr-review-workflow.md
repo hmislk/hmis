@@ -30,6 +30,20 @@ git checkout <branch-name>
 
 Always fetch first — Codex may have auto-pushed fixes you don't have locally.
 
+### 1a. Contributor PR opened against `master`
+Run `git fetch origin pull/<N>/head:pr-<N>` and
+`git log --oneline origin/development..pr-<N>`.
+If it lists commits that aren't the PR's own, check that they are
+`master`-only (not cherry-picked copies of `development` commits).
+If so, retargeting alone pulls them into the diff. Ask the author
+to move only their commits
+(`git rebase --onto origin/development <last-master-commit> pr-<N>`;
+a plain `git rebase origin/development` replays the `master`
+commits too), or rebuild the branch from `origin/development` by
+cherry-picking only their commits oldest-first (list them with
+`git log --reverse --oneline`, so parents apply before children; keeps
+authorship), then retarget.
+
 ### 2. Investigate Comments
 
 - Read the PR link and each reviewer comment carefully

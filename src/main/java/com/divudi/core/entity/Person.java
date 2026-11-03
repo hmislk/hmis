@@ -253,6 +253,22 @@ public class Person implements Serializable, RetirableEntity  {
         this.dob = ldDob.toDate();
     }
 
+    /**
+     * Restores the date of birth from the entered age when the form submitted an
+     * empty date of birth. On a full-form submit the date-of-birth input is
+     * applied after the Years/Months/Days inputs, so if it was still empty (the
+     * age field's ajax had not re-rendered it yet) it clears the date the age
+     * setters had just calculated, while the age components keep their values (#24928).
+     */
+    public void fillDobFromAgeComponentsIfMissing() {
+        if (dob != null) {
+            return;
+        }
+        if (ageYearsComponent > 0 || ageMonthsComponent > 0 || ageDaysComponent > 0) {
+            calDobFromAge();
+        }
+    }
+
     public String getAgeAsString() {
         calAgeFromDob();
         if (ageAsString == null || ageAsString.trim().equals("")) {

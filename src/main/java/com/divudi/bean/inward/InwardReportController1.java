@@ -96,6 +96,7 @@ public class InwardReportController1 implements Serializable {
     private double commitmentTotal;
     private double commitmentPaidTotal;
     private double commitmentBalanceTotal;
+    private Date commitmentProcessedAt;
     // Keyed by commitment bill id; not written onto the managed Bill so a
     // report run can never persist a recomputed paidAmount by accident.
     private Map<Long, Double> commitmentPaidByBillId = new HashMap<>();
@@ -1550,6 +1551,7 @@ public class InwardReportController1 implements Serializable {
         commitmentTotal = 0;
         commitmentPaidTotal = 0;
         commitmentBalanceTotal = 0;
+        commitmentProcessedAt = null;
         commitmentPaidByBillId = new HashMap<>();
         creditPaymentTotalValue = 0;
     }
@@ -2599,6 +2601,10 @@ public class InwardReportController1 implements Serializable {
         return commitmentBalanceTotal;
     }
 
+    public Date getCommitmentProcessedAt() {
+        return commitmentProcessedAt;
+    }
+
     public double getCommitmentPaid(Bill commitmentBill) {
         if (commitmentBill == null || commitmentBill.getId() == null) {
             return 0;
@@ -3368,6 +3374,7 @@ public class InwardReportController1 implements Serializable {
             commitmentPaidTotal += getCommitmentPaid(b);
             commitmentBalanceTotal += getCommitmentBalance(b);
         }
+        commitmentProcessedAt = new Date();
     }
 
     /**

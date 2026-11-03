@@ -84,6 +84,10 @@ public class PharmacyAdjustmentApiService implements Serializable {
 
         Stock stock = loadAndValidateStock(request.getStockId());
         Department department = loadAndValidateDepartment(request.getDepartmentId());
+        if (stock.getStaff() != null || stock.getDepartment() == null
+                || !department.getId().equals(stock.getDepartment().getId())) {
+            throw new Exception("Stock " + stock.getId() + " is not a stock of department " + department.getId());
+        }
 
         double currentQuantity = stock.getStock();
         double newQuantity = request.getNewQuantity();
@@ -442,7 +446,7 @@ public class PharmacyAdjustmentApiService implements Serializable {
         bill.setCreatedAt(Calendar.getInstance().getTime());
         bill.setCreater(user);
 
-        String deptId = billNumberGenerator.departmentBillNumberGeneratorYearly(department, BillTypeAtomic.PHARMACY_STOCK_ADJUSTMENT);
+        String deptId = billNumberGenerator.departmentBillNumberGeneratorYearlyInNewTransaction(department, BillTypeAtomic.PHARMACY_STOCK_ADJUSTMENT);
         bill.setDeptId(deptId);
         bill.setInsId(deptId);
         bill.setBillType(BillType.PharmacyAdjustmentDepartmentStock);
@@ -465,7 +469,7 @@ public class PharmacyAdjustmentApiService implements Serializable {
         bill.setCreatedAt(Calendar.getInstance().getTime());
         bill.setCreater(user);
 
-        String deptId = billNumberGenerator.departmentBillNumberGeneratorYearly(department, BillTypeAtomic.PHARMACY_RETAIL_RATE_ADJUSTMENT);
+        String deptId = billNumberGenerator.departmentBillNumberGeneratorYearlyInNewTransaction(department, BillTypeAtomic.PHARMACY_RETAIL_RATE_ADJUSTMENT);
         bill.setDeptId(deptId);
         bill.setInsId(deptId);
         bill.setBillType(BillType.PharmacyAdjustmentSaleRate);
@@ -488,7 +492,7 @@ public class PharmacyAdjustmentApiService implements Serializable {
         bill.setCreatedAt(Calendar.getInstance().getTime());
         bill.setCreater(user);
 
-        String deptId = billNumberGenerator.departmentBillNumberGeneratorYearly(department, BillTypeAtomic.PHARMACY_STOCK_EXPIRY_DATE_AJUSTMENT);
+        String deptId = billNumberGenerator.departmentBillNumberGeneratorYearlyInNewTransaction(department, BillTypeAtomic.PHARMACY_STOCK_EXPIRY_DATE_AJUSTMENT);
         bill.setDeptId(deptId);
         bill.setInsId(deptId);
         bill.setBillType(BillType.PharmacyAdjustmentExpiryDate);
@@ -511,7 +515,7 @@ public class PharmacyAdjustmentApiService implements Serializable {
         bill.setCreatedAt(Calendar.getInstance().getTime());
         bill.setCreater(user);
 
-        String deptId = billNumberGenerator.departmentBillNumberGeneratorYearly(department, BillTypeAtomic.PHARMACY_PURCHASE_RATE_ADJUSTMENT);
+        String deptId = billNumberGenerator.departmentBillNumberGeneratorYearlyInNewTransaction(department, BillTypeAtomic.PHARMACY_PURCHASE_RATE_ADJUSTMENT);
         bill.setDeptId(deptId);
         bill.setInsId(deptId);
         bill.setBillType(BillType.PharmacyAdjustmentPurchaseRate);

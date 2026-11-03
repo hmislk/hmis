@@ -113,8 +113,10 @@ public class PharmacyAdjustmentApiServiceTest {
         stockFacade.stock = stock;
 
         Department department = new Department();
+        department.setId(1L);
         department.setInstitution(new com.divudi.core.entity.Institution());
         departmentFacade.department = department;
+        stock.setDepartment(department);
 
         user = new WebUser();
 
@@ -176,6 +178,37 @@ public class PharmacyAdjustmentApiServiceTest {
         assertEquals(600.0, bill.getTotal(), 0.001, "Bill.total (gross) should be the absolute value of the change");
         assertEquals(0, java.math.BigDecimal.valueOf(-6.0 * 60.0).compareTo(bill.getBillFinanceDetails().getTotalPurchaseValue()),
                 "A quantity decrease must record a negative purchase-value delta too");
+    }
+
+    @Test
+    @DisplayName("Stock quantity adjustment rejects a staff stock (#24791)")
+    public void testQuantityAdjustmentRejectsStaffStock() {
+        stock.setDepartment(null);
+        stock.setStaff(new com.divudi.core.entity.Staff());
+        StockQuantityAdjustmentDTO request = new StockQuantityAdjustmentDTO();
+        request.setStockId(1L);
+        request.setNewQuantity(4.0);
+        request.setComment("staff stock");
+        request.setDepartmentId(1L);
+
+        assertThrows(Exception.class, () -> service.adjustStockQuantity(request, user));
+        assertTrue(billFacade.saved.isEmpty(), "No adjustment bill may be written for a rejected stock");
+    }
+
+    @Test
+    @DisplayName("Stock quantity adjustment rejects a stock of another department (#24791)")
+    public void testQuantityAdjustmentRejectsOtherDepartmentStock() {
+        Department other = new Department();
+        other.setId(2L);
+        stock.setDepartment(other);
+        StockQuantityAdjustmentDTO request = new StockQuantityAdjustmentDTO();
+        request.setStockId(1L);
+        request.setNewQuantity(4.0);
+        request.setComment("other department");
+        request.setDepartmentId(1L);
+
+        assertThrows(Exception.class, () -> service.adjustStockQuantity(request, user));
+        assertTrue(billFacade.saved.isEmpty(), "No adjustment bill may be written for a rejected stock");
     }
 
     @Test

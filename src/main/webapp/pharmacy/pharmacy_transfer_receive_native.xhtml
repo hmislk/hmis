@@ -299,7 +299,7 @@
 
                 <p:ajax event="open" listener="#{pharmacyConfigController.loadCurrentConfig}" update="transferReceiveNativeConfigForm" />
 
-                <h:form id="transferReceiveNativeConfigForm">
+                <h:panelGroup id="transferReceiveNativeConfigForm" layout="block">
                     <div class="row">
                         <div class="col-12">
                             <div class="card config-section">
@@ -341,6 +341,52 @@
                             </div>
                         </div>
                     </div>
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <div class="card config-section">
+                                <div class="card-header">
+                                    <h6><i class="fas fa-coins"></i> Rate and Value Columns (A4 Receipt)</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="mb-3">
+                                        <p:selectBooleanCheckbox id="transferReceiveShowRateAndValue" value="#{pharmacyConfigController.transferReceiveShowRateAndValue}" />
+                                        <p:outputLabel for="transferReceiveShowRateAndValue" value="Show Rate and Value" class="ms-2" />
+                                        <small class="form-text text-muted d-block">Master switch for the rate and value columns below. Users also need the Pharmacy Transfer View Rates privilege.</small>
+                                    </div>
+                                    <div class="mb-3">
+                                        <p:selectBooleanCheckbox id="transferReceiveDisplayPurchaseRate" value="#{pharmacyConfigController.transferReceiveDisplayPurchaseRate}" />
+                                        <p:outputLabel for="transferReceiveDisplayPurchaseRate" value="Display Purchase Rate" class="ms-2" />
+                                        <small class="form-text text-muted d-block">Show the purchase rate column</small>
+                                    </div>
+                                    <div class="mb-3">
+                                        <p:selectBooleanCheckbox id="transferReceiveDisplayPurchaseValue" value="#{pharmacyConfigController.transferReceiveDisplayPurchaseValue}" />
+                                        <p:outputLabel for="transferReceiveDisplayPurchaseValue" value="Display Purchase Value" class="ms-2" />
+                                        <small class="form-text text-muted d-block">Show the purchase value column</small>
+                                    </div>
+                                    <div class="mb-3">
+                                        <p:selectBooleanCheckbox id="transferReceiveDisplayRetailRate" value="#{pharmacyConfigController.transferReceiveDisplayRetailRate}" />
+                                        <p:outputLabel for="transferReceiveDisplayRetailRate" value="Display Retail Rate" class="ms-2" />
+                                        <small class="form-text text-muted d-block">Show the retail sale rate column</small>
+                                    </div>
+                                    <div class="mb-3">
+                                        <p:selectBooleanCheckbox id="transferReceiveDisplayRetailValue" value="#{pharmacyConfigController.transferReceiveDisplayRetailValue}" />
+                                        <p:outputLabel for="transferReceiveDisplayRetailValue" value="Display Retail Value" class="ms-2" />
+                                        <small class="form-text text-muted d-block">Show the retail sale value column</small>
+                                    </div>
+                                    <div class="mb-3">
+                                        <p:selectBooleanCheckbox id="transferReceiveDisplayTransferRate" value="#{pharmacyConfigController.transferReceiveDisplayTransferRate}" />
+                                        <p:outputLabel for="transferReceiveDisplayTransferRate" value="Display Transfer Rate" class="ms-2" />
+                                        <small class="form-text text-muted d-block">Show the transfer rate column</small>
+                                    </div>
+                                    <div class="mb-3">
+                                        <p:selectBooleanCheckbox id="transferReceiveDisplayTransferValue" value="#{pharmacyConfigController.transferReceiveDisplayTransferValue}" />
+                                        <p:outputLabel for="transferReceiveDisplayTransferValue" value="Display Transfer Value" class="ms-2" />
+                                        <small class="form-text text-muted d-block">Show the transfer value column</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                     <div class="row mt-4">
                         <div class="col-12">
                             <div class="card">
@@ -366,7 +412,7 @@
                             </div>
                         </div>
                     </div>
-                </h:form>
+                </h:panelGroup>
             </p:dialog>
 
         </h:form>

@@ -44,6 +44,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -152,6 +153,7 @@ public class PharmacyStockTakeController implements Serializable {
     private com.divudi.core.entity.Category selectedCategory; // for category-specific downloads
     private com.divudi.core.entity.Category selectedDosageForm; // for dosage-form-specific downloads
     private com.divudi.core.data.DepartmentType selectedDepartmentType; // for department-type-specific downloads
+    private SnapshotSortOrder snapshotSortOrder = SnapshotSortOrder.CATEGORY_ITEM_EXPIRY; // shared by the table and all sheet downloads
     // Pending physical count bills
     private List<com.divudi.core.light.common.PharmacyPhysicalCountLight> pendingPhysicalCounts;
 
@@ -624,6 +626,7 @@ public class PharmacyStockTakeController implements Serializable {
                 snapshotBill.getNetTotal(),
                 Boolean.FALSE
         );
+        snapshotBillDisplay.setDepartmentType(snapshotBill.getDepartmentType());
         return "/pharmacy/pharmacy_stock_take_print?faces-redirect=true&billId=" + snapshotBill.getId();
     }
 
@@ -1237,7 +1240,7 @@ public class PharmacyStockTakeController implements Serializable {
             return null;
         }
 
-        if (snapshotBillDisplay.getCompleted()) {
+        if (Boolean.TRUE.equals(snapshotBillDisplay.getCompleted())) {
             JsfUtil.addErrorMessage("Cannot upload to a completed stock taking session");
             return null;
         }
@@ -1464,7 +1467,7 @@ public class PharmacyStockTakeController implements Serializable {
             JsfUtil.addErrorMessage("Please log to the department you want to upload the stock data");
             return null;
         }
-        if (snapshotBillDisplay.getCompleted()) {
+        if (Boolean.TRUE.equals(snapshotBillDisplay.getCompleted())) {
             JsfUtil.addErrorMessage("Cannot upload to a completed stock taking session");
             return null;
         }
@@ -1639,7 +1642,8 @@ public class PharmacyStockTakeController implements Serializable {
                     snapshotBillDisplay.getCreatedAt(),
                     snapshotBillDisplay.getInstitutionName(), snapshotBillDisplay.getDepartmentName(),
                     (long) physicalCountBill.getBillItems().size(),
-                    snapshotBillDisplay.getNetTotal(), Boolean.FALSE);
+                    snapshotBillDisplay.getNetTotal(), Boolean.FALSE,
+                    snapshotBillDisplay.getDepartmentType());
         }
 
         // doApprovalLogic() may have queued a warning that some lines were not applied
@@ -2431,6 +2435,7 @@ public class PharmacyStockTakeController implements Serializable {
                 b.getNetTotal(),
                 b.isCompleted()
             );
+            snapshotBillDisplay.setDepartmentType(b.getDepartmentType());
         }
 
         // Keep existing behavior for backward compatibility
@@ -2572,10 +2577,10 @@ public class PharmacyStockTakeController implements Serializable {
             JsfUtil.addErrorMessage("No Bill ID");
             return null;
         }
-        // Use same 8-arg constructor as listSnapshotBillRows (proven to work), then patch departmentId
+        // Same constructor as the print page (includes departmentType), then patch departmentId
         String jpql = "select new com.divudi.core.light.common.PharmacySnapshotBillLight("
                 + "b.id, b.deptId, b.createdAt, ins.name, dept.name, "
-                + "0L, b.netTotal, b.completed) "
+                + "0L, b.netTotal, b.completed, b.departmentType) "
                 + "from Bill b left join b.institution ins left join b.department dept where b.id = :billId";
 
         HashMap<String, Object> params = new HashMap<>();
@@ -3458,6 +3463,7 @@ public class PharmacyStockTakeController implements Serializable {
                 dtos = new java.util.ArrayList<>(seen.values());
             }
 
+            sortSnapshotItems(dtos);
             snapshotItems = dtos;
             snapshotItemsLoadedForBillId = snapshotBill.getId();
             System.out.println("[LoadLazy] DONE. items=" + dtos.size()
@@ -4448,6 +4454,85 @@ public class PharmacyStockTakeController implements Serializable {
 
     public void setSelectedDepartmentType(com.divudi.core.data.DepartmentType selectedDepartmentType) {
         this.selectedDepartmentType = selectedDepartmentType;
+    }
+
+    /**
+     * Row order for the stock count bill. One order is shared by the on-screen
+     * table, Print, Export PDF and every Guided/Blind sheet download, so the
+     * sheet the counters use matches what they see.
+     */
+    public enum SnapshotSortOrder {
+        CATEGORY_ITEM_EXPIRY("Category, Item, Expiry"),
+        ITEM_EXPIRY("Item, Expiry"),
+        DOSAGE_FORM_ITEM_EXPIRY("Dosage Form, Item, Expiry"),
+        EXPIRY_ITEM("Expiry Date (soonest first), Item"),
+        BILL_ITEM_ID("Bill Item ID");
+
+        private final String label;
+
+        SnapshotSortOrder(String label) {
+            this.label = label;
+        }
+
+        public String getLabel() {
+            return label;
+        }
+    }
+
+    public SnapshotSortOrder[] getSnapshotSortOrders() {
+        return SnapshotSortOrder.values();
+    }
+
+    public SnapshotSortOrder getSnapshotSortOrder() {
+        return snapshotSortOrder;
+    }
+
+    public void setSnapshotSortOrder(SnapshotSortOrder snapshotSortOrder) {
+        this.snapshotSortOrder = snapshotSortOrder != null ? snapshotSortOrder : SnapshotSortOrder.CATEGORY_ITEM_EXPIRY;
+    }
+
+    /** Re-sorts the already-loaded rows in memory after the user changes the sort order. */
+    public void applySnapshotSortOrder() {
+        if (snapshotItems != null) {
+            sortSnapshotItems(snapshotItems);
+        }
+    }
+
+    private void sortSnapshotItems(List<com.divudi.core.data.dto.SnapshotBillItemDTO> items) {
+        Comparator<String> text = Comparator.nullsLast(String.CASE_INSENSITIVE_ORDER);
+        Comparator<com.divudi.core.data.dto.SnapshotBillItemDTO> byCategory = Comparator.comparing(d -> blankToNull(d.getCategoryName()), text);
+        Comparator<com.divudi.core.data.dto.SnapshotBillItemDTO> byDosageForm = Comparator.comparing(d -> blankToNull(d.getDosageForm()), text);
+        Comparator<com.divudi.core.data.dto.SnapshotBillItemDTO> byItem = Comparator.comparing(d -> blankToNull(d.getItemName()), text);
+        Comparator<com.divudi.core.data.dto.SnapshotBillItemDTO> byExpiry = Comparator.comparing(
+                com.divudi.core.data.dto.SnapshotBillItemDTO::getExpiryDate, Comparator.nullsLast(Comparator.naturalOrder()));
+        Comparator<com.divudi.core.data.dto.SnapshotBillItemDTO> byBatch = Comparator.comparing(d -> blankToNull(d.getBatchNo()), text);
+        Comparator<com.divudi.core.data.dto.SnapshotBillItemDTO> byId = Comparator.comparing(
+                com.divudi.core.data.dto.SnapshotBillItemDTO::getBillItemId, Comparator.nullsLast(Comparator.naturalOrder()));
+
+        Comparator<com.divudi.core.data.dto.SnapshotBillItemDTO> order;
+        switch (snapshotSortOrder != null ? snapshotSortOrder : SnapshotSortOrder.CATEGORY_ITEM_EXPIRY) {
+            case ITEM_EXPIRY:
+                order = byItem.thenComparing(byExpiry);
+                break;
+            case DOSAGE_FORM_ITEM_EXPIRY:
+                order = byDosageForm.thenComparing(byItem).thenComparing(byExpiry);
+                break;
+            case EXPIRY_ITEM:
+                order = byExpiry.thenComparing(byItem);
+                break;
+            case BILL_ITEM_ID:
+                order = byId;
+                break;
+            case CATEGORY_ITEM_EXPIRY:
+            default:
+                order = byCategory.thenComparing(byItem).thenComparing(byExpiry);
+                break;
+        }
+        items.sort(order.thenComparing(byBatch).thenComparing(byId));
+    }
+
+    private static String blankToNull(String s) {
+        return s == null || s.trim().isEmpty() ? null : s.trim();
     }
 
     public java.util.List<com.divudi.core.data.DepartmentType> getAvailableDepartmentTypes() {

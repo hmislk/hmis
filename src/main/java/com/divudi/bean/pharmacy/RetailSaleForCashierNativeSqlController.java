@@ -720,9 +720,8 @@ public class RetailSaleForCashierNativeSqlController implements Serializable, Co
                 patient.setCreatedAt(new Date());
                 patient.getPerson().setCreater(sessionController.getLoggedUser());
                 patient.getPerson().setCreatedAt(new Date());
-                if (patient.getPerson().getId() == null) {
-                    personFacade.create(patient.getPerson());
-                }
+                // Patient.person is cascade = ALL, so creating the patient also saves its person.
+                // Persisting the person separately wrote a second, unreferenced PERSON row (#23900).
                 patientFacade.create(patient);
             } else {
                 // Deliberate divergence from legacy savePatient() (:1440-1462), which only ever

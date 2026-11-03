@@ -508,6 +508,22 @@ public class IouBillController implements Serializable {
             JsfUtil.addErrorMessage("Select a Payment Method");
             return;
         }
+        // Settle requires the funds to equal the selected IOUs, so stop an over-amount at Add
+        if (settlingIuos != null && !settlingIuos.isEmpty()) {
+            double selectedIouTotal = 0.0;
+            for (Payment pout : settlingIuos) {
+                selectedIouTotal += Math.abs(pout.getPaidValue());
+            }
+            double addedFundTotal = Math.abs(currentPayment.getPaidValue());
+            for (Payment pin : getPaymentsForsettlingIuos()) {
+                addedFundTotal += Math.abs(pin.getPaidValue());
+            }
+            if (addedFundTotal > selectedIouTotal + 0.005) {
+                JsfUtil.addErrorMessage("Entered amount cannot exceed the IOU amount. Selected IOUs total "
+                        + String.format("%,.2f", selectedIouTotal) + ".");
+                return;
+            }
+        }
         currentPayment.setDepartment(sessionController.getDepartment());
         currentPayment.setInstitution(sessionController.getInstitution());
         currentPayment.setBill(current);

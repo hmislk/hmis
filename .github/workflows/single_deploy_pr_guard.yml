@@ -1,0 +1,47 @@
+name: Single deploy PR guard
+
+# Fails a PR to a deploy branch (<hospital>-production / <hospital>-staging)
+# while an older PR to the same branch is still open. Add a second fix to the
+# open PR's head branch instead (hotfix-deploy skill, Step 1a). The oldest open
+# PR always passes. Re-run this check, or push, once the older PR is merged or
+# closed. single_deploy_pr_sweep.yml sets the same result as a commit status on
+# deploy branches that do not carry this workflow yet.
+
+on:
+  pull_request:
+    types: [opened, reopened, synchronize, edited]
+    branches:
+      - '*-production'
+      - '*-staging'
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  single-deploy-pr:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Check for an older open PR to the same deploy branch
+        env:
+          EVENT_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          BASE_REF: ${{ github.event.pull_request.base.ref }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          if git rev-parse -q --verify HEAD^2 >/dev/null; then
+            BASE_SHA=$(git rev-parse HEAD^1)
+          else
+            BASE_SHA="$EVENT_BASE_SHA"
+          fi
+          # Use the base branch's copy of the guard when it has one.
+          GUARD="$RUNNER_TEMP/check_single_deploy_pr.py"
+          git show "$BASE_SHA:.github/scripts/check_single_deploy_pr.py" > "$GUARD" 2>/dev/null \
+            || cp .github/scripts/check_single_deploy_pr.py "$GUARD"
+          python3 "$GUARD" --pr "$PR_NUMBER" --base "$BASE_REF"
