@@ -176,6 +176,21 @@
                 font-size: 0.78rem;
                 color: #4b5563;
             }
+            /* "Code expired" banner: same shape, amber */
+            .tfa-sent.tfa-expired {
+                border-color: #fde68a;
+                border-left-color: #d97706;
+                background: #fffbeb;
+            }
+            .tfa-expired .tfa-sent-icon {
+                background: #d97706;
+            }
+            .tfa-expired .tfa-sent-title {
+                color: #78350f;
+            }
+            .tfa-hidden {
+                display: none !important;
+            }
             @keyframes tfa-sent-in {
                 from { opacity: 0; transform: translateY(-6px); }
                 to { opacity: 1; transform: translateY(0); }
@@ -271,14 +286,22 @@
                         <i class="fa fa-sms"></i>
                     </div>
                     <h:outputText value="#{twoFactorSmsController.mobileEntryShown ? 'Log in with SMS code' : 'Verify with SMS code'}" class="tfa-title" />
-                    <h:panelGroup rendered="#{twoFactorSmsController.loginCodeSent}" layout="block" class="tfa-sent" role="status">
+                    <h:panelGroup rendered="#{twoFactorSmsController.loginCodeSent}" layout="block" class="tfa-sent tfa-sent-live d-flex justify-content-center" role="status">
                         <span class="tfa-sent-icon"><i class="fa fa-paper-plane"></i></span>
                         <span class="tfa-sent-text">
                             <span class="tfa-sent-title">Code sent to <b><h:outputText value="#{twoFactorSmsController.maskedMobile}" /></b></span>
-                            <span class="tfa-sent-sub">Enter the 6-digit code from the SMS. It may take a minute to arrive.</span>
                         </span>
                     </h:panelGroup>
-                    <h:outputText rendered="#{not twoFactorSmsController.loginCodeSent and not twoFactorSmsController.mobileEntryShown}"
+                    <!-- Code expired: shown by the server after an expired code is entered, or by the countdown below when it reaches zero -->
+                    <h:panelGroup rendered="#{twoFactorSmsController.loginCodeSent or twoFactorSmsController.loginCodeExpired}" layout="block"
+                                  class="tfa-sent tfa-expired d-flex justify-content-center #{twoFactorSmsController.loginCodeExpired ? '' : 'tfa-hidden'}" role="alert">
+                        <span class="tfa-sent-icon"><i class="fa fa-hourglass-end"></i></span>
+                        <span class="tfa-sent-text">
+                            <span class="tfa-sent-title"><b>Code expired</b></span>
+                            <span class="tfa-sent-sub">Send a new code to <h:outputText value="#{twoFactorSmsController.maskedMobile}" />.</span>
+                        </span>
+                    </h:panelGroup>
+                    <h:outputText rendered="#{not twoFactorSmsController.loginCodeSent and not twoFactorSmsController.loginCodeExpired and not twoFactorSmsController.mobileEntryShown}"
                                   value="We will send a 6-digit code to #{twoFactorSmsController.maskedMobile}." class="tfa-sub" />
                     <h:outputText rendered="#{twoFactorSmsController.mobileEntryShown}"
                                   value="First time: enter the mobile number saved in the system for your account. If it matches, we will send a 6-digit code to it." class="tfa-sub" />
@@ -291,7 +314,7 @@
                     <h:panelGroup rendered="#{twoFactorSmsController.mobileEntryShown}" layout="block">
                         <p:inputText id="txtLoginMobile"
                                      value="#{twoFactorSmsController.loginMobileInput}"
-                                     placeholder="Enter your mobile number (e.g. 0771234567)"
+                                     placeholder="Enter your mobile number"
                                      maxlength="20"
                                      autocomplete="tel"
                                      style="width: 100%; text-align: center; font-size: 1.1rem;" />
@@ -308,7 +331,7 @@
                         <p:defaultCommand target="btnSendFirstSms" />
                     </h:panelGroup>
 
-                    <h:panelGroup rendered="#{twoFactorSmsController.loginCodeSent}" layout="block">
+                    <h:panelGroup rendered="#{twoFactorSmsController.loginCodeSent}" layout="block" class="tfa-code-area">
                         <div class="d-flex justify-content-center">
                             <ez:otp_input id="txtSmsCode"
                                           value="#{twoFactorSmsController.code}"
@@ -317,8 +340,9 @@
                         </div>
                         <span class="tfa-hint">
                             <i class="fa fa-clock me-1"></i>
+                            <!-- At zero the script swaps in the "Code expired" banner (no separate expired text here) -->
                             <span class="tfa-countdown" data-seconds="#{twoFactorSmsController.codeSecondsLeft}"
-                                  data-prefix="Code expires in " data-done="Code expired. Send a new code."></span>
+                                  data-prefix="Code expires in "></span>
                         </span>
 
                         <p:commandButton
@@ -337,7 +361,7 @@
                             <span class="tfa-wait" data-wait="#{twoFactorSmsController.resendSecondsLeft}">
                                 <p:commandButton
                                     id="btnSendSms"
-                                    class="#{twoFactorSmsController.loginCodeSent ? 'ui-button-secondary ui-button-flat' : 'tfa-verify'}"
+                                    class="tfa-resend #{twoFactorSmsController.loginCodeSent ? 'ui-button-secondary ui-button-flat' : 'tfa-verify'}"
                                     value="#{twoFactorSmsController.loginCodeSent ? 'Resend code' : 'Send code'}"
                                     icon="fa fa-redo"
                                     ajax="false"
@@ -379,14 +403,32 @@
                         var m = Math.floor(s / 60), r = s % 60;
                         return m + ':' + (r < 10 ? '0' : '') + r;
                     }
+                    // At expiry: swap the "Code sent" banner for "Code expired", hide the code boxes
+                    // and make Resend the main button (one message only, no pop-up)
+                    function showExpired(el) {
+                        var root = el.closest('.tfa') || document;
+                        Array.prototype.forEach.call(root.querySelectorAll('.tfa-sent-live, .tfa-code-area'), function (n) {
+                            n.classList.add('tfa-hidden');
+                        });
+                        Array.prototype.forEach.call(root.querySelectorAll('.tfa-expired'), function (n) {
+                            n.classList.remove('tfa-hidden');
+                        });
+                        Array.prototype.forEach.call(root.querySelectorAll('.tfa-resend'), function (b) {
+                            b.classList.remove('ui-button-secondary', 'ui-button-flat');
+                            b.classList.add('tfa-verify');
+                        });
+                    }
                     // Code expiry countdown
                     Array.prototype.forEach.call(document.querySelectorAll('.tfa-countdown'), function (el) {
                         var s = parseInt(el.getAttribute('data-seconds'), 10) || 0;
                         var tick = function () {
-                            el.textContent = s > 0 ? el.getAttribute('data-prefix') + fmt(s) : el.getAttribute('data-done');
-                            if (s-- <= 0) {
+                            if (s <= 0) {
                                 clearInterval(t);
+                                showExpired(el);
+                                return;
                             }
+                            el.textContent = el.getAttribute('data-prefix') + fmt(s);
+                            s--;
                         };
                         var t = setInterval(tick, 1000);
                         tick();
