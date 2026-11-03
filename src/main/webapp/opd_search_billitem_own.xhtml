@@ -181,27 +181,27 @@
                                         </h:commandLink>
                                     </p:column>
 
-                                    <p:column headerText="Gross Value" sortBy="#{pi.grossValue}" filterBy="#{pi.grossValue}" filterMatchMode="gte">
+                                    <p:column headerText="Gross Value" sortBy="#{pi.grossValueForDisplay}" filterBy="#{pi.grossValueForDisplay}" filterMatchMode="gte">
                                         <h:commandLink action="/opd/bill_reprint?faces-redirect=true">
-                                            <h:outputLabel value="#{pi.grossValue}">
+                                            <h:outputLabel value="#{pi.grossValueForDisplay}">
                                                 <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputLabel>
                                             <f:setPropertyActionListener value="#{searchController.findBillById(pi.billId)}" target="#{billSearch.billSearch}"/>
                                         </h:commandLink>
                                     </p:column>
 
-                                    <p:column headerText="Discount" sortBy="#{pi.discount}" filterBy="#{pi.discount}" filterMatchMode="gte">
+                                    <p:column headerText="Discount" sortBy="#{pi.discountForDisplay}" filterBy="#{pi.discountForDisplay}" filterMatchMode="gte">
                                         <h:commandLink action="/opd/bill_reprint?faces-redirect=true">
-                                            <h:outputLabel value="#{pi.discount}">
+                                            <h:outputLabel value="#{pi.discountForDisplay}">
                                                 <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputLabel>
                                             <f:setPropertyActionListener value="#{searchController.findBillById(pi.billId)}" target="#{billSearch.billSearch}"/>
                                         </h:commandLink>
                                     </p:column>
 
-                                    <p:column headerText="Net Value" sortBy="#{pi.netValue}" filterBy="#{pi.netValue}" filterMatchMode="gte">
+                                    <p:column headerText="Net Value" sortBy="#{pi.netValueForDisplay}" filterBy="#{pi.netValueForDisplay}" filterMatchMode="gte">
                                         <h:commandLink action="/opd/bill_reprint?faces-redirect=true">
-                                            <h:outputLabel value="#{pi.netValue}">
+                                            <h:outputLabel value="#{pi.netValueForDisplay}">
                                                 <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputLabel>
                                             <f:setPropertyActionListener value="#{searchController.findBillById(pi.billId)}" target="#{billSearch.billSearch}"/>
