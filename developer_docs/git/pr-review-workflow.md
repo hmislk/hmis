@@ -32,12 +32,15 @@ Always fetch first — Codex may have auto-pushed fixes you don't have locally.
 
 ### 1a. Contributor PR opened against `master`
 Run `git fetch origin pull/<N>/head:pr-<N>` and
-`git rev-list --count origin/development..pr-<N>`.
-If the count is more than the PR's own commits, the branch was cut
-from `master`: retargeting alone pulls master-only commits into the
-diff. Ask the author to rebase onto `origin/development`, or rebuild
-the branch from `origin/development` with only their fix commits
-(keep authorship), then retarget.
+`git log --oneline origin/development..pr-<N>`.
+If it lists commits that aren't the PR's own, check that they are
+`master`-only (not cherry-picked copies of `development` commits).
+If so, retargeting alone pulls them into the diff. Ask the author
+to move only their commits
+(`git rebase --onto origin/development <last-master-commit> pr-<N>`;
+a plain `git rebase origin/development` replays the `master`
+commits too), or rebuild the branch from `origin/development` by
+cherry-picking only their commits (keeps authorship), then retarget.
 
 ### 2. Investigate Comments
 
