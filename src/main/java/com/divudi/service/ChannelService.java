@@ -1111,7 +1111,8 @@ public class ChannelService {
      */
     public Bill reserveAgentBookingThroughApiWithinCapacity(OnlineBooking newBooking, SessionInstance session, String refNo, Institution creditCompany) {
         SessionInstance locked = lockAndRecountSession(session);
-        if (isFullyBookedSession(locked)) {
+        // Open holds are left out of the booked count, but each will need a place when completed (#25053)
+        if (isFullyBookedSession(locked, countOpenAgentHolds(locked))) {
             throw new ChannelSessionFullException("Session is Full. Can't add online bookings");
         }
         return addToReserveAgentBookingThroughApi(false, newBooking, locked, refNo, null, creditCompany);
@@ -1131,6 +1132,28 @@ public class ChannelService {
             throw new ChannelSessionFullException("Session is Full. Can't add online bookings");
         }
         return settleOnlineAgentInitialBooking(preBillSession, refNo, agencyCharge);
+    }
+
+    /**
+     * Agent API holds (/save) on the session that are neither completed nor cancelled (#25053).
+     * A cancelled hold only changes its OnlineBooking, so the booking status decides.
+     */
+    public long countOpenAgentHolds(SessionInstance session) {
+        String jpql = "select count(bs) from BillSession bs join bs.bill b join b.onlineBooking ob "
+                + " where bs.retired=false"
+                + " and bs.sessionInstance=:si"
+                + " and b.retired=false"
+                + " and b.cancelled=false"
+                + " and b.billTypeAtomic=:bta"
+                + " and b.paidBill is null"
+                + " and ob.canceled=false"
+                + " and ob.onlineBookingStatus=:pending";
+        Map<String, Object> params = new HashMap<>();
+        params.put("si", session);
+        params.put("bta", BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_PENDING_PAYMENT);
+        params.put("pending", OnlineBookingStatus.PENDING);
+        Long count = getBillSessionFacade().findLongByJpql(jpql, params);
+        return count == null ? 0L : count;
     }
 
     // A projection reads the database row, not an entity another server may have left stale in this server's cache
@@ -2965,6 +2988,14 @@ public class ChannelService {
     }
 
     public boolean isFullyBookedSession(SessionInstance ss) {
+        return isFullyBookedSession(ss, 0L);
+    }
+
+    /**
+     * As {@link #isFullyBookedSession(SessionInstance)}, with {@code openHolds} extra places taken
+     * by agent holds that are not yet completed (#25053).
+     */
+    public boolean isFullyBookedSession(SessionInstance ss, long openHolds) {
         if (ss.getMaxNo() != 0 && configOptionApplicationController.getBooleanValueByKey("Limited appoinments session can't get appoinement more than max amount.")) {
             if (ss.getBookedPatientCount() != null) {
                 int maxNo = ss.getMaxNo();
@@ -2985,7 +3016,7 @@ public class ChannelService {
                 } else {
                     totalPatientCount = bookedPatientCount;
                 }
-                if (maxNo <= totalPatientCount) {
+                if (maxNo <= totalPatientCount + openHolds) {
                     return true;
                 }
             }
