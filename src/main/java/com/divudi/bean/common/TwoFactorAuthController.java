@@ -476,6 +476,10 @@ public class TwoFactorAuthController implements Serializable {
             return;
         }
         WebUser u = webUserFacade.find(user.getId());
+        if (u.isTwoFactorLocked()) {
+            JsfUtil.addErrorMessage("Unlock the account before removing the verified mobile.");
+            return;
+        }
         u.setTwoFactorMobile(null);
         u.setTwoFactorMobileVerifiedAt(null);
         webUserFacade.edit(u);
