@@ -1968,19 +1968,24 @@ public class ConfigOptionApplicationController implements Serializable {
     }
 
     public int getTwoFactorSmsValiditySeconds() {
-        return Math.max(30, getIntegerValueByKey("Two-factor SMS code - validity seconds", 120));
+        return Math.max(30, integerOrDefault(getIntegerValueByKey("Two-factor SMS code - validity seconds", 120), 120));
     }
 
     public int getTwoFactorSmsResendCooldownSeconds() {
-        return Math.max(0, getIntegerValueByKey("Two-factor SMS code - resend cooldown seconds", 60));
+        return Math.max(0, integerOrDefault(getIntegerValueByKey("Two-factor SMS code - resend cooldown seconds", 60), 60));
     }
 
     public int getTwoFactorSmsMaxCodesPerUserPerHour() {
-        return Math.max(1, getIntegerValueByKey("Two-factor SMS code - max codes per user per hour", 5));
+        return Math.max(1, integerOrDefault(getIntegerValueByKey("Two-factor SMS code - max codes per user per hour", 5), 5));
     }
 
     public int getTwoFactorSmsMaxPerHourForAllUsers() {
-        return Math.max(1, getIntegerValueByKey("Two-factor SMS code - max SMS per hour for all users", 200));
+        return Math.max(1, integerOrDefault(getIntegerValueByKey("Two-factor SMS code - max SMS per hour for all users", 200), 200));
+    }
+
+    // A cleared or non-numeric option value comes back as null; use the default instead of unboxing it
+    private static int integerOrDefault(Integer value, int defaultValue) {
+        return value == null ? defaultValue : value;
     }
 
     public String getTwoFactorSmsAllowedCountryCodes() {
