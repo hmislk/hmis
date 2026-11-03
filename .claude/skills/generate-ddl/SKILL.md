@@ -276,6 +276,8 @@ fi
 
 ### 9. Commit and push the wiki
 
+Run step 9 exactly as written, including keeping our version of a conflicted file.
+
 ```bash
 if [ -d "$WIKI_DIR" ]; then
   cd "$WIKI_DIR"
@@ -296,6 +298,9 @@ if [ -d "$WIKI_DIR" ]; then
   git rebase --continue 2>/dev/null || true
   # Commit (skip if nothing staged, e.g. rebase already applied it)
   git diff --cached --quiet || git commit -m "docs(wiki): update DDL generation guide with $(date '+%Y-%m-%d') schema"
+  # Never push a file with conflict markers left in it. `=======` is left out
+  # of the pattern on purpose: it is a legitimate Markdown heading underline.
+  grep -nE '^(<<<<<<<|>>>>>>>)( |$)' Database-Schema-DDL-Generation-Guide.md files/createDDL.sql && { echo 'conflict markers left, not pushing' >&2; exit 1; }
   git push origin master
   cd -
 fi
