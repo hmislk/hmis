@@ -40,7 +40,9 @@ to move only their commits
 (`git rebase --onto origin/development <last-master-commit> pr-<N>`;
 a plain `git rebase origin/development` replays the `master`
 commits too), or rebuild the branch from `origin/development` by
-cherry-picking only their commits (keeps authorship), then retarget.
+cherry-picking only their commits oldest-first (list them with
+`git log --reverse --oneline`, so parents apply before children; keeps
+authorship), then retarget.
 
 ### 2. Investigate Comments
 
