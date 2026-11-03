@@ -57,6 +57,7 @@
                                     queryDelay="300"
                                     autocomplete="off"
                                     inputStyleClass="w-100"
+                                    onkeydown="if (event.key === 'Enter' || event.key === 'NumpadEnter') { var p = document.getElementById(this.id.replace(/_input$/, '_panel')); if (p &amp;&amp; getComputedStyle(p).display !== 'none' &amp;&amp; !p.querySelector('.ui-state-highlight')) { event.preventDefault(); document.getElementById(this.form.id + ':btnSearch').click(); } }"
                                     placeholder="Type 4 letters for suggestions"/>
                             </div>
                             <div class="pharma-search-filter">
