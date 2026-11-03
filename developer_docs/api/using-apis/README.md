@@ -38,6 +38,7 @@ All standard endpoints use the `Finance` header unless noted otherwise below.
 | [API_LOGIN_HISTORY.md](API_LOGIN_HISTORY.md) | User login history records | `Finance` |
 | [API_MEMBERSHIP.md](API_MEMBERSHIP.md) | Membership scheme registration and payment | none (public) |
 | [API_PHARMACEUTICAL_MANAGEMENT.md](API_PHARMACEUTICAL_MANAGEMENT.md) | VTM/ATM/VMP/AMP/VMPP/AMPP item master CRUD + backfill | `Finance` |
+| [API_PHARMACY_ITEM_SUPPLIERS.md](API_PHARMACY_ITEM_SUPPLIERS.md) | Link items to Dealer suppliers (`ItemsDistributors`), single + bulk | `Finance` |
 | [API_PHARMACY_PURCHASE_ORDERS.md](API_PHARMACY_PURCHASE_ORDERS.md) | PO approval status (incl. history) + cancel-approval | `Finance` |
 | [API_PHARMACY_STOCK_ADJUSTMENTS.md](API_PHARMACY_STOCK_ADJUSTMENTS.md) | Search stocks, adjust qty/rates/expiry, create batches | `Finance` |
 | [API_QUICKBOOKS.md](API_QUICKBOOKS.md) | Read-only export of financial data for QuickBooks | `Finance` |
