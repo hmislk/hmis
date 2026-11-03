@@ -449,6 +449,8 @@ public class BalanceHistoryApi {
         // Location info
         dto.setDepartmentId(history.getDepartment() != null ? history.getDepartment().getId() : null);
         dto.setDepartmentName(history.getDepartment() != null ? history.getDepartment().getName() : null);
+        dto.setSiteId(history.getSite() != null ? history.getSite().getId() : null);
+        dto.setSiteName(history.getSite() != null ? history.getSite().getName() : null);
         dto.setInstitutionId(history.getInstitution() != null ? history.getInstitution().getId() : null);
         dto.setInstitutionName(history.getInstitution() != null ? history.getInstitution().getName() : null);
 
