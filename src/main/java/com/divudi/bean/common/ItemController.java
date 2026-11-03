@@ -2818,6 +2818,29 @@ public class ItemController implements Serializable {
 
     }
 
+    /**
+     * Name suggestions for a free-text item name filter (issue #24635): up to
+     * 20 distinct names of active AMPs and AMPPs containing the typed text.
+     * Returns Strings, so the field keeps its "contains" behaviour when the
+     * user does not pick a suggestion.
+     */
+    public List<String> completeAmpAndAmppNames(String query) {
+        if (query == null || query.trim().length() < 4) {
+            return new ArrayList<>();
+        }
+        String jpql = "select distinct c.name from Item c "
+                + "where c.retired = false "
+                + "and (type(c) = :amp or type(c) = :ampp) "
+                + "and upper(c.name) like :q "
+                + "order by c.name";
+        Map<String, Object> params = new HashMap<>();
+        params.put("amp", Amp.class);
+        params.put("ampp", Ampp.class);
+        params.put("q", "%" + query.trim().toUpperCase() + "%");
+        List<String> names = getFacade().findString(jpql, params, TemporalType.TIMESTAMP, 20);
+        return names == null ? new ArrayList<>() : names;
+    }
+
     public List<Item> completeAmpAndAmppItemForLoggedDepartment(String query) {
         List<Item> suggestions;
         String sql;
