@@ -1157,11 +1157,16 @@ public class ChannelService {
     }
 
     /**
-     * The one capacity check for staff booking screens (main screen and month view). Locks the
-     * session row (first database access of the transaction), recounts its bookings from the
-     * booking rows and then compares them, plus open agent holds, with the session maximum, so
-     * the stored counts being stale cannot let a full session through (#25074).
+     * The one capacity check for staff booking screens (main screen and month view). Recounts the
+     * session's bookings from the booking rows and compares them, plus open agent holds, with the
+     * session maximum, so the stored counts being stale cannot let a full session through (#25074).
      * Do not reimplement this in a controller; change it here.
+     * <p>
+     * Limits: the session row lock taken here does NOT outlive this call (it is released when the
+     * method returns, before the caller saves), so it gives a fresh recount, not a serialising
+     * guard. Serialising check and save on one server comes from SessionBookingLock, which the
+     * caller must hold around both. Across several servers these screens are still not covered
+     * (tracked in issue #25066).
      *
      * @param reservedBooking true when the booking takes one of the session's reserved numbers
      * @return true when the session has no room for the booking

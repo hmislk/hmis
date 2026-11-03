@@ -3004,14 +3004,6 @@ public class BookingControllerViewScopeMonth implements Serializable {
             }
         }
 
-        if (selectedSessionInstance.getMaxNo() != 0 && configOptionApplicationController.getBooleanValueByKey("Limited appoinments session can't get appoinement more than max amount.")) {
-            // Same check as the main booking screen: lock the session row, recount, add open agent holds (#25074)
-            if (channelService.isSessionFullForNewBooking(selectedSessionInstance, reservedBooking)) {
-                JsfUtil.addErrorMessage("Error: The maximum number of bookings (" + selectedSessionInstance.getMaxNo() + ") has been Reached.");
-                return;
-            }
-        }
-
         if (configOptionApplicationController.getBooleanValueByKey("Allow bill settlement without patient area")) {
             if (patient.getPerson().getArea() == null || patient.getPerson().getArea().getName().isEmpty()) {
                 JsfUtil.addErrorMessage("Pleace Select Patient Area");
@@ -3034,8 +3026,22 @@ public class BookingControllerViewScopeMonth implements Serializable {
             return;
         }
 
-        saveSelected(patient);
-        printingBill = saveBilledBill(reservedBooking);
+        // Hold SessionBookingLock from the capacity check until the bill (and its BillSession) is saved, as the
+        // main booking screen does, so two staff on this server cannot both take the last place (#25074).
+        // The lock is released by try-with-resources on every path, including early returns and exceptions.
+        try (SessionBookingLock.Hold hold = SessionBookingLock.acquire(selectedSessionInstance)) {
+            if (selectedSessionInstance.getMaxNo() != 0 && configOptionApplicationController.getBooleanValueByKey("Limited appoinments session can't get appoinement more than max amount.")) {
+                // Fresh recount of the booking rows plus open agent holds. The database row lock taken inside
+                // this call is released when it returns, so it is SessionBookingLock above that serialises the check and the save.
+                if (channelService.isSessionFullForNewBooking(selectedSessionInstance, reservedBooking)) {
+                    JsfUtil.addErrorMessage("Error: The maximum number of bookings (" + selectedSessionInstance.getMaxNo() + ") has been Reached.");
+                    return;
+                }
+            }
+
+            saveSelected(patient);
+            printingBill = saveBilledBill(reservedBooking);
+        }
         if (printingBill.getBillTypeAtomic().getBillFinanceType() == BillFinanceType.CASH_IN) {
             List<Payment> p = createPayment(printingBill, paymentMethod);
 
