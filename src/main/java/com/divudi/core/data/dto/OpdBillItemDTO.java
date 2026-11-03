@@ -290,13 +290,16 @@ public class OpdBillItemDTO implements Serializable {
     public String getRefundedByName() { return refundedByName; }
     public void setRefundedByName(String refundedByName) { this.refundedByName = refundedByName; }
 
-    public Double getGrossValue() { return grossValue != null ? grossValue : 0.0; }
+    public Double getGrossValue() { return grossValue; }
+    public Double getGrossValueForDisplay() { return grossValue != null ? grossValue : 0.0; }
     public void setGrossValue(Double grossValue) { this.grossValue = grossValue; }
 
-    public Double getDiscount() { return discount != null ? discount : 0.0; }
+    public Double getDiscount() { return discount; }
+    public Double getDiscountForDisplay() { return discount != null ? discount : 0.0; }
     public void setDiscount(Double discount) { this.discount = discount; }
 
-    public Double getNetValue() { return netValue != null ? netValue : 0.0; }
+    public Double getNetValue() { return netValue; }
+    public Double getNetValueForDisplay() { return netValue != null ? netValue : 0.0; }
     public void setNetValue(Double netValue) { this.netValue = netValue; }
 
     public String getDoctorName() { return doctorName; }
