@@ -129,7 +129,16 @@ public class TwoFactorAuthController implements Serializable {
         if (u == null || !isTwoFactorEnabled()) {
             return false;
         }
-        return u.isTwoFactorEnrolled() || isSmsAllowedFor(u);
+        return u.isTwoFactorEnrolled() || isSmsUsableFor(u) || isFirstSmsLoginPossibleFor(u);
+    }
+
+    /**
+     * Allowed SMS codes but no verified mobile yet: the first SMS login can
+     * only send a code when the staff record holds a valid mobile. Without one
+     * the user is not stopped at an SMS screen that can never send a code.
+     */
+    private boolean isFirstSmsLoginPossibleFor(WebUser u) {
+        return isSmsAllowedFor(u) && !u.isTwoFactorMobileVerified() && twoFactorSmsController.hasUsableStaffMobile(u);
     }
 
     private static boolean isAppLinked(WebUser u) {
@@ -192,7 +201,7 @@ public class TwoFactorAuthController implements Serializable {
             setupSecret = null;
         }
         // Allowed SMS but no verified mobile yet: the mobile is set up on this screen
-        boolean mobileSetup = !smsUsable && isSmsAllowedFor(u);
+        boolean mobileSetup = !smsUsable && isFirstSmsLoginPossibleFor(u);
         twoFactorSmsController.startChallenge(appLinked, smsUsable, mobileSetup);
     }
 
