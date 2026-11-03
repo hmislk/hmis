@@ -498,7 +498,7 @@
 
                                     <h:outputText value="Note " rendered="#{not empty bookingController.selectedSessionInstance.specialNoticeSessionInstance or not empty bookingController.selectedSessionInstance.originatingSession.specialNotice}" />
                                     <h:outputText value=":" rendered="#{not empty bookingController.selectedSessionInstance.specialNoticeSessionInstance or not empty bookingController.selectedSessionInstance.originatingSession.specialNotice}"/>
-                                    <h:outputText value="#{bookingController.selectedSessionInstance.specialNoticeSessionInstance} | #{bookingController.selectedSessionInstance.originatingSession.specialNotice}" 
+                                    <h:outputText value="#{bookingController.selectedSessionInstance.specialNoticeSessionInstance}#{not empty bookingController.selectedSessionInstance.specialNoticeSessionInstance and not empty bookingController.selectedSessionInstance.originatingSession.specialNotice ? ' | ' : ''}#{bookingController.selectedSessionInstance.originatingSession.specialNotice}" 
                                                   rendered="#{not empty bookingController.selectedSessionInstance.specialNoticeSessionInstance or not empty bookingController.selectedSessionInstance.originatingSession.specialNotice}" style="color: red"/>
                                 </h:panelGrid>
                             </p:tab>
