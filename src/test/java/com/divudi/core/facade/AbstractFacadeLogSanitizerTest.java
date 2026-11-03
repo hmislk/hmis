@@ -38,6 +38,41 @@ public class AbstractFacadeLogSanitizerTest {
     }
 
     @Test
+    public void redactBoundValues_removesMultiLineBindValue() {
+        String result = AbstractFacade.redactBoundValues(
+                "Error Code: 1054\nCall: SELECT 1 FROM T WHERE A = ?\n\tbind => [a\nsecretline\nmore]\nQuery: ReadAllQuery(x)");
+        assertFalse(result.contains("secretline"), result);
+        assertFalse(result.contains("more"), result);
+        assertTrue(result.contains("Error Code: 1054"), result);
+        assertTrue(result.contains("bind => [redacted]"), result);
+    }
+
+    @Test
+    public void redactBoundValues_removesUnclosedMultiLineBindToEnd() {
+        String result = AbstractFacade.redactBoundValues("Error Code: 1\nbind => [a\nsecret");
+        assertFalse(result.contains("secret"), result);
+        assertEquals("Error Code: 1 / bind => [redacted]", result);
+    }
+
+    @Test
+    public void redactBoundValues_removesBindValueContainingClosingBracket() {
+        String result = AbstractFacade.redactBoundValues(
+                "Error Code: 1\nbind => [x], secret]tail]\nQuery: ReadAllQuery(y)");
+        assertFalse(result.contains("secret"), result);
+        assertFalse(result.contains("tail"), result);
+        assertTrue(result.contains("bind => [redacted]"), result);
+    }
+
+    @Test
+    public void redactBoundValues_removesMultiLineCallAndQueryText() {
+        String result = AbstractFacade.redactBoundValues(
+                "Error Code: 1\nCall: SELECT 1\nWHERE NAME = 'callsecret'\nQuery: ReadAllQuery(sql=\"x\nWHERE NAME = 'querysecret'\")");
+        assertFalse(result.contains("callsecret"), result);
+        assertFalse(result.contains("querysecret"), result);
+        assertEquals("Error Code: 1 / Call: [redacted] / Query: [redacted]", result);
+    }
+
+    @Test
     public void redactBoundValues_handlesNull() {
         assertNull(AbstractFacade.redactBoundValues(null));
     }

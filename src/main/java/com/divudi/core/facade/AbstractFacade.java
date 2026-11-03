@@ -70,12 +70,23 @@ public abstract class AbstractFacade<T> {
 
     private static final int MAX_CAUSE_DEPTH = 10;
     private static final int MAX_MESSAGE_LENGTH = 1000;
+    /**
+     * The bind, Call and Query patterns run over the whole message with
+     * DOTALL, so a value that spans several lines is removed too. A bind
+     * segment runs to the last closing bracket in the message (a value may
+     * itself contain ']'), or to the end of the message when there is none.
+     * Call and Query text runs to the next bind/Call/Query marker or to the
+     * end of the message.
+     */
     private static final java.util.regex.Pattern BIND_PATTERN
-            = java.util.regex.Pattern.compile("bind\\s*=>.*");
-    private static final java.util.regex.Pattern QUERY_PATTERN
-            = java.util.regex.Pattern.compile("(^|\\s)Query:.*");
+            = java.util.regex.Pattern.compile("bind\\s*=>(?:\\s*\\[.*\\]|.*)",
+                    java.util.regex.Pattern.DOTALL);
     private static final java.util.regex.Pattern CALL_PATTERN
-            = java.util.regex.Pattern.compile("(^|\\s)Call:.*");
+            = java.util.regex.Pattern.compile("(^|\\s)Call:.*?(?=\\s*bind\\s*=>|\\sQuery:|\\z)",
+                    java.util.regex.Pattern.DOTALL);
+    private static final java.util.regex.Pattern QUERY_PATTERN
+            = java.util.regex.Pattern.compile("(^|\\s)Query:.*?(?=\\s*bind\\s*=>|\\sCall:|\\z)",
+                    java.util.regex.Pattern.DOTALL);
     private static final java.util.regex.Pattern QUOTED_VALUE_PATTERN
             = java.util.regex.Pattern.compile("(Duplicate entry |value: ?)'[^']*'");
 
@@ -105,24 +116,24 @@ public abstract class AbstractFacade<T> {
     }
 
     /**
-     * Removes parameter values from an exception message. Per line it
-     * replaces an EclipseLink {@code bind => [...]} segment with
-     * {@code bind => [redacted]}, the {@code Call:} and {@code Query:} text
-     * with {@code [redacted]}, and quoted MySQL values such as
-     * {@code Duplicate entry 'x'} with {@code '[redacted]'}. Lines are then
-     * joined with " / " so the log entry stays on one line. Package-private
-     * for unit testing.
+     * Removes parameter values from an exception message. Across the whole
+     * message (values may span lines) it replaces an EclipseLink
+     * {@code bind => [...]} segment with {@code bind => [redacted]} and the
+     * {@code Call:} and {@code Query:} text with {@code [redacted]}; per line
+     * it then replaces quoted MySQL values such as {@code Duplicate entry 'x'}
+     * with {@code '[redacted]'}. Lines are joined with " / " so the log entry
+     * stays on one line. Package-private for unit testing.
      */
     static String redactBoundValues(String message) {
         if (message == null) {
             return null;
         }
+        String redacted = BIND_PATTERN.matcher(message).replaceAll("bind => [redacted]");
+        redacted = CALL_PATTERN.matcher(redacted).replaceAll("$1Call: [redacted]");
+        redacted = QUERY_PATTERN.matcher(redacted).replaceAll("$1Query: [redacted]");
         StringBuilder sb = new StringBuilder();
-        for (String line : message.split("\\r?\\n")) {
-            String cleaned = BIND_PATTERN.matcher(line).replaceAll("bind => [redacted]");
-            cleaned = CALL_PATTERN.matcher(cleaned).replaceAll("$1Call: [redacted]");
-            cleaned = QUERY_PATTERN.matcher(cleaned).replaceAll("$1Query: [redacted]");
-            cleaned = QUOTED_VALUE_PATTERN.matcher(cleaned).replaceAll("$1'[redacted]'");
+        for (String line : redacted.split("\\r?\\n")) {
+            String cleaned = QUOTED_VALUE_PATTERN.matcher(line).replaceAll("$1'[redacted]'");
             cleaned = cleaned.trim();
             if (cleaned.isEmpty()) {
                 continue;
