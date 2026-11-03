@@ -36,6 +36,12 @@
         position: static !important;
         width: 100% !important;
     }
+
+    /* A long report must not cut a row across two printed pages. */
+    .paper .ui-datatable tr {
+        break-inside: avoid;
+        page-break-inside: avoid;
+    }
 }
 
 @media screen, print {
