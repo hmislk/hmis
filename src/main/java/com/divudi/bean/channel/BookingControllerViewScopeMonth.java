@@ -73,6 +73,7 @@ import com.divudi.core.data.BillFinanceType;
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.OptionScope;
 import com.divudi.core.data.dataStructure.ComponentDetail;
+import com.divudi.service.ChannelService;
 import com.divudi.service.StaffService;
 import com.divudi.core.entity.Doctor;
 import com.divudi.core.entity.Payment;
@@ -125,6 +126,8 @@ public class BookingControllerViewScopeMonth implements Serializable {
      */
     @EJB
     private StaffFacade staffFacade;
+    @EJB
+    private ChannelService channelService;
     @EJB
     private ServiceSessionFacade serviceSessionFacade;
     @EJB
@@ -3022,6 +3025,8 @@ public class BookingControllerViewScopeMonth implements Serializable {
                 } else {
                     totalPatientCount = bookedPatientCount;
                 }
+                // Open agent holds are not in the booked count but each needs a place when completed (#25069)
+                totalPatientCount += channelService.countOpenAgentHolds(selectedSessionInstance);
                 if (maxNo <= totalPatientCount) {
                     JsfUtil.addErrorMessage("Error: The maximum number of bookings (" + maxNo + ") has been Reached.");
                     return;
