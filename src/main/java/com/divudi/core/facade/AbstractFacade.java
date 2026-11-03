@@ -50,6 +50,13 @@ public abstract class AbstractFacade<T> {
      * The helpers still return their usual default; only the logging is new.
      * A {@link NoResultException} from getSingleResult is an expected
      * "nothing found" and is not logged.
+     * <p>
+     * The exception itself is deliberately NOT passed to the logger: an
+     * EclipseLink DatabaseException message carries the SQL call with its
+     * {@code bind => [...]} parameter values and the {@code Query:} text,
+     * which can hold patient data, usernames or password hashes. Only the
+     * sanitized cause chain from {@link #sanitizedCauseChain(Throwable)} is
+     * logged.
      */
     private void logSwallowedQueryFailure(String method, String jpql, Exception e) {
         if (e instanceof NoResultException) {
@@ -57,7 +64,79 @@ public abstract class AbstractFacade<T> {
         }
         String entityName = entityClass == null ? "?" : entityClass.getSimpleName();
         logger.log(Level.SEVERE, "AbstractFacade." + method + " (" + entityName
-                + ") query failed; returning an empty/default result. JPQL: " + jpql, e);
+                + ") query failed; returning an empty/default result. JPQL: " + jpql
+                + " | Cause: " + sanitizedCauseChain(e));
+    }
+
+    private static final int MAX_CAUSE_DEPTH = 10;
+    private static final int MAX_MESSAGE_LENGTH = 1000;
+    private static final java.util.regex.Pattern BIND_PATTERN
+            = java.util.regex.Pattern.compile("bind\\s*=>.*");
+    private static final java.util.regex.Pattern QUERY_PATTERN
+            = java.util.regex.Pattern.compile("(^|\\s)Query:.*");
+    private static final java.util.regex.Pattern CALL_PATTERN
+            = java.util.regex.Pattern.compile("(^|\\s)Call:.*");
+    private static final java.util.regex.Pattern QUOTED_VALUE_PATTERN
+            = java.util.regex.Pattern.compile("(Duplicate entry |value: ?)'[^']*'");
+
+    /**
+     * Describes a throwable and its causes as "Class: message" items joined
+     * by " <- ", with bound values removed (see {@link #redactBoundValues}).
+     * Package-private for unit testing.
+     */
+    static String sanitizedCauseChain(Throwable t) {
+        StringBuilder sb = new StringBuilder();
+        Set<Throwable> seen = java.util.Collections.newSetFromMap(new java.util.IdentityHashMap<>());
+        Throwable current = t;
+        int depth = 0;
+        while (current != null && depth < MAX_CAUSE_DEPTH && seen.add(current)) {
+            if (depth > 0) {
+                sb.append(" <- ");
+            }
+            sb.append(current.getClass().getName());
+            String message = redactBoundValues(current.getMessage());
+            if (message != null && !message.isEmpty()) {
+                sb.append(": ").append(message);
+            }
+            current = current.getCause();
+            depth++;
+        }
+        return sb.toString();
+    }
+
+    /**
+     * Removes parameter values from an exception message. Per line it
+     * replaces an EclipseLink {@code bind => [...]} segment with
+     * {@code bind => [redacted]}, the {@code Call:} and {@code Query:} text
+     * with {@code [redacted]}, and quoted MySQL values such as
+     * {@code Duplicate entry 'x'} with {@code '[redacted]'}. Lines are then
+     * joined with " / " so the log entry stays on one line. Package-private
+     * for unit testing.
+     */
+    static String redactBoundValues(String message) {
+        if (message == null) {
+            return null;
+        }
+        StringBuilder sb = new StringBuilder();
+        for (String line : message.split("\\r?\\n")) {
+            String cleaned = BIND_PATTERN.matcher(line).replaceAll("bind => [redacted]");
+            cleaned = CALL_PATTERN.matcher(cleaned).replaceAll("$1Call: [redacted]");
+            cleaned = QUERY_PATTERN.matcher(cleaned).replaceAll("$1Query: [redacted]");
+            cleaned = QUOTED_VALUE_PATTERN.matcher(cleaned).replaceAll("$1'[redacted]'");
+            cleaned = cleaned.trim();
+            if (cleaned.isEmpty()) {
+                continue;
+            }
+            if (sb.length() > 0) {
+                sb.append(" / ");
+            }
+            sb.append(cleaned);
+        }
+        String result = sb.toString();
+        if (result.length() > MAX_MESSAGE_LENGTH) {
+            result = result.substring(0, MAX_MESSAGE_LENGTH) + "...";
+        }
+        return result;
     }
 
     /**
@@ -736,7 +815,7 @@ public abstract class AbstractFacade<T> {
         try {
             resultList = qry.getResultList();
         } catch (Exception e) {
-            logger.log(Level.SEVERE, "findDTOsByJpql failed for JPQL: " + jpql, e);
+            logSwallowedQueryFailure("findDTOsByJpql", jpql, e);
             resultList = new ArrayList<>();
         }
 
@@ -766,7 +845,7 @@ public abstract class AbstractFacade<T> {
         try {
             resultList = qry.getResultList();
         } catch (Exception e) {
-            logger.log(Level.SEVERE, "findDTOsByJpql failed for JPQL: " + jpql, e);
+            logSwallowedQueryFailure("findDTOsByJpql", jpql, e);
             resultList = new ArrayList<>();
         }
 
@@ -1733,7 +1812,7 @@ public abstract class AbstractFacade<T> {
         try {
             return qry.getResultList();
         } catch (Exception e) {
-            logger.log(Level.SEVERE, "findAggregates failed for JPQL: " + jpql, e);
+            logSwallowedQueryFailure("findAggregates", jpql, e);
             return null;
         }
     }
