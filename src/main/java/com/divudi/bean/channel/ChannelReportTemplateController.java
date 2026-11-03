@@ -1360,6 +1360,11 @@ public class ChannelReportTemplateController implements Serializable {
 
         filtersForDoctorBookingsReport = getFiltersForAllDoctorBookingsReport();
     }
+
+    public String toPrintChannelDoctorAppointmentsReport() {
+        processChannelDoctorAppointmentsReport();
+        return "/channel/channel_all_doctor_bookings_print?faces-redirect=true";
+    }
     
     public List<BillSession> createBillSessionQuery(Bill bill, PaymentEnum paymentEnum, DateEnum dateEnum, ReportKeyWord reportKeyWord) {
         BillType[] billTypes = {BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelOnCall, BillType.ChannelStaff};
@@ -8131,7 +8136,7 @@ public class ChannelReportTemplateController implements Serializable {
     public Map<String, Object> getFiltersForAllDoctorBookingsReport() {
         Map<String, Object> params = new LinkedHashMap<>();
 
-        params.put("Appointment Date", new SimpleDateFormat(sessionController.getApplicationPreference().getLongDateFormat()).format(fromDate)) ;
+        params.put("Appointment Date", new SimpleDateFormat(sessionController.getApplicationPreference().getLongDateFormat()).format(getFromDate())) ;
         params.put("Speciality", speciality != null ? speciality.getName() : "All");
         params.put("Doctor", (staff != null && staff.getPerson() != null) ? staff.getPerson().getNameWithTitle() : "All");
         params.put("Institution", institution != null ? institution.getName() : "All Institutions");

@@ -12,10 +12,6 @@
         <ui:composition template="/channel/channel_reports.xhtml">
             <ui:define name="subContent">
                 <h:outputStylesheet library="css" name="eight_col_filter_panel.css" />
-                
-                <!-- 28th Oct 2026: Load print styles for the Doctor Appointments report. -->
-                <h:outputStylesheet library="css" name="printing.css" />
-
                 <h:form class="w-100">
                     <p:panel header="Doctor Appointments" class="w-100">
 
@@ -135,126 +131,120 @@
                                         ajax="false" value="Export to Excel">
                                         <p:fileDownload value="#{channelReportTemplateController.channelDoctorAppointmentsReportAsExcel}" />
                                     </p:commandButton>
-                                    
-                                    <!-- 30th Oct 2026: Navigate to the dedicated Doctor Appointments print page. -->
                                     <p:commandButton
                                         value="To Print"
                                         ajax="false"
                                         icon="fas fa-print"
                                         class="mx-1 ui-button-danger"
-                                        action="channel_all_doctor_bookings_print?faces-redirect=true" />
-                                    
+                                        action="#{channelReportTemplateController.toPrintChannelDoctorAppointmentsReport()}"/>
                                 </div>
                                 
                             </div>
                         </div>
 
-                        <!-- 28th Oct 2026: Define the printable Doctor Appointments report area. -->
-                        <p:panel id="reportPrint">
-                            <p:dataTable
-                                id="tbl"
-                                value="#{channelReportTemplateController.channelConsultantCountDTOs}"
-                                var="row"
-                                rowKey="#{row.sessionInstanceId}"
-                                
-                                styleClass="doctor-appointments-print-table">
+                        <p:dataTable
+                            id="tbl"
+                            value="#{channelReportTemplateController.channelConsultantCountDTOs}"
+                            var="row"
+                            rowKey="#{row.sessionInstanceId}"
+                            tableStyle="table-layout: auto;">
 
-                                <p:column style="text-align: left;">
-                                    <f:facet name="header">
-                                        <h:outputText value="Consultant"/>
-                                    </f:facet>
-                                    <h:outputText value="#{row.consultantNameWithTitle}"/>
-                                </p:column>
+                            <p:column style="text-align: left;">
+                                <f:facet name="header">
+                                    <h:outputText value="Consultant"/>
+                                </f:facet>
+                                <h:outputText value="#{row.consultantNameWithTitle}"/>
+                            </p:column>
 
-                                <p:column style="text-align: center;">
-                                    <f:facet name="header">
-                                        <h:outputText value="Speciality"/>
-                                    </f:facet>
-                                    <h:outputText value="#{row.consultantSpeciality}"/>
-                                </p:column>
+                            <p:column style="text-align: center;">
+                                <f:facet name="header">
+                                    <h:outputText value="Speciality"/>
+                                </f:facet>
+                                <h:outputText value="#{row.consultantSpeciality}"/>
+                            </p:column>
 
-                                <p:column style="text-align: center;">
-                                    <f:facet name="header">
-                                        <h:outputText value="Time"/>
-                                    </f:facet>
-                                    <h:outputText value="#{row.sessionStartingTime}">
-                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.shortTimeFormat}"/>
-                                    </h:outputText>
-                                </p:column>
+                            <p:column style="text-align: center;">
+                                <f:facet name="header">
+                                    <h:outputText value="Time"/>
+                                </f:facet>
+                                <h:outputText value="#{row.sessionStartingTime}">
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.shortTimeFormat}"/>
+                                </h:outputText>
+                            </p:column>
 
-                                <p:column style="text-align: center;">
-                                    <f:facet name="header">
-                                        <h:outputText value="Direct Booking Count"/>
-                                    </f:facet>
-                                    <h:outputText value="#{row.systemBookingCount}">
-                                        <f:convertNumber pattern="#,##0"/>
-                                    </h:outputText>
-                                </p:column>
+                            <p:column style="text-align: center;">
+                                <f:facet name="header">
+                                    <h:outputText value="Direct Booking Count"/>
+                                </f:facet>
+                                <h:outputText value="#{row.systemBookingCount}">
+                                    <f:convertNumber pattern="#,##0"/>
+                                </h:outputText>
+                            </p:column>
 
-                                <p:column style="text-align: center;">
-                                    <f:facet name="header">
-                                        <h:outputText value="Agent Booking Count"/>
-                                    </f:facet>
-                                    <h:outputText value="#{row.agentBookingCount}">
-                                        <f:convertNumber pattern="#,##0"/>
-                                    </h:outputText>
-                                </p:column>
+                            <p:column style="text-align: center;">
+                                <f:facet name="header">
+                                    <h:outputText value="Agent Booking Count"/>
+                                </f:facet>
+                                <h:outputText value="#{row.agentBookingCount}">
+                                    <f:convertNumber pattern="#,##0"/>
+                                </h:outputText>
+                            </p:column>
 
-                                <p:column style="text-align: center;">
-                                    <f:facet name="header">
-                                        <h:outputText value="On-Call Booking Count"/>
-                                    </f:facet>
-                                    <h:outputText value="#{row.onCallBookingCount}">
-                                        <f:convertNumber pattern="#,##0"/>
-                                    </h:outputText>
-                                </p:column>
+                            <p:column style="text-align: center;">
+                                <f:facet name="header">
+                                    <h:outputText value="On-Call Booking Count"/>
+                                </f:facet>
+                                <h:outputText value="#{row.onCallBookingCount}">
+                                    <f:convertNumber pattern="#,##0"/>
+                                </h:outputText>
+                            </p:column>
 
-                                <p:column style="text-align: center;">
-                                    <f:facet name="header">
-                                        <h:outputText value="Online Booking Count"/>
-                                    </f:facet>
-                                    <h:outputText value="#{row.onlineBookingCount}">
-                                        <f:convertNumber pattern="#,##0"/>
-                                    </h:outputText>
-                                </p:column>
+                            <p:column style="text-align: center;">
+                                <f:facet name="header">
+                                    <h:outputText value="Online Booking Count"/>
+                                </f:facet>
+                                <h:outputText value="#{row.onlineBookingCount}">
+                                    <f:convertNumber pattern="#,##0"/>
+                                </h:outputText>
+                            </p:column>
 
-                                <p:column style="text-align: center;">
-                                    <f:facet name="header">
-                                        <h:outputText value="Rescheduled Booking Count"/>
-                                    </f:facet>
-                                    <h:outputText value="#{row.rescheduledBookingCount}">
-                                        <f:convertNumber pattern="#,##0"/>
-                                    </h:outputText>
-                                </p:column>
+                            <p:column style="text-align: center;">
+                                <f:facet name="header">
+                                    <h:outputText value="Rescheduled Booking Count"/>
+                                </f:facet>
+                                <h:outputText value="#{row.rescheduledBookingCount}">
+                                    <f:convertNumber pattern="#,##0"/>
+                                </h:outputText>
+                            </p:column>
 
-                                <p:column style="text-align: center;">
-                                    <f:facet name="header">
-                                        <h:outputText value="Total Count"/>
-                                    </f:facet>
-                                    <h:outputText value="#{row.totalBookingCount}">
-                                        <f:convertNumber pattern="#,##0"/>
-                                    </h:outputText>
-                                </p:column>
+                            <p:column style="text-align: center;">
+                                <f:facet name="header">
+                                    <h:outputText value="Total Count"/>
+                                </f:facet>
+                                <h:outputText value="#{row.totalBookingCount}">
+                                    <f:convertNumber pattern="#,##0"/>
+                                </h:outputText>
+                            </p:column>
 
-                                <p:column style="text-align: right;">
-                                    <f:facet name="header">
-                                        <h:outputText value="Doctor Fee"/>
-                                    </f:facet>
-                                    <h:outputText value="#{row.doctorFee}">
-                                        <f:convertNumber pattern="#,##0.00"/>
-                                    </h:outputText>
-                                </p:column>
+                            <p:column style="text-align: right;">
+                                <f:facet name="header">
+                                    <h:outputText value="Doctor Fee"/>
+                                </f:facet>
+                                <h:outputText value="#{row.doctorFee}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputText>
+                            </p:column>
 
-                                <p:column style="text-align: center;">
-                                    <f:facet name="header">
-                                        <h:outputText value="Holiday"/>
-                                    </f:facet>
-                                    <h:outputText value="Holiday" rendered="#{row.holiday}"/>
-                                </p:column>
+                            <p:column style="text-align: center;">
+                                <f:facet name="header">
+                                    <h:outputText value="Holiday"/>
+                                </f:facet>
+                                <h:outputText value="Holiday" rendered="#{row.holiday}"/>
+                            </p:column>
 
-                            </p:dataTable>
-                        </p:panel>
+                        </p:dataTable>
                         
+
                     </p:panel>
                 </h:form>
             </ui:define>
