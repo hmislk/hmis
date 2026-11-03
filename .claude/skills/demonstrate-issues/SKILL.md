@@ -73,6 +73,8 @@ picture of each one is understood.
 
 ## Non-goals
 
+- For the reverse, where Claude drives and the user watches and decides, use
+  `show-and-ask`.
 - **No development or fixing ever happens inside this skill.** It ends at
   filing GitHub issue(s). Any actual fix is separate, later work — hand the
   filed issue number(s) to `dev-issue`.
