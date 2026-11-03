@@ -42,6 +42,25 @@ public abstract class AbstractFacade<T> {
     private Class<T> entityClass;
 
     /**
+     * Logs a query failure that a helper below catches and turns into an
+     * empty list, null or zero. Without this, a schema mismatch (for example
+     * an entity field whose column is missing from the database) looks to
+     * the caller exactly like "no rows" and leaves nothing in the server log
+     * (issue #25075: every login showed "Invalid User" with an empty log).
+     * The helpers still return their usual default; only the logging is new.
+     * A {@link NoResultException} from getSingleResult is an expected
+     * "nothing found" and is not logged.
+     */
+    private void logSwallowedQueryFailure(String method, String jpql, Exception e) {
+        if (e instanceof NoResultException) {
+            return;
+        }
+        String entityName = entityClass == null ? "?" : entityClass.getSimpleName();
+        logger.log(Level.SEVERE, "AbstractFacade." + method + " (" + entityName
+                + ") query failed; returning an empty/default result. JPQL: " + jpql, e);
+    }
+
+    /**
      * Executes native SQL query.
      *
      * WARNING: This method does not provide SQL injection protection.
@@ -271,6 +290,7 @@ public abstract class AbstractFacade<T> {
         try {
             return qry.getResultList();
         } catch (Exception e) {
+            logSwallowedQueryFailure("findObjects", jpql, e);
             return null;
         }
     }
@@ -297,6 +317,7 @@ public abstract class AbstractFacade<T> {
         try {
             return qry.getResultList();
         } catch (Exception e) {
+            logSwallowedQueryFailure("findLongList", jpql, e);
             return null;
         }
     }
@@ -553,6 +574,7 @@ public abstract class AbstractFacade<T> {
         try {
             ts = getEntityManager().createQuery(cq).getResultList();
         } catch (Exception e) {
+            logSwallowedQueryFailure("findAll", "<criteria: all " + entityClass.getSimpleName() + ">", e);
             ts = new ArrayList<>();
         }
         return ts;
@@ -622,6 +644,7 @@ public abstract class AbstractFacade<T> {
         try {
             return qry.getResultList();
         } catch (Exception e) {
+            logSwallowedQueryFailure("findByJpqlWithRange", jpql, e);
             return new ArrayList<>();
         }
     }
@@ -675,6 +698,7 @@ public abstract class AbstractFacade<T> {
         try {
             resultList = qry.getResultList();
         } catch (Exception e) {
+            logSwallowedQueryFailure("executeLongJpqlQuery", jpql, e);
             resultList = new ArrayList<>();
         }
 
@@ -777,6 +801,7 @@ public abstract class AbstractFacade<T> {
         try {
             resultList = qry.getResultList();
         } catch (Exception e) {
+            logSwallowedQueryFailure("findDTOsByJpql", jpql, e);
             resultList = new ArrayList<>();
         }
 
@@ -802,6 +827,7 @@ public abstract class AbstractFacade<T> {
         try {
             resultList = qry.getResultList();
         } catch (Exception e) {
+            logSwallowedQueryFailure("findRawResultsByJpql", jpql, e);
             resultList = new ArrayList<>();
         }
 
@@ -831,8 +857,7 @@ public abstract class AbstractFacade<T> {
         try {
             resultList = qry.getResultList();
         } catch (Exception e) {
-            System.out.println("DEBUG: findLightsByJpqlWithoutCache EXCEPTION: " + e.getClass().getName() + " - " + e.getMessage());
-            e.printStackTrace();
+            logSwallowedQueryFailure("findLightsByJpqlWithoutCache", jpql, e);
             resultList = new ArrayList<>();
         }
 
@@ -859,6 +884,7 @@ public abstract class AbstractFacade<T> {
         try {
             resultList = qry.getResultList();
         } catch (Exception e) {
+            logSwallowedQueryFailure("findLightsByJpql", jpql, e);
             resultList = new ArrayList<>();
         }
 
@@ -892,6 +918,7 @@ public abstract class AbstractFacade<T> {
         try {
             resultList = qry.getResultList();
         } catch (Exception e) {
+            logSwallowedQueryFailure("findLightsByJpql", jpql, e);
             resultList = new ArrayList<>();
         }
 
@@ -922,6 +949,7 @@ public abstract class AbstractFacade<T> {
         try {
             resultList = qry.getResultList();
         } catch (Exception e) {
+            logSwallowedQueryFailure("findLightsByJpql", jpql, e);
             resultList = new ArrayList<>();
         }
 
@@ -954,6 +982,7 @@ public abstract class AbstractFacade<T> {
         try {
             ts = qry.getResultList();
         } catch (Exception e) {
+            logSwallowedQueryFailure("findByJpql", jpql, e);
             ts = new ArrayList<>();
         }
 
@@ -988,6 +1017,7 @@ public abstract class AbstractFacade<T> {
         try {
             ts = qry.getResultList();
         } catch (Exception e) {
+            logSwallowedQueryFailure("findByJpql", jpql, e);
             ts = new ArrayList<>();
         }
 
@@ -1190,6 +1220,7 @@ public abstract class AbstractFacade<T> {
 
             return obj;
         } catch (Exception e) {
+            logSwallowedQueryFailure("findAggregateModified", jpql, e);
             return null;
         }
     }
@@ -1227,6 +1258,7 @@ public abstract class AbstractFacade<T> {
             Double result = qry.getSingleResult();
             return result == null ? 0.0 : result;
         } catch (Exception e) {
+            logSwallowedQueryFailure("findDoubleByJpql", jpql, e);
             return 0.0;
         }
     }
@@ -1250,6 +1282,7 @@ public abstract class AbstractFacade<T> {
             Object d = qry.getSingleResult();
             return (Date) d;
         } catch (Exception e) {
+            logSwallowedQueryFailure("findDateByJpql", jpql, e);
             return null;
         }
     }
@@ -1277,6 +1310,7 @@ public abstract class AbstractFacade<T> {
             Object d = qry.getSingleResult();
             return (Long) d;
         } catch (Exception e) {
+            logSwallowedQueryFailure("findLongByJpql", jpql, e);
             return 0l;
         }
     }
@@ -1538,6 +1572,7 @@ public abstract class AbstractFacade<T> {
                 temd = 0.0;
             }
         } catch (Exception e) {
+            logSwallowedQueryFailure("findAggregateDbl", strJQL, e);
             temd = 0.0;
         }
         return temd;
@@ -1552,6 +1587,7 @@ public abstract class AbstractFacade<T> {
                 temd = 0L;
             }
         } catch (Exception e) {
+            logSwallowedQueryFailure("findAggregateLong", strJQL, e);
             temd = 0L;
         }
         return temd;
@@ -1562,6 +1598,7 @@ public abstract class AbstractFacade<T> {
         try {
             return (Long) q.getSingleResult();
         } catch (Exception e) {
+            logSwallowedQueryFailure("findLongByJpql", strJQL, e);
             return 0l;
         }
     }
@@ -1572,6 +1609,7 @@ public abstract class AbstractFacade<T> {
         try {
             return q.getResultList();
         } catch (Exception e) {
+            logSwallowedQueryFailure("findString", strJQL, e);
 //            
             return null;
         }
@@ -1603,6 +1641,7 @@ public abstract class AbstractFacade<T> {
         try {
             return q.getResultList();
         } catch (Exception e) {
+            logSwallowedQueryFailure("findString", strJQL, e);
 //            
             return null;
         }
@@ -1617,6 +1656,7 @@ public abstract class AbstractFacade<T> {
         try {
             return getEntityManager().createQuery(jpql, String.class).getResultList();
         } catch (Exception e) {
+            logSwallowedQueryFailure("findStringListByJpql", jpql, e);
             return new ArrayList<>();
         }
     }
@@ -1633,6 +1673,7 @@ public abstract class AbstractFacade<T> {
 
             return qry.getResultList();
         } catch (Exception e) {
+            logSwallowedQueryFailure("findStringListByJpql", jpql, e);
             return new ArrayList<>();
         }
     }
@@ -1646,6 +1687,7 @@ public abstract class AbstractFacade<T> {
         try {
             return qry.getResultList();
         } catch (Exception e) {
+            logSwallowedQueryFailure("findAggregates", jpql, e);
             return null;
         }
     }
@@ -1732,6 +1774,7 @@ public abstract class AbstractFacade<T> {
 
             return obj;
         } catch (Exception e) {
+            logSwallowedQueryFailure("findAggregat", jpql, e);
             return null;
         }
     }
@@ -1755,6 +1798,7 @@ public abstract class AbstractFacade<T> {
         try {
             return qry.getSingleResult();
         } catch (Exception e) {
+            logSwallowedQueryFailure("findAggregate", jpql, e);
             return null;
         }
     }
@@ -1803,6 +1847,7 @@ public abstract class AbstractFacade<T> {
         try {
             return qry.getSingleResult();
         } catch (Exception e) {
+            logSwallowedQueryFailure("findSingleAggregate", jpql, e);
             return null;
         }
     }
@@ -1837,6 +1882,7 @@ public abstract class AbstractFacade<T> {
             Double result = (Double) qry.getSingleResult();
             return result == null ? 0.0 : result;
         } catch (Exception e) {
+            logSwallowedQueryFailure("findAggregateDbl", jpql, e);
             return 0.0;
         }
     }
@@ -1860,6 +1906,7 @@ public abstract class AbstractFacade<T> {
         try {
             return (Long) qry.getSingleResult();
         } catch (Exception e) {
+            logSwallowedQueryFailure("findAggregateLong", jpql, e);
             return 0L;
         }
     }
@@ -1879,6 +1926,7 @@ public abstract class AbstractFacade<T> {
         } catch (NoResultException e) {
             return null;
         } catch (Exception e) {
+            logSwallowedQueryFailure("findSingleScalar", jpql, e);
             return null;
         }
     }
