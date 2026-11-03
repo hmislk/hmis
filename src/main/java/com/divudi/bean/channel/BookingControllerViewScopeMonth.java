@@ -3005,33 +3005,10 @@ public class BookingControllerViewScopeMonth implements Serializable {
         }
 
         if (selectedSessionInstance.getMaxNo() != 0 && configOptionApplicationController.getBooleanValueByKey("Limited appoinments session can't get appoinement more than max amount.")) {
-            if (selectedSessionInstance.getBookedPatientCount() != null) {
-                int maxNo = selectedSessionInstance.getMaxNo();
-                long bookedPatientCount = selectedSessionInstance.getBookedPatientCount();
-                long reservedBookingCount = selectedSessionInstance.getReservedBookingCount() != null ? selectedSessionInstance.getReservedBookingCount() : 0L;
-                long totalPatientCount;
-
-                List<Integer> reservedNumbers = CommonFunctions.convertStringToIntegerList(selectedSessionInstance.getReserveNumbers());
-
-                if (reservedBooking) {
-                    bookedPatientCount = bookedPatientCount;
-                } else {
-                    bookedPatientCount = bookedPatientCount + reservedNumbers.size() - reservedBookingCount;
-                }
-
-                if (selectedSessionInstance.getCancelPatientCount() != null) {
-                    long canceledPatientCount = selectedSessionInstance.getCancelPatientCount();
-                    totalPatientCount = bookedPatientCount - canceledPatientCount;
-                } else {
-                    totalPatientCount = bookedPatientCount;
-                }
-                // Open agent holds are not in the booked count but each needs a place when completed (#25069)
-                totalPatientCount += channelService.countOpenAgentHolds(selectedSessionInstance);
-                if (maxNo <= totalPatientCount) {
-                    JsfUtil.addErrorMessage("Error: The maximum number of bookings (" + maxNo + ") has been Reached.");
-                    return;
-
-                }
+            // Same check as the main booking screen: lock the session row, recount, add open agent holds (#25074)
+            if (channelService.isSessionFullForNewBooking(selectedSessionInstance, reservedBooking)) {
+                JsfUtil.addErrorMessage("Error: The maximum number of bookings (" + selectedSessionInstance.getMaxNo() + ") has been Reached.");
+                return;
             }
         }
 
