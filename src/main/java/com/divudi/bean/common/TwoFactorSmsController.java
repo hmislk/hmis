@@ -304,6 +304,11 @@ public class TwoFactorSmsController implements Serializable {
             JsfUtil.addErrorMessage("SMS codes are not enabled for your account. Contact your administrator.");
             return;
         }
+        if (u.isTwoFactorMobileVerified()) {
+            // Changing a verified number is done by an administrator, not by the user
+            JsfUtil.addErrorMessage("Your mobile number is already verified. If it has changed, inform your system administrator.");
+            return;
+        }
         mobileVerificationInProgress = true;
         mobileCodeSent = false;
         mobileCode = null;
