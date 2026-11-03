@@ -5,10 +5,10 @@ description: >
   and seeing the situation happen in the running HMIS app would help: money or
   clinical meaning, policy, hard-to-reverse steps, or facts only the user knows.
   Typical triggers are a `triage: needs-human` issue, "show me this and ask me",
-  "walk me through it", or `/show-and-ask`. Not for bugs the user drives and
-  narrates (use demonstrate-issues) or for verification with no human question
-  (use playwright-e2e).
-allowed-tools: Read, Glob, Grep, Bash, mcp__playwright__browser_navigate,
+  "walk me through issue N", or `/show-and-ask`. Not for bugs the user drives
+  and narrates (use demonstrate-issues) or for verification with no human
+  question (use playwright-e2e).
+allowed-tools: Read, Glob, Grep, Bash, PowerShell, mcp__playwright__browser_navigate,
   mcp__playwright__browser_click, mcp__playwright__browser_type,
   mcp__playwright__browser_fill_form, mcp__playwright__browser_select_option,
   mcp__playwright__browser_hover, mcp__playwright__browser_press_key,
@@ -38,17 +38,17 @@ tests. Then ask only what truly needs a human:
 - hard-to-reverse steps
 - facts only the user knows
 
-Decide and report a reversible choice with a clear default, or settle it with
-other dev-hub members. Run test steps yourself instead of handing them to the
-user. If no human question is left, skip the session and report that.
+Decide and report a reversible choice with a clear default. Run test steps
+yourself instead of handing them to the user. If no human question is left, skip
+the session and report that.
 
 ## Where it runs
 
-Run in the main window, because a sub-session cannot talk to the user. This is
-the stated exception to "main window only communicates".
+Run in the session the user is talking to, because a background agent cannot
+talk to the user.
 
-- Ask in plain text, not question dialogs, so the hub listener keeps working.
-- Sub-sessions must not drive this browser during a session.
+- Ask in plain text, not question dialogs, so a dialog does not block the session.
+- Nothing else may drive this browser during a session.
 - If a redeploy is needed, say that it logs the user out, and wait until the
   user is done.
 
@@ -56,12 +56,13 @@ the stated exception to "main window only communicates".
 
 1. Recheck the issue and any PR (`gh issue view`, `gh pr view <N> --json
    state,headRefOid`). Do this again before relying on any earlier result,
-   because a contributor can push mid-session. CodeRabbit "pass" with "Review
-   rate limited" means no review ran.
+   because a contributor can push mid-session.
 2. Write the plain-word explanation, the pause points and the questions in
    `tmp/show-and-ask-<issue>/`.
 3. Confirm the environment: the local app only, on a test database. Check which
    database the app actually uses. If it is QA1, production or unknown, stop.
+   Never write to production, and never write a copy of production patient data
+   to a shared database.
 4. Open the app root headed and ask whether the user can see the browser. If
    not, send a screenshot at each pause instead.
 
@@ -72,13 +73,17 @@ the stated exception to "main window only communicates".
    correct password, compare the WEBUSER columns with a current schema before
    resetting anything.
 2. Explain the error in plain words. Then show it. Then ask.
-3. Open only the app root and click through the menus. Record the menu path. If
-   no menu reaches the page, that is a finding.
+3. Open only the app root and click through the menus ([never navigate by
+   URL](../../../developer_docs/testing/playwright-e2e-workflow.md#-never-navigate-by-typing-a-page-url)).
+   Record the menu path. If no menu reaches the page, that is a finding.
 4. At each pause, ask "did you see X?" or a comprehension or decision question.
-   Ask one question at a time, with options and a recommendation, and wait.
+   Ask one question at a time and wait. Give a decision question options and a
+   recommendation. Make a comprehension question answerable without reading the
+   screen, such as "in your words, what happens to the stock?"
 5. Record each answer with its time in the session's `tmp/` log, using the
    user's own words.
-6. Leave test data in place and list it. Never clean it up unasked.
+6. Verify each test record you create in the intended database. Leave test data
+   in place and list it. Never clean it up unasked.
 
 ### Before any `p:printer` Print button
 
@@ -100,6 +105,8 @@ Draft first. Post nothing during the session.
 1. Keep screenshots in `tmp/`. Avoid full-page screenshots of bills or patient
    data from copied databases unless needed.
 2. Re-read the [public content policy](../../../developer_docs/git/github-public-content-policy.md).
+   Redact patient, bill and hospital data from quoted answers before drafting,
+   not only from screenshots.
 3. Show the user the full redacted comment, including any label change.
 4. Post only after the user approves that draft. Publish redacted images through
    the wiki image flow in `demonstrate-issues` (step 7).
@@ -108,5 +115,5 @@ Draft first. Post nothing during the session.
 
 - The decision and evidence are recorded on the issue.
 - `triage: needs-human` is removed only if no human input is left and the user
-  approved the removal in the same draft.
+  approved the removal in the same draft. A "not sure" answer keeps the label.
 - A follow-up is handed to `dev-issue`.
