@@ -159,6 +159,64 @@
                 font-weight: 600;
                 margin-bottom: 0.4rem;
             }
+            /* SMS code section */
+            .auth-sms {
+                margin-top: 1.5rem;
+                border: 1px solid var(--surface-border, #e5e7eb);
+                border-radius: 16px;
+                overflow: hidden;
+            }
+            .auth-sms-head {
+                display: flex;
+                align-items: center;
+                gap: 0.85rem;
+                padding: 1rem 1.25rem;
+                background: linear-gradient(135deg, #f0f9ff 0%, #eef2ff 100%);
+                border-bottom: 1px solid var(--surface-border, #e5e7eb);
+            }
+            .auth-sms-head > div:last-child {
+                flex: 1 1 auto;
+                min-width: 0;
+            }
+            .auth-sms-icon {
+                width: 2.6rem;
+                height: 2.6rem;
+                border-radius: 12px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 1.2rem;
+                color: #fff;
+                background: linear-gradient(135deg, #0ea5e9 0%, #6366f1 100%);
+                flex: 0 0 auto;
+            }
+            .auth-sms-title {
+                font-weight: 700;
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+            }
+            .auth-sms-tag {
+                font-size: 0.72rem;
+                font-weight: 600;
+                padding: 0.1rem 0.55rem;
+                border-radius: 999px;
+                color: #92400e;
+                background: #fef3c7;
+            }
+            .auth-sms-title .auth-sms-tag {
+                margin-left: auto;
+            }
+            .auth-sms-tag.ok {
+                color: #166534;
+                background: #dcfce7;
+            }
+            .auth-sms-body {
+                padding: 1.1rem 1.25rem 1.25rem 1.25rem;
+            }
+            .auth-sms-mobile {
+                max-width: 16rem;
+            }
             .auth-actions .ui-button {
                 border-radius: 10px;
             }
@@ -332,9 +390,15 @@
                 margin-top: 0.6rem;
                 padding: 0.9rem 1rem;
                 text-align: center;
-                border-radius: 12px;
-                background: #eff6ff;
-                border: 1px solid #bfdbfe;
+                border-radius: 14px;
+                /* Highlighted like the SMS administrator note */
+                background: linear-gradient(135deg, #dbeafe 0%, #e0e7ff 100%);
+                border: 1px solid #93c5fd;
+                border-left: 5px solid #2563eb;
+                box-shadow: 0 6px 18px rgba(37, 99, 235, 0.18);
+            }
+            .auth-reset-help .auth-reset-help-icon {
+                box-shadow: 0 0 0 5px rgba(37, 99, 235, 0.18);
             }
             .auth-reset-help-icon {
                 flex: 0 0 2.2rem;
@@ -348,12 +412,201 @@
                 background: #2563eb;
             }
             .auth-reset-help-title {
-                font-weight: 600;
+                font-size: 1rem;
+                font-weight: 700;
                 color: #1e3a8a;
             }
             .auth-reset-help-text {
-                font-size: 0.85rem;
+                font-size: 0.88rem;
+                font-weight: 500;
                 color: #1e40af;
+            }
+            /* SMS section: verified number tile + administrator note */
+            /* Two rows: the mobile number, then the administrator note.
+               One centred column as wide as the wider box, so both boxes have the same width */
+            .auth-sms-grid {
+                display: grid;
+                grid-template-columns: minmax(0, max-content);
+                justify-content: center;
+                gap: 0.75rem;
+            }
+            .auth-sms-number,
+            .auth-sms-admin {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                text-align: center;
+                gap: 0.85rem;
+                padding: 0.95rem 1.1rem;
+                border-radius: 14px;
+            }
+            .auth-sms-number {
+                background: #f0fdf4;
+                border: 1px solid #bbf7d0;
+            }
+            .auth-sms-number-icon {
+                position: relative;
+                flex: 0 0 auto;
+                width: 2.8rem;
+                height: 2.8rem;
+                border-radius: 12px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 1.35rem;
+                color: #fff;
+                background: #16a34a;
+            }
+            .auth-sms-number-check {
+                position: absolute;
+                right: -0.35rem;
+                bottom: -0.35rem;
+                width: 1.25rem;
+                height: 1.25rem;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 0.6rem;
+                color: #16a34a;
+                background: #fff;
+                box-shadow: 0 0 0 2px #16a34a;
+            }
+            .auth-sms-number-text {
+                display: flex;
+                flex-direction: column;
+                line-height: 1.3;
+                min-width: 0;
+            }
+            .auth-sms-number-label {
+                font-size: 0.78rem;
+                color: #4b5563;
+            }
+            .auth-sms-number-value {
+                font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+                font-size: 1.15rem;
+                font-weight: 700;
+                letter-spacing: 0.06em;
+                color: #14532d;
+            }
+            .auth-sms-number-date {
+                font-size: 0.78rem;
+                color: #4b5563;
+            }
+            /* Administrator note: highlighted (stronger blue, accent bar, soft glow) */
+            .auth-sms-admin {
+                background: linear-gradient(135deg, #dbeafe 0%, #e0e7ff 100%);
+                border: 1px solid #93c5fd;
+                border-left: 5px solid #2563eb;
+                box-shadow: 0 6px 18px rgba(37, 99, 235, 0.18);
+            }
+            .auth-sms-admin .auth-sms-admin-icon {
+                box-shadow: 0 0 0 5px rgba(37, 99, 235, 0.18);
+            }
+            .auth-sms-admin-icon {
+                flex: 0 0 auto;
+                width: 2.4rem;
+                height: 2.4rem;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: #fff;
+                background: #2563eb;
+            }
+            .auth-sms-admin-title {
+                font-size: 1rem;
+                font-weight: 700;
+                color: #1e3a8a;
+            }
+            .auth-sms-admin-text {
+                font-size: 0.88rem;
+                font-weight: 500;
+                color: #1e40af;
+            }
+            /* SMS section: no verified number yet */
+            .auth-sms-empty {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+                gap: 0.45rem;
+                padding: 1.25rem 1rem;
+                border-radius: 14px;
+                border: 1px dashed #fcd34d;
+                background: #fffbeb;
+            }
+            .auth-sms-empty-icon {
+                width: 3rem;
+                height: 3rem;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 1.35rem;
+                color: #fff;
+                background: #d97706;
+                box-shadow: 0 0 0 6px #fef3c7;
+                margin-bottom: 0.3rem;
+            }
+            .auth-sms-empty-title {
+                font-weight: 700;
+                color: #78350f;
+            }
+            .auth-sms-empty .auth-meta {
+                max-width: 28rem;
+            }
+            .auth-sms-cta.ui-button {
+                margin-top: 0.5rem;
+                padding: 0.35rem 1.4rem;
+                border-radius: 12px;
+                font-weight: 600;
+            }
+            /* "Code sent" banner during mobile verification */
+            .auth-sent {
+                display: flex;
+                align-items: center;
+                gap: 0.75rem;
+                margin-top: 1rem;
+                padding: 0.7rem 0.9rem;
+                text-align: left;
+                border-radius: 12px;
+                border: 1px solid #bbf7d0;
+                border-left: 4px solid #16a34a;
+                background: #f0fdf4;
+                animation: auth-sent-in 0.35s ease-out;
+            }
+            .auth-sent-icon {
+                flex: 0 0 auto;
+                width: 2.1rem;
+                height: 2.1rem;
+                border-radius: 50%;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 0.9rem;
+                color: #fff;
+                background: #16a34a;
+            }
+            .auth-sent-text {
+                display: flex;
+                flex-direction: column;
+                line-height: 1.3;
+            }
+            .auth-sent-title {
+                font-size: 0.92rem;
+                color: #14532d;
+            }
+            .auth-sent-title b {
+                letter-spacing: 0.04em;
+            }
+            .auth-sent-sub {
+                font-size: 0.78rem;
+                color: #4b5563;
+            }
+            @keyframes auth-sent-in {
+                from { opacity: 0; transform: translateY(-6px); }
+                to { opacity: 1; transform: translateY(0); }
             }
         </style>
 
@@ -392,6 +645,10 @@
                                     <span class="auth-forced-tag">Required</span>
                                 </div>
                                 <h:outputText value="Your administrator requires an authenticator app for your account. Set it up below to continue using the system."
+                                              rendered="#{not twoFactorSmsController.loggedUserSmsAllowed}"
+                                              class="auth-forced-sub" />
+                                <h:outputText value="Your administrator requires two-step verification for your account. Set up an authenticator app, or verify your mobile number for SMS codes, to continue using the system."
+                                              rendered="#{twoFactorSmsController.loggedUserSmsAllowed}"
                                               class="auth-forced-sub" />
                             </div>
                             <p:commandButton value="Log Out"
@@ -412,10 +669,10 @@
                         <!-- Required setup confirmed: the user is logged out to sign in again with a code -->
                         <h:panelGroup rendered="#{twoFactorAuthController.reloginRequired}" layout="block" class="auth-status linked">
                             <div class="auth-status-icon"><i class="fa fa-check"></i></div>
-                            <h:outputText value="Authenticator app linked" class="auth-status-title" />
+                            <h:outputText value="Two-step verification set up" class="auth-status-title" />
                             <h:panelGroup class="auth-status-chip required">
                                 <i class="fa fa-sign-in-alt"></i>
-                                <h:outputText value=" Sign in again with your password and the 6-digit code from your app." />
+                                <h:outputText value=" Sign in again with your password and a 6-digit code (from your app or by SMS)." />
                             </h:panelGroup>
                             <h:panelGroup layout="block" class="auth-status-action">
                                 <p:commandButton id="btnRelogin"
@@ -581,6 +838,176 @@
                                     <p:defaultCommand target="btnConfirmSelfCode" />
                                 </div>
                             </div>
+                        </h:panelGroup>
+
+                        <!-- SMS code: the other login option, after the mobile number is verified -->
+                        <h:panelGroup id="pnlSmsCode"
+                                      rendered="#{twoFactorAuthController.twoFactorEnabled and twoFactorSmsController.loggedUserSmsAllowed and not twoFactorAuthController.reloginRequired and not twoFactorAuthController.selfSetupInProgress}"
+                                      layout="block" class="auth-sms">
+                            <div class="auth-sms-head">
+                                <div class="auth-sms-icon"><i class="fa fa-sms"></i></div>
+                                <div>
+                                    <div class="auth-sms-title">
+                                        <h:outputText value="SMS Code" />
+                                        <h:outputText value="Verified" class="auth-sms-tag ok" rendered="#{twoFactorSmsController.loggedUserMobileVerified}" />
+                                        <h:outputText value="Not verified" class="auth-sms-tag" rendered="#{not twoFactorSmsController.loggedUserMobileVerified}" />
+                                    </div>
+                                    <div class="auth-meta">
+                                        <h:outputText value="Log in with a 6-digit code sent to your mobile, instead of the authenticator app." />
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Status -->
+                            <h:panelGroup rendered="#{not twoFactorSmsController.mobileVerificationInProgress}" layout="block" class="auth-sms-body">
+                                <!-- Verified: the number codes go to, and who to tell if it changes -->
+                                <h:panelGroup rendered="#{twoFactorSmsController.loggedUserMobileVerified}" layout="block" class="auth-sms-grid">
+                                    <div class="auth-sms-number">
+                                        <div class="auth-sms-number-icon">
+                                            <i class="fa fa-mobile-alt"></i>
+                                            <span class="auth-sms-number-check"><i class="fa fa-check"></i></span>
+                                        </div>
+                                        <div class="auth-sms-number-text">
+                                            <span class="auth-sms-number-label">Codes are sent to</span>
+                                            <h:outputText value="#{twoFactorSmsController.loggedUserMaskedMobile}" class="auth-sms-number-value" />
+                                            <h:panelGroup rendered="#{twoFactorSmsController.loggedUserMobileVerifiedAt ne null}" class="auth-sms-number-date">
+                                                <i class="fa fa-calendar-check me-1"></i>
+                                                <h:outputText value="Verified on " />
+                                                <h:outputText value="#{twoFactorSmsController.loggedUserMobileVerifiedAt}">
+                                                    <f:convertDateTime pattern="dd MMM yyyy, HH:mm" />
+                                                </h:outputText>
+                                            </h:panelGroup>
+                                        </div>
+                                    </div>
+                                    <!-- A verified number is changed by an administrator (Manage User → Remove), not by the user -->
+                                    <div class="auth-sms-admin">
+                                        <div class="auth-sms-admin-icon"><i class="fa fa-user-shield"></i></div>
+                                        <div>
+                                            <div class="auth-sms-admin-title">Changed your mobile number?</div>
+                                            <div class="auth-sms-admin-text">Inform your system administrator to update it.</div>
+                                        </div>
+                                    </div>
+                                </h:panelGroup>
+
+                                <!-- Not verified yet -->
+                                <h:panelGroup rendered="#{not twoFactorSmsController.loggedUserMobileVerified}" layout="block" class="auth-sms-empty">
+                                    <div class="auth-sms-empty-icon"><i class="fa fa-mobile-alt"></i></div>
+                                    <div class="auth-sms-empty-title">No mobile number verified yet</div>
+                                    <div class="auth-meta">Verify your mobile number to receive login codes by SMS. We will send a 6-digit code to confirm it.</div>
+                                    <p:commandButton value="Verify Mobile Number"
+                                                     icon="fa fa-mobile-alt"
+                                                     class="ui-button-success auth-sms-cta"
+                                                     title="Send a code to your mobile number to verify it"
+                                                     process="@this"
+                                                     update="@form"
+                                                     action="#{twoFactorSmsController.startMobileVerification()}" />
+                                </h:panelGroup>
+                            </h:panelGroup>
+
+                            <!-- Verification -->
+                            <h:panelGroup rendered="#{twoFactorSmsController.mobileVerificationInProgress}" layout="block" class="auth-sms-body">
+                                <h:outputText value="Mobile Number" class="auth-label" />
+                                <div class="d-flex gap-2 flex-wrap align-items-center">
+                                    <p:inputText id="txtSmsMobile"
+                                                 value="#{twoFactorSmsController.mobileInput}"
+                                                 placeholder="e.g. 0771234567"
+                                                 autocomplete="tel"
+                                                 class="auth-sms-mobile" />
+                                    <span class="auth-sms-wait" data-wait="#{twoFactorSmsController.mobileResendSecondsLeft}">
+                                        <p:commandButton id="btnSendMobileCode"
+                                                         value="#{twoFactorSmsController.mobileCodeSent ? 'Resend Code' : 'Send Code'}"
+                                                         icon="fa fa-paper-plane"
+                                                         class="ui-button-info"
+                                                         title="Send a 6-digit code to this number"
+                                                         process="@this txtSmsMobile"
+                                                         update="@form"
+                                                         action="#{twoFactorSmsController.sendMobileVerificationCode()}" />
+                                    </span>
+                                </div>
+
+                                <h:panelGroup rendered="#{twoFactorSmsController.mobileCodeSent}" layout="block" class="auth-sent" role="status">
+                                    <span class="auth-sent-icon"><i class="fa fa-paper-plane"></i></span>
+                                    <span class="auth-sent-text">
+                                        <span class="auth-sent-title">Code sent to <b><h:outputText value="#{twoFactorSmsController.mobileSentToMasked}" /></b></span>
+                                        <span class="auth-sent-sub">Enter the 6-digit code from the SMS below. It may take a minute to arrive.</span>
+                                    </span>
+                                </h:panelGroup>
+                                <h:panelGroup rendered="#{twoFactorSmsController.mobileCodeSent}" layout="block" class="mt-3 auth-code-col">
+                                    <h:outputText value="SMS Code" class="auth-label" />
+                                    <ez:otp_input id="txtSmsMobileCode" value="#{twoFactorSmsController.mobileCode}" />
+                                    <div class="auth-meta mt-2">
+                                        <i class="fa fa-clock me-1"></i>
+                                        <span class="auth-sms-countdown" data-seconds="#{twoFactorSmsController.mobileCodeSecondsLeft}"></span>
+                                    </div>
+                                </h:panelGroup>
+
+                                <div class="d-flex justify-content-center gap-2 mt-4">
+                                    <p:commandButton id="btnConfirmMobileCode"
+                                                     rendered="#{twoFactorSmsController.mobileCodeSent}"
+                                                     value="Verify"
+                                                     icon="fa fa-check"
+                                                     class="ui-button-success"
+                                                     title="Verify the code and save this mobile number"
+                                                     process="@this txtSmsMobileCode"
+                                                     update="@form"
+                                                     action="#{twoFactorSmsController.confirmMobileVerification()}" />
+                                    <p:commandButton value="Cancel"
+                                                     class="ui-button-danger ui-button-outlined"
+                                                     icon="fa fa-times"
+                                                     title="Cancel without changing your mobile number"
+                                                     process="@this"
+                                                     update="@form"
+                                                     action="#{twoFactorSmsController.cancelMobileVerification()}" />
+                                </div>
+                            </h:panelGroup>
+                            <script>
+                                //<![CDATA[
+                                (function () {
+                                    var el = document.querySelector('.auth-sms-countdown');
+                                    if (el) {
+                                        var s = parseInt(el.getAttribute('data-seconds'), 10) || 0;
+                                        var t = setInterval(function () {
+                                            tick();
+                                        }, 1000);
+                                        var tick = function () {
+                                            if (s <= 0) {
+                                                el.textContent = 'Code expired. Send a new code.';
+                                                clearInterval(t);
+                                                return;
+                                            }
+                                            el.textContent = 'Code expires in ' + Math.floor(s / 60) + ':' + ((s % 60) < 10 ? '0' : '') + (s % 60);
+                                            s--;
+                                        };
+                                        tick();
+                                    }
+                                    var wrap = document.querySelector('.auth-sms-wait');
+                                    var btn = wrap ? wrap.querySelector('button') : null;
+                                    var w = wrap ? (parseInt(wrap.getAttribute('data-wait'), 10) || 0) : 0;
+                                    if (btn && w > 0) {
+                                        var label = btn.querySelector('.ui-button-text');
+                                        var text = label ? label.textContent : '';
+                                        btn.disabled = true;
+                                        btn.classList.add('ui-state-disabled');
+                                        var tw = setInterval(function () {
+                                            w--;
+                                            if (w <= 0) {
+                                                clearInterval(tw);
+                                                btn.disabled = false;
+                                                btn.classList.remove('ui-state-disabled');
+                                                if (label) {
+                                                    label.textContent = text;
+                                                }
+                                            } else if (label) {
+                                                label.textContent = text + ' (' + w + 's)';
+                                            }
+                                        }, 1000);
+                                        if (label) {
+                                            label.textContent = text + ' (' + w + 's)';
+                                        }
+                                    }
+                                })();
+                                //]]>
+                            </script>
                         </h:panelGroup>
                     </div>
                 </div>
