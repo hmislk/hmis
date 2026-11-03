@@ -233,7 +233,7 @@ public class TwoFactorSmsController implements Serializable {
     }
 
     public void useAuthenticator() {
-        if (appLinked || twoFactorAuthController.isEnrollmentNeeded()) {
+        if (appLinked) {
             smsMode = false;
             code = null;
         }
@@ -247,8 +247,13 @@ public class TwoFactorSmsController implements Serializable {
         return twoFactorAuthController.isPending() && (smsUsable || mobileSetup);
     }
 
+    /**
+     * The authenticator option on the SMS screen: only for a user whose app
+     * is already linked. A user without a linked app sees SMS only; the app
+     * can be set up later from My Authenticator App.
+     */
     public boolean isAuthenticatorOptionAvailable() {
-        return twoFactorAuthController.isPending() && (appLinked || twoFactorAuthController.isEnrollmentNeeded());
+        return twoFactorAuthController.isPending() && appLinked;
     }
 
     /**
