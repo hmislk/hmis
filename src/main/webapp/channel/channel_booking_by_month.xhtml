@@ -298,7 +298,7 @@
                                                                         process="@this" 
                                                                         update="viewPatient editPatient btnDone edit" />
                                                                 </p:selectBooleanButton>
-                                                                <p:commandButton id="btnDone" alt="Save Patient Details" class="ui-button-success" icon="fas fa-check" action="#{bookingControllerViewScopeMonth.saveSelected}" rendered="#{bookingControllerViewScopeMonth.patientDetailsEditable}" />
+                                                                <p:commandButton id="btnDone" alt="Save Patient Details" class="ui-button-success" icon="fas fa-check" action="#{bookingControllerViewScopeMonth.saveSelectedPatient()}" rendered="#{bookingControllerViewScopeMonth.patientDetailsEditable}" process="btnDone editPatient" update=":#{p:resolveFirstComponentWithId('ptImp',view).clientId}" />
                                                             </h:panelGroup>
 
                                                         </h:panelGroup>
