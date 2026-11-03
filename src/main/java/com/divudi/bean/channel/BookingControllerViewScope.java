@@ -4224,42 +4224,48 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 
     public void addNormalChannelBooking() {
         if (billingStarted) {
+            JsfUtil.addErrorMessage("A booking is already being saved. Please wait.");
             return;
         }
         billingStarted = true;
-        if (selectedSessionInstance == null) {
-            JsfUtil.addErrorMessage("Please select a Session");
+        // Reset in finally: a flag left true by an exception made every later click return silently (#25052)
+        try {
+            if (selectedSessionInstance == null) {
+                JsfUtil.addErrorMessage("Please select a Session");
+                return;
+            }
+
+            if (selectedSessionInstance.isDoctorHoliday()) {
+                JsfUtil.addErrorMessage("Doctor is in Holiday.");
+                return;
+            }
+
+            addChannelBooking(false);
+
+            fillBillSessions();
+            //setSelectedSessionInstance(null);
+        } finally {
             billingStarted = false;
-            return;
         }
-
-        if (selectedSessionInstance != null && selectedSessionInstance.isDoctorHoliday()) {
-            JsfUtil.addErrorMessage("Doctor is in Holiday.");
-            billingStarted = false;
-            return;
-        }
-
-        addChannelBooking(false);
-
-        fillBillSessions();
-        billingStarted = false;
-        //setSelectedSessionInstance(null);
-
     }
 
     public void addReservedChannelBooking() {
         if (billingStarted) {
+            JsfUtil.addErrorMessage("A booking is already being saved. Please wait.");
             return;
         }
         billingStarted = true;
-        if (selectedSessionInstance == null) {
-            JsfUtil.addErrorMessage("Please select a Session Instance");
-            return;
+        try {
+            if (selectedSessionInstance == null) {
+                JsfUtil.addErrorMessage("Please select a Session Instance");
+                return;
+            }
+            boolean reservedBooking = true;
+            addChannelBooking(reservedBooking);
+            fillBillSessions();
+        } finally {
+            billingStarted = false;
         }
-        boolean reservedBooking = true;
-        addChannelBooking(reservedBooking);
-        fillBillSessions();
-        billingStarted = false;
     }
 
     public boolean checkApoinmentNumberIsAvailable(int no) {
