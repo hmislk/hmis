@@ -2945,6 +2945,11 @@ public class InwardSearch implements Serializable {
     public void cancelProfessional() {
         if (getBill() != null && getBill().getId() != null && getBill().getId() != 0) {
 
+            if (getComment() == null || getComment().trim().isEmpty()) {
+                JsfUtil.addErrorMessage("Please enter a comment");
+                return;
+            }
+
             if (getBill().getCheckedBy() != null) {
                 JsfUtil.addErrorMessage("Checked Bill. Can not cancel");
                 return;
