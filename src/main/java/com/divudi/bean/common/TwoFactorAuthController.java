@@ -41,7 +41,7 @@ public class TwoFactorAuthController implements Serializable {
     private static final int MAX_FAILED_ATTEMPTS = 5;
     private static final int QR_SIZE_PX = 200;
     public static final String LOCKED_MESSAGE = "Your account is locked after " + MAX_FAILED_ATTEMPTS
-            + " invalid authenticator codes. Please contact an administrator to unlock it.";
+            + " invalid verification codes. Please contact an administrator to unlock it.";
 
     // Audit events: entityType is AUDIT_ENTITY_TYPE, objectId is the affected user, webUserId is who did it
     public static final String AUDIT_ENTITY_TYPE = "TwoFactorAuth";
@@ -56,6 +56,16 @@ public class TwoFactorAuthController implements Serializable {
     public static final String EVENT_LOGIN_FAILED = "2FA Login Failed";
     public static final String EVENT_SETUP_FAILED = "2FA Setup Failed";
     public static final String EVENT_SETUP_QR_RENEWED = "2FA Setup QR Renewed";
+    public static final String EVENT_SMS_CODE_SENT = "2FA SMS Code Sent";
+    public static final String EVENT_SMS_CODE_SEND_FAILED = "2FA SMS Code Send Failed";
+    public static final String EVENT_SMS_RATE_LIMITED = "2FA SMS Code Rate Limited";
+    public static final String EVENT_SMS_LOGIN_SUCCESS = "2FA SMS Login Success";
+    public static final String EVENT_SMS_LOGIN_FAILED = "2FA SMS Login Failed";
+    public static final String EVENT_MOBILE_VERIFIED = "2FA Mobile Verified";
+    public static final String EVENT_MOBILE_VERIFICATION_FAILED = "2FA Mobile Verification Failed";
+    public static final String EVENT_MOBILE_RESET = "2FA Mobile Reset";
+    public static final String EVENT_SMS_ALLOWED_ON = "2FA SMS Code Allowed";
+    public static final String EVENT_SMS_ALLOWED_OFF = "2FA SMS Code Not Allowed";
     private static final int AUTH_LOG_LIMIT = 15;
 
     @EJB
@@ -71,6 +81,8 @@ public class TwoFactorAuthController implements Serializable {
     private SecurityController securityController;
     @Inject
     private ConfigOptionApplicationController configOptionApplicationController;
+    @Inject
+    private TwoFactorSmsController twoFactorSmsController;
 
     // Login challenge state (password already verified, code pending)
     private Long pendingUserId;
@@ -107,15 +119,40 @@ public class TwoFactorAuthController implements Serializable {
     }
 
     /**
-     * Whether the login must stop for an authenticator code: every user with
-     * a linked app, required or not. A required user without one logs in and
-     * is held on the setup screen instead (see {@link #isSetupRequiredNow()}).
+     * Whether the login must stop for a second-step code: every user with a
+     * linked app, and every user allowed SMS codes (one without a verified
+     * mobile sets it up there, see TwoFactorSmsController). A required user
+     * with neither logs in and is held on the setup screen instead (see
+     * {@link #isSetupRequiredNow()}).
      */
     public boolean isCodeNeededAtLoginFor(WebUser u) {
         if (u == null || !isTwoFactorEnabled()) {
             return false;
         }
-        return u.isTwoFactorEnrolled();
+        return u.isTwoFactorEnrolled() || isSmsAllowedFor(u);
+    }
+
+    private static boolean isAppLinked(WebUser u) {
+        return u != null && u.isTwoFactorEnrolled() && u.getTwoFactorSecret() != null;
+    }
+
+    /**
+     * Whether the user can receive login codes by SMS: the option is on in
+     * the configuration, an administrator allowed it for the user, and the
+     * user has verified the mobile number.
+     */
+    public boolean isSmsUsableFor(WebUser u) {
+        return isSmsAllowedFor(u) && u.isTwoFactorMobileVerified();
+    }
+
+    /**
+     * Whether the user may set up SMS codes (verify a mobile number).
+     */
+    public boolean isSmsAllowedFor(WebUser u) {
+        return u != null
+                && isTwoFactorEnabled()
+                && configOptionApplicationController.isTwoFactorSmsLoginEnabled()
+                && u.isTwoFactorSmsAllowed();
     }
 
     /**
@@ -128,62 +165,53 @@ public class TwoFactorAuthController implements Serializable {
             return true;
         }
         WebUser u = sessionController.getLoggedUser();
-        return u != null && !u.isTwoFactorEnrolled() && isTwoFactorRequiredFor(u);
+        return u != null && !u.isTwoFactorEnrolled() && !isSmsUsableFor(u) && isTwoFactorRequiredFor(u);
     }
 
     public boolean isReloginRequired() {
         return reloginRequired;
     }
 
+    /**
+     * Called when a required setup is completed by verifying a mobile number
+     * for SMS codes; the user logs out and signs in again with a code.
+     */
+    public void markReloginRequired() {
+        reloginRequired = true;
+    }
+
     public void startChallenge(WebUser u) {
         pendingUserId = u.getId();
         pendingUserName = u.getName();
         code = null;
-        if (!u.isTwoFactorEnrolled() || u.getTwoFactorSecret() == null) {
+        boolean appLinked = isAppLinked(u);
+        boolean smsUsable = isSmsUsableFor(u);
+        if (!appLinked && !smsUsable) {
             setupSecret = TotpUtil.generateSecret();
         } else {
             setupSecret = null;
         }
+        // Allowed SMS but no verified mobile yet: the mobile is set up on this screen
+        boolean mobileSetup = !smsUsable && isSmsAllowedFor(u);
+        twoFactorSmsController.startChallenge(appLinked, smsUsable, mobileSetup);
     }
 
     public String verifyLoginCode() {
-        if (!isPending()) {
-            return "";
-        }
-        WebUser u = webUserFacade.find(pendingUserId);
-        if (u == null || u.isRetired()) {
-            cancelLogin();
-            JsfUtil.addErrorMessage("Login Failure. Please try again");
-            return "";
-        }
-        if (u.isTwoFactorLocked()) {
-            cancelLogin();
-            showLockedNotice(u.getName());
+        WebUser u = findPendingUser();
+        if (u == null) {
             return "";
         }
         boolean enrolling = setupSecret != null;
+        if (!enrolling && (!u.isTwoFactorEnrolled() || u.getTwoFactorSecret() == null)) {
+            code = null;
+            JsfUtil.addErrorMessage("No authenticator app is linked to your account. Use the SMS code instead.");
+            return "";
+        }
         String secret = enrolling ? setupSecret : securityController.decrypt(u.getTwoFactorSecret());
         long step = TotpUtil.verify(secret, code, enrolling ? null : u.getTwoFactorLastUsedStep());
         code = null;
         if (step < 0) {
-            // Counted on the user, not the session, so logging in again does not give fresh attempts
-            int failedAttempts = u.getTwoFactorFailedAttempts() + 1;
-            u.setTwoFactorFailedAttempts(failedAttempts);
-            Map<String, Object> attempt = new HashMap<>();
-            attempt.put("failedAttempts", failedAttempts);
-            // Nobody is logged in yet, so the user trying to log in is recorded as the actor
-            logTwoFactorEvent(u, u, EVENT_LOGIN_FAILED, null, attempt, "Failed");
-            if (failedAttempts >= MAX_FAILED_ATTEMPTS) {
-                u.setTwoFactorLocked(true);
-                u.setTwoFactorLockedAt(new Date());
-                webUserFacade.edit(u);
-                logTwoFactorEvent(u, u, EVENT_ACCOUNT_LOCKED);
-                cancelLogin();
-                showLockedNotice(u.getName());
-            } else {
-                webUserFacade.edit(u);
-                JsfUtil.addErrorMessage("Invalid authenticator code. " + (MAX_FAILED_ATTEMPTS - failedAttempts) + " attempt(s) left.");
-            }
+            recordFailedSecondFactor(u, EVENT_LOGIN_FAILED, "Invalid authenticator code.");
             return "";
         }
         if (enrolling) {
@@ -191,16 +219,81 @@ public class TwoFactorAuthController implements Serializable {
             u.setTwoFactorEnrolled(true);
             u.setTwoFactorEnrolledAt(new Date());
         }
-        u.setTwoFactorFailedAttempts(0);
         u.setTwoFactorLastUsedStep(step);
+        return completeLoginAfterSecondFactor(u, enrolling ? EVENT_FIRST_LOGIN_SETUP : EVENT_LOGIN_SUCCESS);
+    }
+
+    /**
+     * The pending login user, freshly read; null (with the login cancelled
+     * and a message shown) when there is no pending login or the user is
+     * gone or locked.
+     */
+    public WebUser findPendingUser() {
+        if (!isPending()) {
+            return null;
+        }
+        WebUser u = webUserFacade.find(pendingUserId);
+        if (u == null || u.isRetired()) {
+            cancelLogin();
+            JsfUtil.addErrorMessage("Login Failure. Please try again");
+            return null;
+        }
+        if (u.isTwoFactorLocked()) {
+            cancelLogin();
+            showLockedNotice(u.getName());
+            return null;
+        }
+        return u;
+    }
+
+    /**
+     * Counts a wrong second-step code (authenticator or SMS). One counter is
+     * kept on the user for both methods, so switching method, resending a
+     * code or logging in again never gives fresh attempts; reaching the
+     * limit locks the account until an administrator unlocks it.
+     */
+    public void recordFailedSecondFactor(WebUser u, String auditTrigger, String message) {
+        int failedAttempts = u.getTwoFactorFailedAttempts() + 1;
+        u.setTwoFactorFailedAttempts(failedAttempts);
+        Map<String, Object> attempt = new HashMap<>();
+        attempt.put("failedAttempts", failedAttempts);
+        // Nobody is logged in yet, so the user trying to log in is recorded as the actor
+        logTwoFactorEvent(u, u, auditTrigger, null, attempt, "Failed");
+        if (failedAttempts >= MAX_FAILED_ATTEMPTS) {
+            u.setTwoFactorLocked(true);
+            u.setTwoFactorLockedAt(new Date());
+            webUserFacade.edit(u);
+            logTwoFactorEvent(u, u, EVENT_ACCOUNT_LOCKED);
+            cancelLogin();
+            showLockedNotice(u.getName());
+        } else {
+            webUserFacade.edit(u);
+            JsfUtil.addErrorMessage(message + " " + (MAX_FAILED_ATTEMPTS - failedAttempts) + " attempt(s) left.");
+        }
+    }
+
+    /**
+     * A correct second-step code (authenticator or SMS): clears the failure
+     * count and completes the login, giving the user access.
+     */
+    public String completeLoginAfterSecondFactor(WebUser u, String auditTrigger) {
+        u.setTwoFactorFailedAttempts(0);
         webUserFacade.edit(u);
         boolean channeling = channelingTabView;
         clearChallenge();
         String outcome = sessionController.completeTwoFactorLogin(u, channeling);
         if (outcome != null && !outcome.isEmpty()) {
-            logTwoFactorEvent(u, u, enrolling ? EVENT_FIRST_LOGIN_SETUP : EVENT_LOGIN_SUCCESS);
+            logTwoFactorEvent(u, u, auditTrigger);
         }
         return outcome;
+    }
+
+    /**
+     * Records an SMS-related event (code sent, send failed, mobile verified
+     * ...).
+     */
+    public void logSmsEvent(WebUser actor, WebUser subject, String trigger, Map<String, Object> details, String status) {
+        logTwoFactorEvent(actor, subject, trigger, null, details, status);
     }
 
     public String cancelLogin() {
@@ -214,6 +307,7 @@ public class TwoFactorAuthController implements Serializable {
         setupSecret = null;
         code = null;
         channelingTabView = false;
+        twoFactorSmsController.clear();
     }
 
     public boolean isPending() {
@@ -371,6 +465,29 @@ public class TwoFactorAuthController implements Serializable {
         JsfUtil.addSuccessMessage("Account unlocked.");
     }
 
+    /**
+     * Admin action: removes the user's verified mobile number for SMS codes
+     * (e.g. number changed). The user verifies a number again from My
+     * Authenticator App.
+     */
+    public void resetSmsMobile(WebUser user) {
+        if (user == null || user.getId() == null) {
+            JsfUtil.addErrorMessage("Select a user");
+            return;
+        }
+        WebUser u = webUserFacade.find(user.getId());
+        u.setTwoFactorMobile(null);
+        u.setTwoFactorMobileVerifiedAt(null);
+        webUserFacade.edit(u);
+        logTwoFactorEvent(sessionController.getLoggedUser(), u, EVENT_MOBILE_RESET);
+        copyEnrollment(u, user);
+        WebUser lu = sessionController.getLoggedUser();
+        if (lu != null && user.getId().equals(lu.getId())) {
+            copyEnrollment(u, lu);
+        }
+        JsfUtil.addSuccessMessage("Verified mobile removed. The user must verify a mobile number again to use SMS codes.");
+    }
+
     // <editor-fold defaultstate="collapsed" desc="Audit log">
     /**
      * Records an admin turning "Require Authenticator App (2FA)" on or off
@@ -386,6 +503,21 @@ public class TwoFactorAuthController implements Serializable {
         after.put("twoFactorRequired", subject.isTwoFactorRequired());
         logTwoFactorEvent(sessionController.getLoggedUser(), subject,
                 subject.isTwoFactorRequired() ? EVENT_REQUIRED_ON : EVENT_REQUIRED_OFF, before, after);
+    }
+
+    /**
+     * Records an admin allowing or stopping SMS codes for a user.
+     */
+    public void logSmsAllowedChange(WebUser subject, boolean wasAllowed) {
+        if (subject == null) {
+            return;
+        }
+        Map<String, Object> before = new HashMap<>();
+        before.put("twoFactorSmsAllowed", wasAllowed);
+        Map<String, Object> after = new HashMap<>();
+        after.put("twoFactorSmsAllowed", subject.isTwoFactorSmsAllowed());
+        logTwoFactorEvent(sessionController.getLoggedUser(), subject,
+                subject.isTwoFactorSmsAllowed() ? EVENT_SMS_ALLOWED_ON : EVENT_SMS_ALLOWED_OFF, before, after);
     }
 
     private void logTwoFactorEvent(WebUser actor, WebUser subject, String trigger) {
@@ -458,6 +590,8 @@ public class TwoFactorAuthController implements Serializable {
         to.setTwoFactorFailedAttempts(from.getTwoFactorFailedAttempts());
         to.setTwoFactorLocked(from.isTwoFactorLocked());
         to.setTwoFactorLockedAt(from.getTwoFactorLockedAt());
+        to.setTwoFactorMobile(from.getTwoFactorMobile());
+        to.setTwoFactorMobileVerifiedAt(from.getTwoFactorMobileVerifiedAt());
     }
 
     private WebUser loggedUserFromDb() {
@@ -478,6 +612,14 @@ public class TwoFactorAuthController implements Serializable {
 
     public String getPendingUserName() {
         return pendingUserName;
+    }
+
+    public Long getPendingUserId() {
+        return pendingUserId;
+    }
+
+    public int getMaxFailedAttempts() {
+        return MAX_FAILED_ATTEMPTS;
     }
 
     public boolean isAccountLockedNotice() {
