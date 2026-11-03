@@ -70,6 +70,8 @@ public class TwoFactorSmsController implements Serializable {
     private String loginMobileInput;
     private boolean smsMode;
     private boolean loginCodeSent;
+    // The last login code expired before it was used: the screen shows a "Code expired" banner
+    private boolean loginCodeExpired;
     private String maskedMobile;
     private String code;
     private long codeExpiresAtMs;
@@ -118,6 +120,7 @@ public class TwoFactorSmsController implements Serializable {
         loginMobileInput = null;
         smsMode = false;
         loginCodeSent = false;
+        loginCodeExpired = false;
         maskedMobile = null;
         code = null;
         codeExpiresAtMs = 0;
@@ -221,7 +224,8 @@ public class TwoFactorSmsController implements Serializable {
                 return "";
             case EXPIRED:
                 loginCodeSent = false;
-                JsfUtil.addErrorMessage("The code has expired. Send a new code.");
+                // No pop-up message: the screen shows a "Code expired" banner
+                loginCodeExpired = true;
                 return "";
             case TOO_MANY_ATTEMPTS:
                 loginCodeSent = false;
@@ -402,6 +406,7 @@ public class TwoFactorSmsController implements Serializable {
             case SENT:
                 if (login) {
                     loginCodeSent = true;
+                    loginCodeExpired = false;
                     codeExpiresAtMs = r.getExpiresAt().getTime();
                     resendAvailableAtMs = nowMs + r.getRetryAfterSeconds() * 1000L;
                 } else {
@@ -487,6 +492,10 @@ public class TwoFactorSmsController implements Serializable {
     // <editor-fold defaultstate="collapsed" desc="Getters and setters">
     public boolean isSmsMode() {
         return smsMode;
+    }
+
+    public boolean isLoginCodeExpired() {
+        return loginCodeExpired;
     }
 
     public boolean isLoginCodeSent() {
