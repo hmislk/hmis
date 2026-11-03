@@ -199,9 +199,11 @@ Tablet, Capsule, ml).
   "departmentType": "Pharmacy",
   "ampId": 404,
   "dblValue": 100.0,
-  "packUnitId": 303
+  "packUnitId": 303,
+  "vmppId": 505
 }
 ```
+*Note:* `vmppId` is optional. When omitted and the AMP has a VMP, a matching VMPP is automatically found or created for (VMP, `dblValue`, `packUnitId`). Response `AmppDto` returns `vmppId` and `vmppName`.
 
 **Example - Create VTM:**
 ```bash
