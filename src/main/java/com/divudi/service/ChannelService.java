@@ -1126,6 +1126,8 @@ public class ChannelService {
      */
     public Bill settleOnlineAgentInitialBookingWithinCapacity(BillSession preBillSession, String refNo, double agencyCharge) {
         SessionInstance locked = lockAndRecountSession(preBillSession.getSessionInstance());
+        // A /complete for the same hold on another server may have settled it while this one waited for the lock
+        rejectIfHoldNoLongerOpen(preBillSession);
         if (isFullyBookedSession(locked)) {
             throw new ChannelSessionFullException("Session is Full. Can't add online bookings");
         }
@@ -1152,6 +1154,26 @@ public class ChannelService {
         params.put("pending", OnlineBookingStatus.PENDING);
         Long count = getBillSessionFacade().findLongByJpql(jpql, params);
         return count == null ? 0L : count;
+    }
+
+    // A projection reads the database row, not an entity another server may have left stale in this server's cache
+    private void rejectIfHoldNoLongerOpen(BillSession preBillSession) {
+        String jpql = "select b.paid, b.cancelled, b.refunded, b.retired, bs.retired, pb.id "
+                + " from BillSession bs join bs.bill b left join b.paidBill pb "
+                + " where bs.id=:id";
+        Map<String, Object> params = new HashMap<>();
+        params.put("id", preBillSession.getId());
+        List<Object[]> rows = getBillSessionFacade().findObjectArrayByJpql(jpql, params, TemporalType.TIMESTAMP);
+        if (rows == null || rows.isEmpty() || rows.get(0) == null) {
+            throw new ChannelBookingNotAvailableException("Appoinment : No Appoinment available for the ref no.");
+        }
+        Object[] row = rows.get(0);
+        if (Boolean.TRUE.equals(row[0]) || row[5] != null) {
+            throw new ChannelBookingNotAvailableException("Appoinment : Appoinment Booking for the ref no is already completed.");
+        }
+        if (Boolean.TRUE.equals(row[1]) || Boolean.TRUE.equals(row[2]) || Boolean.TRUE.equals(row[3]) || Boolean.TRUE.equals(row[4])) {
+            throw new ChannelBookingNotAvailableException("Appoinment : Appoinment is no longer available. Cant complete the booking.");
+        }
     }
 
     // Must be the first database access of the transaction: MySQL's consistent reads that follow
