@@ -2831,12 +2831,17 @@ public class ItemController implements Serializable {
         String jpql = "select distinct c.name from Item c "
                 + "where c.retired = false "
                 + "and (type(c) = :amp or type(c) = :ampp) "
-                + "and upper(c.name) like :q "
+                + "and upper(c.name) like :q escape '!' "
                 + "order by c.name";
+        // Typed % and _ are literal (e.g. "0.9%"), not wildcards.
+        String literal = query.trim().toUpperCase()
+                .replace("!", "!!")
+                .replace("%", "!%")
+                .replace("_", "!_");
         Map<String, Object> params = new HashMap<>();
         params.put("amp", Amp.class);
         params.put("ampp", Ampp.class);
-        params.put("q", "%" + query.trim().toUpperCase() + "%");
+        params.put("q", "%" + literal + "%");
         List<String> names = getFacade().findString(jpql, params, TemporalType.TIMESTAMP, 20);
         return names == null ? new ArrayList<>() : names;
     }
