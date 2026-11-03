@@ -409,9 +409,16 @@
                                                         <h:outputText value=" · The user can log in with an SMS code." />
                                                     </h:panelGroup>
                                                 </div>
+                                                <!-- No remove while locked: the lock must be cleared first -->
+                                                <h:panelGroup rendered="#{webUserController.current.twoFactorLocked}" class="tfa-card-note"
+                                                              title="Remove is available after the account is unlocked (see below)">
+                                                    <i class="fa fa-lock"></i>
+                                                    <h:outputText value="Unlock to remove" />
+                                                </h:panelGroup>
                                                 <p:commandButton value="Remove"
                                                                  class="ui-button-danger ui-button-outlined"
                                                                  icon="fa fa-times"
+                                                                 rendered="#{not webUserController.current.twoFactorLocked}"
                                                                  process="@this"
                                                                  update="twoFactorStatusBlock"
                                                                  title="Remove the verified mobile number (e.g. number changed)"
