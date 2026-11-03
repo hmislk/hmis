@@ -3842,6 +3842,7 @@ public class ChannelReportController implements Serializable {
                 + " else pe.name end, ''), "
                 + " coalesce(c.name, '-'), "
                 + " b.paymentMethod, "
+                + " b.staff.person.title, "
                 + " coalesce(b.staff.person.name, ''), "
                 + " coalesce(b.staffFee, 0.0), "
                 + " coalesce(b.hospitalFee, 0.0), "
