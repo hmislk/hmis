@@ -62,6 +62,7 @@ import com.divudi.core.facade.SpecialityFacade;
 import com.divudi.core.facade.StaffFacade;
 import com.divudi.core.util.CommonFunctions;
 import com.divudi.core.util.SessionBookingLock;
+import com.divudi.service.ChannelBookingNotAvailableException;
 import com.divudi.service.ChannelSessionFullException;
 import com.divudi.service.ChannelService;
 import com.divudi.service.PatientService;
@@ -1530,7 +1531,7 @@ public class ChannelApi {
 
             // The stored booked count can be stale; the service recounts under a database row lock (#25050).
             completedBill = channelService.settleOnlineAgentInitialBookingWithinCapacity(temporarySavedBill.getSingleBillSession(), clientsReferanceNo, agencyCharge);
-        } catch (ChannelSessionFullException e) {
+        } catch (ChannelSessionFullException | ChannelBookingNotAvailableException e) {
             JSONObject response = commonFunctionToErrorResponse(e.getMessage());
             return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
         }
