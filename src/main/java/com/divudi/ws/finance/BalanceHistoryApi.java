@@ -482,6 +482,8 @@ public class BalanceHistoryApi {
         dto.setCompanyBalanceBefore(history.getCompanyBalanceBefore());
         dto.setCompanyBalanceAfter(history.getCompanyBalanceAfter());
         dto.setHistoryType(history.getHistoryType() != null ? history.getHistoryType().name() : null);
+        dto.setCreatorName(history.getCreater() != null ? history.getCreater().getName() : null);
+        dto.setInstitutionName(history.getInstitution() != null ? history.getInstitution().getName() : null);
         dto.setCreatedAt(history.getCreatedAt());
         return dto;
     }
