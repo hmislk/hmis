@@ -282,14 +282,14 @@
                                     <div class="user-form-row">
                                         <p:outputLabel value="Email" for="email" class="user-form-label" />
                                         <div class="user-form-field">
-                                            <p:inputText id="email" value="#{webUserController.current.email}" title="Email" />
+                                            <p:inputText id="email" value="#{webUserController.current.webUserPerson.email}" title="Email" />
                                         </div>
                                     </div>
 
                                     <div class="user-form-row">
                                         <p:outputLabel value="Mobile" for="telNo" class="user-form-label" />
                                         <div class="user-form-field">
-                                            <p:inputText id="telNo" value="#{webUserController.current.telNo}" title="Mobile number" />
+                                            <p:inputText id="telNo" value="#{webUserController.current.webUserPerson.mobile}" title="Mobile number" />
                                         </div>
                                     </div>
                                 </p:fieldset>
@@ -331,6 +331,16 @@
                                                               value="Required for all users by configuration" />
                                             </div>
                                         </div>
+                                        <h:panelGroup layout="block" class="user-form-row"
+                                                      rendered="#{configOptionApplicationController.twoFactorSmsLoginEnabled}">
+                                            <p:outputLabel value="Allow SMS Code (2FA)" for="twoFactorSmsAllowed" class="user-form-label" />
+                                            <div class="user-form-field">
+                                                <p:selectBooleanCheckbox id="twoFactorSmsAllowed"
+                                                                         value="#{webUserController.current.twoFactorSmsAllowed}" />
+                                                <h:outputText class="small text-muted mx-2"
+                                                              value="The user can log in with a code sent by SMS after verifying their mobile number" />
+                                            </div>
+                                        </h:panelGroup>
 
                                         <h:outputText value="Authenticator Status" class="tfa-section-title" />
                                         <h:panelGroup id="twoFactorStatusBlock" layout="block" class="tfa-status-area">
@@ -369,7 +379,7 @@
                                             </h:panelGroup>
                                             <!-- Required but not linked yet -->
                                             <h:panelGroup layout="block" class="tfa-card pending"
-                                                          rendered="#{not webUserController.current.twoFactorEnrolled and twoFactorAuthController.isTwoFactorRequiredFor(webUserController.current)}">
+                                                          rendered="#{not webUserController.current.twoFactorEnrolled and twoFactorAuthController.isTwoFactorRequiredFor(webUserController.current) and not twoFactorAuthController.isSmsUsableFor(webUserController.current)}">
                                                 <div class="tfa-card-icon"><i class="fa fa-hourglass-half"></i></div>
                                                 <div class="tfa-card-text">
                                                     <h:outputText value="Setup pending" class="tfa-card-title" />
@@ -385,6 +395,40 @@
                                                     <h:outputText value="Not required for this user. Tick Require Authenticator App (2FA) and save to enforce it." class="tfa-card-sub" />
                                                 </div>
                                             </h:panelGroup>
+                                            <!-- SMS code option: verified mobile -->
+                                            <h:panelGroup layout="block" class="tfa-card linked"
+                                                          rendered="#{configOptionApplicationController.twoFactorSmsLoginEnabled and webUserController.current.twoFactorSmsAllowed and webUserController.current.twoFactorMobileVerified}">
+                                                <div class="tfa-card-icon"><i class="fa fa-sms"></i></div>
+                                                <div class="tfa-card-text">
+                                                    <h:outputText value="SMS code: #{twoFactorSmsController.mask(webUserController.current.twoFactorMobile)}" class="tfa-card-title" />
+                                                    <h:panelGroup class="tfa-card-sub">
+                                                        <h:outputText value="Mobile verified on " />
+                                                        <h:outputText value="#{webUserController.current.twoFactorMobileVerifiedAt}">
+                                                            <f:convertDateTime pattern="dd MMM yyyy, HH:mm" />
+                                                        </h:outputText>
+                                                        <h:outputText value=" · The user can log in with an SMS code." />
+                                                    </h:panelGroup>
+                                                </div>
+                                                <p:commandButton value="Remove"
+                                                                 class="ui-button-danger ui-button-outlined"
+                                                                 icon="fa fa-times"
+                                                                 process="@this"
+                                                                 update="twoFactorStatusBlock"
+                                                                 title="Remove the verified mobile number (e.g. number changed)"
+                                                                 action="#{twoFactorAuthController.resetSmsMobile(webUserController.current)}">
+                                                    <p:confirm header="Remove Verified Mobile"
+                                                               message="SMS codes will stop working for this user until they verify a mobile number again. Continue?"
+                                                               icon="pi pi-exclamation-triangle" />
+                                                </p:commandButton>
+                                            </h:panelGroup>
+                                            <h:panelGroup layout="block" class="tfa-card off"
+                                                          rendered="#{configOptionApplicationController.twoFactorSmsLoginEnabled and webUserController.current.twoFactorSmsAllowed and not webUserController.current.twoFactorMobileVerified}">
+                                                <div class="tfa-card-icon"><i class="fa fa-sms"></i></div>
+                                                <div class="tfa-card-text">
+                                                    <h:outputText value="SMS code: mobile not verified" class="tfa-card-title" />
+                                                    <h:outputText value="At the first SMS login the user types the mobile saved in their staff record; a code is sent to it only if it matches." class="tfa-card-sub" />
+                                                </div>
+                                            </h:panelGroup>
                                         </h:panelGroup>
                                     </h:panelGroup>
 
@@ -395,7 +439,7 @@
                                             <div class="tfa-card-text">
                                                 <h:outputText value="Account locked" class="tfa-card-title" />
                                                 <h:panelGroup class="tfa-card-sub">
-                                                    <h:outputText value="Too many invalid authenticator codes" />
+                                                    <h:outputText value="Too many invalid verification codes" />
                                                     <h:outputText value=" · since " rendered="#{webUserController.current.twoFactorLockedAt ne null}" />
                                                     <h:outputText value="#{webUserController.current.twoFactorLockedAt}" rendered="#{webUserController.current.twoFactorLockedAt ne null}">
                                                         <f:convertDateTime pattern="dd MMM yyyy, HH:mm" />
