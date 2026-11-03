@@ -4399,7 +4399,9 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             if (limitToMaxNo) {
                 // The stored counts can be stale (another counter or an online booking); count the rows now
                 long[] fresh = countBookingsForCapacity(getSelectedSessionInstance());
-                if (isMaxNoReached(reservedBooking, fresh[0], fresh[1], fresh[2])) {
+                // Open agent holds are not in the booked rows but each needs a place when completed (#25069)
+                long openHolds = channelService.countOpenAgentHolds(getSelectedSessionInstance());
+                if (isMaxNoReached(reservedBooking, fresh[0] + openHolds, fresh[1], fresh[2])) {
                     return;
                 }
             }
