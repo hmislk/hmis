@@ -115,11 +115,11 @@
                                 <h:outputLabel value="#{sms.recipient}"/>
                             </p:column>
 
-                            <p:column headerText="Send At" style="padding: 6px; width :8em" class="text-center">
+                            <p:column headerText="Sent At" style="padding: 6px; width :8em" class="text-center">
                                 <p:tag 
                                     rendered="#{sms.sentAt eq null}"
                                     class="ui-tag" 
-                                    value="Not Senf yet"
+                                    value="Not sent yet"
                                     severity="danger" 
                                     style="align-items: center; text-align: center; font-size: 14px;">
                                 </p:tag>
