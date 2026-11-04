@@ -161,7 +161,8 @@
                     </p:column>
                 </p:dataTable>
 
-                <h:panelGroup layout="block" class="mt-2 text-end">
+                <h:panelGroup layout="block" class="mt-2 text-end"
+                              rendered="#{iouTrackController.status eq 'OPEN' or iouTrackController.status eq 'ALL'}">
                     <h:outputText value="#{iouTrackController.openValueLabel} " class="fw-bold" />
                     <h:outputText value="#{iouTrackController.openValue}" class="fw-bold">
                         <f:convertNumber pattern="#,##0.00" />

@@ -7,7 +7,9 @@ import com.divudi.core.entity.Staff;
 import com.divudi.core.entity.WebUser;
 import com.divudi.core.facade.PaymentFacade;
 import com.divudi.core.util.CommonFunctions;
+import com.divudi.core.util.JsfUtil;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
@@ -40,6 +42,7 @@ public class IouTrackController implements Serializable {
     private Staff debtorStaff;
     private WebUser holder;
     private List<Payment> ious;
+    private boolean datesAutoFilled;
 
     public String navigateToTrackIous() {
         // An open IOU of any age must show, or the open total is wrong
@@ -54,9 +57,21 @@ public class IouTrackController implements Serializable {
 
     public void fillIous() {
         // Closed IOUs pile up, so without dates those lists show the last 30 days
+        if (STATUS_OPEN.equals(status) && datesAutoFilled) {
+            // Dates the page filled in for a closed list must not hide older open IOUs
+            fromDate = null;
+            toDate = null;
+            datesAutoFilled = false;
+        }
         if (!STATUS_OPEN.equals(status) && fromDate == null && toDate == null) {
             fromDate = CommonFunctions.getStartOfDay(CommonFunctions.getAddedDate(new Date(), -30));
             toDate = CommonFunctions.getEndOfDay(new Date());
+            datesAutoFilled = true;
+        }
+        if (fromDate != null && toDate != null && fromDate.after(toDate)) {
+            JsfUtil.addErrorMessage("From date must be before To date");
+            ious = new ArrayList<>();
+            return;
         }
         StringBuilder jpql = new StringBuilder("select p from Payment p"
                 + " left join p.cancelledBill cb"
@@ -79,12 +94,16 @@ public class IouTrackController implements Serializable {
             params.put("td", toDate);
         }
         if (STATUS_OPEN.equals(status)) {
-            jpql.append(" and p.cancelled=:can and p.cancelledBill is null");
+            // Use the join alias: mixing p.cancelledBill with the left join returned no rows
+            jpql.append(" and p.cancelled=:can and cb is null");
             params.put("can", false);
         } else if (STATUS_SETTLED.equals(status)) {
-            jpql.append(" and p.cancelled=:can and cb.billTypeAtomic=:settle");
+            // Settlements saved before #25109 closed the IOU with an IOU_CASH_ISSUE bill
+            jpql.append(" and p.cancelled=:can and (cb.billTypeAtomic=:settle"
+                    + " or (cb.billTypeAtomic=:legacySettle and cb <> p.bill))");
             params.put("can", true);
             params.put("settle", BillTypeAtomic.IOU_SETTLE);
+            params.put("legacySettle", BillTypeAtomic.IOU_CASH_ISSUE);
         } else if (STATUS_CONVERTED.equals(status)) {
             jpql.append(" and p.cancelled=:can and cb.billTypeAtomic=:conv");
             params.put("can", false);
@@ -108,7 +127,9 @@ public class IouTrackController implements Serializable {
         }
         BillTypeAtomic closedBy = p.getCancelledBill() == null ? null : p.getCancelledBill().getBillTypeAtomic();
         if (p.isCancelled()) {
-            return closedBy == BillTypeAtomic.IOU_SETTLE ? "Settled" : "Cancelled";
+            boolean legacySettlement = closedBy == BillTypeAtomic.IOU_CASH_ISSUE
+                    && !p.getCancelledBill().equals(p.getBill());
+            return closedBy == BillTypeAtomic.IOU_SETTLE || legacySettlement ? "Settled" : "Cancelled";
         }
         if (closedBy == BillTypeAtomic.IOU_TO_CASH_CONVERSION) {
             return "Converted to Cash";

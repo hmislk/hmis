@@ -270,6 +270,7 @@
                                                 styleClass="w-100 ui-button-info" 
                                                 ajax="false" 
                                                 action="#{iouTrackController.navigateToTrackIous()}"
+                                                rendered="#{webUserController.hasPrivilege('PaymentBillSearch')}"
                                                 value="Track IOUs"
                                                 icon="pi pi-search"
                                                 title="Track outstanding IOUs" >
