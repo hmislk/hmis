@@ -142,7 +142,7 @@
                                         <f:selectItem itemLabel="— Select Role —" itemValue="#{null}" noSelectionOption="true"/>
                                         <f:selectItems value="#{enumController.patientEncounterComponentTypes}"
                                                        var="ect"
-                                                       itemLabel="#{ect}"
+                                                       itemLabel="#{ect.label}"
                                                        itemValue="#{ect}"/>
                                     </p:selectOneMenu>
 
@@ -189,7 +189,7 @@
                                              emptyMessage="No surgical team recorded yet."
                                              class="mt-3">
                                     <p:column headerText="Role">
-                                        <h:outputLabel value="#{ec.patientEncounterComponentType}"/>
+                                        <h:outputLabel value="#{ec.patientEncounterComponentType.label}"/>
                                     </p:column>
                                     <p:column headerText="Name">
                                         <h:outputLabel value="#{ec.staff.person.nameWithTitle}"/>
