@@ -158,7 +158,10 @@
                                 <f:ajax  event="toggleSelect" execute="tblFee" listener="#{channelStaffPaymentBillController.performCalculations()}"   
                                          render=":#{p:resolveFirstComponentWithId('lblDue',view).clientId} :#{p:resolveFirstComponentWithId('lblPay',view).clientId} :#{p:resolveFirstComponentWithId('pnlAbsentWarning',view).clientId}"  />
 
-                                <f:ajax  event="rowSelect" execute="tblFee" listener="#{channelStaffPaymentBillController.performCalculations()}"   
+                                <f:ajax  event="rowSelect" execute="tblFee" listener="#{channelStaffPaymentBillController.performCalculations()}"
+                                         render=":#{p:resolveFirstComponentWithId('lblDue',view).clientId} :#{p:resolveFirstComponentWithId('lblPay',view).clientId} :#{p:resolveFirstComponentWithId('pnlAbsentWarning',view).clientId}"  />
+
+                                <f:ajax  event="rowUnselect" execute="tblFee" listener="#{channelStaffPaymentBillController.performCalculations()}"
                                          render=":#{p:resolveFirstComponentWithId('lblDue',view).clientId} :#{p:resolveFirstComponentWithId('lblPay',view).clientId} :#{p:resolveFirstComponentWithId('pnlAbsentWarning',view).clientId}"  />
 
                                 <p:column selectionBox="true" width="1em"></p:column>
