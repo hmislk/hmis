@@ -754,6 +754,11 @@
                                                                 class="ui-button-info"
                                                                 type="button"
                                                                 onclick="printCustom4Bill('#{p:resolveFirstComponentWithId('originalCustom4BillPriview',view).clientId}', '#{resource['js:paged.polyfill.js']}'); return false;" />
+                                                                <p:commandButton styleClass="ui-button-info mx-1" id="btnFinalRawTextOriginal"
+                                                                    rendered="#{inwardRawTextReceiptController.rawTextPaper}"
+                                                                    value="Print (Raw Text)" ajax="false" icon="fa fa-file-lines"
+                                                                    title="Print on the dot-matrix printer (pre-printed stationery)"
+                                                                    action="#{inwardRawTextFinalBillController.streamFinalBill(inwardSearch.showOrginalBill ? inwardSearch.bill.referenceBill : inwardSearch.bill)}" />
                                                         </div>
                                                     </div>
                                                 </f:facet>
