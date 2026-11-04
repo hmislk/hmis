@@ -1,5 +1,7 @@
 package com.divudi.core.util;
 
+import java.text.DecimalFormat;
+import java.text.FieldPosition;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -8,6 +10,9 @@ import java.util.List;
  * impact (dot-matrix) printers on pre-printed continuous stationery: only the
  * variable content is printed (title, header block, charge lines, payments,
  * totals, preparer). Optionally wrapped in ESC/P control codes.
+ *
+ * When a form length is given the bill is paged so that nothing prints over the
+ * pre-printed header or footer of the next form.
  *
  * Pure and side-effect free: no CDI, no DB, no FacesContext - unit-testable.
  */
@@ -19,6 +24,7 @@ public final class InwardFinalBillTextRenderer {
     /** Totals and payments sit side by side only when the form is at least this wide. */
     public static final int SIDE_BY_SIDE_MIN_WIDTH = 66;
     private static final int AMOUNT_WIDTH = 12;
+    private static final String CONTINUED = "continued...";
 
     private InwardFinalBillTextRenderer() {
     }
@@ -81,6 +87,8 @@ public final class InwardFinalBillTextRenderer {
         public String nic = "";
         public List<Row> charges = new ArrayList<>();
         public List<Row> payments = new ArrayList<>();
+        /** Credit-company (and patient) dues, printed after the net amount. */
+        public List<Row> dueFrom = new ArrayList<>();
         public String totalAmount = "";
         public String discounts = "";
         public String deposit = "";
@@ -89,18 +97,52 @@ public final class InwardFinalBillTextRenderer {
         public boolean showDiscounts = true;
     }
 
+    /**
+     * The amount format for every printed figure: "#,##0.00" with the same rounding as the
+     * on-screen bill (DecimalFormat default, HALF_EVEN), and a value that rounds to zero is
+     * printed as 0.00, never -0.00.
+     */
+    public static DecimalFormat newMoneyFormat() {
+        return new DecimalFormat("#,##0.00") {
+            private static final long serialVersionUID = 1L;
+
+            @Override
+            public StringBuffer format(double number, StringBuffer result, FieldPosition pos) {
+                int start = result.length();
+                super.format(number, result, pos);
+                if (result.substring(start).equals("-0.00")) {
+                    result.setLength(start);
+                    result.append("0.00");
+                }
+                return result;
+            }
+        };
+    }
+
     public static int clampWidth(long width) {
         return (int) Math.max(MIN_WIDTH, Math.min(MAX_WIDTH, width));
     }
 
-    /**
-     * @param topMarginLines blank lines before the title (0..40)
-     * @param formLengthLines form length sent as ESC C n when emitting
-     * ESC/P codes; 0 leaves the printer's own length
-     */
+    /** Same as the paging overload with no bottom margin. */
     public static String render(Data d, int lineWidth, int topMarginLines,
             int formLengthLines, boolean emitEscP) {
+        return render(d, lineWidth, topMarginLines, 0, formLengthLines, emitEscP);
+    }
+
+    /**
+     * @param topMarginLines blank lines before the first line of every page (0..40)
+     * @param bottomMarginLines lines kept free at the foot of every page for the
+     * pre-printed footer (0..40); used only when paging
+     * @param formLengthLines form length in lines. When above zero it is sent as
+     * ESC C n and the bill is paged: a page holds at most
+     * formLength - top margin - bottom margin lines of content. Zero leaves the
+     * printer's own length and prints one continuous stream.
+     */
+    public static String render(Data d, int lineWidth, int topMarginLines, int bottomMarginLines,
+            int formLengthLines, boolean emitEscP) {
         int w = clampWidth(lineWidth);
+        int top = Math.max(0, Math.min(40, topMarginLines));
+        int bottom = Math.max(0, Math.min(40, bottomMarginLines));
         StringBuilder sb = new StringBuilder(1024);
 
         if (emitEscP) {
@@ -113,56 +155,174 @@ public final class InwardFinalBillTextRenderer {
                 sb.append('\u001B').append('C').append((char) Math.min(127, formLengthLines)); // ESC C n
             }
         }
-        for (int i = 0; i < Math.max(0, Math.min(40, topMarginLines)); i++) {
-            sb.append('\n');
-        }
 
+        List<String> head = firstHeader(d, w);
+        List<List<String>> units = chargeUnits(d.charges, w);
+        List<String> totals = totalsBlock(d, w);
+
+        if (formLengthLines <= 0) {
+            appendBlank(sb, top);
+            appendLines(sb, head);
+            for (List<String> unit : units) {
+                appendLines(sb, unit);
+            }
+            appendLines(sb, totals);
+        } else {
+            int usable = Math.max(1, formLengthLines - top - bottom);
+            List<List<String>> pages = null;
+            // The header height does not depend on the page number, only on its digit count.
+            for (int digits = 1; digits <= 4; digits++) {
+                pages = paginate(units, totals, head.size(),
+                        continuationHeader(d, w, digits, digits).size(), usable);
+                if (String.valueOf(pages.size()).length() <= digits) {
+                    break;
+                }
+            }
+            int count = pages.size();
+            for (int i = 0; i < count; i++) {
+                if (i > 0) {
+                    sb.append('\f');
+                }
+                appendBlank(sb, top);
+                appendLines(sb, i == 0 ? head : continuationHeader(d, w, i + 1, count));
+                appendLines(sb, pages.get(i));
+                if (i < count - 1) {
+                    sb.append(spaces(w - CONTINUED.length())).append(CONTINUED).append('\n');
+                }
+            }
+        }
+        if (emitEscP) {
+            sb.append('\f');
+        }
+        return sb.toString();
+    }
+
+    /** Splits the content into pages; each page holds the body lines after its header. */
+    private static List<List<String>> paginate(List<List<String>> units, List<String> totals,
+            int firstHeadLines, int contHeadLines, int usable) {
+        List<List<String>> pages = new ArrayList<>();
+        List<String> cur = new ArrayList<>();
+        int used = firstHeadLines;
+        for (List<String> unit : units) {
+            // keep one line free for "continued..." because more content follows
+            if (used + unit.size() + 1 > usable && !cur.isEmpty()) {
+                pages.add(cur);
+                cur = new ArrayList<>();
+                used = contHeadLines;
+            }
+            cur.addAll(unit);
+            used += unit.size();
+        }
+        if (used + totals.size() > usable && !cur.isEmpty()) {
+            pages.add(cur);
+            cur = new ArrayList<>();
+        }
+        cur.addAll(totals);
+        pages.add(cur);
+        return pages;
+    }
+
+    private static List<String> firstHeader(Data d, int w) {
+        StringBuilder b = new StringBuilder();
         for (String line : wrap(safe(d.title), w)) {
-            sb.append(centre(line, w)).append('\n');
+            b.append(centre(line, w)).append('\n');
         }
-        sb.append('\n');
-
-        pair(sb, "Bill No : " + safe(d.billNo), "BHT No : " + safe(d.bhtNo), w);
-        pair(sb, "Date : " + safe(d.billDate), "Time : " + safe(d.billTime), w);
-        wrapped(sb, "Patient : ", safe(d.patientName), w);
+        b.append('\n');
+        pair(b, "Bill No : " + safe(d.billNo), "BHT No : " + safe(d.bhtNo), w);
+        pair(b, "Date : " + safe(d.billDate), "Time : " + safe(d.billTime), w);
+        wrapped(b, "Patient : ", safe(d.patientName), w);
         if (!safe(d.nic).isEmpty()) {
-            wrapped(sb, "NIC : ", safe(d.nic), w);
+            wrapped(b, "NIC : ", safe(d.nic), w);
         }
+        b.append(repeat('-', w)).append('\n');
+        b.append(spread("PARTICULAR", "AMOUNT", w)).append('\n');
+        b.append(repeat('-', w)).append('\n');
+        return toLines(b);
+    }
 
-        sb.append(repeat('-', w)).append('\n');
-        sb.append(spread("PARTICULAR", "AMOUNT", w)).append('\n');
-        sb.append(repeat('-', w)).append('\n');
+    /** Compact header for pages after the first: title, bill number, page n/N, column header. */
+    private static List<String> continuationHeader(Data d, int w, int page, int pages) {
+        String title = safe(d.title);
+        String right = "Bill No : " + safe(d.billNo) + "   Page " + page + "/" + pages;
+        StringBuilder b = new StringBuilder();
+        if (title.length() + 2 + right.length() <= w) {
+            b.append(title).append(spaces(w - title.length() - right.length())).append(right).append('\n');
+        } else {
+            for (String line : wrap(title, w)) {
+                b.append(centre(line, w)).append('\n');
+            }
+            if (right.length() <= w) {
+                b.append(right).append('\n');
+            } else {
+                pair(b, "Bill No : " + safe(d.billNo), "Page " + page + "/" + pages, w);
+            }
+        }
+        b.append(repeat('-', w)).append('\n');
+        b.append(spread("PARTICULAR", "AMOUNT", w)).append('\n');
+        b.append(repeat('-', w)).append('\n');
+        return toLines(b);
+    }
 
+    /**
+     * The charge rows as units that must not be split across pages: one row with its
+     * wrapped lines; a group heading together with its first line; a subtotal together
+     * with the line before it.
+     */
+    private static List<List<String>> chargeUnits(List<Row> charges, int w) {
         int labelWidth = Math.max(8, w - AMOUNT_WIDTH - 1);
-        for (Row r : d.charges) {
-            String amount = safe(r.getAmount());
+        List<List<String>> units = new ArrayList<>();
+        boolean headingPending = false;
+        for (Row r : charges) {
             if (r.kind == Row.SUBTOTAL) {
-                sb.append(spaces(w - amount.length())).append(amount).append('\n');
+                String amount = safe(r.getAmount());
+                if (units.isEmpty()) {
+                    units.add(new ArrayList<>());
+                }
+                units.get(units.size() - 1).add(spaces(w - amount.length()) + amount);
                 continue;
             }
-            boolean detail = r.kind == Row.DETAIL;
-            String first = detail ? "  " : "";
-            String more = detail ? "    " : "  ";
-            List<String> parts = wrap(safe(r.getLabel()), labelWidth - first.length());
-            for (int i = 0; i < parts.size(); i++) {
-                String part = parts.get(i);
-                if (i == 0) {
-                    part = first + part;
-                    sb.append(part);
-                    if (!amount.isEmpty()) {
-                        sb.append(spaces(w - part.length() - amount.length())).append(amount);
-                    }
-                } else {
-                    sb.append(more).append(part);
-                }
-                sb.append('\n');
+            List<String> lines = rowLines(r, w, labelWidth);
+            if (headingPending && !units.isEmpty()) {
+                units.get(units.size() - 1).addAll(lines);
+                headingPending = false;
+            } else {
+                units.add(new ArrayList<>(lines));
+            }
+            if (r.kind == Row.HEADING) {
+                headingPending = true;
             }
         }
+        return units;
+    }
+
+    private static List<String> rowLines(Row r, int w, int labelWidth) {
+        List<String> out = new ArrayList<>();
+        String amount = safe(r.getAmount());
+        boolean detail = r.kind == Row.DETAIL;
+        String first = detail ? "  " : "";
+        String more = detail ? "    " : "  ";
+        List<String> parts = wrap(safe(r.getLabel()), Math.max(4, labelWidth - first.length()));
+        for (int i = 0; i < parts.size(); i++) {
+            String part = parts.get(i);
+            if (i == 0) {
+                part = first + part;
+                out.add(amount.isEmpty() ? part : part + spaces(w - part.length() - amount.length()) + amount);
+            } else {
+                out.add(more + part);
+            }
+        }
+        return out;
+    }
+
+    /** Closing rule, payments, totals, credit dues and preparer: always printed together. */
+    private static List<String> totalsBlock(Data d, int w) {
+        StringBuilder sb = new StringBuilder();
         sb.append(repeat('-', w)).append('\n');
 
+        boolean side = w >= SIDE_BY_SIDE_MIN_WIDTH;
         List<String> left = new ArrayList<>();
         if (!d.payments.isEmpty()) {
-            int half = w >= SIDE_BY_SIDE_MIN_WIDTH ? (w - 2) / 2 : w;
+            int half = side ? (w - 2) / 2 : w;
             left.add(spread("PAY TYPE", "AMOUNT", half));
             for (Row r : d.payments) {
                 String amount = safe(r.getAmount());
@@ -171,15 +331,18 @@ public final class InwardFinalBillTextRenderer {
             }
         }
         List<String> right = new ArrayList<>();
-        int rightWidth = w >= SIDE_BY_SIDE_MIN_WIDTH ? w - ((w - 2) / 2) - 2 : w;
+        int rightWidth = side ? w - ((w - 2) / 2) - 2 : w;
         right.add(spread("TOTAL AMOUNT", safe(d.totalAmount), rightWidth));
         if (d.showDiscounts) {
             right.add(spread("DISCOUNTS", safe(d.discounts), rightWidth));
         }
         right.add(spread("DEPOSIT", safe(d.deposit), rightWidth));
         right.add(spread("NET AMOUNT (LKR)", safe(d.netAmount), rightWidth));
+        for (Row due : d.dueFrom) {
+            right.addAll(rowLines(due, rightWidth, Math.max(8, rightWidth - AMOUNT_WIDTH - 1)));
+        }
 
-        if (w >= SIDE_BY_SIDE_MIN_WIDTH) {
+        if (side) {
             int half = (w - 2) / 2;
             int n = Math.max(left.size(), right.size());
             for (int i = 0; i < n; i++) {
@@ -201,10 +364,28 @@ public final class InwardFinalBillTextRenderer {
 
         sb.append('\n');
         wrapped(sb, "BILL PREPARED BY : ", safe(d.preparedBy), w);
-        if (emitEscP) {
-            sb.append('\f');
+        return toLines(sb);
+    }
+
+    private static List<String> toLines(StringBuilder sb) {
+        List<String> lines = new ArrayList<>();
+        for (String line : sb.toString().split("\n", -1)) {
+            lines.add(line);
         }
-        return sb.toString();
+        lines.remove(lines.size() - 1);   // the empty text after the last newline
+        return lines;
+    }
+
+    private static void appendLines(StringBuilder sb, List<String> lines) {
+        for (String line : lines) {
+            sb.append(line).append('\n');
+        }
+    }
+
+    private static void appendBlank(StringBuilder sb, int n) {
+        for (int i = 0; i < n; i++) {
+            sb.append('\n');
+        }
     }
 
     /** Left text and right text on one line; stacked on two lines when they do not fit. */

@@ -8,6 +8,7 @@ import com.divudi.core.entity.BillItem;
 import com.divudi.core.entity.Department;
 import com.divudi.core.entity.PatientEncounter;
 import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.data.dataStructure.CreditCompanyAllocation;
 import com.divudi.core.data.dto.FinalBillPrintRowDTO;
 import com.divudi.core.data.inward.InwardChargeType;
 import com.divudi.core.util.InwardFinalBillTextRenderer;
@@ -47,10 +48,12 @@ public class InwardRawTextFinalBillController implements Serializable {
 
     public static final String KEY_TOP_MARGIN = "Inward Raw Text Final Bill Top Margin Lines";
     public static final String KEY_LINE_WIDTH = "Inward Raw Text Final Bill Line Width";
+    public static final String KEY_BOTTOM_MARGIN = "Inward Raw Text Final Bill Bottom Margin Lines";
     public static final String KEY_FORM_LENGTH = "Inward Raw Text Final Bill Form Length Lines";
     public static final String KEY_INTERIM_TITLE = "Inward Raw Text Interim Bill Title";
 
     private static final long DEFAULT_TOP_MARGIN = 8L;
+    private static final long DEFAULT_BOTTOM_MARGIN = 3L; // pre-printed footer
     private static final long DEFAULT_FORM_LENGTH = 33L; // 5.5 inch form at 6 lines per inch
     private static final String DEFAULT_INTERIM_TITLE = "INTERIM BILL";
     private static final TimeZone COLOMBO = TimeZone.getTimeZone("Asia/Colombo");
@@ -109,12 +112,13 @@ public class InwardRawTextFinalBillController implements Serializable {
         int width = InwardFinalBillTextRenderer.clampWidth(
                 longValue(KEY_LINE_WIDTH, dept, InwardFinalBillTextRenderer.DEFAULT_WIDTH));
         int formLength = (int) longValue(KEY_FORM_LENGTH, dept, DEFAULT_FORM_LENGTH);
-        return InwardFinalBillTextRenderer.render(buildData(bill, interim), width, topMargin, formLength, emitEscP);
+        int bottomMargin = (int) longValue(KEY_BOTTOM_MARGIN, dept, DEFAULT_BOTTOM_MARGIN);
+        return InwardFinalBillTextRenderer.render(buildData(bill, interim), width, topMargin, bottomMargin, formLength, emitEscP);
     }
 
     /** Collects what the printed form shows, laying out the charges exactly as Custom Bill 3 does. */
     Data buildData(Bill bill, boolean interim) {
-        DecimalFormat money = new DecimalFormat("#,##0.00");
+        DecimalFormat money = InwardFinalBillTextRenderer.newMoneyFormat();
         Data d = new Data();
         PatientEncounter pe = bill.getPatientEncounter();
 
@@ -161,6 +165,18 @@ public class InwardRawTextFinalBillController implements Serializable {
             d.totalAmount = money.format(bill.getTotal());
             d.discounts = money.format(bill.getDiscount());
             d.netAmount = money.format(bill.getNetTotal() - bill.getPaidAmount());
+            // Same as Custom Bill 3: when a credit company owes part of the bill, list each payer
+            // (the screen lists them in place of "Due Amount"). A patient-only due is just NET AMOUNT.
+            List<CreditCompanyAllocation> dues = bhtSummeryController.creditCompanyDueBreakdownForPrint(bill);
+            boolean anyCompany = false;
+            for (CreditCompanyAllocation due : dues) {
+                anyCompany = anyCompany || !due.isPatientPortion();
+            }
+            if (anyCompany) {
+                for (CreditCompanyAllocation due : dues) {
+                    d.dueFrom.add(new Row("DUE FROM " + due.getCompanyName(), money.format(due.getAllocatedAmount())));
+                }
+            }
         }
         d.deposit = money.format(bhtSummeryController.getCustom3DepositTotal(bill));
         addPayments(d, bill, money);

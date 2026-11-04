@@ -29,6 +29,7 @@
                                 </p:commandButton>
                                 <p:commandButton styleClass="ui-button-info mx-1" id="btnInterimRawText"
                                     rendered="#{inwardRawTextReceiptController.rawTextPaper}"
+                                    disabled="#{intrimPrintController.currentBill.id eq null}"
                                     value="Print Interim (Raw Text)" ajax="false" icon="fa fa-file-lines"
                                     title="Print on the dot-matrix printer (pre-printed stationery)"
                                     action="#{inwardRawTextFinalBillController.streamInterimBill(intrimPrintController.currentBill)}" />
