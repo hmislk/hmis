@@ -2342,7 +2342,8 @@ public class InpatientClinicalDataController implements Serializable {
         if (current == null || current.getId() != null) {
             return;
         }
-        if (current.getPatientEncounterType() != PatientEncounterType.ClinicalAssessment) {
+        if (current.getPatientEncounterType() != PatientEncounterType.ClinicalAssessment
+                && current.getPatientEncounterType() != PatientEncounterType.ClinicalDischarge) {
             return;
         }
         current.setDepartment(sessionController.getDepartment());
