@@ -316,24 +316,13 @@ public class DrawerService {
 
         drawerEntry.setBeforeInHandValue(beforeInHandValue);
         drawerEntry.setAfterInHandValue(beforeInHandValue + signedValue);
-        double totalBalance;
-        if (currentDrawer.getCashInHandValue() == null) {
-            totalBalance = 0.0;
-        } else {
-            totalBalance = currentDrawer.getTotalBalance();
-        }
-        //System.out.println("totalBalance = " + totalBalance);
+        // Both totals skip null fields, so a drawer without a cash value (e.g. card only) still gets its real balance
+        double totalBalance = currentDrawer.getTotalBalance();
 
         drawerEntry.setBeforeBalance(totalBalance);
         drawerEntry.setAfterBalance(totalBalance + signedValue);
 
-        double totalShortageOrExcess;
-        if (currentDrawer.getCashInHandValue() == null) {
-            totalShortageOrExcess = 0.0;
-        } else {
-            totalShortageOrExcess = currentDrawer.getTotalShortageOrExcess();
-        }
-        //System.out.println("totalShortageOrExcess = " + totalShortageOrExcess);
+        double totalShortageOrExcess = currentDrawer.getTotalShortageOrExcess();
 
         drawerEntry.setBeforeShortageExcess(totalShortageOrExcess);
         drawerEntry.setAfterShortageExcess(totalShortageOrExcess);
