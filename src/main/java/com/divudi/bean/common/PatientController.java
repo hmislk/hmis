@@ -2953,6 +2953,23 @@ public class PatientController implements Serializable, ControllerWithPatient {
         }
     }
 
+    public void updateFamilyMemberRelation(FamilyMember familyMember) {
+        if (familyMember == null || familyMember.getId() == null) {
+            JsfUtil.addErrorMessage("No Member is selected to update.");
+            return;
+        }
+        if (familyMember.getRelationToChh() == null) {
+            FamilyMember savedFamilyMember = getFamilyMemberFacade().find(familyMember.getId());
+            familyMember.setRelationToChh(savedFamilyMember == null ? null : savedFamilyMember.getRelationToChh());
+            JsfUtil.addErrorMessage("No relationship.");
+            return;
+        }
+        familyMember.setEditedAt(new Date());
+        familyMember.setEditer(sessionController.getLoggedUser());
+        getFamilyMemberFacade().edit(familyMember);
+        JsfUtil.addSuccessMessage("Relationship Updated");
+    }
+
     public void removeFamily() {
         if (currentFamily == null) {
             JsfUtil.addErrorMessage("No user");
