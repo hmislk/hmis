@@ -336,6 +336,24 @@ public class BhtPaymentSummaryReportController implements Serializable {
     }
 
     /**
+     * Drops the payment of a cancelled deposit or payment bill when its
+     * cancellation bill has no payment of its own. Older code cancelled
+     * deposits without writing the reversal payment (and without a
+     * billTypeAtomic on the cancellation bill), so only the original's
+     * positive payment was found and the cancelled money still counted on
+     * this net-per-BHT report. Cancellation is whole-bill only, so leaving out
+     * the original nets it to zero, the same as an original plus a reversal
+     * payment. Cancellations that do have a reversal payment are unaffected.
+     * Issue #25141.
+     */
+    private static final String EXCLUDE_CANCELLED_WITHOUT_REVERSAL_PAYMENT
+            = " and (p.bill.cancelled = false"
+            + " or p.bill.cancelledBill is null"
+            + " or exists (select rp from Payment rp"
+            + " where rp.retired = false"
+            + " and rp.bill = p.bill.cancelledBill))";
+
+    /**
      * Fetch all Payment records linked to INWARD_DEPOSIT ("Make a Deposit")
      * bills for this encounter. Deposit bills link to the encounter via
      * bill.patientEncounter directly.
@@ -357,7 +375,8 @@ public class BhtPaymentSummaryReportController implements Serializable {
                 + " where p.retired = false"
                 + " and p.bill.retired = false"
                 + " and p.bill.billTypeAtomic in :btas"
-                + " and p.bill.patientEncounter = :enc";
+                + " and p.bill.patientEncounter = :enc"
+                + EXCLUDE_CANCELLED_WITHOUT_REVERSAL_PAYMENT;
         Map<String, Object> params = new HashMap<>();
         params.put("btas", Arrays.asList(
                 BillTypeAtomic.INWARD_DEPOSIT,
@@ -390,7 +409,8 @@ public class BhtPaymentSummaryReportController implements Serializable {
                 + " where p.retired = false"
                 + " and p.bill.retired = false"
                 + " and p.bill.billTypeAtomic in :btas"
-                + " and p.bill.patientEncounter = :enc";
+                + " and p.bill.patientEncounter = :enc"
+                + EXCLUDE_CANCELLED_WITHOUT_REVERSAL_PAYMENT;
         Map<String, Object> params = new HashMap<>();
         params.put("btas", Arrays.asList(
                 BillTypeAtomic.INWARD_PAYMENT,
