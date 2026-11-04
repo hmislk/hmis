@@ -2155,6 +2155,12 @@ public class QuickBookReportController implements Serializable {
         collectionBtas.add(BillTypeAtomic.OPD_BILL_REFUND);
         collectionBtas.add(BillTypeAtomic.OPD_BILL_WITH_PAYMENT);
         collectionBtas.add(BillTypeAtomic.OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
+        collectionBtas.add(BillTypeAtomic.OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
+        collectionBtas.add(BillTypeAtomic.PACKAGE_OPD_BILL_WITH_PAYMENT);
+        collectionBtas.add(BillTypeAtomic.PACKAGE_OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
+        collectionBtas.add(BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION);
+        collectionBtas.add(BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
+        collectionBtas.add(BillTypeAtomic.PACKAGE_OPD_BILL_REFUND);
         temMap.put("btas", collectionBtas);
 
         double collectedFeeValue = getBillFeeFacade().findDoubleByJpql(jpql, temMap, TemporalType.TIMESTAMP);
