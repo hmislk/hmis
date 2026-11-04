@@ -83,6 +83,19 @@ public class InwardFinalBillTextRendererTest {
     }
 
     @Test
+    void wideAmountTextAndNarrowWidthStayWithinLine() {
+        Data d = sample();
+        d.charges.add(new Row("Professional fee for a very long consultant name here", "Free of Charge"));
+        d.preparedBy = "Cashier Supervisor";
+        for (int w : new int[]{24, 30, 36}) {
+            String text = InwardFinalBillTextRenderer.render(d, w, 0, 0, false);
+            for (String line : text.split("\n", -1)) {
+                assertTrue(line.length() <= w, "line too long at width " + w + ": [" + line + "]");
+            }
+        }
+    }
+
+    @Test
     void preparedByContinuationIsIndentedAfterColon() {
         Data d = sample();
         d.preparedBy = "Alexandra Wijesekara Perera Gunawardena";
