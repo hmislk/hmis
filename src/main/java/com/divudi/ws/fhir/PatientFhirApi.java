@@ -11,6 +11,8 @@ import com.divudi.core.entity.ApiKey;
 import com.divudi.core.entity.Patient;
 import com.divudi.core.entity.WebUser;
 import com.divudi.service.fhir.PatientFhirService;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import java.io.IOException;
 import java.util.Date;
 import java.util.List;
@@ -216,14 +218,40 @@ public class PatientFhirApi {
         }
     }
 
+    // The HL7 parser reads primitives with gson's coercing getters. "active":"invalid" or 1 would
+    // become false and retire the patient, and "birthDate":1980 or "gender":["female"] would be saved.
+    private void requireTypesTheParserCoerces(JsonObject json) {
+        JsonElement active = json.get("active");
+        boolean activeIsBoolean = active != null && active.isJsonPrimitive() && active.getAsJsonPrimitive().isBoolean();
+        // "_active" without "active" parses to a value-less element that the service cannot read.
+        if ((active != null || json.has("_active")) && !activeIsBoolean) {
+            throw new FHIRException("active must be true or false");
+        }
+        requireJsonString(json, "birthDate");
+        requireJsonString(json, "gender");
+    }
+
+    private void requireJsonString(JsonObject json, String field) {
+        JsonElement value = json.get(field);
+        if (value != null && !(value.isJsonPrimitive() && value.getAsJsonPrimitive().isString())) {
+            throw new FHIRException(field + " must be a JSON string");
+        }
+    }
+
     private org.hl7.fhir.r5.model.Patient parsePatient(String body) throws IOException, FHIRException {
         Resource resource;
         try {
-            resource = new JsonParser().parse(body);
+            JsonElement json = com.google.gson.JsonParser.parseString(body);
+            if (!json.isJsonObject()) {
+                throw new FHIRException("Body must be a JSON object");
+            }
+            requireTypesTheParserCoerces(json.getAsJsonObject());
+            resource = new JsonParser().parse(json.getAsJsonObject());
         } catch (RuntimeException e) {
             // Bad input surfaces as gson JsonSyntaxException, IllegalArgumentException (unknown code),
-            // ClassCastException (body is not a JSON object) and others. None of it is a server fault.
-            throw new FHIRException(e instanceof ClassCastException ? "Body must be a JSON object" : e.getMessage(), e);
+            // ClassCastException (a JSON value of the wrong shape) and others. None of it is a server fault.
+            boolean unreadable = e.getMessage() == null || e instanceof ClassCastException;
+            throw new FHIRException(unreadable ? "Body does not match the FHIR Patient structure" : e.getMessage(), e);
         }
         if (!(resource instanceof org.hl7.fhir.r5.model.Patient)) {
             throw new FHIRException("Expected a Patient resource");
