@@ -204,6 +204,17 @@ public class IouBillController implements Serializable {
             JsfUtil.addErrorMessage("No IOUs selected. ");
             return true;
         }
+        // Read each IOU again: the page's list can be stale, and settling one twice moves the drawer twice
+        for (Payment selectedIou : settlingIuos) {
+            Payment latestIou = paymentFacade.find(selectedIou.getId());
+            if (latestIou == null
+                    || latestIou.isCancelled()
+                    || latestIou.getCancelledBill() != null
+                    || latestIou.getPaidValue() <= 0) {
+                JsfUtil.addErrorMessage("An IOU you selected is already settled or converted to cash. Reopen Settle IOUs and select again.");
+                return true;
+            }
+        }
         for (Payment pin : paymentsForsettlingIuos) {
             if (pin.getPaymentMethod() != PaymentMethod.Cash) {
                 JsfUtil.addErrorMessage("IOUs can only be settled in cash");
