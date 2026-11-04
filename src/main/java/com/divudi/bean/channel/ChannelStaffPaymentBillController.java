@@ -768,6 +768,35 @@ public class ChannelStaffPaymentBillController implements Serializable {
         }
     }
 
+    /**
+     * Warning text naming the absent patients among the currently selected
+     * fees; empty when none. Used for a non-blocking confirmation (#25047).
+     */
+    public String getAbsentPatientsWarning() {
+        if (payingBillFees == null) {
+            return "";
+        }
+        List<String> names = new ArrayList<>();
+        for (BillFee bf : payingBillFees) {
+            if (bf == null || bf.getBill() == null) {
+                continue;
+            }
+            BillSession bs = bf.getBill().getSingleBillSession();
+            if (bs == null || !bs.isAbsent()) {
+                continue;
+            }
+            String name = "";
+            if (bf.getBill().getPatient() != null && bf.getBill().getPatient().getPerson() != null) {
+                name = bf.getBill().getPatient().getPerson().getNameWithTitle();
+            }
+            names.add((name == null ? "" : name) + " (Appointment No " + bs.getSerialNo() + ")");
+        }
+        if (names.isEmpty()) {
+            return "";
+        }
+        return "Marked as absent: " + String.join(", ", names) + ". Are you sure you want to proceed with the payment?";
+    }
+
     public void performCalculations() {
         calculateTotalDue();
         calculateTotalPay();
