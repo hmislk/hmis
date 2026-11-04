@@ -55,6 +55,48 @@ public class InwardFinalBillTextRendererTest {
     }
 
     @Test
+    void headingDetailsAndSubtotalLayout() {
+        Data d = sample();
+        d.charges.clear();
+        d.charges.add(Row.heading("Consultant Fee"));
+        d.charges.add(Row.detail("Dr A Very Long Consultant Name (Cardiology)", "1,000.00"));
+        d.charges.add(Row.detail("Dr B", "Free of Charge"));
+        d.charges.add(Row.subtotal("1,000.00"));
+        String text = InwardFinalBillTextRenderer.render(d, 36, 0, 0, false);
+        String[] lines = text.split("\n", -1);
+        int h = -1;
+        for (int i = 0; i < lines.length; i++) {
+            assertTrue(lines[i].length() <= 36, "too long: [" + lines[i] + "]");
+            if (lines[i].equals("Consultant Fee")) {
+                h = i;
+            }
+        }
+        assertTrue(h > 0, text);
+        assertTrue(lines[h + 1].startsWith("  Dr A Very"), text);
+        assertTrue(lines[h + 1].endsWith("1,000.00"), text);
+        assertTrue(lines[h + 2].startsWith("    Consultant"), text);
+        assertTrue(lines[h + 3].startsWith("    (Cardiology)"), text);
+        assertTrue(lines[h + 4].startsWith("  Dr B"), text);
+        assertTrue(lines[h + 4].endsWith("Free of Charge"), text);
+        assertEquals(36, lines[h + 5].length(), text);
+        assertEquals("1,000.00", lines[h + 5].trim());
+    }
+
+    @Test
+    void preparedByContinuationIsIndentedAfterColon() {
+        Data d = sample();
+        d.preparedBy = "Alexandra Wijesekara Perera Gunawardena";
+        String text = InwardFinalBillTextRenderer.render(d, 36, 0, 0, false);
+        String[] lines = text.split("\n");
+        int i = 0;
+        while (!lines[i].startsWith("BILL PREPARED BY : ")) {
+            i++;
+        }
+        assertTrue(lines[i + 1].startsWith(" ".repeat("BILL PREPARED BY : ".length()) + "W"), text);
+        assertTrue(lines[i + 1].length() <= 36);
+    }
+
+    @Test
     void topMarginAndEscpCodes() {
         String plain = InwardFinalBillTextRenderer.render(sample(), 40, 3, 33, false);
         assertTrue(plain.startsWith("\n\n\n"));

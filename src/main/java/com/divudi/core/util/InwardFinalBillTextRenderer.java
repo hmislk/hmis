@@ -26,12 +26,38 @@ public final class InwardFinalBillTextRenderer {
     /** One printed line item: a name and an already formatted amount (or text such as "Free of Charge"). */
     public static final class Row {
 
+        private static final int NORMAL = 0;
+        private static final int HEADING = 1;
+        private static final int DETAIL = 2;
+        private static final int SUBTOTAL = 3;
+
         private final String label;
         private final String amount;
+        private final int kind;
 
         public Row(String label, String amount) {
+            this(label, amount, NORMAL);
+        }
+
+        private Row(String label, String amount, int kind) {
             this.label = label;
             this.amount = amount;
+            this.kind = kind;
+        }
+
+        /** A group heading with no amount on its line (e.g. "Consultant Fee"). */
+        public static Row heading(String label) {
+            return new Row(label, "", HEADING);
+        }
+
+        /** A line under a heading, indented (e.g. one doctor and the fee). */
+        public static Row detail(String label, String amount) {
+            return new Row(label, amount, DETAIL);
+        }
+
+        /** The group total, right-aligned on a line of its own. */
+        public static Row subtotal(String amount) {
+            return new Row("", amount, SUBTOTAL);
         }
 
         public String getLabel() {
@@ -109,14 +135,25 @@ public final class InwardFinalBillTextRenderer {
 
         int labelWidth = Math.max(8, w - AMOUNT_WIDTH - 1);
         for (Row r : d.charges) {
-            List<String> parts = wrap(safe(r.getLabel()), labelWidth);
             String amount = safe(r.getAmount());
+            if (r.kind == Row.SUBTOTAL) {
+                sb.append(spaces(w - amount.length())).append(amount).append('\n');
+                continue;
+            }
+            boolean detail = r.kind == Row.DETAIL;
+            String first = detail ? "  " : "";
+            String more = detail ? "    " : "  ";
+            List<String> parts = wrap(safe(r.getLabel()), labelWidth - first.length());
             for (int i = 0; i < parts.size(); i++) {
                 String part = parts.get(i);
                 if (i == 0) {
-                    sb.append(part).append(spaces(w - part.length() - amount.length())).append(amount);
+                    part = first + part;
+                    sb.append(part);
+                    if (!amount.isEmpty()) {
+                        sb.append(spaces(w - part.length() - amount.length())).append(amount);
+                    }
                 } else {
-                    sb.append("  ").append(part);
+                    sb.append(more).append(part);
                 }
                 sb.append('\n');
             }
@@ -163,9 +200,7 @@ public final class InwardFinalBillTextRenderer {
         }
 
         sb.append('\n');
-        for (String line : wrap("BILL PREPARED BY : " + safe(d.preparedBy), w)) {
-            sb.append(line).append('\n');
-        }
+        wrapped(sb, "BILL PREPARED BY : ", safe(d.preparedBy), w);
         if (emitEscP) {
             sb.append('\f');
         }
