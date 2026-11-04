@@ -5365,6 +5365,9 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
                 inwardSearch.setBill(bill);
                 return "/inward/inward_reprint_bill_payment?faces-redirect=true";
 
+            case IOU_SETTLE:
+                return "/cashier/iou_settle_bill_reprint?faces-redirect=true";
+
             case INWARD_APPOINTMENT_BILL:
             case INWARD_APPOINTMENT_CANCEL_BILL:
             case INWARD_APPOINTMENT_BILL_REFUND:
