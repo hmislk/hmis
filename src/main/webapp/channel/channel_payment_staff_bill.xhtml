@@ -150,16 +150,16 @@
                                 >
 
                                 <f:ajax  event="rowSelectCheckbox" execute="tblFee" listener="#{channelStaffPaymentBillController.performCalculations()}"   
-                                         render=":#{p:resolveFirstComponentWithId('lblDue',view).clientId} :#{p:resolveFirstComponentWithId('lblPay',view).clientId} pnlAbsentWarning"  />  
+                                         render=":#{p:resolveFirstComponentWithId('lblDue',view).clientId} :#{p:resolveFirstComponentWithId('lblPay',view).clientId} :#{p:resolveFirstComponentWithId('pnlAbsentWarning',view).clientId}"  />  
 
                                 <f:ajax  event="rowUnselectCheckbox" execute="tblFee" listener="#{channelStaffPaymentBillController.performCalculations()}"   
-                                         render=":#{p:resolveFirstComponentWithId('lblDue',view).clientId} :#{p:resolveFirstComponentWithId('lblPay',view).clientId} pnlAbsentWarning"  />  
+                                         render=":#{p:resolveFirstComponentWithId('lblDue',view).clientId} :#{p:resolveFirstComponentWithId('lblPay',view).clientId} :#{p:resolveFirstComponentWithId('pnlAbsentWarning',view).clientId}"  />  
 
                                 <f:ajax  event="toggleSelect" execute="tblFee" listener="#{channelStaffPaymentBillController.performCalculations()}"   
-                                         render=":#{p:resolveFirstComponentWithId('lblDue',view).clientId} :#{p:resolveFirstComponentWithId('lblPay',view).clientId} pnlAbsentWarning"  />
+                                         render=":#{p:resolveFirstComponentWithId('lblDue',view).clientId} :#{p:resolveFirstComponentWithId('lblPay',view).clientId} :#{p:resolveFirstComponentWithId('pnlAbsentWarning',view).clientId}"  />
 
                                 <f:ajax  event="rowSelect" execute="tblFee" listener="#{channelStaffPaymentBillController.performCalculations()}"   
-                                         render=":#{p:resolveFirstComponentWithId('lblDue',view).clientId} :#{p:resolveFirstComponentWithId('lblPay',view).clientId} pnlAbsentWarning"  />
+                                         render=":#{p:resolveFirstComponentWithId('lblDue',view).clientId} :#{p:resolveFirstComponentWithId('lblPay',view).clientId} :#{p:resolveFirstComponentWithId('pnlAbsentWarning',view).clientId}"  />
 
                                 <p:column selectionBox="true" width="1em"></p:column>
 
@@ -240,7 +240,7 @@
                                     <p:inputNumber value="#{bf.payingAmount}" decimalPlaces="2" class="w-100">
                                         <f:ajax event="blur" execute="@this"
                                                 listener="#{channelStaffPaymentBillController.performCalculations()}"
-                                                render=":#{p:resolveFirstComponentWithId('lblDue',view).clientId} :#{p:resolveFirstComponentWithId('lblPay',view).clientId} pnlAbsentWarning" />
+                                                render=":#{p:resolveFirstComponentWithId('lblDue',view).clientId} :#{p:resolveFirstComponentWithId('lblPay',view).clientId} :#{p:resolveFirstComponentWithId('pnlAbsentWarning',view).clientId}" />
                                     </p:inputNumber>
                                 </p:column>
 
