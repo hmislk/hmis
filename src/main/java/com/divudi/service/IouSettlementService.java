@@ -49,4 +49,34 @@ public class IouSettlementService {
             }
         }
     }
+
+    /**
+     * Gives back a claim made by {@link #claimOpenIous(List)} when the
+     * settlement bill could not be created, so the IOUs are open again. Only a
+     * claimed IOU that is not yet linked to a bill is changed: a row with a
+     * cancelledBill belongs to a settlement or conversion that was saved, and
+     * stays as it is.
+     *
+     * @param claimedIouPaymentIds the ids this request claimed
+     * @return the number of IOUs reopened
+     */
+    public int releaseClaimedIous(List<Long> claimedIouPaymentIds) {
+        if (claimedIouPaymentIds == null || claimedIouPaymentIds.isEmpty()) {
+            return 0;
+        }
+        String jpql = "update Payment p "
+                + " set p.cancelled=:open "
+                + " where p.id in :ids "
+                + " and p.retired=:ret "
+                + " and p.paymentMethod=:pm "
+                + " and p.cancelled=:claimed "
+                + " and p.cancelledBill is null ";
+        Map<String, Object> params = new HashMap<>();
+        params.put("open", false);
+        params.put("ids", new ArrayList<>(claimedIouPaymentIds));
+        params.put("ret", false);
+        params.put("pm", PaymentMethod.IOU);
+        params.put("claimed", true);
+        return paymentFacade.updateByJpql(jpql, params);
+    }
 }
