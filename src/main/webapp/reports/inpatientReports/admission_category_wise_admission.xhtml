@@ -216,46 +216,6 @@
                                 </div>
                                 <h:panelGroup id="phmDept" layout="block">
                                     <p:selectOneMenu
-                                        rendered="#{admissionCategoryWiseAdmissionReportController.institution eq null and admissionCategoryWiseAdmissionReportController.site eq null}"
-                                        value="#{admissionCategoryWiseAdmissionReportController.department}"
-                                        filterMatchMode="contains"
-                                        filter="true"
-                                        styleClass="w-100">
-                                        <f:selectItem itemLabel="All Departments"/>
-                                        <f:selectItems
-                                            value="#{departmentController.getDepartmentsOfInstitutionAndSite()}"
-                                            var="dept"
-                                            itemLabel="#{dept.name}"
-                                            itemValue="#{dept}"/>
-                                    </p:selectOneMenu>
-                                    <p:selectOneMenu
-                                        rendered="#{admissionCategoryWiseAdmissionReportController.institution eq null and admissionCategoryWiseAdmissionReportController.site ne null}"
-                                        value="#{admissionCategoryWiseAdmissionReportController.department}"
-                                        filterMatchMode="contains"
-                                        filter="true"
-                                        styleClass="w-100">
-                                        <f:selectItem itemLabel="All Departments"/>
-                                        <f:selectItems
-                                            value="#{departmentController.getDepartmentsOfInstitutionAndSite(admissionCategoryWiseAdmissionReportController.site)}"
-                                            var="dept"
-                                            itemLabel="#{dept.name}"
-                                            itemValue="#{dept}"/>
-                                    </p:selectOneMenu>
-                                    <p:selectOneMenu
-                                        rendered="#{admissionCategoryWiseAdmissionReportController.institution ne null and admissionCategoryWiseAdmissionReportController.site eq null}"
-                                        value="#{admissionCategoryWiseAdmissionReportController.department}"
-                                        filterMatchMode="contains"
-                                        filter="true"
-                                        styleClass="w-100">
-                                        <f:selectItem itemLabel="All Departments"/>
-                                        <f:selectItems
-                                            value="#{departmentController.getDepartmentsOfInstitutionAndSite(admissionCategoryWiseAdmissionReportController.institution)}"
-                                            var="dept"
-                                            itemLabel="#{dept.name}"
-                                            itemValue="#{dept}"/>
-                                    </p:selectOneMenu>
-                                    <p:selectOneMenu
-                                        rendered="#{admissionCategoryWiseAdmissionReportController.institution ne null and admissionCategoryWiseAdmissionReportController.site ne null}"
                                         value="#{admissionCategoryWiseAdmissionReportController.department}"
                                         filterMatchMode="contains"
                                         filter="true"

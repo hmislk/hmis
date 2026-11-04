@@ -35,6 +35,8 @@ import com.divudi.core.entity.WebUser;
 import com.divudi.core.entity.inward.AdmissionType;
 import com.divudi.core.entity.inward.InwardFee;
 import com.divudi.core.entity.inward.PatientRoom;
+import com.divudi.core.entity.inward.Admission;
+import com.divudi.core.entity.inward.TheatreRoom;
 import com.divudi.core.entity.inward.Room;
 import com.divudi.core.entity.inward.RoomFacilityCharge;
 import com.divudi.core.entity.inward.TimedItem;
@@ -62,6 +64,7 @@ import com.divudi.core.facade.TimedItemFeeFacade;
 import com.divudi.core.util.CommonFunctions;
 import com.divudi.service.inward.TimedItemPricingService;
 import java.io.Serializable;
+import com.divudi.core.util.JsfUtil;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -1847,6 +1850,10 @@ public class InwardBeanController implements Serializable {
                 + " FROM PatientRoom p"
                 + " WHERE p.retired=false"
                 + " AND p.patientEncounter IN :pe";
+        boolean theatreAsOt = billTheatreTimeAsOt();
+        if (theatreAsOt) {
+            sql += " AND TYPE(p) <> :theatreClass";
+        }
         HashMap hm = new HashMap();
         List<PatientEncounter> pts = new ArrayList<>();
         pts.add(patientEncounter);
@@ -1854,6 +1861,9 @@ public class InwardBeanController implements Serializable {
             pts.addAll(cpts);
         }
         hm.put("pe", pts);
+        if (theatreAsOt) {
+            hm.put("theatreClass", TheatreRoom.class);
+        }
 
         Map<InwardChargeType, Double> result = new EnumMap<>(InwardChargeType.class);
         List<Object> rows = getPatientRoomFacade().findObjectByJpql(sql, hm, TemporalType.TIMESTAMP);
@@ -1870,11 +1880,36 @@ public class InwardBeanController implements Serializable {
                 result.put(InwardChargeType.LinenCharges,         toDoubleOrZero(arr[6]));
             }
         }
+        if (theatreAsOt) {
+            String otSql = "SELECT SUM((p.calculatedRoomCharge - p.discountRoomCharge)"
+                    + " + (p.calculatedMoCharge - p.discountMoCharge)"
+                    + " + (p.calculatedNursingCharge - p.discountNursingCharge)"
+                    + " + (p.calculatedMaintainCharge - p.discountMaintainCharge)"
+                    + " + (p.calculatedMedicalCareCharge - p.discountMedicalCareCharge)"
+                    + " + (p.calculatedAdministrationCharge - p.discountAdministrationCharge)"
+                    + " + (p.calculatedLinenCharge - p.discountLinenCharge))"
+                    + " FROM PatientRoom p"
+                    + " WHERE p.retired=false"
+                    + " AND p.patientEncounter IN :pe"
+                    + " AND TYPE(p) = :theatreClass";
+            List<Object> otRows = getPatientRoomFacade().findObjectByJpql(otSql, hm, TemporalType.TIMESTAMP);
+            if (otRows != null && !otRows.isEmpty()) {
+                result.merge(InwardChargeType.OperationTheatreCharges, toDoubleOrZero(otRows.get(0)), Double::sum);
+            }
+        }
         Map<InwardChargeType, Double> timedItemSums = getTimedItemChargeSumsBulk(patientEncounter, cpts);
         for (Map.Entry<InwardChargeType, Double> entry : timedItemSums.entrySet()) {
             result.merge(entry.getKey(), entry.getValue(), Double::sum);
         }
         return result;
+    }
+
+    public boolean billTheatreTimeAsOt() {
+        return configOptionApplicationController.getBooleanValueByKey(com.divudi.service.inward.InwardRoomChargeCalculationService.THEATRE_TIME_AS_OT_KEY, false);
+    }
+
+    public boolean isTheatreTimeAsOt(PatientRoom pr) {
+        return pr instanceof TheatreRoom && billTheatreTimeAsOt();
     }
 
     private double toDoubleOrZero(Object value) {
@@ -2247,6 +2282,69 @@ public class InwardBeanController implements Serializable {
         return cpt;
     }
 
+    /**
+     * The earliest theatre stay (TheatreRoom) still open on this admission or
+     * one of its child (surgery procedure) encounters, or null. A theatre stay
+     * bills by the hour until the patient is returned to the ward from theatre
+     * (PatientTransferController.returnToWard), so discharge must not proceed
+     * while one is open (#24718).
+     */
+    public PatientRoom findOpenTheatreRoom(PatientEncounter admission) {
+        if (admission == null || admission.getId() == null) {
+            return null;
+        }
+        String jpql = "SELECT pr FROM PatientRoom pr"
+                + " LEFT JOIN pr.patientEncounter e"
+                + " LEFT JOIN e.parentEncounter par"
+                + " WHERE TYPE(pr) = :theatreClass"
+                + " AND pr.retired = false"
+                + " AND (pr.discharged = false OR pr.discharged IS NULL)"
+                + " AND (e = :pe OR par = :pe)"
+                + " ORDER BY pr.admittedAt";
+        Map<String, Object> params = new HashMap<>();
+        params.put("theatreClass", TheatreRoom.class);
+        params.put("pe", admission);
+        return getPatientRoomFacade().findFirstByJpql(jpql, params);
+    }
+
+    /**
+     * Baby admissions of this mother that are still on the ward: child
+     * Admissions not yet nursing discharged. A baby's charges are billed on the
+     * mother's bill, so the mother's administrative discharge must wait for
+     * them (#24743). An OPD card converted to this BHT is also a child
+     * Admission and is left out.
+     */
+    public List<PatientEncounter> findBabyAdmissionsNotNursingDischarged(PatientEncounter mother) {
+        if (mother == null || mother.getId() == null) {
+            return new ArrayList<>();
+        }
+        String jpql = "SELECT a FROM PatientEncounter a"
+                + " WHERE TYPE(a) = :admissionClass"
+                + " AND a.retired = false"
+                + " AND a.parentEncounter = :mother"
+                + " AND a.convertedToAnotherEncounter = false"
+                + " AND (a.nursingDischarged = false OR a.nursingDischarged IS NULL)"
+                + " ORDER BY a.id";
+        Map<String, Object> params = new HashMap<>();
+        params.put("admissionClass", Admission.class);
+        params.put("mother", mother);
+        List<PatientEncounter> babies = encounterFacade.findByJpql(jpql, params);
+        return babies != null ? babies : new ArrayList<>();
+    }
+
+    /**
+     * User message for a theatre stay that blocks {@code action}, e.g.
+     * "nursing discharge".
+     */
+    public String openTheatreRoomMessage(PatientRoom theatreRoom, String action) {
+        String theatre = theatreRoom.getRoomFacilityCharge() != null
+                ? theatreRoom.getRoomFacilityCharge().getName() : "theatre";
+        String since = theatreRoom.getAdmittedAt() != null
+                ? CommonFunctions.getDateFormat(theatreRoom.getAdmittedAt(), "dd MMM yyyy hh:mm a") : "an unknown time";
+        return "Patient is still in theatre (" + theatre + ", since " + since + "). Theatre charges keep running until the"
+                + " patient is returned to the ward from the Theatre Dashboard. Complete Return to Ward before " + action + ".";
+    }
+
     public List<PatientItem> fetchPatientItem(PatientEncounter patientEncounter, List<PatientEncounter> cpts) {
         HashMap hm = new HashMap();
         String sql = "SELECT i FROM PatientItem i "
@@ -2260,6 +2358,56 @@ public class InwardBeanController implements Serializable {
         }
         hm.put("pe", pts);
         return getPatientItemFacade().findByJpql(sql, hm);
+    }
+
+    /**
+     * Nothing can be added to an admission after administrative discharge. The
+     * discharge is read from the database, because the session's copy of the
+     * admission can predate it. A baby's charges go on the mother's bill, so her
+     * discharge closes the baby's admission too.
+     *
+     * @return true, after showing the error, when the admission is discharged
+     */
+    public boolean blockIfDischarged(PatientEncounter encounter) {
+        if (encounter == null || encounter.getId() == null) {
+            return false;
+        }
+        Map<String, Object> params = new HashMap<>();
+        params.put("id", encounter.getId());
+        long discharged = patientEncounterFacade.findLongByJpql("select count(pe) from PatientEncounter pe"
+                + " left join pe.parentEncounter parent"
+                + " where pe.id = :id and (pe.discharged = true or parent.discharged = true)", params);
+        if (discharged == 0) {
+            return false;
+        }
+        JsfUtil.addErrorMessage("This patient has been discharged. To add anything, first cancel all final bills, then cancel the discharge on the Interim Bill page.");
+        return true;
+    }
+
+    /**
+     * Unconfirms every final bill of the admission except {@code keep}. Found
+     * by query, not through {@code pe.getFinalBill()}: a session's copy of the
+     * admission can predate the bill that has to be unconfirmed, which would
+     * leave two confirmed final bills for reports to count (issue #24966).
+     */
+    public void unconfirmOtherFinalBills(PatientEncounter pe, Bill keep) {
+        String jpql = "select b from Bill b"
+                + " where b.patientEncounter.id = :peId"
+                + " and b.billTypeAtomic = :bta"
+                + " and b.confirmedFinalBill = true"
+                + " and b.id <> :keepId";
+        Map<String, Object> params = new HashMap<>();
+        params.put("peId", pe.getId());
+        params.put("bta", BillTypeAtomic.INWARD_FINAL_BILL);
+        params.put("keepId", keep.getId());
+        List<Bill> others = getBillFacade().findByJpql(jpql, params);
+        if (others == null) {
+            return;
+        }
+        for (Bill other : others) {
+            other.setConfirmedFinalBill(false);
+            getBillFacade().edit(other);
+        }
     }
 
     public List<Bill> fetchPaymentBill(PatientEncounter patientEncounter, List<PatientEncounter> cpts) {
@@ -3857,25 +4005,7 @@ public class InwardBeanController implements Serializable {
      * way they did in issue #23871 (a porter-flow return counted in the
      * total but missing from the list).
      */
-    private static final List<BillTypeAtomic> INWARD_MEDICINE_BILL_TYPES = Arrays.asList(
-        BillTypeAtomic.PHARMACY_DIRECT_ISSUE,
-        BillTypeAtomic.PHARMACY_DIRECT_ISSUE_CANCELLED,
-        BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE,
-        BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN,
-        BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION,
-        BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE,
-        BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_RETURN,
-        BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_CANCELLATION,
-        BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD,
-        BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN,
-        BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_CANCELLATION,
-        // Porter-based ward return flow (#21466/#21470) - see issue #22990.
-        BillTypeAtomic.RETURN_MEDICINE_INWARD,
-        BillTypeAtomic.RETURN_MEDICINE_INWARD_CANCELLATION,
-        BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE,
-        BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_RETURN,
-        BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_CANCELLATION
-    );
+    private static final List<BillTypeAtomic> INWARD_MEDICINE_BILL_TYPES = com.divudi.core.data.inward.InwardMedicineBillTypes.ALL;
 
     /**
      * Exposes {@link #INWARD_MEDICINE_BILL_TYPES} so callers such as

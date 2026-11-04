@@ -100,7 +100,7 @@ public class GrnApprovingNativeSqlService {
                 .setParameter(3, BillTypeAtomic.PHARMACY_GRN_PRE.toString())
                 .executeUpdate();
         if (claimed == 0) {
-            throw new IllegalStateException(
+            throw new GrnApprovalException(
                     "GRN approve: bill " + request.getBillId() + " is not in PHARMACY_GRN_PRE state (already approved or invalid).");
         }
 
@@ -120,6 +120,12 @@ public class GrnApprovingNativeSqlService {
         // rolls back atomically with everything else in this method.
         grnCostingNativeSqlService.updateBillTotals(
                 request.getBillId(), request.getPostNegationNetTotal(), request.getPostNegationTotal());
+
+        grnCostingNativeSqlService.updateBillExpenseTotals(request.getBillId(), request.getExpenseTotal(),
+                request.getExpensesTotalConsideredForCosting(), request.getExpensesTotalNotConsideredForCosting());
+        if (request.getTotalBillValue() != null) {
+            grnCostingNativeSqlService.updateTotalBillValue(request.getBillId(), request.getTotalBillValue());
+        }
 
         updateBalance(request.getBillId(), request.getBalanceValue());
 

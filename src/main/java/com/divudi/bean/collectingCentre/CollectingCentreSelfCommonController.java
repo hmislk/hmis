@@ -1,6 +1,7 @@
 package com.divudi.bean.collectingCentre;
 
 import com.divudi.bean.common.SessionController;
+import com.divudi.bean.common.TwoFactorAuthController;
 import com.divudi.bean.common.UserNotificationController;
 import com.divudi.bean.common.WebUserController;
 import com.divudi.bean.lab.PatientInvestigationController;
@@ -28,6 +29,8 @@ import com.divudi.core.util.JsfUtil;
 
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
+import javax.faces.application.FacesMessage;
+import javax.faces.context.FacesContext;
 import javax.inject.Inject;
 import javax.inject.Named;
 import java.io.Serializable;
@@ -63,6 +66,8 @@ public class CollectingCentreSelfCommonController implements Serializable {
     private WebUserController webUserController;
     @Inject
     private UserNotificationController userNotificationController;
+    @Inject
+    private TwoFactorAuthController twoFactorAuthController;
 
     @EJB
     private BillFacade billFacade;
@@ -76,6 +81,8 @@ public class CollectingCentreSelfCommonController implements Serializable {
     private PatientReport printingReport;
     private Privileges unauthorizedPrivilege;
     private UserNotification viewingNotification;
+    private boolean selfPasswordChanged;
+    private Date selfPasswordChangedAt;
 
     // <editor-fold defaultstate="collapsed" desc="Privileges">
     public boolean hasSelfPrivilege(Privileges privilege) {
@@ -115,6 +122,67 @@ public class CollectingCentreSelfCommonController implements Serializable {
         }
         return "/collecting_centre/cc_self_index?faces-redirect=true";
     }
+
+    // <editor-fold defaultstate="collapsed" desc="User Settings">
+    /**
+     * Opens the self-service Change Password page. The main menu's Change My
+     * Password page uses the menu template, which collecting centre
+     * self-billing users don't get, so this page reuses
+     * SessionController.changePassword() inside the self-service layout.
+     */
+    public String navigateToCollectingCentreSelfChangePassword() {
+        sessionController.setEnforcedPasswordChange(false);
+        sessionController.setOldPassword(null);
+        sessionController.setPassword(null);
+        sessionController.setNewPasswordConfirm(null);
+        sessionController.setPasswordRequirementMessage(null);
+        selfPasswordChanged = false;
+        selfPasswordChangedAt = null;
+        return "/collecting_centre/cc_self_change_password?faces-redirect=true";
+    }
+
+    /**
+     * Runs SessionController.changePassword() and records whether it worked,
+     * so the page can swap the form for a success screen. changePassword()
+     * reports failures only as error messages, so success is "no error added".
+     */
+    public void changeSelfPassword() {
+        selfPasswordChanged = false;
+        sessionController.changePassword();
+        FacesMessage.Severity maxSeverity = FacesContext.getCurrentInstance().getMaximumSeverity();
+        if (maxSeverity != null && maxSeverity.getOrdinal() >= FacesMessage.SEVERITY_ERROR.getOrdinal()) {
+            return;
+        }
+        selfPasswordChanged = true;
+        selfPasswordChangedAt = new Date();
+        sessionController.setOldPassword(null);
+        sessionController.setPassword(null);
+        sessionController.setNewPasswordConfirm(null);
+    }
+
+    public boolean isSelfPasswordChanged() {
+        return selfPasswordChanged;
+    }
+
+    public Date getSelfPasswordChangedAt() {
+        return selfPasswordChangedAt;
+    }
+
+    public String navigateToCollectingCentreSelfAbout() {
+        return "/collecting_centre/cc_self_about?faces-redirect=true";
+    }
+
+    /**
+     * Opens the self-service Authenticator App page. The main menu's My
+     * Authenticator App page uses the menu template, which collecting centre
+     * self-billing users don't get, so this page reuses TwoFactorAuthController
+     * inside the self-service layout.
+     */
+    public String navigateToCollectingCentreSelfAuthenticator() {
+        twoFactorAuthController.cancelSelfSetup();
+        return "/collecting_centre/cc_self_authenticator?faces-redirect=true";
+    }
+    // </editor-fold>
 
     public String navigateToCollectingCentreSelfStatement() {
         if (!hasSelfPrivilege(Privileges.CcSelfStatement)) {

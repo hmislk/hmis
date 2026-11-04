@@ -1,6 +1,6 @@
 # HMIS Deployment Map — Branches, Pipelines and Servers
 
-*Last updated: 2026-10-16 (Southern Lanka production app enabled; first written 2026-10-11 after the move to the India South Central Azure estate).*
+*Last updated: 2026-10-28 (Ruhunu staging app redeployed from development; first written 2026-10-11 after the move to the India South Central Azure estate).*
 
 This is the single reference for **which branch deploys what, where**. It is
 meant for developers, the server management team and QA. It contains no
@@ -17,7 +17,10 @@ infrastructure sheet held by server management.
   the table below are **not** deployed by any branch merge.
 - Changes reach a hospital branch only through a PR from a **`*-hotfix`**
   branch (see [Hotfix branches](../git/commit-conventions.md#hotfix-branches)).
-  Note: the `-hotfix` suffix is a team rule, **not yet enforced by CI** for `*-production` / `*-staging` targets (`check-branch` still only matches the retired `*-prod` names; tracked in #24453).
+  QA-tested `home-qa*` branches are also accepted; `rh-local-staging` accepts only
+  `development`. CI `check-branch` and `single-deploy-pr` flag other heads and a
+  second open PR as warnings (not required checks). The "Deploy Branches Rules"
+  ruleset blocks deleting, force-pushing and pushing directly to these branches.
 - The old `*-prod`, `*-stg`, `*-dev`, `*-prod-migrated` and `*-stg-migrated`
   branches and their pipelines were **retired on 2026-10-11**. Each was kept as
   a git tag `archive/2026-10-11/<old-branch>` in case it is ever needed.
@@ -32,7 +35,7 @@ All production apps run on Payara 5 on five Azure VMs in the
 | COOP (pharmacy) | `coop-production` | `coop_production_ci_cd.yml` | shared3 | https://coop.carecode.org/coop | |
 | COOP (inward) | `coop-staging` | `coop_staging_ci_cd.yml` | staging | https://stg-migrated.carecode.org/coop | **Live users.** Uses the production database. |
 | Ruhunu | `rh-production` | `rh_production_ci_cd.yml` | shared2 | https://rh.carecode.org/rh | |
-| Ruhunu (staging) | `rh-staging` | `rh_staging_ci_cd.yml` | staging | https://stg-migrated.carecode.org/rh | Uses the production database. |
+| Ruhunu (staging) | `rh-staging` | `rh_staging_ci_cd.yml` | staging | https://stg-migrated.carecode.org/rh | **Live** (redeployed 2026-10-28 through this branch's own pipeline, after `development` was merged into `rh-staging`; then enabled in Payara). Uses the production database, shared with the `rh-production` app; see [Two live apps on one database](#two-live-apps-on-one-database). |
 | RMH | `rmh-production` | `rmh_production_ci_cd.yml` | shared2 | https://rmh.carecode.org/rmh | |
 | RMH (staging) | `rmh-staging` | `rmh_staging_ci_cd.yml` | staging | https://stg-migrated.carecode.org/rmh | Uses the production database. |
 | Southern Lanka | `southernlanka-staging` | `southernlanka_staging_ci_cd.yml` | staging | https://stg-migrated.carecode.org/southernlanka | **Live.** Uses the production database, shared with the shared1 app below. |
@@ -53,7 +56,7 @@ All production apps run on Payara 5 on five Azure VMs in the
 ### Two live apps on one database
 
 When two enabled apps share one database (currently Southern Lanka staging
-and production), every app timer runs in both. The SMS and email senders
+and production, and Ruhunu staging and production), every app timer runs in both. The SMS and email senders
 (`SmsManagerEjb`, `EmailManagerEjb`) read pending records, send, and only then
 mark them sent, and `ScheduledTaskManager` runs due processes without claiming
 them first. So the two apps can send the same SMS or email twice, or run the
@@ -63,6 +66,14 @@ There is no per-app switch for these timers: their configuration options are
 stored in the shared database, so they apply to both apps. Until the code
 claims each record atomically before sending, the only way to stop the
 duplicates is to disable one of the two apps in Payara.
+
+`SessionBookingLock` is a JVM lock, so it doesn't span the two apps either:
+simultaneous channel bookings for one session made in both apps can get the
+same serial number or overbook the session. (`SessionInstanceCreationLock` is
+safe here; the row lock in `findOrCreateSessionInstance` covers both apps.)
+Unlike the timer duplicates above, this gap won't be fixed in code, because
+the two-app setup is temporary (#25015). To avoid it, take channel bookings in
+one app only.
 
 Each pipeline's workflow file lives **only on its own branch**, not on
 `development`.

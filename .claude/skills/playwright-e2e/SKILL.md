@@ -122,6 +122,10 @@ risk the user should know about upfront.
    (`p:selectOneMenu` click-option pattern), and
    [§14](../../../developer_docs/testing/playwright-e2e/navigation-session.md#14-non-ajax-search-buttons-can-timeout-on-click)
    (non-AJAX search clicks that time out but still succeed).
+   If a click "succeeds" but nothing happens (no POST, menu/accordion
+   won't open), check `devicePixelRatio` first — a zoomed MCP profile
+   makes clicks no-ops. Switch to the local Node rig; see
+   [§146](../../../developer_docs/testing/playwright-e2e/environment-db.md#146-clicks-register-as-no-ops-the-mcp-browser-profile-is-zoomed-devicepixelratio-075).
 5. **If the DB lacks suitable test data, generate it through the app** — see
    [§15](../../../developer_docs/testing/playwright-e2e-workflow.md#15-always-generate-test-data--never-fall-back-to-code-only-verification).
    Never fall back to "code looks correct" as evidence.

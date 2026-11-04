@@ -24,10 +24,13 @@
             <div>
                 <h:outputLabel value="#{cc.attrs.bill.creater.department.address}"/>
             </div>
+            
             <div>
-                <h:outputLabel value="#{cc.attrs.bill.creater.department.telephone1} "/>
-                <h:outputLabel value="#{cc.attrs.bill.creater.department.telephone2}"/>
+                <h:outputLabel value="#{cc.attrs.bill.creater.department.telephone1}"/>
+                <h:outputLabel value=" / #{cc.attrs.bill.creater.department.telephone2}"
+                               rendered="#{not empty cc.attrs.bill.creater.department.telephone1 and not empty cc.attrs.bill.creater.department.telephone2}"/>
             </div>
+
             <div>
                 <h:outputLabel value="#{cc.attrs.bill.creater.department.fax}"/>
             </div>
@@ -46,8 +49,8 @@
                 <h:outputLabel value="G.R.N Return No : #{cc.attrs.bill.deptId}"/>
                 <h:outputLabel value="G.R.N.No : #{cc.attrs.bill.referenceBill.deptId}"/>
                 <h:outputLabel value="G.R.N Return Date : #{cc.attrs.bill.createdAt}"/>
-                <h:outputLabel value="G.R.N Date : #{cc.attrs.bill.referenceBill.createdAt}"/>
-                <h:outputLabel value="Invoice No : #{cc.attrs.bill.invoiceNumber}"/>
+                <h:outputLabel value="G.R.N Date : #{cc.attrs.bill.referenceBill.createdAt}"/>                
+                <h:outputLabel value="Invoice No : #{cc.attrs.bill.referenceBill.invoiceNumber}"/>
                 <h:outputLabel value="Return By : #{cc.attrs.bill.creater.staff.code}"/>
                 <h:outputLabel value="Supplier : #{cc.attrs.bill.toInstitution.name}"/>
                 <h:outputLabel value="Location : #{cc.attrs.bill.referenceBill.referenceBill.department.name}"/>
@@ -97,16 +100,25 @@
                 </p:columnGroup>
             </p:dataTable>
         </div>
-
-        <div class="preparedBy">
-            <h:outputLabel style="margin-right: 30%; margin-bottom: 2%"
-                           value="Prepared By : #{cc.attrs.bill.creater.webUserPerson.nameWithTitle}"/>
-            <h:outputLabel value="Prepared Date/Time : #{cc.attrs.bill.approveAt}"/>
+            
+        <div class="row">
+            <div class="col-md-6">
+                <h:outputLabel
+                    value="Prepared By : #{cc.attrs.bill.creater.webUserPerson.nameWithTitle}"/>
+            </div>
+            <div class="col-md-6">
+                <h:outputLabel
+                    value="Prepared Date/Time : #{cc.attrs.bill.approveAt}"/>
+            </div>
         </div>
 
-        <div>
-            <h:outputLabel value="Authorized By : "/>
-            <h:outputLabel value="Authorized Date/Time : "/>
+        <div class="row">
+            <div class="col-md-6">
+                <h:outputLabel value="Authorized By : "/>
+            </div>
+            <div class="col-md-6">
+                <h:outputLabel value="Authorized Date/Time : "/>
+            </div>
         </div>
 
     </div>

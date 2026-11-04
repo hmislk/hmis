@@ -1,0 +1,75 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:print="http://xmlns.jcp.org/jsf/composite/ezcomp/prints">
+
+    <!-- Reprint of the service bill in inwardSearch.bill. Params: duplicate (boolean).
+         Format routing mirrors the bill print preview in inward_bill_service.xhtml (including its config-key
+         fallbacks and their defaults), so a reprint comes out on the same paper as the original print. -->
+
+    <h:panelGroup rendered="#{sessionController.departmentPreference.inwardServiceBillPaperType eq 'FiveFivePaper'
+                              and not configOptionApplicationController.getBooleanValueByKey('Inward Servise Bill size is POS Paper')
+                              and not configOptionApplicationController.getBooleanValueByKey('Inward Servise Bill size is A4 Paper')
+                              and not configOptionApplicationController.getBooleanValueByKey('Inward Servise Bill size is A4Printed Paper')
+                              and not configOptionApplicationController.getBooleanValueByKey('Inward Servise Bill size is FiveFiveCustom3 Paper')
+                              and not configOptionApplicationController.getBooleanValueByKey('Inward Servise Bill size is 5x8 inch Paper')
+                              and not configOptionApplicationController.getBooleanValueByKey('Inward Servise Bill size is FiveFivePrinted paper')}">
+        <div style="page-break-after: always;">
+            <print:five_five_paper_with_headings_inward_service bill="#{inwardSearch.bill}" duplicate="#{duplicate}"/>
+        </div>
+        <br/>
+    </h:panelGroup>
+
+    <h:panelGroup rendered="#{sessionController.departmentPreference.inwardServiceBillPaperType eq 'FiveFivePrintedPaper'
+                              or (configOptionApplicationController.getBooleanValueByKey('Inward Servise Bill size is FiveFivePrinted paper', true)
+                                  and sessionController.departmentPreference.inwardServiceBillPaperType eq 'FiveFivePaper')}">
+        <print:five_five_paper_without_headings_inward_service bill="#{inwardSearch.bill}" dup="#{duplicate}"/>
+        <br/>
+    </h:panelGroup>
+
+    <h:panelGroup rendered="#{sessionController.departmentPreference.inwardServiceBillPaperType eq 'PosPaper'
+                              or (configOptionApplicationController.getBooleanValueByKey('Inward Servise Bill size is POS Paper')
+                                  and sessionController.departmentPreference.inwardServiceBillPaperType eq 'FiveFivePaper')}">
+        <print:posOpdBill_inward_service bill="#{inwardSearch.bill}" duplicate="#{duplicate}"/>
+        <br/>
+    </h:panelGroup>
+
+    <h:panelGroup rendered="#{sessionController.departmentPreference.inwardServiceBillPaperType eq 'A4Paper'
+                              or (configOptionApplicationController.getBooleanValueByKey('Inward Servise Bill size is A4 Paper')
+                                  and sessionController.departmentPreference.inwardServiceBillPaperType eq 'FiveFivePaper')}">
+        <print:A4_paper_with_headings bill="#{inwardSearch.bill}" duplicate="#{duplicate}"/>
+        <br/>
+    </h:panelGroup>
+
+    <h:panelGroup rendered="#{sessionController.departmentPreference.inwardServiceBillPaperType eq 'A4PrintedPaper'
+                              or (configOptionApplicationController.getBooleanValueByKey('Inward Servise Bill size is A4Printed Paper')
+                                  and sessionController.departmentPreference.inwardServiceBillPaperType eq 'FiveFivePaper')}">
+        <print:A4_paper_without_headings bill="#{inwardSearch.bill}" duplicate="#{duplicate}"/>
+        <br/>
+    </h:panelGroup>
+
+    <h:panelGroup rendered="#{sessionController.departmentPreference.inwardServiceBillPaperType eq 'FiveFiveCustom3'
+                              or (configOptionApplicationController.getBooleanValueByKey('Inward Servise Bill size is FiveFiveCustom3 Paper')
+                                  and sessionController.departmentPreference.inwardServiceBillPaperType eq 'FiveFivePaper')}">
+        <print:five_five_custom_3_inward bill="#{inwardSearch.bill}" duplicate="#{duplicate}" payments="1"/>
+        <br/>
+    </h:panelGroup>
+
+    <h:panelGroup rendered="#{sessionController.departmentPreference.inwardServiceBillPaperType eq 'FiveEightInchPaper'
+                              or (configOptionApplicationController.getBooleanValueByKey('Inward Servise Bill size is 5x8 inch Paper')
+                                  and sessionController.departmentPreference.inwardServiceBillPaperType eq 'FiveFivePaper')}">
+        <print:five_eight_opd_bill_inward bill="#{inwardSearch.bill}" duplicate="#{duplicate}" payments="1"/>
+        <br/>
+    </h:panelGroup>
+
+    <h:panelGroup rendered="#{sessionController.departmentPreference.inwardServiceBillPaperType eq 'FiveFivePaperCoustom1'
+                              or configOptionController.getBooleanValueByKeyReadOnly('Inward Service Bill - Show Custom 1 Format', false)}">
+        <div style="page-break-after: always;">
+            <print:five_five_paper_custom_1_inward_bill_service bill="#{inwardSearch.bill}" duplicate="#{duplicate}" cancelled="false"/>
+        </div>
+        <br/>
+    </h:panelGroup>
+
+</ui:composition>

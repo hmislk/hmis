@@ -1,13 +1,19 @@
 name: Branch Merge Validation
 
+# Checks the head branch of a PR into a deploy branch
+# (<hospital>-production / <hospital>-staging):
+#   - rh-local-staging accepts only development.
+#   - every other deploy branch accepts a *-hotfix branch or a QA-tested
+#     home-qa* branch.
+# Advisory: deploy branches have no required checks ("Deploy Branches Rules"
+# ruleset), so a failure warns but does not block the merge.
+
 on:
   pull_request:
     types: [ opened, synchronize, reopened, edited ]
     branches:
-      - '*-prod'
-      - 'staging'
-      - 'hims-qa*'
-      - 'rh-local-staging'
+      - '*-production'
+      - '*-staging'
 
 jobs:
   check-branch:
@@ -23,26 +29,14 @@ jobs:
           SOURCE="$HEAD_BRANCH"
           TARGET="$BASE_BRANCH"
 
-          if [[ "$TARGET" == *-prod ]]; then
-            if [[ "$SOURCE" != *-hotfix && "$SOURCE" != "staging" ]]; then
-              echo "❌ Merging from $SOURCE to $TARGET is not allowed. If this is a hot-fix, please check if branch name ends with '-hotfix'."
-              exit 1
-            fi
-          elif [[ "$TARGET" == hims-qa*-migrated ]]; then
-            if [[ "$SOURCE" != "development" ]]; then
-              echo "❌ Only development can merge to $TARGET (qa restriction)."
-              exit 1
-            fi
-          elif [[ "$TARGET" == "staging" ]]; then
-            if [[ "$SOURCE" != hims-qa*-migrated && "$SOURCE" != "development" ]]; then
-              echo "❌ Only the hims-qa*-migrated branches or development can merge to $TARGET (staging restriction)."
-              exit 1
-            fi
-          elif [[ "$TARGET" == "rh-local-staging" ]]; then
+          if [[ "$TARGET" == "rh-local-staging" ]]; then
             if [[ "$SOURCE" != "development" ]]; then
               echo "❌ Only development can merge to $TARGET (rh-local-staging restriction)."
               exit 1
             fi
+          elif [[ "$SOURCE" != *-hotfix && "$SOURCE" != home-qa* ]]; then
+            echo "❌ Merging from $SOURCE to $TARGET is not allowed. A deploy branch accepts a branch ending in '-hotfix' (see the hotfix-deploy skill) or a QA-tested home-qa* branch."
+            exit 1
           fi
 
           echo "✅ Merge is allowed."

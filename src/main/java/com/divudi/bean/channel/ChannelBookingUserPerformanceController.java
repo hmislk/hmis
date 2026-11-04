@@ -121,8 +121,17 @@ public class ChannelBookingUserPerformanceController implements Serializable {
             params.put("fromDate", fromDate);
             params.put("toDate", toDate);
 
+            // A completed online booking has a pending bill and a completed bill; count the booking once (completed bill only)
+            Map<String, Object> bookingParams = new HashMap<>();
+            bookingParams.put("billTypes", Arrays.asList(
+                    BillTypeAtomic.CHANNEL_BOOKING_WITH_PAYMENT,
+                    BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT
+            ));
+            bookingParams.put("fromDate", fromDate);
+            bookingParams.put("toDate", toDate);
+
             List<ChannelBookingUserPerformanceDTO> bookingList =
-                (List<ChannelBookingUserPerformanceDTO>) billFacade.findLightsByJpql(bookingJpql, params, TemporalType.TIMESTAMP);
+                (List<ChannelBookingUserPerformanceDTO>) billFacade.findLightsByJpql(bookingJpql, bookingParams, TemporalType.TIMESTAMP);
 
             // Step 2: Get payment counts (payments accepted by each user)
             String paymentJpql = "SELECT new com.divudi.core.data.dto.ChannelBookingUserPerformanceDTO("

@@ -393,7 +393,7 @@
                     <tr style="font-size: 12px">
                         <td colspan="9" style="text-align: left; ">Sum of Line Net Totals</td>
                         <td colspan="2" style="text-align: right; ">
-                            <h:outputText value="#{-cc.attrs.bill.total}">
+                            <h:outputText value="#{cc.attrs.bill.total lt 0 ? -cc.attrs.bill.total : cc.attrs.bill.total}">
                                 <f:convertNumber pattern="#,##0.00" />
                             </h:outputText>
                         </td>
@@ -450,7 +450,7 @@
                     <tr style="font-size: 12px">
                         <td colspan="9" style="text-align: left; font-weight: bold!important;">Net Total</td>
                         <td colspan="2" style="text-align: right; font-weight: bold!important;">
-                            <h:outputText value="#{-cc.attrs.bill.netTotal}">
+                            <h:outputText value="#{cc.attrs.bill.netTotal lt 0 ? -cc.attrs.bill.netTotal : cc.attrs.bill.netTotal}">
                                 <f:convertNumber pattern="#,##0.00" />
                             </h:outputText>
                         </td>
@@ -459,7 +459,7 @@
                     <tr style="font-size: 12px">
                         <td colspan="9" style="text-align: left; font-weight: bold!important;">Total Bill Value</td>
                         <td colspan="2" style="text-align: right; font-weight: bold!important;">
-                            <h:outputText value="#{cc.attrs.bill.billFinanceDetails.totalBillValue}">
+                            <h:outputText value="#{cc.attrs.bill.billFinanceDetails.totalBillValue lt 0 ? -cc.attrs.bill.billFinanceDetails.totalBillValue : cc.attrs.bill.billFinanceDetails.totalBillValue}">
                                 <f:convertNumber pattern="#,##0.00" />
                             </h:outputText>
                         </td>
@@ -469,7 +469,7 @@
             </div>
 
             <div style="display: flex; flex-direction: column; width: 100%; font-size: 12px; margin-top: 5px;">
-                <h:outputLabel value="Amount in words : #{grnCostingController.convertToWord(cc.attrs.bill.billFinanceDetails.totalBillValue)} only." rendered="#{cc.attrs.bill.billFinanceDetails.totalBillValue ne null}"/>
+                <h:outputLabel value="Amount in words : #{grnCostingController.convertToWord(cc.attrs.bill.billFinanceDetails.totalBillValue lt 0 ? -cc.attrs.bill.billFinanceDetails.totalBillValue : cc.attrs.bill.billFinanceDetails.totalBillValue)} only." rendered="#{cc.attrs.bill.billFinanceDetails.totalBillValue ne null}"/>
                 <div style="font-size: 12px">
                     <h:outputLabel value="Comments" />
                     <h:outputLabel value=":" style="width: 15px; text-align: center"/>

@@ -350,6 +350,7 @@ public class DepartmentController implements Serializable {
         return getDepartmentsOfInstitutionAndSiteHelper(null, null);
     }
 
+    // The argument is a SITE. For an institution use getDepartmentsOfInstitutionAndSiteForInstitution (#24677).
     public List<Department> getDepartmentsOfInstitutionAndSite(Institution site) {
         return getDepartmentsOfInstitutionAndSiteHelper(null, site);
     }

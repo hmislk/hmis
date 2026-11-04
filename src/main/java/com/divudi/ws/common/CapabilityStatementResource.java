@@ -420,6 +420,12 @@ public class CapabilityStatementResource {
                         "Stock movement history",
                         "API Key",
                         "GET"))
+                .add(resource("Cache Warmup", "/api/warmup",
+                        "GET /stocks loads all Stock rows with stock on hand, with their ItemBatch and Item, into the "
+                        + "EclipseLink shared cache after a deployment or restart. Returns the number of stocks loaded "
+                        + "and the time taken, not the entities.",
+                        "API Key",
+                        "GET"))
                 .add(resource("Login History", "/api/logins",
                         "Login history filtered by department, user, and date range (days, fromDate, toDate). "
                         + "Also exposes /api/logins/last-per-user for the most recent login per unique user in a department.",

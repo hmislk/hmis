@@ -12,6 +12,7 @@ import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Item;
 import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
 import com.divudi.core.entity.pharmacy.Amp;
+import com.divudi.core.entity.pharmacy.Ampp;
 import com.divudi.core.entity.pharmacy.ItemBatch;
 import com.divudi.core.entity.pharmacy.Stock;
 import com.divudi.core.facade.ItemBatchFacade;
@@ -91,6 +92,29 @@ public class PharmacySubstituteService {
      */
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
     public List<StockDTO> findSubstituteStocks(Item item, Department department, double requiredQty) {
+        return findSubstituteStocks(item, department, requiredQty, false);
+    }
+
+    /**
+     * Same as {@link #findSubstituteStocks(Item, Department, double)}, but
+     * leaves out the selected medicine itself so only other brands are listed.
+     *
+     * <p>Used by the BHT issue pages (Direct Issue to BHT and Ward BHT Issue),
+     * where listing the selected medicine among its own substitutes is
+     * confusing (issue #23883). Another batch of the same brand is still
+     * chosen on those pages through their stock autocomplete. The retail sale
+     * pages keep the original AMP so a cashier can move to another batch of
+     * the same brand from this list.
+     *
+     * <p>Generic items (VMP/VMPP/VTM/ATM) have no single selected brand, so
+     * nothing is left out for them.
+     */
+    @TransactionAttribute(TransactionAttributeType.REQUIRED)
+    public List<StockDTO> findAlternativeBrandStocks(Item item, Department department, double requiredQty) {
+        return findSubstituteStocks(item, department, requiredQty, true);
+    }
+
+    private List<StockDTO> findSubstituteStocks(Item item, Department department, double requiredQty, boolean excludeSelectedItem) {
         List<StockDTO> result = new ArrayList<>();
         if (item == null || department == null || department.getId() == null) {
             return result;
@@ -107,9 +131,18 @@ public class PharmacySubstituteService {
         // any positive stock when the caller has no meaningful quantity.
         double minStock = requiredQty > 0 ? requiredQty : 0d;
 
+        Long selectedAmpId = null;
+        if (excludeSelectedItem) {
+            if (item instanceof Amp) {
+                selectedAmpId = item.getId();
+            } else if (item instanceof Ampp && ((Ampp) item).getAmp() != null) {
+                selectedAmpId = ((Ampp) item).getAmp().getId();
+            }
+        }
+
         List<Long> ampIds = new ArrayList<>();
         for (Amp amp : amps) {
-            if (amp != null && amp.getId() != null) {
+            if (amp != null && amp.getId() != null && !amp.getId().equals(selectedAmpId)) {
                 ampIds.add(amp.getId());
             }
         }

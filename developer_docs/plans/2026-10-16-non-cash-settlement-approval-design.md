@@ -14,7 +14,7 @@ Settling non-cash payments (Card, Cheque, Slip, eWallet, OnlineSettlement) must 
 |---|---|
 | D1 | Approval is **mandatory** for every new settlement, at every hospital. No config key. Hospitals that never use Settle Non-Cash are unaffected: nothing is ever pending, so no gate fires. |
 | D2 | A pending request blocks the **requester** (shift end + handover create), and the payments in it are **locked** so they cannot move to anyone else. |
-| D3 | **Cash book is not touched** by request, approval, rejection or cancellation. Cash-book treatment is handled separately. |
+| D3 | **Cash book is not touched** by request, approval, rejection or cancellation. Cash-book treatment is handled separately. *Superseded by #24627: approval debits and cancellation credits the department's cash book.* |
 | D4 | On approval, each payment's value is **debited from the requester's drawer** for its payment method (reverse of the credit made at handover acceptance). |
 | D5 | Approver must hold a new privilege and must **not** be the requester. |
 | D6 | Legacy settlement bills (created before this change, no approval stamp) remain settled as they are. Their drawer was never debited, so cancelling one must not credit the drawer. |

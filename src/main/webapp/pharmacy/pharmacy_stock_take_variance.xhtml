@@ -6,39 +6,41 @@
       xmlns:p="http://primefaces.org/ui"
       xmlns:f="http://xmlns.jcp.org/jsf/core">
     <h:head>
-        <style type="text/css">
-            @media print {
-                /* Hide navigation, header, sidebar, buttons */
-                .layout-topbar, .layout-sidebar, .layout-menu,
-                .no-print, .card-header, .ui-paginator,
-                button, .ui-button { display: none !important; }
-
-                body, .layout-content, .container-fluid { margin: 0 !important; padding: 0 !important; }
-
-                /* Print header shown only when printing */
-                .print-header { display: block !important; margin-bottom: 12px; border-bottom: 2px solid #333; padding-bottom: 8px; }
-
-                /* Compact table for print */
-                .ui-datatable th, .ui-datatable td {
-                    font-size: 9pt !important;
-                    padding: 3px 5px !important;
-                }
-                .ui-datatable { width: 100% !important; }
-
-                /* Show footer totals */
-                .ui-datatable tfoot td { font-weight: bold; border-top: 1px solid #999; }
-
-                /* Force all pages to landscape */
-                @page { size: A4 landscape; margin: 10mm; }
-            }
-
-            /* Hide print header on screen */
-            .print-header { display: none; }
-        </style>
     </h:head>
     <h:body>
         <ui:composition template="/pharmacy/adjustments/pharmacy_adjustment_index.xhtml">
             <ui:define name="subcontent">
+            <style type="text/css">
+                @media print {
+                    /* Hide navigation, header, sidebar, buttons */
+                    .layout-topbar, .layout-sidebar, .layout-menu,
+                    .no-print, .card-header, .ui-paginator,
+                    button, .ui-button { display: none !important; }
+
+                    body, .layout-content, .container-fluid { margin: 0 !important; padding: 0 !important; }
+
+                    /* Print header shown only when printing */
+                    .print-header { display: block !important; margin-bottom: 12px; border-bottom: 2px solid #333; padding-bottom: 8px; }
+
+                    /* Compact table for print */
+                    .ui-datatable th, .ui-datatable td {
+                        font-size: 9pt !important;
+                        padding: 3px 5px !important;
+                    }
+                    .ui-datatable { width: 100% !important; }
+
+                    /* Show footer totals */
+                    .ui-datatable tfoot td { font-weight: bold; border-top: 1px solid #999; }
+
+                    /* Force all pages to landscape */
+                    @page { size: A4 landscape; margin: 10mm; }
+                    /* On-screen copy of the header is replaced by .print-header when printing */
+                    .screen-header { display: none !important; }
+                }
+
+                /* Hide print header on screen */
+                .print-header { display: none; }
+            </style>
                 <h:form>
                     <div class="container-fluid">
                         <div class="card">
@@ -80,7 +82,7 @@
                                             </table>
                                         </div>
 
-                                        <p:panelGrid columns="2" styleClass="ui-panelgrid-blank" columnClasses="text-right pr-3 font-weight-bold,text-left">
+                                        <p:panelGrid columns="2" styleClass="ui-panelgrid-blank screen-header" columnClasses="text-right pr-3 font-weight-bold,text-left">
                                             <h:outputText value="Institution:"/>
                                             <h:outputText value="#{pharmacyStockTakeController.snapshotBill.institution.name}"/>
                                             <h:outputText value="Department:"/>

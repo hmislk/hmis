@@ -9,8 +9,13 @@ import com.divudi.bean.common.SessionController;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.entity.inward.AdmissionNumber;
 import com.divudi.core.facade.AdmissionNumberFacade;
+import com.divudi.ejb.BillNumberGenerator;
+import com.divudi.service.AuditService;
 import java.io.Serializable;
+import java.util.ConcurrentModificationException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
@@ -34,9 +39,15 @@ public class AdmissionNumberController implements Serializable {
 
     @EJB
     AdmissionNumberFacade ejbFacade;
+    @EJB
+    BillNumberGenerator billNumberGenerator;
+    @EJB
+    AuditService auditService;
 
     private List<AdmissionNumber> items;
     private AdmissionNumber selected;
+    /** Counter value when Edit was clicked; the save is rejected if it has moved since. */
+    private Long lastAdmissionNumberAtEdit;
 
     public String navigateToManageAdmissionNumbers() {
         selected = null;
@@ -71,6 +82,7 @@ public class AdmissionNumberController implements Serializable {
 
     public void prepareEdit(AdmissionNumber an) {
         selected = an;
+        lastAdmissionNumberAtEdit = an == null ? null : an.getLastAdmissionNumber();
     }
 
     public void saveSelected() {
@@ -82,8 +94,36 @@ public class AdmissionNumberController implements Serializable {
             JsfUtil.addErrorMessage("Last used BHT number must be zero or a positive number.");
             return;
         }
-        ejbFacade.edit(selected);
+        Long newLast = selected.getLastAdmissionNumber();
+        Long previous;
+        try {
+            // Locked compare-and-set, so a save never rewinds past a BHT number
+            // another user drew while this form was open. (#24672)
+            previous = billNumberGenerator.resetAdmissionNumberRecord(selected, newLast, lastAdmissionNumberAtEdit);
+        } catch (Exception e) {
+            Throwable cause = e;
+            while (cause != null && !(cause instanceof ConcurrentModificationException)) {
+                cause = cause.getCause();
+            }
+            if (cause == null) {
+                throw e;
+            }
+            JsfUtil.addErrorMessage("A BHT number was issued from this sequence while you were editing, "
+                    + "so the change was not saved. Check the current value and edit again.");
+            selected = null;
+            items = null;
+            return;
+        }
+
+        Map<String, Object> before = new HashMap<>();
+        before.put("lastAdmissionNumber", previous);
+        Map<String, Object> after = new HashMap<>();
+        after.put("lastAdmissionNumber", newLast);
+        auditService.logAudit(before, after, sessionController.getLoggedUser(),
+                "AdmissionNumber", "Admission Number Counter Reset", selected.getId());
+
         JsfUtil.addSuccessMessage("BHT counter updated. Next BHT will be " + getNextBht(selected) + ".");
+        lastAdmissionNumberAtEdit = newLast;
         items = null;
     }
 

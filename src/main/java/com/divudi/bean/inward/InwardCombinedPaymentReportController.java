@@ -175,7 +175,7 @@ public class InwardCombinedPaymentReportController implements Serializable {
         cancelledCount = 0;
 
         Map<String, InwardCombinedPaymentGroupDto> byKey = new LinkedHashMap<>();
-        boolean groupByBht = VIEW_GROUPED_BHT.equals(viewMode);
+        boolean groupByBht = VIEW_GROUPED_BHT.equals(generatedViewMode);
 
         for (InwardCombinedPaymentRowDto row : reportRows) {
             double signed = row.getSignedAmount();
@@ -212,7 +212,7 @@ public class InwardCombinedPaymentReportController implements Serializable {
     }
 
     /**
-     * Rows in the order the selected view shows them: grouped together under
+     * Rows in the order the generated view shows them: grouped together under
      * their group in a grouped view, plain chronological order otherwise. The
      * grouped order comes from walking the groups rather than re-sorting, so
      * rows keep their chronological order inside each group.
@@ -236,7 +236,29 @@ public class InwardCombinedPaymentReportController implements Serializable {
      * grouped by.
      */
     public String getGroupColumnHeader() {
-        return VIEW_GROUPED_BHT.equals(viewMode) ? "BHT No" : "Bill Type";
+        return VIEW_GROUPED_BHT.equals(generatedViewMode) ? "BHT No" : "Bill Type";
+    }
+
+    /**
+     * Name of the downloaded Excel file, so it says which view it holds. Follows
+     * generatedViewMode, the view the exported data was built for, not the
+     * View dropdown, which the download submits and may have changed.
+     */
+    public String getExportFileName() {
+        String base = "Combined Inward Payments";
+        if (VIEW_SUMMARY.equals(generatedViewMode)) {
+            return base + " Summary";
+        }
+        if (VIEW_GROUPED_TYPE.equals(generatedViewMode)) {
+            return base + " Grouped by Bill Type";
+        }
+        if (VIEW_GROUPED_BHT.equals(generatedViewMode)) {
+            return base + " Grouped by BHT";
+        }
+        if (VIEW_DETAIL.equals(generatedViewMode)) {
+            return base + " Details";
+        }
+        return base;
     }
 
     /**
@@ -352,15 +374,15 @@ public class InwardCombinedPaymentReportController implements Serializable {
     }
 
     public boolean isSummaryView() {
-        return VIEW_SUMMARY.equals(viewMode);
+        return VIEW_SUMMARY.equals(generatedViewMode);
     }
 
     public boolean isDetailView() {
-        return VIEW_DETAIL.equals(viewMode);
+        return VIEW_DETAIL.equals(generatedViewMode);
     }
 
     public boolean isGroupedView() {
-        return VIEW_GROUPED_TYPE.equals(viewMode) || VIEW_GROUPED_BHT.equals(viewMode);
+        return VIEW_GROUPED_TYPE.equals(generatedViewMode) || VIEW_GROUPED_BHT.equals(generatedViewMode);
     }
 
     public boolean isNoResults() {

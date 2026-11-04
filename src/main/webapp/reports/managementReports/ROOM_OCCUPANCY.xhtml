@@ -242,7 +242,7 @@
                                     value="#{inwardReportController.department}"
                                     filterMatchMode="contains" filter="true">
                                     <f:selectItem itemLabel="All Departments"/>
-                                    <f:selectItems value="#{departmentController.getDepartmentsOfInstitutionAndSite(inwardReportController.institution)}"
+                                    <f:selectItems value="#{departmentController.getDepartmentsOfInstitutionAndSiteForInstitution(inwardReportController.institution)}"
                                                    var="dept" itemLabel="#{dept.name}" itemValue="#{dept}"/>
                                 </p:selectOneMenu>
                                 <p:selectOneMenu

@@ -2,6 +2,7 @@ package com.divudi.core.data.dto.channel;
 
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.data.Title;
 
 public class ChannelAbsentPatientsDTO {
     private Long id;
@@ -56,6 +57,19 @@ public class ChannelAbsentPatientsDTO {
         this.refundedDeptId = refundedDeptId;
         this.referenceId = referenceId;
         this.paidId = paidId;
+    }
+
+    // Same as above, plus the doctor's title so the report shows e.g. "Dr. Name"
+    public ChannelAbsentPatientsDTO(
+            Long id, String deptId, BillTypeAtomic billTypeAtomic, String serviceSessionName, int billSessionSerialNo, String patientName, String cashierName,
+            PaymentMethod paymentMethod, Title doctorTitle, String doctorName, double staffFee, double hospitalFee, double netTotal, boolean cancelled, boolean refunded, String cancelledDeptId, String refundedDeptId, Long referenceId, Long paidId) {
+        this(id, deptId, billTypeAtomic, serviceSessionName, billSessionSerialNo, patientName, cashierName,
+                paymentMethod, doctorName, staffFee, hospitalFee, netTotal, cancelled, refunded, cancelledDeptId, refundedDeptId, referenceId, paidId);
+        String title = doctorTitle == null ? "" : doctorTitle.getLabel().trim();
+        String name = doctorName == null ? "" : doctorName.trim();
+        if (!title.isEmpty() && !name.isEmpty()) {
+            this.doctorName = title + " " + name;
+        }
     }
 
     public Long getId() {

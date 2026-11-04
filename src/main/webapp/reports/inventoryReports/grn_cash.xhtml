@@ -155,7 +155,7 @@
                                     filter="true"> 
                                     <f:selectItem itemLabel="All Departments" />
                                     <f:selectItems  
-                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite(pharmacyReportController.institution)}" 
+                                        value="#{departmentController.getDepartmentsOfInstitutionAndSiteForInstitution(pharmacyReportController.institution)}" 
                                         var="dept" 
                                         itemLabel="#{dept.name}" 
                                         itemValue="#{dept}" />

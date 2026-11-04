@@ -124,7 +124,9 @@
                             <th style="width: 9%; text-align: right!important; font-weight: bold!important;">Received Free Qty</th>
                             <th style="width: 10%; text-align: right!important; font-weight: bold!important;">Purchase Price</th>
                             <th style="width: 10%; text-align: right!important; font-weight: bold!important;">Wholesale Price</th>
-                            <th style="width: 4%; text-align: right!important; font-weight: bold!important;">GP Profit%</th>
+                            <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Print Profit % in GRN Bill', true)}">
+                                <th style="width: 4%; text-align: right!important; font-weight: bold!important;">GP Profit%</th>
+                            </h:panelGroup>
                             <th style="width: 10%; text-align: right!important; font-weight: bold!important;">Value</th>
                         </tr>
                     </thead> 
@@ -163,11 +165,13 @@
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputText>
                                 </td>
-                                <td style="text-align: right;">                  
-                                    <h:outputText id="profMargin" value="#{((bip.pharmaceuticalBillItem.retailRate - bip.pharmaceuticalBillItem.purchaseRate ) / bip.pharmaceuticalBillItem.purchaseRate)*100}" >
-                                        <f:convertNumber pattern="0.0" ></f:convertNumber>
-                                    </h:outputText>
-                                </td>
+                                <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Print Profit % in GRN Bill', true)}">
+                                    <td style="text-align: right;">                  
+                                        <h:outputText id="profMargin" value="#{((bip.pharmaceuticalBillItem.retailRate - bip.pharmaceuticalBillItem.purchaseRate ) / bip.pharmaceuticalBillItem.purchaseRate)*100}" >
+                                            <f:convertNumber pattern="0.0" ></f:convertNumber>
+                                        </h:outputText>
+                                    </td>
+                                </h:panelGroup>
                                 <td style="text-align: right;">
                                     <h:outputText value="#{bip.pharmaceuticalBillItem.purchaseRate*bip.pharmaceuticalBillItem.qty}">
                                         <f:convertNumber pattern="#,##0.00" />
@@ -181,7 +185,7 @@
                     <tfoot class="mt-4" style="font-size: 13px;">
 
                         <tr>
-                            <td colspan="7" style="text-align: left; font-weight: bold!important;">Retail Sale Value</td>
+                            <td colspan="#{configOptionApplicationController.getBooleanValueByKey('Print Profit % in GRN Bill', true) ? 7 : 6}" style="text-align: left; font-weight: bold!important;">Retail Sale Value</td>
                             <td colspan="2" style="text-align: right; font-weight: bold!important;">
 
                                 <h:outputText value="#{cc.attrs.bill.saleValue}">
@@ -192,7 +196,7 @@
                         </tr>
 
                         <tr>
-                            <td colspan="7" style="text-align: left; font-weight: bold!important;">Total</td>
+                            <td colspan="#{configOptionApplicationController.getBooleanValueByKey('Print Profit % in GRN Bill', true) ? 7 : 6}" style="text-align: left; font-weight: bold!important;">Total</td>
                             <td colspan="2" style="text-align: right; font-weight: bold!important;">
                                 <h:outputText value="#{0-cc.attrs.bill.total}">
                                     <f:convertNumber pattern="#,##0.00" />
@@ -201,7 +205,7 @@
                         </tr>
 
                         <tr>
-                            <td colspan="7" style="text-align: left; font-weight: bold!important;">Expenses</td>
+                            <td colspan="#{configOptionApplicationController.getBooleanValueByKey('Print Profit % in GRN Bill', true) ? 7 : 6}" style="text-align: left; font-weight: bold!important;">Expenses</td>
                             <td colspan="2" style="text-align: right; font-weight: bold!important;">
                                 <h:outputText value="#{0-cc.attrs.bill.expenseTotal}">
                                     <f:convertNumber pattern="#,##0.00" />
@@ -210,7 +214,7 @@
                         </tr>
 
                         <tr>
-                            <td colspan="7" style="text-align: left; font-weight: bold!important;">Tax</td>
+                            <td colspan="#{configOptionApplicationController.getBooleanValueByKey('Print Profit % in GRN Bill', true) ? 7 : 6}" style="text-align: left; font-weight: bold!important;">Tax</td>
                             <td colspan="2" style="text-align: right; font-weight: bold!important;">
                                 <h:outputText value="#{cc.attrs.bill.tax}">
                                     <f:convertNumber pattern="#,##0.00" />
@@ -219,7 +223,7 @@
                         </tr>
 
                         <tr>
-                            <td colspan="7" style="text-align: left; font-weight: bold!important;">Discount</td>
+                            <td colspan="#{configOptionApplicationController.getBooleanValueByKey('Print Profit % in GRN Bill', true) ? 7 : 6}" style="text-align: left; font-weight: bold!important;">Discount</td>
                             <td colspan="2" style="text-align: right; font-weight: bold!important;">
                                 <h:outputText value="#{0-cc.attrs.bill.discount}">
                                     <f:convertNumber pattern="#,##0.00" />
@@ -228,7 +232,7 @@
                         </tr>
 
                         <tr>
-                            <td colspan="7" style="text-align: left; font-weight: bold!important;">Net Total</td>
+                            <td colspan="#{configOptionApplicationController.getBooleanValueByKey('Print Profit % in GRN Bill', true) ? 7 : 6}" style="text-align: left; font-weight: bold!important;">Net Total</td>
                             <td colspan="2" style="text-align: right; font-weight: bold!important;">
                                 <h:outputText value="#{0-cc.attrs.bill.netTotal}">
                                     <f:convertNumber pattern="#,##0.00" />

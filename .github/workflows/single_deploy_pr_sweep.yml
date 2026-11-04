@@ -1,0 +1,35 @@
+name: Single deploy PR sweep
+
+# Every 15 minutes, sets the 'single-deploy-pr' commit status on each open PR
+# to a deploy branch (<hospital>-production / <hospital>-staging): success on
+# the oldest open PR per branch, failure on every newer one. Scheduled
+# workflows run from development, so this covers deploy branches that do not
+# carry single_deploy_pr_guard.yml yet, and clears a failure once the older PR
+# is merged or closed.
+
+on:
+  schedule:
+    - cron: '*/15 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: read
+  statuses: write
+
+concurrency:
+  group: single-deploy-pr-sweep
+  cancel-in-progress: false
+
+jobs:
+  sweep:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Set single-deploy-pr status on open deploy-branch PRs
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 .github/scripts/check_single_deploy_pr.py --sweep

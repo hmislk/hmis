@@ -67,6 +67,7 @@
                                              value="#{inwardPharmacyEncounterReportController.wardPharmacyRequestStatusFilter}">
                                 <f:selectItem itemLabel="All" itemValue="#{null}" />
                                 <f:selectItem itemLabel="Issued" itemValue="Issued" />
+                                <f:selectItem itemLabel="Partially Issued" itemValue="Partially Issued" />
                                 <f:selectItem itemLabel="Not Issued" itemValue="Not Issued" />
                                 <f:selectItem itemLabel="Cancelled" itemValue="Cancelled" />
                             </p:selectOneMenu>
@@ -182,15 +183,46 @@
                             <p:tag
                                 value="Cancelled"
                                 severity="danger"
-                                rendered="#{b.cancelled}" />
+                                rendered="#{inwardPharmacyEncounterReportController.getWardRequestSummary(b.id).status eq 'Cancelled'}" />
                             <p:tag
                                 value="Issued"
                                 severity="success"
-                                rendered="#{not b.cancelled and inwardPharmacyEncounterReportController.isRequestFullyIssued(b.id)}" />
+                                rendered="#{inwardPharmacyEncounterReportController.getWardRequestSummary(b.id).status eq 'Issued'}" />
+                            <p:tag
+                                value="Partially Issued"
+                                severity="info"
+                                rendered="#{inwardPharmacyEncounterReportController.getWardRequestSummary(b.id).status eq 'Partially Issued'}" />
                             <p:tag
                                 value="Not Issued"
                                 severity="warning"
-                                rendered="#{not b.cancelled and not inwardPharmacyEncounterReportController.isRequestFullyIssued(b.id)}" />
+                                rendered="#{inwardPharmacyEncounterReportController.getWardRequestSummary(b.id).status eq 'Not Issued'}" />
+                        </p:column>
+
+                        <p:column width="7em" style="padding: 2px 12px 2px 2px; text-align: right">
+                            <f:facet name="header">
+                                <h:outputLabel value="Issued" />
+                            </f:facet>
+                            <h:outputText value="#{inwardPharmacyEncounterReportController.getWardRequestSummary(b.id).issuedValue}">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputText>
+                        </p:column>
+
+                        <p:column width="7em" style="padding: 2px 12px 2px 2px; text-align: right">
+                            <f:facet name="header">
+                                <h:outputLabel value="Returned" />
+                            </f:facet>
+                            <h:outputText value="#{inwardPharmacyEncounterReportController.getWardRequestSummary(b.id).returnedValue}">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputText>
+                        </p:column>
+
+                        <p:column width="7em" style="padding: 2px 12px 2px 2px; text-align: right">
+                            <f:facet name="header">
+                                <h:outputLabel value="Net" />
+                            </f:facet>
+                            <h:outputText value="#{inwardPharmacyEncounterReportController.getWardRequestSummary(b.id).netValue}">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputText>
                         </p:column>
 
                         <p:column width="10em" style="padding: 2px" exportable="false">
@@ -226,26 +258,29 @@
 
                         <p:rowExpansion>
                             <p:dataTable var="ib" value="#{inwardPharmacyEncounterReportController.getIssuedBillsForRequest(b.id)}">
-                                <p:column headerText="Bill No" width="15%">
+                                <p:column headerText="Bill No" width="13%">
                                     <h:outputLabel value="#{ib.deptId}"/>
                                 </p:column>
-                                <p:column headerText="Date" width="20%">
+                                <p:column headerText="Date" width="17%">
                                     <h:outputLabel value="#{ib.createdAt}">
                                         <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" timeZone="Asia/Colombo" />
                                     </h:outputLabel>
                                 </p:column>
-                                <p:column headerText="Issued By" width="20%">
+                                <p:column headerText="Issued By" width="17%">
                                     <h:outputLabel value="#{ib.creater.webUserPerson.name}"/>
                                 </p:column>
-                                <p:column headerText="To Staff" width="20%">
+                                <p:column headerText="To Staff" width="17%">
                                     <h:outputLabel value="#{ib.toStaff.person.nameWithTitle}"/>
                                 </p:column>
-                                <p:column headerText="Net Total" width="12%" style="text-align: right;">
-                                    <h:outputLabel value="#{ib.netTotal}">
+                                <p:column headerText="Net Total" width="11%" style="text-align: right;">
+                                    <h:outputLabel value="#{ib.netTotal}" style="#{ib.cancelled ? 'text-decoration: line-through;' : ''}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </p:column>
-                                <p:column headerText="Action" width="13%">
+                                <p:column headerText="Status" width="10%">
+                                    <p:tag value="Cancelled" severity="danger" rendered="#{ib.cancelled}" />
+                                </p:column>
+                                <p:column headerText="Action" width="15%">
                                     <p:commandButton ajax="false" value="View Bill" action="/ward/ward_pharmacy_reprint_bht_issue_bill_reprint?faces-redirect=true">
                                         <f:setPropertyActionListener target="#{pharmacyBillSearch.bill}" value="#{ib}"/>
                                     </p:commandButton>
@@ -256,7 +291,7 @@
                     </p:dataTable>
 
                     <div class="d-flex justify-content-end p-2">
-                        <h:outputLabel value="Total Net: " style="font-weight: bold;" />
+                        <h:outputLabel value="Total Net (Issued &#8722; Returned): " style="font-weight: bold;" />
                         <h:outputLabel value="#{inwardPharmacyEncounterReportController.pharmacyRequestBillsToWardNetTotal}" style="font-weight: bold; margin-left: 6px;">
                             <f:convertNumber pattern="#,##0.00" />
                         </h:outputLabel>

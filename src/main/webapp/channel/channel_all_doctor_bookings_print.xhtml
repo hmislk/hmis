@@ -1,0 +1,206 @@
+<?xml version='1.0' encoding='UTF-8' ?> 
+
+<!-- 
+    Created on : Oct 30, 2026
+    To fix the related issue: #23326
+    Added by: Wenura
+ -->
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:body>
+        <ui:composition template="/channel/channel_reports.xhtml">
+            <ui:define name="subContent">
+
+                <!-- 31st October 2026: Load the Portrait report print stylesheet. -->
+                <h:outputStylesheet library="css" name="printing/reportprintportrait.css" />
+
+                <h:form>
+                    <p:panel header="Doctor Appointments Print View"
+                             styleClass="w-100">
+
+                        <f:facet name="header">
+                            <div class="d-flex justify-content-between">
+                                <h:outputText
+                                    value="Doctor Appointments Print View"
+                                    class="mt-2"/>
+
+                                <div class="d-flex gap-2">
+                                    <p:commandButton
+                                        value="Print"
+                                        icon="fas fa-print"
+                                        ajax="false"
+                                        class="ui-button-info">
+                                        <p:printer target="reportView"/>
+                                    </p:commandButton>
+
+                                    <p:commandButton
+                                        value="Back to Report"
+                                        icon="fa fa-arrow-left"
+                                        ajax="false"
+                                        class="ui-button-warning"
+                                        action="channel_all_doctor_bookings?faces-redirect=true"/>
+                                </div>
+                            </div>
+                        </f:facet>
+
+                        <h:panelGroup id="reportView"
+                                      layout="block"
+                                      styleClass="d-flex justify-content-center">
+
+                            <div class="paper">
+
+                                <div class="header">
+                                    <div class="d-flex justify-content-center">
+                                        <h:outputText
+                                            value="Doctor Appointments"
+                                            class="text-center"/>
+                                    </div>
+                                </div>
+
+                                <!-- 30th Oct 2026: Display the selected Doctor Appointments report filters. -->
+                                <h:panelGrid columns="2" styleClass="report-header-table">
+                                    <h:outputText value="Appointment Date:"/>
+                                    <h:outputText
+                                        value="#{channelReportTemplateController.getFiltersForAllDoctorBookingsReport().get('Appointment Date')}"/>
+
+                                    <h:outputText value="Speciality:"/>
+                                    <h:outputText
+                                        value="#{channelReportTemplateController.getFiltersForAllDoctorBookingsReport().get('Speciality')}"/>
+
+                                    <h:outputText value="Doctor:"/>
+                                    <h:outputText
+                                        value="#{channelReportTemplateController.getFiltersForAllDoctorBookingsReport().get('Doctor')}"/>
+
+                                    <h:outputText value="Institution:"/>
+                                    <h:outputText
+                                        value="#{channelReportTemplateController.getFiltersForAllDoctorBookingsReport().get('Institution')}"/>
+
+                                    <h:outputText value="Department:"/>
+                                    <h:outputText
+                                        value="#{channelReportTemplateController.getFiltersForAllDoctorBookingsReport().get('Department')}"/>
+                                </h:panelGrid>
+
+                                <!-- 30th Oct 2026: Display the generated All Doctor Appointments report. -->
+                                <p:dataTable
+                                    id="tbl"
+                                    value="#{channelReportTemplateController.channelConsultantCountDTOs}"
+                                    var="row"
+                                    rowKey="#{row.sessionInstanceId}"
+                                    emptyMessage="No Doctor Appointments records found."
+                                    styleClass="doctor-appointments-print-table">
+
+                                    <p:column>
+                                        <f:facet name="header">
+                                            <h:outputText value="Consultant"/>
+                                        </f:facet>
+                                        <h:outputText value="#{row.consultantNameWithTitle}"/>
+                                    </p:column>
+
+                                    <p:column>
+                                        <f:facet name="header">
+                                            <h:outputText value="Speciality"/>
+                                        </f:facet>
+                                        <h:outputText value="#{row.consultantSpeciality}"/>
+                                    </p:column>
+
+                                    <p:column>
+                                        <f:facet name="header">
+                                            <h:outputText value="Time"/>
+                                        </f:facet>
+                                        <h:outputText value="#{row.sessionStartingTime}">
+                                            <f:convertDateTime
+                                                pattern="#{sessionController.applicationPreference.shortTimeFormat}"/>
+                                        </h:outputText>
+                                    </p:column>
+
+                                    <p:column>
+                                        <f:facet name="header">
+                                            <h:outputText value="Direct Booking Count"/>
+                                        </f:facet>
+                                        <h:outputText value="#{row.systemBookingCount}">
+                                            <f:convertNumber pattern="#,##0"/>
+                                        </h:outputText>
+                                    </p:column>
+
+                                    <p:column>
+                                        <f:facet name="header">
+                                            <h:outputText value="Agent Booking Count"/>
+                                        </f:facet>
+                                        <h:outputText value="#{row.agentBookingCount}">
+                                            <f:convertNumber pattern="#,##0"/>
+                                        </h:outputText>
+                                    </p:column>
+
+                                    <p:column>
+                                        <f:facet name="header">
+                                            <h:outputText value="On-Call Booking Count"/>
+                                        </f:facet>
+                                        <h:outputText value="#{row.onCallBookingCount}">
+                                            <f:convertNumber pattern="#,##0"/>
+                                        </h:outputText>
+                                    </p:column>
+
+                                    <p:column>
+                                        <f:facet name="header">
+                                            <h:outputText value="Online Booking Count"/>
+                                        </f:facet>
+                                        <h:outputText value="#{row.onlineBookingCount}">
+                                            <f:convertNumber pattern="#,##0"/>
+                                        </h:outputText>
+                                    </p:column>
+
+                                    <p:column>
+                                        <f:facet name="header">
+                                            <h:outputText value="Rescheduled Booking Count"/>
+                                        </f:facet>
+                                        <h:outputText value="#{row.rescheduledBookingCount}">
+                                            <f:convertNumber pattern="#,##0"/>
+                                        </h:outputText>
+                                    </p:column>
+
+                                    <p:column>
+                                        <f:facet name="header">
+                                            <h:outputText value="Total Count"/>
+                                        </f:facet>
+                                        <h:outputText value="#{row.totalBookingCount}">
+                                            <f:convertNumber pattern="#,##0"/>
+                                        </h:outputText>
+                                    </p:column>
+
+                                    <p:column>
+                                        <f:facet name="header">
+                                            <h:outputText value="Doctor Fee"/>
+                                        </f:facet>
+                                        <h:outputText value="#{row.doctorFee}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
+                                    </p:column>
+
+                                    <p:column>
+                                        <f:facet name="header">
+                                            <h:outputText value="Holiday"/>
+                                        </f:facet>
+                                        <h:outputText
+                                            value="Holiday"
+                                            rendered="#{row.holiday}"/>
+                                    </p:column>
+
+                                </p:dataTable>
+
+                            </div>
+                        </h:panelGroup>
+
+                    </p:panel>
+                </h:form>
+
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

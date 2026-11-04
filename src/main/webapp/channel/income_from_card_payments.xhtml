@@ -134,7 +134,7 @@
                                      paginatorPosition="bottom"
                                      paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                      rowsPerPageTemplate="5,10,20,{ShowAll|'Show All'"
-                                     rowKey="#{row.bill.id}"
+                                     rowKey="#{row.billId}"
 
                                      >
 
@@ -198,7 +198,7 @@
                                 </h:outputText>
                             </p:column>
 
-                            <p:column headerText="Patient" style=" text-align: center;" filterMatchMode="contains" filterBy="#{row.bill.patient.person.name}">
+                            <p:column headerText="Patient" style=" text-align: center;" filterMatchMode="contains" filterBy="#{row.patientName}">
                                 <h:outputText value="#{row.patientName}">
 
                                 </h:outputText>

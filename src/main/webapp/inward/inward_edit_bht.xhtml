@@ -458,6 +458,15 @@
                                         <h:outputLabel value="Guardian Details" class="mx-4"></h:outputLabel>
                                     </f:facet>
                                     <h:panelGrid columns="2" class="w-100">
+                                        <p:outputLabel value="Title" for="cmbGuardianTitle" />
+                                        <p:selectOneMenu
+                                            id="cmbGuardianTitle"
+                                            class="mx-2 w-100"
+                                            autoWidth="false"
+                                            value="#{bhtEditController.current.guardian.title}">
+                                            <f:selectItem itemLabel="Select Title" />
+                                            <f:selectItems value="#{enumController.title}" />
+                                        </p:selectOneMenu>
                                         <p:outputLabel   value="Name:" />
                                         <p:inputText class="mx-2 w-100" autocomplete="off"  value="#{bhtEditController.current.guardian.name}" />
                                         <p:outputLabel value="NIC / Passport"/>

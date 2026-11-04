@@ -397,59 +397,59 @@
                                                  tableStyle="border-collapse:collapse;" styleClass="table">
 
                                         <p:column headerText="Bill No" width="22mm">
-                                            <h:outputText value="#{i.billItem.bill.deptId}" class="billNo" style="font-size: 10px !important;"/>
+                                            <h:outputText value="#{i.billDeptId}" class="billNo" style="font-size: 10px !important;"/>
                                         </p:column>
 
                                         <p:column headerText="Approval Date" width="16mm">
-                                            <h:outputText value="#{i.billItem.bill.createdAt}">
+                                            <h:outputText value="#{i.billCreatedAt}">
                                                 <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
                                             </h:outputText>
                                         </p:column>
 
                                         <p:column headerText="Ref Bill No" width="22mm">
-                                            <h:outputText value="#{i.billItem.bill.backwardReferenceBill.deptId}" class="billNo"/>
+                                            <h:outputText value="#{i.refBillDeptId}" class="billNo"/>
                                         </p:column>
 
                                         <p:column headerText="Ref Bill Approved Date and Time" width="16mm">
-                                            <h:outputText value="#{i.billItem.bill.backwardReferenceBill.createdAt}">
+                                            <h:outputText value="#{i.refBillCreatedAt}">
                                                 <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
                                             </h:outputText>
                                         </p:column>
 
                                         <p:column headerText="Item Description" width="20mm">
-                                            <h:outputText value="#{i.billItem.item.name}"/>
+                                            <h:outputText value="#{i.itemName}"/>
                                         </p:column>
 
                                         <p:column headerText="Item Code" width="15mm" style="text-align: right; padding-right: 10px;">
-                                            <h:outputText value="#{i.billItem.item.code}"/>
+                                            <h:outputText value="#{i.itemCode}"/>
                                         </p:column>
 
                                         <p:column headerText="Category" width="14mm">
-                                            <h:outputText value="#{i.billItem.item.category.name}"/>
+                                            <h:outputText value="#{i.categoryName}"/>
                                         </p:column>
 
                                         <p:column headerText="Dosage Form" width="10mm">
-                                            <h:outputText value="#{i.billItem.item.dosageForm.name}"/>
+                                            <h:outputText value="#{i.dosageFormName}"/>
                                         </p:column>
 
                                         <p:column headerText="Quantity" width="12mm" style="text-align: right; padding-right: 10px;">
-                                            <h:outputText value="#{i.billItem.pharmaceuticalBillItem.qty}">
+                                            <h:outputText value="#{i.qty}">
                                                 <f:convertNumber pattern="#,##0"/>
                                             </h:outputText>
                                         </p:column>
 
                                         <p:column headerText="Unit" width="8mm" style="text-align: center;">
-                                            <h:outputText value="#{i.billItem.item.vmp.strengthUnit.name}"/>
+                                            <h:outputText value="#{i.strengthUnitName}"/>
                                         </p:column>
 
                                         <p:column headerText="Purchase Rate" width="14mm" style="text-align: right; padding-right: 10px;">
-                                            <h:outputText value="#{i.billItem.billItemFinanceDetails.purchaseRate}">
+                                            <h:outputText value="#{i.purchaseRate}">
                                                 <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputText>
                                         </p:column>
 
                                         <p:column headerText="Purchase Value" width="14mm" style="text-align: right; padding-right: 10px;">
-                                            <h:outputText value="#{i.billItem.billItemFinanceDetails.valueAtPurchaseRate}">
+                                            <h:outputText value="#{i.valueAtPurchaseRate}">
                                                 <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputText>
                                             <f:facet name="footer">
@@ -461,7 +461,7 @@
 
                                         <p:column headerText="Cost Rate" width="14mm" style="text-align: right; padding-right: 10px;"
                                                   rendered='#{configOptionApplicationController.getBooleanValueByKey("Manage Costing", true)}'>
-                                            <h:outputText value="#{i.billItem.billItemFinanceDetails.costRate}">
+                                            <h:outputText value="#{i.costRate}">
                                                 <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputText>
                                         </p:column>
@@ -470,7 +470,7 @@
                                                   rendered='#{configOptionApplicationController.getBooleanValueByKey("Manage Costing", true)}'>
                                             <h:outputText
                                                 id="lblCostValueInDetailedReport"
-                                                value="#{i.billItem.billItemFinanceDetails.valueAtCostRate}">
+                                                value="#{i.valueAtCostRate}">
                                                 <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputText>
                                             <f:facet name="footer">
@@ -481,13 +481,13 @@
                                         </p:column>
 
                                         <p:column headerText="Retail Rate" width="14mm" style="text-align: right; padding-right: 10px;">
-                                            <h:outputText value="#{i.billItem.billItemFinanceDetails.retailSaleRate}">
+                                            <h:outputText value="#{i.retailSaleRate}">
                                                 <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputText>
                                         </p:column>
 
                                         <p:column headerText="Retail Value" width="14mm" style="text-align: right; padding-right: 10px;">
-                                            <h:outputText value="#{i.billItem.billItemFinanceDetails.valueAtRetailRate}">
+                                            <h:outputText value="#{i.valueAtRetailRate}">
                                                 <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputText>
                                             <f:facet name="footer">
@@ -498,7 +498,7 @@
                                         </p:column>
 
                                         <p:column headerText="Issue Approved User" width="20mm">
-                                            <h:outputText value="#{i.billItem.bill.creater.webUserPerson.name}"/>
+                                            <h:outputText value="#{i.createrName}"/>
                                         </p:column>
                                     </p:dataTable>
                                 </ui:repeat>

@@ -168,7 +168,10 @@
 
                                     <p:outputLabel value="Count to start Admission Numbers" ></p:outputLabel>
                                     <p:outputLabel value=":" style="width: 30px; text-align: center; " ></p:outputLabel>
-                                    <p:inputText autocomplete="off" value="#{admissionTypeController.current.additionToCount}" class="w-100 m-1" />
+                                    <h:panelGroup layout="block" class="w-100">
+                                        <p:inputText id="additionToCount" autocomplete="off" value="#{admissionTypeController.current.additionToCount}" class="w-100 m-1" />
+                                        <h:outputText value="Only sets the first number of a new BHT series. To change the running sequence (e.g. after cancelling an admission), use Administration &gt; Manage Inpatient Services &gt; BHT Number Management." styleClass="text-muted small d-block m-1" />
+                                    </h:panelGroup>
                                     
                                     <p:outputLabel value="Count as a separate Number" />
                                     <p:outputLabel value=": " style="width: 30px; text-align: center; " ></p:outputLabel>

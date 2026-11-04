@@ -319,6 +319,12 @@ public class FavouriteMedicineApiService implements Serializable {
             if (orderDirection == null || orderDirection.trim().isEmpty()) {
                 orderDirection = "ASC";
             }
+            // Only ASC/DESC may be concatenated into the JPQL string
+            orderDirection = orderDirection.trim();
+            if (!"ASC".equalsIgnoreCase(orderDirection) && !"DESC".equalsIgnoreCase(orderDirection)) {
+                orderDirection = "ASC";
+            }
+            orderDirection = orderDirection.toUpperCase();
 
             switch (orderBy.toLowerCase()) {
                 case "orderno":

@@ -7131,6 +7131,13 @@ public class AnthropicApiService implements Serializable {
                     {"GET", "/pharmacy_f15_report", "Retrieve F15 report data with date range and department filters"}
                 });
 
+        appendModule(sb, "Cache Warmup", "/warmup",
+                "Warm the server's entity cache after a deployment or restart so the first pharmacy bills open quickly.",
+                null,
+                new String[][]{
+                    {"GET", "/warmup/stocks", "Load all stock on hand with their item batches and items into the cache. Returns stocksLoaded and timeTakenMs"}
+                });
+
         appendModule(sb, "Pharmacy - Stock History", "/stock_history",
                 "Retrieve pharmacy stock movement and history records.",
                 githubUrl(branch, "developer_docs/api/using-apis/API_STOCK_HISTORY.md"),
@@ -7209,6 +7216,7 @@ public class AnthropicApiService implements Serializable {
                 new String[][]{
                     {"POST", "/pharmacy/backfill_bfd",      "Backfill missing BFD records for historical pharmacy adjustment bills"},
                     {"POST", "/pharmacy/backfill_grn_bifd", "Backfill missing BIFD/BFD records for historical Pharmacy GRN bills"},
+                    {"POST", "/pharmacy/backfill_transfer_bifd", "Backfill missing BIFD/BFD records for historical pharmacy stock transfer issue/receive bills"},
                     {"POST", "/pharmacy/backfill_transfer_department_type", "Backfill missing departmentType on historical pharmacy transfer bills (issue/receive/cancellations/returns). Dry-run by default (apply=false); resolution: unanimous item types, then backwardReferenceBill, then billedBill"}
                 });
 

@@ -123,7 +123,7 @@
                                     style="width: 100%;">
                                 <f:selectItem itemLabel="All Departments"/>
                                 <f:selectItems
-                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite(pharmacyController.institution)}"
+                                        value="#{departmentController.getDepartmentsOfInstitutionAndSiteForInstitution(pharmacyController.institution)}"
                                         var="dept"
                                         itemLabel="#{dept.name}"
                                         itemValue="#{dept}"/>

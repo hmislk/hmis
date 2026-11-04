@@ -47,6 +47,19 @@ public class InpatientServiceIssueDTO implements Serializable {
         return isCancellation();
     }
 
+    /**
+     * Refund bills carry negative values and are deducted from the report
+     * total, like cancellations. (Issue #21491)
+     */
+    public Boolean isRefund() {
+        return billTypeAtomic == BillTypeAtomic.INWARD_SERVICE_BILL_REFUND
+                || billTypeAtomic == BillTypeAtomic.INWARD_SERVICE_BATCH_BILL_REFUND;
+    }
+
+    public Boolean getRefund() {
+        return isRefund();
+    }
+
     public Double getRate() {
         if (qty != null && qty != 0 && netValue != null) {
             return Math.abs(netValue / qty);

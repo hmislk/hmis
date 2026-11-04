@@ -137,9 +137,11 @@
                                 action="#{bookingController.navigateToManageBooking()}"
                                 icon="fa-solid fa-bars-progress" />
 
-                            <p:commandButton 
-                                ajax="false" 
-                                value="Add Channel Booking" 
+                            <p:commandButton
+                                ajax="false"
+                                immediate="true"
+                                onclick="return clickWhenAjaxIdle(this);"
+                                value="Add Channel Booking"
                                 class="ui-button-warning mx-1"
                                 action="#{bookingControllerViewScope.sessionInstanceFetchFromChannelBooking()}"
                                 rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable channel booking by date navigations from channel booking view', false)}"
@@ -494,10 +496,11 @@
                                     <h:outputText value=":" />
                                     <h:outputText value="#{bookingController.selectedSessionInstance.bookedPatientCount != null ? bookingController.selectedSessionInstance.bookedPatientCount : ' '}" />
 
-                                    <h:outputText value="Note " rendered="#{not empty bookingController.selectedSessionInstance.specialNoticeSessionInstance or not empty bookingController.selectedSessionInstance.originatingSession.specialNotice}" />
-                                    <h:outputText value=":" rendered="#{not empty bookingController.selectedSessionInstance.specialNoticeSessionInstance or not empty bookingController.selectedSessionInstance.originatingSession.specialNotice}"/>
-                                    <h:outputText value="#{bookingController.selectedSessionInstance.specialNoticeSessionInstance} | #{bookingController.selectedSessionInstance.originatingSession.specialNotice}" 
-                                                  rendered="#{not empty bookingController.selectedSessionInstance.specialNoticeSessionInstance or not empty bookingController.selectedSessionInstance.originatingSession.specialNotice}" style="color: red"/>
+                                    <!-- Notices are trimmed so whitespace-only text neither shows the Note row nor adds a stray ' | ' -->
+                                    <h:outputText value="Note " rendered="#{(not empty bookingController.selectedSessionInstance.specialNoticeSessionInstance and not empty bookingController.selectedSessionInstance.specialNoticeSessionInstance.trim()) or (not empty bookingController.selectedSessionInstance.originatingSession.specialNotice and not empty bookingController.selectedSessionInstance.originatingSession.specialNotice.trim())}" />
+                                    <h:outputText value=":" rendered="#{(not empty bookingController.selectedSessionInstance.specialNoticeSessionInstance and not empty bookingController.selectedSessionInstance.specialNoticeSessionInstance.trim()) or (not empty bookingController.selectedSessionInstance.originatingSession.specialNotice and not empty bookingController.selectedSessionInstance.originatingSession.specialNotice.trim())}"/>
+                                    <h:outputText value="#{not empty bookingController.selectedSessionInstance.specialNoticeSessionInstance and not empty bookingController.selectedSessionInstance.specialNoticeSessionInstance.trim() ? bookingController.selectedSessionInstance.specialNoticeSessionInstance.trim() : ''}#{not empty bookingController.selectedSessionInstance.specialNoticeSessionInstance and not empty bookingController.selectedSessionInstance.specialNoticeSessionInstance.trim() and not empty bookingController.selectedSessionInstance.originatingSession.specialNotice and not empty bookingController.selectedSessionInstance.originatingSession.specialNotice.trim() ? ' | ' : ''}#{not empty bookingController.selectedSessionInstance.originatingSession.specialNotice and not empty bookingController.selectedSessionInstance.originatingSession.specialNotice.trim() ? bookingController.selectedSessionInstance.originatingSession.specialNotice.trim() : ''}"
+                                                  rendered="#{(not empty bookingController.selectedSessionInstance.specialNoticeSessionInstance and not empty bookingController.selectedSessionInstance.specialNoticeSessionInstance.trim()) or (not empty bookingController.selectedSessionInstance.originatingSession.specialNotice and not empty bookingController.selectedSessionInstance.originatingSession.specialNotice.trim())}" style="color: red"/>
                                 </h:panelGrid>
                             </p:tab>
                         </p:accordionPanel>
@@ -579,6 +582,24 @@
                         </div>
 
                         <script>
+                            // Add Channel Booking is immediate, so it reads the session chosen by the last ajax
+                            // selection; wait for any pending selection request before submitting (#24925)
+                            function clickWhenAjaxIdle(btn) {
+                                if (PrimeFaces.ajax.Queue.isEmpty()) {
+                                    return true;
+                                }
+                                if (!btn.dataset.waitingForAjax) {
+                                    btn.dataset.waitingForAjax = 'true';
+                                    const timer = setInterval(function () {
+                                        if (PrimeFaces.ajax.Queue.isEmpty()) {
+                                            clearInterval(timer);
+                                            delete btn.dataset.waitingForAjax;
+                                            btn.click();
+                                        }
+                                    }, 100);
+                                }
+                                return false;
+                            }
 
                             function initializeWebSocket() {
                                 console.log("start connection");
@@ -650,7 +671,7 @@
                                          styleClass="ws-trigger"
                                          update="acBookings "
                                          style="display:none"/>
-                        <p:poll interval="15" update="acBookings" listener="#{bookingController.fillBillSessions}"></p:poll>
+                        <p:poll interval="15" process="@this" update="acBookings" listener="#{bookingController.fillBillSessions}"></p:poll>
                     </div>
                 </div>
 

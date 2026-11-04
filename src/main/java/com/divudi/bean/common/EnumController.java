@@ -970,6 +970,7 @@ public class EnumController implements Serializable {
         PaymentMethod[] p = {
             PaymentMethod.Cash,
             PaymentMethod.OnCall,
+            PaymentMethod.Agent,
             PaymentMethod.Card,
             PaymentMethod.Cheque,
             PaymentMethod.Slip,
@@ -1109,11 +1110,7 @@ public class EnumController implements Serializable {
     }
 
     public PaymentMethod[] getPaymentMethodsForIouSettle() {
-        PaymentMethod[] p = {PaymentMethod.Cash,
-            PaymentMethod.Cheque,
-            PaymentMethod.IOU,
-            PaymentMethod.Voucher,
-            PaymentMethod.Slip};
+        PaymentMethod[] p = {PaymentMethod.Cash};
         return p;
     }
 

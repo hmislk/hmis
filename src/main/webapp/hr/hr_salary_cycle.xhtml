@@ -76,7 +76,8 @@
 
                     </p:panel>
 
-                    <!-- RIGHT: Detail -->
+                    <!-- RIGHT: Detail panel (print target) with its action buttons beneath it -->
+                    <div>
                     <p:panel id="tbl">
                         <f:facet name="header">
                             <div style="display: flex; justify-content: space-between; align-items: center;">
@@ -164,29 +165,29 @@
 
                             </h:panelGrid>
                         </h:panelGrid>
-
-                        <!-- Actions -->
-                        <div style="display: flex; gap: 0.5rem; padding-top: 0.75rem; border-top: 1px solid #e2e8f0; margin-top: 0.5rem;">
-                            <p:commandButton
-    id="btnSave"
-    value="Save"
-    icon="fas fa-save"
-    styleClass="ui-button-warning"
-    style="flex: 1;"
-    process="@form"
-    update="@form"
-    action="#{salaryCycleController.saveSelected()}" />
-                            <p:commandButton
-                                value="Print"
-                                icon="fas fa-print"
-                                styleClass="ui-button-info"
-                                style="flex: 1;"
-                                type="button">
-                                <p:printer target="tbl" />
-                            </p:commandButton>
-                        </div>
-
                     </p:panel>
+
+                    <!-- Actions: outside the p:panel id="tbl" so the printout does not include these buttons -->
+                    <div style="display: flex; gap: 0.5rem; padding-top: 0.75rem; border-top: 1px solid #e2e8f0; margin-top: 0.5rem;">
+                        <p:commandButton
+                            id="btnSave"
+                            value="Save"
+                            icon="fas fa-save"
+                            styleClass="ui-button-warning"
+                            style="flex: 1;"
+                            process="@form"
+                            update="@form"
+                            action="#{salaryCycleController.saveSelected()}" />
+                        <p:commandButton
+                            value="Print"
+                            icon="fas fa-print"
+                            styleClass="ui-button-info"
+                            style="flex: 1;"
+                            type="button">
+                            <p:printer target="tbl" />
+                        </p:commandButton>
+                    </div>
+                    </div>
 
                 </div>
 

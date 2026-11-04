@@ -129,23 +129,27 @@
                 <div class="row">
                     <div class="col-md-6">
                         <p:outputLabel for="acReturnPorter" value="Porter / Staff Carrying Medicines to Pharmacy:"/>
-                        <p:autoComplete id="acReturnPorter"
-                                        completeMethod="#{staffController.completeStaffWithoutDoctors}"
-                                        forceSelection="true"
-                                        var="w" itemLabel="#{w.person.name}" itemValue="#{w}"
-                                        value="#{wardPharmacyReturnToPharmacyController.porter}"
-                                        maxResults="10"
-                                        styleClass="w-100"
-                                        placeholder="Search staff by name">
-                            <p:column headerText="Name">
+                        <p:autoComplete 
+                            id="acReturnPorter"
+                            completeMethod="#{staffController.completeStaffWithoutDoctors}"
+                            forceSelection="true"
+                            var="w" 
+                            itemLabel="#{w.person.name}" 
+                            itemValue="#{w}"
+                            value="#{wardPharmacyReturnToPharmacyController.porter}"
+                            maxResults="10"
+                            style="width: 400px;"
+                            placeholder="Search staff by name">
+                            <p:column headerText="Name" style="padding: 6px;">
                                 <h:outputText value="#{w.person.nameWithTitle}"/>
                             </p:column>
-                            <p:column headerText="Speciality">
-                                <h:outputText value="#{w.speciality.name}"/>
-                            </p:column>
-                            <p:column headerText="Staff Code">
+                            <p:column headerText="Staff Code" style="padding: 6px;">
                                 <h:outputText value="#{w.staffCode}"/>
                             </p:column>
+                            <p:column headerText="Speciality" style="padding: 6px;">
+                                <h:outputText value="#{w.speciality.name}"/>
+                            </p:column>
+
                         </p:autoComplete>
                     </div>
                     <div class="col-md-6">
@@ -249,7 +253,9 @@
                         update=":formWardReturnToPharmacy"
                         actionListener="#{wardPharmacyReturnToPharmacyController.settle}"
                         disabled="#{not webUserController.hasPrivilege('InwardPharmacyReturnSubmit') or wardPharmacyReturnToPharmacyController.selectedReceiveBill eq null}"
-                        onclick="if (!confirm('Return the entered quantities to the pharmacy via the selected porter? This cannot be undone.')) { return false; }"/>
+                        onclick="if (!confirm('Return the entered quantities to the pharmacy via the selected porter? This cannot be undone.')) {
+                                    return false;
+                                }"/>
                 </div>
             </p:panel>
 

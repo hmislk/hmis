@@ -187,4 +187,57 @@ class InpatientPackagePricingTest {
 
         assertEquals(0.0, excess, 0.001);
     }
+
+    @Test
+    void applyPackageHoldsCoveredTypesAtAllocationAndDropsTheirMarginAndDiscount() {
+        Map<InwardChargeType, Double> gross = new LinkedHashMap<>();
+        gross.put(InwardChargeType.RoomCharges, 20000.0);
+        gross.put(InwardChargeType.Laboratory, 3000.0);
+        gross.put(InwardChargeType.Medicine, 1500.0); // not covered
+        Map<InwardChargeType, Double> margin = new LinkedHashMap<>();
+        margin.put(InwardChargeType.Laboratory, 300.0);
+        margin.put(InwardChargeType.Medicine, 200.0);
+        Map<InwardChargeType, Double> discount = new LinkedHashMap<>();
+        discount.put(InwardChargeType.Laboratory, 100.0);
+        Map<InwardChargeType, Double> allocations = new LinkedHashMap<>();
+        allocations.put(InwardChargeType.RoomCharges, 25000.0);
+        allocations.put(InwardChargeType.Laboratory, 5000.0);
+
+        InpatientPackagePricing.PackageAdjustment a = InpatientPackagePricing.applyPackage(gross, margin, discount, allocations, 30000.0);
+
+        assertEquals(25000.0, a.getGross().get(InwardChargeType.RoomCharges), 0.001);
+        assertEquals(5000.0, a.getGross().get(InwardChargeType.Laboratory), 0.001);
+        assertEquals(1500.0, a.getGross().get(InwardChargeType.Medicine), 0.001);
+        assertEquals(300.0, a.getDroppedMargin().get(InwardChargeType.Laboratory), 0.001);
+        assertEquals(100.0, a.getDroppedDiscount().get(InwardChargeType.Laboratory), 0.001);
+        assertTrue(!a.getDroppedMargin().containsKey(InwardChargeType.Medicine));
+        assertTrue(!a.getGross().containsKey(InwardChargeType.PackageExcessCharges));
+    }
+
+    @Test
+    void applyPackageAddsExcessFromGrossPlusMarginOfCoveredTypes() {
+        Map<InwardChargeType, Double> gross = new LinkedHashMap<>();
+        gross.put(InwardChargeType.RoomCharges, 28000.0);
+        gross.put(InwardChargeType.Laboratory, 4000.0);
+        Map<InwardChargeType, Double> margin = new LinkedHashMap<>();
+        margin.put(InwardChargeType.Laboratory, 500.0);
+        Map<InwardChargeType, Double> allocations = new LinkedHashMap<>();
+        allocations.put(InwardChargeType.RoomCharges, 25000.0);
+        allocations.put(InwardChargeType.Laboratory, 5000.0);
+
+        InpatientPackagePricing.PackageAdjustment a = InpatientPackagePricing.applyPackage(gross, margin, null, allocations, 30000.0);
+
+        // 28,000 + 4,000 + 500 = 32,500 against a 30,000 package
+        assertEquals(2500.0, a.getGross().get(InwardChargeType.PackageExcessCharges), 0.001);
+    }
+
+    @Test
+    void applyPackageSetsAllocationForACoveredTypeWithNoUsage() {
+        Map<InwardChargeType, Double> allocations = new LinkedHashMap<>();
+        allocations.put(InwardChargeType.Laboratory, 5000.0);
+
+        InpatientPackagePricing.PackageAdjustment a = InpatientPackagePricing.applyPackage(new LinkedHashMap<>(), null, null, allocations, 5000.0);
+
+        assertEquals(5000.0, a.getGross().get(InwardChargeType.Laboratory), 0.001);
+    }
 }

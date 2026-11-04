@@ -267,7 +267,7 @@ public class AgentAndCcApplicationController {
 
             agentHistoryFacade.createAndFlush(agentHistory);
 
-            collectingCentre.setBallance(balanceAfterTx);
+            institutionFacade.updateBalance(collectingCentre, balanceAfterTx);
             institutionFacade.editCcBalanceAndCommit(collectingCentre);
             verifyBalanceWritten(collectingCentreId, balanceAfterTx, agentHistory);
         } finally {
@@ -310,7 +310,7 @@ public class AgentAndCcApplicationController {
 
             agentHistoryFacade.createAndFlush(agentHistory);
 
-            collectingCentre.setBallance(balanceAfterTx);
+            institutionFacade.updateBalance(collectingCentre, balanceAfterTx);
             institutionFacade.editCcBalanceAndCommit(collectingCentre);
             verifyBalanceWritten(collectingCentreId, balanceAfterTx, agentHistory);
 
@@ -353,7 +353,7 @@ public class AgentAndCcApplicationController {
 
             agentHistoryFacade.createAndFlush(agentHistory);
 
-            collectingCentre.setBallance(balanceAfterTx);
+            institutionFacade.updateBalance(collectingCentre, balanceAfterTx);
             institutionFacade.editCcBalanceAndCommit(collectingCentre);
             verifyBalanceWritten(collectingCentreId, balanceAfterTx, agentHistory);
 
@@ -397,7 +397,7 @@ public class AgentAndCcApplicationController {
 
             agentHistoryFacade.createAndFlush(agentHistory);
 
-            collectingCentre.setBallance(balanceAfterTx);
+            institutionFacade.updateBalance(collectingCentre, balanceAfterTx);
             institutionFacade.editCcBalanceAndCommit(collectingCentre);
             verifyBalanceWritten(collectingCentreId, balanceAfterTx, agentHistory);
 
@@ -439,7 +439,7 @@ public class AgentAndCcApplicationController {
 
             agentHistoryFacade.createAndFlush(agentHistory);
 
-            collectingCentre.setBallance(balanceAfterTx);
+            institutionFacade.updateBalance(collectingCentre, balanceAfterTx);
             institutionFacade.editCcBalanceAndCommit(collectingCentre);
             verifyBalanceWritten(collectingCentreId, balanceAfterTx, agentHistory);
 
@@ -483,7 +483,7 @@ public class AgentAndCcApplicationController {
 
             agentHistoryFacade.createAndFlush(agentHistory);
 
-            collectingCentre.setBallance(balanceAfterTx);
+            institutionFacade.updateBalance(collectingCentre, balanceAfterTx);
             institutionFacade.editCcBalanceAndCommit(collectingCentre);
             verifyBalanceWritten(collectingCentreId, balanceAfterTx, agentHistory);
 
@@ -527,7 +527,7 @@ public class AgentAndCcApplicationController {
 
             agentHistoryFacade.createAndFlush(agentHistory);
 
-            collectingCentre.setBallance(balanceAfterTx);
+            institutionFacade.updateBalance(collectingCentre, balanceAfterTx);
             institutionFacade.editCcBalanceAndCommit(collectingCentre);
             verifyBalanceWritten(collectingCentreId, balanceAfterTx, agentHistory);
 
@@ -570,7 +570,7 @@ public class AgentAndCcApplicationController {
 
             agentHistoryFacade.createAndFlush(agentHistory);
 
-            collectingCentre.setBallance(balanceAfterTx);
+            institutionFacade.updateBalance(collectingCentre, balanceAfterTx);
             institutionFacade.editCcBalanceAndCommit(collectingCentre);
             verifyBalanceWritten(collectingCentreId, balanceAfterTx, agentHistory);
 
@@ -613,7 +613,7 @@ public class AgentAndCcApplicationController {
 
             agentHistoryFacade.createAndFlush(agentHistory);
 
-            collectingCentre.setBallance(balanceAfterTx);
+            institutionFacade.updateBalance(collectingCentre, balanceAfterTx);
             institutionFacade.editCcBalanceAndCommit(collectingCentre);
             verifyBalanceWritten(collectingCentreId, balanceAfterTx, agentHistory);
 
@@ -660,7 +660,7 @@ public class AgentAndCcApplicationController {
             bill.setAgentHistory(agentHistory);
             billFacade.edit(bill);
 
-            collectingCentre.setBallance(balanceAfterTx);
+            institutionFacade.updateBalance(collectingCentre, balanceAfterTx);
             institutionFacade.editCcBalanceAndCommit(collectingCentre);
             verifyBalanceWritten(collectingCentreId, balanceAfterTx, agentHistory);
 
@@ -704,7 +704,7 @@ public class AgentAndCcApplicationController {
 
             agentHistoryFacade.createAndFlush(agentHistory);
 
-            collectingCentre.setBallance(balanceAfterTx);
+            institutionFacade.updateBalance(collectingCentre, balanceAfterTx);
             institutionFacade.editCcBalanceAndCommit(collectingCentre);
             verifyBalanceWritten(collectingCentreId, balanceAfterTx, agentHistory);
 
@@ -749,7 +749,7 @@ public class AgentAndCcApplicationController {
 
             agentHistoryFacade.createAndFlush(agentHistory);
 
-            collectingCentre.setBallance(balanceAfterTx);
+            institutionFacade.updateBalance(collectingCentre, balanceAfterTx);
             institutionFacade.editCcBalanceAndCommit(collectingCentre);
             verifyBalanceWritten(collectingCentreId, balanceAfterTx, agentHistory);
 
@@ -797,7 +797,7 @@ public class AgentAndCcApplicationController {
 
             agentHistoryFacade.createAndFlush(agentHistory);
 
-            collectingCentre.setBallance(balanceAfterTx);
+            institutionFacade.updateBalance(collectingCentre, balanceAfterTx);
             institutionFacade.editCcBalanceAndCommit(collectingCentre);
             verifyBalanceWritten(collectingCentreId, balanceAfterTx, agentHistory);
 

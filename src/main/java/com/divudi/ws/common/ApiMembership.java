@@ -196,7 +196,8 @@ public class ApiMembership {
             person.setCreatedAt(new Date());
             person.setRetired(true);
             person.setMembershipScheme(ms);
-            getPersonFacade().create(person);
+            // The person is persisted by the cascade from Patient.person (cascade = ALL) when the
+            // patient is created below; persisting it here too leaves a duplicate PERSON row (#23900).
 
             Patient patient = new Patient();
             patient.setPerson(person);

@@ -141,6 +141,41 @@ public class GrnCostingNativeSqlService {
     }
 
     /**
+     * Persists the bill-level expense totals. Nothing else in the native save
+     * or approve path writes them, so the GRN print showed the expense rows
+     * as 0.00 once the bill was reloaded (#24709).
+     */
+    public void updateBillExpenseTotals(long billId, double expenseTotal,
+            double expensesConsideredForCosting, double expensesNotConsideredForCosting) {
+        em.createNativeQuery(
+            "UPDATE " + billTable() + " SET expenseTotal=?, expensesTotalConsideredForCosting=?,"
+            + " expensesTotalNotConsideredForCosting=? WHERE ID=?")
+            .setParameter(1, expenseTotal)
+            .setParameter(2, expensesConsideredForCosting)
+            .setParameter(3, expensesNotConsideredForCosting)
+            .setParameter(4, billId)
+            .executeUpdate();
+        evictCache();
+    }
+
+    /**
+     * Stores the bill-level totalBillValue on the bill's existing
+     * BillFinanceDetails. Nothing else in the native approve path writes it,
+     * so the GRN print showed it blank after approval (#24709). Does nothing
+     * if the bill has no BillFinanceDetails yet.
+     */
+    public void updateTotalBillValue(long billId, BigDecimal totalBillValue) {
+        Bill billRef = em.find(Bill.class, billId);
+        BillFinanceDetails bfd = billRef != null ? billRef.getBillFinanceDetails() : null;
+        if (bfd == null || bfd.getId() == null) {
+            return;
+        }
+        bfd.setTotalBillValue(totalBillValue);
+        em.merge(bfd);
+        evictCache();
+    }
+
+    /**
      * Carries back both generated/resolved primary keys from {@link #saveLine}
      * so the caller can set them on its in-memory BillItem AND
      * PharmaceuticalBillItem entities -- a native INSERT never reports a
@@ -424,6 +459,17 @@ public class GrnCostingNativeSqlService {
      * as saveBillItemFinanceDetails().
      */
     public void saveBillFinanceDetails(long billId, double totalDiscount, double totalExpense, double totalTax) {
+        saveBillFinanceDetails(billId, totalDiscount, totalExpense, totalTax, null);
+    }
+
+    /**
+     * Same as {@link #saveBillFinanceDetails(long, double, double, double)},
+     * and also stores totalBillValue so the GRN print shows it after the bill
+     * is reloaded (issue #24709). A null totalBillValue leaves the stored
+     * value unchanged.
+     */
+    public void saveBillFinanceDetails(long billId, double totalDiscount, double totalExpense, double totalTax,
+            BigDecimal totalBillValue) {
         Bill billRef = em.find(Bill.class, billId);
         BillFinanceDetails bfd = billRef != null ? billRef.getBillFinanceDetails() : null;
         boolean isNew = (bfd == null || bfd.getId() == null);
@@ -434,6 +480,9 @@ public class GrnCostingNativeSqlService {
         bfd.setTotalDiscount(BigDecimal.valueOf(totalDiscount));
         bfd.setTotalExpense(BigDecimal.valueOf(totalExpense));
         bfd.setTotalTaxValue(BigDecimal.valueOf(totalTax));
+        if (totalBillValue != null) {
+            bfd.setTotalBillValue(totalBillValue);
+        }
 
         if (isNew) {
             bfd.setCreatedAt(new Date());

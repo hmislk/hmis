@@ -17,7 +17,6 @@ import com.divudi.core.entity.Payment;
 import com.divudi.core.entity.PaymentScheme;
 import com.divudi.core.entity.Staff;
 import com.divudi.core.entity.WebUser;
-import com.divudi.core.entity.cashTransaction.CashBook;
 import com.divudi.core.entity.inward.AdmissionType;
 import com.divudi.core.facade.BillFacade;
 import com.divudi.core.facade.InstitutionFacade;
@@ -115,8 +114,6 @@ public class PaymentService {
     @EJB
     StaffService staffService;
     @EJB
-    CashbookService cashbookService;
-    @EJB
     DrawerService drawerService;
     @EJB
     BillService billService;
@@ -137,7 +134,7 @@ public class PaymentService {
      * <li>Creates payments based on the provided bill and payment method
      * data.</li>
      * <li>Updates the drawer.</li>
-     * <li>Updates the cashbook if required by the specified options.</li>
+     * <li>DO NOT write cash book entries; collections reach the cash book at handover acceptance.</li>
      * <li>DO NOT Update the balance of patient deposits.</li>
      * <li>DO NOT Update balances for credit companies.</li>
      * <li>DO NOT Update balances for collecting centres.</li>
@@ -166,7 +163,7 @@ public class PaymentService {
      * <li>DO NOT Update balances for credit companies.</li>
      * <li>DO NOT Update Staff Credit.</li>
      * <li>Writes to the drawer for transaction recording.</li>
-     * <li>Updates the cashbook if required by the specified options.</li>
+     * <li>DO NOT write cash book entries; collections reach the cash book at handover acceptance.</li>
      * </ul>
      *
      * @param cancellationBill The cancellation bill for which payments are
@@ -187,7 +184,6 @@ public class PaymentService {
                 p.setCreater(cancellationBill.getCreater());
                 paymentFacade.create(p);
                 newPayments.add(p);
-                cashbookService.writeCashBookEntryAtPaymentCreation(p);
                 drawerService.updateDrawer(p);
             }
         }
@@ -196,7 +192,6 @@ public class PaymentService {
     
     private List<Payment> createPayment(Bill bill, PaymentMethod pm, PaymentMethodData paymentMethodData, Department department, WebUser webUser) {
 
-        CashBook cashbook = cashbookService.findAndSaveCashBookBySite(department.getSite(), department.getInstitution(), department);
         List<Payment> payments = new ArrayList<>();
         Date currentDate = new Date();
 
@@ -205,7 +200,6 @@ public class PaymentService {
                 Payment payment = createPaymentFromComponentDetail(cd, bill, department, webUser, currentDate);
                 if (payment != null) {
                     paymentFacade.create(payment);
-                    cashbookService.writeCashBookEntryAtPaymentCreation(payment, webUser, cashbook, department);
                     drawerService.updateDrawer(payment);
                     payments.add(payment);
                 }
@@ -226,7 +220,6 @@ public class PaymentService {
             }
             payment.setPaidValue(bill.getNetTotal());
             paymentFacade.create(payment);
-            cashbookService.writeCashBookEntryAtPaymentCreation(payment);
             drawerService.updateDrawer(payment);
             payments.add(payment);
         }
@@ -340,7 +333,6 @@ public class PaymentService {
                 }
 
                 paymentFacade.create(p);
-                cashbookService.writeCashBookEntryAtPaymentCreation(p);
                 drawerService.updateDrawer(p);
                 ps.add(p);
             }
@@ -398,7 +390,6 @@ public class PaymentService {
             }
 
             paymentFacade.create(p);
-            cashbookService.writeCashBookEntryAtPaymentCreation(p);
             ps.add(p);
         }
         return ps;

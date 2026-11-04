@@ -15,42 +15,62 @@
                                 <h:outputLabel value="Debtor Settlement" />
                             </f:facet>
 
-                        <h:panelGrid columns="6" class="my-2 w-100">
-                            <p:outputLabel value="From Date" />
-                            <p:outputLabel value=" : " />
-                            <p:datePicker inputStyleClass="w-75" 
-                                          id="fromDate" 
-                                          showTime="true" 
-                                          value="#{reportController.fromDate}" 
-                                          class="w-100" 
-                                          pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                        <h:panelGrid columns="5" class="w-100">
 
-                            <p:outputLabel value="To Date" />
-                            <p:outputLabel value=" : " />
-                            <p:datePicker inputStyleClass="w-75" 
-                                          id="toDate" 
-                                          showTime="true" 
-                                          value="#{reportController.toDate}"
-                                          class="w-100" 
-                                          pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf133;" styleClass="fa mr-2" />
+                                <p:outputLabel value="From Date" for="fromDate" class="mx-3" />
+                            </h:panelGroup>
+                            <p:datePicker
+                                id="fromDate"
+                                showTime="true"
+                                class="w-100"
+                                inputStyleClass="form-control"
+                                value="#{reportController.fromDate}"
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
 
-                                          <p:outputLabel value="Credit Company"></p:outputLabel>
-                                          <p:outputLabel value=" : " />
-                                          <p:selectOneMenu filter="true" id="cmdInstitution"
-                                             filterMatchMode="contains"
-                                             style=" max-width: 90%; overflow-x: auto; "
-                                             class="w-100"
-                                             value="#{reportController.institution}">
+                            <p:spacer width="30"></p:spacer>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf133;" styleClass="fa mr-2" />
+                                <p:outputLabel value="To Date" for="toDate" class="mx-3" />
+                            </h:panelGroup>
+                            <p:datePicker
+                                id="toDate"
+                                showTime="true"
+                                class="w-100"
+                                inputStyleClass="form-control"
+                                value="#{reportController.toDate}"
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf19c;" styleClass="fa mr-2" />
+                                <p:outputLabel value="Credit Company" for="cmdInstitution" class="mx-3" />
+                            </h:panelGroup>
+                            <p:selectOneMenu
+                                id="cmdInstitution"
+                                styleClass="w-100 form-control"
+                                filter="true"
+                                filterMatchMode="contains"
+                                value="#{reportController.institution}">
                                 <f:selectItem itemLabel="All" />
                                 <f:selectItems value="#{institutionController.creditCompanies}"
                                                var="i"
                                                itemLabel="#{i.name}"
                                                itemValue="#{i}" />
                             </p:selectOneMenu>
-                            <p:outputLabel value="Settlement Status" />
-                            <p:outputLabel value=" : " />
-                            <p:selectOneMenu value="#{reportController.selectedVoucherStatusOnDebtorSettlement}" >
-                                 <f:selectItem itemLabel="All" />
+
+                            <p:spacer width="30"></p:spacer>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf0ae;" styleClass="fa mr-2" />
+                                <p:outputLabel value="Settlement Status" for="cmbStatus" class="mx-3" />
+                            </h:panelGroup>
+                            <p:selectOneMenu
+                                id="cmbStatus"
+                                styleClass="w-100 form-control"
+                                value="#{reportController.selectedVoucherStatusOnDebtorSettlement}" >
+                                <f:selectItem itemLabel="All" />
                                 <f:selectItems value="#{reportController.voucherStatusOnDebtorSettlement}"
                                                var="i"
                                                itemLabel="#{i}"
@@ -58,17 +78,34 @@
                             </p:selectOneMenu>
                         </h:panelGrid>
 
-                        <h:panelGrid columns="6" class="my-3">
-                            <p:commandButton ajax="false" value="Process" icon="fas fa-cogs" class="ui-button-warning" action="#{reportController.createDebtorSettlement}" >
+                        <h:panelGrid columns="4" class="my-2">
+                            <p:commandButton
+                                ajax="false"
+                                value="Process"
+                                icon="fas fa-cogs"
+                                class="ui-button-warning mx-1"
+                                action="#{reportController.createDebtorSettlement}" >
                             </p:commandButton>
-                            <p:commandButton ajax="false" value="Print" icon="fas fa-print" class="ui-button-info mx-1"  >
+                            <p:commandButton
+                                ajax="false"
+                                value="Print"
+                                icon="fas fa-print"
+                                class="ui-button-info mx-1" >
                                 <p:printer target="dtaPr"/>
                             </p:commandButton>
-                            <p:commandButton ajax="false" value="Excel" icon="fas fa-file-excel" class="ui-button-success" >
+                            <p:commandButton
+                                ajax="false"
+                                value="Excel"
+                                icon="fas fa-file-excel"
+                                class="ui-button-success mx-1" >
                                 <p:dataExporter fileName="Debtor Settlement - #{webUserController.institution} (#{reportController.fromDate} - #{reportController.toDate})" type="xlsx" target="dtaPr0" />
                             </p:commandButton>
-                            <p:commandButton ajax="false" value="PDF" icon="fas fa-file-pdf" class="ui-button-danger mx-1" >
-                                <p:dataExporter fileName="Debtor Settlement - #{webUserController.institution} (#{reportController.fromDate} - #{reportController.toDate})" type="pdf" target="dtaPr0" />
+                            <p:commandButton
+                                ajax="false"
+                                value="PDF"
+                                icon="fas fa-file-pdf"
+                                class="ui-button-danger mx-1"
+                                action="#{reportController.exportDebtorSettlementReportToPdf()}" >
                             </p:commandButton>
                         </h:panelGrid>
 
@@ -110,7 +147,9 @@
                                     </f:facet>
                                 </p:column>-->
                                 <p:column headerText="Voucher Amount" >
-                                    <h:outputText value="#{bi.bill.total}" ></h:outputText>
+                                    <h:outputText value="#{bi.bill.total}" >
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
                                     <f:facet name="footer">
                                         <h:outputText value="#{reportController.netTotal}" >
                                        <f:convertNumber pattern="#,##0.00" />

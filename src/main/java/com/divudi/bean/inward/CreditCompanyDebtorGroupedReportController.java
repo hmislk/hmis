@@ -14,6 +14,7 @@ import com.divudi.core.entity.inward.AdmissionType;
 import com.divudi.core.facade.BillFacade;
 import com.divudi.core.facade.BillItemFacade;
 import com.divudi.core.facade.PatientEncounterFacade;
+import com.divudi.service.inward.InwardBhtChargeAggregationService;
 import com.lowagie.text.Document;
 import com.lowagie.text.Element;
 import com.lowagie.text.Font;
@@ -71,6 +72,8 @@ public class CreditCompanyDebtorGroupedReportController implements Serializable 
     BillItemFacade BillItemFacade;
     @EJB
     private PatientEncounterFacade patientEncounterFacade;
+    @EJB
+    private InwardBhtChargeAggregationService chargeAggregationService;
     @Inject
     private SessionController sessionController;
 
@@ -165,21 +168,6 @@ public class CreditCompanyDebtorGroupedReportController implements Serializable 
         }
 
         // --- Non-discharged patients ---
-        List<BillTypeAtomic> chargeTypes = Arrays.asList(
-                BillTypeAtomic.INWARD_SERVICE_BILL,
-                BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION,
-                BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION,
-                BillTypeAtomic.INWARD_SERVICE_BATCH_BILL,
-                BillTypeAtomic.INWARD_SERVICE_BATCH_BILL_CANCELLATION,
-                BillTypeAtomic.INWARD_OUTSIDE_CHARGES_BILL,
-                BillTypeAtomic.INWARD_OUTSIDE_CHARGES_BILL_CANCELLATION,
-                BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE,
-                BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION,
-                BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN,
-                BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE,
-                BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_CANCELLATION,
-                BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_RETURN
-        );
         List<BillTypeAtomic> ccPaymentTypes = Arrays.asList(
                 BillTypeAtomic.CREDIT_COMPANY_INPATIENT_PAYMENT,
                 BillTypeAtomic.CREDIT_COMPANY_INPATIENT_PAYMENT_CANCELLATION,
@@ -234,13 +222,12 @@ public class CreditCompanyDebtorGroupedReportController implements Serializable 
         List<PatientEncounter> nonDischargedEncounters =
                 patientEncounterFacade.findByJpql(encSql, encHm, TemporalType.TIMESTAMP);
 
+        // Same net charge the interim bill / Invoice Journal shows (rooms, services, timed
+        // services, professional fees, every medicine flow).
+        Map<Long, Double> netCharges = chargeAggregationService.fetchNetChargesByEncounter(nonDischargedEncounters);
+
         for (PatientEncounter pe : nonDischargedEncounters) {
-            HashMap<String, Object> chargeParams = new HashMap<>();
-            chargeParams.put("pe", pe);
-            chargeParams.put("chargeTypes", chargeTypes);
-            double chargeTotal = billFacade.findDoubleByJpql(
-                    "Select sum(b.netTotal) from Bill b where b.retired=false and b.patientEncounter=:pe and b.billTypeAtomic in :chargeTypes",
-                    chargeParams);
+            double chargeTotal = netCharges.getOrDefault(pe.getId(), 0.0);
 
             HashMap<String, Object> ccPaidParams = new HashMap<>();
             ccPaidParams.put("pe", pe);

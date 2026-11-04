@@ -118,6 +118,8 @@ public final class InwardReceiptTextRenderer {
 
         if (emitEscP) {
             sb.append('\u001B').append('@');   // ESC @  — initialise
+            sb.append('\u001B').append('U').append('\u0001'); // ESC U 1 — unidirectional, stops alternate lines shifting
+            sb.append('\u001B').append('p').append('\u0000'); // ESC p 0 — proportional off, keeps columns fixed-width
             sb.append('\u001B').append('x').append('\u0001'); // ESC x 1 — LQ mode
             sb.append('\u001B').append('P');   // ESC P  — 10 CPI
         }

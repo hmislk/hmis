@@ -283,17 +283,15 @@
                                         <p:dataExporter 
                                             type="xlsx"
                                             target="tblReport"
-                                            fileName="BHT_Payment_Summary" />
+                                            fileName="BHT_Payment_Summary"
+                                            postProcessor="#{bhtPaymentDetailReportController.postProcessXLSBhtPaymentSummary}" />
                                     </p:commandButton>
-                                    <p:commandButton 
+                                    <p:commandButton
                                         value="PDF"
                                         icon="fas fa-file-pdf"
                                         class="ui-button-danger mx-1"
-                                        ajax="false">
-                                        <p:dataExporter 
-                                            type="pdf"
-                                            target="tblReport"
-                                            fileName="BHT_Payment_Summary" />
+                                        ajax="false"
+                                        action="#{bhtPaymentDetailReportController.downloadBhtPaymentSummaryPdf()}">
                                     </p:commandButton>
                                 </div>
                             </div>

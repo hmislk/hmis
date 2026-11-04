@@ -3635,7 +3635,7 @@ public class DataAdministrationController implements Serializable {
             }
             if (bool4) {
                 if (val4 != 0.0) {
-                    a.setBallance(val4);
+                    institutionFacade.updateBalance(a, val4);
                 }
             }
             institutionFacade.edit(a);

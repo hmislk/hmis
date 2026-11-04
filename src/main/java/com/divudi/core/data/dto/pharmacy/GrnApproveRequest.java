@@ -1,6 +1,7 @@
 package com.divudi.core.data.dto.pharmacy;
 
 import com.divudi.core.data.PaymentMethod;
+import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -55,6 +56,16 @@ public class GrnApproveRequest {
     // GrnCostingNativeSqlService.updateBillTotals().
     private double postNegationNetTotal;
     private double postNegationTotal;
+
+    // Positive total bill value (net total plus expenses not considered for
+    // costing), written to the bill-level BillFinanceDetails. Null leaves the
+    // stored value unchanged (#24709).
+    private BigDecimal totalBillValue;
+
+    // Bill-level expense totals, written as-is to the bill (#24709).
+    private double expenseTotal;
+    private double expensesTotalConsideredForCosting;
+    private double expensesTotalNotConsideredForCosting;
 
     // Computed by the controller's payment-method switch
     // (mirrors GrnCostingController.updateBalanceForGrn()).
@@ -190,5 +201,37 @@ public class GrnApproveRequest {
 
     public void setPoFullyReceived(boolean poFullyReceived) {
         this.poFullyReceived = poFullyReceived;
+    }
+
+    public BigDecimal getTotalBillValue() {
+        return totalBillValue;
+    }
+
+    public void setTotalBillValue(BigDecimal totalBillValue) {
+        this.totalBillValue = totalBillValue;
+    }
+
+    public double getExpenseTotal() {
+        return expenseTotal;
+    }
+
+    public void setExpenseTotal(double expenseTotal) {
+        this.expenseTotal = expenseTotal;
+    }
+
+    public double getExpensesTotalConsideredForCosting() {
+        return expensesTotalConsideredForCosting;
+    }
+
+    public void setExpensesTotalConsideredForCosting(double expensesTotalConsideredForCosting) {
+        this.expensesTotalConsideredForCosting = expensesTotalConsideredForCosting;
+    }
+
+    public double getExpensesTotalNotConsideredForCosting() {
+        return expensesTotalNotConsideredForCosting;
+    }
+
+    public void setExpensesTotalNotConsideredForCosting(double expensesTotalNotConsideredForCosting) {
+        this.expensesTotalNotConsideredForCosting = expensesTotalNotConsideredForCosting;
     }
 }

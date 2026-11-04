@@ -58,6 +58,19 @@
                 </f:facet>
 
                 <style>
+                    .cancelled-row,
+                    .cancelled-row > td {
+                        background-color: #f8d7da !important;
+                        -webkit-print-color-adjust: exact;
+                        print-color-adjust: exact;
+                    }
+                    .refunded-row,
+                    .refunded-row > td {
+                        background-color: #ffe5b4 !important;
+                        -webkit-print-color-adjust: exact;
+                        print-color-adjust: exact;
+                    }
+
                     @media print{
 
                         body {
@@ -110,23 +123,34 @@
                         <p:panel>
                             <f:facet name="header">
 
-                                <p:outputLabel value="Issued Lab" style="font-weight: bold"></p:outputLabel>
+                                <div class="d-flex">
+                                    <p:outputLabel value="Issued Lab" style="font-weight: bold"></p:outputLabel>
 
-                                <p:selectOneMenu class="mx-4 w-50"  value="#{inwardReportControllerBht.department}" filter="true" disabled="true">
-                                    <f:selectItem itemLabel="All Lab" ></f:selectItem>
-                                    <f:selectItems value="#{departmentController.getDepartmentsOfInstitutionAndSiteForInstitution(sessionController.loggedUser.institution)}" var="d" itemLabel="#{d.name}" itemValue="#{d}" ></f:selectItems>
-                                </p:selectOneMenu>
+                                    <p:selectOneMenu class="mx-4 w-50"  value="#{inwardReportControllerBht.department}" filter="true" disabled="true">
+                                        <f:selectItem itemLabel="All Lab" ></f:selectItem>
+                                        <f:selectItems value="#{departmentController.getDepartmentsOfInstitutionAndSiteForInstitution(sessionController.loggedUser.institution)}" var="d" itemLabel="#{d.name}" itemValue="#{d}" ></f:selectItems>
+                                    </p:selectOneMenu>
 
-                                <p:commandButton 
-                                    value="Process" 
-                                    action="#{inwardReportControllerBht.navigateToInpatientLabItemList}" 
-                                    icon="fa fa-prescription-bottle-alt"
-                                    class="ui-button-success"
-                                    >
-                                    <f:setPropertyActionListener 
-                                        value="#{admissionController.current}" 
-                                        target="#{inwardReportControllerBht.patientEncounter}" />
-                                </p:commandButton>
+                                    <div class="d-flex gap-3 mx-4 mt-2">
+                                        <p:outputLabel value="Show Refund cancel Tests" style="font-weight: bold"></p:outputLabel>
+                                        <p:toggleSwitch 
+                                            value="#{inwardReportControllerBht.showRefundCancelTests}"
+                                            onIcon="pi pi-check" 
+                                            offIcon="pi pi-times">
+                                        </p:toggleSwitch>
+                                    </div>
+
+                                    <p:commandButton 
+                                        value="Process" 
+                                        action="#{inwardReportControllerBht.navigateToInpatientLabItemList}" 
+                                        icon="fa fa-prescription-bottle-alt"
+                                        class="ui-button-success">
+                                        <f:setPropertyActionListener 
+                                            value="#{admissionController.current}" 
+                                            target="#{inwardReportControllerBht.patientEncounter}" >
+                                        </f:setPropertyActionListener>
+                                    </p:commandButton>
+                                </div>
 
                             </f:facet>
 
@@ -269,7 +293,8 @@
                                 rowIndexVar="rowIndex" 
 
                                 value="#{inwardReportControllerBht.labBillItemsToPatientEncounter}"  
-                                var="bip">
+                                var="bip"
+                                rowStyleClass="#{bip.bill.billTypeAtomic eq 'INWARD_SERVICE_BILL_CANCELLATION' ? 'cancelled-row' : (bip.bill.billTypeAtomic eq 'INWARD_SERVICE_BILL_REFUND' ? 'refunded-row' : '')}">
 
                                 <f:facet name="header">
                                     <f:facet name="header">

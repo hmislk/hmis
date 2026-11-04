@@ -451,6 +451,15 @@ public class SurgeryBillController implements Serializable {
             timedServiceBillFee.setRetiredAt(new Date());
             timedServiceBillFee.setRetirer(getSessionController().getLoggedUser());
             getBillFeeFacade().edit(timedServiceBillFee);
+            // Re-total the sub-bill and surgery bill so their stored values
+            // drop the deleted charge, as removeTimedEncFromDbase does (#23940).
+            if (timedServiceBillFee.getBillItem() != null) {
+                updateBillItem(timedServiceBillFee.getBillItem());
+            }
+            if (timedServiceBillFee.getBill() != null) {
+                updateBill(timedServiceBillFee.getBill());
+            }
+            getBillBean().updateBatchBill(surgeryBill);
         }
         refreshTimedEncounterComponents();
     }
@@ -1272,6 +1281,10 @@ public class SurgeryBillController implements Serializable {
 
         if (getSurgeryBill().getPatientEncounter().isPaymentFinalized()) {
             JsfUtil.addErrorMessage("Final Payment is Finalized");
+            return true;
+        }
+
+        if (inwardBean.blockIfDischarged(getSurgeryBill().getPatientEncounter())) {
             return true;
         }
 

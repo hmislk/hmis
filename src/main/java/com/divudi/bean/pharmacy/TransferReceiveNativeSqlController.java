@@ -18,6 +18,7 @@ import com.divudi.core.data.BillNumberSuffix;
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.DepartmentType;
+import com.divudi.core.data.dto.TransferReceiveItemPrintDto;
 import com.divudi.core.data.dto.TransferReceiveItemRowDto;
 import com.divudi.core.data.dto.TransferReceivePrintDto;
 import com.divudi.core.entity.Bill;
@@ -39,6 +40,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.persistence.TemporalType;
@@ -75,6 +77,9 @@ public class TransferReceiveNativeSqlController implements Serializable {
     private Date fromDate;
     private Date toDate;
     private TransferReceiveItemRowDto selectedItemRow;
+    // Re-entrancy guard for settle()/settleApprove(): a double submit of the
+    // non-AJAX Receive button must not persist two receive bills (#24788)
+    private final AtomicBoolean settling = new AtomicBoolean(false);
 
     // ---- Injected ----
     @Inject
@@ -393,7 +398,23 @@ public class TransferReceiveNativeSqlController implements Serializable {
      * Mirrors TransferReceiveController.settle().
      */
     public void settle() {
+        if (!settling.compareAndSet(false, true)) {
+            return;
+        }
+        try {
+            doSettle();
+        } finally {
+            settling.set(false);
+        }
+    }
+
+    private void doSettle() {
         if (!isAuthorized("FINALIZE", "PharmacyReceiveFinalize")) {
+            return;
+        }
+        // Already settled by an earlier request of this session (#24788)
+        if (printPreview) {
+            JsfUtil.addErrorMessage("This receive has already been saved. Please go back to the list.");
             return;
         }
         if (itemRowList == null || itemRowList.isEmpty()) {
@@ -421,6 +442,15 @@ public class TransferReceiveNativeSqlController implements Serializable {
             return;
         }
 
+        // Rows with a receiving quantity of 0 or less are skipped by the service; tell the user (#18601)
+        List<String> skippedRows = new ArrayList<>();
+        for (TransferReceiveItemRowDto row : itemRowList) {
+            if (row.getReceivingQty() != null && row.getReceivingQty().signum() <= 0) {
+                String code = row.getItemCode();
+                skippedRows.add(row.getItemName() + (code != null && !code.trim().isEmpty() ? " (" + code + ")" : ""));
+            }
+        }
+
         Bill bill = buildReceiveBillHeader(BillTypeAtomic.PHARMACY_RECEIVE);
         applyBillNumbers(bill);
 
@@ -438,6 +468,10 @@ public class TransferReceiveNativeSqlController implements Serializable {
         receivedBillId = bill.getId();
         enrichPrintDto(printDto, bill);
         printPreview = true;
+        if (!skippedRows.isEmpty()) {
+            JsfUtil.addWarningMessage(skippedRows.size() + " row(s) with a receiving quantity of 0 or less were skipped and not received: "
+                    + String.join(", ", skippedRows));
+        }
     }
 
     /**
@@ -445,7 +479,23 @@ public class TransferReceiveNativeSqlController implements Serializable {
      * Mirrors TransferReceiveController.settleApprove().
      */
     public void settleApprove() {
+        if (!settling.compareAndSet(false, true)) {
+            return;
+        }
+        try {
+            doSettleApprove();
+        } finally {
+            settling.set(false);
+        }
+    }
+
+    private void doSettleApprove() {
         if (!isAuthorized("APPROVE", "PharmacyReceiveApprove")) {
+            return;
+        }
+        // Already approved by an earlier request of this session (#24788)
+        if (printPreview) {
+            JsfUtil.addErrorMessage("This receive has already been approved. Please go back to the list.");
             return;
         }
         if (receivedBillId == null) {
@@ -570,11 +620,42 @@ public class TransferReceiveNativeSqlController implements Serializable {
 
         printDto = transferReceiveNativeSqlService.loadPrintDtoByBillId(receivedBillId);
         if (printDto != null) {
+            // The pre-saved receive bill is a header only (see saveRequest), so the
+            // reloaded DTO has no lines. Print the lines being received instead.
+            fillPrintItemsFromRows(printDto);
             enrichPrintDto(printDto, savedBill);
         }
         printPreview = true;
 
         JsfUtil.addSuccessMessage("Request Finalized Successfully");
+    }
+
+    private void fillPrintItemsFromRows(TransferReceivePrintDto dto) {
+        if (dto.getItems() != null && !dto.getItems().isEmpty()) {
+            return;
+        }
+        if (itemRowList == null || itemRowList.isEmpty()) {
+            return;
+        }
+        List<TransferReceiveItemRowDto> received = new ArrayList<>();
+        for (TransferReceiveItemRowDto row : itemRowList) {
+            if (row.getReceivingQty() != null && row.getReceivingQty().signum() > 0) {
+                received.add(row);
+            }
+        }
+        List<TransferReceiveItemPrintDto> items = transferReceiveNativeSqlService.buildPrintItems(received);
+        double net = 0;
+        double purchase = 0;
+        double retail = 0;
+        for (TransferReceiveItemPrintDto item : items) {
+            net += item.getNetValue();
+            purchase += item.getValueAtPurchaseRate().doubleValue();
+            retail += item.getValueAtRetailRate().doubleValue();
+        }
+        dto.setItems(items);
+        dto.setNetTotal(net);
+        dto.setTotalPurchaseValue(purchase);
+        dto.setTotalRetailSaleValue(retail);
     }
 
     // -----------------------------------------------------------------------

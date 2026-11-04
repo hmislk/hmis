@@ -17,6 +17,7 @@ silently treats that bill's stock value as **zero**, producing a discrepancy in 
 | `PHARMACY_STOCK_ADJUSTMENT` | No BFD created at all before Feb 23, 2026 | ✅ Feb 23, 2026 | **✅ `POST /api/pharmacy/backfill_bfd`** |
 | `PHARMACY_RETAIL_RATE_ADJUSTMENT` | `bill.total = 0` not persisted; BFD `grossTotal` partial before Feb 23, 2026 | ✅ Feb 23, 2026 | **✅ `POST /api/pharmacy/backfill_bfd`** |
 | `PHARMACY_GRN` (and related GRN types) | `BillItemFinanceDetails` (BIFD) not linked to BillItems — GRN reprint shows blank item columns | GRN creation logic unchanged; BIFD must be backfilled manually | **✅ `POST /api/pharmacy/backfill_grn_bifd`** |
+| `PHARMACY_ISSUE` / `PHARMACY_RECEIVE` (stock transfer bills) | BFD and/or `BillItemFinanceDetails` missing on old transfers — Stock Transfer Report shows 0 (#24721) | Transfer writers already save finance details; old rows must be backfilled | **✅ `POST /api/pharmacy/backfill_transfer_bifd`** (use `dryRun` first) |
 
 ---
 
@@ -392,6 +393,13 @@ Check `balanceCheck.discrepancyAtRetailRate` — it should be near zero (within 
   (stock flows out).
 - A `PHARMACY_RETAIL_SALE_CANCELLED_PRE` bill has **positive** `totalRetailSaleValue` (stock
   is restored).
+- **New backfill code:** `Bill.getBillFinanceDetails()` and `BillItem.getBillItemFinanceDetails()`
+  create an empty instance when the field is null, so a `== null` check after them is always
+  false and a managed entity can save empty rows (even in a dry run). Find missing/empty rows
+  with a JPQL projection (`LEFT JOIN ... IS NULL`), and treat existing rows with null values as
+  missing.
+- Load projections, not `Bill`/`BillItem` entities: their eager graphs make a month-long
+  backfill take tens of minutes instead of seconds.
 
 ---
 

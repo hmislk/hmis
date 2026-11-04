@@ -64,12 +64,12 @@
                                             action="#{collectingCentreController.saveSelected()}"
                                             class="ui-button-warning btn"
                                             process="gpDetail btnSave"
-                                            update="lstSelect growl" >
+                                            update="lstSelect ccTabs:ccDeptPanel growl" >
                                         </p:commandButton>
                                     </div>
                                 </f:facet>
 
-                                <p:tabView activeIndex="#{collectingCentreController.activeIndex}">
+                                <p:tabView id="ccTabs" activeIndex="#{collectingCentreController.activeIndex}">
                                     <p:tab title="Basic Details">
                                         <p:panelGrid 
                                             layout="tabular"
@@ -200,15 +200,8 @@
                                             <h:outputText value="Current Balance" >                                        
                                             </h:outputText>
                                             <h:panelGroup >
-                                                <p:inputText
-                                                    autocomplete="off" 
-                                                    rendered="#{webUserController.hasPrivilege('Developers')}"
-                                                    value="#{collectingCentreController.current.ballance}"  
-                                                    class="w-100">
-                                                </p:inputText>
-                                                <h:outputText 
-                                                    rendered="#{not webUserController.hasPrivilege('Developers')}"
-                                                    value="#{collectingCentreController.current.ballance}">                                        
+                                                <h:outputText
+                                                    value="#{collectingCentreController.current.ballance}">
                                                 </h:outputText>
                                             </h:panelGroup>
 
@@ -255,9 +248,54 @@
                                         </p:panelGrid>
                                     </p:tab>
 
+                                    <p:tab title="CC Departments" >
+                                        <h:panelGroup id="ccDeptPanel" layout="block">
+                                            <p:dataTable
+                                                id="tblCcDepartments"
+                                                value="#{collectingCentreController.departmentsOfCurrentCollectingCentre}"
+                                                var="dept"
+                                                rowIndexVar="i"
+                                                emptyMessage="No department has been created for this Collecting Centre yet.">
+                                                <p:column headerText="No" width="3em">
+                                                    <h:outputText value="#{i + 1}" />
+                                                </p:column>
+                                                <p:column headerText="Name">
+                                                    <h:outputText value="#{dept.name}" />
+                                                </p:column>
+                                                <p:column headerText="Code">
+                                                    <h:outputText value="#{dept.code}" />
+                                                </p:column>
+                                                <p:column headerText="Department Type">
+                                                    <h:outputText value="#{dept.departmentType}" />
+                                                </p:column>
+                                                <p:column headerText="Creator">
+                                                    <h:outputText value="#{dept.creater.webUserPerson.name}" />
+                                                </p:column>
+                                                <p:column headerText="Created At">
+                                                    <h:outputText value="#{dept.createdAt}" >
+                                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
+                                                    </h:outputText>
+                                                </p:column>
+                                            </p:dataTable>
+
+                                            <div class="d-flex justify-content-end mt-3">
+                                                <p:commandButton
+                                                    id="crtCCDeptBtn"
+                                                    value="Create New Department for this Centre"
+                                                    class="ui-button-emr"
+                                                    rendered="#{collectingCentreController.current.id ne null and collectingCentreController.departmentOfCurrentCollectingCentre eq null}"
+                                                    icon="fas fa-plus"
+                                                    action="#{collectingCentreController.createSingleDepartmentForCollectingCentre()}"
+                                                    process="@this"
+                                                    update="ccDeptPanel growl">
+                                                </p:commandButton>
+                                            </div>
+                                        </h:panelGroup>
+                                    </p:tab>
+
                                     <p:tab title="Metadata" >
                                         <p:panelGrid columns="2" layout="tabular" class="w-100" >
-                                            <h:outputText value="Active" >                                        
+                                            <h:outputText value="Active" >
                                             </h:outputText>
                                             <p:selectBooleanButton class="form-control" onIcon="fas fa-times" offIcon="fas fa-check" value="#{collectingCentreController.current.inactive}"  />
 
@@ -269,21 +307,6 @@
                                                 <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
                                             </h:outputText>
                                         </p:panelGrid>
-
-                                        <div class="d-flex justify-content-end mt-3">
-                                            <p:commandButton
-                                                id="crtCCDeptBtn"
-                                                value="Create New Department for this Centre"
-                                                class="ui-button-emr"
-                                                rendered="#{collectingCentreController.current.id ne null}"
-                                                icon="fas fa-plus"
-                                                action="#{collectingCentreController.createDepartmentForCollectingCentre()}"
-                                                process="@this"
-                                                update="crtCCDeptBtn growl">
-                                            </p:commandButton>
-                                        </div>
-
-
                                     </p:tab>
                                 </p:tabView>
 

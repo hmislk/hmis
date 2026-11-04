@@ -82,7 +82,7 @@ Do NOT add new print pages using this pattern:
 
 **Configuration Options:**
 - A4 Paper Format One (`grn_with_costing`)
-- A4 Paper Format Two (`grn_with_costing_new` — adds Last Purchase Rate and Profit % columns)
+- A4 Paper Format Two (`grn_with_costing_new` — adds Last Purchase Rate and Profit % columns; hide Profit % with `Print Profit % in GRN Bill` = false)
 - Custom Format 1
 - Custom Format 2
 - Custom Format 3

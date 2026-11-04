@@ -13,6 +13,7 @@
             <ui:define name="subcontent">
 
                 <h:form >
+                    <p:growl id="favGrowl" life="4000" />
                     <p:panel  >
                         <f:facet name="header" >
                             <h:outputText value="Manage Favourite Diagnosis By Age" >
@@ -44,9 +45,9 @@
                                 <p:commandButton value="Add New"
                                                  styleClass="ui-button-success"
                                                  icon="fas fa-plus"
-                                                 process="@this"
-                                                 update="dlgFavouriteDiagnosis"
-                                                 oncomplete="PF('dlgDiagnosis').show()"
+                                                 process="@this acDiagnosis"
+                                                 update="dlgFavouriteDiagnosis favGrowl"
+                                                 oncomplete="if (args &amp;&amp; args.prepared) PF('dlgDiagnosis').show()"
                                                  action="#{favouriteController.prepareAddingFavouriteDiagnosis()}" >
                                 </p:commandButton>
 
@@ -154,8 +155,8 @@
                                                  styleClass="ui-button-success"
                                                  icon="fas fa-save"
                                                  action="#{favouriteController.saveFavDiagnosis()}"
-                                                 update="favouriteDiagnosisTable"
-                                                 oncomplete="PF('dlgDiagnosis').hide()"/>
+                                                 update="favouriteDiagnosisTable favGrowl"
+                                                 oncomplete="if (args &amp;&amp; args.saved) PF('dlgDiagnosis').hide()"/>
                                 <p:commandButton value="Cancel"
                                                  styleClass="ui-button-secondary"
                                                  icon="fas fa-times"

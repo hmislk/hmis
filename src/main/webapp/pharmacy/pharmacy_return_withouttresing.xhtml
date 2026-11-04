@@ -61,6 +61,7 @@
                                             class="w-100"
                                             forceSelection="true"
                                             value="#{pharmacyReturnwithouttresing.stock}"
+                                            converter="stockConverter"
                                             queryDelay="300" completeMethod="#{stockController.completeAvailableStocks}"
                                             var="i"
                                             itemLabel="#{i.itemBatch.item.name}"

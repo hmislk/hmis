@@ -133,8 +133,7 @@ public class AgencyController implements Serializable {
             agentHistory.setTransactionValue(b1);
             agentHistory.setHistoryType(HistoryType.ChannelBalanceReset);
             agentHistoryFacade.create(agentHistory);
-            i.setBallance(b1);
-            ejbFacade.edit(i);
+            ejbFacade.updateBalance(i, b1);
         }
 
         for (Institution i : b2s) {
@@ -147,8 +146,7 @@ public class AgencyController implements Serializable {
             agentHistory.setTransactionValue(b2);
             agentHistory.setHistoryType(HistoryType.ChannelBalanceReset);
             agentHistoryFacade.create(agentHistory);
-            i.setBallance(b2);
-            ejbFacade.edit(i);
+            ejbFacade.updateBalance(i, b2);
         }
 
 

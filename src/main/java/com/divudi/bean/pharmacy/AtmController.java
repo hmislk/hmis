@@ -181,6 +181,7 @@ public class AtmController implements Serializable {
 
     public void prepareAdd() {
         current = new Atm();
+        current.setDepartmentType(DepartmentType.Pharmacy); // the ATM list and search only show Pharmacy ATMs
         selectedAtmDto = null; // Clear DTO selection when adding new
         editable = true;
     }
@@ -229,6 +230,9 @@ public class AtmController implements Serializable {
                 JsfUtil.addSuccessMessage("Updated Successfully.");
             } else {
                 // CREATE - no before state
+                if (getCurrent().getDepartmentType() == null) {
+                    getCurrent().setDepartmentType(DepartmentType.Pharmacy);
+                }
                 getCurrent().setCreatedAt(new Date());
                 getCurrent().setCreater(getSessionController().getLoggedUser());
                 getFacade().create(getCurrent());

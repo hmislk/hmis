@@ -11,12 +11,14 @@
 
         <h:panelGroup>
             <h:form id="admissionNumberForm">
-                <p:growl />
+                <p:growl id="growl" />
 
                 <p:panel header="BHT Number Management">
                     <p:dataTable id="admissionNumberTable"
+                                 widgetVar="admissionNumberTable"
                                  value="#{admissionNumberController.items}"
                                  var="an"
+                                 rowKey="#{an.id}"
                                  emptyMessage="No BHT counter records found."
                                  styleClass="w-100">
                         <p:column headerText="Institution">
@@ -33,13 +35,16 @@
                         </p:column>
                         <p:column headerText="Action" style="width: 80px; text-align: center;">
                             <p:commandButton value="Edit"
+                                             id="btnEdit"
+                                             title="Edit BHT counter #{an.id}"
                                              actionListener="#{admissionNumberController.prepareEdit(an)}"
-                                             update="editPanel"
+                                             update=":admissionNumberForm:editPanelHolder"
                                              process="@this" />
                         </p:column>
                     </p:dataTable>
                 </p:panel>
 
+                <h:panelGroup id="editPanelHolder" layout="block">
                 <h:panelGroup id="editPanel" layout="block" styleClass="mt-3"
                               rendered="#{admissionNumberController.selected != null}">
                     <p:panel header="Adjust BHT Counter">
@@ -70,11 +75,13 @@
                         </h:panelGrid>
 
                         <p:commandButton value="Save"
+                                         id="btnSave"
                                          action="#{admissionNumberController.saveSelected()}"
-                                         update="admissionNumberTable editPanel"
-                                         process="@form"
+                                         update=":admissionNumberForm:admissionNumberTable :admissionNumberForm:editPanelHolder :admissionNumberForm:growl"
+                                         process="@this lastBhtInput"
                                          styleClass="mt-2" />
                     </p:panel>
+                </h:panelGroup>
                 </h:panelGroup>
 
             </h:form>

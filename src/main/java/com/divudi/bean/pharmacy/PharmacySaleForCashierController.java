@@ -97,7 +97,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.LinkedHashSet;
+import java.util.LinkedHashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -1452,7 +1452,9 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
         pat.getPerson().setCreater(getSessionController().getLoggedUser());
         pat.getPerson().setCreatedAt(new Date());
 
-        if (pat.getPerson().getId() == null) {
+        // Patient.person is cascade = ALL, so creating a new patient below also saves its person.
+        // Persisting the person separately here wrote a second, unreferenced PERSON row (#23900).
+        if (pat.getPerson().getId() == null && pat.getId() != null) {
             getPersonFacade().create(pat.getPerson());
         }
         if (pat.getId() == null) {
@@ -1992,8 +1994,9 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
      */
     private List<StockDTO> executeFullSearchAndCacheMetadata(String qry, SearchConfig searchConfig, String cacheKey) {
         try {
-            // Use LinkedHashSet to maintain ordering and eliminate duplicates
-            Set<StockDTO> orderedResults = new LinkedHashSet<>();
+            // Keyed by stock id to keep relevance order and drop duplicates: StockDTO has no
+            // equals/hashCode, and a stock can match both queries (code prefix + name contains)
+            Map<Long, StockDTO> orderedResults = new LinkedHashMap<>();
 
             Map<String, Object> parameters = new HashMap<>();
             parameters.put("department", getSessionController().getLoggedUser().getDepartment());
@@ -2004,7 +2007,9 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
             // Step 1: Get prefix matches first (highest relevance)
             List<StockDTO> prefixResults = executeSearchQuery(qry, searchConfig, parameters, true);
             if (prefixResults != null) {
-                orderedResults.addAll(prefixResults);
+                for (StockDTO dto : prefixResults) {
+                    orderedResults.putIfAbsent(dto.getId(), dto);
+                }
             }
 
             // Step 2: Get contains matches if we need more results (lower relevance)
@@ -2012,12 +2017,14 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
                 parameters.put("searchContains", "%" + qry + "%");
                 List<StockDTO> containsResults = executeSearchQuery(qry, searchConfig, parameters, false);
                 if (containsResults != null) {
-                    orderedResults.addAll(containsResults); // Set automatically handles duplicates
+                    for (StockDTO dto : containsResults) {
+                        orderedResults.putIfAbsent(dto.getId(), dto);
+                    }
                 }
             }
 
             // Convert to list maintaining the insertion order (relevance order)
-            List<StockDTO> finalResults = new ArrayList<>(orderedResults);
+            List<StockDTO> finalResults = new ArrayList<>(orderedResults.values());
 
             // Limit to 20 results
             if (finalResults.size() > 20) {

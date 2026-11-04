@@ -82,6 +82,13 @@ public class PharmacyConfigController implements Serializable {
     private boolean transferReceiveA4Custom1;
     private boolean transferReceiveA4Custom2;
     private boolean transferReceiveCustom1;
+    private boolean transferReceiveShowRateAndValue;
+    private boolean transferReceiveDisplayPurchaseRate;
+    private boolean transferReceiveDisplayPurchaseValue;
+    private boolean transferReceiveDisplayRetailRate;
+    private boolean transferReceiveDisplayRetailValue;
+    private boolean transferReceiveDisplayTransferRate;
+    private boolean transferReceiveDisplayTransferValue;
 
     // Transfer Request Settings
     private boolean transferRequestA4;
@@ -298,6 +305,13 @@ public class PharmacyConfigController implements Serializable {
         transferReceiveA4Custom1 = configOptionController.getBooleanValueByKey("Pharmacy Transfer Receive Receipt is A4 Custom 1", true);
         transferReceiveA4Custom2 = configOptionController.getBooleanValueByKey("Pharmacy Transfer Receive Receipt is A4 Custom 2", true);
         transferReceiveCustom1 = configOptionController.getBooleanValueByKey("Pharmacy Transfer Receive Receipt is Letter Paper Custom 1", true);
+        transferReceiveShowRateAndValue = configOptionApplicationController.getBooleanValueByKey("Pharmacy Transfer Receive - Show Rate and Value", false);
+        transferReceiveDisplayPurchaseRate = configOptionApplicationController.getBooleanValueByKey("Pharmacy Disbursement Reports - Display Purchase Rate", false);
+        transferReceiveDisplayPurchaseValue = configOptionApplicationController.getBooleanValueByKey("Pharmacy Disbursement Reports - Display Purchase Value", false);
+        transferReceiveDisplayRetailRate = configOptionApplicationController.getBooleanValueByKey("Pharmacy Disbursement Reports - Display Retail Sale Rate", false);
+        transferReceiveDisplayRetailValue = configOptionApplicationController.getBooleanValueByKey("Pharmacy Disbursement Reports - Display Retail Sale Value", false);
+        transferReceiveDisplayTransferRate = configOptionApplicationController.getBooleanValueByKey("Pharmacy Disbursement Reports - Display Transfer Rate", false);
+        transferReceiveDisplayTransferValue = configOptionApplicationController.getBooleanValueByKey("Pharmacy Disbursement Reports - Display Transfer Value", false);
 
         // Transfer Request Settings
         transferRequestA4 = configOptionController.getBooleanValueByKey("Pharmacy Transfer Request Receipt is A4", true);
@@ -510,6 +524,15 @@ public class PharmacyConfigController implements Serializable {
             configOptionController.setBooleanValueByKey("Pharmacy Transfer Receive Receipt is A4 Custom 1", transferReceiveA4Custom1);
             configOptionController.setBooleanValueByKey("Pharmacy Transfer Receive Receipt is A4 Custom 2", transferReceiveA4Custom2);
             configOptionController.setBooleanValueByKey("Pharmacy Transfer Receive Receipt is Letter Paper Custom 1", transferReceiveCustom1);
+            // The Disbursement Reports keys are shared with the transfer issue reports, which treat an unset key as true.
+            // Write them only when changed here, so opening and saving this dialog does not hide columns elsewhere.
+            saveBooleanIfChanged("Pharmacy Transfer Receive - Show Rate and Value", transferReceiveShowRateAndValue);
+            saveBooleanIfChanged("Pharmacy Disbursement Reports - Display Purchase Rate", transferReceiveDisplayPurchaseRate);
+            saveBooleanIfChanged("Pharmacy Disbursement Reports - Display Purchase Value", transferReceiveDisplayPurchaseValue);
+            saveBooleanIfChanged("Pharmacy Disbursement Reports - Display Retail Sale Rate", transferReceiveDisplayRetailRate);
+            saveBooleanIfChanged("Pharmacy Disbursement Reports - Display Retail Sale Value", transferReceiveDisplayRetailValue);
+            saveBooleanIfChanged("Pharmacy Disbursement Reports - Display Transfer Rate", transferReceiveDisplayTransferRate);
+            saveBooleanIfChanged("Pharmacy Disbursement Reports - Display Transfer Value", transferReceiveDisplayTransferValue);
 
             // Transfer Request Settings
             configOptionController.setBooleanValueByKey("Pharmacy Transfer Request Receipt is A4", transferRequestA4);
@@ -1444,6 +1467,69 @@ public class PharmacyConfigController implements Serializable {
 
     public void setTransferReceiveCustom1(boolean transferReceiveCustom1) {
         this.transferReceiveCustom1 = transferReceiveCustom1;
+    }
+
+    public boolean isTransferReceiveShowRateAndValue() {
+        return transferReceiveShowRateAndValue;
+    }
+
+    public void setTransferReceiveShowRateAndValue(boolean transferReceiveShowRateAndValue) {
+        this.transferReceiveShowRateAndValue = transferReceiveShowRateAndValue;
+    }
+
+    public boolean isTransferReceiveDisplayPurchaseRate() {
+        return transferReceiveDisplayPurchaseRate;
+    }
+
+    public void setTransferReceiveDisplayPurchaseRate(boolean transferReceiveDisplayPurchaseRate) {
+        this.transferReceiveDisplayPurchaseRate = transferReceiveDisplayPurchaseRate;
+    }
+
+    public boolean isTransferReceiveDisplayPurchaseValue() {
+        return transferReceiveDisplayPurchaseValue;
+    }
+
+    public void setTransferReceiveDisplayPurchaseValue(boolean transferReceiveDisplayPurchaseValue) {
+        this.transferReceiveDisplayPurchaseValue = transferReceiveDisplayPurchaseValue;
+    }
+
+    public boolean isTransferReceiveDisplayRetailRate() {
+        return transferReceiveDisplayRetailRate;
+    }
+
+    public void setTransferReceiveDisplayRetailRate(boolean transferReceiveDisplayRetailRate) {
+        this.transferReceiveDisplayRetailRate = transferReceiveDisplayRetailRate;
+    }
+
+    public boolean isTransferReceiveDisplayRetailValue() {
+        return transferReceiveDisplayRetailValue;
+    }
+
+    public void setTransferReceiveDisplayRetailValue(boolean transferReceiveDisplayRetailValue) {
+        this.transferReceiveDisplayRetailValue = transferReceiveDisplayRetailValue;
+    }
+
+    public boolean isTransferReceiveDisplayTransferRate() {
+        return transferReceiveDisplayTransferRate;
+    }
+
+    public void setTransferReceiveDisplayTransferRate(boolean transferReceiveDisplayTransferRate) {
+        this.transferReceiveDisplayTransferRate = transferReceiveDisplayTransferRate;
+    }
+
+    public boolean isTransferReceiveDisplayTransferValue() {
+        return transferReceiveDisplayTransferValue;
+    }
+
+    public void setTransferReceiveDisplayTransferValue(boolean transferReceiveDisplayTransferValue) {
+        this.transferReceiveDisplayTransferValue = transferReceiveDisplayTransferValue;
+    }
+
+    // These keys are read application-wide by the print templates, so they bypass the department-prefixed ConfigOptionController.
+    private void saveBooleanIfChanged(String key, boolean value) {
+        if (configOptionApplicationController.getBooleanValueByKey(key, false) != value) {
+            configOptionApplicationController.setBooleanValueByKey(key, value);
+        }
     }
 
     // Disposal Issue Getters and Setters

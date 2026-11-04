@@ -804,15 +804,159 @@
                                     </div>
                                 </div>
 
-                                <h:panelGroup id="reportPrint" layout="block">
+                                <style>
+                                    @media print {
+                                        @page {
+                                            size: A4 landscape;
+                                            margin: 10mm 8mm 12mm 8mm;
+                                            @bottom-right {
+                                                content: "Page " counter(page) " of " counter(pages);
+                                                font-family: Arial, sans-serif;
+                                                font-size: 8pt;
+                                            }
+                                        }
+
+                                        body {
+                                            margin: 0 !important;
+                                            -webkit-print-color-adjust: exact;
+                                            print-color-adjust: exact;
+                                        }
+
+                                        .summary-collection-print {
+                                            width: 100% !important;
+                                            font-family: Arial, sans-serif;
+                                            font-size: 9pt;
+                                            color: #000;
+                                        }
+
+                                        .summary-collection-print .report-title {
+                                            font-size: 12pt !important;
+                                        }
+
+                                        .summary-collection-print hr {
+                                            margin: 4px 0;
+                                            border-top: 1px solid #000;
+                                        }
+
+                                        /* Keep the cashier / shift details on one line set; A4 width is below the Bootstrap md breakpoint */
+                                        .summary-collection-print .report-meta {
+                                            display: flex !important;
+                                            flex-wrap: wrap;
+                                            margin: 0 0 6px 0 !important;
+                                        }
+
+                                        .summary-collection-print .report-meta > div {
+                                            flex: 0 0 33.33% !important;
+                                            max-width: 33.33% !important;
+                                            padding: 1px 4px !important;
+                                            font-size: 8.5pt;
+                                        }
+
+                                        .summary-collection-print .ui-datatable {
+                                            margin-bottom: 8px !important;
+                                        }
+
+                                        .summary-collection-print .ui-datatable-tablewrapper {
+                                            overflow: visible !important;
+                                        }
+
+                                        .summary-collection-print .ui-datatable table {
+                                            /* Slightly under 100% so the collapsed outer border is not clipped at the page edge */
+                                            width: calc(100% - 2px) !important;
+                                            table-layout: auto !important;
+                                            border-collapse: collapse !important;
+                                            font-size: 8pt !important;
+                                        }
+
+                                        .summary-collection-print .ui-datatable-header {
+                                            width: calc(100% - 2px) !important;
+                                            box-sizing: border-box;
+                                            padding: 3px 4px !important;
+                                            font-size: 9pt !important;
+                                            text-align: left !important;
+                                            background: #e9ecef !important;
+                                            border: 1px solid #000 !important;
+                                            border-bottom: none !important;
+                                        }
+
+                                        .summary-collection-print .ui-datatable thead th,
+                                        .summary-collection-print .ui-datatable tbody td,
+                                        .summary-collection-print .ui-datatable tfoot td {
+                                            padding: 2px 3px !important;
+                                            border: 1px solid #000 !important;
+                                            min-width: 0 !important;
+                                            white-space: normal !important;
+                                            word-break: break-word;
+                                            line-height: 1.2;
+                                        }
+
+                                        .summary-collection-print .ui-datatable thead th {
+                                            background: #f2f2f2 !important;
+                                            font-weight: bold;
+                                        }
+
+                                        /* Theme header cells drop the right edge; draw it so the last column closes */
+                                        .summary-collection-print .ui-datatable .ui-datatable-tablewrapper > table > thead > tr > th,
+                                        .summary-collection-print .ui-datatable .ui-datatable-tablewrapper > table > thead > tr > th:last-child,
+                                        .summary-collection-print .ui-datatable .ui-datatable-tablewrapper > table > tbody > tr > td:last-child,
+                                        .summary-collection-print .ui-datatable .ui-datatable-tablewrapper > table > tfoot > tr > td:last-child {
+                                            border-right: 1px solid #000 !important;
+                                        }
+
+                                        .summary-collection-print .ui-datatable tfoot td {
+                                            font-weight: bold;
+                                        }
+
+                                        /* Repeat column headers on every page and never split a row */
+                                        .summary-collection-print .ui-datatable thead {
+                                            display: table-header-group;
+                                        }
+
+                                        .summary-collection-print .ui-datatable tfoot {
+                                            display: table-row-group;
+                                        }
+
+                                        .summary-collection-print .ui-datatable tr {
+                                            page-break-inside: avoid;
+                                            break-inside: avoid;
+                                        }
+
+                                        .summary-collection-print .collection-summary {
+                                            font-size: 9pt !important;
+                                            page-break-inside: avoid;
+                                            break-inside: avoid;
+                                        }
+
+                                        .summary-collection-print .collection-summary td {
+                                            border: 1px solid #000 !important;
+                                            padding: 3px 6px !important;
+                                        }
+
+                                        .summary-collection-print .signature-block {
+                                            display: flex !important;
+                                            margin-top: 40px !important;
+                                            page-break-inside: avoid;
+                                            break-inside: avoid;
+                                        }
+
+                                        .summary-collection-print .signature-block > div {
+                                            flex: 0 0 33.33% !important;
+                                            max-width: 33.33% !important;
+                                            padding: 0 10px !important;
+                                            font-size: 8.5pt;
+                                        }
+                                    }
+                                </style>
+
+                                <h:panelGroup id="reportPrint" layout="block" styleClass="summary-collection-print">
                                     <!-- Report header -->
                                     <div class="text-center fw-bold" style="font-weight: bold">
-                                        <h:outputText value="#{sessionController.institution.name}" style="font-size: 1.1rem;"/>
+                                        <h:outputText value="#{sessionController.institution.name}" styleClass="report-title" style="font-size: 1.1rem;"/>
                                         <br/>
                                         <h:outputText value="Summary Collection Report"/>
                                     </div>
                                     <hr/>
-                                    <div class="row mb-2" style="font-weight: bold">
+                                    <div class="row mb-2 report-meta" style="font-weight: bold">
                                         <div class="col-md-3">
                                             <h:outputText value="Cashier : "/>
                                             <h:outputText value="#{channelReportController.bookingsByShiftDto.cashierUserName}"/>
@@ -1045,7 +1189,7 @@
                                         </p:dataTable>
 
                                         <!-- Shift End Collection Summary -->
-                                        <table style="width: 100%; border-collapse: collapse; font-weight: bold; font-size: 14px; text-align: left;">
+                                        <table class="collection-summary" style="width: 100%; border-collapse: collapse; font-weight: bold; font-size: 14px; text-align: left;">
                                             <ui:repeat value="#{channelReportController.bookingsByShiftDto.collections}" var="c">
                                                 <tr>
                                                     <td style="border: 2px solid #ccc; padding: 6px;">
@@ -1121,7 +1265,7 @@
                                         </table>
 
                                         <!-- Signature block -->
-                                        <div class="row" style="margin-top: 60px;">
+                                        <div class="row signature-block" style="margin-top: 60px;">
                                             <div class="col-4 text-center">
                                                 <div style="border-top: 1px solid #000; padding-top: 4px;">
                                                     <h:outputText value="Cashier Signature"/>

@@ -171,6 +171,13 @@ public class InpatientDirectIssueNativeSqlController implements Serializable {
 
         try {
             nativeSqlService.settle(bill, billItemDataList);
+            try {
+                // settle() has committed; drop the copy its commit cached with zero totals (#24671)
+                nativeSqlService.evictSettledBillFromCache(bill.getId());
+            } catch (RuntimeException evictFailure) {
+                // The bill is already saved; a failed eviction must not be reported as a failed settle
+                LOGGER.log(Level.WARNING, "Post-settle cache eviction failed for bill id=" + bill.getId(), evictFailure);
+            }
 
             PrintBillData pbd = new PrintBillData();
             Department issuingDept = sessionController.getLoggedUser().getDepartment();
@@ -367,6 +374,10 @@ public class InpatientDirectIssueNativeSqlController implements Serializable {
         if (qty == null || qty <= 0.0) {
             errorMessage = "Quantity?";
             JsfUtil.addErrorMessage("Please enter a quantity.");
+            return;
+        }
+        if (isDecimalQuantityNotAllowed(qty, selectedStockDto.getItemId())) {
+            JsfUtil.addErrorMessage("Please enter only whole numbers (integers). Decimal values are not allowed for this item.");
             return;
         }
         if (selectedStockDto.getDateOfExpire() != null
@@ -759,10 +770,38 @@ public class InpatientDirectIssueNativeSqlController implements Serializable {
     // Row editing
     // -----------------------------------------------------------------------
 
+    /**
+     * Same three-tier rule as PharmacySaleBhtController: decimals are accepted
+     * when allowed universally, or by the item's allowFractions flag; otherwise
+     * integer-only unless "Quantity Must Be Integer" is switched off. (Issue #15761)
+     *
+     * @return true when the quantity has a fractional part that is not allowed
+     */
+    private boolean isDecimalQuantityNotAllowed(Double quantity, Long itemId) {
+        if (quantity == null || quantity % 1 == 0) {
+            return false;
+        }
+        if (configOptionApplicationController.getBooleanValueByKey(
+                "Pharmacy Direct Issue to BHT - Allow Decimals Universally", false)) {
+            return false;
+        }
+        Item item = itemId != null ? itemFacade.find(itemId) : null;
+        if (item != null && item.isAllowFractions()) {
+            return false;
+        }
+        return configOptionApplicationController.getBooleanValueByKey(
+                "Pharmacy Direct Issue to BHT - Quantity Must Be Integer", true);
+    }
+
     public void onEdit(BillItemData bid) {
         if (bid.getQty() <= 0) {
             bid.setQty(0);
             JsfUtil.addErrorMessage("Quantity must be greater than zero.");
+            return;
+        }
+        if (isDecimalQuantityNotAllowed(bid.getQty(), bid.getItemId())) {
+            bid.setQty(0);
+            JsfUtil.addErrorMessage("Please enter only whole numbers (integers). Decimal values are not allowed for this item.");
             return;
         }
         double absQty = Math.abs(bid.getQty());
@@ -794,7 +833,7 @@ public class InpatientDirectIssueNativeSqlController implements Serializable {
             return;
         }
         double requiredQty = Math.abs(bid.getQty());
-        substituteStocks = pharmacySubstituteService.findSubstituteStocks(item, sessionController.getDepartment(), requiredQty);
+        substituteStocks = pharmacySubstituteService.findAlternativeBrandStocks(item, sessionController.getDepartment(), requiredQty);
     }
 
     public void replaceSelectedSubstitute() {

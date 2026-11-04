@@ -1,19 +1,21 @@
 ---
 name: review-and-fix
 description: >
-  Deep-review one open PR, apply the resulting fixes, verify each one live
-  (build → local redeploy → Playwright + DB), commit, push, drive CI to
+  Deep-review one or more open PRs, apply the resulting fixes, verify each one
+  live (build → local redeploy → Playwright + DB), commit, push, drive CI to
   green, then reply to the review threads. Use when asked to "fix the review
-  findings on #N", "review and fix PR #N", "clean up #N before merge", or on
-  a PR a prior merge-gate run left BLOCKED-REVIEW. It never merges, approves,
-  or requests changes — it hands back a green, fixed PR ready for the user's
-  final review and merge.
-argument-hint: "<pr-number>"
+  findings on #N", "review and fix PR #N", "clean up #N before merge", on PRs
+  a prior merge-gate run left BLOCKED-REVIEW, or to take over a contributor's
+  or intern's PR and make it mergeable ourselves because it is urgent
+  ("take over #N", "fix Rashmika's PR and make it mergeable", `--urgent`).
+  It never merges, approves, or requests changes — it hands back green, fixed
+  PRs ready for the user's final review and merge.
+argument-hint: "<pr-number> [pr-number...] | author=<login>[,<login>...] [count=N] [--urgent]"
 ---
 
 # Review and Fix (HMIS)
 
-Given one open PR: fresh deep code review → classify and discuss the
+Given one or more open PRs, each in turn: fresh deep code review → classify and discuss the
 non-obvious findings → apply the fixes → verify each one live (build →
 local redeploy → Playwright + DB, or browser-only for JSF-only changes) →
 commit → push → **drive CI to green** → reply to the review threads.
@@ -23,9 +25,11 @@ PR is fixed, pushed, its review threads answered, and **CI is green on the
 head commit** — ready for the user's final review and merge.
 
 Invoking this skill is the explicit authorization for every commit / push /
-thread-reply step below — do not re-ask before each one. The discussion
-gate is step 3 (classify + discuss the non-obvious findings); that is the
-only point where you pause for the user.
+thread-reply step below — do not re-ask before each one, including pushing
+to a contributor's PR branch. The discussion gate is step 3 (classify +
+discuss the non-obvious findings); that is the only point where you pause
+for the user, and in `--urgent` mode (see § Urgent takeover) you do not pause
+there either.
 
 ## Background
 
@@ -54,18 +58,29 @@ slower and less reliable than fixing it directly, for two reasons:
 
 No existing skill covers that middle step. This one does.
 
+The same gap shows up with intern PRs that are urgent: the gate has already
+posted its findings, but waiting for another round trip with the author is
+too slow, so we fix the PR ourselves on the author's branch. The first such
+takeover (`#24531`, on-call settle tendered amount) added what this skill
+now covers: a branch 486 commits behind `development` with **no CI run at
+all** (GitHub showed `BLOCKED` only because required checks had never
+started), a fix that changed the meaning of an existing config key (moved
+behind a new key), and a pre-existing defect in a sibling method that became
+a follow-up issue instead of scope creep.
+
 ## Non-goals
 
 - **Not a replacement for `merge-gate`.** `merge-gate` decides *whether* a
   batch of PRs is safe to merge and runs two fixed baseline regression
-  checks unrelated to any PR's scope. This skill *fixes* one PR the gate
+  checks unrelated to any PR's scope. This skill *fixes* the PRs the gate
   (or the user) has already flagged.
 - **Not a replacement for `review-pr`.** It *invokes* `review-pr` for the
   thread-reply step rather than re-implementing the cardinal rules.
 - **Not a general test-automation framework.** It drives the existing
   `code-review`, `playwright-e2e`, and `review-pr` skills.
-- **Not batch.** One PR per invocation — the verify loop needs focus;
-  `merge-gate` already frames the batch.
+- **Not parallel.** Several PRs per invocation are fine, but they run one at
+  a time (§ Multi-PR handling) — only one branch can be deployed on local
+  Payara at once.
 - **Does not merge.** Final review and the merge button are always the
   user's.
 
@@ -86,8 +101,7 @@ merge-gate #A #B #C          # gate a batch
   -> #A PASSED
   -> #B BLOCKED-REVIEW
   -> #C BLOCKED-REVIEW
-review-and-fix #B            # fix + verify + push + CI-green #B
-review-and-fix #C            # fix + verify + push + CI-green #C
+review-and-fix #B #C         # fix + verify + push + CI-green, one after the other
 merge-gate #B #C             # re-gate -> PASSED
 # user merges
 ```
@@ -97,16 +111,74 @@ code" identity.
 
 ## Arguments
 
-- `$0` — one **PR number** (not an issue number). If the number doesn't
+- **PR numbers** — one or more (not issue numbers). If a number doesn't
   resolve to an open PR, say so and ask for the correct PR number rather
   than guessing which PR closes an issue.
-- Optional second argument: a `merge-gate` status-comment URL (or the words
-  "merge-gate findings"). When given, fix only what that prior gate flagged
-  rather than re-reviewing from scratch — read the linked inline comments,
-  skip step 2's fresh `code-review`, and go straight to step 3.
+- **`author=<login>[,<login>...]`** instead of numbers, optionally with
+  `count=N` (default 1): select open PRs into `development` by those authors
+  (see § Selecting PRs by author). The user often gives first names
+  ("Rashmika, Thisara or Shehara"); match them to logins from
+  `gh pr list --json author` and say which logins you used.
+- **`merge-gate findings`** (or a merge-gate status-comment URL): fix only
+  what that gate flagged rather than re-reviewing from scratch — read its
+  inline comments, skip step 2's fresh `code-review`, and go straight to
+  step 3. A PR whose latest top-level comment is a `🚦 Merge Gate: BLOCKED —
+  blocking code-review findings` gets this treatment automatically.
+- **`--urgent`** — the takeover mode in § Urgent takeover. Implied when the
+  user asks to "take over" a PR or says it is urgent.
 
-Process exactly one PR per invocation. `merge-gate` already handles the
-batch framing; the verify loop here needs to stay focused on one branch.
+## Selecting PRs by author
+
+```bash
+gh pr list --repo hmislk/hmis --state open --base development --limit 100 \
+  --json number,title,author,createdAt,isDraft,isCrossRepository,maintainerCanModify,comments \
+  --jq '.[] | select(.isDraft|not) | select(.author.login=="<login>") |
+        "\(.number)\t\(.createdAt[:10])\t\([.comments[]|select(.body|test("Merge Gate"))|.body|split("\n")[0]]|last)\t\(.title)"'
+```
+
+Prefer, in order: a PR the latest merge-gate run left `BLOCKED-REVIEW`
+(findings already exist and the fix is bounded), then the oldest. Skip a PR
+that is waiting on a product decision someone else owns. State the pick and
+why in one line before starting.
+
+## Multi-PR handling
+
+Process PRs **sequentially**, each through step 9 (or parked), before
+starting the next — only one branch can be deployed on local Payara at a
+time. Keep a running outcome table and print it at the end (§ 9).
+
+While one PR's CI is pending (step 7), you may start the next PR's steps 1–6,
+but come back and finish every PR's step 7–8 before the final report. Switch
+branches with the step 1 `persistence.xml` discard/restore every time.
+
+A PR that hits a hard stop (a decision only the user can make, a check that
+stays red after a fix, no push access) is **parked** with its reason, and
+the batch moves on. Never let one PR block the rest.
+
+## Urgent takeover (`--urgent`)
+
+Used when we fix an intern's or contributor's PR ourselves so it can merge
+now. Differences from the default flow:
+
+- **No pause at step 3.** Decide each non-obvious finding by the project
+  rules (CLAUDE.md, the false-positive list in step 3, the sibling code) and
+  record the decision and the reason in the commit body and the takeover
+  comment (step 8). Pause only for a **product decision the rules can't
+  settle** (e.g. what a report should count); park that PR, don't guess.
+- **Default answers that need no discussion:**
+  - A fix that changes what an existing config key does → put the new
+    behaviour behind a **new key** named for what `true` does; leave the old
+    key's behaviour exactly as it was. Choose the new key's default by what
+    fixes the reported bug, and say so.
+  - A real defect found in code the PR only touches or sits next to, which
+    predates the PR → **follow-up issue**, not part of this PR (scope stays
+    reviewable). Process it per the follow-up rule in
+    [Retrospective](../../../developer_docs/process/continuous-improvement-retrospective.md).
+  - The author's approach is kept wherever it is sound; rewrite only what a
+    finding requires.
+- **Keep the author's branch and PR.** Push to their branch; never open a
+  replacement PR, never rebase or force-push (their local clone and the
+  review history depend on it).
 
 ## 1. Checkout
 
@@ -133,6 +205,37 @@ git rev-list --count HEAD..origin/development
 A branch more than a few hundred commits behind `development` is worth a
 rebase note in the final report — a clean textual auto-merge can still hide
 semantic drift in a helper the changed code calls.
+
+### 1a. Push access and an up-to-date branch
+
+Check you can push to the PR's branch before doing any work:
+
+```bash
+gh pr view <PR> --json isCrossRepository,maintainerCanModify,headRefName
+```
+
+`isCrossRepository: false` (an intern branch in `hmislk/hmis`) → you can push,
+whatever `maintainerCanModify` says. A fork with `maintainerCanModify: false`
+→ park the PR (`NO-PUSH-ACCESS`) and ask the author to tick "Allow edits by
+maintainers".
+
+Then bring the branch up to date with a **merge**, not a rebase (no
+force-push to someone else's branch):
+
+```bash
+git merge --no-edit origin/development
+```
+
+Resolve conflicts by keeping both sides' intent; if a conflict needs a
+product call, park the PR. Build and verify on the merged tree, so what you
+test is what will land.
+
+### 1b. CI that never ran
+
+`gh pr checks <PR>` printing `no checks reported` (with `mergeStateStatus:
+BLOCKED`) means no workflow ever started on this branch, not that checks
+failed. The step 6 push starts them. Don't report such a PR as "CI red", and
+don't stop at it.
 
 ## 2. Fresh review
 
@@ -171,7 +274,9 @@ codebase and the known false-positive patterns from `review-pr` /
 
 For each candidate, state: **Valid — will fix** / **False positive —
 <reason>** / **Discuss**. Wait for the user on anything marked Discuss;
-don't burn a build guessing.
+don't burn a build guessing. In `--urgent` mode, resolve each Discuss item
+with § Urgent takeover's default answers instead, and record it; only a
+product decision the rules can't settle parks the PR.
 
 ## 4. Apply the fixes
 
@@ -187,6 +292,21 @@ commit per finding.
 If a fix adds or renames a persisted entity field, run the `generate-ddl`
 skill before moving on (same as `dev-issue` §5a). Skip it for pure
 business-logic / query / view fixes.
+
+When the same logic is duplicated across sibling controllers (by-date and
+by-month channel controllers are the usual pair), extract the shared part
+into a small container-free class with a unit test (pattern:
+`NonCashSettlementRules` / `ChannelTenderedAmountRules`) and call it from
+every site, rather than fixing each copy by hand.
+
+If the fix reads a new config key, write the `getBooleanValueByKey("…", default)`
+call on **one line** with the key as a string literal: the
+`config-semantics-guard` greps line by line and won't see a key split across
+lines or held in a constant. After committing (it reads `HEAD`), run it:
+
+```bash
+python3 .github/scripts/check_config_semantics.py origin/development
+```
 
 ## 5. Verify each fix live
 
@@ -246,6 +366,15 @@ If the local DB lacks data to exercise the finding, in order of preference:
 
 Never fall back to "code looks correct" as the evidence.
 
+Check that every rejected attempt wrote nothing: after a validation-path
+test, query the DB for the record the action would have created. A message
+that appears while a bill is saved anyway is still a bug.
+
+If a click doesn't fire a PrimeFaces AJAX event (e.g. a `selectionMode`
+row click that never sends `rowSelect`), say so in the report, then drive
+the widget instead (`PrimeFaces.widgets[...].selectRow($(tr), false)`) to
+reach the code under test. Don't silently treat it as the normal path.
+
 **Local Payara connection-pool note:** a long-idle local domain can start
 throwing `EJBTransactionRolledbackException: Client's transaction aborted`
 on unrelated queries (patient allergies, favourite reports). Flush the
@@ -302,7 +431,10 @@ Wait for **every** check on the head commit: `validate-compilation`,
 
 - `pending` is **not** a stopping point. Poll it out — `ScheduleWakeup`
   ~270s (same cadence as `dev-issue` §14) and recheck; don't block with
-  `gh pr checks --watch` past a couple of minutes.
+  `gh pr checks --watch` past a couple of minutes. A background poll loop
+  must break only when the output lists the checks and none is `pending`;
+  `gh` errors (e.g. a transient `HTTP 401`) contain no `pending` either and
+  would end a "loop while pending" early.
 - On a **check failure**: read the failing job's log, fix the cause, commit,
   push (step 6's `finally` rule for `persistence.xml` applies to every push),
   go back to the top of this step.
@@ -343,15 +475,44 @@ should do next. Threads you already answered reply-only in step 7 don't need
 a second reply; `review-pr` covers whatever remains and issues the single
 re-review request.
 
-If this PR came from a `merge-gate` run, also post one new top-level status
-comment recording the fixes applied (commit SHA, one line per finding, and
-what was verified live) — this is the same carved-out exception `merge-gate`
-uses for its own outcome comments, so a merger who wasn't in the session can
-see the gate's findings were addressed.
+If this PR came from a `merge-gate` run, or this was a `--urgent` takeover,
+also post one new top-level status comment recording the fixes applied —
+the same carved-out exception `merge-gate` uses for its own outcome
+comments, so a merger who wasn't in the session can see the findings were
+addressed, and the author can learn from what changed. Write it with
+`--body-file` (a file in `tmp/`), public-content rules apply (no hospital
+data):
+
+```markdown
+## 🛠️ Review and Fix: fixed and ready for merge
+
+Taken over to make this mergeable now (urgent). Commit `<sha>`.
+
+**Fixed:**
+- <finding> → <what changed> (<file>)
+
+**Decided without discussion** (urgent mode):
+- <decision> — <rule or reason>
+
+**Verified:** <unit tests>; <menu path> on local Payara: <what was exercised and the result>.
+
+**Not fixed here:** <pre-existing defect> → #<follow-up issue>.
+
+@<author> — please read the diff of `<sha>`; the reasons are in the commit body.
+```
 
 ## 9. Report
 
-Give the user:
+For a batch, start with a table, one row per PR:
+
+| PR # | Author | Outcome | Head SHA | CI | Follow-ups | Notes |
+|---|---|---|---|---|---|---|
+
+Outcome is `READY` (fixed, CI green, threads answered) or `PARKED-<reason>`
+(`PARKED-DECISION`, `PARKED-CI`, `NO-PUSH-ACCESS`). List every follow-up
+issue filed and ask whether to fix them now or in another session.
+
+Then, per PR, give the user:
 
 - The PR link and the head-commit SHA.
 - One line per finding: what it was, how it was fixed (or why dismissed),
@@ -367,7 +528,8 @@ call (matching `dev-issue` §15, `merge-gate`, `review-pr`).
 
 ## Definition of done
 
-The skill has **not** completed until **all** of these hold:
+The skill has **not** completed until **all** of these hold for every PR
+that wasn't parked (a parked PR needs only its reason in the report):
 
 - every must-fix finding is fixed **and** verified live (JSF-only: exercised
   in the browser after confirming the edit is live);

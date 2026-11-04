@@ -71,7 +71,7 @@ public class InpatientPackageController implements Serializable {
         ejbFacade.edit(current);
         items = null;
         current = null;
-        JsfUtil.addSuccessMessage("Deleted Successfully");
+        JsfUtil.addSuccessMessage("Inpatient Package deleted successfully.");
     }
 
     public void saveSelected() {
@@ -79,16 +79,24 @@ public class InpatientPackageController implements Serializable {
             JsfUtil.addErrorMessage("You are not authorized to manage Inpatient Packages.");
             return;
         }
-        if (current == null || current.getName() == null || current.getName().trim().isEmpty()) {
-            JsfUtil.addErrorMessage("Please enter a package name");
+        if (current == null) {
+            JsfUtil.addErrorMessage("Please click Add to create a new package, or select a package to edit");
             return;
+        }
+        boolean missingRequired = false;
+        if (current.getName() == null || current.getName().trim().isEmpty()) {
+            JsfUtil.addErrorMessage("Please enter a package name");
+            missingRequired = true;
         }
         if (current.getAdmissionType() == null) {
             JsfUtil.addErrorMessage("Please select an Admission Type");
-            return;
+            missingRequired = true;
         }
         if (current.getRoomCategory() == null) {
             JsfUtil.addErrorMessage("Please select a Room Category");
+            missingRequired = true;
+        }
+        if (missingRequired) {
             return;
         }
         List<InpatientPackageItem> components = new ArrayList<>();
@@ -113,12 +121,12 @@ public class InpatientPackageController implements Serializable {
         current.setTotalPrice(InpatientPackagePricing.calculateTotalPrice(parsedAmounts, components));
         if (current.getId() != null) {
             ejbFacade.edit(current);
-            JsfUtil.addSuccessMessage("Updated Successfully.");
+            JsfUtil.addSuccessMessage("Inpatient Package updated successfully.");
         } else {
             current.setCreatedAt(new Date());
             current.setCreater(sessionController.getLoggedUser());
             ejbFacade.create(current);
-            JsfUtil.addSuccessMessage("Saved Successfully");
+            JsfUtil.addSuccessMessage("Inpatient Package saved successfully.");
         }
         items = null;
         amountInputMap = null;

@@ -607,6 +607,90 @@ curl -X POST "http://localhost:8080/api/pharmacy/backfill_grn_bifd" \
 
 ---
 
+### POST `/api/pharmacy/backfill_transfer_bifd`
+
+Backfills missing `BillFinanceDetail` (BFD) and `BillItemFinanceDetail` (BIFD) records for
+historical pharmacy stock transfer bills (issue and receive). Transfers saved before finance
+details existed show 0 in the Stock Transfer Report. Values are rebuilt from the
+`PharmaceuticalBillItem` rows (rates at transfer time, falling back to the item batch). Cost
+falls back to the purchase rate when the batch has no cost rate; the count is reported and
+written to the bill's audit comment.
+
+Rows that exist but are empty count as missing: opening some views on old bills can save
+BFD/BIFD rows with null values (`filledBifds` / `filledBfds`). The backfill creates missing
+rows and fills only null fields, never overwriting a stored value, so it is safe to re-run.
+
+It reads only the columns it needs and writes with bulk updates, so a month takes seconds.
+Run month by month, and use `"dryRun": true` first to review the summary.
+
+**Authentication:** `Finance: <api_key>` header
+
+**Request Body:**
+```json
+{
+  "fromDate": "2025-01-01",
+  "toDate": "2025-01-31",
+  "approvedBy": "<approver name>",
+  "auditComment": "Backfill finance details for historical stock transfers",
+  "departmentId": <department id>,
+  "billTypeAtomics": ["PHARMACY_ISSUE", "PHARMACY_RECEIVE"],
+  "dryRun": true
+}
+```
+
+| Field | Required | Description |
+|-------|----------|-------------|
+| `fromDate` | Yes | Start date inclusive, format `yyyy-MM-dd` (must not be after `toDate`) |
+| `toDate` | Yes | End date inclusive, format `yyyy-MM-dd` |
+| `auditComment` | Yes | Audit trail comment stored on every corrected bill |
+| `approvedBy` | Yes | Name of the authorising administrator |
+| `departmentId` | No | Limit scope to a specific department (null = all departments) |
+| `billTypeAtomics` | No | `PHARMACY_ISSUE`, `PHARMACY_RECEIVE`. Defaults to both. Other values return 400 |
+| `dryRun` | No | `true` = compute and report only, nothing is saved. Default `false` |
+
+**Success Response:**
+```json
+{
+  "status": "success",
+  "code": 200,
+  "data": {
+    "totalBillsFound": 120,
+    "processedBills": 118,
+    "skippedBills": 2,
+    "createdBifds": 410,
+    "filledBifds": 0,
+    "createdBfds": 95,
+    "filledBfds": 0,
+    "skippedItems": 1,
+    "costFallbackItems": 300,
+    "totalPurchaseValue": 1250000.0,
+    "totalRetailValue": 1500000.0,
+    "totalCostValue": 1250000.0,
+    "dryRun": true,
+    "errors": []
+  }
+}
+```
+
+The three `total*Value` figures are absolute sums. BFD totals are stored negative for issues and
+positive for receives; BIFD `valueAt*` values are positive for both.
+
+**Example:**
+```bash
+curl -X POST "http://localhost:8080/api/pharmacy/backfill_transfer_bifd" \
+  -H "Finance: <finance_api_key>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "fromDate": "2025-01-01",
+    "toDate": "2025-01-31",
+    "approvedBy": "<approver name>",
+    "auditComment": "Backfill finance details for historical stock transfers",
+    "dryRun": true
+  }'
+```
+
+---
+
 ## Related APIs
 
 - **Institution Management API** - `/api/institutions` - See `API_INSTITUTION_DEPARTMENT_MANAGEMENT.md`

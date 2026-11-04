@@ -885,8 +885,7 @@ public class BillBhtController implements Serializable {
             return;
         }
 
-        if (getBatchBill().getPatientEncounter().isDischarged()) {
-            JsfUtil.addErrorMessage("Sorry Patient is Discharged!!!");
+        if (inwardBean.blockIfDischarged(getBatchBill().getPatientEncounter())) {
             return;
         }
 
@@ -1006,8 +1005,7 @@ public class BillBhtController implements Serializable {
             return true;
         }
 
-        if (getPatientEncounter().isDischarged()) {
-            JsfUtil.addErrorMessage("Sorry Patient is Discharged!!!");
+        if (inwardBean.blockIfDischarged(getPatientEncounter())) {
             return true;
         }
 
@@ -1293,7 +1291,7 @@ public class BillBhtController implements Serializable {
         calTotals();
 
         clearBillItemValues();
-        //JsfUtil.addSuccessMessage("Item Added");
+        JsfUtil.addSuccessMessage("Service/Investigation added successfully.");
     }
 
     public List<BillFee> billFeeFromBillItemWithMatrix(BillItem billItem, PatientEncounter patientEncounter, Department matrixDepartment, PaymentMethod paymentMethod) {
