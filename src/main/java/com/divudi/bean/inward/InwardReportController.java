@@ -1148,13 +1148,13 @@ public class InwardReportController implements Serializable {
         List<BillTypeAtomic> btasIP = new ArrayList<>();
 
         if ("IP".equals(visitType)) {
-            btasIP.addAll(BillTypeAtomic.findByServiceType(ServiceType.INWARD_SERVICE));
+            btasIP.addAll(ipIncomeChargeableBillTypes());
         }
         if ("OP".equals(visitType)) {
             btasOP.addAll(BillTypeAtomic.findByServiceType(ServiceType.OPD));
         }
         if ("Any".equals(visitType)) {
-            btasIP.addAll(BillTypeAtomic.findByServiceType(ServiceType.INWARD_SERVICE));
+            btasIP.addAll(ipIncomeChargeableBillTypes());
             btasOP.addAll(BillTypeAtomic.findByServiceType(ServiceType.OPD));
 
         }
@@ -1217,6 +1217,29 @@ public class InwardReportController implements Serializable {
         return rtrb;
     }
 
+    /**
+     * Inward bills that are actually charged to a BHT. Requests, drafts,
+     * acceptances, theatre store transfers and ward consumption bills share
+     * ServiceType.INWARD_SERVICE but are not income, and counting them
+     * double-counted medicines (issue #21671). Medicines use the same set as
+     * the BHT medicine total so the two cannot drift apart.
+     */
+    private List<BillTypeAtomic> ipIncomeChargeableBillTypes() {
+        List<BillTypeAtomic> btas = new ArrayList<>(Arrays.asList(
+                BillTypeAtomic.INWARD_SERVICE_BILL,
+                BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION,
+                BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION,
+                BillTypeAtomic.INWARD_SERVICE_BILL_REFUND,
+                BillTypeAtomic.INWARD_SERVICE_BATCH_BILL,
+                BillTypeAtomic.INWARD_SERVICE_BATCH_BILL_CANCELLATION,
+                BillTypeAtomic.INWARD_SERVICE_BATCH_BILL_REFUND,
+                BillTypeAtomic.INWARD_OUTSIDE_CHARGES_BILL,
+                BillTypeAtomic.INWARD_OUTSIDE_CHARGES_BILL_CANCELLATION
+        ));
+        btas.addAll(inwardBeanController.getInwardMedicineBillTypes());
+        return btas;
+    }
+
     private List<IpIncomeCategoryWiseRowDTO> findIpIncomeCategoryWiseRowsSingleQuery(List<BillTypeAtomic> btasOP, List<BillTypeAtomic> btasIP) {
 
         List<PaymentMethod> creditPaymentMethods = enumController.getPaymentTypeOfPaymentMethods(PaymentType.CREDIT);
@@ -1245,6 +1268,7 @@ public class InwardReportController implements Serializable {
                 + " left join refRefBi.item refRefI"
                 + " left join refRefI.category refRefC"
                 + " where b.retired = :br"
+                + " and bi.retired = :br"
                 + " and b.createdAt between :fd and :td ");
 
         Map<String, Object> m = new HashMap<>();
@@ -1367,6 +1391,11 @@ public class InwardReportController implements Serializable {
                 categoryRef.setId(rowDto.getCategoryId());
                 categoryRef.setName(rowDto.getCategoryName());
                 categoryRow.setCategory(categoryRef);
+            } else if (categoryRow.getCategory() == null) {
+                // Label the uncategorised row; it was blank in the table and exports
+                Category categoryRef = new Category();
+                categoryRef.setName(categoryName);
+                categoryRow.setCategory(categoryRef);
             }
 
             ReportTemplateRow itemRow = null;
@@ -1391,22 +1420,13 @@ public class InwardReportController implements Serializable {
                 }
             }
 
-            long countModifier = (rowDto.getBillClassType() == BillClassType.CancelledBill
-                    || rowDto.getBillClassType() == BillClassType.RefundBill) ? -1 : 1;
+            long countModifier = ipIncomeCountModifier(rowDto);
 
-            double grossValue = countModifier * Math.abs(nullSafeDouble(rowDto.getGrossValue()));
-            double hospitalFee = countModifier * Math.abs(nullSafeDouble(rowDto.getHospitalFee()));
-            double iteratingDiscount = countModifier * Math.abs(nullSafeDouble(rowDto.getDiscount()));
-            double staffFee = countModifier * Math.abs(nullSafeDouble(rowDto.getStaffFee()));
-            boolean professionalPaymentBill = rowDto.getBillType() == BillType.PaymentBill;
-            double netValue;
-            if (professionalPaymentBill) {
-                netValue = countModifier * Math.abs(nullSafeDouble(rowDto.getNetValue()));
-            } else if (withProfessionalFee) {
-                netValue = countModifier * Math.abs(nullSafeDouble(rowDto.getNetValue()));
-            } else {
-                netValue = countModifier * Math.abs(nullSafeDouble(rowDto.getNetValue()) - nullSafeDouble(rowDto.getStaffFee()));
-            }
+            double grossValue = ipIncomeSignedValue(rowDto, rowDto.getGrossValue());
+            double hospitalFee = ipIncomeSignedValue(rowDto, rowDto.getHospitalFee());
+            double iteratingDiscount = ipIncomeSignedValue(rowDto, rowDto.getDiscount());
+            double staffFee = ipIncomeSignedValue(rowDto, rowDto.getStaffFee());
+            double netValue = ipIncomeNetValue(rowDto);
 
             double sponsorDiscount = 0.0;
             double sponsorPay = 0.0;
@@ -1549,18 +1569,8 @@ public class InwardReportController implements Serializable {
                 continue;
             }
 
-            // ── Count modifier (cancellations/refunds subtract) ─────────────────
-            long countModifier = (rowDto.getBillClassType() == BillClassType.CancelledBill
-                    || rowDto.getBillClassType() == BillClassType.RefundBill) ? -1 : 1;
-
-            // ── Net value (same logic as summarizeBillItemsToIpIncomeCategoryWise) ──
-            boolean isProfPayment = rowDto.getBillType() == BillType.PaymentBill;
-            double netValue;
-            if (isProfPayment || withProfessionalFee) {
-                netValue = countModifier * Math.abs(nullSafeDouble(rowDto.getNetValue()));
-            } else {
-                netValue = countModifier * Math.abs(nullSafeDouble(rowDto.getNetValue()) - nullSafeDouble(rowDto.getStaffFee()));
-            }
+            // ── Net value (shared with summarizeIpIncomeCategoryWiseRows) ───────
+            double netValue = ipIncomeNetValue(rowDto);
 
             // ── Profit Matrix: Cash vs Credit ───────────────────────────────────
             if (pm.getPaymentType() == PaymentType.NON_CREDIT) {
@@ -1577,12 +1587,8 @@ public class InwardReportController implements Serializable {
                     Map<String, Object> entry = new LinkedHashMap<>();
                     entry.put("invoiceNo", rowDto.getBillDeptId() != null
                             ? rowDto.getBillDeptId() : String.valueOf(billId));
-                    entry.put("discount", countModifier * Math.abs(billDiscount));
+                    entry.put("discount", ipIncomeSignedValue(rowDto, billDiscount));
                     billDiscountMap.put(billId, entry);
-                } else {
-                    Map<String, Object> entry = billDiscountMap.get(billId);
-                    double existing = (Double) entry.get("discount");
-                    entry.put("discount", existing + countModifier * Math.abs(billDiscount));
                 }
             }
         }
@@ -1595,6 +1601,43 @@ public class InwardReportController implements Serializable {
 
     private double nullSafeDouble(Double value) {
         return value == null ? 0.0 : value;
+    }
+
+    /**
+     * Amounts keep the sign they were saved with, as the BHT totals do.
+     * Forcing the sign from the bill class turned the porter-flow ward
+     * return (a BilledBill saved with negative values) into income
+     * (issue #21671). Professional payment bills are saved as cash out,
+     * so they still take their sign from the bill class.
+     */
+    private double ipIncomeSignedValue(IpIncomeCategoryWiseRowDTO rowDto, Double value) {
+        if (rowDto.getBillType() == BillType.PaymentBill) {
+            return ipIncomeBillClassSign(rowDto) * Math.abs(nullSafeDouble(value));
+        }
+        return nullSafeDouble(value);
+    }
+
+    private double ipIncomeNetValue(IpIncomeCategoryWiseRowDTO rowDto) {
+        if (rowDto.getBillType() == BillType.PaymentBill || withProfessionalFee) {
+            return ipIncomeSignedValue(rowDto, rowDto.getNetValue());
+        }
+        return ipIncomeSignedValue(rowDto, rowDto.getNetValue()) - ipIncomeSignedValue(rowDto, rowDto.getStaffFee());
+    }
+
+    private long ipIncomeCountModifier(IpIncomeCategoryWiseRowDTO rowDto) {
+        double value = ipIncomeSignedValue(rowDto, rowDto.getNetValue());
+        if (value == 0.0) {
+            value = ipIncomeSignedValue(rowDto, rowDto.getGrossValue());
+        }
+        if (value == 0.0) {
+            return ipIncomeBillClassSign(rowDto);
+        }
+        return value < 0 ? -1 : 1;
+    }
+
+    private long ipIncomeBillClassSign(IpIncomeCategoryWiseRowDTO rowDto) {
+        return (rowDto.getBillClassType() == BillClassType.CancelledBill
+                || rowDto.getBillClassType() == BillClassType.RefundBill) ? -1 : 1;
     }
 
     public void processSurgeryCountDoctorWiseReport() {
