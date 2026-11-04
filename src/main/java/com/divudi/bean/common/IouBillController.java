@@ -38,6 +38,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import com.divudi.service.IouAlreadySettledException;
+import com.divudi.service.IouSettlementService;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
@@ -67,6 +69,8 @@ public class IouBillController implements Serializable {
     private BillItemFacade billItemFacade;
     @EJB
     private PaymentFacade paymentFacade;
+    @EJB
+    private IouSettlementService iouSettlementService;
 
     @Inject
     BillBeanController billBean;
@@ -203,17 +207,6 @@ public class IouBillController implements Serializable {
         if (paymentsForsettlingIuos.isEmpty()) {
             JsfUtil.addErrorMessage("No IOUs selected. ");
             return true;
-        }
-        // Read each IOU again: the page's list can be stale, and settling one twice moves the drawer twice
-        for (Payment selectedIou : settlingIuos) {
-            Payment latestIou = paymentFacade.find(selectedIou.getId());
-            if (latestIou == null
-                    || latestIou.isCancelled()
-                    || latestIou.getCancelledBill() != null
-                    || latestIou.getPaidValue() <= 0) {
-                JsfUtil.addErrorMessage("An IOU you selected is already settled or converted to cash. Reopen Settle IOUs and select again.");
-                return true;
-            }
         }
         for (Payment pin : paymentsForsettlingIuos) {
             if (pin.getPaymentMethod() != PaymentMethod.Cash) {
@@ -579,7 +572,20 @@ public class IouBillController implements Serializable {
     }
 
     public void settleIouSettlingBill() {
+        // This bean is session scoped: a double click runs this twice over the same lists
+        List<Payment> selectedIous = settlingIuos;
         if (errorInSettlingIouBill()) {
+            return;
+        }
+        // Settling an IOU twice moves the drawer twice, and the page's list can be stale
+        List<Long> selectedIouIds = new ArrayList<>();
+        for (Payment selectedIou : selectedIous) {
+            selectedIouIds.add(selectedIou.getId());
+        }
+        try {
+            iouSettlementService.claimOpenIous(selectedIouIds);
+        } catch (IouAlreadySettledException e) {
+            JsfUtil.addErrorMessage(e.getMessage());
             return;
         }
         saveSettleIouBill();
