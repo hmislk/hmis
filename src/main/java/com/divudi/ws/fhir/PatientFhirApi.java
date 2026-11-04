@@ -212,6 +212,9 @@ public class PatientFhirApi {
         if (apiKey.isRetired()) {
             return null;
         }
+        if (apiKey.getKeyType() != com.divudi.core.data.ApiKeyType.FHIR) {
+            return null;
+        }
         WebUser user = apiKey.getWebUser();
         if (user == null || user.isRetired() || !user.isActivated()) {
             return null;
@@ -226,7 +229,7 @@ public class PatientFhirApi {
         String body = javax.json.Json.createObjectBuilder()
                 .add("status", "error")
                 .add("code", 401)
-                .add("message", "Invalid or missing FHIR API key")
+                .add("message", "Invalid or missing API key. An API key of type FHIR is required for the FHIR Patient API")
                 .build().toString();
         return Response.status(401).entity(body).type(javax.ws.rs.core.MediaType.APPLICATION_JSON).build();
     }
