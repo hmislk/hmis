@@ -85,6 +85,26 @@ public class AbstractFacadeLogSanitizerTest {
     }
 
     @Test
+    public void redactBoundValues_removesQuotedValueContainingApostrophe() {
+        String result = AbstractFacade.redactBoundValues(
+                "Duplicate entry 'O'Brien' for key 'NAME' / Incorrect integer value: 'x'y' for column 'AGE'");
+        assertFalse(result.contains("Brien"), result);
+        assertFalse(result.contains("y'"), result);
+        assertEquals("Duplicate entry '[redacted]' for key 'NAME' / Incorrect integer value: '[redacted]' for column 'AGE'", result);
+    }
+
+    @Test
+    public void sanitizedJpql_redactsLiteralsAndKeepsOneLine() {
+        String result = AbstractFacade.sanitizedJpql(
+                "select s from Staff s\n where s.person.name like '%O''Brien%'\n and s.code = 'NIC123' and s.retired=:ret");
+        assertFalse(result.contains("Brien"), result);
+        assertFalse(result.contains("NIC123"), result);
+        assertFalse(result.contains("\n"), result);
+        assertEquals("select s from Staff s where s.person.name like '[redacted]' and s.code = '[redacted]' and s.retired=:ret", result);
+        assertNull(AbstractFacade.sanitizedJpql(null));
+    }
+
+    @Test
     public void redactBoundValues_handlesNull() {
         assertNull(AbstractFacade.redactBoundValues(null));
     }

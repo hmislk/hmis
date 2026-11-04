@@ -64,8 +64,25 @@ public abstract class AbstractFacade<T> {
         }
         String entityName = entityClass == null ? "?" : entityClass.getSimpleName();
         logger.log(Level.SEVERE, "AbstractFacade." + method + " (" + entityName
-                + ") query failed; returning an empty/default result. JPQL: " + jpql
+                + ") query failed; returning an empty/default result. JPQL: " + sanitizedJpql(jpql)
                 + " | Cause: " + sanitizedCauseChain(e));
+    }
+
+    /**
+     * Some callers build JPQL with typed search text inside quoted literals,
+     * so every quoted literal (with '' as an escaped quote) is replaced with
+     * '[redacted]'. Whitespace is collapsed to keep the log entry on one line,
+     * and the result is capped at MAX_MESSAGE_LENGTH. Package-private for
+     * unit testing.
+     */
+    static String sanitizedJpql(String jpql) {
+        if (jpql == null) {
+            return null;
+        }
+        String s = JPQL_LITERAL_PATTERN.matcher(jpql).replaceAll("'[redacted]'")
+                .replaceAll("\\s+", " ")
+                .trim();
+        return s.length() > MAX_MESSAGE_LENGTH ? s.substring(0, MAX_MESSAGE_LENGTH) + "..." : s;
     }
 
     private static final int MAX_CAUSE_DEPTH = 10;
@@ -89,12 +106,18 @@ public abstract class AbstractFacade<T> {
                     java.util.regex.Pattern.DOTALL);
     /**
      * Quoted MySQL values such as {@code Duplicate entry 'x'} are also
-     * matched over the whole message: {@code [^']*} spans newlines, so a
-     * value that contains a line break is removed in full.
+     * matched over the whole message, so a value that contains a line break
+     * is removed in full. MySQL does not escape a quote inside the value
+     * (e.g. {@code 'O'Brien'}), so the value runs to the quote before the
+     * following " for key" / " for column" text; without that text it ends at
+     * the next quote.
      */
     private static final java.util.regex.Pattern QUOTED_VALUE_PATTERN
-            = java.util.regex.Pattern.compile("(Duplicate entry |value: ?)'[^']*'",
+            = java.util.regex.Pattern.compile(
+                    "(Duplicate entry |value: ?)'(?:.*?'(?= for (?:key|column)\\b)|[^']*')",
                     java.util.regex.Pattern.DOTALL);
+    private static final java.util.regex.Pattern JPQL_LITERAL_PATTERN
+            = java.util.regex.Pattern.compile("'(?:[^']|'')*'");
 
     /**
      * Describes a throwable and its causes as "Class: message" items joined
