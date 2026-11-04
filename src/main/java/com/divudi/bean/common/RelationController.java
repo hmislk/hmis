@@ -56,6 +56,10 @@ public class RelationController implements Serializable {
         items = getFacade().findByJpql(j, m);
     }
 
+    public void refreshItems() {
+        recreateModel();
+    }
+
     public Relation getCurrent() {
         return current;
     }

@@ -2381,7 +2381,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
             return null;
         }
         familyMembers = membershipService.fetchFamilyMembers(currentFamily);
-        relationController.fillItems();
+        relationController.refreshItems();
         return "/membership/family_membership_manage?faces-redirect=true";
     }
 
@@ -2392,7 +2392,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
         }
         currentFamily = family;
         familyMembers = membershipService.fetchFamilyMembers(currentFamily);
-        relationController.fillItems();
+        relationController.refreshItems();
         return "/membership/family_membership_manage?faces-redirect=true";
     }
 
