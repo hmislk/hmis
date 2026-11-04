@@ -76,23 +76,53 @@ public abstract class AbstractFacade<T> {
      * comparison operator, '|' or the end) follows it. If a stray quote is
      * still left after that, everything from the first quote to the end is
      * redacted. Whitespace is collapsed to keep the log entry on one line,
-     * and the result is capped at MAX_MESSAGE_LENGTH. Package-private for
-     * unit testing.
+     * and the result is capped at MAX_MESSAGE_LENGTH.
+     * <p>
+     * The JPQL is cut to MAX_INPUT_LENGTH before any regex runs (a literal cut
+     * in half is caught by the redact-to-end fallback), and any Throwable,
+     * such as a StackOverflowError, gives a fixed "[unloggable: ...]" text,
+     * because this runs inside the facade's catch block and must never throw.
+     * Package-private for unit testing.
      */
     static String sanitizedJpql(String jpql) {
         if (jpql == null) {
             return null;
         }
-        String s = JPQL_LITERAL_PATTERN.matcher(jpql).replaceAll("'[redacted]'");
-        if (s.replace("'[redacted]'", "").indexOf('\'') >= 0) {
-            s = jpql.substring(0, jpql.indexOf('\'')) + "'[redacted]";
+        try {
+            boolean truncated = jpql.length() > MAX_INPUT_LENGTH;
+            String input = truncated ? jpql.substring(0, MAX_INPUT_LENGTH) : jpql;
+            String s = JPQL_LITERAL_PATTERN.matcher(input).replaceAll("'[redacted]'");
+            if (s.replace("'[redacted]'", "").indexOf('\'') >= 0) {
+                s = input.substring(0, input.indexOf('\'')) + "'[redacted]";
+            }
+            s = WHITESPACE_PATTERN.matcher(s).replaceAll(" ").trim();
+            if (truncated) {
+                s = s + TRUNCATED_MARKER;
+            }
+            return s.length() > MAX_MESSAGE_LENGTH ? s.substring(0, MAX_MESSAGE_LENGTH) + "..." : s;
+        } catch (Throwable t) {
+            return unloggable(t);
         }
-        s = s.replaceAll("\\s+", " ").trim();
-        return s.length() > MAX_MESSAGE_LENGTH ? s.substring(0, MAX_MESSAGE_LENGTH) + "..." : s;
+    }
+
+    /**
+     * The fixed text logged in place of a value the sanitizer could not
+     * process. It names only the exception class, never the input.
+     */
+    static String unloggable(Throwable t) {
+        return "[unloggable: " + (t == null ? "?" : t.getClass().getName()) + "]";
     }
 
     private static final int MAX_CAUSE_DEPTH = 10;
     private static final int MAX_MESSAGE_LENGTH = 1000;
+    /**
+     * Input longer than this is cut before any regex runs, so the patterns
+     * never see more than a few thousand characters.
+     */
+    static final int MAX_INPUT_LENGTH = 4000;
+    static final String TRUNCATED_MARKER = "\u2026[truncated]";
+    private static final java.util.regex.Pattern WHITESPACE_PATTERN
+            = java.util.regex.Pattern.compile("\\s+");
     /**
      * The bind, Call and Query patterns run over the whole message with
      * DOTALL, so a value that spans several lines is removed too. A bind
@@ -116,14 +146,22 @@ public abstract class AbstractFacade<T> {
      * is removed in full. MySQL does not escape a quote inside the value
      * (e.g. {@code 'O'Brien'}), so the value runs to the quote before the
      * following " for key" / " for column" text; without that text it ends at
-     * the next quote.
+     * the next quote, or at the end of the message when the value is not
+     * closed (for example when the message was cut at MAX_INPUT_LENGTH).
      */
     private static final java.util.regex.Pattern QUOTED_VALUE_PATTERN
             = java.util.regex.Pattern.compile(
-                    "(Duplicate entry |value: ?)'(?:.*?'(?= for (?:key|column)\\b)|[^']*')",
+                    "(Duplicate entry |value: ?)'(?:.*?'(?= for (?:key|column)\\b)|[^']*+(?:'|\\z))",
                     java.util.regex.Pattern.DOTALL);
+    /**
+     * A JPQL literal: a quote, then runs of non-quote characters and quotes
+     * that are not followed by a JPQL boundary, then a quote that is. The
+     * runs are possessive and the loop repeats once per inner quote, not per
+     * character, so a long literal cannot overflow the regex stack.
+     */
     private static final java.util.regex.Pattern JPQL_LITERAL_PATTERN
-            = java.util.regex.Pattern.compile("'(?:[^']|'(?![\\s),=<>!|]|$))*'(?=[\\s),=<>!|]|$)");
+            = java.util.regex.Pattern.compile(
+                    "'[^']*+(?:'(?![\\s),=<>!|]|$)[^']*+)*+'(?=[\\s),=<>!|]|$)");
 
     /**
      * Describes a throwable and its causes as "Class: message" items joined
@@ -131,6 +169,14 @@ public abstract class AbstractFacade<T> {
      * Package-private for unit testing.
      */
     static String sanitizedCauseChain(Throwable t) {
+        try {
+            return describeCauseChain(t);
+        } catch (Throwable e) {
+            return unloggable(e);
+        }
+    }
+
+    private static String describeCauseChain(Throwable t) {
         StringBuilder sb = new StringBuilder();
         Set<Throwable> seen = java.util.Collections.newSetFromMap(new java.util.IdentityHashMap<>());
         Throwable current = t;
@@ -158,11 +204,27 @@ public abstract class AbstractFacade<T> {
      * quoted MySQL values such as {@code Duplicate entry 'x'} with
      * {@code '[redacted]'}. Only then is the message split into lines, which
      * are joined with " / " so the log entry stays on one line.
+     * <p>
+     * The message is cut to MAX_INPUT_LENGTH before any regex runs (an
+     * unclosed bind, Call, Query or quoted value is redacted to the end), and
+     * any Throwable gives a fixed "[unloggable: ...]" text instead.
      * Package-private for unit testing.
      */
     static String redactBoundValues(String message) {
         if (message == null) {
             return null;
+        }
+        try {
+            return redactBoundValuesUnguarded(message);
+        } catch (Throwable t) {
+            return unloggable(t);
+        }
+    }
+
+    private static String redactBoundValuesUnguarded(String message) {
+        boolean truncated = message.length() > MAX_INPUT_LENGTH;
+        if (truncated) {
+            message = message.substring(0, MAX_INPUT_LENGTH);
         }
         String redacted = BIND_PATTERN.matcher(message).replaceAll("bind => [redacted]");
         redacted = CALL_PATTERN.matcher(redacted).replaceAll("$1Call: [redacted]");
@@ -180,6 +242,9 @@ public abstract class AbstractFacade<T> {
             sb.append(cleaned);
         }
         String result = sb.toString();
+        if (truncated) {
+            result = result + TRUNCATED_MARKER;
+        }
         if (result.length() > MAX_MESSAGE_LENGTH) {
             result = result.substring(0, MAX_MESSAGE_LENGTH) + "...";
         }

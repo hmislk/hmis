@@ -121,6 +121,63 @@ public class AbstractFacadeLogSanitizerTest {
         assertEquals("select s from Staff s where s.person.name = '[redacted]", result);
     }
 
+    private static final String JPQL_PREFIX = "select s from Staff s where s.person.name like ";
+    private static final int LONG = 200_000;
+
+    @Test
+    public void sanitizedJpql_longLiteralCompletesAndIsRedacted() {
+        String result = AbstractFacade.sanitizedJpql(JPQL_PREFIX + "'" + "a".repeat(LONG) + "' and s.retired=:ret");
+        assertFalse(result.contains("aaa"), result);
+        assertTrue(result.startsWith(JPQL_PREFIX + "'[redacted]"), result);
+        assertTrue(result.endsWith(AbstractFacade.TRUNCATED_MARKER), result);
+    }
+
+    @Test
+    public void sanitizedJpql_longUnclosedLiteralCompletesAndIsRedacted() {
+        String result = AbstractFacade.sanitizedJpql(JPQL_PREFIX + "'" + "a".repeat(LONG));
+        assertFalse(result.contains("aaa"), result);
+        assertEquals(JPQL_PREFIX + "'[redacted]" + AbstractFacade.TRUNCATED_MARKER, result);
+    }
+
+    @Test
+    public void sanitizedJpql_manyQuotesCompleteAndAreRedacted() {
+        String stray = AbstractFacade.sanitizedJpql(JPQL_PREFIX + "'" + "'".repeat(LONG / 2) + "x");
+        assertEquals(JPQL_PREFIX + "'[redacted]'" + AbstractFacade.TRUNCATED_MARKER, stray);
+        String strayData = AbstractFacade.sanitizedJpql(JPQL_PREFIX + "'x".repeat(LONG / 2));
+        assertFalse(strayData.contains("x"), strayData);
+        assertTrue(strayData.startsWith(JPQL_PREFIX + "'[redacted]"), strayData);
+        String abutting = AbstractFacade.sanitizedJpql(JPQL_PREFIX + "'a'".repeat(66_000));
+        assertFalse(abutting.contains("a'"), abutting);
+        assertTrue(abutting.startsWith(JPQL_PREFIX + "'[redacted]"), abutting);
+        String spaced = AbstractFacade.sanitizedJpql(JPQL_PREFIX + "'secret' or ".repeat(20_000) + "1=1");
+        assertFalse(spaced.contains("secret"), spaced);
+        // The 4 000-char cut lands inside a literal, so the redact-to-end fallback applies.
+        assertEquals(JPQL_PREFIX + "'[redacted]" + AbstractFacade.TRUNCATED_MARKER, spaced);
+    }
+
+    @Test
+    public void redactBoundValues_longInputCompletesAndIsRedacted() {
+        String entry = AbstractFacade.redactBoundValues("Duplicate entry '" + "s".repeat(LONG) + "' for key 'K'");
+        assertEquals("Duplicate entry '[redacted]'" + AbstractFacade.TRUNCATED_MARKER, entry);
+        String unclosed = AbstractFacade.redactBoundValues("Incorrect integer value: '" + "s".repeat(LONG));
+        assertEquals("Incorrect integer value: '[redacted]'" + AbstractFacade.TRUNCATED_MARKER, unclosed);
+        String quotes = AbstractFacade.redactBoundValues("value: '" + "s'".repeat(LONG / 2));
+        assertTrue(quotes.startsWith("value: '[redacted]'"), quotes);
+        String bind = AbstractFacade.redactBoundValues("Error Code: 1\nbind => [" + "s".repeat(LONG) + "]");
+        assertEquals("Error Code: 1 / bind => [redacted]" + AbstractFacade.TRUNCATED_MARKER, bind);
+    }
+
+    @Test
+    public void sanitizedCauseChain_fallsBackWhenSanitizingThrows() {
+        RuntimeException broken = new RuntimeException() {
+            @Override
+            public String getMessage() {
+                throw new StackOverflowError();
+            }
+        };
+        assertEquals("[unloggable: java.lang.StackOverflowError]", AbstractFacade.sanitizedCauseChain(broken));
+    }
+
     @Test
     public void redactBoundValues_handlesNull() {
         assertNull(AbstractFacade.redactBoundValues(null));
