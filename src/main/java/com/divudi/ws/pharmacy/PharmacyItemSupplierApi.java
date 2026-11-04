@@ -60,6 +60,8 @@ public class PharmacyItemSupplierApi {
             .setDateFormat("yyyy-MM-dd HH:mm:ss")
             .create();
 
+    private static final int MAX_BULK_SIZE = 500;
+
     public PharmacyItemSupplierApi() {
     }
 
@@ -193,11 +195,15 @@ public class PharmacyItemSupplierApi {
             if (requests.isEmpty()) {
                 return errorResponse("No valid supplier-item entries found in request body", 400);
             }
+            if (requests.size() > MAX_BULK_SIZE) {
+                return errorResponse("Too many entries; maximum is " + MAX_BULK_SIZE + " per call", 400);
+            }
 
             List<BulkItemSupplierResultDto> results = service.createBulk(requests, user);
             return successResponse(results);
 
-        } catch (JsonSyntaxException e) {
+        } catch (JsonSyntaxException | NumberFormatException | IllegalStateException
+                | UnsupportedOperationException | ClassCastException e) {
             return errorResponse("Invalid JSON format: " + e.getMessage(), 400);
         } catch (Exception e) {
             return errorResponse("An error occurred: " + (e.getMessage() != null ? e.getMessage() : "Unknown error"), 500);
@@ -249,6 +255,8 @@ public class PharmacyItemSupplierApi {
                     if (dto != null) {
                         list.add(dto);
                     }
+                } else {
+                    list.add(new ItemSupplierRequestDto());
                 }
             }
         } else if (element.isJsonObject()) {
@@ -260,6 +268,8 @@ public class PharmacyItemSupplierApi {
                         if (dto != null) {
                             list.add(dto);
                         }
+                    } else {
+                        list.add(new ItemSupplierRequestDto());
                     }
                 }
             } else if (obj.has("items") && obj.get("items").isJsonArray()) {
@@ -269,6 +279,8 @@ public class PharmacyItemSupplierApi {
                         if (dto != null) {
                             list.add(dto);
                         }
+                    } else {
+                        list.add(new ItemSupplierRequestDto());
                     }
                 }
             } else if (obj.has("supplierId") && obj.has("itemIds") && obj.get("itemIds").isJsonArray()) {
@@ -277,6 +289,8 @@ public class PharmacyItemSupplierApi {
                     if (itemIdElem.isJsonPrimitive()) {
                         Long itemId = itemIdElem.getAsLong();
                         list.add(new ItemSupplierRequestDto(supplierId, itemId));
+                    } else {
+                        list.add(new ItemSupplierRequestDto(supplierId, null));
                     }
                 }
             }

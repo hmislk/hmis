@@ -160,7 +160,7 @@ public class PharmacyItemSupplierApiService implements Serializable {
         if (supplier.isRetired()) {
             return new CreateItemSupplierResult(400, "Supplier is retired: " + request.getSupplierId(), null, null);
         }
-        if (supplier.getInstitutionType() != InstitutionType.Dealer && supplier.getInstitutionType() != InstitutionType.StoreDealor) {
+        if (supplier.getInstitutionType() != InstitutionType.Dealer) {
             return new CreateItemSupplierResult(400, "Supplier must be a Dealer institution (got: " + supplier.getInstitutionType() + ")", null, null);
         }
 

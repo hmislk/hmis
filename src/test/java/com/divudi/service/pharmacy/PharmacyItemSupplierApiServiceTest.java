@@ -11,6 +11,7 @@ import com.divudi.core.entity.pharmacy.ItemsDistributors;
 import com.divudi.core.facade.InstitutionFacade;
 import com.divudi.core.facade.ItemFacade;
 import com.divudi.core.facade.ItemsDistributorsFacade;
+import com.divudi.service.AuditService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -27,6 +28,7 @@ public class PharmacyItemSupplierApiServiceTest {
     private DummyItemsDistributorsFacade dummyItemsDistributorsFacade;
     private DummyInstitutionFacade dummyInstitutionFacade;
     private DummyItemFacade dummyItemFacade;
+    private DummyAuditService dummyAuditService;
 
     private Institution validDealer;
     private Institution nonDealer;
@@ -108,6 +110,33 @@ public class PharmacyItemSupplierApiServiceTest {
         @Override public Item find(Object id) { return db.get(id); }
     }
 
+    private static class DummyAuditService extends AuditService {
+        static class AuditCall {
+            Object before;
+            Object after;
+            WebUser user;
+            String entityType;
+            String eventTrigger;
+            Long objectId;
+
+            AuditCall(Object before, Object after, WebUser user, String entityType, String eventTrigger, Long objectId) {
+                this.before = before;
+                this.after = after;
+                this.user = user;
+                this.entityType = entityType;
+                this.eventTrigger = eventTrigger;
+                this.objectId = objectId;
+            }
+        }
+
+        List<AuditCall> calls = new ArrayList<>();
+
+        @Override
+        public void logAudit(Object before, Object after, WebUser user, String entityType, String eventTrigger, Long objectId) {
+            calls.add(new AuditCall(before, after, user, entityType, eventTrigger, objectId));
+        }
+    }
+
     @BeforeEach
     void setUp() throws Exception {
         service = new PharmacyItemSupplierApiService();
@@ -119,6 +148,9 @@ public class PharmacyItemSupplierApiServiceTest {
         injectField("itemsDistributorsFacade", dummyItemsDistributorsFacade);
         injectField("institutionFacade", dummyInstitutionFacade);
         injectField("itemFacade", dummyItemFacade);
+
+        dummyAuditService = new DummyAuditService();
+        injectField("auditService", dummyAuditService);
 
         user = new WebUser();
         user.setId(10L);
@@ -185,6 +217,15 @@ public class PharmacyItemSupplierApiServiceTest {
         assertEquals(user, saved.getCreater());
         assertNotNull(saved.getCreatedAt());
         assertFalse(saved.isRetired());
+
+        assertEquals(1, dummyAuditService.calls.size());
+        DummyAuditService.AuditCall audit = dummyAuditService.calls.get(0);
+        assertNull(audit.before);
+        assertNotNull(audit.after);
+        assertEquals(user, audit.user);
+        assertEquals("ItemsDistributors", audit.entityType);
+        assertEquals("CREATE_ITEM_SUPPLIER_LINK", audit.eventTrigger);
+        assertEquals(saved.getId(), audit.objectId);
     }
 
     @Test
@@ -216,6 +257,22 @@ public class PharmacyItemSupplierApiServiceTest {
     @DisplayName("Rejects creation when supplier is not a Dealer")
     void testCreateLink_SupplierNotDealer() {
         ItemSupplierRequestDto req = new ItemSupplierRequestDto(101L, 200L);
+        PharmacyItemSupplierApiService.CreateItemSupplierResult result = service.createLink(req, user);
+        assertEquals(400, result.getStatus());
+        assertTrue(result.getMessage().contains("Dealer"));
+    }
+
+    @Test
+    @DisplayName("Rejects creation when supplier is StoreDealor (only Dealer allowed for pharmacy)")
+    void testCreateLink_SupplierStoreDealor() {
+        Institution storeDealer = new Institution();
+        storeDealer.setId(103L);
+        storeDealer.setName("Hospital Store Dealer");
+        storeDealer.setInstitutionType(InstitutionType.StoreDealor);
+        storeDealer.setRetired(false);
+        dummyInstitutionFacade.db.put(storeDealer.getId(), storeDealer);
+
+        ItemSupplierRequestDto req = new ItemSupplierRequestDto(103L, 200L);
         PharmacyItemSupplierApiService.CreateItemSupplierResult result = service.createLink(req, user);
         assertEquals(400, result.getStatus());
         assertTrue(result.getMessage().contains("Dealer"));
@@ -315,6 +372,15 @@ public class PharmacyItemSupplierApiServiceTest {
         assertEquals(retirer, entity.getRetirer());
         assertNotNull(entity.getRetiredAt());
         assertEquals("Supplier discontinued this item", entity.getRetireComments());
+
+        assertEquals(2, dummyAuditService.calls.size());
+        DummyAuditService.AuditCall retireAudit = dummyAuditService.calls.get(1);
+        assertNotNull(retireAudit.before);
+        assertNotNull(retireAudit.after);
+        assertEquals(retirer, retireAudit.user);
+        assertEquals("ItemsDistributors", retireAudit.entityType);
+        assertEquals("RETIRE_ITEM_SUPPLIER_LINK", retireAudit.eventTrigger);
+        assertEquals(linkId, retireAudit.objectId);
     }
 
     @Test

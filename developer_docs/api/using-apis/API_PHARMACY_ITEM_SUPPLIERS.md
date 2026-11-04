@@ -147,7 +147,7 @@ Link one item to a Dealer supplier.
 
 ## POST /api/pharmacy/item_suppliers/bulk
 
-Link multiple items to suppliers in a single atomic-safe batch call. Each row receives an individual outcome so that a single bad item ID does not abort the remaining entries.
+Link multiple items to suppliers in one batch call. Each row that fails validation receives its own outcome, so a single bad item ID does not abort the remaining entries. An unexpected persistence error rolls back the whole batch and returns HTTP 500 without row outcomes. Maximum 500 entries per bulk request.
 
 ### Request Formats
 
