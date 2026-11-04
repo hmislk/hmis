@@ -105,6 +105,23 @@ public class AbstractFacadeLogSanitizerTest {
     }
 
     @Test
+    public void sanitizedJpql_redactsLiteralWithUnescapedApostrophe() {
+        String result = AbstractFacade.sanitizedJpql(
+                "select s from Staff s where s.person.name like '%O'Brien%' and s.code like '%D'Arcy%' and s.retired=:ret");
+        assertFalse(result.contains("Brien"), result);
+        assertFalse(result.contains("Arcy"), result);
+        assertEquals("select s from Staff s where s.person.name like '[redacted]' and s.code like '[redacted]' and s.retired=:ret", result);
+    }
+
+    @Test
+    public void sanitizedJpql_redactsToEndWhenAQuoteIsLeftOver() {
+        String result = AbstractFacade.sanitizedJpql(
+                "select s from Staff s where s.person.name = 'O' Brien' and s.retired=:ret");
+        assertFalse(result.contains("Brien"), result);
+        assertEquals("select s from Staff s where s.person.name = '[redacted]", result);
+    }
+
+    @Test
     public void redactBoundValues_handlesNull() {
         assertNull(AbstractFacade.redactBoundValues(null));
     }

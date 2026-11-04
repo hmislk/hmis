@@ -70,8 +70,12 @@ public abstract class AbstractFacade<T> {
 
     /**
      * Some callers build JPQL with typed search text inside quoted literals,
-     * so every quoted literal (with '' as an escaped quote) is replaced with
-     * '[redacted]'. Whitespace is collapsed to keep the log entry on one line,
+     * so every quoted literal is replaced with '[redacted]'. Typed text may
+     * hold an unescaped apostrophe ({@code '%O'Brien%'}), so a quote only
+     * closes a literal when a JPQL boundary (whitespace, ')', ',', a
+     * comparison operator, '|' or the end) follows it. If a stray quote is
+     * still left after that, everything from the first quote to the end is
+     * redacted. Whitespace is collapsed to keep the log entry on one line,
      * and the result is capped at MAX_MESSAGE_LENGTH. Package-private for
      * unit testing.
      */
@@ -79,9 +83,11 @@ public abstract class AbstractFacade<T> {
         if (jpql == null) {
             return null;
         }
-        String s = JPQL_LITERAL_PATTERN.matcher(jpql).replaceAll("'[redacted]'")
-                .replaceAll("\\s+", " ")
-                .trim();
+        String s = JPQL_LITERAL_PATTERN.matcher(jpql).replaceAll("'[redacted]'");
+        if (s.replace("'[redacted]'", "").indexOf('\'') >= 0) {
+            s = jpql.substring(0, jpql.indexOf('\'')) + "'[redacted]";
+        }
+        s = s.replaceAll("\\s+", " ").trim();
         return s.length() > MAX_MESSAGE_LENGTH ? s.substring(0, MAX_MESSAGE_LENGTH) + "..." : s;
     }
 
@@ -117,7 +123,7 @@ public abstract class AbstractFacade<T> {
                     "(Duplicate entry |value: ?)'(?:.*?'(?= for (?:key|column)\\b)|[^']*')",
                     java.util.regex.Pattern.DOTALL);
     private static final java.util.regex.Pattern JPQL_LITERAL_PATTERN
-            = java.util.regex.Pattern.compile("'(?:[^']|'')*'");
+            = java.util.regex.Pattern.compile("'(?:[^']|'(?![\\s),=<>!|]|$))*'(?=[\\s),=<>!|]|$)");
 
     /**
      * Describes a throwable and its causes as "Class: message" items joined
