@@ -222,12 +222,8 @@ public class InwardRawTextFinalBillController implements Serializable {
                     }
                 }
             }
-            for (BillItem bi : items) {
-                if (bi.getInwardChargeType() == InwardChargeType.TechnicianAndParamedicalCharge
-                        && hasProfessionalLine(bi)) {
-                    addFeeBlock(d, bi, typeLabel(bi.getInwardChargeType()), false, money);
-                }
-            }
+            // coop-staging has no TechnicianAndParamedicalCharge type (added later on development, #59a8d8ec49),
+            // and its finalBillCustom4.xhtml has no Technician Fee block, so that loop is omitted here.
             if (sumPerDoctor) {
                 addDoctorSummary(d, bill, typeLabel(InwardChargeType.ProfessionalCharge), money);
             }
