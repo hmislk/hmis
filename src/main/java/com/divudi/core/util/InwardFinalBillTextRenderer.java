@@ -269,7 +269,11 @@ public final class InwardFinalBillTextRenderer {
      * with the line before it.
      */
     private static List<List<String>> chargeUnits(List<Row> charges, int w) {
-        int labelWidth = Math.max(8, w - AMOUNT_WIDTH - 1);
+        int amountWidth = AMOUNT_WIDTH;
+        for (Row r : charges) {
+            amountWidth = Math.max(amountWidth, safe(r.getAmount()).length());
+        }
+        int labelWidth = Math.max(8, w - amountWidth - 1);
         List<List<String>> units = new ArrayList<>();
         boolean headingPending = false;
         for (Row r : charges) {
@@ -403,7 +407,7 @@ public final class InwardFinalBillTextRenderer {
     }
 
     private static void wrapped(StringBuilder sb, String prefix, String value, int w) {
-        List<String> parts = wrap(value, Math.max(8, w - prefix.length()));
+        List<String> parts = wrap(value, Math.max(1, w - prefix.length()));
         for (int i = 0; i < parts.size(); i++) {
             sb.append(i == 0 ? prefix : spaces(prefix.length())).append(parts.get(i)).append('\n');
         }
