@@ -269,7 +269,8 @@
                                             <p:commandButton  
                                                 styleClass="w-100 ui-button-info" 
                                                 ajax="false" 
-                                                action="#{iouBillController.navigateToTrackIous()}"
+                                                action="#{iouTrackController.navigateToTrackIous()}"
+                                                rendered="#{webUserController.hasPrivilege('PaymentBillSearch')}"
                                                 value="Track IOUs"
                                                 icon="pi pi-search"
                                                 title="Track outstanding IOUs" >
