@@ -6,12 +6,12 @@
 package com.divudi.ws.fhir;
 
 import ca.uhn.fhir.context.FhirContext;
-import ca.uhn.fhir.parser.DataFormatException;
 import com.divudi.bean.common.ApiKeyController;
 import com.divudi.core.entity.ApiKey;
 import com.divudi.core.entity.Patient;
 import com.divudi.core.entity.WebUser;
 import com.divudi.service.fhir.PatientFhirService;
+import java.io.IOException;
 import java.util.Date;
 import java.util.List;
 import javax.ejb.EJB;
@@ -28,7 +28,11 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
+import org.hl7.fhir.exceptions.FHIRException;
+import org.hl7.fhir.r5.formats.IParser;
+import org.hl7.fhir.r5.formats.JsonParser;
 import org.hl7.fhir.r5.model.Bundle;
+import org.hl7.fhir.r5.model.Resource;
 
 /**
  * FHIR R5 Patient REST endpoints.
@@ -84,7 +88,7 @@ public class PatientFhirApi {
         }
 
         org.hl7.fhir.r5.model.Patient fhirPt = patientFhirService.toFhirPatient(patient);
-        String json = PatientFhirService.FHIR_CTX.newJsonParser().setPrettyPrint(true).encodeResourceToString(fhirPt);
+        String json = toJson(fhirPt);
         return Response.ok(json, FHIR_JSON).build();
     }
 
@@ -120,7 +124,7 @@ public class PatientFhirApi {
         }
 
         Bundle bundle = patientFhirService.toSearchBundle(patients);
-        String json = PatientFhirService.FHIR_CTX.newJsonParser().setPrettyPrint(true).encodeResourceToString(bundle);
+        String json = toJson(bundle);
         return Response.ok(json, FHIR_JSON).build();
     }
 
@@ -143,14 +147,14 @@ public class PatientFhirApi {
 
         org.hl7.fhir.r5.model.Patient fhirPt;
         try {
-            fhirPt = PatientFhirService.FHIR_CTX.newJsonParser().parseResource(org.hl7.fhir.r5.model.Patient.class, body);
-        } catch (DataFormatException e) {
+            fhirPt = parsePatient(body);
+        } catch (IOException | FHIRException e) {
             return errorResponse("Invalid FHIR Patient JSON: " + e.getMessage(), 400);
         }
 
         Patient created = patientFhirService.createPatient(fhirPt, user);
         org.hl7.fhir.r5.model.Patient responseResource = patientFhirService.toFhirPatient(created);
-        String json = PatientFhirService.FHIR_CTX.newJsonParser().setPrettyPrint(true).encodeResourceToString(responseResource);
+        String json = toJson(responseResource);
         return Response.status(Response.Status.CREATED).entity(json).type(FHIR_JSON).build();
     }
 
@@ -181,8 +185,8 @@ public class PatientFhirApi {
 
         org.hl7.fhir.r5.model.Patient fhirPt;
         try {
-            fhirPt = PatientFhirService.FHIR_CTX.newJsonParser().parseResource(org.hl7.fhir.r5.model.Patient.class, body);
-        } catch (DataFormatException e) {
+            fhirPt = parsePatient(body);
+        } catch (IOException | FHIRException e) {
             return errorResponse("Invalid FHIR Patient JSON: " + e.getMessage(), 400);
         }
 
@@ -192,13 +196,40 @@ public class PatientFhirApi {
         }
 
         org.hl7.fhir.r5.model.Patient responseResource = patientFhirService.toFhirPatient(updated);
-        String json = PatientFhirService.FHIR_CTX.newJsonParser().setPrettyPrint(true).encodeResourceToString(responseResource);
+        String json = toJson(responseResource);
         return Response.ok(json, FHIR_JSON).build();
     }
 
     // -------------------------------------------------------------------------
     // Helpers
     // -------------------------------------------------------------------------
+
+    // The HL7 parser, not HAPI's FHIR_CTX.newJsonParser(): HAPI needs Jackson 2.15+, but with
+    // class-loader delegate="true" Payara's older Jackson wins at runtime (#25126).
+    private String toJson(Resource resource) {
+        try {
+            JsonParser parser = new JsonParser();
+            parser.setOutputStyle(IParser.OutputStyle.PRETTY);
+            return parser.composeString(resource);
+        } catch (IOException e) {
+            throw new IllegalStateException("Could not encode FHIR resource", e);
+        }
+    }
+
+    private org.hl7.fhir.r5.model.Patient parsePatient(String body) throws IOException, FHIRException {
+        Resource resource;
+        try {
+            resource = new JsonParser().parse(body);
+        } catch (RuntimeException e) {
+            // Bad input surfaces as gson JsonSyntaxException, IllegalArgumentException (unknown code),
+            // ClassCastException (body is not a JSON object) and others. None of it is a server fault.
+            throw new FHIRException(e instanceof ClassCastException ? "Body must be a JSON object" : e.getMessage(), e);
+        }
+        if (!(resource instanceof org.hl7.fhir.r5.model.Patient)) {
+            throw new FHIRException("Expected a Patient resource");
+        }
+        return (org.hl7.fhir.r5.model.Patient) resource;
+    }
 
     private WebUser validateApiKey() {
         String key = requestContext.getHeader("FHIR");
