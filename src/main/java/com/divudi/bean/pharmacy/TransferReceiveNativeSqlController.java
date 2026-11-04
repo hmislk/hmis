@@ -442,6 +442,15 @@ public class TransferReceiveNativeSqlController implements Serializable {
             return;
         }
 
+        // Rows with a receiving quantity of 0 or less are skipped by the service; tell the user (#18601)
+        List<String> skippedRows = new ArrayList<>();
+        for (TransferReceiveItemRowDto row : itemRowList) {
+            if (row.getReceivingQty() != null && row.getReceivingQty().signum() <= 0) {
+                String code = row.getItemCode();
+                skippedRows.add(row.getItemName() + (code != null && !code.trim().isEmpty() ? " (" + code + ")" : ""));
+            }
+        }
+
         Bill bill = buildReceiveBillHeader(BillTypeAtomic.PHARMACY_RECEIVE);
         applyBillNumbers(bill);
 
@@ -459,6 +468,10 @@ public class TransferReceiveNativeSqlController implements Serializable {
         receivedBillId = bill.getId();
         enrichPrintDto(printDto, bill);
         printPreview = true;
+        if (!skippedRows.isEmpty()) {
+            JsfUtil.addWarningMessage(skippedRows.size() + " row(s) with a receiving quantity of 0 or less were skipped and not received: "
+                    + String.join(", ", skippedRows));
+        }
     }
 
     /**

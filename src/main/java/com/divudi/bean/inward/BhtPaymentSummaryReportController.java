@@ -11,6 +11,7 @@ import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.Payment;
 import com.divudi.core.entity.PatientEncounter;
 import com.divudi.core.entity.inward.AdmissionType;
+import com.divudi.bean.common.ExcelController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UserSettingsController;
 import com.divudi.core.facade.BillFacade;
@@ -60,6 +61,8 @@ public class BhtPaymentSummaryReportController implements Serializable {
     private UserSettingsController userSettingsController;
     @Inject
     private SessionController sessionController;
+    @Inject
+    private ExcelController excelController;
 
     // -------------------------------------------------------------------------
     // Filter fields
@@ -95,6 +98,14 @@ public class BhtPaymentSummaryReportController implements Serializable {
     private Date reportToDate;
     private String reportDateBasis;
 
+    /**
+     * Ordered {label, value} pairs of every filter as of the last
+     * generateReport() call, written above the table in the Excel export so
+     * the downloaded file shows which filters produced its rows (issue
+     * #24947). Snapshotted for the same reason as reportFromDate above.
+     */
+    private List<String[]> reportFilterPairs;
+
     private double grandTotalDeposits;
     private double grandTotalDepositCash;
     private double grandTotalDepositCard;
@@ -123,6 +134,7 @@ public class BhtPaymentSummaryReportController implements Serializable {
         reportFromDate = fromDate;
         reportToDate = toDate;
         reportDateBasis = dateBasis;
+        reportFilterPairs = buildFilterPairs();
 
         reportRows = new ArrayList<>();
         grandTotalDeposits = 0;
@@ -530,8 +542,28 @@ public class BhtPaymentSummaryReportController implements Serializable {
                 + "   Date Basis: " + ("admissionDate".equals(reportDateBasis) ? "Admission Date" : "Discharge Date");
         com.lowagie.text.Paragraph subPara = new com.lowagie.text.Paragraph(range, subFont);
         subPara.setAlignment(com.lowagie.text.Element.ALIGN_CENTER);
-        subPara.setSpacingAfter(10f);
+        subPara.setSpacingAfter(2f);
         pdf.add(subPara);
+
+        // Remaining filters (issue #24946), from the same Generate-time
+        // snapshot the Excel export uses, so the PDF header always matches
+        // the exported rows. The date range is already on the line above.
+        StringBuilder filters = new StringBuilder();
+        if (reportFilterPairs != null) {
+            for (String[] pair : reportFilterPairs) {
+                if ("From".equals(pair[0]) || "To".equals(pair[0]) || "Date Basis".equals(pair[0])) {
+                    continue;
+                }
+                if (filters.length() > 0) {
+                    filters.append("   ");
+                }
+                filters.append(pair[0]).append(": ").append(pair[1]);
+            }
+        }
+        com.lowagie.text.Paragraph filterPara = new com.lowagie.text.Paragraph(filters.toString(), subFont);
+        filterPara.setAlignment(com.lowagie.text.Element.ALIGN_CENTER);
+        filterPara.setSpacingAfter(10f);
+        pdf.add(filterPara);
     }
 
     /**
@@ -547,6 +579,69 @@ public class BhtPaymentSummaryReportController implements Serializable {
         com.lowagie.text.Paragraph footerPara = new com.lowagie.text.Paragraph("Printed by: " + userName + "     Printed at: " + printedTime, footerFont);
         footerPara.setSpacingBefore(10f);
         pdf.add(footerPara);
+    }
+
+    // -------------------------------------------------------------------------
+    // Excel export post processing (issue #24947)
+    // -------------------------------------------------------------------------
+    /**
+     * {@code p:dataExporter} postProcessor for the "BHT Deposit and Credit
+     * Settlement Detail" xlsx export. The Excel file used to contain only
+     * the table, with no record of the filters that produced it; this adds
+     * the report title, every filter as applied at Generate time, and a
+     * Printed By/At footer (issue #24947).
+     */
+    public void postProcessXlsBhtPaymentDetail(Object document) {
+        if (!(document instanceof org.apache.poi.ss.usermodel.Workbook)) {
+            return;
+        }
+        org.apache.poi.ss.usermodel.Workbook workbook = (org.apache.poi.ss.usermodel.Workbook) document;
+        if (workbook.getNumberOfSheets() == 0) {
+            return;
+        }
+        org.apache.poi.ss.usermodel.Sheet sheet = workbook.getSheetAt(0);
+        List<String[]> filterPairs = reportFilterPairs != null ? reportFilterPairs : buildFilterPairs();
+        int mergeCol = 10;
+        excelController.insertExcelReportHeader(sheet, "BHT Deposit and Credit Settlement Detail", filterPairs, mergeCol);
+        excelController.appendExcelPrintedByFooter(sheet, mergeCol);
+
+        // PrimeFaces sized column A to the first table column (e.g. BHT No)
+        // before this runs; widen it if needed so the filter labels the
+        // header writes there ("Admission Status:" etc.) are not clipped.
+        int longestLabel = 0;
+        for (String[] pair : filterPairs) {
+            if (pair[0] != null) {
+                longestLabel = Math.max(longestLabel, pair[0].length() + 1);
+            }
+        }
+        int labelWidth = Math.min((longestLabel + 2) * 256, 255 * 256);
+        if (sheet.getColumnWidth(0) < labelWidth) {
+            sheet.setColumnWidth(0, labelWidth);
+        }
+    }
+
+    /**
+     * Every filter on the page as {label, value} pairs, using the same
+     * labels and "All ..." wording as the page's own inputs.
+     */
+    private List<String[]> buildFilterPairs() {
+        String dateFormat = sessionController.getApplicationPreference().getLongDateTimeFormat();
+        SimpleDateFormat sdf = new SimpleDateFormat(dateFormat);
+        List<String[]> pairs = new ArrayList<>();
+        // fetchEncounters() applies the date range only when both dates are
+        // set; with either one missing no date filter is applied at all, so
+        // show both as unbounded rather than imply the remaining date filtered.
+        boolean dateRangeApplied = fromDate != null && toDate != null;
+        pairs.add(new String[]{"From", dateRangeApplied ? sdf.format(fromDate) : "Any"});
+        pairs.add(new String[]{"To", dateRangeApplied ? sdf.format(toDate) : "Any"});
+        pairs.add(new String[]{"Date Basis", "admissionDate".equals(dateBasis) ? "Admission Date" : "Discharge Date"});
+        pairs.add(new String[]{"Admission Status", admissionStatus != null ? admissionStatus.getLabel() : "All"});
+        pairs.add(new String[]{"Admission Type", admissionType != null ? admissionType.getName() : "All"});
+        pairs.add(new String[]{"Payment Method", paymentMethod != null ? paymentMethod.getLabel() : "All Methods"});
+        pairs.add(new String[]{"Institution", institution != null ? institution.getName() : "All Institutions"});
+        pairs.add(new String[]{"Site", site != null ? site.getName() : "All Sites"});
+        pairs.add(new String[]{"Department", department != null ? department.getName() : "All Departments"});
+        return pairs;
     }
 
     /**

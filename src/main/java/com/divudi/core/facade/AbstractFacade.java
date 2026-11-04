@@ -42,6 +42,216 @@ public abstract class AbstractFacade<T> {
     private Class<T> entityClass;
 
     /**
+     * Logs a query failure that a helper below catches and turns into an
+     * empty list, null or zero. Without this, a schema mismatch (for example
+     * an entity field whose column is missing from the database) looks to
+     * the caller exactly like "no rows" and leaves nothing in the server log
+     * (issue #25075: every login showed "Invalid User" with an empty log).
+     * The helpers still return their usual default; only the logging is new.
+     * A {@link NoResultException} from getSingleResult is an expected
+     * "nothing found" and is not logged.
+     * <p>
+     * The exception itself is deliberately NOT passed to the logger: an
+     * EclipseLink DatabaseException message carries the SQL call with its
+     * {@code bind => [...]} parameter values and the {@code Query:} text,
+     * which can hold patient data, usernames or password hashes. Only the
+     * sanitized cause chain from {@link #sanitizedCauseChain(Throwable)} is
+     * logged.
+     */
+    private void logSwallowedQueryFailure(String method, String jpql, Exception e) {
+        if (e instanceof NoResultException) {
+            return;
+        }
+        String entityName = entityClass == null ? "?" : entityClass.getSimpleName();
+        logger.log(Level.SEVERE, "AbstractFacade." + method + " (" + entityName
+                + ") query failed; returning an empty/default result. JPQL: " + sanitizedJpql(jpql)
+                + " | Cause: " + sanitizedCauseChain(e));
+    }
+
+    /**
+     * Some callers build JPQL with typed search text inside quoted literals,
+     * so every quoted literal is replaced with '[redacted]'. Typed text may
+     * hold an unescaped apostrophe ({@code '%O'Brien%'}), so a quote only
+     * closes a literal when a JPQL boundary (whitespace, ')', ',', a
+     * comparison operator, '|' or the end) follows it. If a stray quote is
+     * still left after that, everything from the first quote to the end is
+     * redacted. Whitespace is collapsed to keep the log entry on one line,
+     * and the result is capped at MAX_MESSAGE_LENGTH.
+     * <p>
+     * The JPQL is cut to MAX_INPUT_LENGTH before any regex runs (a literal cut
+     * in half is caught by the redact-to-end fallback), and any Throwable,
+     * such as a StackOverflowError, gives a fixed "[unloggable: ...]" text,
+     * because this runs inside the facade's catch block and must never throw.
+     * Package-private for unit testing.
+     */
+    static String sanitizedJpql(String jpql) {
+        if (jpql == null) {
+            return null;
+        }
+        try {
+            boolean truncated = jpql.length() > MAX_INPUT_LENGTH;
+            String input = truncated ? jpql.substring(0, MAX_INPUT_LENGTH) : jpql;
+            String s = JPQL_LITERAL_PATTERN.matcher(input).replaceAll("'[redacted]'");
+            if (s.replace("'[redacted]'", "").indexOf('\'') >= 0) {
+                s = input.substring(0, input.indexOf('\'')) + "'[redacted]";
+            }
+            s = WHITESPACE_PATTERN.matcher(s).replaceAll(" ").trim();
+            if (truncated) {
+                s = s + TRUNCATED_MARKER;
+            }
+            return s.length() > MAX_MESSAGE_LENGTH ? s.substring(0, MAX_MESSAGE_LENGTH) + "..." : s;
+        } catch (Throwable t) {
+            return unloggable(t);
+        }
+    }
+
+    /**
+     * The fixed text logged in place of a value the sanitizer could not
+     * process. It names only the exception class, never the input.
+     */
+    static String unloggable(Throwable t) {
+        return "[unloggable: " + (t == null ? "?" : t.getClass().getName()) + "]";
+    }
+
+    private static final int MAX_CAUSE_DEPTH = 10;
+    private static final int MAX_MESSAGE_LENGTH = 1000;
+    /**
+     * Input longer than this is cut before any regex runs, so the patterns
+     * never see more than a few thousand characters.
+     */
+    static final int MAX_INPUT_LENGTH = 4000;
+    static final String TRUNCATED_MARKER = "\u2026[truncated]";
+    private static final java.util.regex.Pattern WHITESPACE_PATTERN
+            = java.util.regex.Pattern.compile("\\s+");
+    /**
+     * The bind, Call and Query patterns run over the whole message with
+     * DOTALL, so a value that spans several lines is removed too. A bind
+     * segment runs to the last closing bracket in the message (a value may
+     * itself contain ']'), or to the end of the message when there is none.
+     * Call and Query text runs to the next bind/Call/Query marker or to the
+     * end of the message.
+     */
+    private static final java.util.regex.Pattern BIND_PATTERN
+            = java.util.regex.Pattern.compile("bind\\s*=>(?:\\s*\\[.*\\]|.*)",
+                    java.util.regex.Pattern.DOTALL);
+    private static final java.util.regex.Pattern CALL_PATTERN
+            = java.util.regex.Pattern.compile("(^|\\s)Call:.*?(?=\\s*bind\\s*=>|\\sQuery:|\\z)",
+                    java.util.regex.Pattern.DOTALL);
+    private static final java.util.regex.Pattern QUERY_PATTERN
+            = java.util.regex.Pattern.compile("(^|\\s)Query:.*?(?=\\s*bind\\s*=>|\\sCall:|\\z)",
+                    java.util.regex.Pattern.DOTALL);
+    /**
+     * Quoted MySQL values such as {@code Duplicate entry 'x'} are also
+     * matched over the whole message, so a value that contains a line break
+     * is removed in full. MySQL does not escape a quote inside the value
+     * (e.g. {@code 'O'Brien'}), so the value runs to the quote before the
+     * following " for key" / " for column" text; without that text it ends at
+     * the next quote, or at the end of the message when the value is not
+     * closed (for example when the message was cut at MAX_INPUT_LENGTH).
+     */
+    private static final java.util.regex.Pattern QUOTED_VALUE_PATTERN
+            = java.util.regex.Pattern.compile(
+                    "(Duplicate entry |value: ?)'(?:.*?'(?= for (?:key|column)\\b)|[^']*+(?:'|\\z))",
+                    java.util.regex.Pattern.DOTALL);
+    /**
+     * A JPQL literal: a quote, then runs of non-quote characters and quotes
+     * that are not followed by a JPQL boundary, then a quote that is. The
+     * runs are possessive and the loop repeats once per inner quote, not per
+     * character, so a long literal cannot overflow the regex stack.
+     */
+    private static final java.util.regex.Pattern JPQL_LITERAL_PATTERN
+            = java.util.regex.Pattern.compile(
+                    "'[^']*+(?:'(?![\\s),=<>!|]|$)[^']*+)*+'(?=[\\s),=<>!|]|$)");
+
+    /**
+     * Describes a throwable and its causes as "Class: message" items joined
+     * by " <- ", with bound values removed (see {@link #redactBoundValues}).
+     * Package-private for unit testing.
+     */
+    static String sanitizedCauseChain(Throwable t) {
+        try {
+            return describeCauseChain(t);
+        } catch (Throwable e) {
+            return unloggable(e);
+        }
+    }
+
+    private static String describeCauseChain(Throwable t) {
+        StringBuilder sb = new StringBuilder();
+        Set<Throwable> seen = java.util.Collections.newSetFromMap(new java.util.IdentityHashMap<>());
+        Throwable current = t;
+        int depth = 0;
+        while (current != null && depth < MAX_CAUSE_DEPTH && seen.add(current)) {
+            if (depth > 0) {
+                sb.append(" <- ");
+            }
+            sb.append(current.getClass().getName());
+            String message = redactBoundValues(current.getMessage());
+            if (message != null && !message.isEmpty()) {
+                sb.append(": ").append(message);
+            }
+            current = current.getCause();
+            depth++;
+        }
+        return sb.toString();
+    }
+
+    /**
+     * Removes parameter values from an exception message. Across the whole
+     * message (values may span lines) it replaces an EclipseLink
+     * {@code bind => [...]} segment with {@code bind => [redacted]} and the
+     * {@code Call:} and {@code Query:} text with {@code [redacted]}, and
+     * quoted MySQL values such as {@code Duplicate entry 'x'} with
+     * {@code '[redacted]'}. Only then is the message split into lines, which
+     * are joined with " / " so the log entry stays on one line.
+     * <p>
+     * The message is cut to MAX_INPUT_LENGTH before any regex runs (an
+     * unclosed bind, Call, Query or quoted value is redacted to the end), and
+     * any Throwable gives a fixed "[unloggable: ...]" text instead.
+     * Package-private for unit testing.
+     */
+    static String redactBoundValues(String message) {
+        if (message == null) {
+            return null;
+        }
+        try {
+            return redactBoundValuesUnguarded(message);
+        } catch (Throwable t) {
+            return unloggable(t);
+        }
+    }
+
+    private static String redactBoundValuesUnguarded(String message) {
+        boolean truncated = message.length() > MAX_INPUT_LENGTH;
+        if (truncated) {
+            message = message.substring(0, MAX_INPUT_LENGTH);
+        }
+        String redacted = BIND_PATTERN.matcher(message).replaceAll("bind => [redacted]");
+        redacted = CALL_PATTERN.matcher(redacted).replaceAll("$1Call: [redacted]");
+        redacted = QUERY_PATTERN.matcher(redacted).replaceAll("$1Query: [redacted]");
+        redacted = QUOTED_VALUE_PATTERN.matcher(redacted).replaceAll("$1'[redacted]'");
+        StringBuilder sb = new StringBuilder();
+        for (String line : redacted.split("\\r?\\n")) {
+            String cleaned = line.trim();
+            if (cleaned.isEmpty()) {
+                continue;
+            }
+            if (sb.length() > 0) {
+                sb.append(" / ");
+            }
+            sb.append(cleaned);
+        }
+        String result = sb.toString();
+        if (truncated) {
+            result = result + TRUNCATED_MARKER;
+        }
+        if (result.length() > MAX_MESSAGE_LENGTH) {
+            result = result.substring(0, MAX_MESSAGE_LENGTH) + "...";
+        }
+        return result;
+    }
+
+    /**
      * Executes native SQL query.
      *
      * WARNING: This method does not provide SQL injection protection.
@@ -271,6 +481,7 @@ public abstract class AbstractFacade<T> {
         try {
             return qry.getResultList();
         } catch (Exception e) {
+            logSwallowedQueryFailure("findObjects", jpql, e);
             return null;
         }
     }
@@ -297,6 +508,7 @@ public abstract class AbstractFacade<T> {
         try {
             return qry.getResultList();
         } catch (Exception e) {
+            logSwallowedQueryFailure("findLongList", jpql, e);
             return null;
         }
     }
@@ -553,6 +765,7 @@ public abstract class AbstractFacade<T> {
         try {
             ts = getEntityManager().createQuery(cq).getResultList();
         } catch (Exception e) {
+            logSwallowedQueryFailure("findAll", "<criteria: all " + entityClass.getSimpleName() + ">", e);
             ts = new ArrayList<>();
         }
         return ts;
@@ -622,6 +835,7 @@ public abstract class AbstractFacade<T> {
         try {
             return qry.getResultList();
         } catch (Exception e) {
+            logSwallowedQueryFailure("findByJpqlWithRange", jpql, e);
             return new ArrayList<>();
         }
     }
@@ -675,6 +889,7 @@ public abstract class AbstractFacade<T> {
         try {
             resultList = qry.getResultList();
         } catch (Exception e) {
+            logSwallowedQueryFailure("executeLongJpqlQuery", jpql, e);
             resultList = new ArrayList<>();
         }
 
@@ -712,7 +927,7 @@ public abstract class AbstractFacade<T> {
         try {
             resultList = qry.getResultList();
         } catch (Exception e) {
-            logger.log(Level.SEVERE, "findDTOsByJpql failed for JPQL: " + jpql, e);
+            logSwallowedQueryFailure("findDTOsByJpql", jpql, e);
             resultList = new ArrayList<>();
         }
 
@@ -742,7 +957,7 @@ public abstract class AbstractFacade<T> {
         try {
             resultList = qry.getResultList();
         } catch (Exception e) {
-            logger.log(Level.SEVERE, "findDTOsByJpql failed for JPQL: " + jpql, e);
+            logSwallowedQueryFailure("findDTOsByJpql", jpql, e);
             resultList = new ArrayList<>();
         }
 
@@ -777,6 +992,7 @@ public abstract class AbstractFacade<T> {
         try {
             resultList = qry.getResultList();
         } catch (Exception e) {
+            logSwallowedQueryFailure("findDTOsByJpql", jpql, e);
             resultList = new ArrayList<>();
         }
 
@@ -802,6 +1018,7 @@ public abstract class AbstractFacade<T> {
         try {
             resultList = qry.getResultList();
         } catch (Exception e) {
+            logSwallowedQueryFailure("findRawResultsByJpql", jpql, e);
             resultList = new ArrayList<>();
         }
 
@@ -831,8 +1048,7 @@ public abstract class AbstractFacade<T> {
         try {
             resultList = qry.getResultList();
         } catch (Exception e) {
-            System.out.println("DEBUG: findLightsByJpqlWithoutCache EXCEPTION: " + e.getClass().getName() + " - " + e.getMessage());
-            e.printStackTrace();
+            logSwallowedQueryFailure("findLightsByJpqlWithoutCache", jpql, e);
             resultList = new ArrayList<>();
         }
 
@@ -859,6 +1075,7 @@ public abstract class AbstractFacade<T> {
         try {
             resultList = qry.getResultList();
         } catch (Exception e) {
+            logSwallowedQueryFailure("findLightsByJpql", jpql, e);
             resultList = new ArrayList<>();
         }
 
@@ -892,6 +1109,7 @@ public abstract class AbstractFacade<T> {
         try {
             resultList = qry.getResultList();
         } catch (Exception e) {
+            logSwallowedQueryFailure("findLightsByJpql", jpql, e);
             resultList = new ArrayList<>();
         }
 
@@ -922,6 +1140,7 @@ public abstract class AbstractFacade<T> {
         try {
             resultList = qry.getResultList();
         } catch (Exception e) {
+            logSwallowedQueryFailure("findLightsByJpql", jpql, e);
             resultList = new ArrayList<>();
         }
 
@@ -954,6 +1173,7 @@ public abstract class AbstractFacade<T> {
         try {
             ts = qry.getResultList();
         } catch (Exception e) {
+            logSwallowedQueryFailure("findByJpql", jpql, e);
             ts = new ArrayList<>();
         }
 
@@ -988,6 +1208,7 @@ public abstract class AbstractFacade<T> {
         try {
             ts = qry.getResultList();
         } catch (Exception e) {
+            logSwallowedQueryFailure("findByJpql", jpql, e);
             ts = new ArrayList<>();
         }
 
@@ -1190,6 +1411,7 @@ public abstract class AbstractFacade<T> {
 
             return obj;
         } catch (Exception e) {
+            logSwallowedQueryFailure("findAggregateModified", jpql, e);
             return null;
         }
     }
@@ -1227,6 +1449,7 @@ public abstract class AbstractFacade<T> {
             Double result = qry.getSingleResult();
             return result == null ? 0.0 : result;
         } catch (Exception e) {
+            logSwallowedQueryFailure("findDoubleByJpql", jpql, e);
             return 0.0;
         }
     }
@@ -1250,6 +1473,7 @@ public abstract class AbstractFacade<T> {
             Object d = qry.getSingleResult();
             return (Date) d;
         } catch (Exception e) {
+            logSwallowedQueryFailure("findDateByJpql", jpql, e);
             return null;
         }
     }
@@ -1277,6 +1501,7 @@ public abstract class AbstractFacade<T> {
             Object d = qry.getSingleResult();
             return (Long) d;
         } catch (Exception e) {
+            logSwallowedQueryFailure("findLongByJpql", jpql, e);
             return 0l;
         }
     }
@@ -1538,6 +1763,7 @@ public abstract class AbstractFacade<T> {
                 temd = 0.0;
             }
         } catch (Exception e) {
+            logSwallowedQueryFailure("findAggregateDbl", strJQL, e);
             temd = 0.0;
         }
         return temd;
@@ -1552,6 +1778,7 @@ public abstract class AbstractFacade<T> {
                 temd = 0L;
             }
         } catch (Exception e) {
+            logSwallowedQueryFailure("findAggregateLong", strJQL, e);
             temd = 0L;
         }
         return temd;
@@ -1562,6 +1789,7 @@ public abstract class AbstractFacade<T> {
         try {
             return (Long) q.getSingleResult();
         } catch (Exception e) {
+            logSwallowedQueryFailure("findLongByJpql", strJQL, e);
             return 0l;
         }
     }
@@ -1572,6 +1800,7 @@ public abstract class AbstractFacade<T> {
         try {
             return q.getResultList();
         } catch (Exception e) {
+            logSwallowedQueryFailure("findString", strJQL, e);
 //            
             return null;
         }
@@ -1603,6 +1832,7 @@ public abstract class AbstractFacade<T> {
         try {
             return q.getResultList();
         } catch (Exception e) {
+            logSwallowedQueryFailure("findString", strJQL, e);
 //            
             return null;
         }
@@ -1617,6 +1847,7 @@ public abstract class AbstractFacade<T> {
         try {
             return getEntityManager().createQuery(jpql, String.class).getResultList();
         } catch (Exception e) {
+            logSwallowedQueryFailure("findStringListByJpql", jpql, e);
             return new ArrayList<>();
         }
     }
@@ -1633,6 +1864,7 @@ public abstract class AbstractFacade<T> {
 
             return qry.getResultList();
         } catch (Exception e) {
+            logSwallowedQueryFailure("findStringListByJpql", jpql, e);
             return new ArrayList<>();
         }
     }
@@ -1646,6 +1878,7 @@ public abstract class AbstractFacade<T> {
         try {
             return qry.getResultList();
         } catch (Exception e) {
+            logSwallowedQueryFailure("findAggregates", jpql, e);
             return null;
         }
     }
@@ -1691,7 +1924,7 @@ public abstract class AbstractFacade<T> {
         try {
             return qry.getResultList();
         } catch (Exception e) {
-            logger.log(Level.SEVERE, "findAggregates failed for JPQL: " + jpql, e);
+            logSwallowedQueryFailure("findAggregates", jpql, e);
             return null;
         }
     }
@@ -1732,6 +1965,7 @@ public abstract class AbstractFacade<T> {
 
             return obj;
         } catch (Exception e) {
+            logSwallowedQueryFailure("findAggregat", jpql, e);
             return null;
         }
     }
@@ -1755,6 +1989,7 @@ public abstract class AbstractFacade<T> {
         try {
             return qry.getSingleResult();
         } catch (Exception e) {
+            logSwallowedQueryFailure("findAggregate", jpql, e);
             return null;
         }
     }
@@ -1803,6 +2038,7 @@ public abstract class AbstractFacade<T> {
         try {
             return qry.getSingleResult();
         } catch (Exception e) {
+            logSwallowedQueryFailure("findSingleAggregate", jpql, e);
             return null;
         }
     }
@@ -1837,6 +2073,7 @@ public abstract class AbstractFacade<T> {
             Double result = (Double) qry.getSingleResult();
             return result == null ? 0.0 : result;
         } catch (Exception e) {
+            logSwallowedQueryFailure("findAggregateDbl", jpql, e);
             return 0.0;
         }
     }
@@ -1860,6 +2097,7 @@ public abstract class AbstractFacade<T> {
         try {
             return (Long) qry.getSingleResult();
         } catch (Exception e) {
+            logSwallowedQueryFailure("findAggregateLong", jpql, e);
             return 0L;
         }
     }
@@ -1879,6 +2117,7 @@ public abstract class AbstractFacade<T> {
         } catch (NoResultException e) {
             return null;
         } catch (Exception e) {
+            logSwallowedQueryFailure("findSingleScalar", jpql, e);
             return null;
         }
     }

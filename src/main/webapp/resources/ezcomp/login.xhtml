@@ -13,7 +13,9 @@
     <cc:implementation>
         <h:outputStylesheet library="css" name="login.css" ></h:outputStylesheet>
 
-        <div style="background-color: lightgray; height: 100vh;">
+        <!-- Fixed to the viewport so the body's bottom padding (kept for the watermarks) adds no page scroll bar;
+             a tall screen (e.g. authenticator setup on a small window) scrolls inside this box instead -->
+        <div style="background-color: lightgray; position: fixed; top: 0; right: 0; bottom: 0; left: 0; overflow-y: auto;">
             <section class="h-100 gradient-form">
                 <div class="container py-5 h-100" >
                     <div class="row d-flex justify-content-center align-items-center h-100" >

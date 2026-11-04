@@ -283,7 +283,8 @@
                                         <p:dataExporter 
                                             type="xlsx"
                                             target="tblReport"
-                                            fileName="BHT_Payment_Summary" />
+                                            fileName="BHT_Payment_Summary"
+                                            postProcessor="#{bhtPaymentDetailReportController.postProcessXLSBhtPaymentSummary}" />
                                     </p:commandButton>
                                     <p:commandButton
                                         value="PDF"

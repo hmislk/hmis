@@ -65,7 +65,8 @@
                            required="#{cc.attrs.required}"
                            requiredMessage="#{cc.attrs.requiredMessage}" />
             <div class="otp-boxes" data-autofocus="#{cc.attrs.autofocus}">
-                <input type="text" class="otp-digit" maxlength="1" inputmode="numeric" pattern="[0-9]*" autocomplete="off" aria-label="Digit 1" />
+                <!-- No maxlength on the first box: phones auto-fill the whole SMS code into it and the script spreads the digits -->
+                <input type="text" class="otp-digit" inputmode="numeric" pattern="[0-9]*" autocomplete="one-time-code" aria-label="Digit 1" />
                 <input type="text" class="otp-digit" maxlength="1" inputmode="numeric" pattern="[0-9]*" autocomplete="off" aria-label="Digit 2" />
                 <input type="text" class="otp-digit" maxlength="1" inputmode="numeric" pattern="[0-9]*" autocomplete="off" aria-label="Digit 3" />
                 <input type="text" class="otp-digit" maxlength="1" inputmode="numeric" pattern="[0-9]*" autocomplete="off" aria-label="Digit 4" />

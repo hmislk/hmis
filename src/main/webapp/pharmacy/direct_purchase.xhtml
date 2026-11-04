@@ -696,14 +696,16 @@
                                             id="editDoe"
                                             inputStyleClass="w-100"
                                             pattern="dd MM yy"
-                                            value="#{pharmacyDirectPurchaseController.editingBillItem.pharmaceuticalBillItem.doe}" />
+                                            value="#{pharmacyDirectPurchaseController.editDoe}">
+                                            <p:ajax event="dateSelect" process="@this editBatch" update="editBatch" listener="#{pharmacyDirectPurchaseController.setEditingBatch}" />
+                                        </p:calendar>
 
                                         <p:outputLabel for="editBatch" value="Batch No" />
                                         <p:inputText
                                             id="editBatch"
                                             class="w-100"
                                             autocomplete="off"
-                                            value="#{pharmacyDirectPurchaseController.editingBillItem.pharmaceuticalBillItem.stringValue}" />
+                                            value="#{pharmacyDirectPurchaseController.editBatch}" />
                                     </p:panelGrid>
                                     <p:defaultCommand target="btnSave" />
                                     <div class="d-flex justify-content-end mt-3 gap-2">

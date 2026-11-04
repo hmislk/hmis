@@ -850,23 +850,79 @@ public class PharmacyDirectPurchaseController implements Serializable {
     public PharmacyDirectPurchaseController() {
     }
 
+    /**
+     * Batch value last derived automatically from an expiry date, and the bill
+     * item it was derived for. Used so a batch typed by hand is never
+     * overwritten when the expiry date changes.
+     */
+    private String lastAutoBatch;
+    private BillItem lastAutoBatchOwner;
+
     public void setBatch() {
-        if (getCurrentBillItem() != null) {
-            PharmaceuticalBillItem pharmaceuticalBillItem = getCurrentBillItem().getPharmaceuticalBillItem();
+        deriveBatchFromExpiry(getCurrentBillItem());
+    }
 
-            if (pharmaceuticalBillItem != null) {
-                String stringValue = pharmaceuticalBillItem.getStringValue();
+    /**
+     * Edit dialog works on buffered copies of expiry and batch; they are written
+     * to the real row only by updateBillItem() (Save). Cancel simply discards them.
+     */
+    private Date editDoe;
+    private String editBatch;
+    private String editLastAutoBatch;
 
-                if (stringValue != null && stringValue.trim().isEmpty()) {
-                    Date date = pharmaceuticalBillItem.getDoe();
+    public void setEditingBatch() {
+        if (editDoe == null) {
+            return;
+        }
+        boolean empty = editBatch == null || editBatch.trim().isEmpty();
+        boolean wasAutoDerived = editLastAutoBatch != null && editLastAutoBatch.equals(editBatch);
+        if (empty || wasAutoDerived) {
+            editBatch = batchFromExpiry(editDoe);
+            editLastAutoBatch = editBatch;
+        }
+    }
 
-                    if (date != null) {
-                        DateFormat df = new SimpleDateFormat("ddMMyyyy");
-                        String reportDate = df.format(date);
-                        pharmaceuticalBillItem.setStringValue(reportDate);
-                    }
-                }
-            }
+    public Date getEditDoe() {
+        return editDoe;
+    }
+
+    public void setEditDoe(Date editDoe) {
+        this.editDoe = editDoe;
+    }
+
+    public String getEditBatch() {
+        return editBatch;
+    }
+
+    public void setEditBatch(String editBatch) {
+        this.editBatch = editBatch;
+    }
+
+    private static String batchFromExpiry(Date date) {
+        return date == null ? null : new SimpleDateFormat("ddMMyyyy").format(date);
+    }
+
+    private void deriveBatchFromExpiry(BillItem billItem) {
+        if (billItem == null) {
+            return;
+        }
+        PharmaceuticalBillItem pharmaceuticalBillItem = billItem.getPharmaceuticalBillItem();
+        if (pharmaceuticalBillItem == null) {
+            return;
+        }
+        Date date = pharmaceuticalBillItem.getDoe();
+        if (date == null) {
+            return;
+        }
+        String batch = pharmaceuticalBillItem.getStringValue();
+        String previousAuto = (lastAutoBatchOwner == billItem) ? lastAutoBatch : null;
+        boolean empty = batch == null || batch.trim().isEmpty();
+        boolean wasAutoDerived = previousAuto != null && previousAuto.equals(batch);
+        if (empty || wasAutoDerived) {
+            String derived = batchFromExpiry(date);
+            pharmaceuticalBillItem.setStringValue(derived);
+            lastAutoBatch = derived;
+            lastAutoBatchOwner = billItem;
         }
     }
 
@@ -1226,6 +1282,12 @@ public class PharmacyDirectPurchaseController implements Serializable {
 
     public void prepareEditBillItem(BillItem bi) {
         this.editingBillItem = bi;
+        // Buffer expiry and batch. A batch already on the saved row is treated as
+        // the user's own unless it equals the value derived from its current expiry.
+        PharmaceuticalBillItem pbi = bi == null ? null : bi.getPharmaceuticalBillItem();
+        editDoe = pbi == null ? null : pbi.getDoe();
+        editBatch = pbi == null ? null : pbi.getStringValue();
+        editLastAutoBatch = batchFromExpiry(editDoe);
     }
 
     public void updateBillItem() {
@@ -1286,6 +1348,11 @@ public class PharmacyDirectPurchaseController implements Serializable {
                     pbi.setRetailRatePack(BigDecimalUtil.valueOrZero(f.getRetailSaleRatePerUnit()).doubleValue());
                 }
             }
+        }
+        PharmaceuticalBillItem editedPbi = editingBillItem.getPharmaceuticalBillItem();
+        if (editedPbi != null) {
+            editedPbi.setDoe(editDoe);
+            editedPbi.setStringValue(editBatch);
         }
         calculateItemTotals(editingBillItem);
         calculateBillTotalsFromItems();

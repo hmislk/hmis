@@ -38,6 +38,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import com.divudi.service.IouAlreadySettledException;
+import com.divudi.service.IouSettlementService;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
@@ -53,6 +55,8 @@ import org.primefaces.event.TabChangeEvent;
 @SessionScoped
 public class IouBillController implements Serializable {
 
+    private static final String IOU_SETTLE_SUFFIX_WHEN_BLANK = "IOUS";
+
     @EJB
     private PersonFacade personFacade;
     @EJB
@@ -65,6 +69,8 @@ public class IouBillController implements Serializable {
     private BillItemFacade billItemFacade;
     @EJB
     private PaymentFacade paymentFacade;
+    @EJB
+    private IouSettlementService iouSettlementService;
 
     @Inject
     BillBeanController billBean;
@@ -201,6 +207,12 @@ public class IouBillController implements Serializable {
         if (paymentsForsettlingIuos.isEmpty()) {
             JsfUtil.addErrorMessage("No IOUs selected. ");
             return true;
+        }
+        for (Payment pin : paymentsForsettlingIuos) {
+            if (pin.getPaymentMethod() != PaymentMethod.Cash) {
+                JsfUtil.addErrorMessage("IOUs can only be settled in cash");
+                return true;
+            }
         }
         if (Math.abs(settlingIouTotal) != Math.abs(paymentTotal)) {
             JsfUtil.addErrorMessage("Settling Total and Payment Totals do not match. Please check and retry");
@@ -469,11 +481,13 @@ public class IouBillController implements Serializable {
     }
 
     private void saveSettleIouBill() {
+        // With a blank suffix, a settlement number could match an issue or conversion number
         String deptId = billNumberBean.departmentBillNumberGeneratorYearly(sessionController.getDepartment(),
-                BillTypeAtomic.IOU_SETTLE);
+                BillTypeAtomic.IOU_SETTLE, IOU_SETTLE_SUFFIX_WHEN_BLANK);
         getCurrent().setInsId(deptId);
         getCurrent().setDeptId(deptId);
         getCurrent().setBillType(BillType.IouSettle);
+        getCurrent().setBillClassType(BillClassType.BilledBill);
         getCurrent().setBillTypeAtomic(BillTypeAtomic.IOU_SETTLE);
         getCurrent().setDepartment(getSessionController().getDepartment());
         getCurrent().setInstitution(getSessionController().getInstitution());
@@ -481,8 +495,7 @@ public class IouBillController implements Serializable {
         getCurrent().setBillTime(new Date());
         getCurrent().setCreatedAt(new Date());
         getCurrent().setCreater(getSessionController().getLoggedUser());
-        getCurrent().setTotal(0 - getCurrent().getNetTotal());
-        getCurrent().setNetTotal(0 - getCurrent().getNetTotal());
+        // The total follows the cash: a settlement brings cash in, so it stays positive.
 
         getBillFacade().create(getCurrent());
     }
@@ -506,6 +519,10 @@ public class IouBillController implements Serializable {
         }
         if (currentPayment.getPaymentMethod() == null) {
             JsfUtil.addErrorMessage("Select a Payment Method");
+            return;
+        }
+        if (currentPayment.getPaymentMethod() != PaymentMethod.Cash) {
+            JsfUtil.addErrorMessage("IOUs can only be settled in cash");
             return;
         }
         // Settle requires the funds to equal the selected IOUs, so stop an over-amount at Add
@@ -555,10 +572,23 @@ public class IouBillController implements Serializable {
     }
 
     public void settleIouSettlingBill() {
+        // This bean is session scoped: a double click runs this twice over the same lists
+        List<Payment> selectedIous = settlingIuos;
         if (errorInSettlingIouBill()) {
             return;
         }
-        saveIouCreateBill();
+        // Settling an IOU twice moves the drawer twice, and the page's list can be stale
+        List<Long> selectedIouIds = new ArrayList<>();
+        for (Payment selectedIou : selectedIous) {
+            selectedIouIds.add(selectedIou.getId());
+        }
+        try {
+            iouSettlementService.claimOpenIous(selectedIouIds);
+        } catch (IouAlreadySettledException e) {
+            JsfUtil.addErrorMessage(e.getMessage());
+            return;
+        }
+        saveSettleIouBill();
 
         for (Payment pi : getPaymentsForsettlingIuos()) {
             pi.setBill(current);
@@ -575,7 +605,13 @@ public class IouBillController implements Serializable {
             paymentController.save(po);
         }
 
-        drawerController.updateDrawerForOuts(getSettlingIuos());
+        // Written from the bill, not the original IOU payments: those are positive and belong
+        // to the issue bill, so their history row would be positive and on the wrong bill.
+        double settledIouValue = 0.0;
+        for (Payment po : getSettlingIuos()) {
+            settledIouValue += Math.abs(po.getPaidValue());
+        }
+        drawerController.updateDrawerForOuts(getCurrent(), PaymentMethod.IOU, settledIouValue, sessionController.getLoggedUser());
         drawerController.updateDrawerForIns(getPaymentsForsettlingIuos());
         JsfUtil.addSuccessMessage("IOU Settled Successfully");
         settlingIuos = null;

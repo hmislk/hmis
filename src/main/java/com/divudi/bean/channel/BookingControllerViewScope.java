@@ -4224,42 +4224,48 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 
     public void addNormalChannelBooking() {
         if (billingStarted) {
+            JsfUtil.addErrorMessage("A booking is already being saved. Please wait.");
             return;
         }
         billingStarted = true;
-        if (selectedSessionInstance == null) {
-            JsfUtil.addErrorMessage("Please select a Session");
+        // Reset in finally: a flag left true by an exception made every later click return silently (#25052)
+        try {
+            if (selectedSessionInstance == null) {
+                JsfUtil.addErrorMessage("Please select a Session");
+                return;
+            }
+
+            if (selectedSessionInstance.isDoctorHoliday()) {
+                JsfUtil.addErrorMessage("Doctor is in Holiday.");
+                return;
+            }
+
+            addChannelBooking(false);
+
+            fillBillSessions();
+            //setSelectedSessionInstance(null);
+        } finally {
             billingStarted = false;
-            return;
         }
-
-        if (selectedSessionInstance != null && selectedSessionInstance.isDoctorHoliday()) {
-            JsfUtil.addErrorMessage("Doctor is in Holiday.");
-            billingStarted = false;
-            return;
-        }
-
-        addChannelBooking(false);
-
-        fillBillSessions();
-        billingStarted = false;
-        //setSelectedSessionInstance(null);
-
     }
 
     public void addReservedChannelBooking() {
         if (billingStarted) {
+            JsfUtil.addErrorMessage("A booking is already being saved. Please wait.");
             return;
         }
         billingStarted = true;
-        if (selectedSessionInstance == null) {
-            JsfUtil.addErrorMessage("Please select a Session Instance");
-            return;
+        try {
+            if (selectedSessionInstance == null) {
+                JsfUtil.addErrorMessage("Please select a Session Instance");
+                return;
+            }
+            boolean reservedBooking = true;
+            addChannelBooking(reservedBooking);
+            fillBillSessions();
+        } finally {
+            billingStarted = false;
         }
-        boolean reservedBooking = true;
-        addChannelBooking(reservedBooking);
-        fillBillSessions();
-        billingStarted = false;
     }
 
     public boolean checkApoinmentNumberIsAvailable(int no) {
@@ -4348,11 +4354,6 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         }
 
         boolean limitToMaxNo = selectedSessionInstance.getMaxNo() != 0 && configOptionApplicationController.getBooleanValueByKey("Limited appoinments session can't get appoinement more than max amount.");
-        if (limitToMaxNo && selectedSessionInstance.getBookedPatientCount() != null
-                && isMaxNoReached(reservedBooking, selectedSessionInstance.getBookedPatientCount(),
-                        selectedSessionInstance.getReservedBookingCount(), selectedSessionInstance.getCancelPatientCount())) {
-            return;
-        }
 
         if (configOptionApplicationController.getBooleanValueByKey("Allow Tenderd amount for channel booking")) {
             if (paymentMethod == PaymentMethod.Cash) {
@@ -4391,9 +4392,11 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         // The lock is re-entrant, so createBillSession taking it again is safe.
         try (SessionBookingLock.Hold hold = SessionBookingLock.acquire(getSelectedSessionInstance())) {
             if (limitToMaxNo) {
-                // The stored counts can be stale (another counter or an online booking); count the rows now
-                long[] fresh = countBookingsForCapacity(getSelectedSessionInstance());
-                if (isMaxNoReached(reservedBooking, fresh[0], fresh[1], fresh[2])) {
+                // The stored counts can be stale (another counter or an online booking); the shared check
+                // recounts the rows and adds open agent holds (#25074). Its database row lock is released when
+                // it returns, so it is SessionBookingLock above that serialises this check and the save.
+                if (channelService.isSessionFullForNewBooking(getSelectedSessionInstance(), reservedBooking)) {
+                    JsfUtil.addErrorMessage("Error: The maximum number of bookings (" + getSelectedSessionInstance().getMaxNo() + ") has been Reached.");
                     return;
                 }
             }
@@ -6164,53 +6167,6 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
                 }
             }
         }
-    }
-
-    private boolean isMaxNoReached(boolean reservedBooking, Long booked, Long reservedBookings, Long cancelled) {
-        int maxNo = selectedSessionInstance.getMaxNo();
-        long bookedPatientCount = booked != null ? booked : 0L;
-        long reservedNumberCount = reservedBookings != null ? reservedBookings : 0L;
-        if (!reservedBooking) {
-            List<Integer> reservedNumbers = CommonFunctions.convertStringToIntegerList(selectedSessionInstance.getReserveNumbers());
-            bookedPatientCount = bookedPatientCount + reservedNumbers.size() - reservedNumberCount;
-        }
-        long totalPatientCount = cancelled != null ? bookedPatientCount - cancelled : bookedPatientCount;
-        if (maxNo <= totalPatientCount) {
-            JsfUtil.addErrorMessage("Error: The maximum number of bookings (" + maxNo + ") has been Reached.");
-            return true;
-        }
-        return false;
-    }
-
-    /**
-     * Booked, reserved and cancelled counts for the session read from the
-     * booking rows, with the same rules as the stored counts.
-     */
-    private long[] countBookingsForCapacity(SessionInstance si) {
-        String jpql = "select count(bs), "
-                + " sum(case when bs.reservedBooking = true then 1 else 0 end), "
-                + " sum(case when b.cancelled = true then 1 else 0 end) "
-                + " from BillSession bs join bs.bill b "
-                + " where bs.retired=false"
-                + " and bs.sessionInstance=:si"
-                + " and b.billType in :bt"
-                + " and type(b)=:class"
-                + " and (b.billTypeAtomic is null or b.billTypeAtomic <> :bta)";
-        Map<String, Object> params = new HashMap<>();
-        params.put("si", si);
-        params.put("bt", Arrays.asList(BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelOnCall, BillType.ChannelStaff,
-                BillType.ChannelCredit, BillType.ChannelResheduleWithPayment, BillType.ChannelResheduleWithOutPayment));
-        params.put("class", BilledBill.class);
-        params.put("bta", BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_PENDING_PAYMENT);
-        List<Object[]> rows = billSessionFacade.findObjectsArrayByJpql(jpql, params, TemporalType.TIMESTAMP);
-        long[] counts = new long[3];
-        if (rows != null && !rows.isEmpty() && rows.get(0) != null) {
-            for (int i = 0; i < 3; i++) {
-                Object v = rows.get(0)[i];
-                counts[i] = v == null ? 0L : ((Number) v).longValue();
-            }
-        }
-        return counts;
     }
 
     private long countCountedBillSessions(SessionInstance si) {
