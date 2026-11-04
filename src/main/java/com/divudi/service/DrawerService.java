@@ -100,8 +100,8 @@ public class DrawerService {
             return;
         }
 
-        //update Drover History
-        drawerEntryUpdate(payment, drawer);
+        //update Drover History with the signed value applied to the balance below
+        drawerEntryUpdate(payment, drawer, payment.getCreater(), paidValue);
 
         synchronized (drawer) {
             switch (payment.getPaymentMethod()) {
@@ -224,6 +224,24 @@ public class DrawerService {
         if (payment == null) {
             return;
         }
+        drawerEntryUpdate(payment, currentDrawer, user, payment.getPaidValue());
+    }
+
+    /**
+     * Writes the drawer history row for a payment, using the signed value that
+     * is applied to the drawer balance. A drawer "out" made with a positive
+     * payment passes a negative value here, so the row's transaction value and
+     * after-in-hand value agree with the balance change (#25111).
+     *
+     * @param payment the payment being recorded
+     * @param currentDrawer the drawer whose balance changes
+     * @param user the user the history row is filed under
+     * @param signedValue the value added to the drawer balance (negative for an out)
+     */
+    public void drawerEntryUpdate(Payment payment, Drawer currentDrawer, WebUser user, double signedValue) {
+        if (payment == null) {
+            return;
+        }
 
         drawerEntry = new DrawerEntry();
         drawerEntry.setPayment(payment);
@@ -231,7 +249,7 @@ public class DrawerService {
         drawerEntry.setBill(payment.getBill());
         drawerEntry.setDrawer(currentDrawer);
         drawerEntry.setWebUser(user);
-        drawerEntry.setTransactionValue(payment.getPaidValue());
+        drawerEntry.setTransactionValue(signedValue);
         Double beforeInHandValue = 0.0;
 
         if (payment.getPaymentMethod() != null) {
@@ -297,7 +315,7 @@ public class DrawerService {
         }
 
         drawerEntry.setBeforeInHandValue(beforeInHandValue);
-        drawerEntry.setAfterInHandValue(beforeInHandValue + payment.getPaidValue());
+        drawerEntry.setAfterInHandValue(beforeInHandValue + signedValue);
         double totalBalance;
         if (currentDrawer.getCashInHandValue() == null) {
             totalBalance = 0.0;
@@ -307,7 +325,7 @@ public class DrawerService {
         //System.out.println("totalBalance = " + totalBalance);
 
         drawerEntry.setBeforeBalance(totalBalance);
-        drawerEntry.setAfterBalance(totalBalance + payment.getPaidValue());
+        drawerEntry.setAfterBalance(totalBalance + signedValue);
 
         double totalShortageOrExcess;
         if (currentDrawer.getCashInHandValue() == null) {
@@ -461,8 +479,8 @@ public class DrawerService {
             return;
         }
 
-        //update Drover History
-        drawerEntryUpdate(payment, drawer);
+        //update Drover History with the signed value applied to the balance below
+        drawerEntryUpdate(payment, drawer, payment.getCreater(), paidValue);
 
         synchronized (drawer) {
             switch (payment.getPaymentMethod()) {
