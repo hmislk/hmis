@@ -127,6 +127,10 @@ FHIR: <your-api-key>
 
 > **Note**: This endpoint uses the `FHIR` header, **not** the `Finance` header used by most other HMIS APIs.
 
+> **Key type**: The key must be an API key of type **FHIR**. Keys of any other type (Finance, General, Admin, ...) are rejected with `401 Unauthorized` and the message "Invalid or missing API key. An API key of type FHIR is required for the FHIR Patient API".
+>
+> **Creating a FHIR key**: the user the integration will act as logs in (needs the `ChangeMyApiKeys` privilege), opens the settings (gear icon) section of the main menu, chooses **Manage My API Keys**, selects key type **FHIR** under "Add New API Key", enters a key value and an expiry date, and saves.
+
 ### Base URL
 
 ```text
@@ -258,7 +262,7 @@ All endpoints return JSON error objects on failure:
 {
   "status": "error",
   "code": 401,
-  "message": "Invalid or missing API key"
+  "message": "Invalid or missing API key. An API key of type FHIR is required for the FHIR Patient API"
 }
 ```
 
@@ -266,5 +270,5 @@ Common HTTP status codes:
 - `200 OK` — success
 - `201 Created` — patient created (POST)
 - `400 Bad Request` — invalid parameters or malformed FHIR JSON
-- `401 Unauthorized` — missing or invalid API key
+- `401 Unauthorized` — missing, invalid, expired, or non-FHIR-type API key
 - `404 Not Found` — patient not found
