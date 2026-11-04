@@ -2993,6 +2993,8 @@ public class PatientController implements Serializable, ControllerWithPatient {
                 WebUser u = p.getWebUser();
                 if (u != null) {
                     u.setActivated(false);
+                    u.setActivatedAt(new Date());
+                    u.setActivator(getSessionController().getLoggedUser());
                     u.setRetired(true);
                     u.setRetiredAt(new Date());
                     u.setRetirer(getSessionController().getLoggedUser());

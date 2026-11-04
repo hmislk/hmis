@@ -277,6 +277,11 @@ public class WebUserController implements Serializable {
             boolean wasTwoFactorSmsAllowed = saved != null && saved.isTwoFactorSmsAllowed();
             // Authenticator enrollment is written only by TwoFactorAuthController; don't let a stale copy overwrite it
             TwoFactorAuthController.copyEnrollment(saved, current);
+            // activatedAt records the last activation-state change, so it is also the inactive date (#25078)
+            if (saved != null && saved.isActivated() != current.isActivated()) {
+                current.setActivatedAt(new Date());
+                current.setActivator(getSessionController().getLoggedUser());
+            }
             getFacade().edit(current);
             if (wasTwoFactorRequired != current.isTwoFactorRequired()) {
                 twoFactorAuthController.logRequiredChange(current, wasTwoFactorRequired);
