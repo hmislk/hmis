@@ -111,7 +111,7 @@ public class PasswordResetReportController implements Serializable {
         SimpleDateFormat dateFormat = new SimpleDateFormat(sessionController.getApplicationPreference().getLongDateTimeFormat());
         for (UserPasswordResetDto u : users) {
             classify(u, latestHistoryByUser.get(u.getWebUserId()));
-            u.setStatusText(u.isActivated() ? "Active" : withDate("Inactive", u.getActivatedAt(), dateFormat));
+            u.setStatusText(u.isActivated() ? "Active" : withDate("Inactive", "activation record", u.getActivatedAt(), dateFormat));
             u.setRetiredText(u.isRetired() ? withDate("Yes", u.getRetiredAt(), dateFormat) : "No");
             u.setLastLoginAt(lastLoginByUser.get(u.getWebUserId()));
             switch (u.getUpdatedBy()) {
@@ -134,7 +134,18 @@ public class PasswordResetReportController implements Serializable {
     }
 
     private static String withDate(String label, Date date, SimpleDateFormat format) {
-        return date == null ? label : label + " (" + format.format(date) + ")";
+        return withDate(label, null, date, format);
+    }
+
+    /**
+     * Older inactive users carry their last activation date in the same field, so the date is named rather than
+     * presented as a deactivation date.
+     */
+    private static String withDate(String label, String dateName, Date date, SimpleDateFormat format) {
+        if (date == null) {
+            return label;
+        }
+        return label + " (" + (dateName == null ? "" : dateName + ": ") + format.format(date) + ")";
     }
 
     /**

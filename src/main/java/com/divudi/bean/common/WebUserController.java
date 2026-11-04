@@ -253,13 +253,15 @@ public class WebUserController implements Serializable {
         if (current == null) {
             return;
         }
+        // Load the stored state before anything is merged
+        WebUser saved = (current.getId() == null || current.getId() == 0) ? null : getFacade().find(current.getId());
+        boolean activationChanged = saved != null && saved.isActivated() != current.isActivated();
         if (current.getId() == null || current.getId() == 0) {
             getFacade().create(current);
             JsfUtil.addSuccessMessage("Saved");
         } else {
-            WebUser saved = getFacade().find(current.getId());
             // activatedAt records the last activation-state change, so it is also the inactive date (#25078)
-            if (saved != null && saved.isActivated() != current.isActivated()) {
+            if (activationChanged) {
                 current.setActivatedAt(new Date());
                 current.setActivator(getSessionController().getLoggedUser());
             }
