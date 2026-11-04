@@ -2311,6 +2311,31 @@ public class PharmacyRefundForItemReturnsController implements Serializable, Con
         return originalSaleBill.getPaymentMethod() == PaymentMethod.Credit;
     }
 
+    /**
+     * Atomically marks the item-return bill as paid so that only one settle
+     * request can create the refund bill. A second overlapping request updates
+     * zero rows and is rejected before anything is written. If a later step
+     * fails the claim stays set, so the return is not refunded twice; it must
+     * then be reviewed by an administrator.
+     */
+    private boolean claimItemReturnForRefundOrReportError() {
+        if (itemReturnBill == null || itemReturnBill.getId() == null) {
+            JsfUtil.addErrorMessage("No Item Return bill to refund");
+            return false;
+        }
+        Map<String, Object> params = new HashMap<>();
+        params.put("id", itemReturnBill.getId());
+        int updated = getBillFacade().updateByJpql(
+                "UPDATE Bill b SET b.paid = true WHERE b.id = :id AND b.paid = false",
+                params);
+        if (updated != 1) {
+            JsfUtil.addErrorMessage("This return has already been refunded");
+            return false;
+        }
+        itemReturnBill.setPaid(true);
+        return true;
+    }
+
     public void settleRefundForReturnItems() {
         editingQty = null;
 
@@ -2328,6 +2353,10 @@ public class PharmacyRefundForItemReturnsController implements Serializable, Con
         // Validate that Credit payment method sales can only be returned using Credit payment method
         if (validateCreditReturnPaymentMethod()) {
             return; // Validation failed, error message already displayed
+        }
+
+        if (!claimItemReturnForRefundOrReportError()) {
+            return;
         }
 
         saveBill();
