@@ -33,6 +33,7 @@ import com.divudi.core.util.CommonFunctions;
 import java.io.Serializable;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
@@ -1037,12 +1038,20 @@ public class IouBillController implements Serializable {
                 + " where p.retired=:ret "
                 + " and p.currentHolder=:user "
                 + " and p.paymentMethod=:pm"
-                + " and p.cancelled=:can ";
+                + " and p.cancelled=:can "
+                // Converted to cash: the conversion sets cancelledBill, not cancelled
+                + " and p.cancelledBill is null "
+                + " and p.paidValue > 0 "
+                // Conversion and its cancellation post IOU offsets, not IOUs given to anyone.
+                // Cancelling a conversion also reopens the original, so its restored row would list it twice.
+                + " and (p.bill.billTypeAtomic is null or p.bill.billTypeAtomic not in :offsetTypes) ";
         Map params = new HashMap();
         params.put("ret", false);
         params.put("can", false);
         params.put("pm", PaymentMethod.IOU);
         params.put("user", sessionController.getLoggedUser());
+        params.put("offsetTypes", Arrays.asList(BillTypeAtomic.IOU_TO_CASH_CONVERSION,
+                BillTypeAtomic.IOU_TO_CASH_CONVERSION_CANCELLED));
         myIousToSettle = paymentFacade.findByJpql(jpql, params);
         paymentsForsettlingIuos = new ArrayList<>();
         settlingIuos = new ArrayList<>();
