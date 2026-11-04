@@ -8,6 +8,7 @@ import com.divudi.core.entity.BillItem;
 import com.divudi.core.entity.Department;
 import com.divudi.core.entity.PatientEncounter;
 import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.data.dto.FinalBillPrintRowDTO;
 import com.divudi.core.data.inward.InwardChargeType;
 import com.divudi.core.util.InwardFinalBillTextRenderer;
 import com.divudi.core.util.InwardFinalBillTextRenderer.Data;
@@ -19,6 +20,7 @@ import java.io.Serializable;
 import java.nio.charset.Charset;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
@@ -31,7 +33,7 @@ import javax.inject.Named;
 import javax.servlet.http.HttpServletResponse;
 
 /**
- * Raw text (.prn) printing of the inward Final Bill (Custom Bill 3 grouping)
+ * Raw text (.prn) printing of the inward Final Bill (Custom Bill 3 format)
  * and Interim Bill on pre-printed continuous stationery. Reuses the Inward Raw
  * Text machinery: the per-department "Inward Payment Bill Raw Text Paper"
  * switch gates the buttons, and the .prn is picked up by the client print agent.
@@ -110,7 +112,7 @@ public class InwardRawTextFinalBillController implements Serializable {
         return InwardFinalBillTextRenderer.render(buildData(bill, interim), width, topMargin, formLength, emitEscP);
     }
 
-    /** Collects what the printed form shows, grouping charges exactly as Custom Bill 3 does. */
+    /** Collects what the printed form shows, laying out the charges exactly as Custom Bill 3 does. */
     Data buildData(Bill bill, boolean interim) {
         DecimalFormat money = new DecimalFormat("#,##0.00");
         Data d = new Data();
@@ -155,10 +157,7 @@ public class InwardRawTextFinalBillController implements Serializable {
             d.discounts = money.format(0.0);
             d.netAmount = money.format(bill.getTotal() - bill.getPaidAmount());
         } else {
-            for (Map.Entry<String, Double> e : bhtSummeryController.getCustom3CategoryTotals(bill)) {
-                d.charges.add(new Row(e.getKey(), money.format(e.getValue())));
-            }
-            addProfessionalRows(d, bill, money);
+            addFinalBillCharges(d, bill, money);
             d.totalAmount = money.format(bill.getTotal());
             d.discounts = money.format(bill.getDiscount());
             d.netAmount = money.format(bill.getNetTotal() - bill.getPaidAmount());
@@ -168,16 +167,164 @@ public class InwardRawTextFinalBillController implements Serializable {
         return d;
     }
 
-    /** Per-doctor lines, as Custom Bill 3 lists them under the charge groups. */
-    private void addProfessionalRows(Data d, Bill bill, DecimalFormat money) {
-        for (BillItem bip : bill.getBillItems()) {
-            if (bip.getInwardChargeType() != InwardChargeType.ProfessionalCharge || bip.getProFees() == null) {
+    private static final String KEY_SUM_PER_DOCTOR = "Display All Doctor Chargers as a One and Show Sum Value of a Doctor";
+    private static final String KEY_ORGANIZED = "Organized Final Bill Charge Types";
+    private static final String KEY_SEPARATE_MEDICINES = "Separate Medicines and Surgical Supplies Tab";
+
+    private static boolean isOneOf(InwardChargeType t, InwardChargeType... types) {
+        for (InwardChargeType x : types) {
+            if (x == t) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * The charge lines of the Final Bill, mirroring resources/inward/bill/finalBillCustom4.xhtml
+     * (the "Custom Bill 3" button): the bill items in stored order, labelled by charge type,
+     * with the doctors listed under their heading and a subtotal. Follows the options the
+     * composite honours: bundled charge types, organized charge types and sum per doctor.
+     * The original (not the hospital copy) is printed, so professional fees are always shown.
+     */
+    private void addFinalBillCharges(Data d, Bill bill, DecimalFormat money) {
+        List<BillItem> items = bill.getBillItems();
+        boolean sumPerDoctor = configOptionApplicationController.getBooleanValueByKey(KEY_SUM_PER_DOCTOR, false);
+        if (bhtSummeryController.isBundleGroupedChargeTypesOnFinalBill()) {
+            for (FinalBillPrintRowDTO r : bhtSummeryController.getBundledFinalBillRows(bill)) {
+                d.charges.add(new Row(r.getLabel(), money.format(r.getAmount())));
+            }
+            if (!sumPerDoctor) {
+                for (BillItem bi : items) {
+                    if (bi.getInwardChargeType() == InwardChargeType.DoctorAndNurses && bi.getAdjustedValue() != 0) {
+                        d.charges.add(new Row(typeLabel(bi.getInwardChargeType()), money.format(bi.getAdjustedValue())));
+                    }
+                }
+                for (BillItem bi : items) {
+                    if (bi.getInwardChargeType() == InwardChargeType.ProfessionalCharge && hasProfessionalLine(bi)) {
+                        addFeeBlock(d, bi, typeLabel(bi.getInwardChargeType()), false, money);
+                    }
+                }
+            }
+            for (BillItem bi : items) {
+                if (bi.getInwardChargeType() == InwardChargeType.TechnicianAndParamedicalCharge
+                        && hasProfessionalLine(bi)) {
+                    addFeeBlock(d, bi, typeLabel(bi.getInwardChargeType()), false, money);
+                }
+            }
+            if (sumPerDoctor) {
+                addDoctorSummary(d, bill, typeLabel(InwardChargeType.ProfessionalCharge), money);
+            }
+        } else if (!configOptionApplicationController.getBooleanValueByKey(KEY_ORGANIZED, false)) {
+            for (BillItem bi : items) {
+                InwardChargeType t = bi.getInwardChargeType();
+                if (t == InwardChargeType.ProfessionalCharge) {
+                    if (hasProfessionalLine(bi)) {
+                        addFeeBlock(d, bi, t.getName(), false, money);
+                    }
+                } else if (bi.getAdjustedValue() != 0) {
+                    d.charges.add(new Row(t == null ? "" : t.getName(), money.format(bi.getAdjustedValue())));
+                }
+            }
+        } else {
+            addOrganized(d, bill, sumPerDoctor, money);
+        }
+    }
+
+    /** The "Organized Final Bill Charge Types" order of the composite. */
+    private void addOrganized(Data d, Bill bill, boolean sumPerDoctor, DecimalFormat money) {
+        List<BillItem> items = bill.getBillItems();
+        boolean separateMedicines = configOptionApplicationController.getBooleanValueByKey(KEY_SEPARATE_MEDICINES, false);
+        InwardChargeType[] early = {InwardChargeType.AdmissionFee, InwardChargeType.RoomCharges,
+            InwardChargeType.NursingCharges, InwardChargeType.MOCharges, InwardChargeType.LinenCharges,
+            InwardChargeType.MedicalCareICU, InwardChargeType.AdministrationCharge};
+        for (InwardChargeType t : early) {
+            for (BillItem bi : items) {
+                if (bi.getInwardChargeType() == t && bi.getAdjustedValue() != 0) {
+                    d.charges.add(new Row(t.getName(), money.format(bi.getAdjustedValue())));
+                }
+            }
+        }
+        for (BillItem bi : items) {
+            InwardChargeType t = bi.getInwardChargeType();
+            if (t == null || bi.getAdjustedValue() == 0
+                    || isOneOf(t, InwardChargeType.RoomCharges, InwardChargeType.ProfessionalCharge,
+                            InwardChargeType.DoctorAndNurses, InwardChargeType.AdmissionFee,
+                            InwardChargeType.NursingCharges, InwardChargeType.MOCharges,
+                            InwardChargeType.LinenCharges, InwardChargeType.MedicalCareICU,
+                            InwardChargeType.AdministrationCharge, InwardChargeType.Medicine,
+                            InwardChargeType.Laboratory)
+                    || (t == InwardChargeType.MedicinesAndSurgicalSupplies && separateMedicines)) {
                 continue;
             }
-            for (BillFee fe : bip.getProFees()) {
-                if (fe.getBill() == null || fe.getBill().isCancelled()
-                        || !"class com.divudi.core.entity.BilledBill".equals(fe.getBill().getBillClass())
-                        || !(fe.getFeeAdjusted() != 0 || fe.isFreeOfCharge())) {
+            addFeeBlock(d, bi, t.getName(), false, money);
+        }
+        InwardChargeType[] late = {InwardChargeType.Medicine, InwardChargeType.MedicinesAndSurgicalSupplies,
+            InwardChargeType.Laboratory};
+        for (InwardChargeType t : late) {
+            if (t == InwardChargeType.MedicinesAndSurgicalSupplies && !separateMedicines) {
+                continue;
+            }
+            for (BillItem bi : items) {
+                if (bi.getInwardChargeType() == t && bi.getAdjustedValue() != 0) {
+                    d.charges.add(new Row(t.getName(), money.format(bi.getAdjustedValue())));
+                }
+            }
+        }
+        if (sumPerDoctor) {
+            addDoctorSummary(d, bill, InwardChargeType.ProfessionalCharge.getName(), money);
+            return;
+        }
+        for (BillItem bi : items) {
+            if (bi.getInwardChargeType() == InwardChargeType.DoctorAndNurses && bi.getAdjustedValue() != 0) {
+                d.charges.add(new Row(bi.getInwardChargeType().getName(), money.format(bi.getAdjustedValue())));
+            }
+        }
+        for (BillItem bi : items) {
+            if (bi.getInwardChargeType() == InwardChargeType.ProfessionalCharge && hasProfessionalLine(bi)) {
+                addFeeBlock(d, bi, bi.getInwardChargeType().getName(), false, money);
+            }
+        }
+    }
+
+    private String typeLabel(InwardChargeType type) {
+        return configOptionApplicationController.getInwardChargeTypeFinalBillLabel(type);
+    }
+
+    private static boolean hasProfessionalLine(BillItem bi) {
+        return bi.getAdjustedValue() != 0 || bi.isHasFreeOfChargeProFee();
+    }
+
+    /** "Sum per doctor": one aggregated professional line with a row per doctor. */
+    private void addDoctorSummary(Data d, Bill bill, String label, DecimalFormat money) {
+        for (BillItem bi : bhtSummeryController.getSummaryOfDoctorChargers(
+                bill.getBillItems(), bill.getPatientEncounter(), true)) {
+            if (hasProfessionalLine(bi)) {
+                addFeeBlock(d, bi, label, true, money);
+            }
+        }
+    }
+
+    /**
+     * A charge line that lists its doctors: the heading, one indented line per doctor, then
+     * the subtotal. A line with no doctors to list is a plain label and amount line.
+     */
+    private void addFeeBlock(Data d, BillItem bi, String label, boolean summary, DecimalFormat money) {
+        List<Row> rows = new ArrayList<>();
+        if (bi.getProFees() != null) {
+            for (BillFee fe : bi.getProFees()) {
+                boolean shown;
+                double value;
+                if (summary) {
+                    shown = fe.getFeeAdjusted() > 0 || fe.getFeeValue() > 0 || fe.isFreeOfCharge();
+                    value = fe.getFeeAdjusted() != 0 ? fe.getFeeAdjusted() : fe.getFeeValue();
+                } else {
+                    shown = (fe.getFeeAdjusted() != 0 || fe.isFreeOfCharge()) && fe.getBill() != null
+                            && !fe.getBill().isCancelled()
+                            && "class com.divudi.core.entity.BilledBill".equals(fe.getBill().getBillClass());
+                    value = fe.getFeeAdjusted();
+                }
+                if (!shown) {
                     continue;
                 }
                 String name = fe.getStaff() == null || fe.getStaff().getPerson() == null ? ""
@@ -188,15 +335,22 @@ public class InwardRawTextFinalBillController implements Serializable {
                 String amount = fe.isFreeOfCharge() && fe.getFeeAdjusted() == 0
                         ? configOptionApplicationController.getShortTextValueByKey(
                                 "Inward Final Bill - Label For Free Professional Fee", "Free of Charge")
-                        : money.format(fe.getFeeAdjusted());
-                d.charges.add(new Row(name, amount));
-            }
-            if (bip.getUnattributedProfessionalFeeValue() >= 0.01) {
-                d.charges.add(new Row(configOptionApplicationController.getShortTextValueByKey(
-                        "Inward Final Bill - Label For Other Professional Charges", "Other Professional Charges"),
-                        money.format(bip.getUnattributedProfessionalFeeValue())));
+                        : money.format(value);
+                rows.add(Row.detail(name, amount));
             }
         }
+        if (bi.getUnattributedProfessionalFeeValue() >= 0.01) {
+            rows.add(Row.detail(configOptionApplicationController.getShortTextValueByKey(
+                    "Inward Final Bill - Label For Other Professional Charges", "Other Professional Charges"),
+                    money.format(bi.getUnattributedProfessionalFeeValue())));
+        }
+        if (rows.isEmpty()) {
+            d.charges.add(new Row(label, money.format(bi.getAdjustedValue())));
+            return;
+        }
+        d.charges.add(Row.heading(label));
+        d.charges.addAll(rows);
+        d.charges.add(Row.subtotal(money.format(bi.getAdjustedValue())));
     }
 
     /** Admission deposits and payments summed per payment method. */
