@@ -382,7 +382,6 @@ public class CollectingCentreSelfCommonController implements Serializable {
         patientInvestigationController.setSampleId(null);
         patientInvestigationController.setPatientInvestigationStatus(null);
         sampleSendingTransporter = null;
-        sampleSendingDepartment = null;
         patientInvestigationController.setSampleRejectionComment(null);
         setSelfSampleManagementDefaults();
     }
@@ -392,6 +391,16 @@ public class CollectingCentreSelfCommonController implements Serializable {
         patientInvestigationController.setToDate(CommonFunctions.getEndOfDay());
         patientInvestigationController.setInvestigationName(null);
         patientInvestigationController.setCollectingCentreBillingType(CollectingCentreBillingType.AGENT_BILLING);
+        setDefaultSampleSendingDepartment();
+    }
+
+    /**
+     * The Send Samples popup starts on the lab department set on the logged
+     * collecting centre; the user can still choose another lab.
+     */
+    private void setDefaultSampleSendingDepartment() {
+        Institution collectingCentre = sessionController.getInstitution();
+        sampleSendingDepartment = collectingCentre == null ? null : collectingCentre.getLabDepartment();
     }
 
     public void generateSelfBarcodes(Bill bill) {
@@ -524,7 +533,7 @@ public class CollectingCentreSelfCommonController implements Serializable {
 
         showSentSamplesOnPage(samplesToSend);
         sampleSendingTransporter = null;
-        sampleSendingDepartment = null;
+        setDefaultSampleSendingDepartment();
         JsfUtil.addSuccessMessage("Selected Samples Sent to Lab");
     }
 
