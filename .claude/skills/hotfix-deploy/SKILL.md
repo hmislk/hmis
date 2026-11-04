@@ -93,7 +93,7 @@ Examples:
 
 ## Step 3 — Apply the Fix
 
-Make only the minimal changes required. Do NOT port unrelated features or refactors.
+Make only the minimal changes required. Do NOT port unrelated features or refactors. Always compile the hotfix branch before opening the PR: PRs to deploy branches get no compile CI, and older branches often lack newer enum values or facade methods that a cherry-pick uses (2026-11-05: coop-staging lacked an `InwardChargeType` value; mp-production lacked `AbstractFacade.updateByJpql`).
 
 Before editing `persistence.xml`, compare against the target production branch to understand the current state:
 ```bash
