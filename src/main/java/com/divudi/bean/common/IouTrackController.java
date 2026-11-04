@@ -42,8 +42,9 @@ public class IouTrackController implements Serializable {
     private List<Payment> ious;
 
     public String navigateToTrackIous() {
-        fromDate = CommonFunctions.getStartOfDay(CommonFunctions.getAddedDate(new Date(), -30));
-        toDate = CommonFunctions.getEndOfDay(new Date());
+        // An open IOU of any age must show, or the open total is wrong
+        fromDate = null;
+        toDate = null;
         status = STATUS_OPEN;
         debtorStaff = null;
         holder = null;
@@ -52,21 +53,31 @@ public class IouTrackController implements Serializable {
     }
 
     public void fillIous() {
+        // Closed IOUs pile up, so without dates those lists show the last 30 days
+        if (!STATUS_OPEN.equals(status) && fromDate == null && toDate == null) {
+            fromDate = CommonFunctions.getStartOfDay(CommonFunctions.getAddedDate(new Date(), -30));
+            toDate = CommonFunctions.getEndOfDay(new Date());
+        }
         StringBuilder jpql = new StringBuilder("select p from Payment p"
                 + " left join p.cancelledBill cb"
                 + " where p.retired=:ret"
                 + " and p.paymentMethod=:pm"
                 + " and p.paidValue > 0"
                 // Conversion and its cancellation post IOU offsets, not IOUs given to anyone
-                + " and (p.bill.billTypeAtomic is null or p.bill.billTypeAtomic not in :offsetTypes)"
-                + " and p.createdAt between :fd and :td");
+                + " and (p.bill.billTypeAtomic is null or p.bill.billTypeAtomic not in :offsetTypes)");
         Map<String, Object> params = new HashMap<>();
         params.put("ret", false);
         params.put("pm", PaymentMethod.IOU);
         params.put("offsetTypes", Arrays.asList(BillTypeAtomic.IOU_TO_CASH_CONVERSION,
                 BillTypeAtomic.IOU_TO_CASH_CONVERSION_CANCELLED));
-        params.put("fd", fromDate);
-        params.put("td", toDate);
+        if (fromDate != null) {
+            jpql.append(" and p.createdAt >= :fd");
+            params.put("fd", fromDate);
+        }
+        if (toDate != null) {
+            jpql.append(" and p.createdAt <= :td");
+            params.put("td", toDate);
+        }
         if (STATUS_OPEN.equals(status)) {
             jpql.append(" and p.cancelled=:can and p.cancelledBill is null");
             params.put("can", false);
@@ -128,6 +139,21 @@ public class IouTrackController implements Serializable {
             }
         }
         return total;
+    }
+
+    public String getOpenValueLabel() {
+        String format = "yyyy-MM-dd HH:mm";
+        if (fromDate == null && toDate == null) {
+            return "Open value, IOUs of all dates:";
+        }
+        if (fromDate == null) {
+            return "Open value, IOUs created up to " + CommonFunctions.formatDate(toDate, format) + ":";
+        }
+        if (toDate == null) {
+            return "Open value, IOUs created from " + CommonFunctions.formatDate(fromDate, format) + ":";
+        }
+        return "Open value, IOUs created " + CommonFunctions.formatDate(fromDate, format)
+                + " to " + CommonFunctions.formatDate(toDate, format) + ":";
     }
 
     public Date getFromDate() {
