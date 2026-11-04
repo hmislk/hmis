@@ -53,6 +53,8 @@ import org.primefaces.event.TabChangeEvent;
 @SessionScoped
 public class IouBillController implements Serializable {
 
+    private static final String IOU_SETTLE_SUFFIX_WHEN_BLANK = "IOUS";
+
     @EJB
     private PersonFacade personFacade;
     @EJB
@@ -475,8 +477,9 @@ public class IouBillController implements Serializable {
     }
 
     private void saveSettleIouBill() {
+        // With a blank suffix, a settlement number could match an issue or conversion number
         String deptId = billNumberBean.departmentBillNumberGeneratorYearly(sessionController.getDepartment(),
-                BillTypeAtomic.IOU_SETTLE);
+                BillTypeAtomic.IOU_SETTLE, IOU_SETTLE_SUFFIX_WHEN_BLANK);
         getCurrent().setInsId(deptId);
         getCurrent().setDeptId(deptId);
         getCurrent().setBillType(BillType.IouSettle);
