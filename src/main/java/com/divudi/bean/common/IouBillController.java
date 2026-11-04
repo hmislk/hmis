@@ -604,8 +604,10 @@ public class IouBillController implements Serializable {
                 if (released != selectedIouIds.size()) {
                     LOGGER.log(Level.SEVERE, "IOU settlement released {0} of {1} claimed IOU payments, ids {2}",
                             new Object[]{released, selectedIouIds.size(), selectedIouIds});
+                    JsfUtil.addErrorMessage("The IOU settlement could not be saved, and not every selected IOU could be reopened. Please refresh the list, and contact system support if an IOU stays unavailable.");
+                } else {
+                    JsfUtil.addErrorMessage("The IOU settlement could not be saved. The IOUs are still open. Please try Settle again.");
                 }
-                JsfUtil.addErrorMessage("The IOU settlement could not be saved. The IOUs are still open. Please try Settle again.");
             } catch (RuntimeException releaseError) {
                 LOGGER.log(Level.SEVERE, "IOU settlement could not release claimed IOU payment ids " + selectedIouIds, releaseError);
                 JsfUtil.addErrorMessage("The IOU settlement could not be saved, and the selected IOUs could not be reopened. Please contact system support before trying again.");
