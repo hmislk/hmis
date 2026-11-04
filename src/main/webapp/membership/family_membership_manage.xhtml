@@ -157,7 +157,7 @@
                                         value="#{fm.relationToChh}"
                                         class="w-100">
                                         <f:selectItem itemLabel="Select Relationship" itemValue="#{null}" noSelectionOption="true" />
-                                        <f:selectItems value="#{relationController.items}" var="r"
+                                        <f:selectItems value="#{relationController.getItemsIncluding(fm.relationToChh)}" var="r"
                                                        itemLabel="#{r.name}" itemValue="#{r}" ></f:selectItems>
                                         <p:ajax
                                             process="@this"
