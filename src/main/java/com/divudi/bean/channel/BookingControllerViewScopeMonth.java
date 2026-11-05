@@ -7695,17 +7695,19 @@ public class BookingControllerViewScopeMonth implements Serializable, Controller
         quickSearchPatientList = null;
     }
 
+    /**
+     * Saves the patient without validation or messages. The booking flow calls
+     * this just before it saves the bill, and it has its own checks (a phone is
+     * optional there when the institution allows it). The Save Patient Details
+     * button goes through {@link #saveSelectedPatient()}, which validates first.
+     */
     @Override
     public void saveSelected(Patient p) {
         Patient target = (p != null) ? p : this.patient;
-        if (target != null && target.getPerson() != null) {
-            target.getPerson().fillDobFromAgeComponentsIfMissing();
-        }
-        String error = ChannelPatientValidationRules.validatePatientForSave(target);
-        if (error != null) {
-            JsfUtil.addErrorMessage(error);
+        if (target == null || target.getPerson() == null) {
             return;
         }
+        target.getPerson().fillDobFromAgeComponentsIfMissing();
 
         Person person = target.getPerson();
         if (person.getId() == null) {
@@ -7727,18 +7729,30 @@ public class BookingControllerViewScopeMonth implements Serializable, Controller
             target.setCreatedInstitution(sessionController.getInstitution());
             target.setCreater(sessionController.getLoggedUser());
             patientFacade.create(target);
-            setPatientDetailsEditable(false);
-            JsfUtil.addSuccessMessage("Patient details saved successfully");
         } else {
             patientFacade.edit(target);
-            setPatientDetailsEditable(false);
-            JsfUtil.addSuccessMessage("Patient details updated successfully");
         }
     }
 
+    /**
+     * The Save Patient Details button: validates, saves, closes the edit panel
+     * and tells the user.
+     */
     @Override
     public void saveSelectedPatient() {
-        saveSelected(patient);
+        Patient target = this.patient;
+        if (target != null && target.getPerson() != null) {
+            target.getPerson().fillDobFromAgeComponentsIfMissing();
+        }
+        String error = ChannelPatientValidationRules.validatePatientForSave(target);
+        if (error != null) {
+            JsfUtil.addErrorMessage(error);
+            return;
+        }
+        boolean isNew = target.getId() == null;
+        saveSelected(target);
+        setPatientDetailsEditable(false);
+        JsfUtil.addSuccessMessage(isNew ? "Patient details saved successfully" : "Patient details updated successfully");
     }
 
 //    @Override
