@@ -10,6 +10,7 @@ import com.divudi.service.pharmacy.PharmacyItemSupplierApiService;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
+import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
@@ -59,6 +60,14 @@ public class PharmacyItemSupplierApi {
 
     private static final Gson gson = new GsonBuilder()
             .setDateFormat("yyyy-MM-dd HH:mm:ss")
+            // Gson's own Long reader rounds 200.00000000000000001 to 200 and can truncate fractions.
+            .registerTypeAdapter(Long.class, (JsonDeserializer<Long>) (json, type, context) -> {
+                try {
+                    return parseExactLong(json);
+                } catch (NumberFormatException | ArithmeticException e) {
+                    throw new JsonSyntaxException("Invalid ID: " + json, e);
+                }
+            })
             .create();
 
     private static final int MAX_BULK_SIZE = 500;
@@ -283,11 +292,10 @@ public class PharmacyItemSupplierApi {
         if (!row.isJsonObject()) {
             return new ItemSupplierRequestDto();
         }
-        // Read from text: Gson's JsonElement reader truncates 301.5 to 301, its text reader rejects it.
-        return gson.fromJson(row.toString(), ItemSupplierRequestDto.class);
+        return gson.fromJson(row, ItemSupplierRequestDto.class);
     }
 
-    private Long parseExactLong(JsonElement elem) {
+    private static Long parseExactLong(JsonElement elem) {
         if (elem == null || elem.isJsonNull()) {
             return null;
         }

@@ -1,6 +1,7 @@
 package com.divudi.ws.pharmacy;
 
 import com.divudi.core.data.dto.pharmacy.ItemSupplierRequestDto;
+import com.google.gson.JsonSyntaxException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -91,6 +92,23 @@ public class PharmacyItemSupplierApiTest {
         assertEquals(2, list.size());
         assertEquals(200L, list.get(0).getItemId());
         assertEquals(3, list.get(0).getOrderNo());
+        assertNull(list.get(1).getItemId());
+    }
+
+    @Test
+    @DisplayName("parseBulkRequests rejects IDs that Gson would otherwise round to a whole number")
+    void testParseBulkRequests_RejectsRoundedIds() {
+        String rounded = "200.00000000000000001";
+        assertThrows(JsonSyntaxException.class, () -> api.parseBulkRequests("[{\"supplierId\": 100, \"itemId\": " + rounded + "}]"));
+        assertThrows(JsonSyntaxException.class, () -> api.parseBulkRequests("[{\"supplierId\": " + rounded + ", \"itemId\": 200}]"));
+        assertThrows(JsonSyntaxException.class, () -> api.parseBulkRequests("{\"links\": [{\"supplierId\": 100, \"itemId\": \"" + rounded + "\"}]}"));
+    }
+
+    @Test
+    @DisplayName("parseBulkRequests keeps whole-number, string and null IDs working in object rows")
+    void testParseBulkRequests_ObjectRowsAcceptValidIds() {
+        List<ItemSupplierRequestDto> list = api.parseBulkRequests("[{\"supplierId\": 100, \"itemId\": \"200\"}, {\"supplierId\": 100, \"itemId\": null}]");
+        assertEquals(200L, list.get(0).getItemId());
         assertNull(list.get(1).getItemId());
     }
 }
