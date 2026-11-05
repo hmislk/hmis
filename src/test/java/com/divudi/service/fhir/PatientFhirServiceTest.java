@@ -176,6 +176,34 @@ public class PatientFhirServiceTest {
     }
 
     @Test
+    public void mapFhirToPerson_putFamilyOnly_keepsStoredNameWhenGivenUnknown() {
+        Person person = new Person();
+        person.setName("Kamal Perera");
+
+        org.hl7.fhir.r5.model.Patient fhirPt = new org.hl7.fhir.r5.model.Patient();
+        fhirPt.addName().setFamily("Silva");
+
+        service.mapFhirToPerson(fhirPt, person);
+
+        assertEquals("Kamal Perera", person.getName());
+        assertEquals("Silva", person.getLastName());
+    }
+
+    @Test
+    public void mapFhirToPerson_putGivenOnly_keepsStoredNameWhenFamilyUnknown() {
+        Person person = new Person();
+        person.setName("Kamal Perera");
+
+        org.hl7.fhir.r5.model.Patient fhirPt = new org.hl7.fhir.r5.model.Patient();
+        fhirPt.addName().addGiven("Nimal");
+
+        service.mapFhirToPerson(fhirPt, person);
+
+        assertEquals("Kamal Perera", person.getName());
+        assertEquals("Nimal", person.getFullName());
+    }
+
+    @Test
     public void mapFhirToPerson_emptyNameArrayDoesNotOverwriteExistingName() {
         Person person = new Person();
         person.setName("John Doe");

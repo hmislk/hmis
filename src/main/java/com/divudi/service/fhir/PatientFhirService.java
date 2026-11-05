@@ -394,10 +394,10 @@ public class PatientFhirService {
 
                 if (effectiveGiven != null && effectiveFamily != null) {
                     person.setName(effectiveGiven + " " + effectiveFamily);
-                } else if (effectiveGiven != null) {
-                    person.setName(effectiveGiven);
-                } else if (effectiveFamily != null) {
-                    person.setName(effectiveFamily);
+                } else if (person.getName() == null || person.getName().trim().isEmpty()) {
+                    // Only one part is known: use it only when no name is stored yet,
+                    // so a partial PUT never replaces a stored full name.
+                    person.setName(effectiveGiven != null ? effectiveGiven : effectiveFamily);
                 }
             }
         }
