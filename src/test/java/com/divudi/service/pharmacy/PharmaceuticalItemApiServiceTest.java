@@ -112,6 +112,12 @@ public class PharmaceuticalItemApiServiceTest {
             return db.get(id);
         }
 
+
+        @Override
+        public void edit(Vmpp entity) {
+            db.put(entity.getId(), entity);
+        }
+
         @Override
         public Vmpp findFirstByJpql(String jpql, Map<String, Object> params) {
             if (params != null && params.containsKey("vmp") && params.containsKey("d") && params.containsKey("s")) {
@@ -476,5 +482,77 @@ public class PharmaceuticalItemApiServiceTest {
         assertEquals("Rejection Pack", existing.getName());
         assertEquals(100.0, existing.getDblValue());
     }
-}
+    // #25204: a rejected update must mark the transaction rollback-only, so the fields it
+    // already changed on the managed entity are not committed with the error.
+    private int[] useServiceRecordingRollback() throws Exception {
+        final int[] rollbackCalls = {0};
+        service = new PharmaceuticalItemApiService() {
+            @Override
+            void markRollbackOnly() {
+                rollbackCalls[0]++;
+            }
+        };
+        injectField("amppFacade", dummyAmppFacade);
+        injectField("vmppFacade", dummyVmppFacade);
+        injectField("ampFacade", dummyAmpFacade);
+        injectField("measurementUnitFacade", dummyMeasurementUnitFacade);
+        return rollbackCalls;
+    }
 
+    @Test
+    @DisplayName("rejected VMPP update (unknown pack unit) marks the transaction rollback-only")
+    void testUpdateVmpp_RejectedUpdateMarksRollback() throws Exception {
+        int[] rollbackCalls = useServiceRecordingRollback();
+        Vmpp existing = new Vmpp();
+        existing.setId(500L);
+        existing.setName("Paracetamol 500mg 10s");
+        existing.setVmp(testVmp);
+        existing.setDblValue(10.0);
+        existing.setPackUnit(testUnit);
+        dummyVmppFacade.db.put(existing.getId(), existing);
+
+        com.divudi.core.data.dto.pharmaceutical.VmppRequestDTO req = new com.divudi.core.data.dto.pharmaceutical.VmppRequestDTO();
+        req.setName("Renamed Pack");
+        req.setDblValue(20.0);
+        req.setPackUnitId(999L);
+
+        Exception ex = assertThrows(Exception.class,
+                () -> service.updateItem("vmpp", existing.getId(), gson.toJson(req), testUser, gson));
+        assertTrue(ex.getMessage().contains("Pack unit not found"));
+        assertEquals(1, rollbackCalls[0], "the transaction must be marked rollback-only");
+    }
+
+    @Test
+    @DisplayName("accepted VMPP update does not mark the transaction rollback-only")
+    void testUpdateVmpp_AcceptedUpdateDoesNotMarkRollback() throws Exception {
+        int[] rollbackCalls = useServiceRecordingRollback();
+        Vmpp existing = new Vmpp();
+        existing.setId(501L);
+        existing.setName("Paracetamol 500mg 20s");
+        existing.setVmp(testVmp);
+        existing.setDblValue(20.0);
+        existing.setPackUnit(testUnit);
+        dummyVmppFacade.db.put(existing.getId(), existing);
+
+        com.divudi.core.data.dto.pharmaceutical.VmppRequestDTO req = new com.divudi.core.data.dto.pharmaceutical.VmppRequestDTO();
+        req.setPackUnitId(otherUnit.getId());
+
+        service.updateItem("vmpp", existing.getId(), gson.toJson(req), testUser, gson);
+        assertEquals(otherUnit, existing.getPackUnit());
+        assertEquals(0, rollbackCalls[0]);
+    }
+
+    @Test
+    @DisplayName("rejected create (unknown AMP) marks the transaction rollback-only")
+    void testCreateAmpp_RejectedCreateMarksRollback() throws Exception {
+        int[] rollbackCalls = useServiceRecordingRollback();
+        AmppRequestDTO req = new AmppRequestDTO();
+        req.setName("Unknown AMP Pack");
+        req.setAmpId(9999L);
+        req.setDblValue(10.0);
+        req.setPackUnitId(testUnit.getId());
+
+        assertThrows(Exception.class, () -> service.createItem("ampp", gson.toJson(req), testUser, gson));
+        assertEquals(1, rollbackCalls[0]);
+    }
+}
