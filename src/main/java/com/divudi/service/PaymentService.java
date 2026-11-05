@@ -194,7 +194,81 @@ public class PaymentService {
         return newPayments;
     }
     
+    /**
+     * As {@link #createPaymentsForCancelling(Bill)}, for an explicit original
+     * bill. Retired original payments are not mirrored. When
+     * {@code onlyIfOriginalInDrawer} is true, the reversal subtracts from the
+     * drawer only for original payments that have a non-retired DrawerEntry, so
+     * cancelling an original that never entered the drawer leaves the drawer
+     * alone (#25178). The reversal Payment is written either way.
+     */
+    public List<Payment> createPaymentsForCancelling(Bill cancellationBill, Bill originalBill, boolean onlyIfOriginalInDrawer) {
+        List<Payment> newPayments = new ArrayList<>();
+        List<Payment> originalBillPayments = billService.fetchBillPayments(originalBill);
+        if (originalBillPayments != null) {
+            for (Payment originalBillPayment : originalBillPayments) {
+                if (originalBillPayment.isRetired()) {
+                    continue;
+                }
+                Payment p = originalBillPayment.clonePaymentForNewBill();
+                p.invertValues();
+                p.setBill(cancellationBill);
+                p.setInstitution(cancellationBill.getInstitution());
+                p.setDepartment(cancellationBill.getDepartment());
+                p.setCreatedAt(new Date());
+                p.setCreater(cancellationBill.getCreater());
+                paymentFacade.create(p);
+                newPayments.add(p);
+                cashbookService.writeCashBookEntryAtPaymentCreation(p);
+                if (!onlyIfOriginalInDrawer || hasActiveDrawerEntry(originalBillPayment)) {
+                    drawerService.updateDrawer(p);
+                }
+            }
+        }
+        return newPayments;
+    }
+
+    private boolean hasActiveDrawerEntry(Payment payment) {
+        if (payment == null || payment.getId() == null) {
+            return false;
+        }
+        Map<String, Object> params = new HashMap<>();
+        params.put("pid", payment.getId());
+        String jpql = "select count(de) from DrawerEntry de where de.payment.id = :pid and de.retired = false";
+        return paymentFacade.findLongByJpql(jpql, params) > 0;
+    }
+
+    /**
+     * Inward deposit and inward payment creation (#25178). The 6-arg
+     * createPayment writes the drawer only for Multiple Payment Methods, so a
+     * single-method deposit or payment never reached the drawer, while the
+     * cancellation subtracts it. This writes the drawer for the single-method
+     * rows too and leaves every other caller of the 6-arg overload unchanged.
+     */
+    public List<Payment> createPaymentAndUpdateDrawer(Bill bill, PaymentMethod pm, PaymentMethodData paymentMethodData, Institution institution, Department department, WebUser webUser) {
+        List<Payment> ps = createPayment(bill, pm, paymentMethodData, institution, department, webUser);
+        if (pm != PaymentMethod.MultiplePaymentMethods && ps != null) {
+            for (Payment p : ps) {
+                drawerService.updateDrawer(p);
+            }
+        }
+        return ps;
+    }
+
+    /**
+     * Writes the Payment rows for the bill without touching the drawer. For
+     * the reversal of a bill that has no Payment rows, so nothing was ever
+     * credited to the drawer (#25178). Does not update any balance.
+     */
+    public List<Payment> createPaymentWithoutDrawer(Bill bill, PaymentMethodData paymentMethodData) {
+        return createPayment(bill, bill.getPaymentMethod(), paymentMethodData, bill.getDepartment(), bill.getCreater(), false);
+    }
+
     private List<Payment> createPayment(Bill bill, PaymentMethod pm, PaymentMethodData paymentMethodData, Department department, WebUser webUser) {
+        return createPayment(bill, pm, paymentMethodData, department, webUser, true);
+    }
+
+    private List<Payment> createPayment(Bill bill, PaymentMethod pm, PaymentMethodData paymentMethodData, Department department, WebUser webUser, boolean writeDrawer) {
 
         CashBook cashbook = cashbookService.findAndSaveCashBookBySite(department.getSite(), department.getInstitution(), department);
         List<Payment> payments = new ArrayList<>();
@@ -206,7 +280,9 @@ public class PaymentService {
                 if (payment != null) {
                     paymentFacade.create(payment);
                     cashbookService.writeCashBookEntryAtPaymentCreation(payment, webUser, cashbook, department);
-                    drawerService.updateDrawer(payment);
+                    if (writeDrawer) {
+                        drawerService.updateDrawer(payment);
+                    }
                     payments.add(payment);
                 }
             }
@@ -227,7 +303,9 @@ public class PaymentService {
             payment.setPaidValue(bill.getNetTotal());
             paymentFacade.create(payment);
             cashbookService.writeCashBookEntryAtPaymentCreation(payment);
-            drawerService.updateDrawer(payment);
+            if (writeDrawer) {
+                drawerService.updateDrawer(payment);
+            }
             payments.add(payment);
         }
         return payments;
