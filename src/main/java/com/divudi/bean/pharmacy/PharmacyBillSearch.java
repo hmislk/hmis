@@ -5967,20 +5967,10 @@ public class PharmacyBillSearch implements Serializable {
             m.put("pay", searchController.getPaymentMethod());
         }
         if (searchController.getSearchKeyword().getNetTotal() != null && !searchController.getSearchKeyword().getNetTotal().trim().isEmpty()) {
-            try {
-                sql += " AND b.netTotal = :netTotal";
-                m.put("netTotal", Double.parseDouble(searchController.getSearchKeyword().getNetTotal().trim()));
-            } catch (NumberFormatException e) {
-                // skip invalid input
-            }
+            sql += JsfUtil.exactAmountFilter("b.netTotal", "netTotal", searchController.getSearchKeyword().getNetTotal(), "Net Total", m);
         }
         if (searchController.getSearchKeyword().getTotal() != null && !searchController.getSearchKeyword().getTotal().trim().isEmpty()) {
-            try {
-                sql += " AND b.total = :total";
-                m.put("total", Double.parseDouble(searchController.getSearchKeyword().getTotal().trim()));
-            } catch (NumberFormatException e) {
-                // skip invalid input
-            }
+            sql += JsfUtil.exactAmountFilter("b.total", "total", searchController.getSearchKeyword().getTotal(), "Total", m);
         }
 
         sql += " ORDER BY b.createdAt DESC";
@@ -6154,12 +6144,7 @@ public class PharmacyBillSearch implements Serializable {
         }
         if (searchController.getSearchKeyword().getNetTotal() != null
                 && !searchController.getSearchKeyword().getNetTotal().trim().isEmpty()) {
-            try {
-                sql += " AND b.netTotal = :netTotal";
-                m.put("netTotal", Double.parseDouble(searchController.getSearchKeyword().getNetTotal().trim()));
-            } catch (NumberFormatException e) {
-                // skip invalid input
-            }
+            sql += JsfUtil.exactAmountFilter("b.netTotal", "netTotal", searchController.getSearchKeyword().getNetTotal(), "Net Total", m);
         }
 
         sql += " ORDER BY b.createdAt DESC";
@@ -6237,12 +6222,7 @@ public class PharmacyBillSearch implements Serializable {
         }
         if (searchController.getSearchKeyword().getNetTotal() != null
                 && !searchController.getSearchKeyword().getNetTotal().trim().isEmpty()) {
-            try {
-                sql += " AND b.netTotal = :netTotal";
-                m.put("netTotal", Double.parseDouble(searchController.getSearchKeyword().getNetTotal().trim()));
-            } catch (NumberFormatException e) {
-                // skip invalid input
-            }
+            sql += JsfUtil.exactAmountFilter("b.netTotal", "netTotal", searchController.getSearchKeyword().getNetTotal(), "Net Total", m);
         }
 
         sql += " ORDER BY b.createdAt DESC";
@@ -6318,12 +6298,7 @@ public class PharmacyBillSearch implements Serializable {
         }
         if (searchController.getSearchKeyword().getNetTotal() != null
                 && !searchController.getSearchKeyword().getNetTotal().trim().isEmpty()) {
-            try {
-                sql += " AND b.netTotal = :netTotal";
-                m.put("netTotal", Double.parseDouble(searchController.getSearchKeyword().getNetTotal().trim()));
-            } catch (NumberFormatException e) {
-                // skip invalid input
-            }
+            sql += JsfUtil.exactAmountFilter("b.netTotal", "netTotal", searchController.getSearchKeyword().getNetTotal(), "Net Total", m);
         }
 
         sql += " ORDER BY b.createdAt DESC";
@@ -6383,12 +6358,7 @@ public class PharmacyBillSearch implements Serializable {
         }
         if (searchController.getSearchKeyword().getNetTotal() != null
                 && !searchController.getSearchKeyword().getNetTotal().trim().isEmpty()) {
-            try {
-                sql += " AND b.netTotal = :netTotal";
-                m.put("netTotal", Double.parseDouble(searchController.getSearchKeyword().getNetTotal().trim()));
-            } catch (NumberFormatException e) {
-                // skip invalid input
-            }
+            sql += JsfUtil.exactAmountFilter("b.netTotal", "netTotal", searchController.getSearchKeyword().getNetTotal(), "Net Total", m);
         }
 
         sql += " ORDER BY b.createdAt DESC";
