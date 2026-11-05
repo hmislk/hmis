@@ -1387,6 +1387,9 @@ public class CashRecieveBillController implements Serializable {
     }
 
     public String navigateToCancelOpdBill() {
+        // The bill_cancel page shows the Cancel Bill form only when not in print
+        // preview; creating a voucher just before leaves printPreview set (#25142).
+        printPreview = false;
         return "/credit/views/bill_cancel?faces-redirect=true";
     }
 
@@ -1406,10 +1409,11 @@ public class CashRecieveBillController implements Serializable {
         // net total is 0 and the single payment method payment is created as 0.
         cb.invertAndAssignValuesFromOtherBill(b);
         cb.setPaymentMethod(paymentMethod);
+        // Set before the save: set afterwards it was never persisted (#25142).
+        cb.setReferenceBill(b);
         saveCancelBill(BillType.CashRecieveBill, BillTypeAtomic.OPD_CREDIT_COMPANY_PAYMENT_CANCELLATION, cb);
         b.setCancelledBill(cb);
         b.setCancelled(true);
-        cb.setReferenceBill(b);
         List payments = createPayment(cb, paymentMethod);
         drawerController.updateDrawerForOuts(payments);
         WebUser wb = getCashTransactionBean().saveBillCashInTransaction(getCurrent(), getSessionController().getLoggedUser());
