@@ -1776,6 +1776,24 @@ public class PharmacyBillSearch implements Serializable {
         return false;
     }
 
+    // Atomically claims the "cancel this return" slot with a single conditional UPDATE, so two
+    // overlapping requests for the same bill (double-click, slow-AJAX retry, duplicate tab) can't
+    // both pass an in-memory isCancelled() check and each create their own full stock reversal.
+    // Returns true only if THIS call is the one that flips the flag.
+    private boolean claimReturnCancellationOrReportError() {
+        Map<String, Object> params = new HashMap<>();
+        params.put("id", getBill().getId());
+        int updated = getBillFacade().updateByJpql(
+                "UPDATE Bill b SET b.cancelled = true WHERE b.id = :id AND b.cancelled = false",
+                params);
+        if (updated != 1) {
+            JsfUtil.addErrorMessage("Already Cancelled. Can not cancel again");
+            return false;
+        }
+        getBill().setCancelled(true);
+        return true;
+    }
+
     private boolean pharmacyErrorCheck() {
         if (getBill().isCancelled()) {
             JsfUtil.addErrorMessage("Already Cancelled. Can not cancel again");
@@ -3377,6 +3395,9 @@ public class PharmacyBillSearch implements Serializable {
                 JsfUtil.addErrorMessage("Payment for this bill Already Paid");
                 return;
             }
+            if (!claimReturnCancellationOrReportError()) {
+                return;
+            }
 
             RefundBill cb = pharmacyCreateRefundCancelBill();
             cb.setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), cb.getBillType(), BillClassType.RefundBill, BillNumberSuffix.RETCAN));
@@ -3396,7 +3417,6 @@ public class PharmacyBillSearch implements Serializable {
 //                getPharmacyBean().reSetPurchaseRate(ph.getItemBatch(), getBill().getDepartment());
 //                getPharmacyBean().reSetRetailRate(ph.getItemBatch(), getSessionController().getDepartment());
 //            }
-            getBill().setCancelled(true);
             getBill().setCancelledBill(cb);
             getBillFacade().edit(getBill());
             JsfUtil.addSuccessMessage("Cancelled");
@@ -3424,6 +3444,9 @@ public class PharmacyBillSearch implements Serializable {
                 JsfUtil.addErrorMessage("This BHT Already Discharge..");
                 return;
             }
+            if (!claimReturnCancellationOrReportError()) {
+                return;
+            }
 
             RefundBill cb = pharmacyCreateRefundCancelBill();
             cb.setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), cb.getBillType(), BillClassType.RefundBill, BillNumberSuffix.RETCAN));
@@ -3436,7 +3459,6 @@ public class PharmacyBillSearch implements Serializable {
             pharmacyCancelReturnBillItemsWithReducingStock(cb);
 
             // cancelPreBillFees(cb.getBillItems());
-            getBill().setCancelled(true);
             getBill().setCancelledBill(cb);
             getBillFacade().edit(getBill());
             JsfUtil.addSuccessMessage("Cancelled");
@@ -3453,6 +3475,9 @@ public class PharmacyBillSearch implements Serializable {
             if (pharmacyErrorCheck()) {
                 return;
             }
+            if (!claimReturnCancellationOrReportError()) {
+                return;
+            }
 
             RefundBill cb = pharmacyCreateRefundCancelBill();
             cb.setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), cb.getBillType(), BillClassType.RefundBill, BillNumberSuffix.RETCAN));
@@ -3465,7 +3490,6 @@ public class PharmacyBillSearch implements Serializable {
             Payment p = pharmacySaleController.createPayment(cb, paymentMethod);
             pharmacyCancelReturnBillItems(cb, p);
 
-            getBill().setCancelled(true);
             getBill().setCancelledBill(cb);
             getBillFacade().edit(getBill());
 
