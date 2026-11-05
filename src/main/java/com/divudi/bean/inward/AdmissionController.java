@@ -2453,10 +2453,12 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             if (getCurrent().getEncounterRegistrationFlag() != EncounterRegistrationFlag.ON_ADMISSION_DEATH
                     && isGuardianNameAndNicRequiredForTitleOrClaimable()) {
                 Person guardian = getCurrent().getGuardian();
-                if (guardian == null || isBlank(guardian.getName())) {
+                // "Guardian is Required" (existing option) already covers a missing guardian.
+                boolean guardianAlreadyReportedMissing = guardian == null && guardianErrors.contains("Guardian is Required");
+                if (!guardianAlreadyReportedMissing && (guardian == null || isBlank(guardian.getName()))) {
                     addErrorOnce(guardianErrors, "Guardian Name is Required");
                 }
-                if (guardian == null || isBlank(guardian.getNic())) {
+                if (!guardianAlreadyReportedMissing && (guardian == null || isBlank(guardian.getNic()))) {
                     addErrorOnce(guardianErrors, "Guardian NIC is Required");
                 }
             }
