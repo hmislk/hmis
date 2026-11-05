@@ -270,7 +270,7 @@
 
                 <h:panelGroup id="dlgCreditCompanySelectorWrapper">
                     <p:dialog id="dlgCreditCompanySelector" modal="true" widgetVar="wvDlgCreditCompanySelector"
-                              header="Select Credit Company" draggable="false" closable="false" resizable="false"
+                              header="Select Credit Company" draggable="false" closable="true" resizable="false"
                               style="width:500px;">
                         <p:dataTable value="#{cashRecieveBillController.bhtCreditCompanies}" var="ecc" emptyMessage="No companies found">
                             <p:column headerText="Company Name">
@@ -293,6 +293,15 @@
                                                 oncomplete="PF('wvDlgCreditCompanySelector').hide();"/>
                             </p:column>
                         </p:dataTable>
+                        <div class="d-flex justify-content-end mt-2">
+                            <p:commandButton id="btnCancelCreditCompanySelector"
+                                             value="Cancel"
+                                             icon="fa fa-times"
+                                             class="ui-button-secondary"
+                                             type="button"
+                                             title="Close without selecting a credit company"
+                                             onclick="PF('wvDlgCreditCompanySelector').hide(); return false;"/>
+                        </div>
                     </p:dialog>
                 </h:panelGroup>
 

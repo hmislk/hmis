@@ -10,6 +10,8 @@ The HMIS Database Migration System provides a comprehensive framework for managi
 - EclipseLink's DDL auto-update adds missing columns on application startup in development.
 - On production, the admin runs **`/faces/dataAdmin/missing_database_fields.xhtml`** to detect and apply any missing columns before deploying new code.
 
+**Exception:** a column the login path reads (e.g. `WebUser`) needs a migration script plus a pre-deploy step, because a missing column locks everyone out, including admins who would run Add Missing Fields. Example: #25075 / PR #25080.
+
 **Data migrations** (backfilling values in existing rows, transforming data, fixing historical records) require a migration script under `src/main/resources/db/migrations/`. The admin executes these via **`/faces/admin/database_migration.xhtml`**.
 
 > Rule of thumb: if your change is `ALTER TABLE … ADD COLUMN`, skip the migration script. If your change is `UPDATE … SET`, write one.

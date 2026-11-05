@@ -1191,7 +1191,7 @@ public class QuickBookReportController implements Serializable {
             String trnsMemo;
             if (isReturnTransaction) {
                 trnsDocNum = b.getDeptId();
-                trnsMemo = originalGrn != null ? originalGrn.getInvoiceNumber() : "";
+                trnsMemo = originalGrn != null && originalGrn.getInvoiceNumber() != null ? originalGrn.getInvoiceNumber() : "";
             } else {
                 trnsDocNum = b.getInvoiceNumber();
                 trnsMemo = b.getDeptId();
@@ -1330,7 +1330,7 @@ public class QuickBookReportController implements Serializable {
             }
 
             String trnsMemo = isReturnTransaction
-                    ? (originalGrn != null ? originalGrn.getInvoiceNumber() : "")
+                    ? (originalGrn != null && originalGrn.getInvoiceNumber() != null ? originalGrn.getInvoiceNumber() : "")
                     : b.getInvoiceNumber();
             qbf = new QuickBookFormat("TRNS", trnsType, sdf.format(approvalDate), "Accounts Payable:Trade Creditor-" + b.getDepartment().getName(), supplierName, "", "", transAmount, b.getDeptId(), b.getDeptId(), b.getDepartment().getName(), trnsMemo, "", "", "", "", "");
             quickBookFormats.add(qbf);
@@ -2155,6 +2155,15 @@ public class QuickBookReportController implements Serializable {
         collectionBtas.add(BillTypeAtomic.OPD_BILL_REFUND);
         collectionBtas.add(BillTypeAtomic.OPD_BILL_WITH_PAYMENT);
         collectionBtas.add(BillTypeAtomic.OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
+        collectionBtas.add(BillTypeAtomic.OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
+        collectionBtas.add(BillTypeAtomic.PACKAGE_OPD_BILL_WITH_PAYMENT);
+        collectionBtas.add(BillTypeAtomic.PACKAGE_OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
+        collectionBtas.add(BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION);
+        collectionBtas.add(BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
+        collectionBtas.add(BillTypeAtomic.PACKAGE_OPD_BILL_REFUND);
+        collectionBtas.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_WITH_PAYMENT);
+        collectionBtas.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_PAYMENT_COLLECTION_AT_CASHIER);
+        collectionBtas.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_CANCELLATION);
         temMap.put("btas", collectionBtas);
 
         double collectedFeeValue = getBillFeeFacade().findDoubleByJpql(jpql, temMap, TemporalType.TIMESTAMP);

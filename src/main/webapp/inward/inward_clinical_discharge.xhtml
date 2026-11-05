@@ -90,20 +90,25 @@
                                                     itemLabel="#{dc.name}"
                                                     itemValue="#{dc}"
                                                     forceSelection="true"
+                                                    dropdown="true"
+                                                    minQueryLength="0"
                                                     class="w-100"
-                                                    inputStyleClass="w-100"
+                                                    inputStyle="width:calc(100% - 40px)"
                                                     disabled="#{inpatientClinicalDataController.parentAdmission.clinicallyDischarged}"
                                                     placeholder="Select discharge condition" />
                                             </div>
                                             <div class="col-md-6">
                                                 <p:outputLabel for="txtDischargeDateTime" value="Discharge Date/Time:" styleClass="font-weight-bold" />
-                                                <p:inputText
+                                                <p:datePicker
                                                     id="txtDischargeDateTime"
                                                     value="#{inpatientClinicalDataController.clinicalDischargeRecord.encounterDateTime}"
+                                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                                    showTime="true"
+                                                    showButtonBar="true"
+                                                    monthNavigator="true"
+                                                    yearNavigator="true"
                                                     disabled="#{inpatientClinicalDataController.parentAdmission.clinicallyDischarged}"
-                                                    style="width:200px;">
-                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
-                                                </p:inputText>
+                                                    inputStyle="width:220px;" />
                                             </div>
                                         </div>
                                     </div>
@@ -141,8 +146,7 @@
                                                         update="acDischargeDx panelDischargeDiagnoses"
                                                         icon="pi pi-plus"
                                                         value="Add"
-                                                        disabled="#{inpatientClinicalDataController.clinicalDischargeRecord == null or inpatientClinicalDataController.clinicalDischargeRecord.id == null}"
-                                                        title="Save the record first before adding diagnoses" />
+                                                        disabled="#{inpatientClinicalDataController.clinicalDischargeRecord == null}" />
                                                 </div>
                                             </div>
                                         </h:panelGroup>

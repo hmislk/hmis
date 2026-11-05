@@ -12,7 +12,10 @@
         <ui:composition template="/pharmacy/pharmacy_analytics.xhtml">
 
             <ui:define name="subcontent">
-                <h:form id="frm">
+                <h:panelGroup rendered="#{!webUserController.hasPrivilege('PharmacyAnalyticsDepartmentViceStock')}">
+                    <h:outputText value="You are not authorized" styleClass="text-danger" />
+                </h:panelGroup>
+                <h:form id="frm" rendered="#{webUserController.hasPrivilege('PharmacyAnalyticsDepartmentViceStock')}">
 
                     <p:panel header="Department Vice Stock Report">
 

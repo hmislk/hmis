@@ -127,6 +127,11 @@ public class WebUser implements Serializable {
     private boolean twoFactorLocked = false;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date twoFactorLockedAt;
+    // SMS code as the other two-factor option: allowed by an admin, used only after the user verifies the mobile number
+    private boolean twoFactorSmsAllowed = false;
+    private String twoFactorMobile;
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    private Date twoFactorMobileVerifiedAt;
 
     public Staff getStaff() {
         return staff;
@@ -509,6 +514,37 @@ public class WebUser implements Serializable {
 
     public void setTwoFactorLockedAt(Date twoFactorLockedAt) {
         this.twoFactorLockedAt = twoFactorLockedAt;
+    }
+
+    public boolean isTwoFactorSmsAllowed() {
+        return twoFactorSmsAllowed;
+    }
+
+    public void setTwoFactorSmsAllowed(boolean twoFactorSmsAllowed) {
+        this.twoFactorSmsAllowed = twoFactorSmsAllowed;
+    }
+
+    public String getTwoFactorMobile() {
+        return twoFactorMobile;
+    }
+
+    public void setTwoFactorMobile(String twoFactorMobile) {
+        this.twoFactorMobile = twoFactorMobile;
+    }
+
+    public Date getTwoFactorMobileVerifiedAt() {
+        return twoFactorMobileVerifiedAt;
+    }
+
+    public void setTwoFactorMobileVerifiedAt(Date twoFactorMobileVerifiedAt) {
+        this.twoFactorMobileVerifiedAt = twoFactorMobileVerifiedAt;
+    }
+
+    /**
+     * True once the user has confirmed the mobile number used for SMS codes.
+     */
+    public boolean isTwoFactorMobileVerified() {
+        return twoFactorMobile != null && !twoFactorMobile.trim().isEmpty() && twoFactorMobileVerifiedAt != null;
     }
 
     public Institution getSite() {
