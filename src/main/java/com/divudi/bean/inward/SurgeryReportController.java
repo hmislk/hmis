@@ -154,13 +154,27 @@ public class SurgeryReportController implements Serializable {
             queryBody.append(" and i = :proc ");
             params.put("proc", procedure);
         }
+        // Match the theatre room against this surgery's own transfer requests.
+        // Admission-level requests (no surgery bill) count only when the surgery
+        // has none of its own, as in attachOtStatuses. Matching any request on
+        // the admission returned the patient's other surgeries done in another
+        // theatre (issue #24532).
         if (operationTheatreRoom != null) {
-            queryBody.append(" and exists ( ")
-                    .append("   select 1 from PatientTransferRequest otr ")
-                    .append("   where otr.retired = false ")
-                    .append("   and otr.toRoomFacilityCharge = :otRoom ")
-                    .append("   and (otr.admission.id = pe.id or otr.surgeryBill.id = b.id) ")
-                    .append(" ) ");
+            queryBody.append(" and ( exists ( ")
+                    .append("     select 1 from PatientTransferRequest otr ")
+                    .append("     where otr.retired = false ")
+                    .append("     and otr.surgeryBill.id = b.id ")
+                    .append("     and otr.toRoomFacilityCharge = :otRoom ) ")
+                    .append("   or ( exists ( ")
+                    .append("     select 1 from PatientTransferRequest otra ")
+                    .append("     where otra.retired = false ")
+                    .append("     and otra.surgeryBill is null ")
+                    .append("     and otra.admission.id = pe.id ")
+                    .append("     and otra.toRoomFacilityCharge = :otRoom ) ")
+                    .append("   and not exists ( ")
+                    .append("     select 1 from PatientTransferRequest otrb ")
+                    .append("     where otrb.retired = false ")
+                    .append("     and otrb.surgeryBill.id = b.id ) ) ) ");
             params.put("otRoom", operationTheatreRoom);
         }
 
