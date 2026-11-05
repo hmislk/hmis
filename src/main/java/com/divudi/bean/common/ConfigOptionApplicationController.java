@@ -1962,6 +1962,45 @@ public class ConfigOptionApplicationController implements Serializable {
         return getShortTextValueByKey("Authenticator app issuer name", "HMIS");
     }
 
+    // SMS code as the other two-factor login option (TwoFactorSmsController / OtpService)
+    public boolean isTwoFactorSmsLoginEnabled() {
+        return getBooleanValueByKey("Allow SMS code as an alternative to the authenticator app at login", false);
+    }
+
+    public int getTwoFactorSmsValiditySeconds() {
+        return Math.max(30, integerOrDefault(getIntegerValueByKey("Two-factor SMS code - validity seconds", 120), 120));
+    }
+
+    public int getTwoFactorSmsResendCooldownSeconds() {
+        return Math.max(0, integerOrDefault(getIntegerValueByKey("Two-factor SMS code - resend cooldown seconds", 60), 60));
+    }
+
+    public int getTwoFactorSmsMaxCodesPerUserPerHour() {
+        return Math.max(1, integerOrDefault(getIntegerValueByKey("Two-factor SMS code - max codes per user per hour", 5), 5));
+    }
+
+    public int getTwoFactorSmsMaxPerHourForAllUsers() {
+        return Math.max(1, integerOrDefault(getIntegerValueByKey("Two-factor SMS code - max SMS per hour for all users", 200), 200));
+    }
+
+    // A cleared or non-numeric option value comes back as null; use the default instead of unboxing it
+    private static int integerOrDefault(Integer value, int defaultValue) {
+        return value == null ? defaultValue : value;
+    }
+
+    public String getTwoFactorSmsAllowedCountryCodes() {
+        return getShortTextValueByKey("Two-factor SMS code - allowed country codes", "+94");
+    }
+
+    public String getTwoFactorSmsMessageTemplate() {
+        String t = getLongTextValueByKey("Two-factor SMS code - message template",
+                "{code} is your {app_name} login code. Valid for {minutes} minutes. Do not share this code with anyone. Our staff will never ask for it.");
+        if (t == null || !t.contains("{code}")) {
+            return "{code} is your {app_name} login code. Valid for {minutes} minutes. Do not share this code with anyone.";
+        }
+        return t;
+    }
+
     public void setIntegerValueByKey(String key, int value) {
         ConfigOption option = getApplicationOption(key);
         if (option == null || option.getValueType() != OptionValueType.INTEGER) {

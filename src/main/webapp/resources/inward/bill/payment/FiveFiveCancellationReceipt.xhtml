@@ -22,6 +22,13 @@
     <cc:implementation>
 
         <h:outputStylesheet library="css" name="opd_five_five.css" ></h:outputStylesheet>
+        <style>
+            /* Let long values such as a full inward bill number wrap inside the receipt (#24374) */
+            .fiveFiveCancelDetails td {
+                overflow-wrap: anywhere;
+                word-break: break-word;
+            }
+        </style>
         <div class="fiveinchbill" style="page-break-after: always" >
 
             <div class="institutionName">
@@ -51,7 +58,7 @@
             </div>
 
             <div class="billDetailsFiveFive" >
-                <table style="width: 99%!important;" >
+                <table class="fiveFiveCancelDetails" style="width: 99%!important;" >
                     <tr>
                         <td style="text-align: left;" >
                             <h:outputLabel value="Admission Type" class="billDetailsFiveFive" ></h:outputLabel>

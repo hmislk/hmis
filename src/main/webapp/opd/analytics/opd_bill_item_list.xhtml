@@ -241,20 +241,20 @@
                                         <h:outputLabel value="#{dto.paymentSchemeName}"/>
                                     </p:column>
 
-                                    <p:column headerText="Gross Value*" sortBy="#{dto.grossValue}" filterBy="#{dto.grossValue}" filterMatchMode="gte">
-                                        <h:outputLabel value="#{dto.grossValue}">
+                                    <p:column headerText="Gross Value*" sortBy="#{dto.grossValueForDisplay}" filterBy="#{dto.grossValueForDisplay}" filterMatchMode="gte">
+                                        <h:outputLabel value="#{dto.grossValueForDisplay}">
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputLabel>
                                     </p:column>
 
-                                    <p:column headerText="Discount*" sortBy="#{dto.discount}" filterBy="#{dto.discount}" filterMatchMode="gte">
-                                        <h:outputLabel value="#{dto.discount}">
+                                    <p:column headerText="Discount*" sortBy="#{dto.discountForDisplay}" filterBy="#{dto.discountForDisplay}" filterMatchMode="gte">
+                                        <h:outputLabel value="#{dto.discountForDisplay}">
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputLabel>
                                     </p:column>
 
-                                    <p:column headerText="Net Value*" sortBy="#{dto.netValue}" filterBy="#{dto.netValue}" filterMatchMode="gte">
-                                        <h:outputLabel value="#{dto.netValue}">
+                                    <p:column headerText="Net Value*" sortBy="#{dto.netValueForDisplay}" filterBy="#{dto.netValueForDisplay}" filterMatchMode="gte">
+                                        <h:outputLabel value="#{dto.netValueForDisplay}">
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputLabel>
                                     </p:column>
@@ -287,11 +287,13 @@
                                 <h:outputLabel value="#{dto.deptId}"/>
                             </p:column>
 
-                            <p:column headerText="Bill Type Atomic">
+                            <p:column headerText="Bill Type Atomic"
+                                      rendered="#{webUserController.hasPrivilege('Developers')}">
                                 <h:outputLabel value="#{dto.billTypeAtomic}"/>
                             </p:column>
 
-                            <p:column headerText="Bill Class Type">
+                            <p:column headerText="Bill Class Type"
+                                      rendered="#{webUserController.hasPrivilege('Developers')}">
                                 <h:outputLabel value="#{dto.billClassType}"/>
                             </p:column>
 
@@ -366,19 +368,19 @@
                             </p:column>
 
                             <p:column headerText="Gross Value">
-                                <h:outputLabel value="#{dto.grossValue}">
+                                <h:outputLabel value="#{dto.grossValueForDisplay}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
                             </p:column>
 
                             <p:column headerText="Discount">
-                                <h:outputLabel value="#{dto.discount}">
+                                <h:outputLabel value="#{dto.discountForDisplay}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
                             </p:column>
 
                             <p:column headerText="Net Value">
-                                <h:outputLabel value="#{dto.netValue}">
+                                <h:outputLabel value="#{dto.netValueForDisplay}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
                             </p:column>

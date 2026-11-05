@@ -82,7 +82,7 @@
                                          var="ec"
                                          emptyMessage="No fee lines found.">
                                 <p:column headerText="Role">
-                                    <h:outputLabel value="#{ec.patientEncounterComponentType}"/>
+                                    <h:outputLabel value="#{ec.patientEncounterComponentType.label}"/>
                                 </p:column>
                                 <p:column headerText="Doctor/Staff">
                                     <h:outputLabel value="#{ec.staff.person.nameWithTitle}"/>

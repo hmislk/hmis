@@ -754,6 +754,11 @@
                                                                 class="ui-button-info"
                                                                 type="button"
                                                                 onclick="printCustom4Bill('#{p:resolveFirstComponentWithId('originalCustom4BillPriview',view).clientId}', '#{resource['js:paged.polyfill.js']}'); return false;" />
+                                                                <p:commandButton styleClass="ui-button-info mx-1" id="btnFinalRawTextOriginal"
+                                                                    rendered="#{inwardRawTextReceiptController.rawTextPaper}"
+                                                                    value="Print (Raw Text)" ajax="false" icon="fa fa-file-lines"
+                                                                    title="Print on the dot-matrix printer (pre-printed stationery)"
+                                                                    action="#{inwardRawTextFinalBillController.streamFinalBill(inwardSearch.showOrginalBill ? inwardSearch.bill.referenceBill : inwardSearch.bill)}" />
                                                         </div>
                                                     </div>
                                                 </f:facet>
@@ -922,12 +927,22 @@
                             </p:tabView>
 
                             <p:panel rendered="#{inwardSearch.bill.approveAt ne null and inwardSearch.finalBillPdfSnapshotStream ne null}" header="Final Bill (Approved - Frozen Copy)">
+                            <p:commandButton styleClass="ui-button-info mb-2" id="btnFinalRawTextApproved"
+                                rendered="#{inwardRawTextReceiptController.rawTextPaper}"
+                                value="Print (Raw Text)" ajax="false" icon="fa fa-file-lines"
+                                title="Print on the dot-matrix printer (pre-printed stationery)"
+                                action="#{inwardRawTextFinalBillController.streamFinalBill(inwardSearch.bill)}" />
                                 <p:media value="#{inwardSearch.finalBillPdfSnapshotStream}" player="pdf" cache="false" style="width:100%;height:900px;">
                                     <f:param name="finalBillId" value="#{inwardSearch.bill.id}" />
                                 </p:media>
                             </p:panel>
 
                             <p:panel rendered="#{inwardSearch.bill.approveAt ne null and inwardSearch.finalBillPdfSnapshotStream eq null}" header="Final Bill (Approved - Frozen Copy)">
+                                <p:commandButton styleClass="ui-button-info mb-2" id="btnFinalRawTextApprovedNoPdf"
+                                    rendered="#{inwardRawTextReceiptController.rawTextPaper}"
+                                    value="Print (Raw Text)" ajax="false" icon="fa fa-file-lines"
+                                    title="Print on the dot-matrix printer (pre-printed stationery)"
+                                    action="#{inwardRawTextFinalBillController.streamFinalBill(inwardSearch.bill)}" />
                                 <h:outputText value="The approved PDF could not be loaded. Please try reprinting from the Final Bill list." styleClass="text-danger" />
                             </p:panel>
 

@@ -356,6 +356,16 @@
                                                                       value="Required for all users by configuration" />
                                                     </div>
                                                 </div>
+                                                <h:panelGroup layout="block" class="user-form-row"
+                                                              rendered="#{configOptionApplicationController.twoFactorSmsLoginEnabled}">
+                                                    <p:outputLabel for="twoFactorSmsAllowed" value="Allow SMS Code (2FA)" class="user-form-label" />
+                                                    <div class="user-form-field">
+                                                        <p:selectBooleanCheckbox id="twoFactorSmsAllowed"
+                                                                                 value="#{webUserController.current.twoFactorSmsAllowed}" />
+                                                        <h:outputText class="small text-muted mx-2"
+                                                                      value="The user can log in with a code sent by SMS after verifying their mobile number" />
+                                                    </div>
+                                                </h:panelGroup>
                                                 <p class="small text-muted mb-0">
                                                     The user links their authenticator app at their first login.
                                                 </p>

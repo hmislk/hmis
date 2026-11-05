@@ -2885,6 +2885,15 @@ public class BillNumberGenerator {
     }
 
     public String departmentBillNumberGeneratorYearly(Department dep, BillTypeAtomic billType) {
+        return departmentBillNumberGeneratorYearly(dep, billType, "");
+    }
+
+    /**
+     * @param suffixWhenBlank used when "Bill Number Suffix for &lt;billType&gt;" is blank, so a
+     * bill type can stay distinct from others that share its serial pattern. A stored value
+     * always wins.
+     */
+    public String departmentBillNumberGeneratorYearly(Department dep, BillTypeAtomic billType, String suffixWhenBlank) {
         if (dep == null) {
             return "";
         }
@@ -2894,7 +2903,7 @@ public class BillNumberGenerator {
         BillNumber billNumber;
         String billSuffix = configOptionApplicationController.getLongTextValueByKey("Bill Number Suffix for " + billType, "");
         if (billSuffix == null || billSuffix.trim().isEmpty()) {
-            billSuffix = "";
+            billSuffix = suffixWhenBlank;
         }
         boolean commonBillNumberForAllDepartmentsInstitutionsBillTypeAtomic
                 = configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy - Common Bill Number for All Departments, Institutions and Bill Types", false);
