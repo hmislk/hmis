@@ -103,13 +103,13 @@ public class DischargeConditionController implements Serializable {
     }
 
     public List<ClinicalEntity> completeDischargeConditions(String qry) {
-        if (qry == null || qry.trim().isEmpty()) {
-            return new ArrayList<>();
+        if (qry == null) {
+            qry = "";
         }
         List<ClinicalEntity> c;
         Map m = new HashMap();
         m.put("t", SymanticType.Discharge_Condition);
-        m.put("n", "%" + qry.toUpperCase() + "%");
+        m.put("n", "%" + qry.trim().toUpperCase() + "%");
         String sql = "select c from ClinicalEntity c where c.retired=false and upper(c.name) like :n and c.symanticType=:t order by c.name";
         c = getFacade().findByJpql(sql, m, 10);
         if (c == null) {

@@ -1,0 +1,175 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                template="/payments/pay_index.xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui">
+
+    <ui:define name="admin">
+        <h:form id="frmIouTrack">
+            <p:panel>
+                <f:facet name="header">
+                    <h:outputText value="Track IOUs" />
+                </f:facet>
+
+                <p:panelGrid columns="4" layout="tabular" class="w-100 mb-2">
+                    <p:outputLabel for="fromDate" value="From" />
+                    <p:datePicker
+                        id="fromDate"
+                        value="#{iouTrackController.fromDate}"
+                        showTime="true"
+                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+
+                    <p:outputLabel for="toDate" value="To" />
+                    <p:datePicker
+                        id="toDate"
+                        value="#{iouTrackController.toDate}"
+                        showTime="true"
+                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+
+                    <p:outputLabel for="status" value="Status" />
+                    <p:selectOneMenu id="status" value="#{iouTrackController.status}" class="w-100">
+                        <f:selectItem itemLabel="All" itemValue="ALL" />
+                        <f:selectItem itemLabel="Open" itemValue="OPEN" />
+                        <f:selectItem itemLabel="Settled" itemValue="SETTLED" />
+                        <f:selectItem itemLabel="Converted to Cash" itemValue="CONVERTED" />
+                    </p:selectOneMenu>
+
+                    <p:outputLabel for="acDebtor" value="Debtor (Staff)" />
+                    <p:autoComplete
+                        id="acDebtor"
+                        value="#{iouTrackController.debtorStaff}"
+                        completeMethod="#{staffController.completeStaffWithoutDoctors}"
+                        forceSelection="true"
+                        var="st"
+                        itemLabel="#{st.person.name}"
+                        itemValue="#{st}"
+                        class="w-100"
+                        inputStyleClass="w-100"
+                        title="Staff member the IOU was given to">
+                        <p:column>
+                            <h:outputText value="#{st.code}" />
+                        </p:column>
+                        <p:column>
+                            <h:outputText value="#{st.person.nameWithTitle}" />
+                        </p:column>
+                    </p:autoComplete>
+
+                    <p:outputLabel for="acHolder" value="Held by (User)" />
+                    <p:autoComplete
+                        id="acHolder"
+                        value="#{iouTrackController.holder}"
+                        completeMethod="#{webUserController.completeUser}"
+                        forceSelection="true"
+                        var="usr"
+                        itemLabel="#{usr.webUserPerson.name}"
+                        itemValue="#{usr}"
+                        class="w-100"
+                        inputStyleClass="w-100"
+                        title="User whose drawer holds the IOU">
+                        <p:column headerText="Username">
+                            <h:outputText value="#{usr.name}" />
+                        </p:column>
+                        <p:column headerText="Name">
+                            <h:outputText value="#{usr.webUserPerson.name}" />
+                        </p:column>
+                    </p:autoComplete>
+
+                    <h:outputText value="" />
+                    <p:commandButton
+                        id="btnSearch"
+                        value="Search"
+                        icon="fa fa-search"
+                        class="ui-button-info"
+                        ajax="false"
+                        title="List IOUs matching the filters"
+                        action="#{iouTrackController.fillIous()}" />
+                </p:panelGrid>
+
+                <p:dataTable
+                    id="tblIous"
+                    value="#{iouTrackController.ious}"
+                    var="p"
+                    rowKey="#{p.id}"
+                    rows="20"
+                    paginator="true"
+                    paginatorPosition="bottom"
+                    rowsPerPageTemplate="20,50,100"
+                    emptyMessage="No IOUs found">
+
+                    <p:column headerText="ID" rendered="#{webUserController.hasPrivilege('Developers')}">
+                        <h:outputText value="#{p.id}" />
+                    </p:column>
+
+                    <p:column headerText="Date / Time" width="10em">
+                        <h:outputText value="#{p.createdAt}">
+                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" />
+                        </h:outputText>
+                    </p:column>
+
+                    <p:column headerText="Bill No">
+                        <h:outputText value="#{p.bill.deptId}" />
+                    </p:column>
+
+                    <p:column headerText="Bill Type">
+                        <h:outputText value="#{p.bill.billTypeAtomic.label}" />
+                    </p:column>
+
+                    <p:column headerText="Ref. No">
+                        <h:outputText value="#{p.bill.referenceNumber}" />
+                    </p:column>
+
+                    <p:column headerText="Debtor">
+                        <h:outputText value="#{p.bill.staff.person.nameWithTitle}" rendered="#{p.bill.staff ne null}" />
+                        <h:outputText value="#{p.bill.person.nameWithTitle}" rendered="#{p.bill.staff eq null}" />
+                    </p:column>
+
+                    <p:column headerText="Department">
+                        <h:outputText value="#{p.department.name}" />
+                    </p:column>
+
+                    <p:column headerText="Held by">
+                        <h:outputText value="#{p.currentHolder.webUserPerson.name}" rendered="#{p.currentHolder ne null}" />
+                        <h:outputText value="#{p.creater.webUserPerson.name}" rendered="#{p.currentHolder eq null}" />
+                    </p:column>
+
+                    <p:column headerText="Value" styleClass="text-end" width="8em">
+                        <h:outputText value="#{p.paidValue}">
+                            <f:convertNumber pattern="#,##0.00" />
+                        </h:outputText>
+                        <f:facet name="footer">
+                            <h:outputText value="#{iouTrackController.totalValue}">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputText>
+                        </f:facet>
+                    </p:column>
+
+                    <p:column headerText="Status" styleClass="text-center" width="9em">
+                        <h:outputText value="#{iouTrackController.iouStatus(p)}" />
+                    </p:column>
+
+                    <p:column headerText="Closed by Bill">
+                        <h:outputText value="#{p.cancelledBill.deptId}" />
+                    </p:column>
+
+                    <p:column headerText="Closed at" width="10em">
+                        <h:outputText value="#{p.cancelledBill.createdAt}">
+                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" />
+                        </h:outputText>
+                    </p:column>
+                </p:dataTable>
+
+                <h:panelGroup layout="block" class="mt-2 text-end"
+                              rendered="#{iouTrackController.status eq 'OPEN' or iouTrackController.status eq 'ALL'}">
+                    <h:outputText value="#{iouTrackController.openValueLabel} " class="fw-bold" />
+                    <h:outputText value="#{iouTrackController.openValue}" class="fw-bold">
+                        <f:convertNumber pattern="#,##0.00" />
+                    </h:outputText>
+                </h:panelGroup>
+            </p:panel>
+        </h:form>
+    </ui:define>
+
+</ui:composition>

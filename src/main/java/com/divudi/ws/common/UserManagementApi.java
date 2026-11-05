@@ -1543,7 +1543,14 @@ public class UserManagementApi {
         if (req.getSiteId() != null) u.setSite(institutionFacade.find(req.getSiteId()));
         if (req.getDepartmentId() != null) u.setDepartment(departmentFacade.find(req.getDepartmentId()));
         if (req.getRoleId() != null) u.setRole(webUserRoleFacade.find(req.getRoleId()));
-        if (req.getActivated() != null) u.setActivated(req.getActivated());
+        if (req.getActivated() != null) {
+            if (!create && u.isActivated() != req.getActivated()) {
+                // activatedAt records the last activation-state change, so it is also the inactive date (#25078)
+                u.setActivatedAt(new Date());
+                u.setActivator(actor);
+            }
+            u.setActivated(req.getActivated());
+        }
         if (req.getLoginPage() != null) {
             String loginPage = req.getLoginPage().trim();
             if (loginPage.isEmpty()) {
