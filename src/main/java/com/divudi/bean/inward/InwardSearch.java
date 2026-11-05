@@ -109,6 +109,8 @@ public class InwardSearch implements Serializable {
     private com.divudi.core.facade.EmailFacade emailFacade;
     @EJB
     private com.divudi.ejb.EmailManagerEjb emailManagerEjb;
+    @EJB
+    private com.divudi.service.BillService billService;
 
     /**
      * JSF Controllers
