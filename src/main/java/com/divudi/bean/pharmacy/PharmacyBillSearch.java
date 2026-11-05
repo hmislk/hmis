@@ -1186,6 +1186,28 @@ public class PharmacyBillSearch implements Serializable {
         return true;
     }
 
+    /**
+     * True when a refund payment bill (PHARMACY_RETAIL_SALE_RETURN_ITEM_PAYMENTS) that has not
+     * been cancelled references this return bill. Queried from the database, not from the
+     * in-memory returnCashBills list, which can be empty or stale. The refund payment bill is
+     * persisted as a plain Bill, so the query uses the base Bill type.
+     */
+    public boolean hasActiveReturnCashBill() {
+        if (getBill() == null) {
+            return false;
+        }
+        String sql = "Select count(b) From Bill b where b.retired=false "
+                + " and b.cancelled=false "
+                + " and b.billType=:bt "
+                + " and b.referenceBill=:ref "
+                + " and b.billedBill is null";
+        HashMap hm = new HashMap();
+        hm.put("ref", getBill());
+        hm.put("bt", BillType.PharmacySale);
+        Long count = getBillFacade().findLongByJpql(sql, hm);
+        return count != null && count > 0;
+    }
+
     private boolean pharmacyErrorCheck() {
         if (getBill().isCancelled()) {
             JsfUtil.addErrorMessage("Already Cancelled. Can not cancel again");
@@ -2377,7 +2399,7 @@ public class PharmacyBillSearch implements Serializable {
                 return;
             }
 
-            if (getBill().checkActiveReturnCashBill()) {
+            if (hasActiveReturnCashBill()) {
                 JsfUtil.addErrorMessage("Payment for this bill Already Paid");
                 return;
             }
