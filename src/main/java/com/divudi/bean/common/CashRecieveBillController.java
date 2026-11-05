@@ -1399,6 +1399,17 @@ public class CashRecieveBillController implements Serializable {
             JsfUtil.addErrorMessage("Error : Payments Have Been Made By This Voucher");
             return;
         }
+        if (paymentMethod == null) {
+            JsfUtil.addErrorMessage("Select a payment mode");
+            return;
+        }
+        // This page has no breakdown for several payment methods, so a
+        // Multiple Payment Methods cancellation would be built from empty
+        // data and record zero payments (#25140).
+        if (paymentMethod == PaymentMethod.MultiplePaymentMethods) {
+            JsfUtil.addErrorMessage("Multiple Payment Methods can't be used to cancel a voucher. Select one payment mode.");
+            return;
+        }
 
         CancelledBill cb = new CancelledBill();
         cb.copy(b);
