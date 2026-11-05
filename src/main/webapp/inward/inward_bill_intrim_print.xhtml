@@ -27,6 +27,12 @@
                                                  icon="pi pi-print" styleClass="ui-button-info  mx-1">
                                     <p:printer target="Interim"></p:printer>
                                 </p:commandButton>
+                                <p:commandButton styleClass="ui-button-info mx-1" id="btnInterimRawText"
+                                    rendered="#{inwardRawTextReceiptController.rawTextPaper}"
+                                    disabled="#{intrimPrintController.currentBill.id eq null}"
+                                    value="Print Interim (Raw Text)" ajax="false" icon="fa fa-file-lines"
+                                    title="Print on the dot-matrix printer (pre-printed stationery)"
+                                    action="#{inwardRawTextFinalBillController.streamInterimBill(intrimPrintController.currentBill)}" />
                                 <p:commandButton 
                                     ajax="false"
                                     icon="fa fa-search"

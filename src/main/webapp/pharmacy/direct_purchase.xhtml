@@ -616,12 +616,25 @@
                                         disabled="#{pharmacyDirectPurchaseController.bill.completed}"
                                         process="@this"
                                         update=":bill:dlgEditBillItem"
-                                        oncomplete="PF('dlgEditBillItem').show()"
+                                        onclick="dpResetDatepickerState();"
+                                        oncomplete="dpResetDatepickerState(); PF('dlgEditBillItem').show()"
                                         action="#{pharmacyDirectPurchaseController.prepareEditBillItem(ph)}" />
                                     <p:commandButton id="btnDeleteItem" styleClass="ui-button-danger" icon="fas fa-trash" title="Delete Item" disabled="#{pharmacyDirectPurchaseController.bill.completed}" ajax="false" action="#{pharmacyDirectPurchaseController.removeItem(ph)}" />
                                 </p:column>
                             </p:dataTable>
 
+                            <h:outputScript>
+                                /* PrimeFaces 14 Calendar.destroy() sets $.datepicker._curInst.input = null for whichever
+                                   calendar was used last, not for the one being destroyed. Re-rendering the edit dialog
+                                   (which destroys its calendar) therefore breaks the add-row calendar if that was the last
+                                   one used (TypeError in _setDateFromField). No picker is open at these points, so clear
+                                   the global reference before each re-render. */
+                                function dpResetDatepickerState() {
+                                    if (window.jQuery &amp;&amp; jQuery.datepicker) {
+                                        jQuery.datepicker._curInst = null;
+                                    }
+                                }
+                            </h:outputScript>
                             <p:dialog
                                 id="dlgEditBillItem"
                                 header="Edit Item"
@@ -715,8 +728,8 @@
                                             icon="fas fa-save"
                                             styleClass="ui-button-success mr-2"
                                             process=":bill:dlgEditBillItem"
-                                            update=":bill:itemList :bill:tot :bill:billFinanceDetails :bill:dlgEditBillItem"
-                                            oncomplete="if (!args.validationFailed) PF('dlgEditBillItem').hide()"
+                                            update=":bill:itemList :bill:tot :bill:billFinanceDetails :#{p:resolveFirstComponentWithId('msg',view).clientId}"
+                                            oncomplete="if (!args.validationFailed) { PF('dlgEditBillItem').hide(); } dpResetDatepickerState();"
                                             action="#{pharmacyDirectPurchaseController.updateBillItem()}" />
                                         <p:commandButton
                                             value="Cancel"

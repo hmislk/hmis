@@ -995,6 +995,7 @@ public class PharmacyDirectPurchaseController implements Serializable {
     public void addExpense() {
         if (getBill().isCompleted()) {
             JsfUtil.addErrorMessage("This bill is completed and cannot be edited.");
+            markEditValidationFailed();
             return;
         }
         if (getCurrentExpense().getItem() == null) {
@@ -1297,6 +1298,7 @@ public class PharmacyDirectPurchaseController implements Serializable {
         }
         if (editingBillItem == null) {
             JsfUtil.addErrorMessage("No item selected for editing");
+            markEditValidationFailed();
             return;
         }
         BillItemFinanceDetails f = editingBillItem.getBillItemFinanceDetails();
@@ -1317,6 +1319,7 @@ public class PharmacyDirectPurchaseController implements Serializable {
 
             if (!isAllowRetailRateBelowPurchaseRate() && isRetailRateBelowPurchaseRate(item, f)) {
                 JsfUtil.addErrorMessage("Retail rate is below the purchase rate. Enable 'Allow Retail Rate Below Purchase Rate in Pharmacy Purchasing' to proceed.");
+                markEditValidationFailed();
                 return;
             }
 
@@ -1359,6 +1362,17 @@ public class PharmacyDirectPurchaseController implements Serializable {
         distributeProportionalBillValuesToItems();
         recalculateProfitMarginsForAllItems();
         editingBillItem = null;
+    }
+
+    /**
+     * Tells the client (args.validationFailed) that the edit dialog save was rejected so
+     * the dialog stays open and the user can see the error message and correct the values.
+     */
+    private void markEditValidationFailed() {
+        javax.faces.context.FacesContext fc = javax.faces.context.FacesContext.getCurrentInstance();
+        if (fc != null) {
+            fc.validationFailed();
+        }
     }
 
     private boolean isRetailRateBelowPurchaseRate(Item item, BillItemFinanceDetails f) {

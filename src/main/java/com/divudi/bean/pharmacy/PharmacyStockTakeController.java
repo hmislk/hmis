@@ -1135,7 +1135,7 @@ public class PharmacyStockTakeController implements Serializable {
                 BillItem bi = new BillItem();
                 bi.setBill(physicalCountBill);
                 bi.setItem(snapItem.getItem());
-                bi.setQty(physical);
+                bi.setQty(roundQty(physical));
                 bi.setCreatedAt(new Date());
                 bi.setCreater(sessionController.getLoggedUser());
                 bi.setReferanceBillItem(snapItem);
@@ -1145,7 +1145,7 @@ public class PharmacyStockTakeController implements Serializable {
                 Stock currentStock = (snapPbi != null) ? snapPbi.getStock() : null;
                 double currentStockQty = (currentStock != null && currentStock.getStock() != null)
                         ? currentStock.getStock() : snapItem.getQty();
-                bi.setAdjustedValue(physical - currentStockQty);
+                bi.setAdjustedValue(roundQty(physical - currentStockQty));
 
                 PharmaceuticalBillItem pbi = new PharmaceuticalBillItem();
                 pbi.setBillItem(bi);
@@ -1153,7 +1153,7 @@ public class PharmacyStockTakeController implements Serializable {
                     pbi.setItemBatch(snapPbi.getItemBatch());
                     pbi.setStock(currentStock); // Store stock reference for approval process
                 }
-                pbi.setQty(physical);
+                pbi.setQty(roundQty(physical));
                 bi.setPharmaceuticalBillItem(pbi);
                 physicalCountBill.getBillItems().add(bi);
             }
@@ -1333,7 +1333,7 @@ public class PharmacyStockTakeController implements Serializable {
                 BillItem bi = new BillItem();
                 bi.setBill(physicalCountBill);
                 bi.setItem(snapBillItem.getItem()); // Already loaded via JOIN FETCH
-                bi.setQty(physical);
+                bi.setQty(roundQty(physical));
                 bi.setCreatedAt(new Date());
                 bi.setCreater(sessionController.getLoggedUser());
                 bi.setReferanceBillItem(snapBillItem);
@@ -1342,7 +1342,7 @@ public class PharmacyStockTakeController implements Serializable {
                 Stock currentStock = (snapPbi != null) ? snapPbi.getStock() : null; // Already loaded
                 double currentStockQty = (currentStock != null && currentStock.getStock() != null)
                         ? currentStock.getStock() : snapBillItem.getQty();
-                bi.setAdjustedValue(physical - currentStockQty);
+                bi.setAdjustedValue(roundQty(physical - currentStockQty));
 
                 PharmaceuticalBillItem pbi = new PharmaceuticalBillItem();
                 pbi.setBillItem(bi);
@@ -1350,7 +1350,7 @@ public class PharmacyStockTakeController implements Serializable {
                     pbi.setItemBatch(snapPbi.getItemBatch()); // Already loaded
                     pbi.setStock(currentStock);
                 }
-                pbi.setQty(physical);
+                pbi.setQty(roundQty(physical));
                 bi.setPharmaceuticalBillItem(pbi);
 
                 batchItems.add(bi);
@@ -1519,8 +1519,8 @@ public class PharmacyStockTakeController implements Serializable {
 
                     // Build BillItem in memory using JPA proxies — no DB load
                     BillItem bi = new BillItem();
-                    bi.setQty(physicalQty);
-                    bi.setAdjustedValue(physicalQty - snap.currentStockQty);
+                    bi.setQty(roundQty(physicalQty));
+                    bi.setAdjustedValue(roundQty(physicalQty - snap.currentStockQty));
                     bi.setItem(itemFacade.getReference(snap.itemId));
                     bi.setReferanceBillItem(billItemFacade.getReference(snapBillItemId));
 
@@ -1528,7 +1528,7 @@ public class PharmacyStockTakeController implements Serializable {
                     pbi.setBillItem(bi);
                     pbi.setItemBatch(itemBatchFacade.getReference(snap.itemBatchId));
                     pbi.setStock(snap.stockId != null ? stockFacade.getReference(snap.stockId) : null);
-                    pbi.setQty(physicalQty);
+                    pbi.setQty(roundQty(physicalQty));
                     bi.setPharmaceuticalBillItem(pbi);
 
                     billItems.add(bi);
@@ -1643,7 +1643,7 @@ public class PharmacyStockTakeController implements Serializable {
                     snapshotBillDisplay.getId(), snapshotBillDisplay.getDeptId(),
                     snapshotBillDisplay.getCreatedAt(),
                     snapshotBillDisplay.getInstitutionName(), snapshotBillDisplay.getDepartmentName(),
-                    (long) physicalCountBill.getBillItems().size(),
+                    snapshotBillDisplay.getItemsCount(),
                     snapshotBillDisplay.getNetTotal(), Boolean.FALSE,
                     snapshotBillDisplay.getDepartmentType());
         }
@@ -1788,8 +1788,8 @@ public class PharmacyStockTakeController implements Serializable {
             double current = stock.getStock() == null ? 0.0 : stock.getStock();
 
             BillItem bi = new BillItem();
-            bi.setQty(r.getQuantity());
-            bi.setAdjustedValue(r.getQuantity() - current);
+            bi.setQty(roundQty(r.getQuantity()));
+            bi.setAdjustedValue(roundQty(r.getQuantity() - current));
             bi.setItem(amp);
             bi.setDescreption("Added from stock-take upload (sheet row " + r.getRowNo() + ", not in snapshot)");
             bi.setBill(physicalCountBill);
@@ -1797,7 +1797,7 @@ public class PharmacyStockTakeController implements Serializable {
             pbi.setBillItem(bi);
             pbi.setItemBatch(batch);
             pbi.setStock(stock);
-            pbi.setQty(r.getQuantity());
+            pbi.setQty(roundQty(r.getQuantity()));
             bi.setPharmaceuticalBillItem(pbi);
             physicalCountBill.getBillItems().add(bi);
             it.remove();
@@ -4121,6 +4121,15 @@ public class PharmacyStockTakeController implements Serializable {
         JsfUtil.addSuccessMessage("Physical count saved");
     }
 
+    /**
+     * Rounds a stock quantity to 4 decimals before it is stored or compared, so
+     * binary floating-point noise (0.008000000000000007) is not saved and does not
+     * make a line with no real change look like a variance.
+     */
+    private static double roundQty(double value) {
+        return com.divudi.core.util.CommonFunctions.round(value, 4);
+    }
+
     public void approvePhysicalCount() {
         if (physicalCountBill == null) {
             JsfUtil.addErrorMessage("No physical count available");
@@ -4143,7 +4152,7 @@ public class PharmacyStockTakeController implements Serializable {
         boolean hasVariance = false;
         if (physicalCountBill.getBillItems() != null && !physicalCountBill.getBillItems().isEmpty()) {
             for (BillItem bi : physicalCountBill.getBillItems()) {
-                if (bi.getAdjustedValue() != 0) {
+                if (roundQty(bi.getAdjustedValue()) != 0) {
                     hasVariance = true;
                     break;
                 }
@@ -4222,7 +4231,7 @@ public class PharmacyStockTakeController implements Serializable {
         int expectedLines = 0;
         int appliedLines = 0;
         for (BillItem bi : physicalCountBill.getBillItems()) {
-            double variance = bi.getAdjustedValue();
+            double variance = roundQty(bi.getAdjustedValue());
             if (variance == 0) continue;
             expectedLines++;
             BillItem abi = new BillItem();
@@ -4246,7 +4255,7 @@ public class PharmacyStockTakeController implements Serializable {
             apbi.setQty(variance);
             if (stock != null) {
                 double before = stock.getStock();
-                double target = bi.getQty();
+                double target = roundQty(bi.getQty());
                 apbi.setBeforeAdjustmentValue(before);
                 apbi.setAfterAdjustmentValue(target);
                 LOGGER.log(Level.INFO, "[StockTake] Setting target for adjustment: itemCode={0}, batch={1}, before={2}, physicalQty={3}, target={4}, variance={5}",

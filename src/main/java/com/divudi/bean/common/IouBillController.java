@@ -33,11 +33,14 @@ import com.divudi.core.util.CommonFunctions;
 import java.io.Serializable;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import com.divudi.service.IouAlreadySettledException;
 import com.divudi.service.IouSettlementService;
 import javax.ejb.EJB;
@@ -56,6 +59,7 @@ import org.primefaces.event.TabChangeEvent;
 public class IouBillController implements Serializable {
 
     private static final String IOU_SETTLE_SUFFIX_WHEN_BLANK = "IOUS";
+    private static final Logger LOGGER = Logger.getLogger(IouBillController.class.getName());
 
     @EJB
     private PersonFacade personFacade;
@@ -588,7 +592,29 @@ public class IouBillController implements Serializable {
             JsfUtil.addErrorMessage(e.getMessage());
             return;
         }
-        saveSettleIouBill();
+        LOGGER.log(Level.INFO, "IOU settlement claimed IOU payment ids {0}", selectedIouIds);
+        try {
+            saveSettleIouBill();
+        } catch (RuntimeException e) {
+            // The claim is committed, so without a release these IOUs would stay settled with no bill
+            LOGGER.log(Level.SEVERE, "IOU settlement bill was not created; releasing claimed IOU payment ids " + selectedIouIds, e);
+            // The failed insert rolled back, so the bill is not in the database; a retry must insert it again
+            getCurrent().setId(null);
+            try {
+                int released = iouSettlementService.releaseClaimedIous(selectedIouIds);
+                if (released != selectedIouIds.size()) {
+                    LOGGER.log(Level.SEVERE, "IOU settlement released {0} of {1} claimed IOU payments, ids {2}",
+                            new Object[]{released, selectedIouIds.size(), selectedIouIds});
+                    JsfUtil.addErrorMessage("The IOU settlement could not be saved, and not every selected IOU could be reopened. Please refresh the list, and contact system support if an IOU stays unavailable.");
+                } else {
+                    JsfUtil.addErrorMessage("The IOU settlement could not be saved. The IOUs are still open. Please try Settle again.");
+                }
+            } catch (RuntimeException releaseError) {
+                LOGGER.log(Level.SEVERE, "IOU settlement could not release claimed IOU payment ids " + selectedIouIds, releaseError);
+                JsfUtil.addErrorMessage("The IOU settlement could not be saved, and the selected IOUs could not be reopened. Please contact system support before trying again.");
+            }
+            return;
+        }
 
         for (Payment pi : getPaymentsForsettlingIuos()) {
             pi.setBill(current);
@@ -1037,12 +1063,20 @@ public class IouBillController implements Serializable {
                 + " where p.retired=:ret "
                 + " and p.currentHolder=:user "
                 + " and p.paymentMethod=:pm"
-                + " and p.cancelled=:can ";
+                + " and p.cancelled=:can "
+                // Converted to cash: the conversion sets cancelledBill, not cancelled
+                + " and p.cancelledBill is null "
+                + " and p.paidValue > 0 "
+                // Conversion and its cancellation post IOU offsets, not IOUs given to anyone.
+                // Cancelling a conversion also reopens the original, so its restored row would list it twice.
+                + " and (p.bill.billTypeAtomic is null or p.bill.billTypeAtomic not in :offsetTypes) ";
         Map params = new HashMap();
         params.put("ret", false);
         params.put("can", false);
         params.put("pm", PaymentMethod.IOU);
         params.put("user", sessionController.getLoggedUser());
+        params.put("offsetTypes", Arrays.asList(BillTypeAtomic.IOU_TO_CASH_CONVERSION,
+                BillTypeAtomic.IOU_TO_CASH_CONVERSION_CANCELLED));
         myIousToSettle = paymentFacade.findByJpql(jpql, params);
         paymentsForsettlingIuos = new ArrayList<>();
         settlingIuos = new ArrayList<>();
