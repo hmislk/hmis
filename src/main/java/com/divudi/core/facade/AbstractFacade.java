@@ -1499,4 +1499,27 @@ public abstract class AbstractFacade<T> {
             return 0L;
         }
     }
+
+    /**
+     * Executes a JPQL UPDATE/DELETE statement and returns the number of rows affected.
+     * Backported from development for the atomic pharmacy return cancellation guard.
+     */
+    public int updateByJpql(String jpql, Map<String, Object> parameters) {
+        Query query = getEntityManager().createQuery(jpql);
+        if (parameters != null) {
+            for (Map.Entry<String, Object> entry : parameters.entrySet()) {
+                Object paramValue = entry.getValue();
+                if (paramValue instanceof Date) {
+                    query.setParameter(entry.getKey(), (Date) paramValue, TemporalType.TIMESTAMP);
+                } else {
+                    query.setParameter(entry.getKey(), paramValue);
+                }
+            }
+        }
+        try {
+            return query.executeUpdate();
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to execute JPQL update: " + jpql, e);
+        }
+    }
 }
