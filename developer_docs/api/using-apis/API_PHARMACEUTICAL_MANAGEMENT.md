@@ -206,6 +206,8 @@ Tablet, Capsule, ml).
 
 *Note:* `vmppId` is optional. When omitted and the AMP has a VMP, a matching VMPP is automatically found or created for (VMP, `dblValue`, `packUnitId`). When explicitly provided, it must reference an active (unretired) VMPP matching the AMP's VMP, pack size (`dblValue`), and pack unit. Response `AmppDto` returns `vmpId`, `vmpName`, `vmppId`, and `vmppName`.
 
+*Known limitation:* the automatic lookup has no database unique constraint behind it, so two concurrent requests for the same (VMP, `dblValue`, `packUnitId`) can create duplicate VMPPs. `PharmacyBean.getVmpp`, used by the GUI, behaves the same way.
+
 **Example - Create VTM:**
 ```bash
 curl -X POST "http://localhost:8080/api/pharmaceutical_items/vtm" \
@@ -237,7 +239,7 @@ only unique among non-retired rows of that type.
 
 Only provided fields are updated (null fields are ignored).
 
-*AMPP VMPP Update Behavior:* When updating an AMPP, `vmppId` can be explicitly provided (validated against the AMP's VMP, pack size, and pack unit). If omitted and `dblValue`, `packUnitId`, or `ampId` changes, the matching VMPP is automatically re-resolved or created; if the updated pack fields (e.g. `dblValue <= 0` or missing unit) or AMP no longer permit resolution, the stale VMPP association is cleared.
+*AMPP VMPP Update Behavior:* When updating an AMPP, `vmppId` can be explicitly provided (validated against the AMP's VMP, pack size, and pack unit). If omitted and `dblValue`, `packUnitId`, or `ampId` changes, the matching VMPP is automatically re-resolved or created; if the updated pack fields (e.g. `dblValue <= 0` or missing unit) or AMP no longer permit resolution, the stale VMPP association is cleared. A rejected AMPP update saves nothing and creates no VMPP. On AMPP create and update, an `ampId`, `packUnitId` or `vmppId` that does not exist returns HTTP 404; any other rejected `vmppId` returns HTTP 400.
 
 **Example:**
 ```bash
@@ -382,7 +384,7 @@ All responses follow this standard format:
 | 400 | Bad request (validation error, invalid type, missing required field) |
 | 401 | Unauthorized (invalid or missing API key) |
 | 404 | Not found |
-| 409 | Conflict (already retired / not retired / duplicate name on create) |
+| 409 | Conflict (already retired / not retired / duplicate name on create, or on AMPP update) |
 | 500 | Internal server error |
 
 ## Response DTO Fields by Type

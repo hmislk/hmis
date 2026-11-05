@@ -666,6 +666,15 @@ public class PharmaceuticalItemApiService implements Serializable {
             throw new PharmaceuticalItemApiException("AMPP not found with ID: " + id, 404);
         }
 
+        // Before any VMPP is created: DuplicateItemException is checked, so it does not roll back.
+        if (request.getName() != null && !request.getName().trim().isEmpty()
+                && !request.getName().trim().equalsIgnoreCase(item.getName())) {
+            Ampp duplicate = findDuplicateByName(amppFacade, "Ampp", request.getName().trim());
+            if (duplicate != null && !duplicate.getId().equals(item.getId())) {
+                throw new DuplicateItemException(duplicate.getId(), buildAmppDto(duplicate));
+            }
+        }
+
         Amp targetAmp = item.getAmp();
         boolean ampChanged = false;
         if (request.getAmpId() != null) {
@@ -710,14 +719,6 @@ public class PharmaceuticalItemApiService implements Serializable {
                 }
             } else if (packChanged) {
                 targetVmpp = null;
-            }
-        }
-
-        if (request.getName() != null && !request.getName().trim().isEmpty()
-                && !request.getName().trim().equalsIgnoreCase(item.getName())) {
-            Ampp duplicate = findDuplicateByName(amppFacade, "Ampp", request.getName().trim());
-            if (duplicate != null && !duplicate.getId().equals(item.getId())) {
-                throw new DuplicateItemException(duplicate.getId(), buildAmppDto(duplicate));
             }
         }
 

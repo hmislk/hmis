@@ -420,5 +420,61 @@ public class PharmaceuticalItemApiServiceTest {
         Ampp inDb = dummyAmppFacade.find(existing.getId());
         assertNull(inDb.getVmpp(), "Entity in DB must have vmpp cleared");
     }
+
+    private Ampp existingAmppForRejection() {
+        Ampp existing = new Ampp();
+        existing.setId(61L);
+        existing.setName("Rejection Pack");
+        existing.setAmp(testAmp);
+        existing.setDblValue(100.0);
+        existing.setPackUnit(testUnit);
+        dummyAmppFacade.db.put(existing.getId(), existing);
+        return existing;
+    }
+
+    @Test
+    @DisplayName("updateItem with a missing ampId or packUnitId changes nothing")
+    void testUpdateAmpp_MissingAmpOrUnitChangesNothing() {
+        Ampp existing = existingAmppForRejection();
+
+        AmppRequestDTO badAmp = new AmppRequestDTO();
+        badAmp.setName("Changed");
+        badAmp.setDblValue(50.0);
+        badAmp.setAmpId(99999L);
+        assertThrows(PharmaceuticalItemApiException.class,
+                () -> service.updateItem("ampp", existing.getId(), gson.toJson(badAmp), testUser, gson));
+
+        AmppRequestDTO badUnit = new AmppRequestDTO();
+        badUnit.setName("Changed");
+        badUnit.setDblValue(50.0);
+        badUnit.setPackUnitId(99999L);
+        assertThrows(PharmaceuticalItemApiException.class,
+                () -> service.updateItem("ampp", existing.getId(), gson.toJson(badUnit), testUser, gson));
+
+        assertEquals("Rejection Pack", existing.getName());
+        assertEquals(100.0, existing.getDblValue());
+        assertTrue(dummyVmppFacade.flushed.isEmpty());
+    }
+
+    @Test
+    @DisplayName("updateItem with a duplicate name creates no VMPP, because that exception does not roll back")
+    void testUpdateAmpp_DuplicateNameCreatesNoVmpp() {
+        Ampp existing = existingAmppForRejection();
+        Ampp other = new Ampp();
+        other.setId(62L);
+        other.setName("OTHER PACK");
+        dummyAmppFacade.db.put(other.getId(), other);
+
+        AmppRequestDTO req = new AmppRequestDTO();
+        req.setName("Other Pack");
+        req.setDblValue(75.0);
+
+        assertThrows(DuplicateItemException.class,
+                () -> service.updateItem("ampp", existing.getId(), gson.toJson(req), testUser, gson));
+
+        assertTrue(dummyVmppFacade.flushed.isEmpty(), "No VMPP may be left behind by a rejected update");
+        assertEquals("Rejection Pack", existing.getName());
+        assertEquals(100.0, existing.getDblValue());
+    }
 }
 
