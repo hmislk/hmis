@@ -2430,11 +2430,16 @@ public class PharmacyBillSearch implements Serializable {
         }
         LOGGER.log(Level.SEVERE, "Pharmacy return cancellation failed before any reversal; releasing the claim on return bill id " + billId, failure);
         try {
-            if (cancelBill != null && cancelBill.getId() != null) {
-                // The empty cancel bill row was already committed; keep it out of reports. (Only when
-                // the row's id is known; the Pre path saves it with edit(), which leaves cb.getId() null.)
-                cancelBill.setRetired(true);
-                getBillFacade().edit(cancelBill);
+            try {
+                if (cancelBill != null && cancelBill.getId() != null) {
+                    // The empty cancel bill row was already committed; keep it out of reports. (Only when
+                    // the row's id is known; the Pre path saves it with edit(), which leaves cb.getId() null.)
+                    cancelBill.setRetired(true);
+                    getBillFacade().edit(cancelBill);
+                }
+            } catch (RuntimeException retireError) {
+                // A failed retire must not stop the claim from being released.
+                LOGGER.log(Level.SEVERE, "Pharmacy return cancellation could not retire the empty cancel bill for return bill id " + billId, retireError);
             }
             Map<String, Object> params = new HashMap<>();
             params.put("id", billId);
