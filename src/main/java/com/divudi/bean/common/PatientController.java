@@ -164,6 +164,8 @@ public class PatientController implements Serializable, ControllerWithPatient {
     @Inject
     PracticeBookingController practiceBookingController;
     @Inject
+    RelationController relationController;
+    @Inject
     PatientEncounterController patientEncounterController;
     @Inject
     OpticianSaleController opticianSaleController;
@@ -2379,6 +2381,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
             return null;
         }
         familyMembers = membershipService.fetchFamilyMembers(currentFamily);
+        relationController.refreshItems();
         return "/membership/family_membership_manage?faces-redirect=true";
     }
 
@@ -2389,6 +2392,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
         }
         currentFamily = family;
         familyMembers = membershipService.fetchFamilyMembers(currentFamily);
+        relationController.refreshItems();
         return "/membership/family_membership_manage?faces-redirect=true";
     }
 
@@ -2718,6 +2722,11 @@ public class PatientController implements Serializable, ControllerWithPatient {
             getFamilyFacade().create(currentFamily);
             JsfUtil.addSuccessMessage("Family Added");
         } else {
+            for (FamilyMember familyMember : currentFamily.getFamilyMembers()) {
+                if (familyMember.getRelationToChh() == null) {
+                    restoreSavedFamilyMemberRelation(familyMember);
+                }
+            }
             currentFamily.setEditedAt(new Date());
             currentFamily.setEditer(getSessionController().getLoggedUser());
             getFamilyFacade().edit(currentFamily);
@@ -2950,6 +2959,32 @@ public class PatientController implements Serializable, ControllerWithPatient {
             JsfUtil.addSuccessMessage("Removed");
         } catch (Error e) {
             JsfUtil.addErrorMessage("Error in removing. " + e.getMessage());
+        }
+    }
+
+    public void updateFamilyMemberRelation(FamilyMember familyMember) {
+        if (familyMember == null || familyMember.getId() == null) {
+            JsfUtil.addErrorMessage("No Member is selected to update.");
+            return;
+        }
+        if (familyMember.getRelationToChh() == null) {
+            restoreSavedFamilyMemberRelation(familyMember);
+            JsfUtil.addErrorMessage("No relationship.");
+            return;
+        }
+        familyMember.setEditedAt(new Date());
+        familyMember.setEditer(sessionController.getLoggedUser());
+        getFamilyMemberFacade().edit(familyMember);
+        JsfUtil.addSuccessMessage("Relationship Updated");
+    }
+
+    private void restoreSavedFamilyMemberRelation(FamilyMember familyMember) {
+        if (familyMember.getId() == null) {
+            return;
+        }
+        FamilyMember savedFamilyMember = getFamilyMemberFacade().find(familyMember.getId());
+        if (savedFamilyMember != null) {
+            familyMember.setRelationToChh(savedFamilyMember.getRelationToChh());
         }
     }
 
