@@ -2549,8 +2549,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             return false;
         }
         return isBabyOrMasterTitle(getCurrent().getPatient().getPerson().getTitle())
-                && configOptionApplicationController.getBooleanValueByKey(
-                        "Inward Admission - Exempt Baby, Baby Of and Master Titles from Patient NIC Requirement", false);
+                && configOptionApplicationController.getBooleanValueByKey("Inward Admission - Exempt Baby, Baby Of and Master Titles from Patient NIC Requirement", false);
     }
 
     /**
@@ -2559,8 +2558,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
      * Claimable (Credit). (Issue #25190)
      */
     private boolean isGuardianNameAndNicRequiredForTitleOrClaimable() {
-        if (!configOptionApplicationController.getBooleanValueByKey(
-                "Inward Admission - Require Guardian Name and NIC for Baby, Baby Of, Master Titles and Claimable Admissions", false)) {
+        if (!configOptionApplicationController.getBooleanValueByKey("Inward Admission - Require Guardian Name and NIC for Baby, Baby Of, Master Titles and Claimable Admissions", false)) {
             return false;
         }
         boolean titleMatches = getCurrent().getPatient() != null
