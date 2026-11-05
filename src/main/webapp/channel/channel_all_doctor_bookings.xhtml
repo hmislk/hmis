@@ -131,6 +131,12 @@
                                         ajax="false" value="Export to Excel">
                                         <p:fileDownload value="#{channelReportTemplateController.channelDoctorAppointmentsReportAsExcel}" />
                                     </p:commandButton>
+                                    <p:commandButton
+                                        value="To Print"
+                                        ajax="false"
+                                        icon="fas fa-print"
+                                        class="mx-1 ui-button-danger"
+                                        action="#{channelReportTemplateController.toPrintChannelDoctorAppointmentsReport()}"/>
                                 </div>
                                 
                             </div>

@@ -7,6 +7,7 @@ import com.divudi.core.util.JsfUtil;
 import com.divudi.core.util.JsfUtil.PersistAction;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -53,6 +54,10 @@ public class RelationController implements Serializable {
         Map m = new HashMap();
         m.put("ret", false);
         items = getFacade().findByJpql(j, m);
+    }
+
+    public void refreshItems() {
+        recreateModel();
     }
 
     public Relation getCurrent() {
@@ -104,6 +109,14 @@ public class RelationController implements Serializable {
             items = getFacade().findByJpql(j);
         }
         return items;
+    }
+
+    public List<Relation> getItemsIncluding(Relation relation) {
+        List<Relation> itemsIncludingRelation = new ArrayList<>(getItems());
+        if (relation != null && !itemsIncludingRelation.contains(relation)) {
+            itemsIncludingRelation.add(relation);
+        }
+        return itemsIncludingRelation;
     }
 
     public Relation fetchRelationByName(String relationName) {

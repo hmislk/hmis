@@ -230,6 +230,10 @@ public class ReportsStock implements Serializable, ControllerWithReportFilters {
 
     public String navigateToDepartmentViceStockReport() {
         departmentViceStockDtos = new ArrayList<>();
+        totalDepartmentViceStockQuantity = 0.0;
+        totalDepartmentViceStockPurchaseValue = 0.0;
+        totalDepartmentViceStockRetailValue = 0.0;
+        totalDepartmentViceStockCostValue = 0.0;
         return "/pharmacy/pharmacy_report_department_vice_stock?faces-redirect=true";
     }
 

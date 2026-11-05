@@ -518,7 +518,7 @@
                                         <p:dataTable value="#{surgeryBillController.proEncounterComponents}" var="c"
                                                      emptyMessage="No professional fees recorded.">
                                             <p:column headerText="Performance">
-                                                <h:outputLabel value="#{c.patientEncounterComponentType}"/>
+                                                <h:outputLabel value="#{c.patientEncounterComponentType.label}"/>
                                             </p:column>
                                             <p:column headerText="Doctor / Staff">
                                                 <h:outputLabel value="#{c.billFee.staff.person.nameWithTitle}"/>

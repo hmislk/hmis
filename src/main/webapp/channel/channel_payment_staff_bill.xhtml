@@ -150,16 +150,19 @@
                                 >
 
                                 <f:ajax  event="rowSelectCheckbox" execute="tblFee" listener="#{channelStaffPaymentBillController.performCalculations()}"   
-                                         render=":#{p:resolveFirstComponentWithId('lblDue',view).clientId} :#{p:resolveFirstComponentWithId('lblPay',view).clientId}"  />  
+                                         render=":#{p:resolveFirstComponentWithId('lblDue',view).clientId} :#{p:resolveFirstComponentWithId('lblPay',view).clientId} :#{p:resolveFirstComponentWithId('pnlAbsentWarning',view).clientId}"  />  
 
                                 <f:ajax  event="rowUnselectCheckbox" execute="tblFee" listener="#{channelStaffPaymentBillController.performCalculations()}"   
-                                         render=":#{p:resolveFirstComponentWithId('lblDue',view).clientId} :#{p:resolveFirstComponentWithId('lblPay',view).clientId}"  />  
+                                         render=":#{p:resolveFirstComponentWithId('lblDue',view).clientId} :#{p:resolveFirstComponentWithId('lblPay',view).clientId} :#{p:resolveFirstComponentWithId('pnlAbsentWarning',view).clientId}"  />  
 
                                 <f:ajax  event="toggleSelect" execute="tblFee" listener="#{channelStaffPaymentBillController.performCalculations()}"   
-                                         render=":#{p:resolveFirstComponentWithId('lblDue',view).clientId} :#{p:resolveFirstComponentWithId('lblPay',view).clientId}"  />
+                                         render=":#{p:resolveFirstComponentWithId('lblDue',view).clientId} :#{p:resolveFirstComponentWithId('lblPay',view).clientId} :#{p:resolveFirstComponentWithId('pnlAbsentWarning',view).clientId}"  />
 
-                                <f:ajax  event="rowSelect" execute="tblFee" listener="#{channelStaffPaymentBillController.performCalculations()}"   
-                                         render=":#{p:resolveFirstComponentWithId('lblDue',view).clientId} :#{p:resolveFirstComponentWithId('lblPay',view).clientId}"  />
+                                <f:ajax  event="rowSelect" execute="tblFee" listener="#{channelStaffPaymentBillController.performCalculations()}"
+                                         render=":#{p:resolveFirstComponentWithId('lblDue',view).clientId} :#{p:resolveFirstComponentWithId('lblPay',view).clientId} :#{p:resolveFirstComponentWithId('pnlAbsentWarning',view).clientId}"  />
+
+                                <f:ajax  event="rowUnselect" execute="tblFee" listener="#{channelStaffPaymentBillController.performCalculations()}"
+                                         render=":#{p:resolveFirstComponentWithId('lblDue',view).clientId} :#{p:resolveFirstComponentWithId('lblPay',view).clientId} :#{p:resolveFirstComponentWithId('pnlAbsentWarning',view).clientId}"  />
 
                                 <p:column selectionBox="true" width="1em"></p:column>
 
@@ -240,7 +243,7 @@
                                     <p:inputNumber value="#{bf.payingAmount}" decimalPlaces="2" class="w-100">
                                         <f:ajax event="blur" execute="@this"
                                                 listener="#{channelStaffPaymentBillController.performCalculations()}"
-                                                render=":#{p:resolveFirstComponentWithId('lblDue',view).clientId} :#{p:resolveFirstComponentWithId('lblPay',view).clientId}" />
+                                                render=":#{p:resolveFirstComponentWithId('lblDue',view).clientId} :#{p:resolveFirstComponentWithId('lblPay',view).clientId} :#{p:resolveFirstComponentWithId('pnlAbsentWarning',view).clientId}" />
                                     </p:inputNumber>
                                 </p:column>
 
@@ -267,10 +270,18 @@
 
                             </p:panel>      
 
+                            <h:panelGroup id="pnlAbsentWarning" layout="block">
+                                <h:outputText id="txtAbsentWarning"
+                                              value="#{channelStaffPaymentBillController.absentPatientsWarning}"
+                                              rendered="#{not empty channelStaffPaymentBillController.absentPatientsWarning}"
+                                              style="color:#b00020;font-weight:bold;" />
+                            </h:panelGroup>
+
                             <div class="w-50" >
 
                                 <p:commandButton 
                                     id="btnPay"
+                                    onclick="var w = document.getElementById('#{p:resolveFirstComponentWithId('txtAbsentWarning',view).clientId}'); if (w &amp;&amp; w.textContent.length > 0) { return confirm(w.textContent); }"
                                     value="Pay Doctor" 
                                     class="w-25 ui-button-success my-1"
                                     action="#{channelStaffPaymentBillController.settleBill}" 

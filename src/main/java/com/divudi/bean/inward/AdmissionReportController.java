@@ -190,7 +190,7 @@ public class AdmissionReportController implements Serializable {
         if (speciality != null) {
             jpql = "select p from Staff p"
                     + " where p.retired = false"
-                    + " and (upper(p.person.name) like :q or p.code like :q)"
+                    + " and (p.person.name like :q or p.code like :q)"
                     + " and p.speciality = :sp"
                     + " order by p.person.name";
             params.put("sp", speciality);
@@ -198,10 +198,10 @@ public class AdmissionReportController implements Serializable {
             jpql = "select p from Staff p"
                     + " where p.retired = false"
                     + " and p.speciality is not null"
-                    + " and (upper(p.person.name) like :q or p.code like :q)"
+                    + " and (p.person.name like :q or p.code like :q)"
                     + " order by p.person.name";
         }
-        params.put("q", "%" + query.toUpperCase() + "%");
+        params.put("q", "%" + query + "%");
         return staffFacade.findByJpql(jpql, params, 20);
     }
 
