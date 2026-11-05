@@ -1402,6 +1402,9 @@ public class CashRecieveBillController implements Serializable {
 
         CancelledBill cb = new CancelledBill();
         cb.copy(b);
+        // copy() does not carry the totals; without this the cancellation bill's
+        // net total is 0 and the single payment method payment is created as 0.
+        cb.invertAndAssignValuesFromOtherBill(b);
         cb.setPaymentMethod(paymentMethod);
         saveCancelBill(BillType.CashRecieveBill, BillTypeAtomic.OPD_CREDIT_COMPANY_PAYMENT_CANCELLATION, cb);
         b.setCancelledBill(cb);
