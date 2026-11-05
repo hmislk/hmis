@@ -3627,6 +3627,22 @@ public class InwardReportController1 implements Serializable {
         writeExport(ex, excel, "inward_credit_company_commitments");
     }
 
+    /**
+     * The export header label for a Date Basis value, matching the labels in
+     * the report's Date Basis menu (issue #25209: Final Bill Created Date was
+     * printed as Payment/Bill Date).
+     */
+    static String dateBasisLabel(String dateBasis) {
+        if ("dischargeDate".equals(dateBasis)) {
+            return "Discharge Date";
+        } else if ("admissionDate".equals(dateBasis)) {
+            return "Admission Date";
+        } else if ("finalBillCreatedAt".equals(dateBasis)) {
+            return "Final Bill Created Date";
+        }
+        return "Payment/Bill Date";
+    }
+
     private TabularReportExporter newCreditCompanyExporter(String title, boolean withOutstandingFilter) {
         String institutionName = sessionController.getInstitution() != null
                 ? sessionController.getInstitution().getName() : "";
@@ -3634,14 +3650,7 @@ public class InwardReportController1 implements Serializable {
                 && sessionController.getLoggedUser().getWebUserPerson() != null
                 ? sessionController.getLoggedUser().getWebUserPerson().getName() : null;
         SimpleDateFormat dtf = new SimpleDateFormat(sessionController.getApplicationPreference().getLongDateTimeFormat());
-        String dateBasisLabel;
-        if ("dischargeDate".equals(dateBasis)) {
-            dateBasisLabel = "Discharge Date";
-        } else if ("admissionDate".equals(dateBasis)) {
-            dateBasisLabel = "Admission Date";
-        } else {
-            dateBasisLabel = "Payment/Bill Date";
-        }
+        String dateBasisLabel = dateBasisLabel(dateBasis);
         TabularReportExporter ex = new TabularReportExporter(institutionName, title, printedBy,
                 sessionController.getApplicationPreference().getShortDateFormat())
                 .filter("From", dtf.format(getFromDate()))
