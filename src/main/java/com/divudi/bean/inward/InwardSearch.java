@@ -1731,6 +1731,66 @@ public class InwardSearch implements Serializable {
     @EJB
     CashTransactionBean cashTransactionBean;
 
+    /**
+     * Writes the reversal Payment rows for an inward cancellation bill (#25178).
+     * <p>
+     * First tries the payment data entered on the cancel page (read through the
+     * getter, never the raw field). When that produces nothing, mirrors the
+     * original bill's payments with
+     * {@link PaymentService#createPaymentsForCancelling(Bill)}.
+     *
+     * @return the created payments (empty only when the original bill itself
+     * had no payments), or null after an error message was shown because the
+     * original had payments and no reversal could be written. Callers must
+     * return without reporting success on null.
+     */
+    private List<Payment> createReversalPayments(Bill cb, Bill original, PaymentMethod pm) {
+        int originalCount = countNonRetiredPayments(billService.fetchBillPayments(original));
+        PaymentMethodData pmd = getPaymentMethodData();
+        List<Payment> created = null;
+        if (pm != null && hasUsablePaymentData(pm, pmd)) {
+            created = paymentService.createPayment(cb, pm, pmd,
+                    sessionController.getInstitution(),
+                    sessionController.getDepartment(),
+                    sessionController.getLoggedUser());
+        }
+        if ((created == null || created.isEmpty()) && originalCount > 0) {
+            created = paymentService.createPaymentsForCancelling(cb);
+        }
+        if (created == null) {
+            created = new ArrayList<>();
+        }
+        if (originalCount > 0 && created.isEmpty()) {
+            JsfUtil.addErrorMessage("The cancellation bill was saved but its reversal payment could not be written. Do not hand over cash for this cancellation. Please contact support.");
+            return null;
+        }
+        return created;
+    }
+
+    private boolean hasUsablePaymentData(PaymentMethod pm, PaymentMethodData pmd) {
+        if (pmd == null) {
+            return false;
+        }
+        if (pm == PaymentMethod.MultiplePaymentMethods) {
+            return pmd.getPaymentMethodMultiple() != null
+                    && pmd.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails() != null
+                    && !pmd.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().isEmpty();
+        }
+        return true;
+    }
+
+    private int countNonRetiredPayments(List<Payment> payments) {
+        int n = 0;
+        if (payments != null) {
+            for (Payment p : payments) {
+                if (!p.isRetired()) {
+                    n++;
+                }
+            }
+        }
+        return n;
+    }
+
     public void cancelBillPayment() {
         if (getBill() != null && getBill().getId() != null && getBill().getId() != 0) {
 
@@ -1764,7 +1824,10 @@ public class InwardSearch implements Serializable {
 
             getBillBean().updateInwardDipositList(getBill().getPatientEncounter(), cb);
 
-            List<Payment> payments = paymentService.createPayment(cb, paymentMethodData);
+            List<Payment> payments = createReversalPayments(cb, getBill(), cb.getPaymentMethod());
+            if (payments == null) {
+                return;
+            }
             paymentService.updateBalances(payments);
 
             if (getBill().getPatientEncounter().isPaymentFinalized()) {
@@ -1826,13 +1889,9 @@ public class InwardSearch implements Serializable {
 
             getBillBean().updateInwardDipositList(getBill().getPatientEncounter(), cb);
 
-            paymentService.createPayment(
-                cb,
-                cb.getPaymentMethod(), 
-                paymentMethodData, 
-                sessionController.getInstitution(), 
-                sessionController.getDepartment(),
-                sessionController.getLoggedUser());
+            if (createReversalPayments(cb, getBill(), cb.getPaymentMethod()) == null) {
+                return;
+            }
 
             if (getBill().getPatientEncounter().isPaymentFinalized()) {
                 getInwardBean().updateFinalFill(getBill().getPatientEncounter());
@@ -1889,13 +1948,9 @@ public class InwardSearch implements Serializable {
 
             getBillBean().updateInwardDipositList(getBill().getPatientEncounter(), cb);
 
-            paymentService.createPayment(
-                cb,
-                cb.getPaymentMethod(),
-                paymentMethodData,
-                sessionController.getInstitution(),
-                sessionController.getDepartment(),
-                sessionController.getLoggedUser());
+            if (createReversalPayments(cb, getBill(), cb.getPaymentMethod()) == null) {
+                return;
+            }
 
             if (getBill().getPatientEncounter().isPaymentFinalized()) {
                 getInwardBean().updateFinalFill(getBill().getPatientEncounter());
@@ -1953,7 +2008,10 @@ public class InwardSearch implements Serializable {
             getBill().setCancelledBill(cb);
             getBillFacade().edit(getBill());
 
-            List<Payment> payments = paymentService.createPayment(cb, paymentMethodData);
+            List<Payment> payments = createReversalPayments(cb, getBill(), cb.getPaymentMethod());
+            if (payments == null) {
+                return;
+            }
             paymentService.updateBalances(payments);
 
             getBillBean().updateInwardDipositList(getBill().getPatientEncounter(), cb);
