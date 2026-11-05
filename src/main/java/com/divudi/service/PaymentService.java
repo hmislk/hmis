@@ -171,10 +171,23 @@ public class PaymentService {
      * @return A list of created payments associated with the bill.
      */
     public List<Payment> createPaymentsForCancelling(Bill cancellationBill) {
+        return createPaymentsForCancelling(cancellationBill, cancellationBill.getBilledBill());
+    }
+
+    /**
+     * Same as {@link #createPaymentsForCancelling(Bill)} but takes the original
+     * bill explicitly, for cancellation bills that do not set billedBill (for
+     * example refund cancellations, which set refundedBill). Retired original
+     * payments are not mirrored.
+     */
+    public List<Payment> createPaymentsForCancelling(Bill cancellationBill, Bill originalBill) {
         List<Payment> newPayments = new ArrayList<>();
-        List<Payment> originalBillPayments = billService.fetchBillPayments(cancellationBill.getBilledBill());
+        List<Payment> originalBillPayments = billService.fetchBillPayments(originalBill);
         if (originalBillPayments != null) {
             for (Payment originalBillPayment : originalBillPayments) {
+                if (originalBillPayment.isRetired()) {
+                    continue;
+                }
                 Payment p = originalBillPayment.clonePaymentForNewBill();
                 p.invertValues();
                 p.setBill(cancellationBill);
