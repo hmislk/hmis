@@ -885,8 +885,7 @@ public class BillBhtController implements Serializable {
             return;
         }
 
-        if (getBatchBill().getPatientEncounter().isDischarged()) {
-            JsfUtil.addErrorMessage("Sorry Patient is Discharged!!!");
+        if (inwardBean.blockIfDischarged(getBatchBill().getPatientEncounter())) {
             return;
         }
 
@@ -1006,8 +1005,7 @@ public class BillBhtController implements Serializable {
             return true;
         }
 
-        if (getPatientEncounter().isDischarged()) {
-            JsfUtil.addErrorMessage("Sorry Patient is Discharged!!!");
+        if (inwardBean.blockIfDischarged(getPatientEncounter())) {
             return true;
         }
 

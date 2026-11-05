@@ -241,7 +241,8 @@ public class InwardBhtChargeAggregationService implements Serializable {
     /**
      * Net interim-bill charge per encounter: gross (all InwardChargeTypes from
      * fetchChargesByEncounter) - discount + service charge (fetchDiscountAndMarginByEncounter).
-     * Same figure as InwardInvoiceJournalRowDto.getGrandTotal().
+     * Same figure as InwardInvoiceJournalRowDto.getGrandTotal() before the
+     * charge-type and bill-level discounts entered on the final bill.
      */
     public Map<Long, Double> fetchNetChargesByEncounter(List<PatientEncounter> encounters) {
         Map<Long, Double> result = new HashMap<>();

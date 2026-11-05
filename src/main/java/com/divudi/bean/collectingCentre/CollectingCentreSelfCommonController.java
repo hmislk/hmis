@@ -1,8 +1,11 @@
 package com.divudi.bean.collectingCentre;
 
+import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.SessionController;
+import com.divudi.bean.common.TwoFactorAuthController;
 import com.divudi.bean.common.UserNotificationController;
 import com.divudi.bean.common.WebUserController;
+import com.divudi.bean.lab.LabTestHistoryController;
 import com.divudi.bean.lab.PatientInvestigationController;
 import com.divudi.bean.lab.PatientReportController;
 import com.divudi.bean.lab.PatientReportUploadController;
@@ -11,15 +14,19 @@ import com.divudi.core.data.DepartmentType;
 import com.divudi.core.data.Privileges;
 import com.divudi.core.data.lab.CollectingCentreBillingType;
 import com.divudi.core.data.lab.ListingEntity;
+import com.divudi.core.data.lab.PatientInvestigationStatus;
 import com.divudi.core.data.lab.SearchDateType;
 import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.Staff;
 import com.divudi.core.entity.Upload;
 import com.divudi.core.entity.UserNotification;
 import com.divudi.core.entity.lab.PatientInvestigation;
 import com.divudi.core.entity.lab.PatientReport;
 import com.divudi.core.entity.lab.PatientSample;
 import com.divudi.core.facade.BillFacade;
+import com.divudi.core.facade.PatientInvestigationFacade;
 import com.divudi.core.facade.PatientReportFacade;
 import com.divudi.core.facade.PatientSampleFacade;
 import com.divudi.core.facade.UserNotificationFacade;
@@ -28,6 +35,8 @@ import com.divudi.core.util.JsfUtil;
 
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
+import javax.faces.application.FacesMessage;
+import javax.faces.context.FacesContext;
 import javax.inject.Inject;
 import javax.inject.Named;
 import java.io.Serializable;
@@ -56,6 +65,10 @@ public class CollectingCentreSelfCommonController implements Serializable {
     @Inject
     private PatientInvestigationController patientInvestigationController;
     @Inject
+    private LabTestHistoryController labTestHistoryController;
+    @Inject
+    private ConfigOptionApplicationController configOptionApplicationController;
+    @Inject
     private PatientReportController patientReportController;
     @Inject
     private PatientReportUploadController patientReportUploadController;
@@ -63,19 +76,28 @@ public class CollectingCentreSelfCommonController implements Serializable {
     private WebUserController webUserController;
     @Inject
     private UserNotificationController userNotificationController;
+    @Inject
+    private TwoFactorAuthController twoFactorAuthController;
 
     @EJB
     private BillFacade billFacade;
     @EJB
     private PatientSampleFacade patientSampleFacade;
     @EJB
+    private PatientInvestigationFacade patientInvestigationFacade;
+    @EJB
     private PatientReportFacade patientReportFacade;
     @EJB
     private UserNotificationFacade userNotificationFacade;
 
+    private Staff sampleSendingTransporter;
+    private Department sampleSendingDepartment;
+
     private PatientReport printingReport;
     private Privileges unauthorizedPrivilege;
     private UserNotification viewingNotification;
+    private boolean selfPasswordChanged;
+    private Date selfPasswordChangedAt;
 
     // <editor-fold defaultstate="collapsed" desc="Privileges">
     public boolean hasSelfPrivilege(Privileges privilege) {
@@ -115,6 +137,67 @@ public class CollectingCentreSelfCommonController implements Serializable {
         }
         return "/collecting_centre/cc_self_index?faces-redirect=true";
     }
+
+    // <editor-fold defaultstate="collapsed" desc="User Settings">
+    /**
+     * Opens the self-service Change Password page. The main menu's Change My
+     * Password page uses the menu template, which collecting centre
+     * self-billing users don't get, so this page reuses
+     * SessionController.changePassword() inside the self-service layout.
+     */
+    public String navigateToCollectingCentreSelfChangePassword() {
+        sessionController.setEnforcedPasswordChange(false);
+        sessionController.setOldPassword(null);
+        sessionController.setPassword(null);
+        sessionController.setNewPasswordConfirm(null);
+        sessionController.setPasswordRequirementMessage(null);
+        selfPasswordChanged = false;
+        selfPasswordChangedAt = null;
+        return "/collecting_centre/cc_self_change_password?faces-redirect=true";
+    }
+
+    /**
+     * Runs SessionController.changePassword() and records whether it worked,
+     * so the page can swap the form for a success screen. changePassword()
+     * reports failures only as error messages, so success is "no error added".
+     */
+    public void changeSelfPassword() {
+        selfPasswordChanged = false;
+        sessionController.changePassword();
+        FacesMessage.Severity maxSeverity = FacesContext.getCurrentInstance().getMaximumSeverity();
+        if (maxSeverity != null && maxSeverity.getOrdinal() >= FacesMessage.SEVERITY_ERROR.getOrdinal()) {
+            return;
+        }
+        selfPasswordChanged = true;
+        selfPasswordChangedAt = new Date();
+        sessionController.setOldPassword(null);
+        sessionController.setPassword(null);
+        sessionController.setNewPasswordConfirm(null);
+    }
+
+    public boolean isSelfPasswordChanged() {
+        return selfPasswordChanged;
+    }
+
+    public Date getSelfPasswordChangedAt() {
+        return selfPasswordChangedAt;
+    }
+
+    public String navigateToCollectingCentreSelfAbout() {
+        return "/collecting_centre/cc_self_about?faces-redirect=true";
+    }
+
+    /**
+     * Opens the self-service Authenticator App page. The main menu's My
+     * Authenticator App page uses the menu template, which collecting centre
+     * self-billing users don't get, so this page reuses TwoFactorAuthController
+     * inside the self-service layout.
+     */
+    public String navigateToCollectingCentreSelfAuthenticator() {
+        twoFactorAuthController.cancelSelfSetup();
+        return "/collecting_centre/cc_self_authenticator?faces-redirect=true";
+    }
+    // </editor-fold>
 
     public String navigateToCollectingCentreSelfStatement() {
         if (!hasSelfPrivilege(Privileges.CcSelfStatement)) {
@@ -298,7 +381,7 @@ public class CollectingCentreSelfCommonController implements Serializable {
         patientInvestigationController.setPatientName(null);
         patientInvestigationController.setSampleId(null);
         patientInvestigationController.setPatientInvestigationStatus(null);
-        patientInvestigationController.setSampleTransportedToLabByStaff(null);
+        sampleSendingTransporter = null;
         patientInvestigationController.setSampleRejectionComment(null);
         setSelfSampleManagementDefaults();
     }
@@ -308,6 +391,16 @@ public class CollectingCentreSelfCommonController implements Serializable {
         patientInvestigationController.setToDate(CommonFunctions.getEndOfDay());
         patientInvestigationController.setInvestigationName(null);
         patientInvestigationController.setCollectingCentreBillingType(CollectingCentreBillingType.AGENT_BILLING);
+        setDefaultSampleSendingDepartment();
+    }
+
+    /**
+     * The Send Samples popup starts on the lab department set on the logged
+     * collecting centre; the user can still choose another lab.
+     */
+    private void setDefaultSampleSendingDepartment() {
+        Institution collectingCentre = sessionController.getInstitution();
+        sampleSendingDepartment = collectingCentre == null ? null : collectingCentre.getLabDepartment();
     }
 
     public void generateSelfBarcodes(Bill bill) {
@@ -382,7 +475,135 @@ public class CollectingCentreSelfCommonController implements Serializable {
         if (!areSelectedSamplesOwn()) {
             return;
         }
-        patientInvestigationController.sendSamplesToLab(true);
+        if (sampleSendingTransporter == null) {
+            JsfUtil.addErrorMessage("Please select the Sample Transporter");
+            return;
+        }
+        if (sampleSendingDepartment == null) {
+            JsfUtil.addErrorMessage("Please select the Sending to Department");
+            return;
+        }
+        List<PatientSample> samplesToSend = fetchSelectedSamplesToSend();
+        if (samplesToSend == null) {
+            return;
+        }
+
+        Date sentAt = new Date();
+        Map<Long, PatientInvestigation> investigations = new HashMap<>();
+        Map<Long, Bill> bills = new HashMap<>();
+
+        for (PatientSample sample : samplesToSend) {
+            sample.setSampleTransportedToLabByStaff(sampleSendingTransporter);
+            sample.setSampleSent(true);
+            sample.setDepartment(sessionController.getDepartment());
+            sample.setSampleSentBy(sessionController.getLoggedUser());
+            sample.setSampleSentAt(sentAt);
+            sample.setSampleSentToInstitution(sampleSendingDepartment.getInstitution());
+            sample.setSampleSentToDepartment(sampleSendingDepartment);
+            sample.setStatus(PatientInvestigationStatus.SAMPLE_SENT);
+            patientSampleFacade.edit(sample);
+            for (PatientInvestigation investigation : patientInvestigationController.getPatientInvestigationsBySample(sample)) {
+                investigations.putIfAbsent(investigation.getId(), investigation);
+            }
+        }
+
+        for (PatientInvestigation investigation : investigations.values()) {
+            investigation.setSampleSent(true);
+            investigation.setSampleTransportedToLabByStaff(sampleSendingTransporter);
+            investigation.setSampleSentAt(sentAt);
+            investigation.setSampleSentBy(sessionController.getLoggedUser());
+            investigation.setStatus(PatientInvestigationStatus.SAMPLE_SENT);
+            patientInvestigationFacade.edit(investigation);
+            Bill bill = investigation.getBillItem().getBill();
+            bills.putIfAbsent(bill.getId(), bill);
+        }
+
+        for (Bill bill : bills.values()) {
+            bill.setStatus(PatientInvestigationStatus.SAMPLE_SENT);
+            billFacade.edit(bill);
+        }
+
+        if (configOptionApplicationController.getBooleanValueByKey("Lab Test History Enabled", false)) {
+            for (PatientSample sample : samplesToSend) {
+                for (PatientInvestigation investigation : patientInvestigationController.getPatientInvestigationsBySample(sample)) {
+                    labTestHistoryController.addSampleInternalLabSentHistory(investigation, sample, sampleSendingTransporter, sessionController.getDepartment(), sampleSendingDepartment);
+                }
+            }
+        }
+
+        showSentSamplesOnPage(samplesToSend);
+        sampleSendingTransporter = null;
+        setDefaultSampleSendingDepartment();
+        JsfUtil.addSuccessMessage("Selected Samples Sent to Lab");
+    }
+
+    /**
+     * Reads the selected samples from the database, not the page copies, so a
+     * sample changed elsewhere since the search is neither sent twice nor
+     * overwritten. Returns null, with a message, if any of them cannot be sent.
+     */
+    private List<PatientSample> fetchSelectedSamplesToSend() {
+        List<PatientSample> samples = new ArrayList<>();
+        for (PatientSample selected : patientInvestigationController.getSelectedPatientSamples()) {
+            PatientSample sample = patientSampleFacade.findWithoutCache(selected.getId());
+            if (sample == null) {
+                JsfUtil.addErrorMessage("Sample " + selected.getId() + " was not found");
+                return null;
+            }
+            if (sample.getBill().isCancelled()) {
+                JsfUtil.addErrorMessage("The bill of sample " + sample.getId() + " is cancelled");
+                return null;
+            }
+            if (Boolean.TRUE.equals(sample.getOutsourced())) {
+                JsfUtil.addErrorMessage("Sample " + sample.getId() + " has already been sent to an outsource lab");
+                return null;
+            }
+            if (!isSampleReadyToSend(sample)) {
+                JsfUtil.addErrorMessage("Sample " + sample.getId() + " cannot be sent. Only collected samples that are not sent yet can be sent");
+                return null;
+            }
+            for (PatientInvestigation investigation : patientInvestigationController.getPatientInvestigationsBySample(sample)) {
+                if (investigation.getBillItem().isRefunded()) {
+                    JsfUtil.addErrorMessage("The " + investigation.getBillItem().getItem().getName() + " investigation of sample " + sample.getId() + " has been refunded");
+                    return null;
+                }
+            }
+            samples.add(sample);
+        }
+        return samples;
+    }
+
+    private boolean isSampleReadyToSend(PatientSample sample) {
+        return sample.getStatus() == PatientInvestigationStatus.SAMPLE_COLLECTED
+                || sample.getStatus() == PatientInvestigationStatus.SAMPLE_RECOLLECTED
+                || sample.getStatus() == PatientInvestigationStatus.SENT_SAMPLE_RETRIEVING;
+    }
+
+    private void showSentSamplesOnPage(List<PatientSample> sentSamples) {
+        List<PatientSample> rows = patientInvestigationController.getPatientSamples();
+        for (PatientSample sent : sentSamples) {
+            int rowIndex = rows.indexOf(sent);
+            if (rowIndex >= 0) {
+                rows.set(rowIndex, sent);
+            }
+        }
+        patientInvestigationController.setSelectedPatientSamples(null);
+    }
+
+    public Staff getSampleSendingTransporter() {
+        return sampleSendingTransporter;
+    }
+
+    public void setSampleSendingTransporter(Staff sampleSendingTransporter) {
+        this.sampleSendingTransporter = sampleSendingTransporter;
+    }
+
+    public Department getSampleSendingDepartment() {
+        return sampleSendingDepartment;
+    }
+
+    public void setSampleSendingDepartment(Department sampleSendingDepartment) {
+        this.sampleSendingDepartment = sampleSendingDepartment;
     }
 
     public void rejectSelfSamples() {

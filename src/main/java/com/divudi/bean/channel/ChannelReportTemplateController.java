@@ -661,11 +661,13 @@ public class ChannelReportTemplateController implements Serializable {
                 + " where bs.retired=false"
                 + " and bs.bill.billType in :bts"
                 + " and type(bs.bill)=:class "
+                + " and (bs.bill.billTypeAtomic is null or bs.bill.billTypeAtomic != :bta) "
                 + " and bs.sessionInstance=:ss "
                 + " order by bs.serialNo ";
         HashMap<String, Object> hh = new HashMap<>();
         hh.put("bts", bts);
         hh.put("class", BilledBill.class);
+        hh.put("bta", BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_PENDING_PAYMENT);
         hh.put("ss", sessionInstance);
         billSessions = getBillSessionFacade().findByJpql(sql, hh, TemporalType.DATE);
 
@@ -683,6 +685,12 @@ public class ChannelReportTemplateController implements Serializable {
             sessionInstance.setBookedPatientCount(0L);
             sessionInstance.setPaidPatientCount(0L);
             sessionInstance.setCompletedPatientCount(0L);
+            sessionInstance.setCancelOnCallPatientCount(0L);
+            sessionInstance.setCancelPaidPatientCount(0L);
+            sessionInstance.setRefundedPatientCount(0L);
+            sessionInstance.setOnCallPatientCount(0L);
+            sessionInstance.setReservedBookingCount(0L);
+            sessionInstance.setPaidToDoctorPatientCount(calculateSessionDoneFees(sessionInstance));
             sessionInstance.setRemainingPatientCount(0L);
             sessionInstanceFacade.edit(sessionInstance);
             return;
@@ -704,7 +712,11 @@ public class ChannelReportTemplateController implements Serializable {
                 completedPatientCount++;
             }
 
-            if (bs.getPaidBillSession() != null) {
+            // An API booking is counted by its completed bill, which has no paidBillSession of its own (#24927)
+            boolean apiCompleted = bs.getBill() != null
+                    && bs.getBill().getBillTypeAtomic() == BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT;
+
+            if (bs.getPaidBillSession() != null || apiCompleted) {
                 paidPatientCount++;
             }
 
@@ -717,7 +729,7 @@ public class ChannelReportTemplateController implements Serializable {
                     refundedPatientCount++;
                 }
 
-                if (bs.getPaidBillSession() == null && !Boolean.TRUE.equals(bs.getBill().isCancelled())) {
+                if (bs.getPaidBillSession() == null && !Boolean.TRUE.equals(bs.getBill().isCancelled()) && !apiCompleted) {
                     onCallPatientCount++;
                 }
             }
@@ -1247,7 +1259,7 @@ public class ChannelReportTemplateController implements Serializable {
         }
         
         j2 += " order by s.person.name ";
-        m2.put("fd", fromDate);
+        m2.put("fd", getFromDate());
 
         channelConsultantCountDTOs = (List<ChannelConsultantCountDTO>) billFacade.findLightsByJpql(j2, m2, TemporalType.DATE);
 
@@ -1329,7 +1341,7 @@ public class ChannelReportTemplateController implements Serializable {
         m.put("bta", btaList);
         m.put("canClass", CancelledBill.class);
         m.put("bta", btaList);
-        m.put("fd", fromDate);
+        m.put("fd", getFromDate());
 
         List<ChannelConsultantCountDTO> billSessions = (List<ChannelConsultantCountDTO>) billFacade.findLightsByJpql(j, m, TemporalType.DATE);
 
@@ -1347,6 +1359,11 @@ public class ChannelReportTemplateController implements Serializable {
         }   
 
         filtersForDoctorBookingsReport = getFiltersForAllDoctorBookingsReport();
+    }
+
+    public String toPrintChannelDoctorAppointmentsReport() {
+        processChannelDoctorAppointmentsReport();
+        return "/channel/channel_all_doctor_bookings_print?faces-redirect=true";
     }
     
     public List<BillSession> createBillSessionQuery(Bill bill, PaymentEnum paymentEnum, DateEnum dateEnum, ReportKeyWord reportKeyWord) {
@@ -8119,7 +8136,7 @@ public class ChannelReportTemplateController implements Serializable {
     public Map<String, Object> getFiltersForAllDoctorBookingsReport() {
         Map<String, Object> params = new LinkedHashMap<>();
 
-        params.put("Appointment Date", new SimpleDateFormat(sessionController.getApplicationPreference().getLongDateFormat()).format(fromDate)) ;
+        params.put("Appointment Date", new SimpleDateFormat(sessionController.getApplicationPreference().getLongDateFormat()).format(getFromDate())) ;
         params.put("Speciality", speciality != null ? speciality.getName() : "All");
         params.put("Doctor", (staff != null && staff.getPerson() != null) ? staff.getPerson().getNameWithTitle() : "All");
         params.put("Institution", institution != null ? institution.getName() : "All Institutions");

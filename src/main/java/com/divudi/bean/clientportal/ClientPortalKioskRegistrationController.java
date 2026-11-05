@@ -470,7 +470,8 @@ public class ClientPortalKioskRegistrationController implements Serializable {
         // an unauthenticated, IP-gated public terminal, same as the phone/email
         // self-service channels.
         person.setCreatedAt(new Date());
-        personFacade.create(person);
+        // No separate person persist: Patient.person is cascade = ALL, so the patient's
+        // create below saves it. Persisting it here as well wrote a second PERSON row (#23900).
 
         newPatient.setRegistrationSource(PatientRegistrationSource.KIOSK);
         newPatient.setCreatedAt(new Date());

@@ -1,0 +1,14 @@
+{
+  "version": "v2.20.0",
+  "description": "Add the WebUser two-factor (TWOFACTOR*) columns",
+  "issue": "#25075 — Login and API key lookup fail silently when the database is missing new WebUser columns",
+  "author": "Dr M H B Ariyaratne",
+  "date": "2026-11-03",
+  "type": "schema",
+  "tables_affected": ["webuser"],
+  "data_changes": false,
+  "requires_downtime": false,
+  "estimated_duration_minutes": 1,
+  "note": "The WebUser entity maps eleven TWOFACTOR* fields added by #24869 (authenticator app) and #25056 (SMS option). On a database without these columns every query that loads a WebUser fails, so every web login shows 'Invalid User' and every API key lookup returns 'Not a valid key'. This migration adds whichever of the columns are missing, with the types and defaults EclipseLink generates. It is idempotent and changes no data. Because nobody can log in to the admin migration page until the columns exist, run it before deploying a build that includes #24869/#25056, or run migration.sql directly against the database if the build is already deployed.",
+  "rollback": "rollback.sql"
+}

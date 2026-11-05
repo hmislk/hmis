@@ -182,6 +182,8 @@ public class SessionController implements Serializable, HttpSessionListener {
     private CollectingCentreSelfCommonController collectingCentreSelfCommonController;
     @Inject
     private UserSettingsController userSettingsController;
+    @Inject
+    private TwoFactorAuthController twoFactorAuthController;
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Class Variables">
     private static final long serialVersionUID = 1L;
@@ -1072,6 +1074,12 @@ public class SessionController implements Serializable, HttpSessionListener {
                 return selectDepartment();
             }
             return "/index1.xhtml?faces-redirect=true";
+        } else if (twoFactorAuthController.isPending()) {
+            // Password accepted; the template now shows the authenticator code screen
+            twoFactorAuthController.setChannelingTabView(false);
+            return "/index1.xhtml?faces-redirect=true";
+        } else if (twoFactorAuthController.isAccountLockedNotice()) {
+            return "";
         } else {
             JsfUtil.addErrorMessage("Invalid User! Login Failure. Please try again");
             return "";
@@ -1089,6 +1097,11 @@ public class SessionController implements Serializable, HttpSessionListener {
         boolean l = checkUsersWithoutDepartment();
         if (l) {
             return "/index1.xhtml?faces-redirect=true";
+        } else if (twoFactorAuthController.isPending()) {
+            twoFactorAuthController.setChannelingTabView(true);
+            return "";
+        } else if (twoFactorAuthController.isAccountLockedNotice()) {
+            return "";
         } else {
             JsfUtil.addErrorMessage("Invalid User! Login Failure. Please try again");
             return "";
@@ -1309,10 +1322,27 @@ public class SessionController implements Serializable, HttpSessionListener {
         }
     }
 
-    private boolean isFirstVisit() {
-        String j = "Select w from WebUser w order by w.id";
-        WebUser ws = getFacede().findFirstByJpql(j);
-        if (ws == null) {
+    /**
+     * Counts ids only, so a WebUser column missing from the database (a new
+     * field not yet added via Add Missing Fields) cannot fail the login page.
+     *
+     * findLongByJpql is not used because it returns 0 on failure, which would
+     * be mistaken for "no users yet".
+     *
+     * @return null when the check itself fails, so the caller does not cache it
+     */
+    private Boolean isFirstVisit() {
+        List<Long> counts;
+        try {
+            counts = getFacede().findLongList("select count(w.id) from WebUser w", new HashMap<>());
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+        if (counts == null || counts.isEmpty() || counts.get(0) == null) {
+            return null;
+        }
+        if (counts.get(0) == 0L) {
             JsfUtil.addSuccessMessage("First Visit");
             return true;
         } else {
@@ -1536,6 +1566,7 @@ public class SessionController implements Serializable, HttpSessionListener {
     private boolean checkUsersWithoutDepartment() {
         System.out.println("DEBUG: checkUsersWithoutDepartment() started at " + new Date());
         long startTime = System.currentTimeMillis();
+        twoFactorAuthController.dismissLockedNotice();
         
         String jpql;
         jpql = "SELECT u FROM WebUser u WHERE u.retired = false and (u.name)=:un";
@@ -1557,6 +1588,42 @@ public class SessionController implements Serializable, HttpSessionListener {
                         JsfUtil.addErrorMessage("Login not allowed from this IP address for this user.");
                         return false;
                     }
+                    if (u.isTwoFactorLocked()) {
+                        // Locked by too many invalid authenticator codes; only an admin can unlock
+                        twoFactorAuthController.showLockedNotice(u.getName());
+                        return false;
+                    }
+                    if (!webUserController.isGrantAllPrivilegesToAllUsersForTesting()
+                            && twoFactorAuthController.isCodeNeededAtLoginFor(u)) {
+                        // Login is completed by completeTwoFactorLogin() once the code is verified
+                        twoFactorAuthController.startChallenge(u);
+                        return false;
+                    }
+                    return completeLoginWithoutDepartment(u);
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Called by TwoFactorAuthController after the authenticator code of a user
+     * whose password was already verified is accepted.
+     */
+    public String completeTwoFactorLogin(WebUser u, boolean channelingTabView) {
+        department = null;
+        institution = null;
+        if (!completeLoginWithoutDepartment(u)) {
+            return "";
+        }
+        if (!channelingTabView && department != null) {
+            return selectDepartment();
+        }
+        return "/index1.xhtml?faces-redirect=true";
+    }
+
+    private boolean completeLoginWithoutDepartment(WebUser u) {
+        Map m;
                     System.out.println("DEBUG: Password verification successful, loading departments...");
                     long deptStartTime = System.currentTimeMillis();
                     departments = listLoggableDepts(u);
@@ -1642,10 +1709,6 @@ public class SessionController implements Serializable, HttpSessionListener {
                         department = departments.get(0);
                     }
                     return true;
-                }
-            }
-        }
-        return false;
     }
 
     public void loadDashboards() {
@@ -2746,7 +2809,11 @@ public class SessionController implements Serializable, HttpSessionListener {
     public Boolean getFirstLogin() {
         if (firstLogin == null) {
             if (applicationController.getFirstLogin() == null) {
-                firstLogin = isFirstVisit();
+                Boolean firstVisit = isFirstVisit();
+                if (firstVisit == null) {
+                    return false;
+                }
+                firstLogin = firstVisit;
                 applicationController.setFirstLogin(firstLogin);
             } else {
                 firstLogin = applicationController.getFirstLogin();

@@ -1101,6 +1101,109 @@ public class ChannelService {
         }
     }
 
+    /**
+     * Locks the session row in the database, recounts its bookings and, only if it still has room,
+     * reserves the agent booking, all in one transaction. The row lock keeps the maximum when more
+     * than one application server books against the same database, which SessionBookingLock alone
+     * cannot (#25050).
+     *
+     * @throws ChannelSessionFullException when the session has reached its maximum
+     */
+    public Bill reserveAgentBookingThroughApiWithinCapacity(OnlineBooking newBooking, SessionInstance session, String refNo, Institution creditCompany) {
+        SessionInstance locked = lockAndRecountSession(session);
+        // Open holds are left out of the booked count, but each will need a place when completed (#25053)
+        if (isFullyBookedSession(locked, countOpenAgentHolds(locked))) {
+            throw new ChannelSessionFullException("Session is Full. Can't add online bookings");
+        }
+        return addToReserveAgentBookingThroughApi(false, newBooking, locked, refNo, null, creditCompany);
+    }
+
+    /**
+     * Locks the session row, recounts its bookings and settles the held agent booking only if the
+     * session still has room, all in one transaction (#25050).
+     *
+     * @throws ChannelSessionFullException when the session has reached its maximum
+     */
+    public Bill settleOnlineAgentInitialBookingWithinCapacity(BillSession preBillSession, String refNo, double agencyCharge) {
+        SessionInstance locked = lockAndRecountSession(preBillSession.getSessionInstance());
+        // A /complete for the same hold on another server may have settled it while this one waited for the lock
+        rejectIfHoldNoLongerOpen(preBillSession);
+        if (isFullyBookedSession(locked)) {
+            throw new ChannelSessionFullException("Session is Full. Can't add online bookings");
+        }
+        return settleOnlineAgentInitialBooking(preBillSession, refNo, agencyCharge);
+    }
+
+    /**
+     * Agent API holds (/save) on the session that are neither completed nor cancelled (#25053).
+     * A cancelled hold only changes its OnlineBooking, so the booking status decides.
+     */
+    public long countOpenAgentHolds(SessionInstance session) {
+        String jpql = "select count(bs) from BillSession bs join bs.bill b join b.onlineBooking ob "
+                + " where bs.retired=false"
+                + " and bs.sessionInstance=:si"
+                + " and b.retired=false"
+                + " and b.cancelled=false"
+                + " and b.billTypeAtomic=:bta"
+                + " and b.paidBill is null"
+                + " and ob.canceled=false"
+                + " and ob.onlineBookingStatus=:pending";
+        Map<String, Object> params = new HashMap<>();
+        params.put("si", session);
+        params.put("bta", BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_PENDING_PAYMENT);
+        params.put("pending", OnlineBookingStatus.PENDING);
+        Long count = getBillSessionFacade().findLongByJpql(jpql, params);
+        return count == null ? 0L : count;
+    }
+
+    /**
+     * The one capacity check for staff booking screens (main screen and month view). Recounts the
+     * session's bookings from the booking rows and compares them, plus open agent holds, with the
+     * session maximum, so the stored counts being stale cannot let a full session through (#25074).
+     * Do not reimplement this in a controller; change it here.
+     * <p>
+     * Limits: the session row lock taken here does NOT outlive this call (it is released when the
+     * method returns, before the caller saves), so it gives a fresh recount, not a serialising
+     * guard. Serialising check and save on one server comes from SessionBookingLock, which the
+     * caller must hold around both. Across several servers these screens are still not covered
+     * (tracked in issue #25066).
+     *
+     * @param reservedBooking true when the booking takes one of the session's reserved numbers
+     * @return true when the session has no room for the booking
+     */
+    public boolean isSessionFullForNewBooking(SessionInstance session, boolean reservedBooking) {
+        SessionInstance locked = lockAndRecountSession(session);
+        return isFullyBookedSession(locked, countOpenAgentHolds(locked), reservedBooking);
+    }
+
+    // A projection reads the database row, not an entity another server may have left stale in this server's cache
+    private void rejectIfHoldNoLongerOpen(BillSession preBillSession) {
+        String jpql = "select b.paid, b.cancelled, b.refunded, b.retired, bs.retired, pb.id "
+                + " from BillSession bs join bs.bill b left join b.paidBill pb "
+                + " where bs.id=:id";
+        Map<String, Object> params = new HashMap<>();
+        params.put("id", preBillSession.getId());
+        List<Object[]> rows = getBillSessionFacade().findObjectArrayByJpql(jpql, params, TemporalType.TIMESTAMP);
+        if (rows == null || rows.isEmpty() || rows.get(0) == null) {
+            throw new ChannelBookingNotAvailableException("Appoinment : No Appoinment available for the ref no.");
+        }
+        Object[] row = rows.get(0);
+        if (Boolean.TRUE.equals(row[0]) || row[5] != null) {
+            throw new ChannelBookingNotAvailableException("Appoinment : Appoinment Booking for the ref no is already completed.");
+        }
+        if (Boolean.TRUE.equals(row[1]) || Boolean.TRUE.equals(row[2]) || Boolean.TRUE.equals(row[3]) || Boolean.TRUE.equals(row[4])) {
+            throw new ChannelBookingNotAvailableException("Appoinment : Appoinment is no longer available. Cant complete the booking.");
+        }
+    }
+
+    // Must be the first database access of the transaction: MySQL's consistent reads that follow
+    // then see every booking another server committed before it released the row lock.
+    private SessionInstance lockAndRecountSession(SessionInstance session) {
+        SessionInstance locked = sessionInstanceFacade.findWithLock(session.getId());
+        fillBillSessionsAndUpdateBookingsCountInSessionInstance(locked);
+        return locked;
+    }
+
     public Bill addToReserveAgentBookingThroughApi(boolean forReservedNumbers, OnlineBooking newBooking, SessionInstance session, String refNo, WebUser user, Institution creditCompany) {
         //saveOrUpdatePatientDetails(patient);
         updateAndSaveOnlineBooking(newBooking, session);
@@ -1388,7 +1491,7 @@ public class ChannelService {
         bill.setPaidBill(null);
         bill.setBillType(BillType.ChannelOnCall);
         bill.setBillTypeAtomic(BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_PENDING_PAYMENT);
-        String deptId = billNumberBean.departmentBillNumberGeneratorYearly(session.getDepartment(), BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_PENDING_PAYMENT);
+        String deptId = billNumberBean.departmentBillNumberGeneratorYearlyInNewTransaction(session.getDepartment(), BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_PENDING_PAYMENT);
 
         if (deptId.equals("")) {
             return null;
@@ -1575,24 +1678,25 @@ public class ChannelService {
             BillType.ChannelResheduleWithOutPayment,};
 
         List<BillType> bts = Arrays.asList(billTypes);
-        String sql = "Select bs "
+        // One projection query instead of loading BillSession entities and lazily touching bill/paidBillSession per row (#24923)
+        String sql = "Select bs.serialNo, bs.reservedBooking, bs.completed, b.billTypeAtomic, b.cancelled, b.refunded, pbs.id "
                 + " From BillSession bs "
+                + " join bs.bill b "
+                + " left join bs.paidBillSession pbs "
                 + " where bs.retired=false"
-                + " and bs.bill.billType in :bts"
-                + " and type(bs.bill)=:class "
-                + " and bs.bill.billTypeAtomic != :bta"
+                + " and b.billType in :bts"
+                + " and type(b)=:class "
+                + " and b.billTypeAtomic != :bta"
                 + " and bs.sessionInstance=:ss "
                 + " order by bs.serialNo ";
         HashMap<String, Object> hh = new HashMap<>();
 
-        Bill b = new Bill();
-        b.getBillTypeAtomic();
         hh.put("bts", bts);
         hh.put("bta", BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_PENDING_PAYMENT);
         hh.put("class", BilledBill.class);
         hh.put("ss", session);
 
-        List<BillSession> billSessions = getBillSessionFacade().findByJpql(sql, hh, TemporalType.DATE);
+        List<Object[]> billSessions = getBillSessionFacade().findObjectArrayByJpql(sql, hh, TemporalType.DATE);
 
         // Initialize counts
         long bookedPatientCount = 0;
@@ -1626,71 +1730,40 @@ public class ChannelService {
         }
         List<Integer> serialnumbersBySelectedSessionInstance = new ArrayList<>();
         // Loop through billSessions to calculate counts
-        for (BillSession bs : billSessions) {
-            if (bs != null) {
-                bookedPatientCount++; // Always increment if bs is not null
-                serialnumbersBySelectedSessionInstance.add(bs.getSerialNo());
-                // Additional check for reserved status
-                try {
-                    if (bs.isReservedBooking()) {
-                        reservedBookingCount++;
-                    }
-                } catch (NullPointerException npe) {
-                    // Log or handle the fact that there was an NPE checking completion status
+        for (Object[] row : billSessions) {
+            if (row == null) {
+                continue;
+            }
+            Integer serialNo = (Integer) row[0];
+            boolean reservedBooking = row[1] != null && (Boolean) row[1];
+            boolean completed = row[2] != null && (Boolean) row[2];
+            BillTypeAtomic billTypeAtomic = (BillTypeAtomic) row[3];
+            boolean cancelled = row[4] != null && (Boolean) row[4];
+            boolean refunded = row[5] != null && (Boolean) row[5];
+            boolean hasPaidBillSession = row[6] != null;
 
-                }
-
-                // Additional check for completion status
-                try {
-                    if (bs.isCompleted()) {
-                        completedPatientCount++;
-                    }
-                } catch (NullPointerException npe) {
-                    // Log or handle the fact that there was an NPE checking completion status
-
-                }
-
-                // Additional check for paid status
-                try {
-                    if (bs.getBill().getBillTypeAtomic() == BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT) {
-                        paidPatientCount++;
-                    }
-                    if (bs.getPaidBillSession() != null) {
-                        paidPatientCount++;
-                    }
-                } catch (NullPointerException npe) {
-                    // Log or handle the fact that there was an NPE checking paid status
-
-                }
-                // Additional check for cancel status
-                try {
-                    if (bs.getBill().isCancelled()) {
-                        cancelPatientCount++;
-                    }
-                } catch (NullPointerException npe) {
-                    // Log or handle the fact that there was an NPE checking paid status
-
-                }
-
-                // Additional check for refund status
-                try {
-                    if (bs.getBill().isRefunded()) {
-                        refundedPatientCount++;
-                    }
-                } catch (NullPointerException npe) {
-                    // Log or handle the fact that there was an NPE checking paid status
-
-                }
-
-                // Additional check for Oncall status
-                try {
-                    if (bs.getPaidBillSession() == null && !bs.getBill().isCancelled() && bs.getBill().getBillTypeAtomic() != BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT) {
-                        onCallPatientCount++;
-                    }
-                } catch (NullPointerException npe) {
-                    // Log or handle the fact that there was an NPE checking paid status
-
-                }
+            bookedPatientCount++;
+            serialnumbersBySelectedSessionInstance.add(serialNo);
+            if (reservedBooking) {
+                reservedBookingCount++;
+            }
+            if (completed) {
+                completedPatientCount++;
+            }
+            if (billTypeAtomic == BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT) {
+                paidPatientCount++;
+            }
+            if (hasPaidBillSession) {
+                paidPatientCount++;
+            }
+            if (cancelled) {
+                cancelPatientCount++;
+            }
+            if (refunded) {
+                refundedPatientCount++;
+            }
+            if (!hasPaidBillSession && !cancelled && billTypeAtomic != BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT) {
+                onCallPatientCount++;
             }
         }
 
@@ -2935,7 +3008,24 @@ public class ChannelService {
     }
 
     public boolean isFullyBookedSession(SessionInstance ss) {
-        if (ss.getMaxNo() != 0 && configOptionApplicationController.getBooleanValueByKey("Limited appoinments session can't get appoinement more than max amount.")) {
+        return isFullyBookedSession(ss, 0L);
+    }
+
+    /**
+     * As {@link #isFullyBookedSession(SessionInstance)}, with {@code openHolds} extra places taken
+     * by agent holds that are not yet completed (#25053).
+     */
+    public boolean isFullyBookedSession(SessionInstance ss, long openHolds) {
+        return isFullyBookedSession(ss, openHolds, false);
+    }
+
+    /**
+     * As {@link #isFullyBookedSession(SessionInstance, long)}; when {@code reservedBooking} is true
+     * the booking takes one of the session's reserved numbers, so the reserved numbers are not
+     * counted as already taken.
+     */
+    public boolean isFullyBookedSession(SessionInstance ss, long openHolds, boolean reservedBooking) {
+        if (ss.getMaxNo() != 0&& configOptionApplicationController.getBooleanValueByKey("Limited appoinments session can't get appoinement more than max amount.")) {
             if (ss.getBookedPatientCount() != null) {
                 int maxNo = ss.getMaxNo();
                 long bookedPatientCount = ss.getBookedPatientCount();
@@ -2943,9 +3033,7 @@ public class ChannelService {
                 long totalPatientCount;
 
                 List<Integer> reservedNumbers = CommonFunctions.convertStringToIntegerList(ss.getReserveNumbers());
-                if (false) {
-                    bookedPatientCount = bookedPatientCount;
-                } else {
+                if (!reservedBooking) {
                     bookedPatientCount = bookedPatientCount + reservedNumbers.size() - reservedBookingCount;
                 }
 
@@ -2955,7 +3043,7 @@ public class ChannelService {
                 } else {
                     totalPatientCount = bookedPatientCount;
                 }
-                if (maxNo <= totalPatientCount) {
+                if (maxNo <= totalPatientCount + openHolds) {
                     return true;
                 }
             }
@@ -3204,7 +3292,7 @@ public class ChannelService {
         bookingDetails.setOnlineBookingPayment(agencyCharge);
         bookingDetails.setHospitalFee(paidBill.getHospitalFee());
         bookingDetails.setDoctorFee(paidBill.getStaffFee());
-        bookingDetails.setNetTotalForOnlineBooking(paidBill.getNetTotal() + agencyCharge);
+        bookingDetails.setNetTotalForOnlineBooking(CommonFunctions.roundToTwoDecimals(paidBill.getNetTotal() + agencyCharge));
         bookingDetails.setOnlineBookingStatus(OnlineBookingStatus.ACTIVE);
         bookingDetails.setAppoinmentTotalAmount(paidBill.getNetTotal());
 
@@ -3295,7 +3383,7 @@ public class ChannelService {
         completedOnlineBookingBill.setBillType(BillType.ChannelAgent);
         completedOnlineBookingBill.setBillTypeAtomic(BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT);
 
-        String deptId = billNumberBean.departmentBillNumberGeneratorYearly(bs.getDepartment(), BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT);
+        String deptId = billNumberBean.departmentBillNumberGeneratorYearlyInNewTransaction(bs.getDepartment(), BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT);
 
         completedOnlineBookingBill.setInsId(deptId);
         completedOnlineBookingBill.setDeptId(deptId);

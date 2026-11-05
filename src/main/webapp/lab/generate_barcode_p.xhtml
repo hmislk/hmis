@@ -366,7 +366,7 @@
                                     </h:panelGrid>
 
                                     <p:autoComplete 
-                                        completeMethod="#{staffController.completeStaff}"
+                                        completeMethod="#{staffMappingController.completeSampleTransporter}"
                                         value="#{patientInvestigationController.sampleTransportedToLabByStaff}" 
                                         disabled="#{patientInvestigationController.listingEntity ne 'PATIENT_SAMPLES'}"
                                         var="mys" 
@@ -588,7 +588,7 @@
                                 <div class="d-flex gap-3 my-2">
                                     <h:outputLabel class="w-50" value="Transporter"/>
                                     <p:autoComplete 
-                                        completeMethod="#{staffController.completeStaff}"
+                                        completeMethod="#{staffMappingController.completeSampleTransporter}"
                                         value="#{patientInvestigationController.sampleTransportedToLabByStaff}" 
                                         var="mys" 
                                         class="w-100" 

@@ -152,6 +152,8 @@ public class InwardSearch implements Serializable {
     InwardPaymentController inwardPaymentController;
     @Inject
     InwardDepositController inwardDepositController;
+    @Inject
+    private AdmissionController admissionController;
 
     /**
      * Properties
@@ -725,6 +727,10 @@ public class InwardSearch implements Serializable {
         // here first makes this method self-contained regardless of
         // listener ordering.
         this.bill = selectedBill;
+        if (selectedBill != null && selectedBill.getPatientEncounter() instanceof Admission) {
+            admissionController.setCurrent((Admission) selectedBill.getPatientEncounter());
+            admissionController.setPatient(selectedBill.getPatientEncounter().getPatient());
+        }
         refreshFinalBillBackwordReferenceBills();
         refreshFinalBillPdfSnapshot();
     }
@@ -1149,20 +1155,20 @@ public class InwardSearch implements Serializable {
 
         Long previousFinalBillId = pe.getFinalBill() != null ? pe.getFinalBill().getId() : null;
 
-        if (pe.getFinalBill() != null && !pe.getFinalBill().getId().equals(newConfirmed.getId())) {
-            Bill oldConfirmed = pe.getFinalBill();
-            oldConfirmed.setConfirmedFinalBill(false);
-            getBillFacade().edit(oldConfirmed);
-        }
+        // Same lock as a final bill save, so one confirmed version can't race another.
+        getBillNumberBean().withFinalBillVersionLock(pe, () -> {
+            getInwardBean().unconfirmOtherFinalBills(pe, newConfirmed);
 
-        newConfirmed.setConfirmedFinalBill(true);
-        getBillFacade().edit(newConfirmed);
+            newConfirmed.setConfirmedFinalBill(true);
+            getBillFacade().edit(newConfirmed);
 
-        pe.setFinalBill(newConfirmed);
-        pe.setGrantTotal(newConfirmed.getGrantTotal());
-        pe.setDiscount(newConfirmed.getDiscount());
-        pe.setNetTotal(newConfirmed.getNetTotal());
-        getPatientEncounterFacade().edit(pe);
+            pe.setFinalBill(newConfirmed);
+            pe.setGrantTotal(newConfirmed.getGrantTotal());
+            pe.setDiscount(newConfirmed.getDiscount());
+            pe.setNetTotal(newConfirmed.getNetTotal());
+            getPatientEncounterFacade().edit(pe);
+            return null;
+        });
 
         relinkPaymentBillsToConfirmedVersion(pe, newConfirmed);
 
@@ -1232,6 +1238,14 @@ public class InwardSearch implements Serializable {
             JsfUtil.addErrorMessage("Cannot retire the only remaining final bill version");
             return;
         }
+        if (hasPaidCreditCompanyBill(b)) {
+            JsfUtil.addErrorMessage("Cannot retire: a credit company has paid against this final bill version");
+            return;
+        }
+
+        // Before the bill itself: a retired bill can't be retired again, so a
+        // failure here would otherwise leave credit bills active with no retry.
+        retireCreditCompanyBills(b);
 
         b.setRetired(true);
         b.setRetirer(sessionController.getLoggedUser());
@@ -1244,6 +1258,38 @@ public class InwardSearch implements Serializable {
 
         JsfUtil.addSuccessMessage("Final Bill Version Retired");
         finalBillVersions = null;
+    }
+
+    private List<Bill> fetchCreditCompanyBills(Bill finalBill) {
+        String jpql = "select b from Bill b where b.referenceBill.id = :billId and b.billTypeAtomic = :bta"
+                + " and b.retired = false and (b.cancelled = false or b.cancelled is null)";
+        Map<String, Object> params = new HashMap<>();
+        params.put("billId", finalBill.getId());
+        params.put("bta", BillTypeAtomic.INWARD_FINAL_BILL_PAYMENT_BY_CREDIT_COMPANY);
+        return getBillFacade().findByJpql(jpql, params);
+    }
+
+    private boolean hasPaidCreditCompanyBill(Bill finalBill) {
+        for (Bill ccBill : fetchCreditCompanyBills(finalBill)) {
+            if (Math.abs(ccBill.getPaidAmount()) > 0.005) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * A retired or cancelled final bill version no longer claims anything from
+     * the credit company, so its commitment bills must not stay selectable for
+     * settlement or be listed by reports that do not check the version.
+     */
+    private void retireCreditCompanyBills(Bill finalBill) {
+        for (Bill ccBill : fetchCreditCompanyBills(finalBill)) {
+            ccBill.setRetired(true);
+            ccBill.setRetirer(sessionController.getLoggedUser());
+            ccBill.setRetiredAt(new Date());
+            getBillFacade().edit(ccBill);
+        }
     }
 
     private String emailRecipient;
@@ -2089,6 +2135,72 @@ public class InwardSearch implements Serializable {
     @EJB
     CashTransactionBean cashTransactionBean;
 
+    /**
+     * Writes the reversal Payment rows for an inward cancellation bill (#25178).
+     * <p>
+     * When the original bill has active payments, they are mirrored one for one
+     * with {@link PaymentService#createPaymentsForCancelling(Bill, Bill)}, so
+     * each original Payment gets exactly one negated Payment whatever was
+     * selected on the cancel page. Only when the original has no Payment rows at all (not even retired ones) is the
+     * payment data from the cancel page used (read through the getter, never the
+     * raw field).
+     *
+     * @return the created payments (empty only when the original bill itself
+     * had no payments), or null after an error message was shown because the
+     * original had payments and no reversal could be written. Callers must
+     * return without reporting success on null.
+     */
+    private List<Payment> createReversalPayments(Bill cb, Bill original, PaymentMethod pm) {
+        List<Payment> originalPayments = billService.fetchBillPayments(original);
+        int originalCount = countNonRetiredPayments(originalPayments);
+        boolean originalHasNoPaymentRows = originalPayments == null || originalPayments.isEmpty();
+        PaymentMethodData pmd = getPaymentMethodData();
+        List<Payment> created = null;
+        if (originalCount > 0) {
+            created = paymentService.createPaymentsForCancelling(cb, original, true);
+        } else if (originalHasNoPaymentRows && pm != null && hasUsablePaymentData(pm, pmd)) {
+            // Only when the original never had Payment rows. If all its rows are
+            // retired there is no active money to reverse, so nothing is written.
+            // 2-arg overload: also writes the drawer, like createPaymentsForCancelling
+            created = paymentService.createPayment(cb, pmd);
+        }
+        if (created == null) {
+            created = new ArrayList<>();
+        }
+        if (originalCount > 0 && created.size() != originalCount) {
+            java.util.logging.Logger.getLogger(InwardSearch.class.getName()).log(java.util.logging.Level.SEVERE,
+                    "Inward cancellation bill {0} has no complete reversal payment for original bill {1}",
+                    new Object[]{cb.getId(), original.getId()});
+            JsfUtil.addErrorMessage("The cancellation bill was saved but its reversal payment could not be written. Do not hand over cash for this cancellation. Please contact support.");
+            return null;
+        }
+        return created;
+    }
+
+    private boolean hasUsablePaymentData(PaymentMethod pm, PaymentMethodData pmd) {
+        if (pmd == null) {
+            return false;
+        }
+        if (pm == PaymentMethod.MultiplePaymentMethods) {
+            return pmd.getPaymentMethodMultiple() != null
+                    && pmd.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails() != null
+                    && !pmd.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().isEmpty();
+        }
+        return true;
+    }
+
+    private int countNonRetiredPayments(List<Payment> payments) {
+        int n = 0;
+        if (payments != null) {
+            for (Payment p : payments) {
+                if (!p.isRetired()) {
+                    n++;
+                }
+            }
+        }
+        return n;
+    }
+
     public void cancelBillPayment() {
         if (getBill() != null && getBill().getId() != null && getBill().getId() != 0) {
 
@@ -2122,7 +2234,10 @@ public class InwardSearch implements Serializable {
 
             getBillBean().updateInwardDipositList(getBill().getPatientEncounter(), cb);
 
-            List<Payment> payments = paymentService.createPayment(cb, paymentMethodData);
+            List<Payment> payments = createReversalPayments(cb, getBill(), cb.getPaymentMethod());
+            if (payments == null) {
+                return;
+            }
             paymentService.updateBalances(payments);
 
             if (getBill().getPatientEncounter().isPaymentFinalized()) {
@@ -2184,13 +2299,9 @@ public class InwardSearch implements Serializable {
 
             getBillBean().updateInwardDipositList(getBill().getPatientEncounter(), cb);
 
-            paymentService.createPayment(
-                cb,
-                cb.getPaymentMethod(), 
-                paymentMethodData, 
-                sessionController.getInstitution(), 
-                sessionController.getDepartment(),
-                sessionController.getLoggedUser());
+            if (createReversalPayments(cb, getBill(), cb.getPaymentMethod()) == null) {
+                return;
+            }
 
             if (getBill().getPatientEncounter().isPaymentFinalized()) {
                 getInwardBean().updateFinalFill(getBill().getPatientEncounter());
@@ -2247,13 +2358,9 @@ public class InwardSearch implements Serializable {
 
             getBillBean().updateInwardDipositList(getBill().getPatientEncounter(), cb);
 
-            paymentService.createPayment(
-                cb,
-                cb.getPaymentMethod(),
-                paymentMethodData,
-                sessionController.getInstitution(),
-                sessionController.getDepartment(),
-                sessionController.getLoggedUser());
+            if (createReversalPayments(cb, getBill(), cb.getPaymentMethod()) == null) {
+                return;
+            }
 
             if (getBill().getPatientEncounter().isPaymentFinalized()) {
                 getInwardBean().updateFinalFill(getBill().getPatientEncounter());
@@ -2311,7 +2418,10 @@ public class InwardSearch implements Serializable {
             getBill().setCancelledBill(cb);
             getBillFacade().edit(getBill());
 
-            List<Payment> payments = paymentService.createPayment(cb, paymentMethodData);
+            List<Payment> payments = createReversalPayments(cb, getBill(), cb.getPaymentMethod());
+            if (payments == null) {
+                return;
+            }
             paymentService.updateBalances(payments);
 
             getBillBean().updateInwardDipositList(getBill().getPatientEncounter(), cb);
@@ -2392,7 +2502,14 @@ public class InwardSearch implements Serializable {
                 return;
             }
 
+            if (hasPaidCreditCompanyBill(getBill())) {
+                JsfUtil.addErrorMessage("Cannot cancel: a credit company has paid against this final bill");
+                return;
+            }
+
             boolean wasConfirmedFinalBill = getBill().isConfirmedFinalBill();
+
+            retireCreditCompanyBills(getBill());
 
             CancelledBill cb = createCancelBill();
             //Copy & paste
@@ -2891,6 +3008,11 @@ public class InwardSearch implements Serializable {
 
     public void cancelProfessional() {
         if (getBill() != null && getBill().getId() != null && getBill().getId() != 0) {
+
+            if (getComment() == null || getComment().trim().isEmpty()) {
+                JsfUtil.addErrorMessage("Please enter a comment");
+                return;
+            }
 
             if (getBill().getCheckedBy() != null) {
                 JsfUtil.addErrorMessage("Checked Bill. Can not cancel");

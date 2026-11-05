@@ -341,28 +341,13 @@
                                         </h:panelGroup>
                                         <h:panelGroup layout="block" rendered="#{webUserController.hasPrivilege('CcSelfSampleSend')}">
                                             <hr/>
-                                            <h:outputLabel value="Sample Transporter" for="acTransporter"/>
-                                            <p:autoComplete
-                                                id="acTransporter"
-                                                completeMethod="#{staffController.completeStaff}"
-                                                value="#{patientInvestigationController.sampleTransportedToLabByStaff}"
-                                                var="mys"
-                                                class="w-100"
-                                                maxResults="25"
-                                                placeholder="Search transporter"
-                                                inputStyleClass="form-control"
-                                                itemLabel="#{mys.person.nameWithTitle}"
-                                                itemValue="#{mys}">
-                                                <p:column headerText="Code" style="padding: 6px;">#{mys.code}</p:column>
-                                                <p:column headerText="Name" style="padding: 6px;">#{mys.person.nameWithTitle}</p:column>
-                                            </p:autoComplete>
                                             <p:commandButton
                                                 id="btnSendSamples"
-                                                ajax="false"
+                                                type="button"
                                                 value="Send Samples"
                                                 icon="fa fa-paper-plane"
-                                                class="ui-button-warning w-100 mt-2"
-                                                action="#{collectingCentreSelfCommonController.sendSelfSamples}"/>
+                                                class="ui-button-warning w-100"
+                                                onclick="PF('dlgSendSamples').show()"/>
                                         </h:panelGroup>
                                         <h:panelGroup layout="block" rendered="#{webUserController.hasPrivilege('CcSelfSampleReject')}">
                                             <hr/>
@@ -537,6 +522,62 @@
                                     </p:column>
                                 </p:dataTable>
                             </p:panel>
+
+                            <!--SEND SAMPLES POPUP-->
+                            <p:dialog
+                                id="dlgSendSamples"
+                                widgetVar="dlgSendSamples"
+                                header="Send Samples"
+                                modal="true"
+                                closeOnEscape="true"
+                                resizable="false"
+                                width="700"
+                                responsive="true"
+                                rendered="#{patientInvestigationController.listingEntity eq 'PATIENT_SAMPLES' and webUserController.hasPrivilege('CcSelfSampleSend')}">
+                                <div class="mb-3">
+                                    <h:outputLabel value="Sample Transporter" for="acTransporter" class="d-block mb-1"/>
+                                    <p:autoComplete
+                                        id="acTransporter"
+                                        completeMethod="#{staffMappingController.completeSampleTransporter}"
+                                        value="#{collectingCentreSelfCommonController.sampleSendingTransporter}"
+                                        var="mys"
+                                        class="w-100"
+                                        maxResults="25"
+                                        placeholder="Search transporter"
+                                        inputStyleClass="form-control"
+                                        itemLabel="#{mys.person.nameWithTitle}"
+                                        itemValue="#{mys}">
+                                        <p:column headerText="Code" style="padding: 6px;">#{mys.code}</p:column>
+                                        <p:column headerText="Name" style="padding: 6px;">#{mys.person.nameWithTitle}</p:column>
+                                    </p:autoComplete>
+                                </div>
+                                <div class="mb-2">
+                                    <h:outputLabel value="Sending to Department" for="cmbSendingDepartment" class="d-block mb-1"/>
+                                    <p:selectOneMenu
+                                        id="cmbSendingDepartment"
+                                        filter="true"
+                                        filterMatchMode="contains"
+                                        class="w-100"
+                                        value="#{collectingCentreSelfCommonController.sampleSendingDepartment}">
+                                        <f:selectItem itemLabel="Select Department"/>
+                                        <f:selectItems
+                                            value="#{departmentController.listAllLabDepartments()}"
+                                            var="odpt"
+                                            itemLabel="#{odpt.name}"
+                                            itemValue="#{odpt}"/>
+                                    </p:selectOneMenu>
+                                </div>
+                                <f:facet name="footer">
+                                    <p:commandButton value="Cancel" icon="fa-solid fa-xmark" type="button" styleClass="ui-button-secondary me-2" onclick="PF('dlgSendSamples').hide()"/>
+                                    <p:commandButton
+                                        id="btnConfirmSendSamples"
+                                        ajax="false"
+                                        value="Send Samples"
+                                        icon="fa fa-paper-plane"
+                                        styleClass="ui-button-warning"
+                                        action="#{collectingCentreSelfCommonController.sendSelfSamples}"/>
+                                </f:facet>
+                            </p:dialog>
 
                             <!--SAMPLE DETAILS POPUP-->
                             <p:dialog

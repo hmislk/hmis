@@ -23,7 +23,19 @@
                         <p:calendar id="toDate" class="w-100" inputStyleClass="w-100" value="#{channelReportController.toDate}" navigator="true" pattern="dd MMMM yyyy HH:mm:ss"  />
 
                         <h:outputLabel value="Consultant"/>
-                        <au:completeConsultant  value="#{channelReportController.staff}"/>
+                        <!-- Bound directly (not via au:completeConsultant) so JSF finds the Staff converter from the property type -->
+                        <p:autoComplete id="acConsultant"
+                                        forceSelection="true"
+                                        value="#{channelReportController.staff}"
+                                        completeMethod="#{staffController.completeConsultant}"
+                                        var="mys"
+                                        itemLabel="#{mys.person.nameWithTitle}"
+                                        itemValue="#{mys}"
+                                        class="w-100" inputStyleClass="w-100">
+                            <p:column headerText="Name">
+                                #{mys.person.nameWithTitle}
+                            </p:column>
+                        </p:autoComplete>
 
                         <h:outputLabel value="Payment Method"/>
                         <p:selectCheckboxMenu id="cmbParentMethod"

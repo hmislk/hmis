@@ -1,0 +1,14 @@
+{
+  "version": "v2.19.0",
+  "description": "Index BILL.ONLINEBOOKING_ID for channel API booking lookups",
+  "issue": "#24923 — Channel API /complete takes about 25 s under load",
+  "author": "Dr M H B Ariyaratne",
+  "date": "2026-10-30",
+  "type": "schema",
+  "tables_affected": ["bill"],
+  "data_changes": false,
+  "requires_downtime": false,
+  "estimated_duration_minutes": 5,
+  "note": "ChannelService.findBillFromOnlineBooking() and the EAGER OnlineBooking.bill mapping (mappedBy onlineBooking) both look up bills by ONLINEBOOKING_ID, which had no index, so every channel API /save, /complete, /edit and /cancellation call scanned the whole bill table. This migration adds idx_bill_onlinebooking on that column. It is idempotent: it skips when any index already starts with ONLINEBOOKING_ID. InnoDB builds the secondary index online, so bills can still be saved while it runs; duration scales with the size of the bill table.",
+  "rollback": "rollback.sql"
+}

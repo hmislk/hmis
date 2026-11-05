@@ -3,6 +3,7 @@ package com.divudi.ws.finance;
 import com.divudi.bean.common.ApiKeyController;
 import com.divudi.core.entity.ApiKey;
 import com.divudi.core.entity.WebUser;
+import com.divudi.service.BillDataCorrectionException;
 import com.divudi.service.BillDataCorrectionService;
 import com.divudi.ws.common.PATCH;
 import com.google.gson.Gson;
@@ -77,6 +78,8 @@ public class BillDataCorrectionApi {
             );
 
             return successResponse(result);
+        } catch (BillDataCorrectionException ex) {
+            return errorResponse(ex.getMessage(), ex.getStatus());
         } catch (IllegalArgumentException ex) {
             return errorResponse(ex.getMessage(), 400);
         } catch (IllegalStateException ex) {
@@ -130,6 +133,8 @@ public class BillDataCorrectionApi {
             );
 
             return successResponse(result);
+        } catch (BillDataCorrectionException ex) {
+            return errorResponse(ex.getMessage(), ex.getStatus());
         } catch (IllegalArgumentException ex) {
             return errorResponse(ex.getMessage(), 400);
         } catch (IllegalStateException ex) {
@@ -185,6 +190,8 @@ public class BillDataCorrectionApi {
             );
 
             return successResponse(result);
+        } catch (BillDataCorrectionException ex) {
+            return errorResponse(ex.getMessage(), ex.getStatus());
         } catch (IllegalArgumentException ex) {
             return errorResponse(ex.getMessage(), 400);
         } catch (IllegalStateException ex) {

@@ -117,7 +117,7 @@ public class KioskController implements Serializable {
         patient.getPerson().setMobile(phone.toString());
         patient.setRegistrationSource(PatientRegistrationSource.KIOSK);
         patient.getPerson().setCreatedAt(new Date());
-        personFacade.create(patient.getPerson());
+        // Saved by the patient's create below (Patient.person is cascade = ALL, #23900).
         patient.setCreatedAt(new Date());
         patientFacade.create(patient);
 

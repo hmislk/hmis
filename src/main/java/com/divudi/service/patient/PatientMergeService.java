@@ -101,7 +101,7 @@ public class PatientMergeService {
      */
     public void unmerge(PatientMergeRecord mergeRecord, WebUser reversedBy) {
         if (mergeRecord.getStatus() != PatientMergeStatus.ACTIVE) {
-            throw new IllegalStateException("Merge #" + mergeRecord.getId() + " is already reversed.");
+            throw new PatientMergeException("Merge #" + mergeRecord.getId() + " is already reversed.");
         }
 
         Patient primary = mergeRecord.getPrimaryPatient();

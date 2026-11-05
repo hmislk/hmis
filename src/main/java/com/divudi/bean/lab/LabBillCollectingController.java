@@ -170,7 +170,7 @@ public class LabBillCollectingController implements Serializable {
             getNewPatient().getPerson().setCreater(getSessionController().getLoggedUser());
             getNewPatient().getPerson().setCreatedAt(new Date());
 
-            getPersonFacade().create(getNewPatient().getPerson());
+            // Patient.person is cascade = ALL, so creating the patient also saves its person (#23900).
             getPatientFacade().create(getNewPatient());
             tmpPatient = getNewPatient();
 

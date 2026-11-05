@@ -1577,11 +1577,7 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
                 getNewPatient().setCreatedAt(new Date());
                 getNewPatient().getPerson().setCreater(getSessionController().getLoggedUser());
                 getNewPatient().getPerson().setCreatedAt(new Date());
-                try {
-                    getPersonFacade().create(getNewPatient().getPerson());
-                } catch (Exception e) {
-                    getPersonFacade().edit(getNewPatient().getPerson());
-                }
+                // Patient.person is cascade = ALL, so creating the patient below also saves its person (#23900).
                 try {
                     getPatientFacade().create(getNewPatient());
                 } catch (Exception e) {
@@ -2902,6 +2898,7 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
         individualCancelltionBill.setDepartment(getSessionController().getDepartment());
         individualCancelltionBill.setInstitution(getSessionController().getInstitution());
         individualCancelltionBill.setForwardReferenceBill(cancellationBatchBill);
+        individualCancelltionBill.setReferenceBill(originalBill);
         individualCancelltionBill.setComments(comment);
         billService.saveBill(individualCancelltionBill);
 

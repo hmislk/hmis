@@ -22,8 +22,9 @@
                                 value="Settle"                               
                                 icon="pi pi-check"
                                 class="mx-3 ui-button-success"
-                                action="#{iouBillController.settleIouSettlingBill()}" 
-                                ajax="false"  
+                                action="#{iouBillController.settleIouSettlingBill()}"
+                                ajax="false"
+                                onclick="if (this.dataset.submitted) { return false; } this.dataset.submitted = 'true';"
                                 style="min-width: 150px; ">
                             </p:commandButton>
                             <p:commandButton 

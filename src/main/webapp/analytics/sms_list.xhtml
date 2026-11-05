@@ -87,7 +87,7 @@
 
                             <p:column 
                                 headerText="SMS Type" 
-                                style="padding: 6px; width :6em"
+                                style="padding: 6px; width :10em"
                                 sortBy="#{sms.smsType}" 
                                 filterBy="#{sms.smsType}" 
                                 filterMatchMode="contains" >
@@ -113,6 +113,19 @@
                                 filterMatchMode="contains"
                                 styleClass="alignTop" >
                                 <h:outputLabel value="#{sms.recipient}"/>
+                            </p:column>
+
+                            <p:column headerText="Sent At" style="padding: 6px; width :8em" class="text-center">
+                                <p:tag 
+                                    rendered="#{sms.sentAt eq null}"
+                                    class="ui-tag" 
+                                    value="Not sent yet"
+                                    severity="danger" 
+                                    style="align-items: center; text-align: center; font-size: 14px;">
+                                </p:tag>
+                                <h:outputLabel value="#{sms.sentAt}" rendered="#{sms.sentAt ne null}">
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateTimeFormat}"  ></f:convertDateTime>
+                                </h:outputLabel>
                             </p:column>
 
                             <p:column 

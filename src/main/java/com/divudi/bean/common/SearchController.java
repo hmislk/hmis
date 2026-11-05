@@ -7679,6 +7679,11 @@ public class SearchController implements Serializable {
                 .getBooleanValueByKey("Pharmacy - Allow Cross-Department PO Receiving", false);
     }
 
+    private boolean isPoItemSearchLimitedToPendingItems() {
+        return configOptionApplicationController
+                .getBooleanValueByKey("Pharmacy - PO Item Search for GRN Shows Only POs with the Item Not Fully Received", false);
+    }
+
     /**
      * DTO-based version of createPoTablePharmacy for optimized performance.
      * Uses direct DTO query to avoid N+1 problem and entity graph loading. Does
@@ -7787,11 +7792,35 @@ public class SearchController implements Serializable {
             }
 
             if (getSearchKeyword().getItemName() != null && !getSearchKeyword().getItemName().trim().isEmpty()) {
-                jpql += "AND b.id IN (SELECT bItem.bill.id "
-                        + "FROM BillItem bItem "
-                        + "WHERE bItem.retired = false "
-                        + "AND UPPER(bItem.item.name) LIKE :itm) ";
                 params.put("itm", "%" + getSearchKeyword().getItemName().trim().toUpperCase() + "%");
+                if (!isPoItemSearchLimitedToPendingItems()) {
+                    jpql += "AND b.id IN (SELECT bItem.bill.id "
+                            + "FROM BillItem bItem "
+                            + "WHERE bItem.retired = false "
+                            + "AND UPPER(bItem.item.name) LIKE :itm) ";
+                } else {
+                    // Only POs where the searched item is still pending: approved,
+                    // non-cancelled GRNs have not yet received its full qty or free qty.
+                    jpql += "AND b.id IN (SELECT bItem.bill.id "
+                            + "FROM BillItem bItem "
+                            + "WHERE bItem.retired = false "
+                            + "AND UPPER(bItem.item.name) LIKE :itm "
+                            + "AND (ABS(bItem.pharmaceuticalBillItem.qty) > (SELECT COALESCE(SUM(ABS(g.pharmaceuticalBillItem.qty)), 0) "
+                            + "FROM BillItem g "
+                            + "WHERE g.referanceBillItem = bItem "
+                            + "AND g.retired = false "
+                            + "AND g.bill.retired = false "
+                            + "AND g.bill.cancelled = false "
+                            + "AND g.bill.billTypeAtomic IN :grnBtas) "
+                            + "OR ABS(bItem.pharmaceuticalBillItem.freeQty) > (SELECT COALESCE(SUM(ABS(gf.pharmaceuticalBillItem.freeQty)), 0) "
+                            + "FROM BillItem gf "
+                            + "WHERE gf.referanceBillItem = bItem "
+                            + "AND gf.retired = false "
+                            + "AND gf.bill.retired = false "
+                            + "AND gf.bill.cancelled = false "
+                            + "AND gf.bill.billTypeAtomic IN :grnBtas))) ";
+                    params.put("grnBtas", Arrays.asList(BillTypeAtomic.PHARMACY_GRN, BillTypeAtomic.PHARMACY_WHOLESALE_GRN_BILL));
+                }
             }
         }
 
@@ -16163,6 +16192,11 @@ public class SearchController implements Serializable {
             hm.put("staff", "%" + getSearchKeyword().getStaffName().trim().toUpperCase() + "%");
         }
 
+        if (configOptionApplicationController.getBooleanValueByKey("Only Show Completed Channel Bookings On Doctor Payments")) {
+            sql += " and b.bill.singleBillSession.completed=:com ";
+            hm.put("com", true);
+        }
+
         sql += " order by b.speciality.name ";
 
         //hm.put("ins", sessionController.getInstitution());
@@ -17284,8 +17318,18 @@ public class SearchController implements Serializable {
         }
 
         if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
-            sql += " and  ((b.netTotal) = :netTotal )";
-            temMap.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
+            try {
+                Double netTotalValue = Double.parseDouble(getSearchKeyword().getNetTotal().trim().replace(",", ""));
+                if (netTotalValue.isNaN() || netTotalValue.isInfinite()) {
+                    throw new NumberFormatException();
+                }
+                sql += " and abs(b.netTotal - :netTotal) < 0.01 ";
+                temMap.put("netTotal", netTotalValue);
+            } catch (NumberFormatException e) {
+                JsfUtil.addErrorMessage("Invalid Net Total value. Please enter a valid number.");
+                bills = new ArrayList<>(); // don't show results that ignore the filter the user typed
+                return;
+            }
         }
 
         sql += " order by b.insId desc";
@@ -17332,8 +17376,18 @@ public class SearchController implements Serializable {
         }
 
         if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
-            sql += " and  ((b.netTotal) = :netTotal )";
-            temMap.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
+            try {
+                Double netTotalValue = Double.parseDouble(getSearchKeyword().getNetTotal().trim().replace(",", ""));
+                if (netTotalValue.isNaN() || netTotalValue.isInfinite()) {
+                    throw new NumberFormatException();
+                }
+                sql += " and abs(b.netTotal - :netTotal) < 0.01 ";
+                temMap.put("netTotal", netTotalValue);
+            } catch (NumberFormatException e) {
+                JsfUtil.addErrorMessage("Invalid Net Total value. Please enter a valid number.");
+                bills = new ArrayList<>(); // don't show results that ignore the filter the user typed
+                return;
+            }
         }
 
         sql += "order by b.deptId desc";

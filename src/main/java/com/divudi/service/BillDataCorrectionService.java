@@ -70,13 +70,13 @@ public class BillDataCorrectionService {
             WebUser apiUser) {
 
         if (targetType == null || targetType.trim().isEmpty()) {
-            throw new IllegalArgumentException("targetType is required");
+            throw new BillDataCorrectionException("targetType is required");
         }
         if (targetId == null) {
-            throw new IllegalArgumentException("targetId is required");
+            throw new BillDataCorrectionException("targetId is required");
         }
         if (fields == null || fields.isEmpty()) {
-            throw new IllegalArgumentException("fields are required");
+            throw new BillDataCorrectionException("fields are required");
         }
 
         String normalizedType = targetType.trim().toUpperCase();
@@ -105,11 +105,11 @@ public class BillDataCorrectionService {
                 parentBill = updatePharmaceuticalBillItem(targetId, fields, previousValues, newValues);
                 break;
             default:
-                throw new IllegalArgumentException("Unsupported targetType: " + targetType);
+                throw new BillDataCorrectionException("Unsupported targetType: " + targetType);
         }
 
         if (parentBill == null) {
-            throw new IllegalStateException("Unable to resolve parent bill for targetType " + targetType + " and targetId " + targetId);
+            throw new BillDataCorrectionException("Unable to resolve parent bill for targetType " + targetType + " and targetId " + targetId, 409);
         }
 
         appendAuditLog(parentBill, normalizedType, targetId, previousValues, newValues, auditComment, approvedBy, apiUser);
@@ -149,33 +149,33 @@ public class BillDataCorrectionService {
             WebUser apiUser) {
 
         if (billId == null) {
-            throw new IllegalArgumentException("billId is required");
+            throw new BillDataCorrectionException("billId is required");
         }
         if (itemId == null) {
-            throw new IllegalArgumentException("itemId is required");
+            throw new BillDataCorrectionException("itemId is required");
         }
         if (auditComment == null || auditComment.trim().isEmpty()) {
-            throw new IllegalArgumentException("auditComment is required");
+            throw new BillDataCorrectionException("auditComment is required");
         }
         if (approvedBy == null || approvedBy.trim().isEmpty()) {
-            throw new IllegalArgumentException("approvedBy is required");
+            throw new BillDataCorrectionException("approvedBy is required");
         }
 
         Bill bill = billFacade.find(billId);
         if (bill == null) {
-            throw new IllegalArgumentException("Bill not found for id " + billId);
+            throw new BillDataCorrectionException("Bill not found for id " + billId);
         }
 
         Item item = itemFacade.find(itemId);
         if (item == null) {
-            throw new IllegalArgumentException("Item not found for id " + itemId);
+            throw new BillDataCorrectionException("Item not found for id " + itemId);
         }
 
         BillItem referenceBillItem = null;
         if (referenceBillItemId != null) {
             referenceBillItem = billItemFacade.find(referenceBillItemId);
             if (referenceBillItem == null) {
-                throw new IllegalArgumentException("Reference BillItem not found for id " + referenceBillItemId);
+                throw new BillDataCorrectionException("Reference BillItem not found for id " + referenceBillItemId);
             }
 
             Map<String, Object> dupCheckParams = new java.util.HashMap<>();
@@ -186,8 +186,8 @@ public class BillDataCorrectionService {
                     + " AND bi.referanceBillItem = :ref AND bi.bill = :b",
                     dupCheckParams);
             if (alreadyLinked > 0) {
-                throw new IllegalStateException(
-                        "Bill " + billId + " already has an active BillItem referencing BillItem " + referenceBillItemId);
+                throw new BillDataCorrectionException(
+                        "Bill " + billId + " already has an active BillItem referencing BillItem " + referenceBillItemId, 409);
             }
         }
 
@@ -256,31 +256,31 @@ public class BillDataCorrectionService {
             WebUser apiUser) {
 
         if (billItemId == null) {
-            throw new IllegalArgumentException("billItemId is required");
+            throw new BillDataCorrectionException("billItemId is required");
         }
         if (referenceBillFeeId == null) {
-            throw new IllegalArgumentException("referenceBillFeeId is required");
+            throw new BillDataCorrectionException("referenceBillFeeId is required");
         }
         if (auditComment == null || auditComment.trim().isEmpty()) {
-            throw new IllegalArgumentException("auditComment is required");
+            throw new BillDataCorrectionException("auditComment is required");
         }
         if (approvedBy == null || approvedBy.trim().isEmpty()) {
-            throw new IllegalArgumentException("approvedBy is required");
+            throw new BillDataCorrectionException("approvedBy is required");
         }
 
         BillItem billItem = billItemFacade.find(billItemId);
         if (billItem == null) {
-            throw new IllegalArgumentException("BillItem not found for id " + billItemId);
+            throw new BillDataCorrectionException("BillItem not found for id " + billItemId);
         }
 
         Bill bill = billItem.getBill();
         if (bill == null) {
-            throw new IllegalStateException("BillItem " + billItemId + " has no parent bill");
+            throw new BillDataCorrectionException("BillItem " + billItemId + " has no parent bill", 409);
         }
 
         BillFee referenceBillFee = billFeeFacade.find(referenceBillFeeId);
         if (referenceBillFee == null) {
-            throw new IllegalArgumentException("Reference BillFee not found for id " + referenceBillFeeId);
+            throw new BillDataCorrectionException("Reference BillFee not found for id " + referenceBillFeeId);
         }
 
         Map<String, Object> dupCheckParams = new java.util.HashMap<>();
@@ -291,8 +291,8 @@ public class BillDataCorrectionService {
                 + " AND bf.referenceBillFee = :ref AND bf.billItem = :bi",
                 dupCheckParams);
         if (alreadyLinked > 0) {
-            throw new IllegalStateException(
-                    "BillItem " + billItemId + " already has an active BillFee referencing BillFee " + referenceBillFeeId);
+            throw new BillDataCorrectionException(
+                    "BillItem " + billItemId + " already has an active BillFee referencing BillFee " + referenceBillFeeId, 409);
         }
 
         BillFee newFee = new BillFee();
@@ -340,7 +340,7 @@ public class BillDataCorrectionService {
     private Bill updateBill(Long id, Map<String, Object> fields, Map<String, Object> previousValues, Map<String, Object> newValues, WebUser apiUser) {
         Bill entity = billFacade.find(id);
         if (entity == null) {
-            throw new IllegalArgumentException("Bill not found for id " + id);
+            throw new BillDataCorrectionException("Bill not found for id " + id);
         }
         validateAllowedFields(fields, BILL_FIELDS, "BILL");
 
@@ -371,13 +371,13 @@ public class BillDataCorrectionService {
             previousValues.put("departmentType", entity.getDepartmentType() != null ? entity.getDepartmentType().name() : null);
             String value = toStringValue(fields.get("departmentType"));
             if (value == null || value.trim().isEmpty()) {
-                throw new IllegalArgumentException("Field 'departmentType' cannot be empty");
+                throw new BillDataCorrectionException("Field 'departmentType' cannot be empty");
             }
             DepartmentType departmentType;
             try {
                 departmentType = DepartmentType.valueOf(value.trim());
             } catch (IllegalArgumentException ex) {
-                throw new IllegalArgumentException("Field 'departmentType' must be one of " + Arrays.toString(DepartmentType.values()));
+                throw new BillDataCorrectionException("Field 'departmentType' must be one of " + Arrays.toString(DepartmentType.values()));
             }
             entity.setDepartmentType(departmentType);
             newValues.put("departmentType", departmentType.name());
@@ -413,35 +413,35 @@ public class BillDataCorrectionService {
         long itemCount = billItemFacade.findLongByJpql(
                 "SELECT COUNT(bi) FROM BillItem bi WHERE bi.bill = :b AND bi.retired = false", params);
         if (itemCount > 0) {
-            throw new IllegalStateException(
-                    "Bill " + bill.getId() + " has " + itemCount + " active bill items — retire them first");
+            throw new BillDataCorrectionException(
+                    "Bill " + bill.getId() + " has " + itemCount + " active bill items — retire them first", 409);
         }
 
         long feeCount = billFeeFacade.findLongByJpql(
                 "SELECT COUNT(bf) FROM BillFee bf WHERE bf.bill = :b AND bf.retired = false", params);
         if (feeCount > 0) {
-            throw new IllegalStateException(
-                    "Bill " + bill.getId() + " has " + feeCount + " active bill fees — retire them first");
+            throw new BillDataCorrectionException(
+                    "Bill " + bill.getId() + " has " + feeCount + " active bill fees — retire them first", 409);
         }
 
         long paymentCount = paymentFacade.findLongByJpql(
                 "SELECT COUNT(p) FROM Payment p WHERE p.bill = :b AND p.retired = false", params);
         if (paymentCount > 0) {
-            throw new IllegalStateException(
-                    "Bill " + bill.getId() + " has " + paymentCount + " active payments — retire them first");
+            throw new BillDataCorrectionException(
+                    "Bill " + bill.getId() + " has " + paymentCount + " active payments — retire them first", 409);
         }
 
         if (originalNetTotal != 0.0 || originalTotal != 0.0) {
-            throw new IllegalStateException(
+            throw new BillDataCorrectionException(
                     "Bill " + bill.getId() + " has non-zero totals (net=" + originalNetTotal
-                    + ", gross=" + originalTotal + ") — only zero-value bills may be retired via this API");
+                    + ", gross=" + originalTotal + ") — only zero-value bills may be retired via this API", 409);
         }
     }
 
     private Bill updateBillItem(Long id, Map<String, Object> fields, Map<String, Object> previousValues, Map<String, Object> newValues, WebUser apiUser) {
         BillItem entity = billItemFacade.find(id);
         if (entity == null) {
-            throw new IllegalArgumentException("BillItem not found for id " + id);
+            throw new BillDataCorrectionException("BillItem not found for id " + id);
         }
         validateAllowedFields(fields, BILL_ITEM_FIELDS, "BILL_ITEM");
 
@@ -480,13 +480,13 @@ public class BillDataCorrectionService {
             // Covers both 'retired' absent and 'retired: false' explicitly - either
             // way retireComments would otherwise be silently dropped with no error
             // (#23988 review).
-            throw new IllegalArgumentException("'retireComments' requires 'retired: true' in the same request");
+            throw new BillDataCorrectionException("'retireComments' requires 'retired: true' in the same request");
         }
         if (fields.containsKey("retired")) {
             boolean requestedRetire = toBooleanValue(fields.get("retired"), "retired");
             if (requestedRetire) {
                 if (entity.isRetired()) {
-                    throw new IllegalStateException("BillItem " + id + " is already retired - resubmitting would overwrite the original retirement attribution");
+                    throw new BillDataCorrectionException("BillItem " + id + " is already retired - resubmitting would overwrite the original retirement attribution", 409);
                 }
                 previousValues.put("retired", entity.isRetired());
                 previousValues.put("retiredAt", entity.getRetiredAt());
@@ -511,7 +511,7 @@ public class BillDataCorrectionService {
     private Bill updateBillFinanceDetails(Long id, Map<String, Object> fields, Map<String, Object> previousValues, Map<String, Object> newValues) {
         BillFinanceDetails entity = billFinanceDetailsFacade.find(id);
         if (entity == null) {
-            throw new IllegalArgumentException("BillFinanceDetails not found for id " + id);
+            throw new BillDataCorrectionException("BillFinanceDetails not found for id " + id);
         }
         validateAllowedFields(fields, BILL_FINANCE_FIELDS, "BILL_FINANCE_DETAILS");
 
@@ -571,7 +571,7 @@ public class BillDataCorrectionService {
     private Bill updateBillFee(Long id, Map<String, Object> fields, Map<String, Object> previousValues, Map<String, Object> newValues) {
         BillFee entity = billFeeFacade.find(id);
         if (entity == null) {
-            throw new IllegalArgumentException("BillFee not found for id " + id);
+            throw new BillDataCorrectionException("BillFee not found for id " + id);
         }
         validateAllowedFields(fields, BILL_FEE_FIELDS, "BILL_FEES");
 
@@ -600,7 +600,7 @@ public class BillDataCorrectionService {
     private Bill updateBillItemFinanceDetails(Long id, Map<String, Object> fields, Map<String, Object> previousValues, Map<String, Object> newValues) {
         BillItemFinanceDetails entity = billItemFinanceDetailsFacade.find(id);
         if (entity == null) {
-            throw new IllegalArgumentException("BillItemFinanceDetails not found for id " + id);
+            throw new BillDataCorrectionException("BillItemFinanceDetails not found for id " + id);
         }
         validateAllowedFields(fields, BILL_ITEM_FINANCE_FIELDS, "BILL_ITEM_FINANCE_DETAILS");
 
@@ -636,7 +636,7 @@ public class BillDataCorrectionService {
     private Bill updatePharmaceuticalBillItem(Long id, Map<String, Object> fields, Map<String, Object> previousValues, Map<String, Object> newValues) {
         PharmaceuticalBillItem entity = pharmaceuticalBillItemFacade.find(id);
         if (entity == null) {
-            throw new IllegalArgumentException("PharmaceuticalBillItem not found for id " + id);
+            throw new BillDataCorrectionException("PharmaceuticalBillItem not found for id " + id);
         }
         validateAllowedFields(fields, PHARMACEUTICAL_BILL_ITEM_FIELDS, "PHARMACEUTICAL_BILL_ITEM");
 
@@ -678,7 +678,7 @@ public class BillDataCorrectionService {
     private void validateAllowedFields(Map<String, Object> fields, Set<String> allowedFields, String targetType) {
         for (String key : fields.keySet()) {
             if (!allowedFields.contains(key)) {
-                throw new IllegalArgumentException("Field '" + key + "' is not allowed for " + targetType);
+                throw new BillDataCorrectionException("Field '" + key + "' is not allowed for " + targetType);
             }
         }
     }
@@ -726,13 +726,13 @@ public class BillDataCorrectionService {
         try {
             return new BigDecimal(value.toString());
         } catch (NumberFormatException ex) {
-            throw new IllegalArgumentException("Field '" + fieldName + "' must be numeric");
+            throw new BillDataCorrectionException("Field '" + fieldName + "' must be numeric");
         }
     }
 
     private double toDouble(Object value, String fieldName) {
         if (value == null) {
-            throw new IllegalArgumentException("Field '" + fieldName + "' can not be null");
+            throw new BillDataCorrectionException("Field '" + fieldName + "' can not be null");
         }
         if (value instanceof Number) {
             return ((Number) value).doubleValue();
@@ -740,7 +740,7 @@ public class BillDataCorrectionService {
         try {
             return Double.parseDouble(value.toString());
         } catch (NumberFormatException ex) {
-            throw new IllegalArgumentException("Field '" + fieldName + "' must be numeric");
+            throw new BillDataCorrectionException("Field '" + fieldName + "' must be numeric");
         }
     }
 
@@ -750,7 +750,7 @@ public class BillDataCorrectionService {
 
     private boolean toBooleanValue(Object value, String fieldName) {
         if (value == null) {
-            throw new IllegalArgumentException("Field '" + fieldName + "' cannot be null");
+            throw new BillDataCorrectionException("Field '" + fieldName + "' cannot be null");
         }
         if (value instanceof Boolean) {
             return (Boolean) value;
@@ -758,6 +758,6 @@ public class BillDataCorrectionService {
         String s = value.toString().trim().toLowerCase();
         if ("true".equals(s) || "1".equals(s)) return true;
         if ("false".equals(s) || "0".equals(s)) return false;
-        throw new IllegalArgumentException("Field '" + fieldName + "' must be a boolean (true/false)");
+        throw new BillDataCorrectionException("Field '" + fieldName + "' must be a boolean (true/false)");
     }
 }
