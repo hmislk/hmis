@@ -1,0 +1,109 @@
+/* 
+ Created on : Oct 31, 2026, 9:42:02 PM 
+ To fix the related issue: #23326
+ Added by: Wenura
+*/
+
+/*
+ Print page for reports.
+ Report Header styles and table styles are defined here.
+ This stylesheet requests portrait output for reports.
+*/
+
+/* Custom PDF page numbers without browser-generated headers and footers. */
+@page {
+    size: A4 portrait;
+    margin: 12mm 10mm 15mm;
+
+    @bottom-right {
+        content: "Page " counter(page) " of " counter(pages);
+        font-size: 7pt;
+        font-family: Arial, sans-serif;
+    }
+}
+
+/* 31st October 2026: Screen layout for Portrait reports. */
+@media screen {
+    .paper {
+        position: static !important;
+        width: 100% !important;
+    }
+}
+
+/* 31st October 2026: Portrait print layout. */
+@media print {
+    .paper {
+        position: static !important;
+        width: 100% !important;
+    }
+
+    /* A long report must not cut a row across two printed pages. */
+    .paper .ui-datatable tr {
+        break-inside: avoid;
+        page-break-inside: avoid;
+    }
+}
+
+@media screen, print {
+    .paper .header {
+        font-size: 15pt !important;
+        font-weight: 600 !important;
+        line-height: 1.2;
+        margin: 0mm 0mm 5mm 0mm !important;
+        text-align: center !important;
+    }
+
+    .doctor-appointments-print-table {
+        width: 99.9% !important;
+        margin-top: 4mm !important;
+        border-collapse: collapse !important;
+    }
+
+    .paper .ui-datatable table {
+        width: 100% !important;
+        table-layout: fixed !important;
+        font-size: 8pt !important;
+        border-collapse: collapse !important;
+    }
+
+    .paper .ui-datatable th {
+        border: 1pt solid #000000 !important;
+        padding: 3pt 2pt !important;
+        text-align: center !important;
+        vertical-align: middle !important;
+        line-height: 1.2 !important;
+        white-space: normal !important;
+        overflow-wrap: break-word;
+    }
+
+    .paper .ui-datatable td {
+        border: 1pt solid #000000 !important;
+        padding: 3pt 2pt !important;
+        text-align: center !important;
+        vertical-align: middle !important;
+        line-height: 1.2 !important;
+        white-space: normal !important;
+        overflow-wrap: break-word;
+    }
+
+    .report-header-table {
+        border-collapse: collapse !important;
+    }
+
+    .report-header-table td {
+        font-size: 10pt !important;
+        border: 1pt solid #000000 !important;
+        padding: 3px 8px !important;
+        vertical-align: middle !important;
+    }
+
+    .report-header-table .label {
+        font-weight: 600;
+        padding-right: 5px;
+        white-space: nowrap;
+    }
+
+    .paper .ui-sortable-column .ui-sortable-column-icon {
+        display: none !important;
+    }
+}

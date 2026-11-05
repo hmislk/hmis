@@ -84,7 +84,7 @@
                 <ui:repeat value="#{cc.attrs.encounterComponents}" var="ec">
                     <div style="display: flex; justify-content: space-between; margin: 2px 0;">
                         <span>
-                            <h:outputLabel value="#{ec.patientEncounterComponentType}"/>
+                            <h:outputLabel value="#{ec.patientEncounterComponentType.label}"/>
                             <h:outputLabel value=" - #{ec.staff.person.nameWithTitle}"/>
                         </span>
                         <span style="text-align: right; min-width: 60px;">

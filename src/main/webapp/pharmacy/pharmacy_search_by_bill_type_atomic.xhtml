@@ -38,8 +38,27 @@
                                 </p:selectOneMenu>
                             </div>
                             <div class="pharma-search-filter">
-                                <p:outputLabel for="itemName" value="Item Name"/>
-                                <p:inputText id="itemName" autocomplete="off" value="#{searchController.billSearchItemName}" placeholder="Contains item name"/>
+                                <p:outputLabel for="itemName" value="Item Name"
+                                               rendered="#{!configOptionApplicationController.getBooleanValueByKey('Pharmacy Bill Search by Bill Type Atomic - Suggest Item Names', false)}"/>
+                                <p:inputText id="itemName" autocomplete="off" value="#{searchController.billSearchItemName}" placeholder="Contains item name"
+                                             rendered="#{!configOptionApplicationController.getBooleanValueByKey('Pharmacy Bill Search by Bill Type Atomic - Suggest Item Names', false)}"/>
+                                <p:outputLabel for="itemNameSuggest" value="Item Name"
+                                               rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Bill Search by Bill Type Atomic - Suggest Item Names', false)}"/>
+                                <p:autoComplete
+                                    id="itemNameSuggest"
+                                    rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Bill Search by Bill Type Atomic - Suggest Item Names', false)}"
+                                    value="#{searchController.billSearchItemName}"
+                                    completeMethod="#{itemController.completeAmpAndAmppNames}"
+                                    forceSelection="false"
+                                    autoHighlight="false"
+                                    autoSelection="false"
+                                    minQueryLength="4"
+                                    maxResults="20"
+                                    queryDelay="300"
+                                    autocomplete="off"
+                                    inputStyleClass="w-100"
+                                    onkeydown="if (event.key === 'Enter' || event.key === 'NumpadEnter') { var p = document.getElementById(this.id.replace(/_input$/, '_panel')); if (p &amp;&amp; getComputedStyle(p).display !== 'none' &amp;&amp; !p.querySelector('.ui-state-highlight')) { event.preventDefault(); document.getElementById(this.form.id + ':btnSearch').click(); } }"
+                                    placeholder="Type 4 letters for suggestions"/>
                             </div>
                             <div class="pharma-search-filter">
                                 <p:outputLabel for="itemCode" value="Item Code"/>

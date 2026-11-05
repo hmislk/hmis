@@ -98,8 +98,8 @@ public class DrawerController implements Serializable {
             return;
         }
 
-        //update Drover History
-        drawerEntryUpdate(payment, drawer, webUser);
+        //update Drover History with the signed value applied to the balance below
+        drawerService.drawerEntryUpdate(payment, drawer, webUser, paidValue);
 
         synchronized (drawer) {
             switch (payment.getPaymentMethod()) {

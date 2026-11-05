@@ -151,7 +151,7 @@
                                     <p:selectOneMenu class="mx-4 my-1" style="width: 400px;"
                                                      value="#{inwardProfessionalBillController.proEncounterComponent.patientEncounterComponentType}">
                                         <f:selectItem itemLabel="Please select Role"/>
-                                        <f:selectItems value="#{enumController.patientEncounterComponentTypes}"/>
+                                        <f:selectItems value="#{enumController.patientEncounterComponentTypes}" var="pect" itemLabel="#{pect.label}" itemValue="#{pect}"/>
                                     </p:selectOneMenu>
 
                                     <h:outputText value="Speciality"/>
@@ -217,7 +217,7 @@
                         <p:dataTable value="#{inwardProfessionalBillController.proEncounterComponents}" var="c"
                                      emptyMessage="No fees added yet. Use the form above to add fees, then click 'Save Bill'.">
                             <p:column headerText="Role">
-                                <h:outputLabel value="#{c.patientEncounterComponentType}"/>
+                                <h:outputLabel value="#{c.patientEncounterComponentType.label}"/>
                             </p:column>
                             <p:column headerText="Doctor/Staff">
                                 <h:outputLabel value="#{c.billFee.staff.person.nameWithTitle}"/>

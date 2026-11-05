@@ -1156,6 +1156,26 @@ public class ChannelService {
         return count == null ? 0L : count;
     }
 
+    /**
+     * The one capacity check for staff booking screens (main screen and month view). Recounts the
+     * session's bookings from the booking rows and compares them, plus open agent holds, with the
+     * session maximum, so the stored counts being stale cannot let a full session through (#25074).
+     * Do not reimplement this in a controller; change it here.
+     * <p>
+     * Limits: the session row lock taken here does NOT outlive this call (it is released when the
+     * method returns, before the caller saves), so it gives a fresh recount, not a serialising
+     * guard. Serialising check and save on one server comes from SessionBookingLock, which the
+     * caller must hold around both. Across several servers these screens are still not covered
+     * (tracked in issue #25066).
+     *
+     * @param reservedBooking true when the booking takes one of the session's reserved numbers
+     * @return true when the session has no room for the booking
+     */
+    public boolean isSessionFullForNewBooking(SessionInstance session, boolean reservedBooking) {
+        SessionInstance locked = lockAndRecountSession(session);
+        return isFullyBookedSession(locked, countOpenAgentHolds(locked), reservedBooking);
+    }
+
     // A projection reads the database row, not an entity another server may have left stale in this server's cache
     private void rejectIfHoldNoLongerOpen(BillSession preBillSession) {
         String jpql = "select b.paid, b.cancelled, b.refunded, b.retired, bs.retired, pb.id "
@@ -2996,7 +3016,16 @@ public class ChannelService {
      * by agent holds that are not yet completed (#25053).
      */
     public boolean isFullyBookedSession(SessionInstance ss, long openHolds) {
-        if (ss.getMaxNo() != 0 && configOptionApplicationController.getBooleanValueByKey("Limited appoinments session can't get appoinement more than max amount.")) {
+        return isFullyBookedSession(ss, openHolds, false);
+    }
+
+    /**
+     * As {@link #isFullyBookedSession(SessionInstance, long)}; when {@code reservedBooking} is true
+     * the booking takes one of the session's reserved numbers, so the reserved numbers are not
+     * counted as already taken.
+     */
+    public boolean isFullyBookedSession(SessionInstance ss, long openHolds, boolean reservedBooking) {
+        if (ss.getMaxNo() != 0&& configOptionApplicationController.getBooleanValueByKey("Limited appoinments session can't get appoinement more than max amount.")) {
             if (ss.getBookedPatientCount() != null) {
                 int maxNo = ss.getMaxNo();
                 long bookedPatientCount = ss.getBookedPatientCount();
@@ -3004,9 +3033,7 @@ public class ChannelService {
                 long totalPatientCount;
 
                 List<Integer> reservedNumbers = CommonFunctions.convertStringToIntegerList(ss.getReserveNumbers());
-                if (false) {
-                    bookedPatientCount = bookedPatientCount;
-                } else {
+                if (!reservedBooking) {
                     bookedPatientCount = bookedPatientCount + reservedNumbers.size() - reservedBookingCount;
                 }
 
