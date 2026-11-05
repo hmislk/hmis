@@ -204,7 +204,7 @@ Tablet, Capsule, ml).
 }
 ```
 
-*Note:* `vmppId` is optional. When omitted and the AMP has a VMP, a matching VMPP is automatically found or created for (VMP, `dblValue`, `packUnitId`). Response `AmppDto` returns `vmpId`, `vmpName`, `vmppId`, and `vmppName`.
+*Note:* `vmppId` is optional. When omitted and the AMP has a VMP, a matching VMPP is automatically found or created for (VMP, `dblValue`, `packUnitId`). When explicitly provided, it must reference an active (unretired) VMPP matching the AMP's VMP, pack size (`dblValue`), and pack unit. Response `AmppDto` returns `vmpId`, `vmpName`, `vmppId`, and `vmppName`.
 
 **Example - Create VTM:**
 ```bash
@@ -237,7 +237,7 @@ only unique among non-retired rows of that type.
 
 Only provided fields are updated (null fields are ignored).
 
-*AMPP VMPP Update Behavior:* When updating an AMPP, `vmppId` can be explicitly provided (validated against the AMP's VMP). If omitted and `dblValue`, `packUnitId`, or `ampId` changes, the matching VMPP is automatically re-resolved or created; if the updated pack fields or AMP no longer permit resolution, the stale VMPP association is cleared.
+*AMPP VMPP Update Behavior:* When updating an AMPP, `vmppId` can be explicitly provided (validated against the AMP's VMP, pack size, and pack unit). If omitted and `dblValue`, `packUnitId`, or `ampId` changes, the matching VMPP is automatically re-resolved or created; if the updated pack fields (e.g. `dblValue <= 0` or missing unit) or AMP no longer permit resolution, the stale VMPP association is cleared.
 
 **Example:**
 ```bash

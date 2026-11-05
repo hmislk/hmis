@@ -263,10 +263,13 @@ public class PharmaceuticalItemApiService implements Serializable {
         StringBuilder jpql = new StringBuilder();
         jpql.append("SELECT new com.divudi.core.data.dto.AmppDto(")
                 .append("i.id, i.name, i.code, i.retired, i.inactive, ")
-                .append("i.dblValue, pu.name, amp.id, amp.name) ")
+                .append("i.dblValue, pu.name, amp.id, amp.name, ")
+                .append("vmp.id, vmp.name, vmpp.id, vmpp.name) ")
                 .append("FROM Ampp i ")
                 .append("LEFT JOIN i.packUnit pu ")
                 .append("LEFT JOIN i.amp amp ")
+                .append("LEFT JOIN amp.vmp vmp ")
+                .append("LEFT JOIN i.vmpp vmpp ")
                 .append("WHERE i.retired = false ");
 
         if (query != null) {
@@ -480,46 +483,46 @@ public class PharmaceuticalItemApiService implements Serializable {
 
     private AmppDto createAmpp(AmppRequestDTO request, WebUser user) throws Exception {
         validateBaseRequest(request);
-        Ampp item = new Ampp();
-        applyBaseFields(item, request);
-        if (request.getAmpId() != null) {
-            Amp amp = ampFacade.find(request.getAmpId());
-            if (amp == null) {
-                throw new Exception("AMP not found with ID: " + request.getAmpId());
-            }
-            item.setAmp(amp);
-        }
-        if (request.getDblValue() != null) {
-            item.setDblValue(request.getDblValue());
-        }
-        if (request.getPackUnitId() != null) {
-            MeasurementUnit packUnit = measurementUnitFacade.find(request.getPackUnitId());
-            if (packUnit == null) {
-                throw new Exception("Pack unit not found with ID: " + request.getPackUnitId());
-            }
-            item.setPackUnit(packUnit);
-        }
-        Ampp duplicate = findDuplicateByName(amppFacade, "Ampp", item.getName());
+
+        Ampp duplicate = findDuplicateByName(amppFacade, "Ampp", request.getName().trim());
         if (duplicate != null) {
             throw new DuplicateItemException(duplicate.getId(), buildAmppDto(duplicate));
         }
-        if (request.getVmppId() != null) {
-            Vmpp vmpp = vmppFacade.find(request.getVmppId());
-            if (vmpp == null) {
-                throw new Exception("VMPP not found with ID: " + request.getVmppId());
-            }
-            if (item.getAmp() != null && item.getAmp().getVmp() != null && vmpp.getVmp() != null
-                    && !item.getAmp().getVmp().equals(vmpp.getVmp())) {
-                throw new Exception("VMPP with ID: " + request.getVmppId() + " does not belong to the VMP of the selected AMP");
-            }
-            item.setVmpp(vmpp);
-        } else if (item.getAmp() != null && item.getAmp().getVmp() != null &&
-                item.getDblValue() > 0 && item.getPackUnit() != null) {
-            Vmpp vmpp = findOrCreateVmpp(item.getAmp().getVmp(), item.getDblValue(), item.getPackUnit(), user);
-            if (vmpp != null) {
-                item.setVmpp(vmpp);
+
+        Amp amp = null;
+        if (request.getAmpId() != null) {
+            amp = ampFacade.find(request.getAmpId());
+            if (amp == null) {
+                throw new PharmaceuticalItemApiException("AMP not found with ID: " + request.getAmpId(), 404);
             }
         }
+
+        Double dblValue = request.getDblValue();
+
+        MeasurementUnit packUnit = null;
+        if (request.getPackUnitId() != null) {
+            packUnit = measurementUnitFacade.find(request.getPackUnitId());
+            if (packUnit == null) {
+                throw new PharmaceuticalItemApiException("Pack unit not found with ID: " + request.getPackUnitId(), 404);
+            }
+        }
+
+        Vmpp vmpp = null;
+        if (request.getVmppId() != null) {
+            vmpp = validateExplicitVmpp(request.getVmppId(), amp, dblValue, packUnit);
+        } else if (amp != null && amp.getVmp() != null && dblValue != null && dblValue > 0 && packUnit != null) {
+            vmpp = findOrCreateVmpp(amp.getVmp(), dblValue, packUnit, user);
+        }
+
+        Ampp item = new Ampp();
+        applyBaseFields(item, request);
+        item.setAmp(amp);
+        if (dblValue != null) {
+            item.setDblValue(dblValue);
+        }
+        item.setPackUnit(packUnit);
+        item.setVmpp(vmpp);
+
         setAuditFieldsForCreate(item, user);
         amppFacade.createAndFlush(item);
         return buildAmppDto(item);
@@ -660,56 +663,72 @@ public class PharmaceuticalItemApiService implements Serializable {
     private AmppDto updateAmpp(Long id, AmppRequestDTO request, WebUser user) throws Exception {
         Ampp item = amppFacade.find(id);
         if (item == null) {
-            throw new Exception("AMPP not found with ID: " + id);
+            throw new PharmaceuticalItemApiException("AMPP not found with ID: " + id, 404);
         }
-        applyBaseFieldsIfProvided(item, request);
+
+        Amp targetAmp = item.getAmp();
         boolean ampChanged = false;
         if (request.getAmpId() != null) {
-            Amp amp = ampFacade.find(request.getAmpId());
-            if (amp == null) {
-                throw new Exception("AMP not found with ID: " + request.getAmpId());
+            targetAmp = ampFacade.find(request.getAmpId());
+            if (targetAmp == null) {
+                throw new PharmaceuticalItemApiException("AMP not found with ID: " + request.getAmpId(), 404);
             }
-            item.setAmp(amp);
-            ampChanged = true;
+            if (item.getAmp() == null || !item.getAmp().equals(targetAmp)) {
+                ampChanged = true;
+            }
         }
+
+        Double targetDblValue = item.getDblValue();
         boolean dblValueChanged = false;
         if (request.getDblValue() != null) {
             if (Double.compare(item.getDblValue(), request.getDblValue()) != 0) {
                 dblValueChanged = true;
             }
-            item.setDblValue(request.getDblValue());
+            targetDblValue = request.getDblValue();
         }
+
+        MeasurementUnit targetPackUnit = item.getPackUnit();
         boolean packUnitChanged = false;
         if (request.getPackUnitId() != null) {
-            MeasurementUnit packUnit = measurementUnitFacade.find(request.getPackUnitId());
-            if (packUnit == null) {
-                throw new Exception("Pack unit not found with ID: " + request.getPackUnitId());
+            targetPackUnit = measurementUnitFacade.find(request.getPackUnitId());
+            if (targetPackUnit == null) {
+                throw new PharmaceuticalItemApiException("Pack unit not found with ID: " + request.getPackUnitId(), 404);
             }
-            if (item.getPackUnit() == null || !item.getPackUnit().equals(packUnit)) {
+            if (item.getPackUnit() == null || !item.getPackUnit().equals(targetPackUnit)) {
                 packUnitChanged = true;
             }
-            item.setPackUnit(packUnit);
         }
+
+        Vmpp targetVmpp = item.getVmpp();
         if (request.getVmppId() != null) {
-            Vmpp vmpp = vmppFacade.find(request.getVmppId());
-            if (vmpp == null) {
-                throw new Exception("VMPP not found with ID: " + request.getVmppId());
+            targetVmpp = validateExplicitVmpp(request.getVmppId(), targetAmp, targetDblValue, targetPackUnit);
+        } else {
+            boolean packChanged = dblValueChanged || packUnitChanged || ampChanged;
+            if (targetAmp != null && targetAmp.getVmp() != null && targetDblValue != null && targetDblValue > 0 && targetPackUnit != null) {
+                if (packChanged || targetVmpp == null) {
+                    targetVmpp = findOrCreateVmpp(targetAmp.getVmp(), targetDblValue, targetPackUnit, user);
+                }
+            } else if (packChanged) {
+                targetVmpp = null;
             }
-            if (item.getAmp() != null && item.getAmp().getVmp() != null && vmpp.getVmp() != null
-                    && !item.getAmp().getVmp().equals(vmpp.getVmp())) {
-                throw new Exception("VMPP with ID: " + request.getVmppId() + " does not belong to the VMP of the selected AMP");
-            }
-            item.setVmpp(vmpp);
-        } else if ((dblValueChanged || packUnitChanged || ampChanged || item.getVmpp() == null) &&
-                item.getAmp() != null && item.getAmp().getVmp() != null &&
-                item.getDblValue() > 0 && item.getPackUnit() != null) {
-            Vmpp vmpp = findOrCreateVmpp(item.getAmp().getVmp(), item.getDblValue(), item.getPackUnit(), user);
-            if (vmpp != null) {
-                item.setVmpp(vmpp);
-            }
-        } else if (ampChanged && (item.getAmp() == null || item.getAmp().getVmp() == null)) {
-            item.setVmpp(null);
         }
+
+        if (request.getName() != null && !request.getName().trim().isEmpty()
+                && !request.getName().trim().equalsIgnoreCase(item.getName())) {
+            Ampp duplicate = findDuplicateByName(amppFacade, "Ampp", request.getName().trim());
+            if (duplicate != null && !duplicate.getId().equals(item.getId())) {
+                throw new DuplicateItemException(duplicate.getId(), buildAmppDto(duplicate));
+            }
+        }
+
+        applyBaseFieldsIfProvided(item, request);
+        item.setAmp(targetAmp);
+        if (targetDblValue != null) {
+            item.setDblValue(targetDblValue);
+        }
+        item.setPackUnit(targetPackUnit);
+        item.setVmpp(targetVmpp);
+
         setAuditFieldsForEdit(item, user);
         amppFacade.edit(item);
         return buildAmppDto(item);
@@ -1130,16 +1149,36 @@ public class PharmaceuticalItemApiService implements Serializable {
             String unitName = packUnit.getName() != null ? packUnit.getName() : "";
             v.setName(vmp.getName() + " (" + dblValue + " " + unitName + ")");
             setAuditFieldsForCreate(v, user);
-            try {
-                vmppFacade.create(v);
-            } catch (Exception e) {
-                v = vmppFacade.findFirstByJpql(jpql, params);
-                if (v == null) {
-                    throw e;
-                }
-            }
+            vmppFacade.createAndFlush(v);
         }
         return v;
+    }
+
+    private Vmpp validateExplicitVmpp(Long vmppId, Amp amp, Double dblValue, MeasurementUnit packUnit) {
+        if (vmppId == null) {
+            return null;
+        }
+        Vmpp vmpp = vmppFacade.find(vmppId);
+        if (vmpp == null) {
+            throw new PharmaceuticalItemApiException("VMPP not found with ID: " + vmppId, 404);
+        }
+        if (vmpp.isRetired()) {
+            throw new PharmaceuticalItemApiException("VMPP is retired with ID: " + vmppId, 400);
+        }
+        if (amp == null || amp.getVmp() == null) {
+            throw new PharmaceuticalItemApiException("Cannot link VMPP: selected AMP has no associated VMP", 400);
+        }
+        if (vmpp.getVmp() == null || !amp.getVmp().equals(vmpp.getVmp())) {
+            throw new PharmaceuticalItemApiException("VMPP with ID: " + vmppId + " does not belong to the VMP of the selected AMP", 400);
+        }
+        if (dblValue == null || Double.compare(dblValue, vmpp.getDblValue()) != 0) {
+            throw new PharmaceuticalItemApiException("VMPP pack size (" + vmpp.getDblValue()
+                    + ") does not match AMPP pack size (" + (dblValue != null ? dblValue : "null") + ")", 400);
+        }
+        if (packUnit == null || vmpp.getPackUnit() == null || !packUnit.equals(vmpp.getPackUnit())) {
+            throw new PharmaceuticalItemApiException("VMPP pack unit does not match AMPP pack unit", 400);
+        }
+        return vmpp;
     }
 
     private void applyPackFields(Item item, Long parentVmpId, Double dblValue, Long packUnitId, String parentType) throws Exception {
