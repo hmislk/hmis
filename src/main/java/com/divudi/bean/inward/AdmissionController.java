@@ -25,6 +25,7 @@ import com.divudi.core.data.admin.PageMetadata;
 
 import com.divudi.core.data.ApplicationInstitution;
 import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.data.Title;
 import com.divudi.core.data.dataStructure.ComponentDetail;
 import com.divudi.core.data.dataStructure.PaymentMethodData;
 import com.divudi.core.data.dataStructure.YearMonthDay;
@@ -432,6 +433,20 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         metadata.addConfigOption(new ConfigOptionInfo(
                 "Inward Admission - Patient NIC Required for Credit Admissions",
                 "Refuse a Credit admission when the patient's National ID Number is blank; any value, even '-', is accepted. Baby and Rapid / Temp A&E admissions are exempt. Independent of 'Patient Details Required in Patient Admission' (default false)",
+                "inward/inward_admission",
+                OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Inward Admission - Exempt Baby, Baby Of and Master Titles from Patient NIC Requirement",
+                "A blank patient NIC does not block the admission when the patient's title is Baby, Baby Of or Master. Applies to both 'Patient NIC is Required in Patient Admission' and 'Inward Admission - Patient NIC Required for Credit Admissions'. A NIC that is entered is still saved (default false)",
+                "inward/inward_admission",
+                OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Inward Admission - Require Guardian Name and NIC for Baby, Baby Of, Master Titles and Claimable Admissions",
+                "Block the admission when the guardian name or guardian NIC is blank and the patient's title is Baby, Baby Of or Master, or the admission is Claimable (Credit). Applies when the admission is created; Provisional Emergency and On Admission Death admissions are exempt. A value of only spaces counts as blank (default false)",
                 "inward/inward_admission",
                 OptionScope.APPLICATION
         ));
@@ -2369,7 +2384,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             }
             // Baby admissions typically have no NIC of their own yet, so this
             // admission-specific NIC-required check is skipped for them. (Issue #22998)
-            if (!isBabyAdmission() && configOptionApplicationController.getBooleanValueByKey("Patient NIC is Required in Patient Admission", false)) {
+            if (!isBabyAdmission() && !isNicExemptTitle() && configOptionApplicationController.getBooleanValueByKey("Patient NIC is Required in Patient Admission", false)) {
                 if (getCurrent().getPatient().getPerson().getNic() == null || getCurrent().getPatient().getPerson().getNic().trim().isEmpty()) {
                     JsfUtil.addErrorMessage("Patient NIC is Required");
                     patientDetailsHasError = true;
@@ -2396,7 +2411,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         // nor affects OPD/channelling. Any non-blank value (even "-") is accepted.
         // Baby and Rapid / Temp A&E admissions are exempt, matching the existing
         // NIC check. (Issue #23978)
-        if (!isRapidTempAe() && !isBabyAdmission()
+        if (!isRapidTempAe() && !isBabyAdmission() && !isNicExemptTitle()
                 && getCurrent().getPaymentMethod() == PaymentMethod.Credit
                 && configOptionApplicationController.getBooleanValueByKey("Inward Admission - Patient NIC Required for Credit Admissions", false)) {
             Person person = getCurrent().getPatient().getPerson();
@@ -2483,6 +2498,22 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         // reported together. (Issues #24564, #25032)
         if (!isRapidTempAe()) {
             List<String> guardianErrors = AdmissionGuardianRules.validate(getCurrent(), configOptionApplicationController);
+            // Guardian name and NIC for Baby / Baby Of / Master titles and Claimable
+            // admissions. Admit-time only (not shared with Edit Admission Details or
+            // Mark as Verified). Messages already reported above are not repeated.
+            // (Issue #25190)
+            if (getCurrent().getEncounterRegistrationFlag() != EncounterRegistrationFlag.ON_ADMISSION_DEATH
+                    && isGuardianNameAndNicRequiredForTitleOrClaimable()) {
+                Person guardian = getCurrent().getGuardian();
+                // "Guardian is Required" (existing option) already covers a missing guardian.
+                boolean guardianAlreadyReportedMissing = guardian == null && guardianErrors.contains("Guardian is Required");
+                if (!guardianAlreadyReportedMissing && (guardian == null || isBlank(guardian.getName()))) {
+                    addErrorOnce(guardianErrors, "Guardian Name is Required");
+                }
+                if (!guardianAlreadyReportedMissing && (guardian == null || isBlank(guardian.getNic()))) {
+                    addErrorOnce(guardianErrors, "Guardian NIC is Required");
+                }
+            }
             if (!guardianErrors.isEmpty()) {
                 for (String guardianError : guardianErrors) {
                     JsfUtil.addErrorMessage(guardianError);
@@ -2492,6 +2523,52 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         }
 
         return false;
+    }
+
+    private static boolean isBlank(String value) {
+        return value == null || value.trim().isEmpty();
+    }
+
+    private static void addErrorOnce(List<String> errors, String message) {
+        if (!errors.contains(message)) {
+            errors.add(message);
+        }
+    }
+
+    private static boolean isBabyOrMasterTitle(Title title) {
+        return title == Title.Baby || title == Title.Baby_Of || title == Title.Master;
+    }
+
+    /**
+     * @return {@code true} when the option to exempt the Baby, Baby Of and
+     * Master titles from the patient NIC requirement is on and the patient has
+     * one of those titles. (Issue #25189)
+     */
+    private boolean isNicExemptTitle() {
+        if (getCurrent() == null || getCurrent().getPatient() == null || getCurrent().getPatient().getPerson() == null) {
+            return false;
+        }
+        return isBabyOrMasterTitle(getCurrent().getPatient().getPerson().getTitle())
+                && configOptionApplicationController.getBooleanValueByKey(
+                        "Inward Admission - Exempt Baby, Baby Of and Master Titles from Patient NIC Requirement", false);
+    }
+
+    /**
+     * @return {@code true} when the guardian name and NIC option is on and the
+     * patient's title is Baby, Baby Of or Master, or the admission is
+     * Claimable (Credit). (Issue #25190)
+     */
+    private boolean isGuardianNameAndNicRequiredForTitleOrClaimable() {
+        if (!configOptionApplicationController.getBooleanValueByKey(
+                "Inward Admission - Require Guardian Name and NIC for Baby, Baby Of, Master Titles and Claimable Admissions", false)) {
+            return false;
+        }
+        boolean titleMatches = getCurrent().getPatient() != null
+                && getCurrent().getPatient().getPerson() != null
+                && isBabyOrMasterTitle(getCurrent().getPatient().getPerson().getTitle());
+        boolean claimable = getCurrent().isClaimable()
+                || getCurrent().getPaymentMethod() == PaymentMethod.Credit;
+        return titleMatches || claimable;
     }
 
     @Inject
