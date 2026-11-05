@@ -2115,8 +2115,9 @@ public class InwardSearch implements Serializable {
         } else if (originalHasNoPaymentRows && pm != null && hasUsablePaymentData(pm, pmd)) {
             // Only when the original never had Payment rows. If all its rows are
             // retired there is no active money to reverse, so nothing is written.
-            // 2-arg overload: also writes the drawer, like createPaymentsForCancelling
-            created = paymentService.createPayment(cb, pmd);
+            // Nothing was ever credited to the drawer for this original, so the
+            // fallback must not subtract from it.
+            created = paymentService.createPaymentWithoutDrawer(cb, pmd);
         }
         if (created == null) {
             created = new ArrayList<>();
@@ -2253,9 +2254,13 @@ public class InwardSearch implements Serializable {
 
             getBillBean().updateInwardDipositList(getBill().getPatientEncounter(), cb);
 
-            if (createReversalPayments(cb, getBill(), cb.getPaymentMethod()) == null) {
+            List<Payment> reversalPayments = createReversalPayments(cb, getBill(), cb.getPaymentMethod());
+            if (reversalPayments == null) {
                 return;
             }
+            // These two paths do not call updateBalances (it would also touch staff and
+            // credit rows), so restore only the patient deposit balance (#25178).
+            paymentService.restorePatientDepositBalances(reversalPayments, getBill());
 
             if (getBill().getPatientEncounter().isPaymentFinalized()) {
                 getInwardBean().updateFinalFill(getBill().getPatientEncounter());
@@ -2312,9 +2317,13 @@ public class InwardSearch implements Serializable {
 
             getBillBean().updateInwardDipositList(getBill().getPatientEncounter(), cb);
 
-            if (createReversalPayments(cb, getBill(), cb.getPaymentMethod()) == null) {
+            List<Payment> reversalPayments = createReversalPayments(cb, getBill(), cb.getPaymentMethod());
+            if (reversalPayments == null) {
                 return;
             }
+            // These two paths do not call updateBalances (it would also touch staff and
+            // credit rows), so restore only the patient deposit balance (#25178).
+            paymentService.restorePatientDepositBalances(reversalPayments, getBill());
 
             if (getBill().getPatientEncounter().isPaymentFinalized()) {
                 getInwardBean().updateFinalFill(getBill().getPatientEncounter());
