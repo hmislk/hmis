@@ -7,6 +7,8 @@ import com.divudi.core.data.dto.pharmacy.ItemSupplierRequestDto;
 import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.Item;
 import com.divudi.core.entity.WebUser;
+import com.divudi.core.entity.pharmacy.Amp;
+import com.divudi.core.entity.pharmacy.Ampp;
 import com.divudi.core.entity.pharmacy.ItemsDistributors;
 import com.divudi.core.facade.InstitutionFacade;
 import com.divudi.core.facade.ItemFacade;
@@ -90,6 +92,7 @@ public class PharmacyItemSupplierApiServiceTest {
 
             for (ItemsDistributors id : db.values()) {
                 if (id.isRetired()) continue;
+                if (id.getItem() != null && id.getItem().isRetired()) continue;
                 if (supId != null && (id.getInstitution() == null || !id.getInstitution().getId().equals(supId))) continue;
                 if (itmId != null && (id.getItem() == null || !id.getItem().getId().equals(itmId))) continue;
                 res.add(id);
@@ -177,14 +180,14 @@ public class PharmacyItemSupplierApiServiceTest {
         retiredDealer.setRetired(true);
         dummyInstitutionFacade.db.put(retiredDealer.getId(), retiredDealer);
 
-        validItem = new Item();
+        validItem = new Amp();
         validItem.setId(200L);
         validItem.setName("Paracetamol 500mg Tablet");
         validItem.setCode("PARA500");
         validItem.setRetired(false);
         dummyItemFacade.db.put(validItem.getId(), validItem);
 
-        retiredItem = new Item();
+        retiredItem = new Amp();
         retiredItem.setId(201L);
         retiredItem.setName("Discontinued Syrup");
         retiredItem.setCode("DISC01");
@@ -318,7 +321,7 @@ public class PharmacyItemSupplierApiServiceTest {
         service.createLink(new ItemSupplierRequestDto(100L, 200L), user);
 
         // Add a second valid item
-        Item item2 = new Item();
+        Amp item2 = new Amp();
         item2.setId(300L);
         item2.setName("Amoxicillin 250mg Capsule");
         item2.setRetired(false);
@@ -410,7 +413,7 @@ public class PharmacyItemSupplierApiServiceTest {
     void testSearchLinks_Filtering() {
         service.createLink(new ItemSupplierRequestDto(100L, 200L), user);
 
-        Item item2 = new Item();
+        Amp item2 = new Amp();
         item2.setId(300L);
         item2.setName("Item 2");
         item2.setRetired(false);
@@ -433,5 +436,62 @@ public class PharmacyItemSupplierApiServiceTest {
         // Search for non-existent item
         List<ItemSupplierDto> empty = service.searchLinks(null, 999L, 10, 0);
         assertEquals(0, empty.size());
+    }
+
+    @Test
+    @DisplayName("Rejects creation when item is not an Amp or Ampp (e.g. generic Item or Investigation)")
+    void testCreateLink_RejectsNonAmpOrAmpp() {
+        Item genericItem = new Item();
+        genericItem.setId(400L);
+        genericItem.setName("Lab Investigation Blood Test");
+        genericItem.setRetired(false);
+        dummyItemFacade.db.put(genericItem.getId(), genericItem);
+
+        ItemSupplierRequestDto req = new ItemSupplierRequestDto(100L, 400L);
+        PharmacyItemSupplierApiService.CreateItemSupplierResult result = service.createLink(req, user);
+        assertEquals(400, result.getStatus());
+        assertTrue(result.getMessage().contains("Amp or Ampp"));
+    }
+
+    @Test
+    @DisplayName("Successfully creates link when item is an Ampp")
+    void testCreateLink_AmppSuccess() {
+        Ampp ampp = new Ampp();
+        ampp.setId(500L);
+        ampp.setName("Paracetamol 500mg 100s Pack");
+        ampp.setRetired(false);
+        dummyItemFacade.db.put(ampp.getId(), ampp);
+
+        ItemSupplierRequestDto req = new ItemSupplierRequestDto(100L, 500L);
+        PharmacyItemSupplierApiService.CreateItemSupplierResult result = service.createLink(req, user);
+        assertEquals(201, result.getStatus());
+        assertEquals(500L, result.getData().getItemId());
+    }
+
+    @Test
+    @DisplayName("Search links excludes active links whose item is retired")
+    void testSearchLinks_ExcludesRetiredItems() {
+        Amp activeAmp = new Amp();
+        activeAmp.setId(601L);
+        activeAmp.setName("Active Amp");
+        activeAmp.setRetired(false);
+        dummyItemFacade.db.put(activeAmp.getId(), activeAmp);
+        service.createLink(new ItemSupplierRequestDto(100L, 601L), user);
+
+        Amp soonToBeRetiredAmp = new Amp();
+        soonToBeRetiredAmp.setId(602L);
+        soonToBeRetiredAmp.setName("Retiring Amp");
+        soonToBeRetiredAmp.setRetired(false);
+        dummyItemFacade.db.put(soonToBeRetiredAmp.getId(), soonToBeRetiredAmp);
+        service.createLink(new ItemSupplierRequestDto(100L, 602L), user);
+
+        // Mark second item as retired in DB
+        soonToBeRetiredAmp.setRetired(true);
+
+        List<ItemSupplierDto> list = service.searchLinks(100L, null, 10, 0);
+        boolean has602 = list.stream().anyMatch(dto -> dto.getItemId().equals(602L));
+        assertFalse(has602);
+        boolean has601 = list.stream().anyMatch(dto -> dto.getItemId().equals(601L));
+        assertTrue(has601);
     }
 }

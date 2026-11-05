@@ -140,14 +140,14 @@ Link one item to a Dealer supplier.
 | Active link already exists | `409 Conflict` | Returns existing link in `data` with 409 status |
 | Supplier or item not found | `404 Not Found` | Error message indicating missing entity |
 | Supplier is retired or not a Dealer | `400 Bad Request` | Rejects non-Dealer or retired supplier |
-| Item is retired | `400 Bad Request` | Rejects linking retired item |
+| Item is retired or not an Amp/Ampp | `400 Bad Request` | Rejects non-pharmaceutical (must be Amp or Ampp) or retired item |
 | Missing `supplierId` or `itemId` | `400 Bad Request` | Validation error message |
 
 ---
 
 ## POST /api/pharmacy/item_suppliers/bulk
 
-Link multiple items to suppliers in one batch call. Each row that fails validation receives its own outcome, so a single bad item ID does not abort the remaining entries. An unexpected persistence error rolls back the whole batch and returns HTTP 500 without row outcomes. Maximum 500 entries per bulk request.
+Link multiple items to suppliers in one batch call. Each well-formed entry that fails business validation (e.g. non-existent or retired entity, duplicate link) receives its own row-level outcome, allowing valid entries in the batch to succeed. A structurally malformed entry or unparseable ID (e.g. non-integer or string ID like `"bad"`) fails JSON request validation and rejects the entire batch with HTTP 400 with no row outcomes. An unexpected persistence error rolls back the whole batch and returns HTTP 500 without row outcomes. Maximum 500 entries per bulk request.
 
 ### Request Formats
 

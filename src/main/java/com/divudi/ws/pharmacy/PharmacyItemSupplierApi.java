@@ -13,6 +13,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.google.gson.JsonPrimitive;
 import com.google.gson.JsonSyntaxException;
 
 import javax.enterprise.context.RequestScoped;
@@ -202,7 +203,7 @@ public class PharmacyItemSupplierApi {
             List<BulkItemSupplierResultDto> results = service.createBulk(requests, user);
             return successResponse(results);
 
-        } catch (JsonSyntaxException | NumberFormatException | IllegalStateException
+        } catch (JsonSyntaxException | NumberFormatException | ArithmeticException | IllegalStateException
                 | UnsupportedOperationException | ClassCastException e) {
             return errorResponse("Invalid JSON format: " + e.getMessage(), 400);
         } catch (Exception e) {
@@ -243,7 +244,7 @@ public class PharmacyItemSupplierApi {
 
     // ==================== PRIVATE HELPER METHODS ====================
 
-    private List<ItemSupplierRequestDto> parseBulkRequests(String json) {
+    List<ItemSupplierRequestDto> parseBulkRequests(String json) {
         List<ItemSupplierRequestDto> list = new ArrayList<>();
         JsonElement element = JsonParser.parseString(json);
 
@@ -284,10 +285,10 @@ public class PharmacyItemSupplierApi {
                     }
                 }
             } else if (obj.has("supplierId") && obj.has("itemIds") && obj.get("itemIds").isJsonArray()) {
-                Long supplierId = obj.get("supplierId").getAsLong();
+                Long supplierId = parseExactLong(obj.get("supplierId"));
                 for (JsonElement itemIdElem : obj.getAsJsonArray("itemIds")) {
                     if (itemIdElem.isJsonPrimitive()) {
-                        Long itemId = itemIdElem.getAsLong();
+                        Long itemId = parseExactLong(itemIdElem);
                         list.add(new ItemSupplierRequestDto(supplierId, itemId));
                     } else {
                         list.add(new ItemSupplierRequestDto(supplierId, null));
@@ -297,6 +298,23 @@ public class PharmacyItemSupplierApi {
         }
 
         return list;
+    }
+
+    private Long parseExactLong(JsonElement elem) {
+        if (elem == null || elem.isJsonNull()) {
+            return null;
+        }
+        if (!elem.isJsonPrimitive()) {
+            throw new JsonSyntaxException("Expected primitive numeric ID");
+        }
+        JsonPrimitive prim = elem.getAsJsonPrimitive();
+        if (prim.isNumber()) {
+            return prim.getAsBigDecimal().longValueExact();
+        }
+        if (prim.isString()) {
+            return new java.math.BigDecimal(prim.getAsString().trim()).longValueExact();
+        }
+        throw new JsonSyntaxException("Invalid ID type: " + prim);
     }
 
     private Long parseLongParam(String paramName) {

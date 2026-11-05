@@ -7,6 +7,8 @@ import com.divudi.core.data.dto.pharmacy.ItemSupplierRequestDto;
 import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.Item;
 import com.divudi.core.entity.WebUser;
+import com.divudi.core.entity.pharmacy.Amp;
+import com.divudi.core.entity.pharmacy.Ampp;
 import com.divudi.core.entity.pharmacy.ItemsDistributors;
 import com.divudi.core.facade.InstitutionFacade;
 import com.divudi.core.facade.ItemFacade;
@@ -83,7 +85,7 @@ public class PharmacyItemSupplierApiService implements Serializable {
      * Search active item-supplier links with optional filtering and pagination.
      */
     public List<ItemSupplierDto> searchLinks(Long supplierId, Long itemId, Integer limit, Integer offset) {
-        StringBuilder jpql = new StringBuilder("SELECT id FROM ItemsDistributors id WHERE id.retired = false");
+        StringBuilder jpql = new StringBuilder("SELECT id FROM ItemsDistributors id WHERE id.retired = false AND id.item.retired = false");
         Map<String, Object> params = new HashMap<>();
 
         if (supplierId != null) {
@@ -171,6 +173,9 @@ public class PharmacyItemSupplierApiService implements Serializable {
         if (item.isRetired()) {
             return new CreateItemSupplierResult(400, "Item is retired: " + request.getItemId(), null, null);
         }
+        if (!(item instanceof Amp || item instanceof Ampp)) {
+            return new CreateItemSupplierResult(400, "Item must be a pharmaceutical item (Amp or Ampp): " + request.getItemId(), null, null);
+        }
 
         ItemsDistributors existing = findActiveLink(supplier, item);
         if (existing != null) {
@@ -189,13 +194,7 @@ public class PharmacyItemSupplierApiService implements Serializable {
         itemsDistributorsFacade.createAndFlush(link);
 
         ItemSupplierDto dto = ItemSupplierDto.fromEntity(link);
-        if (auditService != null) {
-            try {
-                auditService.logAudit(null, dto, user, "ItemsDistributors", "CREATE_ITEM_SUPPLIER_LINK", link.getId());
-            } catch (Exception e) {
-                // Audit logging failure should not break link creation
-            }
-        }
+        auditService.logAudit(null, dto, user, "ItemsDistributors", "CREATE_ITEM_SUPPLIER_LINK", link.getId());
 
         return new CreateItemSupplierResult(201, "Item supplier link created successfully", dto, link);
     }
@@ -267,13 +266,7 @@ public class PharmacyItemSupplierApiService implements Serializable {
         itemsDistributorsFacade.edit(link);
 
         ItemSupplierDto after = ItemSupplierDto.fromEntity(link);
-        if (auditService != null) {
-            try {
-                auditService.logAudit(before, after, user, "ItemsDistributors", "RETIRE_ITEM_SUPPLIER_LINK", link.getId());
-            } catch (Exception e) {
-                // Audit logging failure should not break link retirement
-            }
-        }
+        auditService.logAudit(before, after, user, "ItemsDistributors", "RETIRE_ITEM_SUPPLIER_LINK", link.getId());
 
         return new RetireItemSupplierResult(200, "Item supplier link retired successfully", after);
     }
