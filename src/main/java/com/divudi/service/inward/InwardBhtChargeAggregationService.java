@@ -182,6 +182,24 @@ public class InwardBhtChargeAggregationService implements Serializable {
         mergeChargeMaps(result, fetchIssueBillGross(encounters, InwardMedicineBillTypes.ALL, null, InwardChargeType.Medicine));
         mergeChargeMaps(result, fetchIssueBillGross(encounters, null, BillType.StoreBhtPre, InwardChargeType.GeneralIssuing));
 
+        return toRowTypes(result);
+    }
+
+    /**
+     * Re-keys each charge type to the bill row it is shown under, so a merged
+     * hospital's Assistant Fee services land in the Professional Charge column
+     * the interim and final bill put them in (issues #25030, #25031) instead
+     * of a column that is not shown but still counted in Gross and Net.
+     */
+    private Map<Long, Map<InwardChargeType, Double>> toRowTypes(Map<Long, Map<InwardChargeType, Double>> source) {
+        Map<Long, Map<InwardChargeType, Double>> result = new HashMap<>();
+        for (Map.Entry<Long, Map<InwardChargeType, Double>> e : source.entrySet()) {
+            Map<InwardChargeType, Double> inner = new EnumMap<>(InwardChargeType.class);
+            for (Map.Entry<InwardChargeType, Double> ie : e.getValue().entrySet()) {
+                inner.merge(professionalFeeClassificationService.rowTypeFor(ie.getKey()), ie.getValue(), Double::sum);
+            }
+            result.put(e.getKey(), inner);
+        }
         return result;
     }
 
