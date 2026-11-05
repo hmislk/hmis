@@ -2155,7 +2155,7 @@ public class InwardSearch implements Serializable {
         PaymentMethodData pmd = getPaymentMethodData();
         List<Payment> created = null;
         if (originalCount > 0) {
-            created = paymentService.createPaymentsForCancelling(cb, original);
+            created = paymentService.createPaymentsForCancelling(cb, original, true);
         } else if (pm != null && hasUsablePaymentData(pm, pmd)) {
             // 2-arg overload: also writes the drawer, like createPaymentsForCancelling
             created = paymentService.createPayment(cb, pmd);
