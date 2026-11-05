@@ -184,6 +184,17 @@ public class PaymentService {
      * payments are not mirrored.
      */
     public List<Payment> createPaymentsForCancelling(Bill cancellationBill, Bill originalBill) {
+        return createPaymentsForCancelling(cancellationBill, originalBill, false);
+    }
+
+    /**
+     * As {@link #createPaymentsForCancelling(Bill, Bill)}. When
+     * {@code onlyIfOriginalInDrawer} is true, the reversal subtracts from the
+     * drawer only for original payments that have a non-retired DrawerEntry, so
+     * cancelling an original that never entered the drawer leaves the drawer
+     * alone (#25178). The reversal Payment is written either way.
+     */
+    public List<Payment> createPaymentsForCancelling(Bill cancellationBill, Bill originalBill, boolean onlyIfOriginalInDrawer) {
         List<Payment> newPayments = new ArrayList<>();
         List<Payment> originalBillPayments = billService.fetchBillPayments(originalBill);
         if (originalBillPayments != null) {
@@ -201,12 +212,24 @@ public class PaymentService {
                 paymentFacade.create(p);
                 newPayments.add(p);
                 cashbookService.writeCashBookEntryAtPaymentCreation(p);
-                drawerService.updateDrawer(p);
+                if (!onlyIfOriginalInDrawer || hasActiveDrawerEntry(originalBillPayment)) {
+                    drawerService.updateDrawer(p);
+                }
             }
         }
         return newPayments;
     }
-    
+
+    private boolean hasActiveDrawerEntry(Payment payment) {
+        if (payment == null || payment.getId() == null) {
+            return false;
+        }
+        Map<String, Object> params = new HashMap<>();
+        params.put("pid", payment.getId());
+        String jpql = "select count(de) from DrawerEntry de where de.payment.id = :pid and de.retired = false";
+        return paymentFacade.findLongByJpql(jpql, params) > 0;
+    }
+
     private List<Payment> createPayment(Bill bill, PaymentMethod pm, PaymentMethodData paymentMethodData, Department department, WebUser webUser) {
 
         CashBook cashbook = cashbookService.findAndSaveCashBookBySite(department.getSite(), department.getInstitution(), department);
