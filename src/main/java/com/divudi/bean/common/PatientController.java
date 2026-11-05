@@ -2988,15 +2988,18 @@ public class PatientController implements Serializable, ControllerWithPatient {
                 p.setRetired(true);
                 p.setRetirer(getSessionController().getLoggedUser());
                 p.setRetiredAt(new Date());
-                getPersonFacade().edit(p);
 
+                // Person.webUser cascades on merge, so the WebUser must be changed before the Person is saved
                 WebUser u = p.getWebUser();
                 if (u != null) {
                     u.setActivated(false);
+                    u.setActivatedAt(new Date());
+                    u.setActivator(getSessionController().getLoggedUser());
                     u.setRetired(true);
                     u.setRetiredAt(new Date());
                     u.setRetirer(getSessionController().getLoggedUser());
                 }
+                getPersonFacade().edit(p);
 
             }
             currentFamily.setRetired(true);
