@@ -2092,10 +2092,12 @@ public class InwardSearch implements Serializable {
     /**
      * Writes the reversal Payment rows for an inward cancellation bill (#25178).
      * <p>
-     * First tries the payment data entered on the cancel page (read through the
-     * getter, never the raw field). When that produces nothing, mirrors the
-     * original bill's payments with
-     * {@link PaymentService#createPaymentsForCancelling(Bill)}.
+     * When the original bill has active payments, they are mirrored one for one
+     * with {@link PaymentService#createPaymentsForCancelling(Bill, Bill)}, so
+     * each original Payment gets exactly one negated Payment whatever was
+     * selected on the cancel page. Only when the original has no payments is the
+     * payment data from the cancel page used (read through the getter, never the
+     * raw field).
      *
      * @return the created payments (empty only when the original bill itself
      * had no payments), or null after an error message was shown because the
@@ -2106,19 +2108,19 @@ public class InwardSearch implements Serializable {
         int originalCount = countNonRetiredPayments(billService.fetchBillPayments(original));
         PaymentMethodData pmd = getPaymentMethodData();
         List<Payment> created = null;
-        if (pm != null && hasUsablePaymentData(pm, pmd)) {
-            created = paymentService.createPayment(cb, pm, pmd,
-                    sessionController.getInstitution(),
-                    sessionController.getDepartment(),
-                    sessionController.getLoggedUser());
-        }
-        if ((created == null || created.isEmpty()) && originalCount > 0) {
-            created = paymentService.createPaymentsForCancelling(cb);
+        if (originalCount > 0) {
+            created = paymentService.createPaymentsForCancelling(cb, original);
+        } else if (pm != null && hasUsablePaymentData(pm, pmd)) {
+            // 2-arg overload: also writes the drawer, like createPaymentsForCancelling
+            created = paymentService.createPayment(cb, pmd);
         }
         if (created == null) {
             created = new ArrayList<>();
         }
-        if (originalCount > 0 && created.isEmpty()) {
+        if (originalCount > 0 && created.size() != originalCount) {
+            java.util.logging.Logger.getLogger(InwardSearch.class.getName()).log(java.util.logging.Level.SEVERE,
+                    "Inward cancellation bill {0} has no complete reversal payment for original bill {1}",
+                    new Object[]{cb.getId(), original.getId()});
             JsfUtil.addErrorMessage("The cancellation bill was saved but its reversal payment could not be written. Do not hand over cash for this cancellation. Please contact support.");
             return null;
         }
