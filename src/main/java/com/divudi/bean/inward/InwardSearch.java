@@ -1895,7 +1895,7 @@ public class InwardSearch implements Serializable {
      * When the original bill has active payments, they are mirrored one for one
      * with {@link PaymentService#createPaymentsForCancelling(Bill, Bill)}, so
      * each original Payment gets exactly one negated Payment whatever was
-     * selected on the cancel page. Only when the original has no payments is the
+     * selected on the cancel page. Only when the original has no Payment rows at all (not even retired ones) is the
      * payment data from the cancel page used (read through the getter, never the
      * raw field).
      *
@@ -1905,12 +1905,16 @@ public class InwardSearch implements Serializable {
      * return without reporting success on null.
      */
     private List<Payment> createReversalPayments(Bill cb, Bill original, PaymentMethod pm) {
-        int originalCount = countNonRetiredPayments(billService.fetchBillPayments(original));
+        List<Payment> originalPayments = billService.fetchBillPayments(original);
+        int originalCount = countNonRetiredPayments(originalPayments);
+        boolean originalHasNoPaymentRows = originalPayments == null || originalPayments.isEmpty();
         PaymentMethodData pmd = getPaymentMethodData();
         List<Payment> created = null;
         if (originalCount > 0) {
             created = paymentService.createPaymentsForCancelling(cb, original, true);
-        } else if (pm != null && hasUsablePaymentData(pm, pmd)) {
+        } else if (originalHasNoPaymentRows && pm != null && hasUsablePaymentData(pm, pmd)) {
+            // Only when the original never had Payment rows. If all its rows are
+            // retired there is no active money to reverse, so nothing is written.
             // 2-arg overload: also writes the drawer, like createPaymentsForCancelling
             created = paymentService.createPayment(cb, pmd);
         }
