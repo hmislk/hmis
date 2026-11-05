@@ -667,7 +667,7 @@ public class InwardPaymentController implements Serializable, ControllerWithMult
         saveBill();
         saveBillItem();
 
-        paymentService.createPayment(
+        paymentService.createPaymentAndUpdateDrawer(
                 current,
                 current.getPaymentMethod(), 
                 paymentMethodData, 
