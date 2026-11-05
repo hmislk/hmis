@@ -145,12 +145,15 @@ gh pr create \
   --title "fix: <description>" \
   --base $0 \
   --head $1-hotfix \
+  --label hotfix \
   --body "..."
 ```
 
 The PR **must** target `$0` (the production branch), not `development` or `master`.
 
-If `gh pr edit` prints a "Projects (classic) is being deprecated" error, it changed nothing. Use `gh api -X PATCH repos/hmislk/hmis/pulls/<n> -f title=... -F body=@file` instead.
+Every PR into a `*-production` or `*-staging` branch carries the `hotfix` label, so hotfixes are easy to tell apart from development PRs. When reusing an open PR (Step 1a), check the label is there: `gh pr edit <number> --add-label hotfix`.
+
+If `gh pr edit` prints a "Projects (classic) is being deprecated" error, it changed nothing. Use `gh api -X PATCH repos/hmislk/hmis/pulls/<n> -f title=... -F body=@file` instead. That fallback does not add labels either, so also run `gh api -X POST repos/hmislk/hmis/issues/<n>/labels -f "labels[]=hotfix"`. Whichever path you used, check the label is there: `gh pr view <n> --json labels`.
 
 A hotfix PR is where hospital-specific detail leaks most easily, because the
 whole point is that one hospital is affected. The body is public: state the
