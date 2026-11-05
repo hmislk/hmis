@@ -255,7 +255,20 @@ public class PaymentService {
         return ps;
     }
 
+    /**
+     * Writes the Payment rows for the bill without touching the drawer. For
+     * the reversal of a bill that has no Payment rows, so nothing was ever
+     * credited to the drawer (#25178). Does not update any balance.
+     */
+    public List<Payment> createPaymentWithoutDrawer(Bill bill, PaymentMethodData paymentMethodData) {
+        return createPayment(bill, bill.getPaymentMethod(), paymentMethodData, bill.getDepartment(), bill.getCreater(), false);
+    }
+
     private List<Payment> createPayment(Bill bill, PaymentMethod pm, PaymentMethodData paymentMethodData, Department department, WebUser webUser) {
+        return createPayment(bill, pm, paymentMethodData, department, webUser, true);
+    }
+
+    private List<Payment> createPayment(Bill bill, PaymentMethod pm, PaymentMethodData paymentMethodData, Department department, WebUser webUser, boolean writeDrawer) {
 
         CashBook cashbook = cashbookService.findAndSaveCashBookBySite(department.getSite(), department.getInstitution(), department);
         List<Payment> payments = new ArrayList<>();
@@ -267,7 +280,9 @@ public class PaymentService {
                 if (payment != null) {
                     paymentFacade.create(payment);
                     cashbookService.writeCashBookEntryAtPaymentCreation(payment, webUser, cashbook, department);
-                    drawerService.updateDrawer(payment);
+                    if (writeDrawer) {
+                        drawerService.updateDrawer(payment);
+                    }
                     payments.add(payment);
                 }
             }
@@ -288,7 +303,9 @@ public class PaymentService {
             payment.setPaidValue(bill.getNetTotal());
             paymentFacade.create(payment);
             cashbookService.writeCashBookEntryAtPaymentCreation(payment);
-            drawerService.updateDrawer(payment);
+            if (writeDrawer) {
+                drawerService.updateDrawer(payment);
+            }
             payments.add(payment);
         }
         return payments;
