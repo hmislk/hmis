@@ -273,6 +273,24 @@ public class PaymentService {
         return payment;
     }
     
+    /**
+     * Inward deposit and inward payment creation (#25178). The 6-arg
+     * createPayment writes the drawer only for Multiple Payment Methods, so a
+     * single-method deposit or payment never reached the drawer (since inward
+     * payments moved off the 2-arg call in 7b938b3c7f), while the cancellation
+     * subtracts it. This writes the drawer for the single-method rows too and
+     * leaves every other caller of the 6-arg overload unchanged.
+     */
+    public List<Payment> createPaymentAndUpdateDrawer(Bill bill, PaymentMethod pm, PaymentMethodData paymentMethodData, Institution institution, Department department, WebUser webUser) {
+        List<Payment> ps = createPayment(bill, pm, paymentMethodData, institution, department, webUser);
+        if (pm != PaymentMethod.MultiplePaymentMethods && ps != null) {
+            for (Payment p : ps) {
+                drawerService.updateDrawer(p);
+            }
+        }
+        return ps;
+    }
+
     public List<Payment> createPayment(Bill bill, PaymentMethod pm, PaymentMethodData paymentMethodData, Institution institution, Department department, WebUser webUser) {
         List<Payment> ps = new ArrayList<>();
 
