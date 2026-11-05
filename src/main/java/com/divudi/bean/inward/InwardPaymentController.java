@@ -922,7 +922,7 @@ public class InwardPaymentController implements Serializable, ControllerWithMult
         // bookkeeping below succeeds or throws. Resetting it here would let
         // either a queued duplicate request or a retry after a later
         // failure reach createPayment() again and create a second Payment.
-        paymentService.createPayment(
+        paymentService.createPaymentAndUpdateDrawer(
                 current,
                 current.getPaymentMethod(),
                 paymentMethodData,
