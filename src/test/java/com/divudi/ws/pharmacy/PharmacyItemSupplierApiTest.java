@@ -74,5 +74,24 @@ public class PharmacyItemSupplierApiTest {
         String json = "{\"supplierId\": 100, \"itemIds\": [\"invalid\"]}";
         assertThrows(NumberFormatException.class, () -> api.parseBulkRequests(json));
     }
+
+    @Test
+    @DisplayName("parseBulkRequests rejects fractional IDs in array and links rows instead of truncating")
+    void testParseBulkRequests_RejectsFractionalIdsInObjectRows() {
+        assertThrows(RuntimeException.class, () -> api.parseBulkRequests("[{\"supplierId\": 100, \"itemId\": 301.5}]"));
+        assertThrows(RuntimeException.class, () -> api.parseBulkRequests("[{\"supplierId\": 100.5, \"itemId\": 301}]"));
+        assertThrows(RuntimeException.class, () -> api.parseBulkRequests("{\"links\": [{\"supplierId\": 100, \"itemId\": 301.5}]}"));
+        assertThrows(RuntimeException.class, () -> api.parseBulkRequests("{\"items\": [{\"supplierId\": 100, \"itemId\": 301.5}]}"));
+    }
+
+    @Test
+    @DisplayName("parseBulkRequests keeps non-object rows as row-level invalid entries")
+    void testParseBulkRequests_NonObjectRowsStayRowLevel() {
+        List<ItemSupplierRequestDto> list = api.parseBulkRequests("[{\"supplierId\": 100, \"itemId\": 200, \"orderNo\": 3}, null]");
+        assertEquals(2, list.size());
+        assertEquals(200L, list.get(0).getItemId());
+        assertEquals(3, list.get(0).getOrderNo());
+        assertNull(list.get(1).getItemId());
+    }
 }
 

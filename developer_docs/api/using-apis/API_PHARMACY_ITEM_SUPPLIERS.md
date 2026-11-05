@@ -147,7 +147,7 @@ Link one item to a Dealer supplier.
 
 ## POST /api/pharmacy/item_suppliers/bulk
 
-Link multiple items to suppliers in one batch call. Each well-formed entry that fails business validation (e.g. non-existent or retired entity, duplicate link) receives its own row-level outcome, allowing valid entries in the batch to succeed. A structurally malformed entry or unparseable ID (e.g. non-integer or string ID like `"bad"`) fails JSON request validation and rejects the entire batch with HTTP 400 with no row outcomes. An unexpected persistence error rolls back the whole batch and returns HTTP 500 without row outcomes. Maximum 500 entries per bulk request.
+Link multiple items to suppliers in one batch call. Each entry that fails business validation (e.g. non-existent or retired entity, duplicate link), and each entry with no usable ID (a non-object row such as `null`, or a missing or `null` `supplierId`/`itemId`), receives its own row-level outcome, allowing valid entries in the batch to succeed. A malformed ID (e.g. a fractional number like `301.5` or a string like `"bad"`), or a body that is not valid JSON, rejects the entire batch with HTTP 400 with no row outcomes and nothing is linked. An unexpected persistence error rolls back the whole batch and returns HTTP 500 without row outcomes. Maximum 500 entries per bulk request.
 
 ### Request Formats
 

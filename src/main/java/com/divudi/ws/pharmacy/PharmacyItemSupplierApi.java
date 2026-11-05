@@ -251,38 +251,17 @@ public class PharmacyItemSupplierApi {
         if (element.isJsonArray()) {
             JsonArray array = element.getAsJsonArray();
             for (JsonElement item : array) {
-                if (item.isJsonObject()) {
-                    ItemSupplierRequestDto dto = gson.fromJson(item, ItemSupplierRequestDto.class);
-                    if (dto != null) {
-                        list.add(dto);
-                    }
-                } else {
-                    list.add(new ItemSupplierRequestDto());
-                }
+                list.add(parseBulkRow(item));
             }
         } else if (element.isJsonObject()) {
             JsonObject obj = element.getAsJsonObject();
             if (obj.has("links") && obj.get("links").isJsonArray()) {
                 for (JsonElement item : obj.getAsJsonArray("links")) {
-                    if (item.isJsonObject()) {
-                        ItemSupplierRequestDto dto = gson.fromJson(item, ItemSupplierRequestDto.class);
-                        if (dto != null) {
-                            list.add(dto);
-                        }
-                    } else {
-                        list.add(new ItemSupplierRequestDto());
-                    }
+                    list.add(parseBulkRow(item));
                 }
             } else if (obj.has("items") && obj.get("items").isJsonArray()) {
                 for (JsonElement item : obj.getAsJsonArray("items")) {
-                    if (item.isJsonObject()) {
-                        ItemSupplierRequestDto dto = gson.fromJson(item, ItemSupplierRequestDto.class);
-                        if (dto != null) {
-                            list.add(dto);
-                        }
-                    } else {
-                        list.add(new ItemSupplierRequestDto());
-                    }
+                    list.add(parseBulkRow(item));
                 }
             } else if (obj.has("supplierId") && obj.has("itemIds") && obj.get("itemIds").isJsonArray()) {
                 Long supplierId = parseExactLong(obj.get("supplierId"));
@@ -298,6 +277,14 @@ public class PharmacyItemSupplierApi {
         }
 
         return list;
+    }
+
+    private ItemSupplierRequestDto parseBulkRow(JsonElement row) {
+        if (!row.isJsonObject()) {
+            return new ItemSupplierRequestDto();
+        }
+        // Read from text: Gson's JsonElement reader truncates 301.5 to 301, its text reader rejects it.
+        return gson.fromJson(row.toString(), ItemSupplierRequestDto.class);
     }
 
     private Long parseExactLong(JsonElement elem) {
