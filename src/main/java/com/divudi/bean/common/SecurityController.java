@@ -8,6 +8,8 @@
 package com.divudi.bean.common;
 
 import java.io.Serializable;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.security.InvalidKeyException;
 import java.security.MessageDigest;
@@ -279,6 +281,37 @@ public class SecurityController implements Serializable {
      * @param sessionController the caller's session controller
      * @return the signing key; never null or empty
      */
+    /**
+     * URL-encoded HMAC link token for a record id, valid until expiry. Use for
+     * every public (no-login) link; never encryptAlphanumeric, whose digit
+     * encoding does not depend on the key.
+     */
+    public String createLinkToken(long id, Date expiry, SessionController sessionController) {
+        String token = createBillToken(id, expiry, obtainHmacSigningKey(sessionController));
+        if (token == null) {
+            return null;
+        }
+        try {
+            return URLEncoder.encode(token, "UTF-8");
+        } catch (UnsupportedEncodingException ex) {
+            return token;
+        }
+    }
+
+    /**
+     * The record id carried by a link token from {@link #createLinkToken}, or
+     * null if the token is missing, tampered, signed with another key or
+     * expired.
+     */
+    public Long decodeLinkId(String token, SessionController sessionController) {
+        String key = sessionController.getApplicationPreference().getEncrptionKey();
+        long[] decoded = decodeBillToken(token, key);
+        if (decoded == null || new Date().getTime() > decoded[1]) {
+            return null;
+        }
+        return decoded[0];
+    }
+
     public String obtainHmacSigningKey(SessionController sessionController) {
         String key = sessionController.getApplicationPreference().getEncrptionKey();
         if (key == null || key.trim().isEmpty()) {
