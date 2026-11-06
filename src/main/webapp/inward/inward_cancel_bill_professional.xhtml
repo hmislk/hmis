@@ -117,7 +117,8 @@
                                     <h:outputLabel value="#{inwardSearch.billFees[rowIndex].staff.speciality.name}"/>
                                 </p:column>
                                 <p:column headerText="Name">
-                                    <h:outputLabel value="#{inwardSearch.billFees[rowIndex].staff.name}"/>
+                                    <!-- Updated on 06 November 2026: Display the doctor's name using the associated Person details. -->
+                                    <h:outputLabel value="#{inwardSearch.billFees[rowIndex].staff.person.nameWithTitle}"/>
                                 </p:column> 
                                 <p:column>
                                     <f:facet name="header">Fee</f:facet>
