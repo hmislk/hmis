@@ -467,27 +467,9 @@ public class BillSearch implements Serializable {
         if (encryptedPatientReportId == null) {
             return;
         }
-        if (encryptedExpiary != null) {
-            Date expiaryDate;
-            try {
-                String ed = encryptedExpiary;
-                ed = securityController.decrypt(ed);
-                if (ed == null) {
-                    return;
-                }
-                expiaryDate = new SimpleDateFormat("ddMMMMyyyyhhmmss").parse(ed);
-            } catch (ParseException ex) {
-                return;
-            }
-            if (expiaryDate.before(new Date())) {
-                return;
-            }
-        }
-        String idStr = getSecurityController().decrypt(encryptedPatientReportId);
-        Long id = 0l;
-        try {
-            id = Long.parseLong(idStr);
-        } catch (Exception e) {
+        // Public (no-login) link: accept only the signed, self-expiring HMAC token.
+        Long id = getSecurityController().decodeLinkId(encryptedPatientReportId, sessionController);
+        if (id == null) {
             return;
         }
         Bill pr = getBillFacade().find(id);
