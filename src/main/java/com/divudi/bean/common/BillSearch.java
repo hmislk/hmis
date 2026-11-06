@@ -673,7 +673,7 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
             if (hmacKey == null || hmacKey.trim().isEmpty()) {
                 return;
             }
-            long[] decoded = securityController.decodeBillToken(encryptedPatientReportId, hmacKey);
+            long[] decoded = securityController.decodeBillToken(SecurityController.LINK_BILL, encryptedPatientReportId, hmacKey);
             if (decoded == null) {
                 return;
             }

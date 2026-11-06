@@ -66,7 +66,7 @@ public class PublicPurchaseOrderController implements Serializable {
 
         long[] decoded;
         try {
-            decoded = securityController.decodeBillToken(token, hmacKey);
+            decoded = securityController.decodeBillToken(SecurityController.LINK_PURCHASE_ORDER, token, hmacKey);
         } catch (Exception e) {
             return;
         }
