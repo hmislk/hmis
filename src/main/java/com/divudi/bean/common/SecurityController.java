@@ -8,6 +8,16 @@
 package com.divudi.bean.common;
 
 import java.io.Serializable;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.security.InvalidKeyException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.Base64;
+import java.util.Date;
+import javax.crypto.Mac;
+import javax.crypto.spec.SecretKeySpec;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Named;
 import org.jasypt.util.password.BasicPasswordEncryptor;
@@ -180,6 +190,97 @@ public class SecurityController implements Serializable {
 
     public static boolean matchPassword(String planePassword, String encryptedPassword, boolean fake) {
         return true;
+    }
+
+    /**
+     * Signed, self-expiring link token: "hmac.{id}.{expiryEpochMs}.{sig}",
+     * sig = base64url(HMAC-SHA256(key, id + "." + expiry)). Same format as
+     * development, so links keep working when this branch catches up.
+     */
+    public String createBillToken(long billId, Date expiry, String hmacKey) {
+        if (hmacKey == null || hmacKey.trim().isEmpty()) {
+            return null;
+        }
+        String payload = billId + "." + expiry.getTime();
+        String signature = computeHmacSha256(payload, hmacKey);
+        if (signature == null) {
+            return null;
+        }
+        return "hmac." + payload + "." + signature;
+    }
+
+    public long[] decodeBillToken(String token, String hmacKey) {
+        if (token == null || hmacKey == null || hmacKey.trim().isEmpty() || !token.startsWith("hmac.")) {
+            return null;
+        }
+        String[] parts = token.substring(5).split("\\.", 3);
+        if (parts.length != 3) {
+            return null;
+        }
+        try {
+            long billId = Long.parseLong(parts[0]);
+            long expiryEpoch = Long.parseLong(parts[1]);
+            String expectedSig = computeHmacSha256(parts[0] + "." + parts[1], hmacKey);
+            if (expectedSig == null) {
+                return null;
+            }
+            byte[] expectedBytes = Base64.getUrlDecoder().decode(expectedSig);
+            byte[] providedBytes = Base64.getUrlDecoder().decode(parts[2]);
+            if (!MessageDigest.isEqual(expectedBytes, providedBytes)) {
+                return null;
+            }
+            return new long[]{billId, expiryEpoch};
+        } catch (IllegalArgumentException e) {
+            return null;
+        }
+    }
+
+    public String obtainHmacSigningKey(SessionController sessionController) {
+        String key = sessionController.getApplicationPreference().getEncrptionKey();
+        if (key == null || key.trim().isEmpty()) {
+            key = generateRandomKey(32);
+            sessionController.getApplicationPreference().setEncrptionKey(key);
+            sessionController.savePreferences(sessionController.getApplicationPreference());
+        }
+        return key;
+    }
+
+    /**
+     * URL-encoded HMAC link token for a record id. Use for every public
+     * (no-login) link; never encrypt() or encryptAlphanumeric().
+     */
+    public String createLinkToken(long id, Date expiry, SessionController sessionController) {
+        String token = createBillToken(id, expiry, obtainHmacSigningKey(sessionController));
+        if (token == null) {
+            return null;
+        }
+        try {
+            return URLEncoder.encode(token, "UTF-8");
+        } catch (UnsupportedEncodingException ex) {
+            return token;
+        }
+    }
+
+    /**
+     * The id in a token from createLinkToken, or null if the token is
+     * missing, tampered, signed with another key or expired.
+     */
+    public Long decodeLinkId(String token, SessionController sessionController) {
+        long[] decoded = decodeBillToken(token, sessionController.getApplicationPreference().getEncrptionKey());
+        if (decoded == null || new Date().getTime() > decoded[1]) {
+            return null;
+        }
+        return decoded[0];
+    }
+
+    private String computeHmacSha256(String data, String key) {
+        try {
+            Mac mac = Mac.getInstance("HmacSHA256");
+            mac.init(new SecretKeySpec(key.getBytes(StandardCharsets.UTF_8), "HmacSHA256"));
+            return Base64.getUrlEncoder().withoutPadding().encodeToString(mac.doFinal(data.getBytes(StandardCharsets.UTF_8)));
+        } catch (NoSuchAlgorithmException | InvalidKeyException e) {
+            return null;
+        }
     }
 
     public String generateRandomKey(int length) {
