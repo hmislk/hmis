@@ -627,7 +627,7 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
             return;
         }
         // Public (no-login) link: accept only the signed, self-expiring HMAC token.
-        Long id = getSecurityController().decodeLinkId(encryptedPatientReportId, sessionController);
+        Long id = getSecurityController().decodeLinkId(SecurityController.LINK_BILL, encryptedPatientReportId, sessionController);
         if (id == null) {
             return;
         }

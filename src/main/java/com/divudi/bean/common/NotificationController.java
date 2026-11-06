@@ -256,7 +256,7 @@ public class NotificationController implements Serializable {
         Calendar c = Calendar.getInstance();
         c.add(Calendar.MONTH, 1);
 
-        String url = CommonFunctions.getBaseUrl() + "faces/requests/bill.xhtml?id=" + securityController.createLinkToken(bill.getId(), c.getTime(), sessionController);
+        String url = CommonFunctions.getBaseUrl() + "faces/requests/bill.xhtml?id=" + securityController.createLinkToken(SecurityController.LINK_BILL, bill.getId(), c.getTime(), sessionController);
         messageBody += "<p>"
                 + "Your Report is attached"
                 + "<br/>"
@@ -319,7 +319,7 @@ public class NotificationController implements Serializable {
         Calendar c = Calendar.getInstance();
         c.add(Calendar.MONTH, 1);
 
-        String url = CommonFunctions.getBaseUrl() + "faces/requests/bill.xhtml?id=" + securityController.createLinkToken(bill.getId(), c.getTime(), sessionController);
+        String url = CommonFunctions.getBaseUrl() + "faces/requests/bill.xhtml?id=" + securityController.createLinkToken(SecurityController.LINK_BILL, bill.getId(), c.getTime(), sessionController);
         messageBody += "<p>"
                 + "Your Report is attached"
                 + "<br/>"
