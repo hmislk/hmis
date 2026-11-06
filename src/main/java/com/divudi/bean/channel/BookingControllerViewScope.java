@@ -1819,14 +1819,9 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     }
 
     public String smsBody(BillSession r) {
-        String securityKey = sessionController.getApplicationPreference().getEncrptionKey();
-        if (securityKey == null || securityKey.trim().equals("")) {
-            sessionController.getApplicationPreference().setEncrptionKey(securityController.generateRandomKey(10));
-            sessionController.savePreferences(sessionController.getApplicationPreference());
-        }
         Calendar c = Calendar.getInstance();
         c.add(Calendar.DATE, 2);
-        String temId = securityController.encryptAlphanumeric(r.getId().toString(), securityKey);
+        String temId = securityController.createLinkToken(SecurityController.LINK_SESSION, r.getId(), c.getTime(), sessionController);
         String url = commonController.getBaseUrl() + "faces/requests/cbss.xhtml?id=" + temId;
         String b = "Your session of "
                 + r.getSessionInstance().getOriginatingSession().getName()
@@ -6457,32 +6452,9 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         if (encryptedBillSessionId == null) {
             return;
         }
-
-        String decodedIdStr;
-        try {
-            decodedIdStr = URLDecoder.decode(encryptedBillSessionId, "UTF-8");
-        } catch (UnsupportedEncodingException e) {
-            // Handle the exception, possibly with logging
-            return;
-        }
-        String securityKey = sessionController.getApplicationPreference().getEncrptionKey();
-        if (securityKey == null || securityKey.trim().equals("")) {
-            sessionController.getApplicationPreference().setEncrptionKey(securityController.generateRandomKey(10));
-            sessionController.savePreferences(sessionController.getApplicationPreference());
-        }
-
-        String idStr = securityController.decryptAlphanumeric(encryptedBillSessionId, securityKey);
-
-        if (idStr == null || idStr.trim().isEmpty()) {
-            // Handle the situation where decryption returns null or an empty string
-            return;
-        }
-
-        Long id;
-        try {
-            id = Long.parseLong(idStr);
-        } catch (NumberFormatException e) {
-            // Handle the exception, possibly with logging
+        // Public (no-login) link: accept only the signed, self-expiring HMAC token.
+        Long id = securityController.decodeLinkId(SecurityController.LINK_SESSION, encryptedBillSessionId, sessionController);
+        if (id == null) {
             return;
         }
 

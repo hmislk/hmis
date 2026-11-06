@@ -9,6 +9,7 @@
 package com.divudi.bean.common;
 
 import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.java.CommonFunctions;
 import com.divudi.data.BillTypeAtomic;
 import static com.divudi.data.BillTypeAtomic.PHARMACY_TRANSFER_REQUEST;
 import com.divudi.data.OptionScope;
@@ -259,20 +260,7 @@ public class NotificationController implements Serializable {
         Calendar c = Calendar.getInstance();
         c.add(Calendar.MONTH, 1);
 
-        String temId = bill.getId() + "";
-        temId = securityController.encrypt(temId);
-        try {
-            temId = URLEncoder.encode(temId, "UTF-8");
-        } catch (UnsupportedEncodingException ex) {
-        }
-
-        String ed = CommonController.getDateFormat(c.getTime(), sessionController.getApplicationPreference().getLongDateFormat());
-        ed = securityController.encrypt(ed);
-        try {
-            ed = URLEncoder.encode(ed, "UTF-8");
-        } catch (UnsupportedEncodingException ex) {
-        }
-        String url = commonController.getBaseUrl() + "faces/requests/bill.xhtml?id=" + temId + "&user=" + ed;
+        String url = commonController.getBaseUrl() + "faces/requests/bill.xhtml?id=" + securityController.createLinkToken(SecurityController.LINK_BILL, bill.getId(), c.getTime(), sessionController);
         messageBody += "<p>"
                 + "Your Report is attached"
                 + "<br/>"
@@ -335,20 +323,7 @@ public class NotificationController implements Serializable {
         Calendar c = Calendar.getInstance();
         c.add(Calendar.MONTH, 1);
 
-        String temId = bill.getId() + "";
-        temId = securityController.encrypt(temId);
-        try {
-            temId = URLEncoder.encode(temId, "UTF-8");
-        } catch (UnsupportedEncodingException ex) {
-        }
-
-        String ed = CommonController.getDateFormat(c.getTime(), sessionController.getApplicationPreference().getLongDateFormat());
-        ed = securityController.encrypt(ed);
-        try {
-            ed = URLEncoder.encode(ed, "UTF-8");
-        } catch (UnsupportedEncodingException ex) {
-        }
-        String url = commonController.getBaseUrl() + "faces/requests/bill.xhtml?id=" + temId + "&user=" + ed;
+        String url = commonController.getBaseUrl() + "faces/requests/bill.xhtml?id=" + securityController.createLinkToken(SecurityController.LINK_BILL, bill.getId(), c.getTime(), sessionController);
         messageBody += "<p>"
                 + "Your Report is attached"
                 + "<br/>"
