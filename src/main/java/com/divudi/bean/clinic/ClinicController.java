@@ -70,6 +70,7 @@ import com.divudi.core.facade.ServiceSessionFacade;
 import com.divudi.core.facade.SmsFacade;
 import com.divudi.core.facade.StaffFacade;
 import com.divudi.core.util.JsfUtil;
+import com.divudi.bean.channel.ChannelPatientValidationRules;
 import com.divudi.core.util.SessionBookingLock;
 import com.divudi.bean.hr.StaffController;
 import com.divudi.bean.membership.PaymentSchemeController;
@@ -8406,9 +8407,25 @@ public class ClinicController implements Serializable, ControllerWithPatientView
         }
     }
 
+    /**
+     * The Save Patient Details button on Clinic Sessions: validates, saves,
+     * closes the edit panel and tells the user. saveSelected(Patient), which the
+     * booking flow calls, stays silent.
+     */
     @Override
     public void saveSelectedPatient() {
+        if (patient != null && patient.getPerson() != null) {
+            patient.getPerson().fillDobFromAgeComponentsIfMissing();
+        }
+        String error = ChannelPatientValidationRules.validatePatientForSave(patient);
+        if (error != null) {
+            JsfUtil.addErrorMessage(error);
+            return;
+        }
+        boolean isNew = patient.getId() == null;
         saveSelected(patient);
+        setPatientDetailsEditable(false);
+        JsfUtil.addSuccessMessage(isNew ? "Patient details saved successfully" : "Patient details updated successfully");
     }
 
     @Override

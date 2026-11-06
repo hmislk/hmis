@@ -214,8 +214,7 @@ public class PharmacyRefundForItemReturnsController implements Serializable, Con
         }
 
         if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
-            jpql += " and  ((b.netTotal) = :netTotal )";
-            params.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
+            jpql += JsfUtil.exactAmountFilter("b.netTotal", "netTotal", getSearchKeyword().getNetTotal(), "Net Total", params);
         }
 
         if (getSearchKeyword().getTotal() != null && !getSearchKeyword().getTotal().trim().equals("")) {
@@ -291,8 +290,7 @@ public class PharmacyRefundForItemReturnsController implements Serializable, Con
         }
 
         if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
-            jpql += " and ((b.netTotal) = :netTotal) ";
-            params.put("netTotal", getSearchKeyword().getNetTotal().trim());
+            jpql += JsfUtil.exactAmountFilter("b.netTotal", "netTotal", getSearchKeyword().getNetTotal(), "Net Total", params);
         }
 
         if (getSearchKeyword().getTotal() != null && !getSearchKeyword().getTotal().trim().equals("")) {
@@ -368,8 +366,7 @@ public class PharmacyRefundForItemReturnsController implements Serializable, Con
         }
 
         if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
-            jpql += " and ((b.netTotal) = :netTotal) ";
-            params.put("netTotal", getSearchKeyword().getNetTotal().trim());
+            jpql += JsfUtil.exactAmountFilter("b.netTotal", "netTotal", getSearchKeyword().getNetTotal(), "Net Total", params);
         }
 
         if (getSearchKeyword().getTotal() != null && !getSearchKeyword().getTotal().trim().equals("")) {
@@ -445,8 +442,7 @@ public class PharmacyRefundForItemReturnsController implements Serializable, Con
         }
 
         if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
-            jpql += " and ((b.netTotal) = :netTotal) ";
-            params.put("netTotal", getSearchKeyword().getNetTotal().trim());
+            jpql += JsfUtil.exactAmountFilter("b.netTotal", "netTotal", getSearchKeyword().getNetTotal(), "Net Total", params);
         }
 
         if (getSearchKeyword().getTotal() != null && !getSearchKeyword().getTotal().trim().equals("")) {

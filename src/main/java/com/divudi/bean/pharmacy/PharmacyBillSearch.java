@@ -2416,6 +2416,48 @@ public class PharmacyBillSearch implements Serializable {
         return true;
     }
 
+    // Gives back the claim made by claimReturnCancellationOrReportError() when the cancellation
+    // failed before anything that needs reversing was committed, so the user can retry instead of
+    // getting "Already Cancelled" forever. Only called by a request whose claim succeeded. If the
+    // stock/item/payment writes had started (reversalStarted), the return is left claimed: some
+    // of those writes are committed, and releasing would let a retry reverse them a second time.
+    private void releaseReturnCancellationClaimAfterFailure(RefundBill cancelBill, boolean reversalStarted, RuntimeException failure) {
+        Long billId = getBill() == null ? null : getBill().getId();
+        if (reversalStarted) {
+            LOGGER.log(Level.SEVERE, "Pharmacy return cancellation failed part-way; return bill id " + billId + " stays marked cancelled and needs a manual check", failure);
+            JsfUtil.addErrorMessage("The cancellation failed part-way. Please contact system support before trying again.");
+            return;
+        }
+        LOGGER.log(Level.SEVERE, "Pharmacy return cancellation failed before any reversal; releasing the claim on return bill id " + billId, failure);
+        try {
+            try {
+                if (cancelBill != null && cancelBill.getId() != null) {
+                    // The empty cancel bill row was already committed; keep it out of reports.
+                    cancelBill.setRetired(true);
+                    getBillFacade().edit(cancelBill);
+                }
+            } catch (RuntimeException retireError) {
+                // A failed retire must not stop the claim from being released.
+                LOGGER.log(Level.SEVERE, "Pharmacy return cancellation could not retire the empty cancel bill for return bill id " + billId, retireError);
+            }
+            Map<String, Object> params = new HashMap<>();
+            params.put("id", billId);
+            int released = getBillFacade().updateByJpql(
+                    "UPDATE Bill b SET b.cancelled = false WHERE b.id = :id AND b.cancelled = true AND b.cancelledBill IS NULL",
+                    params);
+            if (released == 1) {
+                getBill().setCancelled(false);
+                JsfUtil.addErrorMessage("The cancellation could not be completed. Nothing was changed. Please try again.");
+            } else {
+                LOGGER.log(Level.SEVERE, "Pharmacy return cancellation claim on return bill id {0} could not be released", billId);
+                JsfUtil.addErrorMessage("The cancellation could not be completed, and the return could not be reopened. Please contact system support.");
+            }
+        } catch (RuntimeException releaseError) {
+            LOGGER.log(Level.SEVERE, "Pharmacy return cancellation could not release the claim on return bill id " + billId, releaseError);
+            JsfUtil.addErrorMessage("The cancellation could not be completed, and the return could not be reopened. Please contact system support.");
+        }
+    }
+
 //    private void updateRemainingQty(PharmaceuticalBillItem nB) {
 //        String sql = "Select p from PharmaceuticalBillItem p where p.billItem.id=" + nB.getBillItem().getReferanceBillItem().getId();
 //        PharmaceuticalBillItem po = getPharmaceuticalBillItemFacade().findFirstByJpql(sql);
@@ -2974,12 +3016,14 @@ public class PharmacyBillSearch implements Serializable {
                 getPharmaceuticalBillItemFacade().create(ph);
             }
 
-            b.setPharmaceuticalBillItem(ph);
-
+            // create, not edit: edit() merges a copy and leaves b without an id, so each later
+            // edit of b (or of ph/can, which point to it) inserted another BillItem row (#25200).
+            // Saved before b points to ph, so the cascade does not try to insert ph a second time.
             if (b.getId() == null) {
-                getBillItemFacede().edit(b);
+                getBillItemFacede().create(b);
             }
 
+            b.setPharmaceuticalBillItem(ph);
             ph.setBillItem(b);
             getPharmaceuticalBillItemFacade().edit(ph);
 
@@ -3028,12 +3072,14 @@ public class PharmacyBillSearch implements Serializable {
                 getPharmaceuticalBillItemFacade().create(ph);
             }
 
-            b.setPharmaceuticalBillItem(ph);
-
+            // create, not edit: edit() merges a copy and leaves b without an id, so each later
+            // edit of b (or of ph/can, which point to it) inserted another BillItem row (#25200).
+            // Saved before b points to ph, so the cascade does not try to insert ph a second time.
             if (b.getId() == null) {
-                getBillItemFacede().edit(b);
+                getBillItemFacede().create(b);
             }
 
+            b.setPharmaceuticalBillItem(ph);
             ph.setBillItem(b);
             getPharmaceuticalBillItemFacade().edit(ph);
 
@@ -3786,29 +3832,38 @@ public class PharmacyBillSearch implements Serializable {
                 return;
             }
 
-            RefundBill cb = pharmacyCreateRefundCancelBill();
-            cb.setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), cb.getBillType(), BillClassType.RefundBill, BillNumberSuffix.RETCAN));
-            cb.setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), cb.getBillType(), BillClassType.RefundBill, BillNumberSuffix.RETCAN));
+            RefundBill cb = null;
+            boolean reversalStarted = false;
+            try {
+                cb = pharmacyCreateRefundCancelBill();
+                cb.setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), cb.getBillType(), BillClassType.RefundBill, BillNumberSuffix.RETCAN));
+                cb.setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), cb.getBillType(), BillClassType.RefundBill, BillNumberSuffix.RETCAN));
 
-            if (cb.getId() == null) {
-                getBillFacade().edit(cb);
+                if (cb.getId() == null) {
+                    // create, not edit: edit() leaves cb without an id, and every later save of
+                    // cb or its items then inserted another cancel bill row (#25200).
+                    getBillFacade().create(cb);
+                }
+
+                reversalStarted = true;
+                pharmacyCancelReturnBillItemsWithReducingStock(cb);
+
+    //            List<PharmaceuticalBillItem> tmp = getPharmaceuticalBillItemFacade().findByJpql("Select p from PharmaceuticalBillItem p where p.billItem.bill.id=" + getBill().getId());
+    //
+    //            for (PharmaceuticalBillItem ph : tmp) {
+    //                getPharmacyBean().deductFromStock(ph.getItemBatch(), ph.getQtyInUnit() + ph.getFreeQtyInUnit(), getBill().getDepartment());
+    //
+    //                getPharmacyBean().reSetPurchaseRate(ph.getItemBatch(), getBill().getDepartment());
+    //                getPharmacyBean().reSetRetailRate(ph.getItemBatch(), getSessionController().getDepartment());
+    //            }
+                getBill().setCancelledBill(cb);
+                getBillFacade().edit(getBill());
+                JsfUtil.addSuccessMessage("Cancelled");
+
+                printPreview = true;
+            } catch (RuntimeException e) {
+                releaseReturnCancellationClaimAfterFailure(cb, reversalStarted, e);
             }
-
-            pharmacyCancelReturnBillItemsWithReducingStock(cb);
-
-//            List<PharmaceuticalBillItem> tmp = getPharmaceuticalBillItemFacade().findByJpql("Select p from PharmaceuticalBillItem p where p.billItem.bill.id=" + getBill().getId());
-//
-//            for (PharmaceuticalBillItem ph : tmp) {
-//                getPharmacyBean().deductFromStock(ph.getItemBatch(), ph.getQtyInUnit() + ph.getFreeQtyInUnit(), getBill().getDepartment());
-//
-//                getPharmacyBean().reSetPurchaseRate(ph.getItemBatch(), getBill().getDepartment());
-//                getPharmacyBean().reSetRetailRate(ph.getItemBatch(), getSessionController().getDepartment());
-//            }
-            getBill().setCancelledBill(cb);
-            getBillFacade().edit(getBill());
-            JsfUtil.addSuccessMessage("Cancelled");
-
-            printPreview = true;
 
         } else {
             JsfUtil.addErrorMessage("No Bill to cancel");
@@ -3835,22 +3890,29 @@ public class PharmacyBillSearch implements Serializable {
                 return;
             }
 
-            RefundBill cb = pharmacyCreateRefundCancelBill();
-            cb.setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), cb.getBillType(), BillClassType.RefundBill, BillNumberSuffix.RETCAN));
-            cb.setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), cb.getBillType(), BillClassType.RefundBill, BillNumberSuffix.RETCAN));
+            RefundBill cb = null;
+            boolean reversalStarted = false;
+            try {
+                cb = pharmacyCreateRefundCancelBill();
+                cb.setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), cb.getBillType(), BillClassType.RefundBill, BillNumberSuffix.RETCAN));
+                cb.setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), cb.getBillType(), BillClassType.RefundBill, BillNumberSuffix.RETCAN));
 
-            if (cb.getId() == null) {
-                getBillFacade().create(cb);
+                if (cb.getId() == null) {
+                    getBillFacade().create(cb);
+                }
+
+                reversalStarted = true;
+                pharmacyCancelReturnBillItemsWithReducingStock(cb);
+
+                // cancelPreBillFees(cb.getBillItems());
+                getBill().setCancelledBill(cb);
+                getBillFacade().edit(getBill());
+                JsfUtil.addSuccessMessage("Cancelled");
+
+                printPreview = true;
+            } catch (RuntimeException e) {
+                releaseReturnCancellationClaimAfterFailure(cb, reversalStarted, e);
             }
-
-            pharmacyCancelReturnBillItemsWithReducingStock(cb);
-
-            // cancelPreBillFees(cb.getBillItems());
-            getBill().setCancelledBill(cb);
-            getBillFacade().edit(getBill());
-            JsfUtil.addSuccessMessage("Cancelled");
-
-            printPreview = true;
 
         } else {
             JsfUtil.addErrorMessage("No Bill to cancel");
@@ -3866,33 +3928,40 @@ public class PharmacyBillSearch implements Serializable {
                 return;
             }
 
-            RefundBill cb = pharmacyCreateRefundCancelBill();
-            cb.setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), cb.getBillType(), BillClassType.RefundBill, BillNumberSuffix.RETCAN));
-            cb.setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), cb.getBillType(), BillClassType.RefundBill, BillNumberSuffix.RETCAN));
+            RefundBill cb = null;
+            boolean reversalStarted = false;
+            try {
+                cb = pharmacyCreateRefundCancelBill();
+                cb.setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), cb.getBillType(), BillClassType.RefundBill, BillNumberSuffix.RETCAN));
+                cb.setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), cb.getBillType(), BillClassType.RefundBill, BillNumberSuffix.RETCAN));
 
-            if (cb.getId() == null) {
-                getBillFacade().create(cb);
-            }
-            //for Payment,billFee and BillFeepayment
-            Payment p = pharmacySaleController.createPayment(cb, paymentMethod);
-            pharmacyCancelReturnBillItems(cb, p);
-
-            getBill().setCancelledBill(cb);
-            getBillFacade().edit(getBill());
-
-            getCashTransactionBean().saveBillCashInTransaction(cb, getSessionController().getLoggedUser());
-
-            JsfUtil.addSuccessMessage("Cancelled");
-            if (getBill().getPaymentMethod() == PaymentMethod.Credit) {
-                if (getBill().getToStaff() != null) {
-                    getStaffBean().updateStaffCredit(getBill().getToStaff(), 0 - getBill().getNetTotal());
-                    JsfUtil.addSuccessMessage("Staff Credit Updated");
-                    cb.setFromStaff(getBill().getToStaff());
-                    getBillFacade().edit(cb);
+                if (cb.getId() == null) {
+                    getBillFacade().create(cb);
                 }
-            }
+                //for Payment,billFee and BillFeepayment
+                reversalStarted = true;
+                Payment p = pharmacySaleController.createPayment(cb, paymentMethod);
+                pharmacyCancelReturnBillItems(cb, p);
 
-            printPreview = true;
+                getBill().setCancelledBill(cb);
+                getBillFacade().edit(getBill());
+
+                getCashTransactionBean().saveBillCashInTransaction(cb, getSessionController().getLoggedUser());
+
+                JsfUtil.addSuccessMessage("Cancelled");
+                if (getBill().getPaymentMethod() == PaymentMethod.Credit) {
+                    if (getBill().getToStaff() != null) {
+                        getStaffBean().updateStaffCredit(getBill().getToStaff(), 0 - getBill().getNetTotal());
+                        JsfUtil.addSuccessMessage("Staff Credit Updated");
+                        cb.setFromStaff(getBill().getToStaff());
+                        getBillFacade().edit(cb);
+                    }
+                }
+
+                printPreview = true;
+            } catch (RuntimeException e) {
+                releaseReturnCancellationClaimAfterFailure(cb, reversalStarted, e);
+            }
 
         } else {
             JsfUtil.addErrorMessage("No Bill to cancel");

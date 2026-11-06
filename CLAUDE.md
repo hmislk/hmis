@@ -22,6 +22,7 @@
 - **🚨 Never modify or remove existing constructors.** Only add new ones, delegating via `this(...)`. See [DTO Guidelines](developer_docs/dto/implementation-guidelines.md).
 - **🚨 JPQL first.** Native SQL only for a demonstrated performance need JPQL can't meet.
 - **🚨 `COUNT(...)` queries use `findLongByJpql`**, never `findDoubleByJpql` (silently returns 0.0).
+- **🚨 Save a new entity with the facade's `create()`, never `edit()`.** `edit()` merges a copy and leaves the object without an id, so every later save of it, or of anything pointing to it, inserts another row (#25200: one cancel wrote 7 bills).
 - **🚨 Bind id lists, not entity lists, for a root entity in JPQL.** EclipseLink serialises the entities for `b in :bills`, so the query silently matches nothing. Use `b.id in :billIds`.
 - **🚨 Business errors thrown from a `@Stateless` service use an `@ApplicationException(rollback = true)` exception.** A plain `IllegalStateException`/`IllegalArgumentException` reaches the JSF controller or REST class as `EJBException`, so its `catch` never fires and the user sees no message.
 - **🚨 New report buttons on a Favorites-enabled index page** (e.g. `reports/index.xhtml`) go in both the category tab and the ⭐ Favorites tab. Read [Report Favorites](developer_docs/feature/report-favorites.md) first.
