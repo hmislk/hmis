@@ -9,6 +9,9 @@ import com.divudi.service.DrawerService;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.logging.Handler;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -117,6 +120,37 @@ class DrawerControllerBusyTest {
 
         controller.updateDrawerForIns(ps);
         assertEquals(4, service.calls);
+    }
+
+    @Test
+    void busyDrawer_logsSkippedPaymentsWithAppliedSignAndPlainIds() {
+        service.busy = true;
+        List<LogRecord> records = new ArrayList<>();
+        Handler h = new Handler() {
+            @Override
+            public void publish(LogRecord r) {
+                records.add(r);
+            }
+
+            @Override
+            public void flush() {
+            }
+
+            @Override
+            public void close() {
+            }
+        };
+        Logger log = Logger.getLogger(DrawerController.class.getName());
+        log.addHandler(h);
+        try {
+            controller.updateDrawerForOuts(Arrays.asList(payment(1234567, 10), payment(2, 20)), new WebUser());
+        } finally {
+            log.removeHandler(h);
+        }
+        assertEquals(2, records.size());
+        assertEquals("1234567", records.get(0).getParameters()[0]);
+        assertEquals("-10.0", records.get(0).getParameters()[2]);
+        assertEquals("-20.0", records.get(1).getParameters()[2]);
     }
 
     @Test

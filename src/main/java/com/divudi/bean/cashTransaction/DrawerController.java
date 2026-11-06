@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.function.DoubleUnaryOperator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
@@ -78,7 +79,7 @@ public class DrawerController implements Serializable {
         for (int i = 0; i < payments.size(); i++) {
             Payment payment = payments.get(i);
             if (!updateDrawerOrReport(payment, Math.abs(payment.getPaidValue()), webUser)) {
-                reportSkipped(payments.subList(i + 1, payments.size()), webUser);
+                reportSkipped(payments.subList(i + 1, payments.size()), webUser, Math::abs);
                 return;
             }
         }
@@ -95,7 +96,7 @@ public class DrawerController implements Serializable {
         for (int i = 0; i < payments.size(); i++) {
             Payment payment = payments.get(i);
             if (!updateDrawerOrReport(payment, payment.getPaidValue(), webUser)) {
-                reportSkipped(payments.subList(i + 1, payments.size()), webUser);
+                reportSkipped(payments.subList(i + 1, payments.size()), webUser, v -> v);
                 return;
             }
         }
@@ -110,7 +111,7 @@ public class DrawerController implements Serializable {
             drawerService.updateDrawer(bill, paidValue, paymentMethod, webUser);
         } catch (DrawerBusyException e) {
             LOGGER.log(Level.SEVERE, "Cash drawer NOT updated (drawer busy): bill id {0}, amount {1}, method {2}, drawer user {3}. Apply it with a drawer adjustment.",
-                    new Object[]{bill == null ? null : bill.getId(), paidValue, paymentMethod, userName(webUser)});
+                    new Object[]{String.valueOf(bill == null ? null : bill.getId()), String.valueOf(paidValue), String.valueOf(paymentMethod), userName(webUser)});
             tellCashier();
         }
     }
@@ -138,21 +139,31 @@ public class DrawerController implements Serializable {
     /**
      * After one busy drawer, the bill's remaining payments are not tried: the row
      * is still locked, and each try would wait out the database lock timeout again.
-     * They are logged so an admin can apply them.
+     * They are logged so an admin can apply them, with the same sign the loop
+     * would have applied.
+     *
+     * @param webUser the drawer user, or null for each payment's creator
+     * @param signed maps a payment's paid value to the amount the loop applies
      */
-    private void reportSkipped(List<Payment> payments, WebUser webUser) {
+    private void reportSkipped(List<Payment> payments, WebUser webUser, DoubleUnaryOperator signed) {
         for (Payment payment : payments) {
-            logNotApplied(payment, payment == null ? 0 : payment.getPaidValue(), webUser);
+            if (payment == null) {
+                continue;
+            }
+            logNotApplied(payment, signed.applyAsDouble(payment.getPaidValue()),
+                    webUser != null ? webUser : payment.getCreater());
         }
     }
 
     private void logNotApplied(Payment payment, double value, WebUser drawerUser) {
+        // Plain string values: Logger's MessageFormat would group ids (1,234,567)
+        // and round amounts, and admins search and apply these values as logged.
         LOGGER.log(Level.SEVERE, "Cash drawer NOT updated (drawer busy): payment id {0}, bill id {1}, amount {2}, method {3}, drawer user {4}. Apply it with a drawer adjustment.",
                 new Object[]{
-                    payment == null ? null : payment.getId(),
-                    payment == null || payment.getBill() == null ? null : payment.getBill().getId(),
-                    value,
-                    payment == null ? null : payment.getPaymentMethod(),
+                    String.valueOf(payment == null ? null : payment.getId()),
+                    String.valueOf(payment == null || payment.getBill() == null ? null : payment.getBill().getId()),
+                    String.valueOf(value),
+                    String.valueOf(payment == null ? null : payment.getPaymentMethod()),
                     userName(drawerUser)});
     }
 
@@ -187,7 +198,7 @@ public class DrawerController implements Serializable {
         for (int i = 0; i < payments.size(); i++) {
             Payment payment = payments.get(i);
             if (!updateDrawerOrReport(payment, -Math.abs(payment.getPaidValue()), webUser)) {
-                reportSkipped(payments.subList(i + 1, payments.size()), webUser);
+                reportSkipped(payments.subList(i + 1, payments.size()), webUser, v -> -Math.abs(v));
                 return;
             }
         }
@@ -213,9 +224,7 @@ public class DrawerController implements Serializable {
         for (int i = 0; i < payments.size(); i++) {
             Payment payment = payments.get(i);
             if (!updateCreatorsDrawerOrReport(payment, Math.abs(payment.getPaidValue()))) {
-                for (Payment skipped : payments.subList(i + 1, payments.size())) {
-                    logNotApplied(skipped, skipped == null ? 0 : skipped.getPaidValue(), skipped == null ? null : skipped.getCreater());
-                }
+                reportSkipped(payments.subList(i + 1, payments.size()), null, Math::abs);
                 return;
             }
         }
