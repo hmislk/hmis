@@ -888,7 +888,7 @@ public class BookingController implements Serializable, ControllerWithPatient, C
     public String smsBody(BillSession r) {
         Calendar c = Calendar.getInstance();
         c.add(Calendar.DATE, 2);
-        String temId = securityController.createLinkToken(r.getId(), c.getTime(), sessionController);
+        String temId = securityController.createLinkToken(SecurityController.LINK_SESSION, r.getId(), c.getTime(), sessionController);
         String url = CommonFunctions.getBaseUrl() + "faces/requests/cbss.xhtml?id=" + temId;
         String b = "Your session of "
                 + r.getSessionInstance().getOriginatingSession().getName()

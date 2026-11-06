@@ -1472,7 +1472,7 @@ public class ClinicController implements Serializable, ControllerWithPatientView
     public String smsBody(BillSession r) {
         Calendar c = Calendar.getInstance();
         c.add(Calendar.DATE, 2);
-        String temId = securityController.createLinkToken(r.getId(), c.getTime(), sessionController);
+        String temId = securityController.createLinkToken(SecurityController.LINK_SESSION, r.getId(), c.getTime(), sessionController);
         String url = CommonFunctions.getBaseUrl() + "faces/requests/cbss.xhtml?id=" + temId;
         String b = "Your session of "
                 + r.getSessionInstance().getOriginatingSession().getName()
@@ -6100,7 +6100,7 @@ public class ClinicController implements Serializable, ControllerWithPatientView
         }
         // Signed, self-expiring token only (the alphanumeric encoding of a
         // numeric id did not depend on the key).
-        Long id = securityController.decodeLinkId(encryptedBillSessionId, sessionController);
+        Long id = securityController.decodeLinkId(SecurityController.LINK_SESSION, encryptedBillSessionId, sessionController);
         if (id == null) {
             return;
         }
