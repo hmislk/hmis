@@ -15,54 +15,54 @@
                     <p:panel id="pan1" >
                         <p:panelGrid columns="4" class="w-100">
                             <h:outputLabel   value="From Date" />
-                            <p:calendar styleClass="noPrintButton" value="#{channelReportController.fromDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
+                            <p:calendar styleClass="noPrintButton" value="#{channelReportTemplateController.fromDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
                             </p:calendar>
                             <h:outputLabel   value="To Date" />
-                            <p:calendar styleClass="noPrintButton" value="#{channelReportController.toDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
+                            <p:calendar styleClass="noPrintButton" value="#{channelReportTemplateController.toDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
                             </p:calendar>  
 
                             <p:outputLabel value="Bank Vise"/>
-                            <p:selectBooleanCheckbox value="#{channelReportController.reportKeyWord.bool1}" >
+                            <p:selectBooleanCheckbox value="#{channelReportTemplateController.reportKeyWord.bool1}" >
                                 <f:ajax event="change" execute="@this" render="pan1" />
                             </p:selectBooleanCheckbox>
 
-                            <p:outputLabel value="Report Type" rendered="#{channelReportController.reportKeyWord.bool1}"/>
-                            <p:selectOneRadio id="console" value="#{channelReportController.reportKeyWord.string}" 
-                                              rendered="#{channelReportController.reportKeyWord.bool1}">
+                            <p:outputLabel value="Report Type" rendered="#{channelReportTemplateController.reportKeyWord.bool1}"/>
+                            <p:selectOneRadio id="console" value="#{channelReportTemplateController.reportKeyWord.string}" 
+                                              rendered="#{channelReportTemplateController.reportKeyWord.bool1}">
                                 <f:selectItem itemLabel="Summary" itemValue="0" />
                                 <f:selectItem itemLabel="Detail" itemValue="1" />
                             </p:selectOneRadio>
 
-                            <p:outputLabel value="Bank" rendered="#{!channelReportController.reportKeyWord.bool1}"/>
-                            <p:selectOneMenu value="#{channelReportController.reportKeyWord.bank}" rendered="#{!channelReportController.reportKeyWord.bool1}">
+                            <p:outputLabel value="Bank" rendered="#{!channelReportTemplateController.reportKeyWord.bool1}"/>
+                            <p:selectOneMenu value="#{channelReportTemplateController.reportKeyWord.bank}" rendered="#{!channelReportTemplateController.reportKeyWord.bool1}">
                                 <f:selectItem itemLabel="Select Bank"/>
                                 <f:selectItems value="#{institutionController.banks}" var="inst" itemLabel="#{inst.name}" itemValue="#{inst}"/>
                             </p:selectOneMenu>
 
-                            <p:outputLabel value="Department" rendered="#{!channelReportController.reportKeyWord.bool1}"/>
-                            <p:autoComplete styleClass="noPrintButton mediuminput"  value="#{channelReportController.department}" rendered="#{!channelReportController.reportKeyWord.bool1}"
+                            <p:outputLabel value="Department" rendered="#{!channelReportTemplateController.reportKeyWord.bool1}"/>
+                            <p:autoComplete styleClass="noPrintButton mediuminput"  value="#{channelReportTemplateController.department}" rendered="#{!channelReportTemplateController.reportKeyWord.bool1}"
                                             style="text-align: left; "  completeMethod="#{departmentController.completeDept}" var="dep" itemValue="#{dep}" itemLabel="#{dep.name}" forceSelection="true" >
                             </p:autoComplete>
 
-                            <h:outputLabel styleClass="noPrintButton" value=" User Name " rendered="#{!channelReportController.reportKeyWord.bool1}"/>
+                            <h:outputLabel styleClass="noPrintButton" value=" User Name " rendered="#{!channelReportTemplateController.reportKeyWord.bool1}"/>
                             <p:autoComplete  completeMethod="#{webUserController.completeUser}" styleClass="noPrintButton"
-                                             forceSelection="true" rendered="#{!channelReportController.reportKeyWord.bool1}"
+                                             forceSelection="true" rendered="#{!channelReportTemplateController.reportKeyWord.bool1}"
                                              var="w" itemLabel="#{w.webUserPerson.name}" itemValue="#{w}"
-                                             value="#{channelReportController.webUser}" ></p:autoComplete>
+                                             value="#{channelReportTemplateController.webUser}" ></p:autoComplete>
                         </p:panelGrid>
                         <h:panelGrid columns="6" class="my-2">
-                            <p:commandButton style="margin-right: 10px" value="Process" ajax="false" action="#{channelReportController.createCardSummery()}" rendered="#{!channelReportController.reportKeyWord.bool1}" />
-                            <p:commandButton style="margin-right: 10px" value="Process" ajax="false" action="#{channelReportController.createCardSummeryBankVise()}" rendered="#{channelReportController.reportKeyWord.bool1}" />
+                            <p:commandButton style="margin-right: 10px" value="Process" ajax="false" action="#{channelReportTemplateController.createCardSummery()}" rendered="#{!channelReportTemplateController.reportKeyWord.bool1}" />
+                            <p:commandButton style="margin-right: 10px" value="Process" ajax="false" action="#{channelReportTemplateController.createCardSummeryBankVise()}" rendered="#{channelReportTemplateController.reportKeyWord.bool1}" />
                             <p:commandButton style="margin-right: 10px" id="print" value="Print">
                                 <p:printer target="panelPrint" />
                             </p:commandButton>
-                            <p:commandButton style="margin-right: 10px" value="Excel" ajax="false" styleClass="noPrintButton" rendered="#{!channelReportController.reportKeyWord.bool1}">
+                            <p:commandButton style="margin-right: 10px" value="Excel" ajax="false" styleClass="noPrintButton" rendered="#{!channelReportTemplateController.reportKeyWord.bool1}">
                                 <p:dataExporter type="xlsx" target="tbl" fileName="card_summery" />
                             </p:commandButton>
-                            <p:commandButton style="margin-right: 10px" value="Excel" ajax="false" styleClass="noPrintButton" rendered="#{channelReportController.reportKeyWord.bool1 and channelReportController.reportKeyWord.string eq '0'}" >
+                            <p:commandButton style="margin-right: 10px" value="Excel" ajax="false" styleClass="noPrintButton" rendered="#{channelReportTemplateController.reportKeyWord.bool1 and channelReportTemplateController.reportKeyWord.string eq '0'}" >
                                 <p:dataExporter type="xlsx" target="tbl1" fileName="card_summery_bank_vise" />
                             </p:commandButton>
-                            <p:commandButton style="margin-right: 10px" value="Excel" ajax="false" styleClass="noPrintButton" rendered="#{channelReportController.reportKeyWord.bool1 and channelReportController.reportKeyWord.string eq '1'}" >
+                            <p:commandButton style="margin-right: 10px" value="Excel" ajax="false" styleClass="noPrintButton" rendered="#{channelReportTemplateController.reportKeyWord.bool1 and channelReportTemplateController.reportKeyWord.string eq '1'}" >
                                 <p:dataExporter type="xlsx" target="tbl2" fileName="card_summery_bank_vise" />
                             </p:commandButton>
                         </h:panelGrid>
@@ -71,7 +71,7 @@
                     </p:panel>
 
                     <p:panel id="panelPrint" styleClass="noBorder summeryBorder">
-                        <p:dataTable id="tbl" value="#{channelReportController.channelBills}" var="b" rowIndexVar="i" rendered="#{!channelReportController.reportKeyWord.bool1}">
+                        <p:dataTable id="tbl" value="#{channelReportTemplateController.channelBills}" var="b" rowIndexVar="i" rendered="#{!channelReportTemplateController.reportKeyWord.bool1}">
                             <p:column >
                                 <f:facet name="header">
                                     <p:outputLabel value="No"/>
@@ -93,13 +93,13 @@
                                 </f:facet>
                                 <p:outputLabel value="#{b.patient.person.nameWithTitle}"/>
                             </p:column>
-                            <p:column rendered="#{channelReportController.department eq null}">
+                            <p:column rendered="#{channelReportTemplateController.department eq null}">
                                 <f:facet name="header">
                                     <p:outputLabel value="Department"/>
                                 </f:facet>
                                 <p:outputLabel value="#{b.department.name}"/>
                             </p:column>
-                            <p:column rendered="#{channelReportController.webUser eq null}">
+                            <p:column rendered="#{channelReportTemplateController.webUser eq null}">
                                 <f:facet name="header">
                                     <p:outputLabel value="User"/>
                                 </f:facet>
@@ -163,7 +163,7 @@
                                 </f:facet>
                                 <p:outputLabel value="#{b.creditCardRefNo}"/>
                                 <f:facet name="footer">
-                                    <p:outputLabel value="#{channelReportController.grantNetTotal}" >
+                                    <p:outputLabel value="#{channelReportTemplateController.grantNetTotal}" >
                                         <f:convertNumber pattern="#,##0.00" />
                                     </p:outputLabel>
                                 </f:facet>
@@ -171,8 +171,8 @@
 
 
                         </p:dataTable>
-                        <p:dataTable id="tbl1" value="#{channelReportController.depBills}" 
-                                     rendered="#{channelReportController.reportKeyWord.bool1 and channelReportController.reportKeyWord.string eq '0'}"
+                        <p:dataTable id="tbl1" value="#{channelReportTemplateController.depBills}" 
+                                     rendered="#{channelReportTemplateController.reportKeyWord.bool1 and channelReportTemplateController.reportKeyWord.string eq '0'}"
                                      var="b" rowIndexVar="i" >
                             <p:column >
                                 <f:facet name="header">
@@ -198,7 +198,7 @@
                                     <f:convertNumber pattern="#,##0.00" />
                                 </p:outputLabel>
                                 <f:facet name="footer">
-                                    <p:outputLabel value="#{channelReportController.grantNetTotal}" >
+                                    <p:outputLabel value="#{channelReportTemplateController.grantNetTotal}" >
                                         <f:convertNumber pattern="#,##0.00" />
                                     </p:outputLabel>
                                 </f:facet>
@@ -206,8 +206,8 @@
 
 
                         </p:dataTable>
-                        <p:dataTable id="tbl2" value="#{channelReportController.depBills}" 
-                                     rendered="#{channelReportController.reportKeyWord.bool1 and channelReportController.reportKeyWord.string eq '1'}"
+                        <p:dataTable id="tbl2" value="#{channelReportTemplateController.depBills}" 
+                                     rendered="#{channelReportTemplateController.reportKeyWord.bool1 and channelReportTemplateController.reportKeyWord.string eq '1'}"
                                      var="a" rowIndexVar="i" >
                             <p:columnGroup  type="header">
                                 <p:row>
@@ -280,7 +280,7 @@
                                 </p:column>
                             </p:subTable>
                             <f:facet name="footer">
-                                <p:outputLabel value="#{channelReportController.grantNetTotal}" style="float: right;">
+                                <p:outputLabel value="#{channelReportTemplateController.grantNetTotal}" style="float: right;">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </p:outputLabel>
 

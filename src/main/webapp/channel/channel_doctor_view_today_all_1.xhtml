@@ -19,21 +19,21 @@
                 <p:panel>
                     <p:panelGrid columns="2" >
                         <h:outputLabel value="From Date"/>
-                        <p:calendar value="#{channelReportController.fromDate}" navigator="true" pattern="dd MMMM yyyy HH:mm:ss"  >
+                        <p:calendar value="#{channelReportTemplateController.fromDate}" navigator="true" pattern="dd MMMM yyyy HH:mm:ss"  >
                         </p:calendar>
                         <h:outputLabel value="To Date"/>
-                        <p:calendar value="#{channelReportController.toDate}" navigator="true" pattern="dd MMMM yyyy HH:mm:ss" >
+                        <p:calendar value="#{channelReportTemplateController.toDate}" navigator="true" pattern="dd MMMM yyyy HH:mm:ss" >
                         </p:calendar>
                         <h:panelGrid columns="2" rendered="#{webUserController.hasPrivilege('Developers')}">
-                            <h:outputText id="output" value="Percentage #{channelReportController.reportKeyWord.from} % " />
-                            <h:inputHidden id="txt2" value="#{channelReportController.reportKeyWord.from}" />
+                            <h:outputText id="output" value="Percentage #{channelReportTemplateController.reportKeyWord.from} % " />
+                            <h:inputHidden id="txt2" value="#{channelReportTemplateController.reportKeyWord.from}" />
                         </h:panelGrid>
                         <p:slider for="txt2" display="output" style="width: 200px" displayTemplate="Percentage {value} % " rendered="#{webUserController.hasPrivilege('Developers')}" />
                         
                     </p:panelGrid>
                     
                     <h:panelGrid columns="3" class="my-2">
-                            <p:commandButton action="#{channelReportController.createTotalDoctorAllBTT}" value="Fill" ajax="false" ></p:commandButton> 
+                            <p:commandButton action="#{channelReportTemplateController.createTotalDoctorAllBTT}" value="Fill" ajax="false" ></p:commandButton> 
                             <p:commandButton style="margin-right: 10px; margin-left: 10px" value="Print" action="#" styleClass="noPrintButton">
                                 <p:printer target="pan1" />
                             </p:commandButton>
@@ -45,17 +45,17 @@
                 </p:panel>
                 <p:panel id="pan1" styleClass="noBorder summeryBorder">
 
-                    <p:dataTable id="tbl" value="#{channelReportController.channelDoctors}" var="bs" sortBy="#{bs.common}" rowIndexVar="i" >
+                    <p:dataTable id="tbl" value="#{channelReportTemplateController.channelDoctors}" var="bs" sortBy="#{bs.common}" rowIndexVar="i" >
                         <f:facet name="header" >
                             <p:outputLabel value="#{sessionController.loggedUser.institution.name}" /><br></br>
                             <p:outputLabel value="#{sessionController.loggedUser.institution.address}"/><br></br>
                             <p:outputLabel value="Consultant BTT Report" /><br></br>
                             <p:outputLabel value="From : "/>
-                            <p:outputLabel class="ml-2" value="#{channelReportController.fromDate}" >
+                            <p:outputLabel class="ml-2" value="#{channelReportTemplateController.fromDate}" >
                                 <f:convertDateTime pattern="dd MMMM yyyy HH:mm:ss" />
                             </p:outputLabel>     
                             <p:outputLabel class="ml-5" value="To : "/>
-                            <p:outputLabel class="ml-2" value="#{channelReportController.toDate}" >
+                            <p:outputLabel class="ml-2" value="#{channelReportTemplateController.toDate}" >
                                 <f:convertDateTime pattern="dd MMMM yyyy HH:mm:ss" />
                             </p:outputLabel>
                         </f:facet>
@@ -96,7 +96,7 @@
                                 <f:convertNumber pattern="##,###,##0.00" />
                             </p:outputLabel>
                             <f:facet name="footer">
-                                <p:outputLabel value="#{channelReportController.total}" style="float: right;">
+                                <p:outputLabel value="#{channelReportTemplateController.total}" style="float: right;">
                                     <f:convertNumber pattern="##,###,##0.00" />
                                 </p:outputLabel>
                             </f:facet>
@@ -106,7 +106,7 @@
                                 <f:convertNumber pattern="##,###,##0.00" />
                             </p:outputLabel>
                             <f:facet name="footer">
-                                <p:outputLabel value="#{(channelReportController.total)*0.15}" style="float: right;">
+                                <p:outputLabel value="#{(channelReportTemplateController.total)*0.15}" style="float: right;">
                                     <f:convertNumber pattern="##,###,##0.00" />
                                 </p:outputLabel>
                             </f:facet>
@@ -116,7 +116,7 @@
                                 <f:convertNumber pattern="##,###,##0.00" />
                             </p:outputLabel>
                             <f:facet name="footer">
-                                <p:outputLabel value="#{(channelReportController.total)*1.15}" style="float: right;">
+                                <p:outputLabel value="#{(channelReportTemplateController.total)*1.15}" style="float: right;">
                                     <f:convertNumber pattern="##,###,##0.00" />
                                 </p:outputLabel>
                             </f:facet>

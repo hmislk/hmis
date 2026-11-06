@@ -17,53 +17,53 @@
                 <p:panel>
                     <p:panelGrid columns="2" >
                         <h:outputLabel value="From Date"/>
-                        <p:calendar value="#{channelReportController.fromDate}" navigator="true" pattern="dd MMMM yyyy HH:mm:ss"  >
+                        <p:calendar value="#{channelReportTemplateController.fromDate}" navigator="true" pattern="dd MMMM yyyy HH:mm:ss"  >
                         </p:calendar>
                         <h:outputLabel value="To Date"/>
-                        <p:calendar value="#{channelReportController.toDate}" navigator="true" pattern="dd MMMM yyyy HH:mm:ss" >
+                        <p:calendar value="#{channelReportTemplateController.toDate}" navigator="true" pattern="dd MMMM yyyy HH:mm:ss" >
                         </p:calendar>
                         <p:outputLabel value="Agent Name" />
-                        <p:autoComplete converter="deal" value="#{channelReportController.institution}" styleClass="mediuminput"
+                        <p:autoComplete converter="deal" value="#{channelReportTemplateController.institution}" styleClass="mediuminput"
                                         forceSelection="true"
                                         completeMethod="#{agencyController.completeAgency}" var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" >
                             <p:column>#{vt.institutionCode}</p:column>
                             <p:column>#{vt.name}</p:column>
                         </p:autoComplete>
                         <h:outputLabel value="Session Date"/> 
-                        <p:selectBooleanCheckbox value="#{channelReportController.sessoinDate}" />
+                        <p:selectBooleanCheckbox value="#{channelReportTemplateController.sessoinDate}" />
                         <p:outputLabel value="Channel Type" rendered="#{sessionController.loggedPreference.applicationInstitution eq 'Cooperative'}" />
-                        <p:selectOneMenu id="cmbChanType" value="#{channelReportController.reportKeyWord.billType}" rendered="#{sessionController.loggedPreference.applicationInstitution eq 'Cooperative'}" >
+                        <p:selectOneMenu id="cmbChanType" value="#{channelReportTemplateController.reportKeyWord.billType}" rendered="#{sessionController.loggedPreference.applicationInstitution eq 'Cooperative'}" >
                             <f:selectItem itemLabel="Please Select a Type"/>
                             <f:selectItems value="#{enumController.channelType}" var="t" itemLabel="#{t.label}" itemValue="#{t}" />    
                         </p:selectOneMenu>
                     </p:panelGrid> 
                     
                     <h:panelGrid columns="3" class="my-2">
-                    <p:commandButton action="#{channelReportController.createAgentBookings()}" value="Fill" ajax="false" ></p:commandButton> 
+                    <p:commandButton action="#{channelReportTemplateController.createAgentBookings()}" value="Fill" ajax="false" ></p:commandButton> 
                             <p:commandButton style="margin-right: 10px; margin-left: 10px" ajax="false" value="Print" styleClass="noPrintButton">
                                 <p:printer target="reportPrint"  />
                             </p:commandButton>
 
-                            <p:commandButton actionListener="#{channelReportController.createAgentBookings()}" ajax="false" value="Excel" styleClass="noPrintButton">
+                            <p:commandButton actionListener="#{channelReportTemplateController.createAgentBookings()}" ajax="false" value="Excel" styleClass="noPrintButton">
                                 <p:dataExporter type="xlsx" target="tbl1" fileName="channel_report_agent_history"  />
                             </p:commandButton>
                         </h:panelGrid>
                     
                 </p:panel>
                 <p:panel id="reportPrint" styleClass="noBorder summeryBorder">
-                    <p:dataTable value="#{channelReportController.channelBills}" var="b" id="tbl1" rowIndexVar="i" rowStyleClass="#{b.billClassType eq 'CancelledBill' or b.billClassType eq 'RefundBill' ? 'crossLine':''}">
+                    <p:dataTable value="#{channelReportTemplateController.channelBills}" var="b" id="tbl1" rowIndexVar="i" rowStyleClass="#{b.billClassType eq 'CancelledBill' or b.billClassType eq 'RefundBill' ? 'crossLine':''}">
                         <f:facet name="header">
                             <p:outputLabel value="From" />
-                            <p:outputLabel class="ml-2" value="#{channelReportController.fromDate}" >
+                            <p:outputLabel class="ml-2" value="#{channelReportTemplateController.fromDate}" >
                                 <f:convertDateTime pattern="dd MMMM yyyy HH:mm:ss" />
                             </p:outputLabel>
                             <p:outputLabel class="ml-5" value="To" />
-                            <p:outputLabel class="ml-2" value="#{channelReportController.toDate}" >
+                            <p:outputLabel class="ml-2" value="#{channelReportTemplateController.toDate}" >
                                 <f:convertDateTime pattern="dd MMMM yyyy HH:mm:ss" />
                             </p:outputLabel><br></br>
-                            <p:outputLabel value=" All Agents " rendered="#{channelReportController.institution eq null}"/>
-                            <p:outputLabel value=" Channel Agent - " rendered="#{channelReportController.institution ne null}"/>
-                            <p:outputLabel value="#{channelReportController.institution.name} - #{channelReportController.institution.institutionCode}" rendered="#{channelReportController.institution ne null}"/>
+                            <p:outputLabel value=" All Agents " rendered="#{channelReportTemplateController.institution eq null}"/>
+                            <p:outputLabel value=" Channel Agent - " rendered="#{channelReportTemplateController.institution ne null}"/>
+                            <p:outputLabel value="#{channelReportTemplateController.institution.name} - #{channelReportTemplateController.institution.institutionCode}" rendered="#{channelReportTemplateController.institution ne null}"/>
                         </f:facet>
                         <p:column>
                             <f:facet name="header">
@@ -71,7 +71,7 @@
                             </f:facet>
                             <p:outputLabel value="#{i+1}" />
                         </p:column>
-                        <p:column rendered="#{channelReportController.institution eq null}" style="width: 300px!important;text-overflow: ellipsis;white-space: nowrap;overflow: hidden;">
+                        <p:column rendered="#{channelReportTemplateController.institution eq null}" style="width: 300px!important;text-overflow: ellipsis;white-space: nowrap;overflow: hidden;">
                             <f:facet name="header">
                                 <p:outputLabel value="Agent" />
                             </f:facet>
@@ -138,7 +138,7 @@
                                 <f:convertNumber pattern="#,##,##0.00" />
                             </p:outputLabel>
                             <f:facet name="footer">
-                                <p:outputLabel value="#{channelReportController.netTotalDoc}" style="float: right;">
+                                <p:outputLabel value="#{channelReportTemplateController.netTotalDoc}" style="float: right;">
                                     <f:convertNumber pattern="#,##,##0.00" />
                                 </p:outputLabel>  
                             </f:facet>
@@ -151,7 +151,7 @@
                                 <f:convertNumber pattern="#,##,##0.00" />
                             </p:outputLabel>
                             <f:facet name="footer">
-                                <p:outputLabel value="#{channelReportController.netTotal-channelReportController.netTotalDoc}" style="float: right;">
+                                <p:outputLabel value="#{channelReportTemplateController.netTotal-channelReportTemplateController.netTotalDoc}" style="float: right;">
                                     <f:convertNumber pattern="#,##,##0.00" />
                                 </p:outputLabel>  
                             </f:facet>
@@ -164,7 +164,7 @@
                                 <f:convertNumber pattern="#,##,##0.00" />
                             </p:outputLabel>
                             <f:facet name="footer">
-                                <p:outputLabel value="#{channelReportController.netTotal}" style="float: right;" >
+                                <p:outputLabel value="#{channelReportTemplateController.netTotal}" style="float: right;" >
                                     <f:convertNumber pattern="#,##,##0.00" />
                                 </p:outputLabel>  
                             </f:facet>
