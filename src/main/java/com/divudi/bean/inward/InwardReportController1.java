@@ -86,6 +86,13 @@ public class InwardReportController1 implements Serializable {
     private String dateBasis = "createdAt";
     private boolean outstandingOnly;
     private AdmissionStatus admissionStatus = AdmissionStatus.DISCHARGED_AND_FINAL_BILL_COMPLETED;
+    // The Date Basis and Admission Status the shown Debtor/Commitment rows were
+    // built with (issue #25237): the export buttons submit the filter menus, and
+    // dateBasis is shared by the reports on this session bean, so the export
+    // header and notes must not read the live values.
+    private String debtorProcessedDateBasis;
+    private AdmissionStatus debtorProcessedAdmissionStatus;
+    private String commitmentProcessedDateBasis;
     private String reportType = "aggregate";
     private List<Bill> bills;
     private List<BillItem> debtorSettlementItems;
@@ -1548,6 +1555,9 @@ public class InwardReportController1 implements Serializable {
         debtorPaidTotal = 0;
         debtorOutstandingTotal = 0;
         commitmentBills = null;
+        debtorProcessedDateBasis = null;
+        debtorProcessedAdmissionStatus = null;
+        commitmentProcessedDateBasis = null;
         commitmentTotal = 0;
         commitmentPaidTotal = 0;
         commitmentBalanceTotal = 0;
@@ -3105,6 +3115,8 @@ public class InwardReportController1 implements Serializable {
             .thenComparing(Bill::getId, Comparator.nullsLast(Comparator.naturalOrder()));
 
     public void inwardCreditCompanyDebtors() {
+        debtorProcessedDateBasis = dateBasis;
+        debtorProcessedAdmissionStatus = admissionStatus;
         boolean anyStatus = admissionStatus == null || admissionStatus == AdmissionStatus.ANY_STATUS;
         boolean wantFinalized = anyStatus || admissionStatus == AdmissionStatus.DISCHARGED_AND_FINAL_BILL_COMPLETED;
         // Issue #23793: with Discharge Date as the basis, currently admitted patients
@@ -3372,6 +3384,7 @@ public class InwardReportController1 implements Serializable {
      * commitment bill. No (Active) rows and no settlement figures.
      */
     public void inwardCreditCompanyCommitments() {
+        commitmentProcessedDateBasis = dateBasis;
         commitmentBills = findCreditCompanyCommitmentBills(true);
         commitmentPaidByBillId = findCommitmentSettledAmounts(commitmentBills);
         commitmentTotal = 0;
@@ -3543,7 +3556,7 @@ public class InwardReportController1 implements Serializable {
         }
         TabularReportExporter.Align l = TabularReportExporter.Align.LEFT;
         TabularReportExporter.Align r = TabularReportExporter.Align.RIGHT;
-        TabularReportExporter ex = newCreditCompanyExporter("Inpatient Credit Company Debtor Report", true)
+        TabularReportExporter ex = newCreditCompanyExporter("Inpatient Credit Company Debtor Report", true, debtorProcessedDateBasis)
                 .column("Commitment Bill No", 2.6f, l)
                 .column("Final Bill No", 2.4f, l)
                 .column("BHT No", 1.2f, l)
@@ -3558,8 +3571,8 @@ public class InwardReportController1 implements Serializable {
                 .column("Settled by Patient", 1.4f, r)
                 .column("Total Paid", 1.4f, r)
                 .column("Outstanding", 1.4f, r);
-        ex.filter("Admission Status", admissionStatus == null
-                ? AdmissionStatus.ANY_STATUS.getLabel() : admissionStatus.getLabel());
+        ex.filter("Admission Status", debtorProcessedAdmissionStatus == null
+                ? AdmissionStatus.ANY_STATUS.getLabel() : debtorProcessedAdmissionStatus.getLabel());
         boolean hasActive = false;
         boolean hasBillPending = false;
         for (Bill b : bills) {
@@ -3589,7 +3602,7 @@ public class InwardReportController1 implements Serializable {
         ex.totals("Total", null, null, null, null, null, null, null, null, null,
                 debtorBillTotal, null, null, debtorPaidTotal, debtorOutstandingTotal);
         ex.note("Final Bill Value is not totalled: a final bill shared by two or more credit companies appears once per company.");
-        for (String note : pendingRowDateNotes(dateBasis, admissionStatus, hasActive, hasBillPending)) {
+        for (String note : pendingRowDateNotes(debtorProcessedDateBasis, debtorProcessedAdmissionStatus, hasActive, hasBillPending)) {
             ex.note(note);
         }
         writeExport(ex, excel, "inward_credit_company_debtors");
@@ -3603,7 +3616,7 @@ public class InwardReportController1 implements Serializable {
         boolean showPaidAndRemaining = configOptionApplicationController.getBooleanValueByKey(
                 "Credit Company Commitment Report - Show Paid and Remaining Columns", true);
         TabularReportExporter.Align l = TabularReportExporter.Align.LEFT;
-        TabularReportExporter ex = newCreditCompanyExporter("Inpatient Credit Company Commitment Report", false)
+        TabularReportExporter ex = newCreditCompanyExporter("Inpatient Credit Company Commitment Report", false, commitmentProcessedDateBasis)
                 .column("No.", 0.5f, TabularReportExporter.Align.CENTER)
                 .column("Final Bill No", 2.4f, l)
                 .column("BHT No", 1.2f, l)
@@ -3701,14 +3714,14 @@ public class InwardReportController1 implements Serializable {
         return notes;
     }
 
-    private TabularReportExporter newCreditCompanyExporter(String title, boolean withOutstandingFilter) {
+    private TabularReportExporter newCreditCompanyExporter(String title, boolean withOutstandingFilter, String processedDateBasis) {
         String institutionName = sessionController.getInstitution() != null
                 ? sessionController.getInstitution().getName() : "";
         String printedBy = sessionController.getLoggedUser() != null
                 && sessionController.getLoggedUser().getWebUserPerson() != null
                 ? sessionController.getLoggedUser().getWebUserPerson().getName() : null;
         SimpleDateFormat dtf = new SimpleDateFormat(sessionController.getApplicationPreference().getLongDateTimeFormat());
-        String dateBasisLabel = dateBasisLabel(dateBasis);
+        String dateBasisLabel = dateBasisLabel(processedDateBasis);
         TabularReportExporter ex = new TabularReportExporter(institutionName, title, printedBy,
                 sessionController.getApplicationPreference().getShortDateFormat())
                 .filter("From", dtf.format(getFromDate()))
