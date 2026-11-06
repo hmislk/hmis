@@ -445,7 +445,7 @@ public class NotificationController implements Serializable {
         Calendar c = Calendar.getInstance();
         c.add(Calendar.MONTH, 1);
 
-        String token = securityController.createBillToken(bill.getId(), c.getTime(), securityController.obtainHmacSigningKey(sessionController));
+        String token = securityController.createBillToken(SecurityController.LINK_BILL, bill.getId(), c.getTime(), securityController.obtainHmacSigningKey(sessionController));
         String encodedToken;
         try {
             encodedToken = URLEncoder.encode(token, "UTF-8");
@@ -515,7 +515,7 @@ public class NotificationController implements Serializable {
         Calendar c = Calendar.getInstance();
         c.add(Calendar.MONTH, 1);
 
-        String token2 = securityController.createBillToken(bill.getId(), c.getTime(), securityController.obtainHmacSigningKey(sessionController));
+        String token2 = securityController.createBillToken(SecurityController.LINK_BILL, bill.getId(), c.getTime(), securityController.obtainHmacSigningKey(sessionController));
         String encodedToken2;
         try {
             encodedToken2 = URLEncoder.encode(token2, "UTF-8");
