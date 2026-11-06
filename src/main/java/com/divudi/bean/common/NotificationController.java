@@ -256,15 +256,21 @@ public class NotificationController implements Serializable {
         Calendar c = Calendar.getInstance();
         c.add(Calendar.MONTH, 1);
 
+        String securityKey = sessionController.getApplicationPreference().getEncrptionKey();
+        if (securityKey == null || securityKey.trim().equals("")) {
+            securityKey = securityController.generateRandomKey(10);
+            sessionController.getApplicationPreference().setEncrptionKey(securityKey);
+            sessionController.savePreferences(sessionController.getApplicationPreference());
+        }
         String temId = bill.getId() + "";
-        temId = securityController.encrypt(temId);
+        temId = securityController.encryptAlphanumeric(temId, securityKey);
         try {
             temId = URLEncoder.encode(temId, "UTF-8");
         } catch (UnsupportedEncodingException ignored) {
         }
 
         String ed = CommonFunctions.getDateFormat(c.getTime(), sessionController.getApplicationPreference().getLongDateFormat());
-        ed = securityController.encrypt(ed);
+        ed = securityController.encryptAlphanumeric(ed, securityKey);
         try {
             ed = URLEncoder.encode(ed, "UTF-8");
         } catch (UnsupportedEncodingException ignored) {
@@ -332,15 +338,21 @@ public class NotificationController implements Serializable {
         Calendar c = Calendar.getInstance();
         c.add(Calendar.MONTH, 1);
 
+        String securityKey = sessionController.getApplicationPreference().getEncrptionKey();
+        if (securityKey == null || securityKey.trim().equals("")) {
+            securityKey = securityController.generateRandomKey(10);
+            sessionController.getApplicationPreference().setEncrptionKey(securityKey);
+            sessionController.savePreferences(sessionController.getApplicationPreference());
+        }
         String temId = bill.getId() + "";
-        temId = securityController.encrypt(temId);
+        temId = securityController.encryptAlphanumeric(temId, securityKey);
         try {
             temId = URLEncoder.encode(temId, "UTF-8");
         } catch (UnsupportedEncodingException ex) {
         }
 
         String ed = CommonFunctions.getDateFormat(c.getTime(), sessionController.getApplicationPreference().getLongDateFormat());
-        ed = securityController.encrypt(ed);
+        ed = securityController.encryptAlphanumeric(ed, securityKey);
         try {
             ed = URLEncoder.encode(ed, "UTF-8");
         } catch (UnsupportedEncodingException ignored) {

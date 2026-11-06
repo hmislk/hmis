@@ -622,15 +622,21 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
     }
 
     public void preparePatientReportByIdForRequests() {
+        // Resolve the bill link with the per-install random key (not the legacy
+        // fixed jasypt key, which was public in the repo and let any bill be
+        // forged, #25244), and enforce the expiry carried in the link.
         bill = null;
         if (encryptedPatientReportId == null) {
+            return;
+        }
+        String securityKey = sessionController.getApplicationPreference().getEncrptionKey();
+        if (securityKey == null || securityKey.trim().equals("")) {
             return;
         }
         if (encryptedExpiary != null) {
             Date expiaryDate;
             try {
-                String ed = encryptedExpiary;
-                ed = securityController.decrypt(ed);
+                String ed = getSecurityController().decryptAlphanumeric(encryptedExpiary, securityKey);
                 if (ed == null) {
                     return;
                 }
@@ -642,7 +648,7 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
                 return;
             }
         }
-        String idStr = getSecurityController().decrypt(encryptedPatientReportId);
+        String idStr = getSecurityController().decryptAlphanumeric(encryptedPatientReportId, securityKey);
         Long id = 0l;
         try {
             id = Long.parseLong(idStr);
