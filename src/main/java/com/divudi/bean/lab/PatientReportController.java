@@ -401,7 +401,7 @@ public class PatientReportController implements Serializable {
             if (hmacKey == null || hmacKey.trim().isEmpty()) {
                 return;
             }
-            long[] decoded = securityController.decodeBillToken(encryptedPatientReportId, hmacKey);
+            long[] decoded = securityController.decodeBillToken(SecurityController.LINK_REPORT, encryptedPatientReportId, hmacKey);
             if (decoded == null) {
                 return;
             }
@@ -434,7 +434,7 @@ public class PatientReportController implements Serializable {
     private String reportLinkToken(PatientReport r) {
         Calendar c = Calendar.getInstance();
         c.add(Calendar.MONTH, 1);
-        String token = getSecurityController().createBillToken(r.getId(), c.getTime(), getSecurityController().obtainHmacSigningKey(sessionController));
+        String token = getSecurityController().createBillToken(SecurityController.LINK_REPORT, r.getId(), c.getTime(), getSecurityController().obtainHmacSigningKey(sessionController));
         try {
             return URLEncoder.encode(token, "UTF-8");
         } catch (UnsupportedEncodingException ex) {
@@ -1496,7 +1496,7 @@ public class PatientReportController implements Serializable {
         Calendar c = Calendar.getInstance();
         c.add(Calendar.MONTH, 1);
 
-        String emailToken = getSecurityController().createBillToken(r.getId(), c.getTime(), getSecurityController().obtainHmacSigningKey(sessionController));
+        String emailToken = getSecurityController().createBillToken(SecurityController.LINK_REPORT, r.getId(), c.getTime(), getSecurityController().obtainHmacSigningKey(sessionController));
         String encodedEmailToken;
         try {
             encodedEmailToken = URLEncoder.encode(emailToken, "UTF-8");
@@ -1588,7 +1588,7 @@ public class PatientReportController implements Serializable {
         Calendar c = Calendar.getInstance();
         c.add(Calendar.MONTH, 1);
 
-        String cancelToken = getSecurityController().createBillToken(r.getId(), c.getTime(), getSecurityController().obtainHmacSigningKey(sessionController));
+        String cancelToken = getSecurityController().createBillToken(SecurityController.LINK_REPORT, r.getId(), c.getTime(), getSecurityController().obtainHmacSigningKey(sessionController));
         String encodedCancelToken;
         try {
             encodedCancelToken = URLEncoder.encode(cancelToken, "UTF-8");
@@ -1712,7 +1712,7 @@ public class PatientReportController implements Serializable {
     public String generateQrCodeLink(PatientReport r) {
         Calendar c = Calendar.getInstance();
         c.add(Calendar.MONTH, 1);
-        String qrToken = getSecurityController().createBillToken(r.getId(), c.getTime(), getSecurityController().obtainHmacSigningKey(sessionController));
+        String qrToken = getSecurityController().createBillToken(SecurityController.LINK_REPORT, r.getId(), c.getTime(), getSecurityController().obtainHmacSigningKey(sessionController));
         String encodedQrToken;
         try {
             encodedQrToken = URLEncoder.encode(qrToken, "UTF-8");
@@ -1770,7 +1770,7 @@ public class PatientReportController implements Serializable {
                 // Construct the URL
                 String qrDetailsToken = "";
                 if (r != null) {
-                    String rawToken = getSecurityController().createBillToken(r.getId(), c.getTime(), getSecurityController().obtainHmacSigningKey(sessionController));
+                    String rawToken = getSecurityController().createBillToken(SecurityController.LINK_REPORT, r.getId(), c.getTime(), getSecurityController().obtainHmacSigningKey(sessionController));
                     try {
                         qrDetailsToken = URLEncoder.encode(rawToken, "UTF-8");
                     } catch (UnsupportedEncodingException ex) {
