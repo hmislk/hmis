@@ -9831,46 +9831,68 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         quickSearchPatientList = null;
     }
 
+    /**
+     * Saves the patient without validation or messages. The booking flow calls
+     * this just before it saves the bill, and it has its own checks (a phone is
+     * optional there when the institution allows it). The Save Patient Details
+     * button goes through {@link #saveSelectedPatient()}, which validates first.
+     */
     @Override
     public void saveSelected(Patient p) {
-        if (patient == null) {
+        Patient target = (p != null) ? p : this.patient;
+        if (target == null || target.getPerson() == null) {
             return;
         }
-        if (patient.getPerson() == null) {
-            return;
-        }
-        if (patient.getPerson().getId() == null) {
-            patient.getPerson().setCreatedAt(new Date());
-            patient.getPerson().setCreater(sessionController.getLoggedUser());
-            if (patient.getId() != null) {
+        target.getPerson().fillDobFromAgeComponentsIfMissing();
+
+        Person person = target.getPerson();
+        if (person.getId() == null) {
+            person.setCreatedAt(new Date());
+            person.setCreater(sessionController.getLoggedUser());
+            if (target.getId() != null) {
                 // Existing patient: the patient is merged below, which cascades a merge, so a
                 // brand-new person still has to be persisted here.
-                personFacade.create(patient.getPerson());
+                personFacade.create(person);
             }
             // New patient: the person is persisted by the cascade from Patient.person
             // (cascade = ALL) in patientFacade.create below. Persisting it here too leaves an
             // unreferenced duplicate PERSON row (#23900).
         } else {
-            personFacade.edit(patient.getPerson());
+            personFacade.edit(person);
         }
-        if (patient.getId() == null) {
-            patient.setCreatedAt(new Date());
-            patient.setCreatedInstitution(sessionController.getInstitution());
-            patient.setCreater(sessionController.getLoggedUser());
-            patientFacade.create(patient);
+        if (target.getId() == null) {
+            target.setCreatedAt(new Date());
+            target.setCreatedInstitution(sessionController.getInstitution());
+            target.setCreater(sessionController.getLoggedUser());
+            patientFacade.create(target);
         } else {
-            patientFacade.edit(patient);
+            patientFacade.edit(target);
         }
-    }
-    
-    public void saveSelected() {
-        saveSelected(this.patient);
-        
     }
 
+    public void saveSelected() {
+        saveSelectedPatient();
+    }
+
+    /**
+     * The Save Patient Details button: validates, saves, closes the edit panel
+     * and tells the user.
+     */
     @Override
     public void saveSelectedPatient() {
-        saveSelected(patient);
+        Patient target = this.patient;
+        if (target != null && target.getPerson() != null) {
+            target.getPerson().fillDobFromAgeComponentsIfMissing();
+        }
+        String error = ChannelPatientValidationRules.validatePatientForSave(target);
+        if (error != null) {
+            JsfUtil.addErrorMessage(error);
+            return;
+        }
+        boolean isNew = target.getId() == null;
+        saveSelected(target);
+        setPatientDetailsEditable(false);
+        JsfUtil.addSuccessMessage(isNew ? "Patient details saved successfully" : "Patient details updated successfully");
     }
 
     @Override

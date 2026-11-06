@@ -49,7 +49,7 @@
                                         process="@this" 
                                         update="viewPatient editPatient btnDone edit" />
                                 </p:selectBooleanButton>
-                                <p:commandButton id="btnDone" alt="Save Patient Details" class="ui-button-success" icon="fas fa-check" action="#{cc.attrs.controller.saveSelected}" rendered="#{cc.attrs.controller.patientDetailsEditable}" />
+                                <p:commandButton id="btnDone" alt="Save Patient Details" class="ui-button-success" icon="fas fa-check" action="#{cc.attrs.controller.saveSelectedPatient}" process="btnDone editPatient" update="ptImp" rendered="#{cc.attrs.controller.patientDetailsEditable}" />
                             </h:panelGroup>
 
                         </h:panelGroup>

@@ -1618,6 +1618,16 @@ public class BhtSummeryController implements Serializable {
                     break;
                 default:
                     discountValue = discountSet(cit);
+                    if (cit.getInwardChargeType() == InwardChargeType.ProfessionalCharge
+                            && professionalFeeClassificationService.isSuppressed(InwardChargeType.DoctorAndNurses)) {
+                        // Merged hospital: Assistant Fee services are shown on this
+                        // row (issue #25031) but have no row of their own, so run the
+                        // discount step that row would have run. It is a staff charge,
+                        // so it clears their fee discounts and adds nothing here.
+                        ChargeItemTotal assistantServices = new ChargeItemTotal();
+                        assistantServices.setInwardChargeType(InwardChargeType.DoctorAndNurses);
+                        discountValue += discountSet(assistantServices);
+                    }
             }
 
             // Package-covered rows are held at the package's flat allocated

@@ -19,14 +19,14 @@
                 <p:panel>
                     <p:panelGrid columns="2" >
                         <h:outputLabel value="From Date"/>
-                        <p:calendar value="#{channelReportController.fromDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"   >
+                        <p:calendar value="#{channelReportTemplateController.fromDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"   >
                         </p:calendar>
                         <h:outputLabel value="To Date"/>
-                        <p:calendar value="#{channelReportController.toDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
+                        <p:calendar value="#{channelReportTemplateController.toDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
                         </p:calendar>
                     </p:panelGrid>
                     <h:panelGrid columns="3" class="my-2">
-                        <p:commandButton style="margin-right: 10px" action="#{channelReportController.createTotalDoctorAll}" value="Fill" ajax="false" ></p:commandButton> 
+                        <p:commandButton style="margin-right: 10px" action="#{channelReportTemplateController.createTotalDoctorAll}" value="Fill" ajax="false" ></p:commandButton> 
                         <p:commandButton style="margin-right: 10px" value="Print" action="#" styleClass="noPrintButton">
                             <p:printer target="pan1" />
                         </p:commandButton>
@@ -36,17 +36,17 @@
                     </h:panelGrid>
                 </p:panel>
                 <p:panel id="pan1" styleClass="noBorder summeryBorder">
-                    <p:dataTable id="tbl" value="#{channelReportController.channelDoctors}" var="bs" sortBy="#{bs.common}" rowIndexVar="i" >
+                    <p:dataTable id="tbl" value="#{channelReportTemplateController.channelDoctors}" var="bs" sortBy="#{bs.common}" rowIndexVar="i" >
                         <f:facet name="header" >
                             <p:outputLabel value="#{sessionController.loggedUser.institution.name}" /><br></br>
                             <p:outputLabel value="#{sessionController.loggedUser.institution.address}"/><br></br>
                             <p:outputLabel value="Consultant BTT Report" /><br></br>
                             <p:outputLabel value="From : "/>
-                            <p:outputLabel class="ml-2" value="#{channelReportController.fromDate}" >
+                            <p:outputLabel class="ml-2" value="#{channelReportTemplateController.fromDate}" >
                                 <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
                             </p:outputLabel>     
                             <p:outputLabel class="ml-5" value="To : "/>
-                            <p:outputLabel class="ml-2" value="#{channelReportController.toDate}" >
+                            <p:outputLabel class="ml-2" value="#{channelReportTemplateController.toDate}" >
                                 <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
                             </p:outputLabel>
                         </f:facet>
@@ -87,7 +87,7 @@
                                 <f:convertNumber pattern="##,###,##0.00" />
                             </p:outputLabel>
                             <f:facet name="footer">
-                                <p:outputLabel value="#{channelReportController.total}" style="float: right;">
+                                <p:outputLabel value="#{channelReportTemplateController.total}" style="float: right;">
                                     <f:convertNumber pattern="##,###,##0.00" />
                                 </p:outputLabel>
                             </f:facet>

@@ -2,7 +2,7 @@
 name: hotfix-deploy
 description: >
   Full hotfix workflow for deploying urgent fixes to a production branch
-  (coop-production, rh-production, southernlanka-staging, etc.). Covers branch creation,
+  (coop-production, rh-production, southernlanka-production, etc.). Covers branch creation,
   fix, commit, push, and PR targeting the production branch. Use when you need
   to apply an urgent fix directly to a production environment without going
   through the normal development → QA → prod pipeline. The agent may invoke
@@ -19,7 +19,7 @@ Deploy an urgent fix directly to a production branch.
 
 ## Arguments
 
-- `$0` — Target production branch, or staging branch that serves production (e.g., `coop-production`, `rh-production`, `coop-staging`, `southernlanka-staging`)
+- `$0` — Target production branch, or staging branch that serves production (e.g., `coop-production`, `rh-production`, `coop-staging`, `southernlanka-production`)
 - `$1` — Short description of the fix (e.g., `sequence-preallocation`, `critical-billing-fix`)
 
 ## Critical Rule
@@ -214,8 +214,8 @@ added/renamed, and similarly-named branches are NOT interchangeable.
 | COOP — pharmacy | `coop-production` | |
 | COOP — inward | `coop-staging` | Despite the "staging" name, COOP inward users run against it day to day (production DB). |
 | Ruhunu hospital | `rh-production` | `rh-staging` is live again (since 2026-10-28) and writes to the same production DB. |
-| Southern Lanka | `southernlanka-staging` | **Live users are here.** `southernlanka-production` is live too (since 2026-10-15), on the same DB. |
-| RMH | `rmh-production` | `rmh-staging` writes to the same production DB. |
+| Southern Lanka | `southernlanka-production` | The only live app. `southernlanka-staging` is not used (app disabled, checked 2026-11-06); don't hotfix it. |
+| RMH | `rmh-production` | `rmh-staging` is not used (app disabled, checked 2026-11-06); don't hotfix it. |
 | Others | `suwani-production`, `asiripharmacy-production`, `digasiri-production`, `horizon-production`, `mp-production`, `mpold-production`, `roseth-production`, `ewc-production` | |
 
 The old `*-prod`, `*-prod-migrated` and `*-stg-migrated` branches were retired on
