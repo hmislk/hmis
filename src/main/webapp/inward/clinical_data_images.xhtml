@@ -54,9 +54,8 @@
                                 ajax="false"
                                 icon="fa fa-id-card"
                                 value="Inpatient Dashboard"
-                                immediate="true"
                                 class="p-0 m-1"
-                                action="#{admissionController.navigateToInpatientDashboard(inpatientClinicalDataController.current)}" >
+                                action="#{admissionController.navigateToAdmissionProfilePage}" >
                                 <f:setPropertyActionListener value="#{inpatientClinicalDataController.current}" target="#{admissionController.current}" ></f:setPropertyActionListener>
                             </p:commandButton>
 
