@@ -2,6 +2,7 @@ package com.divudi.bean.lab;
 
 import com.divudi.bean.common.ApplicationController;
 import com.divudi.bean.common.CommonController;
+import com.divudi.java.CommonFunctions;
 import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.ItemForItemController;
 import com.divudi.bean.common.PdfController;
@@ -333,15 +334,21 @@ public class PatientReportController implements Serializable {
     }
 
     public void preparePatientReportByIdForRequests() {
+        // Resolve the link with the per-install random key (not the legacy
+        // fixed jasypt key, which was public in the repo and let any report be
+        // forged, #25244), and enforce the expiry carried in the link.
         currentPatientReport = null;
         if (encryptedPatientReportId == null) {
+            return;
+        }
+        String securityKey = sessionController.getApplicationPreference().getEncrptionKey();
+        if (securityKey == null || securityKey.trim().equals("")) {
             return;
         }
         if (encryptedExpiary != null) {
             Date expiaryDate;
             try {
-                String ed = encryptedExpiary;
-                ed = securityController.decrypt(ed);
+                String ed = getSecurityController().decryptAlphanumeric(encryptedExpiary, securityKey);
                 if (ed == null) {
                     return;
                 }
@@ -353,7 +360,7 @@ public class PatientReportController implements Serializable {
                 return;
             }
         }
-        String idStr = getSecurityController().decrypt(encryptedPatientReportId);
+        String idStr = getSecurityController().decryptAlphanumeric(encryptedPatientReportId, securityKey);
         Long id = 0l;
         try {
             id = Long.parseLong(idStr);
@@ -368,33 +375,26 @@ public class PatientReportController implements Serializable {
     }
 
     public void preparePatientReportByIdForRequestsWithoutExpiary() {
+        // Resolve with the per-install random key, not the legacy public jasypt
+        // key (#25244).
         currentPatientReport = null;
         if (encryptedPatientReportId == null) {
             return;
         }
-
-        String decodedIdStr;
-        try {
-            decodedIdStr = URLDecoder.decode(encryptedPatientReportId, "UTF-8");
-        } catch (UnsupportedEncodingException e) {
-            // Handle the exception, possibly with logging
+        String securityKey = sessionController.getApplicationPreference().getEncrptionKey();
+        if (securityKey == null || securityKey.trim().equals("")) {
             return;
         }
-
-        String idStr = getSecurityController().decrypt(decodedIdStr);
+        String idStr = getSecurityController().decryptAlphanumeric(encryptedPatientReportId, securityKey);
         if (idStr == null || idStr.trim().isEmpty()) {
-            // Handle the situation where decryption returns null or an empty string
             return;
         }
-
         Long id;
         try {
             id = Long.parseLong(idStr);
         } catch (NumberFormatException e) {
-            // Handle the exception, possibly with logging
             return;
         }
-
         PatientReport pr = getFacade().find(id);
         if (pr != null) {
             currentPatientReport = pr;
@@ -1467,21 +1467,7 @@ public class PatientReportController implements Serializable {
         Calendar c = Calendar.getInstance();
         c.add(Calendar.MONTH, 1);
 
-        String temId = currentPatientReport.getId() + "";
-        temId = getSecurityController().encrypt(temId);
-        try {
-            temId = URLEncoder.encode(temId, "UTF-8");
-        } catch (UnsupportedEncodingException ex) {
-        }
-
-        String ed = commonController.getDateFormat(c.getTime(), "ddMMMMyyyyhhmmss");
-        ed = getSecurityController().encrypt(ed);
-        try {
-            ed = URLEncoder.encode(ed, "UTF-8");
-        } catch (UnsupportedEncodingException ex) {
-        }
-
-        String url = commonController.getBaseUrl() + "faces/requests/report.xhtml?id=" + temId + "&user=" + ed;
+        String url = CommonFunctions.getBaseUrl() + "faces/requests/report.xhtml?" + secureReportLinkQuery(currentPatientReport.getId());
         b += "<p>"
                 + "Your Report is attached"
                 + "<br/>"
@@ -1566,21 +1552,7 @@ public class PatientReportController implements Serializable {
         Calendar c = Calendar.getInstance();
         c.add(Calendar.MONTH, 1);
 
-        String temId = currentPatientReport.getId() + "";
-        temId = getSecurityController().encrypt(temId);
-        try {
-            temId = URLEncoder.encode(temId, "UTF-8");
-        } catch (UnsupportedEncodingException ex) {
-        }
-
-        String ed = commonController.getDateFormat(c.getTime(), "ddMMMMyyyyhhmmss");
-        ed = getSecurityController().encrypt(ed);
-        try {
-            ed = URLEncoder.encode(ed, "UTF-8");
-        } catch (UnsupportedEncodingException ex) {
-        }
-
-        String url = commonController.getBaseUrl() + "faces/requests/report.xhtml?id=" + temId + "&user=" + ed;
+        String url = CommonFunctions.getBaseUrl() + "faces/requests/report.xhtml?" + secureReportLinkQuery(currentPatientReport.getId());
         b += "<p>"
                 + "The report before reversing approval is attached. The current report can be viewed at following link"
                 + "<br/>"
@@ -1613,16 +1585,36 @@ public class PatientReportController implements Serializable {
         return b;
     }
 
+    /**
+     * Builds the URL-safe "id=..&user=.." query for a report link, bound to
+     * this install's random key (not the legacy fixed jasypt key, which was
+     * public in the repo and let any report be forged, #25244), with a
+     * one-month expiry.
+     */
+    private String secureReportLinkQuery(long reportId) {
+        String securityKey = sessionController.getApplicationPreference().getEncrptionKey();
+        if (securityKey == null || securityKey.trim().equals("")) {
+            securityKey = securityController.generateRandomKey(10);
+            sessionController.getApplicationPreference().setEncrptionKey(securityKey);
+            sessionController.savePreferences(sessionController.getApplicationPreference());
+        }
+        Calendar c = Calendar.getInstance();
+        c.add(Calendar.MONTH, 1);
+        String idTok = getSecurityController().encryptAlphanumeric(String.valueOf(reportId), securityKey);
+        String expTok = getSecurityController().encryptAlphanumeric(
+                CommonFunctions.getDateFormat(c.getTime(), "ddMMMMyyyyhhmmss"), securityKey);
+        try {
+            idTok = URLEncoder.encode(idTok, "UTF-8");
+            expTok = URLEncoder.encode(expTok, "UTF-8");
+        } catch (UnsupportedEncodingException ex) {
+        }
+        return "id=" + idTok + "&user=" + expTok;
+    }
+
     public String smsBody(PatientReport r, String old) {
         Calendar c = Calendar.getInstance();
         c.add(Calendar.MONTH, 1);
-        String temId = getSecurityController().encrypt(r.getId().toString());
-        try {
-            temId = URLEncoder.encode(temId, "UTF-8");
-        } catch (UnsupportedEncodingException ex) {
-            // Handle the exception
-        }
-        String url = commonController.getBaseUrl() + "faces/requests/report1.xhtml?id=" + temId;
+        String url = CommonFunctions.getBaseUrl() + "faces/requests/report1.xhtml?" + secureReportLinkQuery(r.getId());
         String b = "Your "
                 + r.getPatientInvestigation().getInvestigation().getName()
                 + " is ready. "
@@ -1633,19 +1625,7 @@ public class PatientReportController implements Serializable {
     public String smsBody(PatientReport r, boolean old) {
         Calendar c = Calendar.getInstance();
         c.add(Calendar.MONTH, 1);
-        String temId = currentPatientReport.getId() + "";
-        temId = getSecurityController().encrypt(temId);
-        try {
-            temId = URLEncoder.encode(temId, "UTF-8");
-        } catch (UnsupportedEncodingException ex) {
-        }
-        String ed = commonController.getDateFormat(c.getTime(), "ddMMMMyyyyhhmmss");
-        ed = getSecurityController().encrypt(ed);
-        try {
-            ed = URLEncoder.encode(ed, "UTF-8");
-        } catch (UnsupportedEncodingException ex) {
-        }
-        String url = commonController.getBaseUrl() + "faces/requests/report.xhtml?id=" + temId + "&user=" + ed;
+        String url = CommonFunctions.getBaseUrl() + "faces/requests/report.xhtml?" + secureReportLinkQuery(currentPatientReport.getId());
         String b = "Your "
                 + r.getPatientInvestigation().getInvestigation().getName()
                 + " is ready. "
@@ -1656,19 +1636,7 @@ public class PatientReportController implements Serializable {
     public String generateQrCodeLink(PatientReport r) {
         Calendar c = Calendar.getInstance();
         c.add(Calendar.MONTH, 1);
-        String temId = currentPatientReport.getId() + "";
-        temId = getSecurityController().encrypt(temId);
-        try {
-            temId = URLEncoder.encode(temId, "UTF-8");
-        } catch (UnsupportedEncodingException ex) {
-        }
-        String ed = commonController.getDateFormat(c.getTime(), "ddMMMMyyyyhhmmss");
-        ed = getSecurityController().encrypt(ed);
-        try {
-            ed = URLEncoder.encode(ed, "UTF-8");
-        } catch (UnsupportedEncodingException ex) {
-        }
-        String url = commonController.getBaseUrl() + "faces/requests/report.xhtml?id=" + temId + "&user=" + ed;
+        String url = CommonFunctions.getBaseUrl() + "faces/requests/report.xhtml?" + secureReportLinkQuery(currentPatientReport.getId());
         return url;
     }
 
@@ -1676,17 +1644,6 @@ public class PatientReportController implements Serializable {
         if (r != null) {
             Calendar c = Calendar.getInstance();
             c.add(Calendar.MONTH, 1);
-
-            // Ensure currentPatientReport is not null
-            if (currentPatientReport != null) {
-                String temId = currentPatientReport.getId() + "";
-                temId = getSecurityController().encrypt(temId);
-                try {
-                    temId = URLEncoder.encode(temId, "UTF-8");
-                } catch (UnsupportedEncodingException ex) {
-                    // Handle the exception
-                }
-            }
 
             // Ensure all chained method calls do not result in null
             if (r.getPatientInvestigation() != null
@@ -1728,27 +1685,11 @@ public class PatientReportController implements Serializable {
                     investigationName = r.getPatientInvestigation().getInvestigation().getName();
                 }
 
-                // Construct the URL
-                String temId = ""; // Initialize temId
+                // Construct the URL (per-install key, one-month expiry; #25244)
+                String url = "";
                 if (currentPatientReport != null) {
-                    temId = currentPatientReport.getId() + "";
-                    temId = getSecurityController().encrypt(temId);
-                    try {
-                        temId = URLEncoder.encode(temId, "UTF-8");
-                    } catch (UnsupportedEncodingException ex) {
-                        // Handle the exception
-                    }
+                    url = CommonFunctions.getBaseUrl() + "faces/requests/report.xhtml?" + secureReportLinkQuery(currentPatientReport.getId());
                 }
-
-                String ed = commonController.getDateFormat(c.getTime(), "ddMMMMyyyyhhmmss");
-                ed = getSecurityController().encrypt(ed);
-                try {
-                    ed = URLEncoder.encode(ed, "UTF-8");
-                } catch (UnsupportedEncodingException ex) {
-                    // Handle the exception
-                }
-
-                String url = commonController.getBaseUrl() + "faces/requests/report.xhtml?id=" + temId + "&user=" + ed;
 
                 // Create the QR code contents using the variables and URL
                 String qrCodeContents = "Patient Name: " + patientName + "\n"
