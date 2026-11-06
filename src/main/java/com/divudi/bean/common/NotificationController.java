@@ -257,20 +257,7 @@ public class NotificationController implements Serializable {
         Calendar c = Calendar.getInstance();
         c.add(Calendar.MONTH, 1);
 
-        String temId = bill.getId() + "";
-        temId = securityController.encrypt(temId);
-        try {
-            temId = URLEncoder.encode(temId, "UTF-8");
-        } catch (UnsupportedEncodingException ignored) {
-        }
-
-        String ed = CommonFunctions.getDateFormat(c.getTime(), sessionController.getApplicationPreference().getLongDateFormat());
-        ed = securityController.encrypt(ed);
-        try {
-            ed = URLEncoder.encode(ed, "UTF-8");
-        } catch (UnsupportedEncodingException ignored) {
-        }
-        String url = CommonFunctions.getBaseUrl() + "faces/requests/bill.xhtml?id=" + temId + "&user=" + ed;
+        String url = CommonFunctions.getBaseUrl() + "faces/requests/bill.xhtml?id=" + securityController.createLinkToken(SecurityController.LINK_BILL, bill.getId(), c.getTime(), sessionController);
         messageBody += "<p>"
                 + "Your Report is attached"
                 + "<br/>"
@@ -333,20 +320,7 @@ public class NotificationController implements Serializable {
         Calendar c = Calendar.getInstance();
         c.add(Calendar.MONTH, 1);
 
-        String temId = bill.getId() + "";
-        temId = securityController.encrypt(temId);
-        try {
-            temId = URLEncoder.encode(temId, "UTF-8");
-        } catch (UnsupportedEncodingException ex) {
-        }
-
-        String ed = CommonFunctions.getDateFormat(c.getTime(), sessionController.getApplicationPreference().getLongDateFormat());
-        ed = securityController.encrypt(ed);
-        try {
-            ed = URLEncoder.encode(ed, "UTF-8");
-        } catch (UnsupportedEncodingException ignored) {
-        }
-        String url = CommonFunctions.getBaseUrl() + "faces/requests/bill.xhtml?id=" + temId + "&user=" + ed;
+        String url = CommonFunctions.getBaseUrl() + "faces/requests/bill.xhtml?id=" + securityController.createLinkToken(SecurityController.LINK_BILL, bill.getId(), c.getTime(), sessionController);
         messageBody += "<p>"
                 + "Your Report is attached"
                 + "<br/>"
