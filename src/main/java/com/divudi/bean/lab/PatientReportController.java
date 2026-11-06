@@ -384,74 +384,18 @@ public class PatientReportController implements Serializable {
                 return; // link expired
             }
             currentPatientReport = getFacade().find(decoded[0]);
-        } else {
-            // TODO: Remove this legacy block after 2026-07-09.
-            // Backward compatibility for links sent before HMAC migration (issue #19863).
-            // All link generators in this class now emit HMAC tokens, so no new legacy
-            // links are created. Old links had a 1-month TTL so none will be valid after
-            // that date.
-            if (encryptedExpiary != null) {
-                Date expiaryDate;
-                try {
-                    String ed = securityController.decrypt(encryptedExpiary);
-                    if (ed == null) {
-                        return;
-                    }
-                    expiaryDate = new SimpleDateFormat("ddMMMMyyyyhhmmss").parse(ed);
-                } catch (ParseException ex) {
-                    return;
-                }
-                if (expiaryDate.before(new Date())) {
-                    return;
-                }
-            }
-            String idStr = getSecurityController().decrypt(encryptedPatientReportId);
-            Long id = 0L;
-            try {
-                id = Long.parseLong(idStr);
-            } catch (Exception e) {
-                return;
-            }
-            PatientReport pr = getFacade().find(id);
-            if (pr == null) {
-                return;
-            }
-            currentPatientReport = pr;
         }
+        // Legacy jasypt-encrypted links (fixed key, issue #19863) are no longer
+        // accepted. Their 1-month TTL lapsed after 2026-07-09, so none remain
+        // valid, and the fixed key is public in the repository. A non-HMAC token
+        // now resolves to no report (see #25249).
     }
 
     public void preparePatientReportByIdForRequestsWithoutExpiary() {
-        currentPatientReport = null;
-        if (encryptedPatientReportId == null) {
-            return;
-        }
-
-        String decodedIdStr;
-        try {
-            decodedIdStr = URLDecoder.decode(encryptedPatientReportId, "UTF-8");
-        } catch (UnsupportedEncodingException e) {
-            // Handle the exception, possibly with logging
-            return;
-        }
-
-        String idStr = getSecurityController().decrypt(decodedIdStr);
-        if (idStr == null || idStr.trim().isEmpty()) {
-            // Handle the situation where decryption returns null or an empty string
-            return;
-        }
-
-        Long id;
-        try {
-            id = Long.parseLong(idStr);
-        } catch (NumberFormatException e) {
-            // Handle the exception, possibly with logging
-            return;
-        }
-
-        PatientReport pr = getFacade().find(id);
-        if (pr != null) {
-            currentPatientReport = pr;
-        }
+        // Historically decrypted the id with the fixed public jasypt key and no
+        // expiry, so any report could be opened without signing in (#25249).
+        // Now hardened to accept only signed, self-expiring HMAC tokens.
+        preparePatientReportByIdForRequests();
     }
 
     public void preparePatientReportForReportLink() {
