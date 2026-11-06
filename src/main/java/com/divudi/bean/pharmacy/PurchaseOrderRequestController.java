@@ -567,11 +567,16 @@ public class PurchaseOrderRequestController implements Serializable {
         Map<Long, Double> ratesByItemId = fetchLastRatesForItems(items,
                 "billItemFinanceDetails.lineGrossRate",
                 "pharmaceuticalBillItem.itemBatch.purcahseRate",
-                "purchase");
+                "purchase",
+                false);
 
         Department dept = getDepartmentLookupScope().department;
         if (dept != null) {
             for (Item item : getItemsMissingRates(getUniqueItemsWithIds(items), ratesByItemId)) {
+                if (item instanceof Ampp) {
+                    // This lookup returns the per-unit rate of the AMP; a pack never bought stays blank.
+                    continue;
+                }
                 double rate = pharmacyBean.getLastPurchaseRate(item, dept, true);
                 if (rate > 0.0) {
                     ratesByItemId.put(item.getId(), rate);
@@ -602,6 +607,15 @@ public class PurchaseOrderRequestController implements Serializable {
     }
 
     private Map<Long, Double> fetchLastRatesForItems(List<Item> items, String financeRatePath, String itemBatchRatePath, String rateLabel) {
+        return fetchLastRatesForItems(items, financeRatePath, itemBatchRatePath, rateLabel, true);
+    }
+
+    /**
+     * @param useUnitBatchRateForPacks when false, a pack (AMPP) gets no rate from
+     *                                 the item batch, because the batch rate is per
+     *                                 unit of the AMP, not per pack.
+     */
+    private Map<Long, Double> fetchLastRatesForItems(List<Item> items, String financeRatePath, String itemBatchRatePath, String rateLabel, boolean useUnitBatchRateForPacks) {
         List<Item> lookupItems = getUniqueItemsWithIds(items);
         Map<Long, Double> ratesByItemId = new HashMap<>();
         if (lookupItems.isEmpty()) {
@@ -614,9 +628,15 @@ public class PurchaseOrderRequestController implements Serializable {
         mergeMissingRates(ratesByItemId, fetchScopedFinanceRatesForItems(getItemsMissingRates(lookupItems, ratesByItemId), financeRatePath, rateLabel, "institution", scope.institution));
         mergeMissingRates(ratesByItemId, fetchScopedFinanceRatesForItems(getItemsMissingRates(lookupItems, ratesByItemId), financeRatePath, rateLabel, "global", null));
 
-        mergeMissingItemBatchRates(ratesByItemId, lookupItems, itemBatchRatePath, rateLabel, "department", scope.department);
-        mergeMissingItemBatchRates(ratesByItemId, lookupItems, itemBatchRatePath, rateLabel, "institution", scope.institution);
-        mergeMissingItemBatchRates(ratesByItemId, lookupItems, itemBatchRatePath, rateLabel, "global", null);
+        List<Item> batchLookupItems = new ArrayList<>();
+        for (Item item : lookupItems) {
+            if (useUnitBatchRateForPacks || !(item instanceof Ampp)) {
+                batchLookupItems.add(item);
+            }
+        }
+        mergeMissingItemBatchRates(ratesByItemId, batchLookupItems, itemBatchRatePath, rateLabel, "department", scope.department);
+        mergeMissingItemBatchRates(ratesByItemId, batchLookupItems, itemBatchRatePath, rateLabel, "institution", scope.institution);
+        mergeMissingItemBatchRates(ratesByItemId, batchLookupItems, itemBatchRatePath, rateLabel, "global", null);
 
         return ratesByItemId;
     }
