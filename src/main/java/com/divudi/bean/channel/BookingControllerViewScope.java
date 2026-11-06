@@ -1821,7 +1821,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     public String smsBody(BillSession r) {
         Calendar c = Calendar.getInstance();
         c.add(Calendar.DATE, 2);
-        String temId = securityController.createLinkToken(r.getId(), c.getTime(), sessionController);
+        String temId = securityController.createLinkToken(SecurityController.LINK_SESSION, r.getId(), c.getTime(), sessionController);
         String url = commonController.getBaseUrl() + "faces/requests/cbss.xhtml?id=" + temId;
         String b = "Your session of "
                 + r.getSessionInstance().getOriginatingSession().getName()
@@ -6453,7 +6453,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             return;
         }
         // Public (no-login) link: accept only the signed, self-expiring HMAC token.
-        Long id = securityController.decodeLinkId(encryptedBillSessionId, sessionController);
+        Long id = securityController.decodeLinkId(SecurityController.LINK_SESSION, encryptedBillSessionId, sessionController);
         if (id == null) {
             return;
         }

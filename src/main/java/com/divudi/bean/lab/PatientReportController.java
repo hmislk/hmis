@@ -339,7 +339,7 @@ public class PatientReportController implements Serializable {
         if (encryptedPatientReportId == null) {
             return;
         }
-        Long id = getSecurityController().decodeLinkId(encryptedPatientReportId, sessionController);
+        Long id = getSecurityController().decodeLinkId(SecurityController.LINK_REPORT, encryptedPatientReportId, sessionController);
         if (id == null) {
             return;
         }
@@ -1559,7 +1559,7 @@ public class PatientReportController implements Serializable {
     private String reportLinkToken(PatientReport r) {
         Calendar c = Calendar.getInstance();
         c.add(Calendar.MONTH, 1);
-        return getSecurityController().createLinkToken(r.getId(), c.getTime(), sessionController);
+        return getSecurityController().createLinkToken(SecurityController.LINK_REPORT, r.getId(), c.getTime(), sessionController);
     }
 
     public String smsBody(PatientReport r, String old) {

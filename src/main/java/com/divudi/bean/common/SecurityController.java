@@ -192,96 +192,6 @@ public class SecurityController implements Serializable {
         return true;
     }
 
-    /**
-     * Signed, self-expiring link token: "hmac.{id}.{expiryEpochMs}.{sig}",
-     * sig = base64url(HMAC-SHA256(key, id + "." + expiry)). Same format as
-     * development, so links keep working when this branch catches up.
-     */
-    public String createBillToken(long billId, Date expiry, String hmacKey) {
-        if (hmacKey == null || hmacKey.trim().isEmpty()) {
-            return null;
-        }
-        String payload = billId + "." + expiry.getTime();
-        String signature = computeHmacSha256(payload, hmacKey);
-        if (signature == null) {
-            return null;
-        }
-        return "hmac." + payload + "." + signature;
-    }
-
-    public long[] decodeBillToken(String token, String hmacKey) {
-        if (token == null || hmacKey == null || hmacKey.trim().isEmpty() || !token.startsWith("hmac.")) {
-            return null;
-        }
-        String[] parts = token.substring(5).split("\\.", 3);
-        if (parts.length != 3) {
-            return null;
-        }
-        try {
-            long billId = Long.parseLong(parts[0]);
-            long expiryEpoch = Long.parseLong(parts[1]);
-            String expectedSig = computeHmacSha256(parts[0] + "." + parts[1], hmacKey);
-            if (expectedSig == null) {
-                return null;
-            }
-            byte[] expectedBytes = Base64.getUrlDecoder().decode(expectedSig);
-            byte[] providedBytes = Base64.getUrlDecoder().decode(parts[2]);
-            if (!MessageDigest.isEqual(expectedBytes, providedBytes)) {
-                return null;
-            }
-            return new long[]{billId, expiryEpoch};
-        } catch (IllegalArgumentException e) {
-            return null;
-        }
-    }
-
-    public String obtainHmacSigningKey(SessionController sessionController) {
-        String key = sessionController.getApplicationPreference().getEncrptionKey();
-        if (key == null || key.trim().isEmpty()) {
-            key = generateRandomKey(32);
-            sessionController.getApplicationPreference().setEncrptionKey(key);
-            sessionController.savePreferences(sessionController.getApplicationPreference());
-        }
-        return key;
-    }
-
-    /**
-     * URL-encoded HMAC link token for a record id. Use for every public
-     * (no-login) link; never encrypt() or encryptAlphanumeric().
-     */
-    public String createLinkToken(long id, Date expiry, SessionController sessionController) {
-        String token = createBillToken(id, expiry, obtainHmacSigningKey(sessionController));
-        if (token == null) {
-            return null;
-        }
-        try {
-            return URLEncoder.encode(token, "UTF-8");
-        } catch (UnsupportedEncodingException ex) {
-            return token;
-        }
-    }
-
-    /**
-     * The id in a token from createLinkToken, or null if the token is
-     * missing, tampered, signed with another key or expired.
-     */
-    public Long decodeLinkId(String token, SessionController sessionController) {
-        long[] decoded = decodeBillToken(token, sessionController.getApplicationPreference().getEncrptionKey());
-        if (decoded == null || new Date().getTime() > decoded[1]) {
-            return null;
-        }
-        return decoded[0];
-    }
-
-    private String computeHmacSha256(String data, String key) {
-        try {
-            Mac mac = Mac.getInstance("HmacSHA256");
-            mac.init(new SecretKeySpec(key.getBytes(StandardCharsets.UTF_8), "HmacSHA256"));
-            return Base64.getUrlEncoder().withoutPadding().encodeToString(mac.doFinal(data.getBytes(StandardCharsets.UTF_8)));
-        } catch (NoSuchAlgorithmException | InvalidKeyException e) {
-            return null;
-        }
-    }
 
     public String generateRandomKey(int length) {
         if (length <= 0) {
@@ -300,6 +210,141 @@ public class SecurityController implements Serializable {
         try {
             return en.decrypt(word);
         } catch (Exception ex) {
+            return null;
+        }
+    }
+
+    /** Link purposes. A token signed for one purpose never verifies for another (ids overlap across tables). */
+    public static final String LINK_REPORT = "report";
+    public static final String LINK_BILL = "bill";
+    public static final String LINK_SESSION = "session";
+    public static final String LINK_PURCHASE_ORDER = "po";
+
+    /**
+     * Creates a tamper-proof, self-expiring HMAC-SHA256 token for a public
+     * (no-login) link.
+     *
+     * Token format: "hmac.{id}.{expiryEpochMs}.{base64url_signature}", where
+     * the signature covers "{purpose}:{id}.{expiryEpochMs}". Binding the
+     * purpose stops a token issued for one record type (e.g. a channel
+     * session) from opening a different type that has the same numeric id.
+     *
+     * @param purpose  one of the LINK_* constants
+     * @param id       the database ID to embed
+     * @param expiry   when the link should stop working
+     * @param hmacKey  the signing key (from ApplicationPreference.encrptionKey)
+     * @return the token, or null if purpose or hmacKey is blank
+     */
+    public String createBillToken(String purpose, long id, Date expiry, String hmacKey) {
+        if (purpose == null || purpose.isEmpty() || hmacKey == null || hmacKey.trim().isEmpty()) {
+            return null;
+        }
+        String payload = id + "." + expiry.getTime();
+        String signature = computeHmacSha256(purpose + ":" + payload, hmacKey);
+        if (signature == null) {
+            return null;
+        }
+        return "hmac." + payload + "." + signature;
+    }
+
+    /**
+     * Verifies a token from {@link #createBillToken} for the given purpose.
+     *
+     * @param purpose  the LINK_* constant the calling page serves
+     * @param token    the raw token string (already URL-decoded)
+     * @param hmacKey  the signing key (from ApplicationPreference.encrptionKey)
+     * @return long[]{id, expiryEpochMs} if the signature is valid for this
+     *         purpose, or null if the token is missing, malformed, tampered
+     *         or issued for another purpose. The caller checks the expiry.
+     */
+    public long[] decodeBillToken(String purpose, String token, String hmacKey) {
+        if (purpose == null || purpose.isEmpty() || token == null || hmacKey == null || hmacKey.trim().isEmpty()) {
+            return null;
+        }
+        if (!token.startsWith("hmac.")) {
+            return null;
+        }
+        String[] parts = token.substring(5).split("\\.", 3);
+        if (parts.length != 3) {
+            return null;
+        }
+        try {
+            long id = Long.parseLong(parts[0]);
+            long expiryEpoch = Long.parseLong(parts[1]);
+            String expectedSig = computeHmacSha256(purpose + ":" + parts[0] + "." + parts[1], hmacKey);
+            if (expectedSig == null) {
+                return null;
+            }
+            // Use constant-time comparison to prevent timing side-channel attacks
+            byte[] expectedBytes = Base64.getUrlDecoder().decode(expectedSig);
+            byte[] providedBytes = Base64.getUrlDecoder().decode(parts[2]);
+            if (!MessageDigest.isEqual(expectedBytes, providedBytes)) {
+                return null;
+            }
+            return new long[]{id, expiryEpoch};
+        } catch (IllegalArgumentException e) {
+            return null;
+        }
+    }
+
+    /**
+     * URL-encoded HMAC link token for a record id, valid until expiry. Use for
+     * every public (no-login) link; never encryptAlphanumeric, whose digit
+     * encoding does not depend on the key.
+     */
+    public String createLinkToken(String purpose, long id, Date expiry, SessionController sessionController) {
+        String token = createBillToken(purpose, id, expiry, obtainHmacSigningKey(sessionController));
+        if (token == null) {
+            return null;
+        }
+        try {
+            return URLEncoder.encode(token, "UTF-8");
+        } catch (UnsupportedEncodingException ex) {
+            return token;
+        }
+    }
+
+    /**
+     * The record id carried by a link token from {@link #createLinkToken}, or
+     * null if the token is missing, tampered, signed with another key, issued
+     * for another purpose or expired.
+     */
+    public Long decodeLinkId(String purpose, String token, SessionController sessionController) {
+        String key = sessionController.getApplicationPreference().getEncrptionKey();
+        long[] decoded = decodeBillToken(purpose, token, key);
+        if (decoded == null || new Date().getTime() > decoded[1]) {
+            return null;
+        }
+        return decoded[0];
+    }
+
+    /**
+     * Returns the HMAC signing key from ApplicationPreference, generating and
+     * persisting a new 32-character random key if none exists yet.
+     * Use this in preference to inline get-or-generate logic to keep key
+     * management centralised.
+     *
+     * @param sessionController the caller's session controller
+     * @return the signing key; never null or empty
+     */
+    public String obtainHmacSigningKey(SessionController sessionController) {
+        String key = sessionController.getApplicationPreference().getEncrptionKey();
+        if (key == null || key.trim().isEmpty()) {
+            key = generateRandomKey(32);
+            sessionController.getApplicationPreference().setEncrptionKey(key);
+            sessionController.savePreferences(sessionController.getApplicationPreference());
+        }
+        return key;
+    }
+
+    private String computeHmacSha256(String data, String key) {
+        try {
+            Mac mac = Mac.getInstance("HmacSHA256");
+            SecretKeySpec secretKey = new SecretKeySpec(key.getBytes(StandardCharsets.UTF_8), "HmacSHA256");
+            mac.init(secretKey);
+            byte[] rawHmac = mac.doFinal(data.getBytes(StandardCharsets.UTF_8));
+            return Base64.getUrlEncoder().withoutPadding().encodeToString(rawHmac);
+        } catch (NoSuchAlgorithmException | InvalidKeyException e) {
             return null;
         }
     }
