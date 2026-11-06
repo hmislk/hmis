@@ -2,7 +2,7 @@
 
 ## Repository
 - Repo: https://github.com/hmislk/hmis (not buddhika75/hmis). It is **public**.
-- Temp files go in `<project-root>/tmp/`, never system `/tmp/`.
+- **Two-tier temp policy.** In-repo `<project-root>/tmp/` holds only small TEXT working files (md reports, short scripts); it is gitignored and swept regularly. Bulk/binary/one-off artifacts (screenshots, Playwright output, PDFs, DB dumps) go to an OUT-OF-REPO per-machine directory, never inside the repo root and never system `/tmp/`. Resolve the repo root with `git rev-parse --show-toplevel`. Confirm no machine's repo root sits inside a cloud-synced folder (OneDrive, Dropbox).
 
 ## Essential Rules
 
@@ -37,6 +37,9 @@
 ### Security
 - **🚨 No hospital data in GitHub** (issues, PRs, comments, commits, screenshots): no record counts, production bill/BHT/PHN numbers or IDs, schema names, cutover dates, staff stats, patient/doctor details, or data-fix logs. Describe the defect instead; naming the reporting hospital is fine. See [Public Content Policy](developer_docs/git/github-public-content-policy.md).
 - **🚨 Never write credentials** (passwords, API keys, DB users, IPs, hostnames, SSH strings) into any file in the project folder, tracked or not. Point to the external credentials file instead.
+- **🚨 No live-vulnerability detail on ANY public GitHub surface until the fix is deployed everywhere**: comments, PR bodies and titles, commit messages, close reasons. Write only "hardening, tracked under #N". GitHub keeps body edit-history and force-pushed commits by SHA, so draft security-PR text privately first.
+- **🚨 Security PRs need a threat-model note before review.** Green CI and e2e are not enough. State whether the change closes the whole class: forgery AND replay AND cross-purpose use.
+- **🚨 DB dumps and backups NEVER go inside the repo tree**, even in a gitignored subdirectory. Resolve the root with `git rev-parse --show-toplevel` and refuse any dump path under it. Each machine picks its own out-of-repo directory.
 
 ### Deployment
 - **🚨 Never deploy manually as root.** Deploy only through GitHub Actions CI/CD; if a manual fix is unavoidable, use `appuser`. See [Deployment Recovery](developer_docs/deployment/deployment-recovery-guide.md).
@@ -47,6 +50,10 @@
 - **🚨 Never clean up test data unasked.** Leave records in place and list what you created. Never write test data to production without confirming the environment. See [§15a](developer_docs/testing/playwright-e2e-workflow.md#15a-leave-test-data-where-it-is--never-clean-up-unasked).
 
 ### Git
+- **🚨 Never `git add -A` or `git add .`.** Stage explicit paths only. This repo can carry many untracked local artifacts, so a sweep is a data-leak risk, not just noise. A scripted commit must print `git status --porcelain` and the exact file list, and refuse any path outside the intended set.
+- **🚨 Hotfix branches sync `.gitignore` from `origin/development` first** (`git checkout origin/development -- .gitignore`). See the hotfix-deploy skill.
+- **🚨 Any task that WRITES to git** (commit, push, branch creation, or a scripted/bulk edit of more than ~10 files) runs in a dedicated worker session, not the communication session. A hand-made commit of a few explicit paths may stay inline; read-only lookups are always inline. Worker prompts follow the [worker dispatch template](developer_docs/process/worker-dispatch-template.md).
+- **🚨 If junk or data was pushed to the public repo**, follow the `public-repo-leak-runbook` skill immediately. A force-push does not purge it.
 - Commit messages include `Closes #N`. See [Commit Conventions](developer_docs/git/commit-conventions.md).
 - **🚨 Branch from `origin/development`** and target PRs at `development`, never `master`. Check for existing code against `origin/development`.
 - **🚨 Before opening a PR for issue #N**, run `gh pr list --state all --search N`. If one is open, add to it; if one is merged, the fix is already in `development`. Never open a second PR for the same issue.

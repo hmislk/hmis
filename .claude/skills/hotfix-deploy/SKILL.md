@@ -91,6 +91,17 @@ Examples:
 - `critical-billing-fix-hotfix`
 - `persistence-tuning-hotfix`
 
+## Step 2a — Sync `.gitignore` from `origin/development`
+
+Deploy branches can lag `development`, and a stale `.gitignore` lets local artifacts (screenshots, `tmp/`, Playwright output) be staged by accident. Right after creating the branch:
+
+```bash
+git checkout origin/development -- .gitignore
+git diff --cached --stat   # review; commit it with the fix, by explicit path
+```
+
+If `.gitignore` is already identical, nothing is staged. Never use `git add -A` or `git add .` anywhere in this workflow; stage explicit paths only.
+
 ## Step 3 — Apply the Fix
 
 Make only the minimal changes required. Do NOT port unrelated features or refactors. Always compile the hotfix branch before opening the PR: PRs to deploy branches get no compile CI, and older branches often lack newer enum values or facade methods that a cherry-pick uses (2026-11-05: coop-staging lacked an `InwardChargeType` value; mp-production lacked `AbstractFacade.updateByJpql`).
