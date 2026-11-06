@@ -450,44 +450,22 @@ public class PatientReportController implements Serializable {
     }
 
     public void preparePatientReportForReportLink() {
-        currentPatientReport = null;
-        if (encryptedPatientReportId == null) {
-            return;
-        }
-
-        String decodedIdStr;
-        try {
-            decodedIdStr = URLDecoder.decode(encryptedPatientReportId, "UTF-8");
-        } catch (UnsupportedEncodingException e) {
-            // Handle the exception, possibly with logging
-            return;
-        }
-        String securityKey = sessionController.getApplicationPreference().getEncrptionKey();
-        if (securityKey == null || securityKey.trim().equals("")) {
-            sessionController.getApplicationPreference().setEncrptionKey(securityController.generateRandomKey(10));
-            sessionController.savePreferences(sessionController.getApplicationPreference());
-        }
-
-        String idStr = getSecurityController().decryptAlphanumeric(encryptedPatientReportId, securityKey);
-
-        if (idStr == null || idStr.trim().isEmpty()) {
-            // Handle the situation where decryption returns null or an empty string
-            return;
-        }
-
-        Long id;
-        try {
-            id = Long.parseLong(idStr);
-        } catch (NumberFormatException e) {
-            // Handle the exception, possibly with logging
-            return;
-        }
-
-        PatientReport pr = getFacade().find(id);
-        if (pr != null) {
-            currentPatientReport = pr;
-        }
+        // Accepts only the signed, self-expiring HMAC token. The older
+        // alphanumeric id encoding did not depend on the key for digits, so
+        // it is no longer accepted.
+        preparePatientReportByIdForRequests();
         setShowBackground(true);
+    }
+
+    private String reportLinkToken(PatientReport r) {
+        Calendar c = Calendar.getInstance();
+        c.add(Calendar.MONTH, 1);
+        String token = getSecurityController().createBillToken(r.getId(), c.getTime(), getSecurityController().obtainHmacSigningKey(sessionController));
+        try {
+            return URLEncoder.encode(token, "UTF-8");
+        } catch (UnsupportedEncodingException ex) {
+            return token;
+        }
     }
 
     public List<PatientReport> patientReports(PatientInvestigation pi) {
@@ -1707,16 +1685,8 @@ public class PatientReportController implements Serializable {
     }
 
     public String smsBody(PatientReport r) {
-        String securityKey = sessionController.getApplicationPreference().getEncrptionKey();
-        if (securityKey == null || securityKey.trim().equals("")) {
-            sessionController.getApplicationPreference().setEncrptionKey(securityController.generateRandomKey(10));
-            sessionController.savePreferences(sessionController.getApplicationPreference());
-        }
-        Calendar c = Calendar.getInstance();
-        c.add(Calendar.MONTH, 1);
         String smsBody = "";
-        String temId = getSecurityController().encryptAlphanumeric(r.getId().toString(), securityKey);
-        String url = CommonFunctions.getBaseUrl() + "faces/requests/ix.xhtml?id=" + temId;
+        String url = CommonFunctions.getBaseUrl() + "faces/requests/ix.xhtml?id=" + reportLinkToken(r);
 
         String template = configOptionApplicationController.getLongTextValueByKey("Custom SMS Body Massage for Lab Report");
         if (!template.equalsIgnoreCase("")) {
@@ -1745,13 +1715,7 @@ public class PatientReportController implements Serializable {
     }
 
     public String emailBody(PatientReport r) {
-        String securityKey = sessionController.getApplicationPreference().getEncrptionKey();
-        if (securityKey == null || securityKey.trim().isEmpty()) {
-            sessionController.getApplicationPreference().setEncrptionKey(securityController.generateRandomKey(10));
-            sessionController.savePreferences(sessionController.getApplicationPreference());
-        }
-        String temId = getSecurityController().encryptAlphanumeric(r.getId().toString(), securityKey);
-        String reportLink = CommonFunctions.getBaseUrl() + "faces/requests/ix.xhtml?id=" + temId;
+        String reportLink = CommonFunctions.getBaseUrl() + "faces/requests/ix.xhtml?id=" + reportLinkToken(r);
 
         String template = configOptionApplicationController.getLongTextValueByKey(
                 "Email Body for Lab Report Email",
