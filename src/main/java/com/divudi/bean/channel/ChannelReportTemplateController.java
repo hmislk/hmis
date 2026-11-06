@@ -3814,10 +3814,10 @@ public class ChannelReportTemplateController implements Serializable {
 
         channelBills.addAll(channelBillListByBillType2(true, null, bts, getFromDate(), getToDate()));
         channelTotal = new ChannelTotal();
-        channelTotal.setStaffFee(channelBillTotalByBillType(true, null, bts, getFromDate(), getToDate(), true, false, false, false));
-        channelTotal.setHosFee(channelBillTotalByBillType(true, null, bts, getFromDate(), getToDate(), false, true, false, false));
-        channelTotal.setNetTotal(channelBillTotalByBillType(true, null, bts, getFromDate(), getToDate(), false, false, true, false));
-        channelTotal.setVat(channelBillTotalByBillType(true, null, bts, getFromDate(), getToDate(), false, false, false, true));
+        channelTotal.setStaffFee(channelBillTotalByBillType(true, null, bts, getFromDate(), getToDate(), true, false, false, false, false));
+        channelTotal.setHosFee(channelBillTotalByBillType(true, null, bts, getFromDate(), getToDate(), false, true, false, false, false));
+        channelTotal.setNetTotal(channelBillTotalByBillType(true, null, bts, getFromDate(), getToDate(), false, false, true, false, false));
+        channelTotal.setVat(channelBillTotalByBillType(true, null, bts, getFromDate(), getToDate(), false, false, false, true, false));
 
     }
 
@@ -3941,6 +3941,15 @@ public class ChannelReportTemplateController implements Serializable {
     }
 
     public double channelBillTotalByBillType(boolean createdDate, Bill bill, List<BillType> billTypes, Date fd, Date td, boolean staff, boolean hos, boolean net, boolean vat) {
+        return channelBillTotalByBillType(createdDate, bill, billTypes, fd, td, staff, hos, net, vat, true);
+    }
+
+    /**
+     * @param filterByUser false for the OPD VAT report, which has no User Name
+     * filter and whose bill list ignores reportKeyWord.webUser: a user left
+     * selected on the channel VAT page must not narrow its totals (#25240).
+     */
+    private double channelBillTotalByBillType(boolean createdDate, Bill bill, List<BillType> billTypes, Date fd, Date td, boolean staff, boolean hos, boolean net, boolean vat, boolean filterByUser) {
 
         HashMap hm = new HashMap();
         String sql = "";
@@ -3991,7 +4000,7 @@ public class ChannelReportTemplateController implements Serializable {
             hm.put("ins", institution);
         }
 
-        if (reportKeyWord != null && reportKeyWord.getWebUser() != null) {
+        if (filterByUser && reportKeyWord != null && reportKeyWord.getWebUser() != null) {
             sql += " and b.creater=:user";
             hm.put("user", reportKeyWord.getWebUser());
         }
