@@ -243,6 +243,11 @@ public class PharmacyDirectPurchaseController implements Serializable {
         }
         BigDecimal freeQty = BigDecimalUtil.valueOrZero(f.getFreeQuantity());
 
+        if (!BigDecimalUtil.isPositive(qty) && BigDecimalUtil.isPositive(freeQty)
+                && !BigDecimalUtil.isPositive(f.getLineGrossRate())) {
+            JsfUtil.addWarningMessage("No purchase rate on this free-only item. Its free value will be zero. Enter a purchase rate if you know it.");
+        }
+
         if (item instanceof Ampp) {
             // AMPP: User enters packs, need to set units per pack and quantity by units
             BigDecimal unitsPerPack = Optional.ofNullable(f.getUnitsPerPack()).orElse(BigDecimal.ONE);
