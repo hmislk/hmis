@@ -368,7 +368,7 @@
                         <h:outputLabel value=":" ></h:outputLabel>
                     </td>
                     <td>
-                        <h:outputLabel value="#{cc.attrs.bill.paymentMethod.label}"></h:outputLabel>
+                        <h:outputLabel value="#{cc.attrs.bill.paidBill ne null and cc.attrs.bill.paidBill.paymentMethod ne null ? cc.attrs.bill.paidBill.paymentMethod.label : cc.attrs.bill.paymentMethod.label}"></h:outputLabel>
                     </td>
                 </tr>
 
