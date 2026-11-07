@@ -2877,8 +2877,8 @@ public class GrnCostingNativeSqlController implements Serializable {
             double receivedFreeQty = Math.abs(grnFreeQtyMap.getOrDefault(poItemId, 0.0))
                     - Math.abs(grnCancelledFreeQtyMap.getOrDefault(poItemId, 0.0));
 
-            double remains = Math.abs(pbiInApprovedOrder.getQty()) - Math.abs(receivedQty);
-            double remainFreeQty = pbiInApprovedOrder.getFreeQty() - Math.abs(receivedFreeQty);
+            double remains = Math.max(0.0, Math.abs(pbiInApprovedOrder.getQty()) - Math.abs(receivedQty));
+            double remainFreeQty = Math.max(0.0, pbiInApprovedOrder.getFreeQty() - Math.abs(receivedFreeQty));
 
             if (remains > 0 || remainFreeQty > 0) {
                 BillItem newlyCreatedBillItemForGrn = new BillItem();
