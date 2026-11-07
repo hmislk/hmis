@@ -29,7 +29,7 @@ An agent named `*-reviewer`, `*-guard` or `*-verifier` must not list Edit, Write
 | Role | `model` / `effort` | Agents today |
 |---|---|---|
 | Mechanical checks (text scans, link checks) | `haiku` / `low` | `hmis-public-guard` |
-| Developers, reviewers, QA, analysts | `sonnet` / `medium` | `hmis-rules-reviewer`, `java-backend-developer`, `jsf-frontend-dev`, `lab-analyzer-integration`, `performance-optimizer`, `devops-troubleshooter` |
+| Developers, reviewers, QA, analysts | `sonnet` / `medium` | `hmis-rules-reviewer`, `hmis-qa-verifier`, `hmis-ux-reviewer`, `java-backend-developer`, `jsf-frontend-dev`, `lab-analyzer-integration`, `performance-optimizer`, `devops-troubleshooter` |
 | Security review | `sonnet` / `high` | `hmis-security-reviewer` |
 | Architects, on request only | `inherit` / `medium` | `hmis-domain-architect` |
 
