@@ -3052,6 +3052,11 @@ public class PharmacySaleForCashierController3 implements Serializable, Controll
 //        getPreBill().setMembershipScheme(membershipSchemeController.fetchPatientMembershipScheme(pt, getSessionController().getApplicationPreference().isMembershipExpires()));
         getPreBill().setToStaff(toStaff);
         getPreBill().setToInstitution(toInstitution);
+        // Credit sale: the credit company is the counterparty; record it in creditCompany too,
+        // as the native page does, so the bill reaches credit-company debtor reports (#22462).
+        if (getPaymentMethod() == PaymentMethod.Credit && toInstitution != null) {
+            getPreBill().setCreditCompany(toInstitution);
+        }
 
         getPreBill().setComments(comment);
 
@@ -3651,6 +3656,12 @@ public class PharmacySaleForCashierController3 implements Serializable, Controll
         if (getPaymentMethod() == null) {
             billSettlingStarted = false;
             JsfUtil.addErrorMessage("Please select Payment Method");
+            return null;
+        }
+
+        if (getPaymentMethod() == PaymentMethod.Credit && toInstitution == null) {
+            billSettlingStarted = false;
+            JsfUtil.addErrorMessage("Please select the credit company.");
             return null;
         }
 
@@ -5109,6 +5120,9 @@ public class PharmacySaleForCashierController3 implements Serializable, Controll
 
     @Deprecated // Use listnerForPaymentMethodChange
     public void changeListener() {
+        if (paymentMethod != PaymentMethod.Credit) {
+            toInstitution = null; // credit company applies to Credit only (#22462)
+        }
         if (paymentMethod == PaymentMethod.PatientDeposit) {
             getPaymentMethodData().getPatient_deposit().setPatient(patient);
         }
