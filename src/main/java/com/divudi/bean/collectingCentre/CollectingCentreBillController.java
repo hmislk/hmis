@@ -1598,7 +1598,7 @@ public class CollectingCentreBillController implements Serializable, ControllerW
                 entryNet += bf.getFeeValue();
                 entryDis += bf.getFeeDiscount();
                 entryVat += bf.getFeeVat();
-                if (bf.getInstitution().getInstitutionType() == InstitutionType.CollectingCentre) {
+                if (bf.getInstitution() != null && bf.getInstitution().getInstitutionType() == InstitutionType.CollectingCentre) {
                     collectingcCenterFee = bf.getFeeValue();
                     totalCCFee += bf.getFeeValue();
                 } else if (bf.getStaff() != null) {
