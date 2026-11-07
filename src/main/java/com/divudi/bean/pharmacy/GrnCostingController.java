@@ -2994,6 +2994,22 @@ public class GrnCostingController implements Serializable {
      * persisted draft as part of a Finalize/Approve action that has already
      * been authorized under its own privilege.
      */
+    /**
+     * Saves lines added to an existing GRN before the bill is merged. A merge
+     * would save a copy of a new line and leave this one without an id, so the
+     * next merge orphans the copy and its delete fails (#25285).
+     */
+    private void persistNewBillItems() {
+        for (BillItem i : getCurrentGrnBillPre().getBillItems()) {
+            if (i.getId() == null) {
+                i.setBill(getCurrentGrnBillPre());
+                i.setCreatedAt(new Date());
+                i.setCreater(getSessionController().getLoggedUser());
+                getBillItemFacade().create(i);
+            }
+        }
+    }
+
     private void doRequestWithSaveApprove() {
         // Simple save method for costing save/approve workflow
         // Allow saving with incomplete data - no validation required
@@ -3031,6 +3047,7 @@ public class GrnCostingController implements Serializable {
         if (getCurrentGrnBillPre().getId() == null) {
             getBillFacade().create(getCurrentGrnBillPre());
         } else {
+            persistNewBillItems();
             getBillFacade().edit(getCurrentGrnBillPre());
         }
 
