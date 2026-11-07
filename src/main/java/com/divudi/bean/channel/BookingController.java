@@ -1465,6 +1465,11 @@ public class BookingController implements Serializable, ControllerWithPatient, C
 
     public void addChannelBooking(boolean reservedBooking) {
         errorText = "";
+        if (selectedSessionInstance == null) {
+            JsfUtil.addErrorMessage("Please select a session.");
+            settleSucessFully = false;
+            return;
+        }
         if (billSessionErrorPresent()) {
             JsfUtil.addErrorMessage("Session Selection Error. Please Retry From Beginning");
             settleSucessFully = false;
@@ -1482,7 +1487,7 @@ public class BookingController implements Serializable, ControllerWithPatient, C
         }
 
         if (paymentMethod == PaymentMethod.OnCall) {
-            if (selectedSessionInstance.getOriginatingSession().isPaidAppointmentsOnly() == true) {
+            if (selectedSessionInstance.getOriginatingSession() != null && selectedSessionInstance.getOriginatingSession().isPaidAppointmentsOnly()) {
                 JsfUtil.addErrorMessage("This Session is Paid Appointments Only");
                 settleSucessFully = false;
                 return;
@@ -2956,6 +2961,11 @@ public class BookingController implements Serializable, ControllerWithPatient, C
     }
 
     public void fillBillSessions() {
+        if (selectedSessionInstance == null) {
+            billSessions = new ArrayList<>();
+            selectedBillSession = null;
+            return;
+        }
 
         BillType[] billTypes = {
             BillType.ChannelAgent,
