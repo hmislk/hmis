@@ -110,7 +110,7 @@ if [ "${HMIS_ALLOW_RISKY_PUSH:-}" = "1" ]; then
 fi
 # Stop Git Bash on Windows rewriting the "<rev>:<path>" argument of git show.
 export MSYS_NO_PATHCONV=1
-git fetch -q origin development:refs/remotes/origin/development 2>/dev/null ||
+git fetch -q origin +development:refs/remotes/origin/development 2>/dev/null ||
   echo "pre-push: WARNING: could not fetch origin development (offline?); using the local copy." >&2
 TMP_HOOK="$(mktemp)" || exit 1
 trap 'rm -f "$TMP_HOOK"' EXIT

@@ -12,7 +12,7 @@ Role: you carry ONE change that is already merged in `development` (a commit sha
 
 When invoked:
 1. Read the brief: the source commit or PR, and the target branches (`<hospital>-production` / `<hospital>-staging` only; never `*-prod`, `*-stg`, `*-migrated` or `master`). If a target is ambiguous, stop and ask (skill, "Common Production Branches").
-2. `git fetch origin development:refs/remotes/origin/development` (works in a `--single-branch` clone too). Resolve the source to its commit(s) on `origin/development`: for a PR, `gh pr view <N> --json state,mergeCommit,commits`; it must be MERGED. Note the files it touches (`git show --stat <sha>`; for a merge commit, `git diff --stat <sha>^1 <sha>`).
+2. `git fetch origin +development:refs/remotes/origin/development` (forced refspec; works in a `--single-branch` clone too). Resolve the source to its commit(s) on `origin/development`: for a PR, `gh pr view <N> --json state,mergeCommit,commits`; it must be MERGED. Note the files it touches (`git show --stat <sha>`; for a merge commit, `git diff --stat <sha>^1 <sha>`).
 3. Check whether another session is using the checkout (`git status`, `git reflog -5`) and stash any local work as the skill's Step 1 says; `persistence.xml` local JNDI stays unstaged.
 4. For each target branch, in turn:
    a. **Existing PR:** `gh pr list --state open --base <branch> --json number,headRefName,isCrossRepository`. If one is open, add to its head branch (skill Step 1a) and run `gh pr view <N> --json state` before pushing; never open a second PR. Otherwise branch `<short-name>-<n>-hotfix` from `origin/<branch>` (Step 2, then 2a), with `<n>` = 1, 2, ... so each target in the run gets its own head; never put the target branch name in it.
@@ -36,6 +36,6 @@ Output contract (≤30 lines, to the caller only):
 Then the merge plan: `Round 1: <PR>, <PR> (different hosts) / Round 2: ...`, with the host group of each PR.
 Then, if watching: `<branch>: run <id> <conclusion>`. Then `UNPROVEN: <what you could not check>`. Before the PRs exist, return each PR's title and body (`AWAITING GUARD`) so the caller can run `hmis-public-guard` and resume you.
 
-Out of scope: merging any PR, deploying by hand, writing a new fix on a deploy branch (port only what `development` has), changing workflows, touching production servers or databases.
+Out of scope: merging any PR, deploying by hand, writing a new fix on a deploy branch (port only what `development` has), authoring or changing workflows (except the hotfix-deploy Step 2a guard sync from `origin/development`), touching production servers or databases.
 
 Stop conditions: stop and report for a target where the source is not merged in `development`, a touched file or symbol is missing, the cherry-pick conflicts beyond the change's own lines, the compile fails and the fix is not obvious, the open PR is from a fork or is mid-review/scheduled, or the target branch is ambiguous.
