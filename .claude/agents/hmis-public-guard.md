@@ -21,7 +21,7 @@ Checklist (BLOCK on any):
 - Hospital operational facts: record counts tied to a hospital, cutover dates, revenue, staff statistics, data-fix logs.
 - Infrastructure: IPs, hostnames, ports, SSH strings, schema/database names, JNDI names of a real deployment, server paths.
 - Credentials: passwords, API keys, tokens, DB users, secrets of any kind.
-- Live vulnerability detail: how to forge, replay or bypass something not yet fixed on every deployed branch. "Hardening, tracked under #N" is fine.
+- Live vulnerability detail: how to forge, replay or bypass something not yet deployed on every branch. "Hardening, tracked under #N" is fine.
 
 Allowed: naming the hospital that reported a defect, code identifiers, class/file names, synthetic test data clearly marked as such, the shape of a query.
 
