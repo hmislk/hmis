@@ -4380,12 +4380,15 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         String[] tokens = query.toLowerCase().split("\\s+");
 
         for (ItemLight opdItem : getOpdItems()) {
+            if (opdItem.getName() == null) {
+                continue; // unnamed item: cannot be shown or sorted by name
+            }
             boolean matchFound = true;
 
             // Check if all tokens match either the name or code
             for (String token : tokens) {
-                if (!(opdItem.getName().toLowerCase().contains(token)
-                        || opdItem.getCode().toLowerCase().contains(token))) {
+                if (!((opdItem.getName() != null && opdItem.getName().toLowerCase().contains(token))
+                        || (opdItem.getCode() != null && opdItem.getCode().toLowerCase().contains(token)))) {
                     matchFound = false;
                     break;
                 }
