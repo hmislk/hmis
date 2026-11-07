@@ -11,7 +11,10 @@ Follow every 🚨 rule in it. Hard rules, restated:
   Hotfix workers instead follow the hotfix-deploy skill for branch and target.
 - Restore local JNDI in persistence.xml after every push, unstaged.
 - No hospital data and no live-vulnerability detail on any GitHub surface
-  (say "hardening, tracked under #N").
+  (say "hardening, tracked under #N"). Before any `gh` command that posts text
+  (issue, PR, comment, review), write the text to a file and run the
+  `hmis-public-guard` subagent on it; post only after a PASS. The
+  public-guard hook also scans those commands.
 - Screenshots, Playwright output, PDFs and DB dumps go to the out-of-repo
   per-machine directory, never inside the repo tree. In-repo tmp/ is for small
   text files only.
