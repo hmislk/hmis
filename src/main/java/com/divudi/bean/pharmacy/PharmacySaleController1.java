@@ -2129,7 +2129,29 @@ public class PharmacySaleController1 implements Serializable, ControllerWithPati
         setToken(currentToken);
     }
 
+    /**
+     * Guarded entry point (#21153): a double-submit must never run the settle
+     * twice or create an empty PreBill. The flag is reset in finally so every
+     * early return of the internal method releases it.
+     */
     public String settlePreBillAndNavigateToPrint() {
+        if (billSettlingStarted) {
+            JsfUtil.addErrorMessage("Settlement is already in progress. Please wait.");
+            return null;
+        }
+        if (getPreBill() == null || getPreBill().getBillItems() == null || getPreBill().getBillItems().isEmpty()) {
+            JsfUtil.addErrorMessage("No Items added to bill to sale");
+            return null;
+        }
+        billSettlingStarted = true;
+        try {
+            return settlePreBillAndNavigateToPrintInternal();
+        } finally {
+            billSettlingStarted = false;
+        }
+    }
+
+    private String settlePreBillAndNavigateToPrintInternal() {
         configOptionFacade.flush();
         editingQty = null;
 
