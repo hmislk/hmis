@@ -6,7 +6,7 @@ Read this before adding or editing an agent. CI `agent-lint` (`.github/scripts/c
 
 Allowed fields only: `name`, `description`, `tools`, `disallowedTools`, `model`, `effort`, `color`, `skills`, `hooks`, `maxTurns`. Required: `name`, `description`, `tools`, `model`. The frontmatter must be valid YAML, so quote a value that contains `: `.
 
-- **Never** `memory` (it silently adds Edit/Write), `isolation` (worktrees are banned) or `Agent` in `tools` (no nested agents).
+- **Never** `memory` (it silently adds Edit/Write), `isolation` (worktrees are banned), `permissionMode` or `mcpServers`, or `Agent` in `tools` (no nested agents). The lint reports these as "banned by policy", distinct from a misspelt "unknown field".
 - `description`: 1–2 sentences, at most 300 characters: what it does, when to use it, what it is not for. No `<example>` blocks; every description loads into every request. Say "use proactively" only for a cheap agent we really want auto-invoked.
 - `color`: `red`, `blue`, `green`, `yellow`, `purple`, `orange`, `pink` or `cyan`.
 - `skills`: at most two, and never a skill with `disable-model-invocation: true` (it cannot be preloaded; tell the agent to Read that `SKILL.md` instead).
@@ -17,7 +17,8 @@ Leaving out `tools` gives the agent every tool, MCP included. Always set it.
 
 | Role | `tools` | `disallowedTools` |
 |---|---|---|
-| Read-only (reviewer, guard, verifier, architect, analyst) | `Read, Grep, Glob, Bash` | `Edit, Write, NotebookEdit, Agent` |
+| Read-only (reviewer, verifier, architect, analyst) | `Read, Grep, Glob, Bash` | `Edit, Write, NotebookEdit, Agent` |
+| Text guard (judges text only) | `Read, Grep` | `Bash, Glob, Edit, Write, NotebookEdit, Agent` |
 | Developer | `Read, Grep, Glob, Bash, Edit, Write` | `NotebookEdit, Agent` |
 | Browser QA | read-only set plus `mcp__playwright__*` | `Edit, Write, NotebookEdit, Agent` |
 
@@ -25,12 +26,12 @@ An agent named `*-reviewer`, `*-guard` or `*-verifier` must not list Edit, Write
 
 ## Model and effort
 
-| Role | `model` / `effort` |
-|---|---|
-| Mechanical checks (text scans, link checks) | `haiku` / `low` |
-| Developers, reviewers, QA, analysts | `sonnet` / `medium` |
-| Security review | `sonnet` / `high` |
-| Architects, on request only | `inherit` / `medium` |
+| Role | `model` / `effort` | Agents today |
+|---|---|---|
+| Mechanical checks (text scans, link checks) | `haiku` / `low` | `hmis-public-guard` |
+| Developers, reviewers, QA, analysts | `sonnet` / `medium` | `hmis-rules-reviewer`, `java-backend-developer`, `jsf-frontend-dev`, `lab-analyzer-integration`, `performance-optimizer`, `devops-troubleshooter` |
+| Security review | `sonnet` / `high` | `hmis-security-reviewer` |
+| Architects, on request only | `inherit` / `medium` | `hmis-domain-architect` |
 
 "Think hard" in the body is just text; `effort` is the real control. Dispatch costly or rare agents conditionally (by diff path), never as "use proactively".
 
@@ -49,6 +50,6 @@ Sections in this order, short:
 
 Reviewers return findings to the caller only. Posting is the coordinator's job, after checking the text against the [Public Content Policy](../git/github-public-content-policy.md).
 
-To retire an agent, delete it. `.claude/agents/` is scanned recursively, so a moved file is still live.
+To retire an agent, delete it. `.claude/agents/` is scanned recursively, so a moved file is still live. `.codex/agents/` holds Codex mirrors of some agents; delete the mirror in the same PR. New agents are not mirrored there yet.
 
 Run the lint locally: `python3 .github/scripts/check_agent_frontmatter.py` (needs PyYAML).
