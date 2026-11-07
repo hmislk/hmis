@@ -285,8 +285,11 @@ public class CashRecieveBillController implements Serializable {
 
         List<Bill> list = getAdmissionController().getCreditPaymentBillsBht(ins);
         for (Bill b : list) {
+            if (b.getNetTotal() - b.getPaidAmount() <= 0.01) {
+                continue;
+            }
             getCurrentBillItem().setPatientEncounter(b.getPatientEncounter());
-            getCurrentBillItem().setNetValue(b.getNetTotal());
+            getCurrentBillItem().setNetValue(Math.max(0, b.getNetTotal() - b.getPaidAmount()));
             getCurrentBillItem().getPatientEncounter().setCreditCompany(b.getCreditCompany());
             getCurrentBillItem().setReferenceBill(b);
             getCurrentBillItem().setBill(b);
@@ -617,6 +620,46 @@ public class CashRecieveBillController implements Serializable {
         return false;
     }
 
+    /**
+     * Inpatient credit company payment must never exceed the outstanding due of the
+     * bill it settles. The due is read fresh from the database, so a payment made in
+     * the meantime is respected. Lines without a reference bill (legacy admission
+     * aggregates) are not checked here. Returns true (after showing an error) when
+     * the payment exceeds the due.
+     */
+    private boolean isBhtOverPayment(List<BillItem> items) {
+        java.util.Map<Long, Double> payingByBill = new java.util.LinkedHashMap<>();
+        for (BillItem bi : items) {
+            if (bi == null || bi.getReferenceBill() == null || bi.getReferenceBill().getId() == null) {
+                continue;
+            }
+            payingByBill.merge(bi.getReferenceBill().getId(), bi.getNetValue(), Double::sum);
+        }
+        for (java.util.Map.Entry<Long, Double> e : payingByBill.entrySet()) {
+            Bill fresh = getBillFacade().find(e.getKey());
+            if (fresh == null) {
+                continue;
+            }
+            // Scalar query reads the database, not the (possibly stale) cached entity.
+            java.util.HashMap<String, Object> p = new java.util.HashMap<>();
+            p.put("id", e.getKey());
+            double due = Math.max(0, getBillFacade().findDoubleByJpql(
+                    "select abs(b.netTotal) - abs(coalesce(b.paidAmount, 0)) from Bill b where b.id = :id", p, true));
+            double paying = e.getValue();
+            if (paying - due > 0.01) {
+                if (due <= 0.01) {
+                    JsfUtil.addErrorMessage("Bill " + fresh.getDeptId() + " is already fully paid. Nothing was saved.");
+                } else {
+                    JsfUtil.addErrorMessage(String.format(
+                            "Payment amount (%.2f) cannot exceed the outstanding due amount (%.2f) of bill %s. Nothing was saved.",
+                            paying, due, fresh.getDeptId()));
+                }
+                return true;
+            }
+        }
+        return false;
+    }
+
     private boolean errorCheckForAddingBht() {
         Institution currentCc = null;
         if (getCurrentBillItem().getReferenceBill() != null) {
@@ -626,6 +669,23 @@ public class CashRecieveBillController implements Serializable {
         }
         if (currentCc == null) {
             JsfUtil.addErrorMessage("U cant add without credit company name");
+            return true;
+        }
+
+        // Only the bill being added is checked: existing lines for the same bill are summed
+        // in memory with the current line, so this costs one due query per add.
+        List<BillItem> toCheck = new ArrayList<>();
+        Bill currentRef = getCurrentBillItem().getReferenceBill();
+        if (currentRef != null) {
+            for (BillItem existing : getBillItems()) {
+                if (existing.getReferenceBill() != null
+                        && Objects.equals(existing.getReferenceBill().getId(), currentRef.getId())) {
+                    toCheck.add(existing);
+                }
+            }
+        }
+        toCheck.add(getCurrentBillItem());
+        if (isBhtOverPayment(toCheck)) {
             return true;
         }
 
@@ -954,6 +1014,10 @@ public class CashRecieveBillController implements Serializable {
 
         if (getCurrent().getFromInstitution() == null) {
             JsfUtil.addErrorMessage("Select Credit Company");
+            return true;
+        }
+
+        if (isBhtOverPayment(getSelectedBillItems())) {
             return true;
         }
 
