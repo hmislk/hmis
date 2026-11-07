@@ -1207,6 +1207,28 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         return suggestions;
     }
 
+    /**
+     * BHT autocomplete for reports (#24760): any admission, discharged or not.
+     */
+    public List<PatientEncounterDto> completeBhtDtosForReports(String query) {
+        List<PatientEncounterDto> suggestions;
+        if (query == null || query.trim().isEmpty()) {
+            suggestions = new ArrayList<>();
+        } else {
+            HashMap h = new HashMap();
+            String sql = "select new com.divudi.core.data.dto.PatientEncounterDto(c.id, c.patient.person.name, c.bhtNo, c.patient.phn) "
+                    + " from PatientEncounter c "
+                    + " where c.retired=false "
+                    + " and ((lower(c.bhtNo)) like :q "
+                    + " or (lower(c.patient.person.name)) like :q "
+                    + " or (lower(c.patient.phn)) like :q) "
+                    + " order by c.bhtNo";
+            h.put("q", "%" + query.trim().toLowerCase() + "%");
+            suggestions = (List<PatientEncounterDto>) patientEncounterFacade.findLightsByJpql(sql, h, TemporalType.TIMESTAMP, 20);
+        }
+        return suggestions;
+    }
+
     public List<Admission> completePatientAdmissionFromWaitingRoom(String query) {
         List<Admission> suggestions;
         String sql;

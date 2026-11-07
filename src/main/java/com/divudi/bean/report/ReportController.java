@@ -46,6 +46,9 @@ import com.divudi.core.data.HistoryType;
 import com.divudi.core.data.dto.ExpiryItemListDto;
 import com.divudi.core.data.dto.DurationServiceReportDTO;
 import com.divudi.core.data.dto.PatientJourneyRow;
+import com.divudi.core.data.dto.InpatientDirectIssueBhtDTO;
+import com.divudi.core.data.dto.InpatientDirectIssueDepartmentDTO;
+import com.divudi.core.data.dto.InpatientDirectIssueItemDTO;
 import com.divudi.core.data.dto.PatientEncounterDto;
 import com.divudi.core.data.dto.PharmacySaleBhtBillDTO;
 import com.divudi.core.data.dto.PharmacySaleDepartmentDTO;
@@ -5606,6 +5609,274 @@ public class ReportController implements Serializable, ControllerWithReportFilte
         this.patientEncounterDtoForBhtNo = patientEncounterDtoForBhtNo;
     }
 
+    // ---- Inpatient Direct Issue report (#24760) ----
+    private static final Set<BillTypeAtomic> DIRECT_ISSUE_ISSUE_TYPES = new HashSet<>(Arrays.asList(
+            BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE,
+            BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE));
+
+    private static final Set<BillTypeAtomic> DIRECT_ISSUE_NEGATIVE_TYPES = new HashSet<>(Arrays.asList(
+            BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION,
+            BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN,
+            BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_CANCELLATION,
+            BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_RETURN));
+
+    private List<InpatientDirectIssueDepartmentDTO> inpatientDirectIssueDepartments;
+    private double inpatientDirectIssueTotalQty;
+    private double inpatientDirectIssueTotalRetail;
+    private double inpatientDirectIssueTotalCost;
+
+    public boolean isInpatientDirectIssueCostingEnabled() {
+        return configOptionApplicationController.getBooleanValueByKey("Manage Costing", true);
+    }
+
+    private static double nzd(Double d) {
+        return d != null ? d : 0.0;
+    }
+
+    public void processInpatientDirectIssueReport() {
+        inpatientDirectIssueDepartments = null;
+        inpatientDirectIssueTotalQty = 0.0;
+        inpatientDirectIssueTotalRetail = 0.0;
+        inpatientDirectIssueTotalCost = 0.0;
+
+        if (fromDate == null || toDate == null) {
+            JsfUtil.addErrorMessage("Please select the from and to dates.");
+            return;
+        }
+
+        List<BillTypeAtomic> allTypes = new ArrayList<>(DIRECT_ISSUE_ISSUE_TYPES);
+        allTypes.addAll(DIRECT_ISSUE_NEGATIVE_TYPES);
+
+        StringBuilder jpql = new StringBuilder();
+        jpql.append("SELECT NEW com.divudi.core.data.dto.InpatientDirectIssueItemDTO(");
+        jpql.append("bi.id, b.id, b.deptId, b.createdAt, b.billTypeAtomic, d.id, d.name, ");
+        jpql.append("pe.id, pe.bhtNo, pn.name, pt.phn, ");
+        jpql.append("item.id, item.code, item.name, bi.qty, ");
+        jpql.append("pbi.retailRate, pbi.costRate, pbi.purchaseRate, bi.grossValue) ");
+        jpql.append("FROM BillItem bi JOIN bi.bill b JOIN bi.item item ");
+        jpql.append("LEFT JOIN b.department d ");
+        jpql.append("LEFT JOIN bi.pharmaceuticalBillItem pbi ");
+        jpql.append("LEFT JOIN b.patientEncounter pe ");
+        jpql.append("LEFT JOIN pe.patient pt ");
+        jpql.append("LEFT JOIN pt.person pn ");
+        jpql.append("LEFT JOIN b.referenceBill rb ");
+        jpql.append("LEFT JOIN b.billedBill ob ");
+        jpql.append("WHERE b.billTypeAtomic IN :bTypes ");
+        // Legacy request-issue cancellations were stored under the direct-issue cancellation type;
+        // keep a return/cancellation row only when its original bill is a direct issue.
+        jpql.append("AND (b.billTypeAtomic IN :issueTypes OR rb.billTypeAtomic IN :issueTypes OR ob.billTypeAtomic IN :issueTypes) ");
+        jpql.append("AND b.createdAt BETWEEN :fd AND :td ");
+        jpql.append("AND bi.retired = false AND (b.retired = false OR b.retired IS NULL) ");
+
+        Map<String, Object> m = new HashMap<>();
+        m.put("bTypes", allTypes);
+        m.put("issueTypes", new ArrayList<>(DIRECT_ISSUE_ISSUE_TYPES));
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+
+        if (institution != null) {
+            jpql.append("AND b.institution.id = :insId ");
+            m.put("insId", institution.getId());
+        }
+        if (site != null) {
+            jpql.append("AND d.site.id = :siteId ");
+            m.put("siteId", site.getId());
+        }
+        if (department != null) {
+            jpql.append("AND d.id = :depId ");
+            m.put("depId", department.getId());
+        }
+        if (patientEncounterDtoForBhtNo != null && patientEncounterDtoForBhtNo.getId() != null) {
+            jpql.append("AND pe.id = :peId ");
+            m.put("peId", patientEncounterDtoForBhtNo.getId());
+        }
+        if (item != null) {
+            jpql.append("AND item.id = :itemId ");
+            m.put("itemId", item.getId());
+        }
+        jpql.append("ORDER BY d.name, pe.bhtNo, b.createdAt, bi.id");
+
+        @SuppressWarnings("unchecked")
+        List<InpatientDirectIssueItemDTO> flat = (List<InpatientDirectIssueItemDTO>) billItemFacade
+                .findLightsByJpql(jpql.toString(), m, TemporalType.TIMESTAMP);
+
+        inpatientDirectIssueDepartments = buildInpatientDirectIssueHierarchy(flat);
+    }
+
+    private List<InpatientDirectIssueDepartmentDTO> buildInpatientDirectIssueHierarchy(List<InpatientDirectIssueItemDTO> flat) {
+        Map<Long, InpatientDirectIssueDepartmentDTO> deptMap = new LinkedHashMap<>();
+        Map<String, InpatientDirectIssueBhtDTO> bhtMap = new HashMap<>();
+        if (flat == null) {
+            return new ArrayList<>();
+        }
+        for (InpatientDirectIssueItemDTO dto : flat) {
+            double q = Math.abs(nzd(dto.getQty()));
+            double retail = dto.getRetailRate() != null && dto.getRetailRate() > 0
+                    ? q * dto.getRetailRate() : Math.abs(nzd(dto.getGrossValue()));
+            Double cr = dto.getCostRate() != null && dto.getCostRate() > 0 ? dto.getCostRate() : dto.getPurchaseRate();
+            double cost = q * nzd(cr);
+            boolean neg = DIRECT_ISSUE_NEGATIVE_TYPES.contains(dto.getBillTypeAtomic());
+            int sign = neg ? -1 : 1;
+            dto.setNegative(neg);
+            dto.setSignedQty(sign * q);
+            dto.setRetailValue(sign * retail);
+            dto.setCostValue(sign * cost);
+
+            Long deptKey = dto.getDepartmentId() != null ? dto.getDepartmentId() : -1L;
+            InpatientDirectIssueDepartmentDTO dept = deptMap.get(deptKey);
+            if (dept == null) {
+                dept = new InpatientDirectIssueDepartmentDTO(dto.getDepartmentId(),
+                        dto.getDepartmentName() != null ? dto.getDepartmentName() : "Unknown");
+                deptMap.put(deptKey, dept);
+            }
+            String bhtKey = deptKey + "|" + (dto.getEncounterId() != null ? dto.getEncounterId() : -1L);
+            InpatientDirectIssueBhtDTO bht = bhtMap.get(bhtKey);
+            if (bht == null) {
+                bht = new InpatientDirectIssueBhtDTO(dto.getEncounterId(), dto.getBhtNo(),
+                        dto.getPatientName(), dto.getPatientPhn());
+                bhtMap.put(bhtKey, bht);
+                dept.getBhts().add(bht);
+            }
+            bht.getItems().add(dto);
+        }
+        List<InpatientDirectIssueDepartmentDTO> result = new ArrayList<>(deptMap.values());
+        for (InpatientDirectIssueDepartmentDTO d : result) {
+            d.calculateTotals();
+            inpatientDirectIssueTotalQty += d.getTotalQty();
+            inpatientDirectIssueTotalRetail += d.getTotalRetail();
+            inpatientDirectIssueTotalCost += d.getTotalCost();
+        }
+        return result;
+    }
+
+    public void downloadInpatientDirectIssueExcel() {
+        if (inpatientDirectIssueDepartments == null || inpatientDirectIssueDepartments.isEmpty()) {
+            JsfUtil.addErrorMessage("No data to export. Please process the report first.");
+            return;
+        }
+        boolean costing = isInpatientDirectIssueCostingEnabled();
+        SXSSFWorkbook workbook = null;
+        try {
+            workbook = new SXSSFWorkbook(100);
+            workbook.setCompressTempFiles(true);
+            SXSSFSheet sheet = workbook.createSheet("Inpatient Direct Issue");
+            ExcelStyleBundle styles = createStyleBundle(workbook);
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+            int rowIdx = 0;
+
+            Row titleRow = sheet.createRow(rowIdx++);
+            createCell(titleRow, 0, "Inpatient Direct Issue Report", styles.title);
+            rowIdx++;
+            rowIdx = writeInfoRow(sheet, rowIdx, "Institution:", institution != null ? institution.getName() : "All", styles);
+            rowIdx = writeInfoRow(sheet, rowIdx, "Site:", site != null ? site.getName() : "All", styles);
+            rowIdx = writeInfoRow(sheet, rowIdx, "Store/Department:", department != null ? department.getName() : "All", styles);
+            rowIdx = writeInfoRow(sheet, rowIdx, "BHT:", patientEncounterDtoForBhtNo != null ? nullSafe(patientEncounterDtoForBhtNo.getBhtNo()) : "All", styles);
+            rowIdx = writeInfoRow(sheet, rowIdx, "Item:", item != null ? nullSafe(item.getName()) : "All", styles);
+            rowIdx = writeInfoRow(sheet, rowIdx, "From Date:", fromDate != null ? sdf.format(fromDate) : "", styles);
+            rowIdx = writeInfoRow(sheet, rowIdx, "To Date:", toDate != null ? sdf.format(toDate) : "", styles);
+            rowIdx++;
+
+            String[] headers = costing
+                    ? new String[]{"Date", "Bill No.", "BHT No.", "Patient", "Item", "Qty", "Retail Value", "Cost Value"}
+                    : new String[]{"Date", "Bill No.", "BHT No.", "Patient", "Item", "Qty", "Retail Value"};
+            int cols = headers.length;
+            Row headerRow = sheet.createRow(rowIdx++);
+            for (int i = 0; i < cols; i++) {
+                createCell(headerRow, i, headers[i], styles.header);
+            }
+
+            for (InpatientDirectIssueDepartmentDTO dept : inpatientDirectIssueDepartments) {
+                Row deptRow = sheet.createRow(rowIdx++);
+                createCell(deptRow, 0, dept.getDepartmentName(), styles.deptHeader);
+                for (int i = 1; i < cols; i++) {
+                    createCell(deptRow, i, "", styles.deptHeader);
+                }
+                for (InpatientDirectIssueBhtDTO bht : dept.getBhts()) {
+                    for (InpatientDirectIssueItemDTO it : bht.getItems()) {
+                        Row r = sheet.createRow(rowIdx++);
+                        createCell(r, 0, it.getBillDate() != null ? sdf.format(it.getBillDate()) : "", styles.normal);
+                        createCell(r, 1, it.getBillNo(), styles.normal);
+                        createCell(r, 2, bht.getBhtNo(), styles.normal);
+                        createCell(r, 3, bht.getPatientName(), styles.normal);
+                        createCell(r, 4, it.getItemName(), styles.normal);
+                        createNumericCell(r, 5, it.getSignedQty(), styles.number);
+                        createNumericCell(r, 6, it.getRetailValue(), styles.number);
+                        if (costing) {
+                            createNumericCell(r, 7, it.getCostValue(), styles.number);
+                        }
+                    }
+                    Row t = sheet.createRow(rowIdx++);
+                    for (int i = 0; i < 5; i++) {
+                        createCell(t, i, i == 4 ? "BHT Total:" : "", styles.bhtTotal);
+                    }
+                    createNumericCell(t, 5, bht.getTotalQty(), styles.bhtTotalNumber);
+                    createNumericCell(t, 6, bht.getTotalRetail(), styles.bhtTotalNumber);
+                    if (costing) {
+                        createNumericCell(t, 7, bht.getTotalCost(), styles.bhtTotalNumber);
+                    }
+                }
+                Row dt = sheet.createRow(rowIdx++);
+                for (int i = 0; i < 5; i++) {
+                    createCell(dt, i, i == 4 ? dept.getDepartmentName() + " Total:" : "", styles.deptTotal);
+                }
+                createNumericCell(dt, 5, dept.getTotalQty(), styles.deptTotalNumber);
+                createNumericCell(dt, 6, dept.getTotalRetail(), styles.deptTotalNumber);
+                if (costing) {
+                    createNumericCell(dt, 7, dept.getTotalCost(), styles.deptTotalNumber);
+                }
+                rowIdx++;
+            }
+            Row g = sheet.createRow(rowIdx++);
+            for (int i = 0; i < 5; i++) {
+                createCell(g, i, i == 4 ? "Grand Total:" : "", styles.grandTotal);
+            }
+            createNumericCell(g, 5, inpatientDirectIssueTotalQty, styles.grandTotalNumber);
+            createNumericCell(g, 6, inpatientDirectIssueTotalRetail, styles.grandTotalNumber);
+            if (costing) {
+                createNumericCell(g, 7, inpatientDirectIssueTotalCost, styles.grandTotalNumber);
+            }
+
+            int[] colWidths = {4500, 3500, 3500, 5500, 7000, 3000, 3500, 3500};
+            for (int i = 0; i < cols; i++) {
+                sheet.setColumnWidth(i, colWidths[i]);
+            }
+
+            FacesContext facesContext = FacesContext.getCurrentInstance();
+            ExternalContext externalContext = facesContext.getExternalContext();
+            externalContext.responseReset();
+            externalContext.setResponseContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+            String fileName = "Inpatient_Direct_Issue_" + new SimpleDateFormat("yyyyMMdd_HHmm").format(new Date()) + ".xlsx";
+            externalContext.setResponseHeader("Content-Disposition", "attachment; filename=\"" + fileName + "\"");
+            try (OutputStream out = externalContext.getResponseOutputStream()) {
+                workbook.write(out);
+                out.flush();
+            }
+            facesContext.responseComplete();
+        } catch (IOException e) {
+            JsfUtil.addErrorMessage("Error generating Excel: " + e.getMessage());
+        } finally {
+            if (workbook != null) {
+                workbook.dispose();
+            }
+        }
+    }
+
+    public List<InpatientDirectIssueDepartmentDTO> getInpatientDirectIssueDepartments() {
+        return inpatientDirectIssueDepartments;
+    }
+
+    public double getInpatientDirectIssueTotalQty() {
+        return inpatientDirectIssueTotalQty;
+    }
+
+    public double getInpatientDirectIssueTotalRetail() {
+        return inpatientDirectIssueTotalRetail;
+    }
+
+    public double getInpatientDirectIssueTotalCost() {
+        return inpatientDirectIssueTotalCost;
+    }
+
     private static class ExcelStyleBundle {
 
         CellStyle title;
@@ -6763,6 +7034,16 @@ public class ReportController implements Serializable, ControllerWithReportFilte
         reportViewTypes.add(ReportViewType.BY_BILL_ITEM);
         reportViewType = ReportViewType.BY_BILL_ITEM;
         return "/analytics/summaries/income_bill_counts?faces-redirect=true";
+    }
+
+    public String navigateToInpatientDirectIssueReport() {
+        inpatientDirectIssueDepartments = null;
+        inpatientDirectIssueTotalQty = 0.0;
+        inpatientDirectIssueTotalRetail = 0.0;
+        inpatientDirectIssueTotalCost = 0.0;
+        item = null;
+        patientEncounterDtoForBhtNo = null;
+        return "/reports/inventoryReports/inpatient_direct_issue_report?faces-redirect=true";
     }
 
     public String navigateToStockTransferReport() {
