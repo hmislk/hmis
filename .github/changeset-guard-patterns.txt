@@ -30,7 +30,10 @@ block \.(tgz|zip)$
 
 # Secrets and keys ("deny": no allow rule exempts them)
 block (^|/)\.env(\.[^/]*)?$
-deny credentials[^/]*$
+# credentials: only data/secret file types, so source such as
+# ApiCredentialsService.java is not blocked.
+deny credentials[^/]*\.(txt|json|env|properties|ya?ml|csv|xml|ini|conf|cfg|toml)$
+deny (^|/)credentials$
 deny \.pem$
 deny (^|/)id_rsa[^/]*$
 allow (^|/)\.env\.example$

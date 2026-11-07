@@ -85,7 +85,10 @@ fi
 # ---- 4. Install the changeset-guard pre-push hook -----------
 # A thin wrapper that runs the tracked scripts/hooks/pre-push, so later
 # changes to the hook or .github/changeset-guard-patterns.txt apply without
-# reinstalling. An unrelated existing pre-push hook is left alone.
+# reinstalling. On a branch without the hook (cut from a deploy branch) it runs
+# origin/development's copy, and blocks the push if that cannot be loaded.
+# Re-run this script to upgrade an older wrapper. An unrelated existing
+# pre-push hook is left alone.
 HOOKS_DIR="$(git rev-parse --git-path hooks)"
 mkdir -p "$HOOKS_DIR"
 PRE_PUSH="$HOOKS_DIR/pre-push"
@@ -98,8 +101,26 @@ else
 #!/usr/bin/env bash
 # HMIS changeset-guard pre-push (installed by scripts/install-dev-hooks.sh)
 HOOK_SCRIPT="$(git rev-parse --show-toplevel)/scripts/hooks/pre-push"
-[ -f "$HOOK_SCRIPT" ] || exit 0
-exec bash "$HOOK_SCRIPT" "$@"
+[ -f "$HOOK_SCRIPT" ] && exec bash "$HOOK_SCRIPT" "$@"
+# The branch predates the hook (e.g. a hotfix cut from a deploy branch): run
+# development's copy instead of skipping the check.
+if [ "${HMIS_ALLOW_RISKY_PUSH:-}" = "1" ]; then
+  echo "pre-push: HMIS_ALLOW_RISKY_PUSH=1 set, changeset guard skipped."
+  exit 0
+fi
+# Stop Git Bash on Windows rewriting the "<rev>:<path>" argument of git show.
+export MSYS_NO_PATHCONV=1
+git fetch -q origin development:refs/remotes/origin/development 2>/dev/null ||
+  echo "pre-push: WARNING: could not fetch origin development (offline?); using the local copy." >&2
+TMP_HOOK="$(mktemp)" || exit 1
+trap 'rm -f "$TMP_HOOK"' EXIT
+if ! git show origin/development:scripts/hooks/pre-push > "$TMP_HOOK" 2>/dev/null || [ ! -s "$TMP_HOOK" ]; then
+  echo "pre-push: BLOCKED. The changeset guard hook could not be loaded from" >&2
+  echo "origin/development. Run 'git fetch origin development' and retry." >&2
+  exit 1
+fi
+echo "pre-push: scripts/hooks/pre-push is missing on this branch; using the copy from origin/development." >&2
+HMIS_GUARD_FETCHED=1 bash "$TMP_HOOK" "$@"
 HOOK
   chmod +x "$PRE_PUSH"
   GUARD_INSTALLED=1

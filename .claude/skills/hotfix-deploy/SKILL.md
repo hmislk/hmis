@@ -106,13 +106,26 @@ git diff --cached --stat   # review; commit it with the fix, by explicit path
 
 If `.gitignore` is already identical, nothing is staged. Never use `git add -A` or `git add .` anywhere in this workflow; stage explicit paths only.
 
+Then sync the changeset guard, so the pre-push hook and the CI `changeset-guard` job run on this branch and its PR (the workflow has no branch filter, but a PR only runs workflows present on its head). Commit it on its own, before the fix:
+
+```bash
+GUARD_PATHS=".github/workflows/changeset_guard.yml .github/changeset-guard-patterns.txt scripts/changeset-guard.sh scripts/hooks/pre-push"
+git checkout origin/development -- $GUARD_PATHS
+git status --porcelain -- $GUARD_PATHS   # only these paths
+if ! git diff --cached --quiet -- $GUARD_PATHS; then
+  git commit -m "chore(ci): sync changeset guard from development" -- $GUARD_PATHS
+fi
+```
+
+If nothing is staged, the branch already has them. Without these files the local hook falls back to `origin/development`'s copy, but CI does not.
+
 ## Step 3 — Apply the Fix
 
 Make only the minimal changes required. Do NOT port unrelated features or refactors. Always compile the hotfix branch before opening the PR: PRs to deploy branches get no compile CI, and older branches often lack newer enum values or facade methods that a cherry-pick uses (2026-11-05: coop-staging lacked an `InwardChargeType` value; mp-production lacked `AbstractFacade.updateByJpql`).
 
 Before editing `persistence.xml`, compare against the target production branch to understand the current state:
 ```bash
-git show origin/$0:src/main/resources/META-INF/persistence.xml
+MSYS_NO_PATHCONV=1 git show origin/$0:src/main/resources/META-INF/persistence.xml   # MSYS_NO_PATHCONV: Git Bash on Windows
 ```
 
 ## Step 3a — Test on the Production Branch's Own Code
