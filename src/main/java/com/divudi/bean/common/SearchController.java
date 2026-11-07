@@ -8318,7 +8318,7 @@ public class SearchController implements Serializable {
         }
 
         if (getSearchKeyword().getBhtNo() != null && !getSearchKeyword().getBhtNo().trim().equals("")) {
-            sql += " and  ((b.paidForBillFee.bill.patientEncounter.bhtNo) like :bht )";
+            sql += " and  ((b.bill.patientEncounter.bhtNo) like :bht )";
             temMap.put("bht", "%" + getSearchKeyword().getBhtNo().trim().toUpperCase() + "%");
         }
 
@@ -8396,7 +8396,7 @@ public class SearchController implements Serializable {
         }
 
         if (getSearchKeyword().getBhtNo() != null && !getSearchKeyword().getBhtNo().trim().equals("")) {
-            sql += " and  ((b.paidForBillFee.bill.patientEncounter.bhtNo) like :bht )";
+            sql += " and  ((b.bill.patientEncounter.bhtNo) like :bht )";
             temMap.put("bht", "%" + getSearchKeyword().getBhtNo().trim().toUpperCase() + "%");
         }
         sql += "  order by b.staff.id    ";
