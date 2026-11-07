@@ -8211,6 +8211,12 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 
         getBillFacade().edit(getBillSession().getBill());
 
+        if (selectedBillSession != null && selectedBillSession.getBillItem() != null && selectedBillSession.getBillItem().getBill() != null) {
+            selectedBillSession.getBillItem().getBill().setPaidAmount(b.getPaidAmount());
+            selectedBillSession.getBillItem().getBill().setBalance(0.0);
+            selectedBillSession.getBillItem().getBill().setPaidBill(b);
+        }
+
         b.setSingleBillItem(billItemForPaidSession);
         b.setSingleBillSession(bs);
         getBillFacade().editAndCommit(b);

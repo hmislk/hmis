@@ -368,7 +368,12 @@
                         <h:outputLabel value=":" ></h:outputLabel>
                     </td>
                     <td>
-                        <h:outputLabel value="#{cc.attrs.bill.paymentMethod.label}"></h:outputLabel>
+                        <h:panelGroup rendered="#{cc.attrs.bill.paidBill ne null and cc.attrs.bill.paidBill.paymentMethod ne null}">
+                            <h:outputLabel value="#{cc.attrs.bill.paidBill.paymentMethod.label}"></h:outputLabel>
+                        </h:panelGroup>
+                        <h:panelGroup rendered="#{cc.attrs.bill.paidBill eq null or cc.attrs.bill.paidBill.paymentMethod eq null}">
+                            <h:outputLabel value="#{cc.attrs.bill.paymentMethod.label}"></h:outputLabel>
+                        </h:panelGroup>
                     </td>
                 </tr>
 

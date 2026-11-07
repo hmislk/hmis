@@ -288,6 +288,12 @@ public class ChannelBillController implements Serializable {
         getBillSession().getBill().setPaidBill(b);
         getBillFacade().edit(getBillSession().getBill());
 
+        if (getBillSession() != null && getBillSession().getBillItem() != null && getBillSession().getBillItem().getBill() != null) {
+            getBillSession().getBillItem().getBill().setPaidAmount(b.getPaidAmount());
+            getBillSession().getBillItem().getBill().setBalance(0.0);
+            getBillSession().getBillItem().getBill().setPaidBill(b);
+        }
+
         b.setSingleBillItem(bi);
         b.setSingleBillSession(bs);
         getBillFacade().edit(b);
