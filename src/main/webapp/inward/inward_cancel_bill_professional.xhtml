@@ -108,21 +108,22 @@
                             </p:panel>
                         </p:panelGrid>
                         <p:panel header="Payment Detail" class="my-2">
-                            <p:dataTable rowIndexVar="rowIndex" value="#{inwardSearch.billItems}" var="bip" >
+                            <!-- One row per fee: a theatre bill holds several professionals' fees on one bill item. -->
+                            <p:dataTable id="tblProfessionalFees" widgetVar="tblProfessionalFees"
+                                         rowIndexVar="rowIndex" value="#{inwardSearch.billFees}" var="bf" rowKey="#{bf.id}" >
                                 <p:column>
                                     <f:facet name="header">No</f:facet>
-                                    <h:outputLabel value="#{rowIndex+1}"/>                                
+                                    <h:outputLabel value="#{rowIndex+1}"/>
                                 </p:column>
                                 <p:column headerText="Speciality">
-                                    <h:outputLabel value="#{inwardSearch.billFees[rowIndex].staff.speciality.name}"/>
+                                    <h:outputLabel value="#{bf.staff.speciality.name}"/>
                                 </p:column>
                                 <p:column headerText="Name">
-                                    <!-- Updated on 06 November 2026: Display the doctor's name using the associated Person details. -->
-                                    <h:outputLabel value="#{inwardSearch.billFees[rowIndex].staff.person.nameWithTitle}"/>
-                                </p:column> 
+                                    <h:outputLabel value="#{bf.staff.person.nameWithTitle}"/>
+                                </p:column>
                                 <p:column>
                                     <f:facet name="header">Fee</f:facet>
-                                    <h:outputLabel value="#{bip.netValue}"/>                                
+                                    <h:outputLabel value="#{bf.feeValue}"/>
                                 </p:column>
                             </p:dataTable>
                         </p:panel>
