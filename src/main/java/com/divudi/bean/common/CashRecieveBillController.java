@@ -644,7 +644,7 @@ public class CashRecieveBillController implements Serializable {
             java.util.HashMap<String, Object> p = new java.util.HashMap<>();
             p.put("id", e.getKey());
             double due = Math.max(0, getBillFacade().findDoubleByJpql(
-                    "select abs(b.netTotal) - abs(coalesce(b.paidAmount, 0)) from Bill b where b.id = :id", p, true));
+                    "select b.netTotal - coalesce(b.paidAmount, 0) from Bill b where b.id = :id", p, true));
             double paying = e.getValue();
             if (paying - due > 0.01) {
                 if (due <= 0.01) {
@@ -1570,12 +1570,24 @@ public class CashRecieveBillController implements Serializable {
 
     }
 
-    public void updateReferanceBills(){
-        for(BillItem b : getBillItems()){
-            b.getReferenceBill().setPaid(true);
-            b.getReferenceBill().setPaidAmount(b.getReferenceBill().getPaidAmount() + b.getNetValue());
-            b.getReferenceBill().setPaidBill(getCurrent());
-            billFacade.edit(b.getReferenceBill());
+    /**
+     * Links the payment bill to each reference bill. The paid amount is NOT added to here:
+     * it is recomputed from the saved payment bill items (updateSettlingCreditBillSettledValues),
+     * so a stale session copy of the reference bill can never overwrite another payment.
+     */
+    public void updateReferanceBills() {
+        for (BillItem b : getBillItems()) {
+            if (b.getReferenceBill() == null || b.getReferenceBill().getId() == null) {
+                continue;
+            }
+            Bill fresh = billFacade.find(b.getReferenceBill().getId());
+            if (fresh == null) {
+                continue;
+            }
+            fresh.setPaid(true);
+            fresh.setPaidBill(getCurrent());
+            billFacade.edit(fresh);
+            b.setReferenceBill(fresh);
         }
     }
 
@@ -1835,7 +1847,16 @@ public class CashRecieveBillController implements Serializable {
     }
 
     private void updateSettlingCreditBillSettledValues(BillItem billItemWithReferanceToCreditBill) {
+        // Work on a fresh copy of the reference bill, not the copy held in this session bean
+        // since the bill was selected, so other payments are never overwritten.
         Bill referenceBill = billItemWithReferanceToCreditBill.getReferenceBill();
+        if (referenceBill != null && referenceBill.getId() != null) {
+            Bill fresh = getBillFacade().find(referenceBill.getId());
+            if (fresh != null) {
+                referenceBill = fresh;
+                billItemWithReferanceToCreditBill.setReferenceBill(fresh);
+            }
+        }
 
         double settledCreditValueByCompanies = getCreditBean().getSettledAmountByCompany(referenceBill);
         double settledCreditValueByPatient = getCreditBean().getSettledAmountByPatient(referenceBill);
