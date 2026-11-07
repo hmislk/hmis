@@ -164,7 +164,7 @@ public class PatientReportBean {
         String jpql = "";
         Investigation temIx = (Investigation) ptReport.getItem();
 
-        for (ReportItem ii : temIx.getReportItems()) {
+        for (ReportItem ii : new ArrayList<>(temIx.getReportItems())) {
 
             PatientReportItemValue val = null;
             Patient currentReportPatient = patientFacade.findWithoutCache(ptReport.getPatientInvestigation().getPatient().getId());
@@ -267,7 +267,7 @@ public class PatientReportBean {
          System.out.println("addPatientReportItemValuesForTemplateReport");
         String sql = "";
         Investigation temIx = (Investigation) ptReport.getItem();
-        for (ReportItem ii : temIx.getReportItems()) {
+        for (ReportItem ii : new ArrayList<>(temIx.getReportItems())) {
             System.out.println("ii = " + ii);
             System.out.println("ii.getName = " + ii.getName());
             PatientReportItemValue val = null;
@@ -372,7 +372,7 @@ public class PatientReportBean {
 //        ////// // System.out.println("going to add microbiology report item values for report");
         Investigation temIx = (Investigation) ptReport.getItem();
 //        ////// // System.out.println("Items getting for ix is - " + temIx.getName());
-        for (ReportItem ii : temIx.getReportItems()) {
+        for (ReportItem ii : new ArrayList<>(temIx.getReportItems())) {
 //            ////// // System.out.println("report items is " + ii.getName());
             if (ii.isRetired()) {
 //                ////// // System.out.println("retired = " + ii.isRetired());
@@ -452,7 +452,7 @@ public class PatientReportBean {
     public void addMicrobiologyNonAntibioticReportItemValuesForReport(PatientReport ptReport) {
         String sql;
         Investigation temIx = (Investigation) ptReport.getItem();
-        for (ReportItem ii : temIx.getReportItems()) {
+        for (ReportItem ii : new ArrayList<>(temIx.getReportItems())) {
             if (ii.isRetired()) {
                 continue;
             }
