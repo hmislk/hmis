@@ -4039,23 +4039,11 @@ public class SearchController implements Serializable {
         }
 
         if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
-            try {
-                Double netTotal = Double.parseDouble(getSearchKeyword().getNetTotal().trim());
-                jpql.append(" and b.netTotal = :netTotal");
-                m.put("netTotal", netTotal);
-            } catch (NumberFormatException e) {
-                // Ignore invalid number format
-            }
+            jpql.append(JsfUtil.exactAmountFilter("b.netTotal", "netTotal", getSearchKeyword().getNetTotal(), "Net Total", m));
         }
 
         if (getSearchKeyword().getTotal() != null && !getSearchKeyword().getTotal().trim().equals("")) {
-            try {
-                Double total = Double.parseDouble(getSearchKeyword().getTotal().trim());
-                jpql.append(" and b.total = :total");
-                m.put("total", total);
-            } catch (NumberFormatException e) {
-                // Ignore invalid number format
-            }
+            jpql.append(JsfUtil.exactAmountFilter("b.total", "total", getSearchKeyword().getTotal(), "Total", m));
         }
 
         jpql.append(" order by b.createdAt desc");
@@ -5813,13 +5801,7 @@ public class SearchController implements Serializable {
         }
 
         if (getSearchKeyword().getTotal() != null && !getSearchKeyword().getTotal().trim().equals("")) {
-            try {
-                Double total = Double.parseDouble(getSearchKeyword().getTotal().trim());
-                jpql.append(" and bi.netValue = :total");
-                m.put("total", total);
-            } catch (NumberFormatException e) {
-                // Ignore invalid number format
-            }
+            jpql.append(JsfUtil.exactAmountFilter("bi.netValue", "total", getSearchKeyword().getTotal(), "Total", m));
         }
 
         if (getSearchKeyword().getItemName() != null && !getSearchKeyword().getItemName().trim().equals("")) {
@@ -7768,13 +7750,7 @@ public class SearchController implements Serializable {
             }
 
             if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().isEmpty()) {
-                try {
-                    BigDecimal netTotalValue = new BigDecimal(getSearchKeyword().getNetTotal().trim());
-                    jpql += "AND b.netTotal = :netTotal ";
-                    params.put("netTotal", netTotalValue);
-                } catch (NumberFormatException e) {
-                    // Ignore invalid number format
-                }
+                jpql += JsfUtil.exactAmountFilter("b.netTotal", "netTotal", getSearchKeyword().getNetTotal(), "Net Total", params);
             }
 
             if (getSearchKeyword().getItemName() != null && !getSearchKeyword().getItemName().trim().isEmpty()) {
@@ -11191,23 +11167,11 @@ public class SearchController implements Serializable {
         }
 
         if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
-            try {
-                Double netTotal = Double.parseDouble(getSearchKeyword().getNetTotal().trim());
-                sql += " and  ((token.bill.netTotal) = :netTotal )";
-                parameters.put("netTotal", netTotal);
-            } catch (NumberFormatException e) {
-                // Ignore invalid number format
-            }
+            sql += JsfUtil.exactAmountFilter("token.bill.netTotal", "netTotal", getSearchKeyword().getNetTotal(), "Net Total", parameters);
         }
 
         if (getSearchKeyword().getTotal() != null && !getSearchKeyword().getTotal().trim().equals("")) {
-            try {
-                Double total = Double.parseDouble(getSearchKeyword().getTotal().trim());
-                sql += " and  ((token.bill.total) = :total )";
-                parameters.put("total", total);
-            } catch (NumberFormatException e) {
-                // Ignore invalid number format
-            }
+            sql += JsfUtil.exactAmountFilter("token.bill.total", "total", getSearchKeyword().getTotal(), "Total", parameters);
         }
 
         if (getSearchKeyword().getTokenNumber() != null && !getSearchKeyword().getTokenNumber().trim().equals("")) {
@@ -11255,23 +11219,11 @@ public class SearchController implements Serializable {
         }
 
         if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
-            try {
-                Double netTotal = Double.parseDouble(getSearchKeyword().getNetTotal().trim());
-                sql += " and  ((token.bill.netTotal) = :netTotal )";
-                parameters.put("netTotal", netTotal);
-            } catch (NumberFormatException e) {
-                // Ignore invalid number format
-            }
+            sql += JsfUtil.exactAmountFilter("token.bill.netTotal", "netTotal", getSearchKeyword().getNetTotal(), "Net Total", parameters);
         }
 
         if (getSearchKeyword().getTotal() != null && !getSearchKeyword().getTotal().trim().equals("")) {
-            try {
-                Double total = Double.parseDouble(getSearchKeyword().getTotal().trim());
-                sql += " and  ((token.bill.total) = :total )";
-                parameters.put("total", total);
-            } catch (NumberFormatException e) {
-                // Ignore invalid number format
-            }
+            sql += JsfUtil.exactAmountFilter("token.bill.total", "total", getSearchKeyword().getTotal(), "Total", parameters);
         }
 
         if (getSearchKeyword().getTokenNumber() != null && !getSearchKeyword().getTokenNumber().trim().equals("")) {
