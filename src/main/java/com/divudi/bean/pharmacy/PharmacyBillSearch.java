@@ -774,7 +774,7 @@ public class PharmacyBillSearch implements Serializable {
             return "";
         }
         // Re-read by id: a stale tab or a double click on Yes must not cancel a bill twice (#22255).
-        Bill freshBill = bill.getId() != null ? billFacade.find(bill.getId()) : null;
+        Bill freshBill = bill.getId() != null ? billFacade.findWithoutCache(bill.getId()) : null;
         if (freshBill == null) {
             JsfUtil.addErrorMessage("Not Bill Found !");
             return "";
