@@ -1219,6 +1219,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             String sql = "select new com.divudi.core.data.dto.PatientEncounterDto(c.id, c.patient.person.name, c.bhtNo, c.patient.phn) "
                     + " from PatientEncounter c "
                     + " where c.retired=false "
+                    + " and c.bhtNo is not null "
                     + " and ((lower(c.bhtNo)) like :q "
                     + " or (lower(c.patient.person.name)) like :q "
                     + " or (lower(c.patient.phn)) like :q) "
