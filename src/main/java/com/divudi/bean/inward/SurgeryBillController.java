@@ -21,6 +21,7 @@ import com.divudi.core.data.inward.SurgeryBillType;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.PharmacyBean;
 import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.WebUser;
 import com.divudi.core.entity.BillFee;
 import com.divudi.core.entity.BillItem;
 import com.divudi.core.entity.BilledBill;
@@ -235,6 +236,7 @@ public class SurgeryBillController implements Serializable {
         // Safe to retire
         retireSurgeryBill(surgery);
         getBillBean().updateBatchBill(surgery);
+        logSurgeryDeletionAudit(surgery);
         surgeryList = null; // refresh list
         JsfUtil.addSuccessMessage("Surgery removed successfully.");
     }
@@ -384,6 +386,29 @@ public class SurgeryBillController implements Serializable {
             return null;
         }
         return getBillBean().fetchByForwardBill(getSurgeryBill(), SurgeryBillType.TimedService);
+    }
+
+    /**
+     * Records the deletion of a surgery on the encounter's audit trail (#22253).
+     * Called only after the surgery has been retired, never for a refused delete.
+     */
+    private void logSurgeryDeletionAudit(Bill surgery) {
+        Map<String, Object> before = new LinkedHashMap<>();
+        before.put("surgeryName", surgery.getProcedure() != null && surgery.getProcedure().getItem() != null
+                ? surgery.getProcedure().getItem().getName() : null);
+        before.put("billNo", surgery.getDeptId());
+        before.put("fromTime", surgery.getProcedure() != null ? surgery.getProcedure().getFromTime() : null);
+        before.put("toTime", surgery.getProcedure() != null ? surgery.getProcedure().getToTime() : null);
+        before.put("netTotal", surgery.getNetTotal());
+
+        WebUser loggedUser = getSessionController().getLoggedUser();
+        Map<String, Object> after = new LinkedHashMap<>();
+        after.put("retired", true);
+        after.put("deletedBy", loggedUser.getWebUserPerson() != null
+                ? loggedUser.getWebUserPerson().getName() : loggedUser.getName());
+
+        auditService.logEncounterAudit(surgery.getPatientEncounter(), "Delete Surgery",
+                before, after, loggedUser, "Bill", surgery.getId());
     }
 
     private void retireSurgeryBill(Bill surgery) {
