@@ -630,6 +630,11 @@
                                         update="diff" 
                                         event="keyup"
                                         listener="#{grnCostingController.calDifference()}"/>
+                                    <p:ajax
+                                        process="@this"
+                                        update="diff"
+                                        event="change"
+                                        listener="#{grnCostingController.calDifference()}"/>
                                 </p:inputText>
                                 <p:outputLabel value="Difference"/>
                                 <p:inputText 
