@@ -22,7 +22,7 @@ Leaving out `tools` gives the agent every tool, MCP included. Always set it.
 | Developer | `Read, Grep, Glob, Bash, Edit, Write` | `NotebookEdit, Agent` |
 | Browser QA | read-only set plus `mcp__playwright__*` | `Edit, Write, NotebookEdit, Agent` |
 
-An agent named `*-reviewer`, `*-guard` or `*-verifier` must not list Edit, Write or NotebookEdit (CI checks). Bash can still write, so a rule that must always hold (read-only SQL, a public-text scan) belongs in a hook, not a sentence.
+An agent named `*-reviewer`, `*-guard` or `*-verifier` must not list Edit, Write or NotebookEdit (CI checks). Bash can still write, so a rule that must always hold (read-only SQL, a public-text scan) belongs in a hook, not a sentence. A hook is a backstop, not enforcement: `.claude/hooks/public-guard.py` fails open when no python runs, and anyone can skip it with the `HMIS_PUBLIC_GUARD_BYPASS=1` prefix.
 
 ## Model and effort
 

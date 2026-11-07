@@ -1,14 +1,28 @@
 #!/usr/bin/env python3
 """PreToolUse hook: regex scan of text about to be posted to the public repo.
 
-Runs on Bash commands that post text to GitHub (gh pr/issue create|edit|comment|
-review, gh api .../comments|replies|reviews) or write a commit message
-(git commit -m/-F). Scans the command text plus any --body-file / -F file it
-names. A high-confidence hit blocks the command (exit 2) and asks for the
-hmis-public-guard subagent. The regexes are a backstop, not the judge.
+Runs on Bash commands that can carry public text:
+  gh pr     create|edit|comment|review|close|merge|reopen   (-b/--body, -c/--comment,
+            -t/--title/--subject, --body-file/-F)
+  gh issue  create|edit|comment|close|reopen
+  gh release create|edit (-n/--notes, -F/--notes-file), gh gist create|edit (file args)
+  gh label|repo create|edit (--description)
+  gh api    with -f/-F/--field/--raw-field/--input (comment, reply, review, issue and
+            pull bodies, graphql mutations)
+  git commit|tag|notes|merge (-m/--message, -F/--file), with git -C/-c options
+Short, long and --flag=value forms all match, since the whole command is scanned.
+It also scans the files named by --body-file, --notes-file, --file, --input, -F
+(gh api key=@file) and gh gist file arguments. A high-confidence hit blocks the
+command (exit 2) and asks for the hmis-public-guard subagent. The regexes are a
+backstop, not the judge.
 
-Bypass for one command, after hmis-public-guard returned PASS or a human
-checked the text: prefix it with HMIS_PUBLIC_GUARD_BYPASS=1.
+It fails open: if no python runs, or the input is not hook JSON, the command
+goes through. Tests: .claude/hooks/test_public_guard.py.
+
+Bypass for one command, after hmis-public-guard returned PASS or a human checked
+the text: prefix the command with HMIS_PUBLIC_GUARD_BYPASS=1. It counts only as
+an env assignment in front of a command, not inside quoted text. Anyone can type
+it, so it is a speed bump, not enforcement.
 
 Machine-specific patterns (real hostnames, which must never be committed) may be
 added one regex per line in the file named by HMIS_PUBLIC_GUARD_EXTRA, default
@@ -18,20 +32,26 @@ developer_docs/git/github-public-content-policy.md
 import json
 import os
 import re
+import shlex
 import sys
 
 BYPASS = "HMIS_PUBLIC_GUARD_BYPASS"
 
+GIT = r"\bgit(?:\s+(?:-[Cc]\s+\S+|--[\w-]+(?:=\S+)?))*\s+"
 POSTING = [
-    re.compile(r"\bgh\s+pr\s+(create|edit|comment|review)\b"),
-    re.compile(r"\bgh\s+issue\s+(create|comment|edit)\b"),
-    re.compile(r"\bgh\s+api\b[^\n;|&]*/(comments|replies|reviews)\b"),
-    re.compile(r"\bgit\s+commit\b[^\n;|&]*\s(-[a-zA-Z]*[mF]\b|--message\b|--file\b)"),
+    re.compile(r"\bgh\s+pr\s+(?:create|edit|comment|review|close|merge|reopen)\b"),
+    re.compile(r"\bgh\s+issue\s+(?:create|edit|comment|close|reopen)\b"),
+    re.compile(r"\bgh\s+(?:release|gist|label|repo)\s+(?:create|edit)\b"),
+    re.compile(r"\bgh\s+api\b[^\n;|&]*\s(?:-[fF]|--field|--raw-field|--input)(?![\w-])"),
+    re.compile(GIT + r"(?:commit|tag|notes|merge)\b"),
 ]
 
 # File arguments whose content is the posted text.
 FILE_ARGS = re.compile(
-    r"(?:--body-file|--file|-F)(?:\s+|=)(?:body=)?@?(\"[^\"]+\"|'[^']+'|[^\s;|&]+)")
+    r"(?<![\w-])(?:--body-file|--notes-file|--file|--input|-[a-zA-Z]*F)(?:\s+|=)"
+    r"(?:body=)?@?(\"[^\"]+\"|'[^']+'|[^\s;|&]+)")
+GIST = re.compile(r"\bgh\s+gist\s+(?:create|edit)\b")
+SHELL_OPS = set("();<>|&")
 
 OCTET = r"(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)"
 IPV4 = re.compile(r"(?<![\w.])(" + OCTET + r"(?:\." + OCTET + r"){3})(?![\w.])")
@@ -85,8 +105,7 @@ def extra_checks():
     return out
 
 
-def posted_text(command, cwd):
-    parts = [command]
+def file_names(command):
     for m in FILE_ARGS.finditer(command):
         name = m.group(1).strip("\"'")
         field = re.match(r"^\w+=(@?)(.*)$", name)
@@ -94,7 +113,14 @@ def posted_text(command, cwd):
             if not field.group(1):
                 continue
             name = field.group(2)
-        name = name.lstrip("@")
+        yield name.lstrip("@")
+    if GIST.search(command):
+        yield from gist_files(command)
+
+
+def posted_text(command, cwd):
+    parts = [command]
+    for name in file_names(command):
         if name in ("-", ""):
             continue
         path = os.path.expanduser(name)
@@ -107,6 +133,47 @@ def posted_text(command, cwd):
         except OSError:
             pass
     return "\n".join(parts)
+
+
+def shell_words(command):
+    """shlex tokens with operators split out; None if the quoting is unbalanced."""
+    try:
+        lex = shlex.shlex(command, posix=True, punctuation_chars=True)
+        lex.whitespace_split = True
+        return list(lex)
+    except ValueError:
+        return None
+
+
+def gist_files(command):
+    """Non-flag words after gh gist create|edit, up to the next shell operator."""
+    words = shell_words(command) or []
+    out = []
+    for i in range(len(words) - 2):
+        if words[i:i + 2] == ["gh", "gist"] and words[i + 2] in ("create", "edit"):
+            for w in words[i + 3:]:
+                if w and all(c in SHELL_OPS for c in w):
+                    break
+                if not w.startswith("-"):
+                    out.append(w)
+    return out
+
+
+def bypass_requested(command):
+    if os.environ.get(BYPASS) == "1":
+        return True
+    words = shell_words(command)
+    if not words:
+        return False
+    at_start = True
+    for w in words:
+        if w and all(c in SHELL_OPS for c in w):
+            at_start = True
+        elif at_start:
+            if w == BYPASS + "=1":
+                return True
+            at_start = bool(re.match(r"^[A-Za-z_]\w*=", w))
+    return False
 
 
 def scan(text):
@@ -134,11 +201,12 @@ def main():
     if data.get("tool_name") != "Bash":
         return 0
     command = (data.get("tool_input") or {}).get("command") or ""
-    if not any(rx.search(command) for rx in POSTING):
+    joined = command.replace("\\\n", " ")  # backslash line continuations
+    if not any(rx.search(joined) for rx in POSTING):
         return 0
-    if os.environ.get(BYPASS) == "1" or re.search(r"(?:^|[\s;&(])" + BYPASS + r"=1\b", command):
+    if bypass_requested(command):
         return 0
-    hits = scan(posted_text(command, data.get("cwd") or os.getcwd()))
+    hits = scan(posted_text(joined, data.get("cwd") or os.getcwd()))
     if not hits:
         return 0
     lines = ["public-guard hook: this text is going to the PUBLIC hmislk/hmis repo and matched:"]
