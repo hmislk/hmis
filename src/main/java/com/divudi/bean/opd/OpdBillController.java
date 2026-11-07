@@ -4384,8 +4384,8 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
 
             // Check if all tokens match either the name or code
             for (String token : tokens) {
-                if (!(opdItem.getName().toLowerCase().contains(token)
-                        || opdItem.getCode().toLowerCase().contains(token))) {
+                if (!((opdItem.getName() != null && opdItem.getName().toLowerCase().contains(token))
+                        || (opdItem.getCode() != null && opdItem.getCode().toLowerCase().contains(token)))) {
                     matchFound = false;
                     break;
                 }
