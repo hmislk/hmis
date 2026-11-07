@@ -1,0 +1,100 @@
+#!/usr/bin/env bash
+# ============================================================
+# HMIS pre-push hook: block a push whose outgoing commits ADD risky files
+# (same rules as the CI changeset guard; see .github/changeset-guard-patterns.txt).
+# Installed by scripts/install-dev-hooks.sh.
+# Bypass for one push only, after checking every file it names:
+#   HMIS_ALLOW_RISKY_PUSH=1 git push ...
+# ============================================================
+REPO_ROOT="$(git rev-parse --show-toplevel)"
+
+if [ "${HMIS_ALLOW_RISKY_PUSH:-}" = "1" ]; then
+  echo "pre-push: HMIS_ALLOW_RISKY_PUSH=1 set, changeset guard skipped."
+  exit 0
+fi
+
+# A branch cut from a deploy branch (<hospital>-production / -staging) may not
+# have the guard script or its patterns file yet. Never skip the check then:
+# load the missing file from origin/development, and block if that fails.
+# Git Bash on Windows rewrites "<rev>:<path>" arguments (MSYS path conversion),
+# which breaks "git show origin/development:<path>". Harmless elsewhere.
+export MSYS_NO_PATHCONV=1
+FALLBACK_REF="origin/development"
+TMP_DIR=""
+trap '[ -n "$TMP_DIR" ] && rm -rf "$TMP_DIR"' EXIT
+FETCHED="${HMIS_GUARD_FETCHED:-0}"
+
+fetch_development() {
+  [ "$FETCHED" = "1" ] && return 0
+  FETCHED=1
+  if ! git fetch -q origin "+development:refs/remotes/$FALLBACK_REF" 2>/dev/null; then
+    echo "pre-push: WARNING: could not fetch origin development (offline?); using the local $FALLBACK_REF copy." >&2
+  fi
+}
+
+# guard_file <repo-relative path>: set GUARD_FILE to a readable, non-empty copy
+# of the file, from the working tree or else from origin/development. Returns 1
+# when neither works. Runs in this shell (not in $(...)), so the fetch flag and
+# the temporary directory are shared and cleaned up by the EXIT trap.
+guard_file() {
+  GUARD_FILE=""
+  if [ -s "$REPO_ROOT/$1" ]; then
+    GUARD_FILE="$REPO_ROOT/$1"
+    return 0
+  fi
+  fetch_development
+  if [ -z "$TMP_DIR" ]; then
+    TMP_DIR="$(mktemp -d)" || return 1
+  fi
+  tmp="$TMP_DIR/$(printf '%s' "$1" | tr '/' '_')"
+  if git show "$FALLBACK_REF:$1" > "$tmp" 2>/dev/null && [ -s "$tmp" ]; then
+    echo "pre-push: $1 is missing on this branch; using the copy from $FALLBACK_REF." >&2
+    GUARD_FILE="$tmp"
+    return 0
+  fi
+  return 1
+}
+
+GUARD=""
+PATTERNS=""
+guard_file scripts/changeset-guard.sh && GUARD="$GUARD_FILE"
+[ -n "$GUARD" ] && guard_file .github/changeset-guard-patterns.txt && PATTERNS="$GUARD_FILE"
+if [ -z "$GUARD" ] || [ -z "$PATTERNS" ]; then
+  echo "pre-push: BLOCKED. The changeset guard is missing on this branch and could" >&2
+  echo "not be loaded from $FALLBACK_REF. This repository is PUBLIC, so the push" >&2
+  echo "is not allowed unchecked. Run 'git fetch origin development' and retry, or" >&2
+  echo "sync the guard files onto the branch (hotfix-deploy skill, Step 2a)." >&2
+  exit 1
+fi
+export CHANGESET_GUARD_PATTERNS="$PATTERNS"
+
+# Exclude only commits already on the push destination's remote-tracking
+# branches, so a commit that exists only on another remote is still checked.
+# Fall back to all remotes when $1 is a URL or a remote with no tracking refs.
+REMOTE="${1:-}"
+if [ -n "$REMOTE" ] && [ -n "$(git for-each-ref --count=1 "refs/remotes/$REMOTE/" 2>/dev/null)" ]; then
+  EXCLUDE="--remotes=$REMOTE"
+else
+  EXCLUDE="--remotes"
+fi
+
+STATUS=0
+while read -r local_ref local_sha remote_ref remote_sha; do
+  [ -n "${local_sha:-}" ] || continue
+  case "$local_sha" in *[!0]*) ;; *) continue ;; esac   # branch deletion
+  # Outgoing = commits not already on the destination's remote-tracking branches.
+  set -- "$local_sha" --not "$EXCLUDE"
+  case "$remote_sha" in
+    *[!0]*) git cat-file -e "$remote_sha^{commit}" 2>/dev/null && set -- "$@" "$remote_sha" ;;
+  esac
+  if ! bash "$GUARD" "$@"; then
+    STATUS=1
+  fi
+done
+
+if [ "$STATUS" -ne 0 ]; then
+  echo ""
+  echo "pre-push: push blocked. To push anyway (only if every file above is safe"
+  echo "to publish), run: HMIS_ALLOW_RISKY_PUSH=1 git push ..."
+fi
+exit "$STATUS"
