@@ -1,7 +1,10 @@
 ---
 name: devops-troubleshooter
-description: Use this agent when you need help with deployment issues, CI/CD pipeline failures, infrastructure problems, automation tasks, or system monitoring concerns. Examples: <example>Context: User is experiencing a failed deployment pipeline. user: 'My GitHub Actions workflow is failing during the build step with a Maven error' assistant: 'I'll use the devops-troubleshooter agent to diagnose this pipeline failure and provide solutions.' <commentary>Since the user has a CI/CD pipeline issue, use the devops-troubleshooter agent to analyze and resolve the build failure.</commentary></example> <example>Context: User needs to set up automated deployment monitoring. user: 'I want to automate our QA deployment process and add monitoring alerts' assistant: 'Let me use the devops-troubleshooter agent to help design an automated deployment workflow with proper monitoring.' <commentary>Since the user needs deployment automation and monitoring setup, use the devops-troubleshooter agent to architect the solution.</commentary></example>
+description: Diagnoses CI/CD, GitHub Actions and Payara deployment failures for this repo and proposes fixes. Not for deploying, which goes only through CI (hotfixes use the hotfix-deploy skill).
+tools: Read, Grep, Glob, Bash, Edit
+disallowedTools: Write, NotebookEdit, Agent
 model: sonnet
+effort: medium
 color: orange
 ---
 

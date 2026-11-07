@@ -9,6 +9,7 @@ import com.divudi.bean.common.ApiKeyController;
 import com.divudi.core.entity.ApiKey;
 import com.divudi.core.entity.WebUser;
 import com.divudi.service.pharmacy.DuplicateItemException;
+import com.divudi.service.pharmacy.PharmaceuticalItemApiException;
 import com.divudi.service.pharmacy.PharmaceuticalItemApiService;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -98,6 +99,8 @@ public class PharmaceuticalItemApi {
             List<?> results = itemService.searchItems(type, query, departmentType, limit, offset);
             return successResponse(results);
 
+        } catch (PharmaceuticalItemApiException e) {
+            return errorResponse(e.getMessage(), e.getStatus());
         } catch (Exception e) {
             String msg = e.getMessage();
             if (msg != null && msg.contains("Invalid item type")) {
@@ -129,6 +132,8 @@ public class PharmaceuticalItemApi {
             Object result = itemService.findItemById(type, id);
             return successResponse(result);
 
+        } catch (PharmaceuticalItemApiException e) {
+            return errorResponse(e.getMessage(), e.getStatus());
         } catch (Exception e) {
             String msg = e.getMessage();
             if (msg != null && msg.contains("not found")) {
@@ -168,6 +173,8 @@ public class PharmaceuticalItemApi {
             return errorResponse("Invalid JSON format: " + e.getMessage(), 400);
         } catch (DuplicateItemException e) {
             return alreadyExistsResponse(e.getExistingId(), e.getExistingDto());
+        } catch (PharmaceuticalItemApiException e) {
+            return errorResponse(e.getMessage(), e.getStatus());
         } catch (Exception e) {
             String msg = e.getMessage();
             if (msg != null && (msg.contains("not found") || msg.contains("is required") || msg.contains("Invalid"))) {
@@ -222,6 +229,10 @@ public class PharmaceuticalItemApi {
 
         } catch (JsonSyntaxException e) {
             return errorResponse("Invalid JSON format: " + e.getMessage(), 400);
+        } catch (DuplicateItemException e) {
+            return alreadyExistsResponse(e.getExistingId(), e.getExistingDto());
+        } catch (PharmaceuticalItemApiException e) {
+            return errorResponse(e.getMessage(), e.getStatus());
         } catch (Exception e) {
             String msg = e.getMessage();
             if (msg != null && msg.contains("not found")) {
@@ -257,6 +268,8 @@ public class PharmaceuticalItemApi {
             Object result = itemService.retireItem(type, id, retireComments, user);
             return successResponse(result);
 
+        } catch (PharmaceuticalItemApiException e) {
+            return errorResponse(e.getMessage(), e.getStatus());
         } catch (Exception e) {
             String msg = e.getMessage();
             if (msg != null && msg.contains("not found")) {
@@ -294,6 +307,8 @@ public class PharmaceuticalItemApi {
             Object result = itemService.unretireItem(type, id, user);
             return successResponse(result);
 
+        } catch (PharmaceuticalItemApiException e) {
+            return errorResponse(e.getMessage(), e.getStatus());
         } catch (Exception e) {
             String msg = e.getMessage();
             if (msg != null && msg.contains("not found")) {
@@ -337,6 +352,8 @@ public class PharmaceuticalItemApi {
             Object result = itemService.setItemActiveStatus(type, id, active, user);
             return successResponse(result);
 
+        } catch (PharmaceuticalItemApiException e) {
+            return errorResponse(e.getMessage(), e.getStatus());
         } catch (Exception e) {
             String msg = e.getMessage();
             if (msg != null && msg.contains("not found")) {

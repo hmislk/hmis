@@ -1,5 +1,6 @@
 package com.divudi.bean.inward;
 
+import com.divudi.core.util.JsfUtil;
 import com.divudi.bean.common.SessionController;
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.CountedServiceType;
@@ -80,6 +81,9 @@ public class CreditCompanyDebtorGroupedReportController implements Serializable 
     private Date fromDate = startOfCurrentMonth();
     private Date toDate = new Date();
     private String dateBasis = "createdAt";
+    // The basis the shown groups were built with: the export buttons submit the
+    // Date Basis menu, so the export header must not read the live dateBasis.
+    private String processedDateBasis;
     private Institution institution;
     private Institution admittingInstitution;
     private Institution site;
@@ -97,6 +101,7 @@ public class CreditCompanyDebtorGroupedReportController implements Serializable 
 
     public void generateReport() {
         groups = new ArrayList<>();
+        processedDateBasis = dateBasis;
         grandBillTotal = 0;
         grandSettledByCompany = 0;
         grandSettledByPatient = 0;
@@ -219,8 +224,16 @@ public class CreditCompanyDebtorGroupedReportController implements Serializable 
         encHm.put("frm", fromDate);
         encHm.put("to", toDate);
 
-        List<PatientEncounter> nonDischargedEncounters =
-                patientEncounterFacade.findByJpql(encSql, encHm, TemporalType.TIMESTAMP);
+        // Issue #23793: Discharge Date means discharged patients only, so currently
+        // admitted patients (no discharge date) are left out of the rows and totals.
+        // For every other basis they are selected by admission date.
+        boolean excludeAdmitted = InwardReportController1.excludesCurrentlyAdmitted(dateBasis);
+        if (excludeAdmitted) {
+            JsfUtil.addInfoMessage(InwardReportController1.ADMITTED_EXCLUDED_MESSAGE);
+        }
+        List<PatientEncounter> nonDischargedEncounters = excludeAdmitted
+                ? new ArrayList<>()
+                : patientEncounterFacade.findByJpql(encSql, encHm, TemporalType.TIMESTAMP);
 
         // Same net charge the interim bill / Invoice Journal shows (rooms, services, timed
         // services, professional fees, every medicine flow).
@@ -254,7 +267,7 @@ public class CreditCompanyDebtorGroupedReportController implements Serializable 
             syntheticBill.setPatientEncounter(pe);
             syntheticBill.setPatient(pe.getPatient());
             syntheticBill.setCreditCompany(pe.getCreditCompany());
-            syntheticBill.setDeptId("(Active)");
+            syntheticBill.setDeptId(InwardReportController1.ACTIVE_ROW_LABEL);
             syntheticBill.setBillDate(pe.getDateOfAdmission());
             syntheticBill.setNetTotal(chargeTotal);
             syntheticBill.setSettledAmountBySponsor(ccPaid);
@@ -391,12 +404,7 @@ public class CreditCompanyDebtorGroupedReportController implements Serializable 
             rowIdx++; // blank row
 
             // --- Filter details ---
-            String dateBasisLabel;
-            switch (dateBasis) {
-                case "dischargeDate": dateBasisLabel = "Discharge Date"; break;
-                case "admissionDate": dateBasisLabel = "Admission Date"; break;
-                default:              dateBasisLabel = "Payment / Bill Date"; break;
-            }
+            String dateBasisLabel = exportDateBasisLabel();
             rowIdx = createFilterRow(sheet, rowIdx, "Date Basis",
                     dateBasisLabel, filterLabelStyle, filterValueStyle, COL_COUNT);
             rowIdx = createFilterRow(sheet, rowIdx, "From",
@@ -612,12 +620,7 @@ public class CreditCompanyDebtorGroupedReportController implements Serializable 
             document.add(new Paragraph(" "));
 
             // --- Filter details ---
-            String dateBasisLabel;
-            switch (dateBasis) {
-                case "dischargeDate": dateBasisLabel = "Discharge Date"; break;
-                case "admissionDate": dateBasisLabel = "Admission Date"; break;
-                default:              dateBasisLabel = "Payment / Bill Date"; break;
-            }
+            String dateBasisLabel = exportDateBasisLabel();
 
             PdfPTable filterTable = new PdfPTable(2);
             filterTable.setWidthPercentage(65);
@@ -822,6 +825,43 @@ public class CreditCompanyDebtorGroupedReportController implements Serializable 
         cell.setCellStyle(style);
     }
 
+    /**
+     * The export's Date Basis line, naming the date that selected the (Active)
+     * rows when it differs from the chosen basis (issue #25221), and saying that
+     * admitted patients are left out under Discharge Date (issue #23793).
+     */
+    String exportDateBasisLabel() {
+        return exportDateBasisLabel(processedDateBasis, hasActiveRows());
+    }
+
+    static String exportDateBasisLabel(String basis, boolean hasActiveRows) {
+        String label = InwardReportController1.dateBasisLabel(basis);
+        if (InwardReportController1.excludesCurrentlyAdmitted(basis)) {
+            return label + " (currently admitted patients not included)";
+        }
+        if (hasActiveRows && !"admissionDate".equals(basis)) {
+            return label + "; " + InwardReportController1.ACTIVE_ROW_LABEL + " rows by Admission Date";
+        }
+        return label;
+    }
+
+    private boolean hasActiveRows() {
+        if (groups == null) {
+            return false;
+        }
+        for (CreditCompanyDebtorGroupDTO g : groups) {
+            if (g.getBills() == null) {
+                continue;
+            }
+            for (Bill b : g.getBills()) {
+                if (b.getReferenceBill() == null && InwardReportController1.ACTIVE_ROW_LABEL.equals(b.getDeptId())) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     private String resolveDateField(String basis, String defaultField, String encounterAlias) {
         if ("dischargeDate".equals(basis)) {
             return encounterAlias + ".dateOfDischarge";
@@ -843,6 +883,7 @@ public class CreditCompanyDebtorGroupedReportController implements Serializable 
         paymentMethod = null;
         outstandingOnly = false;
         groups = null;
+        processedDateBasis = null;
         grandBillTotal = 0;
         grandSettledByCompany = 0;
         grandSettledByPatient = 0;

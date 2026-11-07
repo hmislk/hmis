@@ -75,6 +75,21 @@ Invoke the `code-review` skill against this PR at **high** effort with
 `--comment`, so findings post directly to the PR (reuses the existing
 review engine instead of duplicating its logic).
 
+In parallel, dispatch these read-only subagents on the same PR (`.claude/agents/`;
+they return findings to you and never post):
+
+- `hmis-rules-reviewer`: always. *Trial (2026-11-07, dev-hub Q1): run it alongside
+  `code-review` for 2 weeks, until 2026-11-21, then the team decides whether one
+  replaces the other.*
+- `hmis-security-reviewer`: when the diff touches auth, tokens, HMAC/signed links,
+  `ws/`, privileges, `WebUser*`, filters or no-login (public) pages.
+- `hmis-ux-reviewer`: when the diff has `.xhtml`. Non-blocking: only its BLOCKING
+  rows (ui-guidelines/jsf-ajax rule breaks) count as findings; suggestions go in
+  the chat summary.
+
+Fold their findings into the classification below. Any of them you post as an
+inline comment goes through `hmis-public-guard` first.
+
 **Before classifying anything, run the fallback below** to confirm every
 finding the sub-agent claims to have posted actually landed — do this
 *before* the classification step decides to record `BLOCKED-REVIEW` and
@@ -190,8 +205,11 @@ PR — don't attempt Phase 3 against a stale or undeployed build.
 
 ### Phase 3 — End-to-end verification
 
-Run via the `playwright-e2e` skill (login, department selection, AJAX-aware
-waits, DB verification per its workflow doc). **Reach every page through the
+Dispatch the `hmis-qa-verifier` subagent with the Phase 2 workflows and the two
+baseline checks below as its acceptance checks, plus the app root URL and
+environment. It runs the `playwright-e2e` workflow (login, department selection,
+AJAX-aware waits, DB verification per its workflow doc). Its `FAIL` verdict is
+blocking (`BLOCKED-E2E`); `BLOCKED` means set up the environment and re-run. **Reach every page through the
 menus, never by URL** — a URL-loaded page renders against uninitialised
 session state and can fail in ways no user can reach (`playwright-e2e` §2). For **every** PR that reaches
 this phase, run all three of the following — the two baseline checks are
@@ -241,7 +259,8 @@ all the way to `PASSED`). This is an intentional, carved-out exception to
 the general "never post top-level PR comments, only reply to reviewer
 threads" rule — merge-gate is reporting its own factual outcome, not review
 opinion needing threading, so a fresh top-level comment each run is
-correct, not noise. Post via:
+correct, not noise. Write the text to a file first and run the
+`hmis-public-guard` subagent on it; post only after a `PASS`. Post via:
 
 ```bash
 gh pr comment <PR> --body "..."

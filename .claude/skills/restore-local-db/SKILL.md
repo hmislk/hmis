@@ -50,10 +50,16 @@ Resolve it once at the start: use the Windows path if it exists, else the
 `$HOME/.config/hmis/credentials.txt` path, else **stop and ask the user** where
 their credentials file is. Referenced below as `<CREDS>`.
 
-Downloaded dumps and rollback backups go under a backup directory —
-`C:\Backups` on the Windows dev laptop (`C:\Backups\pre-restore` for rollback
-copies). Adjust for the platform if the skill ever runs elsewhere. Referenced
-below as `<BACKUP_DIR>`. Temp files (`.err` logs etc.) go in the session
+Downloaded dumps and rollback backups go under an **out-of-repo** backup
+directory chosen per machine (e.g. `C:\Backups` on a Windows dev laptop, with
+`pre-restore` under it for rollback copies). Referenced below as `<BACKUP_DIR>`.
+
+**Repo-root guard (MUST, before any dump, download or restore):** resolve the
+repo root with `git rev-parse --show-toplevel` and refuse any dump, backup or
+`--dump` path that is under it (including a gitignored subdirectory). If
+`<BACKUP_DIR>` or a given path is inside the repo, stop and pick or ask for an
+out-of-repo directory. Also stop if the repo root or `<BACKUP_DIR>` is inside a
+cloud-synced folder (OneDrive, Dropbox). Temp files (`.err` logs etc.) go in the session
 scratchpad directory, referenced as `<SCRATCH>`.
 
 Section names and the exact set of DB servers in that file change over time —

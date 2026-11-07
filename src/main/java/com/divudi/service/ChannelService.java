@@ -2229,8 +2229,7 @@ public class ChannelService {
             }
 
             if (searchKeyword.getNetTotal() != null && !searchKeyword.getNetTotal().trim().equals("")) {
-                sql += " and  ((bill.netTotal) = :netTotal )";
-                params.put("netTotal", "%" + searchKeyword.getNetTotal().trim().toUpperCase() + "%");
+                sql += JsfUtil.exactAmountFilter("bill.netTotal", "netTotal", searchKeyword.getNetTotal(), "Net Total", params);
             }
 
             if (searchKeyword.getFromInstitution() != null && !searchKeyword.getFromInstitution().trim().equals("")) {

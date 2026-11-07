@@ -1387,6 +1387,9 @@ public class CashRecieveBillController implements Serializable {
     }
 
     public String navigateToCancelOpdBill() {
+        // The bill_cancel page shows the Cancel Bill form only when not in print
+        // preview; creating a voucher just before leaves printPreview set (#25142).
+        printPreview = false;
         return "/credit/views/bill_cancel?faces-redirect=true";
     }
 
@@ -1399,6 +1402,17 @@ public class CashRecieveBillController implements Serializable {
             JsfUtil.addErrorMessage("Error : Payments Have Been Made By This Voucher");
             return;
         }
+        if (paymentMethod == null) {
+            JsfUtil.addErrorMessage("Select a payment mode");
+            return;
+        }
+        // This page has no breakdown for several payment methods, so a
+        // Multiple Payment Methods cancellation would be built from empty
+        // data and record zero payments (#25140).
+        if (paymentMethod == PaymentMethod.MultiplePaymentMethods) {
+            JsfUtil.addErrorMessage("Multiple Payment Methods can't be used to cancel a voucher. Select one payment mode.");
+            return;
+        }
 
         CancelledBill cb = new CancelledBill();
         cb.copy(b);
@@ -1406,10 +1420,11 @@ public class CashRecieveBillController implements Serializable {
         // net total is 0 and the single payment method payment is created as 0.
         cb.invertAndAssignValuesFromOtherBill(b);
         cb.setPaymentMethod(paymentMethod);
+        // Set before the save: set afterwards it was never persisted (#25142).
+        cb.setReferenceBill(b);
         saveCancelBill(BillType.CashRecieveBill, BillTypeAtomic.OPD_CREDIT_COMPANY_PAYMENT_CANCELLATION, cb);
         b.setCancelledBill(cb);
         b.setCancelled(true);
-        cb.setReferenceBill(b);
         List payments = createPayment(cb, paymentMethod);
         drawerController.updateDrawerForOuts(payments);
         WebUser wb = getCashTransactionBean().saveBillCashInTransaction(getCurrent(), getSessionController().getLoggedUser());

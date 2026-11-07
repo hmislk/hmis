@@ -376,6 +376,15 @@ public class CapabilityStatementResource {
                         + "GET /search supports query, institutionId, departmentId, size.",
                         "API Key (Finance header)",
                         "GET", "POST", "PUT", "DELETE"))
+                .add(resource("Pharmacy Item Suppliers", "/api/pharmacy/item_suppliers",
+                        "Link items (AMPs) to suppliers (Dealers) via the ItemsDistributors entity. "
+                        + "GET /?supplierId=&itemId=&limit=&offset= lists active links. "
+                        + "POST creates a link between a Dealer institution and an active item; rejects non-Dealer institutions and retired items; "
+                        + "returns 409 Conflict with the existing row if an active link already exists. "
+                        + "POST /bulk accepts an array of supplier-item pairs and returns per-row outcomes (created | already_exists | error). "
+                        + "DELETE /{id}?retireComments= soft-retires a link with audit attribution.",
+                        "API Key (Finance header)",
+                        "GET", "POST", "DELETE"))
                 .add(resource("Pharmacy Adjustments", "/api/pharmacy_adjustments",
                         "Pharmacy stock and adjustment operations. "
                         + "POST /backfill_finance_details is an admin-only, idempotent backfill: recomputes "

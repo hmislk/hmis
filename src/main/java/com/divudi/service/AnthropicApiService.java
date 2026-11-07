@@ -1887,6 +1887,33 @@ public class AnthropicApiService implements Serializable {
                         .add("required", Json.createArrayBuilder().add("method")))
                 .build();
 
+        JsonObject manageItemSuppliersTool = Json.createObjectBuilder()
+                .add("name", "manage_item_suppliers")
+                .add("description",
+                        "Search, get, link, bulk-link, or retire pharmacy item-supplier links (an AMP linked to a Dealer institution), "
+                        + "the same links as Pharmacy → Pharmaceutical Management → Institutions → Item Suppliers.\n\n"
+                        + "method: SEARCH | GET | POST | BULK | DELETE. "
+                        + "SEARCH filters by supplierId and/or itemId with limit/offset. POST links one item (supplierId, itemId, optional orderNo). "
+                        + "BULK links many items to one supplier (supplierId + itemIds as comma-separated IDs, max 500) and returns a per-row outcome. "
+                        + "DELETE retires a link by id. Find supplier IDs with the institutions API and AMP IDs with the pharmaceutical_items API (type amp). "
+                        + "Always confirm with the user before POST, BULK, or DELETE.")
+                .add("input_schema", Json.createObjectBuilder()
+                        .add("type", "object")
+                        .add("properties", Json.createObjectBuilder()
+                                .add("method", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("enum", Json.createArrayBuilder().add("SEARCH").add("GET").add("POST").add("BULK").add("DELETE")))
+                                .add("id", Json.createObjectBuilder().add("type", "string").add("description", "Link ID — required for GET and DELETE"))
+                                .add("supplierId", Json.createObjectBuilder().add("type", "string").add("description", "Dealer institution ID"))
+                                .add("itemId", Json.createObjectBuilder().add("type", "string").add("description", "AMP item ID"))
+                                .add("itemIds", Json.createObjectBuilder().add("type", "string").add("description", "Comma-separated AMP IDs — required for BULK"))
+                                .add("orderNo", Json.createObjectBuilder().add("type", "string"))
+                                .add("limit", Json.createObjectBuilder().add("type", "string"))
+                                .add("offset", Json.createObjectBuilder().add("type", "string"))
+                                .add("retireComments", Json.createObjectBuilder().add("type", "string")))
+                        .add("required", Json.createArrayBuilder().add("method")))
+                .build();
+
         JsonObject manageChannelBookingTool = Json.createObjectBuilder()
                 .add("name", "manage_channel_booking")
                 .add("description",
@@ -2398,6 +2425,7 @@ public class AnthropicApiService implements Serializable {
                 .add(listUserRolesTool)
                 .add(setUserLoginPageTool)
                 .add(managePharmacyItemsTool)
+                .add(manageItemSuppliersTool)
                 .add(managePharmacyDiscountsTool)
                 .add(managePaymentSchemesTool)
                 .add(manageChannelBookingTool)
@@ -2823,6 +2851,9 @@ public class AnthropicApiService implements Serializable {
                 }
                 case "manage_pharmacy_items": {
                     return callPharmacyItemsApi(toolInput, hmisBaseUrl, hmisApiKey);
+                }
+                case "manage_item_suppliers": {
+                    return callItemSuppliersApi(toolInput, hmisBaseUrl, hmisApiKey);
                 }
                 case "manage_pharmacy_discounts": {
                     return callPharmacyDiscountsApi(toolInput, hmisBaseUrl, hmisApiKey);
@@ -5997,6 +6028,67 @@ public class AnthropicApiService implements Serializable {
         }
     }
 
+    private String callItemSuppliersApi(JsonObject input, String hmisBaseUrl, String hmisApiKey) {
+        if (hmisBaseUrl == null || hmisBaseUrl.trim().isEmpty()) {
+            return "Error: HMIS base URL is not configured.";
+        }
+        if (hmisApiKey == null || hmisApiKey.trim().isEmpty()) {
+            return "Error: HMIS API key is not configured.";
+        }
+        String method = input.getString("method", "SEARCH").toUpperCase();
+        String id = jsonString(input, "id");
+        try {
+            String base = hmisBaseUrl.replaceAll("/$", "") + "/api/pharmacy/item_suppliers";
+            String url = base;
+            String httpMethod = "GET";
+            String body = null;
+            switch (method) {
+                case "SEARCH": {
+                    StringBuilder q = new StringBuilder();
+                    for (String key : new String[]{"supplierId", "itemId", "limit", "offset"}) {
+                        String value = jsonString(input, key);
+                        if (!value.isEmpty()) {
+                            q.append(q.length() == 0 ? "?" : "&").append(queryParam(key, value));
+                        }
+                    }
+                    url = base + q;
+                    break;
+                }
+                case "GET":
+                    url = base + "/" + requireText(id, "id");
+                    break;
+                case "POST": {
+                    httpMethod = "POST";
+                    javax.json.JsonObjectBuilder b = Json.createObjectBuilder()
+                            .add("supplierId", parseLongRequired(jsonString(input, "supplierId"), "supplierId"))
+                            .add("itemId", parseLongRequired(jsonString(input, "itemId"), "itemId"));
+                    addLong(b, "orderNo", jsonString(input, "orderNo"));
+                    body = b.build().toString();
+                    break;
+                }
+                case "BULK":
+                    httpMethod = "POST";
+                    url = base + "/bulk";
+                    body = Json.createObjectBuilder()
+                            .add("supplierId", parseLongRequired(jsonString(input, "supplierId"), "supplierId"))
+                            .add("itemIds", csvLongArray(jsonString(input, "itemIds")))
+                            .build().toString();
+                    break;
+                case "DELETE":
+                    httpMethod = "DELETE";
+                    url = base + "/" + requireText(id, "id");
+                    String retireComments = jsonString(input, "retireComments");
+                    if (!retireComments.isEmpty()) url += "?" + queryParam("retireComments", retireComments);
+                    break;
+                default:
+                    return "Unknown method: " + method;
+            }
+            return callHmisApi(url, httpMethod, body, hmisApiKey);
+        } catch (Exception e) {
+            return "Item suppliers API error: " + e.getMessage();
+        }
+    }
+
     private String callChannelBookingApi(JsonObject input, String hmisBaseUrl, String hmisApiKey) {
         if (hmisBaseUrl == null || hmisBaseUrl.trim().isEmpty()) {
             return "Error: HMIS base URL is not configured.";
@@ -7194,6 +7286,18 @@ public class AnthropicApiService implements Serializable {
                     {"POST",   "/pharmacy/items",        "Create a dispensable pharmacy item. Body: name, code, categoryId, dosageFormId, ampId, institutionId, departmentId, retailRate, allowFractions, discountAllowed"},
                     {"PUT",    "/pharmacy/items/{id}",   "Update a dispensable pharmacy item"},
                     {"DELETE", "/pharmacy/items/{id}",   "Retire a dispensable pharmacy item"}
+                });
+
+        appendModule(sb, "Pharmacy Item Suppliers", "/pharmacy/item_suppliers",
+                "Manage links between AMP items and Dealer suppliers (ItemsDistributors), as on Pharmacy → Pharmaceutical Management → Institutions → Item Suppliers. "
+                + "Use the manage_item_suppliers tool. Always confirm with the user before linking or retiring.",
+                githubUrl(branch, "developer_docs/api/using-apis/API_PHARMACY_ITEM_SUPPLIERS.md"),
+                new String[][]{
+                    {"GET",    "/pharmacy/item_suppliers",      "List active links. Filters: supplierId, itemId, limit, offset"},
+                    {"GET",    "/pharmacy/item_suppliers/{id}", "Get one link"},
+                    {"POST",   "/pharmacy/item_suppliers",      "Link one item to a Dealer. Body: supplierId, itemId, orderNo. 409 if an active link exists"},
+                    {"POST",   "/pharmacy/item_suppliers/bulk", "Bulk link (max 500). Body: {supplierId, itemIds:[...]} or [{supplierId, itemId}, ...]; per-row outcomes"},
+                    {"DELETE", "/pharmacy/item_suppliers/{id}", "Retire a link. Optional retireComments"}
                 });
 
         appendModule(sb, "Pharmaceutical Config", "/pharmaceutical_config",
