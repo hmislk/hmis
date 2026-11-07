@@ -3659,12 +3659,6 @@ public class PharmacySaleForCashierController3 implements Serializable, Controll
             return null;
         }
 
-        if (getPaymentMethod() == PaymentMethod.Credit && toInstitution == null) {
-            billSettlingStarted = false;
-            JsfUtil.addErrorMessage("Please select the credit company.");
-            return null;
-        }
-
         BooleanMessage discountSchemeValidation = discountSchemeValidationService.validateDiscountScheme(paymentMethod, paymentScheme);
         if (!discountSchemeValidation.isFlag()) {
             billSettlingStarted = false;
