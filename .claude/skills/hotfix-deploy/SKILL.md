@@ -112,7 +112,9 @@ Then sync the changeset guard, so the pre-push hook and the CI `changeset-guard`
 GUARD_PATHS=".github/workflows/changeset_guard.yml .github/changeset-guard-patterns.txt scripts/changeset-guard.sh scripts/hooks/pre-push"
 git checkout origin/development -- $GUARD_PATHS
 git status --porcelain -- $GUARD_PATHS   # only these paths
-git commit -m "chore(ci): sync changeset guard from development" -- $GUARD_PATHS
+if ! git diff --cached --quiet -- $GUARD_PATHS; then
+  git commit -m "chore(ci): sync changeset guard from development" -- $GUARD_PATHS
+fi
 ```
 
 If nothing is staged, the branch already has them. Without these files the local hook falls back to `origin/development`'s copy, but CI does not.

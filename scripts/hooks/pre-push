@@ -20,8 +20,8 @@ fi
 # which breaks "git show origin/development:<path>". Harmless elsewhere.
 export MSYS_NO_PATHCONV=1
 FALLBACK_REF="origin/development"
-TMP_FILES=""
-trap 'rm -f $TMP_FILES' EXIT
+TMP_DIR=""
+trap '[ -n "$TMP_DIR" ] && rm -rf "$TMP_DIR"' EXIT
 FETCHED="${HMIS_GUARD_FETCHED:-0}"
 
 fetch_development() {
@@ -32,26 +32,34 @@ fetch_development() {
   fi
 }
 
-# guard_file <repo-relative path>: print a readable path to the file, from the
-# working tree or else from origin/development. Returns 1 when neither works.
+# guard_file <repo-relative path>: set GUARD_FILE to a readable, non-empty copy
+# of the file, from the working tree or else from origin/development. Returns 1
+# when neither works. Runs in this shell (not in $(...)), so the fetch flag and
+# the temporary directory are shared and cleaned up by the EXIT trap.
 guard_file() {
-  if [ -f "$REPO_ROOT/$1" ]; then
-    printf '%s\n' "$REPO_ROOT/$1"
+  GUARD_FILE=""
+  if [ -s "$REPO_ROOT/$1" ]; then
+    GUARD_FILE="$REPO_ROOT/$1"
     return 0
   fi
   fetch_development
-  tmp="$(mktemp)" || return 1
-  TMP_FILES="$TMP_FILES $tmp"
+  if [ -z "$TMP_DIR" ]; then
+    TMP_DIR="$(mktemp -d)" || return 1
+  fi
+  tmp="$TMP_DIR/$(printf '%s' "$1" | tr '/' '_')"
   if git show "$FALLBACK_REF:$1" > "$tmp" 2>/dev/null && [ -s "$tmp" ]; then
     echo "pre-push: $1 is missing on this branch; using the copy from $FALLBACK_REF." >&2
-    printf '%s\n' "$tmp"
+    GUARD_FILE="$tmp"
     return 0
   fi
   return 1
 }
 
-if ! GUARD="$(guard_file scripts/changeset-guard.sh)" ||
-   ! PATTERNS="$(guard_file .github/changeset-guard-patterns.txt)"; then
+GUARD=""
+PATTERNS=""
+guard_file scripts/changeset-guard.sh && GUARD="$GUARD_FILE"
+[ -n "$GUARD" ] && guard_file .github/changeset-guard-patterns.txt && PATTERNS="$GUARD_FILE"
+if [ -z "$GUARD" ] || [ -z "$PATTERNS" ]; then
   echo "pre-push: BLOCKED. The changeset guard is missing on this branch and could" >&2
   echo "not be loaded from $FALLBACK_REF. This repository is PUBLIC, so the push" >&2
   echo "is not allowed unchecked. Run 'git fetch origin development' and retry, or" >&2
