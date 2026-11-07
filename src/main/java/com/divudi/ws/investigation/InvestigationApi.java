@@ -164,6 +164,7 @@ public class InvestigationApi {
                 InvestigationResponseDTO existing = investigationApiService.findById(existingId);
                 Map<String, Object> map = successData(existing);
                 map.put("status", "already_exists");
+                map.put("code", 409);
                 map.put("id", existingId);
                 return Response.status(409).entity(gson.toJson(map)).build();
             } catch (Exception e) {
