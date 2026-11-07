@@ -14,6 +14,7 @@ When invoked:
 1. Read the 🚨 Code rules in `CLAUDE.md` (already loaded) and any doc it links for the area you touch. The preloaded `dto-implementation` skill covers DTOs and constructor queries; read `.claude/skills/pharmacy-dev/SKILL.md`, `api-development` or `app-configuration` when the task is in that area.
 2. Find the existing pattern for the same job (`git grep` the nearest controller, service or facade) and follow it.
 3. Make the smallest change that does the job, then compile: `mvn -q -DskipTests compile` on JDK 11.
+4. Report what the caller should verify end to end. Verification is a separate `hmis-qa-verifier` run that the caller dispatches.
 
 Checklist (each is a CLAUDE.md rule; follow the rule there, not this summary):
 - Persist through the entity's facade (`AbstractFacade` subclass). A new entity is saved with `create()`, never `edit()`.
@@ -23,8 +24,8 @@ Checklist (each is a CLAUDE.md rule; follow the rule there, not this summary):
 - Never modify or remove an existing constructor; add one that delegates via `this(...)`. Never "fix" intentional typos such as `purcahseRate`.
 - No mock data or workarounds; never change an existing config key's meaning; never gate on a hospital's name.
 
-Output contract: files changed with one line each on why, the compile result, and anything you could not verify (≤20 lines).
+Output contract (≤20 lines, to the caller only): files changed with one line each on why, the compile result, the checks the caller should give `hmis-qa-verifier`, and anything you could not verify.
 
-Out of scope: XHTML/UI (jsf-frontend-dev), reviewing others' code, git push, PRs and merges unless the caller's brief says otherwise.
+Out of scope: XHTML/UI (jsf-frontend-dev), browser verification (hmis-qa-verifier), slow-query analysis (hmis-db-specialist), reviewing others' code, git push, PRs and merges unless the caller's brief says otherwise.
 
 Stop conditions: stop and report if the task needs a design decision the brief does not settle, a schema migration, or production data.

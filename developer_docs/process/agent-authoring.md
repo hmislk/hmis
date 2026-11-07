@@ -20,6 +20,7 @@ Leaving out `tools` gives the agent every tool, MCP included. Always set it.
 | Read-only (reviewer, verifier, architect, analyst) | `Read, Grep, Glob, Bash` | `Edit, Write, NotebookEdit, Agent` |
 | Text guard (judges text only) | `Read, Grep` | `Bash, Glob, Edit, Write, NotebookEdit, Agent` |
 | Developer | `Read, Grep, Glob, Bash, Edit, Write` | `NotebookEdit, Agent` |
+| Worker (branch to PR) | everything except `Agent`, listed explicitly (dev-hub MCP tools by name) | `Agent` |
 | Browser QA | read-only set plus `mcp__playwright__*` | `Edit, Write, NotebookEdit, Agent` |
 
 An agent named `*-reviewer`, `*-guard` or `*-verifier` must not list Edit, Write or NotebookEdit (CI checks). Bash can still write, so a rule that must always hold (read-only SQL, a public-text scan) belongs in a hook, not a sentence. A hook is a backstop, not enforcement: `.claude/hooks/public-guard.py` fails open when no python runs, and anyone can skip it with the `HMIS_PUBLIC_GUARD_BYPASS=1` prefix.
@@ -29,7 +30,8 @@ An agent named `*-reviewer`, `*-guard` or `*-verifier` must not list Edit, Write
 | Role | `model` / `effort` | Agents today |
 |---|---|---|
 | Mechanical checks (text scans, link checks) | `haiku` / `low` | `hmis-public-guard` |
-| Developers, reviewers, QA, analysts | `sonnet` / `medium` | `hmis-rules-reviewer`, `hmis-qa-verifier`, `hmis-ux-reviewer`, `java-backend-developer`, `jsf-frontend-dev`, `lab-analyzer-integration`, `performance-optimizer`, `devops-troubleshooter` |
+| End-user docs | `sonnet` / `low` | `hmis-docs-writer` |
+| Developers, reviewers, QA, analysts | `sonnet` / `medium` | `hmis-rules-reviewer`, `hmis-qa-verifier`, `hmis-ux-reviewer`, `hmis-db-specialist`, `hmis-worker`, `java-backend-developer`, `jsf-frontend-dev`, `lab-analyzer-integration`, `devops-troubleshooter` |
 | Security review | `sonnet` / `high` | `hmis-security-reviewer` |
 | Architects, on request only | `inherit` / `medium` | `hmis-domain-architect` |
 
