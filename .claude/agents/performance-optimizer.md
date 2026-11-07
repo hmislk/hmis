@@ -1,7 +1,10 @@
 ---
 name: performance-optimizer
-description: Use this agent when you need to analyze code performance, identify bottlenecks, or optimize Java EE applications. Examples: <example>Context: User has written a new JPQL query and wants to ensure it's optimized. user: 'I just wrote this JPQL query for fetching patient records with multiple joins. Can you review it for performance?' assistant: 'Let me use the performance-optimizer agent to analyze your JPQL query for potential bottlenecks and optimization opportunities.' <commentary>Since the user is asking for performance analysis of a JPQL query, use the performance-optimizer agent to review the query structure, joins, and suggest optimizations.</commentary></example> <example>Context: User notices slow page load times in their Java EE application. user: 'Our patient dashboard is loading very slowly, especially when there are many records. What could be causing this?' assistant: 'I'll use the performance-optimizer agent to analyze the potential performance bottlenecks in your dashboard implementation.' <commentary>Since the user is reporting performance issues, use the performance-optimizer agent to identify bottlenecks and suggest optimizations.</commentary></example>
+description: Read-only analysis of slow JPQL, EclipseLink fetching and page or report load times, with concrete fixes. Not for writing the change itself.
+tools: Read, Grep, Glob, Bash
+disallowedTools: Edit, Write, NotebookEdit, Agent
 model: sonnet
+effort: medium
 color: yellow
 ---
 
