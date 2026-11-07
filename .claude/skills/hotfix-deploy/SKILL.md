@@ -62,7 +62,8 @@ gh pr list --state open --base $0 --json number,headRefName,headRepositoryOwner,
   more fixes (e.g. it is mid-review or scheduled to merge at a fixed time).
   CI enforces this: `single-deploy-pr` fails every PR except the oldest open
   one per deploy branch. Check out its head branch
-  (`git checkout -B <headRefName> origin/<headRefName>`), skip Step 2, apply
+  (`git checkout -B <headRefName> origin/<headRefName>`), skip Step 2 but run
+  Step 2a, apply
   the fix (Steps 3–6, pushing to `<headRefName>`), then in Step 7 run
   `gh pr edit <number> --title ... --body ...` instead of `gh pr create`, so
   the title and body cover every fix in the PR (one section per issue).
@@ -90,6 +91,18 @@ Examples:
 - `sequence-preallocation-hotfix`
 - `critical-billing-fix-hotfix`
 - `persistence-tuning-hotfix`
+
+## Step 2a — Sync `.gitignore` from `origin/development`
+
+Deploy branches can lag `development`, and a stale `.gitignore` lets local artifacts (screenshots, `tmp/`, Playwright output) be staged by accident. Right after creating the branch:
+
+```bash
+git fetch origin development:refs/remotes/origin/development   # also works in a --single-branch clone
+git checkout origin/development -- .gitignore
+git diff --cached --stat   # review; commit it with the fix, by explicit path
+```
+
+If `.gitignore` is already identical, nothing is staged. Never use `git add -A` or `git add .` anywhere in this workflow; stage explicit paths only.
 
 ## Step 3 — Apply the Fix
 
