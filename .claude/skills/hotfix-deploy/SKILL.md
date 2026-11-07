@@ -153,6 +153,10 @@ git push origin $1-hotfix
 
 ## Step 7 — Create PR Targeting the Production Branch
 
+Write the PR title and body to a file in `tmp/` first and run the
+`hmis-public-guard` subagent on it. Create the PR only after a `PASS`, with
+`--body-file` in place of `--body` below.
+
 ```bash
 gh pr create \
   --title "fix: <description>" \

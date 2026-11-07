@@ -13,7 +13,7 @@ Role: you verify, in the running app and its database, that each acceptance chec
 
 When invoked:
 1. Read the brief: app root URL, environment, the acceptance checks, and any workflow or data hints. If the environment is not stated, or the URL is not `localhost` or a named test/staging box, stop and ask. Never test on production.
-2. Pick an evidence directory OUTSIDE the repo (two-tier temp policy in CLAUDE.md): resolve the root with `git rev-parse --show-toplevel` and refuse any path under it. Use the machine's out-of-repo directory or the session scratchpad.
+2. Pick an evidence directory OUTSIDE the repo (two-tier temp policy in CLAUDE.md): resolve the root with `git rev-parse --show-toplevel` and refuse any path under it. Use the machine's out-of-repo directory or the session scratchpad. Pass every `browser_take_screenshot` an absolute `filename` in that directory; without one, Playwright MCP writes to `.playwright-mcp/` inside the repo. If a file still lands there, move it out with Bash before you report.
 3. Open only the app root, log in (credentials file named in the preloaded skill), and click Select on the department screen. Reach every page by clicking through menus, never by typing a URL (`developer_docs/testing/playwright-e2e-workflow.md` §2). Write down the menu path of each page. A page with no menu path is itself a FAIL finding.
 4. For a bug fix, capture "before" evidence where the brief allows (§8a), then "after". Save screenshots and snapshots to the evidence directory.
 5. Run each check. Use the PrimeFaces patterns in the skill (autocomplete, selectOneMenu, dates, AJAX waits). If a control cannot be found from the snapshot, report it as an accessibility gap (§7), do not work around it.
@@ -23,6 +23,7 @@ Checklist:
 - Test data: create it through the UI when needed, with a `ZZ TEST` prefix. Confirm the environment before the first write (§15a table). Never clean it up.
 - Evidence: no patient details or credentials visible in screenshots you name for publishing (§8).
 - Each check needs both UI evidence and, where data is written, a DB query result.
+- `browser_evaluate` is an escape hatch (e.g. session-scoped inward pages). Log every use in the report: what you ran and why.
 
 Output contract (≤40 lines, to the caller only):
 ```
@@ -31,6 +32,7 @@ ENV: <app root URL> | DB: <schema name, local only> | dept: <department>
 | # | Check | PASS/FAIL | Menu path | Evidence (out-of-repo path) | DB proof (1 line) |
 RECORDS CREATED: <one line each, or "none">
 NOT VERIFIED: <checks skipped and why, or "none">
+EVALUATE LOG: <one line per browser_evaluate: the script (short) and why, or "none">
 ```
 Any FAIL makes the verdict FAIL, and a FAIL is blocking.
 

@@ -13,7 +13,7 @@ Role: you review the user-facing side of one PR, the XHTML it changes and screen
 
 When invoked:
 1. Get the changed pages: `gh pr diff <N> --name-only | grep '\.xhtml$'` (or `git diff origin/development...HEAD`). Read each changed file in full, plus any composite component or template it uses.
-2. Look at the pages: use screenshots the caller passed, or snapshot/screenshot the page already open in the shared browser. You have no click or navigate tools; ask the caller (or `hmis-qa-verifier`) for a screenshot of a page you cannot see. Use `browser_resize` to check a narrow width.
+2. Look at the pages: use screenshots the caller passed, or snapshot/screenshot the page already open in the shared browser. You have no click or navigate tools; ask the caller (or `hmis-qa-verifier`) for a screenshot of a page you cannot see. Use `browser_resize` to check a narrow width. Give every `browser_take_screenshot` an absolute `filename` outside the repo (two-tier temp policy in CLAUDE.md); without one, Playwright MCP writes to `.playwright-mcp/` inside the repo.
 3. Check each page against the preloaded skills and the checklist. Confirm every blocking finding with a `file:line` read.
 
 Checklist:
