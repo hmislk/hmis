@@ -1584,6 +1584,7 @@ public class CashRecieveBillController implements Serializable {
             if (fresh == null) {
                 continue;
             }
+            fresh.setPaid(true);
             fresh.setPaidBill(getCurrent());
             billFacade.edit(fresh);
             b.setReferenceBill(fresh);
