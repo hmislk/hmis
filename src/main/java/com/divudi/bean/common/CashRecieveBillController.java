@@ -672,7 +672,18 @@ public class CashRecieveBillController implements Serializable {
             return true;
         }
 
-        List<BillItem> toCheck = new ArrayList<>(getBillItems());
+        // Only the bill being added is checked: existing lines for the same bill are summed
+        // in memory with the current line, so this costs one due query per add.
+        List<BillItem> toCheck = new ArrayList<>();
+        Bill currentRef = getCurrentBillItem().getReferenceBill();
+        if (currentRef != null) {
+            for (BillItem existing : getBillItems()) {
+                if (existing.getReferenceBill() != null
+                        && Objects.equals(existing.getReferenceBill().getId(), currentRef.getId())) {
+                    toCheck.add(existing);
+                }
+            }
+        }
         toCheck.add(getCurrentBillItem());
         if (isBhtOverPayment(toCheck)) {
             return true;
