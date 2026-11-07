@@ -27,7 +27,7 @@ FETCHED="${HMIS_GUARD_FETCHED:-0}"
 fetch_development() {
   [ "$FETCHED" = "1" ] && return 0
   FETCHED=1
-  if ! git fetch -q origin "development:refs/remotes/$FALLBACK_REF" 2>/dev/null; then
+  if ! git fetch -q origin "+development:refs/remotes/$FALLBACK_REF" 2>/dev/null; then
     echo "pre-push: WARNING: could not fetch origin development (offline?); using the local $FALLBACK_REF copy." >&2
   fi
 }

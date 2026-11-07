@@ -99,7 +99,7 @@ Examples:
 Deploy branches can lag `development`, and a stale `.gitignore` lets local artifacts (screenshots, `tmp/`, Playwright output) be staged by accident. Right after creating the branch:
 
 ```bash
-git fetch origin development:refs/remotes/origin/development   # also works in a --single-branch clone
+git fetch origin +development:refs/remotes/origin/development   # forced refspec; also works in a --single-branch clone
 git checkout origin/development -- .gitignore
 git diff --cached --stat   # review; commit it with the fix, by explicit path
 ```
@@ -116,6 +116,8 @@ if ! git diff --cached --quiet -- $GUARD_PATHS; then
   git commit -m "chore(ci): sync changeset guard from development" -- $GUARD_PATHS
 fi
 ```
+
+Pushing a change to `.github/workflows/*` needs a gh token with the `workflow` scope. Check `gh auth status` (the `Token scopes` line); if `workflow` is missing, run `gh auth refresh -s workflow`. Without it GitHub rejects the push. Then stop and ask the user; never drop the guard sync to get the push through.
 
 If nothing is staged, the branch already has them. Without these files the local hook falls back to `origin/development`'s copy, but CI does not.
 
