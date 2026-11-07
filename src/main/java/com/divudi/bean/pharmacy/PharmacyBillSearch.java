@@ -2432,8 +2432,7 @@ public class PharmacyBillSearch implements Serializable {
         try {
             try {
                 if (cancelBill != null && cancelBill.getId() != null) {
-                    // The empty cancel bill row was already committed; keep it out of reports. (Only when
-                    // the row's id is known; the Pre path saves it with edit(), which leaves cb.getId() null.)
+                    // The empty cancel bill row was already committed; keep it out of reports.
                     cancelBill.setRetired(true);
                     getBillFacade().edit(cancelBill);
                 }
@@ -3017,12 +3016,14 @@ public class PharmacyBillSearch implements Serializable {
                 getPharmaceuticalBillItemFacade().create(ph);
             }
 
-            b.setPharmaceuticalBillItem(ph);
-
+            // create, not edit: edit() merges a copy and leaves b without an id, so each later
+            // edit of b (or of ph/can, which point to it) inserted another BillItem row (#25200).
+            // Saved before b points to ph, so the cascade does not try to insert ph a second time.
             if (b.getId() == null) {
-                getBillItemFacede().edit(b);
+                getBillItemFacede().create(b);
             }
 
+            b.setPharmaceuticalBillItem(ph);
             ph.setBillItem(b);
             getPharmaceuticalBillItemFacade().edit(ph);
 
@@ -3071,12 +3072,14 @@ public class PharmacyBillSearch implements Serializable {
                 getPharmaceuticalBillItemFacade().create(ph);
             }
 
-            b.setPharmaceuticalBillItem(ph);
-
+            // create, not edit: edit() merges a copy and leaves b without an id, so each later
+            // edit of b (or of ph/can, which point to it) inserted another BillItem row (#25200).
+            // Saved before b points to ph, so the cascade does not try to insert ph a second time.
             if (b.getId() == null) {
-                getBillItemFacede().edit(b);
+                getBillItemFacede().create(b);
             }
 
+            b.setPharmaceuticalBillItem(ph);
             ph.setBillItem(b);
             getPharmaceuticalBillItemFacade().edit(ph);
 
@@ -3837,7 +3840,9 @@ public class PharmacyBillSearch implements Serializable {
                 cb.setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), cb.getBillType(), BillClassType.RefundBill, BillNumberSuffix.RETCAN));
 
                 if (cb.getId() == null) {
-                    getBillFacade().edit(cb);
+                    // create, not edit: edit() leaves cb without an id, and every later save of
+                    // cb or its items then inserted another cancel bill row (#25200).
+                    getBillFacade().create(cb);
                 }
 
                 reversalStarted = true;

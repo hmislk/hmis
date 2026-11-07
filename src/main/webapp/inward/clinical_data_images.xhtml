@@ -50,7 +50,14 @@
                                 title="Print">
                                 <p:printer target=":formImage:tblView:txtComments"/>
                             </p:commandButton>
-
+                            <p:commandButton
+                                ajax="false"
+                                icon="fa fa-id-card"
+                                value="Inpatient Dashboard"
+                                class="p-0 m-1"
+                                action="#{admissionController.navigateToAdmissionProfilePage}" >
+                                <f:setPropertyActionListener value="#{inpatientClinicalDataController.current}" target="#{admissionController.current}" ></f:setPropertyActionListener>
+                            </p:commandButton>
 
                         </div>
                     </div>

@@ -2322,11 +2322,14 @@ public class PharmacyBean {
             v.setVmp(ampp.getAmp().getVmp());
             v.setDblValue(ampp.getDblValue());
             v.setPackUnit(packUnit);
-            try {
-                v.setName(ampp.getAmp().getVmp().getName() + "(" + ampp.getDblValue() + " " + ampp.getVmpp().getPackUnit().getName() + ")");
-            } catch (Exception e) {
-                //System.err.println("Error : " + e.getMessage());
-            }
+            // Name it from the pack unit passed in, as the item API's find-or-create does. It used
+            // ampp.getVmpp().getPackUnit(), which is null for a new AMPP, and the swallowed
+            // exception left the VMPP without a name (#25205).
+            Vmp vmp = ampp.getAmp().getVmp();
+            String vmpName = vmp != null && vmp.getName() != null ? vmp.getName() : "";
+            String unitName = packUnit != null && packUnit.getName() != null ? packUnit.getName() : "";
+            v.setName(vmpName + " (" + ampp.getDblValue() + " " + unitName + ")");
+            v.setCreatedAt(Calendar.getInstance().getTime());
             getVmppFacade().create(v);
         }
         return v;

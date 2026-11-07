@@ -2,7 +2,7 @@
 name: hotfix-deploy
 description: >
   Full hotfix workflow for deploying urgent fixes to a production branch
-  (coop-production, rh-production, southernlanka-staging, etc.). Covers branch creation,
+  (coop-production, rh-production, southernlanka-production, etc.). Covers branch creation,
   fix, commit, push, and PR targeting the production branch. Use when you need
   to apply an urgent fix directly to a production environment without going
   through the normal development → QA → prod pipeline. The agent may invoke
@@ -19,7 +19,7 @@ Deploy an urgent fix directly to a production branch.
 
 ## Arguments
 
-- `$0` — Target production branch, or staging branch that serves production (e.g., `coop-production`, `rh-production`, `coop-staging`, `southernlanka-staging`)
+- `$0` — Target production branch, or staging branch that serves production (e.g., `coop-production`, `rh-production`, `coop-staging`, `southernlanka-production`)
 - `$1` — Short description of the fix (e.g., `sequence-preallocation`, `critical-billing-fix`)
 
 ## Critical Rule
@@ -62,7 +62,8 @@ gh pr list --state open --base $0 --json number,headRefName,headRepositoryOwner,
   more fixes (e.g. it is mid-review or scheduled to merge at a fixed time).
   CI enforces this: `single-deploy-pr` fails every PR except the oldest open
   one per deploy branch. Check out its head branch
-  (`git checkout -B <headRefName> origin/<headRefName>`), skip Step 2, apply
+  (`git checkout -B <headRefName> origin/<headRefName>`), skip Step 2 but run
+  Step 2a, apply
   the fix (Steps 3–6, pushing to `<headRefName>`), then in Step 7 run
   `gh pr edit <number> --title ... --body ...` instead of `gh pr create`, so
   the title and body cover every fix in the PR (one section per issue).
@@ -90,6 +91,18 @@ Examples:
 - `sequence-preallocation-hotfix`
 - `critical-billing-fix-hotfix`
 - `persistence-tuning-hotfix`
+
+## Step 2a — Sync `.gitignore` from `origin/development`
+
+Deploy branches can lag `development`, and a stale `.gitignore` lets local artifacts (screenshots, `tmp/`, Playwright output) be staged by accident. Right after creating the branch:
+
+```bash
+git fetch origin development:refs/remotes/origin/development   # also works in a --single-branch clone
+git checkout origin/development -- .gitignore
+git diff --cached --stat   # review; commit it with the fix, by explicit path
+```
+
+If `.gitignore` is already identical, nothing is staged. Never use `git add -A` or `git add .` anywhere in this workflow; stage explicit paths only.
 
 ## Step 3 — Apply the Fix
 
@@ -214,8 +227,8 @@ added/renamed, and similarly-named branches are NOT interchangeable.
 | COOP — pharmacy | `coop-production` | |
 | COOP — inward | `coop-staging` | Despite the "staging" name, COOP inward users run against it day to day (production DB). |
 | Ruhunu hospital | `rh-production` | `rh-staging` is live again (since 2026-10-28) and writes to the same production DB. |
-| Southern Lanka | `southernlanka-staging` | **Live users are here.** `southernlanka-production` is live too (since 2026-10-15), on the same DB. |
-| RMH | `rmh-production` | `rmh-staging` writes to the same production DB. |
+| Southern Lanka | `southernlanka-production` | The only live app. `southernlanka-staging` is not used (app disabled, checked 2026-11-06); don't hotfix it. |
+| RMH | `rmh-production` | `rmh-staging` is not used (app disabled, checked 2026-11-06); don't hotfix it. |
 | Others | `suwani-production`, `asiripharmacy-production`, `digasiri-production`, `horizon-production`, `mp-production`, `mpold-production`, `roseth-production`, `ewc-production` | |
 
 The old `*-prod`, `*-prod-migrated` and `*-stg-migrated` branches were retired on

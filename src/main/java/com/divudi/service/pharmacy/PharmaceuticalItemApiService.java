@@ -44,7 +44,9 @@ import com.divudi.core.facade.VmppFacade;
 import com.divudi.core.facade.VtmFacade;
 import com.divudi.core.util.CommonFunctions;
 
+import javax.annotation.Resource;
 import javax.ejb.EJB;
+import javax.ejb.SessionContext;
 import javax.ejb.Stateless;
 import java.io.Serializable;
 import java.util.Calendar;
@@ -79,6 +81,19 @@ public class PharmaceuticalItemApiService implements Serializable {
     private MeasurementUnitFacade measurementUnitFacade;
     @EJB
     private PharmaceuticalItemCategoryFacade pharmaceuticalItemCategoryFacade;
+    @Resource
+    private SessionContext sessionContext;
+
+    // The create and update paths change managed entities and then may throw a checked
+    // exception (not found, duplicate, ...). A checked exception does not roll back, so the
+    // earlier changes would be committed with the error (#25204). Mark the transaction
+    // rollback-only before the exception leaves the bean, so a rejected request changes nothing.
+    // Package-private so a unit test can observe the call without a container.
+    void markRollbackOnly() {
+        if (sessionContext != null) {
+            sessionContext.setRollbackOnly();
+        }
+    }
 
     // ==================== SEARCH ====================
 
@@ -373,21 +388,26 @@ public class PharmaceuticalItemApiService implements Serializable {
             throw new Exception("User is required for creating items");
         }
 
-        switch (type) {
-            case "vtm":
-                return createVtm(gson.fromJson(requestJson, VtmRequestDTO.class), user);
-            case "atm":
-                return createAtm(gson.fromJson(requestJson, AtmRequestDTO.class), user);
-            case "vmp":
-                return createVmp(gson.fromJson(requestJson, VmpRequestDTO.class), user);
-            case "amp":
-                return createAmp(gson.fromJson(requestJson, AmpRequestDTO.class), user);
-            case "vmpp":
-                return createVmpp(gson.fromJson(requestJson, VmppRequestDTO.class), user);
-            case "ampp":
-                return createAmpp(gson.fromJson(requestJson, AmppRequestDTO.class), user);
-            default:
-                throw new Exception("Invalid item type: " + type);
+        try {
+            switch (type) {
+                case "vtm":
+                    return createVtm(gson.fromJson(requestJson, VtmRequestDTO.class), user);
+                case "atm":
+                    return createAtm(gson.fromJson(requestJson, AtmRequestDTO.class), user);
+                case "vmp":
+                    return createVmp(gson.fromJson(requestJson, VmpRequestDTO.class), user);
+                case "amp":
+                    return createAmp(gson.fromJson(requestJson, AmpRequestDTO.class), user);
+                case "vmpp":
+                    return createVmpp(gson.fromJson(requestJson, VmppRequestDTO.class), user);
+                case "ampp":
+                    return createAmpp(gson.fromJson(requestJson, AmppRequestDTO.class), user);
+                default:
+                    throw new Exception("Invalid item type: " + type);
+            }
+        } catch (Exception e) {
+            markRollbackOnly();
+            throw e;
         }
     }
 
@@ -539,21 +559,26 @@ public class PharmaceuticalItemApiService implements Serializable {
             throw new Exception("User is required for updating items");
         }
 
-        switch (type) {
-            case "vtm":
-                return updateVtm(id, gson.fromJson(requestJson, VtmRequestDTO.class), user);
-            case "atm":
-                return updateAtm(id, gson.fromJson(requestJson, AtmRequestDTO.class), user);
-            case "vmp":
-                return updateVmp(id, gson.fromJson(requestJson, VmpRequestDTO.class), user);
-            case "amp":
-                return updateAmp(id, gson.fromJson(requestJson, AmpRequestDTO.class), user);
-            case "vmpp":
-                return updateVmpp(id, gson.fromJson(requestJson, VmppRequestDTO.class), user);
-            case "ampp":
-                return updateAmpp(id, gson.fromJson(requestJson, AmppRequestDTO.class), user);
-            default:
-                throw new Exception("Invalid item type: " + type);
+        try {
+            switch (type) {
+                case "vtm":
+                    return updateVtm(id, gson.fromJson(requestJson, VtmRequestDTO.class), user);
+                case "atm":
+                    return updateAtm(id, gson.fromJson(requestJson, AtmRequestDTO.class), user);
+                case "vmp":
+                    return updateVmp(id, gson.fromJson(requestJson, VmpRequestDTO.class), user);
+                case "amp":
+                    return updateAmp(id, gson.fromJson(requestJson, AmpRequestDTO.class), user);
+                case "vmpp":
+                    return updateVmpp(id, gson.fromJson(requestJson, VmppRequestDTO.class), user);
+                case "ampp":
+                    return updateAmpp(id, gson.fromJson(requestJson, AmppRequestDTO.class), user);
+                default:
+                    throw new Exception("Invalid item type: " + type);
+            }
+        } catch (Exception e) {
+            markRollbackOnly();
+            throw e;
         }
     }
 

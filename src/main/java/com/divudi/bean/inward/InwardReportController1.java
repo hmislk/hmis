@@ -86,6 +86,13 @@ public class InwardReportController1 implements Serializable {
     private String dateBasis = "createdAt";
     private boolean outstandingOnly;
     private AdmissionStatus admissionStatus = AdmissionStatus.DISCHARGED_AND_FINAL_BILL_COMPLETED;
+    // The Date Basis and Admission Status the shown Debtor/Commitment rows were
+    // built with (issue #25237): the export buttons submit the filter menus, and
+    // dateBasis is shared by the reports on this session bean, so the export
+    // header and notes must not read the live values.
+    private String debtorProcessedDateBasis;
+    private AdmissionStatus debtorProcessedAdmissionStatus;
+    private String commitmentProcessedDateBasis;
     private String reportType = "aggregate";
     private List<Bill> bills;
     private List<BillItem> debtorSettlementItems;
@@ -1548,6 +1555,9 @@ public class InwardReportController1 implements Serializable {
         debtorPaidTotal = 0;
         debtorOutstandingTotal = 0;
         commitmentBills = null;
+        debtorProcessedDateBasis = null;
+        debtorProcessedAdmissionStatus = null;
+        commitmentProcessedDateBasis = null;
         commitmentTotal = 0;
         commitmentPaidTotal = 0;
         commitmentBalanceTotal = 0;
@@ -3105,11 +3115,20 @@ public class InwardReportController1 implements Serializable {
             .thenComparing(Bill::getId, Comparator.nullsLast(Comparator.naturalOrder()));
 
     public void inwardCreditCompanyDebtors() {
+        debtorProcessedDateBasis = dateBasis;
+        debtorProcessedAdmissionStatus = admissionStatus;
         boolean anyStatus = admissionStatus == null || admissionStatus == AdmissionStatus.ANY_STATUS;
         boolean wantFinalized = anyStatus || admissionStatus == AdmissionStatus.DISCHARGED_AND_FINAL_BILL_COMPLETED;
-        boolean wantActive = anyStatus || admissionStatus == AdmissionStatus.ADMITTED_BUT_NOT_DISCHARGED;
+        // Issue #23793: with Discharge Date as the basis, currently admitted patients
+        // (no discharge date yet) are left out of the rows and the totals.
+        boolean excludeAdmitted = excludesCurrentlyAdmitted(dateBasis);
+        boolean statusIncludesAdmitted = anyStatus || admissionStatus == AdmissionStatus.ADMITTED_BUT_NOT_DISCHARGED;
+        boolean wantActive = statusIncludesAdmitted && !excludeAdmitted;
         boolean wantDischargedNotFinalized = anyStatus || admissionStatus == AdmissionStatus.DISCHARGED_BUT_FINAL_BILL_NOT_COMPLETED;
         boolean individualView = "individual".equals(reportType);
+        if (excludeAdmitted && statusIncludesAdmitted) {
+            JsfUtil.addInfoMessage(ADMITTED_EXCLUDED_MESSAGE);
+        }
 
         debtorBillTotal = 0;
         debtorPaidTotal = 0;
@@ -3204,8 +3223,9 @@ public class InwardReportController1 implements Serializable {
 
         if (wantActive) {
             // === Non-discharged (currently admitted) credit company patients ===
-            // Always filtered by admission date regardless of dateBasis: these encounters
-            // have no discharge date or final bill yet to filter by.
+            // Filtered by admission date for every basis except Discharge Date (which
+            // skips them, see above): these encounters have no discharge date or final
+            // bill yet to filter by.
             String encSql = "Select pe from PatientEncounter pe"
                     + " where pe.retired=false"
                     + " and (pe.discharged=false or pe.discharged is null)"
@@ -3249,7 +3269,7 @@ public class InwardReportController1 implements Serializable {
             Map<Long, Double> netCharges = chargeAggregationService.fetchNetChargesByEncounter(nonDischargedEncounters);
 
             for (PatientEncounter pe : nonDischargedEncounters) {
-                addSyntheticDebtorRow(pe, netCharges.getOrDefault(pe.getId(), 0.0), ccPaymentTypes, paymentAndDepositTypes, "(Active)", pe.getDateOfAdmission());
+                addSyntheticDebtorRow(pe, netCharges.getOrDefault(pe.getId(), 0.0), ccPaymentTypes, paymentAndDepositTypes, ACTIVE_ROW_LABEL, pe.getDateOfAdmission());
             }
         }
 
@@ -3302,7 +3322,7 @@ public class InwardReportController1 implements Serializable {
             Map<Long, Double> netCharges = chargeAggregationService.fetchNetChargesByEncounter(dischargedNotFinalizedEncounters);
 
             for (PatientEncounter pe : dischargedNotFinalizedEncounters) {
-                addSyntheticDebtorRow(pe, netCharges.getOrDefault(pe.getId(), 0.0), ccPaymentTypes, paymentAndDepositTypes, "(Discharged - Bill Pending)", pe.getDateOfDischarge());
+                addSyntheticDebtorRow(pe, netCharges.getOrDefault(pe.getId(), 0.0), ccPaymentTypes, paymentAndDepositTypes, BILL_PENDING_ROW_LABEL, pe.getDateOfDischarge());
             }
         }
     }
@@ -3364,6 +3384,7 @@ public class InwardReportController1 implements Serializable {
      * commitment bill. No (Active) rows and no settlement figures.
      */
     public void inwardCreditCompanyCommitments() {
+        commitmentProcessedDateBasis = dateBasis;
         commitmentBills = findCreditCompanyCommitmentBills(true);
         commitmentPaidByBillId = findCommitmentSettledAmounts(commitmentBills);
         commitmentTotal = 0;
@@ -3535,7 +3556,7 @@ public class InwardReportController1 implements Serializable {
         }
         TabularReportExporter.Align l = TabularReportExporter.Align.LEFT;
         TabularReportExporter.Align r = TabularReportExporter.Align.RIGHT;
-        TabularReportExporter ex = newCreditCompanyExporter("Inpatient Credit Company Debtor Report", true)
+        TabularReportExporter ex = newCreditCompanyExporter("Inpatient Credit Company Debtor Report", true, debtorProcessedDateBasis)
                 .column("Commitment Bill No", 2.6f, l)
                 .column("Final Bill No", 2.4f, l)
                 .column("BHT No", 1.2f, l)
@@ -3550,12 +3571,18 @@ public class InwardReportController1 implements Serializable {
                 .column("Settled by Patient", 1.4f, r)
                 .column("Total Paid", 1.4f, r)
                 .column("Outstanding", 1.4f, r);
+        ex.filter("Admission Status", debtorProcessedAdmissionStatus == null
+                ? AdmissionStatus.ANY_STATUS.getLabel() : debtorProcessedAdmissionStatus.getLabel());
         boolean hasActive = false;
+        boolean hasBillPending = false;
         for (Bill b : bills) {
             PatientEncounter pe = b.getPatientEncounter();
             Bill fb = b.getReferenceBill();
-            if (fb == null && "(Active)".equals(b.getDeptId())) {
+            if (fb == null && ACTIVE_ROW_LABEL.equals(b.getDeptId())) {
                 hasActive = true;
+            }
+            if (fb == null && BILL_PENDING_ROW_LABEL.equals(b.getDeptId())) {
+                hasBillPending = true;
             }
             ex.row(b.getDeptId(),
                     fb == null ? "" : fb.getDeptId(),
@@ -3575,8 +3602,8 @@ public class InwardReportController1 implements Serializable {
         ex.totals("Total", null, null, null, null, null, null, null, null, null,
                 debtorBillTotal, null, null, debtorPaidTotal, debtorOutstandingTotal);
         ex.note("Final Bill Value is not totalled: a final bill shared by two or more credit companies appears once per company.");
-        if (hasActive) {
-            ex.note("(Active) rows are currently admitted patients with no final bill yet: Company Commitment shows running charges.");
+        for (String note : pendingRowDateNotes(debtorProcessedDateBasis, debtorProcessedAdmissionStatus, hasActive, hasBillPending)) {
+            ex.note(note);
         }
         writeExport(ex, excel, "inward_credit_company_debtors");
     }
@@ -3589,7 +3616,7 @@ public class InwardReportController1 implements Serializable {
         boolean showPaidAndRemaining = configOptionApplicationController.getBooleanValueByKey(
                 "Credit Company Commitment Report - Show Paid and Remaining Columns", true);
         TabularReportExporter.Align l = TabularReportExporter.Align.LEFT;
-        TabularReportExporter ex = newCreditCompanyExporter("Inpatient Credit Company Commitment Report", false)
+        TabularReportExporter ex = newCreditCompanyExporter("Inpatient Credit Company Commitment Report", false, commitmentProcessedDateBasis)
                 .column("No.", 0.5f, TabularReportExporter.Align.CENTER)
                 .column("Final Bill No", 2.4f, l)
                 .column("BHT No", 1.2f, l)
@@ -3627,21 +3654,74 @@ public class InwardReportController1 implements Serializable {
         writeExport(ex, excel, "inward_credit_company_commitments");
     }
 
-    private TabularReportExporter newCreditCompanyExporter(String title, boolean withOutstandingFilter) {
+    /**
+     * The export header label for a Date Basis value, matching the labels in
+     * the report's Date Basis menu (issue #25209: Final Bill Created Date was
+     * printed as Payment/Bill Date).
+     */
+    static String dateBasisLabel(String dateBasis) {
+        if ("dischargeDate".equals(dateBasis)) {
+            return "Discharge Date";
+        } else if ("admissionDate".equals(dateBasis)) {
+            return "Admission Date";
+        } else if ("finalBillCreatedAt".equals(dateBasis)) {
+            return "Final Bill Created Date";
+        }
+        return "Payment/Bill Date";
+    }
+
+    static final String ACTIVE_ROW_LABEL = "(Active)";
+    static final String BILL_PENDING_ROW_LABEL = "(Discharged - Bill Pending)";
+    static final String ADMITTED_EXCLUDED_MESSAGE = "Currently admitted patients have no discharge date,"
+            + " so they are not listed when the Date Basis is Discharge Date."
+            + " Choose Admission Date or Payment/Bill Date to see them.";
+
+    /**
+     * Issue #23793: Discharge Date means discharged patients only, so currently
+     * admitted patients (no discharge date) are left out of the Debtor reports.
+     */
+    static boolean excludesCurrentlyAdmitted(String dateBasis) {
+        return "dischargeDate".equals(dateBasis);
+    }
+
+    /**
+     * Export notes for the rows that have no final bill yet. Issue #25221: they
+     * say which date selected those rows when it is not the Date Basis printed in
+     * the header, and that admitted patients were left out under Discharge Date.
+     * (Active) rows are always dated by admission date; (Discharged - Bill Pending)
+     * rows by discharge date, or admission date when that basis is chosen.
+     */
+    static List<String> pendingRowDateNotes(String dateBasis, AdmissionStatus admissionStatus,
+            boolean hasActive, boolean hasBillPending) {
+        List<String> notes = new ArrayList<>();
+        boolean admissionBasis = "admissionDate".equals(dateBasis);
+        boolean dischargeBasis = "dischargeDate".equals(dateBasis);
+        if (hasActive) {
+            notes.add(ACTIVE_ROW_LABEL + " rows are currently admitted patients with no final bill yet:"
+                    + " Company Commitment shows running charges."
+                    + (admissionBasis ? "" : " They are selected by Admission Date, not " + dateBasisLabel(dateBasis) + "."));
+        }
+        if (hasBillPending && !admissionBasis && !dischargeBasis) {
+            notes.add(BILL_PENDING_ROW_LABEL + " rows are selected by Discharge Date, not "
+                    + dateBasisLabel(dateBasis) + ": they have no final bill yet.");
+        }
+        boolean statusIncludesAdmitted = admissionStatus == null
+                || admissionStatus == AdmissionStatus.ANY_STATUS
+                || admissionStatus == AdmissionStatus.ADMITTED_BUT_NOT_DISCHARGED;
+        if (excludesCurrentlyAdmitted(dateBasis) && statusIncludesAdmitted) {
+            notes.add("Currently admitted patients are not included: they have no discharge date.");
+        }
+        return notes;
+    }
+
+    private TabularReportExporter newCreditCompanyExporter(String title, boolean withOutstandingFilter, String processedDateBasis) {
         String institutionName = sessionController.getInstitution() != null
                 ? sessionController.getInstitution().getName() : "";
         String printedBy = sessionController.getLoggedUser() != null
                 && sessionController.getLoggedUser().getWebUserPerson() != null
                 ? sessionController.getLoggedUser().getWebUserPerson().getName() : null;
         SimpleDateFormat dtf = new SimpleDateFormat(sessionController.getApplicationPreference().getLongDateTimeFormat());
-        String dateBasisLabel;
-        if ("dischargeDate".equals(dateBasis)) {
-            dateBasisLabel = "Discharge Date";
-        } else if ("admissionDate".equals(dateBasis)) {
-            dateBasisLabel = "Admission Date";
-        } else {
-            dateBasisLabel = "Payment/Bill Date";
-        }
+        String dateBasisLabel = dateBasisLabel(processedDateBasis);
         TabularReportExporter ex = new TabularReportExporter(institutionName, title, printedBy,
                 sessionController.getApplicationPreference().getShortDateFormat())
                 .filter("From", dtf.format(getFromDate()))
