@@ -5567,12 +5567,12 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
                 multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getOnlineSettlement().getTotalValue();
 
             }
-            remainAmount = total - multiplePaymentMethodTotalValue;
-            return total - multiplePaymentMethodTotalValue;
+            remainAmount = netTotal - multiplePaymentMethodTotalValue;
+            return netTotal - multiplePaymentMethodTotalValue;
 
         }
-        remainAmount = total;
-        return total;
+        remainAmount = netTotal;
+        return netTotal;
     }
 
     @Override
