@@ -3051,9 +3051,8 @@ public class PharmacySaleForCashierController2 implements Serializable, Controll
         getPreBill().setToInstitution(toInstitution);
         // Credit sale: the credit company is the counterparty; record it in creditCompany too,
         // as the native page does, so the bill reaches credit-company debtor reports (#22462).
-        if (getPaymentMethod() == PaymentMethod.Credit && toInstitution != null) {
-            getPreBill().setCreditCompany(toInstitution);
-        }
+        // Set on every save, including null, so a retried PreBill never keeps an earlier company.
+        getPreBill().setCreditCompany(getPaymentMethod() == PaymentMethod.Credit ? toInstitution : null);
 
         getPreBill().setComments(comment);
 
