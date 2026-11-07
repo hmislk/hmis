@@ -286,7 +286,7 @@ public class CashRecieveBillController implements Serializable {
         List<Bill> list = getAdmissionController().getCreditPaymentBillsBht(ins);
         for (Bill b : list) {
             getCurrentBillItem().setPatientEncounter(b.getPatientEncounter());
-            getCurrentBillItem().setNetValue(b.getNetTotal());
+            getCurrentBillItem().setNetValue(Math.max(0, b.getNetTotal() - b.getPaidAmount()));
             getCurrentBillItem().getPatientEncounter().setCreditCompany(b.getCreditCompany());
             getCurrentBillItem().setReferenceBill(b);
             getCurrentBillItem().setBill(b);
@@ -617,6 +617,25 @@ public class CashRecieveBillController implements Serializable {
         return false;
     }
 
+    /**
+     * Inpatient credit company payment must never exceed the outstanding due of the
+     * bill it settles. Returns true (after showing an error) when it does.
+     */
+    private boolean isBhtOverPayment(BillItem bi) {
+        if (bi == null || bi.getReferenceBill() == null) {
+            return false;
+        }
+        double paying = bi.getNetValue();
+        double due = getReferenceBhtBallance(bi);
+        if (paying - due > 0.01) {
+            JsfUtil.addErrorMessage(String.format(
+                    "Payment amount (%.2f) cannot exceed the outstanding due amount (%.2f). Nothing was saved.",
+                    paying, due));
+            return true;
+        }
+        return false;
+    }
+
     private boolean errorCheckForAddingBht() {
         Institution currentCc = null;
         if (getCurrentBillItem().getReferenceBill() != null) {
@@ -626,6 +645,10 @@ public class CashRecieveBillController implements Serializable {
         }
         if (currentCc == null) {
             JsfUtil.addErrorMessage("U cant add without credit company name");
+            return true;
+        }
+
+        if (isBhtOverPayment(getCurrentBillItem())) {
             return true;
         }
 
@@ -955,6 +978,12 @@ public class CashRecieveBillController implements Serializable {
         if (getCurrent().getFromInstitution() == null) {
             JsfUtil.addErrorMessage("Select Credit Company");
             return true;
+        }
+
+        for (BillItem selected : getSelectedBillItems()) {
+            if (isBhtOverPayment(selected)) {
+                return true;
+            }
         }
 
         Bill refBillCheck = getBillItems().get(0).getReferenceBill();
