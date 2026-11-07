@@ -262,13 +262,13 @@
                                         summary.hide();
                                         pagers.show();
                                         if (total > oldRows) {
-                                            PF('wCogsSaleTbl').paginator.setRowsPerPage(oldRows);
+                                            PF('wCogsSaleTbl').paginator.setRowsPerPage(String(oldRows));
                                         }
                                     }, 1000);
                                 };
                                 if (total > oldRows) {
                                     jQuery(document).one('pfAjaxComplete', printNow);
-                                    paginator.setRowsPerPage(total);
+                                    paginator.setRowsPerPage('*');
                                 } else {
                                     printNow();
                                 }
@@ -297,7 +297,7 @@
                             </h:panelGroup>
                         <p:dataTable id="tbl" widgetVar="wCogsSaleTbl" value="#{pharmacyReportController.cogsBillDtos}" var="b" rowIndexVar="n" paginator="true" paginatorPosition="bottom" rows="10"
                                      paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                     currentPageReportTemplate="Showing {startRecord} to {endRecord} of {totalRecords}" rowsPerPageTemplate="5,10,15,25,50,100,500,1000">
+                                     currentPageReportTemplate="Showing {startRecord} to {endRecord} of {totalRecords}" rowsPerPageTemplate="5,10,15,25,50,100,500,1000,{ShowAll|'All'}">
 
                             <p:column headerText="Date" width="4em">
                                 <h:outputText value="#{b.billCreatedAt}">
