@@ -7,13 +7,58 @@
 #   HMIS_ALLOW_RISKY_PUSH=1 git push ...
 # ============================================================
 REPO_ROOT="$(git rev-parse --show-toplevel)"
-GUARD="$REPO_ROOT/scripts/changeset-guard.sh"
-[ -f "$GUARD" ] || exit 0   # branch predates the guard
 
 if [ "${HMIS_ALLOW_RISKY_PUSH:-}" = "1" ]; then
   echo "pre-push: HMIS_ALLOW_RISKY_PUSH=1 set, changeset guard skipped."
   exit 0
 fi
+
+# A branch cut from a deploy branch (<hospital>-production / -staging) may not
+# have the guard script or its patterns file yet. Never skip the check then:
+# load the missing file from origin/development, and block if that fails.
+# Git Bash on Windows rewrites "<rev>:<path>" arguments (MSYS path conversion),
+# which breaks "git show origin/development:<path>". Harmless elsewhere.
+export MSYS_NO_PATHCONV=1
+FALLBACK_REF="origin/development"
+TMP_FILES=""
+trap 'rm -f $TMP_FILES' EXIT
+FETCHED="${HMIS_GUARD_FETCHED:-0}"
+
+fetch_development() {
+  [ "$FETCHED" = "1" ] && return 0
+  FETCHED=1
+  if ! git fetch -q origin "development:refs/remotes/$FALLBACK_REF" 2>/dev/null; then
+    echo "pre-push: WARNING: could not fetch origin development (offline?); using the local $FALLBACK_REF copy." >&2
+  fi
+}
+
+# guard_file <repo-relative path>: print a readable path to the file, from the
+# working tree or else from origin/development. Returns 1 when neither works.
+guard_file() {
+  if [ -f "$REPO_ROOT/$1" ]; then
+    printf '%s\n' "$REPO_ROOT/$1"
+    return 0
+  fi
+  fetch_development
+  tmp="$(mktemp)" || return 1
+  TMP_FILES="$TMP_FILES $tmp"
+  if git show "$FALLBACK_REF:$1" > "$tmp" 2>/dev/null && [ -s "$tmp" ]; then
+    echo "pre-push: $1 is missing on this branch; using the copy from $FALLBACK_REF." >&2
+    printf '%s\n' "$tmp"
+    return 0
+  fi
+  return 1
+}
+
+if ! GUARD="$(guard_file scripts/changeset-guard.sh)" ||
+   ! PATTERNS="$(guard_file .github/changeset-guard-patterns.txt)"; then
+  echo "pre-push: BLOCKED. The changeset guard is missing on this branch and could" >&2
+  echo "not be loaded from $FALLBACK_REF. This repository is PUBLIC, so the push" >&2
+  echo "is not allowed unchecked. Run 'git fetch origin development' and retry, or" >&2
+  echo "sync the guard files onto the branch (hotfix-deploy skill, Step 2a)." >&2
+  exit 1
+fi
+export CHANGESET_GUARD_PATTERNS="$PATTERNS"
 
 # Exclude only commits already on the push destination's remote-tracking
 # branches, so a commit that exists only on another remote is still checked.
