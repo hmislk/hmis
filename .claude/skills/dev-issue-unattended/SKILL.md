@@ -399,7 +399,7 @@ step 9/11.
 4. **Document the pass** in that same PR section — which findings came up,
    which bucket each landed in, and why — the same judgment-call-logging
    convention already used for steps 3 and 13. Name what ran (`/code-review
-   <level>` or the `java-health-code-reviewer` agent). "Self-review (inline)",
+   <level>` or the `hmis-rules-reviewer` agent). "Self-review (inline)",
    meaning you re-read your own diff, is not this step.
 
 Step 14's CodeRabbit/Codex loop is unchanged by this step — this is an
@@ -508,8 +508,8 @@ Repeat, up to **3 cycles**:
    documented false-positive/valid-fix patterns.
    **If CodeRabbit or Codex is rate-limited or out of usage** (its check or
    comment says "rate limited", "usage limit" or similar), the PR has no
-   independent review. Dispatch the `java-health-code-reviewer` agent
-   (`model: sonnet`) on `gh pr diff <PR#>` (several PRs can go to one agent).
+   independent review. Dispatch the `hmis-rules-reviewer` agent
+   on `gh pr diff <PR#>` (several PRs can go to one agent).
    Post its findings and what you did with each as a PR comment. Fix the
    valid ones on the branch, then re-run step 7 for anything you changed.
    Do this before reporting the PR mergeable; don't wait for the bot's limit

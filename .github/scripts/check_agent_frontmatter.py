@@ -18,6 +18,13 @@ KNOWN_FIELDS = {
     "name", "description", "tools", "disallowedTools", "model", "effort",
     "color", "skills", "hooks", "maxTurns",
 }
+# Real Claude Code fields that this repo does not allow (see agent-authoring.md).
+BANNED_FIELDS = {
+    "memory": "it silently adds Edit/Write to the agent",
+    "isolation": "worktrees are banned in this repo",
+    "permissionMode": "agents inherit the session's permission mode",
+    "mcpServers": "agents get MCP tools only by naming them in 'tools'",
+}
 REQUIRED_FIELDS = ("name", "description", "tools", "model")
 COLORS = {"red", "blue", "green", "yellow", "purple", "orange", "pink", "cyan"}
 MODELS = {"haiku", "sonnet", "opus", "fable", "inherit"}
@@ -70,7 +77,9 @@ def check(path, root):
     fm, err = parse_frontmatter(text)
     if err:
         return [err], None
-    for key in sorted(set(fm) - KNOWN_FIELDS):
+    for key in sorted(set(fm) & set(BANNED_FIELDS)):
+        errors.append(f"banned by policy: '{key}' ({BANNED_FIELDS[key]})")
+    for key in sorted(set(fm) - KNOWN_FIELDS - set(BANNED_FIELDS)):
         errors.append(f"unknown field '{key}' (allowed: {', '.join(sorted(KNOWN_FIELDS))})")
     for key in REQUIRED_FIELDS:
         if not fm.get(key):
