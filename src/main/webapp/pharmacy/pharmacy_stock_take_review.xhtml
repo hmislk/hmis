@@ -111,7 +111,7 @@
                                                 </h:outputText>
                                             </p:column>
                                             <p:column headerText="Variance vs Starting Qty" style="width: 130px; text-align:right;">
-                                                <h:outputText value="#{bi.qty - bi.referanceBillItem.qty}" styleClass="font-weight-bold #{(bi.qty - bi.referanceBillItem.qty) gt 0 ? 'text-success' : ((bi.qty - bi.referanceBillItem.qty) lt 0 ? 'text-danger' : 'text-muted')}">
+                                                <h:outputText rendered="#{bi.referanceBillItem ne null}" value="#{bi.qty - bi.referanceBillItem.qty}" styleClass="font-weight-bold #{(bi.qty - bi.referanceBillItem.qty) gt 0 ? 'text-success' : ((bi.qty - bi.referanceBillItem.qty) lt 0 ? 'text-danger' : 'text-muted')}">
                                                     <f:convertNumber integerOnly="true"/>
                                                 </h:outputText>
                                             </p:column>
