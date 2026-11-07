@@ -58,7 +58,7 @@ directory chosen per machine (e.g. `C:\Backups` on a Windows dev laptop, with
 repo root with `git rev-parse --show-toplevel` and refuse any dump, backup or
 `--dump` path that is under it (including a gitignored subdirectory). If
 `<BACKUP_DIR>` or a given path is inside the repo, stop and pick or ask for an
-out-of-repo directory. Also stop if the repo root itself is inside a
+out-of-repo directory. Also stop if the repo root or `<BACKUP_DIR>` is inside a
 cloud-synced folder (OneDrive, Dropbox). Temp files (`.err` logs etc.) go in the session
 scratchpad directory, referenced as `<SCRATCH>`.
 

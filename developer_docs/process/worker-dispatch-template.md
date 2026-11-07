@@ -8,6 +8,7 @@ Follow every 🚨 rule in it. Hard rules, restated:
 - Never `git add -A` or `git add .`; stage explicit paths only, and print
   `git status --porcelain` plus the file list before committing.
 - Branch from origin/development; no worktrees; target PRs at development.
+  Hotfix workers instead follow the hotfix-deploy skill for branch and target.
 - Restore local JNDI in persistence.xml after every push, unstaged.
 - No hospital data and no live-vulnerability detail on any GitHub surface
   (say "hardening, tracked under #N").

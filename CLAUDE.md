@@ -55,7 +55,7 @@
 - **🚨 Any task that WRITES to git** (commit, push, branch creation, or a scripted/bulk edit of more than ~10 files) runs in a dedicated worker session, not the communication session. A hand-made commit of a few explicit paths may stay inline; read-only lookups are always inline. Worker prompts follow the [worker dispatch template](developer_docs/process/worker-dispatch-template.md).
 - **🚨 If junk or data was pushed to the public repo**, follow the `public-repo-leak-runbook` skill immediately. A force-push does not purge it.
 - Commit messages include `Closes #N`. See [Commit Conventions](developer_docs/git/commit-conventions.md).
-- **🚨 Branch from `origin/development`** and target PRs at `development`, never `master`. Check for existing code against `origin/development`.
+- **🚨 Branch from `origin/development`** and target PRs at `development`, never `master` (hotfixes: use the `/hotfix-deploy` skill). Check for existing code against `origin/development`.
 - **🚨 Before opening a PR for issue #N**, run `gh pr list --state all --search N`. If one is open, add to it; if one is merged, the fix is already in `development`. Never open a second PR for the same issue.
 - **🚨 Deploy branches are `<hospital>-production` / `<hospital>-staging`** (India estate). Never target `*-prod`, `*-stg` or `*-migrated`; they were retired 2026-10-11. See [Deployment map](developer_docs/deployment/ci-cd-pipeline-overview.md).
 - **🚨 Branches targeting a production/staging branch end in `-hotfix`** (CI `check-branch` warns otherwise; QA-tested `home-qa*` heads are also accepted). Use the `/hotfix-deploy` skill. Exception: `rh-local-staging` accepts only `development` as the PR head (CI `branch_merge_validation.yml`).
