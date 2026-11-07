@@ -3049,6 +3049,10 @@ public class PharmacySaleForCashierController2 implements Serializable, Controll
 //        getPreBill().setMembershipScheme(membershipSchemeController.fetchPatientMembershipScheme(pt, getSessionController().getApplicationPreference().isMembershipExpires()));
         getPreBill().setToStaff(toStaff);
         getPreBill().setToInstitution(toInstitution);
+        // Credit sale: the credit company is the counterparty; record it in creditCompany too,
+        // as the native page does, so the bill reaches credit-company debtor reports (#22462).
+        // Set on every save, including null, so a retried PreBill never keeps an earlier company.
+        getPreBill().setCreditCompany(getPaymentMethod() == PaymentMethod.Credit ? toInstitution : null);
 
         getPreBill().setComments(comment);
 
@@ -5106,6 +5110,9 @@ public class PharmacySaleForCashierController2 implements Serializable, Controll
 
     @Deprecated // Use listnerForPaymentMethodChange
     public void changeListener() {
+        if (paymentMethod != PaymentMethod.Credit) {
+            toInstitution = null; // credit company applies to Credit only (#22462)
+        }
         if (paymentMethod == PaymentMethod.PatientDeposit) {
             getPaymentMethodData().getPatient_deposit().setPatient(patient);
         }
