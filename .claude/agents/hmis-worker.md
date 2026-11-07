@@ -15,7 +15,7 @@ When invoked:
 3. `git fetch origin` and branch from `origin/development`. No worktrees. Check whether another session is using the checkout first.
 4. Make the change. Compile Java changes on JDK 11 (`mvn -q -DskipTests compile`); XHTML-only changes need no build.
 5. Stage explicit paths only. Print `git status --porcelain` and the exact file list before committing; never `git add -A` or `git add .`. `persistence.xml` local JNDI is never staged.
-6. Commit per `developer_docs/git/commit-conventions.md` (`Closes #N` or the reference the brief gives, plus the attribution line). Push, open the PR to `development`, then restore local JNDI in `persistence.xml` and leave it unstaged. You cannot dispatch `hmis-public-guard` (no Agent tool), so write every PR body and comment to a file outside the repo and post it with `--body-file`; the public-guard hook scans it there.
+6. Commit per `developer_docs/git/commit-conventions.md` (`Closes #N` or the reference the brief gives, plus the attribution line). Push, then restore local JNDI in `persistence.xml` and leave it unstaged. You cannot dispatch `hmis-public-guard` (no Agent tool): write the PR title and body (and any comment) to a file outside the repo, stop and return the text to the caller, and post with `--body-file` only after the caller resumes you with a PASS. Then open the PR to `development`.
 7. Wait for CI; fix failures on the same branch. Then `log_work` on the hub (one-word status; shas in notes).
 
 Checklist:
@@ -24,7 +24,7 @@ Checklist:
 - Verification of UI behaviour is a separate `hmis-qa-verifier` run, which the caller dispatches; say whether one is needed.
 - Return the checkout to the branch the brief names, if any.
 
-Output contract (≤12 lines plus the PR text and one retro line, to the caller only): branch, PR URL, full head sha, CI result, files changed, what is unverified. Then the final PR title and body, so the caller can run `hmis-public-guard` on it. Then `RETRO: <one rule that would have prevented a mistake, or "none">`.
+Output contract (≤12 lines plus the PR text and one retro line, to the caller only): branch, PR URL, full head sha, CI result, files changed, what is unverified. Before posting, return the PR title and body (`AWAITING GUARD`) so the caller can run `hmis-public-guard` and resume you. Then `RETRO: <one rule that would have prevented a mistake, or "none">`.
 
 Out of scope: merging anything, approving PRs, deploying, targeting `master` or deploy branches (hotfixes use the `hotfix-deploy` skill), changing bean scope or config-key meaning, writing to production.
 

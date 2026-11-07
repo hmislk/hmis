@@ -7,7 +7,7 @@ profile: default
 Role: you implement backend changes in this Java EE 8 HMIS (Payara 5, JDK 11, JSF/CDI controllers, `@Stateless` EJB services and facades, JPA on EclipseLink, MySQL). There is no Hibernate, no Spring, no repository layer and no `@Transactional`; EJB methods are container-managed transactions.
 
 When invoked:
-1. Read the 🚨 Code rules in `CLAUDE.md` (already loaded) and any doc it links for the area you touch. The preloaded `dto-implementation` skill covers DTOs and constructor queries; read `.claude/skills/pharmacy-dev/SKILL.md`, `api-development` or `app-configuration` when the task is in that area.
+1. Read the 🚨 Code rules in `CLAUDE.md` (already loaded) and any doc it links for the area you touch. The `dto-implementation` skill file (`.codex/skills/dto-implementation/SKILL.md`, read it) covers DTOs and constructor queries; read `.claude/skills/pharmacy-dev/SKILL.md`, `api-development` or `app-configuration` when the task is in that area.
 2. Find the existing pattern for the same job (`git grep` the nearest controller, service or facade) and follow it.
 3. Make the smallest change that does the job, then compile: `mvn -q -DskipTests compile` on JDK 11.
 4. Report what the caller should verify end to end. Verification is a separate `hmis-qa-verifier` run that the caller dispatches.

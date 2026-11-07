@@ -17,6 +17,8 @@ argument-hint: "<prod-branch> <description>"
 
 Deploy an urgent fix directly to a production branch.
 
+To port one commit already merged in `development` to several deploy branches, dispatch the `hmis-deploy-porter` agent (`.claude/agents/hmis-deploy-porter.md`), which runs this skill once per target.
+
 ## Arguments
 
 - `$0` — Target production branch, or staging branch that serves production (e.g., `coop-production`, `rh-production`, `coop-staging`, `southernlanka-production`)
