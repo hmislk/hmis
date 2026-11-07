@@ -3589,7 +3589,7 @@ public class PharmacySaleForCashierController implements Serializable, Controlle
      * twice or create an empty PreBill. The flag is reset in finally so every
      * early return of the internal method releases it.
      */
-    public String settlePreBillAndNavigateToPrint() {
+    public synchronized String settlePreBillAndNavigateToPrint() {
         if (billSettlingStarted) {
             JsfUtil.addErrorMessage("Settlement is already in progress. Please wait.");
             return null;
