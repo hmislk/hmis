@@ -15,12 +15,22 @@ if [ "${HMIS_ALLOW_RISKY_PUSH:-}" = "1" ]; then
   exit 0
 fi
 
+# Exclude only commits already on the push destination's remote-tracking
+# branches, so a commit that exists only on another remote is still checked.
+# Fall back to all remotes when $1 is a URL or a remote with no tracking refs.
+REMOTE="${1:-}"
+if [ -n "$REMOTE" ] && [ -n "$(git for-each-ref --count=1 "refs/remotes/$REMOTE/" 2>/dev/null)" ]; then
+  EXCLUDE="--remotes=$REMOTE"
+else
+  EXCLUDE="--remotes"
+fi
+
 STATUS=0
 while read -r local_ref local_sha remote_ref remote_sha; do
   [ -n "${local_sha:-}" ] || continue
   case "$local_sha" in *[!0]*) ;; *) continue ;; esac   # branch deletion
-  # Outgoing = commits not already on any remote-tracking branch.
-  set -- "$local_sha" --not --remotes
+  # Outgoing = commits not already on the destination's remote-tracking branches.
+  set -- "$local_sha" --not "$EXCLUDE"
   case "$remote_sha" in
     *[!0]*) git cat-file -e "$remote_sha^{commit}" 2>/dev/null && set -- "$@" "$remote_sha" ;;
   esac

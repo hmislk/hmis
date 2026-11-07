@@ -23,6 +23,9 @@ fi
 REPO_ROOT="$(git rev-parse --show-toplevel)" || exit 2
 PATTERNS="${CHANGESET_GUARD_PATTERNS:-$REPO_ROOT/.github/changeset-guard-patterns.txt}"
 MAX_BYTES="${CHANGESET_GUARD_MAX_BYTES:-5242880}"
+case "$MAX_BYTES" in
+  ''|*[!0-9]*) echo "changeset-guard: CHANGESET_GUARD_MAX_BYTES must be a whole number of bytes: $MAX_BYTES" >&2; exit 2 ;;
+esac
 
 if [ ! -f "$PATTERNS" ]; then
   echo "changeset-guard: patterns file not found: $PATTERNS" >&2
@@ -31,16 +34,18 @@ fi
 
 BLOCK_FILE="$(mktemp)"
 ALLOW_FILE="$(mktemp)"
+DENY_FILE="$(mktemp)"
 ADDED_FILE="$(mktemp)"
-trap 'rm -f "$BLOCK_FILE" "$ALLOW_FILE" "$ADDED_FILE"' EXIT
+trap 'rm -f "$BLOCK_FILE" "$ALLOW_FILE" "$DENY_FILE" "$ADDED_FILE"' EXIT
 
-# Split the patterns file into block and allow lists (tolerates CRLF).
+# Split the patterns file into block, allow and deny lists (tolerates CRLF).
 while IFS= read -r line || [ -n "$line" ]; do
   line="$(printf '%s' "$line" | tr -d '\r')"
   case "$line" in
     ''|'#'*) continue ;;
     'block '*) printf '%s\n' "${line#block }" >> "$BLOCK_FILE" ;;
     'allow '*) printf '%s\n' "${line#allow }" >> "$ALLOW_FILE" ;;
+    'deny '*) printf '%s\n' "${line#deny }" >> "$DENY_FILE" ;;
     *) echo "changeset-guard: ignoring malformed rule: $line" >&2 ;;
   esac
 done < "$PATTERNS"
@@ -66,13 +71,19 @@ REPORT=""
 while IFS=' ' read -r commit blob mode path; do
   [ -n "${path:-}" ] || continue
   reason=""
-  if ! printf '%s\n' "$path" | grep -iqE -f "$ALLOW_FILE" 2>/dev/null; then
+  list=""
+  if [ -s "$DENY_FILE" ] && printf '%s\n' "$path" | grep -iqE -f "$DENY_FILE"; then
+    list="$DENY_FILE"
+  elif ! printf '%s\n' "$path" | grep -iqE -f "$ALLOW_FILE" 2>/dev/null; then
     if [ -s "$BLOCK_FILE" ] && printf '%s\n' "$path" | grep -iqE -f "$BLOCK_FILE"; then
-      rule="$(while IFS= read -r re; do
-                printf '%s\n' "$path" | grep -iqE -- "$re" && { printf '%s' "$re"; break; }
-              done < "$BLOCK_FILE")"
-      reason="matches risky pattern '$rule'"
+      list="$BLOCK_FILE"
     fi
+  fi
+  if [ -n "$list" ]; then
+    rule="$(while IFS= read -r re; do
+              printf '%s\n' "$path" | grep -iqE -- "$re" && { printf '%s' "$re"; break; }
+            done < "$list")"
+    reason="matches risky pattern '$rule'"
   fi
   if [ "$mode" != "160000" ]; then
     size="$(git cat-file -s "$blob" 2>/dev/null || echo 0)"
@@ -95,7 +106,8 @@ if [ "$FOUND" -gt 0 ]; then
   echo "Remove each file from the commits that add it (git rebase / git reset), not"
   echo "just in a later commit: a deleted file stays in the public history."
   echo "Screenshots, PDFs, dumps and logs belong outside the repo. If a file is"
-  echo "legitimate, add an 'allow' rule to .github/changeset-guard-patterns.txt."
+  echo "legitimate, add an 'allow' rule to .github/changeset-guard-patterns.txt"
+  echo "('allow' does not exempt 'deny' rules or files over the size limit)."
   exit 1
 fi
 

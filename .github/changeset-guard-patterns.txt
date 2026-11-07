@@ -3,9 +3,10 @@
 # (scripts/hooks/pre-push). Both fail when a commit ADDS a file that matches a
 # "block" line and no "allow" line. Files already in the repo are not checked.
 #
-# Format: one rule per line, "block <ERE>" or "allow <ERE>". The ERE is
-# matched case-insensitively (grep -iE) against the repo-relative path.
-# "allow" wins over "block". Files over the size limit fail regardless.
+# Format: one rule per line, "block <ERE>", "allow <ERE>" or "deny <ERE>". The
+# ERE is matched case-insensitively (grep -iE) against the repo-relative path.
+# "allow" wins over "block"; "deny" fails even when an "allow" line matches.
+# Files over the size limit fail regardless of "allow".
 # To add a legitimate path, add an "allow" line in the same PR; reviewers see it.
 
 # Scratch directories and browser-automation output
@@ -27,11 +28,11 @@ block \.(dump|bak)$
 block \.log$
 block \.(tgz|zip)$
 
-# Secrets and keys
+# Secrets and keys ("deny": no allow rule exempts them)
 block (^|/)\.env(\.[^/]*)?$
-block credentials[^/]*$
-block \.pem$
-block (^|/)id_rsa[^/]*$
+deny credentials[^/]*$
+deny \.pem$
+deny (^|/)id_rsa[^/]*$
 allow (^|/)\.env\.example$
 
 # Legitimate SQL: database migrations and the reference SQL kept with the app

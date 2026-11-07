@@ -10,14 +10,14 @@ name: Changeset guard
 # in the same PR, where the reviewer sees it.
 #
 # hotfix-label: a PR into a deploy branch (<hospital>-production /
-# <hospital>-staging) should carry the 'hotfix' label. Advisory, like
-# check-branch: it warns and never fails (deploy branches have no required
-# checks, decided 2026-10-28). rh-local-staging is exempt: it only takes
+# <hospital>-staging) must carry the 'hotfix' label; the job fails without it
+# (reviewer decision on PR #25282). It blocks a merge only if the Deploy
+# Branches ruleset requires it. rh-local-staging is exempt: it only takes
 # development.
 
 on:
   pull_request:
-    types: [opened, synchronize, reopened, labeled, unlabeled]
+    types: [opened, synchronize, reopened, edited, labeled, unlabeled]
 
 permissions:
   contents: read
@@ -63,7 +63,7 @@ jobs:
         run: |
           if [ "$HAS_LABEL" = "true" ]; then
             echo "Label 'hotfix' present on this PR into $BASE_REF."
-          else
-            echo "::warning::This PR targets deploy branch $BASE_REF but has no 'hotfix' label. Add it (gh pr edit <N> --add-label hotfix); merging this PR deploys. See the hotfix-deploy skill."
+            exit 0
           fi
-          exit 0
+          echo "::error::This PR targets deploy branch $BASE_REF but has no 'hotfix' label. Add it (gh pr edit <N> --add-label hotfix); merging this PR deploys. See the hotfix-deploy skill."
+          exit 1

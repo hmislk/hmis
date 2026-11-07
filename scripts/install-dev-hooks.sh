@@ -89,6 +89,7 @@ fi
 HOOKS_DIR="$(git rev-parse --git-path hooks)"
 mkdir -p "$HOOKS_DIR"
 PRE_PUSH="$HOOKS_DIR/pre-push"
+GUARD_INSTALLED=0
 if [ -f "$PRE_PUSH" ] && ! grep -q "HMIS changeset-guard pre-push" "$PRE_PUSH"; then
   echo "[WARN] $PRE_PUSH already exists and is not ours; not overwriting."
   echo "       Call scripts/hooks/pre-push from it to enable the changeset guard."
@@ -101,12 +102,17 @@ HOOK_SCRIPT="$(git rev-parse --show-toplevel)/scripts/hooks/pre-push"
 exec bash "$HOOK_SCRIPT" "$@"
 HOOK
   chmod +x "$PRE_PUSH"
+  GUARD_INSTALLED=1
   echo "[OK] changeset-guard pre-push hook installed in $PRE_PUSH"
 fi
 
 echo ""
 echo "=== Done ==="
-echo "Your commits will now be scanned for secrets before they are created,"
-echo "and pushes that add risky files (screenshots, PDFs, dumps, tmp/ files)"
-echo "are blocked. Bypass one push only with: HMIS_ALLOW_RISKY_PUSH=1 git push"
+echo "Your commits will now be scanned for secrets before they are created."
+if [ "$GUARD_INSTALLED" = "1" ]; then
+  echo "Pushes that add risky files (screenshots, PDFs, dumps, tmp/ files) are"
+  echo "blocked. Bypass one push only with: HMIS_ALLOW_RISKY_PUSH=1 git push"
+else
+  echo "[WARN] The changeset guard is NOT active on push: see the warning above."
+fi
 echo "To test: gitleaks detect --config=.gitleaks.toml -v"
