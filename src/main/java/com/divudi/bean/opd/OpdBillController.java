@@ -4668,13 +4668,11 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
                         p.setPaidValue(cd.getPaymentMethodData().getStaffCredit().getTotalValue());
                         if (cd.getPaymentMethodData().getStaffCredit().getToStaff() != null) {
                             if (cd.getPaymentMethod() == PaymentMethod.Staff) {
-                                // Record the staff so cancellation can reverse it (#20549).
-                                // settle() applies the credit via paymentService.updateBalances.
+                                // Record the staff on the payment row (#20549).
                                 p.setToStaff(cd.getPaymentMethodData().getStaffCredit().getToStaff());
-                            } else {
-                                staffBean.updateStaffCredit(cd.getPaymentMethodData().getStaffCredit().getToStaff(), cd.getPaymentMethodData().getStaffCredit().getTotalValue());
-                                JsfUtil.addSuccessMessage("Staff Credit Updated");
                             }
+                            staffBean.updateStaffCredit(cd.getPaymentMethodData().getStaffCredit().getToStaff(), cd.getPaymentMethodData().getStaffCredit().getTotalValue());
+                            JsfUtil.addSuccessMessage("Staff Credit Updated");
                         }
                         break;
                     case Staff_Welfare:
