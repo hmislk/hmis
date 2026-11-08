@@ -2921,6 +2921,10 @@ public class PatientController implements Serializable, ControllerWithPatient {
             JsfUtil.addErrorMessage("No relationship.");
             return;
         }
+        if (isAlreadyFamilyMember(currentFamily, current)) {
+            JsfUtil.addErrorMessage("This family member has already been added.");
+            return;
+        }
         current.getPerson().setMembershipScheme(currentFamily.getMembershipScheme());
         save(current);
         saveFamily();
@@ -2942,6 +2946,31 @@ public class PatientController implements Serializable, ControllerWithPatient {
         JsfUtil.addSuccessMessage("Family Member Added to Family");
         current = null;
         currentRelation = null;
+    }
+
+    /**
+     * True when the patient (same record, or same NIC) is already an active member of the family (#16299).
+     */
+    private boolean isAlreadyFamilyMember(Family family, Patient patient) {
+        if (family == null || patient == null || family.getFamilyMembers() == null) {
+            return false;
+        }
+        String nic = patient.getPerson() == null || patient.getPerson().getNic() == null
+                ? "" : patient.getPerson().getNic().trim();
+        for (FamilyMember fm : family.getFamilyMembers()) {
+            if (fm == null || fm.isRetired() || fm.getPatient() == null) {
+                continue;
+            }
+            Patient existing = fm.getPatient();
+            if (existing == patient || (patient.getId() != null && patient.getId().equals(existing.getId()))) {
+                return true;
+            }
+            if (!nic.isEmpty() && existing.getPerson() != null && existing.getPerson().getNic() != null
+                    && nic.equalsIgnoreCase(existing.getPerson().getNic().trim())) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public void removeFamilyMember() {
