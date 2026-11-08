@@ -2046,6 +2046,33 @@ public class PatientReportController implements Serializable {
         JsfUtil.addSuccessMessage("Antibiotic group added");
     }
 
+    /**
+     * Permanently deletes an added organism (antibiotic group) and all its
+     * values from the current Microbiology report. Not allowed once the
+     * report is approved.
+     */
+    public void removePatientReportGroupForMicrobiology(PatientReportGroup group) {
+        if (currentPatientReport == null) {
+            JsfUtil.addErrorMessage("No patient report available");
+            return;
+        }
+        if (group == null) {
+            JsfUtil.addErrorMessage("No organism selected");
+            return;
+        }
+        if (Boolean.TRUE.equals(currentPatientReport.getApproved())) {
+            JsfUtil.addErrorMessage("Cannot delete an organism from an approved report");
+            return;
+        }
+
+        String removedName = group.getGroupName();
+        getPrBean().removeOrganismGroup(currentPatientReport, group);
+
+        // Save the report so its cached lists no longer hold the deleted rows.
+        savePatientReport();
+        JsfUtil.addSuccessMessage("Organism removed" + (removedName == null ? "" : ": " + removedName));
+    }
+
     public PatientReportGroup addPatientReportGroup() {
         if (!validateAndPrepareGroupAddition()) {
             return null;
