@@ -7418,17 +7418,9 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
     }
 
     public PaymentMethodData getPaymentMethodData() {
-        // If we're viewing a bill that was paid with multiple payment methods,
-        // and we have stored original payment data, use that for the "Original Payment Details" section
-        if (this.bill != null
-                && this.bill.getPaymentMethod() == PaymentMethod.MultiplePaymentMethods
-                && originalPaymentMethodData != null
-                && originalPaymentMethodData.getPaymentMethodMultiple() != null
-                && !originalPaymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().isEmpty()) {
-            return originalPaymentMethodData;
-        }
-
-        // Otherwise return the normal payment method data for editing
+        // Always the new bill's own payment data: the cancel/refund save code
+        // uses this object, so the page must edit it. The original bill's
+        // payments are read from getOriginalPaymentMethodData() instead.
         if (paymentMethodData == null) {
             paymentMethodData = new PaymentMethodData();
         }
