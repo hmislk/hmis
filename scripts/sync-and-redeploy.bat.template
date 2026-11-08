@@ -11,6 +11,15 @@ if not exist "%CONFIG_FILE%" (
 )
 call "%CONFIG_FILE%"
 
+REM Usage: sync-and-redeploy.bat [--deploy-only]
+REM   --deploy-only  (or set DEPLOY_ONLY=1) skips git sync and rebuild and re-deploys the
+REM                  WAR already in target\. Use it to recover after a deploy was killed
+REM                  (e.g. out of memory) - no 150 MB rebuild needed.
+REM MIN_FREE_MB (env or config file) is the free RAM required before deploying.
+if /i "%~1"=="--deploy-only" set "DEPLOY_ONLY=1"
+if not defined DEPLOY_ONLY set "DEPLOY_ONLY=0"
+if not defined MIN_FREE_MB set "MIN_FREE_MB=3000"
+
 set "PERSISTENCE_FILE=%REPO_ROOT%\src\main\resources\META-INF\persistence.xml"
 cd /d "%REPO_ROOT%" || exit /b 1
 echo === Repo: %REPO_ROOT% ===
@@ -18,6 +27,11 @@ echo === Repo: %REPO_ROOT% ===
 if not "%JAVA_HOME_DETECTED%"=="" (
     set "JAVA_HOME=%JAVA_HOME_DETECTED%"
     set "PATH=%JAVA_HOME%\bin;%PATH%"
+)
+
+if "%DEPLOY_ONLY%"=="1" (
+    echo Deploy-only: skipping git sync and build, using the existing WAR.
+    goto :verify_war
 )
 
 REM 1. Stash a local persistence.xml edit separately, so it never lands in a commit.
@@ -69,9 +83,15 @@ echo Building with %MVN_CMD% ...
 call "%MVN_CMD%" clean package -DskipTests
 
 REM 6. Verify the WAR, rebuild once if it looks stale/empty.
+:verify_war
 call :find_war
 call :check_war_size
 if not "%WAR_OK%"=="1" (
+    if "%DEPLOY_ONLY%"=="1" (
+        echo ERROR: --deploy-only needs a valid WAR in %REPO_ROOT%\target but none was found.
+        echo Run without --deploy-only to build one.
+        exit /b 1
+    )
     echo WAR missing or suspiciously small, rebuilding once...
     call "%MVN_CMD%" clean package -DskipTests
     call :find_war
@@ -82,6 +102,28 @@ if not "%WAR_OK%"=="1" (
     )
 )
 echo WAR ready: %WAR_FILE%
+
+REM 6b. Free-memory pre-check. "deploy --force" undeploys the running app first, so a
+REM kill (out of memory) mid-deploy leaves NO app deployed. Never start an undeploy
+REM that cannot finish: abort here, while the old app is still running.
+call :get_free_mb
+if not defined FREE_MB (
+    echo WARNING: could not read free memory; skipping the pre-deploy memory check.
+    goto :memory_ok
+)
+if %FREE_MB% LSS %MIN_FREE_MB% (
+    echo.
+    echo ERROR: only %FREE_MB% MB RAM free, need at least %MIN_FREE_MB% MB ^(MIN_FREE_MB^) to deploy safely.
+    echo Aborting BEFORE touching the running app, so it stays deployed.
+    echo Options:
+    echo   - Close the browser, Playwright and IDE to free RAM, then re-run with --deploy-only
+    echo   - Build on a roomier machine and copy the WAR here, then run with --deploy-only
+    echo   - Test on staging instead of this machine
+    echo   - Override at your own risk: set MIN_FREE_MB=lower value, then run with --deploy-only
+    exit /b 1
+)
+echo Free memory OK: %FREE_MB% MB ^(minimum %MIN_FREE_MB% MB^).
+:memory_ok
 
 REM 7. Deploy with the discovered name/contextroot - never derived from the WAR filename.
 set "ASADMIN=%PAYARA_HOME%\bin\asadmin.bat"
@@ -94,6 +136,11 @@ echo Recent server.log entries:
 powershell -NoProfile -Command "Get-Content -Tail 30 '%SERVER_LOG%' | Select-String -Pattern 'deployed','deploy.*fail','exception'"
 echo Done. Check http://localhost:%HTTP_PORT%/%CONTEXT_ROOT%/ if the app didn't report success above.
 exit /b 0
+
+:get_free_mb
+set "FREE_MB="
+for /f %%M in ('powershell -NoProfile -Command "[int]((Get-CimInstance Win32_OperatingSystem).FreePhysicalMemory/1024)"') do set "FREE_MB=%%M"
+goto :eof
 
 :find_war
 set "WAR_FILE="

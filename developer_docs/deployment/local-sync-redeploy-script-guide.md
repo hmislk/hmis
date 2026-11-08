@@ -185,9 +185,11 @@ and remember the answer in the per-machine config file described above.
 6. Verify the resulting WAR exists and is non-trivially sized before
    deploying (defends against the truncation issue below); rebuild once if
    it looks wrong.
-7. Deploy with the **discovered** `--name` / `--contextroot` / admin port —
+7. Check free RAM (see "Out-of-memory during deploy" below) and abort
+   before touching the running app if it is below `MIN_FREE_MB`.
+8. Deploy with the **discovered** `--name` / `--contextroot` / admin port —
    never re-derived from the WAR filename.
-8. Poll `server.log` for the domain's actual success/failure line and report
+9. Poll `server.log` for the domain's actual success/failure line and report
    it clearly.
 
 ## Troubleshooting
@@ -227,6 +229,34 @@ correlation, not a confirmed mechanism. The generated script defends against
 it defensively rather than by fixing a root cause: it checks the WAR's size
 immediately before every `asadmin deploy` call and rebuilds if it looks
 stale or empty (step 6 above).
+
+### Out-of-memory during deploy leaves the app undeployed
+
+**Symptom**: the script was killed (out of memory) during step 8 and the
+domain now has **no** application deployed. Seen on memory-tight machines.
+
+**Cause**: `asadmin deploy --force=true` undeploys the running app first,
+then deploys the new WAR. A process kill in between leaves nothing deployed,
+and recovery used to mean a full rebuild (the WAR is about 154 MB).
+
+**Prevention - free-RAM pre-check**: before step 8 the generated script reads
+free RAM (Windows: `FreePhysicalMemory` via PowerShell; Linux:
+`MemAvailable` from `/proc/meminfo`). Below `MIN_FREE_MB` (default `3000`) it
+prints an error and exits **before** the undeploy, so the old app keeps
+running. Override the threshold with an environment variable or a
+`MIN_FREE_MB` line in the config file (`hmis-sync-redeploy.conf.bat` /
+`.hmis-sync-redeploy.conf`). If memory cannot be read, the check is skipped
+with a warning.
+
+**Recovery - `--deploy-only`**: run the script with `--deploy-only` (or set
+`DEPLOY_ONLY=1`). It skips the git sync and the Maven build and re-deploys the
+WAR already in `target/`, after the same size and free-RAM checks. If no valid
+WAR exists it stops and tells you to run a normal build. Typical recovery:
+close the browser/Playwright/IDE, then `sync-and-redeploy --deploy-only`.
+
+**Routing**: on a machine with under about 4 GB free RAM, do not local-deploy
+the full WAR. Build on a roomier machine and copy the WAR to `target/` (then
+use `--deploy-only`), or test on staging.
 
 ## Related Documentation
 
