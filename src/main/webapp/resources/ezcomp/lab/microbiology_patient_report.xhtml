@@ -229,14 +229,20 @@
                                     </div>
                                 </div>
 
-                                <!-- Organism comment -->
+                                <!-- Organism comment: same layout as the memo items (e.g. CULTURE COLONY COUNT) -->
                                 <ui:repeat value="#{patientReportController.currentPatientReport.patientReportItemValues}"
                                            var="prc">
                                     <h:panelGroup layout="block"
-                                                  style="clear: left; text-align: left; font-size: 14px; padding: 4px 0 2px 5%;"
-                                                  rendered="#{prc.patientReportGroup.groupName eq group.groupName and prc.investigationItem.ixItemType eq 'OrganismComment' and not empty prc.lobValue}">
-                                        <h:outputText value="#{prc.investigationItem.name} : " style="font-weight: bold;"/>
-                                        <h:outputText value="#{prc.lobValue}" style="white-space: pre-wrap;"/>
+                                                  style="display: inline-block; clear: left; float: left; width: 100%; vertical-align: top; font-size: 14px; margin-bottom: 0; margin-top: 4px;"
+                                                  rendered="#{prc.patientReportGroup.groupName eq group.groupName and prc.investigationItem.ixItemType eq 'OrganismComment' and prc.lobValuePrintable ne '' and prc.lobValuePrintable ne null}">
+                                        <div style="display: inline-block; float: left; width: 1%; clear: left; " ></div>
+                                        <div style="display: inline-block; top: 0px; float: left; width: 30%; text-align: left; padding-top: 0.1%; padding-bottom: 0.1%; ">
+                                            <h:outputLabel value="#{prc.investigationItem.name}" escape="false"/>
+                                        </div>
+                                        <div style="display: inline-block; float: left; width: 3%; " ></div>
+                                        <div class="micMemoValue" style="display: inline-block; text-align: left; float:left; width: 60%; padding-top: 0.1%; padding-bottom: 0.1%; ">
+                                            <h:outputLabel value="#{prc.lobValueLinesAligned}" escape="false" />
+                                        </div>
                                     </h:panelGroup>
                                 </ui:repeat>
 
