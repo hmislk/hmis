@@ -2949,7 +2949,8 @@ public class PatientController implements Serializable, ControllerWithPatient {
     }
 
     /**
-     * True when the patient (same record, or same NIC) is already an active member of the family (#16299).
+     * True when the patient (same record, same NIC, or same PHN, the member's
+     * number) is already an active member of the family (#16299).
      */
     private boolean isAlreadyFamilyMember(Family family, Patient patient) {
         if (family == null || patient == null || family.getFamilyMembers() == null) {
@@ -2957,6 +2958,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
         }
         String nic = patient.getPerson() == null || patient.getPerson().getNic() == null
                 ? "" : patient.getPerson().getNic().trim();
+        String phn = patient.getPhn() == null ? "" : patient.getPhn().trim();
         for (FamilyMember fm : family.getFamilyMembers()) {
             if (fm == null || fm.isRetired() || fm.getPatient() == null) {
                 continue;
@@ -2967,6 +2969,10 @@ public class PatientController implements Serializable, ControllerWithPatient {
             }
             if (!nic.isEmpty() && existing.getPerson() != null && existing.getPerson().getNic() != null
                     && nic.equalsIgnoreCase(existing.getPerson().getNic().trim())) {
+                return true;
+            }
+            if (!phn.isEmpty() && existing.getPhn() != null
+                    && phn.equalsIgnoreCase(existing.getPhn().trim())) {
                 return true;
             }
         }
