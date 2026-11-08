@@ -1006,7 +1006,7 @@ public class BillPackageController implements Serializable, ControllerWithPatien
                     break;
                 case ewallet:
                     paymentMethodData.getEwallet().setInstitution(
-                        originalPayment.getBank() != null ? originalPayment.getBank() : originalPayment.getInstitution());
+                        originalPayment.getBank() != null ? originalPayment.getBank() : originalPayment.getCreditCompany());
                     paymentMethodData.getEwallet().setReferenceNo(originalPayment.getReferenceNo());
                     paymentMethodData.getEwallet().setNo(originalPayment.getReferenceNo());
                     paymentMethodData.getEwallet().setReferralNo(originalPayment.getPolicyNo());
@@ -1099,7 +1099,7 @@ public class BillPackageController implements Serializable, ControllerWithPatien
                         break;
                     case ewallet:
                         cd.getPaymentMethodData().getEwallet().setInstitution(
-                            originalPayment.getBank() != null ? originalPayment.getBank() : originalPayment.getInstitution());
+                            originalPayment.getBank() != null ? originalPayment.getBank() : originalPayment.getCreditCompany());
                         cd.getPaymentMethodData().getEwallet().setReferenceNo(originalPayment.getReferenceNo());
                         cd.getPaymentMethodData().getEwallet().setNo(originalPayment.getReferenceNo());
                         cd.getPaymentMethodData().getEwallet().setReferralNo(originalPayment.getPolicyNo());
@@ -1198,7 +1198,7 @@ public class BillPackageController implements Serializable, ControllerWithPatien
                     break;
                 case ewallet:
                     paymentMethodData.getEwallet().setInstitution(
-                        originalPayment.getBank() != null ? originalPayment.getBank() : originalPayment.getInstitution());
+                        originalPayment.getBank() != null ? originalPayment.getBank() : originalPayment.getCreditCompany());
                     paymentMethodData.getEwallet().setReferenceNo(originalPayment.getReferenceNo());
                     paymentMethodData.getEwallet().setNo(originalPayment.getReferenceNo());
                     paymentMethodData.getEwallet().setReferralNo(originalPayment.getPolicyNo());
