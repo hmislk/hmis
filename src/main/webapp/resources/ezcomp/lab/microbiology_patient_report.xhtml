@@ -69,7 +69,7 @@
 
         <h:panelGroup rendered="#{patientReportController.currentPatientReport.item.reportType eq 'Microbiology'}"  >
 
-            <div id="divReportM"  class="labReport"   >
+            <div id="divReportM"  class="labReport" data-bottom-limit="#{configOptionApplicationController.getShortTextValueByKey('Microbiology Lab Report Data Area Bottom Limit (%)', '75')}" >
                 <ez:common_report showBackground="#{patientReportController.showBackground or cc.attrs.showBackground}"
                                   commonReportFormat="#{patientReportController.currentPatientReport.reportFormat}"
                                   patientReport="#{patientReportController.currentPatientReport}"/>
@@ -84,16 +84,16 @@
                     </span>
                 </h:panelGroup>
                 
-                <div style="position: absolute; top: #{configOptionApplicationController.getShortTextValueByKey('Microbiology Lab Report Height')}%; width: 97%; left: 1%; text-align: center; font-family:Cambria, Georgia, serif; font-size: 14px; height: 70%; vertical-align: top;" >
+                <div class="micDataArea" style="position: absolute; top: #{configOptionApplicationController.getShortTextValueByKey('Microbiology Lab Report Height')}%; width: 97%; left: 1%; text-align: center; font-family:Cambria, Georgia, serif; font-size: 14px; height: 70%; vertical-align: top;" >
                     <div style="margin-left:5%; text-align: left;">
                         <h:outputLabel 
                             value="#{patientReportController.currentPatientReport.patientInvestigation.investigation.printName}"
                             style="font-weight: bold;font-size: 18px!important; text-decoration: underline; "/>
                     </div>
-                    <div id="labelsAndValues" style="left:5%; margin-top: 7px; width: 90%; display: inline-block; vertical-align: top; " >
+                    <div id="labelsAndValues" class="micDataShell" style="left:5%; margin-top: 7px; width: 90%; display: inline-block; vertical-align: top; " >
                         <div style="vertical-align: top; width: 100%; padding: 1px;margin: auto;display: inline-block;">
                             <ui:repeat  value="#{patientReportController.currentPatientReport.patientReportItemValues}" var="prv" >
-                                <h:panelGroup style="display: inline-block; clear: left; float: left; width: 100%; vertical-align: top; font-size: 14px; margin-bottom: 0;" layout="block"  rendered="#{prv.investigationItem.ixItemType eq 'Value' and prv.investigationItem.ixItemValueType eq 'Memo' and prv.investigationItem.retired ne true and prv.lobValuePrintable ne '' and prv.lobValuePrintable ne null and prv.investigationItem.riTop lt 50 }" >
+                                <h:panelGroup styleClass="micBlock" style="display: inline-block; clear: left; float: left; width: 100%; vertical-align: top; font-size: 14px; margin-bottom: 0;" layout="block"  rendered="#{prv.investigationItem.ixItemType eq 'Value' and prv.investigationItem.ixItemValueType eq 'Memo' and prv.investigationItem.retired ne true and prv.lobValuePrintable ne '' and prv.lobValuePrintable ne null and prv.investigationItem.riTop lt 50 }" >
                                     <div style="display: inline-block; float: left; width: 1%; clear: left; " ></div>
                                     <div style="display: inline-block; top: 0px; float: left; width: 30%; text-align: left; padding-top: 0.1%; padding-bottom: 0.1%; ">
                                         <h:outputLabel value="#{prv.investigationItem.name}"   escape="false"/>
@@ -108,7 +108,7 @@
 
                         <h:panelGroup rendered="#{empty patientReportController.currentPatientReport.patientReportGroups}">
 
-                            <div class="row">
+                            <div class="row micBlock">
                                 <div class="col-6">
                                     <ui:repeat  
                                         value="#{patientInvestigationController.column1AntibioticList}" 
@@ -163,14 +163,14 @@
                                        var="group"   
                                        >
 
-                                <div style="vertical-align: top; text-align: left;  padding-top: 0.1%; padding-bottom: 0%; clear: left;">
+                                <div class="micBlock" style="vertical-align: top; text-align: left;  padding-top: 0.1%; padding-bottom: 0%; clear: left;">
                                     <h:outputLabel 
                                         value="#{group.groupName}" 
                                         rendered="#{patientReportController.currentPatientReport.transHasAbst}"
                                         style="font-size: 135%; margin-top: 2px; font-weight: bold;">
                                     </h:outputLabel>
                                 </div>
-                                <div class="row">
+                                <div class="row micBlock">
                                     <div class="col-6">
                                         <ui:repeat  
                                             value="#{patientInvestigationController.column1AntibioticList}" 
@@ -229,10 +229,28 @@
                                     </div>
                                 </div>
 
+                                <!-- Organism comment: same layout as the memo items (e.g. CULTURE COLONY COUNT) -->
+                                <ui:repeat value="#{patientReportController.currentPatientReport.patientReportItemValues}"
+                                           var="prc">
+                                    <h:panelGroup layout="block"
+                                                  styleClass="micBlock"
+                                                  style="display: inline-block; clear: left; float: left; width: 100%; vertical-align: top; font-size: 14px; margin-bottom: 0; margin-top: 4px;"
+                                                  rendered="#{prc.patientReportGroup.groupName eq group.groupName and prc.investigationItem.ixItemType eq 'OrganismComment' and prc.lobValuePrintable ne '' and prc.lobValuePrintable ne null}">
+                                        <div style="display: inline-block; float: left; width: 1%; clear: left; " ></div>
+                                        <div style="display: inline-block; top: 0px; float: left; width: 30%; text-align: left; padding-top: 0.1%; padding-bottom: 0.1%; ">
+                                            <h:outputLabel value="#{prc.investigationItem.name}" escape="false"/>
+                                        </div>
+                                        <div style="display: inline-block; float: left; width: 3%; " ></div>
+                                        <div class="micMemoValue" style="display: inline-block; text-align: left; float:left; width: 60%; padding-top: 0.1%; padding-bottom: 0.1%; ">
+                                            <h:outputLabel value="#{prc.lobValueLinesAligned}" escape="false" />
+                                        </div>
+                                    </h:panelGroup>
+                                </ui:repeat>
+
                             </ui:repeat>
                         </h:panelGroup>
 
-                        <div style="vertical-align: top; text-align: left; padding-top: 3px; clear: left;">
+                        <div class="micBlock" style="vertical-align: top; text-align: left; padding-top: 3px; clear: left;">
                             <h:panelGroup rendered="#{patientReportController.currentPatientReport.patientReportItemValues.size()gt 0}">
                                 <hr/>
                             </h:panelGroup>
@@ -240,13 +258,13 @@
 
                         <div style="vertical-align: top; text-align: left; font-size: 14px;  padding-top: 0%; padding-bottom: 0%; clear: left;">
                             <ui:repeat  value="#{patientReportController.currentPatientReport.patientReportItemValues}" var="prv" >
-                                <h:panelGroup layout="block" style="display: block; clear: left; float: left; width: 100%; margin-bottom: 12px;" rendered="#{prv.investigationItem.ixItemType eq 'Value' and prv.investigationItem.ixItemValueType eq 'Memo' and prv.investigationItem.retired ne true and prv.lobValuePrintable ne '' and prv.lobValuePrintable ne null and prv.investigationItem.riTop gt 50 }" >
+                                <h:panelGroup layout="block" styleClass="micBlock" style="display: block; clear: left; float: left; width: 100%; margin-bottom: 12px;" rendered="#{prv.investigationItem.ixItemType eq 'Value' and prv.investigationItem.ixItemValueType eq 'Memo' and prv.investigationItem.retired ne true and prv.lobValuePrintable ne '' and prv.lobValuePrintable ne null and prv.investigationItem.riTop gt 50 }" >
                                     <div style="float: left;width: 5%; " ></div>
                                     <div style=" float: left; text-align: left; width: 20%;padding-left: 1px; padding-right: 1px; padding-top: 1px; vertical-align: top;">
                                         <h:outputLabel value="#{prv.investigationItem.name}"  escape="false" />
                                     </div>
                                 </h:panelGroup>
-                                <h:panelGroup layout="block" style="display: block; clear: left; float: left; width: 100%; margin-bottom: 12px;" rendered="#{prv.investigationItem.ixItemType eq 'Value' and prv.investigationItem.ixItemValueType eq 'Memo' and prv.investigationItem.retired ne true and prv.lobValuePrintable ne '' and prv.lobValuePrintable ne null and prv.investigationItem.riTop gt 50 }" >
+                                <h:panelGroup layout="block" styleClass="micBlock" style="display: block; clear: left; float: left; width: 100%; margin-bottom: 12px;" rendered="#{prv.investigationItem.ixItemType eq 'Value' and prv.investigationItem.ixItemValueType eq 'Memo' and prv.investigationItem.retired ne true and prv.lobValuePrintable ne '' and prv.lobValuePrintable ne null and prv.investigationItem.riTop gt 50 }" >
                                     <div class="micMemoValue" style=" text-align: left; float:left; margin-left: 5%; width: 90%;padding-left: 1px; padding-right: 1px; padding-top: 1px; vertical-align: top;">
                                         <h:outputLabel value="#{prv.lobValueLinesAligned}"    escape="false" />
                                     </div>
@@ -274,7 +292,169 @@
                         </ui:repeat>
                     </div>
                 </div>
+
+                <!-- Page number ("Page 1 of 2"), shown just below the data-area bottom
+                     limit line (75% by default). Text and top position are set by
+                     micPaginateReport(); format and font/side come from config. -->
+                <div class="micPageNo"
+                     data-format="#{configOptionApplicationController.getShortTextValueByKey('Microbiology Lab Report Page Number Format', 'Page {page} of {total}')}"
+                     style="position: absolute; top: 75.5%; z-index: 950; font-family: Cambria, Georgia, serif; #{configOptionApplicationController.getShortTextValueByKey('Microbiology Lab Report Page Number Text Style', 'right: 4%; font-size: 12px;')}"></div>
             </div>
+            <script>
+                /*
+                 * Splits the microbiology report over several A4 pages.
+                 * Page 1 holds report rows (.micBlock) down to the data-area
+                 * bottom limit (data-bottom-limit, % of the page height, default
+                 * 75). The first row that ends below it, and every row after it,
+                 * move to a new page: a copy of page 1 (letterhead, header,
+                 * watermark) with an empty data area. Repeats for page 3 and on.
+                 * Extra pages get .labReportNext, so Print page-breaks them and
+                 * Export PDF (labReportTrimPdf) makes one PDF page per box.
+                 * Positions are compared as fractions of the page height, so a
+                 * scaled (mobile) preview measures the same.
+                 */
+                (function () {
+                    if (window.micPaginateReport) {
+                        return;
+                    }
+                    var moved = [];
+
+                    function restore() {
+                        moved.forEach(function (m) {
+                            if (m.placeholder.isConnected) {
+                                m.placeholder.parentNode.replaceChild(m.block, m.placeholder);
+                            }
+                        });
+                        moved = [];
+                        document.querySelectorAll('.micPageCont').forEach(function (p) {
+                            p.parentNode.removeChild(p);
+                        });
+                    }
+
+                    // A new page is a full copy of page 1 (letterhead, header, title,
+                    // external images, watermark, page number ...) with only the
+                    // result rows (.micBlock) taken out; the moved rows go into
+                    // .micPageBody at the top of the results area.
+                    function makePage(page1, pageNo) {
+                        var page = page1.cloneNode(true);
+                        page.querySelectorAll('[id]').forEach(function (e) {
+                            e.removeAttribute('id');
+                        });
+                        page.id = 'divReportM_p' + pageNo;
+                        page.classList.add('labReportNext', 'micPageCont');
+                        page.querySelectorAll('.micBlock').forEach(function (b) {
+                            b.parentNode.removeChild(b);
+                        });
+                        var holder = page.querySelector('.micDataShell') || page.querySelector('.micDataArea');
+                        var body = document.createElement('div');
+                        body.className = 'micPageBody';
+                        body.style.width = '100%';
+                        body.style.display = 'flow-root';
+                        holder.insertBefore(body, holder.firstChild);
+                        return page;
+                    }
+
+                    function bottomLimitPercent(page) {
+                        var limit = parseFloat(page.getAttribute('data-bottom-limit'));
+                        return (limit > 0 &amp;&amp; limit !== Infinity &amp;&amp; !(limit > 100)) ? limit : 75;
+                    }
+
+                    function setPageNumbers() {
+                        var pages = Array.prototype.slice.call(document.querySelectorAll('#divReportM, .micPageCont'));
+                        pages.forEach(function (pg, i) {
+                            var el = pg.querySelector('.micPageNo');
+                            if (!el) {
+                                return;
+                            }
+                            // just below the data-area bottom limit line
+                            el.style.top = (bottomLimitPercent(pg) + 0.5) + '%';
+                            el.style.bottom = 'auto';
+                            var fmt = el.getAttribute('data-format') || 'Page {page} of {total}';
+                            el.textContent = fmt.replace('{page}', String(i + 1)).replace('{total}', String(pages.length));
+                        });
+                    }
+
+                    window.micPaginateReport = function () {
+                        restore();
+                        setPageNumbers();
+                        var page1 = document.getElementById('divReportM');
+                        if (!page1) {
+                            return;
+                        }
+                        var data = page1.querySelector('.micDataArea');
+                        if (!data || page1.getBoundingClientRect().height === 0) {
+                            return;
+                        }
+                        var limit = bottomLimitPercent(page1) / 100;
+
+                        var blocks = Array.prototype.slice.call(data.querySelectorAll('.micBlock'));
+                        var current = page1;
+                        var start = 0;
+                        var pageNo = 1;
+                        while (start !== blocks.length) {
+                            var r = current.getBoundingClientRect();
+                            var cut = -1;
+                            for (var i = start; i !== blocks.length; i++) {
+                                var b = blocks[i].getBoundingClientRect();
+                                if (b.height === 0) {
+                                    continue;
+                                }
+                                if ((b.bottom - r.top) / r.height > limit + 0.0001) {
+                                    cut = i;
+                                    break;
+                                }
+                            }
+                            if (cut === -1) {
+                                break;
+                            }
+                            // A row taller than a whole page stays alone on its page.
+                            if (cut === start &amp;&amp; current !== page1) {
+                                cut = start + 1;
+                                if (cut === blocks.length) {
+                                    break;
+                                }
+                            }
+                            pageNo++;
+                            var page = makePage(page1, pageNo);
+                            current.parentNode.insertBefore(page, current.nextSibling);
+                            var body = page.querySelector('.micPageBody');
+                            for (var j = cut; j !== blocks.length; j++) {
+                                var blk = blocks[j];
+                                if (!blk.micPlaceholder || !blk.micPlaceholder.isConnected) {
+                                    var ph = document.createComment('micBlock');
+                                    blk.parentNode.insertBefore(ph, blk);
+                                    blk.micPlaceholder = ph;
+                                    moved.push({placeholder: ph, block: blk});
+                                }
+                                body.appendChild(blk);
+                            }
+                            current = page;
+                            start = cut;
+                            if (pageNo > 20) {
+                                break;
+                            }
+                        }
+                        setPageNumbers();
+                        if (typeof window.micFitPreview === 'function') {
+                            window.micFitPreview();
+                        }
+                    };
+
+                    function run() {
+                        window.micPaginateReport();
+                    }
+                    window.addEventListener('load', run);
+                    if (document.fonts &amp;&amp; document.fonts.ready) {
+                        document.fonts.ready.then(run);
+                    }
+                    if (window.jQuery) {
+                        jQuery(document).on('pfAjaxComplete', run);
+                    }
+                })();
+                if (document.readyState === 'complete') {
+                    window.micPaginateReport();
+                }
+            </script>
         </h:panelGroup>
     </cc:implementation>
 </html>

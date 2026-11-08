@@ -144,6 +144,7 @@
                                                 itemLabel="#{ix.name}" 
                                                 itemValue="#{ix}" 
                                                 size="30" 
+                                                maxResults="15"
                                                 class="w-100" 
                                                 inputStyleClass="w-100">
                                                 <f:ajax event="itemSelect" execute="@this" render="department" ></f:ajax>
@@ -153,10 +154,11 @@
                                             <p:outputLabel value="Lab Department"  for="department" />
                                             <h:panelGroup id="department"  >
                                                 <p:selectOneMenu 
+                                                    class="w-100"
                                                     value="#{collectingCentreController.current.labDepartment}" 
                                                     rendered="#{collectingCentreController.current.labInstitution ne null}" >
                                                     <f:selectItem itemLabel="Select Department"/>
-                                                    <f:selectItems value="#{departmentController.getInstitutionDepatrments(collectingCentreController.current.labInstitution)}"/>
+                                                    <f:selectItems value="#{departmentController.getInstitutionLabDepartments(collectingCentreController.current.labInstitution)}"/>
                                                 </p:selectOneMenu>
                                                 <p:outputLabel 
                                                     value=""

@@ -2129,7 +2129,29 @@ public class PharmacySaleController2 implements Serializable, ControllerWithPati
         setToken(currentToken);
     }
 
-    public String settlePreBillAndNavigateToPrint() {
+    /**
+     * Guarded entry point (#21153): a double-submit must never run the settle
+     * twice or create an empty PreBill. The flag is reset in finally so every
+     * early return of the internal method releases it.
+     */
+    public synchronized String settlePreBillAndNavigateToPrint() {
+        if (billSettlingStarted) {
+            JsfUtil.addErrorMessage("Settlement is already in progress. Please wait.");
+            return null;
+        }
+        if (getPreBill() == null || getPreBill().getBillItems() == null || getPreBill().getBillItems().isEmpty()) {
+            JsfUtil.addErrorMessage("No Items added to bill to sale");
+            return null;
+        }
+        billSettlingStarted = true;
+        try {
+            return settlePreBillAndNavigateToPrintInternal();
+        } finally {
+            billSettlingStarted = false;
+        }
+    }
+
+    private String settlePreBillAndNavigateToPrintInternal() {
         configOptionFacade.flush();
         editingQty = null;
 
@@ -2824,18 +2846,12 @@ public class PharmacySaleController2 implements Serializable, ControllerWithPati
                     case Staff:
                         p.setToStaff(cd.getPaymentMethodData().getStaffCredit().getToStaff());
                         p.setPaidValue(cd.getPaymentMethodData().getStaffCredit().getTotalValue());
-                        if (cd.getPaymentMethodData().getStaffCredit().getToStaff() != null) {
-                            staffBean.updateStaffCredit(cd.getPaymentMethodData().getStaffCredit().getToStaff(), cd.getPaymentMethodData().getStaffCredit().getTotalValue());
-                            JsfUtil.addSuccessMessage("Staff Credit Updated");
-                        }
+                        // Staff credit is applied once by paymentService.updateBalances in settleBillWithPay (#25339).
                         break;
                     case Staff_Welfare:
                         p.setToStaff(cd.getPaymentMethodData().getStaffWelfare().getToStaff());
                         p.setPaidValue(cd.getPaymentMethodData().getStaffWelfare().getTotalValue());
-                        if (cd.getPaymentMethodData().getStaffWelfare().getToStaff() != null) {
-                            staffBean.updateStaffWelfare(cd.getPaymentMethodData().getStaffWelfare().getToStaff(), cd.getPaymentMethodData().getStaffWelfare().getTotalValue());
-                            JsfUtil.addSuccessMessage("Staff Welfare Balance Updated");
-                        }
+                        // Staff welfare is applied once by paymentService.updateBalances in settleBillWithPay (#25339).
                         break;
                     case YouOweMe:
                     case MultiplePaymentMethods:
@@ -2912,18 +2928,12 @@ public class PharmacySaleController2 implements Serializable, ControllerWithPati
                 case Staff:
                     p.setToStaff(paymentMethodData.getStaffCredit().getToStaff());
                     p.setPaidValue(paymentMethodData.getStaffCredit().getTotalValue());
-                    if (paymentMethodData.getStaffCredit().getToStaff() != null) {
-                        staffBean.updateStaffCredit(paymentMethodData.getStaffCredit().getToStaff(), paymentMethodData.getStaffCredit().getTotalValue());
-                        JsfUtil.addSuccessMessage("Staff Credit Updated");
-                    }
+                    // Staff credit is applied once by paymentService.updateBalances in settleBillWithPay (#25339).
                     break;
                 case Staff_Welfare:
                     p.setToStaff(paymentMethodData.getStaffWelfare().getToStaff());
                     p.setPaidValue(paymentMethodData.getStaffWelfare().getTotalValue());
-                    if (paymentMethodData.getStaffWelfare().getToStaff() != null) {
-                        staffBean.updateStaffWelfare(paymentMethodData.getStaffWelfare().getToStaff(), paymentMethodData.getStaffWelfare().getTotalValue());
-                        JsfUtil.addSuccessMessage("Staff Welfare Balance Updated");
-                    }
+                    // Staff welfare is applied once by paymentService.updateBalances in settleBillWithPay (#25339).
                     break;
                 case YouOweMe:
                 case MultiplePaymentMethods:

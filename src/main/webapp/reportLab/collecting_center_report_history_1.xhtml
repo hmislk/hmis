@@ -24,21 +24,21 @@
                 <p:panel>
                     <h:panelGrid columns="2" >
                         <h:outputLabel value="From Date"/>
-                        <p:calendar value="#{channelReportController.fromDate}" navigator="true" pattern="dd MMM yyyy HH:mm:ss"  >
+                        <p:calendar value="#{channelReportTemplateController.fromDate}" navigator="true" pattern="dd MMM yyyy HH:mm:ss"  >
                         </p:calendar>
                         <h:outputLabel value="To Date"/>
-                        <p:calendar value="#{channelReportController.toDate}" navigator="true" pattern="dd MMM yyyy HH:mm:ss" >
+                        <p:calendar value="#{channelReportTemplateController.toDate}" navigator="true" pattern="dd MMM yyyy HH:mm:ss" >
                         </p:calendar>
                         <p:outputLabel value="Agent Name" />
-                        <p:autoComplete id="creditCom" forceSelection="true" value="#{channelReportController.institution}"  completeMethod="#{institutionController.completeCollectingCenter}" var="ix" itemLabel="#{ix.name}" itemValue="#{ix}" size="30"  style="width: 400px;">
+                        <p:autoComplete id="creditCom" forceSelection="true" value="#{channelReportTemplateController.institution}"  completeMethod="#{institutionController.completeCollectingCenter}" var="ix" itemLabel="#{ix.name}" itemValue="#{ix}" size="30"  style="width: 400px;">
                             <f:ajax  event="itemSelect" execute="creditCom"  />
                             <p:column>#{ix.institutionCode}</p:column>
                             <p:column>#{ix.name}</p:column>
                         </p:autoComplete>
                         <p:outputLabel value="Show Patient Name" />
-                        <p:selectBooleanCheckbox value="#{channelReportController.showPatient}" />
+                        <p:selectBooleanCheckbox value="#{channelReportTemplateController.showPatient}" />
 
-                        <p:commandButton action="#{channelReportController.createCollectingCenterHistorySubTable}" value="Fill" ajax="false" ></p:commandButton> 
+                        <p:commandButton action="#{channelReportTemplateController.createCollectingCenterHistorySubTable}" value="Fill" ajax="false" ></p:commandButton> 
                         <h:panelGrid columns="2">
                             <p:commandButton ajax="false" value="Print" styleClass="noPrintButton">
                                 <p:printer target="reportPrint"  />
@@ -50,19 +50,19 @@
                     </h:panelGrid> 
                 </p:panel>
                 <p:panel id="reportPrint" styleClass="noBorder summeryBorder">
-                    <p:dataTable value="#{channelReportController.agentHistoryWithDate}" var="ahwd" id="tbl1" rowIndexVar="i">
+                    <p:dataTable value="#{channelReportTemplateController.agentHistoryWithDate}" var="ahwd" id="tbl1" rowIndexVar="i">
                         <f:facet name="header">
                             <p:outputLabel value="#{sessionController.loggedUser.institution.name}" />
                             <br></br>
                             <p:outputLabel value="Statement Of Agent Account - " />
-                            <p:outputLabel value="#{channelReportController.institution.institutionCode} -#{channelReportController.institution.name}" />
+                            <p:outputLabel value="#{channelReportTemplateController.institution.institutionCode} -#{channelReportTemplateController.institution.name}" />
                             <br></br>
                             <p:outputLabel value="From : " />
-                            <p:outputLabel value="#{channelReportController.fromDate}" >
+                            <p:outputLabel value="#{channelReportTemplateController.fromDate}" >
                                 <f:convertDateTime pattern="dd,MMMM yyyy" />
                             </p:outputLabel>
                             <p:outputLabel value="  To : " />
-                            <p:outputLabel value="#{channelReportController.toDate}" >
+                            <p:outputLabel value="#{channelReportTemplateController.toDate}" >
                                 <f:convertDateTime pattern="dd,MMMM yyyy" />
                             </p:outputLabel>
                         </f:facet>
@@ -70,7 +70,7 @@
                             <p:row>
                                 <p:column headerText="Recipt No" />
                                 <p:column headerText="Cus.Inv.N" />
-                                <p:column headerText="Patient" rendered="#{channelReportController.showPatient}"/>
+                                <p:column headerText="Patient" rendered="#{channelReportTemplateController.showPatient}"/>
                                 <p:column headerText="Hos. Fee" />
                                 <p:column headerText="Doc. Fee" />
                                 <p:column headerText="Total" />
@@ -92,7 +92,7 @@
                             <p:column>
                                 <p:outputLabel value="#{a.referenceNo}"/>
                             </p:column>  
-                            <p:column rendered="#{channelReportController.showPatient}">
+                            <p:column rendered="#{channelReportTemplateController.showPatient}">
                                 <p:outputLabel value="#{a.bill.patient.person.name}" />
                             </p:column>
                             <p:column styleClass="numberCol" >

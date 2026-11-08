@@ -2,7 +2,7 @@
 name: hotfix-deploy
 description: >
   Full hotfix workflow for deploying urgent fixes to a production branch
-  (coop-production, rh-production, southernlanka-staging, etc.). Covers branch creation,
+  (coop-production, rh-production, southernlanka-production, etc.). Covers branch creation,
   fix, commit, push, and PR targeting the production branch. Use when you need
   to apply an urgent fix directly to a production environment without going
   through the normal development → QA → prod pipeline. The agent may invoke
@@ -17,9 +17,11 @@ argument-hint: "<prod-branch> <description>"
 
 Deploy an urgent fix directly to a production branch.
 
+To port one commit already merged in `development` to several deploy branches, dispatch the `hmis-deploy-porter` agent (`.claude/agents/hmis-deploy-porter.md`), which runs this skill once per target.
+
 ## Arguments
 
-- `$0` — Target production branch, or staging branch that serves production (e.g., `coop-production`, `rh-production`, `coop-staging`, `southernlanka-staging`)
+- `$0` — Target production branch, or staging branch that serves production (e.g., `coop-production`, `rh-production`, `coop-staging`, `southernlanka-production`)
 - `$1` — Short description of the fix (e.g., `sequence-preallocation`, `critical-billing-fix`)
 
 ## Critical Rule
@@ -62,7 +64,8 @@ gh pr list --state open --base $0 --json number,headRefName,headRepositoryOwner,
   more fixes (e.g. it is mid-review or scheduled to merge at a fixed time).
   CI enforces this: `single-deploy-pr` fails every PR except the oldest open
   one per deploy branch. Check out its head branch
-  (`git checkout -B <headRefName> origin/<headRefName>`), skip Step 2, apply
+  (`git checkout -B <headRefName> origin/<headRefName>`), skip Step 2 but run
+  Step 2a, apply
   the fix (Steps 3–6, pushing to `<headRefName>`), then in Step 7 run
   `gh pr edit <number> --title ... --body ...` instead of `gh pr create`, so
   the title and body cover every fix in the PR (one section per issue).
@@ -91,13 +94,40 @@ Examples:
 - `critical-billing-fix-hotfix`
 - `persistence-tuning-hotfix`
 
+## Step 2a — Sync `.gitignore` from `origin/development`
+
+Deploy branches can lag `development`, and a stale `.gitignore` lets local artifacts (screenshots, `tmp/`, Playwright output) be staged by accident. Right after creating the branch:
+
+```bash
+git fetch origin +development:refs/remotes/origin/development   # forced refspec; also works in a --single-branch clone
+git checkout origin/development -- .gitignore
+git diff --cached --stat   # review; commit it with the fix, by explicit path
+```
+
+If `.gitignore` is already identical, nothing is staged. Never use `git add -A` or `git add .` anywhere in this workflow; stage explicit paths only.
+
+Then sync the changeset guard, so the pre-push hook and the CI `changeset-guard` job run on this branch and its PR (the workflow has no branch filter, but a PR only runs workflows present on its head). Commit it on its own, before the fix:
+
+```bash
+GUARD_PATHS=".github/workflows/changeset_guard.yml .github/changeset-guard-patterns.txt scripts/changeset-guard.sh scripts/hooks/pre-push"
+git checkout origin/development -- $GUARD_PATHS
+git status --porcelain -- $GUARD_PATHS   # only these paths
+if ! git diff --cached --quiet -- $GUARD_PATHS; then
+  git commit -m "chore(ci): sync changeset guard from development" -- $GUARD_PATHS
+fi
+```
+
+Pushing a change to `.github/workflows/*` needs a gh token with the `workflow` scope. Check `gh auth status` (the `Token scopes` line); if `workflow` is missing, run `gh auth refresh -s workflow`. Without it GitHub rejects the push. Then stop and ask the user; never drop the guard sync to get the push through.
+
+If nothing is staged, the branch already has them. Without these files the local hook falls back to `origin/development`'s copy, but CI does not.
+
 ## Step 3 — Apply the Fix
 
-Make only the minimal changes required. Do NOT port unrelated features or refactors.
+Make only the minimal changes required. Do NOT port unrelated features or refactors. Always compile the hotfix branch before opening the PR: PRs to deploy branches get no compile CI, and older branches often lack newer enum values or facade methods that a cherry-pick uses (2026-11-05: coop-staging lacked an `InwardChargeType` value; mp-production lacked `AbstractFacade.updateByJpql`).
 
 Before editing `persistence.xml`, compare against the target production branch to understand the current state:
 ```bash
-git show origin/$0:src/main/resources/META-INF/persistence.xml
+MSYS_NO_PATHCONV=1 git show origin/$0:src/main/resources/META-INF/persistence.xml   # MSYS_NO_PATHCONV: Git Bash on Windows
 ```
 
 ## Step 3a — Test on the Production Branch's Own Code
@@ -140,17 +170,24 @@ git push origin $1-hotfix
 
 ## Step 7 — Create PR Targeting the Production Branch
 
+Write the PR title and body to a file in `tmp/` first and run the
+`hmis-public-guard` subagent on it. Create the PR only after a `PASS`, with
+`--body-file` in place of `--body` below.
+
 ```bash
 gh pr create \
   --title "fix: <description>" \
   --base $0 \
   --head $1-hotfix \
+  --label hotfix \
   --body "..."
 ```
 
 The PR **must** target `$0` (the production branch), not `development` or `master`.
 
-If `gh pr edit` prints a "Projects (classic) is being deprecated" error, it changed nothing. Use `gh api -X PATCH repos/hmislk/hmis/pulls/<n> -f title=... -F body=@file` instead.
+Every PR into a `*-production` or `*-staging` branch carries the `hotfix` label, so hotfixes are easy to tell apart from development PRs. When reusing an open PR (Step 1a), check the label is there: `gh pr edit <number> --add-label hotfix`.
+
+If `gh pr edit` prints a "Projects (classic) is being deprecated" error, it changed nothing. Use `gh api -X PATCH repos/hmislk/hmis/pulls/<n> -f title=... -F body=@file` instead. That fallback does not add labels either, so also run `gh api -X POST repos/hmislk/hmis/issues/<n>/labels -f "labels[]=hotfix"`. Whichever path you used, check the label is there: `gh pr view <n> --json labels`.
 
 A hotfix PR is where hospital-specific detail leaks most easily, because the
 whole point is that one hospital is affected. The body is public: state the
@@ -211,8 +248,8 @@ added/renamed, and similarly-named branches are NOT interchangeable.
 | COOP — pharmacy | `coop-production` | |
 | COOP — inward | `coop-staging` | Despite the "staging" name, COOP inward users run against it day to day (production DB). |
 | Ruhunu hospital | `rh-production` | `rh-staging` is live again (since 2026-10-28) and writes to the same production DB. |
-| Southern Lanka | `southernlanka-staging` | **Live users are here.** `southernlanka-production` is live too (since 2026-10-15), on the same DB. |
-| RMH | `rmh-production` | `rmh-staging` writes to the same production DB. |
+| Southern Lanka | `southernlanka-production` | The only live app. `southernlanka-staging` is not used (app disabled, checked 2026-11-06); don't hotfix it. |
+| RMH | `rmh-production` | `rmh-staging` is not used (app disabled, checked 2026-11-06); don't hotfix it. |
 | Others | `suwani-production`, `asiripharmacy-production`, `digasiri-production`, `horizon-production`, `mp-production`, `mpold-production`, `roseth-production`, `ewc-production` | |
 
 The old `*-prod`, `*-prod-migrated` and `*-stg-migrated` branches were retired on

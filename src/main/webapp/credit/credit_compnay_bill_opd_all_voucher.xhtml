@@ -85,16 +85,22 @@
 
                                     <div class="col-md-10">
                                         <div>
-                                            <h:panelGroup id="creditCard" style="display: #{cashRecieveBillController.current.paymentMethod ne 'Card' ? 'none' : 'block'} ; ">
-                                                <pa:creditCard paymentMethodData="#{cashRecieveBillController.paymentMethodData}"/>
+                                            <h:panelGroup id="creditCard">
+                                                <h:panelGroup rendered="#{cashRecieveBillController.current.paymentMethod eq 'Card'}">
+                                                    <pa:creditCard paymentMethodData="#{cashRecieveBillController.paymentMethodData}"/>
+                                                </h:panelGroup>
                                             </h:panelGroup>
 
-                                            <h:panelGroup id="cheque" style="display: #{cashRecieveBillController.current.paymentMethod ne 'Cheque' ? 'none' : 'block'} ; " >
-                                                <pa:cheque paymentMethodData="#{cashRecieveBillController.paymentMethodData}"/>
+                                            <h:panelGroup id="cheque">
+                                                <h:panelGroup rendered="#{cashRecieveBillController.current.paymentMethod eq 'Cheque'}">
+                                                    <pa:cheque paymentMethodData="#{cashRecieveBillController.paymentMethodData}"/>
+                                                </h:panelGroup>
                                             </h:panelGroup>
 
-                                            <h:panelGroup id="slip" style="display: #{cashRecieveBillController.current.paymentMethod ne 'Slip' ? 'none' : 'block'} ;">
-                                                <pa:slip paymentMethodData="#{cashRecieveBillController.paymentMethodData}"/>
+                                            <h:panelGroup id="slip">
+                                                <h:panelGroup rendered="#{cashRecieveBillController.current.paymentMethod eq 'Slip'}">
+                                                    <pa:slip paymentMethodData="#{cashRecieveBillController.paymentMethodData}"/>
+                                                </h:panelGroup>
                                             </h:panelGroup>
                                         </div>
                                     </div>

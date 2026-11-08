@@ -443,13 +443,7 @@ public class TransferReceiveNativeSqlController implements Serializable {
         }
 
         // Rows with a receiving quantity of 0 or less are skipped by the service; tell the user (#18601)
-        List<String> skippedRows = new ArrayList<>();
-        for (TransferReceiveItemRowDto row : itemRowList) {
-            if (row.getReceivingQty() != null && row.getReceivingQty().signum() <= 0) {
-                String code = row.getItemCode();
-                skippedRows.add(row.getItemName() + (code != null && !code.trim().isEmpty() ? " (" + code + ")" : ""));
-            }
-        }
+        List<String> skippedRows = collectSkippedRowLabels();
 
         Bill bill = buildReceiveBillHeader(BillTypeAtomic.PHARMACY_RECEIVE);
         applyBillNumbers(bill);
@@ -468,8 +462,33 @@ public class TransferReceiveNativeSqlController implements Serializable {
         receivedBillId = bill.getId();
         enrichPrintDto(printDto, bill);
         printPreview = true;
-        if (!skippedRows.isEmpty()) {
-            JsfUtil.addWarningMessage(skippedRows.size() + " row(s) with a receiving quantity of 0 or less were skipped and not received: "
+        warnSkippedRows(skippedRows);
+    }
+
+    /**
+     * Labels (item name, code, batch) of rows the service will not receive because
+     * the receiving quantity is blank, zero or negative (#18601, #25113).
+     */
+    private List<String> collectSkippedRowLabels() {
+        List<String> skippedRows = new ArrayList<>();
+        if (itemRowList == null) {
+            return skippedRows;
+        }
+        for (TransferReceiveItemRowDto row : itemRowList) {
+            if (row.getReceivingQty() == null || row.getReceivingQty().signum() <= 0) {
+                String code = row.getItemCode();
+                String batch = row.getBatchNo();
+                skippedRows.add(row.getItemName()
+                        + (code != null && !code.trim().isEmpty() ? " (" + code + ")" : "")
+                        + (batch != null && !batch.trim().isEmpty() ? " batch " + batch : ""));
+            }
+        }
+        return skippedRows;
+    }
+
+    private void warnSkippedRows(List<String> skippedRows) {
+        if (skippedRows != null && !skippedRows.isEmpty()) {
+            JsfUtil.addWarningMessage(skippedRows.size() + " row(s) with a blank receiving quantity or a quantity of 0 or less were skipped and not received: "
                     + String.join(", ", skippedRows));
         }
     }
@@ -523,6 +542,8 @@ public class TransferReceiveNativeSqlController implements Serializable {
             return;
         }
 
+        List<String> skippedRows = collectSkippedRowLabels();
+
         long preBillId = receivedBillId; // capture before overwrite
         Bill bill = buildReceiveBillHeader(BillTypeAtomic.PHARMACY_RECEIVE);
         bill.setApproveAt(new Date());
@@ -553,6 +574,7 @@ public class TransferReceiveNativeSqlController implements Serializable {
         receivedBillId = bill.getId();
         enrichPrintDto(printDto, bill);
         printPreview = true;
+        warnSkippedRows(skippedRows);
     }
 
     /**
@@ -628,6 +650,7 @@ public class TransferReceiveNativeSqlController implements Serializable {
         printPreview = true;
 
         JsfUtil.addSuccessMessage("Request Finalized Successfully");
+        warnSkippedRows(collectSkippedRowLabels());
     }
 
     private void fillPrintItemsFromRows(TransferReceivePrintDto dto) {

@@ -7,6 +7,7 @@ import com.divudi.core.data.dto.investigation.InvestigationSearchResultDTO;
 import com.divudi.core.data.dto.investigation.InvestigationUpdateRequestDTO;
 import com.divudi.core.entity.ApiKey;
 import com.divudi.core.entity.WebUser;
+import com.divudi.service.investigation.InvestigationAlreadyExistsException;
 import com.divudi.service.investigation.InvestigationApiService;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -157,12 +158,13 @@ public class InvestigationApi {
             InvestigationResponseDTO dto = investigationApiService.create(request, user);
             return Response.status(201).entity(gson.toJson(successData(dto))).build();
 
-        } catch (IllegalStateException ex) {
+        } catch (InvestigationAlreadyExistsException ex) {
             try {
-                Long existingId = Long.valueOf(ex.getMessage());
+                Long existingId = ex.getExistingId();
                 InvestigationResponseDTO existing = investigationApiService.findById(existingId);
                 Map<String, Object> map = successData(existing);
                 map.put("status", "already_exists");
+                map.put("code", 409);
                 map.put("id", existingId);
                 return Response.status(409).entity(gson.toJson(map)).build();
             } catch (Exception e) {

@@ -16,22 +16,22 @@
                 <p:panel  header="Channel Bill List With VAT 15%">
                     <h:panelGrid columns="2" class="my-2"> 
                         <h:outputLabel value="From Date"/>
-                        <p:calendar class="w-100 mx-4" inputStyleClass="w-100" id="frmDate" value="#{channelReportController.fromDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
+                        <p:calendar class="w-100 mx-4" inputStyleClass="w-100" id="frmDate" value="#{channelReportTemplateController.fromDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
 
                         <h:outputLabel value="To Date"/>
-                        <p:calendar class="w-100 mx-4" inputStyleClass="w-100 my-1" id="toDate" value="#{channelReportController.toDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
+                        <p:calendar class="w-100 mx-4" inputStyleClass="w-100 my-1" id="toDate" value="#{channelReportTemplateController.toDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
                         <h:outputLabel styleClass="noPrintButton" value="User Name"/>
                         <p:autoComplete class="w-100 mx-4" inputStyleClass="w-100"  completeMethod="#{webUserController.completeUser}"
                                         forceSelection="true"
                                         var="w" itemLabel="#{w.webUserPerson.name}" itemValue="#{w}"
-                                        value="#{channelReportController.reportKeyWord.webUser}" ></p:autoComplete>
+                                        value="#{channelReportTemplateController.reportKeyWord.webUser}" ></p:autoComplete>
                         <h:outputLabel value="Session Date"/>
-                        <p:selectBooleanCheckbox class="w-100 mx-4 my-1" value="#{channelReportController.sessoinDate}" />
+                        <p:selectBooleanCheckbox class="w-100 mx-4 my-1" value="#{channelReportTemplateController.sessoinDate}" />
                         <h:outputLabel value="Without Agency"/>
-                        <p:selectBooleanCheckbox class="w-100 mx-4" value="#{channelReportController.agncyOnCall}" />
+                        <p:selectBooleanCheckbox class="w-100 mx-4" value="#{channelReportTemplateController.agncyOnCall}" />
                     </h:panelGrid>
                     <h:panelGrid columns="6" class="my-2"> 
-                        <p:commandButton class="ui-button-warning" icon="fas fa-cogs" ajax="false" id="btnRefresh" value="Process" action="#{channelReportController.createAllChannelBillReportForVat}">
+                        <p:commandButton class="ui-button-warning" icon="fas fa-cogs" ajax="false" id="btnRefresh" value="Process" action="#{channelReportTemplateController.createAllChannelBillReportForVat}">
                         </p:commandButton>
                         <p:commandButton ajax="false" value="Print" class="ui-button-info mx-2" icon="fas fa-print" >
                             <p:printer target="billFeeReport"  />
@@ -45,15 +45,15 @@
                 <p:panel id="billFeeReport" styleClass="noBorder summeryBorder" header="Channel Bill List">
 
 
-                    <p:dataTable value="#{channelReportController.channelBills}" var="b" id="tbl1" >
+                    <p:dataTable value="#{channelReportTemplateController.channelBills}" var="b" id="tbl1" >
                         <f:facet name="header" >
                             <p:outputLabel value="Channel Bill List With VAT 15%" />
                             <h:outputLabel value="&emsp;From : &nbsp;" style=" white-space:pre-line;"/>
-                            <h:outputLabel  value="#{channelReportController.fromDate}" >
+                            <h:outputLabel  value="#{channelReportTemplateController.fromDate}" >
                                 <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                             </h:outputLabel>                          
                             <h:outputLabel value="&emsp;&emsp;To : &nbsp;"/>
-                            <h:outputLabel  value="#{channelReportController.toDate}" >
+                            <h:outputLabel  value="#{channelReportTemplateController.toDate}" >
                                 <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                             </h:outputLabel>
                         </f:facet>
@@ -73,7 +73,7 @@
                             <p:outputLabel value="#{b.patient.person.name}" />                                    
                         </p:column>
 
-                        <p:column style="text-align: left;" rendered="#{!channelReportController.sessoinDate}">
+                        <p:column style="text-align: left;" rendered="#{!channelReportTemplateController.sessoinDate}">
                             <f:facet name="header" >
                                 <p:outputLabel value="Created Date" />
                             </f:facet>
@@ -82,7 +82,7 @@
                             </p:outputLabel>                                    
                         </p:column>
 
-                        <p:column style="text-align: left;" rendered="#{channelReportController.sessoinDate}" >
+                        <p:column style="text-align: left;" rendered="#{channelReportTemplateController.sessoinDate}" >
                             <f:facet name="header" >
                                 <p:outputLabel value="Session Date" />
                             </f:facet>
@@ -143,37 +143,37 @@
                                         <h:outputLabel value="Total"/>
                                     </f:facet>
                                 </p:column>
-                                <p:column footerText="#{channelReportController.channelTotal.staffFee}" style=" text-align: right">
+                                <p:column footerText="#{channelReportTemplateController.channelTotal.staffFee}" style=" text-align: right">
                                     <f:facet name="footer">
-                                        <h:outputLabel value="#{channelReportController.channelTotal.staffFee}">
+                                        <h:outputLabel value="#{channelReportTemplateController.channelTotal.staffFee}">
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputLabel>
                                     </f:facet>
                                 </p:column>
-                                <p:column footerText="#{channelReportController.channelTotal.hosFee}" style=" text-align: right">
+                                <p:column footerText="#{channelReportTemplateController.channelTotal.hosFee}" style=" text-align: right">
                                     <f:facet name="footer">
-                                        <h:outputLabel value="#{channelReportController.channelTotal.hosFee}">
+                                        <h:outputLabel value="#{channelReportTemplateController.channelTotal.hosFee}">
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputLabel>
                                     </f:facet>
                                 </p:column>
-                                <p:column footerText="#{channelReportController.channelTotal.netTotal}" style=" text-align: right">
+                                <p:column footerText="#{channelReportTemplateController.channelTotal.netTotal}" style=" text-align: right">
                                     <f:facet name="footer">
-                                        <h:outputLabel value="#{channelReportController.channelTotal.netTotal}">
+                                        <h:outputLabel value="#{channelReportTemplateController.channelTotal.netTotal}">
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputLabel>
                                     </f:facet>
                                 </p:column>
-                                <p:column footerText="#{channelReportController.channelTotal.vat}" style=" text-align: right">
+                                <p:column footerText="#{channelReportTemplateController.channelTotal.vat}" style=" text-align: right">
                                     <f:facet name="footer">
-                                        <h:outputLabel value="#{channelReportController.channelTotal.vat}">
+                                        <h:outputLabel value="#{channelReportTemplateController.channelTotal.vat}">
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputLabel>
                                     </f:facet>
                                 </p:column>
-                                <p:column footerText="#{channelReportController.channelTotal.vat+channelReportController.channelTotal.netTotal}" style=" text-align: right">
+                                <p:column footerText="#{channelReportTemplateController.channelTotal.vat+channelReportTemplateController.channelTotal.netTotal}" style=" text-align: right">
                                     <f:facet name="footer">
-                                        <h:outputLabel value="#{channelReportController.channelTotal.vat+channelReportController.channelTotal.netTotal}">
+                                        <h:outputLabel value="#{channelReportTemplateController.channelTotal.vat+channelReportTemplateController.channelTotal.netTotal}">
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputLabel>
                                     </f:facet>

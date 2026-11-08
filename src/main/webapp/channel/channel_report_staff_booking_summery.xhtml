@@ -21,18 +21,18 @@
                 <p:panel>
                     <p:panelGrid columns="2" >
                         <h:outputLabel value="From Date"/>
-                        <p:calendar value="#{channelReportController.fromDate}" navigator="true" pattern="yyyy MMMM dd HH:mm:ss"  >
+                        <p:calendar value="#{channelReportTemplateController.fromDate}" navigator="true" pattern="yyyy MMMM dd HH:mm:ss"  >
                         </p:calendar>
                         <h:outputLabel value="To Date"/>
-                        <p:calendar value="#{channelReportController.toDate}" navigator="true" pattern="yyyy MMMM dd HH:mm:ss" >
+                        <p:calendar value="#{channelReportTemplateController.toDate}" navigator="true" pattern="yyyy MMMM dd HH:mm:ss" >
                         </p:calendar>
                         <h:outputLabel value="Paid Only"/> 
-                        <p:selectBooleanCheckbox value="#{channelReportController.paid}" />
+                        <p:selectBooleanCheckbox value="#{channelReportTemplateController.paid}" />
                         <h:outputLabel value="By Created Date"/> 
-                        <p:selectBooleanCheckbox value="#{channelReportController.sessoinDate}" />
+                        <p:selectBooleanCheckbox value="#{channelReportTemplateController.sessoinDate}" />
                     </p:panelGrid>
                     <h:panelGrid columns="3" class="my-2">
-                        <p:commandButton action="#{channelReportController.createStaffBookingSummeryTable}" value="Process" ajax="false" />
+                        <p:commandButton action="#{channelReportTemplateController.createStaffBookingSummeryTable}" value="Process" ajax="false" />
                         <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right; margin-right: 10px; margin-left: 10px" >
                             <p:dataExporter type="xlsx" target="tbl1" fileName="channel_report_staff_booking_summery"  />
                         </p:commandButton>
@@ -42,18 +42,18 @@
                     </h:panelGrid>
                 </p:panel>
                 <p:panel id="reportPrint" styleClass="noBorder summeryBorder">
-                    <p:dataTable value="#{channelReportController.staffBookingWithCounts}" var="s" id="tbl1" rowIndexVar="i" >
+                    <p:dataTable value="#{channelReportTemplateController.staffBookingWithCounts}" var="s" id="tbl1" rowIndexVar="i" >
                         <f:facet name="header">
                             <p:outputLabel value="#{sessionController.loggedUser.institution.name}" />
                             <br></br>
                             <p:outputLabel value="Staff Booking Summary Report" />
                             <br></br>
                             <p:outputLabel value="From : " />
-                            <p:outputLabel class="ml-2" value="#{channelReportController.fromDate}" >
+                            <p:outputLabel class="ml-2" value="#{channelReportTemplateController.fromDate}" >
                                 <f:convertDateTime pattern="dd MMMM yyyy HH:mm:ss" />
                             </p:outputLabel>
                             <p:outputLabel class="ml-5" value="  To : " />
-                            <p:outputLabel class="ml-2" value="#{channelReportController.toDate}" >
+                            <p:outputLabel class="ml-2" value="#{channelReportTemplateController.toDate}" >
                                 <f:convertDateTime pattern="dd MMMM yyyy HH:mm:ss" />
                             </p:outputLabel>
                         </f:facet>

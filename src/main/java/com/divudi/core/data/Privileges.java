@@ -1212,6 +1212,7 @@ public enum Privileges {
     ReportsConsumption("Reports Page - 2. Consumption (Legacy)"),
     ReportsConsumptionDto("Reports Page - 2. Consumption"),
     ReportsStockTransferReport("Reports Page - 3. Stock Transfers"),
+    ReportsInpatientDirectIssue("Reports Page - 3.1 Inpatient Direct Issue"),
     ReportsCostOfGoodsSold("Reports Page - 4. Cost Of Good Sold"),
     ReportsGoodInTransit("Reports Page - 5. Good in Transit"),
     ReportsGrnReport("Reports Page - 6. GRN Report"),
@@ -2116,6 +2117,7 @@ public enum Privileges {
             case ReportsConsumption:
             case ReportsConsumptionDto:
             case ReportsStockTransferReport:
+            case ReportsInpatientDirectIssue:
             case ReportsCostOfGoodsSold:
             case ReportsGoodInTransit:
             case ReportsGrnReport:

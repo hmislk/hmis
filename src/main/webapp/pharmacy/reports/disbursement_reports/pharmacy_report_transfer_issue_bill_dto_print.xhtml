@@ -138,14 +138,17 @@
                                          style="font-weight: 400; font-size: 20px;margin-bottom: 5px;">
                                         <h:outputText value="Pharmacy Transfer Issue Bills"/>
                                     </div>
-                                    <div class="d-flex justify-content-center text-5 gap-2"
-                                         style="font-weight: 600; font-size: 15px;margin-bottom: 5px;">
-                                        <h:outputText value="From - "/>
-                                        <h:outputText value="#{reportsTransfer.fromDepartment.name}"/>
-                                        <h:outputText value="" style="width: 2em!important;" class="text-center"/>
-                                        <h:outputText value="To - "/>
-                                        <h:outputText value="#{reportsTransfer.toDepartment.name}"/>
-                                    </div>
+                                    <h:panelGroup layout="block"
+                                                  styleClass="d-flex justify-content-center text-5 gap-2"
+                                                  style="font-weight: 600; font-size: 15px;margin-bottom: 5px;"
+                                                  rendered="#{not empty reportsTransfer.fromDepartment or not empty reportsTransfer.toDepartment}">
+                                        <h:outputText value="From - " rendered="#{not empty reportsTransfer.fromDepartment}"/>
+                                        <h:outputText value="#{reportsTransfer.fromDepartment.name}" rendered="#{not empty reportsTransfer.fromDepartment}"/>
+                                        <h:outputText value="" style="width: 2em!important;" class="text-center"
+                                                      rendered="#{not empty reportsTransfer.fromDepartment and not empty reportsTransfer.toDepartment}"/>
+                                        <h:outputText value="To - " rendered="#{not empty reportsTransfer.toDepartment}"/>
+                                        <h:outputText value="#{reportsTransfer.toDepartment.name}" rendered="#{not empty reportsTransfer.toDepartment}"/>
+                                    </h:panelGroup>
                                     <div class="d-flex justify-content-center text-5 gap-2"
                                          style="font-weight: 600; font-size: 15px;margin-bottom: 5px;">
                                         <h:outputText value="From Date - "/>

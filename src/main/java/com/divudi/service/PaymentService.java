@@ -171,10 +171,34 @@ public class PaymentService {
      * @return A list of created payments associated with the bill.
      */
     public List<Payment> createPaymentsForCancelling(Bill cancellationBill) {
+        return createPaymentsForCancelling(cancellationBill, cancellationBill.getBilledBill());
+    }
+
+    /**
+     * Same as {@link #createPaymentsForCancelling(Bill)} but takes the original
+     * bill explicitly, for cancellation bills that do not set billedBill (for
+     * example refund cancellations, which set refundedBill). Retired original
+     * payments are not mirrored.
+     */
+    public List<Payment> createPaymentsForCancelling(Bill cancellationBill, Bill originalBill) {
+        return createPaymentsForCancelling(cancellationBill, originalBill, false);
+    }
+
+    /**
+     * As {@link #createPaymentsForCancelling(Bill, Bill)}. When
+     * {@code onlyIfOriginalInDrawer} is true, the reversal subtracts from the
+     * drawer only for original payments that have a non-retired DrawerEntry, so
+     * cancelling an original that never entered the drawer leaves the drawer
+     * alone (#25178). The reversal Payment is written either way.
+     */
+    public List<Payment> createPaymentsForCancelling(Bill cancellationBill, Bill originalBill, boolean onlyIfOriginalInDrawer) {
         List<Payment> newPayments = new ArrayList<>();
-        List<Payment> originalBillPayments = billService.fetchBillPayments(cancellationBill.getBilledBill());
+        List<Payment> originalBillPayments = billService.fetchBillPayments(originalBill);
         if (originalBillPayments != null) {
             for (Payment originalBillPayment : originalBillPayments) {
+                if (originalBillPayment.isRetired()) {
+                    continue;
+                }
                 Payment p = originalBillPayment.clonePaymentForNewBill();
                 p.invertValues();
                 p.setBill(cancellationBill);
@@ -184,13 +208,66 @@ public class PaymentService {
                 p.setCreater(cancellationBill.getCreater());
                 paymentFacade.create(p);
                 newPayments.add(p);
-                drawerService.updateDrawer(p);
+                if (!onlyIfOriginalInDrawer || hasActiveDrawerEntry(originalBillPayment)) {
+                    drawerService.updateDrawer(p);
+                }
             }
         }
         return newPayments;
     }
-    
+
+    private boolean hasActiveDrawerEntry(Payment payment) {
+        if (payment == null || payment.getId() == null) {
+            return false;
+        }
+        Map<String, Object> params = new HashMap<>();
+        params.put("pid", payment.getId());
+        String jpql = "select count(de) from DrawerEntry de where de.payment.id = :pid and de.retired = false";
+        return paymentFacade.findLongByJpql(jpql, params) > 0;
+    }
+
+    /**
+     * Writes the Payment rows for the bill without touching the drawer. For
+     * the reversal of a bill that has no Payment rows, so nothing was ever
+     * credited to the drawer (#25178). Does not update any balance.
+     */
+    public List<Payment> createPaymentWithoutDrawer(Bill bill, PaymentMethodData paymentMethodData) {
+        return createPayment(bill, bill.getPaymentMethod(), paymentMethodData, bill.getDepartment(), bill.getCreater(), false);
+    }
+
+    /**
+     * Restores the patient deposit balance for reversal payments paid from a
+     * patient deposit, as the 6-arg createPayment did for inward deposit and
+     * payment cancellations before #25181 (#25178). Use only on paths that do
+     * not call {@link #updateBalances(List)}, which already restores it.
+     */
+    public void restorePatientDepositBalances(List<Payment> reversalPayments, Bill originalBill) {
+        if (reversalPayments == null) {
+            return;
+        }
+        for (Payment p : reversalPayments) {
+            if (p.getPaymentMethod() != PaymentMethod.PatientDeposit || p.getBill() == null) {
+                continue;
+            }
+            Patient pt = p.getBill().getPatient();
+            if (pt == null && p.getBill().getPatientEncounter() != null) {
+                pt = p.getBill().getPatientEncounter().getPatient();
+            }
+            if (pt == null) {
+                LOGGER.log(Level.WARNING, "No patient on cancellation bill {0}; patient deposit not restored.", p.getBill().getId());
+                continue;
+            }
+            Department dep = originalBill != null && originalBill.getDepartment() != null ? originalBill.getDepartment() : p.getDepartment();
+            PatientDeposit pd = patientDepositService.getDepositOfThePatient(pt, dep);
+            patientDepositService.updateBalance(p, pd);
+        }
+    }
+
     private List<Payment> createPayment(Bill bill, PaymentMethod pm, PaymentMethodData paymentMethodData, Department department, WebUser webUser) {
+        return createPayment(bill, pm, paymentMethodData, department, webUser, true);
+    }
+
+    private List<Payment> createPayment(Bill bill, PaymentMethod pm, PaymentMethodData paymentMethodData, Department department, WebUser webUser, boolean writeDrawer) {
 
         List<Payment> payments = new ArrayList<>();
         Date currentDate = new Date();
@@ -200,7 +277,9 @@ public class PaymentService {
                 Payment payment = createPaymentFromComponentDetail(cd, bill, department, webUser, currentDate);
                 if (payment != null) {
                     paymentFacade.create(payment);
-                    drawerService.updateDrawer(payment);
+                    if (writeDrawer) {
+                        drawerService.updateDrawer(payment);
+                    }
                     payments.add(payment);
                 }
             }
@@ -220,7 +299,9 @@ public class PaymentService {
             }
             payment.setPaidValue(bill.getNetTotal());
             paymentFacade.create(payment);
-            drawerService.updateDrawer(payment);
+            if (writeDrawer) {
+                        drawerService.updateDrawer(payment);
+                    }
             payments.add(payment);
         }
         return payments;
@@ -260,6 +341,24 @@ public class PaymentService {
         return payment;
     }
     
+    /**
+     * Inward deposit and inward payment creation (#25178). The 6-arg
+     * createPayment writes the drawer only for Multiple Payment Methods, so a
+     * single-method deposit or payment never reached the drawer (since inward
+     * payments moved off the 2-arg call in 7b938b3c7f), while the cancellation
+     * subtracts it. This writes the drawer for the single-method rows too and
+     * leaves every other caller of the 6-arg overload unchanged.
+     */
+    public List<Payment> createPaymentAndUpdateDrawer(Bill bill, PaymentMethod pm, PaymentMethodData paymentMethodData, Institution institution, Department department, WebUser webUser) {
+        List<Payment> ps = createPayment(bill, pm, paymentMethodData, institution, department, webUser);
+        if (pm != PaymentMethod.MultiplePaymentMethods && ps != null) {
+            for (Payment p : ps) {
+                drawerService.updateDrawer(p);
+            }
+        }
+        return ps;
+    }
+
     public List<Payment> createPayment(Bill bill, PaymentMethod pm, PaymentMethodData paymentMethodData, Institution institution, Department department, WebUser webUser) {
         List<Payment> ps = new ArrayList<>();
 
@@ -649,11 +748,17 @@ public class PaymentService {
         if (p.getBill() == null) {
             return;
         }
-        if (p.getBill().getToStaff() == null) {
+        // A Staff (staff credit) row moves the staff's current credit, not
+        // their welfare (#25339). Staff from the payment first (multiple
+        // payment methods), then from the bill (single payment method).
+        Staff toStaff = p.getToStaff();
+        if (toStaff == null) {
+            toStaff = p.getBill().getToStaff();
+        }
+        if (toStaff == null) {
             return;
         }
-        Staff toStaff = p.getBill().getToStaff();
-        staffService.updateStaffWelfare(toStaff, p.getPaidValue());
+        staffService.updateStaffCredit(toStaff, p.getPaidValue());
     }
 
     private void updateStaffWelare(Payment p) {

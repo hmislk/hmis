@@ -673,7 +673,7 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
             if (hmacKey == null || hmacKey.trim().isEmpty()) {
                 return;
             }
-            long[] decoded = securityController.decodeBillToken(encryptedPatientReportId, hmacKey);
+            long[] decoded = securityController.decodeBillToken(SecurityController.LINK_BILL, encryptedPatientReportId, hmacKey);
             if (decoded == null) {
                 return;
             }
@@ -681,34 +681,11 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
                 return; // link expired
             }
             bill = getBillFacade().find(decoded[0]);
-        } else {
-            // TODO: Remove this legacy block after 2026-07-09.
-            // Backward compatibility for links sent before HMAC migration (issue #19863).
-            // Old links have a 1-month TTL so none will be valid after that date.
-            if (encryptedExpiary != null) {
-                Date expiaryDate;
-                try {
-                    String ed = securityController.decrypt(encryptedExpiary);
-                    if (ed == null) {
-                        return;
-                    }
-                    expiaryDate = new SimpleDateFormat("ddMMMMyyyyhhmmss").parse(ed);
-                } catch (ParseException ex) {
-                    return;
-                }
-                if (expiaryDate.before(new Date())) {
-                    return;
-                }
-            }
-            String idStr = getSecurityController().decrypt(encryptedPatientReportId);
-            Long id = 0L;
-            try {
-                id = Long.parseLong(idStr);
-            } catch (Exception e) {
-                return;
-            }
-            bill = getBillFacade().find(id);
         }
+        // Legacy jasypt-encrypted links (fixed public key, issue #19863) are no
+        // longer accepted; their 1-month TTL lapsed after 2026-07-09 and the key
+        // is public in the repository. A non-HMAC token now resolves to no bill
+        // (see #25249).
     }
 
     public void fillBillTypeSummery() {
@@ -3013,7 +2990,8 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
         // double-deduct from the drawer balance. See issue #19796.
         JsfUtil.addSuccessMessage("Cancelled");
 
-        if (cancellationBill.getPaymentMethod() == PaymentMethod.Credit) {
+        if (cancellationBill.getPaymentMethod() == PaymentMethod.Credit
+                || cancellationBill.getPaymentMethod() == PaymentMethod.Staff) { // Staff credit too (#25339)
             //TODO: Manage Credit Balances for Company, Staff
             if (cancellationBill.getToStaff() != null) {
                 staffBean.updateStaffCredit(cancellationBill.getToStaff(), 0 - (getBill().getNetTotal() + getBill().getVat()));
