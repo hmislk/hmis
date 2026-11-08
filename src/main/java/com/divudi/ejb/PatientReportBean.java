@@ -535,7 +535,59 @@ public class PatientReportBean {
             getPtRivFacade().create(val);
             ptReport.getPatientReportItemValues().add(val);
         }
+
+        addOrganismCommentValue(ptReport, group);
         return group;
+    }
+
+    /**
+     * Creates the empty comment value for a newly added organism (antibiotic
+     * group), so the user can type a comment inside that organism's section.
+     */
+    private void addOrganismCommentValue(PatientReport ptReport, PatientReportGroup group) {
+        Investigation ix = ptReport.getPatientInvestigation().getInvestigation();
+        InvestigationItem commentItem = investigationItemForOrganismComment(ix);
+        if (commentItem == null) {
+            return;
+        }
+        PatientReportItemValue val = new PatientReportItemValue();
+        val.setLobValue("");
+        val.setInvestigationItem(commentItem);
+        val.setPatient(ptReport.getPatientInvestigation().getPatient());
+        val.setPatientEncounter(ptReport.getPatientInvestigation().getEncounter());
+        val.setPatientReport(ptReport);
+        val.setPatientReportGroup(group);
+        getPtRivFacade().create(val);
+        ptReport.getPatientReportItemValues().add(val);
+    }
+
+    /**
+     * Returns the investigation's organism comment item, creating it on first
+     * use (in the same way antibiotic items are created on demand).
+     */
+    public InvestigationItem investigationItemForOrganismComment(Investigation i) {
+        if (i == null) {
+            return null;
+        }
+        Map m = new HashMap();
+        String jpql = "select ii from InvestigationItem ii where ii.item=:i "
+                + " and ii.retired=false "
+                + " and ii.ixItemType=:iit ";
+        m.put("i", i);
+        m.put("iit", InvestigationItemType.OrganismComment);
+        InvestigationItem ii = getIiFacade().findFirstByJpql(jpql, m);
+        if (ii == null) {
+            ii = new InvestigationItem();
+            ii.setName("Comment");
+            ii.setItem(i);
+            ii.setIxItemType(InvestigationItemType.OrganismComment);
+            ii.setIxItemValueType(InvestigationItemValueType.Memo);
+            getIiFacade().create(ii);
+            if (i.getReportItems() != null) {
+                i.getReportItems().add(ii);
+            }
+        }
+        return ii;
     }
 
     @EJB
