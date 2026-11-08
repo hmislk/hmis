@@ -422,7 +422,8 @@ public class DirectPurchaseReturnController implements Serializable {
 
             double qty = fd.getQuantity().doubleValue();
             double freeQty = fd.getFreeQuantity().doubleValue();
-            double unitsPerPack = fd.getUnitsPerPack().doubleValue();
+            double unitsPerPack = fd.getUnitsPerPack() != null && fd.getUnitsPerPack().doubleValue() > 0
+                    ? fd.getUnitsPerPack().doubleValue() : 1.0;
             double rate = fd.getLineGrossRate().doubleValue();
 
             if (i.getItem() instanceof Ampp) {
@@ -443,6 +444,7 @@ public class DirectPurchaseReturnController implements Serializable {
             // The bill item quantity is the returned quantity in units, not the
             // quantity still available to return (#25375).
             i.setQty(Math.abs(pbi.getQty()));
+            setReturnedStockValues(fd, refFd, Math.abs(pbi.getQty() + pbi.getFreeQty()));
             i.setCreatedAt(Calendar.getInstance().getTime());
             i.setCreater(getSessionController().getLoggedUser());
 
@@ -572,6 +574,31 @@ public class DirectPurchaseReturnController implements Serializable {
         printPreview = true;
         JsfUtil.addSuccessMessage("Successfully Returned");
 
+    }
+
+    /**
+     * Sets the returned line's value at cost, purchase and retail rate to the
+     * purchase line's values scaled by returned units / purchased units.
+     * Stock leaves the department, so the values are negative, as in
+     * DirectPurchaseReturnWorkflowController (#25378).
+     */
+    private void setReturnedStockValues(BillItemFinanceDetails fd, BillItemFinanceDetails refFd, double returnedUnits) {
+        BigDecimal purchasedUnits = refFd.getTotalQuantityByUnits() == null
+                ? BigDecimal.ZERO : refFd.getTotalQuantityByUnits().abs();
+        if (purchasedUnits.signum() == 0) {
+            return;
+        }
+        BigDecimal share = BigDecimal.valueOf(returnedUnits).divide(purchasedUnits, 10, java.math.RoundingMode.HALF_UP);
+        fd.setValueAtCostRate(scaledNegative(refFd.getValueAtCostRate(), share));
+        fd.setValueAtPurchaseRate(scaledNegative(refFd.getValueAtPurchaseRate(), share));
+        fd.setValueAtRetailRate(scaledNegative(refFd.getValueAtRetailRate(), share));
+    }
+
+    private BigDecimal scaledNegative(BigDecimal purchaseLineValue, BigDecimal share) {
+        if (purchaseLineValue == null) {
+            return BigDecimal.ZERO;
+        }
+        return purchaseLineValue.abs().multiply(share).setScale(4, java.math.RoundingMode.HALF_UP).negate();
     }
 
     /**
