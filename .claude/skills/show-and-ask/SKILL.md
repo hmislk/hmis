@@ -24,7 +24,6 @@ The reverse of `demonstrate-issues`: Claude drives a visible browser to simulate
 a situation, and the user watches, understands and decides. Claude pauses at key
 moments, asks, and records the answers on the issue.
 
-**Status: not yet piloted.** Remove this line after the first real session.
 
 **This skill never fixes anything.** A fix is separate `dev-issue` work.
 
@@ -41,6 +40,14 @@ tests. Then ask only what truly needs a human:
 Decide and report a reversible choice with a clear default. Run test steps
 yourself instead of handing them to the user. If no human question is left, skip
 the session and report that.
+
+Before offering or queuing a session, check that the issue is still open, still
+labelled `triage: needs-human`, and that its question is not already answered in
+a comment or a merged PR. A closed or decided issue needs no session.
+
+If nothing needs to be seen on screen, run the session as questions only, in the
+terminal: explain the finding in plain words, then ask one question at a time
+with numbered options. No app or browser is needed then.
 
 ## Where it runs
 
