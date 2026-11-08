@@ -36,6 +36,11 @@
                         .mic-organism-name {
                             font-style: italic;
                         }
+                        .mic-organism-comment {
+                            padding: 8px 10px;
+                            border-top: 1px solid #dee2e6;
+                            background: #fcfcfd;
+                        }
                         .mic-organism-card.ui-panel .ui-panel-content {
                             padding: 0;
                         }
@@ -716,6 +721,25 @@
                                                 </ui:repeat>
                                                 </tbody>
                                                 </table>
+
+                                                <!-- Organism comment (one per organism, created when the organism is added) -->
+                                                <ui:repeat value="#{patientReportController.currentPatientReport.patientReportItemValues}"
+                                                           var="pvc">
+                                                    <h:panelGroup layout="block"
+                                                                  styleClass="mic-organism-comment"
+                                                                  rendered="#{pvc.patientReportGroup.groupName eq group.groupName and pvc.investigationItem.ixItemType eq 'OrganismComment'}">
+                                                        <p:outputLabel for="txtOrganismComment" value="Comment" styleClass="mic-field-label"/>
+                                                        <p:inputTextarea id="txtOrganismComment"
+                                                                         value="#{pvc.lobValue}"
+                                                                         rows="2"
+                                                                         autoResize="true"
+                                                                         styleClass="w-100"
+                                                                         placeholder="Comment for this organism"
+                                                                         disabled="#{patientReportController.currentPatientReport.approved}">
+                                                            <p:ajax process="@this" event="blur" listener="#{patientReportController.savePatientReportItemValues()}"/>
+                                                        </p:inputTextarea>
+                                                    </h:panelGroup>
+                                                </ui:repeat>
                                                 </p:panel>
 
                                             </ui:repeat>
