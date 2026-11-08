@@ -65,14 +65,17 @@ talk to the user.
    because a contributor can push mid-session.
 2. Write the plain-word explanation, the pause points and the questions in
    `tmp/show-and-ask-<issue>/`.
-3. Confirm the environment: the local app only, on a test database. Check which
-   database the app actually uses. If it is QA1, production or unknown, stop.
+3. For a session that uses the app, confirm the environment: the local app
+   only, on a test database. Check which database the app actually uses. If it is QA1, production or unknown, stop.
    Never write to production, and never write a copy of production patient data
    to a shared database.
-4. Open the app root headed and ask whether the user can see the browser. If
-   not, send a screenshot at each pause instead.
+4. For a session that uses the app, open the app root headed and ask whether
+   the user can see the browser. If not, send a screenshot at each pause instead.
 
 ## Session
+
+In a question-only session, skip steps 1, 3 and 6 and the print stub below;
+steps 2, 4 and 5 and the posting rules still apply.
 
 1. Log in yourself, using the login steps in `playwright-e2e`, and select the
    department first. Ask about login only if needed. If login fails with a
