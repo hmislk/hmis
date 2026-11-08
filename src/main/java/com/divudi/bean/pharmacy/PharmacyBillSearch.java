@@ -3334,7 +3334,11 @@ public class PharmacyBillSearch implements Serializable {
             getBillFacade().edit(newlyCreatedRetailSaleCancellationBillPre);
 
             JsfUtil.addSuccessMessage("Cancelled");
-            if (getBill().getPaymentMethod() == PaymentMethod.Credit) {
+            if (getBill().getPaymentMethod() == PaymentMethod.Credit
+                    || (getBill().getPaymentMethod() == PaymentMethod.Staff
+                    && paymentMethod == PaymentMethod.Staff)) {
+                // Staff credit too (#25339), only when the cancellation itself
+                // is by Staff; a Cash cancellation already refunds the cash.
                 if (getBill().getToStaff() != null) {
                     getStaffBean().updateStaffCredit(getBill().getToStaff(), 0 - getBill().getNetTotal());
                     JsfUtil.addSuccessMessage("Staff Credit Updated");

@@ -748,11 +748,17 @@ public class PaymentService {
         if (p.getBill() == null) {
             return;
         }
-        if (p.getBill().getToStaff() == null) {
+        // A Staff (staff credit) row moves the staff's current credit, not
+        // their welfare (#25339). Staff from the payment first (multiple
+        // payment methods), then from the bill (single payment method).
+        Staff toStaff = p.getToStaff();
+        if (toStaff == null) {
+            toStaff = p.getBill().getToStaff();
+        }
+        if (toStaff == null) {
             return;
         }
-        Staff toStaff = p.getBill().getToStaff();
-        staffService.updateStaffWelfare(toStaff, p.getPaidValue());
+        staffService.updateStaffCredit(toStaff, p.getPaidValue());
     }
 
     private void updateStaffWelare(Payment p) {

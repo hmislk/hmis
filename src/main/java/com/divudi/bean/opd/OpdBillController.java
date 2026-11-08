@@ -4662,17 +4662,29 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
                         p.setChequeDate(cd.getPaymentMethodData().getSlip().getDate());
 
                         break;
-                    case OnCall:
                     case OnlineSettlement:
+                        // Own case: it used to fall through into Staff (#25339).
+                        p.setPaidValue(cd.getPaymentMethodData().getOnlineSettlement().getTotalValue());
+                        p.setBank(cd.getPaymentMethodData().getOnlineSettlement().getInstitution());
+                        p.setPaymentDate(cd.getPaymentMethodData().getOnlineSettlement().getDate());
+                        p.setReferenceNo(cd.getPaymentMethodData().getOnlineSettlement().getReferenceNo());
+                        p.setComments(cd.getPaymentMethodData().getOnlineSettlement().getComment());
+                        break;
+                    case OnCall:
                     case Staff:
                         p.setPaidValue(cd.getPaymentMethodData().getStaffCredit().getTotalValue());
-                        if (cd.getPaymentMethodData().getStaffCredit().getToStaff() != null) {
-                            if (cd.getPaymentMethod() == PaymentMethod.Staff) {
-                                // Record the staff on the payment row (#20549).
-                                p.setToStaff(cd.getPaymentMethodData().getStaffCredit().getToStaff());
-                            }
+                        if (cd.getPaymentMethod() == PaymentMethod.OnCall
+                                && cd.getPaymentMethodData().getStaffCredit().getToStaff() != null) {
+                            // OnCall is a no-op in paymentService.updateBalances, so
+                            // keep its old inline staff credit (#25339).
                             staffBean.updateStaffCredit(cd.getPaymentMethodData().getStaffCredit().getToStaff(), cd.getPaymentMethodData().getStaffCredit().getTotalValue());
-                            JsfUtil.addSuccessMessage("Staff Credit Updated");
+                        }
+                        if (cd.getPaymentMethodData().getStaffCredit().getToStaff() != null
+                                && cd.getPaymentMethod() == PaymentMethod.Staff) {
+                            // Record the staff on the payment row (#20549). The
+                            // credit itself is applied once by
+                            // paymentService.updateBalances in settle (#25339).
+                            p.setToStaff(cd.getPaymentMethodData().getStaffCredit().getToStaff());
                         }
                         break;
                     case Staff_Welfare:

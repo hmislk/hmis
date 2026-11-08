@@ -2990,7 +2990,8 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
         // double-deduct from the drawer balance. See issue #19796.
         JsfUtil.addSuccessMessage("Cancelled");
 
-        if (cancellationBill.getPaymentMethod() == PaymentMethod.Credit) {
+        if (cancellationBill.getPaymentMethod() == PaymentMethod.Credit
+                || cancellationBill.getPaymentMethod() == PaymentMethod.Staff) { // Staff credit too (#25339)
             //TODO: Manage Credit Balances for Company, Staff
             if (cancellationBill.getToStaff() != null) {
                 staffBean.updateStaffCredit(cancellationBill.getToStaff(), 0 - (getBill().getNetTotal() + getBill().getVat()));
