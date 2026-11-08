@@ -131,6 +131,22 @@
                             <p:column headerText="Requested By">
                                 <h:outputLabel value="#{p.creatorName}"/>
                             </p:column>
+                            <p:column headerText="Status">
+                                <h:panelGroup rendered="#{p.cancelled}">
+                                    <p:tag value="Cancelled" severity="danger"/>
+                                    <h:panelGroup layout="block" styleClass="small text-muted mt-1"
+                                                  rendered="#{p.cancelledAt ne null}">
+                                        <h:outputText value="#{p.cancelledAt}">
+                                            <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                        </h:outputText>
+                                        <h:outputText value=" by #{p.cancellerName}" rendered="#{not empty p.cancellerName}"/>
+                                    </h:panelGroup>
+                                </h:panelGroup>
+                                <p:tag value="Fully Issued" severity="success"
+                                       rendered="#{not p.cancelled and p.fullyIssued eq true}"/>
+                                <p:tag value="Open" severity="info"
+                                       rendered="#{not p.cancelled and p.fullyIssued ne true}"/>
+                            </p:column>
                             <p:column headerText="Action">
                                 <p:commandButton
                                     id="btnViewTransferRequest"
