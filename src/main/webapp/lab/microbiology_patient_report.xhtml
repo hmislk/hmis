@@ -36,6 +36,15 @@
                         .mic-organism-name {
                             font-style: italic;
                         }
+                        .mic-organism-card .ui-panel-title {
+                            display: inline-flex;
+                            align-items: center;
+                        }
+                        .mic-organism-delete.ui-button {
+                            margin-left: 8px;
+                            width: 2rem;
+                            height: 2rem;
+                        }
                         .mic-organism-comment {
                             padding: 8px 10px;
                             border-top: 1px solid #dee2e6;
@@ -670,6 +679,17 @@
                                                             styleClass="mic-organism-name"
                                                             value="#{group.groupName}" >
                                                         </h:outputText>
+                                                        <p:commandButton
+                                                            id="btnRemoveOrganism"
+                                                            icon="fa fa-trash"
+                                                            title="Delete this organism and all its results"
+                                                            styleClass="ui-button-danger ui-button-flat mic-organism-delete"
+                                                            rendered="#{not patientReportController.currentPatientReport.approved}"
+                                                            process="@this"
+                                                            update=":#{p:resolveFirstComponentWithId('panelDataEntryForMicrobiology',view).clientId} :#{p:resolveFirstComponentWithId('divPrint',view).clientId} :#{p:resolveFirstComponentWithId('messages',view).clientId}"
+                                                            onclick="if (!confirm('Delete this organism and all its antibiotic results and comment? This cannot be undone.')) { return false; }"
+                                                            action="#{patientReportController.removePatientReportGroupForMicrobiology(group)}">
+                                                        </p:commandButton>
                                                     </f:facet>
                                                 <table class="mic-ab-table">
                                                 <thead>
