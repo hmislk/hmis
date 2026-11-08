@@ -53,7 +53,7 @@ echo "JAVA_HOME detected: ${JAVA_HOME_DETECTED:-NOT FOUND}"
 # --- 3. Payara home detection ---
 PAYARA_HOME_DETECTED="${PAYARA_HOME:-}"
 if [ -z "$PAYARA_HOME_DETECTED" ]; then
-    for candidate in "$HOME/payara" "/opt/payara5" "/opt/payara6" "/home/carecode/payara"; do
+    for candidate in "$HOME/payara" "/opt/payara5" "/opt/payara6"; do
         if [ -x "$candidate/bin/asadmin" ]; then
             PAYARA_HOME_DETECTED="$candidate"
             break

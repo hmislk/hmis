@@ -19,8 +19,8 @@ script wrong for everyone else:
 - **Payara install location**: no fixed path across machines (see
   [DEVELOPMENT_ENVIRONMENTS.md](../DEVELOPMENT_ENVIRONMENTS.md))
 - **Payara domain name**: usually `domain1`, but not always (e.g. `rh`)
-- **Admin/HTTP ports**: usually `4848`/`8080`, but not always — one known
-  machine runs its `rh` domain on admin port `9048` and HTTP port `9080`
+- **Admin/HTTP ports**: usually `4848`/`8080`, but not always — some
+  machines use a non-default admin/HTTP port pair
 - **Deployed application name/context-root**: must match what's already
   registered in that domain, or redeploy fails (see the collision bug below)
 
@@ -97,7 +97,7 @@ There is no single fixed path. Detection order:
 2. Known candidate paths per OS (extend
    [DEVELOPMENT_ENVIRONMENTS.md](../DEVELOPMENT_ENVIRONMENTS.md) as new
    machines are documented):
-   - Linux: `$HOME/payara`, `/opt/payara5`, `/opt/payara6`, `/home/carecode/payara`
+   - Linux: `$HOME/payara`, `/opt/payara5`, `/opt/payara6`
    - Windows: `C:\Payara5`, `D:\Payara`, `%USERPROFILE%\Payara_Server`
 3. Fallback bounded search for an `asadmin` / `asadmin.bat` binary a few
    directories deep under common install roots (never a full filesystem
@@ -111,8 +111,8 @@ There is no single fixed path. Detection order:
 ### 4. Payara Domain, Admin Port, HTTP Port
 
 A machine can have more than one domain. **Never assume the default admin
-port 4848** — one known machine (`carecode`, domain `rh`) runs admin on
-`9048` and HTTP on `9080`.
+port 4848**. Some machines use a non-default admin/HTTP port pair; always
+read the actual ports from the domain's `domain.xml`.
 
 1. Enumerate domains: `asadmin list-domains` (or list the directory names
    under `<payara_home>/glassfish/domains/`).
