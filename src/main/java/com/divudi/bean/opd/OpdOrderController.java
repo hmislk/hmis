@@ -3586,13 +3586,22 @@ public class OpdOrderController implements Serializable, ControllerWithPatient, 
                         p.setChequeDate(cd.getPaymentMethodData().getSlip().getDate());
 
                         break;
-                    case OnCall:
                     case OnlineSettlement:
+                        // Own case: it used to fall through into Staff (#25339).
+                        p.setPaidValue(cd.getPaymentMethodData().getOnlineSettlement().getTotalValue());
+                        p.setBank(cd.getPaymentMethodData().getOnlineSettlement().getInstitution());
+                        p.setPaymentDate(cd.getPaymentMethodData().getOnlineSettlement().getDate());
+                        p.setReferenceNo(cd.getPaymentMethodData().getOnlineSettlement().getReferenceNo());
+                        p.setComments(cd.getPaymentMethodData().getOnlineSettlement().getComment());
+                        break;
+                    case OnCall:
                     case Staff:
                         p.setPaidValue(cd.getPaymentMethodData().getStaffCredit().getTotalValue());
-                        if (cd.getPaymentMethodData().getStaffCredit().getToStaff() != null) {
-                            staffBean.updateStaffCredit(cd.getPaymentMethodData().getStaffCredit().getToStaff(), cd.getPaymentMethodData().getStaffCredit().getTotalValue());
-                            JsfUtil.addSuccessMessage("Staff Welfare Balance Updated");
+                        if (cd.getPaymentMethodData().getStaffCredit().getToStaff() != null
+                                && cd.getPaymentMethod() == PaymentMethod.Staff) {
+                            // The credit is applied once by
+                            // paymentService.updateBalances in settle (#25339).
+                            p.setToStaff(cd.getPaymentMethodData().getStaffCredit().getToStaff());
                         }
                         break;
                     case YouOweMe:
