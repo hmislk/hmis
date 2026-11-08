@@ -4673,6 +4673,12 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
                     case OnCall:
                     case Staff:
                         p.setPaidValue(cd.getPaymentMethodData().getStaffCredit().getTotalValue());
+                        if (cd.getPaymentMethod() == PaymentMethod.OnCall
+                                && cd.getPaymentMethodData().getStaffCredit().getToStaff() != null) {
+                            // OnCall is a no-op in paymentService.updateBalances, so
+                            // keep its old inline staff credit (#25339).
+                            staffBean.updateStaffCredit(cd.getPaymentMethodData().getStaffCredit().getToStaff(), cd.getPaymentMethodData().getStaffCredit().getTotalValue());
+                        }
                         if (cd.getPaymentMethodData().getStaffCredit().getToStaff() != null
                                 && cd.getPaymentMethod() == PaymentMethod.Staff) {
                             // Record the staff on the payment row (#20549). The

@@ -3597,6 +3597,12 @@ public class OpdOrderController implements Serializable, ControllerWithPatient, 
                     case OnCall:
                     case Staff:
                         p.setPaidValue(cd.getPaymentMethodData().getStaffCredit().getTotalValue());
+                        if (cd.getPaymentMethod() == PaymentMethod.OnCall
+                                && cd.getPaymentMethodData().getStaffCredit().getToStaff() != null) {
+                            // OnCall is a no-op in paymentService.updateBalances, so
+                            // keep its old inline staff credit (#25339).
+                            staffBean.updateStaffCredit(cd.getPaymentMethodData().getStaffCredit().getToStaff(), cd.getPaymentMethodData().getStaffCredit().getTotalValue());
+                        }
                         if (cd.getPaymentMethodData().getStaffCredit().getToStaff() != null
                                 && cd.getPaymentMethod() == PaymentMethod.Staff) {
                             // The credit is applied once by
