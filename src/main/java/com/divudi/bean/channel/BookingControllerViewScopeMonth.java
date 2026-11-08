@@ -556,6 +556,9 @@ public class BookingControllerViewScopeMonth implements Serializable, Controller
         bill.setNetTotal(getSelectedSessionInstanceForRechedule().getOriginatingSession().getTotal());
         bill.setPaymentMethod(bs.getBill().getPaymentMethod());
         bill.setPatient(bs.getBill().getPatient());
+        if (bs.getBill().getPaidBill() != null) {
+            bill.setPaidBill(bs.getBill().getPaidBill());
+        }
         switch (bs.getBill().getPaymentMethod()) {
             case OnCall:
                 bill.setBillType(BillType.ChannelResheduleWithOutPayment);
