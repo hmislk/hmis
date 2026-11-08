@@ -5368,7 +5368,9 @@ public class SearchController implements Serializable {
             params.put("billNo", "%" + getSearchKeyword().getBillNo().trim().toUpperCase() + "%");
         }
 
-        jpql += " order by b.createdAt desc";
+        // Open requests first, so cancelled ones never push them out of the 50-row limit.
+        // CASE keeps the order null-safe for databases where the cancelled column holds NULL.
+        jpql += " order by case when b.cancelled = true then 1 else 0 end, b.createdAt desc";
 
         transferRequestDtos = (List<PharmacyTransferRequestListDTO>) billFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP, 50, true);
 
