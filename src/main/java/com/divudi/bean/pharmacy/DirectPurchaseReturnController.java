@@ -440,6 +440,9 @@ public class DirectPurchaseReturnController implements Serializable {
             boolean isAmpp = i.getItem() instanceof Ampp;
             double unitRate = isAmpp && unitsPerPack > 0 ? rate / unitsPerPack : rate;
             i.setNetValue(Math.abs(pbi.getQty() * unitRate));
+            // The bill item quantity is the returned quantity in units, not the
+            // quantity still available to return (#25375).
+            i.setQty(Math.abs(pbi.getQty()));
             i.setCreatedAt(Calendar.getInstance().getTime());
             i.setCreater(getSessionController().getLoggedUser());
 
@@ -549,8 +552,12 @@ public class DirectPurchaseReturnController implements Serializable {
             return;
         }
         pharmacyCalculation.calculateRetailSaleValueAndFreeValueAtPurchaseRate(getBill());
+        // Recalculate from the quantities typed on the page: the per-line ajax update
+        // may not have run for every line before Return was clicked (#25375).
+        callculateBillDetails();
         saveReturnBill();
         saveBillItems();
+        setReturnTotalsFromLines();
 
         boolean generatePayments = configOptionApplicationController.getBooleanValueByKey(
             "Generate Payments for GRN, GRN Returns, Direct Purchase, and Direct Purchase Returns", false);
@@ -565,6 +572,22 @@ public class DirectPurchaseReturnController implements Serializable {
         printPreview = true;
         JsfUtil.addSuccessMessage("Successfully Returned");
 
+    }
+
+    /**
+     * The return bill's total is the sum of its returned line values (#25375).
+     */
+    private void setReturnTotalsFromLines() {
+        double total = 0.0;
+        for (BillItem i : getBillItems()) {
+            BillItem ref = i.getReferanceBillItem();
+            if (i.getBillItemFinanceDetails() == null || ref == null || ref.getBillItemFinanceDetails() == null) {
+                continue; // saveBillItems() skips these lines too
+            }
+            total += i.getNetValue();
+        }
+        getReturnBill().setTotal(total);
+        getReturnBill().setNetTotal(total);
     }
 
     private void calTotal() {
