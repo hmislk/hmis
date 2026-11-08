@@ -541,6 +541,54 @@ public class PatientReportBean {
     }
 
     /**
+     * Permanently deletes one organism (antibiotic group) from a Microbiology
+     * report, together with all its values (antibiotic results and comment).
+     * The rows are first taken out of the report's lists so a later save of
+     * the report does not write them back. Values go before the group because
+     * each value references its group.
+     */
+    public void removeOrganismGroup(PatientReport ptReport, PatientReportGroup group) {
+        if (ptReport == null || group == null) {
+            return;
+        }
+        Long groupId = group.getId();
+
+        List<PatientReportItemValue> valuesToRemove = new ArrayList<>();
+        if (ptReport.getPatientReportItemValues() != null) {
+            java.util.Iterator<PatientReportItemValue> it = ptReport.getPatientReportItemValues().iterator();
+            while (it.hasNext()) {
+                PatientReportItemValue v = it.next();
+                PatientReportGroup g = v.getPatientReportGroup();
+                if (g != null && (g == group || (groupId != null && groupId.equals(g.getId())))) {
+                    valuesToRemove.add(v);
+                    it.remove();
+                }
+            }
+        }
+
+        PatientReportGroup groupToRemove = group;
+        if (ptReport.getPatientReportGroups() != null) {
+            java.util.Iterator<PatientReportGroup> git = ptReport.getPatientReportGroups().iterator();
+            while (git.hasNext()) {
+                PatientReportGroup g = git.next();
+                if (g == group || (groupId != null && groupId.equals(g.getId()))) {
+                    groupToRemove = g;
+                    git.remove();
+                }
+            }
+        }
+
+        for (PatientReportItemValue v : valuesToRemove) {
+            if (v.getId() != null) {
+                getPtRivFacade().remove(v);
+            }
+        }
+        if (groupToRemove.getId() != null) {
+            patientReportGroupFacade.remove(groupToRemove);
+        }
+    }
+
+    /**
      * Creates the empty comment value for a newly added organism (antibiotic
      * group), so the user can type a comment inside that organism's section.
      */
