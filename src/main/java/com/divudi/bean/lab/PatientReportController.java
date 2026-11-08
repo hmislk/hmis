@@ -215,14 +215,14 @@ public class PatientReportController implements Serializable {
 
         if (null == patientReport.getReportType()) {
             setCurrentPatientReport(patientReport);
-            return "/lab/patient_report?faces-redirect=true";
+            return patientReportPageFor(patientReport) + "?faces-redirect=true";
         } else {
             switch (patientReport.getReportType()) {
                 case INTERFACE:
                 case GENARATE:
                     setCurrentPatientReport(patientReport);
                     fillReportFormats(patientReport);
-                    return "/lab/patient_report?faces-redirect=true";
+                    return patientReportPageFor(patientReport) + "?faces-redirect=true";
                 case UPLOAD:
                     Upload u = loadUpload(patientReport);
 
@@ -768,7 +768,7 @@ public class PatientReportController implements Serializable {
         } else {
             getStaffController().setCurrent(null);
         }
-        return "/lab/patient_report";
+        return patientReportPageFor(currentPatientReport);
     }
 
     public List<PatientReportItemValue> getPatientReportItemValues() {
@@ -2044,6 +2044,33 @@ public class PatientReportController implements Serializable {
         savePatientReport();
         setGroupName(null);
         JsfUtil.addSuccessMessage("Antibiotic group added");
+    }
+
+    /**
+     * Permanently deletes an added organism (antibiotic group) and all its
+     * values from the current Microbiology report. Not allowed once the
+     * report is approved.
+     */
+    public void removePatientReportGroupForMicrobiology(PatientReportGroup group) {
+        if (currentPatientReport == null) {
+            JsfUtil.addErrorMessage("No patient report available");
+            return;
+        }
+        if (group == null) {
+            JsfUtil.addErrorMessage("No organism selected");
+            return;
+        }
+        if (Boolean.TRUE.equals(currentPatientReport.getApproved())) {
+            JsfUtil.addErrorMessage("Cannot delete an organism from an approved report");
+            return;
+        }
+
+        String removedName = group.getGroupName();
+        getPrBean().removeOrganismGroup(currentPatientReport, group);
+
+        // Save the report so its cached lists no longer hold the deleted rows.
+        savePatientReport();
+        JsfUtil.addSuccessMessage("Organism removed" + (removedName == null ? "" : ": " + removedName));
     }
 
     public PatientReportGroup addPatientReportGroup() {
@@ -3360,6 +3387,20 @@ public class PatientReportController implements Serializable {
 
     }
 
+    /**
+     * Returns the data entry page for the given patient report (without the
+     * faces-redirect suffix). Microbiology reports open in their own page; all
+     * other reports open in the general patient report page.
+     */
+    public String patientReportPageFor(PatientReport patientReport) {
+        if (patientReport != null
+                && patientReport.getTransInvestigation() != null
+                && patientReport.getTransInvestigation().getReportType() == InvestigationReportType.Microbiology) {
+            return "/lab/microbiology_patient_report";
+        }
+        return "/lab/patient_report";
+    }
+
     public String navigateToNewlyCreatedPatientReport(PatientInvestigation pi) {
         if (pi == null) {
             JsfUtil.addErrorMessage("No Patient Report");
@@ -3405,7 +3446,7 @@ public class PatientReportController implements Serializable {
 
         fillReportFormats(currentPatientReport);
 
-        return "/lab/patient_report?faces-redirect=true";
+        return patientReportPageFor(currentPatientReport) + "?faces-redirect=true";
     }
 
     private List<ReportFormat> avalilableReportFormats;
@@ -3469,7 +3510,7 @@ public class PatientReportController implements Serializable {
 
         createNewPatientReport(pi, ix);
         getCommonReportItemController().setCategory(ix.getReportFormat());
-        return "/lab/patient_report";
+        return patientReportPageFor(currentPatientReport);
     }
 
     public String enterNewAlternativeReportFormat(PatientInvestigation pi) {
@@ -3486,7 +3527,7 @@ public class PatientReportController implements Serializable {
             getCommonReportItemController().setCategory(currentReportInvestigation.getReportFormat());
         }
 
-        return "/lab/patient_report?faces-redirect=true";
+        return patientReportPageFor(currentPatientReport) + "?faces-redirect=true";
     }
 
     public List<PatientReport> getCustomerReports() {
