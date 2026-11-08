@@ -4667,16 +4667,21 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
                     case Staff:
                         p.setPaidValue(cd.getPaymentMethodData().getStaffCredit().getTotalValue());
                         if (cd.getPaymentMethodData().getStaffCredit().getToStaff() != null) {
-                            staffBean.updateStaffCredit(cd.getPaymentMethodData().getStaffCredit().getToStaff(), cd.getPaymentMethodData().getStaffCredit().getTotalValue());
-                            JsfUtil.addSuccessMessage("Staff Credit Updated");
+                            if (cd.getPaymentMethod() == PaymentMethod.Staff) {
+                                // Record the staff so cancellation can reverse it (#20549).
+                                // settle() applies the credit via paymentService.updateBalances.
+                                p.setToStaff(cd.getPaymentMethodData().getStaffCredit().getToStaff());
+                            } else {
+                                staffBean.updateStaffCredit(cd.getPaymentMethodData().getStaffCredit().getToStaff(), cd.getPaymentMethodData().getStaffCredit().getTotalValue());
+                                JsfUtil.addSuccessMessage("Staff Credit Updated");
+                            }
                         }
                         break;
                     case Staff_Welfare:
                         p.setPaidValue(cd.getPaymentMethodData().getStaffWelfare().getTotalValue());
-                        if (cd.getPaymentMethodData().getStaffWelfare().getToStaff() != null) {
-                            staffBean.updateStaffWelfare(cd.getPaymentMethodData().getStaffWelfare().getToStaff(), cd.getPaymentMethodData().getStaffWelfare().getTotalValue());
-                            JsfUtil.addSuccessMessage("Staff Welfare Balance Updated");
-                        }
+                        // Record the staff so cancellation can reverse it (#20549).
+                        // settle() applies the welfare via paymentService.updateBalances.
+                        p.setToStaff(cd.getPaymentMethodData().getStaffWelfare().getToStaff());
                         break;
                     case YouOweMe:
                     case MultiplePaymentMethods:

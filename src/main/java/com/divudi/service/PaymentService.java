@@ -748,11 +748,14 @@ public class PaymentService {
         if (p.getBill() == null) {
             return;
         }
-        if (p.getBill().getToStaff() == null) {
+        Staff toStaff = p.getToStaff();
+        if (toStaff == null) {
+            toStaff = p.getBill().getToStaff();
+        }
+        if (toStaff == null) {
             return;
         }
-        Staff toStaff = p.getBill().getToStaff();
-        staffService.updateStaffWelfare(toStaff, p.getPaidValue());
+        staffService.updateStaffCredit(toStaff, p.getPaidValue());
     }
 
     private void updateStaffWelare(Payment p) {
