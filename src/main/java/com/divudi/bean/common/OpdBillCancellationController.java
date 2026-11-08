@@ -1829,17 +1829,9 @@ public class OpdBillCancellationController implements Serializable, ControllerWi
 
     @Override
     public PaymentMethodData getPaymentMethodData() {
-        // If we're viewing a bill that was paid with multiple payment methods,
-        // and we have stored original payment data, use that for the "Original Payment Details" section
-        if (this.bill != null
-                && this.bill.getPaymentMethod() == PaymentMethod.MultiplePaymentMethods
-                && originalPaymentMethodData != null
-                && originalPaymentMethodData.getPaymentMethodMultiple() != null
-                && !originalPaymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().isEmpty()) {
-            return originalPaymentMethodData;
-        }
-
-        // Otherwise return the normal payment method data for editing
+        // Always the cancellation's own payment data: cancelOpdBill() saves this
+        // object, so the page must edit it. The original bill's payments are
+        // shown from getOriginalPaymentMethodData()/billPayments instead.
         if (paymentMethodData == null) {
             paymentMethodData = new PaymentMethodData();
         }
