@@ -434,7 +434,12 @@ public class DirectPurchaseReturnController implements Serializable {
             }
 
 
-            i.setNetValue(pbi.getQty() * rate);
+            // Money comes back to the department, so the line value is positive, as on the
+            // GRN return (GrnReturnWithCostingController). pbi qty is in units, so an AMPP
+            // pack rate is divided by units per pack (#25375).
+            boolean isAmpp = i.getItem() instanceof Ampp;
+            double unitRate = isAmpp && unitsPerPack > 0 ? rate / unitsPerPack : rate;
+            i.setNetValue(Math.abs(pbi.getQty() * unitRate));
             i.setCreatedAt(Calendar.getInstance().getTime());
             i.setCreater(getSessionController().getLoggedUser());
 
@@ -567,6 +572,12 @@ public class DirectPurchaseReturnController implements Serializable {
 
         for (BillItem p : getBillItems()) {
             double rate = getReturnRate(p).doubleValue();
+            // p.getQty() is in units; an AMPP return rate is per pack (#25375).
+            BillItemFinanceDetails pfd = p.getBillItemFinanceDetails();
+            double upp = pfd != null && pfd.getUnitsPerPack() != null ? pfd.getUnitsPerPack().doubleValue() : 1.0;
+            if (p.getItem() instanceof Ampp && upp > 0) {
+                rate = rate / upp;
+            }
             grossTotal += rate * p.getQty();
 
         }
