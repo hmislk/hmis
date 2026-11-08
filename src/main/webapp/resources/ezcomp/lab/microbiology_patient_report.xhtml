@@ -229,6 +229,17 @@
                                     </div>
                                 </div>
 
+                                <!-- Organism comment -->
+                                <ui:repeat value="#{patientReportController.currentPatientReport.patientReportItemValues}"
+                                           var="prc">
+                                    <h:panelGroup layout="block"
+                                                  style="clear: left; text-align: left; font-size: 14px; padding: 4px 0 2px 5%;"
+                                                  rendered="#{prc.patientReportGroup.groupName eq group.groupName and prc.investigationItem.ixItemType eq 'OrganismComment' and not empty prc.lobValue}">
+                                        <h:outputText value="#{prc.investigationItem.name} : " style="font-weight: bold;"/>
+                                        <h:outputText value="#{prc.lobValue}" style="white-space: pre-wrap;"/>
+                                    </h:panelGroup>
+                                </ui:repeat>
+
                             </ui:repeat>
                         </h:panelGroup>
 
