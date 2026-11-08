@@ -25,6 +25,11 @@ public class UserPasswordResetDto implements Serializable {
     private boolean retired;
     private String updatedBy;
     private Date lastLoginAt;
+    private boolean activated;
+    private Date activatedAt;
+    private Date retiredAt;
+    private String statusText;
+    private String retiredText;
 
     public UserPasswordResetDto() {
     }
@@ -47,6 +52,19 @@ public class UserPasswordResetDto implements Serializable {
         } else {
             this.staffName = username;
         }
+    }
+
+    // Constructor adding the account state, for the Status and Retired columns.
+    public UserPasswordResetDto(Long webUserId, String username, String userCode,
+            Title staffPersonTitle, String staffPersonName,
+            Title webUserPersonTitle, String webUserPersonName,
+            Date lastPasswordResetAt, Boolean retired,
+            Boolean activated, Date activatedAt, Date retiredAt) {
+        this(webUserId, username, userCode, staffPersonTitle, staffPersonName,
+                webUserPersonTitle, webUserPersonName, lastPasswordResetAt, retired);
+        this.activated = activated != null && activated;
+        this.activatedAt = activatedAt;
+        this.retiredAt = retiredAt;
     }
 
     private static String nameWithTitle(Title title, String name) {
@@ -123,6 +141,36 @@ public class UserPasswordResetDto implements Serializable {
             return "danger";
         }
         return "warning";
+    }
+
+    public boolean isActivated() {
+        return activated;
+    }
+
+    public Date getActivatedAt() {
+        return activatedAt;
+    }
+
+    public Date getRetiredAt() {
+        return retiredAt;
+    }
+
+    // "Active" or "Inactive (date)"; formatted by the report controller
+    public String getStatusText() {
+        return statusText;
+    }
+
+    public void setStatusText(String statusText) {
+        this.statusText = statusText;
+    }
+
+    // "No" or "Yes (date)"; formatted by the report controller
+    public String getRetiredText() {
+        return retiredText;
+    }
+
+    public void setRetiredText(String retiredText) {
+        this.retiredText = retiredText;
     }
 
     public Date getLastLoginAt() {

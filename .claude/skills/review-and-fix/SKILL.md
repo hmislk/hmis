@@ -246,7 +246,12 @@ Otherwise invoke the `code-review` skill against this PR at **high** effort,
 **without** `--comment` or `--fix` — you are going to fix and verify each
 finding by hand, not annotate the PR or blind-apply a patch.
 
-Collect the findings it returns with their categories.
+In parallel, dispatch the same read-only reviewers `merge-gate` Phase 1 uses:
+`hmis-rules-reviewer` always, `hmis-security-reviewer` when the diff touches
+auth, tokens, signed links, `ws/`, privileges or no-login pages, and
+`hmis-ux-reviewer` (non-blocking) when the diff has `.xhtml`.
+
+Collect the findings they all return with their categories.
 
 ## 3. Classify and discuss (the one discussion gate)
 
@@ -311,6 +316,9 @@ python3 .github/scripts/check_config_semantics.py origin/development
 ## 5. Verify each fix live
 
 Do not trust "the code looks right." Every must-fix finding gets exercised.
+After the build/redeploy below, you may dispatch `hmis-qa-verifier` with one
+acceptance check per must-fix finding instead of driving the browser yourself;
+its `FAIL` means the fix is not done.
 
 ### 5a. JSF-only changes (XHTML, no Java)
 
@@ -481,7 +489,8 @@ the same carved-out exception `merge-gate` uses for its own outcome
 comments, so a merger who wasn't in the session can see the findings were
 addressed, and the author can learn from what changed. Write it with
 `--body-file` (a file in `tmp/`), public-content rules apply (no hospital
-data):
+data). Run `hmis-public-guard` on that file, and on the `review-pr` reply
+texts, and post only after a `PASS`:
 
 ```markdown
 ## 🛠️ Review and Fix: fixed and ready for merge

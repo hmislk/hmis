@@ -161,7 +161,7 @@ public class PurchaseOrderSmsController implements Serializable {
         Calendar expiry = Calendar.getInstance();
         expiry.add(Calendar.YEAR, 10);
 
-        String token = securityController.createBillToken(b.getId(), expiry.getTime(), securityController.obtainHmacSigningKey(sessionController));
+        String token = securityController.createBillToken(SecurityController.LINK_PURCHASE_ORDER, b.getId(), expiry.getTime(), securityController.obtainHmacSigningKey(sessionController));
         String encodedToken;
         try {
             encodedToken = URLEncoder.encode(token, "UTF-8");

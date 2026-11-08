@@ -112,7 +112,8 @@ documented here, and warrants stopping and asking rather than guessing.
   [What May Go Into a GitHub Issue, PR, or Comment](../../../developer_docs/git/github-public-content-policy.md).
   Naming which hospital *reported* the bug is allowed; publishing its data is
   not. Non-negotiable here especially, since there's no human proofreading
-  before it posts.
+  before it posts: run the `hmis-public-guard` subagent on every text before
+  posting, and post only after a `PASS`.
 - Never resolve genuinely ambiguous behavior — where the codebase, git
   history, and related issues give no clear signal either way — by picking an
   option silently. That is exactly the "stop and flag" case in steps 3 and 14.
@@ -342,7 +343,8 @@ of the changed workflow has passed against the rebuilt local deployment
 the evidence. If it cannot be run or does not pass after step 8, do not push
 or open a PR: end the issue as a stop and report why.
 
-Same as `dev-issue` step 7: exercise the feature with the department/records
+Dispatching `hmis-qa-verifier` with the acceptance checks is the preferred way
+to run this gate; its `FAIL` means not passed. Same as `dev-issue` step 7: exercise the feature with the department/records
 from step 4, screenshot each meaningful stage into `tmp/`, verify in the DB.
 On a DB copied from production, blank patient, doctor and staff names and
 bill/BHT numbers before each screenshot, or crop them out right after, so
@@ -382,7 +384,10 @@ step 9/11.
    at all.
 2. **Run `/code-review`** at that effort level against the working diff —
    the uncommitted changes on the branch, before the first commit/push, not
-   against an already-open PR.
+   against an already-open PR. Also dispatch `hmis-rules-reviewer`, plus
+   `hmis-security-reviewer` when the diff touches auth, tokens, signed links,
+   `ws/`, privileges or no-login pages, and `hmis-ux-reviewer` (non-blocking)
+   when it has `.xhtml`.
 3. **Triage each finding into one of three buckets:**
    - **In-scope, confirmed bug** → fix it, rebuild/redeploy, re-run the
      relevant Playwright/DB verification from step 7, and fold the fix into
@@ -399,7 +404,7 @@ step 9/11.
 4. **Document the pass** in that same PR section — which findings came up,
    which bucket each landed in, and why — the same judgment-call-logging
    convention already used for steps 3 and 13. Name what ran (`/code-review
-   <level>` or the `java-health-code-reviewer` agent). "Self-review (inline)",
+   <level>` or the `hmis-rules-reviewer` agent). "Self-review (inline)",
    meaning you re-read your own diff, is not this step.
 
 Step 14's CodeRabbit/Codex loop is unchanged by this step — this is an
@@ -508,8 +513,8 @@ Repeat, up to **3 cycles**:
    documented false-positive/valid-fix patterns.
    **If CodeRabbit or Codex is rate-limited or out of usage** (its check or
    comment says "rate limited", "usage limit" or similar), the PR has no
-   independent review. Dispatch the `java-health-code-reviewer` agent
-   (`model: sonnet`) on `gh pr diff <PR#>` (several PRs can go to one agent).
+   independent review. Dispatch the `hmis-rules-reviewer` agent
+   on `gh pr diff <PR#>` (several PRs can go to one agent).
    Post its findings and what you did with each as a PR comment. Fix the
    valid ones on the branch, then re-run step 7 for anything you changed.
    Do this before reporting the PR mergeable; don't wait for the bot's limit

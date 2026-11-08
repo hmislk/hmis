@@ -30,6 +30,10 @@ public class AmppDto implements Serializable {
     private Long vmpId;
     private String vmpName;
 
+    // VMPP relationship
+    private Long vmppId;
+    private String vmppName;
+
     /**
      * Default constructor
      */
@@ -158,6 +162,14 @@ public class AmppDto implements Serializable {
         this.vmpName = vmpName;
     }
 
+    public AmppDto(Long id, String name, String code, Boolean retired, Boolean inactive,
+                   Double dblValue, String packUnitName, Long ampId, String ampName,
+                   Long vmpId, String vmpName, Long vmppId, String vmppName) {
+        this(id, name, code, retired, inactive, dblValue, packUnitName, ampId, ampName, vmpId, vmpName);
+        this.vmppId = vmppId;
+        this.vmppName = vmppName;
+    }
+
     // Display utility methods
 
     /**
@@ -190,6 +202,14 @@ public class AmppDto implements Serializable {
      */
     public String getVmpDisplay() {
         return (vmpName != null && !vmpName.trim().isEmpty()) ? vmpName : "Not linked";
+    }
+
+    /**
+     * Get display text for VMPP relationship
+     * @return VMPP name or "Not linked" if no VMPP
+     */
+    public String getVmppDisplay() {
+        return (vmppName != null && !vmppName.trim().isEmpty()) ? vmppName : "Not linked";
     }
 
     /**
@@ -325,6 +345,22 @@ public class AmppDto implements Serializable {
         this.vmpName = vmpName;
     }
 
+    public Long getVmppId() {
+        return vmppId;
+    }
+
+    public void setVmppId(Long vmppId) {
+        this.vmppId = vmppId;
+    }
+
+    public String getVmppName() {
+        return vmppName;
+    }
+
+    public void setVmppName(String vmppName) {
+        this.vmppName = vmppName;
+    }
+
     // Utility methods for consistency
 
     @Override
@@ -353,6 +389,8 @@ public class AmppDto implements Serializable {
                 ", packUnitName='" + packUnitName + '\'' +
                 ", ampName='" + ampName + '\'' +
                 ", vmpName='" + vmpName + '\'' +
+                ", vmppId=" + vmppId +
+                ", vmppName='" + vmppName + '\'' +
                 '}';
     }
 }

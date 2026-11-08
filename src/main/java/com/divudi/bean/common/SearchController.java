@@ -2070,8 +2070,7 @@ public class SearchController implements Serializable {
         }
 
         if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
-            sql += " and  ((b.netTotal) = :netTotal )";
-            temMap.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
+            sql += JsfUtil.exactAmountFilter("b.netTotal", "netTotal", getSearchKeyword().getNetTotal(), "Net Total", temMap);
         }
 
         if (getSearchKeyword().getTotal() != null && !getSearchKeyword().getTotal().trim().equals("")) {
@@ -3241,8 +3240,7 @@ public class SearchController implements Serializable {
         }
 
         if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
-            sql += " and  ((b.netTotal) = :netTotal )";
-            temMap.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
+            sql += JsfUtil.exactAmountFilter("b.netTotal", "netTotal", getSearchKeyword().getNetTotal(), "Net Total", temMap);
         }
 
         if (getSearchKeyword().getTotal() != null && !getSearchKeyword().getTotal().trim().equals("")) {
@@ -3361,8 +3359,7 @@ public class SearchController implements Serializable {
         }
 
         if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
-            sql += " and  ((b.netTotal) = :netTotal )";
-            m.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
+            sql += JsfUtil.exactAmountFilter("b.netTotal", "netTotal", getSearchKeyword().getNetTotal(), "Net Total", m);
         }
 
         if (getSearchKeyword().getBhtNo() != null && !getSearchKeyword().getBhtNo().trim().equals("")) {
@@ -3571,8 +3568,7 @@ public class SearchController implements Serializable {
         }
 
         if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
-            sql += " and  ((b.netTotal) = :netTotal )";
-            m.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
+            sql += JsfUtil.exactAmountFilter("b.netTotal", "netTotal", getSearchKeyword().getNetTotal(), "Net Total", m);
         }
 
         if (getSearchKeyword().getTotal() != null && !getSearchKeyword().getTotal().trim().equals("")) {
@@ -3641,8 +3637,7 @@ public class SearchController implements Serializable {
         }
 
         if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
-            sql += " and  ((b.netTotal) = :netTotal )";
-            m.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
+            sql += JsfUtil.exactAmountFilter("b.netTotal", "netTotal", getSearchKeyword().getNetTotal(), "Net Total", m);
         }
 
         if (getSearchKeyword().getTotal() != null && !getSearchKeyword().getTotal().trim().equals("")) {
@@ -3799,8 +3794,7 @@ public class SearchController implements Serializable {
         }
 
         if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
-            sql += " and  ((b.netTotal) = :netTotal )";
-            temMap.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
+            sql += JsfUtil.exactAmountFilter("b.netTotal", "netTotal", getSearchKeyword().getNetTotal(), "Net Total", temMap);
         }
 
         if (getSearchKeyword().getTotal() != null && !getSearchKeyword().getTotal().trim().equals("")) {
@@ -4045,23 +4039,11 @@ public class SearchController implements Serializable {
         }
 
         if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
-            try {
-                Double netTotal = Double.parseDouble(getSearchKeyword().getNetTotal().trim());
-                jpql.append(" and b.netTotal = :netTotal");
-                m.put("netTotal", netTotal);
-            } catch (NumberFormatException e) {
-                // Ignore invalid number format
-            }
+            jpql.append(JsfUtil.exactAmountFilter("b.netTotal", "netTotal", getSearchKeyword().getNetTotal(), "Net Total", m));
         }
 
         if (getSearchKeyword().getTotal() != null && !getSearchKeyword().getTotal().trim().equals("")) {
-            try {
-                Double total = Double.parseDouble(getSearchKeyword().getTotal().trim());
-                jpql.append(" and b.total = :total");
-                m.put("total", total);
-            } catch (NumberFormatException e) {
-                // Ignore invalid number format
-            }
+            jpql.append(JsfUtil.exactAmountFilter("b.total", "total", getSearchKeyword().getTotal(), "Total", m));
         }
 
         jpql.append(" order by b.createdAt desc");
@@ -4160,8 +4142,7 @@ public class SearchController implements Serializable {
         }
 
         if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
-            sql += " and  ((b.netTotal) = :netTotal )";
-            m.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
+            sql += JsfUtil.exactAmountFilter("b.netTotal", "netTotal", getSearchKeyword().getNetTotal(), "Net Total", m);
         }
 
         if (getSearchKeyword().getTotal() != null && !getSearchKeyword().getTotal().trim().equals("")) {
@@ -4210,8 +4191,7 @@ public class SearchController implements Serializable {
         }
 
         if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
-            sql += " and  ((b.netTotal) = :netTotal )";
-            m.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
+            sql += JsfUtil.exactAmountFilter("b.netTotal", "netTotal", getSearchKeyword().getNetTotal(), "Net Total", m);
         }
 
         if (getSearchKeyword().getTotal() != null && !getSearchKeyword().getTotal().trim().equals("")) {
@@ -4289,8 +4269,7 @@ public class SearchController implements Serializable {
         }
 
         if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
-            sql += " and  ((b.netTotal) = :netTotal )";
-            m.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
+            sql += JsfUtil.exactAmountFilter("b.netTotal", "netTotal", getSearchKeyword().getNetTotal(), "Net Total", m);
         }
 
         if (getSearchKeyword().getTotal() != null && !getSearchKeyword().getTotal().trim().equals("")) {
@@ -4871,8 +4850,7 @@ public class SearchController implements Serializable {
         }
 
         if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
-            jpql += " and  ((b.netTotal) = :netTotal )";
-            params.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
+            jpql += JsfUtil.exactAmountFilter("b.netTotal", "netTotal", getSearchKeyword().getNetTotal(), "Net Total", params);
         }
 
         if (getSearchKeyword().getFromInstitution() != null && !getSearchKeyword().getFromInstitution().trim().equals("")) {
@@ -5068,8 +5046,7 @@ public class SearchController implements Serializable {
         }
 
         if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
-            jpql += " and  ((b.netTotal) = :netTotal )";
-            params.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
+            jpql += JsfUtil.exactAmountFilter("b.netTotal", "netTotal", getSearchKeyword().getNetTotal(), "Net Total", params);
         }
 
         if (getSearchKeyword().getFromInstitution() != null && !getSearchKeyword().getFromInstitution().trim().equals("")) {
@@ -5253,8 +5230,7 @@ public class SearchController implements Serializable {
         }
 
         if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
-            sql += " and  ((b.netTotal) = :netTotal )";
-            temMap.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
+            sql += JsfUtil.exactAmountFilter("b.netTotal", "netTotal", getSearchKeyword().getNetTotal(), "Net Total", temMap);
         }
 
         if (getSearchKeyword().getFromInstitution() != null && !getSearchKeyword().getFromInstitution().trim().equals("")) {
@@ -5825,13 +5801,7 @@ public class SearchController implements Serializable {
         }
 
         if (getSearchKeyword().getTotal() != null && !getSearchKeyword().getTotal().trim().equals("")) {
-            try {
-                Double total = Double.parseDouble(getSearchKeyword().getTotal().trim());
-                jpql.append(" and bi.netValue = :total");
-                m.put("total", total);
-            } catch (NumberFormatException e) {
-                // Ignore invalid number format
-            }
+            jpql.append(JsfUtil.exactAmountFilter("bi.netValue", "total", getSearchKeyword().getTotal(), "Total", m));
         }
 
         if (getSearchKeyword().getItemName() != null && !getSearchKeyword().getItemName().trim().equals("")) {
@@ -7237,8 +7207,7 @@ public class SearchController implements Serializable {
         }
 
         if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
-            sql += " and  ((bi.bill.netTotal) = :netTotal )";
-            tmp.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
+            sql += JsfUtil.exactAmountFilter("bi.bill.netTotal", "netTotal", getSearchKeyword().getNetTotal(), "Net Total", tmp);
         }
 
         return sql;
@@ -7272,8 +7241,7 @@ public class SearchController implements Serializable {
         }
 
         if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
-            sql += " and  ((b.netTotal) = :netTotal )";
-            tmp.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
+            sql += JsfUtil.exactAmountFilter("b.netTotal", "netTotal", getSearchKeyword().getNetTotal(), "Net Total", tmp);
         }
 
         return sql;
@@ -7782,13 +7750,7 @@ public class SearchController implements Serializable {
             }
 
             if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().isEmpty()) {
-                try {
-                    BigDecimal netTotalValue = new BigDecimal(getSearchKeyword().getNetTotal().trim());
-                    jpql += "AND b.netTotal = :netTotal ";
-                    params.put("netTotal", netTotalValue);
-                } catch (NumberFormatException e) {
-                    // Ignore invalid number format
-                }
+                jpql += JsfUtil.exactAmountFilter("b.netTotal", "netTotal", getSearchKeyword().getNetTotal(), "Net Total", params);
             }
 
             if (getSearchKeyword().getItemName() != null && !getSearchKeyword().getItemName().trim().isEmpty()) {
@@ -7893,8 +7855,7 @@ public class SearchController implements Serializable {
         }
 
         if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
-            sql += " and  ((b.netTotal) = :netTotal )";
-            tmp.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
+            sql += JsfUtil.exactAmountFilter("b.netTotal", "netTotal", getSearchKeyword().getNetTotal(), "Net Total", tmp);
         }
 
         sql += " order by b.createdAt desc  ";
@@ -8357,7 +8318,9 @@ public class SearchController implements Serializable {
         }
 
         if (getSearchKeyword().getBhtNo() != null && !getSearchKeyword().getBhtNo().trim().equals("")) {
-            sql += " and  ((b.paidForBillFee.bill.patientEncounter.bhtNo) like :bht )";
+            // Split-mode OPD bills keep the BHT only on their batch bill (backwardReferenceBill).
+            sql += " and (b.bill.id in (select eb.id from Bill eb where eb.patientEncounter.bhtNo like :bht)"
+                    + " or b.bill.id in (select ib.id from Bill ib where ib.backwardReferenceBill.patientEncounter.bhtNo like :bht)) ";
             temMap.put("bht", "%" + getSearchKeyword().getBhtNo().trim().toUpperCase() + "%");
         }
 
@@ -8435,7 +8398,9 @@ public class SearchController implements Serializable {
         }
 
         if (getSearchKeyword().getBhtNo() != null && !getSearchKeyword().getBhtNo().trim().equals("")) {
-            sql += " and  ((b.paidForBillFee.bill.patientEncounter.bhtNo) like :bht )";
+            // Split-mode OPD bills keep the BHT only on their batch bill (backwardReferenceBill).
+            sql += " and (b.bill.id in (select eb.id from Bill eb where eb.patientEncounter.bhtNo like :bht)"
+                    + " or b.bill.id in (select ib.id from Bill ib where ib.backwardReferenceBill.patientEncounter.bhtNo like :bht)) ";
             temMap.put("bht", "%" + getSearchKeyword().getBhtNo().trim().toUpperCase() + "%");
         }
         sql += "  order by b.staff.id    ";
@@ -10875,8 +10840,7 @@ public class SearchController implements Serializable {
         }
 
         if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
-            sql += " and  ((b.netTotal) = :netTotal )";
-            temMap.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
+            sql += JsfUtil.exactAmountFilter("b.netTotal", "netTotal", getSearchKeyword().getNetTotal(), "Net Total", temMap);
         }
 
         if (getSearchKeyword().getTotal() != null && !getSearchKeyword().getTotal().trim().equals("")) {
@@ -11207,23 +11171,11 @@ public class SearchController implements Serializable {
         }
 
         if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
-            try {
-                Double netTotal = Double.parseDouble(getSearchKeyword().getNetTotal().trim());
-                sql += " and  ((token.bill.netTotal) = :netTotal )";
-                parameters.put("netTotal", netTotal);
-            } catch (NumberFormatException e) {
-                // Ignore invalid number format
-            }
+            sql += JsfUtil.exactAmountFilter("token.bill.netTotal", "netTotal", getSearchKeyword().getNetTotal(), "Net Total", parameters);
         }
 
         if (getSearchKeyword().getTotal() != null && !getSearchKeyword().getTotal().trim().equals("")) {
-            try {
-                Double total = Double.parseDouble(getSearchKeyword().getTotal().trim());
-                sql += " and  ((token.bill.total) = :total )";
-                parameters.put("total", total);
-            } catch (NumberFormatException e) {
-                // Ignore invalid number format
-            }
+            sql += JsfUtil.exactAmountFilter("token.bill.total", "total", getSearchKeyword().getTotal(), "Total", parameters);
         }
 
         if (getSearchKeyword().getTokenNumber() != null && !getSearchKeyword().getTokenNumber().trim().equals("")) {
@@ -11271,23 +11223,11 @@ public class SearchController implements Serializable {
         }
 
         if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
-            try {
-                Double netTotal = Double.parseDouble(getSearchKeyword().getNetTotal().trim());
-                sql += " and  ((token.bill.netTotal) = :netTotal )";
-                parameters.put("netTotal", netTotal);
-            } catch (NumberFormatException e) {
-                // Ignore invalid number format
-            }
+            sql += JsfUtil.exactAmountFilter("token.bill.netTotal", "netTotal", getSearchKeyword().getNetTotal(), "Net Total", parameters);
         }
 
         if (getSearchKeyword().getTotal() != null && !getSearchKeyword().getTotal().trim().equals("")) {
-            try {
-                Double total = Double.parseDouble(getSearchKeyword().getTotal().trim());
-                sql += " and  ((token.bill.total) = :total )";
-                parameters.put("total", total);
-            } catch (NumberFormatException e) {
-                // Ignore invalid number format
-            }
+            sql += JsfUtil.exactAmountFilter("token.bill.total", "total", getSearchKeyword().getTotal(), "Total", parameters);
         }
 
         if (getSearchKeyword().getTokenNumber() != null && !getSearchKeyword().getTokenNumber().trim().equals("")) {
@@ -11537,8 +11477,7 @@ public class SearchController implements Serializable {
         }
 
         if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
-            sql += " and  ((b.netTotal) = :netTotal )";
-            temMap.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
+            sql += JsfUtil.exactAmountFilter("b.netTotal", "netTotal", getSearchKeyword().getNetTotal(), "Net Total", temMap);
         }
 
         if (getSearchKeyword().getTotal() != null && !getSearchKeyword().getTotal().trim().equals("")) {
@@ -11586,8 +11525,7 @@ public class SearchController implements Serializable {
         }
 
         if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
-            sql += " and  ((b.netTotal) = :netTotal )";
-            temMap.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
+            sql += JsfUtil.exactAmountFilter("b.netTotal", "netTotal", getSearchKeyword().getNetTotal(), "Net Total", temMap);
         }
 
         if (getSearchKeyword().getTotal() != null && !getSearchKeyword().getTotal().trim().equals("")) {
@@ -11676,8 +11614,7 @@ public class SearchController implements Serializable {
         }
 
         if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
-            sql += " and  ((b.netTotal) = :netTotal )";
-            temMap.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
+            sql += JsfUtil.exactAmountFilter("b.netTotal", "netTotal", getSearchKeyword().getNetTotal(), "Net Total", temMap);
         }
 
         if (getSearchKeyword().getTotal() != null && !getSearchKeyword().getTotal().trim().equals("")) {
@@ -11724,8 +11661,7 @@ public class SearchController implements Serializable {
         }
 
         if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
-            sql += " and  ((b.netTotal) = :netTotal )";
-            temMap.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
+            sql += JsfUtil.exactAmountFilter("b.netTotal", "netTotal", getSearchKeyword().getNetTotal(), "Net Total", temMap);
         }
 
         if (getSearchKeyword().getTotal() != null && !getSearchKeyword().getTotal().trim().equals("")) {
@@ -12321,8 +12257,7 @@ public class SearchController implements Serializable {
         }
 
         if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
-            sql += " and  ((bill.netTotal) = :netTotal )";
-            temMap.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
+            sql += JsfUtil.exactAmountFilter("bill.netTotal", "netTotal", getSearchKeyword().getNetTotal(), "Net Total", temMap);
         }
 
         if (getSearchKeyword().getTotal() != null && !getSearchKeyword().getTotal().trim().equals("")) {
@@ -12384,8 +12319,7 @@ public class SearchController implements Serializable {
         }
 
         if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
-            sql += " and  ((bill.netTotal) = :netTotal )";
-            temMap.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
+            sql += JsfUtil.exactAmountFilter("bill.netTotal", "netTotal", getSearchKeyword().getNetTotal(), "Net Total", temMap);
         }
 
         if (getSearchKeyword().getTotal() != null && !getSearchKeyword().getTotal().trim().equals("")) {
@@ -12546,8 +12480,7 @@ public class SearchController implements Serializable {
         }
 
         if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
-            sql += " and  ((bill.netTotal) = :netTotal )";
-            temMap.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
+            sql += JsfUtil.exactAmountFilter("bill.netTotal", "netTotal", getSearchKeyword().getNetTotal(), "Net Total", temMap);
         }
 
         if (getSearchKeyword().getTotal() != null && !getSearchKeyword().getTotal().trim().equals("")) {
@@ -12637,8 +12570,7 @@ public class SearchController implements Serializable {
             temMap.put("billNo", "%" + searchKw.getBillNo().trim().toUpperCase() + "%");
         }
         if (searchKw != null && searchKw.getNetTotal() != null && !searchKw.getNetTotal().trim().equals("")) {
-            sql += " and  ((bill.netTotal) = :netTotal )";
-            temMap.put("netTotal", "%" + searchKw.getNetTotal().trim().toUpperCase() + "%");
+            sql += JsfUtil.exactAmountFilter("bill.netTotal", "netTotal", searchKw.getNetTotal(), "Net Total", temMap);
         }
         if (searchKw != null && searchKw.getTotal() != null && !searchKw.getTotal().trim().equals("")) {
             sql += " and  ((bill.total) like :total )";
@@ -12905,8 +12837,7 @@ public class SearchController implements Serializable {
         }
 
         if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
-            sql += " and  ((b.netTotal) = :netTotal )";
-            temMap.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
+            sql += JsfUtil.exactAmountFilter("b.netTotal", "netTotal", getSearchKeyword().getNetTotal(), "Net Total", temMap);
         }
 
         if (getSearchKeyword().getTotal() != null && !getSearchKeyword().getTotal().trim().equals("")) {
@@ -13001,8 +12932,7 @@ public class SearchController implements Serializable {
         }
 
         if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
-            sql += " and  ((b.netTotal) = :netTotal )";
-            temMap.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
+            sql += JsfUtil.exactAmountFilter("b.netTotal", "netTotal", getSearchKeyword().getNetTotal(), "Net Total", temMap);
         }
 
         if (getSearchKeyword().getTotal() != null && !getSearchKeyword().getTotal().trim().equals("")) {
@@ -13160,8 +13090,7 @@ public class SearchController implements Serializable {
         }
 
         if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
-            sql += " and  ((bf.bill.netTotal) = :netTotal )";
-            temMap.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
+            sql += JsfUtil.exactAmountFilter("bf.bill.netTotal", "netTotal", getSearchKeyword().getNetTotal(), "Net Total", temMap);
         }
 
         if (getSearchKeyword().getTotal() != null && !getSearchKeyword().getTotal().trim().equals("")) {
@@ -13253,8 +13182,7 @@ public class SearchController implements Serializable {
         }
 
         if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
-            sql += " and  ((bf.bill.netTotal) = :netTotal )";
-            temMap.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
+            sql += JsfUtil.exactAmountFilter("bf.bill.netTotal", "netTotal", getSearchKeyword().getNetTotal(), "Net Total", temMap);
         }
 
         if (getSearchKeyword().getTotal() != null && !getSearchKeyword().getTotal().trim().equals("")) {
@@ -13405,8 +13333,7 @@ public class SearchController implements Serializable {
         }
 
         if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
-            sql += " and  ((b.netTotal) = :netTotal )";
-            temMap.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
+            sql += JsfUtil.exactAmountFilter("b.netTotal", "netTotal", getSearchKeyword().getNetTotal(), "Net Total", temMap);
         }
 
         if (getSearchKeyword().getTotal() != null && !getSearchKeyword().getTotal().trim().equals("")) {
@@ -13486,8 +13413,7 @@ public class SearchController implements Serializable {
         }
 
         if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
-            sql += " and  ((b.netTotal) = :netTotal )";
-            temMap.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
+            sql += JsfUtil.exactAmountFilter("b.netTotal", "netTotal", getSearchKeyword().getNetTotal(), "Net Total", temMap);
         }
 
         if (getSearchKeyword().getTotal() != null && !getSearchKeyword().getTotal().trim().equals("")) {
@@ -15524,8 +15450,7 @@ public class SearchController implements Serializable {
         }
 
         if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
-            sql += " and  ((b.netTotal) = :netTotal )";
-            temMap.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
+            sql += JsfUtil.exactAmountFilter("b.netTotal", "netTotal", getSearchKeyword().getNetTotal(), "Net Total", temMap);
         }
 
         if (getSearchKeyword().getTotal() != null && !getSearchKeyword().getTotal().trim().equals("")) {
@@ -15570,8 +15495,7 @@ public class SearchController implements Serializable {
         }
 
         if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
-            sql += " and  ((b.netTotal) = :netTotal )";
-            temMap.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
+            sql += JsfUtil.exactAmountFilter("b.netTotal", "netTotal", getSearchKeyword().getNetTotal(), "Net Total", temMap);
         }
 
         if (getSearchKeyword().getTotal() != null && !getSearchKeyword().getTotal().trim().equals("")) {
@@ -15614,8 +15538,7 @@ public class SearchController implements Serializable {
         }
 
         if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
-            sql += " and  ((b.netTotal) = :netTotal )";
-            temMap.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
+            sql += JsfUtil.exactAmountFilter("b.netTotal", "netTotal", getSearchKeyword().getNetTotal(), "Net Total", temMap);
         }
 
         if (getSearchKeyword().getTotal() != null && !getSearchKeyword().getTotal().trim().equals("")) {
@@ -15662,8 +15585,7 @@ public class SearchController implements Serializable {
         }
 
         if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
-            sql += " and  ((b.netTotal) = :netTotal )";
-            temMap.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
+            sql += JsfUtil.exactAmountFilter("b.netTotal", "netTotal", getSearchKeyword().getNetTotal(), "Net Total", temMap);
         }
 
         if (getSearchKeyword().getTotal() != null && !getSearchKeyword().getTotal().trim().equals("")) {
@@ -15717,8 +15639,7 @@ public class SearchController implements Serializable {
         }
 
         if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
-            sql += " and  ((b.netTotal) = :netTotal )";
-            temMap.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
+            sql += JsfUtil.exactAmountFilter("b.netTotal", "netTotal", getSearchKeyword().getNetTotal(), "Net Total", temMap);
         }
 
         if (getSearchKeyword().getTotal() != null && !getSearchKeyword().getTotal().trim().equals("")) {
@@ -15764,8 +15685,7 @@ public class SearchController implements Serializable {
         }
 
         if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
-            sql += " and  ((b.netTotal) = :netTotal )";
-            temMap.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
+            sql += JsfUtil.exactAmountFilter("b.netTotal", "netTotal", getSearchKeyword().getNetTotal(), "Net Total", temMap);
         }
 
         if (getSearchKeyword().getFromInstitution() != null && !getSearchKeyword().getFromInstitution().trim().equals("")) {
@@ -15895,8 +15815,7 @@ public class SearchController implements Serializable {
         }
 
         if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
-            sql += " and  ((b.bill.netTotal) = :netTotal )";
-            temMap.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
+            sql += JsfUtil.exactAmountFilter("b.bill.netTotal", "netTotal", getSearchKeyword().getNetTotal(), "Net Total", temMap);
         }
 
         if (getSearchKeyword().getBhtNo() != null && !getSearchKeyword().getBhtNo().trim().equals("")) {
@@ -16324,8 +16243,7 @@ public class SearchController implements Serializable {
         }
 
         if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
-            jpql += " and  ((b.netTotal) = :netTotal )";
-            temMap.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
+            jpql += JsfUtil.exactAmountFilter("b.netTotal", "netTotal", getSearchKeyword().getNetTotal(), "Net Total", temMap);
         }
 
         if (getSearchKeyword().getFromInstitution() != null && !getSearchKeyword().getFromInstitution().trim().equals("")) {
@@ -16369,8 +16287,7 @@ public class SearchController implements Serializable {
         }
 
         if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
-            jpql += " and  ((b.netTotal) = :netTotal )";
-            temMap.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
+            jpql += JsfUtil.exactAmountFilter("b.netTotal", "netTotal", getSearchKeyword().getNetTotal(), "Net Total", temMap);
         }
 
         if (getSearchKeyword().getPatientName() != null && !getSearchKeyword().getPatientName().trim().equals("")) {
@@ -16431,8 +16348,7 @@ public class SearchController implements Serializable {
         }
 
         if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
-            sql += " and  ((b.bill.netTotal) = :netTotal )";
-            temMap.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
+            sql += JsfUtil.exactAmountFilter("b.bill.netTotal", "netTotal", getSearchKeyword().getNetTotal(), "Net Total", temMap);
         }
 
         if (getSearchKeyword().getItemName() != null && !getSearchKeyword().getItemName().trim().equals("")) {
@@ -16488,8 +16404,7 @@ public class SearchController implements Serializable {
         }
 
         if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
-            sql += " and  ((b.netTotal) = :netTotal )";
-            temMap.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
+            sql += JsfUtil.exactAmountFilter("b.netTotal", "netTotal", getSearchKeyword().getNetTotal(), "Net Total", temMap);
         }
 
         sql += " order by b.deptId desc ";
@@ -16644,8 +16559,7 @@ public class SearchController implements Serializable {
         }
 
         if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
-            sql += " and  ((b.netTotal) = :netTotal )";
-            temMap.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
+            sql += JsfUtil.exactAmountFilter("b.netTotal", "netTotal", getSearchKeyword().getNetTotal(), "Net Total", temMap);
         }
 
         sql += "order by b.deptId desc";
@@ -16699,8 +16613,7 @@ public class SearchController implements Serializable {
         }
 
         if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
-            sql += " and  ((b.netTotal) = :netTotal )";
-            temMap.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
+            sql += JsfUtil.exactAmountFilter("b.netTotal", "netTotal", getSearchKeyword().getNetTotal(), "Net Total", temMap);
         }
 
         sql += " order by b.deptId desc  ";
@@ -16749,8 +16662,7 @@ public class SearchController implements Serializable {
         }
 
         if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
-            sql += " and  ((b.netTotal) = :netTotal )";
-            temMap.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
+            sql += JsfUtil.exactAmountFilter("b.netTotal", "netTotal", getSearchKeyword().getNetTotal(), "Net Total", temMap);
         }
 
         sql += " order by b.deptId desc  ";
@@ -16862,8 +16774,7 @@ public class SearchController implements Serializable {
         }
 
         if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
-            sql += " and  ((b.netTotal) = :netTotal )";
-            temMap.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
+            sql += JsfUtil.exactAmountFilter("b.netTotal", "netTotal", getSearchKeyword().getNetTotal(), "Net Total", temMap);
         }
 
         sql += " order by b.deptId desc  ";
@@ -16954,8 +16865,7 @@ public class SearchController implements Serializable {
         }
 
         if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
-            sql += " and  ((b.netTotal) = :netTotal )";
-            temMap.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
+            sql += JsfUtil.exactAmountFilter("b.netTotal", "netTotal", getSearchKeyword().getNetTotal(), "Net Total", temMap);
         }
 
         sql += " order by b.id desc  ";
@@ -17015,8 +16925,7 @@ public class SearchController implements Serializable {
         }
 
         if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
-            sql += " and  ((b.netTotal) = :netTotal )";
-            temMap.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
+            sql += JsfUtil.exactAmountFilter("b.netTotal", "netTotal", getSearchKeyword().getNetTotal(), "Net Total", temMap);
         }
 
         sql += " order by b.deptId desc  ";
@@ -17268,8 +17177,7 @@ public class SearchController implements Serializable {
         }
 
         if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
-            sql += " and  ((b.netTotal) = :netTotal )";
-            temMap.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
+            sql += JsfUtil.exactAmountFilter("b.netTotal", "netTotal", getSearchKeyword().getNetTotal(), "Net Total", temMap);
         }
 
         sql += "order by b.deptId desc";
@@ -17425,8 +17333,7 @@ public class SearchController implements Serializable {
         }
 
         if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
-            sql += " and  ((b.netTotal) = :netTotal )";
-            temMap.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
+            sql += JsfUtil.exactAmountFilter("b.netTotal", "netTotal", getSearchKeyword().getNetTotal(), "Net Total", temMap);
         }
 
         if (getSearchKeyword().getNumber() != null && !getSearchKeyword().getNumber().trim().equals("")) {
@@ -17533,8 +17440,7 @@ public class SearchController implements Serializable {
         }
 
         if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
-            sql += " and  ((b.netTotal) = :netTotal )";
-            temMap.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
+            sql += JsfUtil.exactAmountFilter("b.netTotal", "netTotal", getSearchKeyword().getNetTotal(), "Net Total", temMap);
         }
 
         if (getSearchKeyword().getNumber() != null && !getSearchKeyword().getNumber().trim().equals("")) {

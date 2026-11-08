@@ -50,7 +50,8 @@ numbers, entity IDs), affected-record counts, production schema names, cutover
 dates, per-staff statistics, data-fix logs or credentials. Describe the defect
 and the local test evidence; keep hospital-specific numbers in `tmp/`. This
 applies to the issue body as much as to the PR — including an issue *you* file
-mid-run for a bug you found yourself.
+mid-run for a bug you found yourself. Write each such text to a file and run
+the `hmis-public-guard` subagent on it; post only after a `PASS`.
 
 ## 1. Setup
 
@@ -219,7 +220,8 @@ Rules that hold on every machine:
 
 ## 7. Test with Playwright + verify in DB
 
-Run the `playwright-e2e` skill workflow:
+Run the `playwright-e2e` skill workflow, or dispatch the `hmis-qa-verifier`
+subagent with the acceptance checks (its `FAIL` sends you back to step 8):
 - Before scripting a page, grep `developer_docs/testing/playwright-e2e/` for
   its name (e.g. `grep -rn "Patient Admit"`) and read the matching §. Most
   selector, growl and test-data traps are already there.
@@ -378,6 +380,11 @@ JNDI names noted in step 11 with `Edit`, leaving that change **unstaged**.
 Precondition: the step 7 end-to-end test (Playwright and/or API, with DB or API
 read-back) has passed against the rebuilt local deployment. Base is
 `development`, branched from `origin/development`.
+
+Before creating the PR (small fixes may skip this), dispatch `hmis-rules-reviewer`
+on the branch diff, plus `hmis-security-reviewer` when it touches auth, tokens,
+signed links, `ws/`, privileges or no-login pages, and `hmis-ux-reviewer`
+(non-blocking) when it has `.xhtml`. Fix confirmed findings first.
 
 Run `mkdir -p "tmp/<issue>"` first, then write the PR body with the Write tool
 to `tmp/<issue>/pr-body.md` and pass

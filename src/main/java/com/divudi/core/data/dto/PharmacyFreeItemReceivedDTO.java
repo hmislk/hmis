@@ -69,6 +69,37 @@ public class PharmacyFreeItemReceivedDTO implements Serializable {
     }
 
     /**
+     * Same as the 16-argument constructor, but takes the plain stored rate
+     * columns. For old free-only GRN lines (stored rate 0, paid qty 0) the rate
+     * falls back to the entered pack rate net of line discount, per unit
+     * (issue #25300). Done in Java to avoid mixing BigDecimal and double in JPQL.
+     */
+    public PharmacyFreeItemReceivedDTO(Long billItemId, Long billId, Date receivedDate, String grnNo, String invoiceNo,
+            BillTypeAtomic billTypeAtomic, String departmentName, DepartmentType departmentType,
+            Long supplierId, String supplierName, Long itemId, String itemCode, String itemName,
+            Double paidQty, Double freeQty, Double storedPurchaseRate,
+            java.math.BigDecimal lineGrossRate, java.math.BigDecimal lineDiscountRate,
+            java.math.BigDecimal unitsPerPack) {
+        this(billItemId, billId, receivedDate, grnNo, invoiceNo, billTypeAtomic, departmentName, departmentType,
+                supplierId, supplierName, itemId, itemCode, itemName, paidQty, freeQty,
+                resolveRate(storedPurchaseRate, paidQty, lineGrossRate, lineDiscountRate, unitsPerPack));
+    }
+
+    private static Double resolveRate(Double stored, Double paidQty, java.math.BigDecimal gross,
+            java.math.BigDecimal discount, java.math.BigDecimal unitsPerPack) {
+        double storedRate = stored == null ? 0.0 : stored;
+        double paid = paidQty == null ? 0.0 : paidQty;
+        if (storedRate == 0.0 && paid == 0.0 && gross != null && unitsPerPack != null
+                && unitsPerPack.signum() > 0) {
+            java.math.BigDecimal net = gross.subtract(discount == null ? java.math.BigDecimal.ZERO : discount);
+            if (net.signum() > 0) {
+                return net.divide(unitsPerPack, 8, java.math.RoundingMode.HALF_UP).doubleValue();
+            }
+        }
+        return stored;
+    }
+
+    /**
      * Paid quantity received less the paid quantity returned to the supplier.
      */
     public double getNetPaidQty() {

@@ -94,96 +94,17 @@ public class DrawerService {
             return;
         }
 
-        Drawer drawer = getUsersDrawer(webUser);
+        Drawer drawer = lockUsersDrawer(webUser);
         if (drawer == null) {
             System.err.println("No drawer found for the user.");
             return;
         }
 
-        //update Drover History
-        drawerEntryUpdate(payment, drawer);
+        //update Drover History with the signed value applied to the balance below
+        drawerEntryUpdate(payment, drawer, payment.getCreater(), paidValue);
 
-        synchronized (drawer) {
-            switch (payment.getPaymentMethod()) {
-                case OnCall:
-                    drawer.setOnCallInHandValue(safeAdd(drawer.getOnCallInHandValue(), paidValue));
-                    drawer.setOnCallBalance(safeAdd(drawer.getOnCallBalance(), paidValue));
-                    break;
-                case Cash:
-                    drawer.setCashInHandValue(safeAdd(drawer.getCashInHandValue(), paidValue));
-                    drawer.setCashBalance(safeAdd(drawer.getCashBalance(), paidValue));
-                    break;
-                case Card:
-                    drawer.setCardInHandValue(safeAdd(drawer.getCardInHandValue(), paidValue));
-                    drawer.setCardBalance(safeAdd(drawer.getCardBalance(), paidValue));
-                    break;
-                case MultiplePaymentMethods:
-                    drawer.setMultiplePaymentMethodsInHandValue(safeAdd(drawer.getMultiplePaymentMethodsInHandValue(), paidValue));
-                    drawer.setMultiplePaymentMethodsBalance(safeAdd(drawer.getMultiplePaymentMethodsBalance(), paidValue));
-                    break;
-                case Staff:
-                    drawer.setStaffInHandValue(safeAdd(drawer.getStaffInHandValue(), paidValue));
-                    drawer.setStaffBalance(safeAdd(drawer.getStaffBalance(), paidValue));
-                    break;
-                case Credit:
-                    drawer.setCreditInHandValue(safeAdd(drawer.getCreditInHandValue(), paidValue));
-                    drawer.setCreditBalance(safeAdd(drawer.getCreditBalance(), paidValue));
-                    break;
-                case Staff_Welfare:
-                    drawer.setStaffWelfareInHandValue(safeAdd(drawer.getStaffWelfareInHandValue(), paidValue));
-                    drawer.setStaffWelfareBalance(safeAdd(drawer.getStaffWelfareBalance(), paidValue));
-                    break;
-                case Voucher:
-                    drawer.setVoucherInHandValue(safeAdd(drawer.getVoucherInHandValue(), paidValue));
-                    drawer.setVoucherBalance(safeAdd(drawer.getVoucherBalance(), paidValue));
-                    break;
-                case IOU:
-                    drawer.setIouInHandValue(safeAdd(drawer.getIouInHandValue(), paidValue));
-                    drawer.setIouBalance(safeAdd(drawer.getIouBalance(), paidValue));
-                    break;
-                case Agent:
-                    drawer.setAgentInHandValue(safeAdd(drawer.getAgentInHandValue(), paidValue));
-                    drawer.setAgentBalance(safeAdd(drawer.getAgentBalance(), paidValue));
-                    break;
-                case Cheque:
-                    drawer.setChequeInHandValue(safeAdd(drawer.getChequeInHandValue(), paidValue));
-                    drawer.setChequeBalance(safeAdd(drawer.getChequeBalance(), paidValue));
-                    break;
-                case Slip:
-                    drawer.setSlipInHandValue(safeAdd(drawer.getSlipInHandValue(), paidValue));
-                    drawer.setSlipBalance(safeAdd(drawer.getSlipBalance(), paidValue));
-                    break;
-                case ewallet:
-                    drawer.setEwalletInHandValue(safeAdd(drawer.getEwalletInHandValue(), paidValue));
-                    drawer.setEwalletBalance(safeAdd(drawer.getEwalletBalance(), paidValue));
-                    break;
-                case PatientDeposit:
-                    drawer.setPatientDepositInHandValue(safeAdd(drawer.getPatientDepositInHandValue(), paidValue));
-                    drawer.setPatientDepositBalance(safeAdd(drawer.getPatientDepositBalance(), paidValue));
-                    break;
-                case PatientPoints:
-                    drawer.setPatientPointsInHandValue(safeAdd(drawer.getPatientPointsInHandValue(), paidValue));
-                    drawer.setPatientPointsBalance(safeAdd(drawer.getPatientPointsBalance(), paidValue));
-                    break;
-                case OnlineSettlement:
-                    drawer.setOnlineSettlementInHandValue(safeAdd(drawer.getOnlineSettlementInHandValue(), paidValue));
-                    drawer.setOnlineSettlementBalance(safeAdd(drawer.getOnlineSettlementBalance(), paidValue));
-                    break;
-                case None:
-                    drawer.setNoneInHandValue(safeAdd(drawer.getNoneInHandValue(), paidValue));
-                    drawer.setNoneBalance(safeAdd(drawer.getNoneBalance(), paidValue));
-                    break;
-                case YouOweMe:
-                    drawer.setYouOweMeInHandValue(safeAdd(drawer.getYouOweMeInHandValue(), paidValue));
-                    drawer.setYouOweMeBalance(safeAdd(drawer.getYouOweMeBalance(), paidValue));
-                    break;
-                default:
-                    System.err.println("Unhandled payment method: " + payment.getPaymentMethod());
-                    break;
-            }
-
-            drawerFacade.editAndCommit(drawer);
-        }
+        addToBalance(drawer, payment.getPaymentMethod(), paidValue);
+        drawerFacade.editAndCommit(drawer);
     }
 
     // </editor-fold>
@@ -224,6 +145,24 @@ public class DrawerService {
         if (payment == null) {
             return;
         }
+        drawerEntryUpdate(payment, currentDrawer, user, payment.getPaidValue());
+    }
+
+    /**
+     * Writes the drawer history row for a payment, using the signed value that
+     * is applied to the drawer balance. A drawer "out" made with a positive
+     * payment passes a negative value here, so the row's transaction value and
+     * after-in-hand value agree with the balance change (#25111).
+     *
+     * @param payment the payment being recorded
+     * @param currentDrawer the drawer whose balance changes
+     * @param user the user the history row is filed under
+     * @param signedValue the value added to the drawer balance (negative for an out)
+     */
+    public void drawerEntryUpdate(Payment payment, Drawer currentDrawer, WebUser user, double signedValue) {
+        if (payment == null) {
+            return;
+        }
 
         drawerEntry = new DrawerEntry();
         drawerEntry.setPayment(payment);
@@ -231,7 +170,7 @@ public class DrawerService {
         drawerEntry.setBill(payment.getBill());
         drawerEntry.setDrawer(currentDrawer);
         drawerEntry.setWebUser(user);
-        drawerEntry.setTransactionValue(payment.getPaidValue());
+        drawerEntry.setTransactionValue(signedValue);
         Double beforeInHandValue = 0.0;
 
         if (payment.getPaymentMethod() != null) {
@@ -297,25 +236,14 @@ public class DrawerService {
         }
 
         drawerEntry.setBeforeInHandValue(beforeInHandValue);
-        drawerEntry.setAfterInHandValue(beforeInHandValue + payment.getPaidValue());
-        double totalBalance;
-        if (currentDrawer.getCashInHandValue() == null) {
-            totalBalance = 0.0;
-        } else {
-            totalBalance = currentDrawer.getTotalBalance();
-        }
-        //System.out.println("totalBalance = " + totalBalance);
+        drawerEntry.setAfterInHandValue(beforeInHandValue + signedValue);
+        // Both totals skip null fields, so a drawer without a cash value (e.g. card only) still gets its real balance
+        double totalBalance = currentDrawer.getTotalBalance();
 
         drawerEntry.setBeforeBalance(totalBalance);
-        drawerEntry.setAfterBalance(totalBalance + payment.getPaidValue());
+        drawerEntry.setAfterBalance(totalBalance + signedValue);
 
-        double totalShortageOrExcess;
-        if (currentDrawer.getCashInHandValue() == null) {
-            totalShortageOrExcess = 0.0;
-        } else {
-            totalShortageOrExcess = currentDrawer.getTotalShortageOrExcess();
-        }
-        //System.out.println("totalShortageOrExcess = " + totalShortageOrExcess);
+        double totalShortageOrExcess = currentDrawer.getTotalShortageOrExcess();
 
         drawerEntry.setBeforeShortageExcess(totalShortageOrExcess);
         drawerEntry.setAfterShortageExcess(totalShortageOrExcess);
@@ -455,95 +383,167 @@ public class DrawerService {
             return;
         }
 
-        Drawer drawer = getUsersDrawer(payment.getCreater());
+        Drawer drawer = lockUsersDrawer(payment.getCreater());
         if (drawer == null) {
             System.err.println("No drawer found for the user.");
             return;
         }
 
-        //update Drover History
-        drawerEntryUpdate(payment, drawer);
+        //update Drover History with the signed value applied to the balance below
+        drawerEntryUpdate(payment, drawer, payment.getCreater(), paidValue);
 
-        synchronized (drawer) {
-            switch (payment.getPaymentMethod()) {
-                case OnCall:
-                    drawer.setOnCallInHandValue(safeAdd(drawer.getOnCallInHandValue(), paidValue));
-                    drawer.setOnCallBalance(safeAdd(drawer.getOnCallBalance(), paidValue));
-                    break;
-                case Cash:
-                    drawer.setCashInHandValue(safeAdd(drawer.getCashInHandValue(), paidValue));
-                    drawer.setCashBalance(safeAdd(drawer.getCashBalance(), paidValue));
-                    break;
-                case Card:
-                    drawer.setCardInHandValue(safeAdd(drawer.getCardInHandValue(), paidValue));
-                    drawer.setCardBalance(safeAdd(drawer.getCardBalance(), paidValue));
-                    break;
-                case MultiplePaymentMethods:
-                    drawer.setMultiplePaymentMethodsInHandValue(safeAdd(drawer.getMultiplePaymentMethodsInHandValue(), paidValue));
-                    drawer.setMultiplePaymentMethodsBalance(safeAdd(drawer.getMultiplePaymentMethodsBalance(), paidValue));
-                    break;
-                case Staff:
-                    drawer.setStaffInHandValue(safeAdd(drawer.getStaffInHandValue(), paidValue));
-                    drawer.setStaffBalance(safeAdd(drawer.getStaffBalance(), paidValue));
-                    break;
-                case Credit:
-                    drawer.setCreditInHandValue(safeAdd(drawer.getCreditInHandValue(), paidValue));
-                    drawer.setCreditBalance(safeAdd(drawer.getCreditBalance(), paidValue));
-                    break;
-                case Staff_Welfare:
-                    drawer.setStaffWelfareInHandValue(safeAdd(drawer.getStaffWelfareInHandValue(), paidValue));
-                    drawer.setStaffWelfareBalance(safeAdd(drawer.getStaffWelfareBalance(), paidValue));
-                    break;
-                case Voucher:
-                    drawer.setVoucherInHandValue(safeAdd(drawer.getVoucherInHandValue(), paidValue));
-                    drawer.setVoucherBalance(safeAdd(drawer.getVoucherBalance(), paidValue));
-                    break;
-                case IOU:
-                    drawer.setIouInHandValue(safeAdd(drawer.getIouInHandValue(), paidValue));
-                    drawer.setIouBalance(safeAdd(drawer.getIouBalance(), paidValue));
-                    break;
-                case Agent:
-                    drawer.setAgentInHandValue(safeAdd(drawer.getAgentInHandValue(), paidValue));
-                    drawer.setAgentBalance(safeAdd(drawer.getAgentBalance(), paidValue));
-                    break;
-                case Cheque:
-                    drawer.setChequeInHandValue(safeAdd(drawer.getChequeInHandValue(), paidValue));
-                    drawer.setChequeBalance(safeAdd(drawer.getChequeBalance(), paidValue));
-                    break;
-                case Slip:
-                    drawer.setSlipInHandValue(safeAdd(drawer.getSlipInHandValue(), paidValue));
-                    drawer.setSlipBalance(safeAdd(drawer.getSlipBalance(), paidValue));
-                    break;
-                case ewallet:
-                    drawer.setEwalletInHandValue(safeAdd(drawer.getEwalletInHandValue(), paidValue));
-                    drawer.setEwalletBalance(safeAdd(drawer.getEwalletBalance(), paidValue));
-                    break;
-                case PatientDeposit:
-                    drawer.setPatientDepositInHandValue(safeAdd(drawer.getPatientDepositInHandValue(), paidValue));
-                    drawer.setPatientDepositBalance(safeAdd(drawer.getPatientDepositBalance(), paidValue));
-                    break;
-                case PatientPoints:
-                    drawer.setPatientPointsInHandValue(safeAdd(drawer.getPatientPointsInHandValue(), paidValue));
-                    drawer.setPatientPointsBalance(safeAdd(drawer.getPatientPointsBalance(), paidValue));
-                    break;
-                case OnlineSettlement:
-                    drawer.setOnlineSettlementInHandValue(safeAdd(drawer.getOnlineSettlementInHandValue(), paidValue));
-                    drawer.setOnlineSettlementBalance(safeAdd(drawer.getOnlineSettlementBalance(), paidValue));
-                    break;
-                case None:
-                    drawer.setNoneInHandValue(safeAdd(drawer.getNoneInHandValue(), paidValue));
-                    drawer.setNoneBalance(safeAdd(drawer.getNoneBalance(), paidValue));
-                    break;
-                case YouOweMe:
-                    drawer.setYouOweMeInHandValue(safeAdd(drawer.getYouOweMeInHandValue(), paidValue));
-                    drawer.setYouOweMeBalance(safeAdd(drawer.getYouOweMeBalance(), paidValue));
-                    break;
-                default:
-                    System.err.println("Unhandled payment method: " + payment.getPaymentMethod());
-                    break;
-            }
+        addToBalance(drawer, payment.getPaymentMethod(), paidValue);
+        drawerFacade.editAndCommit(drawer);
+    }
 
-            drawerFacade.editAndCommit(drawer);
+    /**
+     * Applies {@code paidValue} to {@code webUser}'s drawer and records it in that
+     * user's drawer history, in one transaction under a row lock. Unlike
+     * {@link #updateDrawer(Payment, double, WebUser)}, the history entry is tagged
+     * with {@code webUser} rather than the payment's creator - the behaviour
+     * DrawerController has always had.
+     */
+    public void updateUsersDrawer(Payment payment, double paidValue, WebUser webUser) {
+        if (payment == null || webUser == null) {
+            System.err.println("Payment or payment creator is null.");
+            return;
+        }
+        Drawer drawer = lockUsersDrawer(webUser);
+        if (drawer == null) {
+            System.err.println("No drawer found for the user.");
+            return;
+        }
+        drawerEntryUpdate(payment, drawer, webUser, paidValue);
+        addToBalance(drawer, payment.getPaymentMethod(), paidValue);
+        drawerFacade.editAndCommit(drawer);
+    }
+
+    /**
+     * Applies {@code value} for a bill (no Payment row) to {@code webUser}'s drawer
+     * and records it in the drawer history, in one transaction under a row lock.
+     */
+    public void updateDrawer(Bill bill, double value, PaymentMethod paymentMethod, WebUser webUser) {
+        if (bill == null || webUser == null) {
+            System.err.println("Payment or payment creator is null.");
+            return;
+        }
+        Drawer drawer = lockUsersDrawer(webUser);
+        if (drawer == null) {
+            System.err.println("No drawer found for the user.");
+            return;
+        }
+        drawerEntryUpdate(bill, drawer, paymentMethod, webUser, value);
+        addToBalance(drawer, paymentMethod, value);
+        drawerFacade.editAndCommit(drawer);
+    }
+
+    /**
+     * The user's drawer, re-read from the database with a row lock (SELECT ... FOR
+     * UPDATE) held until the current transaction ends. Every balance change reads the
+     * old value and writes the new one, so two requests on one drawer (the same
+     * cashier in two tabs, or the online/API settle) must not interleave: without the
+     * lock both read the same balance and one delta is lost (issue #25123). A drawer
+     * that does not exist yet is created unlocked, since no other request can see it.
+     */
+    private Drawer lockUsersDrawer(WebUser webUser) {
+        Drawer existing = findUsersDrawerWithoutCreate(webUser);
+        if (existing == null) {
+            return getUsersDrawer(webUser);
+        }
+        return drawerFacade.findForUpdate(existing.getId());
+    }
+
+    /** {@link #lockUsersDrawer} for a drawer the caller already holds. */
+    private Drawer lockForUpdate(Drawer drawer) {
+        if (drawer == null || drawer.getId() == null) {
+            return drawer;
+        }
+        Drawer locked = drawerFacade.findForUpdate(drawer.getId());
+        return locked != null ? locked : drawer;
+    }
+
+    /** Adds {@code value} to the in-hand value and balance of the payment method's columns. */
+    private void addToBalance(Drawer drawer, PaymentMethod paymentMethod, double value) {
+        if (paymentMethod == null) {
+            System.err.println("Drawer update without a payment method.");
+            return;
+        }
+        switch (paymentMethod) {
+            case OnCall:
+                drawer.setOnCallInHandValue(safeAdd(drawer.getOnCallInHandValue(), value));
+                drawer.setOnCallBalance(safeAdd(drawer.getOnCallBalance(), value));
+                break;
+            case Cash:
+                drawer.setCashInHandValue(safeAdd(drawer.getCashInHandValue(), value));
+                drawer.setCashBalance(safeAdd(drawer.getCashBalance(), value));
+                break;
+            case Card:
+                drawer.setCardInHandValue(safeAdd(drawer.getCardInHandValue(), value));
+                drawer.setCardBalance(safeAdd(drawer.getCardBalance(), value));
+                break;
+            case MultiplePaymentMethods:
+                drawer.setMultiplePaymentMethodsInHandValue(safeAdd(drawer.getMultiplePaymentMethodsInHandValue(), value));
+                drawer.setMultiplePaymentMethodsBalance(safeAdd(drawer.getMultiplePaymentMethodsBalance(), value));
+                break;
+            case Staff:
+                drawer.setStaffInHandValue(safeAdd(drawer.getStaffInHandValue(), value));
+                drawer.setStaffBalance(safeAdd(drawer.getStaffBalance(), value));
+                break;
+            case Credit:
+                drawer.setCreditInHandValue(safeAdd(drawer.getCreditInHandValue(), value));
+                drawer.setCreditBalance(safeAdd(drawer.getCreditBalance(), value));
+                break;
+            case Staff_Welfare:
+                drawer.setStaffWelfareInHandValue(safeAdd(drawer.getStaffWelfareInHandValue(), value));
+                drawer.setStaffWelfareBalance(safeAdd(drawer.getStaffWelfareBalance(), value));
+                break;
+            case Voucher:
+                drawer.setVoucherInHandValue(safeAdd(drawer.getVoucherInHandValue(), value));
+                drawer.setVoucherBalance(safeAdd(drawer.getVoucherBalance(), value));
+                break;
+            case IOU:
+                drawer.setIouInHandValue(safeAdd(drawer.getIouInHandValue(), value));
+                drawer.setIouBalance(safeAdd(drawer.getIouBalance(), value));
+                break;
+            case Agent:
+                drawer.setAgentInHandValue(safeAdd(drawer.getAgentInHandValue(), value));
+                drawer.setAgentBalance(safeAdd(drawer.getAgentBalance(), value));
+                break;
+            case Cheque:
+                drawer.setChequeInHandValue(safeAdd(drawer.getChequeInHandValue(), value));
+                drawer.setChequeBalance(safeAdd(drawer.getChequeBalance(), value));
+                break;
+            case Slip:
+                drawer.setSlipInHandValue(safeAdd(drawer.getSlipInHandValue(), value));
+                drawer.setSlipBalance(safeAdd(drawer.getSlipBalance(), value));
+                break;
+            case ewallet:
+                drawer.setEwalletInHandValue(safeAdd(drawer.getEwalletInHandValue(), value));
+                drawer.setEwalletBalance(safeAdd(drawer.getEwalletBalance(), value));
+                break;
+            case PatientDeposit:
+                drawer.setPatientDepositInHandValue(safeAdd(drawer.getPatientDepositInHandValue(), value));
+                drawer.setPatientDepositBalance(safeAdd(drawer.getPatientDepositBalance(), value));
+                break;
+            case PatientPoints:
+                drawer.setPatientPointsInHandValue(safeAdd(drawer.getPatientPointsInHandValue(), value));
+                drawer.setPatientPointsBalance(safeAdd(drawer.getPatientPointsBalance(), value));
+                break;
+            case OnlineSettlement:
+                drawer.setOnlineSettlementInHandValue(safeAdd(drawer.getOnlineSettlementInHandValue(), value));
+                drawer.setOnlineSettlementBalance(safeAdd(drawer.getOnlineSettlementBalance(), value));
+                break;
+            case None:
+                drawer.setNoneInHandValue(safeAdd(drawer.getNoneInHandValue(), value));
+                drawer.setNoneBalance(safeAdd(drawer.getNoneBalance(), value));
+                break;
+            case YouOweMe:
+                drawer.setYouOweMeInHandValue(safeAdd(drawer.getYouOweMeInHandValue(), value));
+                drawer.setYouOweMeBalance(safeAdd(drawer.getYouOweMeBalance(), value));
+                break;
+            default:
+                System.err.println("Unhandled payment method for drawer update: " + paymentMethod);
+                break;
         }
     }
 
@@ -642,94 +642,17 @@ public class DrawerService {
         if (drawer == null || paymentMethod == null || bill == null || user == null) {
             return;
         }
-        synchronized (drawer) {
-            // The drawer history filters by webUser, so the entry must be tagged with the
-            // drawer owner (cashier whose drawer changed), not the actor approving/applying it.
-            WebUser drawerOwner = drawer.getDrawerUser() != null ? drawer.getDrawerUser() : user;
-            drawerEntryUpdate(bill, drawer, paymentMethod, drawerOwner, delta);
-            if (drawerEntry != null) {
-                drawerEntry.setCreater(user);
-                save(drawerEntry);
-            }
-            switch (paymentMethod) {
-                case OnCall:
-                    drawer.setOnCallInHandValue(safeAdd(drawer.getOnCallInHandValue(), delta));
-                    drawer.setOnCallBalance(safeAdd(drawer.getOnCallBalance(), delta));
-                    break;
-                case Cash:
-                    drawer.setCashInHandValue(safeAdd(drawer.getCashInHandValue(), delta));
-                    drawer.setCashBalance(safeAdd(drawer.getCashBalance(), delta));
-                    break;
-                case Card:
-                    drawer.setCardInHandValue(safeAdd(drawer.getCardInHandValue(), delta));
-                    drawer.setCardBalance(safeAdd(drawer.getCardBalance(), delta));
-                    break;
-                case MultiplePaymentMethods:
-                    drawer.setMultiplePaymentMethodsInHandValue(safeAdd(drawer.getMultiplePaymentMethodsInHandValue(), delta));
-                    drawer.setMultiplePaymentMethodsBalance(safeAdd(drawer.getMultiplePaymentMethodsBalance(), delta));
-                    break;
-                case Staff:
-                    drawer.setStaffInHandValue(safeAdd(drawer.getStaffInHandValue(), delta));
-                    drawer.setStaffBalance(safeAdd(drawer.getStaffBalance(), delta));
-                    break;
-                case Credit:
-                    drawer.setCreditInHandValue(safeAdd(drawer.getCreditInHandValue(), delta));
-                    drawer.setCreditBalance(safeAdd(drawer.getCreditBalance(), delta));
-                    break;
-                case Staff_Welfare:
-                    drawer.setStaffWelfareInHandValue(safeAdd(drawer.getStaffWelfareInHandValue(), delta));
-                    drawer.setStaffWelfareBalance(safeAdd(drawer.getStaffWelfareBalance(), delta));
-                    break;
-                case Voucher:
-                    drawer.setVoucherInHandValue(safeAdd(drawer.getVoucherInHandValue(), delta));
-                    drawer.setVoucherBalance(safeAdd(drawer.getVoucherBalance(), delta));
-                    break;
-                case IOU:
-                    drawer.setIouInHandValue(safeAdd(drawer.getIouInHandValue(), delta));
-                    drawer.setIouBalance(safeAdd(drawer.getIouBalance(), delta));
-                    break;
-                case Agent:
-                    drawer.setAgentInHandValue(safeAdd(drawer.getAgentInHandValue(), delta));
-                    drawer.setAgentBalance(safeAdd(drawer.getAgentBalance(), delta));
-                    break;
-                case Cheque:
-                    drawer.setChequeInHandValue(safeAdd(drawer.getChequeInHandValue(), delta));
-                    drawer.setChequeBalance(safeAdd(drawer.getChequeBalance(), delta));
-                    break;
-                case Slip:
-                    drawer.setSlipInHandValue(safeAdd(drawer.getSlipInHandValue(), delta));
-                    drawer.setSlipBalance(safeAdd(drawer.getSlipBalance(), delta));
-                    break;
-                case ewallet:
-                    drawer.setEwalletInHandValue(safeAdd(drawer.getEwalletInHandValue(), delta));
-                    drawer.setEwalletBalance(safeAdd(drawer.getEwalletBalance(), delta));
-                    break;
-                case PatientDeposit:
-                    drawer.setPatientDepositInHandValue(safeAdd(drawer.getPatientDepositInHandValue(), delta));
-                    drawer.setPatientDepositBalance(safeAdd(drawer.getPatientDepositBalance(), delta));
-                    break;
-                case PatientPoints:
-                    drawer.setPatientPointsInHandValue(safeAdd(drawer.getPatientPointsInHandValue(), delta));
-                    drawer.setPatientPointsBalance(safeAdd(drawer.getPatientPointsBalance(), delta));
-                    break;
-                case OnlineSettlement:
-                    drawer.setOnlineSettlementInHandValue(safeAdd(drawer.getOnlineSettlementInHandValue(), delta));
-                    drawer.setOnlineSettlementBalance(safeAdd(drawer.getOnlineSettlementBalance(), delta));
-                    break;
-                case None:
-                    drawer.setNoneInHandValue(safeAdd(drawer.getNoneInHandValue(), delta));
-                    drawer.setNoneBalance(safeAdd(drawer.getNoneBalance(), delta));
-                    break;
-                case YouOweMe:
-                    drawer.setYouOweMeInHandValue(safeAdd(drawer.getYouOweMeInHandValue(), delta));
-                    drawer.setYouOweMeBalance(safeAdd(drawer.getYouOweMeBalance(), delta));
-                    break;
-                default:
-                    System.err.println("Unhandled payment method for drawer adjustment: " + paymentMethod);
-                    break;
-            }
-            drawerFacade.editAndCommit(drawer);
+        drawer = lockForUpdate(drawer);
+        // The drawer history filters by webUser, so the entry must be tagged with the
+        // drawer owner (cashier whose drawer changed), not the actor approving/applying it.
+        WebUser drawerOwner = drawer.getDrawerUser() != null ? drawer.getDrawerUser() : user;
+        drawerEntryUpdate(bill, drawer, paymentMethod, drawerOwner, delta);
+        if (drawerEntry != null) {
+            drawerEntry.setCreater(user);
+            save(drawerEntry);
         }
+        addToBalance(drawer, paymentMethod, delta);
+        drawerFacade.editAndCommit(drawer);
     }
 
     /**
@@ -865,7 +788,8 @@ public class DrawerService {
             throw new IllegalArgumentException("Target user has no department/institution set; cannot generate an adjustment bill number");
         }
 
-        Drawer drawer = getUsersDrawer(targetUser);
+        // Locked, so the deltas below are computed from the balance no other request can change.
+        Drawer drawer = lockUsersDrawer(targetUser);
 
         List<PaymentMethod> methods = paymentMethod != null
                 ? Collections.singletonList(paymentMethod)

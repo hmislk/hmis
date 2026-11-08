@@ -1,0 +1,278 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <h:body class="w-100 border">
+        <ui:composition template="/reports/index.xhtml" class="w-100 border">
+            <ui:define name="subcontent">
+                <h:form class="w-100">
+                    <p:panel header="Inpatient Direct Issue" class="w-100 my-2">
+                        <h:panelGrid columns="5" class="w-100" >
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf073;" styleClass="fa mr-2" />
+                                <p:outputLabel value="From" for="fromDate" styleClass="m-3" />
+                            </h:panelGroup>
+                            <p:datePicker value="#{reportController.fromDate}" id="fromDate" styleClass="w-100"
+                                          inputStyleClass="w-100 form-control"
+                                          pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                          showTime="true" monthNavigator="true" yearNavigator="true" timeInput="true" />
+
+                            <p:spacer width="20"></p:spacer>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf073;" styleClass="fa mr-2"/>
+                                <p:outputLabel value="To" for="toDate" class="m-3"/>
+                            </h:panelGroup>
+                            <p:datePicker value="#{reportController.toDate}" id="toDate" styleClass="w-100"
+                                          inputStyleClass="w-100 form-control"
+                                          pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                          showTime="true" monthNavigator="true" yearNavigator="true" timeInput="true" />
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText styleClass="fa fa-university mr-2"/>
+                                <p:outputLabel value="Institution" for="phmIns" class="m-3">
+                                </p:outputLabel>
+                            </h:panelGroup>
+                            <p:selectOneMenu
+                                value="#{reportController.institution}"
+                                id="phmIns"
+                                class="w-100"
+                                filter="true">
+                                <f:selectItem itemLabel="All Institutions"/>
+                                <f:selectItems value="#{institutionController.companies}" var="ins" itemLabel="#{ins.name}"
+                                               itemValue="#{ins}"/>
+                                <p:ajax process="phmIns" update="sto"/>
+                            </p:selectOneMenu>
+
+                            <p:spacer width="20"></p:spacer>
+
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText styleClass="fa fa-map-marker-alt mr-2"/>
+                                <p:outputLabel value="Site" for="phmSite" class="m-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu
+                                value="#{reportController.site}"
+                                id="phmSite"
+                                class="w-100"
+                                filter="true">
+                                <f:selectItem itemLabel="All Sites"/>
+                                <f:selectItems value="#{institutionController.sites}" var="site" itemLabel="#{site.name}"
+                                               itemValue="#{site}"/>
+                                <p:ajax process="phmSite" update="sto"/>
+                            </p:selectOneMenu>
+
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf54e;" styleClass="fa mr-2" />
+                                <h:outputLabel value="Store/Department" for="sto" class="m-3"/>
+                            </h:panelGroup>
+                            <h:panelGroup id="sto">
+
+                                <!-- Component 1: Without Institution and Site -->
+                                <p:selectOneMenu
+                                    rendered="#{reportController.institution eq null and reportController.site eq null}"
+                                    styleClass="w-100 form-control"
+                                    value="#{reportController.department}"
+                                    filterMatchMode="contains"
+                                    filter="true">
+                                    <f:selectItem itemLabel="All Departments"/>
+                                    <f:selectItems
+                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite()}"
+                                        var="d"
+                                        itemLabel="#{d.name}"
+                                        itemValue="#{d}"/>
+                                </p:selectOneMenu>
+
+                                <!-- Component 2: With Site Only -->
+                                <p:selectOneMenu
+                                    rendered="#{reportController.institution eq null and reportController.site ne null}"
+                                    styleClass="w-100 form-control"
+                                    value="#{reportController.department}"
+                                    filterMatchMode="contains"
+                                    filter="true">
+                                    <f:selectItem itemLabel="All Departments"/>
+                                    <f:selectItems
+                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite(reportController.site)}"
+                                        var="d"
+                                        itemLabel="#{d.name}"
+                                        itemValue="#{d}"/>
+                                </p:selectOneMenu>
+
+                                <!-- Component 3: With Institution Only -->
+                                <p:selectOneMenu
+                                    rendered="#{reportController.institution ne null and reportController.site eq null}"
+                                    styleClass="w-100 form-control"
+                                    value="#{reportController.department}"
+                                    filterMatchMode="contains"
+                                    filter="true">
+                                    <f:selectItem itemLabel="All Departments"/>
+                                    <f:selectItems
+                                        value="#{departmentController.getDepartmentsOfInstitutionAndSiteForInstitution(reportController.institution)}"
+                                        var="d"
+                                        itemLabel="#{d.name}"
+                                        itemValue="#{d}"/>
+                                </p:selectOneMenu>
+
+                                <!-- Component 4: With Both Institution and Site -->
+                                <p:selectOneMenu
+                                    rendered="#{reportController.institution ne null and reportController.site ne null}"
+                                    styleClass="w-100 form-control"
+                                    value="#{reportController.department}"
+                                    filterMatchMode="contains"
+                                    filter="true">
+                                    <f:selectItem itemLabel="All Departments"/>
+                                    <f:selectItems
+                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite(reportController.institution, reportController.site)}"
+                                        var="d"
+                                        itemLabel="#{d.name}"
+                                        itemValue="#{d}"/>
+                                </p:selectOneMenu>
+
+                                <p:selectOneMenu
+                                    rendered="false"
+                                    styleClass="w-100 form-control"
+                                    value="#{reportController.department}"
+                                    filter="true">
+                                    <f:selectItem itemLabel="All Departments"/>
+                                    <f:selectItems
+                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite(reportController.institution, reportController.site)}"
+                                        var="d"
+                                        itemLabel="#{d.name}"
+                                        itemValue="#{d}"/>
+                                </p:selectOneMenu>
+                            </h:panelGroup>
+
+
+                            <p:spacer width="20"></p:spacer>
+
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf15c;" styleClass="fa mr-2" />
+                                <h:outputLabel value="BHT No" for="acBht" class="m-3"/>
+                            </h:panelGroup>
+                            <p:autoComplete id="acBht"
+                                            value="#{reportController.patientEncounterDtoForBhtNo}"
+                                            converter="#{patientEncounterDtoConverter}"
+                                            styleClass="w-100"
+                                            inputStyleClass="w-100 form-control"
+                                            placeholder="BHT, name or PHN"
+                                            minQueryLength="3" queryDelay="300"
+                                            completeMethod="#{admissionController.completeBhtDtosForReports}"
+                                            forceSelection="true"
+                                            var="bht"
+                                            itemLabel="#{bht.bhtNo}"
+                                            itemValue="#{bht}">
+                                <p:column headerText="BHT"><h:outputText value="#{bht.bhtNo}"/></p:column>
+                                <p:column headerText="Patient Name"><h:outputText value="#{bht.patientName}"/></p:column>
+                            </p:autoComplete>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf484;" styleClass="fa mr-2" />
+                                <h:outputLabel value="Item" for="acItem" class="m-3"/>
+                            </h:panelGroup>
+                            <p:autoComplete id="acItem" value="#{reportController.item}"
+                                            forceSelection="true" styleClass="w-100" inputStyleClass="w-100 form-control"
+                                            minQueryLength="3" queryDelay="300"
+                                            completeMethod="#{itemController.completeAmpItem}" var="vt"
+                                            itemLabel="#{vt.name}" itemValue="#{vt}">
+                                <p:column headerText="Item"><h:outputText value="#{vt.name}"/></p:column>
+                                <p:column headerText="Code"><h:outputText value="#{vt.code}"/></p:column>
+                            </p:autoComplete>
+
+                        </h:panelGrid>
+
+                        <div class="d-flex align-items-center my-4">
+                            <p:commandButton class="ui-button-warning mx-1" icon="fas fa-cogs" ajax="false"
+                                             value="Process" action="#{reportController.processInpatientDirectIssueReport}"/>
+                            <p:commandButton class="ui-button-success mx-1" icon="fas fa-file-excel" ajax="false"
+                                             value="Download" action="#{reportController.downloadInpatientDirectIssueExcel}" />
+                        </div>
+
+                        <p:panel header="Inpatient Direct Issue Report" styleClass="my-2">
+
+                            <div class="d-flex justify-content-end mb-3">
+                                <table class="table table-bordered table-sm" style="width: auto;">
+                                    <tr>
+                                        <th><h:outputText value="Grand Qty:" /></th>
+                                        <td style="text-align: right;"><h:outputText value="#{reportController.inpatientDirectIssueTotalQty}"><f:convertNumber groupingUsed="true" minFractionDigits="2" /></h:outputText></td>
+                                    </tr>
+                                    <tr>
+                                        <th><h:outputText value="Grand Retail Value:" /></th>
+                                        <td style="text-align: right;"><h:outputText value="#{reportController.inpatientDirectIssueTotalRetail}"><f:convertNumber groupingUsed="true" minFractionDigits="2" /></h:outputText></td>
+                                    </tr>
+                                    <tr>
+                                        <h:panelGroup rendered="#{reportController.inpatientDirectIssueCostingEnabled}">
+                                            <th><h:outputText value="Grand Cost Value:" /></th>
+                                            <td style="text-align: right;"><h:outputText value="#{reportController.inpatientDirectIssueTotalCost}"><f:convertNumber groupingUsed="true" minFractionDigits="2" /></h:outputText></td>
+                                        </h:panelGroup>
+                                    </tr>
+                                </table>
+                            </div>
+
+                            <div id="printPanel">
+                                <ui:repeat value="#{reportController.inpatientDirectIssueDepartments}" var="dept">
+                                    <h5 class="mt-3"><h:outputText value="#{dept.departmentName}" /></h5>
+                                    <ui:repeat value="#{dept.bhts}" var="bhtGroup">
+                                        <p:dataTable value="#{bhtGroup.items}" var="row" styleClass="mb-3" rowKey="#{row.billItemId}"
+                                                     emptyMessage="No items">
+                                            <f:facet name="header">
+                                                <h:outputText value="BHT: #{bhtGroup.bhtNo} - #{bhtGroup.patientName}" />
+                                            </f:facet>
+                                            <p:column headerText="Date" style="width: 150px;">
+                                                <h:outputText value="#{row.billDate}">
+                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                                </h:outputText>
+                                            </p:column>
+                                            <p:column headerText="Bill No">
+                                                <h:outputText value="#{row.billNo}" />
+                                            </p:column>
+                                            <p:column headerText="Type">
+                                                <h:outputText value="#{row.billTypeAtomic.label}" />
+                                            </p:column>
+                                            <p:column headerText="Item">
+                                                <h:outputText value="#{row.itemName}" />
+                                            </p:column>
+                                            <p:column headerText="Qty" style="text-align: right;">
+                                                <h:outputText value="#{row.signedQty}"><f:convertNumber groupingUsed="true" minFractionDigits="2" /></h:outputText>
+                                                <f:facet name="footer">
+                                                    <h:outputText value="#{bhtGroup.totalQty}"><f:convertNumber groupingUsed="true" minFractionDigits="2" /></h:outputText>
+                                                </f:facet>
+                                            </p:column>
+                                            <p:column headerText="Retail Value" style="text-align: right;">
+                                                <h:outputText value="#{row.retailValue}"><f:convertNumber groupingUsed="true" minFractionDigits="2" /></h:outputText>
+                                                <f:facet name="footer">
+                                                    <h:outputText value="#{bhtGroup.totalRetail}"><f:convertNumber groupingUsed="true" minFractionDigits="2" /></h:outputText>
+                                                </f:facet>
+                                            </p:column>
+                                            <p:column headerText="Cost Value" style="text-align: right;" rendered="#{reportController.inpatientDirectIssueCostingEnabled}">
+                                                <h:outputText value="#{row.costValue}"><f:convertNumber groupingUsed="true" minFractionDigits="2" /></h:outputText>
+                                                <f:facet name="footer">
+                                                    <h:outputText value="#{bhtGroup.totalCost}"><f:convertNumber groupingUsed="true" minFractionDigits="2" /></h:outputText>
+                                                </f:facet>
+                                            </p:column>
+                                        </p:dataTable>
+                                    </ui:repeat>
+                                    <table class="table table-sm table-bordered mb-4">
+                                        <tr class="table-success">
+                                            <th><h:outputText value="#{dept.departmentName} Total" /></th>
+                                            <th style="text-align: right;">Qty: <h:outputText value="#{dept.totalQty}"><f:convertNumber groupingUsed="true" minFractionDigits="2" /></h:outputText></th>
+                                            <th style="text-align: right;">Retail: <h:outputText value="#{dept.totalRetail}"><f:convertNumber groupingUsed="true" minFractionDigits="2" /></h:outputText></th>
+                                            <h:panelGroup rendered="#{reportController.inpatientDirectIssueCostingEnabled}">
+                                                <th style="text-align: right;">Cost: <h:outputText value="#{dept.totalCost}"><f:convertNumber groupingUsed="true" minFractionDigits="2" /></h:outputText></th>
+                                            </h:panelGroup>
+                                        </tr>
+                                    </table>
+                                </ui:repeat>
+                            </div>
+                        </p:panel>
+                    </p:panel>
+                </h:form>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

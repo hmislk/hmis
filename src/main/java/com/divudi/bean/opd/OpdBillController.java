@@ -4380,12 +4380,15 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         String[] tokens = query.toLowerCase().split("\\s+");
 
         for (ItemLight opdItem : getOpdItems()) {
+            if (opdItem.getName() == null) {
+                continue; // unnamed item: cannot be shown or sorted by name
+            }
             boolean matchFound = true;
 
             // Check if all tokens match either the name or code
             for (String token : tokens) {
-                if (!(opdItem.getName().toLowerCase().contains(token)
-                        || opdItem.getCode().toLowerCase().contains(token))) {
+                if (!((opdItem.getName() != null && opdItem.getName().toLowerCase().contains(token))
+                        || (opdItem.getCode() != null && opdItem.getCode().toLowerCase().contains(token)))) {
                     matchFound = false;
                     break;
                 }
@@ -4659,21 +4662,36 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
                         p.setChequeDate(cd.getPaymentMethodData().getSlip().getDate());
 
                         break;
-                    case OnCall:
                     case OnlineSettlement:
+                        // Own case: it used to fall through into Staff (#25339).
+                        p.setPaidValue(cd.getPaymentMethodData().getOnlineSettlement().getTotalValue());
+                        p.setBank(cd.getPaymentMethodData().getOnlineSettlement().getInstitution());
+                        p.setPaymentDate(cd.getPaymentMethodData().getOnlineSettlement().getDate());
+                        p.setReferenceNo(cd.getPaymentMethodData().getOnlineSettlement().getReferenceNo());
+                        p.setComments(cd.getPaymentMethodData().getOnlineSettlement().getComment());
+                        break;
+                    case OnCall:
                     case Staff:
                         p.setPaidValue(cd.getPaymentMethodData().getStaffCredit().getTotalValue());
-                        if (cd.getPaymentMethodData().getStaffCredit().getToStaff() != null) {
+                        if (cd.getPaymentMethod() == PaymentMethod.OnCall
+                                && cd.getPaymentMethodData().getStaffCredit().getToStaff() != null) {
+                            // OnCall is a no-op in paymentService.updateBalances, so
+                            // keep its old inline staff credit (#25339).
                             staffBean.updateStaffCredit(cd.getPaymentMethodData().getStaffCredit().getToStaff(), cd.getPaymentMethodData().getStaffCredit().getTotalValue());
-                            JsfUtil.addSuccessMessage("Staff Credit Updated");
+                        }
+                        if (cd.getPaymentMethodData().getStaffCredit().getToStaff() != null
+                                && cd.getPaymentMethod() == PaymentMethod.Staff) {
+                            // Record the staff on the payment row (#20549). The
+                            // credit itself is applied once by
+                            // paymentService.updateBalances in settle (#25339).
+                            p.setToStaff(cd.getPaymentMethodData().getStaffCredit().getToStaff());
                         }
                         break;
                     case Staff_Welfare:
                         p.setPaidValue(cd.getPaymentMethodData().getStaffWelfare().getTotalValue());
-                        if (cd.getPaymentMethodData().getStaffWelfare().getToStaff() != null) {
-                            staffBean.updateStaffWelfare(cd.getPaymentMethodData().getStaffWelfare().getToStaff(), cd.getPaymentMethodData().getStaffWelfare().getTotalValue());
-                            JsfUtil.addSuccessMessage("Staff Welfare Balance Updated");
-                        }
+                        // Record the staff so cancellation can reverse it (#20549).
+                        // settle() applies the welfare via paymentService.updateBalances.
+                        p.setToStaff(cd.getPaymentMethodData().getStaffWelfare().getToStaff());
                         break;
                     case YouOweMe:
                     case MultiplePaymentMethods:

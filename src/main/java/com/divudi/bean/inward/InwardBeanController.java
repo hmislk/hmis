@@ -413,7 +413,7 @@ public class InwardBeanController implements Serializable {
             for (Object[] row : results) {
                 InwardChargeType chargeType = (InwardChargeType) row[0];
                 Double total = row[1] != null ? ((Number) row[1]).doubleValue() : 0.0;
-                totalsMap.put(chargeType, total);
+                totalsMap.merge(professionalFeeClassificationService.rowTypeFor(chargeType), total, Double::sum);
             }
         }
 
@@ -703,7 +703,7 @@ public class InwardBeanController implements Serializable {
         if (results != null) {
             for (Object[] row : results) {
                 if (row[0] != null && row[1] != null) {
-                    map.put((InwardChargeType) row[0], ((Number) row[1]).doubleValue());
+                    map.merge(professionalFeeClassificationService.rowTypeFor((InwardChargeType) row[0]), ((Number) row[1]).doubleValue(), Double::sum);
                 }
             }
         }
@@ -734,7 +734,7 @@ public class InwardBeanController implements Serializable {
             for (Object[] row : results) {
                 InwardChargeType chargeType = (InwardChargeType) row[0];
                 Double total = row[1] != null ? ((Number) row[1]).doubleValue() : 0.0;
-                totalsMap.put(chargeType, total);
+                totalsMap.merge(professionalFeeClassificationService.rowTypeFor(chargeType), total, Double::sum);
             }
         }
 
@@ -773,7 +773,10 @@ public class InwardBeanController implements Serializable {
                 double gross = row[1] != null ? ((Number) row[1]).doubleValue() : 0.0;
                 double margin = row[2] != null ? ((Number) row[2]).doubleValue() : 0.0;
                 double vat = row[3] != null ? ((Number) row[3]).doubleValue() : 0.0;
-                totalsMap.put(chargeType, new double[]{gross, margin, vat});
+                double[] sums = totalsMap.computeIfAbsent(professionalFeeClassificationService.rowTypeFor(chargeType), k -> new double[3]);
+                sums[0] += gross;
+                sums[1] += margin;
+                sums[2] += vat;
             }
         }
 
@@ -2204,7 +2207,7 @@ public class InwardBeanController implements Serializable {
             for (Object[] row : results) {
                 InwardChargeType chargeType = (InwardChargeType) row[0];
                 Double total = row[1] != null ? ((Number) row[1]).doubleValue() : 0.0;
-                totalsMap.put(chargeType, total);
+                totalsMap.merge(professionalFeeClassificationService.rowTypeFor(chargeType), total, Double::sum);
             }
         }
 
@@ -2251,7 +2254,7 @@ public class InwardBeanController implements Serializable {
                 if (chargeType == null || itemName == null || itemName.isEmpty()) {
                     continue;
                 }
-                amountsByTypeAndName.computeIfAbsent(chargeType, k -> new LinkedHashMap<>())
+                amountsByTypeAndName.computeIfAbsent(professionalFeeClassificationService.rowTypeFor(chargeType), k -> new LinkedHashMap<>())
                         .merge(itemName, amount, Double::sum);
             }
         }

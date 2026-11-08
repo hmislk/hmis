@@ -1,0 +1,32 @@
+name: Agent lint
+
+# Fails a PR whose .claude/agents/*.md frontmatter Claude Code would silently
+# ignore or that breaks developer_docs/process/agent-authoring.md: unknown
+# fields, missing name/description/tools/model, long or <example> descriptions,
+# bad color/model/effort values, Agent in tools, write tools on a read-only
+# role, or a preloaded skill that is missing or disable-model-invocation.
+
+on:
+  pull_request:
+    paths:
+      - '.claude/agents/**'
+      - '.claude/skills/**'
+      - '.github/scripts/check_agent_frontmatter.py'
+      - '.github/workflows/agent_lint.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  agent-lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Ensure PyYAML
+        run: python3 -c 'import yaml' 2>/dev/null || python3 -m pip install --quiet --break-system-packages pyyaml==6.0.2
+
+      - name: Check agent frontmatter
+        run: python3 .github/scripts/check_agent_frontmatter.py
