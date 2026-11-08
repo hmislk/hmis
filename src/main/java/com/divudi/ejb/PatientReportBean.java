@@ -558,20 +558,12 @@ public class PatientReportBean {
 
         if (ii == null) {
             ii = new InvestigationItem();
-            try {
-                getIiFacade().create(ii);
-            } catch (Exception ignored) {
-            }
             ii.setName(a.getName());
             ii.setItem(i);
             ii.setIxItemType(InvestigationItemType.Antibiotic);
             ii.setIxItemValueType(InvestigationItemValueType.Varchar);
             ii.setCssTop("90%");
-            getIiFacade().edit(ii);
-
-            i.getReportItems().add(ii);
-            getIxFacade().edit(i);
-
+            getIiFacade().create(ii);
         }
         return ii;
     }
