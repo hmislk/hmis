@@ -292,6 +292,13 @@
                         </ui:repeat>
                     </div>
                 </div>
+
+                <!-- Page number ("Page 1 of 2"), shown just below the data-area bottom
+                     limit line (75% by default). Text and top position are set by
+                     micPaginateReport(); format and font/side come from config. -->
+                <div class="micPageNo"
+                     data-format="#{configOptionApplicationController.getShortTextValueByKey('Microbiology Lab Report Page Number Format', 'Page {page} of {total}')}"
+                     style="position: absolute; top: 75.5%; z-index: 950; font-family: Cambria, Georgia, serif; #{configOptionApplicationController.getShortTextValueByKey('Microbiology Lab Report Page Number Text Style', 'right: 4%; font-size: 12px;')}"></div>
             </div>
             <script>
                 /*
@@ -352,8 +359,24 @@
                         return (limit > 0 &amp;&amp; limit !== Infinity &amp;&amp; !(limit > 100)) ? limit : 75;
                     }
 
+                    function setPageNumbers() {
+                        var pages = Array.prototype.slice.call(document.querySelectorAll('#divReportM, .micPageCont'));
+                        pages.forEach(function (pg, i) {
+                            var el = pg.querySelector('.micPageNo');
+                            if (!el) {
+                                return;
+                            }
+                            // just below the data-area bottom limit line
+                            el.style.top = (bottomLimitPercent(pg) + 0.5) + '%';
+                            el.style.bottom = 'auto';
+                            var fmt = el.getAttribute('data-format') || 'Page {page} of {total}';
+                            el.textContent = fmt.replace('{page}', String(i + 1)).replace('{total}', String(pages.length));
+                        });
+                    }
+
                     window.micPaginateReport = function () {
                         restore();
+                        setPageNumbers();
                         var page1 = document.getElementById('divReportM');
                         if (!page1) {
                             return;
@@ -411,6 +434,7 @@
                                 break;
                             }
                         }
+                        setPageNumbers();
                         if (typeof window.micFitPreview === 'function') {
                             window.micFitPreview();
                         }
