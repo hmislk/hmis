@@ -283,11 +283,11 @@
                         <!-- Print-only header: criteria + totals (CR: identify incomplete pages + preserve filter values) -->
                         <h:panelGroup layout="block" styleClass="print-report-header mb-3">
                             <h:outputText value="Free Items Received (GRN / Direct Purchase)" styleClass="fw-bold fs-5"/>
-                            <h:panelGroup layout="block">
+                            <h:panelGroup layout="block" styleClass="d-block">
                                 <h:outputText value="Report Type: "/>
                                 <h:outputText value="#{pharmacyProcurementReportController.freeItemReportType eq 'DETAIL' ? 'Detail' : (pharmacyProcurementReportController.freeItemReportType eq 'SUPPLIER' ? 'Supplier-wise Summary' : (pharmacyProcurementReportController.freeItemReportType eq 'ITEM' ? 'Item-wise Summary' : 'Date-wise Summary'))}"/>
                             </h:panelGroup>
-                            <h:panelGroup layout="block">
+                            <h:panelGroup layout="block" styleClass="d-block">
                                 <h:outputText value="Period: "/>
                                 <h:outputText value="#{pharmacyProcurementReportController.fromDate}">
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
@@ -297,19 +297,19 @@
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
                                 </h:outputText>
                             </h:panelGroup>
-                            <h:panelGroup layout="block" rendered="#{pharmacyProcurementReportController.institution ne null}">
+                            <h:panelGroup layout="block" styleClass="d-block" rendered="#{pharmacyProcurementReportController.institution ne null}">
                                 <h:outputText value="Institution: #{pharmacyProcurementReportController.institution.name}"/>
                             </h:panelGroup>
-                            <h:panelGroup layout="block" rendered="#{pharmacyProcurementReportController.site ne null}">
+                            <h:panelGroup layout="block" styleClass="d-block" rendered="#{pharmacyProcurementReportController.site ne null}">
                                 <h:outputText value="Site: #{pharmacyProcurementReportController.site.name}"/>
                             </h:panelGroup>
-                            <h:panelGroup layout="block" rendered="#{pharmacyProcurementReportController.department ne null}">
+                            <h:panelGroup layout="block" styleClass="d-block" rendered="#{pharmacyProcurementReportController.department ne null}">
                                 <h:outputText value="Department: #{pharmacyProcurementReportController.department.name}"/>
                             </h:panelGroup>
-                            <h:panelGroup layout="block" rendered="#{pharmacyProcurementReportController.dealer ne null}">
+                            <h:panelGroup layout="block" styleClass="d-block" rendered="#{pharmacyProcurementReportController.dealer ne null}">
                                 <h:outputText value="Supplier: #{pharmacyProcurementReportController.dealer.name}"/>
                             </h:panelGroup>
-                            <h:panelGroup layout="block" rendered="#{pharmacyProcurementReportController.item ne null}">
+                            <h:panelGroup layout="block" styleClass="d-block" rendered="#{pharmacyProcurementReportController.item ne null}">
                                 <h:outputText value="Item: #{pharmacyProcurementReportController.item.name}"/>
                             </h:panelGroup>
                             <h:panelGroup layout="block" styleClass="mt-1">
