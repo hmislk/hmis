@@ -381,6 +381,8 @@ public class PharmacyDirectPurchaseController implements Serializable {
 
         // Calculate item totals using internal logic
         calculateItemTotals(getCurrentBillItem());
+        // The typed purchase value only drives the entry row (issue #22864); an added line is edited by rate
+        f.setEnteredLineGrossTotal(null);
 
         getCurrentBillItem().setSearialNo(getBillItems().size());
         getBillItems().add(currentBillItem);
@@ -416,7 +418,12 @@ public class PharmacyDirectPurchaseController implements Serializable {
             }
         }
 
-        // Recalculate item totals when quantity changes
+        // Recalculate item totals when quantity changes. When a total purchase value was typed
+        // (issue #22864) the purchase rate is derived from it again inside calculateItemTotals.
+        if (bi.getBillItemFinanceDetails().getEnteredLineGrossTotal() != null
+                && !BigDecimalUtil.isPositive(bi.getBillItemFinanceDetails().getQuantity())) {
+            JsfUtil.addErrorMessage("Enter a quantity greater than zero so that the purchase rate can be calculated from the purchase value.");
+        }
         calculateItemTotals(bi);
     }
 
@@ -452,8 +459,75 @@ public class PharmacyDirectPurchaseController implements Serializable {
         if (bi == null || bi.getBillItemFinanceDetails() == null) {
             return;
         }
+        BillItemFinanceDetails f = bi.getBillItemFinanceDetails();
+        if (f.getEnteredLineGrossTotal() != null) {
+            // The rate box shows the derived rate with 2 decimals, so leaving the box without
+            // touching it sends back that rounded text. Only a different rate is a real edit.
+            BigDecimal qty = BigDecimalUtil.valueOrZero(f.getQuantity());
+            boolean untouched = false;
+            if (BigDecimalUtil.isPositive(qty) && f.getLineGrossRate() != null) {
+                BigDecimal derived = f.getEnteredLineGrossTotal().divide(qty, MathContext.DECIMAL64);
+                untouched = f.getLineGrossRate().compareTo(derived.setScale(2, RoundingMode.HALF_UP)) == 0;
+            }
+            if (!untouched) {
+                // The user typed their own rate, so the rate wins and the value follows it
+                f.setEnteredLineGrossTotal(null);
+            }
+        }
         // Recalculate item totals when purchase rate changes
         calculateItemTotals(bi);
+    }
+
+    /**
+     * Issue #22864: the user typed the total purchase value (paid quantity x rate, before the
+     * line discount). The purchase rate is derived from it at full precision, per pack for a
+     * pack item and per unit otherwise, and every dependent value is recalculated through
+     * calculateItemTotals(), the same path a rate edit uses.
+     */
+    public void onPurchaseValueChange() {
+        BillItem bi = currentBillItem;
+        if (bi == null || bi.getBillItemFinanceDetails() == null || !isPurchaseValueEntryEnabled()) {
+            return;
+        }
+        BillItemFinanceDetails f = bi.getBillItemFinanceDetails();
+        BigDecimal value = f.getLineGrossTotal();
+        if (value == null || BigDecimalUtil.isNegative(value)) {
+            f.setEnteredLineGrossTotal(null);
+            calculateItemTotals(bi);
+            JsfUtil.addErrorMessage("Please enter a valid purchase value (negative values not allowed)");
+            return;
+        }
+        if (!BigDecimalUtil.isPositive(f.getQuantity())) {
+            f.setEnteredLineGrossTotal(null);
+            calculateItemTotals(bi);
+            JsfUtil.addErrorMessage("Enter the quantity first. The purchase rate cannot be calculated from the purchase value without a quantity.");
+            return;
+        }
+        f.setEnteredLineGrossTotal(value);
+        calculateItemTotals(bi);
+    }
+
+    /**
+     * Whether the Purchase Value box accepts input and drives the purchase rate (issue #22864).
+     */
+    public boolean isPurchaseValueEntryEnabled() {
+        return configOptionApplicationController.getBooleanValueByKey(
+                "Allow Entering Total Purchase Value to Calculate the Purchase Rate in Direct Purchase and GRN Costing", false);
+    }
+
+    /**
+     * Two-decimal display for the purchase rate and value boxes while the option is on, so the
+     * derived rate keeps its full precision behind the display. Null (default converter) when off.
+     */
+    public PurchaseMoneyDisplayConverter getPurchaseMoneyConverter() {
+        return isPurchaseValueEntryEnabled() ? new PurchaseMoneyDisplayConverter() : null;
+    }
+
+    /**
+     * Two-decimal converter for the Purchase Value box (same output as the pattern it showed before).
+     */
+    public PurchaseMoneyDisplayConverter getPurchaseValueConverter() {
+        return new PurchaseMoneyDisplayConverter();
     }
 
     public void onLineDiscountRateChange() {
@@ -657,6 +731,7 @@ public class PharmacyDirectPurchaseController implements Serializable {
         //f will never be null as it is created in the getter
 
         f.setLineGrossRate(BigDecimal.valueOf(pr));
+        f.setEnteredLineGrossTotal(null);
 
         if (item instanceof Ampp) {
             double units = item.getDblValue();
@@ -1983,6 +2058,13 @@ public class PharmacyDirectPurchaseController implements Serializable {
 
         // Item Gross = Quantity × Purchase Rate
         BigDecimal itemGross = BigDecimalUtil.multiply(qty, purchaseRate);
+        if (f.getEnteredLineGrossTotal() != null && BigDecimalUtil.isPositive(qty)) {
+            // Issue #22864: the typed purchase value is the truth. The rate follows it at full
+            // precision and the gross stays exactly what was typed (it matches the invoice).
+            itemGross = f.getEnteredLineGrossTotal();
+            purchaseRate = itemGross.divide(qty, MathContext.DECIMAL64);
+            f.setLineGrossRate(purchaseRate);
+        }
         f.setLineGrossTotal(itemGross);
 
         // Item Discount = Quantity × Discount Rate
@@ -2860,6 +2942,13 @@ public class PharmacyDirectPurchaseController implements Serializable {
         );
 
         // Configuration Options - APPLICATION scope
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Allow Entering Total Purchase Value to Calculate the Purchase Rate in Direct Purchase and GRN Costing",
+                "Makes the Purchase Value box editable. The user enters quantity and total purchase value (paid quantity only, "
+                + "before line discount) and the purchase rate is calculated as value / quantity, per pack for a pack item. "
+                + "When off, the Purchase Value box stays read-only and the rate is typed as before.",
+                OptionScope.APPLICATION
+        ));
         metadata.addConfigOption(new ConfigOptionInfo(
                 "Allow Wholesale Transactions in Pharmacy Purchasing",
                 "Shows the Wholesale Rate field on the Add New Item row and item edit dialog",

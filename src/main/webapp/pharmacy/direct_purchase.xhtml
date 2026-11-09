@@ -199,7 +199,7 @@
                                                 process="@this"
                                                 listener="#{pharmacyDirectPurchaseController.onQuantityChange}"
                                                 update="txtLineDiscountValue txtPurchaseValueMinusLineDiscountValue
-                                                txtRetailValue txtCostValue
+                                                txtRetailValue txtCostValue txtPrate
                                                 txtPurchaseValue txtUnitsPerPack txtPackOrUnit @this
                                                 :#{p:resolveFirstComponentWithId('billFinanceDetails', view).clientId} msg" />
                                         </p:inputText>
@@ -238,6 +238,7 @@
                                             class="w-100 m-1 text-end"
                                             onkeydown="if (event.keyCode === 13) { event.preventDefault(); }"
                                             onkeyup="if (event.keyCode === 13) { event.preventDefault(); var addBtnId = '#{p:resolveFirstComponentWithId('btnAdd',view).clientId}'; this.blur(); setTimeout(function () { document.getElementById(addBtnId).click(); }, 350); }"
+                                            converter="#{pharmacyDirectPurchaseController.purchaseMoneyConverter}"
                                             value="#{pharmacyDirectPurchaseController.currentBillItem.billItemFinanceDetails.lineGrossRate}">
                                             <p:ajax
                                                 event="blur"
@@ -422,11 +423,20 @@
                                             value="Purchase Value" /><br/>
                                         <p:inputText
                                             id="txtPurchaseValue"
-                                            disabled="true"
+                                            widgetVar="dpPurchaseValue"
+                                            disabled="#{not pharmacyDirectPurchaseController.purchaseValueEntryEnabled}"
                                             autocomplete="off"
+                                            onfocus="this.select()"
                                             class="w-100 m-1 text-end"
+                                            converter="#{pharmacyDirectPurchaseController.purchaseValueConverter}"
                                             value="#{pharmacyDirectPurchaseController.currentBillItem.billItemFinanceDetails.lineGrossTotal}">
-                                            <f:convertNumber pattern="#,##0.00" />
+                                            <p:ajax
+                                                event="change"
+                                                process="@this"
+                                                listener="#{pharmacyDirectPurchaseController.onPurchaseValueChange}"
+                                                update="txtPrate txtLineDiscountValue txtPurchaseValueMinusLineDiscountValue
+                                                txtRetailValue txtCostValue @this
+                                                :#{p:resolveFirstComponentWithId('billFinanceDetails', view).clientId} msg" />
                                         </p:inputText>
                                     </div>
 

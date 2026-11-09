@@ -46,6 +46,7 @@ import com.divudi.service.pharmacy.GrnApprovingNativeSqlService;
 import com.divudi.service.pharmacy.GrnCostingNativeSqlService;
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.math.MathContext;
 import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -227,6 +228,13 @@ public class GrnCostingNativeSqlController implements Serializable {
                 "Pharmacy Purchase - Quantity Must Be Integer",
                 "Validates that quantity and free quantity values are whole numbers (no decimals)",
                 OptionScope.INSTITUTION
+        ));
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Allow Entering Total Purchase Value to Calculate the Purchase Rate in Direct Purchase and GRN Costing",
+                "Adds an editable Purchase Value column to the GRN item table. The user enters the receiving quantity and the "
+                + "total purchase value (paid quantity only, before line discount) and the purchase rate is calculated as "
+                + "value / quantity, per pack for a pack item. When off, there is no Purchase Value column and the rate is typed as before.",
+                OptionScope.APPLICATION
         ));
 
         metadata.addPrivilege(new PrivilegeInfo(
@@ -1336,6 +1344,76 @@ public class GrnCostingNativeSqlController implements Serializable {
         recalculateProfitMarginsForAllItems();
     }
 
+    /**
+     * Purchase Rate box edited by hand. While a typed purchase value is driving the line
+     * (issue #22864) the box shows the derived rate with 2 decimals, so leaving it untouched
+     * sends back that rounded text; only a different rate is a real edit and then the rate wins.
+     */
+    public void purchaseRateChangedListner(BillItem tmp) {
+        BillItemFinanceDetails f = tmp.getBillItemFinanceDetails();
+        if (f != null && f.getEnteredLineGrossTotal() != null) {
+            BigDecimal qty = BigDecimalUtil.valueOrZero(f.getQuantity());
+            boolean untouched = false;
+            if (BigDecimalUtil.isPositive(qty) && f.getLineGrossRate() != null) {
+                BigDecimal derived = f.getEnteredLineGrossTotal().divide(qty, MathContext.DECIMAL64);
+                untouched = f.getLineGrossRate().compareTo(derived.setScale(2, RoundingMode.HALF_UP)) == 0;
+            }
+            if (!untouched) {
+                f.setEnteredLineGrossTotal(null);
+            }
+        }
+        onEdit(tmp);
+    }
+
+    /**
+     * Issue #22864: the user typed the total purchase value (receiving quantity only, before the
+     * line discount). The purchase rate is derived at full precision, per pack for a pack item,
+     * then the line goes through the same path as a rate edit (onEdit), so line values, margins,
+     * the retail-rate check, bill totals and distributed costs stay consistent.
+     */
+    public void purchaseValueChangedListner(BillItem tmp) {
+        BillItemFinanceDetails f = tmp.getBillItemFinanceDetails();
+        if (f == null || !isPurchaseValueEntryEnabled()) {
+            return;
+        }
+        BigDecimal value = f.getLineGrossTotal();
+        if (value == null || BigDecimalUtil.isNegative(value)) {
+            f.setEnteredLineGrossTotal(null);
+            onEdit(tmp);
+            JsfUtil.addErrorMessage("Please enter a valid purchase value (negative values not allowed)");
+            return;
+        }
+        if (!BigDecimalUtil.isPositive(f.getQuantity())) {
+            f.setEnteredLineGrossTotal(null);
+            onEdit(tmp);
+            JsfUtil.addErrorMessage("Enter the receiving quantity first. The purchase rate cannot be calculated from the purchase value without a quantity.");
+            return;
+        }
+        f.setEnteredLineGrossTotal(value);
+        f.setLineGrossRate(value.divide(f.getQuantity(), MathContext.DECIMAL64));
+        onEdit(tmp);
+    }
+
+    /**
+     * Whether the Purchase Value column is shown and drives the purchase rate (issue #22864).
+     */
+    public boolean isPurchaseValueEntryEnabled() {
+        return configOptionApplicationController.getBooleanValueByKey(
+                "Allow Entering Total Purchase Value to Calculate the Purchase Rate in Direct Purchase and GRN Costing", false);
+    }
+
+    /**
+     * Two-decimal display for the purchase rate box while the option is on, so the derived rate
+     * keeps its full precision behind the display. Null (default converter) when off.
+     */
+    public PurchaseMoneyDisplayConverter getPurchaseMoneyConverter() {
+        return isPurchaseValueEntryEnabled() ? new PurchaseMoneyDisplayConverter() : null;
+    }
+
+    public PurchaseMoneyDisplayConverter getPurchaseValueConverter() {
+        return new PurchaseMoneyDisplayConverter();
+    }
+
     public void lineDiscountRateChangedListner(BillItem tmp) {
         BillItemFinanceDetails f = tmp.getBillItemFinanceDetails();
         if (f == null) {
@@ -2123,6 +2201,12 @@ public class GrnCostingNativeSqlController implements Serializable {
         BigDecimal retailRate = BigDecimalUtil.valueOrZero(billItemFinanceDetails.getRetailSaleRate());
 
         BigDecimal lineGrossTotal = lineGrossRate.multiply(qty);
+        if (billItemFinanceDetails.getEnteredLineGrossTotal() != null && BigDecimalUtil.isPositive(qty)) {
+            // Issue #22864: the typed purchase value is the truth. The rate follows it at full
+            // precision and the gross stays exactly what was typed (it matches the invoice).
+            lineGrossTotal = billItemFinanceDetails.getEnteredLineGrossTotal();
+            lineGrossRate = lineGrossTotal.divide(qty, MathContext.DECIMAL64);
+        }
         BigDecimal lineDiscountValue = lineDiscountRate.multiply(qty);
         BigDecimal lineNetTotal = lineGrossTotal.subtract(lineDiscountValue);
         // A free-only line (qty 0) keeps its entered rate, as Direct Purchase does. Its line
