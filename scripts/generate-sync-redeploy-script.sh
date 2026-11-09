@@ -241,11 +241,21 @@ else
         STASHED_PERSISTENCE=1
     fi
 
-    # 2. Commit anything else uncommitted.
+    # 2. Commit tracked changes only. Untracked files (screenshots, exports,
+    #    scratch files) are never staged, so they cannot reach the public repo.
     if [ -n "$(git status --porcelain)" ]; then
-        echo "Committing other uncommitted changes..."
-        git add -A
-        git commit -m "WIP: auto-commit before sync-and-redeploy"
+        echo "Uncommitted changes:"
+        git status --porcelain
+        UNTRACKED="$(git ls-files --others --exclude-standard)"
+        if [ -n "$UNTRACKED" ]; then
+            echo "WARNING: these untracked files were NOT committed:"
+            echo "$UNTRACKED"
+        fi
+        if ! git diff --quiet || ! git diff --cached --quiet; then
+            echo "Committing tracked changes only..."
+            git add -u
+            git commit -m "WIP: auto-commit before sync-and-redeploy"
+        fi
     fi
 
     # 3. Fetch and merge development. Stop on conflict - no auto-resolution.
