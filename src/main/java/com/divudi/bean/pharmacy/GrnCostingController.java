@@ -3530,8 +3530,10 @@ public class GrnCostingController implements Serializable {
                         if (poPbi != null) {
                             //getRemainingQty() is double, can NOT be null
                             //At this point grnBillItem.getPharmaceuticalBillItem() is NOT null as it is used above. its getQty is double, so can not be null
-                            poPbi.setRemainingQty(Math.abs(poPbi.getRemainingQty()) - Math.abs(grnBillItem.getPharmaceuticalBillItem().getQty()));
-                            poPbi.setRemainingFreeQty(Math.abs(poPbi.getRemainingFreeQty()) - Math.abs(grnBillItem.getPharmaceuticalBillItem().getFreeQty()));
+                            double currentRemaining = Math.max(0.0, poPbi.getRemainingQty());
+                            double currentRemainingFree = Math.max(0.0, poPbi.getRemainingFreeQty());
+                            poPbi.setRemainingQty(Math.max(0.0, currentRemaining - Math.abs(grnBillItem.getPharmaceuticalBillItem().getQty())));
+                            poPbi.setRemainingFreeQty(Math.max(0.0, currentRemainingFree - Math.abs(grnBillItem.getPharmaceuticalBillItem().getFreeQty())));
                             poPbi.setCompletedQty(Math.abs(poPbi.getCompletedQty()) + Math.abs(grnBillItem.getPharmaceuticalBillItem().getQty()));
                             poPbi.setCompletedFreeQty(Math.abs(poPbi.getCompletedFreeQty()) + Math.abs(grnBillItem.getPharmaceuticalBillItem().getFreeQty()));
                             billItemFacade.editAndCommit(poBillItem);
