@@ -14,6 +14,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 
 /**
@@ -112,5 +113,29 @@ public class OpdBatchBillCancellationStaffReversalTest {
         assertEquals(PaymentMethod.Staff, controller.getPaymentMethod());
         assertSame(staff, controller.getToStaff(),
                 "Controller toStaff must be populated from original payment row for staff credit reversal");
+    }
+
+    @Test
+    @DisplayName("Single payment method Credit bill resets paymentMethodData and does not carry over previous staff (#25348)")
+    void initializePaymentData_singleMethodCredit_resetsPreviousStaffCredit() throws Exception {
+        Staff previousStaff = new Staff();
+        previousStaff.setId(999L);
+        controller.getPaymentMethodData().getStaffCredit().setToStaff(previousStaff);
+
+        Bill batchBill = new Bill();
+        batchBill.setNetTotal(1000.0);
+        batchBill.setPaymentMethod(PaymentMethod.Credit);
+        controller.setBatchBill(batchBill);
+
+        Payment payment = new Payment();
+        payment.setPaymentMethod(PaymentMethod.Credit);
+        payment.setPaidValue(1000.0);
+        payment.setToStaff(null);
+
+        initMethod.invoke(controller, Collections.singletonList(payment));
+
+        assertEquals(PaymentMethod.Credit, controller.getPaymentMethod());
+        assertNull(controller.getPaymentMethodData().getStaffCredit().getToStaff(),
+                "Stale staff member from previous cancellation must be cleared on new payment data initialization");
     }
 }

@@ -1991,6 +1991,7 @@ public class OpdBatchBillCancellationController implements Serializable, Control
 
                         bills = billsOfBatchBill(batchBill);
                         paymentMethod = null;
+                        paymentMethodData = new PaymentMethodData();
                         patient = batchBill.getPatient();
                         paymentMethods = billService.availablePaymentMethodsForCancellation(batchBill);
                         comment = currentRequest.getRequestReason();
@@ -2022,6 +2023,7 @@ public class OpdBatchBillCancellationController implements Serializable, Control
         } else {
             bills = billsOfBatchBill(batchBill);
             paymentMethod = null;
+            paymentMethodData = new PaymentMethodData();
             patient = batchBill.getPatient();
             paymentMethods = billService.availablePaymentMethodsForCancellation(batchBill);
             comment = null;
@@ -2056,6 +2058,7 @@ public class OpdBatchBillCancellationController implements Serializable, Control
      * @param originalPayments List of Payment objects from the original bill
      */
     private void initializePaymentDataFromOriginalPayments(List<Payment> originalPayments) {
+        paymentMethodData = new PaymentMethodData();
         if (originalPayments == null || originalPayments.isEmpty()) {
             return;
         }
@@ -2832,8 +2835,7 @@ public class OpdBatchBillCancellationController implements Serializable, Control
         if (cancellationBatchBill.getPaymentMethod() == PaymentMethod.PatientDeposit) {
             PatientDeposit pd = patientDepositService.getDepositOfThePatient(cancellationBatchBill.getPatient(), sessionController.getDepartment());
             patientDepositService.updateBalance(cancellationBatchBill, pd);
-        } else if (cancellationBatchBill.getPaymentMethod() == PaymentMethod.Credit
-                || cancellationBatchBill.getPaymentMethod() == PaymentMethod.Staff) { // Staff credit too (#25339)
+        } else if (cancellationBatchBill.getPaymentMethod() == PaymentMethod.Staff) {
             Staff staffForCredit = cancellationBatchBill.getToStaff();
             if (staffForCredit == null) {
                 staffForCredit = toStaff;
@@ -2846,6 +2848,13 @@ public class OpdBatchBillCancellationController implements Serializable, Control
                 JsfUtil.addSuccessMessage("Staff Credit Updated");
                 cancellationBatchBill.setFromStaff(staffForCredit);
                 cancellationBatchBill.setToStaff(staffForCredit);
+                getBillFacade().edit(cancellationBatchBill);
+            }
+        } else if (cancellationBatchBill.getPaymentMethod() == PaymentMethod.Credit) {
+            if (cancellationBatchBill.getToStaff() != null) {
+                staffService.updateStaffCredit(cancellationBatchBill.getToStaff(), 0 - Math.abs(cancellationBatchBill.getNetTotal() + getBill().getVat()));
+                JsfUtil.addSuccessMessage("Staff Credit Updated");
+                cancellationBatchBill.setFromStaff(cancellationBatchBill.getToStaff());
                 getBillFacade().edit(cancellationBatchBill);
             }
         } else if (cancellationBatchBill.getPaymentMethod() == PaymentMethod.Staff_Welfare) {
@@ -3001,8 +3010,7 @@ public class OpdBatchBillCancellationController implements Serializable, Control
         if (cancellationBatchBill.getPaymentMethod() == PaymentMethod.PatientDeposit) {
             PatientDeposit pd = patientDepositService.getDepositOfThePatient(cancellationBatchBill.getPatient(), sessionController.getDepartment());
             patientDepositService.updateBalance(cancellationBatchBill, pd);
-        } else if (cancellationBatchBill.getPaymentMethod() == PaymentMethod.Credit
-                || cancellationBatchBill.getPaymentMethod() == PaymentMethod.Staff) { // Staff credit too (#25339)
+        } else if (cancellationBatchBill.getPaymentMethod() == PaymentMethod.Staff) {
             Staff staffForCredit = cancellationBatchBill.getToStaff();
             if (staffForCredit == null) {
                 staffForCredit = toStaff;
@@ -3015,6 +3023,13 @@ public class OpdBatchBillCancellationController implements Serializable, Control
                 JsfUtil.addSuccessMessage("Staff Credit Updated");
                 cancellationBatchBill.setFromStaff(staffForCredit);
                 cancellationBatchBill.setToStaff(staffForCredit);
+                getBillFacade().edit(cancellationBatchBill);
+            }
+        } else if (cancellationBatchBill.getPaymentMethod() == PaymentMethod.Credit) {
+            if (cancellationBatchBill.getToStaff() != null) {
+                staffService.updateStaffCredit(cancellationBatchBill.getToStaff(), 0 - Math.abs(cancellationBatchBill.getNetTotal() + getBill().getVat()));
+                JsfUtil.addSuccessMessage("Staff Credit Updated");
+                cancellationBatchBill.setFromStaff(cancellationBatchBill.getToStaff());
                 getBillFacade().edit(cancellationBatchBill);
             }
         } else if (cancellationBatchBill.getPaymentMethod() == PaymentMethod.Staff_Welfare) {
