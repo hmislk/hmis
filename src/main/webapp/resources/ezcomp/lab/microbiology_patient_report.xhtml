@@ -105,6 +105,7 @@
                                 </h:panelGroup>
                             </ui:repeat>
                         </div>
+                        
 
                         <h:panelGroup rendered="#{empty patientReportController.currentPatientReport.patientReportGroups}">
 
@@ -253,12 +254,6 @@
 
                             </ui:repeat>
                         </h:panelGroup>
-
-                        <div class="micBlock" style="vertical-align: top; text-align: left; padding-top: 3px; clear: left;">
-                            <h:panelGroup rendered="#{patientReportController.currentPatientReport.patientReportItemValues.size()gt 0}">
-                                <hr/>
-                            </h:panelGroup>
-                        </div>
 
                         <div style="vertical-align: top; text-align: left; font-size: 14px;  padding-top: 0%; padding-bottom: 0%; clear: left;">
                             <ui:repeat  value="#{patientReportController.currentPatientReport.patientReportItemValues}" var="prv" >
