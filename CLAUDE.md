@@ -29,6 +29,7 @@
 - **🚨 Never change the meaning of an existing config key** (no added/removed `!`, no new default). Hospitals store a value per key; create a new key whose name says what `true` does. CI `config-semantics-guard` fails PRs that do this. See [Changing existing options](developer_docs/configuration/application-options.md#changing-existing-options).
 - **🚨 Never change a bean's scope** (`@SessionScoped` → `@ViewScoped` etc.) without discussing it with the lead developer first. Fix the issue within the current scope. CI `bean-scope-guard` fails such PRs unless the lead developer adds the label `scope-change-approved`. See [Bean Scope Policy](developer_docs/jsf/bean-scope-policy.md).
 - **🚨 Never gate behavior on a hospital's name** (`applicationInstitution eq 'Ruhuna'` etc.). Use a `ConfigOption`. See [Institution-Specific Behavior](developer_docs/configuration/institution-specific-behavior.md). Fix existing violations only when already touching that code.
+- **🚨 Multiple Payment Methods never includes a credit method** (Staff Credit, Credit); non-credit methods such as Staff Welfare are fine. See [Multiple Payment Methods policy](developer_docs/billing/multiple-payment-methods-policy.md).
 - **🚨 Cancellation is whole-bill only.** Never build item-level cancellation; reversing some items is a Return/Refund, which most bill types already have. See [Cancellation vs. Return](developer_docs/billing/cancellation-vs-return-policy.md).
 
 ### persistence.xml
