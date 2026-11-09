@@ -3292,13 +3292,24 @@ public class OpdBatchBillCancellationController implements Serializable, Control
                         p.setPaidValue(cd.getPaymentMethodData().getEwallet().getTotalValue());
                         p.setComments(cd.getPaymentMethodData().getEwallet().getComment());
                         break;
+                    case Staff:
+                        // Value and staff are needed so paymentService.updateBalances() reverses the staff credit (#25348)
+                        p.setToStaff(cd.getPaymentMethodData().getStaffCredit().getToStaff());
+                        p.setPaidValue(cd.getPaymentMethodData().getStaffCredit().getTotalValue());
+                        p.setComments(cd.getPaymentMethodData().getStaffCredit().getComment());
+                        break;
+                    case Staff_Welfare:
+                        // Value and staff are needed so paymentService.updateBalances() reverses the staff welfare (#25348)
+                        p.setToStaff(cd.getPaymentMethodData().getStaffWelfare().getToStaff());
+                        p.setPaidValue(cd.getPaymentMethodData().getStaffWelfare().getTotalValue());
+                        p.setComments(cd.getPaymentMethodData().getStaffWelfare().getComment());
+                        break;
                     case Agent:
                     case Credit:
                     case PatientDeposit:
                     case Slip:
                     case OnCall:
                     case OnlineSettlement:
-                    case Staff:
                     case YouOweMe:
                     case MultiplePaymentMethods:
                 }
