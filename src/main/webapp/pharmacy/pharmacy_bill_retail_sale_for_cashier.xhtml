@@ -526,6 +526,30 @@
                                     </p:panel>
 
                                     <h:panelGroup id="welfareStaff">
+                                        <p:panel class="m-1 w-100" rendered="#{pharmacySaleForCashierController.paymentMethod eq 'Credit'}">
+                                            <f:facet name="header">
+                                                <h:outputText styleClass="fa fa-building" />
+                                                <h:outputText value="Credit Company" class="mx-4"></h:outputText>
+                                            </f:facet>
+                                            <p:autoComplete
+                                                id="acCreditCompany"
+                                                class="w-100"
+                                                inputStyleClass="form-control"
+                                                forceSelection="true"
+                                                value="#{pharmacySaleForCashierController.toInstitution}"
+                                                completeMethod="#{institutionController.completeCreditCompany}"
+                                                var="ix"
+                                                minQueryLength="2"
+                                                placeholder="Credit Company (type at least 2 letters to search)"
+                                                itemLabel="#{ix.name}"
+                                                itemValue="#{ix}"
+                                                size="10">
+                                                <p:ajax event="itemSelect"
+                                                        process="@this"
+                                                        update="pBillDetails"
+                                                        listener="#{pharmacySaleForCashierController.changeListener()}"/>
+                                            </p:autoComplete>
+                                        </p:panel>
                                         <p:panel class="m-1 w-100" rendered="#{pharmacySaleForCashierController.paymentMethod eq 'Staff_Welfare'}">
                                             <f:facet name="header">
                                                 <h:outputText styleClass="fa fa-user-md" />

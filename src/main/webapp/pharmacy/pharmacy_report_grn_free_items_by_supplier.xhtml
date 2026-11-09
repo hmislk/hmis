@@ -268,6 +268,56 @@
 
                     <h:panelGroup id="reportPrint" layout="block">
 
+                        <!-- Hide interactive controls (paginator + per-column filter boxes) from the printed output,
+                             and show a print-only header that states the filter criteria and the total row count,
+                             so a single-page printout is not mistaken for the complete report. -->
+                        <style>
+                            .print-report-header { display: none; }
+                            @media print {
+                                #frmFree\:reportPrint .ui-paginator { display: none !important; }
+                                #frmFree\:reportPrint .ui-column-filter { display: none !important; }
+                                .print-report-header { display: block !important; }
+                            }
+                        </style>
+
+                        <!-- Print-only header: criteria + totals (CR: identify incomplete pages + preserve filter values) -->
+                        <h:panelGroup layout="block" styleClass="print-report-header mb-3">
+                            <h:outputText value="Free Items Received (GRN / Direct Purchase)" styleClass="fw-bold fs-5"/>
+                            <h:panelGroup layout="block" styleClass="d-block">
+                                <h:outputText value="Report Type: "/>
+                                <h:outputText value="#{pharmacyProcurementReportController.freeItemReportType eq 'DETAIL' ? 'Detail' : (pharmacyProcurementReportController.freeItemReportType eq 'SUPPLIER' ? 'Supplier-wise Summary' : (pharmacyProcurementReportController.freeItemReportType eq 'ITEM' ? 'Item-wise Summary' : 'Date-wise Summary'))}"/>
+                            </h:panelGroup>
+                            <h:panelGroup layout="block" styleClass="d-block">
+                                <h:outputText value="Period: "/>
+                                <h:outputText value="#{pharmacyProcurementReportController.fromDate}">
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                </h:outputText>
+                                <h:outputText value=" to "/>
+                                <h:outputText value="#{pharmacyProcurementReportController.toDate}">
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                </h:outputText>
+                            </h:panelGroup>
+                            <h:panelGroup layout="block" styleClass="d-block" rendered="#{pharmacyProcurementReportController.institution ne null}">
+                                <h:outputText value="Institution: #{pharmacyProcurementReportController.institution.name}"/>
+                            </h:panelGroup>
+                            <h:panelGroup layout="block" styleClass="d-block" rendered="#{pharmacyProcurementReportController.site ne null}">
+                                <h:outputText value="Site: #{pharmacyProcurementReportController.site.name}"/>
+                            </h:panelGroup>
+                            <h:panelGroup layout="block" styleClass="d-block" rendered="#{pharmacyProcurementReportController.department ne null}">
+                                <h:outputText value="Department: #{pharmacyProcurementReportController.department.name}"/>
+                            </h:panelGroup>
+                            <h:panelGroup layout="block" styleClass="d-block" rendered="#{pharmacyProcurementReportController.dealer ne null}">
+                                <h:outputText value="Supplier: #{pharmacyProcurementReportController.dealer.name}"/>
+                            </h:panelGroup>
+                            <h:panelGroup layout="block" styleClass="d-block" rendered="#{pharmacyProcurementReportController.item ne null}">
+                                <h:outputText value="Item: #{pharmacyProcurementReportController.item.name}"/>
+                            </h:panelGroup>
+                            <h:panelGroup layout="block" styleClass="mt-1">
+                                <h:outputText value="Total: #{pharmacyProcurementReportController.freeItemLineCount} line(s) in #{pharmacyProcurementReportController.freeItemBillCount} bill(s). The printout shows the rows currently displayed on screen; to print every line, set 'Rows per page' to a value at least equal to the total lines before printing."
+                                              styleClass="small"/>
+                            </h:panelGroup>
+                        </h:panelGroup>
+
                         <!-- Summary strip -->
                         <h:panelGrid columns="5" styleClass="w-100 mb-2" columnClasses="text-center,text-center,text-center,text-center,text-center"
                                      rendered="#{pharmacyProcurementReportController.freeItemLineCount gt 0}">

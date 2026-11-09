@@ -2033,9 +2033,9 @@ public class OpticianRepairBillController implements Serializable, ControllerWit
                 multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getSlip().getTotalValue();
 
             }
-            return total - multiplePaymentMethodTotalValue;
+            return netTotal - multiplePaymentMethodTotalValue;
         }
-        return total;
+        return netTotal;
     }
 
     public void recieveRemainAmountAutomatically() {

@@ -76,6 +76,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -5356,7 +5357,43 @@ public class PatientInvestigationController implements Serializable {
     private List<PatientReportItemValue> column1AntibioticList;
     private List<PatientReportItemValue> column2AntibioticList;
 
+    /**
+     * Antibiotic columns for the grouped Microbiology report: each organism
+     * (report group) is split into two balanced columns on its own.
+     */
     public List<PatientReportItemValue> findAntibioticForMicrobiologyReport(List<PatientReportItemValue> ptivList) {
+        return findAntibioticForMicrobiologyReport(ptivList, true);
+    }
+
+    /**
+     * Antibiotic columns for a report that lists all antibiotics in one block,
+     * ignoring organisms (e.g. requests/report.xhtml): the whole list is split
+     * into two balanced columns, so organisms with one result each do not all
+     * end up in the first column.
+     */
+    public List<PatientReportItemValue> findAntibioticForMicrobiologyReportUngrouped(List<PatientReportItemValue> ptivList) {
+        return findAntibioticForMicrobiologyReport(ptivList, false);
+    }
+
+    /**
+     * First column of the whole-report (ungrouped) split of the current report.
+     * Separate from {@link #getColumn1AntibioticList()}, whose getter rebuilds
+     * the per-organism split on every call.
+     */
+    public List<PatientReportItemValue> getColumn1AntibioticListUngrouped() {
+        populateAntibioticListsFromCurrentReport(false);
+        return column1AntibioticList;
+    }
+
+    /**
+     * Second column of the whole-report (ungrouped) split of the current report.
+     */
+    public List<PatientReportItemValue> getColumn2AntibioticListUngrouped() {
+        populateAntibioticListsFromCurrentReport(false);
+        return column2AntibioticList;
+    }
+
+    private List<PatientReportItemValue> findAntibioticForMicrobiologyReport(List<PatientReportItemValue> ptivList, boolean splitPerGroup) {
         List<PatientReportItemValue> antibioticItems = new ArrayList<>();
         column1AntibioticList = new ArrayList<>();
         column2AntibioticList = new ArrayList<>();
@@ -5377,15 +5414,24 @@ public class PatientInvestigationController implements Serializable {
                 ? "" : ptiv.getInvestigationItem().getName(),
                 String.CASE_INSENSITIVE_ORDER));
 
+        // Split each organism (report group) on its own: the report renders one
+        // section per group and filters these lists by group name, so a single
+        // split over all groups leaves each section's columns unbalanced.
+        Map<String, List<PatientReportItemValue>> itemsByGroup = new LinkedHashMap<>();
+        for (PatientReportItemValue ptiv : antibioticItems) {
+            String groupName = !splitPerGroup
+                    || ptiv.getPatientReportGroup() == null
+                    || ptiv.getPatientReportGroup().getGroupName() == null
+                    ? "" : ptiv.getPatientReportGroup().getGroupName();
+            itemsByGroup.computeIfAbsent(groupName, k -> new ArrayList<>()).add(ptiv);
+        }
+
         // Fill the first column top-to-bottom with the first half (rounded up)
         // and the rest into the second column, e.g. 11 -> 6 + 5, 12 -> 6 + 6.
-        int firstColumnCount = (antibioticItems.size() + 1) / 2;
-        for (int i = 0; i < antibioticItems.size(); i++) {
-            if (i < firstColumnCount) {
-                column1AntibioticList.add(antibioticItems.get(i));
-            } else {
-                column2AntibioticList.add(antibioticItems.get(i));
-            }
+        for (List<PatientReportItemValue> groupItems : itemsByGroup.values()) {
+            int firstColumnCount = (groupItems.size() + 1) / 2;
+            column1AntibioticList.addAll(groupItems.subList(0, firstColumnCount));
+            column2AntibioticList.addAll(groupItems.subList(firstColumnCount, groupItems.size()));
         }
 
         return antibioticItems;
@@ -5398,6 +5444,10 @@ public class PatientInvestigationController implements Serializable {
      * that does not re-run the navigation action).
      */
     private void populateAntibioticListsFromCurrentReport() {
+        populateAntibioticListsFromCurrentReport(true);
+    }
+
+    private void populateAntibioticListsFromCurrentReport(boolean splitPerGroup) {
         if (patientReportController == null
                 || patientReportController.getCurrentPatientReport() == null
                 || patientReportController.getCurrentPatientReport().getPatientReportItemValues() == null) {
@@ -5405,7 +5455,7 @@ public class PatientInvestigationController implements Serializable {
             column2AntibioticList = new ArrayList<>();
             return;
         }
-        findAntibioticForMicrobiologyReport(patientReportController.getCurrentPatientReport().getPatientReportItemValues());
+        findAntibioticForMicrobiologyReport(patientReportController.getCurrentPatientReport().getPatientReportItemValues(), splitPerGroup);
     }
 
     public void markSelectedAsReceived() {

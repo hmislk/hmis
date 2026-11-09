@@ -86,7 +86,7 @@ public class InvestigationApiService implements Serializable {
         if (req == null || !req.isValid()) throw new Exception("Valid request is required");
         Map<String, Object> m = new HashMap<>(); m.put("name", req.getName().trim().toLowerCase());
         List<Investigation> ex = investigationFacade.findByJpql("select i from Investigation i where i.retired=false and lower(i.name)=:name", m, TemporalType.TIMESTAMP, 1);
-        if (!ex.isEmpty()) throw new IllegalStateException(String.valueOf(ex.get(0).getId()));
+        if (!ex.isEmpty()) throw new InvestigationAlreadyExistsException(ex.get(0).getId());
         Investigation i = new Investigation();
         i.setName(req.getName().trim());
         i.setCode(req.getCode() != null && !req.getCode().trim().isEmpty() ? req.getCode().trim() : CommonFunctions.nameToCode(req.getName()));
@@ -107,7 +107,7 @@ public class InvestigationApiService implements Serializable {
         Machine analyzer = resolveAnalyzer(req.getAnalyzerId(), req.getAnalyzerName(), user);
         if (analyzer != null) i.setMachine(analyzer);
         i.setCreater(user); i.setCreatedAt(new Date()); i.setRetired(false);
-        investigationFacade.create(i); i.setBilledAs(i); i.setReportedAs(i); investigationFacade.edit(i);
+        investigationFacade.createAndFlush(i); i.setBilledAs(i); i.setReportedAs(i); investigationFacade.edit(i);
         return toResponse(i, "Investigation created successfully");
     }
 

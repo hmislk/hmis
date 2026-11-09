@@ -75,6 +75,7 @@ import java.io.Serializable;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
@@ -765,11 +766,29 @@ public class PharmacyBillSearch implements Serializable {
         return "/ward/ward_pharmacy_bht_issue_request_edit?faces-redirect=true";
     }
 
-    public String cancelInwardPharmacyRequestBill() {
+    public synchronized String cancelInwardPharmacyRequestBill() {
         if (bill == null) {
             JsfUtil.addErrorMessage("Not Bill Found !");
             return "";
         }
+        if (!isAuthorized("CANCEL", "InwardPharmacyIssueRequestCancel")) {
+            return "";
+        }
+        // Re-read by id: a stale tab or a double click on Yes must not cancel a bill twice (#22255).
+        Bill freshBill = bill.getId() != null ? billFacade.findWithoutCache(bill.getId()) : null;
+        if (freshBill == null) {
+            JsfUtil.addErrorMessage("Not Bill Found !");
+            return "";
+        }
+        if (freshBill.isCancelled() || freshBill.getCancelledBill() != null) {
+            JsfUtil.addErrorMessage("This request has already been cancelled.");
+            return "";
+        }
+        if (freshBill.isRefunded()) {
+            JsfUtil.addErrorMessage("This request has been refunded and cannot be cancelled.");
+            return "";
+        }
+        bill = freshBill;
         // A blank inputText submits "" (not null), so a null check alone let the
         // request be cancelled without a comment (#24517).
         if (comment == null || comment.trim().isEmpty()) {
@@ -3316,7 +3335,11 @@ public class PharmacyBillSearch implements Serializable {
             getBillFacade().edit(newlyCreatedRetailSaleCancellationBillPre);
 
             JsfUtil.addSuccessMessage("Cancelled");
-            if (getBill().getPaymentMethod() == PaymentMethod.Credit) {
+            if (getBill().getPaymentMethod() == PaymentMethod.Credit
+                    || (getBill().getPaymentMethod() == PaymentMethod.Staff
+                    && paymentMethod == PaymentMethod.Staff)) {
+                // Staff credit too (#25339), only when the cancellation itself
+                // is by Staff; a Cash cancellation already refunds the cash.
                 if (getBill().getToStaff() != null) {
                     getStaffBean().updateStaffCredit(getBill().getToStaff(), 0 - getBill().getNetTotal());
                     JsfUtil.addSuccessMessage("Staff Credit Updated");
@@ -3858,6 +3881,7 @@ public class PharmacyBillSearch implements Serializable {
     //            }
                 getBill().setCancelledBill(cb);
                 getBillFacade().edit(getBill());
+                clearSaleBillRefundedFlagIfNoActiveReturns(getBill());
                 JsfUtil.addSuccessMessage("Cancelled");
 
                 printPreview = true;
@@ -3867,6 +3891,53 @@ public class PharmacyBillSearch implements Serializable {
 
         } else {
             JsfUtil.addErrorMessage("No Bill to cancel");
+        }
+    }
+
+    /**
+     * After an items-only return is cancelled, clears the sale bill's refunded
+     * flag when no other active return remains, so the Sale Bill Search no
+     * longer shows "Refunded" and the sale can be cancelled again (#24489).
+     * Runs after the cancellation is committed; a failure here is logged and
+     * never reported as a failed cancellation.
+     *
+     * @param cancelledReturnBill the return bill that was just cancelled
+     */
+    private void clearSaleBillRefundedFlagIfNoActiveReturns(Bill cancelledReturnBill) {
+        try {
+            Bill saleBillRef = cancelledReturnBill.getReferenceBill() != null
+                    ? cancelledReturnBill.getReferenceBill()
+                    : cancelledReturnBill.getBilledBill();
+            if (saleBillRef == null || saleBillRef.getId() == null) {
+                return;
+            }
+            Bill saleBill = getBillFacade().find(saleBillRef.getId());
+            if (saleBill == null || !saleBill.isRefunded()) {
+                return;
+            }
+            Map<String, Object> params = new HashMap<>();
+            params.put("saleId", saleBill.getId());
+            params.put("btas", Arrays.asList(
+                    BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_ONLY,
+                    BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS,
+                    BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS_PREBILL));
+            // countByJpql, not findLongByJpql: findLongByJpql swallows a failure and returns 0,
+            // which would wrongly clear the flag while a return is still active.
+            // The pre-bill match covers returns made from the cashier reprint page.
+            Long activeReturns = getBillFacade().countByJpql(
+                    "SELECT COUNT(r) FROM Bill r JOIN r.billedBill bb LEFT JOIN bb.referenceBill bbr "
+                    + "WHERE (bb.id = :saleId OR bbr.id = :saleId) "
+                    + "AND r.billTypeAtomic IN :btas "
+                    + "AND r.cancelled = false "
+                    + "AND r.retired = false",
+                    params);
+            if (activeReturns != null && activeReturns == 0L) {
+                saleBill.setRefunded(false);
+                getBillFacade().edit(saleBill);
+            }
+        } catch (RuntimeException e) {
+            LOGGER.log(Level.SEVERE, "Could not recalculate the refunded flag of the sale bill after cancelling return bill id "
+                    + (cancelledReturnBill == null ? null : cancelledReturnBill.getId()), e);
         }
     }
 
