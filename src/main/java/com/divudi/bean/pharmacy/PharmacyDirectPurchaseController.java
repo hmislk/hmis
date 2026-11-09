@@ -485,7 +485,13 @@ public class PharmacyDirectPurchaseController implements Serializable {
         }
         BillItemFinanceDetails f = bi.getBillItemFinanceDetails();
         BigDecimal value = f.getLineGrossTotal();
-        if (value == null || BigDecimalUtil.isNegative(value)) {
+        if (value == null) {
+            // Box cleared: go back to rate entry without an error.
+            f.setEnteredLineGrossTotal(null);
+            calculateItemTotals(bi);
+            return;
+        }
+        if (BigDecimalUtil.isNegative(value)) {
             f.setEnteredLineGrossTotal(null);
             calculateItemTotals(bi);
             JsfUtil.addErrorMessage("Please enter a valid purchase value (negative values not allowed)");
@@ -522,6 +528,20 @@ public class PharmacyDirectPurchaseController implements Serializable {
      */
     public PurchaseMoneyDisplayConverter getPurchaseValueConverter() {
         return new PurchaseMoneyDisplayConverter();
+    }
+
+    /**
+     * Converter for the line Edit dialog's Purchase Rate box. With value entry on it keeps the
+     * full-precision derived rate (so 2,500 / 3 is not saved back as 833.33); with it off it is the
+     * same "#,##0.00" number converter the box always had.
+     */
+    public javax.faces.convert.Converter getEditPurchaseRateConverter() {
+        if (isPurchaseValueEntryEnabled()) {
+            return new PurchaseMoneyDisplayConverter();
+        }
+        javax.faces.convert.NumberConverter nc = new javax.faces.convert.NumberConverter();
+        nc.setPattern("#,##0.00");
+        return nc;
     }
 
     public void onLineDiscountRateChange() {

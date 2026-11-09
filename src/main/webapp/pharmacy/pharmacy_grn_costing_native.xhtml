@@ -192,7 +192,7 @@
                                         <p:ajax
                                             event="blur"
                                             process="txtQty"
-                                            update=":#{p:resolveFirstComponentWithId('panelBillDetails',view).clientId} total pRate #{grnCostingNativeSqlController.purchaseValueEntryEnabled ? 'pValue' : ''} profMargin diff :#{p:resolveFirstComponentWithId('billFinanceDetails', view).clientId} @this :#{p:resolveFirstComponentWithId('messages',view).clientId}"
+                                            update=":#{p:resolveFirstComponentWithId('panelBillDetails',view).clientId} total #{grnCostingNativeSqlController.purchaseValueEntryEnabled ? 'pRate pValue' : ''} profMargin diff :#{p:resolveFirstComponentWithId('billFinanceDetails', view).clientId} @this :#{p:resolveFirstComponentWithId('messages',view).clientId}"
                                             listener="#{grnCostingNativeSqlController.qtyChangedListner(bi)}"></p:ajax>
                                     </p:inputText>
                                 </p:column>

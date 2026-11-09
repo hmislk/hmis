@@ -1402,7 +1402,13 @@ public class GrnCostingNativeSqlController implements Serializable {
             return;
         }
         BigDecimal value = f.getLineGrossTotal();
-        if (value == null || BigDecimalUtil.isNegative(value)) {
+        if (value == null) {
+            // Box cleared: go back to rate entry without an error.
+            f.setEnteredLineGrossTotal(null);
+            onEdit(tmp);
+            return;
+        }
+        if (BigDecimalUtil.isNegative(value)) {
             f.setEnteredLineGrossTotal(null);
             onEdit(tmp);
             JsfUtil.addErrorMessage("Please enter a valid purchase value (negative values not allowed)");

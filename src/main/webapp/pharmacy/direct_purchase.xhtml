@@ -199,7 +199,7 @@
                                                 process="@this"
                                                 listener="#{pharmacyDirectPurchaseController.onQuantityChange}"
                                                 update="txtLineDiscountValue txtPurchaseValueMinusLineDiscountValue
-                                                txtRetailValue txtCostValue txtPrate
+                                                txtRetailValue txtCostValue #{pharmacyDirectPurchaseController.purchaseValueEntryEnabled ? 'txtPrate' : ''}
                                                 txtPurchaseValue txtUnitsPerPack txtPackOrUnit @this
                                                 :#{p:resolveFirstComponentWithId('billFinanceDetails', view).clientId} msg" />
                                         </p:inputText>
@@ -692,8 +692,8 @@
                                             class="w-100 text-end"
                                             autocomplete="off"
                                             onfocus="this.select()"
+                                            converter="#{pharmacyDirectPurchaseController.editPurchaseRateConverter}"
                                             value="#{pharmacyDirectPurchaseController.editingBillItem.billItemFinanceDetails.lineGrossRate}">
-                                            <f:convertNumber pattern="#,##0.00" />
                                         </p:inputText>
 
                                         <p:outputLabel for="editDisRate" value="Discount Rate" />
