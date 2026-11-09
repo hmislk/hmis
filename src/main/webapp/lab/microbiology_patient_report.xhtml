@@ -711,6 +711,8 @@
                                                                title="Type to filter the antibiotics of this organism"
                                                                autocomplete="off"
                                                                oninput="micFilterAntibiotics(this);"
+                                                               onfocus="this.select();"
+                                                               onclick="this.select();"
                                                                onkeydown="if (event.key === 'Enter') { event.preventDefault(); return false; }"/>
                                                     </div>
                                                 </div>
@@ -899,6 +901,24 @@
                                         }
                                     }
 
+                                    // Clear one organism's search box and show all its antibiotics again
+                                    function micClearAntibioticSearch(card) {
+                                        var input = card.querySelector('.mic-ab-search-input');
+                                        if (input &amp;&amp; input.value !== '') {
+                                            input.value = '';
+                                            micFilterAntibiotics(input);
+                                        }
+                                    }
+
+                                    // Put the cursor in an organism's search box (empty, ready to type)
+                                    function micFocusAntibioticSearch(card) {
+                                        var input = card.querySelector('.mic-ab-search-input');
+                                        if (input) {
+                                            input.focus();
+                                            input.select();
+                                        }
+                                    }
+
                                     // ---- Remember which organism is open ----
                                     // The cards are re-rendered after every postback (Save, Approve, ...) and after
                                     // Add / Edit / Delete Organism, so the open card is kept in sessionStorage
@@ -967,12 +987,19 @@
                                             return;
                                         }
                                         var opened = !micIsOrganismCollapsed(card);
+                                        // Every open / close starts the search afresh
+                                        micClearAntibioticSearch(card);
                                         if (opened) {
                                             document.querySelectorAll('.mic-organism-card').forEach(function (other) {
                                                 if (other !== card) {
                                                     micSetOrganismCollapsed(other, true, false);
+                                                    micClearAntibioticSearch(other);
                                                 }
                                             });
+                                            // Focus the search box once the slide has finished
+                                            setTimeout(function () {
+                                                micFocusAntibioticSearch(card);
+                                            }, 250);
                                         }
                                         var map = micReadOpenOrganisms();
                                         map[micReportIdOf(key)] = opened ? key : '';
