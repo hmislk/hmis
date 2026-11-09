@@ -715,8 +715,11 @@
                                                             rendered="#{not patientReportController.currentPatientReport.approved}"
                                                             process="@this"
                                                             update=":#{p:resolveFirstComponentWithId('panelDataEntryForMicrobiology',view).clientId} :#{p:resolveFirstComponentWithId('divPrint',view).clientId} :#{p:resolveFirstComponentWithId('messages',view).clientId}"
-                                                            onclick="if (!confirm('Delete this organism and all its antibiotic results and comment? This cannot be undone.')) { return false; }"
                                                             action="#{patientReportController.removePatientReportGroupForMicrobiology(group)}">
+                                                            <p:confirm
+                                                                header="Delete Organism"
+                                                                message="Delete this organism and all its antibiotic results and comment? This cannot be undone."
+                                                                icon="pi pi-exclamation-triangle"/>
                                                         </p:commandButton>
                                                     </f:facet>
                                                 <table class="mic-ab-table">
@@ -794,6 +797,14 @@
                                     </h:panelGroup>
 
                                 </p:panel>
+
+                                <!-- Yes / No confirmation for Delete Organism -->
+                                <p:confirmDialog global="true" showEffect="fade" hideEffect="fade" responsive="true" width="420">
+                                    <p:commandButton value="No" type="button" icon="pi pi-times"
+                                                     styleClass="ui-confirmdialog-no ui-button-secondary"/>
+                                    <p:commandButton value="Yes" type="button" icon="pi pi-check"
+                                                     styleClass="ui-confirmdialog-yes ui-button-danger"/>
+                                </p:confirmDialog>
 
                                 <!-- Rename organism -->
                                 <p:dialog
