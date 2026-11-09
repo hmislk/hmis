@@ -40,6 +40,7 @@
                             display: inline-flex;
                             align-items: center;
                         }
+                        .mic-organism-edit.ui-button,
                         .mic-organism-delete.ui-button {
                             margin-left: 8px;
                             width: 2rem;
@@ -680,6 +681,17 @@
                                                             value="#{group.groupName}" >
                                                         </h:outputText>
                                                         <p:commandButton
+                                                            id="btnEditOrganism"
+                                                            icon="fa fa-pencil"
+                                                            title="Edit this organism's name"
+                                                            styleClass="ui-button-flat mic-organism-edit"
+                                                            rendered="#{not patientReportController.currentPatientReport.approved}"
+                                                            process="@this"
+                                                            update=":#{p:resolveFirstComponentWithId('pnlRenameOrganism',view).clientId}"
+                                                            oncomplete="PF('dlgRenameOrganism').show();"
+                                                            action="#{patientReportController.prepareRenamePatientReportGroupForMicrobiology(group)}">
+                                                        </p:commandButton>
+                                                        <p:commandButton
                                                             id="btnRemoveOrganism"
                                                             icon="fa fa-trash"
                                                             title="Delete this organism and all its results"
@@ -766,6 +778,42 @@
                                     </h:panelGroup>
 
                                 </p:panel>
+
+                                <!-- Rename organism -->
+                                <p:dialog
+                                    id="dlgRenameOrganism"
+                                    widgetVar="dlgRenameOrganism"
+                                    header="Edit Organism Name"
+                                    modal="true"
+                                    resizable="false"
+                                    closeOnEscape="true"
+                                    width="420">
+                                    <h:panelGroup id="pnlRenameOrganism" layout="block">
+                                        <p:outputLabel for="txtRenameOrganism" value="Organism Name" class="mic-field-label"/>
+                                        <p:inputText
+                                            id="txtRenameOrganism"
+                                            class="w-100 mt-1"
+                                            value="#{patientReportController.organismNewName}"
+                                            onkeydown="if (event.key === 'Enter') { event.preventDefault(); document.getElementById(this.id.replace(/txtRenameOrganism$/, 'btnSaveRenameOrganism')).click(); return false; }"/>
+                                        <div class="d-flex justify-content-end gap-2 mt-3">
+                                            <p:commandButton
+                                                value="Cancel"
+                                                icon="fa fa-times"
+                                                type="button"
+                                                class="ui-button-secondary"
+                                                onclick="PF('dlgRenameOrganism').hide();"/>
+                                            <p:commandButton
+                                                id="btnSaveRenameOrganism"
+                                                value="Save"
+                                                icon="fa fa-check"
+                                                class="ui-button-success"
+                                                process="@this txtRenameOrganism"
+                                                update=":#{p:resolveFirstComponentWithId('panelDataEntryForMicrobiology',view).clientId} :#{p:resolveFirstComponentWithId('divPrint',view).clientId} :#{p:resolveFirstComponentWithId('messages',view).clientId}"
+                                                oncomplete="if (args &amp;&amp; args.organismRenamed) { PF('dlgRenameOrganism').hide(); }"
+                                                action="#{patientReportController.renamePatientReportGroupForMicrobiology()}"/>
+                                        </div>
+                                    </h:panelGroup>
+                                </p:dialog>
 
                                 <script>
                                     // Organism cards are toggleable p:panels (same as Report Details).
