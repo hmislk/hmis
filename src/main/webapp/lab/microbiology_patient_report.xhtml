@@ -972,7 +972,10 @@
                                         });
                                     }
 
-                                    // Accordion: when the user opens one organism, close the others
+                                    // Accordion: when the user opens one organism, close the others.
+                                    // Listen in the CAPTURE phase: the PrimeFaces toggler handler returns false,
+                                    // which stops the click from bubbling up to document. The panel toggles
+                                    // right after this listener, so the new state is read in a timeout.
                                     document.addEventListener('click', function (e) {
                                         if (!e.isTrusted || !e.target.closest) {
                                             return;
@@ -986,25 +989,27 @@
                                         if (!key) {
                                             return;
                                         }
-                                        var opened = !micIsOrganismCollapsed(card);
-                                        // Every open / close starts the search afresh
-                                        micClearAntibioticSearch(card);
-                                        if (opened) {
-                                            document.querySelectorAll('.mic-organism-card').forEach(function (other) {
-                                                if (other !== card) {
-                                                    micSetOrganismCollapsed(other, true, false);
-                                                    micClearAntibioticSearch(other);
-                                                }
-                                            });
-                                            // Focus the search box once the slide has finished
-                                            setTimeout(function () {
-                                                micFocusAntibioticSearch(card);
-                                            }, 250);
-                                        }
-                                        var map = micReadOpenOrganisms();
-                                        map[micReportIdOf(key)] = opened ? key : '';
-                                        micWriteOpenOrganisms(map);
-                                    });
+                                        setTimeout(function () {
+                                            var opened = !micIsOrganismCollapsed(card);
+                                            // Every open / close starts the search afresh
+                                            micClearAntibioticSearch(card);
+                                            if (opened) {
+                                                document.querySelectorAll('.mic-organism-card').forEach(function (other) {
+                                                    if (other !== card) {
+                                                        micSetOrganismCollapsed(other, true, false);
+                                                        micClearAntibioticSearch(other);
+                                                    }
+                                                });
+                                                // Focus the search box once the slide has finished
+                                                setTimeout(function () {
+                                                    micFocusAntibioticSearch(card);
+                                                }, 250);
+                                            }
+                                            var map = micReadOpenOrganisms();
+                                            map[micReportIdOf(key)] = opened ? key : '';
+                                            micWriteOpenOrganisms(map);
+                                        }, 0);
+                                    }, true);
 
                                     if (window.jQuery) {
                                         jQuery(function () {
