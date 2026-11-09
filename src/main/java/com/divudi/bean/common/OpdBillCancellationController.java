@@ -1190,7 +1190,7 @@ public class OpdBillCancellationController implements Serializable, ControllerWi
                     getPaymentMethodData().getSlip().setTotalValue(Math.abs(bill.getNetTotal()));
                     break;
                 case ewallet:
-                    getPaymentMethodData().getEwallet().setInstitution(originalPayment.getBank() != null ? originalPayment.getBank() : originalPayment.getInstitution());
+                    getPaymentMethodData().getEwallet().setInstitution(eWalletProvider(originalPayment));
                     getPaymentMethodData().getEwallet().setReferenceNo(originalPayment.getReferenceNo());
                     getPaymentMethodData().getEwallet().setNo(originalPayment.getReferenceNo());
                     getPaymentMethodData().getEwallet().setReferralNo(originalPayment.getPolicyNo());
@@ -1306,7 +1306,7 @@ public class OpdBillCancellationController implements Serializable, ControllerWi
                         cd.getPaymentMethodData().getSlip().setTotalValue(refundAmount);
                         break;
                     case ewallet:
-                        cd.getPaymentMethodData().getEwallet().setInstitution(originalPayment.getBank() != null ? originalPayment.getBank() : originalPayment.getInstitution());
+                        cd.getPaymentMethodData().getEwallet().setInstitution(eWalletProvider(originalPayment));
                         cd.getPaymentMethodData().getEwallet().setReferenceNo(originalPayment.getReferenceNo());
                         cd.getPaymentMethodData().getEwallet().setNo(originalPayment.getReferenceNo());
                         cd.getPaymentMethodData().getEwallet().setReferralNo(originalPayment.getPolicyNo());
@@ -1405,7 +1405,7 @@ public class OpdBillCancellationController implements Serializable, ControllerWi
                 getPaymentMethodData().getSlip().setTotalValue(Math.abs(bill.getNetTotal()));
                 break;
             case ewallet:
-                getPaymentMethodData().getEwallet().setInstitution(payment.getBank() != null ? payment.getBank() : payment.getInstitution());
+                getPaymentMethodData().getEwallet().setInstitution(eWalletProvider(payment));
                 getPaymentMethodData().getEwallet().setReferenceNo(payment.getReferenceNo());
                 getPaymentMethodData().getEwallet().setNo(payment.getReferenceNo());
                 getPaymentMethodData().getEwallet().setReferralNo(payment.getPolicyNo());
@@ -1817,17 +1817,9 @@ public class OpdBillCancellationController implements Serializable, ControllerWi
 
     @Override
     public PaymentMethodData getPaymentMethodData() {
-        // If we're viewing a bill that was paid with multiple payment methods,
-        // and we have stored original payment data, use that for the "Original Payment Details" section
-        if (this.bill != null
-                && this.bill.getPaymentMethod() == PaymentMethod.MultiplePaymentMethods
-                && originalPaymentMethodData != null
-                && originalPaymentMethodData.getPaymentMethodMultiple() != null
-                && !originalPaymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().isEmpty()) {
-            return originalPaymentMethodData;
-        }
-
-        // Otherwise return the normal payment method data for editing
+        // Always the cancellation's own payment data: cancelOpdBill() saves this
+        // object, so the page must edit it. The original bill's payments are
+        // shown from getOriginalPaymentMethodData()/billPayments instead.
         if (paymentMethodData == null) {
             paymentMethodData = new PaymentMethodData();
         }
@@ -2333,6 +2325,19 @@ public class OpdBillCancellationController implements Serializable, ControllerWi
         }
 
         return filteredPayments;
+    }
+
+    /**
+     * The e-Wallet provider of a payment. Single-method bills store it in
+     * bank; multiple-payment bills store it in creditCompany (#18082).
+     * Payment.institution is the hospital that took the payment, never the
+     * provider, so it is not used here.
+     */
+    private Institution eWalletProvider(Payment payment) {
+        if (payment == null) {
+            return null;
+        }
+        return payment.getBank() != null ? payment.getBank() : payment.getCreditCompany();
     }
 
     /**

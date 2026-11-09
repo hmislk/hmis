@@ -190,6 +190,24 @@ public class TokenController implements Serializable, ControllerWithPatient {
         return "/token/pharmacy_tokens_called_counter_wise"; // Adjust the navigation string as per your page structure
     }
 
+    private Date startOfToday() {
+        java.util.Calendar c = java.util.Calendar.getInstance();
+        c.set(java.util.Calendar.HOUR_OF_DAY, 0);
+        c.set(java.util.Calendar.MINUTE, 0);
+        c.set(java.util.Calendar.SECOND, 0);
+        c.set(java.util.Calendar.MILLISECOND, 0);
+        return c.getTime();
+    }
+
+    // Exclusive upper bound, so a bill dated tomorrow (server clock corrected
+    // after it was saved) does not show on today's TV.
+    private Date startOfTomorrow() {
+        java.util.Calendar c = java.util.Calendar.getInstance();
+        c.setTime(startOfToday());
+        c.add(java.util.Calendar.DATE, 1);
+        return c.getTime();
+    }
+
     public void fillSaleForCashierCalledBillsTokens(){
         Map m = new HashMap();
         String j = "Select t "
@@ -202,6 +220,8 @@ public class TokenController implements Serializable, ControllerWithPatient {
                 + " and t.tokenType=:ty"
                 + " and t.completed=:com"
                 + " and t.displayToken = true"
+                + " and t.bill.createdAt >= :fd"
+                + " and t.bill.createdAt < :td"
                 + " and t.retired = false";
         
         Bill b = new Bill();
@@ -211,6 +231,10 @@ public class TokenController implements Serializable, ControllerWithPatient {
         m.put("cal", true); // Tokens that are called
         m.put("com", false); // Tokens that are not completed
         m.put("ty", TokenType.PHARMACY_TOKEN_SALE_FOR_CASHIER);
+        // Only today's tokens: token numbers restart daily, and called but
+        // never completed tokens from earlier days cluttered the TV.
+        m.put("fd", startOfToday());
+        m.put("td", startOfTomorrow());
         j += " order by t.id";
         currentTokensSaleForCashier = tokenFacade.findByJpql(j, m, TemporalType.DATE);
     }
@@ -228,6 +252,8 @@ public class TokenController implements Serializable, ControllerWithPatient {
                 + " and t.inProgress=:prog "
                 + " and t.completed=:com "
                 + " and t.displayToken = true"
+                + " and t.bill.createdAt >= :fd"
+                + " and t.bill.createdAt < :td"
                 + " and t.retired = false";
         
         Bill b = new Bill();
@@ -238,6 +264,10 @@ public class TokenController implements Serializable, ControllerWithPatient {
         m.put("prog", true); // Tokens that are not in progress
         m.put("com", false); // Tokens that are not completed
         m.put("ty", TokenType.PHARMACY_TOKEN_SALE_FOR_CASHIER);
+        // Only today's tokens: token numbers restart daily, and called but
+        // never completed tokens from earlier days cluttered the TV.
+        m.put("fd", startOfToday());
+        m.put("td", startOfTomorrow());
         j += " order by t.id";
         inprogressTokensSaleForCashier = tokenFacade.findByJpql(j, m, TemporalType.DATE);
     }
