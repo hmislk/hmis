@@ -65,7 +65,7 @@
 
 
                 <p:panel  id="panelPrint">
-                    <p:dataTable id="sum1" value="#{pharmacySaleReportController.categoryMovementReportDtos}" var="i" rowIndexVar="rowIndex">
+                    <p:dataTable id="sum1" value="#{pharmacySaleReportController.categoryMovementReportDtos}" var="i" rowKey="#{i.itemId}-#{i.rowType}" rowIndexVar="rowIndex">
                         <f:facet name="header">
                             <p:outputLabel value="CATEGORY - WISE MOVEMENT REPORT" />
                             &#13;&nbsp;

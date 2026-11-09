@@ -69,6 +69,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -4253,6 +4254,18 @@ public class PharmacySaleReportController implements Serializable {
                 || CATEGORY_MOVEMENT_TRANSFER_RECEIVE_REVERSAL.contains(a);
     }
 
+    private boolean isCategoryMovementForward(BillTypeAtomic a) {
+        if (a == null) {
+            return false;
+        }
+        return CATEGORY_MOVEMENT_OPD_SALE.contains(a)
+                || CATEGORY_MOVEMENT_WHOLESALE.contains(a)
+                || CATEGORY_MOVEMENT_INWARD_ISSUE.contains(a)
+                || CATEGORY_MOVEMENT_DEPARTMENT_ISSUE.contains(a)
+                || CATEGORY_MOVEMENT_DISPOSAL.contains(a)
+                || CATEGORY_MOVEMENT_TRANSFER_RECEIVE.contains(a);
+    }
+
     private List<BillTypeAtomic> categoryMovementAtomics() {
         List<BillTypeAtomic> all = new ArrayList<>();
         all.addAll(CATEGORY_MOVEMENT_OPD_SALE);
@@ -4299,51 +4312,84 @@ public class PharmacySaleReportController implements Serializable {
         auditEventApplicationController.logAuditEvent(auditEvent);
 
         Map<String, Object> m = new HashMap<>();
-        String sql = "select pbi.billItem.bill.billTypeAtomic, "
-                + " pbi.billItem.item.id, "
-                + " pbi.billItem.item.name, "
-                + " pbi.billItem.item.code, "
-                + " sum(abs(pbi.billItem.netValue)), "
-                + " sum(abs(pbi.itemBatch.purcahseRate * pbi.qty)), "
-                + " sum(abs(pbi.qty)) "
+        // bb / rb: the original bill a cancellation points to. A retail or wholesale
+        // cancellation pre bill links it as billedBill (PharmacyBean
+        // .createPreBillForRetailSaleCancellation); an issue or disposal cancellation
+        // links it as referenceBill (PharmacyBillSearch.cancelBill). rbi: the ward
+        // return line an ACCEPT_RETURN_MEDICINE_INWARD line was received from; the
+        // receive line itself carries no value, so its sale value is netRate x qty
+        // of that ward return line.
+        String sql = "select b.billTypeAtomic, "
+                + " bb.billTypeAtomic, "
+                + " rb.billTypeAtomic, "
+                + " i.id, "
+                + " i.name, "
+                + " i.code, "
+                + " sum(abs(bi.netValue)), "
+                + " sum(abs(ib.purcahseRate * pbi.qty)), "
+                + " sum(abs(pbi.qty)), "
+                + " sum(abs(rbi.netRate * pbi.qty)) "
                 + " from PharmaceuticalBillItem pbi "
-                + " where pbi.billItem.bill.billTypeAtomic in :atomics "
-                + " and pbi.billItem.bill.retired = false "
-                + " and pbi.billItem.bill.createdAt between :fd and :td "
+                + " join pbi.billItem bi "
+                + " join bi.bill b "
+                + " join bi.item i "
+                + " join pbi.itemBatch ib "
+                + " left join b.billedBill bb "
+                + " left join b.referenceBill rb "
+                + " left join bi.referanceBillItem rbi "
+                + " where b.billTypeAtomic in :atomics "
+                + " and b.retired = false "
+                + " and bi.retired = false "
+                + " and b.createdAt between :fd and :td "
                 + " and exists (select sh.id from StockHistory sh where sh.pbItem = pbi) ";
 
         if (category != null) {
-            sql += " and pbi.billItem.item.category.id = :catId ";
+            sql += " and i.category.id = :catId ";
             m.put("catId", category.getId());
         }
         if (department != null) {
-            sql += " and pbi.billItem.bill.department.id = :deptId ";
+            sql += " and b.department.id = :deptId ";
             m.put("deptId", department.getId());
         }
         m.put("atomics", categoryMovementAtomics());
         m.put("fd", fromDate);
         m.put("td", toDate);
 
-        sql += " group by pbi.billItem.bill.billTypeAtomic, pbi.billItem.item.id, pbi.billItem.item.name, pbi.billItem.item.code "
-                + " order by pbi.billItem.item.name ";
+        sql += " group by b.billTypeAtomic, bb.billTypeAtomic, rb.billTypeAtomic, i.id, i.name, i.code ";
         List<Object[]> objs = getBillFacade().findAggregates(sql, m, TemporalType.TIMESTAMP);
 
-        // One row per item and kind (movement, cancellation/return), in item name order
+        // One row per item and kind (movement, cancellation/return)
         Map<String, CategoryMovementReportDTO> rowsByKey = new LinkedHashMap<>();
         if (objs != null) {
             for (Object[] o : objs) {
                 BillTypeAtomic atomic = (BillTypeAtomic) o[0];
-                Long itemId = (Long) o[1];
+                BillTypeAtomic billedAtomic = (BillTypeAtomic) o[1];
+                BillTypeAtomic referenceAtomic = (BillTypeAtomic) o[2];
+                Long itemId = (Long) o[3];
                 if (atomic == null || itemId == null) {
                     continue;
                 }
-                double sv = o[4] == null ? 0.0 : ((Number) o[4]).doubleValue();
-                double cv = o[5] == null ? 0.0 : ((Number) o[5]).doubleValue();
-                double qty = o[6] == null ? 0.0 : ((Number) o[6]).doubleValue();
+                double sv = o[6] == null ? 0.0 : ((Number) o[6]).doubleValue();
+                double cv = o[7] == null ? 0.0 : ((Number) o[7]).doubleValue();
+                double qty = o[8] == null ? 0.0 : ((Number) o[8]).doubleValue();
+                if (atomic == BillTypeAtomic.ACCEPT_RETURN_MEDICINE_INWARD && sv == 0) {
+                    sv = o[9] == null ? 0.0 : ((Number) o[9]).doubleValue();
+                }
                 if (sv == 0 && cv == 0 && qty == 0) {
                     continue;
                 }
                 boolean reversal = isCategoryMovementReversal(atomic);
+                // The column follows the movement being reversed: a disposal cancellation
+                // is written as PHARMACY_ISSUE_CANCELLED and a wholesale cancellation as
+                // PHARMACY_RETAIL_SALE_CANCELLED_PRE, so their own atomic names the wrong column.
+                BillTypeAtomic columnAtomic = atomic;
+                if (reversal) {
+                    if (isCategoryMovementForward(billedAtomic)) {
+                        columnAtomic = billedAtomic;
+                    } else if (isCategoryMovementForward(referenceAtomic)) {
+                        columnAtomic = referenceAtomic;
+                    }
+                }
                 double sign = reversal ? -1.0 : 1.0;
                 sv = sign * sv;
                 cv = sign * cv;
@@ -4354,33 +4400,33 @@ public class PharmacySaleReportController implements Serializable {
                 if (r == null) {
                     r = new CategoryMovementReportDTO();
                     r.setItemId(itemId);
-                    r.setItemName((String) o[2]);
-                    r.setItemCode((String) o[3]);
+                    r.setItemName((String) o[4]);
+                    r.setItemCode((String) o[5]);
                     r.setRowType(reversal ? CATEGORY_MOVEMENT_ROW_REVERSAL : CATEGORY_MOVEMENT_ROW_MOVEMENT);
                     rowsByKey.put(key, r);
                 }
 
-                if (CATEGORY_MOVEMENT_OPD_SALE.contains(atomic) || CATEGORY_MOVEMENT_OPD_SALE_REVERSAL.contains(atomic)) {
+                if (CATEGORY_MOVEMENT_OPD_SALE.contains(columnAtomic) || CATEGORY_MOVEMENT_OPD_SALE_REVERSAL.contains(columnAtomic)) {
                     r.setOpdSale(r.getOpdSale() + sv);
                     r.setOpdSaleQty(r.getOpdSaleQty() + qty);
                     r.setPurchaseValue(r.getPurchaseValue() + cv);
-                } else if (CATEGORY_MOVEMENT_WHOLESALE.contains(atomic) || CATEGORY_MOVEMENT_WHOLESALE_REVERSAL.contains(atomic)) {
+                } else if (CATEGORY_MOVEMENT_WHOLESALE.contains(columnAtomic) || CATEGORY_MOVEMENT_WHOLESALE_REVERSAL.contains(columnAtomic)) {
                     r.setWholesale(r.getWholesale() + sv);
                     r.setWholesaleQty(r.getWholesaleQty() + qty);
                     r.setPurchaseValue(r.getPurchaseValue() + cv);
-                } else if (CATEGORY_MOVEMENT_INWARD_ISSUE.contains(atomic) || CATEGORY_MOVEMENT_INWARD_ISSUE_REVERSAL.contains(atomic)) {
+                } else if (CATEGORY_MOVEMENT_INWARD_ISSUE.contains(columnAtomic) || CATEGORY_MOVEMENT_INWARD_ISSUE_REVERSAL.contains(columnAtomic)) {
                     r.setInwardIssue(r.getInwardIssue() + sv);
                     r.setInwardIssueQty(r.getInwardIssueQty() + qty);
                     r.setPurchaseValue(r.getPurchaseValue() + cv);
-                } else if (CATEGORY_MOVEMENT_DEPARTMENT_ISSUE.contains(atomic) || CATEGORY_MOVEMENT_DEPARTMENT_ISSUE_REVERSAL.contains(atomic)) {
+                } else if (CATEGORY_MOVEMENT_DEPARTMENT_ISSUE.contains(columnAtomic) || CATEGORY_MOVEMENT_DEPARTMENT_ISSUE_REVERSAL.contains(columnAtomic)) {
                     r.setDepartmentIssue(r.getDepartmentIssue() + sv);
                     r.setDepartmentIssueQty(r.getDepartmentIssueQty() + qty);
                     r.setPurchaseValue(r.getPurchaseValue() + cv);
-                } else if (CATEGORY_MOVEMENT_DISPOSAL.contains(atomic) || CATEGORY_MOVEMENT_DISPOSAL_REVERSAL.contains(atomic)) {
+                } else if (CATEGORY_MOVEMENT_DISPOSAL.contains(columnAtomic) || CATEGORY_MOVEMENT_DISPOSAL_REVERSAL.contains(columnAtomic)) {
                     // A disposal has no sale value, so it is shown at purchase value
                     r.setDisposal(r.getDisposal() + cv);
                     r.setDisposalQty(r.getDisposalQty() + qty);
-                } else if (CATEGORY_MOVEMENT_TRANSFER_RECEIVE.contains(atomic) || CATEGORY_MOVEMENT_TRANSFER_RECEIVE_REVERSAL.contains(atomic)) {
+                } else if (CATEGORY_MOVEMENT_TRANSFER_RECEIVE.contains(columnAtomic) || CATEGORY_MOVEMENT_TRANSFER_RECEIVE_REVERSAL.contains(columnAtomic)) {
                     // Stock coming in: shown on its own, not part of the outgoing total.
                     // Signs follow the same rule as the outgoing columns: a receive
                     // (PHARMACY_RECEIVE) is plus, its cancellation (PHARMACY_RECEIVE_CANCELLED)
@@ -4393,6 +4439,11 @@ public class PharmacySaleReportController implements Serializable {
         }
 
         categoryMovementReportDtos = new ArrayList<>(rowsByKey.values());
+        // Item name, then item id (two items can share a name), then the Movement row first
+        categoryMovementReportDtos.sort(Comparator
+                .comparing((CategoryMovementReportDTO d) -> d.getItemName() == null ? "" : d.getItemName(), String.CASE_INSENSITIVE_ORDER)
+                .thenComparing(CategoryMovementReportDTO::getItemId, Comparator.nullsLast(Comparator.naturalOrder()))
+                .thenComparing(d -> CATEGORY_MOVEMENT_ROW_MOVEMENT.equals(d.getRowType()) ? 0 : 1));
         totalOpdSale = 0.0;
         totalWholesale = 0.0;
         totalInwardIssue = 0.0;
