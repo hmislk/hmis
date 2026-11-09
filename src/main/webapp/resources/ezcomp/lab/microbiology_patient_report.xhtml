@@ -347,6 +347,28 @@
                     }
                     var moved = [];
                     var created = [];
+                    var unwrapped = [];
+
+                    // An organism section taller than a whole page would be cut off at
+                    // the bottom of its page in print and PDF. Break it into its parts
+                    // (name, antibiotics, comment) so they flow onto the next pages.
+                    function splitSection(section) {
+                        if (!section.classList.contains('micOrganismSection')) {
+                            return null;
+                        }
+                        var parts = Array.prototype.filter.call(section.children, function (c) {
+                            return c.getBoundingClientRect().height !== 0;
+                        });
+                        if (parts.length &lt; 2) {
+                            return null;
+                        }
+                        section.classList.remove('micBlock');
+                        parts.forEach(function (c) {
+                            c.classList.add('micBlock');
+                        });
+                        unwrapped.push({section: section, parts: parts});
+                        return parts;
+                    }
 
                     // Undo only what this window did: never remove pages it did not make.
                     function restore() {
@@ -362,6 +384,13 @@
                             }
                         });
                         created = [];
+                        unwrapped.forEach(function (u) {
+                            u.parts.forEach(function (c) {
+                                c.classList.remove('micBlock');
+                            });
+                            u.section.classList.add('micBlock');
+                        });
+                        unwrapped = [];
                         var p1 = document.getElementById('divReportM');
                         if (p1) {
                             p1.classList.remove('micSplit');
@@ -458,6 +487,15 @@
                             }
                             if (cut === -1) {
                                 break;
+                            }
+                            // An organism section that does not fit even on a fresh page is
+                            // broken into its parts, then this page is measured again.
+                            if (cut === start &amp;&amp; current !== page1) {
+                                var parts = splitSection(blocks[start]);
+                                if (parts) {
+                                    Array.prototype.splice.apply(blocks, [start, 1].concat(parts));
+                                    continue;
+                                }
                             }
                             // A row taller than a whole page stays alone on its page.
                             if (cut === start &amp;&amp; current !== page1) {
