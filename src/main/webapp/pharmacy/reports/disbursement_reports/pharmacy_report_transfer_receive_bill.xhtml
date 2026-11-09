@@ -206,60 +206,60 @@
                                 </p:column>
 
 
-                                <p:column headerText="Purchase Value" styleClass="text-end" footerText="#{empty reportsTransfer.purchaseValue ? null : commonFunctionsProxy.abs(reportsTransfer.purchaseValue)}"
+                                <p:column headerText="Purchase Value" styleClass="text-end" footerText="#{empty reportsTransfer.purchaseValue ? null : reportsTransfer.purchaseValue}"
                                           rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Disbursement Reports - Display Purchase', true) and userSettingsController.pharmacyReportTransferReceiveBillPurchaseValueVisible}">
                                     <f:facet name="header">
                                         <h:outputLabel value="Purchase Value" styleClass="text-end" />
                                     </f:facet>
-                                    <h:outputLabel value="#{empty i.purchaseValue ? null : commonFunctionsProxy.abs(i.purchaseValue)}" styleClass="text-end">
+                                    <h:outputLabel value="#{empty i.purchaseValue ? null : i.signedPurchaseValue}" styleClass="text-end">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                     <f:facet name="footer">
-                                        <h:outputLabel value="#{empty reportsTransfer.purchaseValue ? null : commonFunctionsProxy.abs(reportsTransfer.purchaseValue)}" styleClass="text-end fw-bold">
+                                        <h:outputLabel value="#{empty reportsTransfer.purchaseValue ? null : reportsTransfer.purchaseValue}" styleClass="text-end fw-bold">
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>
                                     </f:facet>
                                 </p:column>
-                                <p:column headerText="Sale Value" styleClass="text-end" footerText="#{empty reportsTransfer.saleValue ? null : commonFunctionsProxy.abs(reportsTransfer.saleValue)}"
+                                <p:column headerText="Sale Value" styleClass="text-end" footerText="#{empty reportsTransfer.saleValue ? null : reportsTransfer.saleValue}"
                                           rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Disbursement Reports - Display Retail Sale', true) and userSettingsController.pharmacyReportTransferReceiveBillSaleValueVisible}">
                                     <f:facet name="header">
                                         <h:outputLabel value="Sale Value" styleClass="text-end" />
                                     </f:facet>
-                                    <h:outputLabel value="#{empty i.saleValue ? null : commonFunctionsProxy.abs(i.saleValue)}" styleClass="text-end">
+                                    <h:outputLabel value="#{empty i.saleValue ? null : i.signedSaleValue}" styleClass="text-end">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                     <f:facet name="footer">
-                                        <h:outputLabel value="#{empty reportsTransfer.saleValue ? null : commonFunctionsProxy.abs(reportsTransfer.saleValue)}" styleClass="text-end fw-bold">
+                                        <h:outputLabel value="#{empty reportsTransfer.saleValue ? null : reportsTransfer.saleValue}" styleClass="text-end fw-bold">
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>
                                     </f:facet>
                                 </p:column>
 
-                                <p:column headerText="Cost Value" styleClass="text-end" footerText="#{empty reportsTransfer.costValue ? null : commonFunctionsProxy.abs(reportsTransfer.costValue)}"
+                                <p:column headerText="Cost Value" styleClass="text-end" footerText="#{empty reportsTransfer.costValue ? null : reportsTransfer.costValue}"
                                           rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Disbursement Reports - Display Cost', true) and userSettingsController.pharmacyReportTransferReceiveBillCostValueVisible}">
                                     <f:facet name="header">
                                         <h:outputLabel value="Cost Value" styleClass="text-end" />
                                     </f:facet>
-                                    <h:outputLabel value="#{empty i.costValueDouble ? null : commonFunctionsProxy.abs(i.costValueDouble)}" styleClass="text-end">
+                                    <h:outputLabel value="#{empty i.costValueDouble ? null : i.signedCostValue}" styleClass="text-end">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                     <f:facet name="footer">
-                                        <h:outputLabel value="#{empty reportsTransfer.costValue ? null : commonFunctionsProxy.abs(reportsTransfer.costValue)}" styleClass="text-end fw-bold">
+                                        <h:outputLabel value="#{empty reportsTransfer.costValue ? null : reportsTransfer.costValue}" styleClass="text-end fw-bold">
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>
                                     </f:facet>
                                 </p:column>
 
-                                <p:column headerText="Transfer Value" styleClass="text-end" footerText="#{empty reportsTransfer.transferValue ? null : commonFunctionsProxy.abs(reportsTransfer.transferValue)}"
+                                <p:column headerText="Transfer Value" styleClass="text-end" footerText="#{empty reportsTransfer.transferValue ? null : reportsTransfer.transferValue}"
                                           rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Disbursement Reports - Display Transfer', true) and userSettingsController.pharmacyReportTransferReceiveBillTransferValueVisible}">
                                     <f:facet name="header">
                                         <h:outputLabel value="Transfer Value" styleClass="text-end" />
                                     </f:facet>
-                                    <h:outputLabel value="#{empty i.transferValueDouble ? null : commonFunctionsProxy.abs(i.transferValueDouble)}" styleClass="text-end">
+                                    <h:outputLabel value="#{empty i.transferValueDouble ? null : i.signedTransferValue}" styleClass="text-end">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                     <f:facet name="footer">
-                                        <h:outputLabel value="#{empty reportsTransfer.transferValue ? null : commonFunctionsProxy.abs(reportsTransfer.transferValue)}" styleClass="text-end fw-bold">
+                                        <h:outputLabel value="#{empty reportsTransfer.transferValue ? null : reportsTransfer.transferValue}" styleClass="text-end fw-bold">
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>
                                     </f:facet>

@@ -835,7 +835,7 @@
                         <p:menuitem 
                             icon="fas fa-money-bill-wave"  
                             ajax="false"  
-                            action="/collecting_centre/collecting_centre_bill?faces-redirect=true" 
+                            action="#{agentAndCcPaymentController.navigateToCcDeposit}" 
                             value="Collecting Centre Payment" 
                             rendered="#{webUserController.hasPrivilege('CCPaymentReceive')}"
                             actionListener="#{agentAndCcPaymentController.prepareNewBill()}" >

@@ -63,6 +63,7 @@ import com.divudi.core.facade.StockFacade;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.bean.opd.OpdBillController;
 import com.divudi.bean.pharmacy.GrnReturnWorkflowController;
+import com.divudi.bean.pharmacy.PharmacyReturnwithouttresing;
 import com.divudi.bean.pharmacy.PharmacyBillSearch;
 import com.divudi.bean.pharmacy.PharmacyController;
 import com.divudi.core.data.BillCategory;
@@ -279,6 +280,9 @@ public class SearchController implements Serializable {
 
     @Inject
     private GrnReturnWorkflowController grnReturnWorkflowController;
+
+    @Inject
+    private PharmacyReturnwithouttresing pharmacyReturnwithouttresing;
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Class Variables">
     private String visitType;
@@ -532,6 +536,8 @@ public class SearchController implements Serializable {
     }
 
     public String navigateToPharmacyReturnWithoutReceipt() {
+        // Start a fresh return; otherwise the session bean still shows the last settled bill's print preview (#16854).
+        pharmacyReturnwithouttresing.resetAll();
         return "/pharmacy/pharmacy_return_withouttresing?faces-redirect=true";
     }
 
@@ -8318,7 +8324,9 @@ public class SearchController implements Serializable {
         }
 
         if (getSearchKeyword().getBhtNo() != null && !getSearchKeyword().getBhtNo().trim().equals("")) {
-            sql += " and  ((b.paidForBillFee.bill.patientEncounter.bhtNo) like :bht )";
+            // Split-mode OPD bills keep the BHT only on their batch bill (backwardReferenceBill).
+            sql += " and (b.bill.id in (select eb.id from Bill eb where eb.patientEncounter.bhtNo like :bht)"
+                    + " or b.bill.id in (select ib.id from Bill ib where ib.backwardReferenceBill.patientEncounter.bhtNo like :bht)) ";
             temMap.put("bht", "%" + getSearchKeyword().getBhtNo().trim().toUpperCase() + "%");
         }
 
@@ -8396,7 +8404,9 @@ public class SearchController implements Serializable {
         }
 
         if (getSearchKeyword().getBhtNo() != null && !getSearchKeyword().getBhtNo().trim().equals("")) {
-            sql += " and  ((b.paidForBillFee.bill.patientEncounter.bhtNo) like :bht )";
+            // Split-mode OPD bills keep the BHT only on their batch bill (backwardReferenceBill).
+            sql += " and (b.bill.id in (select eb.id from Bill eb where eb.patientEncounter.bhtNo like :bht)"
+                    + " or b.bill.id in (select ib.id from Bill ib where ib.backwardReferenceBill.patientEncounter.bhtNo like :bht)) ";
             temMap.put("bht", "%" + getSearchKeyword().getBhtNo().trim().toUpperCase() + "%");
         }
         sql += "  order by b.staff.id    ";

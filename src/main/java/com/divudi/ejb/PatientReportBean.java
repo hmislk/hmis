@@ -164,7 +164,7 @@ public class PatientReportBean {
         String jpql = "";
         Investigation temIx = (Investigation) ptReport.getItem();
 
-        for (ReportItem ii : temIx.getReportItems()) {
+        for (ReportItem ii : new ArrayList<>(temIx.getReportItems())) {
 
             PatientReportItemValue val = null;
             Patient currentReportPatient = patientFacade.findWithoutCache(ptReport.getPatientInvestigation().getPatient().getId());
@@ -267,7 +267,7 @@ public class PatientReportBean {
          System.out.println("addPatientReportItemValuesForTemplateReport");
         String sql = "";
         Investigation temIx = (Investigation) ptReport.getItem();
-        for (ReportItem ii : temIx.getReportItems()) {
+        for (ReportItem ii : new ArrayList<>(temIx.getReportItems())) {
             System.out.println("ii = " + ii);
             System.out.println("ii.getName = " + ii.getName());
             PatientReportItemValue val = null;
@@ -372,7 +372,7 @@ public class PatientReportBean {
 //        ////// // System.out.println("going to add microbiology report item values for report");
         Investigation temIx = (Investigation) ptReport.getItem();
 //        ////// // System.out.println("Items getting for ix is - " + temIx.getName());
-        for (ReportItem ii : temIx.getReportItems()) {
+        for (ReportItem ii : new ArrayList<>(temIx.getReportItems())) {
 //            ////// // System.out.println("report items is " + ii.getName());
             if (ii.isRetired()) {
 //                ////// // System.out.println("retired = " + ii.isRetired());
@@ -452,7 +452,7 @@ public class PatientReportBean {
     public void addMicrobiologyNonAntibioticReportItemValuesForReport(PatientReport ptReport) {
         String sql;
         Investigation temIx = (Investigation) ptReport.getItem();
-        for (ReportItem ii : temIx.getReportItems()) {
+        for (ReportItem ii : new ArrayList<>(temIx.getReportItems())) {
             if (ii.isRetired()) {
                 continue;
             }
@@ -535,7 +535,107 @@ public class PatientReportBean {
             getPtRivFacade().create(val);
             ptReport.getPatientReportItemValues().add(val);
         }
+
+        addOrganismCommentValue(ptReport, group);
         return group;
+    }
+
+    /**
+     * Permanently deletes one organism (antibiotic group) from a Microbiology
+     * report, together with all its values (antibiotic results and comment).
+     * The rows are first taken out of the report's lists so a later save of
+     * the report does not write them back. Values go before the group because
+     * each value references its group.
+     */
+    public void removeOrganismGroup(PatientReport ptReport, PatientReportGroup group) {
+        if (ptReport == null || group == null) {
+            return;
+        }
+        Long groupId = group.getId();
+
+        List<PatientReportItemValue> valuesToRemove = new ArrayList<>();
+        if (ptReport.getPatientReportItemValues() != null) {
+            java.util.Iterator<PatientReportItemValue> it = ptReport.getPatientReportItemValues().iterator();
+            while (it.hasNext()) {
+                PatientReportItemValue v = it.next();
+                PatientReportGroup g = v.getPatientReportGroup();
+                if (g != null && (g == group || (groupId != null && groupId.equals(g.getId())))) {
+                    valuesToRemove.add(v);
+                    it.remove();
+                }
+            }
+        }
+
+        PatientReportGroup groupToRemove = group;
+        if (ptReport.getPatientReportGroups() != null) {
+            java.util.Iterator<PatientReportGroup> git = ptReport.getPatientReportGroups().iterator();
+            while (git.hasNext()) {
+                PatientReportGroup g = git.next();
+                if (g == group || (groupId != null && groupId.equals(g.getId()))) {
+                    groupToRemove = g;
+                    git.remove();
+                }
+            }
+        }
+
+        for (PatientReportItemValue v : valuesToRemove) {
+            if (v.getId() != null) {
+                getPtRivFacade().remove(v);
+            }
+        }
+        if (groupToRemove.getId() != null) {
+            patientReportGroupFacade.remove(groupToRemove);
+        }
+    }
+
+    /**
+     * Creates the empty comment value for a newly added organism (antibiotic
+     * group), so the user can type a comment inside that organism's section.
+     */
+    private void addOrganismCommentValue(PatientReport ptReport, PatientReportGroup group) {
+        Investigation ix = ptReport.getPatientInvestigation().getInvestigation();
+        InvestigationItem commentItem = investigationItemForOrganismComment(ix);
+        if (commentItem == null) {
+            return;
+        }
+        PatientReportItemValue val = new PatientReportItemValue();
+        val.setLobValue("");
+        val.setInvestigationItem(commentItem);
+        val.setPatient(ptReport.getPatientInvestigation().getPatient());
+        val.setPatientEncounter(ptReport.getPatientInvestigation().getEncounter());
+        val.setPatientReport(ptReport);
+        val.setPatientReportGroup(group);
+        getPtRivFacade().create(val);
+        ptReport.getPatientReportItemValues().add(val);
+    }
+
+    /**
+     * Returns the investigation's organism comment item, creating it on first
+     * use (in the same way antibiotic items are created on demand).
+     */
+    public InvestigationItem investigationItemForOrganismComment(Investigation i) {
+        if (i == null) {
+            return null;
+        }
+        Map m = new HashMap();
+        String jpql = "select ii from InvestigationItem ii where ii.item=:i "
+                + " and ii.retired=false "
+                + " and ii.ixItemType=:iit ";
+        m.put("i", i);
+        m.put("iit", InvestigationItemType.OrganismComment);
+        InvestigationItem ii = getIiFacade().findFirstByJpql(jpql, m);
+        if (ii == null) {
+            ii = new InvestigationItem();
+            ii.setName("Comment");
+            ii.setItem(i);
+            ii.setIxItemType(InvestigationItemType.OrganismComment);
+            ii.setIxItemValueType(InvestigationItemValueType.Memo);
+            getIiFacade().create(ii);
+            if (i.getReportItems() != null) {
+                i.getReportItems().add(ii);
+            }
+        }
+        return ii;
     }
 
     @EJB

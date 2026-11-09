@@ -2069,7 +2069,7 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
                     getPaymentMethodData().getSlip().setTotalValue(Math.abs(batchBill.getNetTotal()));
                     break;
                 case ewallet:
-                    getPaymentMethodData().getEwallet().setInstitution(originalPayment.getBank() != null ? originalPayment.getBank() : originalPayment.getInstitution());
+                    getPaymentMethodData().getEwallet().setInstitution(originalPayment.getBank() != null ? originalPayment.getBank() : originalPayment.getCreditCompany());
                     getPaymentMethodData().getEwallet().setReferenceNo(originalPayment.getReferenceNo());
                     getPaymentMethodData().getEwallet().setNo(originalPayment.getReferenceNo());
                     getPaymentMethodData().getEwallet().setReferralNo(originalPayment.getPolicyNo());
@@ -2158,7 +2158,7 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
                         cd.getPaymentMethodData().getSlip().setTotalValue(refundAmount);
                         break;
                     case ewallet:
-                        cd.getPaymentMethodData().getEwallet().setInstitution(originalPayment.getBank() != null ? originalPayment.getBank() : originalPayment.getInstitution());
+                        cd.getPaymentMethodData().getEwallet().setInstitution(originalPayment.getBank() != null ? originalPayment.getBank() : originalPayment.getCreditCompany());
                         cd.getPaymentMethodData().getEwallet().setReferenceNo(originalPayment.getReferenceNo());
                         cd.getPaymentMethodData().getEwallet().setNo(originalPayment.getReferenceNo());
                         cd.getPaymentMethodData().getEwallet().setReferralNo(originalPayment.getPolicyNo());
@@ -2702,7 +2702,8 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
         if (cancellationBatchBill.getPaymentMethod() == PaymentMethod.PatientDeposit) {
             PatientDeposit pd = patientDepositService.getDepositOfThePatient(cancellationBatchBill.getPatient(), sessionController.getDepartment());
             patientDepositService.updateBalance(cancellationBatchBill, pd);
-        } else if (cancellationBatchBill.getPaymentMethod() == PaymentMethod.Credit) {
+        } else if (cancellationBatchBill.getPaymentMethod() == PaymentMethod.Credit
+                || cancellationBatchBill.getPaymentMethod() == PaymentMethod.Staff) { // Staff credit too (#25339)
             if (cancellationBatchBill.getToStaff() != null) {
                 staffService.updateStaffCredit(cancellationBatchBill.getToStaff(), 0 - Math.abs(cancellationBatchBill.getNetTotal() + getBill().getVat()));
                 JsfUtil.addSuccessMessage("Staff Credit Updated");
@@ -2845,7 +2846,8 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
         if (cancellationBatchBill.getPaymentMethod() == PaymentMethod.PatientDeposit) {
             PatientDeposit pd = patientDepositService.getDepositOfThePatient(cancellationBatchBill.getPatient(), sessionController.getDepartment());
             patientDepositService.updateBalance(cancellationBatchBill, pd);
-        } else if (cancellationBatchBill.getPaymentMethod() == PaymentMethod.Credit) {
+        } else if (cancellationBatchBill.getPaymentMethod() == PaymentMethod.Credit
+                || cancellationBatchBill.getPaymentMethod() == PaymentMethod.Staff) { // Staff credit too (#25339)
             if (cancellationBatchBill.getToStaff() != null) {
                 staffService.updateStaffCredit(cancellationBatchBill.getToStaff(), 0 - Math.abs(cancellationBatchBill.getNetTotal() + getBill().getVat()));
                 JsfUtil.addSuccessMessage("Staff Credit Updated");
@@ -5567,12 +5569,12 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
                 multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getOnlineSettlement().getTotalValue();
 
             }
-            remainAmount = total - multiplePaymentMethodTotalValue;
-            return total - multiplePaymentMethodTotalValue;
+            remainAmount = netTotal - multiplePaymentMethodTotalValue;
+            return netTotal - multiplePaymentMethodTotalValue;
 
         }
-        remainAmount = total;
-        return total;
+        remainAmount = netTotal;
+        return netTotal;
     }
 
     @Override

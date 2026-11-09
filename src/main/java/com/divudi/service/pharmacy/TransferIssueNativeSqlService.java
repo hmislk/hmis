@@ -1336,6 +1336,11 @@ public class TransferIssueNativeSqlService {
         bfd.setCreatedAt(new Date());
         bfd.setNetTotal(billNetTotal);
         bfd.setGrossTotal(billNetTotal);
+        // Bill-level line totals = sum of the item lines (each bifd.lineNetTotal
+        // above), the same value the JPA issue path stores; the Transfer Issue
+        // reports read these (#25389).
+        bfd.setLineNetTotal(billNetTotal);
+        bfd.setLineGrossTotal(billNetTotal);
         bfd.setTotalCostValue(totalCostValue.negate());
         bfd.setTotalPurchaseValue(totalPurchaseValue.negate());
         bfd.setTotalRetailSaleValue(totalRetailSaleValue.negate());
