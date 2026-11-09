@@ -463,13 +463,7 @@ public class PharmacyDirectPurchaseController implements Serializable {
         if (f.getEnteredLineGrossTotal() != null) {
             // The rate box shows the derived rate with 2 decimals, so leaving the box without
             // touching it sends back that rounded text. Only a different rate is a real edit.
-            BigDecimal qty = BigDecimalUtil.valueOrZero(f.getQuantity());
-            boolean untouched = false;
-            if (BigDecimalUtil.isPositive(qty) && f.getLineGrossRate() != null) {
-                BigDecimal derived = f.getEnteredLineGrossTotal().divide(qty, MathContext.DECIMAL64);
-                untouched = f.getLineGrossRate().compareTo(derived.setScale(2, RoundingMode.HALF_UP)) == 0;
-            }
-            if (!untouched) {
+            if (!PurchaseValueRate.isRateUntouched(f.getEnteredLineGrossTotal(), f.getQuantity(), f.getLineGrossRate())) {
                 // The user typed their own rate, so the rate wins and the value follows it
                 f.setEnteredLineGrossTotal(null);
             }
@@ -2062,7 +2056,7 @@ public class PharmacyDirectPurchaseController implements Serializable {
             // Issue #22864: the typed purchase value is the truth. The rate follows it at full
             // precision and the gross stays exactly what was typed (it matches the invoice).
             itemGross = f.getEnteredLineGrossTotal();
-            purchaseRate = itemGross.divide(qty, MathContext.DECIMAL64);
+            purchaseRate = PurchaseValueRate.derive(itemGross, qty);
             f.setLineGrossRate(purchaseRate);
         }
         f.setLineGrossTotal(itemGross);
@@ -2944,9 +2938,9 @@ public class PharmacyDirectPurchaseController implements Serializable {
         // Configuration Options - APPLICATION scope
         metadata.addConfigOption(new ConfigOptionInfo(
                 "Allow Entering Total Purchase Value to Calculate the Purchase Rate in Direct Purchase and GRN Costing",
-                "Makes the Purchase Value box editable. The user enters quantity and total purchase value (paid quantity only, "
-                + "before line discount) and the purchase rate is calculated as value / quantity, per pack for a pack item. "
-                + "When off, the Purchase Value box stays read-only and the rate is typed as before.",
+                "When on, the Purchase Value box on Direct Purchase and the Purchase Value column on the native GRN costing page can be edited. "
+                + "The user enters quantity and total purchase value (paid quantity only, before line discount) and the purchase rate is "
+                + "calculated as value / quantity, per pack for a pack item. When off, the rate is typed as before.",
                 OptionScope.APPLICATION
         ));
         metadata.addConfigOption(new ConfigOptionInfo(

@@ -7,6 +7,7 @@ import java.text.DecimalFormatSymbols;
 import java.text.ParsePosition;
 import java.util.Locale;
 import javax.faces.component.UIComponent;
+import javax.faces.component.ValueHolder;
 import javax.faces.context.FacesContext;
 import javax.faces.convert.Converter;
 import javax.faces.convert.ConverterException;
@@ -34,7 +35,18 @@ public class PurchaseMoneyDisplayConverter implements Converter<BigDecimal>, Ser
         if (value == null || value.trim().isEmpty()) {
             return null;
         }
-        String text = value.trim();
+        Object current = component instanceof ValueHolder ? ((ValueHolder) component).getValue() : null;
+        return parse(value.trim(), current);
+    }
+
+    /**
+     * Leaving a box untouched sends back its 2-decimal text. If that is what the current value
+     * shows, keep the current value so extra decimals (e.g. 12.3456) are not rounded away.
+     */
+    static BigDecimal parse(String text, Object current) {
+        if (current instanceof BigDecimal && text.equals(format((BigDecimal) current))) {
+            return (BigDecimal) current;
+        }
         ParsePosition position = new ParsePosition(0);
         Number parsed = newFormat().parse(text, position);
         if (parsed == null || position.getIndex() != text.length()) {
@@ -49,6 +61,10 @@ public class PurchaseMoneyDisplayConverter implements Converter<BigDecimal>, Ser
         if (value == null) {
             return "";
         }
+        return format(value);
+    }
+
+    private static String format(BigDecimal value) {
         return newFormat().format(value);
     }
 }
