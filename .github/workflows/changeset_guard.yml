@@ -1,0 +1,69 @@
+name: Changeset guard
+
+# changeset-guard: fails a PR whose commits ADD risky files: anything under
+# tmp/ or .playwright-mcp/, root-level screenshots/PDFs, tmp_*.py scratch
+# scripts, SQL dumps and backups, logs, archives, secret/key files, or any
+# file over 5 MB. This repository is public; a file that lands in a commit
+# stays in the history even after a later delete. Rules and allow-list:
+# .github/changeset-guard-patterns.txt (shared with the local pre-push hook,
+# scripts/hooks/pre-push). A legitimate new path gets an 'allow' rule there
+# in the same PR, where the reviewer sees it.
+#
+# hotfix-label: a PR into a deploy branch (<hospital>-production /
+# <hospital>-staging) must carry the 'hotfix' label; the job fails without it
+# (reviewer decision on PR #25282). It blocks a merge only if the Deploy
+# Branches ruleset requires it. rh-local-staging is exempt: it only takes
+# development.
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, edited, labeled, unlabeled]
+
+permissions:
+  contents: read
+
+jobs:
+  changeset-guard:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Check that the PR adds no risky files
+        env:
+          EVENT_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          set -euo pipefail
+          # Compare against the merge commit's first parent (the current base
+          # tip), as config_semantics_guard.yml does.
+          if git rev-parse -q --verify HEAD^2 >/dev/null; then
+            BASE_SHA=$(git rev-parse HEAD^1)
+          else
+            BASE_SHA="$EVENT_BASE_SHA"
+          fi
+          echo "Checking files added by commits in HEAD, not in base $BASE_SHA"
+          if ! bash scripts/changeset-guard.sh HEAD --not "$BASE_SHA" | tee "$RUNNER_TEMP/guard.txt"; then
+            grep -E '^  ' "$RUNNER_TEMP/guard.txt" | sed 's/^  /::error::Risky file added: /' || true
+            exit 1
+          fi
+
+  hotfix-label:
+    if: >-
+      (endsWith(github.event.pull_request.base.ref, '-production') ||
+       endsWith(github.event.pull_request.base.ref, '-staging')) &&
+      github.event.pull_request.base.ref != 'rh-local-staging'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check for the hotfix label
+        env:
+          BASE_REF: ${{ github.event.pull_request.base.ref }}
+          HAS_LABEL: ${{ contains(github.event.pull_request.labels.*.name, 'hotfix') }}
+        run: |
+          if [ "$HAS_LABEL" = "true" ]; then
+            echo "Label 'hotfix' present on this PR into $BASE_REF."
+            exit 0
+          fi
+          echo "::error::This PR targets deploy branch $BASE_REF but has no 'hotfix' label. Add it (gh pr edit <N> --add-label hotfix); merging this PR deploys. See the hotfix-deploy skill."
+          exit 1
