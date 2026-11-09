@@ -355,6 +355,7 @@ public class InwardReportController implements Serializable {
     private String admissionReportProcessedBy;
     private double ipIncomeCashTotal;
     private double ipIncomeCreditTotal;
+    private double ipIncomeNoPaymentMethodTotal;
 
     private List<Map<String, Object>> ipIncomeBillDiscounts;
     private double ipIncomeTotalBillDiscount;
@@ -1380,7 +1381,8 @@ public class InwardReportController implements Serializable {
                     ? rowDto.getEncounterPaymentMethod()
                     : rowDto.getBillPaymentMethod();
 
-            if (paymentMethodForBillItem == null || paymentMethodForBillItem.getPaymentType() == PaymentType.NONE) {
+            // A row with no payment method still counts as income (#25433)
+            if (paymentMethodForBillItem != null && paymentMethodForBillItem.getPaymentType() == PaymentType.NONE) {
                 continue;
             }
 
@@ -1440,7 +1442,9 @@ public class InwardReportController implements Serializable {
             double sponsorDiscount = 0.0;
             double sponsorPay = 0.0;
             double patientPay = 0.0;
-            if (paymentMethodForBillItem.getPaymentType() == PaymentType.CREDIT) {
+            if (paymentMethodForBillItem == null) {
+                // no payment method: in the totals, but neither sponsor nor patient pay
+            } else if (paymentMethodForBillItem.getPaymentType() == PaymentType.CREDIT) {
                 sponsorPay = netValue;
             } else if (paymentMethodForBillItem.getPaymentType() == PaymentType.NON_CREDIT) {
                 patientPay = netValue;
@@ -1557,6 +1561,7 @@ public class InwardReportController implements Serializable {
     private void populateIpIncomeProfitMatrixAndBillDiscounts(List<IpIncomeCategoryWiseRowDTO> rows) {
         ipIncomeCashTotal = 0.0;
         ipIncomeCreditTotal = 0.0;
+        ipIncomeNoPaymentMethodTotal = 0.0;
         ipIncomeTotalBillDiscount = 0.0;
         ipIncomeBillDiscounts = new ArrayList<>();
 
@@ -1574,7 +1579,7 @@ public class InwardReportController implements Serializable {
             pm = rowDto.getEncounterPaymentMethod() != null
                     ? rowDto.getEncounterPaymentMethod()
                     : rowDto.getBillPaymentMethod();
-            if (pm == null || pm.getPaymentType() == PaymentType.NONE) {
+            if (pm != null && pm.getPaymentType() == PaymentType.NONE) {
                 continue;
             }
 
@@ -1582,7 +1587,9 @@ public class InwardReportController implements Serializable {
             double netValue = ipIncomeNetValue(rowDto);
 
             // ── Profit Matrix: Cash vs Credit ───────────────────────────────────
-            if (pm.getPaymentType() == PaymentType.NON_CREDIT) {
+            if (pm == null) {
+                ipIncomeNoPaymentMethodTotal += netValue;
+            } else if (pm.getPaymentType() == PaymentType.NON_CREDIT) {
                 ipIncomeCashTotal += netValue;
             } else if (pm.getPaymentType() == PaymentType.CREDIT) {
                 ipIncomeCreditTotal += netValue;
@@ -7299,6 +7306,14 @@ public class InwardReportController implements Serializable {
         this.roomCategories = roomCategories;
     }
 
+    public double getIpIncomeNoPaymentMethodTotal() {
+        return ipIncomeNoPaymentMethodTotal;
+    }
+
+    public void setIpIncomeNoPaymentMethodTotal(double ipIncomeNoPaymentMethodTotal) {
+        this.ipIncomeNoPaymentMethodTotal = ipIncomeNoPaymentMethodTotal;
+    }
+
     public double getIpIncomeCashTotal() {
         return ipIncomeCashTotal;
     }
@@ -8061,8 +8076,11 @@ public class InwardReportController implements Serializable {
                 pmh1.setCellValue("Credit");
                 pmh1.setCellStyle(headerStyle);
                 Cell pmh2 = pmHeader.createCell(2);
-                pmh2.setCellValue("Total");
+                pmh2.setCellValue("No payment method");
                 pmh2.setCellStyle(headerStyle);
+                Cell pmh3 = pmHeader.createCell(3);
+                pmh3.setCellValue("Total");
+                pmh3.setCellStyle(headerStyle);
 
                 Row pmData = sheet.createRow(rowNum++);
                 Cell pm1 = pmData.createCell(0);
@@ -8072,8 +8090,11 @@ public class InwardReportController implements Serializable {
                 pm2.setCellValue(ipIncomeCreditTotal);
                 pm2.setCellStyle(numberStyle);
                 Cell pm3 = pmData.createCell(2);
-                pm3.setCellValue(ipIncomeCashTotal + ipIncomeCreditTotal);
+                pm3.setCellValue(ipIncomeNoPaymentMethodTotal);
                 pm3.setCellStyle(numberStyle);
+                Cell pm4 = pmData.createCell(3);
+                pm4.setCellValue(ipIncomeCashTotal + ipIncomeCreditTotal + ipIncomeNoPaymentMethodTotal);
+                pm4.setCellStyle(numberStyle);
 
                 rowNum += 2;
 
@@ -8308,19 +8329,21 @@ public class InwardReportController implements Serializable {
                 // ===== Profit Matrix =====
                 document.add(buildSectionTitle("Profit Matrix"));
 
-                PdfPTable pmTable = new PdfPTable(3);
+                PdfPTable pmTable = new PdfPTable(4);
                 pmTable.setWidthPercentage(60);
                 pmTable.setHorizontalAlignment(Element.ALIGN_CENTER);
                 pmTable.setSpacingBefore(5);
-                pmTable.setWidths(new float[]{1f, 1f, 1f});
+                pmTable.setWidths(new float[]{1f, 1f, 1f, 1f});
 
                 addPdfHeaderCell(pmTable, "Cash");
                 addPdfHeaderCell(pmTable, "Credit");
+                addPdfHeaderCell(pmTable, "No payment method");
                 addPdfHeaderCell(pmTable, "Total");
 
                 addPdfCell(pmTable, String.format("%,.2f", ipIncomeCashTotal), cellFont, Element.ALIGN_RIGHT, null);
                 addPdfCell(pmTable, String.format("%,.2f", ipIncomeCreditTotal), cellFont, Element.ALIGN_RIGHT, null);
-                addPdfCell(pmTable, String.format("%,.2f", ipIncomeCashTotal + ipIncomeCreditTotal), cellFont, Element.ALIGN_RIGHT, null);
+                addPdfCell(pmTable, String.format("%,.2f", ipIncomeNoPaymentMethodTotal), cellFont, Element.ALIGN_RIGHT, null);
+                addPdfCell(pmTable, String.format("%,.2f", ipIncomeCashTotal + ipIncomeCreditTotal + ipIncomeNoPaymentMethodTotal), cellFont, Element.ALIGN_RIGHT, null);
 
                 document.add(pmTable);
 
