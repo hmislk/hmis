@@ -65,6 +65,27 @@
             .micMemoValue .ql-indent-6 { padding-left: 18em; }
             .micMemoValue .ql-indent-7 { padding-left: 21em; }
             .micMemoValue .ql-indent-8 { padding-left: 24em; }
+            /* A split report must give every page box a real A4 height in print
+               (like the general report). Otherwise each box is 0 high (all its
+               items are absolutely positioned), the browser ignores the page
+               breaks and every page is printed on top of page 1. */
+            /* 296mm (not 297mm) and no body margin: a box of exactly a sheet's
+               height plus the print frame's default 8px body margin overflows
+               the last sheet and prints an extra blank page at the end. */
+            @media print {
+                html:has(#divReportM.micSplit),
+                body:has(#divReportM.micSplit) {
+                    margin: 0 !important;
+                    padding: 0 !important;
+                }
+                #divReportM.micSplit,
+                .micPageCont {
+                    height: 296mm !important;
+                    overflow: hidden;
+                    break-inside: avoid;
+                    page-break-inside: avoid;
+                }
+            }
         </style>
 
         <h:panelGroup rendered="#{patientReportController.currentPatientReport.item.reportType eq 'Microbiology'}"  >
@@ -341,6 +362,10 @@
                             }
                         });
                         created = [];
+                        var p1 = document.getElementById('divReportM');
+                        if (p1) {
+                            p1.classList.remove('micSplit');
+                        }
                     }
 
                     // A new page is a full copy of page 1 (letterhead, header, title,
@@ -462,6 +487,7 @@
                                 break;
                             }
                         }
+                        page1.classList.toggle('micSplit', pageNo > 1);
                         setPageNumbers();
                         if (typeof window.micFitPreview === 'function') {
                             window.micFitPreview();
