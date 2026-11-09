@@ -19,8 +19,8 @@ script wrong for everyone else:
 - **Payara install location**: no fixed path across machines (see
   [DEVELOPMENT_ENVIRONMENTS.md](../DEVELOPMENT_ENVIRONMENTS.md))
 - **Payara domain name**: usually `domain1`, but not always (e.g. `rh`)
-- **Admin/HTTP ports**: usually `4848`/`8080`, but not always — one known
-  machine runs its `rh` domain on admin port `9048` and HTTP port `9080`
+- **Admin/HTTP ports**: usually `4848`/`8080`, but not always — some
+  machines use a non-default admin/HTTP port pair
 - **Deployed application name/context-root**: must match what's already
   registered in that domain, or redeploy fails (see the collision bug below)
 
@@ -97,7 +97,7 @@ There is no single fixed path. Detection order:
 2. Known candidate paths per OS (extend
    [DEVELOPMENT_ENVIRONMENTS.md](../DEVELOPMENT_ENVIRONMENTS.md) as new
    machines are documented):
-   - Linux: `$HOME/payara`, `/opt/payara5`, `/opt/payara6`, `/home/carecode/payara`
+   - Linux: `$HOME/payara`, `/opt/payara5`, `/opt/payara6`
    - Windows: `C:\Payara5`, `D:\Payara`, `%USERPROFILE%\Payara_Server`
 3. Fallback bounded search for an `asadmin` / `asadmin.bat` binary a few
    directories deep under common install roots (never a full filesystem
@@ -111,8 +111,8 @@ There is no single fixed path. Detection order:
 ### 4. Payara Domain, Admin Port, HTTP Port
 
 A machine can have more than one domain. **Never assume the default admin
-port 4848** — one known machine (`carecode`, domain `rh`) runs admin on
-`9048` and HTTP on `9080`.
+port 4848**. Some machines use a non-default admin/HTTP port pair; always
+read the actual ports from the domain's `domain.xml`.
 
 1. Enumerate domains: `asadmin list-domains` (or list the directory names
    under `<payara_home>/glassfish/domains/`).
@@ -185,9 +185,11 @@ and remember the answer in the per-machine config file described above.
 6. Verify the resulting WAR exists and is non-trivially sized before
    deploying (defends against the truncation issue below); rebuild once if
    it looks wrong.
-7. Deploy with the **discovered** `--name` / `--contextroot` / admin port —
+7. Check free RAM (see "Out-of-memory during deploy" below) and abort
+   before touching the running app if it is below `MIN_FREE_MB`.
+8. Deploy with the **discovered** `--name` / `--contextroot` / admin port —
    never re-derived from the WAR filename.
-8. Poll `server.log` for the domain's actual success/failure line and report
+9. Poll `server.log` for the domain's actual success/failure line and report
    it clearly.
 
 ## Troubleshooting
@@ -227,6 +229,39 @@ correlation, not a confirmed mechanism. The generated script defends against
 it defensively rather than by fixing a root cause: it checks the WAR's size
 immediately before every `asadmin deploy` call and rebuilds if it looks
 stale or empty (step 6 above).
+
+### Out-of-memory during deploy leaves the app undeployed
+
+**Symptom**: the script was killed (out of memory) during step 8 and the
+domain now has **no** application deployed. Seen on memory-tight machines.
+
+**Cause**: `asadmin deploy --force=true` undeploys the running app first,
+then deploys the new WAR. A process kill in between leaves nothing deployed,
+and recovery used to mean a full rebuild (the WAR is about 154 MB).
+
+**Prevention - free-RAM pre-check**: before step 8 the generated script reads
+free RAM (Windows: `FreePhysicalMemory` via PowerShell; Linux:
+`MemAvailable` from `/proc/meminfo`). Below `MIN_FREE_MB` (default `3000`) it
+prints an error and exits **before** the undeploy, so the old app keeps
+running. Override the threshold with an environment variable or a
+`MIN_FREE_MB` line in the config file (`hmis-sync-redeploy.conf.bat` /
+`.hmis-sync-redeploy.conf`); the environment variable wins. `MIN_FREE_MB`
+must be a whole number from 1 to 9999999 with no leading zero, or the script
+stops. The check fails closed: if free RAM cannot be read, or the reading is not
+a plain number (empty, `N/A`, an error text), the script aborts before the
+undeploy. After checking RAM yourself you can opt out explicitly with
+`SKIP_MEMORY_CHECK=1`, which deploys with a warning. Both scripts reject
+unknown arguments.
+
+**Recovery - `--deploy-only`**: run the script with `--deploy-only` (or set
+`DEPLOY_ONLY=1`). It skips the git sync and the Maven build and re-deploys the
+WAR already in `target/`, after the same size and free-RAM checks. If no valid
+WAR exists it stops and tells you to run a normal build. Typical recovery:
+close the browser/Playwright/IDE, then `sync-and-redeploy --deploy-only`.
+
+**Routing**: on a machine with under about 4 GB free RAM, do not local-deploy
+the full WAR. Build on a roomier machine and copy the WAR to `target/` (then
+use `--deploy-only`), or test on staging.
 
 ## Related Documentation
 
