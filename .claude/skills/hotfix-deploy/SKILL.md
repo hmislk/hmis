@@ -126,7 +126,9 @@ Then remove stray gitlinks. Some deploy branches carry submodule entries with no
 ```bash
 git ls-tree -r HEAD | awk '$2=="commit"{print $4}'   # must print nothing
 git rm --cached <path>   # for each path printed
-git commit -m "chore: remove stray gitlink(s) so CI checkout works" -- <path>...
+git diff --cached --name-status   # only D lines for those paths
+git commit -m "chore: remove stray gitlink(s) so CI checkout works"   # no pathspec: `-- <path>` re-adds it from the working tree
+git ls-tree -r HEAD | awk '$2=="commit"{print $4}'   # re-check: must print nothing
 ```
 
 ## Step 3 — Apply the Fix
