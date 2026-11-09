@@ -65,6 +65,27 @@
             .micMemoValue .ql-indent-6 { padding-left: 18em; }
             .micMemoValue .ql-indent-7 { padding-left: 21em; }
             .micMemoValue .ql-indent-8 { padding-left: 24em; }
+            /* A split report must give every page box a real A4 height in print
+               (like the general report). Otherwise each box is 0 high (all its
+               items are absolutely positioned), the browser ignores the page
+               breaks and every page is printed on top of page 1. */
+            /* 296mm (not 297mm) and no body margin: a box of exactly a sheet's
+               height plus the print frame's default 8px body margin overflows
+               the last sheet and prints an extra blank page at the end. */
+            @media print {
+                html:has(#divReportM.micSplit),
+                body:has(#divReportM.micSplit) {
+                    margin: 0 !important;
+                    padding: 0 !important;
+                }
+                #divReportM.micSplit,
+                .micPageCont {
+                    height: 296mm !important;
+                    overflow: hidden;
+                    break-inside: avoid;
+                    page-break-inside: avoid;
+                }
+            }
         </style>
 
         <h:panelGroup rendered="#{patientReportController.currentPatientReport.item.reportType eq 'Microbiology'}"  >
@@ -105,6 +126,7 @@
                                 </h:panelGroup>
                             </ui:repeat>
                         </div>
+                        
 
                         <h:panelGroup rendered="#{empty patientReportController.currentPatientReport.patientReportGroups}">
 
@@ -163,14 +185,18 @@
                                        var="group"   
                                        >
 
-                                <div class="micBlock" style="vertical-align: top; text-align: left;  padding-top: 0.1%; padding-bottom: 0%; clear: left;">
+                                <!-- One organism (name + antibiotics + comment) is ONE page block, so the
+                                     page splitter moves the whole section to the next page instead of
+                                     cutting it in half. A section taller than a page stays alone on its page. -->
+                                <div class="micBlock micOrganismSection" style="display: flow-root; clear: left; width: 100%;">
+                                <div style="vertical-align: top; text-align: left;  padding-top: 0.1%; padding-bottom: 0%; clear: left;">
                                     <h:outputLabel 
                                         value="#{group.groupName}" 
                                         rendered="#{patientReportController.currentPatientReport.transHasAbst}"
                                         style="font-size: 135%; margin-top: 2px; font-weight: bold;">
                                     </h:outputLabel>
                                 </div>
-                                <div class="row micBlock">
+                                <div class="row">
                                     <div class="col-6">
                                         <ui:repeat  
                                             value="#{patientInvestigationController.column1AntibioticList}" 
@@ -233,8 +259,7 @@
                                 <ui:repeat value="#{patientReportController.currentPatientReport.patientReportItemValues}"
                                            var="prc">
                                     <h:panelGroup layout="block"
-                                                  styleClass="micBlock"
-                                                  style="display: inline-block; clear: left; float: left; width: 100%; vertical-align: top; font-size: 14px; margin-bottom: 0; margin-top: 4px;"
+                                                  style="display: inline-block; clear: left; float: left; width: 100%; vertical-align: top; font-size: 14px; margin-bottom: 0; margin-top: 14px;"
                                                   rendered="#{prc.patientReportGroup.groupName eq group.groupName and prc.investigationItem.ixItemType eq 'OrganismComment' and prc.lobValuePrintable ne '' and prc.lobValuePrintable ne null}">
                                         <div style="display: inline-block; float: left; width: 1%; clear: left; " ></div>
                                         <div style="display: inline-block; top: 0px; float: left; width: 30%; text-align: left; padding-top: 0.1%; padding-bottom: 0.1%; ">
@@ -246,15 +271,10 @@
                                         </div>
                                     </h:panelGroup>
                                 </ui:repeat>
+                                </div>
 
                             </ui:repeat>
                         </h:panelGroup>
-
-                        <div class="micBlock" style="vertical-align: top; text-align: left; padding-top: 3px; clear: left;">
-                            <h:panelGroup rendered="#{patientReportController.currentPatientReport.patientReportItemValues.size()gt 0}">
-                                <hr/>
-                            </h:panelGroup>
-                        </div>
 
                         <div style="vertical-align: top; text-align: left; font-size: 14px;  padding-top: 0%; padding-bottom: 0%; clear: left;">
                             <ui:repeat  value="#{patientReportController.currentPatientReport.patientReportItemValues}" var="prv" >
@@ -297,8 +317,9 @@
                      limit line (75% by default). Text and top position are set by
                      micPaginateReport(); format and font/side come from config. -->
                 <div class="micPageNo"
+                     data-top="#{configOptionApplicationController.getShortTextValueByKey('Microbiology Lab Report Page Number Top', '77.5')}"
                      data-format="#{configOptionApplicationController.getShortTextValueByKey('Microbiology Lab Report Page Number Format', 'Page {page} of {total}')}"
-                     style="position: absolute; top: 75.5%; z-index: 950; font-family: Cambria, Georgia, serif; #{configOptionApplicationController.getShortTextValueByKey('Microbiology Lab Report Page Number Text Style', 'right: 4%; font-size: 12px;')}"></div>
+                     style="position: absolute; top: #{empty configOptionApplicationController.getShortTextValueByKey('Microbiology Lab Report Page Number Top', '77.5') ? '77.5%' : (configOptionApplicationController.getShortTextValueByKey('Microbiology Lab Report Page Number Top', '77.5').trim().matches('-?[0-9]+([.][0-9]+)?') ? configOptionApplicationController.getShortTextValueByKey('Microbiology Lab Report Page Number Top', '77.5').trim().concat('%') : configOptionApplicationController.getShortTextValueByKey('Microbiology Lab Report Page Number Top', '77.5').trim())}; z-index: 950; font-family: Cambria, Georgia, serif; #{configOptionApplicationController.getShortTextValueByKey('Microbiology Lab Report Page Number Text Style', 'right: 4%; font-size: 12px;')}"></div>
             </div>
             <script>
                 /*
@@ -317,8 +338,39 @@
                     if (window.micPaginateReport) {
                         return;
                     }
+                    // Print (p:printer) writes a copy of the already split report into
+                    // a print iframe, which runs this script again. Re-splitting there
+                    // would drop the extra pages, so the copy is left exactly as it is.
+                    if (document.querySelector('.micPageCont')) {
+                        window.micPaginateReport = function () {};
+                        return;
+                    }
                     var moved = [];
+                    var created = [];
+                    var unwrapped = [];
 
+                    // An organism section taller than a whole page would be cut off at
+                    // the bottom of its page in print and PDF. Break it into its parts
+                    // (name, antibiotics, comment) so they flow onto the next pages.
+                    function splitSection(section) {
+                        if (!section.classList.contains('micOrganismSection')) {
+                            return null;
+                        }
+                        var parts = Array.prototype.filter.call(section.children, function (c) {
+                            return c.getBoundingClientRect().height !== 0;
+                        });
+                        if (parts.length &lt; 2) {
+                            return null;
+                        }
+                        section.classList.remove('micBlock');
+                        parts.forEach(function (c) {
+                            c.classList.add('micBlock');
+                        });
+                        unwrapped.push({section: section, parts: parts});
+                        return parts;
+                    }
+
+                    // Undo only what this window did: never remove pages it did not make.
                     function restore() {
                         moved.forEach(function (m) {
                             if (m.placeholder.isConnected) {
@@ -326,9 +378,23 @@
                             }
                         });
                         moved = [];
-                        document.querySelectorAll('.micPageCont').forEach(function (p) {
-                            p.parentNode.removeChild(p);
+                        created.forEach(function (p) {
+                            if (p.parentNode) {
+                                p.parentNode.removeChild(p);
+                            }
                         });
+                        created = [];
+                        unwrapped.forEach(function (u) {
+                            u.parts.forEach(function (c) {
+                                c.classList.remove('micBlock');
+                            });
+                            u.section.classList.add('micBlock');
+                        });
+                        unwrapped = [];
+                        var p1 = document.getElementById('divReportM');
+                        if (p1) {
+                            p1.classList.remove('micSplit');
+                        }
                     }
 
                     // A new page is a full copy of page 1 (letterhead, header, title,
@@ -359,6 +425,22 @@
                         return (limit > 0 &amp;&amp; limit !== Infinity &amp;&amp; !(limit > 100)) ? limit : 75;
                     }
 
+                    // Page number "top": the 'Microbiology Lab Report Page Number Top' option when set
+                    // (a plain number means %, e.g. 80; or any CSS length, e.g. 92% / 250mm / 900px),
+                    // otherwise just below the data-area bottom limit line.
+                    function pageNumberTop(el, pg) {
+                        var cfg = (el.getAttribute('data-top') || '').trim();
+                        if (cfg !== '') {
+                            if (/^-?\d+(\.\d+)?$/.test(cfg)) {
+                                return cfg + '%';
+                            }
+                            if (/^-?\d+(\.\d+)?(%|px|mm|cm|in|pt|em|rem|vh)$/.test(cfg)) {
+                                return cfg;
+                            }
+                        }
+                        return (bottomLimitPercent(pg) + 0.5) + '%';
+                    }
+
                     function setPageNumbers() {
                         var pages = Array.prototype.slice.call(document.querySelectorAll('#divReportM, .micPageCont'));
                         pages.forEach(function (pg, i) {
@@ -366,8 +448,7 @@
                             if (!el) {
                                 return;
                             }
-                            // just below the data-area bottom limit line
-                            el.style.top = (bottomLimitPercent(pg) + 0.5) + '%';
+                            el.style.top = pageNumberTop(el, pg);
                             el.style.bottom = 'auto';
                             var fmt = el.getAttribute('data-format') || 'Page {page} of {total}';
                             el.textContent = fmt.replace('{page}', String(i + 1)).replace('{total}', String(pages.length));
@@ -407,6 +488,15 @@
                             if (cut === -1) {
                                 break;
                             }
+                            // An organism section that does not fit even on a fresh page is
+                            // broken into its parts, then this page is measured again.
+                            if (cut === start &amp;&amp; current !== page1) {
+                                var parts = splitSection(blocks[start]);
+                                if (parts) {
+                                    Array.prototype.splice.apply(blocks, [start, 1].concat(parts));
+                                    continue;
+                                }
+                            }
                             // A row taller than a whole page stays alone on its page.
                             if (cut === start &amp;&amp; current !== page1) {
                                 cut = start + 1;
@@ -417,6 +507,7 @@
                             pageNo++;
                             var page = makePage(page1, pageNo);
                             current.parentNode.insertBefore(page, current.nextSibling);
+                            created.push(page);
                             var body = page.querySelector('.micPageBody');
                             for (var j = cut; j !== blocks.length; j++) {
                                 var blk = blocks[j];
@@ -434,6 +525,7 @@
                                 break;
                             }
                         }
+                        page1.classList.toggle('micSplit', pageNo > 1);
                         setPageNumbers();
                         if (typeof window.micFitPreview === 'function') {
                             window.micFitPreview();

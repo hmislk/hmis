@@ -139,6 +139,17 @@
                                         /* Repeat for other elements as needed */
                                     }
 
+                                    /* Export PDF only: the microbiology page boxes are 28cm high
+                                       with a black border on screen. Make each one a full A4 page
+                                       (as in print) without the border, so the PDF has no line and
+                                       no empty band at the bottom. One page or many, each box is
+                                       one PDF page (labReportTrimPdf). */
+                                    #pdf.labPdfExport #divReportM,
+                                    #pdf.labPdfExport .micPageCont {
+                                        height: 297mm !important;
+                                        border: 0 !important;
+                                    }
+
                                 </style>
 
                                 <h:outputScript library="js" name="lab-report-pdf.js" target="body"/>
@@ -149,6 +160,7 @@
                                         console.log("Add History to Downloading PDF ...");
                                         const element = document.getElementById('pdf');
                                         element.classList.remove('print-only');
+                                        element.classList.add('labPdfExport');
 
                                         const opt = {
                                             margin: [0, 0, 0, 0], // top, left, bottom, right
@@ -165,7 +177,12 @@
                                         html2pdf().from(element).set(opt).toPdf().get('pdf').then(function (pdf) {
                                             return labReportTrimPdf(pdf, element); // Remove the second page if it exists
                                         }).save().then(() => {
+                                            element.classList.remove('labPdfExport');
                                             element.classList.add('print-only');
+                                        }).catch((e) => {
+                                            element.classList.remove('labPdfExport');
+                                            element.classList.add('print-only');
+                                            console.error(e);
                                         });
                                     }
                                 </script>
