@@ -115,8 +115,7 @@
                                         value="#{ph.billItemFinanceDetails.quantity}">
                                         <f:convertNumber pattern="#,##0.00##" integerOnly="#{!ph.item.allowFractions}" ></f:convertNumber>
                                         <f:validator validatorId="positiveNumberValidator" />
-                                    </p:inputText>
-                                    <p:keyFilter for="txtReturningTotalQty" mask="#{ph.item.allowFractions ? 'num' : 'int'}" />
+                                        <p:keyFilter for="txtReturningTotalQty" mask="#{ph.item.allowFractions ? 'num' : 'int'}" />
                                         <p:ajax 
                                             event="keyup" 
                                             process="@this"
