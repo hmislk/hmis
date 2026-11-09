@@ -5375,6 +5375,24 @@ public class PatientInvestigationController implements Serializable {
         return findAntibioticForMicrobiologyReport(ptivList, false);
     }
 
+    /**
+     * First column of the whole-report (ungrouped) split of the current report.
+     * Separate from {@link #getColumn1AntibioticList()}, whose getter rebuilds
+     * the per-organism split on every call.
+     */
+    public List<PatientReportItemValue> getColumn1AntibioticListUngrouped() {
+        populateAntibioticListsFromCurrentReport(false);
+        return column1AntibioticList;
+    }
+
+    /**
+     * Second column of the whole-report (ungrouped) split of the current report.
+     */
+    public List<PatientReportItemValue> getColumn2AntibioticListUngrouped() {
+        populateAntibioticListsFromCurrentReport(false);
+        return column2AntibioticList;
+    }
+
     private List<PatientReportItemValue> findAntibioticForMicrobiologyReport(List<PatientReportItemValue> ptivList, boolean splitPerGroup) {
         List<PatientReportItemValue> antibioticItems = new ArrayList<>();
         column1AntibioticList = new ArrayList<>();
@@ -5426,6 +5444,10 @@ public class PatientInvestigationController implements Serializable {
      * that does not re-run the navigation action).
      */
     private void populateAntibioticListsFromCurrentReport() {
+        populateAntibioticListsFromCurrentReport(true);
+    }
+
+    private void populateAntibioticListsFromCurrentReport(boolean splitPerGroup) {
         if (patientReportController == null
                 || patientReportController.getCurrentPatientReport() == null
                 || patientReportController.getCurrentPatientReport().getPatientReportItemValues() == null) {
@@ -5433,7 +5455,7 @@ public class PatientInvestigationController implements Serializable {
             column2AntibioticList = new ArrayList<>();
             return;
         }
-        findAntibioticForMicrobiologyReport(patientReportController.getCurrentPatientReport().getPatientReportItemValues());
+        findAntibioticForMicrobiologyReport(patientReportController.getCurrentPatientReport().getPatientReportItemValues(), splitPerGroup);
     }
 
     public void markSelectedAsReceived() {
