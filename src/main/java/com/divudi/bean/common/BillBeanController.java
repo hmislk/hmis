@@ -2121,23 +2121,22 @@ public class BillBeanController implements Serializable {
     /**
      * Transfer Receive summary totals per from/to department, in the stock-in
      * view (#18285/#18286): a receive counts positive and a cancellation or
-     * refund negative, whatever sign is stored. Retired bills and unapproved
-     * PHARMACY_RECEIVE_PRE requests are excluded, as in the by-bill and
-     * by-item receive reports.
+     * refund negative, whatever sign is stored. The other rules match the
+     * Transfer Receive by Bill query (b.retired = false, the same
+     * finance-detail columns), plus the PHARMACY_RECEIVE_PRE exclusion.
      */
     public List<Object[]> fetchSignedTransferReceiveDepartmentTotals(Date fromDate, Date toDate,
             Department fromDepartment, Department toDepartment) {
         // Sum magnitudes per department pair and atomic, then apply the atomic's sign here.
         String sql = "select b.fromDepartment, b.toDepartment, b.billTypeAtomic, "
-                // A receive bill leaves bfd.lineNetTotal empty, so fall back to the bill net total.
-                + "sum(ABS(COALESCE(bfd.lineNetTotal, b.netTotal, 0.0))), "
+                + "sum(ABS(COALESCE(bfd.lineNetTotal, 0.0))), "
                 + "sum(ABS(COALESCE(bfd.totalPurchaseValue, 0.0))), "
                 + "sum(ABS(COALESCE(bfd.totalRetailSaleValue, 0.0))), "
                 + "sum(ABS(COALESCE(bfd.totalCostValue, 0.0))) "
                 + " FROM Bill b "
                 + " LEFT JOIN b.billFinanceDetails bfd "
                 + " where b.billType = :bTp "
-                + " and (b.retired = false or b.retired is null) "
+                + " and b.retired = false "
                 + " and (b.billTypeAtomic is null or b.billTypeAtomic <> :preAtomic) "
                 + " and b.createdAt between :fromDate and :toDate ";
 

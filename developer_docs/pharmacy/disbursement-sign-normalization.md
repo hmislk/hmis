@@ -30,6 +30,7 @@ Report display: Transfer Receive reports
 - Transfer Receive by Bill, by Bill Item and Summary use the stock-in view: `PHARMACY_RECEIVE` is positive and `PHARMACY_RECEIVE_CANCELLED` (any CANCELLATION or REFUND category atomic) is negative, so the totals net.
 - Stored signs on older receive bills are mixed, so take the absolute value first and then apply the sign from the BillTypeAtomic. Never sign by stored value.
 - `PHARMACY_RECEIVE_PRE` is an unapproved receive request that is later replaced by the `PHARMACY_RECEIVE` bill. These reports exclude it, or the receive would be counted twice.
+- The Summary uses the same rules and columns as Transfer Receive by Bill (`b.retired = false`, `BillFinanceDetails` values); only the sign and the `PHARMACY_RECEIVE_PRE` exclusion are added. Its Transfer Value reads `lineNetTotal`, which receive bills leave empty (#25387).
 
 Implementation Pattern
 1) Normalize with absolute value
