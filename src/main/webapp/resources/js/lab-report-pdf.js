@@ -47,7 +47,11 @@ function labReportTrimPdf(pdf, element) {
             var ctx = crop.getContext('2d');
             ctx.fillStyle = '#ffffff';
             ctx.fillRect(0, 0, crop.width, crop.height);
-            ctx.drawImage(canvas, border, border, srcW, srcH, 0, 0, srcW, srcH);
+            // Keep only the top A4 part; skip drawing on invalid sizes.
+            var drawH = Math.min(srcH, crop.height);
+            if (srcW > 0 && drawH > 0) {
+                ctx.drawImage(canvas, border, border, srcW, drawH, 0, 0, srcW, drawH);
+            }
             if (i > 0) {
                 pdf.addPage([210, 297], 'portrait');
             }
