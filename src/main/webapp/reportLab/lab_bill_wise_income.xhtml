@@ -1,0 +1,392 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:body>
+        <ui:composition template="/reportLab/lab_summeries_index.xhtml">
+            <ui:define name="subcontent">
+
+                <h:form id="frmBwi">
+                    <p:panel header="Lab Bill-wise Income (A4)">
+                        <h:panelGrid columns="6" styleClass="w-100 form-grid">
+                            <h:outputLabel value="From" for="fromDate"/>
+                            <p:calendar id="fromDate"
+                                        styleClass="w-100"
+                                        inputStyleClass="w-100 form-control"
+                                        value="#{labBillWiseIncomeReportController.fromDate}"
+                                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+
+                            <h:outputLabel value="To" for="toDate"/>
+                            <p:calendar id="toDate"
+                                        styleClass="w-100"
+                                        inputStyleClass="w-100 form-control"
+                                        value="#{labBillWiseIncomeReportController.toDate}"
+                                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+
+                            <h:outputLabel value="Cashier" for="acCashier"/>
+                            <p:autoComplete id="acCashier"
+                                            completeMethod="#{webUserController.completeUser}"
+                                            class="w-100"
+                                            inputStyleClass="w-100"
+                                            value="#{labBillWiseIncomeReportController.webUser}"
+                                            var="user"
+                                            maxResults="15"
+                                            itemLabel="#{user.webUserPerson.name}"
+                                            itemValue="#{user}">
+                                <p:column headerText="Username">
+                                    <h:outputText value="#{user.name}"/>
+                                </p:column>
+                                <p:column headerText="Name">
+                                    <h:outputText value="#{user.webUserPerson.name}"/>
+                                </p:column>
+                            </p:autoComplete>
+
+                            <h:outputLabel value="Institution" for="cmbIns"/>
+                            <p:selectOneMenu id="cmbIns"
+                                             styleClass="w-100 form-control"
+                                             value="#{labBillWiseIncomeReportController.institution}"
+                                             filter="true">
+                                <f:selectItem itemLabel="All Institutions"/>
+                                <f:selectItems value="#{institutionController.companies}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}"/>
+                                <p:ajax process="cmbIns" update="cmbDept"/>
+                            </p:selectOneMenu>
+
+                            <h:outputLabel value="Department" for="cmbDept"/>
+                            <h:panelGroup id="cmbDept">
+                                <p:selectOneMenu rendered="#{labBillWiseIncomeReportController.institution eq null}"
+                                                 styleClass="w-100 form-control"
+                                                 value="#{labBillWiseIncomeReportController.department}"
+                                                 filterMatchMode="contains"
+                                                 filter="true">
+                                    <f:selectItem itemLabel="All Departments"/>
+                                    <f:selectItems value="#{departmentController.getDepartmentsOfInstitutionAndSite()}"
+                                                   var="d" itemLabel="#{d.name}" itemValue="#{d}"/>
+                                </p:selectOneMenu>
+                                <p:selectOneMenu rendered="#{labBillWiseIncomeReportController.institution ne null}"
+                                                 styleClass="w-100 form-control"
+                                                 value="#{labBillWiseIncomeReportController.department}"
+                                                 filterMatchMode="contains"
+                                                 filter="true">
+                                    <f:selectItem itemLabel="All Departments"/>
+                                    <f:selectItems value="#{departmentController.getDepartmentsOfInstitutionAndSiteForInstitution(labBillWiseIncomeReportController.institution)}"
+                                                   var="d" itemLabel="#{d.name}" itemValue="#{d}"/>
+                                </p:selectOneMenu>
+                            </h:panelGroup>
+
+                            <h:outputLabel value="Visit Type" for="cmbVisitType"/>
+                            <p:selectOneMenu id="cmbVisitType"
+                                             styleClass="w-100 form-control"
+                                             value="#{labBillWiseIncomeReportController.visitType}">
+                                <f:selectItem itemLabel="All (OP, IP, CC)"/>
+                                <f:selectItem itemValue="OP" itemLabel="Out Patients (OP)"/>
+                                <f:selectItem itemValue="IP" itemLabel="In Patients (IP)"/>
+                                <f:selectItem itemValue="CC" itemLabel="Collecting Centre (CC)"/>
+                            </p:selectOneMenu>
+                        </h:panelGrid>
+
+                        <div class="d-flex justify-content-between gap-2 mt-3 mb-2">
+                            <div class="d-flex gap-2">
+                                <p:commandButton value="Process"
+                                                 ajax="false"
+                                                 action="#{labBillWiseIncomeReportController.processReport()}"
+                                                 styleClass="ui-button-success m-1"
+                                                 icon="pi pi-cog"/>
+                                <p:commandButton value="Print"
+                                                 ajax="false"
+                                                 styleClass="ui-button-warning m-1"
+                                                 icon="pi pi-print"
+                                                 disabled="#{empty labBillWiseIncomeReportController.days}">
+                                    <p:printer target="bwiReport"/>
+                                </p:commandButton>
+                            </div>
+                            <p:commandButton value="Clear"
+                                             ajax="false"
+                                             action="#{labBillWiseIncomeReportController.clearFilters()}"
+                                             class="ui-button-danger m-1"
+                                             icon="fas fa-eraser"/>
+                        </div>
+
+                        <style>
+                            .bwi-paper { font-family: Arial, sans-serif; color: #000; }
+                            .bwi-title { text-align: center; font-size: 15px; font-weight: 700; margin: 2px 0; }
+                            .bwi-sub { text-align: center; font-size: 11px; margin-bottom: 6px; }
+                            .bwi-date { text-align: center; font-size: 16px; font-weight: 700; margin: 12px 0 4px 0; }
+                            .bwi-table { border-collapse: collapse; width: 100%; font-size: 11px; }
+                            .bwi-table th, .bwi-table td { border: 1px solid #000; padding: 2px 4px; vertical-align: top; }
+                            .bwi-table th { text-align: center; }
+                            .bwi-num { text-align: right; white-space: nowrap; }
+                            .bwi-total td { font-weight: 700; border-top: 1px solid #000; }
+                            .bwi-billno { font-weight: 700; }
+                            .bwi-pm { margin-top: 6px; }
+                            .bwi-cancel { color: #c00; font-weight: 700; }
+                            .bwi-refund { color: #c00; font-style: italic; }
+                            .bwi-summary { border-collapse: collapse; margin: 6px 0 0 auto; font-size: 11px; }
+                            .bwi-summary td { padding: 1px 6px; }
+                            .bwi-summary .bwi-strong td { font-weight: 700; border-top: 1px solid #000; border-bottom: 3px double #000; }
+                            .bwi-idx { text-align: center; white-space: nowrap; }
+                            .bwi-item-idx { display: inline-block; min-width: 18px; color: #555; }
+                            .bwi-sum { margin: 8px 0 4px 0; page-break-inside: avoid; }
+                            .bwi-sum-title { text-align: center; font-size: 14px; font-weight: 700; margin: 6px 0; text-decoration: underline; }
+                            .bwi-sum-sub { font-size: 12px; font-weight: 700; margin: 8px 0 3px 0; }
+                            .bwi-sum-overall { border-collapse: collapse; width: 100%; font-size: 11px; border: 1px solid #000; }
+                            .bwi-sum-overall td { padding: 2px 6px; }
+                            .bwi-sum-overall .bwi-strong td { font-weight: 700; }
+                            .bwi-sum-table th { white-space: nowrap; }
+                            .bwi-vt { display: inline-block; font-weight: 700; margin-right: 4px; }
+                            @media screen {
+                                .bwi-paper { background: #fff; border: 1px solid #dee2e6; border-radius: 6px; padding: 16px 20px; margin-top: 8px; }
+                                .bwi-title { font-size: 18px; }
+                                .bwi-sub { font-size: 13px; color: #555; }
+                                .bwi-date { text-align: left; font-size: 16px; background: #e9f2fb; border-left: 4px solid #2c7be5; padding: 6px 10px; margin: 18px 0 6px 0; }
+                                .bwi-table { font-size: 13px; }
+                                .bwi-table th, .bwi-table td { border: 1px solid #dee2e6; padding: 5px 8px; }
+                                .bwi-table thead th { background: #f1f3f5; position: sticky; top: 0; z-index: 1; }
+                                .bwi-table tbody.bwi-bill:nth-of-type(even) td { background: #fafbfc; }
+                                .bwi-table tbody.bwi-bill:hover td { background: #fff8e1; }
+                                .bwi-total td { background: #f8f9fa !important; border-top: 2px solid #adb5bd; }
+                                .bwi-vt { background: #e7f1ff; color: #1a56db; border-radius: 3px; padding: 0 5px; font-size: 11px; }
+                                .bwi-pm { color: #444; }
+                                .bwi-summary { font-size: 13px; min-width: 300px; border: 1px solid #dee2e6; }
+                                .bwi-summary td { padding: 3px 10px; }
+                            }
+                            @media print {
+                                @page {
+                                    size: A4 portrait;
+                                    margin: 10mm 10mm 14mm 10mm;
+                                    @bottom-center {
+                                        content: "Page " counter(page) " of " counter(pages);
+                                        font-family: Arial, sans-serif;
+                                        font-size: 9pt;
+                                    }
+                                }
+                                .bwi-paper { width: 190mm; }
+                                .bwi-bill { page-break-inside: avoid; }
+                                .bwi-day + .bwi-day { page-break-before: always; }
+                            }
+                        </style>
+
+                        <h:panelGroup id="bwiReport" layout="block" styleClass="bwi-paper"
+                                      rendered="#{labBillWiseIncomeReportController.days ne null}">
+                            <div class="bwi-title">
+                                <h:outputText value="#{sessionController.loggedUser.institution.name}"/>
+                            </div>
+                            <div class="bwi-title">Lab Bill-wise Income</div>
+                            <div class="bwi-sub">
+                                <h:outputText value="#{labBillWiseIncomeReportController.fromDate}">
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" timeZone="Asia/Colombo"/>
+                                </h:outputText>
+                                <h:outputText value=" to "/>
+                                <h:outputText value="#{labBillWiseIncomeReportController.toDate}">
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" timeZone="Asia/Colombo"/>
+                                </h:outputText>
+                                <h:outputText value=" | Institution: #{labBillWiseIncomeReportController.institution.name}"
+                                              rendered="#{labBillWiseIncomeReportController.institution ne null}"/>
+                                <h:outputText value=" | Department: #{labBillWiseIncomeReportController.department.name}"
+                                              rendered="#{labBillWiseIncomeReportController.department ne null}"/>
+                                <h:outputText value=" | Cashier: #{labBillWiseIncomeReportController.webUser.webUserPerson.name}"
+                                              rendered="#{labBillWiseIncomeReportController.webUser ne null}"/>
+                                <h:outputText value=" | Visit Type: #{labBillWiseIncomeReportController.visitType}"
+                                              rendered="#{not empty labBillWiseIncomeReportController.visitType}"/>
+                            </div>
+
+                            <h:panelGroup layout="block" styleClass="bwi-sum"
+                                          rendered="#{not empty labBillWiseIncomeReportController.days}">
+                                <div class="bwi-sum-title">SUMMARY</div>
+                                <table class="bwi-sum-overall">
+                                    <tr>
+                                        <td>Total Bills</td>
+                                        <td class="bwi-num"><h:outputText value="#{labBillWiseIncomeReportController.grandTotals.billCount}"/></td>
+                                        <td>Total Gross</td>
+                                        <td class="bwi-num"><h:outputText value="#{labBillWiseIncomeReportController.grandTotals.gross}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Total Tests</td>
+                                        <td class="bwi-num"><h:outputText value="#{labBillWiseIncomeReportController.grandTotals.testCount}"/></td>
+                                        <td>Total Discount</td>
+                                        <td class="bwi-num"><h:outputText value="#{labBillWiseIncomeReportController.grandTotals.discount}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Cancelled Bills</td>
+                                        <td class="bwi-num"><h:outputText value="#{labBillWiseIncomeReportController.grandTotals.cancelledBillCount}"/></td>
+                                        <td>Total Billed (Net)</td>
+                                        <td class="bwi-num"><h:outputText value="#{labBillWiseIncomeReportController.grandTotals.net}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Refunded Tests</td>
+                                        <td class="bwi-num"><h:outputText value="#{labBillWiseIncomeReportController.grandTotals.refundedTestCount}"/></td>
+                                        <td>Total Cancel</td>
+                                        <td class="bwi-num"><h:outputText value="#{labBillWiseIncomeReportController.grandTotals.cancelledNet}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td>
+                                    </tr>
+                                    <tr>
+                                        <td></td>
+                                        <td></td>
+                                        <td>Total Refund</td>
+                                        <td class="bwi-num"><h:outputText value="#{labBillWiseIncomeReportController.grandTotals.refundedNet}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td>
+                                    </tr>
+                                    <tr class="bwi-strong">
+                                        <td></td>
+                                        <td></td>
+                                        <td>Net Income</td>
+                                        <td class="bwi-num"><h:outputText value="#{labBillWiseIncomeReportController.grandTotals.netIncome}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td>
+                                    </tr>
+                                </table>
+
+                                <div class="bwi-sum-sub">By Payment Method</div>
+                                <table class="bwi-table bwi-sum-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Payment Method</th>
+                                            <th>Bills</th>
+                                            <th>Tests</th>
+                                            <th>Billed (Net)</th>
+                                            <th>Cancelled</th>
+                                            <th>Refunded</th>
+                                            <th>Net Income</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <ui:repeat value="#{labBillWiseIncomeReportController.paymentMethodSummary}" var="pms">
+                                            <tr>
+                                                <td><h:outputText value="#{pms.key}"/></td>
+                                                <td class="bwi-num"><h:outputText value="#{pms.value.billCount}"/></td>
+                                                <td class="bwi-num"><h:outputText value="#{pms.value.testCount}"/></td>
+                                                <td class="bwi-num"><h:outputText value="#{pms.value.net}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td>
+                                                <td class="bwi-num"><h:outputText value="#{pms.value.cancelledNet}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td>
+                                                <td class="bwi-num"><h:outputText value="#{pms.value.refundedNet}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td>
+                                                <td class="bwi-num"><h:outputText value="#{pms.value.netIncome}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td>
+                                            </tr>
+                                        </ui:repeat>
+                                    </tbody>
+                                </table>
+
+                                <div class="bwi-sum-sub">By Visit Type</div>
+                                <table class="bwi-table bwi-sum-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Visit Type</th>
+                                            <th>Bills</th>
+                                            <th>Tests</th>
+                                            <th>Billed (Net)</th>
+                                            <th>Cancelled</th>
+                                            <th>Refunded</th>
+                                            <th>Net Income</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <ui:repeat value="#{labBillWiseIncomeReportController.visitTypeSummary}" var="vts">
+                                            <tr>
+                                                <td><h:outputText value="#{vts.key}"/></td>
+                                                <td class="bwi-num"><h:outputText value="#{vts.value.billCount}"/></td>
+                                                <td class="bwi-num"><h:outputText value="#{vts.value.testCount}"/></td>
+                                                <td class="bwi-num"><h:outputText value="#{vts.value.net}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td>
+                                                <td class="bwi-num"><h:outputText value="#{vts.value.cancelledNet}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td>
+                                                <td class="bwi-num"><h:outputText value="#{vts.value.refundedNet}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td>
+                                                <td class="bwi-num"><h:outputText value="#{vts.value.netIncome}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td>
+                                            </tr>
+                                        </ui:repeat>
+                                    </tbody>
+                                </table>
+                            </h:panelGroup>
+
+                            <h:panelGroup layout="block" styleClass="bwi-sub"
+                                          rendered="#{empty labBillWiseIncomeReportController.days}">
+                                No bills found for the selected filters.
+                            </h:panelGroup>
+
+                            <ui:repeat value="#{labBillWiseIncomeReportController.days}" var="day">
+                                <div class="bwi-day">
+                                    <div class="bwi-date">
+                                        <h:outputText value="#{day.date}">
+                                            <f:convertDateTime pattern="dd MMMM yyyy" timeZone="Asia/Colombo"/>
+                                        </h:outputText>
+                                    </div>
+                                    <table class="bwi-table">
+                                        <thead>
+                                            <tr>
+                                                <th style="width: 5%;">#</th>
+                                                <th style="width: 25%;">BILL NO</th>
+                                                <th>TEST</th>
+                                                <th style="width: 13%;">GROSS</th>
+                                                <th style="width: 12%;">DISCOUNT</th>
+                                                <th style="width: 14%;">BILL AMOUNT</th>
+                                            </tr>
+                                        </thead>
+                                        <ui:repeat value="#{day.bills}" var="bg" varStatus="bst">
+                                            <tbody class="bwi-bill">
+                                                <ui:repeat value="#{bg.items}" var="bi" varStatus="st">
+                                                    <tr>
+                                                        <ui:fragment rendered="#{st.first}">
+                                                            <td class="bwi-idx" rowspan="#{bg.items.size() + 1}">
+                                                                <h:outputText value="#{bst.index + 1}"/>
+                                                            </td>
+                                                            <td rowspan="#{bg.items.size() + 1}">
+                                                                <div class="bwi-billno">
+                                                                    <h:outputText value="#{bg.billNo}"/>
+                                                                </div>
+                                                                <div class="bwi-pm">
+                                                                    <h:outputText value="#{bg.visitType}" styleClass="bwi-vt"/>
+                                                                    <h:outputText value="#{bg.paymentMethodLabel}"/>
+                                                                </div>
+                                                                <h:panelGroup layout="block" styleClass="bwi-cancel" rendered="#{bg.cancelled}">
+                                                                    CANCELLED
+                                                                </h:panelGroup>
+                                                            </td>
+                                                        </ui:fragment>
+                                                        <td>
+                                                            <h:outputText value="#{st.index + 1}. " styleClass="bwi-item-idx"/>
+                                                            <h:outputText value="#{bi.itemName}"/>
+                                                            <h:outputText value=" (Refunded)" styleClass="bwi-refund" rendered="#{bi.itemRefunded}"/>
+                                                        </td>
+                                                        <td class="bwi-num">
+                                                            <h:outputText value="#{bi.grossValue}">
+                                                                <f:convertNumber pattern="#,##0.00"/>
+                                                            </h:outputText>
+                                                        </td>
+                                                        <td class="bwi-num">
+                                                            <h:outputText value="#{bi.discount}">
+                                                                <f:convertNumber pattern="#,##0.00"/>
+                                                            </h:outputText>
+                                                        </td>
+                                                        <td class="bwi-num">
+                                                            <h:outputText value="#{bi.netValue}">
+                                                                <f:convertNumber pattern="#,##0.00"/>
+                                                            </h:outputText>
+                                                        </td>
+                                                    </tr>
+                                                </ui:repeat>
+                                                <tr class="bwi-total">
+                                                    <td class="bwi-num">TOTAL</td>
+                                                    <td class="bwi-num">
+                                                        <h:outputText value="#{bg.gross}">
+                                                            <f:convertNumber pattern="#,##0.00"/>
+                                                        </h:outputText>
+                                                    </td>
+                                                    <td class="bwi-num">
+                                                        <h:outputText value="#{bg.discount}">
+                                                            <f:convertNumber pattern="#,##0.00"/>
+                                                        </h:outputText>
+                                                    </td>
+                                                    <td class="bwi-num">
+                                                        <h:outputText value="#{bg.net}">
+                                                            <f:convertNumber pattern="#,##0.00"/>
+                                                        </h:outputText>
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </ui:repeat>
+                                    </table>
+
+                                </div>
+                            </ui:repeat>
+                        </h:panelGroup>
+                    </p:panel>
+                </h:form>
+
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>
