@@ -63,6 +63,7 @@ import com.divudi.core.facade.StockFacade;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.bean.opd.OpdBillController;
 import com.divudi.bean.pharmacy.GrnReturnWorkflowController;
+import com.divudi.bean.pharmacy.PharmacyReturnwithouttresing;
 import com.divudi.bean.pharmacy.PharmacyBillSearch;
 import com.divudi.bean.pharmacy.PharmacyController;
 import com.divudi.core.data.BillCategory;
@@ -279,6 +280,9 @@ public class SearchController implements Serializable {
 
     @Inject
     private GrnReturnWorkflowController grnReturnWorkflowController;
+
+    @Inject
+    private PharmacyReturnwithouttresing pharmacyReturnwithouttresing;
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Class Variables">
     private String visitType;
@@ -532,6 +536,8 @@ public class SearchController implements Serializable {
     }
 
     public String navigateToPharmacyReturnWithoutReceipt() {
+        // Start a fresh return; otherwise the session bean still shows the last settled bill's print preview (#16854).
+        pharmacyReturnwithouttresing.resetAll();
         return "/pharmacy/pharmacy_return_withouttresing?faces-redirect=true";
     }
 
