@@ -1,0 +1,44 @@
+# Changeset guard patterns. Read by scripts/changeset-guard.sh, which runs in
+# CI (.github/workflows/changeset_guard.yml) and in the local pre-push hook
+# (scripts/hooks/pre-push). Both fail when a commit ADDS a file that matches a
+# "block" line and no "allow" line. Files already in the repo are not checked.
+#
+# Format: one rule per line, "block <ERE>", "allow <ERE>" or "deny <ERE>". The
+# ERE is matched case-insensitively (grep -iE) against the repo-relative path.
+# "allow" wins over "block"; "deny" fails even when an "allow" line matches.
+# Files over the size limit fail regardless of "allow".
+# To add a legitimate path, add an "allow" line in the same PR; reviewers see it.
+
+# Scratch directories and browser-automation output
+block ^tmp/
+block (^|/)\.playwright-mcp/
+
+# Screenshots and documents dropped at the repo root
+block ^[^/]+\.(png|jpe?g|pdf)$
+
+# Scratch scripts
+block (^|/)tmp_[^/]*\.py$
+
+# Database dumps and backups
+block \.sql$
+block \.sql\.gz$
+block \.(dump|bak)$
+
+# Logs and archives
+block \.log$
+block \.(tgz|zip)$
+
+# Secrets and keys ("deny": no allow rule exempts them)
+block (^|/)\.env(\.[^/]*)?$
+# credentials: only data/secret file types, so source such as
+# ApiCredentialsService.java is not blocked.
+deny credentials[^/]*\.(txt|json|env|properties|ya?ml|csv|xml|ini|conf|cfg|toml)$
+deny (^|/)credentials$
+deny \.pem$
+deny (^|/)id_rsa[^/]*$
+allow (^|/)\.env\.example$
+
+# Legitimate SQL: database migrations and the reference SQL kept with the app
+allow ^src/main/resources/db/migrations/.*\.sql$
+allow ^src/main/resources/sql/.*\.sql$
+allow ^src/main/webapp/resources/(sql|update)/.*\.sql$
