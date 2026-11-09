@@ -101,4 +101,54 @@ public class PaymentServiceStaffCreditTest {
         assertEquals(750.0, mockStaffService.creditValue, 0.001);
         assertEquals(0, mockStaffService.welfareCallCount, "Must NOT touch welfare");
     }
+
+    @Test
+    @DisplayName("Cancelling a Staff payment copies toStaff so updateBalances can reverse the credit")
+    void createPaymentsForCancelling_staffPayment_preservesToStaff() throws Exception {
+        Staff staff = new Staff();
+        staff.setId(103L);
+
+        Payment original = new Payment();
+        original.setPaymentMethod(PaymentMethod.Staff);
+        original.setPaidValue(300.0);
+        original.setToStaff(staff);
+
+        Bill originalBill = new Bill();
+        Bill cancellationBill = new Bill(); // no bill-level recipient
+
+        BillService stubBillService = new BillService() {
+            @Override
+            public java.util.List<Payment> fetchBillPayments(Bill bill) {
+                return Collections.singletonList(original);
+            }
+        };
+        com.divudi.core.facade.PaymentFacade stubFacade = new com.divudi.core.facade.PaymentFacade() {
+            @Override
+            public void create(Payment entity) {
+            }
+        };
+        DrawerService stubDrawer = new DrawerService() {
+            @Override
+            public void updateDrawer(Payment payment) {
+            }
+        };
+        setField("billService", stubBillService);
+        setField("paymentFacade", stubFacade);
+        setField("drawerService", stubDrawer);
+
+        java.util.List<Payment> reversals = paymentService.createPaymentsForCancelling(cancellationBill, originalBill);
+        assertEquals(1, reversals.size());
+        assertSame(staff, reversals.get(0).getToStaff());
+
+        paymentService.updateBalances(reversals);
+        assertEquals(1, mockStaffService.creditCallCount);
+        assertSame(staff, mockStaffService.creditStaff);
+        assertEquals(-300.0, mockStaffService.creditValue, 0.001);
+    }
+
+    private void setField(String name, Object value) throws Exception {
+        Field f = PaymentService.class.getDeclaredField(name);
+        f.setAccessible(true);
+        f.set(paymentService, value);
+    }
 }

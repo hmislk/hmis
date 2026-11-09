@@ -200,6 +200,9 @@ public class PaymentService {
                     continue;
                 }
                 Payment p = originalBillPayment.clonePaymentForNewBill();
+                if (p.getPaymentMethod() == PaymentMethod.Staff) {
+                    p.setToStaff(originalBillPayment.getToStaff());
+                }
                 p.invertValues();
                 p.setBill(cancellationBill);
                 p.setInstitution(cancellationBill.getInstitution());
