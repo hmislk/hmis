@@ -577,11 +577,7 @@ public class GrnCostingNativeSqlController implements Serializable {
                 getCurrentGrnBillPre().getExpensesTotalNotConsideredForCosting());
 
         BillFinanceDetails bfd = getCurrentGrnBillPre().getBillFinanceDetails();
-        double totalDiscount = bfd != null && bfd.getTotalDiscount() != null ? bfd.getTotalDiscount().doubleValue() : 0.0;
-        double totalExpense = bfd != null && bfd.getTotalExpense() != null ? bfd.getTotalExpense().doubleValue() : 0.0;
-        double totalTax = bfd != null && bfd.getTotalTaxValue() != null ? bfd.getTotalTaxValue().doubleValue() : 0.0;
-        BigDecimal totalBillValue = bfd != null ? bfd.getTotalBillValue() : null;
-        grnCostingNativeSqlService.saveBillFinanceDetails(billId, totalDiscount, totalExpense, totalTax, totalBillValue);
+        grnCostingNativeSqlService.saveBillFinanceDetails(billId, bfd);
 
         JsfUtil.addSuccessMessage("GRN Saved");
     }
@@ -739,6 +735,11 @@ public class GrnCostingNativeSqlController implements Serializable {
         String insId = billNumbers[1];
         getCurrentGrnBillPre().setDeptId(deptId);
         getCurrentGrnBillPre().setInsId(insId);
+
+        if (getCurrentGrnBillPre().getId() != null) {
+            grnCostingNativeSqlService.saveBillFinanceDetails(
+                    getCurrentGrnBillPre().getId(), getCurrentGrnBillPre().getBillFinanceDetails());
+        }
 
         List<GrnApproveLineData> lines = new ArrayList<>();
         for (BillItem grnBillItem : getBillItems()) {
