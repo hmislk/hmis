@@ -3921,14 +3921,17 @@ public class PharmacyBillSearch implements Serializable {
                     BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_ONLY,
                     BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS,
                     BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS_PREBILL));
-            long activeReturns = getBillFacade().findLongByJpql(
-                    "SELECT COUNT(r) FROM Bill r "
-                    + "WHERE r.billedBill.id = :saleId "
+            // countByJpql, not findLongByJpql: findLongByJpql swallows a failure and returns 0,
+            // which would wrongly clear the flag while a return is still active.
+            // The pre-bill match covers returns made from the cashier reprint page.
+            Long activeReturns = getBillFacade().countByJpql(
+                    "SELECT COUNT(r) FROM Bill r JOIN r.billedBill bb LEFT JOIN bb.referenceBill bbr "
+                    + "WHERE (bb.id = :saleId OR bbr.id = :saleId) "
                     + "AND r.billTypeAtomic IN :btas "
                     + "AND r.cancelled = false "
                     + "AND r.retired = false",
                     params);
-            if (activeReturns == 0) {
+            if (activeReturns != null && activeReturns == 0L) {
                 saleBill.setRefunded(false);
                 getBillFacade().edit(saleBill);
             }
