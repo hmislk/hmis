@@ -5335,6 +5335,13 @@ public class SearchController implements Serializable {
     /**
      * Populates {@link #transferRequestDtos} using DTO projections. Each
      * request DTO additionally loads its issued bill DTOs for display.
+     *
+     * <p>Cancelled requests are listed too, with their cancelled flag, time and
+     * canceller, so a request cancelled from this list stays visible with a
+     * Cancelled status instead of disappearing (#18282). The page already
+     * disables Issue for a cancelled row. LEFT JOINs on the cancellation bill:
+     * an implicit path (b.cancelledBill.createdAt) would be an inner join and
+     * drop every request that was never cancelled.</p>
      */
     public void createRequestTableDto() {
         String jpql = "select new com.divudi.core.data.dto.PharmacyTransferRequestListDTO("
@@ -5344,10 +5351,15 @@ public class SearchController implements Serializable {
                 + " b.department.name, "
                 + " b.creater.webUserPerson.name, "
                 + " b.completed, "
-                + " b.fullyIssued)"
+                + " b.fullyIssued, "
+                + " b.cancelled, "
+                + " cb.createdAt, "
+                + " cbp.name)"
                 + " from Bill b"
+                + " left join b.cancelledBill cb"
+                + " left join cb.creater cbu"
+                + " left join cbu.webUserPerson cbp"
                 + " where b.retired=false "
-                + " and b.cancelled=false "
                 + " and  b.toDepartment=:toDep"
                 + " and b.billTypeAtomic = :billTypeAtomic"
                 + " and b.createdAt between :fromDate and :toDate";
@@ -5362,7 +5374,9 @@ public class SearchController implements Serializable {
             params.put("billNo", "%" + getSearchKeyword().getBillNo().trim().toUpperCase() + "%");
         }
 
-        jpql += " order by b.createdAt desc";
+        // Open requests first, so cancelled ones never push them out of the 50-row limit.
+        // CASE keeps the order null-safe for databases where the cancelled column holds NULL.
+        jpql += " order by case when b.cancelled = true then 1 else 0 end, b.createdAt desc";
 
         transferRequestDtos = (List<PharmacyTransferRequestListDTO>) billFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP, 50, true);
 
