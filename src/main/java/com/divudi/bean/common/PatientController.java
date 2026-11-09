@@ -4774,7 +4774,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
                     getPaymentMethodData().getSlip().setTotalValue(Math.abs(getBill().getNetTotal()));
                     break;
                 case ewallet:
-                    Institution selectedInstitution = originalPayment.getBank() != null ? originalPayment.getBank() : originalPayment.getInstitution();
+                    Institution selectedInstitution = originalPayment.getBank() != null ? originalPayment.getBank() : originalPayment.getCreditCompany();
 
                     getPaymentMethodData().getEwallet().setInstitution(selectedInstitution);
                     getPaymentMethodData().getEwallet().setReferenceNo(originalPayment.getReferenceNo());
