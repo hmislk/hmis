@@ -5398,12 +5398,12 @@ public class SearchController implements Serializable {
         // LEFT JOINs are required: implicit path navigation (b.referenceBill.id) generates
         // an inner join that silently excludes bills where referenceBill_ID is NULL
         // (e.g. bills created via native SQL that only set backwardReferenceBill).
-        String jpql = "select new com.divudi.core.data.dto.PharmacyTransferRequestIssueDTO(b.id, b.deptId)"
+        // Cancelled issue bills are kept so the page can show them in red (#25374).
+        String jpql = "select new com.divudi.core.data.dto.PharmacyTransferRequestIssueDTO(b.id, b.deptId, b.cancelled)"
                 + " from Bill b"
                 + " left join b.referenceBill ref"
                 + " left join b.backwardReferenceBill bref"
                 + " where b.retired = false"
-                + " and b.cancelled = false"
                 + " and b.billTypeAtomic = :bta"
                 + " and (ref.id = :rid or bref.id = :rid)";
         HashMap<String, Object> params = new HashMap<>();
