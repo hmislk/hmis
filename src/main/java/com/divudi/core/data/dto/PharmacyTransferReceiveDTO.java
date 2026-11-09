@@ -1,5 +1,7 @@
 package com.divudi.core.data.dto;
 
+import com.divudi.core.data.BillCategory;
+import com.divudi.core.data.BillTypeAtomic;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Date;
@@ -32,6 +34,7 @@ public class PharmacyTransferReceiveDTO implements Serializable {
     private String billClassSimpleName; // Simple class name (e.g., "Bill", "CancelledBill")
     private String billedBillDeptId;    // Original issue bill's deptId (for cancelled receives)
     private Long billedBillId;          // Original issue bill's id (for cancelled receives)
+    private BillTypeAtomic billTypeAtomic;
     
     // Default constructor
     public PharmacyTransferReceiveDTO() {
@@ -234,6 +237,22 @@ public class PharmacyTransferReceiveDTO implements Serializable {
     }
 
     /**
+     * Constructor that also carries the bill's BillTypeAtomic, which decides
+     * the report sign (#18286).
+     */
+    public PharmacyTransferReceiveDTO(BillTypeAtomic billTypeAtomic, Object billClass, Long billId, Object deptId, Date createdAt,
+                                    Object departmentName, Object fromDepartmentName,
+                                    Object transporterName, Object cancelled, Object refunded,
+                                    Object comments, Object costValue, Object purchaseValue,
+                                    Object transferValue, Object saleValue,
+                                    Object billedBillDeptId, Object billedBillId) {
+        this(billClass, billId, deptId, createdAt, departmentName, fromDepartmentName, transporterName,
+                cancelled, refunded, comments, costValue, purchaseValue, transferValue, saleValue,
+                billedBillDeptId, billedBillId);
+        this.billTypeAtomic = billTypeAtomic;
+    }
+
+    /**
      * Helper method to extract simple class name from TYPE(b) result.
      * TYPE(b) returns the fully qualified class name, we extract just the class name.
      *
@@ -404,6 +423,53 @@ public class PharmacyTransferReceiveDTO implements Serializable {
      */
     public boolean isCancelledReceive() {
         return "CancelledBill".equals(billClassSimpleName);
+    }
+
+    public BillTypeAtomic getBillTypeAtomic() {
+        return billTypeAtomic;
+    }
+
+    public void setBillTypeAtomic(BillTypeAtomic billTypeAtomic) {
+        this.billTypeAtomic = billTypeAtomic;
+    }
+
+    /**
+     * Stock-in view sign for the Transfer Receive reports (#18286): a
+     * PHARMACY_RECEIVE bill is positive, a PHARMACY_RECEIVE_CANCELLED bill is
+     * negative. Keyed on BillTypeAtomic (any cancellation or refund category
+     * is negative); the bill class is used only when the atomic is missing.
+     * Stored signs are mixed, so the magnitude is taken first.
+     */
+    public boolean isNegativeInReport() {
+        if (billTypeAtomic != null) {
+            BillCategory category = billTypeAtomic.getBillCategory();
+            return category == BillCategory.CANCELLATION || category == BillCategory.REFUND;
+        }
+        return isCancelledReceive();
+    }
+
+    private Double signed(BigDecimal value) {
+        if (value == null) {
+            return 0.0;
+        }
+        double magnitude = Math.abs(value.doubleValue());
+        return isNegativeInReport() ? -magnitude : magnitude;
+    }
+
+    public Double getSignedPurchaseValue() {
+        return signed(purchaseValue);
+    }
+
+    public Double getSignedSaleValue() {
+        return signed(saleValue);
+    }
+
+    public Double getSignedCostValue() {
+        return signed(costValue);
+    }
+
+    public Double getSignedTransferValue() {
+        return signed(transferValue);
     }
 
     // Convenience methods for XHTML compatibility

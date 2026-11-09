@@ -2621,18 +2621,23 @@ public class GrnCostingNativeSqlController implements Serializable {
 
             double previouslyReceivedQty = calculateRemainigQtyFromOrder(poItem);
             double previouslyReceivedFreeQty = calculateRemainingFreeQtyFromOrder(poItem);
+            // Remaining is floored at 0 (#25284): once an earlier GRN has
+            // over-received, a line clamped to 0 is valid and must pass, while
+            // any positive quantity is still refused.
+            double remainingQty = Math.max(0.0, orderedQty - previouslyReceivedQty);
+            double remainingFreeQty = Math.max(0.0, orderedFreeQty - previouslyReceivedFreeQty);
 
-            if (orderedQty < previouslyReceivedQty + currentGrnQty) {
+            if (currentGrnQty > remainingQty) {
                 return "Item " + itemNameByPoItem.get(poItemId) + " cannot receive " + currentGrnQty
                         + " as it exceeds ordered quantity. Ordered: " + orderedQty + ", Already received: " + previouslyReceivedQty
-                        + ", Remaining: " + (orderedQty - previouslyReceivedQty);
+                        + ", Remaining: " + remainingQty;
             }
 
-            if (enableFreeQtyValidation && orderedFreeQty < previouslyReceivedFreeQty + currentGrnFreeQty) {
+            if (enableFreeQtyValidation && currentGrnFreeQty > remainingFreeQty) {
                 return "Item " + itemNameByPoItem.get(poItemId) + " cannot receive " + currentGrnFreeQty
                         + " free quantity as it exceeds ordered free quantity. Ordered free: " + orderedFreeQty
                         + ", Already received free: " + previouslyReceivedFreeQty
-                        + ", Remaining free: " + (orderedFreeQty - previouslyReceivedFreeQty);
+                        + ", Remaining free: " + remainingFreeQty;
             }
         }
 
@@ -2904,8 +2909,8 @@ public class GrnCostingNativeSqlController implements Serializable {
             double receivedFreeQty = Math.abs(grnFreeQtyMap.getOrDefault(poItemId, 0.0))
                     - Math.abs(grnCancelledFreeQtyMap.getOrDefault(poItemId, 0.0));
 
-            double remains = Math.abs(pbiInApprovedOrder.getQty()) - Math.abs(receivedQty);
-            double remainFreeQty = pbiInApprovedOrder.getFreeQty() - Math.abs(receivedFreeQty);
+            double remains = Math.max(0.0, Math.abs(pbiInApprovedOrder.getQty()) - Math.abs(receivedQty));
+            double remainFreeQty = Math.max(0.0, pbiInApprovedOrder.getFreeQty() - Math.abs(receivedFreeQty));
 
             if (remains > 0 || remainFreeQty > 0) {
                 BillItem newlyCreatedBillItemForGrn = new BillItem();

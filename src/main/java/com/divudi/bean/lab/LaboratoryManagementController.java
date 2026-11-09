@@ -272,7 +272,7 @@ public class LaboratoryManagementController implements Serializable {
             if (currentPatientReport.getPatientInvestigation().getInvestigation().isBypassSampleWorkflow()) {
                 return "/lab/patient_report_without_sample_sending_process?faces-redirect=true";
             } else {
-                return "/lab/patient_report?faces-redirect=true";
+                return patientReportController.patientReportPageFor(currentPatientReport) + "?faces-redirect=true";
             }
         } else {
             switch (currentPatientReport.getReportType()) {
@@ -284,7 +284,7 @@ public class LaboratoryManagementController implements Serializable {
                     if (currentPatientReport.getPatientInvestigation().getInvestigation().isBypassSampleWorkflow()) {
                         return "/lab/patient_report_without_sample_sending_process?faces-redirect=true";
                     } else {
-                        return "/lab/patient_report?faces-redirect=true";
+                        return patientReportController.patientReportPageFor(currentPatientReport) + "?faces-redirect=true";
                     }
                 case UPLOAD:
 

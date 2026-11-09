@@ -422,7 +422,8 @@ public class DirectPurchaseReturnController implements Serializable {
 
             double qty = fd.getQuantity().doubleValue();
             double freeQty = fd.getFreeQuantity().doubleValue();
-            double unitsPerPack = fd.getUnitsPerPack().doubleValue();
+            double unitsPerPack = fd.getUnitsPerPack() != null && fd.getUnitsPerPack().doubleValue() > 0
+                    ? fd.getUnitsPerPack().doubleValue() : 1.0;
             double rate = fd.getLineGrossRate().doubleValue();
 
             if (i.getItem() instanceof Ampp) {
@@ -434,7 +435,16 @@ public class DirectPurchaseReturnController implements Serializable {
             }
 
 
-            i.setNetValue(pbi.getQty() * rate);
+            // Money comes back to the department, so the line value is positive, as on the
+            // GRN return (GrnReturnWithCostingController). pbi qty is in units, so an AMPP
+            // pack rate is divided by units per pack (#25375).
+            boolean isAmpp = i.getItem() instanceof Ampp;
+            double unitRate = isAmpp && unitsPerPack > 0 ? rate / unitsPerPack : rate;
+            i.setNetValue(Math.abs(pbi.getQty() * unitRate));
+            // The bill item quantity is the returned quantity in units, not the
+            // quantity still available to return (#25375).
+            i.setQty(Math.abs(pbi.getQty()));
+            setReturnedStockValues(fd, refFd, Math.abs(pbi.getQty() + pbi.getFreeQty()));
             i.setCreatedAt(Calendar.getInstance().getTime());
             i.setCreater(getSessionController().getLoggedUser());
 
@@ -544,8 +554,12 @@ public class DirectPurchaseReturnController implements Serializable {
             return;
         }
         pharmacyCalculation.calculateRetailSaleValueAndFreeValueAtPurchaseRate(getBill());
+        // Recalculate from the quantities typed on the page: the per-line ajax update
+        // may not have run for every line before Return was clicked (#25375).
+        callculateBillDetails();
         saveReturnBill();
         saveBillItems();
+        setReturnTotalsFromLines();
 
         boolean generatePayments = configOptionApplicationController.getBooleanValueByKey(
             "Generate Payments for GRN, GRN Returns, Direct Purchase, and Direct Purchase Returns", false);
@@ -562,11 +576,58 @@ public class DirectPurchaseReturnController implements Serializable {
 
     }
 
+    /**
+     * Sets the returned line's value at cost, purchase and retail rate to the
+     * purchase line's values scaled by returned units / purchased units.
+     * Stock leaves the department, so the values are negative, as in
+     * DirectPurchaseReturnWorkflowController (#25378).
+     */
+    private void setReturnedStockValues(BillItemFinanceDetails fd, BillItemFinanceDetails refFd, double returnedUnits) {
+        BigDecimal purchasedUnits = refFd.getTotalQuantityByUnits() == null
+                ? BigDecimal.ZERO : refFd.getTotalQuantityByUnits().abs();
+        if (purchasedUnits.signum() == 0) {
+            return;
+        }
+        BigDecimal share = BigDecimal.valueOf(returnedUnits).divide(purchasedUnits, 10, java.math.RoundingMode.HALF_UP);
+        fd.setValueAtCostRate(scaledNegative(refFd.getValueAtCostRate(), share));
+        fd.setValueAtPurchaseRate(scaledNegative(refFd.getValueAtPurchaseRate(), share));
+        fd.setValueAtRetailRate(scaledNegative(refFd.getValueAtRetailRate(), share));
+    }
+
+    private BigDecimal scaledNegative(BigDecimal purchaseLineValue, BigDecimal share) {
+        if (purchaseLineValue == null) {
+            return BigDecimal.ZERO;
+        }
+        return purchaseLineValue.abs().multiply(share).setScale(4, java.math.RoundingMode.HALF_UP).negate();
+    }
+
+    /**
+     * The return bill's total is the sum of its returned line values (#25375).
+     */
+    private void setReturnTotalsFromLines() {
+        double total = 0.0;
+        for (BillItem i : getBillItems()) {
+            BillItem ref = i.getReferanceBillItem();
+            if (i.getBillItemFinanceDetails() == null || ref == null || ref.getBillItemFinanceDetails() == null) {
+                continue; // saveBillItems() skips these lines too
+            }
+            total += i.getNetValue();
+        }
+        getReturnBill().setTotal(total);
+        getReturnBill().setNetTotal(total);
+    }
+
     private void calTotal() {
         double grossTotal = 0.0;
 
         for (BillItem p : getBillItems()) {
             double rate = getReturnRate(p).doubleValue();
+            // p.getQty() is in units; an AMPP return rate is per pack (#25375).
+            BillItemFinanceDetails pfd = p.getBillItemFinanceDetails();
+            double upp = pfd != null && pfd.getUnitsPerPack() != null ? pfd.getUnitsPerPack().doubleValue() : 1.0;
+            if (p.getItem() instanceof Ampp && upp > 0) {
+                rate = rate / upp;
+            }
             grossTotal += rate * p.getQty();
 
         }
