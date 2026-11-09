@@ -244,6 +244,19 @@
                                                 event="blur"
                                                 async="true"
                                                 process="@this"
+                                                disabled="#{pharmacyDirectPurchaseController.purchaseValueEntryEnabled}"
+                                                listener="#{pharmacyDirectPurchaseController.onLineGrossRateChange}"
+                                                update="txtPurchaseValue txtLineDiscountValue txtPurchaseValueMinusLineDiscountValue
+                                                txtRetailValue txtCostValue
+                                                txtPackOrUnit txtUnitsPerPack
+                                                :#{p:resolveFirstComponentWithId('billFinanceDetails', view).clientId}" />
+                                            <!-- #22864: with value entry on, fire only on a real rate change. A blur
+                                                 request when tabbing past the rate re-rendered the Purchase Value box
+                                                 while the user was typing in it, so only part of the value was sent. -->
+                                            <p:ajax
+                                                event="change"
+                                                process="@this"
+                                                disabled="#{not pharmacyDirectPurchaseController.purchaseValueEntryEnabled}"
                                                 listener="#{pharmacyDirectPurchaseController.onLineGrossRateChange}"
                                                 update="txtPurchaseValue txtLineDiscountValue txtPurchaseValueMinusLineDiscountValue
                                                 txtRetailValue txtCostValue
