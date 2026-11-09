@@ -36,13 +36,29 @@
                         .mic-organism-name {
                             font-style: italic;
                         }
-                        .mic-organism-card .ui-panel-title {
-                            display: inline-flex;
+                        /* Title fills the bar so Edit / Delete sit at the right, before the toggle icon */
+                        .mic-organism-card .ui-panel-titlebar {
+                            display: flex;
                             align-items: center;
+                        }
+                        .mic-organism-card .ui-panel-title {
+                            display: flex;
+                            align-items: center;
+                            flex: 1 1 auto;
+                            min-width: 0;
+                        }
+                        .mic-organism-edit.ui-button {
+                            margin-left: auto;
+                        }
+                        .mic-organism-delete.ui-button {
+                            margin-left: 4px;
+                        }
+                        .mic-organism-card .ui-panel-titlebar-toggler {
+                            margin-left: 8px;
                         }
                         .mic-organism-edit.ui-button,
                         .mic-organism-delete.ui-button {
-                            margin-left: 8px;
+                            flex: 0 0 auto;
                             width: 2rem;
                             height: 2rem;
                         }
