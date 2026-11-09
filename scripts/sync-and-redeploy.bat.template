@@ -34,7 +34,7 @@ if not defined DEPLOY_ONLY set "DEPLOY_ONLY=0"
 if not defined MIN_FREE_MB set "MIN_FREE_MB=3000"
 REM cmd compares non-numbers as strings (3000MB vs 500 would pass) and reads a leading
 REM zero as octal, so accept only 1-9999999 with no leading zero.
-echo(%MIN_FREE_MB%| findstr /r /x "[1-9][0-9]*" >nul || goto :bad_min_free
+echo(%MIN_FREE_MB%| findstr /r /x "[123456789][0123456789]*" >nul || goto :bad_min_free
 if not "%MIN_FREE_MB:~7%"=="" goto :bad_min_free
 
 set "PERSISTENCE_FILE=%REPO_ROOT%\src\main\resources\META-INF\persistence.xml"
@@ -60,13 +60,27 @@ if not "%errorlevel%"=="0" (
     set "STASHED_PERSISTENCE=1"
 )
 
-REM 2. Commit anything else uncommitted.
+REM 2. Commit tracked changes only. Untracked files (screenshots, exports,
+REM    scratch files) are never staged, so they cannot reach the public repo.
 set "HAS_CHANGES="
 for /f "delims=" %%S in ('git status --porcelain') do set "HAS_CHANGES=1"
 if defined HAS_CHANGES (
-    echo Committing other uncommitted changes...
-    git add -A
-    git commit -m "WIP: auto-commit before sync-and-redeploy"
+    echo Uncommitted changes:
+    git status --porcelain
+    set "HAS_UNTRACKED="
+    for /f "delims=" %%U in ('git ls-files --others --exclude-standard') do set "HAS_UNTRACKED=1"
+    if defined HAS_UNTRACKED (
+        echo WARNING: these untracked files were NOT committed:
+        git ls-files --others --exclude-standard
+    )
+    set "HAS_TRACKED="
+    git diff --quiet || set "HAS_TRACKED=1"
+    git diff --cached --quiet || set "HAS_TRACKED=1"
+    if defined HAS_TRACKED (
+        echo Committing tracked changes only...
+        git add -u
+        git commit -m "WIP: auto-commit before sync-and-redeploy"
+    )
 )
 
 REM 3. Fetch and merge development. Stop on conflict - no auto-resolution.
@@ -130,7 +144,7 @@ if "%SKIP_MEMORY_CHECK%"=="1" (
 )
 REM Fail closed: empty, "N/A" or an error text aborts while the old app still runs.
 if not defined FREE_MB goto :bad_free_mb
-echo(%FREE_MB%| findstr /r /x "0 [1-9][0-9]*" >nul || goto :bad_free_mb
+echo(%FREE_MB%| findstr /r /x "0 [123456789][0123456789]*" >nul || goto :bad_free_mb
 if not "%FREE_MB:~9%"=="" goto :bad_free_mb
 if %FREE_MB% LSS %MIN_FREE_MB% (
     echo.

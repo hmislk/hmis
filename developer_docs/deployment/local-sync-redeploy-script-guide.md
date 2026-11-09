@@ -173,7 +173,10 @@ and remember the answer in the per-machine config file described above.
 1. `cd` into the repo checkout path recorded at generation time.
 2. Handle uncommitted changes: stash any uncommitted edit to
    `persistence.xml` **separately** first (so hardcoded local JNDI values
-   never land in a commit), then commit anything else uncommitted.
+   never land in a commit), print `git status --porcelain`, then commit
+   **tracked changes only** (`git add -u`). Untracked files are never
+   committed; the script lists them with a warning that they were NOT
+   committed.
 3. `git fetch origin development && git merge origin/development --no-edit`.
    **On any conflict, the script stops immediately** and leaves the
    repository mid-merge for manual resolution — it never attempts automatic
