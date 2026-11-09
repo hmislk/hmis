@@ -16,6 +16,7 @@ import com.divudi.core.util.JsfUtil;
 import com.divudi.bean.membership.PaymentSchemeController;
 import com.divudi.core.data.BillClassType;
 import com.divudi.core.data.BillType;
+import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.DepartmentType;
 import com.divudi.core.data.FeeType;
 import com.divudi.core.data.PaymentMethod;
@@ -67,9 +68,11 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -4008,6 +4011,9 @@ public class PharmacySaleReportController implements Serializable {
     List<CategoryMovementReportDTO> categoryMovementReportDtos;
 
     double totalOpdSale;
+    double totalWholesale;
+    double totalDisposal;
+    double totalTransferReceive;
     double totalInwardIssue;
     double totalDepartmentIssue;
     double totalTatalValue;
@@ -4154,10 +4160,107 @@ public class PharmacySaleReportController implements Serializable {
 
     }
 
+    // Issue #18635: the Category-wise Movement report used to read only PreBill
+    // rows, so cancellations, returns, wholesale, disposals and transfer receives
+    // never showed. It now reads an explicit BillTypeAtomic list. For a PRE/settled
+    // pair (retail sale, cashier sale, wholesale, return with payment) only the
+    // half that moved the stock is counted: the query keeps a line only when it
+    // has a StockHistory row, so the settled twin can never be counted twice.
+    // Values are read as absolute amounts and signed by the atomic: a movement is
+    // plus, its cancellation/return twin is minus and is shown on its own line.
+    private static final List<BillTypeAtomic> CATEGORY_MOVEMENT_OPD_SALE = Collections.unmodifiableList(Arrays.asList(
+            BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE,
+            BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE_TO_SETTLE_AT_CASHIER
+    ));
+    private static final List<BillTypeAtomic> CATEGORY_MOVEMENT_OPD_SALE_REVERSAL = Collections.unmodifiableList(Arrays.asList(
+            BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED_PRE,
+            BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_ONLY,
+            BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS_PREBILL,
+            BillTypeAtomic.PHARMACY_RETAIL_SALE_REFUND,
+            BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE_ADD_TO_STOCK
+    ));
+    private static final List<BillTypeAtomic> CATEGORY_MOVEMENT_WHOLESALE = Collections.unmodifiableList(Arrays.asList(
+            BillTypeAtomic.PHARMACY_WHOLESALE_PRE
+    ));
+    private static final List<BillTypeAtomic> CATEGORY_MOVEMENT_WHOLESALE_REVERSAL = Collections.unmodifiableList(Arrays.asList(
+            BillTypeAtomic.PHARMACY_WHOLESALE_CANCELLED,
+            BillTypeAtomic.PHARMACY_WHOLESALE_REFUND
+    ));
+    private static final List<BillTypeAtomic> CATEGORY_MOVEMENT_INWARD_ISSUE = Collections.unmodifiableList(Arrays.asList(
+            BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE,
+            BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE,
+            BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD,
+            BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE,
+            BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_THEATRE
+    ));
+    private static final List<BillTypeAtomic> CATEGORY_MOVEMENT_INWARD_ISSUE_REVERSAL = Collections.unmodifiableList(Arrays.asList(
+            BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION,
+            BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN,
+            BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_CANCELLATION,
+            BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_RETURN,
+            BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_CANCELLATION,
+            BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN,
+            BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_CANCELLATION,
+            BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_RETURN,
+            BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_THEATRE_CANCELLATION,
+            BillTypeAtomic.RETURN_MEDICINE_INWARD,
+            BillTypeAtomic.RETURN_MEDICINE_THEATRE
+    ));
+    private static final List<BillTypeAtomic> CATEGORY_MOVEMENT_DEPARTMENT_ISSUE = Collections.unmodifiableList(Arrays.asList(
+            BillTypeAtomic.PHARMACY_DIRECT_ISSUE,
+            BillTypeAtomic.PHARMACY_ISSUE
+    ));
+    private static final List<BillTypeAtomic> CATEGORY_MOVEMENT_DEPARTMENT_ISSUE_REVERSAL = Collections.unmodifiableList(Arrays.asList(
+            BillTypeAtomic.PHARMACY_DIRECT_ISSUE_CANCELLED,
+            BillTypeAtomic.PHARMACY_ISSUE_CANCELLED,
+            BillTypeAtomic.PHARMACY_ISSUE_RETURN
+    ));
+    private static final List<BillTypeAtomic> CATEGORY_MOVEMENT_DISPOSAL = Collections.unmodifiableList(Arrays.asList(
+            BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE
+    ));
+    private static final List<BillTypeAtomic> CATEGORY_MOVEMENT_DISPOSAL_REVERSAL = Collections.unmodifiableList(Arrays.asList(
+            BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE_CANCELLED,
+            BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE_RETURN
+    ));
+    private static final List<BillTypeAtomic> CATEGORY_MOVEMENT_TRANSFER_RECEIVE = Collections.unmodifiableList(Arrays.asList(
+            BillTypeAtomic.PHARMACY_RECEIVE
+    ));
+    private static final List<BillTypeAtomic> CATEGORY_MOVEMENT_TRANSFER_RECEIVE_REVERSAL = Collections.unmodifiableList(Arrays.asList(
+            BillTypeAtomic.PHARMACY_RECEIVE_CANCELLED
+    ));
+
+    private static final String CATEGORY_MOVEMENT_ROW_MOVEMENT = "Movement";
+    private static final String CATEGORY_MOVEMENT_ROW_REVERSAL = "Cancellation / Return";
+
+    private boolean isCategoryMovementReversal(BillTypeAtomic a) {
+        return CATEGORY_MOVEMENT_OPD_SALE_REVERSAL.contains(a)
+                || CATEGORY_MOVEMENT_WHOLESALE_REVERSAL.contains(a)
+                || CATEGORY_MOVEMENT_INWARD_ISSUE_REVERSAL.contains(a)
+                || CATEGORY_MOVEMENT_DEPARTMENT_ISSUE_REVERSAL.contains(a)
+                || CATEGORY_MOVEMENT_DISPOSAL_REVERSAL.contains(a)
+                || CATEGORY_MOVEMENT_TRANSFER_RECEIVE_REVERSAL.contains(a);
+    }
+
+    private List<BillTypeAtomic> categoryMovementAtomics() {
+        List<BillTypeAtomic> all = new ArrayList<>();
+        all.addAll(CATEGORY_MOVEMENT_OPD_SALE);
+        all.addAll(CATEGORY_MOVEMENT_OPD_SALE_REVERSAL);
+        all.addAll(CATEGORY_MOVEMENT_WHOLESALE);
+        all.addAll(CATEGORY_MOVEMENT_WHOLESALE_REVERSAL);
+        all.addAll(CATEGORY_MOVEMENT_INWARD_ISSUE);
+        all.addAll(CATEGORY_MOVEMENT_INWARD_ISSUE_REVERSAL);
+        all.addAll(CATEGORY_MOVEMENT_DEPARTMENT_ISSUE);
+        all.addAll(CATEGORY_MOVEMENT_DEPARTMENT_ISSUE_REVERSAL);
+        all.addAll(CATEGORY_MOVEMENT_DISPOSAL);
+        all.addAll(CATEGORY_MOVEMENT_DISPOSAL_REVERSAL);
+        all.addAll(CATEGORY_MOVEMENT_TRANSFER_RECEIVE);
+        all.addAll(CATEGORY_MOVEMENT_TRANSFER_RECEIVE_REVERSAL);
+        return all;
+    }
+
     public void createCategoryMovementReportNew() {
         FacesContext context = FacesContext.getCurrentInstance();
         HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
-        ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
 
         String url = request.getRequestURL().toString();
 
@@ -4183,125 +4286,118 @@ public class PharmacySaleReportController implements Serializable {
         auditEvent.setEventTrigger("createCategoryMovementReportNew()");
         auditEventApplicationController.logAuditEvent(auditEvent);
 
-        String sql;
-        Map m = new HashMap();
-
-        sql = "select pbi.billItem.bill.billType, "
+        Map<String, Object> m = new HashMap<>();
+        String sql = "select pbi.billItem.bill.billTypeAtomic, "
                 + " pbi.billItem.item.id, "
                 + " pbi.billItem.item.name, "
                 + " pbi.billItem.item.code, "
-                + " sum(pbi.billItem.netValue), "
-                + " sum(pbi.itemBatch.purcahseRate*pbi.qty), "
-                + " sum(pbi.qty) "
+                + " sum(abs(pbi.billItem.netValue)), "
+                + " sum(abs(pbi.itemBatch.purcahseRate * pbi.qty)), "
+                + " sum(abs(pbi.qty)) "
                 + " from PharmaceuticalBillItem pbi "
-                + " where type(pbi.billItem.bill)=:bc "
-                + " and pbi.billItem.bill.createdAt between :fd and :td ";
+                + " where pbi.billItem.bill.billTypeAtomic in :atomics "
+                + " and pbi.billItem.bill.retired = false "
+                + " and pbi.billItem.bill.createdAt between :fd and :td "
+                + " and exists (select sh.id from StockHistory sh where sh.pbItem = pbi) ";
 
         if (category != null) {
-            sql += " and pbi.billItem.item.category=:cat ";
-            m.put("cat", category);
+            sql += " and pbi.billItem.item.category.id = :catId ";
+            m.put("catId", category.getId());
         }
         if (department != null) {
-            sql += " and pbi.billItem.bill.department=:dept ";
-            m.put("dept", department);
+            sql += " and pbi.billItem.bill.department.id = :deptId ";
+            m.put("deptId", department.getId());
         }
-        m.put("bc", PreBill.class);
+        m.put("atomics", categoryMovementAtomics());
         m.put("fd", fromDate);
         m.put("td", toDate);
 
-        sql += " group by pbi.billItem.bill.billType, pbi.billItem.item.id, pbi.billItem.item.name, pbi.billItem.item.code "
+        sql += " group by pbi.billItem.bill.billTypeAtomic, pbi.billItem.item.id, pbi.billItem.item.name, pbi.billItem.item.code "
                 + " order by pbi.billItem.item.name ";
         List<Object[]> objs = getBillFacade().findAggregates(sql, m, TemporalType.TIMESTAMP);
 
-        categoryMovementReportDtos = new ArrayList<>();
-        Long previousItemId = null;
-        CategoryMovementReportDTO r = new CategoryMovementReportDTO();
-        totalOpdSale = 0.0;
-        totalInwardIssue = 0.0;
-        totalDepartmentIssue = 0.0;
-        totalPurchaseValue = 0.0;
-        totalTatalValue = 0.0;
-        totalMargineValue = 0.0;
-        totalQty = 0.0;
-        for (Object o[] : objs) {
-            try {
-                BillType tbt = (BillType) o[0];
-                Long tiId = (Long) o[1];
-                String tiName = (String) o[2];
-                String tiCode = (String) o[3];
-                double sv = (double) o[4];
-                double cv = (double) o[5];
-                double qty = (double) o[6];
-
-                if (sv == 0 && qty == 0) {
+        // One row per item and kind (movement, cancellation/return), in item name order
+        Map<String, CategoryMovementReportDTO> rowsByKey = new LinkedHashMap<>();
+        if (objs != null) {
+            for (Object[] o : objs) {
+                BillTypeAtomic atomic = (BillTypeAtomic) o[0];
+                Long itemId = (Long) o[1];
+                if (atomic == null || itemId == null) {
                     continue;
                 }
-                if (previousItemId == null || !tiId.equals(previousItemId)) {
+                double sv = o[4] == null ? 0.0 : ((Number) o[4]).doubleValue();
+                double cv = o[5] == null ? 0.0 : ((Number) o[5]).doubleValue();
+                double qty = o[6] == null ? 0.0 : ((Number) o[6]).doubleValue();
+                if (sv == 0 && cv == 0 && qty == 0) {
+                    continue;
+                }
+                boolean reversal = isCategoryMovementReversal(atomic);
+                double sign = reversal ? -1.0 : 1.0;
+                sv = sign * sv;
+                cv = sign * cv;
+                qty = sign * qty;
+
+                String key = itemId + (reversal ? "-R" : "-M");
+                CategoryMovementReportDTO r = rowsByKey.get(key);
+                if (r == null) {
                     r = new CategoryMovementReportDTO();
-                    r.setItemId(tiId);
-                    r.setItemName(tiName);
-                    r.setItemCode(tiCode);
-                    r.setDepartmentIssue(0.0);
-                    r.setInwardIssue(0.0);
-                    r.setMarginValue(0.0);
-                    r.setOpdSale(0.0);
-                    r.setPurchaseValue(0.0);
-                    r.setTotal(0.0);
-                    r.setTotalQty(0.0);
-                    r.setTransferIn(0.0);
-                    r.setTransferOut(0.0);
-                    previousItemId = tiId;
-                    categoryMovementReportDtos.add(r);
+                    r.setItemId(itemId);
+                    r.setItemName((String) o[2]);
+                    r.setItemCode((String) o[3]);
+                    r.setRowType(reversal ? CATEGORY_MOVEMENT_ROW_REVERSAL : CATEGORY_MOVEMENT_ROW_MOVEMENT);
+                    rowsByKey.put(key, r);
                 }
 
-                switch (tbt) {
-                    case PharmacySale:
-                    case PharmacyPre:
-                        r.setOpdSale(r.getOpdSale() + sv);
-                        r.setOpdSaleQty(r.getOpdSaleQty() + qty);
-                        r.setPurchaseValue(r.getPurchaseValue() + cv);
-                        break;
-                    case PharmacyBhtPre:
-                        r.setInwardIssue(r.getInwardIssue() + sv);
-                        r.setInwardIssueQty(r.getInwardIssueQty() + qty);
-                        r.setPurchaseValue(r.getPurchaseValue() + cv);
-                        break;
-                    case PharmacyIssue:
-                        r.setDepartmentIssue(r.getDepartmentIssue() + sv);
-                        r.setDepartmentIssueQty(r.getDepartmentIssueQty() + qty);
-                        r.setPurchaseValue(r.getPurchaseValue() + cv);
-                        break;
-                    case PharmacyTransferIssue:
-                        r.setTransferIn(r.getTransferIn() + sv);
-                        r.setTransferInQty(r.getTransferInQty() + qty);
-                        break;
-                    case PharmacyTransferReceive:
-                        r.setTransferOut(r.getTransferOut() + sv);
-                        r.setTransferOutQty(r.getTransferOutQty() + qty);
-                        break;
-
-                    default:
+                if (CATEGORY_MOVEMENT_OPD_SALE.contains(atomic) || CATEGORY_MOVEMENT_OPD_SALE_REVERSAL.contains(atomic)) {
+                    r.setOpdSale(r.getOpdSale() + sv);
+                    r.setOpdSaleQty(r.getOpdSaleQty() + qty);
+                    r.setPurchaseValue(r.getPurchaseValue() + cv);
+                } else if (CATEGORY_MOVEMENT_WHOLESALE.contains(atomic) || CATEGORY_MOVEMENT_WHOLESALE_REVERSAL.contains(atomic)) {
+                    r.setWholesale(r.getWholesale() + sv);
+                    r.setWholesaleQty(r.getWholesaleQty() + qty);
+                    r.setPurchaseValue(r.getPurchaseValue() + cv);
+                } else if (CATEGORY_MOVEMENT_INWARD_ISSUE.contains(atomic) || CATEGORY_MOVEMENT_INWARD_ISSUE_REVERSAL.contains(atomic)) {
+                    r.setInwardIssue(r.getInwardIssue() + sv);
+                    r.setInwardIssueQty(r.getInwardIssueQty() + qty);
+                    r.setPurchaseValue(r.getPurchaseValue() + cv);
+                } else if (CATEGORY_MOVEMENT_DEPARTMENT_ISSUE.contains(atomic) || CATEGORY_MOVEMENT_DEPARTMENT_ISSUE_REVERSAL.contains(atomic)) {
+                    r.setDepartmentIssue(r.getDepartmentIssue() + sv);
+                    r.setDepartmentIssueQty(r.getDepartmentIssueQty() + qty);
+                    r.setPurchaseValue(r.getPurchaseValue() + cv);
+                } else if (CATEGORY_MOVEMENT_DISPOSAL.contains(atomic) || CATEGORY_MOVEMENT_DISPOSAL_REVERSAL.contains(atomic)) {
+                    // A disposal has no sale value, so it is shown at purchase value
+                    r.setDisposal(r.getDisposal() + cv);
+                    r.setDisposalQty(r.getDisposalQty() + qty);
+                } else if (CATEGORY_MOVEMENT_TRANSFER_RECEIVE.contains(atomic) || CATEGORY_MOVEMENT_TRANSFER_RECEIVE_REVERSAL.contains(atomic)) {
+                    // Stock coming in: shown on its own, not part of the outgoing total
+                    r.setTransferReceive(r.getTransferReceive() + cv);
+                    r.setTransferReceiveQty(r.getTransferReceiveQty() + qty);
                 }
-
-            } catch (Exception e) {
             }
-
-            r.setTotalQty(r.getOpdSaleQty() + r.getInwardIssueQty() + r.getDepartmentIssueQty());
-            r.setTotal(r.getOpdSale() + r.getInwardIssue() + r.getDepartmentIssue());
-            r.setMarginValue(r.getTotal() + r.getPurchaseValue());
         }
 
+        categoryMovementReportDtos = new ArrayList<>(rowsByKey.values());
         totalOpdSale = 0.0;
+        totalWholesale = 0.0;
         totalInwardIssue = 0.0;
         totalDepartmentIssue = 0.0;
+        totalDisposal = 0.0;
+        totalTransferReceive = 0.0;
         totalPurchaseValue = 0.0;
         totalTatalValue = 0.0;
         totalMargineValue = 0.0;
         totalQty = 0.0;
         for (CategoryMovementReportDTO row : categoryMovementReportDtos) {
+            row.setTotalQty(row.getOpdSaleQty() + row.getWholesaleQty() + row.getInwardIssueQty() + row.getDepartmentIssueQty());
+            row.setTotal(row.getOpdSale() + row.getWholesale() + row.getInwardIssue() + row.getDepartmentIssue());
+            row.setMarginValue(row.getTotal() - row.getPurchaseValue());
+
             totalOpdSale += row.getOpdSale();
+            totalWholesale += row.getWholesale();
             totalInwardIssue += row.getInwardIssue();
             totalDepartmentIssue += row.getDepartmentIssue();
+            totalDisposal += row.getDisposal();
+            totalTransferReceive += row.getTransferReceive();
             totalPurchaseValue += row.getPurchaseValue();
             totalTatalValue += row.getTotal();
             totalMargineValue += row.getMarginValue();
@@ -8389,6 +8485,18 @@ public class PharmacySaleReportController implements Serializable {
 
     public void setTotalUnitIssueNC(double totalUnitIssueNC) {
         this.totalUnitIssueNC = totalUnitIssueNC;
+    }
+
+    public double getTotalWholesale() {
+        return totalWholesale;
+    }
+
+    public double getTotalDisposal() {
+        return totalDisposal;
+    }
+
+    public double getTotalTransferReceive() {
+        return totalTransferReceive;
     }
 
     public double getTotalOpdSale() {
