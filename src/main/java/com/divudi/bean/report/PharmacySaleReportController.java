@@ -4013,6 +4013,7 @@ public class PharmacySaleReportController implements Serializable {
     double totalOpdSale;
     double totalWholesale;
     double totalDisposal;
+    double totalDisposalQty;
     double totalTransferReceive;
     double totalInwardIssue;
     double totalDepartmentIssue;
@@ -4177,6 +4178,9 @@ public class PharmacySaleReportController implements Serializable {
             BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_ONLY,
             BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS_PREBILL,
             BillTypeAtomic.PHARMACY_RETAIL_SALE_REFUND,
+            // A cashier-settled pre bill that was never paid: SearchController.addToStock()
+            // puts its stock back (PharmacyBean.reAddToStock -> addToStock with the pbi, so it
+            // has StockHistory). It undoes a PHARMACY_RETAIL_SALE_PRE_TO_SETTLE_AT_CASHIER sale.
             BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE_ADD_TO_STOCK
     ));
     private static final List<BillTypeAtomic> CATEGORY_MOVEMENT_WHOLESALE = Collections.unmodifiableList(Arrays.asList(
@@ -4184,6 +4188,7 @@ public class PharmacySaleReportController implements Serializable {
     ));
     private static final List<BillTypeAtomic> CATEGORY_MOVEMENT_WHOLESALE_REVERSAL = Collections.unmodifiableList(Arrays.asList(
             BillTypeAtomic.PHARMACY_WHOLESALE_CANCELLED,
+            // No code writes PHARMACY_WHOLESALE_REFUND today; listed so a future refund is counted
             BillTypeAtomic.PHARMACY_WHOLESALE_REFUND
     ));
     private static final List<BillTypeAtomic> CATEGORY_MOVEMENT_INWARD_ISSUE = Collections.unmodifiableList(Arrays.asList(
@@ -4203,7 +4208,14 @@ public class PharmacySaleReportController implements Serializable {
             BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_CANCELLATION,
             BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_RETURN,
             BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_THEATRE_CANCELLATION,
-            BillTypeAtomic.RETURN_MEDICINE_INWARD,
+            // Ward returns reach the pharmacy in two steps. RETURN_MEDICINE_INWARD is the
+            // ward-side bill (department = ward, stock ward -> porter), so it is NOT counted:
+            // it would show a reversal on the ward. The pharmacy's own reversal is
+            // ACCEPT_RETURN_MEDICINE_INWARD (porter -> pharmacy stock, with StockHistory).
+            // Theatre returns are written as DIRECT_ISSUE_INWARD_MEDICINE_RETURN by
+            // BhtIssueReturnController; DIRECT_ISSUE_THEATRE_MEDICINE_RETURN and
+            // RETURN_MEDICINE_THEATRE have no writer today and are listed for the future.
+            BillTypeAtomic.ACCEPT_RETURN_MEDICINE_INWARD,
             BillTypeAtomic.RETURN_MEDICINE_THEATRE
     ));
     private static final List<BillTypeAtomic> CATEGORY_MOVEMENT_DEPARTMENT_ISSUE = Collections.unmodifiableList(Arrays.asList(
@@ -4369,7 +4381,11 @@ public class PharmacySaleReportController implements Serializable {
                     r.setDisposal(r.getDisposal() + cv);
                     r.setDisposalQty(r.getDisposalQty() + qty);
                 } else if (CATEGORY_MOVEMENT_TRANSFER_RECEIVE.contains(atomic) || CATEGORY_MOVEMENT_TRANSFER_RECEIVE_REVERSAL.contains(atomic)) {
-                    // Stock coming in: shown on its own, not part of the outgoing total
+                    // Stock coming in: shown on its own, not part of the outgoing total.
+                    // Signs follow the same rule as the outgoing columns: a receive
+                    // (PHARMACY_RECEIVE) is plus, its cancellation (PHARMACY_RECEIVE_CANCELLED)
+                    // is minus on the Cancellation / Return row, so the Net footer is the
+                    // stock actually kept from transfers.
                     r.setTransferReceive(r.getTransferReceive() + cv);
                     r.setTransferReceiveQty(r.getTransferReceiveQty() + qty);
                 }
@@ -4382,6 +4398,7 @@ public class PharmacySaleReportController implements Serializable {
         totalInwardIssue = 0.0;
         totalDepartmentIssue = 0.0;
         totalDisposal = 0.0;
+        totalDisposalQty = 0.0;
         totalTransferReceive = 0.0;
         totalPurchaseValue = 0.0;
         totalTatalValue = 0.0;
@@ -4397,6 +4414,7 @@ public class PharmacySaleReportController implements Serializable {
             totalInwardIssue += row.getInwardIssue();
             totalDepartmentIssue += row.getDepartmentIssue();
             totalDisposal += row.getDisposal();
+            totalDisposalQty += row.getDisposalQty();
             totalTransferReceive += row.getTransferReceive();
             totalPurchaseValue += row.getPurchaseValue();
             totalTatalValue += row.getTotal();
@@ -8493,6 +8511,10 @@ public class PharmacySaleReportController implements Serializable {
 
     public double getTotalDisposal() {
         return totalDisposal;
+    }
+
+    public double getTotalDisposalQty() {
+        return totalDisposalQty;
     }
 
     public double getTotalTransferReceive() {

@@ -96,6 +96,9 @@
 
                         <p:column headerText="Type">
                             <h:outputLabel value="#{i.rowType}" />
+                            <f:facet name="footer">
+                                <h:outputLabel value="Net" title="Movements minus cancellations and returns" />
+                            </f:facet>
                         </p:column>
 
                         <p:column headerText="Quantity" style="text-align: right;">
@@ -190,6 +193,11 @@
                             <h:outputLabel value="#{i.disposalQty}">
                                 <f:convertNumber pattern="#,##0.00" />
                             </h:outputLabel>
+                            <f:facet name="footer">
+                                <h:outputLabel value="#{pharmacySaleReportController.totalDisposalQty}" style="float: right;">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputLabel>
+                            </f:facet>
                         </p:column>
 
                         <p:column headerText="Disposal (Purchase Value)" style="text-align: right;">
