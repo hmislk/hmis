@@ -194,8 +194,11 @@ if [ ! -f "$CONFIG_FILE" ]; then
     echo "ERROR: $CONFIG_FILE not found. Re-run scripts/generate-sync-redeploy-script.sh."
     exit 1
 fi
+# An environment MIN_FREE_MB (the documented one-command override) wins over the config file.
+ENV_MIN_FREE_MB="${MIN_FREE_MB:-}"
 # shellcheck source=/dev/null
 source "$CONFIG_FILE"
+[ -n "$ENV_MIN_FREE_MB" ] && MIN_FREE_MB="$ENV_MIN_FREE_MB"
 
 # Usage: sync-and-redeploy.sh [--deploy-only]
 #   --deploy-only  (or DEPLOY_ONLY=1) skips git sync and rebuild and re-deploys
@@ -210,6 +213,9 @@ for arg in "$@"; do
     esac
 done
 MIN_FREE_MB="${MIN_FREE_MB:-3000}"
+case "$MIN_FREE_MB" in
+    ''|*[!0-9]*) echo "ERROR: MIN_FREE_MB must be a whole number of MB (got '$MIN_FREE_MB')."; exit 1 ;;
+esac
 
 PERSISTENCE_FILE="$REPO_ROOT/src/main/resources/META-INF/persistence.xml"
 

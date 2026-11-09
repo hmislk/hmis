@@ -9,7 +9,10 @@ if not exist "%CONFIG_FILE%" (
     echo ERROR: %CONFIG_FILE% not found. Re-run scripts\generate-sync-redeploy-script.bat.
     exit /b 1
 )
+REM An environment MIN_FREE_MB (the documented override) wins over the config file.
+set "ENV_MIN_FREE_MB=%MIN_FREE_MB%"
 call "%CONFIG_FILE%"
+if defined ENV_MIN_FREE_MB set "MIN_FREE_MB=%ENV_MIN_FREE_MB%"
 
 REM Usage: sync-and-redeploy.bat [--deploy-only]
 REM   --deploy-only  (or set DEPLOY_ONLY=1) skips git sync and rebuild and re-deploys the
@@ -19,6 +22,11 @@ REM MIN_FREE_MB (env or config file) is the free RAM required before deploying.
 if /i "%~1"=="--deploy-only" set "DEPLOY_ONLY=1"
 if not defined DEPLOY_ONLY set "DEPLOY_ONLY=0"
 if not defined MIN_FREE_MB set "MIN_FREE_MB=3000"
+REM cmd compares non-numbers as strings (3000MB vs 500 would pass), so refuse them.
+echo(%MIN_FREE_MB%| findstr /r /x "[0-9][0-9]*" >nul || (
+    echo ERROR: MIN_FREE_MB must be a whole number of MB ^(got "%MIN_FREE_MB%"^).
+    exit /b 1
+)
 
 set "PERSISTENCE_FILE=%REPO_ROOT%\src\main\resources\META-INF\persistence.xml"
 cd /d "%REPO_ROOT%" || exit /b 1
