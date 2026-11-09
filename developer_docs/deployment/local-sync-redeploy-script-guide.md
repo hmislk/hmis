@@ -245,8 +245,13 @@ free RAM (Windows: `FreePhysicalMemory` via PowerShell; Linux:
 prints an error and exits **before** the undeploy, so the old app keeps
 running. Override the threshold with an environment variable or a
 `MIN_FREE_MB` line in the config file (`hmis-sync-redeploy.conf.bat` /
-`.hmis-sync-redeploy.conf`). If memory cannot be read, the check is skipped
-with a warning.
+`.hmis-sync-redeploy.conf`); the environment variable wins. `MIN_FREE_MB`
+must be a whole number from 1 to 9999999 with no leading zero, or the script
+stops. The check fails closed: if free RAM cannot be read, or the reading is not
+a plain number (empty, `N/A`, an error text), the script aborts before the
+undeploy. After checking RAM yourself you can opt out explicitly with
+`SKIP_MEMORY_CHECK=1`, which deploys with a warning. Both scripts reject
+unknown arguments.
 
 **Recovery - `--deploy-only`**: run the script with `--deploy-only` (or set
 `DEPLOY_ONLY=1`). It skips the git sync and the Maven build and re-deploys the

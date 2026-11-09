@@ -213,9 +213,12 @@ for arg in "$@"; do
     esac
 done
 MIN_FREE_MB="${MIN_FREE_MB:-3000}"
-case "$MIN_FREE_MB" in
-    ''|*[!0-9]*) echo "ERROR: MIN_FREE_MB must be a whole number of MB (got '$MIN_FREE_MB')."; exit 1 ;;
-esac
+# Whole number of MB, no leading zero, at most 7 digits (under 10 TB), so the
+# numeric test below can never overflow or error into the "OK" branch.
+if ! [[ "$MIN_FREE_MB" =~ ^[1-9][0-9]{0,6}$ ]]; then
+    echo "ERROR: MIN_FREE_MB must be a whole number of MB from 1 to 9999999, no leading zero (got '$MIN_FREE_MB')."
+    exit 1
+fi
 
 PERSISTENCE_FILE="$REPO_ROOT/src/main/resources/META-INF/persistence.xml"
 
@@ -316,9 +319,17 @@ free_mb() {
     echo "$v"
 }
 FREE_MB="$(free_mb)"
-if [ -z "$FREE_MB" ]; then
-    echo "WARNING: could not read free memory; skipping the pre-deploy memory check."
-elif [ "$FREE_MB" -lt "$MIN_FREE_MB" ]; then
+# Fail closed: anything that is not a plain number (empty, "N/A", an error text)
+# aborts, because the old app is still running and must stay deployed.
+if [ "${SKIP_MEMORY_CHECK:-0}" = "1" ]; then
+    echo "WARNING: SKIP_MEMORY_CHECK=1 set; deploying WITHOUT the free-memory check (free memory read: '${FREE_MB}')."
+elif ! [[ "$FREE_MB" =~ ^[0-9]{1,9}$ ]]; then
+    echo ""
+    echo "ERROR: could not measure free memory (got '${FREE_MB}'). Aborting BEFORE touching the running app."
+    echo "Fix the memory reading (/proc/meminfo, PowerShell Get-CimInstance or 'free'), or, after checking RAM"
+    echo "yourself, opt out explicitly: SKIP_MEMORY_CHECK=1 $0 --deploy-only"
+    exit 1
+elif [ "$((10#$FREE_MB))" -lt "$MIN_FREE_MB" ]; then
     echo ""
     echo "ERROR: only ${FREE_MB} MB RAM free, need at least ${MIN_FREE_MB} MB (MIN_FREE_MB) to deploy safely."
     echo "Aborting BEFORE touching the running app, so it stays deployed."

@@ -19,14 +19,23 @@ REM   --deploy-only  (or set DEPLOY_ONLY=1) skips git sync and rebuild and re-de
 REM                  WAR already in target\. Use it to recover after a deploy was killed
 REM                  (e.g. out of memory) - no 150 MB rebuild needed.
 REM MIN_FREE_MB (env or config file) is the free RAM required before deploying.
-if /i "%~1"=="--deploy-only" set "DEPLOY_ONLY=1"
-if not defined DEPLOY_ONLY set "DEPLOY_ONLY=0"
-if not defined MIN_FREE_MB set "MIN_FREE_MB=3000"
-REM cmd compares non-numbers as strings (3000MB vs 500 would pass), so refuse them.
-echo(%MIN_FREE_MB%| findstr /r /x "[0-9][0-9]*" >nul || (
-    echo ERROR: MIN_FREE_MB must be a whole number of MB ^(got "%MIN_FREE_MB%"^).
+:parse_args
+if "%~1"=="" goto :args_done
+if /i "%~1"=="--deploy-only" (
+    set "DEPLOY_ONLY=1"
+) else (
+    echo Unknown argument: %~1
     exit /b 1
 )
+shift
+goto :parse_args
+:args_done
+if not defined DEPLOY_ONLY set "DEPLOY_ONLY=0"
+if not defined MIN_FREE_MB set "MIN_FREE_MB=3000"
+REM cmd compares non-numbers as strings (3000MB vs 500 would pass) and reads a leading
+REM zero as octal, so accept only 1-9999999 with no leading zero.
+echo(%MIN_FREE_MB%| findstr /r /x "[1-9][0-9]*" >nul || goto :bad_min_free
+if not "%MIN_FREE_MB:~7%"=="" goto :bad_min_free
 
 set "PERSISTENCE_FILE=%REPO_ROOT%\src\main\resources\META-INF\persistence.xml"
 cd /d "%REPO_ROOT%" || exit /b 1
@@ -115,10 +124,14 @@ REM 6b. Free-memory pre-check. "deploy --force" undeploys the running app first,
 REM kill (out of memory) mid-deploy leaves NO app deployed. Never start an undeploy
 REM that cannot finish: abort here, while the old app is still running.
 call :get_free_mb
-if not defined FREE_MB (
-    echo WARNING: could not read free memory; skipping the pre-deploy memory check.
+if "%SKIP_MEMORY_CHECK%"=="1" (
+    echo WARNING: SKIP_MEMORY_CHECK=1 set; deploying WITHOUT the free-memory check ^(free memory read: "%FREE_MB%"^).
     goto :memory_ok
 )
+REM Fail closed: empty, "N/A" or an error text aborts while the old app still runs.
+if not defined FREE_MB goto :bad_free_mb
+echo(%FREE_MB%| findstr /r /x "0 [1-9][0-9]*" >nul || goto :bad_free_mb
+if not "%FREE_MB:~9%"=="" goto :bad_free_mb
 if %FREE_MB% LSS %MIN_FREE_MB% (
     echo.
     echo ERROR: only %FREE_MB% MB RAM free, need at least %MIN_FREE_MB% MB ^(MIN_FREE_MB^) to deploy safely.
@@ -144,6 +157,17 @@ echo Recent server.log entries:
 powershell -NoProfile -Command "Get-Content -Tail 30 '%SERVER_LOG%' | Select-String -Pattern 'deployed','deploy.*fail','exception'"
 echo Done. Check http://localhost:%HTTP_PORT%/%CONTEXT_ROOT%/ if the app didn't report success above.
 exit /b 0
+
+:bad_min_free
+echo ERROR: MIN_FREE_MB must be a whole number of MB from 1 to 9999999, no leading zero ^(got "%MIN_FREE_MB%"^).
+exit /b 1
+
+:bad_free_mb
+echo.
+echo ERROR: could not measure free memory ^(got "%FREE_MB%"^). Aborting BEFORE touching the running app.
+echo Fix the PowerShell Get-CimInstance reading, or, after checking RAM yourself, opt out explicitly:
+echo   set SKIP_MEMORY_CHECK=1, then run with --deploy-only
+exit /b 1
 
 :get_free_mb
 set "FREE_MB="
