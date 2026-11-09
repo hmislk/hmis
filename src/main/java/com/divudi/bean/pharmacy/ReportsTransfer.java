@@ -931,6 +931,7 @@ public class ReportsTransfer implements Serializable {
 
         jpql.append("select new com.divudi.core.data.dto.PharmacyTransferReceiveBillItemDTO(")
                 .append("b.id, ")
+                .append("b.billTypeAtomic, ")  // #18285: the atomic decides the report sign
                 .append("TYPE(b), ")  // ADDED: Bill class discriminator to identify CancelledBill
                 .append("b.deptId, b.createdAt, it.name, it.code,")
                 .append(" bi.qty, ib.costRate, bfd.valueAtCostRate,")
@@ -946,11 +947,15 @@ public class ReportsTransfer implements Serializable {
                 .append(" where b.billType=:bt")
                 .append(" and (b.retired=false or b.retired is null)")
                 .append(" and (bi.retired=false or bi.retired is null)")
+                .append(" and (b.billTypeAtomic is null or b.billTypeAtomic <> :preAtomic)")
                 .append(" and b.createdAt between :fd and :td ");
 
         params.put("fd", fromDate);
         params.put("td", toDate);
         params.put("bt", BillType.PharmacyTransferReceive);
+        // A PHARMACY_RECEIVE_PRE bill is an unapproved receive request, later replaced by
+        // the PHARMACY_RECEIVE bill; counting it too would double the receive (#18285).
+        params.put("preAtomic", BillTypeAtomic.PHARMACY_RECEIVE_PRE);
 
         if (fromDepartment != null) {
             jpql.append(" and b.fromDepartment=:fdept");
@@ -1585,7 +1590,11 @@ public class ReportsTransfer implements Serializable {
         netTotalPurchaseValues = 0.0;
         netTotalCostValues = 0.0;
 
-        List<Object[]> objects = getBillBeanController().fetchBilledDepartmentFinanceDetailsWithFromAndTo(fd, td, fromDep, toDep, bt);
+        // The receive summary uses signed totals (receive +, cancellation -), like the
+        // by-bill and by-item receive reports (#18285/#18286).
+        List<Object[]> objects = bt == BillType.PharmacyTransferReceive
+                ? getBillBeanController().fetchSignedTransferReceiveDepartmentTotals(fd, td, fromDep, toDep)
+                : getBillBeanController().fetchBilledDepartmentFinanceDetailsWithFromAndTo(fd, td, fromDep, toDep, bt);
 
         for (Object[] ob : objects) {
             Department fromDepartment = (Department) ob[0];
@@ -2870,6 +2879,7 @@ public class ReportsTransfer implements Serializable {
         StringBuilder jpql = new StringBuilder();
 
         jpql.append("SELECT new com.divudi.core.data.dto.PharmacyTransferReceiveDTO(")
+                .append("b.billTypeAtomic, ")  // #18286: the atomic decides the report sign
                 .append("TYPE(b), ")  // ADDED: Bill class discriminator to identify CancelledBill
                 .append("b.id, ")
                 .append("COALESCE(b.deptId, ''), ")
@@ -2894,11 +2904,14 @@ public class ReportsTransfer implements Serializable {
                 .append("LEFT JOIN b.billedBill bb ")  // ADDED: Join to original issue bill for traceability
                 .append("WHERE b.billType = :bt ")
                 .append("AND b.retired = false ")
+                .append("AND (b.billTypeAtomic IS NULL OR b.billTypeAtomic <> :preAtomic) ")
                 .append("AND b.createdAt BETWEEN :fd AND :td ");
 
         params.put("fd", fromDate);
         params.put("td", toDate);
         params.put("bt", BillType.PharmacyTransferReceive);
+        // Unapproved PHARMACY_RECEIVE_PRE requests are not stock movements (#18286).
+        params.put("preAtomic", BillTypeAtomic.PHARMACY_RECEIVE_PRE);
 
         if (fromDepartment != null) {
             jpql.append("AND b.fromDepartment = :fdept ");

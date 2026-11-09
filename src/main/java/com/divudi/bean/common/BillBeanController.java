@@ -2118,6 +2118,76 @@ public class BillBeanController implements Serializable {
         return getBillFeeFacade().findAggregates(sql, temMap, TemporalType.TIMESTAMP);
     }
 
+    /**
+     * Transfer Receive summary totals per from/to department, in the stock-in
+     * view (#18285/#18286): a receive counts positive and a cancellation or
+     * refund negative, whatever sign is stored. Retired bills and unapproved
+     * PHARMACY_RECEIVE_PRE requests are excluded, as in the by-bill and
+     * by-item receive reports.
+     */
+    public List<Object[]> fetchSignedTransferReceiveDepartmentTotals(Date fromDate, Date toDate,
+            Department fromDepartment, Department toDepartment) {
+        // Sum magnitudes per department pair and atomic, then apply the atomic's sign here.
+        String sql = "select b.fromDepartment, b.toDepartment, b.billTypeAtomic, "
+                // A receive bill leaves bfd.lineNetTotal empty, so fall back to the bill net total.
+                + "sum(ABS(COALESCE(bfd.lineNetTotal, b.netTotal, 0.0))), "
+                + "sum(ABS(COALESCE(bfd.totalPurchaseValue, 0.0))), "
+                + "sum(ABS(COALESCE(bfd.totalRetailSaleValue, 0.0))), "
+                + "sum(ABS(COALESCE(bfd.totalCostValue, 0.0))) "
+                + " FROM Bill b "
+                + " LEFT JOIN b.billFinanceDetails bfd "
+                + " where b.billType = :bTp "
+                + " and (b.retired = false or b.retired is null) "
+                + " and (b.billTypeAtomic is null or b.billTypeAtomic <> :preAtomic) "
+                + " and b.createdAt between :fromDate and :toDate ";
+
+        Map temMap = new HashMap();
+        if (fromDepartment != null) {
+            sql += " and b.fromDepartment = :fromDept ";
+            temMap.put("fromDept", fromDepartment);
+        }
+        if (toDepartment != null) {
+            sql += " and b.toDepartment = :toDept ";
+            temMap.put("toDept", toDepartment);
+        }
+
+        sql += " group by b.fromDepartment, b.toDepartment, b.billTypeAtomic "
+                + " order by b.fromDepartment.name, b.toDepartment.name ";
+
+        temMap.put("toDate", toDate);
+        temMap.put("fromDate", fromDate);
+        temMap.put("bTp", BillType.PharmacyTransferReceive);
+        temMap.put("preAtomic", BillTypeAtomic.PHARMACY_RECEIVE_PRE);
+
+        List<Object[]> rows = getBillFeeFacade().findAggregates(sql, temMap, TemporalType.TIMESTAMP);
+        // Merge into one row per department pair: [fromDept, toDept, transfer, purchase, sale, cost].
+        java.util.LinkedHashMap<String, Object[]> merged = new java.util.LinkedHashMap<>();
+        if (rows != null) {
+            for (Object[] r : rows) {
+                Department fromDept = (Department) r[0];
+                Department toDept = (Department) r[1];
+                BillTypeAtomic atomic = (BillTypeAtomic) r[2];
+                boolean negative = atomic != null
+                        && (atomic.getBillCategory() == com.divudi.core.data.BillCategory.CANCELLATION
+                        || atomic.getBillCategory() == com.divudi.core.data.BillCategory.REFUND);
+                double sign = negative ? -1.0 : 1.0;
+                String key = (fromDept == null ? "null" : String.valueOf(fromDept.getId()))
+                        + "|" + (toDept == null ? "null" : String.valueOf(toDept.getId()));
+                Object[] m = merged.get(key);
+                if (m == null) {
+                    m = new Object[]{fromDept, toDept, 0.0, 0.0, 0.0, 0.0};
+                    merged.put(key, m);
+                }
+                for (int i = 0; i < 4; i++) {
+                    Object v = r[3 + i];
+                    double d = v instanceof Number ? ((Number) v).doubleValue() : 0.0;
+                    m[2 + i] = (Double) m[2 + i] + sign * d;
+                }
+            }
+        }
+        return new ArrayList<>(merged.values());
+    }
+
     public List<Object[]> fetchBilledDepartmentItemStore(Date fromDate, Date toDate, Department department) {
         String sql;
         Map temMap = new HashMap();
