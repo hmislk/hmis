@@ -181,6 +181,7 @@
                                             element.classList.add('print-only');
                                         }).catch((e) => {
                                             element.classList.remove('labPdfExport');
+                                            element.classList.add('print-only');
                                             console.error(e);
                                         });
                                     }
