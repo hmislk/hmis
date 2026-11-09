@@ -163,14 +163,18 @@
                                        var="group"   
                                        >
 
-                                <div class="micBlock" style="vertical-align: top; text-align: left;  padding-top: 0.1%; padding-bottom: 0%; clear: left;">
+                                <!-- One organism (name + antibiotics + comment) is ONE page block, so the
+                                     page splitter moves the whole section to the next page instead of
+                                     cutting it in half. A section taller than a page stays alone on its page. -->
+                                <div class="micBlock micOrganismSection" style="display: flow-root; clear: left; width: 100%;">
+                                <div style="vertical-align: top; text-align: left;  padding-top: 0.1%; padding-bottom: 0%; clear: left;">
                                     <h:outputLabel 
                                         value="#{group.groupName}" 
                                         rendered="#{patientReportController.currentPatientReport.transHasAbst}"
                                         style="font-size: 135%; margin-top: 2px; font-weight: bold;">
                                     </h:outputLabel>
                                 </div>
-                                <div class="row micBlock">
+                                <div class="row">
                                     <div class="col-6">
                                         <ui:repeat  
                                             value="#{patientInvestigationController.column1AntibioticList}" 
@@ -233,7 +237,6 @@
                                 <ui:repeat value="#{patientReportController.currentPatientReport.patientReportItemValues}"
                                            var="prc">
                                     <h:panelGroup layout="block"
-                                                  styleClass="micBlock"
                                                   style="display: inline-block; clear: left; float: left; width: 100%; vertical-align: top; font-size: 14px; margin-bottom: 0; margin-top: 4px;"
                                                   rendered="#{prc.patientReportGroup.groupName eq group.groupName and prc.investigationItem.ixItemType eq 'OrganismComment' and prc.lobValuePrintable ne '' and prc.lobValuePrintable ne null}">
                                         <div style="display: inline-block; float: left; width: 1%; clear: left; " ></div>
@@ -246,6 +249,7 @@
                                         </div>
                                     </h:panelGroup>
                                 </ui:repeat>
+                                </div>
 
                             </ui:repeat>
                         </h:panelGroup>
