@@ -199,6 +199,15 @@ public class TokenController implements Serializable, ControllerWithPatient {
         return c.getTime();
     }
 
+    // Exclusive upper bound, so a bill dated tomorrow (server clock corrected
+    // after it was saved) does not show on today's TV.
+    private Date startOfTomorrow() {
+        java.util.Calendar c = java.util.Calendar.getInstance();
+        c.setTime(startOfToday());
+        c.add(java.util.Calendar.DATE, 1);
+        return c.getTime();
+    }
+
     public void fillSaleForCashierCalledBillsTokens(){
         Map m = new HashMap();
         String j = "Select t "
@@ -212,6 +221,7 @@ public class TokenController implements Serializable, ControllerWithPatient {
                 + " and t.completed=:com"
                 + " and t.displayToken = true"
                 + " and t.bill.createdAt >= :fd"
+                + " and t.bill.createdAt < :td"
                 + " and t.retired = false";
         
         Bill b = new Bill();
@@ -224,6 +234,7 @@ public class TokenController implements Serializable, ControllerWithPatient {
         // Only today's tokens: token numbers restart daily, and called but
         // never completed tokens from earlier days cluttered the TV.
         m.put("fd", startOfToday());
+        m.put("td", startOfTomorrow());
         j += " order by t.id";
         currentTokensSaleForCashier = tokenFacade.findByJpql(j, m, TemporalType.DATE);
     }
@@ -242,6 +253,7 @@ public class TokenController implements Serializable, ControllerWithPatient {
                 + " and t.completed=:com "
                 + " and t.displayToken = true"
                 + " and t.bill.createdAt >= :fd"
+                + " and t.bill.createdAt < :td"
                 + " and t.retired = false";
         
         Bill b = new Bill();
@@ -255,6 +267,7 @@ public class TokenController implements Serializable, ControllerWithPatient {
         // Only today's tokens: token numbers restart daily, and called but
         // never completed tokens from earlier days cluttered the TV.
         m.put("fd", startOfToday());
+        m.put("td", startOfTomorrow());
         j += " order by t.id";
         inprogressTokensSaleForCashier = tokenFacade.findByJpql(j, m, TemporalType.DATE);
     }
