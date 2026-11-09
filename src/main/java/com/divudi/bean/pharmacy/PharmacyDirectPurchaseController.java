@@ -2176,13 +2176,27 @@ public class PharmacyDirectPurchaseController implements Serializable {
             f.setValueAtWholesaleRate(BigDecimal.ZERO);
         }
 
+        // Issue #22864: when a typed purchase value drives the line, the purchase values come from
+        // the exact line net total, not from the 4-decimal net rate (3 x 833.3333 = 2499.9999).
+        boolean valueEntered = f.getEnteredLineGrossTotal() != null && BigDecimalUtil.isPositive(qty);
+        BigDecimal exactLineNet = BigDecimalUtil.valueOrZero(f.getLineNetTotal());
+
         // Calculate valueAtPurchaseRate based on configuration
         if (configOptionApplicationController.getBooleanValueByKey("Purchase Value Includes Free Items", true)) {
             // Net Rate × Total Quantity (includes free items)
             // Value at purchase becomes unit rate × total units, keeping AMPP aligned with AMP
-            f.setValueAtPurchaseRate(
-                    BigDecimalUtil.multiply(totalUnits, purchaseRatePerUnit)
-            );
+            if (valueEntered) {
+                // Line net pro-rated to paid + free quantity, same rule as GRN Costing
+                f.setValueAtPurchaseRate(exactLineNet
+                        .multiply(qty.add(BigDecimalUtil.valueOrZero(f.getFreeQuantity())))
+                        .divide(qty, MathContext.DECIMAL64));
+            } else {
+                f.setValueAtPurchaseRate(
+                        BigDecimalUtil.multiply(totalUnits, purchaseRatePerUnit)
+                );
+            }
+        } else if (valueEntered) {
+            f.setValueAtPurchaseRate(exactLineNet);
         } else {
             // Net Rate × Paid Quantity (actual money spent, excludes free items)
             f.setValueAtPurchaseRate(
@@ -2211,7 +2225,10 @@ public class PharmacyDirectPurchaseController implements Serializable {
         pbi.setRetailRate(retailRatePerUnit.doubleValue()); // Retail rate per unit
 
         // Calculate values (quantity × rate) so unit-level totals remain consistent
-        BigDecimal pbiPurchaseValue = BigDecimalUtil.multiply(qtyByUnits, purchaseRatePerUnit);
+        // Paid units × net rate per unit equals the line net total; use it exactly when typed (#22864)
+        BigDecimal pbiPurchaseValue = valueEntered
+                ? exactLineNet
+                : BigDecimalUtil.multiply(qtyByUnits, purchaseRatePerUnit);
         BigDecimal pbiCostValue = BigDecimalUtil.multiply(qtyByUnits, costRatePerUnit);
         BigDecimal pbiRetailValue = BigDecimalUtil.multiply(qtyByUnits, retailRatePerUnit);
 
