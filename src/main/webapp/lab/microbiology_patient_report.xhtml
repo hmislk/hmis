@@ -776,16 +776,48 @@
                                                     <h:panelGroup layout="block"
                                                                   styleClass="mic-organism-comment"
                                                                   rendered="#{pvc.patientReportGroup.groupName eq group.groupName and pvc.investigationItem.ixItemType eq 'OrganismComment'}">
-                                                        <p:outputLabel for="txtOrganismComment" value="Comment" styleClass="mic-field-label"/>
-                                                        <p:inputTextarea id="txtOrganismComment"
-                                                                         value="#{pvc.lobValue}"
-                                                                         rows="2"
-                                                                         autoResize="true"
-                                                                         styleClass="w-100"
-                                                                         placeholder="Comment for this organism"
-                                                                         disabled="#{patientReportController.currentPatientReport.approved}">
+                                                        <h:outputLabel value="Comment" styleClass="mic-field-label"/>
+                                                        <!-- Same rich text editor as the memo items (e.g. CULTURE COLONY COUNT) -->
+                                                        <p:textEditor id="txtOrganismComment"
+                                                                      class="w-100 mt-1 micMemoEditor"
+                                                                      secure="false"
+                                                                      allowFormatting="true"
+                                                                      allowBlocks="true"
+                                                                      allowStyles="true"
+                                                                      placeholder="Comment for this organism"
+                                                                      disabled="#{patientReportController.currentPatientReport.approved}"
+                                                                      value="#{pvc.lobValue}">
+                                                            <f:facet name="toolbar">
+                                                                <span class="ql-formats">
+                                                                    <button class="ql-bold"></button>
+                                                                    <button class="ql-italic"></button>
+                                                                    <button class="ql-underline"></button>
+                                                                    <button class="ql-strike"></button>
+                                                                </span>
+
+                                                                <span class="ql-formats">
+                                                                    <select class="ql-font"></select>
+                                                                    <select class="ql-size"></select>
+                                                                </span>
+
+                                                                <span class="ql-formats">
+                                                                    <button class="ql-script" value="sub"></button>
+                                                                    <button class="ql-script" value="super"></button>
+                                                                </span>
+
+                                                                <span class="ql-formats">
+                                                                    <button class="ql-list" value="ordered"></button>
+                                                                    <button class="ql-list" value="bullet"></button>
+                                                                    <button class="ql-indent" value="-1"></button>
+                                                                    <button class="ql-indent" value="+1"></button>
+                                                                </span>
+
+                                                                <span class="ql-formats">
+                                                                    <select class="ql-align"></select>
+                                                                </span>
+                                                            </f:facet>
                                                             <p:ajax process="@this" event="blur" listener="#{patientReportController.savePatientReportItemValues()}"/>
-                                                        </p:inputTextarea>
+                                                        </p:textEditor>
                                                     </h:panelGroup>
                                                 </ui:repeat>
                                                 </p:panel>
