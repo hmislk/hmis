@@ -76,7 +76,8 @@
                             justify-content: space-between;
                             flex-wrap: wrap;
                             gap: 8px;
-                            margin-bottom: 10px;
+                            padding: 8px 10px;
+                            border-bottom: 1px solid #dee2e6;
                         }
                         .mic-ab-search {
                             position: relative;
@@ -655,34 +656,6 @@
                                     </h:panelGroup>
 
                                     <h:panelGroup rendered="#{not empty patientReportController.currentPatientReport.patientReportGroups}">
-                                            <!-- Antibiotic search + expand / collapse (client side only) -->
-                                            <div class="mic-organism-tools">
-                                                <div class="mic-ab-search">
-                                                    <i class="fa fa-search"></i>
-                                                    <input type="text"
-                                                           id="micAbSearch"
-                                                           class="form-control form-control-sm"
-                                                           placeholder="Search antibiotic..."
-                                                           title="Type to filter antibiotics in all organisms"
-                                                           autocomplete="off"
-                                                           oninput="micFilterAntibiotics(this.value);"
-                                                           onkeydown="if (event.key === 'Enter') { event.preventDefault(); return false; }"/>
-                                                </div>
-                                                <div class="d-flex gap-1">
-                                                    <button type="button" class="mic-tool-btn" title="Expand all organisms"
-                                                            onclick="micToggleAllOrganisms(false);">
-                                                        <i class="fa fa-angle-double-down"></i> Expand all
-                                                    </button>
-                                                    <button type="button" class="mic-tool-btn" title="Collapse all organisms"
-                                                            onclick="micToggleAllOrganisms(true);">
-                                                        <i class="fa fa-angle-double-up"></i> Collapse all
-                                                    </button>
-                                                </div>
-                                            </div>
-                                            <div id="micAbNoMatch" class="text-muted text-center py-2" style="display: none;">
-                                                No antibiotic matches your search.
-                                            </div>
-
                                             <ui:repeat
                                                 id="tblMicValsGroupes"
                                                 value="#{patientReportController.currentPatientReport.patientReportGroups}"
@@ -691,6 +664,12 @@
                                                 <p:panel toggleable="true" toggleSpeed="200" styleClass="mic-organism-card">
                                                     <f:facet name="header">
                                                         <i class="fa-solid fa-bacterium me-2"></i>
+                                                        <!-- Key used to remember this card's open / closed state across postbacks -->
+                                                        <h:outputText
+                                                            styleClass="mic-organism-key"
+                                                            style="display: none;"
+                                                            value="#{patientReportController.currentPatientReport.id}|#{group.id}" >
+                                                        </h:outputText>
                                                         <h:outputText
                                                             escape="false"
                                                             styleClass="mic-organism-name"
@@ -722,6 +701,22 @@
                                                                 icon="pi pi-exclamation-triangle"/>
                                                         </p:commandButton>
                                                     </f:facet>
+                                                <!-- Antibiotic search for this organism only (client side) -->
+                                                <div class="mic-organism-tools">
+                                                    <div class="mic-ab-search">
+                                                        <i class="fa fa-search"></i>
+                                                        <input type="text"
+                                                               class="form-control form-control-sm mic-ab-search-input"
+                                                               placeholder="Search antibiotic..."
+                                                               title="Type to filter the antibiotics of this organism"
+                                                               autocomplete="off"
+                                                               oninput="micFilterAntibiotics(this);"
+                                                               onkeydown="if (event.key === 'Enter') { event.preventDefault(); return false; }"/>
+                                                    </div>
+                                                </div>
+                                                <div class="mic-ab-no-match text-muted text-center py-2" style="display: none;">
+                                                    No antibiotic matches your search.
+                                                </div>
                                                 <table class="mic-ab-table">
                                                 <thead>
                                                     <tr>
@@ -843,9 +838,8 @@
                                 </p:dialog>
 
                                 <script>
-                                    // Organism cards are toggleable p:panels (same as Report Details).
-                                    // Open / close them through the panel's own toggle button so the
-                                    // PrimeFaces widget state stays in sync.
+                                    // Organism cards are toggleable p:panels (same as Report Details),
+                                    // shown as an accordion: only one organism is open at a time.
                                     function micIsOrganismCollapsed(card) {
                                         // PrimeFaces keeps the panel state in a hidden "panelId_collapsed" input,
                                         // updated at once (the content's display changes only after the slide).
@@ -857,8 +851,24 @@
                                         return !!content &amp;&amp; window.getComputedStyle(content).display === 'none';
                                     }
 
-                                    function micSetOrganismCollapsed(card, collapse) {
-                                        if (micIsOrganismCollapsed(card) !== collapse) {
+                                    // Open / close one card through its PrimeFaces widget (instant = no slide)
+                                    function micSetOrganismCollapsed(card, collapse, instant) {
+                                        if (micIsOrganismCollapsed(card) === collapse) {
+                                            return;
+                                        }
+                                        var widget = (window.PrimeFaces &amp;&amp; PrimeFaces.getWidgetById) ? PrimeFaces.getWidgetById(card.id) : null;
+                                        if (widget &amp;&amp; widget.cfg &amp;&amp; typeof widget.collapse === 'function') {
+                                            var speed = widget.cfg.toggleSpeed;
+                                            if (instant) {
+                                                widget.cfg.toggleSpeed = 0;
+                                            }
+                                            if (collapse) {
+                                                widget.collapse();
+                                            } else {
+                                                widget.expand();
+                                            }
+                                            widget.cfg.toggleSpeed = speed;
+                                        } else {
                                             var toggler = card.querySelector('.ui-panel-titlebar-toggler');
                                             if (toggler) {
                                                 toggler.click();
@@ -866,45 +876,117 @@
                                         }
                                     }
 
-                                    // Collapse (true) or expand (false) every organism card
-                                    function micToggleAllOrganisms(collapse) {
-                                        document.querySelectorAll('.mic-organism-card').forEach(function (card) {
-                                            micSetOrganismCollapsed(card, collapse);
-                                        });
-                                    }
-
-                                    // Filter antibiotic rows in all organisms by name.
-                                    // Cards with a match are expanded; cards without one are hidden.
-                                    function micFilterAntibiotics(text) {
-                                        var q = (text || '').trim().toLowerCase();
+                                    // Filter the antibiotic rows of ONE organism by name
+                                    function micFilterAntibiotics(input) {
+                                        var card = input.closest('.mic-organism-card');
+                                        if (!card) {
+                                            return;
+                                        }
+                                        var q = (input.value || '').trim().toLowerCase();
                                         var anyMatch = false;
-                                        document.querySelectorAll('.mic-organism-card').forEach(function (card) {
-                                            var cardMatch = false;
-                                            card.querySelectorAll('.mic-ab-row').forEach(function (row) {
-                                                var nameCell = row.querySelector('.mic-ab-name');
-                                                var name = nameCell ? nameCell.textContent.toLowerCase() : '';
-                                                var show = q === '' || name.indexOf(q) !== -1;
-                                                row.style.display = show ? '' : 'none';
-                                                if (show) {
-                                                    cardMatch = true;
-                                                }
-                                            });
-                                            if (q === '') {
-                                                card.style.display = '';
-                                            } else {
-                                                card.style.display = cardMatch ? '' : 'none';
-                                                if (cardMatch) {
-                                                    micSetOrganismCollapsed(card, false);
-                                                }
-                                            }
-                                            if (cardMatch) {
+                                        card.querySelectorAll('.mic-ab-row').forEach(function (row) {
+                                            var nameCell = row.querySelector('.mic-ab-name');
+                                            var name = nameCell ? nameCell.textContent.toLowerCase() : '';
+                                            var show = q === '' || name.indexOf(q) !== -1;
+                                            row.style.display = show ? '' : 'none';
+                                            if (show) {
                                                 anyMatch = true;
                                             }
                                         });
-                                        var noMatch = document.getElementById('micAbNoMatch');
+                                        var noMatch = card.querySelector('.mic-ab-no-match');
                                         if (noMatch) {
                                             noMatch.style.display = (q !== '' &amp;&amp; !anyMatch) ? '' : 'none';
                                         }
+                                    }
+
+                                    // ---- Remember which organism is open ----
+                                    // The cards are re-rendered after every postback (Save, Approve, ...) and after
+                                    // Add / Edit / Delete Organism, so the open card is kept in sessionStorage
+                                    // (per browser tab, per report) and re-applied. Empty string = all closed.
+                                    var MIC_ORGANISM_OPEN_KEY = 'micOrganismOpen';
+
+                                    function micReadOpenOrganisms() {
+                                        try {
+                                            return JSON.parse(window.sessionStorage.getItem(MIC_ORGANISM_OPEN_KEY)) || {};
+                                        } catch (e) {
+                                            return {};
+                                        }
+                                    }
+
+                                    function micWriteOpenOrganisms(map) {
+                                        try {
+                                            window.sessionStorage.setItem(MIC_ORGANISM_OPEN_KEY, JSON.stringify(map));
+                                        } catch (e) {
+                                            // storage unavailable: the first organism opens by default
+                                        }
+                                    }
+
+                                    // Card key = "reportId|groupId"
+                                    function micOrganismKey(card) {
+                                        var keyEl = card.querySelector('.mic-organism-key');
+                                        return keyEl ? keyEl.textContent.trim() : null;
+                                    }
+
+                                    function micReportIdOf(key) {
+                                        return key ? key.split('|')[0] : null;
+                                    }
+
+                                    function micRestoreOrganismStates() {
+                                        var cards = Array.prototype.slice.call(document.querySelectorAll('.mic-organism-card'));
+                                        if (cards.length === 0) {
+                                            return;
+                                        }
+                                        var keys = cards.map(micOrganismKey);
+                                        var reportId = micReportIdOf(keys[0]);
+                                        var stored = micReadOpenOrganisms()[reportId];
+                                        var openKey;
+                                        if (stored === '') {
+                                            openKey = '';                       // the user closed them all
+                                        } else if (stored &amp;&amp; keys.indexOf(stored) !== -1) {
+                                            openKey = stored;                   // remembered organism
+                                        } else {
+                                            openKey = keys[0];                  // default: first organism
+                                        }
+                                        cards.forEach(function (card, i) {
+                                            micSetOrganismCollapsed(card, keys[i] !== openKey, true);
+                                        });
+                                    }
+
+                                    // Accordion: when the user opens one organism, close the others
+                                    document.addEventListener('click', function (e) {
+                                        if (!e.isTrusted || !e.target.closest) {
+                                            return;
+                                        }
+                                        var toggler = e.target.closest('.mic-organism-card .ui-panel-titlebar-toggler');
+                                        if (!toggler) {
+                                            return;
+                                        }
+                                        var card = toggler.closest('.mic-organism-card');
+                                        var key = card ? micOrganismKey(card) : null;
+                                        if (!key) {
+                                            return;
+                                        }
+                                        var opened = !micIsOrganismCollapsed(card);
+                                        if (opened) {
+                                            document.querySelectorAll('.mic-organism-card').forEach(function (other) {
+                                                if (other !== card) {
+                                                    micSetOrganismCollapsed(other, true, false);
+                                                }
+                                            });
+                                        }
+                                        var map = micReadOpenOrganisms();
+                                        map[micReportIdOf(key)] = opened ? key : '';
+                                        micWriteOpenOrganisms(map);
+                                    });
+
+                                    if (window.jQuery) {
+                                        jQuery(function () {
+                                            micRestoreOrganismStates();
+                                        });
+                                        // Add / Edit / Delete Organism re-render the cards through AJAX
+                                        jQuery(document).on('pfAjaxComplete', function () {
+                                            micRestoreOrganismStates();
+                                        });
                                     }
                                 </script>
 
