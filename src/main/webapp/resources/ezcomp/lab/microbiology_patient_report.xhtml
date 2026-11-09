@@ -317,8 +317,17 @@
                     if (window.micPaginateReport) {
                         return;
                     }
+                    // Print (p:printer) writes a copy of the already split report into
+                    // a print iframe, which runs this script again. Re-splitting there
+                    // would drop the extra pages, so the copy is left exactly as it is.
+                    if (document.querySelector('.micPageCont')) {
+                        window.micPaginateReport = function () {};
+                        return;
+                    }
                     var moved = [];
+                    var created = [];
 
+                    // Undo only what this window did: never remove pages it did not make.
                     function restore() {
                         moved.forEach(function (m) {
                             if (m.placeholder.isConnected) {
@@ -326,9 +335,12 @@
                             }
                         });
                         moved = [];
-                        document.querySelectorAll('.micPageCont').forEach(function (p) {
-                            p.parentNode.removeChild(p);
+                        created.forEach(function (p) {
+                            if (p.parentNode) {
+                                p.parentNode.removeChild(p);
+                            }
                         });
+                        created = [];
                     }
 
                     // A new page is a full copy of page 1 (letterhead, header, title,
@@ -432,6 +444,7 @@
                             pageNo++;
                             var page = makePage(page1, pageNo);
                             current.parentNode.insertBefore(page, current.nextSibling);
+                            created.push(page);
                             var body = page.querySelector('.micPageBody');
                             for (var j = cut; j !== blocks.length; j++) {
                                 var blk = blocks[j];
