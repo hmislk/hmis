@@ -121,6 +121,14 @@ Pushing a change to `.github/workflows/*` needs a gh token with the `workflow` s
 
 If nothing is staged, the branch already has them. Without these files the local hook falls back to `origin/development`'s copy, but CI does not.
 
+Then remove stray gitlinks. Some deploy branches carry submodule entries with no `.gitmodules` URL (old `.claude/worktrees/*`, `hmis.wiki`, `wiki-tmp`), and CI checkout then fails with `No url found for submodule path`. List them and drop each one from the index, in its own commit:
+
+```bash
+git ls-tree -r HEAD | awk '$2=="commit"{print $4}'   # must print nothing
+git rm --cached <path>   # for each path printed
+git commit -m "chore: remove stray gitlink(s) so CI checkout works" -- <path>...
+```
+
 ## Step 3 — Apply the Fix
 
 Make only the minimal changes required. Do NOT port unrelated features or refactors. Always compile the hotfix branch before opening the PR: PRs to deploy branches get no compile CI, and older branches often lack newer enum values or facade methods that a cherry-pick uses (2026-11-05: coop-staging lacked an `InwardChargeType` value; mp-production lacked `AbstractFacade.updateByJpql`).
