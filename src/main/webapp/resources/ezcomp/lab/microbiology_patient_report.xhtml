@@ -296,9 +296,9 @@
                      limit line (75% by default). Text and top position are set by
                      micPaginateReport(); format and font/side come from config. -->
                 <div class="micPageNo"
-                     data-top="#{configOptionApplicationController.getShortTextValueByKey('Microbiology Lab Report Page Number Top', '')}"
+                     data-top="#{configOptionApplicationController.getShortTextValueByKey('Microbiology Lab Report Page Number Top', '77.5')}"
                      data-format="#{configOptionApplicationController.getShortTextValueByKey('Microbiology Lab Report Page Number Format', 'Page {page} of {total}')}"
-                     style="position: absolute; top: 75.5%; z-index: 950; font-family: Cambria, Georgia, serif; #{configOptionApplicationController.getShortTextValueByKey('Microbiology Lab Report Page Number Text Style', 'right: 4%; font-size: 12px;')}"></div>
+                     style="position: absolute; top: #{empty configOptionApplicationController.getShortTextValueByKey('Microbiology Lab Report Page Number Top', '77.5') ? '77.5%' : (configOptionApplicationController.getShortTextValueByKey('Microbiology Lab Report Page Number Top', '77.5').trim().matches('-?[0-9]+([.][0-9]+)?') ? configOptionApplicationController.getShortTextValueByKey('Microbiology Lab Report Page Number Top', '77.5').trim().concat('%') : configOptionApplicationController.getShortTextValueByKey('Microbiology Lab Report Page Number Top', '77.5').trim())}; z-index: 950; font-family: Cambria, Georgia, serif; #{configOptionApplicationController.getShortTextValueByKey('Microbiology Lab Report Page Number Text Style', 'right: 4%; font-size: 12px;')}"></div>
             </div>
             <script>
                 /*
