@@ -98,7 +98,7 @@
                                         </f:facet>
 
                                         <h:panelGroup >
-                                            <fieldset disabled="#{opdBillCancellationController.paymentMethod eq 'Credit'}"
+                                            <fieldset disabled="#{opdBillCancellationController.paymentMethod eq 'Credit' ? 'disabled' : null}"
                                                       style="border: none; padding: 0; margin: 0;">
                                                 <h:panelGroup
                                                     class="row"
@@ -256,6 +256,10 @@
                                                                                 <div class="col-md-6">
                                                                                     <label class="form-label">Amount:</label>
                                                                                     <p class="form-control-plaintext">#{originalPm.totalValue}</p>
+                                                                                </div>
+                                                                                <div class="col-md-6">
+                                                                                    <label class="form-label">Bank / Institution:</label>
+                                                                                    <p class="form-control-plaintext">#{originalPm.institution.name}</p>
                                                                                 </div>
                                                                                 <div class="col-md-6">
                                                                                     <label class="form-label">Reference:</label>
@@ -601,39 +605,33 @@
                                                         </h:outputText>
                                                     </p:column>
 
-                                                    <p:column headerText="Bank" rendered="#{op.paymentMethod eq 'Card' or op.paymentMethod eq 'Slip' or op.paymentMethod eq 'Cheque' or op.paymentMethod eq 'ewallet' or op.paymentMethod eq 'OnlineSettlement'}">
+                                                    <!-- #18082: column-level rendered cannot use the row var (headers vanished, cells shifted); conditions sit on the cell content -->
+                                                    <p:column headerText="Bank / Company">
                                                         <h:outputText value="#{op.bank.name}" rendered="#{op.bank ne null}"/>
-                                                        <h:outputText value="#{op.institution.name}" rendered="#{op.bank eq null and op.institution ne null}"/>
+                                                        <h:outputText value="#{op.creditCompany.name}" rendered="#{op.bank eq null and (op.paymentMethod eq 'ewallet' or op.paymentMethod eq 'Credit') and op.creditCompany ne null}"/>
+                                                        <h:outputText value="#{op.institution.name}" rendered="#{op.bank eq null and op.institution ne null and (op.paymentMethod eq 'Card' or op.paymentMethod eq 'Slip' or op.paymentMethod eq 'Cheque' or op.paymentMethod eq 'OnlineSettlement')}"/>
+                                                        <h:outputText value="#{op.toStaff.person.name}" rendered="#{op.toStaff ne null and (op.paymentMethod eq 'Staff' or op.paymentMethod eq 'Staff_Welfare')}"/>
                                                     </p:column>
 
-                                                    <p:column headerText="Ref/Card No" rendered="#{op.paymentMethod eq 'Card' or op.paymentMethod eq 'Slip' or op.paymentMethod eq 'Cheque' or op.paymentMethod eq 'ewallet' or op.paymentMethod eq 'OnlineSettlement'}">
+                                                    <p:column headerText="Reference">
                                                         <h:outputText value="#{op.referenceNo}" rendered="#{op.referenceNo ne null and op.referenceNo ne ''}"/>
                                                         <h:outputText value="#{op.chequeRefNo}" rendered="#{(op.referenceNo eq null or op.referenceNo eq '') and op.chequeRefNo ne null and op.chequeRefNo ne ''}"/>
                                                         <h:outputText value="#{op.creditCardRefNo}" rendered="#{(op.referenceNo eq null or op.referenceNo eq '') and op.creditCardRefNo ne null and op.creditCardRefNo ne ''}"/>
+                                                        <h:outputText value="#{op.policyNo}" rendered="#{op.paymentMethod eq 'Credit' and op.policyNo ne null and op.policyNo ne ''}"/>
                                                     </p:column>
 
-                                                    <p:column headerText="Date" rendered="#{op.paymentMethod eq 'Slip' or op.paymentMethod eq 'Cheque' or op.paymentMethod eq 'OnlineSettlement'}">
-                                                        <h:outputText value="#{op.realizedAt}" rendered="#{op.realizedAt ne null}">
-                                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" />
-                                                        </h:outputText>
-                                                        <h:outputText value="#{op.paymentDate}" rendered="#{op.realizedAt eq null and op.paymentDate ne null}">
-                                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" />
-                                                        </h:outputText>
-                                                        <h:outputText value="#{op.chequeDate}" rendered="#{op.realizedAt eq null and op.paymentDate eq null and op.chequeDate ne null}">
-                                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" />
-                                                        </h:outputText>
-                                                    </p:column>
-
-                                                    <p:column headerText="Credit Company" rendered="#{op.paymentMethod eq 'Credit'}">
-                                                        <h:outputText value="#{op.creditCompany.name}" rendered="#{op.creditCompany ne null}"/>
-                                                    </p:column>
-
-                                                    <p:column headerText="Policy No" rendered="#{op.paymentMethod eq 'Credit'}">
-                                                        <h:outputText value="#{op.policyNo}" />
-                                                    </p:column>
-
-                                                    <p:column headerText="Staff" rendered="#{op.paymentMethod eq 'Staff' or op.paymentMethod eq 'Staff_Welfare'}">
-                                                        <h:outputText value="#{op.toStaff.person.name}" rendered="#{op.toStaff ne null}"/>
+                                                    <p:column headerText="Date">
+                                                        <h:panelGroup rendered="#{op.paymentMethod eq 'Slip' or op.paymentMethod eq 'Cheque' or op.paymentMethod eq 'OnlineSettlement'}">
+                                                            <h:outputText value="#{op.realizedAt}" rendered="#{op.realizedAt ne null}">
+                                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" />
+                                                            </h:outputText>
+                                                            <h:outputText value="#{op.paymentDate}" rendered="#{op.realizedAt eq null and op.paymentDate ne null}">
+                                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" />
+                                                            </h:outputText>
+                                                            <h:outputText value="#{op.chequeDate}" rendered="#{op.realizedAt eq null and op.paymentDate eq null and op.chequeDate ne null}">
+                                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" />
+                                                            </h:outputText>
+                                                        </h:panelGroup>
                                                     </p:column>
 
                                                     <p:column headerText="Comments">

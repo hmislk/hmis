@@ -18,5 +18,19 @@
       "Bash(/home/buddhika/payara/bin/asadmin list*)",
       "Bash(/home/buddhika/payara/bin/asadmin ping-connection-pool*)"
     ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "command -v python3 >/dev/null 2>&1 && exec python3 \"$CLAUDE_PROJECT_DIR/.claude/hooks/public-guard.py\" || exec python \"$CLAUDE_PROJECT_DIR/.claude/hooks/public-guard.py\"",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
   }
 }

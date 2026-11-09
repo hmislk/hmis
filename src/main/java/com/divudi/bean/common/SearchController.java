@@ -63,6 +63,7 @@ import com.divudi.core.facade.StockFacade;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.bean.opd.OpdBillController;
 import com.divudi.bean.pharmacy.GrnReturnWorkflowController;
+import com.divudi.bean.pharmacy.PharmacyReturnwithouttresing;
 import com.divudi.bean.pharmacy.PharmacyBillSearch;
 import com.divudi.bean.pharmacy.PharmacyController;
 import com.divudi.core.data.BillCategory;
@@ -279,6 +280,9 @@ public class SearchController implements Serializable {
 
     @Inject
     private GrnReturnWorkflowController grnReturnWorkflowController;
+
+    @Inject
+    private PharmacyReturnwithouttresing pharmacyReturnwithouttresing;
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Class Variables">
     private String visitType;
@@ -532,6 +536,8 @@ public class SearchController implements Serializable {
     }
 
     public String navigateToPharmacyReturnWithoutReceipt() {
+        // Start a fresh return; otherwise the session bean still shows the last settled bill's print preview (#16854).
+        pharmacyReturnwithouttresing.resetAll();
         return "/pharmacy/pharmacy_return_withouttresing?faces-redirect=true";
     }
 
@@ -4039,23 +4045,11 @@ public class SearchController implements Serializable {
         }
 
         if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
-            try {
-                Double netTotal = Double.parseDouble(getSearchKeyword().getNetTotal().trim());
-                jpql.append(" and b.netTotal = :netTotal");
-                m.put("netTotal", netTotal);
-            } catch (NumberFormatException e) {
-                // Ignore invalid number format
-            }
+            jpql.append(JsfUtil.exactAmountFilter("b.netTotal", "netTotal", getSearchKeyword().getNetTotal(), "Net Total", m));
         }
 
         if (getSearchKeyword().getTotal() != null && !getSearchKeyword().getTotal().trim().equals("")) {
-            try {
-                Double total = Double.parseDouble(getSearchKeyword().getTotal().trim());
-                jpql.append(" and b.total = :total");
-                m.put("total", total);
-            } catch (NumberFormatException e) {
-                // Ignore invalid number format
-            }
+            jpql.append(JsfUtil.exactAmountFilter("b.total", "total", getSearchKeyword().getTotal(), "Total", m));
         }
 
         jpql.append(" order by b.createdAt desc");
@@ -5813,13 +5807,7 @@ public class SearchController implements Serializable {
         }
 
         if (getSearchKeyword().getTotal() != null && !getSearchKeyword().getTotal().trim().equals("")) {
-            try {
-                Double total = Double.parseDouble(getSearchKeyword().getTotal().trim());
-                jpql.append(" and bi.netValue = :total");
-                m.put("total", total);
-            } catch (NumberFormatException e) {
-                // Ignore invalid number format
-            }
+            jpql.append(JsfUtil.exactAmountFilter("bi.netValue", "total", getSearchKeyword().getTotal(), "Total", m));
         }
 
         if (getSearchKeyword().getItemName() != null && !getSearchKeyword().getItemName().trim().equals("")) {
@@ -7768,13 +7756,7 @@ public class SearchController implements Serializable {
             }
 
             if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().isEmpty()) {
-                try {
-                    BigDecimal netTotalValue = new BigDecimal(getSearchKeyword().getNetTotal().trim());
-                    jpql += "AND b.netTotal = :netTotal ";
-                    params.put("netTotal", netTotalValue);
-                } catch (NumberFormatException e) {
-                    // Ignore invalid number format
-                }
+                jpql += JsfUtil.exactAmountFilter("b.netTotal", "netTotal", getSearchKeyword().getNetTotal(), "Net Total", params);
             }
 
             if (getSearchKeyword().getItemName() != null && !getSearchKeyword().getItemName().trim().isEmpty()) {
@@ -8342,7 +8324,9 @@ public class SearchController implements Serializable {
         }
 
         if (getSearchKeyword().getBhtNo() != null && !getSearchKeyword().getBhtNo().trim().equals("")) {
-            sql += " and  ((b.paidForBillFee.bill.patientEncounter.bhtNo) like :bht )";
+            // Split-mode OPD bills keep the BHT only on their batch bill (backwardReferenceBill).
+            sql += " and (b.bill.id in (select eb.id from Bill eb where eb.patientEncounter.bhtNo like :bht)"
+                    + " or b.bill.id in (select ib.id from Bill ib where ib.backwardReferenceBill.patientEncounter.bhtNo like :bht)) ";
             temMap.put("bht", "%" + getSearchKeyword().getBhtNo().trim().toUpperCase() + "%");
         }
 
@@ -8420,7 +8404,9 @@ public class SearchController implements Serializable {
         }
 
         if (getSearchKeyword().getBhtNo() != null && !getSearchKeyword().getBhtNo().trim().equals("")) {
-            sql += " and  ((b.paidForBillFee.bill.patientEncounter.bhtNo) like :bht )";
+            // Split-mode OPD bills keep the BHT only on their batch bill (backwardReferenceBill).
+            sql += " and (b.bill.id in (select eb.id from Bill eb where eb.patientEncounter.bhtNo like :bht)"
+                    + " or b.bill.id in (select ib.id from Bill ib where ib.backwardReferenceBill.patientEncounter.bhtNo like :bht)) ";
             temMap.put("bht", "%" + getSearchKeyword().getBhtNo().trim().toUpperCase() + "%");
         }
         sql += "  order by b.staff.id    ";
@@ -11191,23 +11177,11 @@ public class SearchController implements Serializable {
         }
 
         if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
-            try {
-                Double netTotal = Double.parseDouble(getSearchKeyword().getNetTotal().trim());
-                sql += " and  ((token.bill.netTotal) = :netTotal )";
-                parameters.put("netTotal", netTotal);
-            } catch (NumberFormatException e) {
-                // Ignore invalid number format
-            }
+            sql += JsfUtil.exactAmountFilter("token.bill.netTotal", "netTotal", getSearchKeyword().getNetTotal(), "Net Total", parameters);
         }
 
         if (getSearchKeyword().getTotal() != null && !getSearchKeyword().getTotal().trim().equals("")) {
-            try {
-                Double total = Double.parseDouble(getSearchKeyword().getTotal().trim());
-                sql += " and  ((token.bill.total) = :total )";
-                parameters.put("total", total);
-            } catch (NumberFormatException e) {
-                // Ignore invalid number format
-            }
+            sql += JsfUtil.exactAmountFilter("token.bill.total", "total", getSearchKeyword().getTotal(), "Total", parameters);
         }
 
         if (getSearchKeyword().getTokenNumber() != null && !getSearchKeyword().getTokenNumber().trim().equals("")) {
@@ -11255,23 +11229,11 @@ public class SearchController implements Serializable {
         }
 
         if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
-            try {
-                Double netTotal = Double.parseDouble(getSearchKeyword().getNetTotal().trim());
-                sql += " and  ((token.bill.netTotal) = :netTotal )";
-                parameters.put("netTotal", netTotal);
-            } catch (NumberFormatException e) {
-                // Ignore invalid number format
-            }
+            sql += JsfUtil.exactAmountFilter("token.bill.netTotal", "netTotal", getSearchKeyword().getNetTotal(), "Net Total", parameters);
         }
 
         if (getSearchKeyword().getTotal() != null && !getSearchKeyword().getTotal().trim().equals("")) {
-            try {
-                Double total = Double.parseDouble(getSearchKeyword().getTotal().trim());
-                sql += " and  ((token.bill.total) = :total )";
-                parameters.put("total", total);
-            } catch (NumberFormatException e) {
-                // Ignore invalid number format
-            }
+            sql += JsfUtil.exactAmountFilter("token.bill.total", "total", getSearchKeyword().getTotal(), "Total", parameters);
         }
 
         if (getSearchKeyword().getTokenNumber() != null && !getSearchKeyword().getTokenNumber().trim().equals("")) {

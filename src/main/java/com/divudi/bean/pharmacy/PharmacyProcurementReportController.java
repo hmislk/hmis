@@ -329,8 +329,9 @@ public class PharmacyProcurementReportController implements Serializable {
             Map<String, Object> m = new HashMap<>();
             String jpql = "select new com.divudi.core.data.dto.PharmacyFreeItemReceivedDTO("
                     + " bi.id, b.id, b.createdAt, b.deptId, b.invoiceNumber, b.billTypeAtomic, d.name, d.departmentType,"
-                    + " s.id, s.name, i.id, i.code, i.name, pbi.qty, pbi.freeQty, pbi.purchaseRate) "
-                    + " from BillItem bi join bi.pharmaceuticalBillItem pbi join bi.bill b join b.department d join bi.item i"
+                    + " s.id, s.name, i.id, i.code, i.name, pbi.qty, pbi.freeQty, "
+                    + " pbi.purchaseRate, f.lineGrossRate, f.lineDiscountRate, f.unitsPerPack) "
+                    + " from BillItem bi join bi.pharmaceuticalBillItem pbi left join bi.billItemFinanceDetails f join bi.bill b join b.department d join bi.item i"
                     + " left join b.fromInstitution s "
                     + " where bi.retired=false and b.retired=false and b.cancelled=false and pbi.freeQty > 0 "
                     + " and b.billTypeAtomic in :btas and b.createdAt between :fd and :td ";

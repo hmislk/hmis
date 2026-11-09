@@ -765,11 +765,29 @@ public class PharmacyBillSearch implements Serializable {
         return "/ward/ward_pharmacy_bht_issue_request_edit?faces-redirect=true";
     }
 
-    public String cancelInwardPharmacyRequestBill() {
+    public synchronized String cancelInwardPharmacyRequestBill() {
         if (bill == null) {
             JsfUtil.addErrorMessage("Not Bill Found !");
             return "";
         }
+        if (!isAuthorized("CANCEL", "InwardPharmacyIssueRequestCancel")) {
+            return "";
+        }
+        // Re-read by id: a stale tab or a double click on Yes must not cancel a bill twice (#22255).
+        Bill freshBill = bill.getId() != null ? billFacade.findWithoutCache(bill.getId()) : null;
+        if (freshBill == null) {
+            JsfUtil.addErrorMessage("Not Bill Found !");
+            return "";
+        }
+        if (freshBill.isCancelled() || freshBill.getCancelledBill() != null) {
+            JsfUtil.addErrorMessage("This request has already been cancelled.");
+            return "";
+        }
+        if (freshBill.isRefunded()) {
+            JsfUtil.addErrorMessage("This request has been refunded and cannot be cancelled.");
+            return "";
+        }
+        bill = freshBill;
         // A blank inputText submits "" (not null), so a null check alone let the
         // request be cancelled without a comment (#24517).
         if (comment == null || comment.trim().isEmpty()) {
@@ -3316,7 +3334,11 @@ public class PharmacyBillSearch implements Serializable {
             getBillFacade().edit(newlyCreatedRetailSaleCancellationBillPre);
 
             JsfUtil.addSuccessMessage("Cancelled");
-            if (getBill().getPaymentMethod() == PaymentMethod.Credit) {
+            if (getBill().getPaymentMethod() == PaymentMethod.Credit
+                    || (getBill().getPaymentMethod() == PaymentMethod.Staff
+                    && paymentMethod == PaymentMethod.Staff)) {
+                // Staff credit too (#25339), only when the cancellation itself
+                // is by Staff; a Cash cancellation already refunds the cash.
                 if (getBill().getToStaff() != null) {
                     getStaffBean().updateStaffCredit(getBill().getToStaff(), 0 - getBill().getNetTotal());
                     JsfUtil.addSuccessMessage("Staff Credit Updated");
@@ -5972,20 +5994,10 @@ public class PharmacyBillSearch implements Serializable {
             m.put("pay", searchController.getPaymentMethod());
         }
         if (searchController.getSearchKeyword().getNetTotal() != null && !searchController.getSearchKeyword().getNetTotal().trim().isEmpty()) {
-            try {
-                sql += " AND b.netTotal = :netTotal";
-                m.put("netTotal", Double.parseDouble(searchController.getSearchKeyword().getNetTotal().trim()));
-            } catch (NumberFormatException e) {
-                // skip invalid input
-            }
+            sql += JsfUtil.exactAmountFilter("b.netTotal", "netTotal", searchController.getSearchKeyword().getNetTotal(), "Net Total", m);
         }
         if (searchController.getSearchKeyword().getTotal() != null && !searchController.getSearchKeyword().getTotal().trim().isEmpty()) {
-            try {
-                sql += " AND b.total = :total";
-                m.put("total", Double.parseDouble(searchController.getSearchKeyword().getTotal().trim()));
-            } catch (NumberFormatException e) {
-                // skip invalid input
-            }
+            sql += JsfUtil.exactAmountFilter("b.total", "total", searchController.getSearchKeyword().getTotal(), "Total", m);
         }
 
         sql += " ORDER BY b.createdAt DESC";
@@ -6159,12 +6171,7 @@ public class PharmacyBillSearch implements Serializable {
         }
         if (searchController.getSearchKeyword().getNetTotal() != null
                 && !searchController.getSearchKeyword().getNetTotal().trim().isEmpty()) {
-            try {
-                sql += " AND b.netTotal = :netTotal";
-                m.put("netTotal", Double.parseDouble(searchController.getSearchKeyword().getNetTotal().trim()));
-            } catch (NumberFormatException e) {
-                // skip invalid input
-            }
+            sql += JsfUtil.exactAmountFilter("b.netTotal", "netTotal", searchController.getSearchKeyword().getNetTotal(), "Net Total", m);
         }
 
         sql += " ORDER BY b.createdAt DESC";
@@ -6242,12 +6249,7 @@ public class PharmacyBillSearch implements Serializable {
         }
         if (searchController.getSearchKeyword().getNetTotal() != null
                 && !searchController.getSearchKeyword().getNetTotal().trim().isEmpty()) {
-            try {
-                sql += " AND b.netTotal = :netTotal";
-                m.put("netTotal", Double.parseDouble(searchController.getSearchKeyword().getNetTotal().trim()));
-            } catch (NumberFormatException e) {
-                // skip invalid input
-            }
+            sql += JsfUtil.exactAmountFilter("b.netTotal", "netTotal", searchController.getSearchKeyword().getNetTotal(), "Net Total", m);
         }
 
         sql += " ORDER BY b.createdAt DESC";
@@ -6323,12 +6325,7 @@ public class PharmacyBillSearch implements Serializable {
         }
         if (searchController.getSearchKeyword().getNetTotal() != null
                 && !searchController.getSearchKeyword().getNetTotal().trim().isEmpty()) {
-            try {
-                sql += " AND b.netTotal = :netTotal";
-                m.put("netTotal", Double.parseDouble(searchController.getSearchKeyword().getNetTotal().trim()));
-            } catch (NumberFormatException e) {
-                // skip invalid input
-            }
+            sql += JsfUtil.exactAmountFilter("b.netTotal", "netTotal", searchController.getSearchKeyword().getNetTotal(), "Net Total", m);
         }
 
         sql += " ORDER BY b.createdAt DESC";
@@ -6388,12 +6385,7 @@ public class PharmacyBillSearch implements Serializable {
         }
         if (searchController.getSearchKeyword().getNetTotal() != null
                 && !searchController.getSearchKeyword().getNetTotal().trim().isEmpty()) {
-            try {
-                sql += " AND b.netTotal = :netTotal";
-                m.put("netTotal", Double.parseDouble(searchController.getSearchKeyword().getNetTotal().trim()));
-            } catch (NumberFormatException e) {
-                // skip invalid input
-            }
+            sql += JsfUtil.exactAmountFilter("b.netTotal", "netTotal", searchController.getSearchKeyword().getNetTotal(), "Net Total", m);
         }
 
         sql += " ORDER BY b.createdAt DESC";

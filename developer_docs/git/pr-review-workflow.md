@@ -68,7 +68,7 @@ authorship), then retarget.
 
 ### 4a. Code Review After Applying CodeRabbit Fixes — MANDATORY
 
-**After applying any CodeRabbit (or other automated reviewer) suggestion, always review the changed code with the `java-health-code-reviewer` agent before pushing.** Automated tools frequently generate suggestions with wrong method names, incorrect types, or API calls that do not exist in this codebase, causing compilation errors.
+**After applying any CodeRabbit (or other automated reviewer) suggestion, always review the changed code with the `hmis-rules-reviewer` agent before pushing.** Automated tools frequently generate suggestions with wrong method names, incorrect types, or API calls that do not exist in this codebase, causing compilation errors.
 
 Specifically verify:
 - All method names exist on the actual entity class (e.g., `isCompleted()` not `getCompleted()` for primitive `boolean` fields in JPA entities)

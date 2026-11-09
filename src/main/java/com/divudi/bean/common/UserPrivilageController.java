@@ -1423,6 +1423,7 @@ public class UserPrivilageController implements Serializable {
         new DefaultTreeNode(new PrivilegeHolder(Privileges.ReportsConsumption, "2. Consumption (Legacy)"), reportsPageInventoryReportsNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.ReportsConsumptionDto, "2. Consumption"), reportsPageInventoryReportsNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.ReportsStockTransferReport, "3. Stock Transfers"), reportsPageInventoryReportsNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.ReportsInpatientDirectIssue, "3.1 Inpatient Direct Issue"), reportsPageInventoryReportsNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.ReportsCostOfGoodsSold, "4. Cost Of Good Sold"), reportsPageInventoryReportsNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.ReportsGoodInTransit, "5. Good in Transit"), reportsPageInventoryReportsNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.ReportsGrnReport, "6. GRN Report"), reportsPageInventoryReportsNode);

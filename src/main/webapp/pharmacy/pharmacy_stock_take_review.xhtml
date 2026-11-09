@@ -105,7 +105,17 @@
                                                 <p:inputText value="#{bi.descreption}" class="w-100">
                                                 </p:inputText>
                                             </p:column>
-                                            <p:column headerText="Variance" style="width: 120px; text-align:right;">
+                                            <p:column headerText="Current Stock (at upload)" style="width: 120px; text-align:right;">
+                                                <h:outputText value="#{bi.qty - bi.adjustedValue}">
+                                                    <f:convertNumber integerOnly="true"/>
+                                                </h:outputText>
+                                            </p:column>
+                                            <p:column headerText="Variance vs Starting Qty" style="width: 130px; text-align:right;">
+                                                <h:outputText rendered="#{bi.referanceBillItem ne null}" value="#{bi.qty - bi.referanceBillItem.qty}" styleClass="font-weight-bold #{(bi.qty - bi.referanceBillItem.qty) gt 0 ? 'text-success' : ((bi.qty - bi.referanceBillItem.qty) lt 0 ? 'text-danger' : 'text-muted')}">
+                                                    <f:convertNumber integerOnly="true"/>
+                                                </h:outputText>
+                                            </p:column>
+                                            <p:column headerText="Adjustment (vs Current Stock)" style="width: 140px; text-align:right;">
                                                 <h:outputText value="#{bi.adjustedValue}" styleClass="font-weight-bold #{bi.adjustedValue gt 0 ? 'text-success' : (bi.adjustedValue lt 0 ? 'text-danger' : 'text-muted')}">
                                                     <f:convertNumber integerOnly="true"/>
                                                 </h:outputText>

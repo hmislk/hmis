@@ -2191,9 +2191,13 @@ public class TransferIssueController implements Serializable {
                 return null;
             }
             // Return a StockDTO with just the ID set - the setter will handle entity conversion
-            StockDTO dto = new StockDTO();
-            dto.setId(Long.valueOf(value));
-            return dto;
+            try {
+                StockDTO dto = new StockDTO();
+                dto.setId(Long.valueOf(value.trim()));
+                return dto;
+            } catch (NumberFormatException e) {
+                return null;
+            }
         }
 
         @Override

@@ -8,6 +8,8 @@
 package com.divudi.bean.common;
 
 import java.io.Serializable;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.security.InvalidKeyException;
 import java.security.MessageDigest;
@@ -206,25 +208,33 @@ public class SecurityController implements Serializable {
         }
     }
 
+    /** Link purposes. A token signed for one purpose never verifies for another (ids overlap across tables). */
+    public static final String LINK_REPORT = "report";
+    public static final String LINK_BILL = "bill";
+    public static final String LINK_SESSION = "session";
+    public static final String LINK_PURCHASE_ORDER = "po";
+
     /**
-     * Creates a tamper-proof, self-expiring HMAC-SHA256 token for bill
-     * notification URLs. Replaces the legacy jasypt encrypt/decrypt pair that
-     * used a hardcoded key.
+     * Creates a tamper-proof, self-expiring HMAC-SHA256 token for a public
+     * (no-login) link.
      *
-     * Token format: "hmac.{billId}.{expiryEpochMs}.{base64url_signature}"
+     * Token format: "hmac.{id}.{expiryEpochMs}.{base64url_signature}", where
+     * the signature covers "{purpose}:{id}.{expiryEpochMs}". Binding the
+     * purpose stops a token issued for one record type (e.g. a channel
+     * session) from opening a different type that has the same numeric id.
      *
-     * @param billId   the bill database ID to embed
+     * @param purpose  one of the LINK_* constants
+     * @param id       the database ID to embed
      * @param expiry   when the link should stop working
      * @param hmacKey  the signing key (from ApplicationPreference.encrptionKey)
-     * @return the URL-safe token string, or null if hmacKey is blank
+     * @return the token, or null if purpose or hmacKey is blank
      */
-    public String createBillToken(long billId, Date expiry, String hmacKey) {
-        if (hmacKey == null || hmacKey.trim().isEmpty()) {
+    public String createBillToken(String purpose, long id, Date expiry, String hmacKey) {
+        if (purpose == null || purpose.isEmpty() || hmacKey == null || hmacKey.trim().isEmpty()) {
             return null;
         }
-        long expiryEpoch = expiry.getTime();
-        String payload = billId + "." + expiryEpoch;
-        String signature = computeHmacSha256(payload, hmacKey);
+        String payload = id + "." + expiry.getTime();
+        String signature = computeHmacSha256(purpose + ":" + payload, hmacKey);
         if (signature == null) {
             return null;
         }
@@ -232,16 +242,17 @@ public class SecurityController implements Serializable {
     }
 
     /**
-     * Verifies and decodes an HMAC bill token produced by
-     * {@link #createBillToken}.
+     * Verifies a token from {@link #createBillToken} for the given purpose.
      *
+     * @param purpose  the LINK_* constant the calling page serves
      * @param token    the raw token string (already URL-decoded)
      * @param hmacKey  the signing key (from ApplicationPreference.encrptionKey)
-     * @return long[]{billId, expiryEpochMs} if the signature is valid, or null
-     *         if the token is missing, malformed, or tampered
+     * @return long[]{id, expiryEpochMs} if the signature is valid for this
+     *         purpose, or null if the token is missing, malformed, tampered
+     *         or issued for another purpose. The caller checks the expiry.
      */
-    public long[] decodeBillToken(String token, String hmacKey) {
-        if (token == null || hmacKey == null || hmacKey.trim().isEmpty()) {
+    public long[] decodeBillToken(String purpose, String token, String hmacKey) {
+        if (purpose == null || purpose.isEmpty() || token == null || hmacKey == null || hmacKey.trim().isEmpty()) {
             return null;
         }
         if (!token.startsWith("hmac.")) {
@@ -252,9 +263,9 @@ public class SecurityController implements Serializable {
             return null;
         }
         try {
-            long billId = Long.parseLong(parts[0]);
+            long id = Long.parseLong(parts[0]);
             long expiryEpoch = Long.parseLong(parts[1]);
-            String expectedSig = computeHmacSha256(parts[0] + "." + parts[1], hmacKey);
+            String expectedSig = computeHmacSha256(purpose + ":" + parts[0] + "." + parts[1], hmacKey);
             if (expectedSig == null) {
                 return null;
             }
@@ -264,10 +275,41 @@ public class SecurityController implements Serializable {
             if (!MessageDigest.isEqual(expectedBytes, providedBytes)) {
                 return null;
             }
-            return new long[]{billId, expiryEpoch};
+            return new long[]{id, expiryEpoch};
         } catch (IllegalArgumentException e) {
             return null;
         }
+    }
+
+    /**
+     * URL-encoded HMAC link token for a record id, valid until expiry. Use for
+     * every public (no-login) link; never encryptAlphanumeric, whose digit
+     * encoding does not depend on the key.
+     */
+    public String createLinkToken(String purpose, long id, Date expiry, SessionController sessionController) {
+        String token = createBillToken(purpose, id, expiry, obtainHmacSigningKey(sessionController));
+        if (token == null) {
+            return null;
+        }
+        try {
+            return URLEncoder.encode(token, "UTF-8");
+        } catch (UnsupportedEncodingException ex) {
+            return token;
+        }
+    }
+
+    /**
+     * The record id carried by a link token from {@link #createLinkToken}, or
+     * null if the token is missing, tampered, signed with another key, issued
+     * for another purpose or expired.
+     */
+    public Long decodeLinkId(String purpose, String token, SessionController sessionController) {
+        String key = sessionController.getApplicationPreference().getEncrptionKey();
+        long[] decoded = decodeBillToken(purpose, token, key);
+        if (decoded == null || new Date().getTime() > decoded[1]) {
+            return null;
+        }
+        return decoded[0];
     }
 
     /**

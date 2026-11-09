@@ -1165,6 +1165,10 @@ public class TransferReceiveNativeSqlService {
         bfd.setCreatedAt(new Date());
         bfd.setNetTotal(billNetTotal.negate());
         bfd.setGrossTotal(billNetTotal.negate());
+        // Bill-level line totals, same sign as the item lines (#25387): the
+        // Transfer Receive Summary reads BillFinanceDetails.lineNetTotal.
+        bfd.setLineNetTotal(billNetTotal.negate());
+        bfd.setLineGrossTotal(billNetTotal.negate());
         bfd.setTotalCostValue(totalCostValue);
         bfd.setTotalPurchaseValue(totalPurchaseValue);
         bfd.setTotalRetailSaleValue(totalRetailSaleValue);
