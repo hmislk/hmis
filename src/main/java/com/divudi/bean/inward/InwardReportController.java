@@ -1617,10 +1617,14 @@ public class InwardReportController implements Serializable {
      * Forcing the sign from the bill class turned the porter-flow ward
      * return (a BilledBill saved with negative values) into income
      * (issue #21671). Professional payment bills are saved as cash out,
-     * so they still take their sign from the bill class.
+     * so they still take their sign from the bill class. Refund bills do
+     * too: inpatient medicine returns (BhtIssueReturnController) save
+     * positive item values and only a negative bill total, so keeping the
+     * saved sign would add returns to income.
      */
     private double ipIncomeSignedValue(IpIncomeCategoryWiseRowDTO rowDto, Double value) {
-        if (rowDto.getBillType() == BillType.PaymentBill) {
+        if (rowDto.getBillType() == BillType.PaymentBill
+                || rowDto.getBillClassType() == BillClassType.RefundBill) {
             return ipIncomeBillClassSign(rowDto) * Math.abs(nullSafeDouble(value));
         }
         return nullSafeDouble(value);
