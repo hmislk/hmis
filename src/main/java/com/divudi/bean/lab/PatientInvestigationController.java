@@ -5357,7 +5357,25 @@ public class PatientInvestigationController implements Serializable {
     private List<PatientReportItemValue> column1AntibioticList;
     private List<PatientReportItemValue> column2AntibioticList;
 
+    /**
+     * Antibiotic columns for the grouped Microbiology report: each organism
+     * (report group) is split into two balanced columns on its own.
+     */
     public List<PatientReportItemValue> findAntibioticForMicrobiologyReport(List<PatientReportItemValue> ptivList) {
+        return findAntibioticForMicrobiologyReport(ptivList, true);
+    }
+
+    /**
+     * Antibiotic columns for a report that lists all antibiotics in one block,
+     * ignoring organisms (e.g. requests/report.xhtml): the whole list is split
+     * into two balanced columns, so organisms with one result each do not all
+     * end up in the first column.
+     */
+    public List<PatientReportItemValue> findAntibioticForMicrobiologyReportUngrouped(List<PatientReportItemValue> ptivList) {
+        return findAntibioticForMicrobiologyReport(ptivList, false);
+    }
+
+    private List<PatientReportItemValue> findAntibioticForMicrobiologyReport(List<PatientReportItemValue> ptivList, boolean splitPerGroup) {
         List<PatientReportItemValue> antibioticItems = new ArrayList<>();
         column1AntibioticList = new ArrayList<>();
         column2AntibioticList = new ArrayList<>();
@@ -5383,7 +5401,8 @@ public class PatientInvestigationController implements Serializable {
         // split over all groups leaves each section's columns unbalanced.
         Map<String, List<PatientReportItemValue>> itemsByGroup = new LinkedHashMap<>();
         for (PatientReportItemValue ptiv : antibioticItems) {
-            String groupName = ptiv.getPatientReportGroup() == null
+            String groupName = !splitPerGroup
+                    || ptiv.getPatientReportGroup() == null
                     || ptiv.getPatientReportGroup().getGroupName() == null
                     ? "" : ptiv.getPatientReportGroup().getGroupName();
             itemsByGroup.computeIfAbsent(groupName, k -> new ArrayList<>()).add(ptiv);
