@@ -979,19 +979,20 @@ public class ReportsTransfer implements Serializable {
         transferValue = 0.0;
 
         if (transferReceiveBillItemDtos != null) {
+            // Signed totals: cancelled receive lines are deducted (#18285).
             for (PharmacyTransferReceiveBillItemDTO d : transferReceiveBillItemDtos) {
                 if (d.getPurchaseValue() != null) {
-                    purchaseValue += d.getPurchaseValue();
+                    purchaseValue += d.getSignedPurchaseValue();
                 }
                 if (d.getCostValue() != null) {
-                    costValue += d.getCostValue();
+                    costValue += d.getSignedCostValue();
                 }
                 if (d.getRetailValue() != null) {
-                    retailValue += d.getRetailValue();
-                    saleValue += d.getRetailValue();
+                    retailValue += d.getSignedRetailValue();
+                    saleValue += d.getSignedRetailValue();
                 }
                 if (d.getTransferValue() != null) {
-                    transferValue += d.getTransferValue();
+                    transferValue += d.getSignedTransferValue();
                 }
             }
         }
@@ -2931,19 +2932,12 @@ public class ReportsTransfer implements Serializable {
         purchaseValue = 0.0;
         transferValue = 0.0;
         if (transferReceiveDtos != null) {
+            // Signed totals: cancelled receive bills are deducted (#18286).
             for (PharmacyTransferReceiveDTO dto : transferReceiveDtos) {
-                if (dto.getSaleValue() != null) {
-                    saleValue += dto.getSaleValue();
-                }
-                if (dto.getPurchaseValue() != null) {
-                    purchaseValue += dto.getPurchaseValue();
-                }
-                if (dto.getCostValue() != null) {
-                    costValue += dto.getCostValue().doubleValue();
-                }
-                if (dto.getTransferValueDouble() != null) {
-                    transferValue += dto.getTransferValueDouble();
-                }
+                saleValue += dto.getSignedSaleValue();
+                purchaseValue += dto.getSignedPurchaseValue();
+                costValue += dto.getSignedCostValue();
+                transferValue += dto.getSignedTransferValue();
             }
         }
     }

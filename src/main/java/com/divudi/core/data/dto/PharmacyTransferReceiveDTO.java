@@ -406,6 +406,34 @@ public class PharmacyTransferReceiveDTO implements Serializable {
         return "CancelledBill".equals(billClassSimpleName);
     }
 
+    /**
+     * Display value with the report sign: a cancelled receive bill is shown
+     * negative and a receive bill positive, whatever sign is stored (#18286).
+     */
+    private Double signed(BigDecimal value) {
+        if (value == null) {
+            return 0.0;
+        }
+        double magnitude = Math.abs(value.doubleValue());
+        return isCancelledReceive() ? -magnitude : magnitude;
+    }
+
+    public Double getSignedPurchaseValue() {
+        return signed(purchaseValue);
+    }
+
+    public Double getSignedSaleValue() {
+        return signed(saleValue);
+    }
+
+    public Double getSignedCostValue() {
+        return signed(costValue);
+    }
+
+    public Double getSignedTransferValue() {
+        return signed(transferValue);
+    }
+
     // Convenience methods for XHTML compatibility
     public Double getNetTotal() {
         return transferValue != null ? transferValue.doubleValue() : 0.0;
