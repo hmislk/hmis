@@ -525,6 +525,8 @@ public class GrnCostingNativeSqlService {
         if (src.getTotalWholesaleValueNonFree() != null) dest.setTotalWholesaleValueNonFree(src.getTotalWholesaleValueNonFree());
 
         if (src.getTotalOfFreeItemValues() != null) dest.setTotalOfFreeItemValues(src.getTotalOfFreeItemValues());
+        if (src.getTotalOfFreeItemValuesFree() != null) dest.setTotalOfFreeItemValuesFree(src.getTotalOfFreeItemValuesFree());
+        if (src.getTotalOfFreeItemValuesNonFree() != null) dest.setTotalOfFreeItemValuesNonFree(src.getTotalOfFreeItemValuesNonFree());
         if (src.getTotalQuantity() != null) dest.setTotalQuantity(src.getTotalQuantity());
         if (src.getTotalFreeQuantity() != null) dest.setTotalFreeQuantity(src.getTotalFreeQuantity());
         if (src.getTotalQuantityInAtomicUnitOfMeasurement() != null) dest.setTotalQuantityInAtomicUnitOfMeasurement(src.getTotalQuantityInAtomicUnitOfMeasurement());
@@ -547,6 +549,11 @@ public class GrnCostingNativeSqlService {
 
         if (src.getBillExpensesConsideredForCosting() != null) dest.setBillExpensesConsideredForCosting(src.getBillExpensesConsideredForCosting());
         if (src.getBillExpensesNotConsideredForCosting() != null) dest.setBillExpensesNotConsideredForCosting(src.getBillExpensesNotConsideredForCosting());
+
+        if (src.getTotalBeforeAdjustmentValue() != null) dest.setTotalBeforeAdjustmentValue(src.getTotalBeforeAdjustmentValue());
+        if (src.getTotalAfterAdjustmentValue() != null) dest.setTotalAfterAdjustmentValue(src.getTotalAfterAdjustmentValue());
+        if (src.getActualNetValue() != null) dest.setActualNetValue(src.getActualNetValue());
+        if (src.getNetValueAdjustment() != null) dest.setNetValueAdjustment(src.getNetValueAdjustment());
 
         if (src.getTotalBillValue() != null) dest.setTotalBillValue(src.getTotalBillValue());
     }
