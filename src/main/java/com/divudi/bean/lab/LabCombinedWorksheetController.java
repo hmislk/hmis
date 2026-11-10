@@ -47,6 +47,7 @@ public class LabCombinedWorksheetController implements Serializable {
     private InvestigationTube combinedTube;
     private List<Long> combinedSampleIds;
     private List<String> combinedBillNumbers;
+    private final Map<Long, String> tubeNameCache = new HashMap<>();
 
     public void processCombinedWorksheet() {
         clear();
@@ -135,6 +136,27 @@ public class LabCombinedWorksheetController implements Serializable {
         params.put("piId", pi.getId());
         List<PatientSampleComponant> list = patientSampleComponantFacade.findByJpqlWithoutCache(jpql, params);
         return list == null ? new ArrayList<>() : list;
+    }
+
+    public String getTubeNameBySample(Long patientSampleId) {
+        if (patientSampleId == null) {
+            return "";
+        }
+        String cached = tubeNameCache.get(patientSampleId);
+        if (cached != null) {
+            return cached;
+        }
+        String jpql = "SELECT ps.tube.name "
+                + " FROM PatientSample ps "
+                + " WHERE ps.id=:psId";
+        Map<String, Object> params = new HashMap<>();
+        params.put("psId", patientSampleId);
+        List<?> results = patientSampleComponantFacade.findLightsByJpql(jpql, params);
+        String name = (results == null || results.isEmpty() || results.get(0) == null)
+                ? ""
+                : results.get(0).toString();
+        tubeNameCache.put(patientSampleId, name);
+        return name;
     }
 
     public void clear() {
