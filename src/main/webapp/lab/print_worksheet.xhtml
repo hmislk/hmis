@@ -36,15 +36,27 @@
                     <div class="row">
                         <div class="col-md-7">
 
-                            <div class="d-flex justify-content-end mb-3">
+                            <div class="d-flex justify-content-end gap-2 mb-3">
                                 <div>
-                                    <p:commandButton 
+                                    <p:commandButton
                                         value="Process WorkSheet"
                                         ajax="false"
+                                        actionListener="#{labCombinedWorksheetController.clear()}"
                                         action="#{laboratoryManagementController.processWorkSheet()}"
                                         class="ui-button-emr"
                                         icon="fa fa-refresh">
                                     </p:commandButton>
+                                </div>
+                                <div>
+                                    <p:commandButton
+                                        id="btnCombinedWorksheet"
+                                        value="Combined WorkSheet"
+                                        ajax="false"
+                                        action="#{labCombinedWorksheetController.processCombinedWorksheet()}"
+                                        class="ui-button-success"
+                                        icon="fa fa-object-group">
+                                    </p:commandButton>
+                                    <p:tooltip for="btnCombinedWorksheet" value="Combine the selected investigations of one patient that share the same sample tube into a single worksheet" position="bottom"/>
                                 </div>
                             </div>
 
@@ -189,7 +201,7 @@
                                     </div>
                                 </f:facet>
 
-                                <h:panelGroup rendered="#{laboratoryManagementController.selectedItems.size() eq 0}">
+                                <h:panelGroup rendered="#{empty laboratoryManagementController.selectedItems and not labCombinedWorksheetController.combined}">
                                     <div class="d-flex justify-content-center justify-center shadow" 
                                          style="
                                          height: 6em;
@@ -212,7 +224,15 @@
 
                                 <h:panelGroup id="printView">
 
-                                    <h:panelGroup rendered="#{laboratoryManagementController.selectedItems.size() ne 0}">
+                                    <h:panelGroup rendered="#{labCombinedWorksheetController.combined}">
+                                        <worksheet:five_five_combined_worksheet
+                                            patientInvestigations="#{labCombinedWorksheetController.combinedItems}"
+                                            tubeName="#{labCombinedWorksheetController.combinedTube.name}"
+                                            sampleIds="#{labCombinedWorksheetController.combinedSampleIds}"
+                                            billNumbers="#{labCombinedWorksheetController.combinedBillNumbersAsString}"/>
+                                    </h:panelGroup>
+
+                                    <h:panelGroup rendered="#{not labCombinedWorksheetController.combined and not empty laboratoryManagementController.selectedItems}">
 
                                         <ui:repeat value="#{laboratoryManagementController.selectedItems}" var="ins" >
 
