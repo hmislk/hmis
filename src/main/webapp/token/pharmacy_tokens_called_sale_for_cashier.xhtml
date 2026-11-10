@@ -222,6 +222,16 @@
             </div>
             </ui:fragment>
 
+            <!-- Without the header, the clock gets its own line and a click on it still toggles full screen. -->
+            <ui:fragment rendered="#{!configOptionApplicationController.getBooleanValueByKey('Pharmacy Sale for Cashier Token Display - Show Header', true)}">
+                <div onclick="toggleFullScreen(); return false;" style="font-size: 15pt; font-weight: bold; color: white; min-height: 30px; padding: 4px 20px; cursor: pointer;">
+                    <ui:fragment rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Sale for Cashier Token Display - Show Date and Time', true)}">
+                        <span id="date"></span>
+                        <span id="time"></span>
+                    </ui:fragment>
+                </div>
+            </ui:fragment>
+
             <div class="container-fluid" style="margin-top: #{configOptionApplicationController.getBooleanValueByKey('Pharmacy Sale for Cashier Token Display - Show Header', true) ? '180px' : '10px'}">
 
                 <ui:repeat var="token" value="#{tokenController.currentTokensSaleForCashier}" >
