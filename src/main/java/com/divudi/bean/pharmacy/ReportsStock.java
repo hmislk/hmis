@@ -2355,40 +2355,39 @@ public class ReportsStock implements Serializable, ControllerWithReportFilters {
 
     public void fillDistributorExpiryStocks() {
 
-        if (department == null || institution == null) {
-            JsfUtil.addErrorMessage("Please select a department and distributor");
+        if (department == null) {
+            JsfUtil.addErrorMessage("Please select a department");
             return;
         }
 
         Map<String, Object> m = new HashMap<>();
-        String sql;
-
-        sql = "select s "
+        // Supplier = the supplier on the batch's GRN, not the manual
+        // supplier-item allocation list (ItemsDistributors), which is often
+        // not maintained and made this report return nothing (#24461).
+        StringBuilder jpql = new StringBuilder("select s "
                 + "from Stock s "
                 + "where s.stock > :st "
                 + "and s.department = :dep "
-                + "and s.itemBatch.dateOfExpire between :fd and :td "
-                + "and s.itemBatch.item.id in ("
-                + "    select item.id "
-                + "    from ItemsDistributors id join id.item as item "
-                + "    where id.retired = false "
-                + "    and id.institution = :ins"
-                + ") "
-                + "order by s.itemBatch.dateOfExpire";
+                + "and s.itemBatch.dateOfExpire between :fd and :td ");
+        if (institution != null) {
+            jpql.append("and s.itemBatch.lastPurchaseBillItem.bill.fromInstitution = :ins ");
+            m.put("ins", institution);
+        }
+        jpql.append("order by s.itemBatch.dateOfExpire");
 
         m.put("dep", department);
-        m.put("ins", institution);
         m.put("fd", getFromDate());
         m.put("td", getToDate());
         m.put("st", 0.0);
 
-        stocks = getStockFacade().findByJpql(sql, m);
+        stocks = getStockFacade().findByJpql(jpql.toString(), m);
 
         stockPurchaseValue = 0.0;
         stockSaleValue = 0.0;
         for (Stock ts : stocks) {
-            stockPurchaseValue += ts.getItemBatch().getPurcahseRate() * ts.getStock();
-            stockSaleValue += ts.getItemBatch().getPurcahseRate() * ts.getStock();
+            double qty = ts.getStock() == null ? 0.0 : ts.getStock();
+            stockPurchaseValue += ts.getItemBatch().getPurcahseRate() * qty;
+            stockSaleValue += ts.getItemBatch().getRetailsaleRate() * qty;
         }
 
     }
