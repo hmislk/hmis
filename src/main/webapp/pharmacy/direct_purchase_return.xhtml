@@ -115,8 +115,7 @@
                                         value="#{ph.billItemFinanceDetails.quantity}">
                                         <f:convertNumber pattern="#,##0.00##" integerOnly="#{!ph.item.allowFractions}" ></f:convertNumber>
                                         <f:validator validatorId="positiveNumberValidator" />
-                                    </p:inputText>
-                                    <p:keyFilter for="txtReturningTotalQty" mask="#{ph.item.allowFractions ? 'num' : 'int'}" />
+                                        <p:keyFilter for="txtReturningTotalQty" mask="#{ph.item.allowFractions ? 'num' : 'int'}" />
                                         <p:ajax 
                                             event="keyup" 
                                             process="@this"
@@ -142,9 +141,8 @@
                                         value="#{ph.billItemFinanceDetails.quantity}">
                                         <f:convertNumber integerOnly="#{!ph.item.allowFractions}" />
                                         <f:validator validatorId="nonNegativeNumberValidator" />
-                                    </p:inputText>
-                                    <p:keyFilter for="txtReturningQty" mask="#{ph.item.allowFractions ? 'num' : 'int'}" />
-                                        <p:ajax 
+                                        <p:keyFilter for="txtReturningQty" mask="#{ph.item.allowFractions ? 'num' : 'int'}" />
+                                        <p:ajax
                                             process="@this"
                                             event="keyup" 
                                             update="txtLineReturnValue :#{p:resolveFirstComponentWithId('panelReturnBillDetails',view).clientId}" 
