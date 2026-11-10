@@ -35,6 +35,14 @@ public class PharmacyTransferRequestIssueDTO implements Serializable {
         this.cancelled = false;
     }
 
+    /**
+     * Issued-bill button on Issue for Requests, including cancelled issues.
+     */
+    public PharmacyTransferRequestIssueDTO(Long billId, String deptId, Boolean cancelled) {
+        this(billId, deptId);
+        this.cancelled = cancelled != null && cancelled;
+    }
+
     public PharmacyTransferRequestIssueDTO(Long billId, String deptId, Date createdAt,
             String creatorName, Boolean cancelled, Date cancelledAt,
             String cancellerName, String toStaffName, BigDecimal netTotal) {

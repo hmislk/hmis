@@ -165,6 +165,8 @@ public class PatientReportController implements Serializable {
     //Class Variables
     String selectText = "";
     private String groupName;
+    private PatientReportGroup organismToRename;
+    private String organismNewName;
     private PatientInvestigation currentPtIx;
     private PatientReport currentPatientReport;
     private String receipientEmail;
@@ -2073,6 +2075,63 @@ public class PatientReportController implements Serializable {
         JsfUtil.addSuccessMessage("Organism removed" + (removedName == null ? "" : ": " + removedName));
     }
 
+    /**
+     * Opens the rename dialog for an added organism (antibiotic group).
+     */
+    public void prepareRenamePatientReportGroupForMicrobiology(PatientReportGroup group) {
+        organismToRename = group;
+        organismNewName = group == null ? null : group.getGroupName();
+    }
+
+    /**
+     * Saves the new name of the organism selected in the rename dialog. Not
+     * allowed once the report is approved, and the name must stay unique
+     * within the report because results are matched to organisms by name.
+     */
+    public void renamePatientReportGroupForMicrobiology() {
+        if (currentPatientReport == null) {
+            JsfUtil.addErrorMessage("No patient report available");
+            return;
+        }
+        if (organismToRename == null) {
+            JsfUtil.addErrorMessage("No organism selected");
+            return;
+        }
+        if (Boolean.TRUE.equals(currentPatientReport.getApproved())) {
+            JsfUtil.addErrorMessage("Cannot rename an organism in an approved report");
+            return;
+        }
+        String newName = organismNewName == null ? "" : organismNewName.trim();
+        if (newName.isEmpty()) {
+            JsfUtil.addErrorMessage("Enter an Organism Name");
+            return;
+        }
+        String oldName = organismToRename.getGroupName();
+        if (newName.equals(oldName)) {
+            organismToRename = null;
+            organismNewName = null;
+            org.primefaces.PrimeFaces.current().ajax().addCallbackParam("organismRenamed", true);
+            return;
+        }
+        if (currentPatientReport.getPatientReportGroups() != null) {
+            Long renameId = organismToRename.getId();
+            for (PatientReportGroup g : currentPatientReport.getPatientReportGroups()) {
+                boolean sameGroup = g == organismToRename || (renameId != null && renameId.equals(g.getId()));
+                if (!sameGroup && g.getGroupName() != null && g.getGroupName().trim().equalsIgnoreCase(newName)) {
+                    JsfUtil.addErrorMessage("An organism named '" + newName + "' is already added to this report");
+                    return;
+                }
+            }
+        }
+
+        getPrBean().renameOrganismGroup(currentPatientReport, organismToRename, newName);
+        savePatientReport();
+        organismToRename = null;
+        organismNewName = null;
+        org.primefaces.PrimeFaces.current().ajax().addCallbackParam("organismRenamed", true);
+        JsfUtil.addSuccessMessage("Organism renamed to " + newName);
+    }
+
     public PatientReportGroup addPatientReportGroup() {
         if (!validateAndPrepareGroupAddition()) {
             return null;
@@ -3709,6 +3768,22 @@ public class PatientReportController implements Serializable {
     public void setGroupName(String groupName) {
         this.groupName = groupName;
 
+    }
+
+    public PatientReportGroup getOrganismToRename() {
+        return organismToRename;
+    }
+
+    public void setOrganismToRename(PatientReportGroup organismToRename) {
+        this.organismToRename = organismToRename;
+    }
+
+    public String getOrganismNewName() {
+        return organismNewName;
+    }
+
+    public void setOrganismNewName(String organismNewName) {
+        this.organismNewName = organismNewName;
     }
 
     public boolean isCalculatedRequerd() {

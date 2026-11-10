@@ -125,6 +125,20 @@ public class PharmacyTransferRequestListDTO implements Serializable {
         this.fullyIssued = fullyIssued;
     }
 
+    /**
+     * Constructor for the Issue for Requests list, which now shows cancelled
+     * requests as well (#18282): the completed/fullyIssued flags plus the
+     * request's cancelled flag and its cancellation time and canceller.
+     */
+    public PharmacyTransferRequestListDTO(Long billId, String deptId, Date createdAt,
+            String fromDepartmentName, String creatorName, Boolean completed, Boolean fullyIssued,
+            Boolean cancelled, Date cancelledAt, String cancellerName) {
+        this(billId, deptId, createdAt, fromDepartmentName, creatorName, completed, fullyIssued);
+        this.cancelled = cancelled != null && cancelled;
+        this.cancelledAt = cancelledAt;
+        this.cancellerName = cancellerName;
+    }
+
     // Basic constructor without cancellation details
     public PharmacyTransferRequestListDTO(Long billId, Object deptId, Date createdAt,
             Object fromDepartmentName, Object creatorName) {

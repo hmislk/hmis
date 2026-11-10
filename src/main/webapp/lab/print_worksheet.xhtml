@@ -12,6 +12,29 @@
     <ui:define name="content">
 
         <h:outputStylesheet library="css" name="maincss.css" />
+        <style>
+            .ws-sample {
+                margin-bottom: 8px;
+            }
+            .ws-tube-chip {
+                display: inline-flex;
+                align-items: center;
+                gap: 4px;
+                margin-top: 3px;
+                margin-left: 1.3em;
+                padding: 1px 8px;
+                border: 1px solid #a5d6a7;
+                border-radius: 10px;
+                background-color: #e8f5e9;
+                color: #2e7d32;
+                font-size: 0.8em;
+                font-weight: 600;
+                white-space: nowrap;
+                max-width: 100%;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+        </style>
         <h:form  >
             <h:panelGroup rendered="#{(!webUserController.hasPrivilege('DashBoardMenu') and !webUserController.hasPrivilege('DashBoardWorksheet'))}">
                 <na:not_authorize />
@@ -36,15 +59,27 @@
                     <div class="row">
                         <div class="col-md-7">
 
-                            <div class="d-flex justify-content-end mb-3">
+                            <div class="d-flex justify-content-end gap-2 mb-3">
                                 <div>
-                                    <p:commandButton 
+                                    <p:commandButton
                                         value="Process WorkSheet"
                                         ajax="false"
+                                        actionListener="#{labCombinedWorksheetController.clear()}"
                                         action="#{laboratoryManagementController.processWorkSheet()}"
                                         class="ui-button-emr"
                                         icon="fa fa-refresh">
                                     </p:commandButton>
+                                </div>
+                                <div>
+                                    <p:commandButton
+                                        id="btnCombinedWorksheet"
+                                        value="Combined WorkSheet"
+                                        ajax="false"
+                                        action="#{labCombinedWorksheetController.processCombinedWorksheet()}"
+                                        class="ui-button-success"
+                                        icon="fa fa-object-group">
+                                    </p:commandButton>
+                                    <p:tooltip for="btnCombinedWorksheet" value="Combine the selected investigations of one patient that share the same sample tube into a single worksheet" position="bottom"/>
                                 </div>
                             </div>
 
@@ -127,11 +162,18 @@
 
                                 <p:column headerText="Sample IDs" style="width:10em; vertical-align: top;">
                                     <ui:repeat value="#{laboratoryManagementController.getPatientSampleComponentsByInvestigation(pi.investigationId)}" var="sample">
-                                        <div class="ui-g d-grid" style="margin-bottom: 10px;">
-                                            <div class="ui-g-6 d-flex">
-                                                <i class="fa fa-vial"></i>
-                                                <h:outputText value="#{sample}" class="mx-2 text-primary" />
+                                        <div class="ws-sample">
+                                            <div class="d-flex align-items-center">
+                                                <i class="fa fa-vial text-primary"></i>
+                                                <h:outputText value="#{sample}" class="mx-2 text-primary fw-semibold" />
                                             </div>
+                                            <h:panelGroup layout="block"
+                                                          rendered="#{not empty labCombinedWorksheetController.getTubeNameBySample(sample)}">
+                                                <span class="ws-tube-chip" title="Sample tube">
+                                                    <i class="fa fa-flask"></i>
+                                                    <h:outputText value="#{labCombinedWorksheetController.getTubeNameBySample(sample)}"/>
+                                                </span>
+                                            </h:panelGroup>
                                         </div>
                                     </ui:repeat>
                                 </p:column>
@@ -189,7 +231,7 @@
                                     </div>
                                 </f:facet>
 
-                                <h:panelGroup rendered="#{laboratoryManagementController.selectedItems.size() eq 0}">
+                                <h:panelGroup rendered="#{empty laboratoryManagementController.selectedItems and not labCombinedWorksheetController.combined}">
                                     <div class="d-flex justify-content-center justify-center shadow" 
                                          style="
                                          height: 6em;
@@ -212,7 +254,15 @@
 
                                 <h:panelGroup id="printView">
 
-                                    <h:panelGroup rendered="#{laboratoryManagementController.selectedItems.size() ne 0}">
+                                    <h:panelGroup rendered="#{labCombinedWorksheetController.combined}">
+                                        <worksheet:five_five_combined_worksheet
+                                            patientInvestigations="#{labCombinedWorksheetController.combinedItems}"
+                                            tubeName="#{labCombinedWorksheetController.combinedTube.name}"
+                                            sampleIds="#{labCombinedWorksheetController.combinedSampleIds}"
+                                            billNumbers="#{labCombinedWorksheetController.combinedBillNumbersAsString}"/>
+                                    </h:panelGroup>
+
+                                    <h:panelGroup rendered="#{not labCombinedWorksheetController.combined and not empty laboratoryManagementController.selectedItems}">
 
                                         <ui:repeat value="#{laboratoryManagementController.selectedItems}" var="ins" >
 

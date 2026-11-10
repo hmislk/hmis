@@ -64,6 +64,8 @@ public class TokenController implements Serializable, ControllerWithPatient {
     PatientController patientController;
     @Inject
     PharmacyBillSearch pharmacyBillSearch;
+    @Inject
+    ConfigOptionApplicationController configOptionApplicationController;
 
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Class variables">
@@ -190,6 +192,24 @@ public class TokenController implements Serializable, ControllerWithPatient {
         return "/token/pharmacy_tokens_called_counter_wise"; // Adjust the navigation string as per your page structure
     }
 
+    private Date startOfToday() {
+        java.util.Calendar c = java.util.Calendar.getInstance();
+        c.set(java.util.Calendar.HOUR_OF_DAY, 0);
+        c.set(java.util.Calendar.MINUTE, 0);
+        c.set(java.util.Calendar.SECOND, 0);
+        c.set(java.util.Calendar.MILLISECOND, 0);
+        return c.getTime();
+    }
+
+    // Exclusive upper bound, so a bill dated tomorrow (server clock corrected
+    // after it was saved) does not show on today's TV.
+    private Date startOfTomorrow() {
+        java.util.Calendar c = java.util.Calendar.getInstance();
+        c.setTime(startOfToday());
+        c.add(java.util.Calendar.DATE, 1);
+        return c.getTime();
+    }
+
     public void fillSaleForCashierCalledBillsTokens(){
         Map m = new HashMap();
         String j = "Select t "
@@ -202,6 +222,8 @@ public class TokenController implements Serializable, ControllerWithPatient {
                 + " and t.tokenType=:ty"
                 + " and t.completed=:com"
                 + " and t.displayToken = true"
+                + " and t.bill.createdAt >= :fd"
+                + " and t.bill.createdAt < :td"
                 + " and t.retired = false";
         
         Bill b = new Bill();
@@ -211,8 +233,12 @@ public class TokenController implements Serializable, ControllerWithPatient {
         m.put("cal", true); // Tokens that are called
         m.put("com", false); // Tokens that are not completed
         m.put("ty", TokenType.PHARMACY_TOKEN_SALE_FOR_CASHIER);
-        j += " order by t.id";
-        currentTokensSaleForCashier = tokenFacade.findByJpql(j, m, TemporalType.DATE);
+        // Only today's tokens: token numbers restart daily, and called but
+        // never completed tokens from earlier days cluttered the TV.
+        m.put("fd", startOfToday());
+        m.put("td", startOfTomorrow());
+        currentTokensSaleForCashier = findTokensForDisplay(j, m,
+                "Pharmacy Sale for Cashier Token Display - Maximum Number of Called Tokens to Show (0 for All)");
     }
     
     public void fillInprogressSaleForCashierBillsTokens(){
@@ -228,6 +254,8 @@ public class TokenController implements Serializable, ControllerWithPatient {
                 + " and t.inProgress=:prog "
                 + " and t.completed=:com "
                 + " and t.displayToken = true"
+                + " and t.bill.createdAt >= :fd"
+                + " and t.bill.createdAt < :td"
                 + " and t.retired = false";
         
         Bill b = new Bill();
@@ -238,8 +266,28 @@ public class TokenController implements Serializable, ControllerWithPatient {
         m.put("prog", true); // Tokens that are not in progress
         m.put("com", false); // Tokens that are not completed
         m.put("ty", TokenType.PHARMACY_TOKEN_SALE_FOR_CASHIER);
-        j += " order by t.id";
-        inprogressTokensSaleForCashier = tokenFacade.findByJpql(j, m, TemporalType.DATE);
+        // Only today's tokens: token numbers restart daily, and called but
+        // never completed tokens from earlier days cluttered the TV.
+        m.put("fd", startOfToday());
+        m.put("td", startOfTomorrow());
+        inprogressTokensSaleForCashier = findTokensForDisplay(j, m,
+                "Pharmacy Sale for Cashier Token Display - Maximum Number of In-Progress Tokens to Show (0 for All)");
+    }
+
+    // With a limit, the newest tokens win, so a token that was just called
+    // always reaches the TV. The rows still show oldest first.
+    private List<Token> findTokensForDisplay(String jpql, Map m, String maxCountKey) {
+        Integer max = configOptionApplicationController.getIntegerValueByKey(maxCountKey, 0);
+        if (max == null || max <= 0) {
+            return tokenFacade.findByJpql(jpql + " order by t.id", m, TemporalType.DATE);
+        }
+        List<Token> newest = tokenFacade.findByJpql(jpql + " order by t.id desc", m, TemporalType.DATE, max);
+        if (newest == null) {
+            return newest;
+        }
+        List<Token> oldestFirst = new java.util.ArrayList<>(newest);
+        java.util.Collections.reverse(oldestFirst);
+        return oldestFirst;
     }
 
     public void fillPharmacyTokensCalled() {

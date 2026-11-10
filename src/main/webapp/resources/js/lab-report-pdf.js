@@ -32,11 +32,26 @@ function labReportTrimPdf(pdf, element) {
         chain = chain.then(function () {
             return html2pdf().set(opt).from(box).toCanvas().get('canvas');
         }).then(function (canvas) {
-            // the captured box can be taller than one page; keep the top A4 part
+            // The captured box can be taller or shorter than one A4 page (the
+            // screen box of some reports is 28cm high). Paint the A4 canvas white
+            // first: an unpainted area is transparent, and JPEG turns it into a
+            // black band at the bottom of the page. The box's 1px screen border
+            // is cut off so it does not print as a line.
+            var scale = canvas.width / (box.offsetWidth || canvas.width);
+            var border = Math.round((parseFloat(getComputedStyle(box).borderTopWidth) || 0) * scale);
+            var srcW = canvas.width - 2 * border;
+            var srcH = canvas.height - 2 * border;
             var crop = document.createElement('canvas');
-            crop.width = canvas.width;
-            crop.height = Math.round(canvas.width * 297 / 210);
-            crop.getContext('2d').drawImage(canvas, 0, 0);
+            crop.width = srcW;
+            crop.height = Math.round(srcW * 297 / 210);
+            var ctx = crop.getContext('2d');
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, crop.width, crop.height);
+            // Keep only the top A4 part; skip drawing on invalid sizes.
+            var drawH = Math.min(srcH, crop.height);
+            if (srcW > 0 && drawH > 0) {
+                ctx.drawImage(canvas, border, border, srcW, drawH, 0, 0, srcW, drawH);
+            }
             if (i > 0) {
                 pdf.addPage([210, 297], 'portrait');
             }

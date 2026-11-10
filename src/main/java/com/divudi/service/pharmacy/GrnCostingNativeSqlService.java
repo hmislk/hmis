@@ -458,18 +458,19 @@ public class GrnCostingNativeSqlService {
      * bill.BILLFINANCEDETAILS_ID on first creation -- same two-step pattern
      * as saveBillItemFinanceDetails().
      */
-    public void saveBillFinanceDetails(long billId, double totalDiscount, double totalExpense, double totalTax) {
-        saveBillFinanceDetails(billId, totalDiscount, totalExpense, totalTax, null);
-    }
-
     /**
-     * Same as {@link #saveBillFinanceDetails(long, double, double, double)},
-     * and also stores totalBillValue so the GRN print shows it after the bill
-     * is reloaded (issue #24709). A null totalBillValue leaves the stored
-     * value unchanged.
+     * JPA persist/merge of the bill-level BillFinanceDetails (IDENTITY PK),
+     * followed by a native UPDATE to link it back onto
+     * bill.BILLFINANCEDETAILS_ID on first creation -- same two-step pattern
+     * as saveBillItemFinanceDetails().
+     * Stores full bill-level finance details (netTotal, grossTotal, line totals,
+     * stock values, expenses, taxes, and discounts) so GRN reports and prints
+     * show accurate values (#25390).
      */
-    public void saveBillFinanceDetails(long billId, double totalDiscount, double totalExpense, double totalTax,
-            BigDecimal totalBillValue) {
+    public void saveBillFinanceDetails(long billId, BillFinanceDetails source) {
+        if (source == null) {
+            return;
+        }
         Bill billRef = em.find(Bill.class, billId);
         BillFinanceDetails bfd = billRef != null ? billRef.getBillFinanceDetails() : null;
         boolean isNew = (bfd == null || bfd.getId() == null);
@@ -477,12 +478,7 @@ public class GrnCostingNativeSqlService {
             bfd = new BillFinanceDetails();
         }
 
-        bfd.setTotalDiscount(BigDecimal.valueOf(totalDiscount));
-        bfd.setTotalExpense(BigDecimal.valueOf(totalExpense));
-        bfd.setTotalTaxValue(BigDecimal.valueOf(totalTax));
-        if (totalBillValue != null) {
-            bfd.setTotalBillValue(totalBillValue);
-        }
+        copyFinanceDetails(source, bfd);
 
         if (isNew) {
             bfd.setCreatedAt(new Date());
@@ -496,6 +492,92 @@ public class GrnCostingNativeSqlService {
             em.merge(bfd);
         }
         evictCache();
+    }
+
+    /**
+     * Copies non-null bill finance fields from source to destination.
+     */
+    public static void copyFinanceDetails(BillFinanceDetails src, BillFinanceDetails dest) {
+        if (src == null || dest == null) {
+            return;
+        }
+        if (src.getNetTotal() != null) dest.setNetTotal(src.getNetTotal());
+        if (src.getGrossTotal() != null) dest.setGrossTotal(src.getGrossTotal());
+        if (src.getLineNetTotal() != null) dest.setLineNetTotal(src.getLineNetTotal());
+        if (src.getLineGrossTotal() != null) dest.setLineGrossTotal(src.getLineGrossTotal());
+        if (src.getBillNetTotal() != null) dest.setBillNetTotal(src.getBillNetTotal());
+        if (src.getBillGrossTotal() != null) dest.setBillGrossTotal(src.getBillGrossTotal());
+
+        if (src.getTotalCostValue() != null) dest.setTotalCostValue(src.getTotalCostValue());
+        if (src.getTotalCostValueFree() != null) dest.setTotalCostValueFree(src.getTotalCostValueFree());
+        if (src.getTotalCostValueNonFree() != null) dest.setTotalCostValueNonFree(src.getTotalCostValueNonFree());
+
+        if (src.getTotalPurchaseValue() != null) dest.setTotalPurchaseValue(src.getTotalPurchaseValue());
+        if (src.getTotalPurchaseValueFree() != null) dest.setTotalPurchaseValueFree(src.getTotalPurchaseValueFree());
+        if (src.getTotalPurchaseValueNonFree() != null) dest.setTotalPurchaseValueNonFree(src.getTotalPurchaseValueNonFree());
+
+        if (src.getTotalRetailSaleValue() != null) dest.setTotalRetailSaleValue(src.getTotalRetailSaleValue());
+        if (src.getTotalRetailSaleValueFree() != null) dest.setTotalRetailSaleValueFree(src.getTotalRetailSaleValueFree());
+        if (src.getTotalRetailSaleValueNonFree() != null) dest.setTotalRetailSaleValueNonFree(src.getTotalRetailSaleValueNonFree());
+
+        if (src.getTotalWholesaleValue() != null) dest.setTotalWholesaleValue(src.getTotalWholesaleValue());
+        if (src.getTotalWholesaleValueFree() != null) dest.setTotalWholesaleValueFree(src.getTotalWholesaleValueFree());
+        if (src.getTotalWholesaleValueNonFree() != null) dest.setTotalWholesaleValueNonFree(src.getTotalWholesaleValueNonFree());
+
+        if (src.getTotalOfFreeItemValues() != null) dest.setTotalOfFreeItemValues(src.getTotalOfFreeItemValues());
+        if (src.getTotalOfFreeItemValuesFree() != null) dest.setTotalOfFreeItemValuesFree(src.getTotalOfFreeItemValuesFree());
+        if (src.getTotalOfFreeItemValuesNonFree() != null) dest.setTotalOfFreeItemValuesNonFree(src.getTotalOfFreeItemValuesNonFree());
+        if (src.getTotalQuantity() != null) dest.setTotalQuantity(src.getTotalQuantity());
+        if (src.getTotalFreeQuantity() != null) dest.setTotalFreeQuantity(src.getTotalFreeQuantity());
+        if (src.getTotalQuantityInAtomicUnitOfMeasurement() != null) dest.setTotalQuantityInAtomicUnitOfMeasurement(src.getTotalQuantityInAtomicUnitOfMeasurement());
+        if (src.getTotalFreeQuantityInAtomicUnitOfMeasurement() != null) dest.setTotalFreeQuantityInAtomicUnitOfMeasurement(src.getTotalFreeQuantityInAtomicUnitOfMeasurement());
+
+        if (src.getBillDiscount() != null) dest.setBillDiscount(src.getBillDiscount());
+        if (src.getLineDiscount() != null) dest.setLineDiscount(src.getLineDiscount());
+        if (src.getTotalDiscount() != null) dest.setTotalDiscount(src.getTotalDiscount());
+
+        if (src.getBillExpense() != null) dest.setBillExpense(src.getBillExpense());
+        if (src.getLineExpense() != null) dest.setLineExpense(src.getLineExpense());
+        if (src.getTotalExpense() != null) dest.setTotalExpense(src.getTotalExpense());
+
+        if (src.getBillTaxValue() != null) dest.setBillTaxValue(src.getBillTaxValue());
+        if (src.getItemTaxValue() != null) dest.setItemTaxValue(src.getItemTaxValue());
+        if (src.getTotalTaxValue() != null) dest.setTotalTaxValue(src.getTotalTaxValue());
+
+        if (src.getBillCostValue() != null) dest.setBillCostValue(src.getBillCostValue());
+        if (src.getLineCostValue() != null) dest.setLineCostValue(src.getLineCostValue());
+
+        if (src.getBillExpensesConsideredForCosting() != null) dest.setBillExpensesConsideredForCosting(src.getBillExpensesConsideredForCosting());
+        if (src.getBillExpensesNotConsideredForCosting() != null) dest.setBillExpensesNotConsideredForCosting(src.getBillExpensesNotConsideredForCosting());
+
+        if (src.getTotalBeforeAdjustmentValue() != null) dest.setTotalBeforeAdjustmentValue(src.getTotalBeforeAdjustmentValue());
+        if (src.getTotalAfterAdjustmentValue() != null) dest.setTotalAfterAdjustmentValue(src.getTotalAfterAdjustmentValue());
+        if (src.getActualNetValue() != null) dest.setActualNetValue(src.getActualNetValue());
+        if (src.getNetValueAdjustment() != null) dest.setNetValueAdjustment(src.getNetValueAdjustment());
+
+        if (src.getTotalBillValue() != null) dest.setTotalBillValue(src.getTotalBillValue());
+    }
+
+    public void saveBillFinanceDetails(long billId, double totalDiscount, double totalExpense, double totalTax) {
+        saveBillFinanceDetails(billId, totalDiscount, totalExpense, totalTax, null);
+    }
+
+    /**
+     * Same as {@link #saveBillFinanceDetails(long, double, double, double)},
+     * and also stores totalBillValue so the GRN print shows it after the bill
+     * is reloaded (issue #24709). A null totalBillValue leaves the stored
+     * value unchanged.
+     */
+    public void saveBillFinanceDetails(long billId, double totalDiscount, double totalExpense, double totalTax,
+            BigDecimal totalBillValue) {
+        BillFinanceDetails bfd = new BillFinanceDetails();
+        bfd.setTotalDiscount(BigDecimal.valueOf(totalDiscount));
+        bfd.setTotalExpense(BigDecimal.valueOf(totalExpense));
+        bfd.setTotalTaxValue(BigDecimal.valueOf(totalTax));
+        if (totalBillValue != null) {
+            bfd.setTotalBillValue(totalBillValue);
+        }
+        saveBillFinanceDetails(billId, bfd);
     }
 
     /**
