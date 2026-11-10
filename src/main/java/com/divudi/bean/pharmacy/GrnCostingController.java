@@ -1378,8 +1378,8 @@ public class GrnCostingController implements Serializable {
             double receivedFreeQty = Math.abs(grnFreeQtyMap.getOrDefault(poItemId, 0.0))
                     - Math.abs(grnCancelledFreeQtyMap.getOrDefault(poItemId, 0.0));
 
-            double remains = Math.abs(pbiInApprovedOrder.getQty()) - Math.abs(receivedQty);
-            double remainFreeQty = pbiInApprovedOrder.getFreeQty() - Math.abs(receivedFreeQty);
+            double remains = Math.max(0.0, Math.abs(pbiInApprovedOrder.getQty()) - Math.abs(receivedQty));
+            double remainFreeQty = Math.max(0.0, pbiInApprovedOrder.getFreeQty() - Math.abs(receivedFreeQty));
 
             if (remains > 0 || remainFreeQty > 0) {
                 BillItem newlyCreatedBillItemForGrn = new BillItem();
@@ -1490,8 +1490,8 @@ public class GrnCostingController implements Serializable {
 
         for (BillItem importBi : importGrnBill.getBillItems()) {
             PharmaceuticalBillItem i = importBi.getPharmaceuticalBillItem();
-            double remains = i.getQty() - calculateRemainigQtyFromOrder(i);
-            double remainFreeQty = i.getFreeQty() - calculateRemainingFreeQtyFromOrder(i);
+            double remains = Math.max(0.0, i.getQty() - calculateRemainigQtyFromOrder(i));
+            double remainFreeQty = Math.max(0.0, i.getFreeQty() - calculateRemainingFreeQtyFromOrder(i));
 
             if (remains > 0 || remainFreeQty > 0) {
                 BillItem bi = new BillItem();
@@ -3343,18 +3343,23 @@ public class GrnCostingController implements Serializable {
 
             double previouslyReceivedQty = calculateRemainigQtyFromOrder(poItem);
             double previouslyReceivedFreeQty = calculateRemainingFreeQtyFromOrder(poItem);
+            // Remaining is floored at 0 (#25284): once an earlier GRN has
+            // over-received, a line clamped to 0 is valid and must pass, while
+            // any positive quantity is still refused.
+            double remainingQty = Math.max(0.0, orderedQty - previouslyReceivedQty);
+            double remainingFreeQty = Math.max(0.0, orderedFreeQty - previouslyReceivedFreeQty);
 
-            if (orderedQty < previouslyReceivedQty + currentGrnQty) {
+            if (currentGrnQty > remainingQty) {
                 return "Item " + itemName + " cannot receive " + currentGrnQty
                         + " as it exceeds ordered quantity. Ordered: " + orderedQty + ", Already received: " + previouslyReceivedQty
-                        + ", Remaining: " + (orderedQty - previouslyReceivedQty);
+                        + ", Remaining: " + remainingQty;
             }
 
-            if (enableFreeQtyValidation && orderedFreeQty < previouslyReceivedFreeQty + currentGrnFreeQty) {
+            if (enableFreeQtyValidation && currentGrnFreeQty > remainingFreeQty) {
                 return "Item " + itemName + " cannot receive " + currentGrnFreeQty
                         + " free quantity as it exceeds ordered free quantity. Ordered free: " + orderedFreeQty
                         + ", Already received free: " + previouslyReceivedFreeQty
-                        + ", Remaining free: " + (orderedFreeQty - previouslyReceivedFreeQty);
+                        + ", Remaining free: " + remainingFreeQty;
             }
         }
 
@@ -3530,8 +3535,10 @@ public class GrnCostingController implements Serializable {
                         if (poPbi != null) {
                             //getRemainingQty() is double, can NOT be null
                             //At this point grnBillItem.getPharmaceuticalBillItem() is NOT null as it is used above. its getQty is double, so can not be null
-                            poPbi.setRemainingQty(Math.abs(poPbi.getRemainingQty()) - Math.abs(grnBillItem.getPharmaceuticalBillItem().getQty()));
-                            poPbi.setRemainingFreeQty(Math.abs(poPbi.getRemainingFreeQty()) - Math.abs(grnBillItem.getPharmaceuticalBillItem().getFreeQty()));
+                            double currentRemaining = Math.max(0.0, poPbi.getRemainingQty());
+                            double currentRemainingFree = Math.max(0.0, poPbi.getRemainingFreeQty());
+                            poPbi.setRemainingQty(Math.max(0.0, currentRemaining - Math.abs(grnBillItem.getPharmaceuticalBillItem().getQty())));
+                            poPbi.setRemainingFreeQty(Math.max(0.0, currentRemainingFree - Math.abs(grnBillItem.getPharmaceuticalBillItem().getFreeQty())));
                             poPbi.setCompletedQty(Math.abs(poPbi.getCompletedQty()) + Math.abs(grnBillItem.getPharmaceuticalBillItem().getQty()));
                             poPbi.setCompletedFreeQty(Math.abs(poPbi.getCompletedFreeQty()) + Math.abs(grnBillItem.getPharmaceuticalBillItem().getFreeQty()));
                             billItemFacade.editAndCommit(poBillItem);

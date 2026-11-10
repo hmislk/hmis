@@ -36,12 +36,29 @@
                         .mic-organism-name {
                             font-style: italic;
                         }
-                        .mic-organism-card .ui-panel-title {
-                            display: inline-flex;
+                        /* Title fills the bar so Edit / Delete sit at the right, before the toggle icon */
+                        .mic-organism-card .ui-panel-titlebar {
+                            display: flex;
                             align-items: center;
                         }
+                        .mic-organism-card .ui-panel-title {
+                            display: flex;
+                            align-items: center;
+                            flex: 1 1 auto;
+                            min-width: 0;
+                        }
+                        .mic-organism-edit.ui-button {
+                            margin-left: auto;
+                        }
                         .mic-organism-delete.ui-button {
+                            margin-left: 4px;
+                        }
+                        .mic-organism-card .ui-panel-titlebar-toggler {
                             margin-left: 8px;
+                        }
+                        .mic-organism-edit.ui-button,
+                        .mic-organism-delete.ui-button {
+                            flex: 0 0 auto;
                             width: 2rem;
                             height: 2rem;
                         }
@@ -59,7 +76,8 @@
                             justify-content: space-between;
                             flex-wrap: wrap;
                             gap: 8px;
-                            margin-bottom: 10px;
+                            padding: 8px 10px;
+                            border-bottom: 1px solid #dee2e6;
                         }
                         .mic-ab-search {
                             position: relative;
@@ -638,34 +656,6 @@
                                     </h:panelGroup>
 
                                     <h:panelGroup rendered="#{not empty patientReportController.currentPatientReport.patientReportGroups}">
-                                            <!-- Antibiotic search + expand / collapse (client side only) -->
-                                            <div class="mic-organism-tools">
-                                                <div class="mic-ab-search">
-                                                    <i class="fa fa-search"></i>
-                                                    <input type="text"
-                                                           id="micAbSearch"
-                                                           class="form-control form-control-sm"
-                                                           placeholder="Search antibiotic..."
-                                                           title="Type to filter antibiotics in all organisms"
-                                                           autocomplete="off"
-                                                           oninput="micFilterAntibiotics(this.value);"
-                                                           onkeydown="if (event.key === 'Enter') { event.preventDefault(); return false; }"/>
-                                                </div>
-                                                <div class="d-flex gap-1">
-                                                    <button type="button" class="mic-tool-btn" title="Expand all organisms"
-                                                            onclick="micToggleAllOrganisms(false);">
-                                                        <i class="fa fa-angle-double-down"></i> Expand all
-                                                    </button>
-                                                    <button type="button" class="mic-tool-btn" title="Collapse all organisms"
-                                                            onclick="micToggleAllOrganisms(true);">
-                                                        <i class="fa fa-angle-double-up"></i> Collapse all
-                                                    </button>
-                                                </div>
-                                            </div>
-                                            <div id="micAbNoMatch" class="text-muted text-center py-2" style="display: none;">
-                                                No antibiotic matches your search.
-                                            </div>
-
                                             <ui:repeat
                                                 id="tblMicValsGroupes"
                                                 value="#{patientReportController.currentPatientReport.patientReportGroups}"
@@ -674,11 +664,28 @@
                                                 <p:panel toggleable="true" toggleSpeed="200" styleClass="mic-organism-card">
                                                     <f:facet name="header">
                                                         <i class="fa-solid fa-bacterium me-2"></i>
+                                                        <!-- Key used to remember this card's open / closed state across postbacks -->
+                                                        <h:outputText
+                                                            styleClass="mic-organism-key"
+                                                            style="display: none;"
+                                                            value="#{patientReportController.currentPatientReport.id}|#{group.id}" >
+                                                        </h:outputText>
                                                         <h:outputText
                                                             escape="false"
                                                             styleClass="mic-organism-name"
                                                             value="#{group.groupName}" >
                                                         </h:outputText>
+                                                        <p:commandButton
+                                                            id="btnEditOrganism"
+                                                            icon="fa fa-pencil"
+                                                            title="Edit this organism's name"
+                                                            styleClass="ui-button-flat mic-organism-edit"
+                                                            rendered="#{not patientReportController.currentPatientReport.approved}"
+                                                            process="@this"
+                                                            update=":#{p:resolveFirstComponentWithId('pnlRenameOrganism',view).clientId}"
+                                                            oncomplete="PF('dlgRenameOrganism').show();"
+                                                            action="#{patientReportController.prepareRenamePatientReportGroupForMicrobiology(group)}">
+                                                        </p:commandButton>
                                                         <p:commandButton
                                                             id="btnRemoveOrganism"
                                                             icon="fa fa-trash"
@@ -687,10 +694,31 @@
                                                             rendered="#{not patientReportController.currentPatientReport.approved}"
                                                             process="@this"
                                                             update=":#{p:resolveFirstComponentWithId('panelDataEntryForMicrobiology',view).clientId} :#{p:resolveFirstComponentWithId('divPrint',view).clientId} :#{p:resolveFirstComponentWithId('messages',view).clientId}"
-                                                            onclick="if (!confirm('Delete this organism and all its antibiotic results and comment? This cannot be undone.')) { return false; }"
                                                             action="#{patientReportController.removePatientReportGroupForMicrobiology(group)}">
+                                                            <p:confirm
+                                                                header="Delete Organism"
+                                                                message="Delete this organism and all its antibiotic results and comment? This cannot be undone."
+                                                                icon="pi pi-exclamation-triangle"/>
                                                         </p:commandButton>
                                                     </f:facet>
+                                                <!-- Antibiotic search for this organism only (client side) -->
+                                                <div class="mic-organism-tools">
+                                                    <div class="mic-ab-search">
+                                                        <i class="fa fa-search"></i>
+                                                        <input type="text"
+                                                               class="form-control form-control-sm mic-ab-search-input"
+                                                               placeholder="Search antibiotic..."
+                                                               title="Type to filter the antibiotics of this organism"
+                                                               autocomplete="off"
+                                                               oninput="micFilterAntibiotics(this);"
+                                                               onfocus="this.select();"
+                                                               onclick="this.select();"
+                                                               onkeydown="if (event.key === 'Enter') { event.preventDefault(); return false; }"/>
+                                                    </div>
+                                                </div>
+                                                <div class="mic-ab-no-match text-muted text-center py-2" style="display: none;">
+                                                    No antibiotic matches your search.
+                                                </div>
                                                 <table class="mic-ab-table">
                                                 <thead>
                                                     <tr>
@@ -748,16 +776,48 @@
                                                     <h:panelGroup layout="block"
                                                                   styleClass="mic-organism-comment"
                                                                   rendered="#{pvc.patientReportGroup.groupName eq group.groupName and pvc.investigationItem.ixItemType eq 'OrganismComment'}">
-                                                        <p:outputLabel for="txtOrganismComment" value="Comment" styleClass="mic-field-label"/>
-                                                        <p:inputTextarea id="txtOrganismComment"
-                                                                         value="#{pvc.lobValue}"
-                                                                         rows="2"
-                                                                         autoResize="true"
-                                                                         styleClass="w-100"
-                                                                         placeholder="Comment for this organism"
-                                                                         disabled="#{patientReportController.currentPatientReport.approved}">
+                                                        <h:outputLabel value="Comment" styleClass="mic-field-label"/>
+                                                        <!-- Same rich text editor as the memo items (e.g. CULTURE COLONY COUNT) -->
+                                                        <p:textEditor id="txtOrganismComment"
+                                                                      class="w-100 mt-1 micMemoEditor"
+                                                                      secure="false"
+                                                                      allowFormatting="true"
+                                                                      allowBlocks="true"
+                                                                      allowStyles="true"
+                                                                      placeholder="Comment for this organism"
+                                                                      disabled="#{patientReportController.currentPatientReport.approved}"
+                                                                      value="#{pvc.lobValue}">
+                                                            <f:facet name="toolbar">
+                                                                <span class="ql-formats">
+                                                                    <button class="ql-bold"></button>
+                                                                    <button class="ql-italic"></button>
+                                                                    <button class="ql-underline"></button>
+                                                                    <button class="ql-strike"></button>
+                                                                </span>
+
+                                                                <span class="ql-formats">
+                                                                    <select class="ql-font"></select>
+                                                                    <select class="ql-size"></select>
+                                                                </span>
+
+                                                                <span class="ql-formats">
+                                                                    <button class="ql-script" value="sub"></button>
+                                                                    <button class="ql-script" value="super"></button>
+                                                                </span>
+
+                                                                <span class="ql-formats">
+                                                                    <button class="ql-list" value="ordered"></button>
+                                                                    <button class="ql-list" value="bullet"></button>
+                                                                    <button class="ql-indent" value="-1"></button>
+                                                                    <button class="ql-indent" value="+1"></button>
+                                                                </span>
+
+                                                                <span class="ql-formats">
+                                                                    <select class="ql-align"></select>
+                                                                </span>
+                                                            </f:facet>
                                                             <p:ajax process="@this" event="blur" listener="#{patientReportController.savePatientReportItemValues()}"/>
-                                                        </p:inputTextarea>
+                                                        </p:textEditor>
                                                     </h:panelGroup>
                                                 </ui:repeat>
                                                 </p:panel>
@@ -767,10 +827,53 @@
 
                                 </p:panel>
 
+                                <!-- Yes / No confirmation for Delete Organism -->
+                                <p:confirmDialog global="true" showEffect="fade" hideEffect="fade" responsive="true" width="420">
+                                    <p:commandButton value="No" type="button" icon="pi pi-times"
+                                                     styleClass="ui-confirmdialog-no ui-button-secondary"/>
+                                    <p:commandButton value="Yes" type="button" icon="pi pi-check"
+                                                     styleClass="ui-confirmdialog-yes ui-button-danger"/>
+                                </p:confirmDialog>
+
+                                <!-- Rename organism -->
+                                <p:dialog
+                                    id="dlgRenameOrganism"
+                                    widgetVar="dlgRenameOrganism"
+                                    header="Edit Organism Name"
+                                    modal="true"
+                                    resizable="false"
+                                    closeOnEscape="true"
+                                    width="420">
+                                    <h:panelGroup id="pnlRenameOrganism" layout="block">
+                                        <p:outputLabel for="txtRenameOrganism" value="Organism Name" class="mic-field-label"/>
+                                        <p:inputText
+                                            id="txtRenameOrganism"
+                                            class="w-100 mt-1"
+                                            value="#{patientReportController.organismNewName}"
+                                            onkeydown="if (event.key === 'Enter') { event.preventDefault(); document.getElementById(this.id.replace(/txtRenameOrganism$/, 'btnSaveRenameOrganism')).click(); return false; }"/>
+                                        <div class="d-flex justify-content-end gap-2 mt-3">
+                                            <p:commandButton
+                                                value="Cancel"
+                                                icon="fa fa-times"
+                                                type="button"
+                                                class="ui-button-secondary"
+                                                onclick="PF('dlgRenameOrganism').hide();"/>
+                                            <p:commandButton
+                                                id="btnSaveRenameOrganism"
+                                                value="Save"
+                                                icon="fa fa-check"
+                                                class="ui-button-success"
+                                                process="@this txtRenameOrganism"
+                                                update=":#{p:resolveFirstComponentWithId('panelDataEntryForMicrobiology',view).clientId} :#{p:resolveFirstComponentWithId('divPrint',view).clientId} :#{p:resolveFirstComponentWithId('messages',view).clientId}"
+                                                oncomplete="if (args &amp;&amp; args.organismRenamed) { PF('dlgRenameOrganism').hide(); }"
+                                                action="#{patientReportController.renamePatientReportGroupForMicrobiology()}"/>
+                                        </div>
+                                    </h:panelGroup>
+                                </p:dialog>
+
                                 <script>
-                                    // Organism cards are toggleable p:panels (same as Report Details).
-                                    // Open / close them through the panel's own toggle button so the
-                                    // PrimeFaces widget state stays in sync.
+                                    // Organism cards are toggleable p:panels (same as Report Details),
+                                    // shown as an accordion: only one organism is open at a time.
                                     function micIsOrganismCollapsed(card) {
                                         // PrimeFaces keeps the panel state in a hidden "panelId_collapsed" input,
                                         // updated at once (the content's display changes only after the slide).
@@ -782,8 +885,24 @@
                                         return !!content &amp;&amp; window.getComputedStyle(content).display === 'none';
                                     }
 
-                                    function micSetOrganismCollapsed(card, collapse) {
-                                        if (micIsOrganismCollapsed(card) !== collapse) {
+                                    // Open / close one card through its PrimeFaces widget (instant = no slide)
+                                    function micSetOrganismCollapsed(card, collapse, instant) {
+                                        if (micIsOrganismCollapsed(card) === collapse) {
+                                            return;
+                                        }
+                                        var widget = (window.PrimeFaces &amp;&amp; PrimeFaces.getWidgetById) ? PrimeFaces.getWidgetById(card.id) : null;
+                                        if (widget &amp;&amp; widget.cfg &amp;&amp; typeof widget.collapse === 'function') {
+                                            var speed = widget.cfg.toggleSpeed;
+                                            if (instant) {
+                                                widget.cfg.toggleSpeed = 0;
+                                            }
+                                            if (collapse) {
+                                                widget.collapse();
+                                            } else {
+                                                widget.expand();
+                                            }
+                                            widget.cfg.toggleSpeed = speed;
+                                        } else {
                                             var toggler = card.querySelector('.ui-panel-titlebar-toggler');
                                             if (toggler) {
                                                 toggler.click();
@@ -791,45 +910,147 @@
                                         }
                                     }
 
-                                    // Collapse (true) or expand (false) every organism card
-                                    function micToggleAllOrganisms(collapse) {
-                                        document.querySelectorAll('.mic-organism-card').forEach(function (card) {
-                                            micSetOrganismCollapsed(card, collapse);
-                                        });
-                                    }
-
-                                    // Filter antibiotic rows in all organisms by name.
-                                    // Cards with a match are expanded; cards without one are hidden.
-                                    function micFilterAntibiotics(text) {
-                                        var q = (text || '').trim().toLowerCase();
+                                    // Filter the antibiotic rows of ONE organism by name
+                                    function micFilterAntibiotics(input) {
+                                        var card = input.closest('.mic-organism-card');
+                                        if (!card) {
+                                            return;
+                                        }
+                                        var q = (input.value || '').trim().toLowerCase();
                                         var anyMatch = false;
-                                        document.querySelectorAll('.mic-organism-card').forEach(function (card) {
-                                            var cardMatch = false;
-                                            card.querySelectorAll('.mic-ab-row').forEach(function (row) {
-                                                var nameCell = row.querySelector('.mic-ab-name');
-                                                var name = nameCell ? nameCell.textContent.toLowerCase() : '';
-                                                var show = q === '' || name.indexOf(q) !== -1;
-                                                row.style.display = show ? '' : 'none';
-                                                if (show) {
-                                                    cardMatch = true;
-                                                }
-                                            });
-                                            if (q === '') {
-                                                card.style.display = '';
-                                            } else {
-                                                card.style.display = cardMatch ? '' : 'none';
-                                                if (cardMatch) {
-                                                    micSetOrganismCollapsed(card, false);
-                                                }
-                                            }
-                                            if (cardMatch) {
+                                        card.querySelectorAll('.mic-ab-row').forEach(function (row) {
+                                            var nameCell = row.querySelector('.mic-ab-name');
+                                            var name = nameCell ? nameCell.textContent.toLowerCase() : '';
+                                            var show = q === '' || name.indexOf(q) !== -1;
+                                            row.style.display = show ? '' : 'none';
+                                            if (show) {
                                                 anyMatch = true;
                                             }
                                         });
-                                        var noMatch = document.getElementById('micAbNoMatch');
+                                        var noMatch = card.querySelector('.mic-ab-no-match');
                                         if (noMatch) {
                                             noMatch.style.display = (q !== '' &amp;&amp; !anyMatch) ? '' : 'none';
                                         }
+                                    }
+
+                                    // Clear one organism's search box and show all its antibiotics again
+                                    function micClearAntibioticSearch(card) {
+                                        var input = card.querySelector('.mic-ab-search-input');
+                                        if (input &amp;&amp; input.value !== '') {
+                                            input.value = '';
+                                            micFilterAntibiotics(input);
+                                        }
+                                    }
+
+                                    // Put the cursor in an organism's search box (empty, ready to type)
+                                    function micFocusAntibioticSearch(card) {
+                                        var input = card.querySelector('.mic-ab-search-input');
+                                        if (input) {
+                                            input.focus();
+                                            input.select();
+                                        }
+                                    }
+
+                                    // ---- Remember which organism is open ----
+                                    // The cards are re-rendered after every postback (Save, Approve, ...) and after
+                                    // Add / Edit / Delete Organism, so the open card is kept in sessionStorage
+                                    // (per browser tab, per report) and re-applied. Empty string = all closed.
+                                    var MIC_ORGANISM_OPEN_KEY = 'micOrganismOpen';
+
+                                    function micReadOpenOrganisms() {
+                                        try {
+                                            return JSON.parse(window.sessionStorage.getItem(MIC_ORGANISM_OPEN_KEY)) || {};
+                                        } catch (e) {
+                                            return {};
+                                        }
+                                    }
+
+                                    function micWriteOpenOrganisms(map) {
+                                        try {
+                                            window.sessionStorage.setItem(MIC_ORGANISM_OPEN_KEY, JSON.stringify(map));
+                                        } catch (e) {
+                                            // storage unavailable: the first organism opens by default
+                                        }
+                                    }
+
+                                    // Card key = "reportId|groupId"
+                                    function micOrganismKey(card) {
+                                        var keyEl = card.querySelector('.mic-organism-key');
+                                        return keyEl ? keyEl.textContent.trim() : null;
+                                    }
+
+                                    function micReportIdOf(key) {
+                                        return key ? key.split('|')[0] : null;
+                                    }
+
+                                    function micRestoreOrganismStates() {
+                                        var cards = Array.prototype.slice.call(document.querySelectorAll('.mic-organism-card'));
+                                        if (cards.length === 0) {
+                                            return;
+                                        }
+                                        var keys = cards.map(micOrganismKey);
+                                        var reportId = micReportIdOf(keys[0]);
+                                        var stored = micReadOpenOrganisms()[reportId];
+                                        var openKey;
+                                        if (stored === '') {
+                                            openKey = '';                       // the user closed them all
+                                        } else if (stored &amp;&amp; keys.indexOf(stored) !== -1) {
+                                            openKey = stored;                   // remembered organism
+                                        } else {
+                                            openKey = keys[0];                  // default: first organism
+                                        }
+                                        cards.forEach(function (card, i) {
+                                            micSetOrganismCollapsed(card, keys[i] !== openKey, true);
+                                        });
+                                    }
+
+                                    // Accordion: when the user opens one organism, close the others.
+                                    // Listen in the CAPTURE phase: the PrimeFaces toggler handler returns false,
+                                    // which stops the click from bubbling up to document. The panel toggles
+                                    // right after this listener, so the new state is read in a timeout.
+                                    document.addEventListener('click', function (e) {
+                                        if (!e.isTrusted || !e.target.closest) {
+                                            return;
+                                        }
+                                        var toggler = e.target.closest('.mic-organism-card .ui-panel-titlebar-toggler');
+                                        if (!toggler) {
+                                            return;
+                                        }
+                                        var card = toggler.closest('.mic-organism-card');
+                                        var key = card ? micOrganismKey(card) : null;
+                                        if (!key) {
+                                            return;
+                                        }
+                                        setTimeout(function () {
+                                            var opened = !micIsOrganismCollapsed(card);
+                                            // Every open / close starts the search afresh
+                                            micClearAntibioticSearch(card);
+                                            if (opened) {
+                                                document.querySelectorAll('.mic-organism-card').forEach(function (other) {
+                                                    if (other !== card) {
+                                                        micSetOrganismCollapsed(other, true, false);
+                                                        micClearAntibioticSearch(other);
+                                                    }
+                                                });
+                                                // Focus the search box once the slide has finished
+                                                setTimeout(function () {
+                                                    micFocusAntibioticSearch(card);
+                                                }, 250);
+                                            }
+                                            var map = micReadOpenOrganisms();
+                                            map[micReportIdOf(key)] = opened ? key : '';
+                                            micWriteOpenOrganisms(map);
+                                        }, 0);
+                                    }, true);
+
+                                    if (window.jQuery) {
+                                        jQuery(function () {
+                                            micRestoreOrganismStates();
+                                        });
+                                        // Add / Edit / Delete Organism re-render the cards through AJAX
+                                        jQuery(document).on('pfAjaxComplete', function () {
+                                            micRestoreOrganismStates();
+                                        });
                                     }
                                 </script>
 

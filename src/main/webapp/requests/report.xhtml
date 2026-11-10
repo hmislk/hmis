@@ -292,13 +292,13 @@
                                                                    style="font-size: 135%; margin-top: 5px; font-weight: bold;"></h:outputLabel>
                                                 </div>
                                                 <h:outputLabel 
-                                                    value="#{patientInvestigationController.findAntibioticForMicrobiologyReport(patientReportController.currentPatientReport.patientReportItemValues)}"
+                                                    value="#{patientInvestigationController.findAntibioticForMicrobiologyReportUngrouped(patientReportController.currentPatientReport.patientReportItemValues)}"
                                                     style="display:none;"/>
 
                                                 <div class="row">
                                                     <div class="col-6">
                                                         <ui:repeat  
-                                                            value="#{patientInvestigationController.column1AntibioticList}" 
+                                                            value="#{patientInvestigationController.column1AntibioticListUngrouped}" 
                                                             var="prv" >
                                                             <h:panelGroup 
                                                                 style="font-size: 15px;"
@@ -319,7 +319,7 @@
 
                                                     <div class="col-6">
                                                         <ui:repeat  
-                                                            value="#{patientInvestigationController.column2AntibioticList}" 
+                                                            value="#{patientInvestigationController.column2AntibioticListUngrouped}" 
                                                             var="prv" >
                                                             <h:panelGroup 
                                                                 style="font-size: 16px;"

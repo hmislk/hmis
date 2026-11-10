@@ -475,10 +475,18 @@
                                             </h:outputText>
                                         </p:column>
 
+                                        <p:column width="10em">
+                                            <f:facet name="header"><h:outputText value="No payment method"/></f:facet>
+                                            <h:outputText value="#{inwardReportController.ipIncomeNoPaymentMethodTotal}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
+                                        </p:column>
+
                                         <p:column width="8em">
                                             <f:facet name="header"><h:outputText value="Total"/></f:facet>
                                             <h:outputText value="#{inwardReportController.ipIncomeCashTotal
-                                                                   + inwardReportController.ipIncomeCreditTotal}">
+                                                                   + inwardReportController.ipIncomeCreditTotal
+                                                                   + inwardReportController.ipIncomeNoPaymentMethodTotal}">
                                                 <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputText>
                                         </p:column>
@@ -783,10 +791,18 @@
                                             </h:outputText>
                                         </p:column>
 
+                                        <p:column width="10em">
+                                            <f:facet name="header"><h:outputText value="No payment method"/></f:facet>
+                                            <h:outputText value="#{inwardReportController.ipIncomeNoPaymentMethodTotal}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
+                                        </p:column>
+
                                         <p:column width="8em">
                                             <f:facet name="header"><h:outputText value="Total"/></f:facet>
                                             <h:outputText value="#{inwardReportController.ipIncomeCashTotal
-                                                                   + inwardReportController.ipIncomeCreditTotal}">
+                                                                   + inwardReportController.ipIncomeCreditTotal
+                                                                   + inwardReportController.ipIncomeNoPaymentMethodTotal}">
                                                 <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputText>
                                         </p:column>

@@ -154,13 +154,27 @@ public class SurgeryReportController implements Serializable {
             queryBody.append(" and i = :proc ");
             params.put("proc", procedure);
         }
+        // Match the theatre room against this surgery's own transfer requests.
+        // Admission-level requests (no surgery bill) count only when the surgery
+        // has none of its own, as in attachOtStatuses. Matching any request on
+        // the admission returned the patient's other surgeries done in another
+        // theatre (issue #24532).
         if (operationTheatreRoom != null) {
-            queryBody.append(" and exists ( ")
-                    .append("   select 1 from PatientTransferRequest otr ")
-                    .append("   where otr.retired = false ")
-                    .append("   and otr.toRoomFacilityCharge = :otRoom ")
-                    .append("   and (otr.admission.id = pe.id or otr.surgeryBill.id = b.id) ")
-                    .append(" ) ");
+            queryBody.append(" and ( exists ( ")
+                    .append("     select 1 from PatientTransferRequest otr ")
+                    .append("     where otr.retired = false ")
+                    .append("     and otr.surgeryBill.id = b.id ")
+                    .append("     and otr.toRoomFacilityCharge = :otRoom ) ")
+                    .append("   or ( exists ( ")
+                    .append("     select 1 from PatientTransferRequest otra ")
+                    .append("     where otra.retired = false ")
+                    .append("     and otra.surgeryBill is null ")
+                    .append("     and otra.admission.id = pe.id ")
+                    .append("     and otra.toRoomFacilityCharge = :otRoom ) ")
+                    .append("   and not exists ( ")
+                    .append("     select 1 from PatientTransferRequest otrb ")
+                    .append("     where otrb.retired = false ")
+                    .append("     and otrb.surgeryBill.id = b.id ) ) ) ");
             params.put("otRoom", operationTheatreRoom);
         }
 
@@ -214,8 +228,12 @@ public class SurgeryReportController implements Serializable {
             return;
         }
 
+        // Cancelling a professional fee bill (InwardSearch) only flags the bill as
+        // cancelled; its EncounterComponent rows stay retired = false. So the
+        // professional fee bill's own cancelled/retired flags are fetched too and
+        // those doctors are dropped below (issue #24532).
         String jpql = "SELECT pe.id, ce.id, ec.patientEncounterComponentType, "
-                + " stp.title, stp.name, bfstp.title, bfstp.name "
+                + " stp.title, stp.name, bfstp.title, bfstp.name, pb.cancelled, pb.retired "
                 + " FROM EncounterComponent ec "
                 + " LEFT JOIN ec.patientEncounter pe "
                 + " LEFT JOIN ec.childEncounter ce "
@@ -224,6 +242,8 @@ public class SurgeryReportController implements Serializable {
                 + " LEFT JOIN ec.billFee bf "
                 + " LEFT JOIN bf.staff bfst "
                 + " LEFT JOIN bfst.person bfstp "
+                + " LEFT JOIN ec.billItem bi "
+                + " LEFT JOIN bi.bill pb "
                 + " WHERE (pe.id IN :procIds OR ce.id IN :procIds) "
                 + " AND ec.retired = false "
                 + " AND ec.patientEncounterComponentType IN :types "
@@ -238,10 +258,23 @@ public class SurgeryReportController implements Serializable {
         List<Object[]> docRows = billFacade.findAggregates(jpql, p, TemporalType.TIMESTAMP);
 
         Map<Long, List<String>> doctorsByProcedure = new HashMap<>();
+        // Procedures whose only professional fees were cancelled. Their surgeon
+        // must be cleared, not left at the b.staff fallback, because adding a
+        // Performed_By fee also set the surgery bill's staff to that doctor.
+        Set<Long> proceduresWithCancelledFees = new HashSet<>();
 
         for (Object[] row : docRows) {
             Long peId = (Long) row[0];
             Long ceId = (Long) row[1];
+            if (Boolean.TRUE.equals(row[7]) || Boolean.TRUE.equals(row[8])) {
+                if (peId != null) {
+                    proceduresWithCancelledFees.add(peId);
+                }
+                if (ceId != null) {
+                    proceduresWithCancelledFees.add(ceId);
+                }
+                continue;
+            }
             com.divudi.core.data.inward.PatientEncounterComponentType type
                     = (com.divudi.core.data.inward.PatientEncounterComponentType) row[2];
 
@@ -282,6 +315,8 @@ public class SurgeryReportController implements Serializable {
             List<String> docs = doctorsByProcedure.get(r.getProcedureId());
             if (docs != null && !docs.isEmpty()) {
                 r.setSurgeonName(docs.stream().distinct().collect(Collectors.joining(", ")));
+            } else if (proceduresWithCancelledFees.contains(r.getProcedureId())) {
+                r.setSurgeonName(null);
             }
         }
     }

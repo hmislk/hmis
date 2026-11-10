@@ -589,6 +589,40 @@ public class PatientReportBean {
     }
 
     /**
+     * Renames one organism (antibiotic group) of a Microbiology report. The
+     * page and the printed report match values to their organism by group
+     * name, so every in-memory copy of the group (in the report's group list
+     * and on each value) gets the new name before the group is saved.
+     */
+    public void renameOrganismGroup(PatientReport ptReport, PatientReportGroup group, String newName) {
+        if (ptReport == null || group == null || newName == null) {
+            return;
+        }
+        Long groupId = group.getId();
+        group.setGroupName(newName);
+
+        if (ptReport.getPatientReportGroups() != null) {
+            for (PatientReportGroup g : ptReport.getPatientReportGroups()) {
+                if (g == group || (groupId != null && groupId.equals(g.getId()))) {
+                    g.setGroupName(newName);
+                }
+            }
+        }
+        if (ptReport.getPatientReportItemValues() != null) {
+            for (PatientReportItemValue v : ptReport.getPatientReportItemValues()) {
+                PatientReportGroup g = v.getPatientReportGroup();
+                if (g != null && (g == group || (groupId != null && groupId.equals(g.getId())))) {
+                    g.setGroupName(newName);
+                }
+            }
+        }
+
+        if (groupId != null) {
+            patientReportGroupFacade.edit(group);
+        }
+    }
+
+    /**
      * Creates the empty comment value for a newly added organism (antibiotic
      * group), so the user can type a comment inside that organism's section.
      */
@@ -643,6 +677,14 @@ public class PatientReportBean {
     @EJB
     InvestigationItemFacade iiFacade;
 
+    /**
+     * Looks up an existing {@link InvestigationItem} for an antibiotic under the given investigation,
+     * or creates a new one without mutating the shared investigation format (#25331).
+     *
+     * @param a the antibiotic to find or create an item for
+     * @param i the investigation that the antibiotic belongs to
+     * @return the existing or newly created investigation item
+     */
     public InvestigationItem investigationItemForAntibiotic(Antibiotic a, Investigation i) {
         Map m = new HashMap();
         String sql;
@@ -658,20 +700,12 @@ public class PatientReportBean {
 
         if (ii == null) {
             ii = new InvestigationItem();
-            try {
-                getIiFacade().create(ii);
-            } catch (Exception ignored) {
-            }
             ii.setName(a.getName());
             ii.setItem(i);
             ii.setIxItemType(InvestigationItemType.Antibiotic);
             ii.setIxItemValueType(InvestigationItemValueType.Varchar);
             ii.setCssTop("90%");
-            getIiFacade().edit(ii);
-
-            i.getReportItems().add(ii);
-            getIxFacade().edit(i);
-
+            getIiFacade().create(ii);
         }
         return ii;
     }

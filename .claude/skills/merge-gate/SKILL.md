@@ -245,6 +245,10 @@ evidence redacted.
 Before posting `PASSED`, check that CodeRabbit has reviewed the PR's current head commit.
 `gh pr checks` doesn't show this. Run `gh api repos/hmislk/hmis/commits/<head-sha>/status --jq .state`
 (it must not be `pending`) and check that CodeRabbit's summary comment no longer says "review in progress".
+A rate-limited CodeRabbit still shows a green status, so read its status description for the head sha:
+`gh api repos/hmislk/hmis/commits/<head-sha>/statuses --jq '[.[]|select(.context|test("CodeRabbit";"i"))][0]|.state+" | "+.description'`
+(newest first). It counts as reviewed only if the state is `success` and the description doesn't match
+`rate limit`, `limit reached` or `in progress` (case-insensitive). Old comments don't count either way: the status is per sha.
 The only alternative: when CodeRabbit can't review (rate-limited or down), the PR carries a comment
 `CR skipped: <reason>` with a real reason. Then record PASSED with "CodeRabbit skipped: <reason>" in the status comment.
 Handle any new threads it posts the same way as Phase 1 findings. The `development` ruleset

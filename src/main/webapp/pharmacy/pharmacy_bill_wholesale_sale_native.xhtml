@@ -9,6 +9,8 @@
       xmlns:pa="http://xmlns.jcp.org/jsf/composite/paymentMethod">
     <h:body>
         <ui:composition template="/resources/template/template.xhtml">
+            <!-- This page shows its own growls (panelError, panelInfo); skip the template growl so messages do not show twice -->
+            <ui:param name="hideTemplateGrowl" value="true" />
             <ui:define name="content">
                 <h:form id="bill">
                     <script>
@@ -17,7 +19,8 @@
                             if (ac) { ac.focus(); }
                         };
                     </script>
-                    <p:growl id="panelError" />
+                    <p:growl id="panelError" sticky="true" severity="error,fatal" />
+                    <p:growl id="panelInfo" severity="info,warn" autoUpdate="true" />
                     <p:defaultCommand target="btnAdd" />
 
                     <!-- ============================================================
