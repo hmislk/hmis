@@ -64,6 +64,8 @@ public class TokenController implements Serializable, ControllerWithPatient {
     PatientController patientController;
     @Inject
     PharmacyBillSearch pharmacyBillSearch;
+    @Inject
+    ConfigOptionApplicationController configOptionApplicationController;
 
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Class variables">
@@ -235,8 +237,8 @@ public class TokenController implements Serializable, ControllerWithPatient {
         // never completed tokens from earlier days cluttered the TV.
         m.put("fd", startOfToday());
         m.put("td", startOfTomorrow());
-        j += " order by t.id";
-        currentTokensSaleForCashier = tokenFacade.findByJpql(j, m, TemporalType.DATE);
+        currentTokensSaleForCashier = findTokensForDisplay(j, m,
+                "Pharmacy Sale for Cashier Token Display - Maximum Number of Called Tokens to Show (0 for All)");
     }
     
     public void fillInprogressSaleForCashierBillsTokens(){
@@ -268,8 +270,24 @@ public class TokenController implements Serializable, ControllerWithPatient {
         // never completed tokens from earlier days cluttered the TV.
         m.put("fd", startOfToday());
         m.put("td", startOfTomorrow());
-        j += " order by t.id";
-        inprogressTokensSaleForCashier = tokenFacade.findByJpql(j, m, TemporalType.DATE);
+        inprogressTokensSaleForCashier = findTokensForDisplay(j, m,
+                "Pharmacy Sale for Cashier Token Display - Maximum Number of In-Progress Tokens to Show (0 for All)");
+    }
+
+    // With a limit, the newest tokens win, so a token that was just called
+    // always reaches the TV. The rows still show oldest first.
+    private List<Token> findTokensForDisplay(String jpql, Map m, String maxCountKey) {
+        Integer max = configOptionApplicationController.getIntegerValueByKey(maxCountKey, 0);
+        if (max == null || max <= 0) {
+            return tokenFacade.findByJpql(jpql + " order by t.id", m, TemporalType.DATE);
+        }
+        List<Token> newest = tokenFacade.findByJpql(jpql + " order by t.id desc", m, TemporalType.DATE, max);
+        if (newest == null) {
+            return newest;
+        }
+        List<Token> oldestFirst = new java.util.ArrayList<>(newest);
+        java.util.Collections.reverse(oldestFirst);
+        return oldestFirst;
     }
 
     public void fillPharmacyTokensCalled() {
