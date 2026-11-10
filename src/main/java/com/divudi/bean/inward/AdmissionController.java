@@ -25,6 +25,7 @@ import com.divudi.core.data.admin.PageMetadata;
 
 import com.divudi.core.data.ApplicationInstitution;
 import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.data.Title;
 import com.divudi.core.data.dataStructure.ComponentDetail;
 import com.divudi.core.data.dataStructure.PaymentMethodData;
 import com.divudi.core.data.dataStructure.YearMonthDay;
@@ -54,6 +55,7 @@ import com.divudi.core.facade.PatientRoomFacade;
 import com.divudi.core.facade.PatientTransferRequestFacade;
 import com.divudi.core.entity.inward.PatientTransferRequest;
 import com.divudi.core.data.inward.EncounterRegistrationFlag;
+import com.divudi.service.inward.AdmissionGuardianRules;
 import com.divudi.core.data.inward.TransferRequestStatus;
 import com.divudi.core.facade.PersonFacade;
 import com.divudi.core.facade.RoomFacade;
@@ -359,6 +361,37 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         ));
 
         metadata.addConfigOption(new ConfigOptionInfo(
+                "Inward Admission - Require Patient NIC or Guardian NIC",
+                "Block the admission when both the patient NIC and the guardian NIC are blank; either one is enough. "
+                + "Not applied to Provisional Emergency admissions at admit time. Turn off 'Guardian NIC is Required in Patient Admission' "
+                + "if the guardian NIC should only be needed when the patient has none (default false)",
+                "inward/inward_admission",
+                OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Inward Admission - Enforce Guardian Checks When Marking Provisional Emergency Complete",
+                "Apply the guardian checks (and the patient/guardian NIC rule, if on) when a Provisional Emergency admission is marked as verified (default false)",
+                "inward/inward_admission",
+                OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Inward Admission - Enforce Guardian Checks in Edit Admission Details",
+                "Apply the guardian checks (and the patient/guardian NIC rule, if on) when saving Edit Admission Details, so the fields cannot be cleared after admission. "
+                + "Provisional Emergency admissions are exempt (default false)",
+                "inward/inward_admission",
+                OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Inward Admission - Guardian Checks Treat Whitespace-Only Values as Missing",
+                "A guardian name, NIC, address or phone containing only spaces counts as missing in every guardian check (default false)",
+                "inward/inward_admission",
+                OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
                 "Patient Admit - Enable Referred From in Patient Admission",
                 "Show the Referred From field during admission (default false)",
                 "inward/inward_admission",
@@ -382,6 +415,27 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         metadata.addConfigOption(new ConfigOptionInfo(
                 "Inward Patient Admit - Credit Companies Require Reference Number",
                 "Require a reference number for credit companies during admission (default false)",
+                "inward/inward_admission",
+                OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Inward Admission - Patient NIC Required for Credit Admissions",
+                "Refuse a Credit admission when the patient's National ID Number is blank; any value, even '-', is accepted. Baby and Rapid / Temp A&E admissions are exempt. Independent of 'Patient Details Required in Patient Admission' (default false)",
+                "inward/inward_admission",
+                OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Inward Admission - Exempt Baby, Baby Of and Master Titles from Patient NIC Requirement",
+                "A blank patient NIC does not block the admission when the patient's title is Baby, Baby Of or Master. Applies to both 'Patient NIC is Required in Patient Admission' and 'Inward Admission - Patient NIC Required for Credit Admissions'. A NIC that is entered is still saved (default false)",
+                "inward/inward_admission",
+                OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Inward Admission - Require Guardian Name and NIC for Baby, Baby Of, Master Titles and Claimable Admissions",
+                "Block the admission when the guardian name or guardian NIC is blank and the patient's title is Baby, Baby Of or Master, or the admission is Claimable (Credit). Applies when the admission is created; Provisional Emergency and On Admission Death admissions are exempt. A value of only spaces counts as blank (default false)",
                 "inward/inward_admission",
                 OptionScope.APPLICATION
         ));
@@ -2229,54 +2283,59 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         // by design; blank name/address are placeholder-filled and the required
         // patient-detail checks below are skipped. (Issue #21183)
         if (!isRapidTempAe() && configOptionApplicationController.getBooleanValueByKey("Patient Details Required in Patient Admission", false)) {
+            // Each check below is independent of the others, so all of them are
+            // evaluated and reported together instead of stopping at the first
+            // miss — otherwise a form missing several fields takes one
+            // submit/fix round-trip per field. (Issue #24564)
+            boolean patientDetailsHasError = false;
             if (configOptionApplicationController.getBooleanValueByKey("Patient Title is Required in Patient Admission", false)) {
                 if (getCurrent().getPatient().getPerson().getTitle() == null) {
                     JsfUtil.addErrorMessage("Patient Title is Required");
-                    return true;
+                    patientDetailsHasError = true;
                 }
             }
             if (configOptionApplicationController.getBooleanValueByKey("Patient Gender is Required in Patient Admission", false)) {
                 if (getCurrent().getPatient().getPerson().getSex() == null) {
                     JsfUtil.addErrorMessage("Patient Gender is Required");
-                    return true;
+                    patientDetailsHasError = true;
                 }
             }
             if (configOptionApplicationController.getBooleanValueByKey("Patient Age is Required in Patient Admission", false)) {
                 if (getCurrent().getPatient().getPerson().getDob() == null) {
                     JsfUtil.addErrorMessage("Patient Age is Required");
-                    return true;
+                    patientDetailsHasError = true;
                 }
             }
             if (configOptionApplicationController.getBooleanValueByKey("Patient Name is Required in Patient Admission", false)) {
                 if (getCurrent().getPatient().getPerson().getName() == null || getCurrent().getPatient().getPerson().getName().trim().isEmpty()) {
                     JsfUtil.addErrorMessage("Patient Name is Required");
-                    return true;
+                    patientDetailsHasError = true;
                 }
             }
             if (configOptionApplicationController.getBooleanValueByKey("Patient Address is Required in Patient Admission", false)) {
                 if (getCurrent().getPatient().getPerson().getAddress() == null || getCurrent().getPatient().getPerson().getAddress().trim().isEmpty()) {
                     JsfUtil.addErrorMessage("Patient Address is Required");
-                    return true;
+                    patientDetailsHasError = true;
                 }
             }
             if (configOptionApplicationController.getBooleanValueByKey("Patient Area is Required in Patient Admission", false)) {
                 if (getCurrent().getPatient().getPerson().getArea() == null || getCurrent().getPatient().getPerson().getArea().getName().trim().isEmpty()) {
                     JsfUtil.addErrorMessage("Patient Area is Required");
-                    return true;
+                    patientDetailsHasError = true;
                 }
             }
             if (configOptionApplicationController.getBooleanValueByKey("Patient Mail is Required in Patient Admission", false)) {
                 if (getCurrent().getPatient().getPerson().getEmail() == null || getCurrent().getPatient().getPerson().getEmail().trim().isEmpty()) {
                     JsfUtil.addErrorMessage("Patient Mail is Required");
-                    return true;
+                    patientDetailsHasError = true;
                 }
             }
             // Baby admissions typically have no NIC of their own yet, so this
             // admission-specific NIC-required check is skipped for them. (Issue #22998)
-            if (!isBabyAdmission() && configOptionApplicationController.getBooleanValueByKey("Patient NIC is Required in Patient Admission", false)) {
+            if (!isBabyAdmission() && !isNicExemptTitle() && configOptionApplicationController.getBooleanValueByKey("Patient NIC is Required in Patient Admission", false)) {
                 if (getCurrent().getPatient().getPerson().getNic() == null || getCurrent().getPatient().getPerson().getNic().trim().isEmpty()) {
                     JsfUtil.addErrorMessage("Patient NIC is Required");
-                    return true;
+                    patientDetailsHasError = true;
                 }
             }
             // Baby admissions typically have no phone number of their own yet either
@@ -2286,8 +2345,27 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             if (!isBabyAdmission() && configOptionApplicationController.getBooleanValueByKey("Patient Phone Number is Required in Patient Admission", false)) {
                 if (getCurrent().getPatient().getPerson().getPhone() == null || getCurrent().getPatient().getPerson().getPhone().trim().isEmpty()) {
                     JsfUtil.addErrorMessage("Patient Phone Number is Required");
-                    return true;
+                    patientDetailsHasError = true;
                 }
+            }
+            if (patientDetailsHasError) {
+                return true;
+            }
+        }
+
+        // Credit admissions need a patient NIC on record. Deliberately kept outside
+        // the "Patient Details Required" block above, and on its own inward-only
+        // option, so enabling it neither drags in the other patient-detail checks
+        // nor affects OPD/channelling. Any non-blank value (even "-") is accepted.
+        // Baby and Rapid / Temp A&E admissions are exempt, matching the existing
+        // NIC check. (Issue #23978)
+        if (!isRapidTempAe() && !isBabyAdmission() && !isNicExemptTitle()
+                && getCurrent().getPaymentMethod() == PaymentMethod.Credit
+                && configOptionApplicationController.getBooleanValueByKey("Inward Admission - Patient NIC Required for Credit Admissions", false)) {
+            Person person = getCurrent().getPatient().getPerson();
+            if (person == null || person.getNic() == null || person.getNic().trim().isEmpty()) {
+                JsfUtil.addErrorMessage("National ID Number is required for credit admissions. Enter the NIC, or '-' if not available.");
+                return true;
             }
         }
 
@@ -2299,112 +2377,146 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         }
 
         if (configOptionApplicationController.getBooleanValueByKey("Inward Admission - Mandatory Fields Enabled", false)) {
+            // Independent per-field checks — accumulate and report all of them
+            // together rather than stopping at the first. (Issue #24564)
+            boolean mandatoryFieldsHasError = false;
             if (configOptionApplicationController.getBooleanValueByKey("Inward Admission - Medical Officer Required", false)) {
                 if (getCurrent().getOpdDoctor() == null) {
                     JsfUtil.addErrorMessage("Medical Officer is Required");
-                    return true;
+                    mandatoryFieldsHasError = true;
                 }
             }
             if (configOptionApplicationController.getBooleanValueByKey("Inward Admission - Primary Reason Required", false)) {
                 if (getCurrent().getPrimaryReason() == null) {
                     JsfUtil.addErrorMessage("Primary Reason is Required");
-                    return true;
+                    mandatoryFieldsHasError = true;
                 }
             }
             if (configOptionApplicationController.getBooleanValueByKey("Inward Admission - Comments Required", false)) {
                 if (getCurrent().getComments() == null || getCurrent().getComments().trim().isEmpty()) {
                     JsfUtil.addErrorMessage("Comments / Reference No is Required");
-                    return true;
+                    mandatoryFieldsHasError = true;
                 }
             }
             if (!isRapidTempAe() && configOptionApplicationController.getBooleanValueByKey("Inward Admission - Referring Doctor Required", false)) {
                 if (getCurrent().getReferringDoctor() == null) {
                     JsfUtil.addErrorMessage("Doctor who referred the patient is Required");
-                    return true;
+                    mandatoryFieldsHasError = true;
                 }
             }
             if (!isRapidTempAe() && configOptionApplicationController.getBooleanValueByKey("Inward Admission - Referring Staff Required", false)) {
                 if (getCurrent().getReferringStaff() == null) {
                     JsfUtil.addErrorMessage("Staff who referred the patient is Required");
-                    return true;
+                    mandatoryFieldsHasError = true;
                 }
             }
             if (!isRapidTempAe() && configOptionApplicationController.getBooleanValueByKey("Inward Admission - Referral Institution Required", false)) {
                 if (getCurrent().getReferredByInstitution() == null) {
                     JsfUtil.addErrorMessage("Referral Institution is Required");
-                    return true;
+                    mandatoryFieldsHasError = true;
                 }
             }
             if (configOptionApplicationController.getBooleanValueByKey("Inward Admission - Workplace Required", false)) {
                 if (getCurrent().getWorkplace() == null) {
                     JsfUtil.addErrorMessage("Workplace is Required");
-                    return true;
+                    mandatoryFieldsHasError = true;
                 }
             }
             if (!isRapidTempAe() && configOptionApplicationController.getBooleanValueByKey("Inward Admission - Referral Number Required", false)) {
                 if (getCurrent().getReferralId() == null || getCurrent().getReferralId().trim().isEmpty()) {
                     JsfUtil.addErrorMessage("Referral Number is Required");
-                    return true;
+                    mandatoryFieldsHasError = true;
                 }
             }
             if (!isRapidTempAe() && configOptionApplicationController.getBooleanValueByKey("Patient Admit - Require Referred From in Patient Admission", false)) {
                 if (getCurrent().getReferringMethod() == null || getCurrent().getReferringMethod().trim().isEmpty()) {
                     JsfUtil.addErrorMessage("Referred From is Required");
-                    return true;
+                    mandatoryFieldsHasError = true;
                 }
+            }
+            if (mandatoryFieldsHasError) {
+                return true;
             }
         }
 
-        if (!isRapidTempAe() && configOptionApplicationController.getBooleanValueByKey("Guardian Details Required in Patient Admission")) {
-            if (getCurrent().getGuardian() == null) {
-                JsfUtil.addErrorMessage("Guardian is Required");
+        // Guardian per-field checks and the "patient NIC, else guardian NIC" rule live in
+        // AdmissionGuardianRules so Edit Admission Details and "Mark as Verified" enforce
+        // exactly the same configuration. Provisional Emergency admissions are exempt
+        // here and are checked when the registration is marked complete. All problems are
+        // reported together. (Issues #24564, #25032)
+        if (!isRapidTempAe()) {
+            List<String> guardianErrors = AdmissionGuardianRules.validate(getCurrent(), configOptionApplicationController);
+            // Guardian name and NIC for Baby / Baby Of / Master titles and Claimable
+            // admissions. Admit-time only (not shared with Edit Admission Details or
+            // Mark as Verified). Messages already reported above are not repeated.
+            // (Issue #25190)
+            if (getCurrent().getEncounterRegistrationFlag() != EncounterRegistrationFlag.ON_ADMISSION_DEATH
+                    && isGuardianNameAndNicRequiredForTitleOrClaimable()) {
+                Person guardian = getCurrent().getGuardian();
+                // "Guardian is Required" (existing option) already covers a missing guardian.
+                boolean guardianAlreadyReportedMissing = guardian == null && guardianErrors.contains("Guardian is Required");
+                if (!guardianAlreadyReportedMissing && (guardian == null || isBlank(guardian.getName()))) {
+                    addErrorOnce(guardianErrors, "Guardian Name is Required");
+                }
+                if (!guardianAlreadyReportedMissing && (guardian == null || isBlank(guardian.getNic()))) {
+                    addErrorOnce(guardianErrors, "Guardian NIC is Required");
+                }
+            }
+            if (!guardianErrors.isEmpty()) {
+                for (String guardianError : guardianErrors) {
+                    JsfUtil.addErrorMessage(guardianError);
+                }
                 return true;
-            }
-            if (configOptionApplicationController.getBooleanValueByKey("Guardian Title is Required in Patient Admission", true)) {
-                if (getCurrent().getGuardian().getTitle() == null) {
-                    JsfUtil.addErrorMessage("Guardian Title is Required");
-                    return true;
-                }
-            }
-            if (configOptionApplicationController.getBooleanValueByKey("Guardian Name is Required in Patient Admission", true)) {
-                if (getCurrent().getGuardian().getName() == null || getCurrent().getGuardian().getName().isEmpty()) {
-                    JsfUtil.addErrorMessage("Guardian Name is Required");
-                    return true;
-                }
-            }
-            if (configOptionApplicationController.getBooleanValueByKey("Guardian NIC is Required in Patient Admission", true)) {
-                if (getCurrent().getGuardian().getNic() == null || getCurrent().getGuardian().getNic().isEmpty()) {
-                    JsfUtil.addErrorMessage("Guardian NIC is Required");
-                    return true;
-                }
-            }
-            if (configOptionApplicationController.getBooleanValueByKey("Guardian Address is Required in Patient Admission", true)) {
-                if (getCurrent().getGuardian().getAddress() == null || getCurrent().getGuardian().getAddress().isEmpty()) {
-                    JsfUtil.addErrorMessage("Guardian Address is Required");
-                    return true;
-                }
-            }
-            if (configOptionApplicationController.getBooleanValueByKey("Guardian Mobile Number is Required in Patient Admission", true)) {
-                if (getCurrent().getGuardian().getMobile() == null || getCurrent().getGuardian().getMobile().isEmpty()) {
-                    JsfUtil.addErrorMessage("Guardian Mobile Number is Required");
-                    return true;
-                }
-            }
-            if (configOptionApplicationController.getBooleanValueByKey("Guardian Home Phone Number is Required in Patient Admission", false)) {
-                if (getCurrent().getGuardian().getPhone() == null || getCurrent().getGuardian().getPhone().isEmpty()) {
-                    JsfUtil.addErrorMessage("Guardian Home Phone Number is Required");
-                    return true;
-                }
-            }
-            if (configOptionApplicationController.getBooleanValueByKey("Guardian Relationship is Required in Patient Admission", true)) {
-                if (getCurrent().getGuardianRelationshipToPatient() == null) {
-                    JsfUtil.addErrorMessage("Guardian Relationship is Required");
-                    return true;
-                }
             }
         }
 
         return false;
+    }
+
+    private static boolean isBlank(String value) {
+        return value == null || value.trim().isEmpty();
+    }
+
+    private static void addErrorOnce(List<String> errors, String message) {
+        if (!errors.contains(message)) {
+            errors.add(message);
+        }
+    }
+
+    private static boolean isBabyOrMasterTitle(Title title) {
+        return title == Title.Baby || title == Title.Baby_Of || title == Title.Master;
+    }
+
+    /**
+     * @return {@code true} when the option to exempt the Baby, Baby Of and
+     * Master titles from the patient NIC requirement is on and the patient has
+     * one of those titles. (Issue #25189)
+     */
+    private boolean isNicExemptTitle() {
+        if (getCurrent() == null || getCurrent().getPatient() == null || getCurrent().getPatient().getPerson() == null) {
+            return false;
+        }
+        return isBabyOrMasterTitle(getCurrent().getPatient().getPerson().getTitle())
+                && configOptionApplicationController.getBooleanValueByKey(
+                        "Inward Admission - Exempt Baby, Baby Of and Master Titles from Patient NIC Requirement", false);
+    }
+
+    /**
+     * @return {@code true} when the guardian name and NIC option is on and the
+     * patient's title is Baby, Baby Of or Master, or the admission is
+     * Claimable (Credit). (Issue #25190)
+     */
+    private boolean isGuardianNameAndNicRequiredForTitleOrClaimable() {
+        if (!configOptionApplicationController.getBooleanValueByKey(
+                "Inward Admission - Require Guardian Name and NIC for Baby, Baby Of, Master Titles and Claimable Admissions", false)) {
+            return false;
+        }
+        boolean titleMatches = getCurrent().getPatient() != null
+                && getCurrent().getPatient().getPerson() != null
+                && isBabyOrMasterTitle(getCurrent().getPatient().getPerson().getTitle());
+        boolean claimable = getCurrent().isClaimable()
+                || getCurrent().getPaymentMethod() == PaymentMethod.Credit;
+        return titleMatches || claimable;
     }
 
     @Inject
@@ -2969,6 +3081,21 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         if (getCurrent() == null) {
             JsfUtil.addErrorMessage("No admission selected");
             return;
+        }
+        // A provisional admission skips the guardian checks at admit time so the emergency
+        // path stays fast. When this option is on, they are enforced here, before the
+        // registration can be marked complete. (Issue #25032)
+        if (configOptionApplicationController.getBooleanValueByKey(
+                "Inward Admission - Enforce Guardian Checks When Marking Provisional Emergency Complete", false)) {
+            List<String> guardianErrors = AdmissionGuardianRules.validate(getCurrent(), configOptionApplicationController);
+            if (!guardianErrors.isEmpty()) {
+                for (String guardianError : guardianErrors) {
+                    JsfUtil.addErrorMessage(guardianError);
+                }
+                JsfUtil.addErrorMessage("The registration was not marked as complete. "
+                        + "Add the missing details (Edit Admission Details) and try again.");
+                return;
+            }
         }
         Map<String, Object> before = new LinkedHashMap<>();
         before.put("registrationFlag", getCurrent().getEncounterRegistrationFlag());
