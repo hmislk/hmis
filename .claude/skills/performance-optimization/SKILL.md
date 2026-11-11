@@ -47,6 +47,20 @@ Key pattern from Pharmacy Retail Sale (639ms -> 50ms):
 - Implement lazy loading for large datasets
 - Cache report results when data doesn't change frequently
 
+### 🚨 Found a slow report? File an issue
+
+Whenever a report is found slow (during testing, an investigation or a user
+complaint), file a GitHub issue for it then, without waiting to be asked. A
+report that times out makes users think its data is missing. The issue asks for:
+
+- a fast DTO-based report as the default button, and
+- the existing report kept beside it as "(Legacy)" so the two can be
+  cross-checked (as Stock Ledger does: "12. Stock Ledger" and "12. Stock Leger
+  (Legacy)").
+
+Record the menu path, the filters used and how long it took. No hospital data
+in the issue. One issue per report; search for an existing one first.
+
 For detailed guides, read:
 - [Autocomplete Optimization](../../developer_docs/performance/autocomplete-optimization-guide.md)
 - [MySQL Performance](../../developer_docs/database/mysql-performance-configuration.md)
