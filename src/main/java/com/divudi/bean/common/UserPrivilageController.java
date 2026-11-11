@@ -768,6 +768,7 @@ public class UserPrivilageController implements Serializable {
         new DefaultTreeNode(new PrivilegeHolder(Privileges.CcSelfSampleBarcodePrint, "Generate/Print Barcodes"), ccSelfSampleNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.CcSelfSampleCollect, "Collect Samples"), ccSelfSampleNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.CcSelfSampleSend, "Send Samples"), ccSelfSampleNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.CcSelfSampleEditSendingDepartment, "Edit Sending to Department"), ccSelfSampleNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.CcSelfSampleReject, "Reject Samples"), ccSelfSampleNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.CcSelfSampleRegenerate, "Re-Generate Samples"), ccSelfSampleNode);
 
