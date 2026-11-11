@@ -245,7 +245,7 @@
                                                             </h:outputText>
                                                         </td>
                                                         <td style="width: 17mm; text-align: right;">
-                                                            <h:outputText value="#{p.bill.netTotal - p.bill.paidAmount}" style="margin-right: 1mm;">
+                                                            <h:outputText value="#{p.bill.netTotal - p.bill.refundAmount - p.bill.paidAmount}" style="margin-right: 1mm;">
                                                                 <f:convertNumber pattern="#,##0.00" />
                                                             </h:outputText>
                                                         </td>
@@ -274,7 +274,7 @@
                                                     </td>
 
                                                     <td style="text-align:right;">
-                                                        <h:outputText value="#{i.total - i.paidTotal}" style="margin-right: 1mm;">
+                                                        <h:outputText value="#{i.total - i.refundTotal - i.paidTotal}" style="margin-right: 1mm;">
                                                             <f:convertNumber pattern="#,##0.00"/>
                                                         </h:outputText>
                                                     </td>

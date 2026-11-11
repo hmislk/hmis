@@ -112,7 +112,10 @@ public class CreditBean {
                 + " and p.bill.createdAt  between :frm and :to ";
 
         if (lessThan) {
-            jpql += " and (abs(p.bill.netTotal)-abs(p.bill.paidAmount))>:val ";
+            // Due = net total less refunds less settlements. Negative bills (refund and
+            // cancellation bills) are not receivables, so they are never listed (#16982).
+            jpql += " and p.bill.netTotal>0 "
+                    + " and (p.bill.netTotal-coalesce(p.bill.refundAmount,0)-coalesce(p.bill.paidAmount,0))>:val ";
         } else {
             jpql += " and (abs(p.bill.netTotal)-abs(p.bill.paidAmount))<:val ";
         }
@@ -276,7 +279,10 @@ public class CreditBean {
                 .append("WHERE b.retired = FALSE ");
 
         if (lessThan) {
-            jpqlBuilder.append("AND (ABS(b.netTotal) - ABS(b.paidAmount)) > :val ");
+            // Due = net total less refunds less settlements; refund and cancellation
+            // bills (negative net total) are not receivables (#16982).
+            jpqlBuilder.append("AND b.netTotal > 0 ")
+                    .append("AND (b.netTotal - COALESCE(b.refundAmount, 0) - COALESCE(b.paidAmount, 0)) > :val ");
         } else {
             jpqlBuilder.append("AND (ABS(b.netTotal) - ABS(b.paidAmount)) < :val ");
         }
