@@ -5754,6 +5754,7 @@ public class PharmacyReportController implements Serializable {
             List<BillType> billTypes = new ArrayList<>();
             billTypes.add(BillType.PharmacyAdjustmentDepartmentSingleStock);
             billTypes.add(BillType.PharmacyAdjustmentDepartmentStock);
+            billTypes.add(BillType.PharmacyAdjustmentBatchChange);
             billTypes.add(BillType.PharmacyStockAdjustmentBill);
             billItemsDtos = new ArrayList<>();
             netTotal = 0.0;
@@ -14213,6 +14214,7 @@ public class PharmacyReportController implements Serializable {
             List<BillType> billTypes = new ArrayList<>();
             billTypes.add(BillType.PharmacyAdjustmentDepartmentSingleStock);
             billTypes.add(BillType.PharmacyAdjustmentDepartmentStock);
+            billTypes.add(BillType.PharmacyAdjustmentBatchChange);
             billTypes.add(BillType.PharmacyStockAdjustmentBill);
 
             // Query for Stock Adjustment Issues (negative quantities)

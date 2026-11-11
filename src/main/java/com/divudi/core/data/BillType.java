@@ -200,7 +200,9 @@ public enum BillType {
     OPERATIONAL_EXPENSES,
     OPERATIONAL_EXPENSES_CANCELLED,
     CHEQUE_PAID,
-    CHEQUE_REALIZED;
+    CHEQUE_REALIZED,
+    // Appended last on purpose: PriceMatrix stores BillType by ordinal, so never insert mid-enum.
+    PharmacyAdjustmentBatchChange;
 
     public String getLabel() {
         switch (this) {
@@ -377,6 +379,8 @@ public enum BillType {
                 return "Pharmacy Adjustment - Cost Rate";
             case PharmacyAdjustmentExpiryDate:
                 return "Pharmacy Adjustment - Expiry Date";
+            case PharmacyAdjustmentBatchChange:
+                return "Pharmacy Adjustment - Batch Change";
             case PharmacyMajorAdjustment:
                 return "Pharmacy Major Adjustment";
             default:
