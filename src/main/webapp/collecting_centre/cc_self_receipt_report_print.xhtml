@@ -19,7 +19,14 @@
                     </h:form>
                 </h:panelGroup>
 
-                <h:panelGroup rendered="#{collectingCentreSelfCommonController.collectingCentreDepartment}">
+                <h:panelGroup rendered="#{collectingCentreSelfCommonController.collectingCentreDepartment and not collectingCentreSelfReportController.canOpenReceiptReport}">
+                    <h:outputStylesheet library="css" name="collecting_centre_self_billing_not_available.css"/>
+                    <h:form id="ccUnauthorizedForm">
+                        <ez:cc_self_billing_unauthorized/>
+                    </h:form>
+                </h:panelGroup>
+
+                <h:panelGroup rendered="#{collectingCentreSelfCommonController.collectingCentreDepartment and collectingCentreSelfReportController.canOpenReceiptReport}">
                     <h:outputStylesheet library="css" name="collecting_centre_self_billing_bill.css"/>
                     <style>
                         .cc-receipt-paper {
@@ -100,13 +107,13 @@
                                             <span>
                                                 <b>From Date </b>
                                                 <h:outputText value="#{collectingCentreSelfReportController.fromDate}">
-                                                    <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
                                                 </h:outputText>
                                             </span>
                                             <span>
                                                 <b>To Date </b>
                                                 <h:outputText value="#{collectingCentreSelfReportController.toDate}">
-                                                    <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
                                                 </h:outputText>
                                             </span>
                                             <span>
@@ -134,7 +141,7 @@
                                                         <td><h:outputText value="#{row.bill.deptId}"/></td>
                                                         <td>
                                                             <h:outputText value="#{row.bill.createdAt}">
-                                                                <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
                                                             </h:outputText>
                                                         </td>
                                                         <td><h:outputText value="#{row.bill.creater.name}"/></td>
