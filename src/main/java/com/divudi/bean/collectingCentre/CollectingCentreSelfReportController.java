@@ -79,28 +79,52 @@ public class CollectingCentreSelfReportController implements Serializable {
     private Date fromDate;
     private Date toDate;
     private ReportTemplateRowBundle receiptBundle;
+    /**
+     * The collecting centre the receiptBundle was queried for, so a bundle is
+     * never shown after the session moves to another centre.
+     */
+    private Institution receiptCollectingCentre;
+
+    // <editor-fold defaultstate="collapsed" desc="Privileges">
+    public boolean isCanOpenReports() {
+        return collectingCentreSelfCommonController.hasSelfPrivilege(Privileges.CcSelfReports);
+    }
+
+    /**
+     * The Receipt Report sits inside the Reports section, so it needs both
+     * the Reports and the Receipt Report privileges.
+     */
+    public boolean isCanOpenReceiptReport() {
+        return isCanOpenReports()
+                && collectingCentreSelfCommonController.hasSelfPrivilege(Privileges.CcSelfReceiptReport);
+    }
+
+    private Privileges missingReceiptReportPrivilege() {
+        return isCanOpenReports() ? Privileges.CcSelfReceiptReport : Privileges.CcSelfReports;
+    }
+    // </editor-fold>
 
     // <editor-fold defaultstate="collapsed" desc="Navigation">
     public String navigateToReports() {
-        if (!collectingCentreSelfCommonController.hasSelfPrivilege(Privileges.CcSelfReports)) {
+        if (!isCanOpenReports()) {
             return collectingCentreSelfCommonController.navigateToSelfUnauthorized(Privileges.CcSelfReports);
         }
         return "/collecting_centre/cc_self_reports?faces-redirect=true";
     }
 
     public String navigateToReceiptReport() {
-        if (!collectingCentreSelfCommonController.hasSelfPrivilege(Privileges.CcSelfReceiptReport)) {
-            return collectingCentreSelfCommonController.navigateToSelfUnauthorized(Privileges.CcSelfReceiptReport);
+        if (!isCanOpenReceiptReport()) {
+            return collectingCentreSelfCommonController.navigateToSelfUnauthorized(missingReceiptReportPrivilege());
         }
         fromDate = CommonFunctions.getStartOfMonth();
         toDate = CommonFunctions.getEndOfDay();
-        receiptBundle = null;
+        clearReceiptBundle();
         return "/collecting_centre/cc_self_receipt_report?faces-redirect=true";
     }
 
     public String navigateBackToReceiptReport() {
-        if (!collectingCentreSelfCommonController.hasSelfPrivilege(Privileges.CcSelfReceiptReport)) {
-            return collectingCentreSelfCommonController.navigateToSelfUnauthorized(Privileges.CcSelfReceiptReport);
+        if (!isCanOpenReceiptReport()) {
+            return collectingCentreSelfCommonController.navigateToSelfUnauthorized(missingReceiptReportPrivilege());
         }
         return "/collecting_centre/cc_self_receipt_report?faces-redirect=true";
     }
@@ -111,7 +135,7 @@ public class CollectingCentreSelfReportController implements Serializable {
      */
     public String navigateToReceiptReportPrint() {
         processReceiptReport();
-        if (receiptBundle == null) {
+        if (getReceiptBundle() == null) {
             return null;
         }
         return "/collecting_centre/cc_self_receipt_report_print?faces-redirect=true";
@@ -124,8 +148,9 @@ public class CollectingCentreSelfReportController implements Serializable {
      * pinned to the logged-in Collecting Centre (bill.fromInstitution).
      */
     public void processReceiptReport() {
-        receiptBundle = null;
-        if (!collectingCentreSelfCommonController.checkSelfPrivilege(Privileges.CcSelfReceiptReport)) {
+        clearReceiptBundle();
+        if (!collectingCentreSelfCommonController.checkSelfPrivilege(Privileges.CcSelfReports)
+                || !collectingCentreSelfCommonController.checkSelfPrivilege(Privileges.CcSelfReceiptReport)) {
             return;
         }
         Institution collectingCentre = sessionController.getInstitution();
@@ -160,7 +185,21 @@ public class CollectingCentreSelfReportController implements Serializable {
             bundle.setReportTemplateRows((List<ReportTemplateRow>) billFacade.findLightsByJpql(jpql, m));
             bundle.calculateTotalByBills();
             receiptBundle = bundle;
+            receiptCollectingCentre = collectingCentre;
         }, CollectionCenterReport.COLLECTION_CENTER_RECEIPT_REPORT, sessionController.getLoggedUser());
+    }
+
+    private void clearReceiptBundle() {
+        receiptBundle = null;
+        receiptCollectingCentre = null;
+    }
+
+    private boolean isReceiptBundleForCurrentCentre() {
+        Institution current = sessionController.getInstitution();
+        return receiptCollectingCentre != null
+                && current != null
+                && receiptCollectingCentre.getId() != null
+                && receiptCollectingCentre.getId().equals(current.getId());
     }
 
     public Map<String, Object> getReceiptReportFilters() {
@@ -194,6 +233,7 @@ public class CollectingCentreSelfReportController implements Serializable {
      */
     public void exportReceiptReportToPdf() {
         processReceiptReport();
+        ReportTemplateRowBundle receiptBundle = getReceiptBundle();
         if (receiptBundle == null) {
             return;
         }
@@ -304,7 +344,18 @@ public class CollectingCentreSelfReportController implements Serializable {
         this.toDate = toDate;
     }
 
+    /**
+     * Returns the bundle only while the session is still on the collecting
+     * centre it was queried for, and only to a user who may open the report.
+     */
     public ReportTemplateRowBundle getReceiptBundle() {
+        if (receiptBundle == null) {
+            return null;
+        }
+        if (!isReceiptBundleForCurrentCentre() || !isCanOpenReceiptReport()) {
+            clearReceiptBundle();
+            return null;
+        }
         return receiptBundle;
     }
     // </editor-fold>
