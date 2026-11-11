@@ -1,0 +1,217 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:ez="http://xmlns.jcp.org/jsf/composite/ezcomp">
+    <h:head>
+        <title>Collecting Centre Self Billing - Receipt Report</title>
+    </h:head>
+    <h:body>
+        <ui:composition template="/resources/template/template_without_menu.xhtml">
+            <ui:define name="content">
+                <h:panelGroup rendered="#{not collectingCentreSelfCommonController.collectingCentreDepartment}">
+                    <h:outputStylesheet library="css" name="collecting_centre_self_billing_not_available.css"/>
+                    <h:form id="ccNotAvailableForm">
+                        <ez:cc_self_billing_not_available/>
+                    </h:form>
+                </h:panelGroup>
+
+                <h:panelGroup rendered="#{collectingCentreSelfCommonController.collectingCentreDepartment}">
+                    <h:outputStylesheet library="css" name="collecting_centre_self_billing_bill.css"/>
+                    <div class="cc-bill-page">
+                        <h:form id="form">
+                            <ez:cc_self_billing_header
+                                pageTitle="Receipt Report"
+                                highlightCode="#{sessionController.institution.code}"
+                                highlightName="#{sessionController.institution.name}"
+                                pageIcon="fas fa-receipt"
+                                backAction="#{collectingCentreSelfReportController.navigateToReports}"
+                                backLabel="Back to Reports"/>
+
+                            <p:growl id="msg"/>
+
+                            <p:dialog widgetVar="ccProcessingDlg" modal="true" closable="false" resizable="false" draggable="false" showHeader="false" styleClass="cc-settling-dialog">
+                                <div class="cc-settling-body">
+                                    <span class="cc-settling-spinner">
+                                        <h:outputText styleClass="fa fa-spinner fa-spin"/>
+                                    </span>
+                                    <div class="cc-settling-text">
+                                        <span class="cc-settling-title">Processing Report</span>
+                                        <span class="cc-settling-subtitle">Please wait, this may take a moment...</span>
+                                    </div>
+                                </div>
+                            </p:dialog>
+
+                            <p:panel styleClass="cc-bill-card cc-c-blue">
+                                <f:facet name="header">
+                                    <h:outputText styleClass="fa-solid fa-filter"/>
+                                    <h:outputText value="Report Criteria" class="mx-2"/>
+                                </f:facet>
+
+                                <div class="row align-items-end cc-criteria-row">
+                                    <div class="col-md-3">
+                                        <h:outputLabel value="From Date" for="fromDate" styleClass="d-block mb-1"/>
+                                        <p:calendar
+                                            id="fromDate"
+                                            placeholder="Select from date"
+                                            value="#{collectingCentreSelfReportController.fromDate}"
+                                            navigator="false"
+                                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                            class="w-100"
+                                            inputStyleClass="form-control"
+                                            maxdate="#{commonFunctionsProxy.endOfDayOnCurrentDate}">
+                                        </p:calendar>
+                                    </div>
+
+                                    <div class="col-md-3">
+                                        <h:outputLabel value="To Date" for="toDate" styleClass="d-block mb-1"/>
+                                        <p:calendar
+                                            id="toDate"
+                                            placeholder="Select to date"
+                                            value="#{collectingCentreSelfReportController.toDate}"
+                                            navigator="false"
+                                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                            class="w-100"
+                                            inputStyleClass="form-control"
+                                            maxdate="#{commonFunctionsProxy.endOfDayOnCurrentDate}">
+                                        </p:calendar>
+                                    </div>
+
+                                    <div class="col-md-5 ms-md-auto mt-2 mt-md-0">
+                                        <span class="d-none d-md-block mb-1 cc-criteria-spacer">&#160;</span>
+                                        <div class="d-flex gap-2">
+                                            <p:commandButton
+                                                id="btnProcess"
+                                                class="ui-button-warning flex-fill"
+                                                icon="fas fa-cogs"
+                                                value="Process"
+                                                process="@form"
+                                                update="reportHeader tblReceipts msg"
+                                                onstart="PF('ccProcessingDlg').show();"
+                                                oncomplete="PF('ccProcessingDlg').hide();"
+                                                action="#{collectingCentreSelfReportController.processReceiptReport}">
+                                            </p:commandButton>
+
+                                            <p:commandButton
+                                                id="btnPrint"
+                                                class="ui-button-info flex-fill"
+                                                icon="fa-solid fa-print"
+                                                value="Print"
+                                                ajax="false"
+                                                action="#{collectingCentreSelfReportController.navigateToReceiptReportPrint()}">
+                                            </p:commandButton>
+
+                                            <p:commandButton
+                                                id="btnExcel"
+                                                class="ui-button-success flex-fill"
+                                                icon="fas fa-file-excel"
+                                                value="Excel"
+                                                ajax="false"
+                                                actionListener="#{collectingCentreSelfReportController.processReceiptReport()}">
+                                                <p:dataExporter
+                                                    type="xlsx"
+                                                    target="tblReceipts"
+                                                    fileName="cc_receipt_report"
+                                                    postProcessor="#{collectingCentreSelfReportController.postProcessReceiptReportExcel}"/>
+                                            </p:commandButton>
+
+                                            <p:commandButton
+                                                id="btnPdf"
+                                                class="ui-button-danger flex-fill"
+                                                icon="fa-solid fa-file-pdf"
+                                                value="PDF"
+                                                ajax="false"
+                                                action="#{collectingCentreSelfReportController.exportReceiptReportToPdf()}">
+                                            </p:commandButton>
+                                        </div>
+                                    </div>
+                                </div>
+                            </p:panel>
+
+                            <div class="mt-3">
+                                <p:panel styleClass="cc-bill-card cc-c-green">
+                                    <f:facet name="header">
+                                        <h:outputText styleClass="fa-solid fa-list"/>
+                                        <h:outputText value="Receipts" class="mx-2"/>
+                                    </f:facet>
+
+                                    <h:panelGroup id="reportHeader" layout="block" styleClass="text-center mb-3 fs-5">
+                                        <h:outputText value="#{sessionController.institution.name}" styleClass="d-block fw-bold fs-4"/>
+                                        <h:outputText value="From "/>
+                                        <h:outputText value="#{collectingCentreSelfReportController.fromDate}">
+                                            <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                        </h:outputText>
+                                        <h:outputText value=" To "/>
+                                        <h:outputText value="#{collectingCentreSelfReportController.toDate}">
+                                            <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                        </h:outputText>
+                                    </h:panelGroup>
+
+                                    <p:dataTable
+                                        id="tblReceipts"
+                                        rowIndexVar="i"
+                                        styleClass="cc-card-table" reflow="true"
+                                        value="#{collectingCentreSelfReportController.receiptBundle.reportTemplateRows}"
+                                        var="row"
+                                        rowKey="#{row.bill.id}"
+                                        style="min-width: 100%;"
+                                        paginator="true"
+                                        rows="20"
+                                        paginatorPosition="bottom"
+                                        paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                        rowsPerPageTemplate="20,50,100"
+                                        currentPageReportTemplate="Showing {startRecord} to {endRecord} of {totalRecords} entries"
+                                        emptyMessage="No receipts found for the selected dates">
+
+                                        <p:column headerText="No" style="width: 3em; padding: 8px;">
+                                            <h:outputText value="#{i+1}"/>
+                                        </p:column>
+
+                                        <p:column headerText="Bill No" sortBy="#{row.bill.deptId}" filterBy="#{row.bill.deptId}" filterMatchMode="contains" style="padding: 8px;">
+                                            <h:outputText value="#{row.bill.deptId}"/>
+                                        </p:column>
+
+                                        <p:column headerText="Billed At" style="padding: 8px;">
+                                            <h:outputText value="#{row.bill.createdAt}">
+                                                <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                            </h:outputText>
+                                        </p:column>
+
+                                        <p:column headerText="Billed By" style="padding: 8px;">
+                                            <h:outputText value="#{row.bill.creater.name}"/>
+                                        </p:column>
+
+                                        <p:column headerText="Payment Method" style="padding: 8px;">
+                                            <h:outputText value="#{row.bill.paymentMethod.label}"/>
+                                            <f:facet name="footer">
+                                                <h:outputText value="Total"/>
+                                            </f:facet>
+                                        </p:column>
+
+                                        <p:column headerText="Amount" sortBy="#{row.bill.total}" class="text-end" style="padding: 8px;">
+                                            <h:outputText value="#{row.bill.total}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
+                                            <f:facet name="footer">
+                                                <h:outputText value="#{collectingCentreSelfReportController.receiptBundle.total}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputText>
+                                            </f:facet>
+                                        </p:column>
+
+                                        <p:column headerText="Comments" style="padding: 8px;">
+                                            <h:outputText value="#{row.bill.comments}"/>
+                                        </p:column>
+                                    </p:dataTable>
+                                </p:panel>
+                            </div>
+                        </h:form>
+                    </div>
+                </h:panelGroup>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>
