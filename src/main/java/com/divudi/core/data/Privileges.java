@@ -820,6 +820,7 @@ public enum Privileges {
     CcSelfSampleBarcodePrint("CC Self - Generate/Print Barcodes"),
     CcSelfSampleCollect("CC Self - Collect Samples"),
     CcSelfSampleSend("CC Self - Send Samples"),
+    CcSelfSampleEditSendingDepartment("CC Self - Edit Sample Sending Department"),
     CcSelfSampleReject("CC Self - Reject Samples"),
     CcSelfSampleRegenerate("CC Self - Re-Generate Samples"),
     //</editor-fold>
@@ -1660,6 +1661,7 @@ public enum Privileges {
             case CcSelfSampleBarcodePrint:
             case CcSelfSampleCollect:
             case CcSelfSampleSend:
+            case CcSelfSampleEditSendingDepartment:
             case CcSelfSampleReject:
             case CcSelfSampleRegenerate:
                 return "Collecting Centre Self Billing";
