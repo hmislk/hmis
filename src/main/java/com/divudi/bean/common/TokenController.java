@@ -278,9 +278,10 @@ public class TokenController implements Serializable, ControllerWithPatient {
     // order (exactly as before). With no limit (unset, 0 or negative) that list
     // is returned unchanged. With a limit:
     // - called list (byCalledAt = true): the tokens called MOST RECENTLY are kept
-    //   (calledAt desc; a token with no calledAt counts as oldest; id desc breaks
-    //   ties), so a low-numbered token called late still reaches the TV and the
-    //   token called longest ago drops off. The kept tokens are shown oldest call
+    //   (calledAt desc; a token with no calledAt counts as oldest, except one in
+    //   payment (in progress), which counts as newest; id desc breaks ties), so
+    //   a low-numbered token called late still reaches the TV and the token
+    //   called longest ago drops off. The kept tokens are shown oldest call
     //   first, so the latest call is the last row.
     // - in-progress list (byCalledAt = false): marking a token in progress does
     //   not store a timestamp (calledAt is cleared, startedAt is not set), so the
@@ -295,9 +296,13 @@ public class TokenController implements Serializable, ControllerWithPatient {
             return new java.util.ArrayList<>(all.subList(all.size() - max, all.size()));
         }
         List<Token> kept = new java.util.ArrayList<>(all);
-        // Oldest call first (null calledAt first, then by id); the last 'max' are the most recent calls.
+        // Oldest call first; the last 'max' are the most recent calls. A token whose
+        // payment is being taken (in progress) has its calledAt cleared but is the
+        // most current on the board, so it ranks newest and is never dropped before
+        // an older call. Other tokens without calledAt rank oldest.
         kept.sort(java.util.Comparator
-                .comparing(Token::getCalledAt, java.util.Comparator.nullsFirst(java.util.Comparator.<Date>naturalOrder()))
+                .comparingInt((Token t) -> t.isInProgress() ? 2 : (t.getCalledAt() == null ? 0 : 1))
+                .thenComparing(Token::getCalledAt, java.util.Comparator.nullsFirst(java.util.Comparator.<Date>naturalOrder()))
                 .thenComparing(Token::getId, java.util.Comparator.nullsFirst(java.util.Comparator.<Long>naturalOrder())));
         return new java.util.ArrayList<>(kept.subList(kept.size() - max, kept.size()));
     }
