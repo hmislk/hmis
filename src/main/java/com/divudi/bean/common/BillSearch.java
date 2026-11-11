@@ -2223,6 +2223,11 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
 
         saveRefundBill(refundingBill);
 
+        // Keep the credit batch bill's refundAmount, paidAmount and balance in step with
+        // the refund, as Return Items and individual cancellation already do (#16982).
+        // The method is a no-op for a bill with no batch bill or a non-credit batch bill.
+        updateBatchBillFinancialFieldsForIndividualCancellation(bill, refundingBill);
+
         Payment p = getOpdPreSettleController().createPaymentForCancellationsAndRefunds(refundingBill, paymentMethod);
 
         //TODO: Create Payments for Bill Items
