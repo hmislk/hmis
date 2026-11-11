@@ -814,6 +814,8 @@ public enum Privileges {
     CcSelfBillCancel("CC Self - Bill Cancel"),
     CcSelfBillRefund("CC Self - Bill Refund"),
     CcSelfStatement("CC Self - Statement"),
+    CcSelfReports("CC Self - Reports"),
+    CcSelfReceiptReport("CC Self - Receipt Report"),
     CcSelfSampleManagement("CC Self - Sample Management"),
     CcSelfSampleBarcodePrint("CC Self - Generate/Print Barcodes"),
     CcSelfSampleCollect("CC Self - Collect Samples"),
@@ -1652,6 +1654,8 @@ public enum Privileges {
             case CcSelfBillCancel:
             case CcSelfBillRefund:
             case CcSelfStatement:
+            case CcSelfReports:
+            case CcSelfReceiptReport:
             case CcSelfSampleManagement:
             case CcSelfSampleBarcodePrint:
             case CcSelfSampleCollect:
