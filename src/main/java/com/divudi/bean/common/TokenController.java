@@ -238,7 +238,7 @@ public class TokenController implements Serializable, ControllerWithPatient {
         m.put("fd", startOfToday());
         m.put("td", startOfTomorrow());
         currentTokensSaleForCashier = findTokensForDisplay(j, m,
-                "Pharmacy Sale for Cashier Token Display - Maximum Number of Called Tokens to Show (0 for All)");
+                "Pharmacy Sale for Cashier Token Display - Maximum Number of Called Tokens to Show (0 for All)", true);
     }
     
     public void fillInprogressSaleForCashierBillsTokens(){
@@ -271,23 +271,43 @@ public class TokenController implements Serializable, ControllerWithPatient {
         m.put("fd", startOfToday());
         m.put("td", startOfTomorrow());
         inprogressTokensSaleForCashier = findTokensForDisplay(j, m,
-                "Pharmacy Sale for Cashier Token Display - Maximum Number of In-Progress Tokens to Show (0 for All)");
+                "Pharmacy Sale for Cashier Token Display - Maximum Number of In-Progress Tokens to Show (0 for All)", false);
     }
 
-    // With a limit, the newest tokens win, so a token that was just called
-    // always reaches the TV. The rows still show oldest first.
-    private List<Token> findTokensForDisplay(String jpql, Map m, String maxCountKey) {
+    // Limit for the Sale for Cashier TV board. Today's tokens are read in id
+    // order (exactly as before). With no limit (unset, 0 or negative) that list
+    // is returned unchanged. With a limit:
+    // - called list (byCalledAt = true): the tokens called MOST RECENTLY are kept
+    //   (calledAt desc; a token with no calledAt counts as oldest; id desc breaks
+    //   ties), so a low-numbered token called late still reaches the TV and the
+    //   token called longest ago drops off. The kept tokens are shown oldest call
+    //   first, so the latest call is the last row.
+    // - in-progress list (byCalledAt = false): marking a token in progress does
+    //   not store a timestamp (calledAt is cleared, startedAt is not set), so the
+    //   highest token ids (the newest bills) are kept, shown in id order.
+    private List<Token> findTokensForDisplay(String jpql, Map m, String maxCountKey, boolean byCalledAt) {
+        List<Token> all = tokenFacade.findByJpql(jpql + " order by t.id", m, TemporalType.DATE);
         Integer max = configOptionApplicationController.getIntegerValueByKey(maxCountKey, 0);
-        if (max == null || max <= 0) {
-            return tokenFacade.findByJpql(jpql + " order by t.id", m, TemporalType.DATE);
+        if (all == null || max == null || max <= 0 || all.size() <= max) {
+            return all;
         }
-        List<Token> newest = tokenFacade.findByJpql(jpql + " order by t.id desc", m, TemporalType.DATE, max);
-        if (newest == null) {
-            return newest;
+        if (!byCalledAt) {
+            return new java.util.ArrayList<>(all.subList(all.size() - max, all.size()));
         }
-        List<Token> oldestFirst = new java.util.ArrayList<>(newest);
-        java.util.Collections.reverse(oldestFirst);
-        return oldestFirst;
+        List<Token> kept = new java.util.ArrayList<>(all);
+        // Oldest call first (null calledAt first, then by id); the last 'max' are the most recent calls.
+        kept.sort(java.util.Comparator
+                .comparing(Token::getCalledAt, java.util.Comparator.nullsFirst(java.util.Comparator.<Date>naturalOrder()))
+                .thenComparing(Token::getId, java.util.Comparator.nullsFirst(java.util.Comparator.<Long>naturalOrder())));
+        return new java.util.ArrayList<>(kept.subList(kept.size() - max, kept.size()));
+    }
+
+    // Size/width options for the Sale for Cashier TV board: a blank, non-numeric
+    // or non-positive stored value falls back to the default instead of
+    // rendering "width: px" or invisible numbers.
+    public int saleForCashierDisplaySize(String key, int defaultValue) {
+        Integer v = configOptionApplicationController.getIntegerValueByKey(key, defaultValue);
+        return (v == null || v <= 0) ? defaultValue : v;
     }
 
     public void fillPharmacyTokensCalled() {
