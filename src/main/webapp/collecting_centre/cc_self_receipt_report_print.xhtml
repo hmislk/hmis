@@ -1,0 +1,179 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:ez="http://xmlns.jcp.org/jsf/composite/ezcomp">
+    <h:head>
+        <title>Collecting Centre Self Billing - Receipt Report Print</title>
+    </h:head>
+    <h:body>
+        <ui:composition template="/resources/template/template_without_menu.xhtml">
+            <ui:define name="content">
+                <h:panelGroup rendered="#{not collectingCentreSelfCommonController.collectingCentreDepartment}">
+                    <h:outputStylesheet library="css" name="collecting_centre_self_billing_not_available.css"/>
+                    <h:form id="ccNotAvailableForm">
+                        <ez:cc_self_billing_not_available/>
+                    </h:form>
+                </h:panelGroup>
+
+                <h:panelGroup rendered="#{collectingCentreSelfCommonController.collectingCentreDepartment and not collectingCentreSelfReportController.canOpenReceiptReport}">
+                    <h:outputStylesheet library="css" name="collecting_centre_self_billing_not_available.css"/>
+                    <h:form id="ccUnauthorizedForm">
+                        <ez:cc_self_billing_unauthorized/>
+                    </h:form>
+                </h:panelGroup>
+
+                <h:panelGroup rendered="#{collectingCentreSelfCommonController.collectingCentreDepartment and collectingCentreSelfReportController.canOpenReceiptReport}">
+                    <h:outputStylesheet library="css" name="collecting_centre_self_billing_bill.css"/>
+                    <style>
+                        .cc-receipt-paper {
+                            background: #fff;
+                            color: #000;
+                            padding: 6mm;
+                            max-width: 297mm;
+                            margin: 0 auto;
+                        }
+                        .cc-receipt-paper .cc-print-title {
+                            text-align: center;
+                            font-weight: 700;
+                        }
+                        .cc-receipt-paper .cc-print-meta {
+                            display: flex;
+                            flex-wrap: wrap;
+                            justify-content: center;
+                            gap: 16px;
+                            font-size: 12px;
+                            margin: 2mm 0 3mm;
+                        }
+                        .cc-receipt-paper table {
+                            border-collapse: collapse;
+                            width: 100%;
+                            font-size: 12px;
+                        }
+                        .cc-receipt-paper th,
+                        .cc-receipt-paper td {
+                            border: 1px solid #000;
+                            padding: 2px 4px;
+                            text-align: left;
+                        }
+                        .cc-receipt-paper th { font-weight: 700; }
+                        .cc-receipt-paper .num { text-align: right; }
+                        .cc-receipt-paper tfoot td { font-weight: 700; }
+                        @media print {
+                            @page { size: A4 landscape; }
+                            .cc-receipt-paper { padding: 0; max-width: none; }
+                        }
+                    </style>
+                    <div class="cc-bill-page">
+                        <h:form id="form">
+                            <ez:cc_self_billing_header
+                                pageTitle="Receipt Report Print"
+                                highlightCode="#{sessionController.institution.code}"
+                                highlightName="#{sessionController.institution.name}"
+                                pageIcon="fa-solid fa-print"
+                                backAction="#{collectingCentreSelfReportController.navigateBackToReceiptReport}"
+                                backLabel="Back to Report"/>
+
+                            <p:panel styleClass="cc-bill-card cc-c-blue">
+                                <f:facet name="header">
+                                    <div class="d-flex justify-content-between align-items-center w-100">
+                                        <span>
+                                            <h:outputText styleClass="fa-solid fa-receipt"/>
+                                            <h:outputText value="Receipt Report" class="mx-2"/>
+                                        </span>
+                                        <p:commandButton
+                                            id="btnPrint"
+                                            icon="fa-solid fa-print"
+                                            class="ui-button-info"
+                                            value="Print"
+                                            type="button">
+                                            <p:printer target="reportView"/>
+                                        </p:commandButton>
+                                    </div>
+                                </f:facet>
+
+                                <h:panelGroup id="reportView" layout="block">
+                                    <div class="cc-receipt-paper">
+                                        <div class="cc-print-title" style="font-size: 20px;">
+                                            <h:outputText value="#{sessionController.institution.name}"/>
+                                        </div>
+                                        <div class="cc-print-title" style="font-size: 16px;">
+                                            <h:outputText value="Collection Centre Receipt Report"/>
+                                        </div>
+                                        <div class="cc-print-meta">
+                                            <span>
+                                                <b>From Date </b>
+                                                <h:outputText value="#{collectingCentreSelfReportController.fromDate}">
+                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                                </h:outputText>
+                                            </span>
+                                            <span>
+                                                <b>To Date </b>
+                                                <h:outputText value="#{collectingCentreSelfReportController.toDate}">
+                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                                </h:outputText>
+                                            </span>
+                                            <span>
+                                                <b>Collecting Centre </b>
+                                                <h:outputText value="#{sessionController.institution.code} - #{sessionController.institution.name}"/>
+                                            </span>
+                                        </div>
+
+                                        <table>
+                                            <thead>
+                                                <tr>
+                                                    <th style="width: 10mm;">S. No.</th>
+                                                    <th>Bill No</th>
+                                                    <th>Billed At</th>
+                                                    <th>Billed By</th>
+                                                    <th>Payment Method</th>
+                                                    <th class="num">Amount</th>
+                                                    <th>Comments</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <ui:repeat value="#{collectingCentreSelfReportController.receiptBundle.reportTemplateRows}" var="row" varStatus="s">
+                                                    <tr>
+                                                        <td><h:outputText value="#{s.index + 1}"/></td>
+                                                        <td><h:outputText value="#{row.bill.deptId}"/></td>
+                                                        <td>
+                                                            <h:outputText value="#{row.bill.createdAt}">
+                                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                                            </h:outputText>
+                                                        </td>
+                                                        <td><h:outputText value="#{row.bill.creater.name}"/></td>
+                                                        <td><h:outputText value="#{row.bill.paymentMethod.label}"/></td>
+                                                        <td class="num">
+                                                            <h:outputText value="#{row.bill.total}">
+                                                                <f:convertNumber pattern="#,##0.00"/>
+                                                            </h:outputText>
+                                                        </td>
+                                                        <td><h:outputText value="#{row.bill.comments}"/></td>
+                                                    </tr>
+                                                </ui:repeat>
+                                            </tbody>
+                                            <tfoot>
+                                                <tr>
+                                                    <td colspan="5" style="text-align: center;">Total</td>
+                                                    <td class="num">
+                                                        <h:outputText value="#{collectingCentreSelfReportController.receiptBundle.total}">
+                                                            <f:convertNumber pattern="#,##0.00"/>
+                                                        </h:outputText>
+                                                    </td>
+                                                    <td></td>
+                                                </tr>
+                                            </tfoot>
+                                        </table>
+                                    </div>
+                                </h:panelGroup>
+                            </p:panel>
+                        </h:form>
+                    </div>
+                </h:panelGroup>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

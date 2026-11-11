@@ -558,6 +558,7 @@
                                         filter="true"
                                         filterMatchMode="contains"
                                         class="w-100"
+                                        disabled="#{not webUserController.hasPrivilege('CcSelfSampleEditSendingDepartment')}"
                                         value="#{collectingCentreSelfCommonController.sampleSendingDepartment}">
                                         <f:selectItem itemLabel="Select Department"/>
                                         <f:selectItems
