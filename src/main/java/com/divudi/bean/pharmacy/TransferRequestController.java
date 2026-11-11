@@ -54,6 +54,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import javax.persistence.TemporalType;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.WeakHashMap;
@@ -136,6 +137,7 @@ public class TransferRequestController implements Serializable {
     private boolean printPreview;
     private boolean showAllBillFormats = false;
     private Department toDepartment;
+    private static final int RECENT_REQUEST_DAYS = 90;
     private List<Department> recentToDepartments;
     private ItemDTO currentItemDto;
     private ItemRatesDTO currentItemRates;
@@ -164,6 +166,7 @@ public class TransferRequestController implements Serializable {
         rejectionReason = null;
         printPreview = false;
         transferRequestBillPre = null;
+        recentToDepartments = null;
     }
 
     public void changeDepartment() {
@@ -1818,19 +1821,47 @@ public class TransferRequestController implements Serializable {
 
     public List<Department> getRecentToDepartments() {
         if (recentToDepartments == null) {
-            String jpql = "select distinct d from Bill b "
-                    + "join b.toDepartment d "
-                    + "left join fetch d.institution "
-                    + "where b.retired=false "
-                    + "and b.billTypeAtomic=:bt "
-                    + "and b.fromDepartment=:fd "
-                    + "and d.retired=false "
-                    + "and d.inactive=false "
-                    + "order by b.id desc";
-            Map<String, Object> m = new HashMap<>();
-            m.put("bt", BillTypeAtomic.PHARMACY_TRANSFER_REQUEST);
-            m.put("fd", sessionController.getDepartment());
-            recentToDepartments = departmentFacade.findByJpql(jpql, m, 10);
+            // This getter runs while the page renders, so it must be fast and must never
+            // throw. Bill is large and has no index on (billTypeAtomic, fromDepartment), so an
+            // unbounded scan, or a join to Department that makes MySQL drive from the
+            // department side, took over ten seconds and the page stayed blank until it
+            // finished. Bound the scan to recent requests (createdAt index), group on the
+            // department id column of Bill only, and load the departments afterwards.
+            // Grouping with an aggregate ORDER BY also stays valid under ONLY_FULL_GROUP_BY
+            // (no DISTINCT + ORDER BY on a column outside the select list).
+            List<Department> recent = new ArrayList<>();
+            try {
+                String jpql = "select b.toDepartment.id, max(b.id) from Bill b "
+                        + "where b.retired=false "
+                        + "and b.billTypeAtomic=:bt "
+                        + "and b.fromDepartment=:fd "
+                        + "and b.createdAt > :since "
+                        + "group by b.toDepartment.id "
+                        + "order by max(b.id) desc";
+                Map<String, Object> m = new HashMap<>();
+                m.put("bt", BillTypeAtomic.PHARMACY_TRANSFER_REQUEST);
+                m.put("fd", sessionController.getDepartment());
+                Calendar since = Calendar.getInstance();
+                since.add(Calendar.DAY_OF_YEAR, -RECENT_REQUEST_DAYS);
+                m.put("since", since.getTime());
+                // Fetch a few extra ids: retired or inactive departments are skipped below.
+                List<Object[]> rows = departmentFacade.findObjectsArrayByJpql(jpql, m, TemporalType.TIMESTAMP, 20);
+                for (Object[] row : rows) {
+                    if (recent.size() >= 10) {
+                        break;
+                    }
+                    if (row[0] == null) {
+                        continue;
+                    }
+                    Department d = departmentFacade.find((Long) row[0]);
+                    if (d != null && !d.isRetired() && !d.isInactive()) {
+                        recent.add(d);
+                    }
+                }
+            } catch (Exception e) {
+                LOGGER.log(Level.WARNING, "Could not load recent request departments", e);
+            }
+            recentToDepartments = recent;
         }
         return recentToDepartments;
     }
