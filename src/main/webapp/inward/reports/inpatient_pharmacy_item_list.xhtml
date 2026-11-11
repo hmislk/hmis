@@ -298,7 +298,7 @@
                                     <f:facet name="header">
                                         <h:outputLabel value="QTY" />
                                     </f:facet>
-                                    <p:outputLabel value="#{(bip.referanceBillItem ne null and bip.referanceBillItem.bill.billTypeAtomic ne 'REQUEST_MEDICINE_INWARD') and !bip.referanceBillItem.bill.cancelled ? 0 - bip.qty : bip.qty}">
+                                    <p:outputLabel value="#{bip.referanceBillItem ne null and (bip.referanceBillItem.bill.billTypeAtomic ne 'REQUEST_MEDICINE_INWARD' or bip.referanceBillItem.bill.cancelled) ? (bip.qty lt 0 ? -bip.qty : bip.qty) : bip.qty}">
                                         <f:convertNumber pattern="#0" />
                                     </p:outputLabel>
 <!--                                    <p:outputLabel value="#{bip.qty}">
@@ -320,7 +320,7 @@
                                     <f:facet name="header">
                                         <h:outputLabel value="Net Value" />
                                     </f:facet>
-                                    <h:outputLabel value="#{(bip.referanceBillItem ne null and bip.referanceBillItem.bill.billTypeAtomic ne 'REQUEST_MEDICINE_INWARD') and !bip.referanceBillItem.bill.cancelled ? 0 - bip.netValue : bip.netValue}">
+                                    <h:outputLabel value="#{bip.referanceBillItem ne null and (bip.referanceBillItem.bill.billTypeAtomic ne 'REQUEST_MEDICINE_INWARD' or bip.referanceBillItem.bill.cancelled) ? (bip.netValue lt 0 ? -bip.netValue : bip.netValue) : bip.netValue}">
                                         <f:convertNumber pattern="#0.00" />
                                     </h:outputLabel>
                                     <f:facet name="footer">
