@@ -24,8 +24,10 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.persistence.TemporalType;
@@ -847,43 +849,44 @@ public class CreditBean {
     }
 
     public double getRefundAmount(Bill b) {
-        // Query to find refunds for a bill, handling different bill structures:
-        // 1. Direct refunds: b.billedBill = :b (refund directly linked to the bill)
-        // 2. Via referenceBill: b.billedBill.referenceBill = :b (pharmacy/other bills)
-        // 3. OPD batch bills returns: b.referenceBill.backwardReferenceBill = :b
-        //    (OPD refunds link via referenceBill to individual bill, which has backwardReferenceBill to batch)
-        // 4. OPD batch bills cancellations: b.billedBill.backwardReferenceBill = :b
-        //    (OPD cancellations link via billedBill to individual bill, which has backwardReferenceBill to batch)
-
-        double totalRefund = 0.0;
+        // Finds the refund/cancellation bills linked to a bill, handling different structures:
+        // 1. Direct refunds: rb.billedBill = b
+        // 2. Via billedBill.referenceBill: rb.billedBill.referenceBill = b (pharmacy/other bills)
+        // 3. OPD batch bill returns: rb.referenceBill.backwardReferenceBill = b
+        //    (the refund links via referenceBill to the individual bill, which points to the batch bill)
+        // 4. OPD batch bill cancellations: rb.billedBill.backwardReferenceBill = b
+        //    (the cancellation links via billedBill to the individual bill, which points to the batch bill)
+        // A refund bill can match more than one of these (an OPD fee refund has billedBill and
+        // referenceBill both pointing to the individual bill), so the ids are collected first and
+        // each bill is counted once (#16982).
+        if (b == null || b.getId() == null) {
+            return 0.0;
+        }
         HashMap params = new HashMap();
-        params.put("b", b);
+        params.put("bid", b.getId());
 
-        // Query 1: Direct refunds (b.billedBill = :b)
-        String jpql1 = "Select sum(b.netTotal+b.vat) From Bill b "
-                + " where b.retired=false and b.billedBill=:b ";
-        double refund1 = getBillItemFacade().findDoubleByJpql(jpql1, params);
+        Set<Long> refundBillIds = new HashSet<>();
+        String[] conditions = {
+            "rb.billedBill.id=:bid",
+            "rb.billedBill.referenceBill.id=:bid",
+            "rb.referenceBill.backwardReferenceBill.id=:bid",
+            "rb.billedBill.backwardReferenceBill.id=:bid"
+        };
+        for (String condition : conditions) {
+            String jpql = "Select rb.id From Bill rb where rb.retired=false and " + condition;
+            List<Long> ids = getBillFacade().findLongList(jpql, params);
+            if (ids != null) {
+                refundBillIds.addAll(ids);
+            }
+        }
+        if (refundBillIds.isEmpty()) {
+            return 0.0;
+        }
 
-        // Query 2: Via billedBill.referenceBill (b.billedBill.referenceBill = :b)
-        String jpql2 = "Select sum(b.netTotal+b.vat) From Bill b "
-                + " where b.retired=false and b.billedBill.referenceBill=:b ";
-        double refund2 = getBillItemFacade().findDoubleByJpql(jpql2, params);
-
-        // Query 3: OPD batch bills returns (b.referenceBill.backwardReferenceBill = :b)
-        String jpql3 = "Select sum(b.netTotal+b.vat) From Bill b "
-                + " where b.retired=false and b.referenceBill.backwardReferenceBill=:b ";
-        double refund3 = getBillItemFacade().findDoubleByJpql(jpql3, params);
-
-        // Query 4: OPD batch bills cancellations (b.billedBill.backwardReferenceBill = :b)
-        // This handles individual bill cancellations where cancellation bill links via billedBill
-        // to the individual bill, which has backwardReferenceBill pointing to the batch bill
-        String jpql4 = "Select sum(b.netTotal+b.vat) From Bill b "
-                + " where b.retired=false and b.billedBill.backwardReferenceBill=:b ";
-        double refund4 = getBillItemFacade().findDoubleByJpql(jpql4, params);
-
-        totalRefund = refund1 + refund2 + refund3 + refund4;
-
-        return totalRefund;
+        HashMap sumParams = new HashMap();
+        sumParams.put("ids", new ArrayList<>(refundBillIds));
+        return getBillItemFacade().findDoubleByJpql(
+                "Select sum(rb.netTotal+rb.vat) From Bill rb where rb.id in :ids", sumParams);
     }
 
     public Object[] getRefundAmounts(Bill b) {
