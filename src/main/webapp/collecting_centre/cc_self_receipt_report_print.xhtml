@@ -146,12 +146,13 @@
                                                         </td>
                                                         <td><h:outputText value="#{row.bill.creater.name}"/></td>
                                                         <td><h:outputText value="#{row.bill.paymentMethod.label}"/></td>
+                                                        <td><h:outputText value="#{row.bill.comments}"/></td>
                                                         <td class="num">
                                                             <h:outputText value="#{row.bill.total}">
                                                                 <f:convertNumber pattern="#,##0.00"/>
                                                             </h:outputText>
                                                         </td>
-                                                        <td><h:outputText value="#{row.bill.comments}"/></td>
+                                                        
                                                     </tr>
                                                 </ui:repeat>
                                             </tbody>
