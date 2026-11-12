@@ -76,6 +76,12 @@ A print or settings dialog must use the **same** controller as the page or templ
 | ---------------------------------------------------------------- | --------- | ------- | ------------------------------------------------------------------------------------------------------- |
 | `Inward Administrative Discharge - Require Nursing Discharge`   | Boolean   | `true`  | Controls whether `BhtSummeryController.checkDischargeTime()` requires `PatientEncounter.isNursingDischarged()` before allowing administrative discharge (the "Discharge" action on the Interim Bill) for room-charged admissions. Some hospitals do not use the nursing discharge workflow; setting this to `false` for those institutions lets administrative discharge proceed without it. See issue #22607. |
 
+## Pharmacy BHT Issue
+
+| Key                                                              | Type      | Default | Description                                                                                             |
+| ---------------------------------------------------------------- | --------- | ------- | ------------------------------------------------------------------------------------------------------- |
+| `Pharmacy BHT Issue - Carry Medicines Via Porter and Receive in Ward` | Boolean | `false` | Application-wide. When `true`, issuing a BHT medicine request (`PharmacySaleBhtController.settlePharmacyBhtIssueAccept`) requires a porter, moves the issued stock to the porter's staff stock, and the ward must then accept it on *Receive Medicines from Pharmacy* (#21467, #21468). The nursing-discharge "unaccepted issues" blocker and the *Unaccepted Issues* list apply only in this mode. When `false`, the issue completes with no porter and no staff-stock transfer, the porter field and the receive/unaccepted buttons are hidden, and a receive navigation shows a message. Hospitals that used the porter flow before this key existed must set it to `true`. Switch it off only after the pending-receipt lists are empty, because bills issued via a porter then can no longer be received. |
+
 ## Inpatient Reports
 
 | Key                                                              | Type      | Default | Description                                                                                             |

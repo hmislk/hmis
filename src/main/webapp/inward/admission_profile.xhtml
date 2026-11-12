@@ -1165,7 +1165,7 @@
                                             ajax="false"
                                             action="#{wardPharmacyBhtIssueReceiveController.navigateToPendingListForAdmission(admissionController.current)}"
                                             icon="fa fa-truck-medical"
-                                            rendered="#{webUserController.hasPrivilege('InwardPharmacyBhtReceive')}"
+                                            rendered="#{webUserController.hasPrivilege('InwardPharmacyBhtReceive') and wardPharmacyBhtIssueReceiveController.porterReceiveEnabled}"
                                             class="w-100"/>
                                     </div>
                                     <div class="col-6">
@@ -1247,7 +1247,7 @@
                                             id="btnUnacceptedIssuesHistory"
                                             value="Unaccepted Issues"
                                             action="#{inwardPharmacyEncounterReportController.navigateToInpatientPharmacyUnacceptedIssuesList()}"
-                                            rendered="#{webUserController.hasPrivilege('PharmacyBHTIssueAccept') or webUserController.hasPrivilege('InwardPharmacyIssueRequestSearch')}"
+                                            rendered="#{(webUserController.hasPrivilege('PharmacyBHTIssueAccept') or webUserController.hasPrivilege('InwardPharmacyIssueRequestSearch')) and wardPharmacyBhtIssueReceiveController.porterReceiveEnabled}"
                                             icon="fa fa-triangle-exclamation"
                                             class="w-100"
                                             ajax="false">

@@ -1,5 +1,6 @@
 package com.divudi.bean.inward;
 
+import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.NotificationController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.core.data.BillTypeAtomic;
@@ -53,6 +54,9 @@ public class NursingDischargeController implements Serializable {
 
     @Inject
     private SessionController sessionController;
+
+    @Inject
+    private ConfigOptionApplicationController configOptionApplicationController;
 
     @Inject
     private NotificationController notificationController;
@@ -128,6 +132,11 @@ public class NursingDischargeController implements Serializable {
 
     @SuppressWarnings("unchecked")
     private List<PendingPharmacyItemDTO> fetchUnacceptedIssues() {
+        // Without the ward receive step there is nothing to accept, so an issue is never "unaccepted".
+        if (!configOptionApplicationController.getBooleanValueByKey(
+                "Pharmacy BHT Issue - Carry Medicines Via Porter and Receive in Ward", false)) {
+            return new ArrayList<>();
+        }
         String jpql = "SELECT new com.divudi.core.data.dto.PendingPharmacyItemDTO(b.id, b.deptId, b.billDate, b.billTypeAtomic,"
                 + " COALESCE(createrPerson.name, ''), COALESCE(toDept.name, ''))"
                 + " FROM Bill b"

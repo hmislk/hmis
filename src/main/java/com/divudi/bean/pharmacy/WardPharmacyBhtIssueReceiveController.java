@@ -1,5 +1,6 @@
 package com.divudi.bean.pharmacy;
 
+import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.WebUserController;
 import com.divudi.core.data.BillType;
@@ -48,6 +49,8 @@ public class WardPharmacyBhtIssueReceiveController implements Serializable {
     private SessionController sessionController;
     @Inject
     private WebUserController webUserController;
+    @Inject
+    private ConfigOptionApplicationController configOptionApplicationController;
 
     @EJB
     private BillFacade billFacade;
@@ -79,7 +82,28 @@ public class WardPharmacyBhtIssueReceiveController implements Serializable {
         printPreview = false;
     }
 
+    /**
+     * The ward receive step exists only for hospitals that issue BHT medicines
+     * via a porter. See PharmacySaleBhtController.isCarryViaPorterEnabled().
+     */
+    public boolean isPorterReceiveEnabled() {
+        return configOptionApplicationController.getBooleanValueByKey(
+                "Pharmacy BHT Issue - Carry Medicines Via Porter and Receive in Ward", false);
+    }
+
+    private boolean checkPorterReceiveEnabled() {
+        if (isPorterReceiveEnabled()) {
+            return true;
+        }
+        JsfUtil.addErrorMessage("Receiving medicines from the pharmacy is not enabled. "
+                + "Enable the option 'Pharmacy BHT Issue - Carry Medicines Via Porter and Receive in Ward' to use it.");
+        return false;
+    }
+
     public String navigateToPendingList() {
+        if (!checkPorterReceiveEnabled()) {
+            return null;
+        }
         makeNull();
         admissionScoped = false;
         admissionPatientEncounter = null;
@@ -117,6 +141,9 @@ public class WardPharmacyBhtIssueReceiveController implements Serializable {
      * admission, with no date filter, since the set is inherently small.
      */
     public String navigateToPendingListForAdmission(PatientEncounter encounter) {
+        if (!checkPorterReceiveEnabled()) {
+            return null;
+        }
         makeNull();
         admissionScoped = true;
         admissionPatientEncounter = encounter;

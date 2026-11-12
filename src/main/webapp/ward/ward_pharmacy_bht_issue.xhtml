@@ -81,7 +81,7 @@
 
                 </f:facet>
 
-                <div class="row">
+                <h:panelGroup layout="block" class="row" rendered="#{pharmacySaleBhtController.carryViaPorterEnabled}">
                     <div class="col-md-6 my-2">
                         <div class="d-flex gap-3">
                             <h:outputLabel value="Porter / Staff Carrying Medicines to Ward:" for="acPorter" class="mt-2"/>
@@ -109,9 +109,9 @@
                                 </p:column>
 
                             </p:autoComplete>
-                        </div>              
+                        </div>
                     </div>
-                </div>
+                </h:panelGroup>
 
                 <h:panelGroup class="row">
                     <h:panelGroup class="row" rendered="#{configOptionApplicationController.getBooleanValueByKey('Adding new items for inpatient requests are allowed.',true)}">

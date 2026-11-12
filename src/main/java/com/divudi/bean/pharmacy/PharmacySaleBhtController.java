@@ -1529,6 +1529,16 @@ public class PharmacySaleBhtController implements Serializable {
      * after a later settlement step fails doesn't credit the porter twice
      * for the same items.
      */
+    /**
+     * When true, a BHT medicine request is issued to a porter (staff stock) and
+     * the ward then receives it. When false (default), the issue completes
+     * without a porter and without the ward receive step.
+     */
+    public boolean isCarryViaPorterEnabled() {
+        return configOptionApplicationController.getBooleanValueByKey(
+                "Pharmacy BHT Issue - Carry Medicines Via Porter and Receive in Ward", false);
+    }
+
     private void transferIssuedStockToPorter(List<BillItem> list, Staff porter) {
         if (porter == null) {
             return;
@@ -1777,9 +1787,13 @@ public class PharmacySaleBhtController implements Serializable {
             return;
         }
 
-        if (getPreBill().getToStaff() == null) {
-            JsfUtil.addErrorMessage("Please select the staff member (porter) who will carry the medicines to the ward.");
-            return;
+        if (isCarryViaPorterEnabled()) {
+            if (getPreBill().getToStaff() == null) {
+                JsfUtil.addErrorMessage("Please select the staff member (porter) who will carry the medicines to the ward.");
+                return;
+            }
+        } else {
+            getPreBill().setToStaff(null);
         }
 
         BillTypeAtomic bta = BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD;
@@ -2338,7 +2352,9 @@ public class PharmacySaleBhtController implements Serializable {
         try {
             savePreBillFinally(pt, matrixDepartment, btp, bta);
             savePreBillItemsFinally(tmpBillItems);
-            transferIssuedStockToPorter(tmpBillItems, getPreBill().getToStaff());
+            if (isCarryViaPorterEnabled()) {
+                transferIssuedStockToPorter(tmpBillItems, getPreBill().getToStaff());
+            }
 
             // Calculation Margin — must run BEFORE the finance details are built,
             // for the reason recorded at the other call site. Issue #23952.

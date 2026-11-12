@@ -647,7 +647,7 @@
                                                                     ajax="false"
                                                                     action="#{wardPharmacyBhtIssueReceiveController.navigateToPendingList}"
                                                                     icon="fa fa-truck-medical"
-                                                                    rendered="#{webUserController.hasPrivilege('InwardPharmacyBhtReceive')}"
+                                                                    rendered="#{webUserController.hasPrivilege('InwardPharmacyBhtReceive') and wardPharmacyBhtIssueReceiveController.porterReceiveEnabled}"
                                                                     class="w-100">
                                                                 </p:commandButton>
                                                             </div>

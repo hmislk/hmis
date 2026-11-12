@@ -5,6 +5,7 @@
  */
 package com.divudi.bean.inward;
 
+import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.data.BillType;
@@ -74,6 +75,8 @@ public class InwardPharmacyEncounterReportController implements Serializable {
     AdmissionController admissionController;
     @Inject
     SessionController sessionController;
+    @Inject
+    ConfigOptionApplicationController configOptionApplicationController;
 
     private PatientEncounter patientEncounter;
 
@@ -955,6 +958,11 @@ public class InwardPharmacyEncounterReportController implements Serializable {
     }
 
     private List<Bill> fetchUnacceptedIssueBills() {
+        // Without the ward receive step there is nothing to accept, so an issue is never "unaccepted".
+        if (!configOptionApplicationController.getBooleanValueByKey(
+                "Pharmacy BHT Issue - Carry Medicines Via Porter and Receive in Ward", false)) {
+            return new ArrayList<>();
+        }
         String jpql = "SELECT b FROM Bill b "
                 + "WHERE b.patientEncounter = :pe "
                 + "AND b.billTypeAtomic = :bta "
