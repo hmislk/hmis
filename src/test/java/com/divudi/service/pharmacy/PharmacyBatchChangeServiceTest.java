@@ -48,6 +48,7 @@ public class PharmacyBatchChangeServiceTest {
         List<Stock> created = new ArrayList<>();
         @Override protected EntityManager getEntityManager() { return null; }
         @Override public Stock findWithoutCache(Object id) { return source; }
+        @Override public Stock findWithLock(Object id) { return Long.valueOf(800L).equals(id) ? source : existingTarget; }
         @Override public Stock findFirstByJpql(String jpql, Map<String, Object> parameters, boolean withoutCache) { return existingTarget; }
         @Override public void create(Stock entity) { entity.setId(900L); created.add(entity); }
     }
@@ -56,6 +57,7 @@ public class PharmacyBatchChangeServiceTest {
         ItemBatch target;
         @Override protected EntityManager getEntityManager() { return null; }
         @Override public ItemBatch findWithoutCache(Object id) { return target; }
+        @Override public ItemBatch findWithLock(Object id) { return target; }
     }
 
     private static class DummyBillNumberGenerator extends BillNumberGenerator {
@@ -73,10 +75,12 @@ public class PharmacyBatchChangeServiceTest {
             return true;
         }
         @Override
-        public Stock addToStock(PharmaceuticalBillItem pbi, double qty, Department department) {
-            Stock s = pbi.getStock();
-            s.setStock(s.getStock() + qty);
-            return s;
+        public boolean addToStock(Stock stock, double qty, PharmaceuticalBillItem pbi, Department d) {
+            if (stock != pbi.getStock()) {
+                return false;
+            }
+            stock.setStock(stock.getStock() + qty);
+            return true;
         }
     }
 

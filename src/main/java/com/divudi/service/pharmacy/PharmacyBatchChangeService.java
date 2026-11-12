@@ -98,7 +98,9 @@ public class PharmacyBatchChangeService {
             throw new PharmacyBatchChangeException("Quantity to move must be greater than zero.");
         }
 
-        Stock sourceStock = stockFacade.findWithoutCache(sourceStockId);
+        // Row lock on the source stock, held to the end of this transaction: concurrent moves out of the
+        // same row queue up here, so the before/after quantities recorded below are the real ones.
+        Stock sourceStock = stockFacade.findWithLock(sourceStockId);
         if (sourceStock == null || sourceStock.isRetired() || sourceStock.getItemBatch() == null) {
             throw new PharmacyBatchChangeException("The selected stock no longer exists.");
         }
@@ -118,7 +120,9 @@ public class PharmacyBatchChangeService {
             throw new PharmacyBatchChangeException("This item does not allow fractions; enter a whole number.");
         }
 
-        ItemBatch targetBatch = itemBatchFacade.findWithoutCache(targetItemBatchId);
+        // Row lock on the target batch: serialises the creation of its department stock row (Stock has no
+        // unique key on batch + department), so two concurrent changes cannot both create one.
+        ItemBatch targetBatch = itemBatchFacade.findWithLock(targetItemBatchId);
         if (targetBatch == null || targetBatch.isRetired() || targetBatch.getItem() == null) {
             throw new PharmacyBatchChangeException("The batch to move to no longer exists.");
         }
@@ -143,6 +147,11 @@ public class PharmacyBatchChangeService {
             targetStock.setDepartment(department);
             targetStock.setStock(0.0);
             stockFacade.create(targetStock);
+        } else {
+            targetStock = stockFacade.findWithLock(targetStock.getId());
+            if (targetStock == null) {
+                throw new PharmacyBatchChangeException("The stock of the batch to move to changed; nothing was moved. Please try again.");
+            }
         }
         double targetBefore = targetStock.getStock() == null ? 0.0 : targetStock.getStock();
         double targetAfter = targetBefore + qty;
@@ -162,7 +171,10 @@ public class PharmacyBatchChangeService {
         // Line 2: To batch (stock in)
         PharmaceuticalBillItem toLine = createLine(bill, targetStock, targetBatch, qty, targetBefore, targetAfter,
                 "Batch change: moved in from batch " + sourceBatch.getBatchNo(), 2, user);
-        pharmacyBean.addToStock(toLine, qty, department);
+        // Credit the same row the bill line points to (not a second, unfiltered lookup by batch and department).
+        if (!pharmacyBean.addToStock(targetStock, qty, toLine, department)) {
+            throw new PharmacyBatchChangeException("The stock of the batch to move to could not be updated; nothing was moved. Please try again.");
+        }
 
         return billFacade.findWithoutCache(bill.getId());
     }

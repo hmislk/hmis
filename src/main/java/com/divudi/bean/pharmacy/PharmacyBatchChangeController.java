@@ -161,15 +161,21 @@ public class PharmacyBatchChangeController implements Serializable {
                     sessionController.getLoggedUser(), sessionController.getDepartment());
             printPreview = true;
             JsfUtil.addSuccessMessage("Batch changed successfully.");
-            ItemBatch target = itemBatchFacade.find(targetBatchId);
-            if (target != null && target.getDateOfExpire() != null && target.getDateOfExpire().before(new Date())) {
-                JsfUtil.addWarningMessage("The batch moved to has already expired.");
-            }
         } catch (PharmacyBatchChangeException e) {
             JsfUtil.addErrorMessage(e.getMessage());
         } catch (RuntimeException e) {
             Logger.getLogger(PharmacyBatchChangeController.class.getName()).log(Level.SEVERE, "Batch change failed", e);
             JsfUtil.addErrorMessage("The batch change could not be saved. Nothing was changed.");
+            return;
+        }
+        // The save has committed; an expiry-warning lookup failure must not look like a failed save.
+        try {
+            ItemBatch target = itemBatchFacade.find(targetBatchId);
+            if (target != null && target.getDateOfExpire() != null && target.getDateOfExpire().before(new Date())) {
+                JsfUtil.addWarningMessage("The batch moved to has already expired.");
+            }
+        } catch (RuntimeException e) {
+            Logger.getLogger(PharmacyBatchChangeController.class.getName()).log(Level.WARNING, "Expiry check after batch change failed", e);
         }
     }
 

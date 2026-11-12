@@ -14222,7 +14222,7 @@ public class PharmacyReportController implements Serializable {
             StringBuilder jpqlIssue = new StringBuilder();
             jpqlIssue.append("SELECT ")
                     .append("SUM(bi.pharmaceuticalBillItem.qty * bi.pharmaceuticalBillItem.itemBatch.purcahseRate), ")
-                    .append("SUM(bi.pharmaceuticalBillItem.qty * bi.pharmaceuticalBillItem.itemBatch.costRate), ")
+                    .append("SUM(bi.pharmaceuticalBillItem.qty * (CASE WHEN bi.bill.billType = :batchChangeType THEN COALESCE(bi.pharmaceuticalBillItem.itemBatch.costRate, bi.pharmaceuticalBillItem.itemBatch.purcahseRate) ELSE bi.pharmaceuticalBillItem.itemBatch.costRate END)), ")
                     .append("SUM(bi.pharmaceuticalBillItem.qty * bi.pharmaceuticalBillItem.itemBatch.retailsaleRate) ")
                     .append("FROM BillItem bi ")
                     .append("WHERE bi.retired = :ret ")
@@ -14233,6 +14233,7 @@ public class PharmacyReportController implements Serializable {
 
             paramsIssue.put("ret", false);
             paramsIssue.put("btas", billTypes);
+            paramsIssue.put("batchChangeType", BillType.PharmacyAdjustmentBatchChange);
             paramsIssue.put("fd", fromDate);
             paramsIssue.put("td", toDate);
             addFilter(jpqlIssue, paramsIssue, "bi.bill.institution", "ins", institution);
@@ -14249,7 +14250,7 @@ public class PharmacyReportController implements Serializable {
             StringBuilder jpqlReceive = new StringBuilder();
             jpqlReceive.append("SELECT ")
                     .append("SUM(bi.pharmaceuticalBillItem.qty * bi.pharmaceuticalBillItem.itemBatch.purcahseRate), ")
-                    .append("SUM(bi.pharmaceuticalBillItem.qty * bi.pharmaceuticalBillItem.itemBatch.costRate), ")
+                    .append("SUM(bi.pharmaceuticalBillItem.qty * (CASE WHEN bi.bill.billType = :batchChangeType THEN COALESCE(bi.pharmaceuticalBillItem.itemBatch.costRate, bi.pharmaceuticalBillItem.itemBatch.purcahseRate) ELSE bi.pharmaceuticalBillItem.itemBatch.costRate END)), ")
                     .append("SUM(bi.pharmaceuticalBillItem.qty * bi.pharmaceuticalBillItem.itemBatch.retailsaleRate) ")
                     .append("FROM BillItem bi ")
                     .append("WHERE bi.retired = :ret ")
@@ -14260,6 +14261,7 @@ public class PharmacyReportController implements Serializable {
 
             paramsReceive.put("ret", false);
             paramsReceive.put("btas", billTypes);
+            paramsReceive.put("batchChangeType", BillType.PharmacyAdjustmentBatchChange);
             paramsReceive.put("fd", fromDate);
             paramsReceive.put("td", toDate);
             addFilter(jpqlReceive, paramsReceive, "bi.bill.institution", "ins", institution);
