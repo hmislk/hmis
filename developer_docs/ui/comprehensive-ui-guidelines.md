@@ -248,7 +248,7 @@ Reference implementation for the layout: `src/main/webapp/pharmacy/reports/summa
 
 3. **The results table starts directly under the button row and spans the full panel width.** Use the compact style (`styleClass="p-datatable-sm"`, or `ui-datatable-sm compact-datatable` as in the reference), `paginatorPosition="bottom"`, a `rowsPerPageTemplate`, and footer totals for every count and value column. Follow § DataTable Compact Size for column widths.
 
-4. **Offer the standard filters, not only Department.** A bill-based report has From / To (date and time, both honoured by the query), then Institution / Site / Department on one row (rule 6 above), then the report-specific filters (e.g. Referring Doctor, Payment Method, Discount Scheme, Admission Type). Each dropdown has an "All ..." first item.
+4. **Offer the standard filters, not only Department.** A bill-based report has From / To (date and time, both honoured by the query), then Institution / Site / Department on one row (rule 6 above), then the report-specific filters (e.g. Referring Doctor, Payment Method, Discount Scheme, Admission Type). Each filter dropdown has an "All ..." first item; a selector that must have a value (e.g. a Report View chooser) is not a filter, so it keeps a "-- Select ... --" first item instead.
 
 5. **Open with a useful default range** (start of today to end of today) and let an empty result say "No records found" under a filter set the user can read at a glance.
 
