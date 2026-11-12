@@ -131,6 +131,10 @@ public class BillItemReportBundle implements Serializable {
             // OPD Batch Bill Types - Cancellations
             case OPD_BATCH_BILL_CANCELLATION:
             case PACKAGE_OPD_BATCH_BILL_CANCELLATION:
+            // Inward Service Bill Cancellations
+            case INWARD_SERVICE_BILL_CANCELLATION:
+            case INWARD_SERVICE_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION:
+            case INWARD_SERVICE_BATCH_BILL_CANCELLATION:
                 return BillCategory.CANCELLATION;
             case OPD_BILL_REFUND:
             case INWARD_SERVICE_BILL_REFUND:

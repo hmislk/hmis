@@ -243,7 +243,7 @@
                         <table class="total-table" style="line-height: 1.0;">
                             <h:panelGroup rendered="#{!configOptionApplicationController.getBooleanValueByKey('Hide the bill Total and Discount',true)}">
 
-                                <h:panelGroup rendered="#{cc.attrs.bill.patientEncounter eq null and cc.attrs.bill.discount gt 0}">
+                                <h:panelGroup rendered="#{cc.attrs.bill.patientEncounter eq null}">
                                     <tr>
                                         <td >Total Amount</td>
                                         <td  style="text-align: right;">
@@ -254,7 +254,10 @@
                                     </tr>
 
                                     <tr>
-                                        <td >Discount: (#{cc.attrs.bill.backwardReferenceBill.paymentScheme.name})</td>
+                                        <td >Discount
+                                            <h:outputText value=": (#{cc.attrs.bill.paymentScheme.name})"
+                                                          rendered="#{cc.attrs.bill.paymentScheme ne null}"/>
+                                        </td>
                                         <td  style="text-align: right;">
                                             <h:outputLabel  value="#{- cc.attrs.bill.discount}">
                                                 <f:convertNumber pattern="#,##0.00" />
