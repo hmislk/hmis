@@ -234,6 +234,30 @@ Reference implementations:
 - `src/main/webapp/inward/report_admission_by_consultant.xhtml` (location filters as the last row)
 - `src/main/webapp/reports/inventoryReports/cost_of_goods_sold.xhtml` (Institution/Site/Department aligned on one row in an inventory report)
 
+### Report Page Layout (all report pages look the same)
+
+**🚨 Every report page uses one layout, top to bottom: panel header → filter grid → action-button row → results table, each spanning the full width of the content area.** This is a web application, not a website: no decorative whitespace, and the results table gets all the width there is.
+
+Reference implementation for the layout: `src/main/webapp/pharmacy/reports/summary_reports/pharmacy_income_report.xhtml`.
+
+**Rules:**
+
+1. **Filters go on top, never in a side column.** Do not split the page into `col-md-2` (filters) + `col-md-10` (table), and do not stack one filter per line. Use the 8-column filter grid above, three label/input pairs per row.
+
+2. **Action buttons sit in one horizontal row directly under the filter grid, left-aligned, at their natural width** (`m-1`, never `w-100`), in this order: **Process** (`ui-button-success`), then exports: **Download**/Excel (`ui-button-info`), **Print** (`ui-button-warning`), **PDF** (`ui-button-danger`). Every button has an icon. An export button that is shown must work (`p:dataExporter` or an action); do not ship a placeholder.
+
+3. **The results table starts directly under the button row and spans the full panel width.** Use the compact style (`styleClass="p-datatable-sm"`, or `ui-datatable-sm compact-datatable` as in the reference), `paginatorPosition="bottom"`, a `rowsPerPageTemplate`, and footer totals for every count and value column. Follow § DataTable Compact Size for column widths.
+
+4. **Offer the standard filters, not only Department.** A bill-based report has From / To (date and time, both honoured by the query), then Institution / Site / Department on one row (rule 6 above), then the report-specific filters (e.g. Referring Doctor, Payment Method, Discount Scheme, Admission Type). Each filter dropdown has an "All ..." first item; a selector that must have a value (e.g. a Report View chooser) is not a filter, so it keeps a "-- Select ... --" first item instead.
+
+5. **Open with a useful default range** (start of today to end of today) and let an empty result say "No records found" under a filter set the user can read at a glance.
+
+6. **Add `p:defaultCommand` pointing at Process** (see [Data-Dense Page Patterns § Keyboard-First Data Entry](data-dense-page-patterns.md#3-keyboard-first-data-entry)).
+
+7. **Take the layout from the reference, not its inline styles.** Do not copy the repeated `style="padding: 0px!important; ..."` attributes; use the compact style classes instead.
+
+When touching an older report that uses the side-column layout, move it to this layout in the same change.
+
 ---
 
 ## Buttons and Workflow Actions
