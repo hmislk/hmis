@@ -348,14 +348,18 @@ html body .p-datepicker-panel .ui-datepicker-calendar td > a:hover {
     background: #eff6ff;
     color: #1d4ed8;
 }
-html body .p-datepicker-panel .ui-datepicker-calendar td.ui-datepicker-today > a {
+/* p:datePicker marks today with ui-state-highlight and the selected day
+   with ui-state-active, so keep the two distinct. */
+html body .p-datepicker-panel .ui-datepicker-calendar td.ui-datepicker-today > a,
+html body .p-datepicker-panel .ui-datepicker-calendar td > a.ui-state-highlight {
     background: transparent;
     box-shadow: inset 0 0 0 1.5px #2563eb;
     color: #2563eb;
     font-weight: 600;
 }
 html body .p-datepicker-panel .ui-datepicker-calendar td > a.ui-state-active,
-html body .p-datepicker-panel .ui-datepicker-calendar td > a.ui-state-highlight {
+html body .p-datepicker-panel .ui-datepicker-calendar td.ui-datepicker-today > a.ui-state-active,
+html body .p-datepicker-panel .ui-datepicker-calendar td > a.ui-state-highlight.ui-state-active {
     background: #2563eb;
     box-shadow: none;
     color: #ffffff;
