@@ -9,7 +9,7 @@
         <ui:composition template="/pharmacy/pharmacy_analytics.xhtml">
             <ui:define name="subcontent">
                 <h:form >
-                    <p:panel header="Sale Report by Referral Doctor" >
+                    <p:panel header="Sale Report by Referral Doctor (Legacy)" >
                         <div class="row">
                             <div class="col-md-2">
                                 <h:outputLabel value="Bill Date From" ></h:outputLabel>
@@ -54,7 +54,9 @@
                                     icon="fas fa-file-excel" 
                                     ajax="false"
                                     value="Excel" >
+                                    <p:dataExporter type="xlsx" target="tbl" fileName="prescription_summary"/>
                                 </p:commandButton>
+                                <h:outputText class="d-block text-muted small mt-2" value="Legacy report: counts settled retail sale bills by bill date only (time is ignored), excludes bills without a referring doctor and does not deduct refunds or returns. Use Referring Doctor Wise Sale Report for reconciled figures." />
                             </div>
                             
                             <div class="col-md-10">
@@ -66,7 +68,7 @@
                                     paginatorPosition="bottom"
                                     rows="10"
                                     >
-                                    <p:column headerText="Docter">
+                                    <p:column headerText="Doctor">
                                         <p:commandLink 
                                             ajax="false"
                                             action="#{reportController.navigateToPrescriptionListFromPrescriptionSummery(doc.doctorId)}" >
@@ -74,13 +76,13 @@
                                         </p:commandLink>
                                     </p:column>
 
-                                    <p:column headerText="Presciption Count">
+                                    <p:column headerText="Prescription Count">
                                         <h:outputText value="#{doc.prescriptionCount}">
                                             <f:convertNumber pattern="#,##0" ></f:convertNumber>
                                         </h:outputText>
                                     </p:column>
 
-                                    <p:column headerText="Presciption Value" style="text-align: right;">
+                                    <p:column headerText="Prescription Value" style="text-align: right;">
                                         <h:outputText value="#{doc.prescriptionValue}">
                                             <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                         </h:outputText>
