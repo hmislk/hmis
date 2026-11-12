@@ -1,0 +1,210 @@
+/*
+ * Modern, compact p:calendar popup for the Collecting Centre self-billing pages.
+ *
+ * The popup (#ui-datepicker-div) is appended to <body>, so it cannot be
+ * scoped to a page class. This file is only included on CC self pages.
+ * "html body #ui-datepicker-div" outranks the PrimeFaces theme whatever
+ * the stylesheet order.
+ */
+
+html body #ui-datepicker-div.ui-datepicker {
+    width: 17.5rem;
+    max-width: calc(100vw - 1rem);
+    box-sizing: border-box;
+    padding: 0.75rem;
+    margin-top: 0.25rem;
+    background: #ffffff;
+    color: #1e293b;
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    box-shadow: 0 12px 32px rgba(15, 23, 42, 0.16), 0 2px 6px rgba(15, 23, 42, 0.08);
+    font-size: 0.85rem;
+    font-family: inherit;
+}
+
+/* ---- Header: month title with round prev / next buttons ---- */
+html body #ui-datepicker-div .ui-datepicker-header {
+    position: relative;
+    padding: 0.25rem 0 0.5rem;
+    margin: 0;
+    background: transparent;
+    border: none;
+    color: #0f172a;
+}
+html body #ui-datepicker-div .ui-datepicker-title {
+    margin: 0 2.25rem;
+    line-height: 2rem;
+    text-align: center;
+    font-size: 0.95rem;
+    font-weight: 600;
+}
+html body #ui-datepicker-div .ui-datepicker-prev,
+html body #ui-datepicker-div .ui-datepicker-next {
+    top: 0.25rem;
+    margin-top: 0;
+    width: 2rem;
+    height: 2rem;
+    line-height: 2rem;
+    border-radius: 50%;
+    background: #f1f5f9;
+    color: #475569;
+}
+html body #ui-datepicker-div .ui-datepicker-prev { left: 0; }
+html body #ui-datepicker-div .ui-datepicker-next { right: 0; }
+html body #ui-datepicker-div .ui-datepicker-prev:hover,
+html body #ui-datepicker-div .ui-datepicker-next:hover {
+    background: #dbeafe;
+    color: #1d4ed8;
+}
+
+/* ---- Day grid ---- */
+html body #ui-datepicker-div .ui-datepicker-calendar {
+    width: 100%;
+    margin: 0;
+    border-collapse: collapse;
+    table-layout: fixed;
+}
+html body #ui-datepicker-div .ui-datepicker-calendar th {
+    padding: 0.25rem 0;
+    color: #94a3b8;
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    text-align: center;
+}
+html body #ui-datepicker-div .ui-datepicker-calendar th > span {
+    width: auto;
+    height: auto;
+}
+html body #ui-datepicker-div .ui-datepicker-calendar td {
+    padding: 1px;
+    text-align: center;
+}
+html body #ui-datepicker-div .ui-datepicker-calendar td > a,
+html body #ui-datepicker-div .ui-datepicker-calendar td > span {
+    width: 2.1rem;
+    height: 2.1rem;
+    line-height: 2.1rem;
+    max-width: 100%;
+    margin: 0 auto;
+    padding: 0;
+    border: none;
+    border-radius: 50%;
+    background: transparent;
+    color: #1e293b;
+    font-size: 0.8rem;
+    text-decoration: none;
+}
+html body #ui-datepicker-div .ui-datepicker-calendar td > a:hover {
+    background: #eff6ff;
+    color: #1d4ed8;
+}
+/* Today */
+html body #ui-datepicker-div .ui-datepicker-calendar td.ui-datepicker-today > a {
+    background: transparent;
+    box-shadow: inset 0 0 0 1.5px #2563eb;
+    color: #2563eb;
+    font-weight: 600;
+}
+/* Selected day */
+html body #ui-datepicker-div .ui-datepicker-calendar td > a.ui-state-active,
+html body #ui-datepicker-div .ui-datepicker-calendar td.ui-datepicker-today > a.ui-state-active {
+    background: #2563eb;
+    box-shadow: none;
+    color: #ffffff;
+    font-weight: 600;
+}
+/* Days after maxdate / other months */
+html body #ui-datepicker-div .ui-datepicker-calendar td.ui-state-disabled > span,
+html body #ui-datepicker-div .ui-datepicker-calendar td.ui-datepicker-other-month > a {
+    color: #cbd5e1;
+    opacity: 1;
+}
+
+/* ---- Time: Hour / Minute / Second dropdowns side by side ----
+   Each dt (label) + dd (dropdown) pair becomes one column: label on
+   top, dropdown below. The "Time" read-out row is hidden because the
+   input field already shows the chosen value. */
+html body #ui-datepicker-div .ui-timepicker-div {
+    margin-top: 0.5rem;
+    padding-top: 0.5rem;
+    border-top: 1px solid #e2e8f0;
+}
+html body #ui-datepicker-div .ui-timepicker-div .ui-widget-header,
+html body #ui-datepicker-div .ui-timepicker-div dl dt.ui_tpicker_time_label,
+html body #ui-datepicker-div .ui-timepicker-div dl dd.ui_tpicker_time {
+    display: none;
+}
+html body #ui-datepicker-div .ui-timepicker-div dl {
+    display: grid;
+    grid-template-rows: auto auto;
+    grid-auto-flow: column;
+    grid-auto-columns: 1fr;
+    align-items: center;
+    gap: 0.2rem 0.4rem;
+    margin: 0;
+    text-align: left;
+}
+html body #ui-datepicker-div .ui-timepicker-div dl dt {
+    float: none;
+    clear: none;
+    margin: 0;
+    padding: 0;
+    color: #64748b;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+html body #ui-datepicker-div .ui-timepicker-div dl dd {
+    margin: 0;
+    font-weight: 600;
+    color: #0f172a;
+}
+html body #ui-datepicker-div .ui-timepicker-div select {
+    width: 100%;
+    height: 1.9rem;
+    margin: 0;
+    padding: 0 0.3rem;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    background: #f8fafc;
+    color: #0f172a;
+    font-size: 0.8rem;
+}
+html body #ui-datepicker-div .ui-timepicker-div select:focus {
+    outline: none;
+    border-color: #2563eb;
+    box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
+}
+
+/* ---- Now / Done buttons ---- */
+html body #ui-datepicker-div .ui-datepicker-buttonpane {
+    display: flex;
+    justify-content: space-between;
+    gap: 0.5rem;
+    margin: 0.6rem 0 0;
+    padding: 0.6rem 0 0;
+    border-top: 1px solid #e2e8f0;
+    background: transparent;
+}
+html body #ui-datepicker-div .ui-datepicker-buttonpane button {
+    float: none;
+    flex: 1 1 0;
+    margin: 0;
+    padding: 0.35rem 0.75rem;
+    border-radius: 8px;
+    border: 1px solid #cbd5e1;
+    background: #ffffff;
+    color: #334155;
+    font-size: 0.8rem;
+    font-weight: 600;
+    opacity: 1;
+    box-shadow: none;
+}
+html body #ui-datepicker-div .ui-datepicker-buttonpane button.ui-datepicker-close {
+    border-color: #2563eb;
+    background: #2563eb;
+    color: #ffffff;
+}
+html body #ui-datepicker-div .ui-datepicker-buttonpane button:hover {
+    filter: brightness(0.96);
+}
