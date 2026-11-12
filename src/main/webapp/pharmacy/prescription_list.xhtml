@@ -72,7 +72,7 @@
                                 <h:outputLabel value="Department" class="mx-3"/>
                             </h:panelGroup>
                             <h:panelGroup id="cmbDept">
-                                <p:selectOneMenu rendered="#{prescriptionListController.institution eq null and prescriptionListController.site eq null}"
+                                <p:selectOneMenu id="cmbDeptAll" rendered="#{prescriptionListController.institution eq null and prescriptionListController.site eq null}"
                                                  styleClass="w-100 form-control"
                                                  value="#{prescriptionListController.department}"
                                                  filterMatchMode="contains" filter="true">
@@ -80,7 +80,7 @@
                                     <f:selectItems value="#{departmentController.getDepartmentsOfInstitutionAndSite()}"
                                                    var="d" itemLabel="#{d.name}" itemValue="#{d}"/>
                                 </p:selectOneMenu>
-                                <p:selectOneMenu rendered="#{prescriptionListController.institution eq null and prescriptionListController.site ne null}"
+                                <p:selectOneMenu id="cmbDeptSite" rendered="#{prescriptionListController.institution eq null and prescriptionListController.site ne null}"
                                                  styleClass="w-100 form-control"
                                                  value="#{prescriptionListController.department}"
                                                  filterMatchMode="contains" filter="true">
@@ -88,7 +88,7 @@
                                     <f:selectItems value="#{departmentController.getDepartmentsOfInstitutionAndSite(prescriptionListController.site)}"
                                                    var="d" itemLabel="#{d.name}" itemValue="#{d}"/>
                                 </p:selectOneMenu>
-                                <p:selectOneMenu rendered="#{prescriptionListController.institution ne null and prescriptionListController.site eq null}"
+                                <p:selectOneMenu id="cmbDeptIns" rendered="#{prescriptionListController.institution ne null and prescriptionListController.site eq null}"
                                                  styleClass="w-100 form-control"
                                                  value="#{prescriptionListController.department}"
                                                  filterMatchMode="contains" filter="true">
@@ -96,7 +96,7 @@
                                     <f:selectItems value="#{departmentController.getDepartmentsOfInstitutionAndSiteForInstitution(prescriptionListController.institution)}"
                                                    var="d" itemLabel="#{d.name}" itemValue="#{d}"/>
                                 </p:selectOneMenu>
-                                <p:selectOneMenu rendered="#{prescriptionListController.institution ne null and prescriptionListController.site ne null}"
+                                <p:selectOneMenu id="cmbDeptInsSite" rendered="#{prescriptionListController.institution ne null and prescriptionListController.site ne null}"
                                                  styleClass="w-100 form-control"
                                                  value="#{prescriptionListController.department}"
                                                  filterMatchMode="contains" filter="true">
@@ -161,6 +161,7 @@
                         </p:commandButton>
 
                         <p:dataTable id="tbl"
+                                     widgetVar="prescriptionListTable"
                                      styleClass="ui-datatable-borderless ui-datatable-sm compact-datatable w-100"
                                      value="#{prescriptionListController.rows}"
                                      var="row"
@@ -236,7 +237,7 @@
                             </p:column>
                             <p:column headerText="Actions" exportable="false" width="5em">
                                 <p:commandLink value="View"
-                                               title="Open this bill"
+                                               title="Open bill #{row.billNo}"
                                                ajax="false"
                                                action="#{billSearch.navigateToViewBillByAtomicBillTypeByBillId(row.billId)}"/>
                             </p:column>
