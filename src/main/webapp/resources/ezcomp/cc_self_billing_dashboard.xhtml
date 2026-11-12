@@ -162,13 +162,14 @@
                                 </div>
                                 <h:outputText styleClass="cc-action-label" value="Search Bills"/>
                             </h:commandLink>
-                            <div class="cc-action-card cc-c-orange">
-                                <span class="cc-action-badge">Soon</span>
+                            <h:commandLink
+                                styleClass="cc-action-card cc-c-orange"
+                                action="#{collectingCentreSelfReportController.navigateToReports()}">
                                 <div class="cc-action-icon">
                                     <h:outputText styleClass="fas fa-chart-bar"/>
                                 </div>
                                 <h:outputText styleClass="cc-action-label" value="Reports"/>
-                            </div>
+                            </h:commandLink>
                             <div class="cc-action-card cc-c-purple">
                                 <span class="cc-action-badge">Soon</span>
                                 <div class="cc-action-icon">
@@ -270,13 +271,13 @@
                                 <h:outputText styleClass="cc-timeline-title" value="Mobile friendly"/>
                                 <h:outputText styleClass="cc-timeline-desc" value="Use every page on a phone or tablet"/>
                             </li>
+                            <li class="done">
+                                <h:outputText styleClass="cc-timeline-title" value="Reports"/>
+                                <h:outputText styleClass="cc-timeline-desc" value="Receipt report for your collecting centre"/>
+                            </li>
                             <li class="cc-c-purple">
                                 <h:outputText styleClass="cc-timeline-title" value="Payments"/>
                                 <h:outputText styleClass="cc-timeline-desc" value="Track deposits and payments to the hospital"/>
-                            </li>
-                            <li class="cc-c-orange">
-                                <h:outputText styleClass="cc-timeline-title" value="Reports"/>
-                                <h:outputText styleClass="cc-timeline-desc" value="Summaries for your collecting centre"/>
                             </li>
                         </ul>
                     </div>

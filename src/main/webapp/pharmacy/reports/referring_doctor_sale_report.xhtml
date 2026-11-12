@@ -1,0 +1,183 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <h:body>
+        <ui:composition template="/pharmacy/pharmacy_analytics.xhtml">
+            <ui:define name="subcontent">
+                <h:panelGroup layout="block" rendered="#{not webUserController.hasPrivilege('PharmacyAnalyticsPrescriptionSummary')}">
+                    <h:outputText value="Not Authorized" styleClass="text-danger"/>
+                </h:panelGroup>
+                <h:form id="frmReferringDoctorSale" rendered="#{webUserController.hasPrivilege('PharmacyAnalyticsPrescriptionSummary')}">
+                    <p:panel header="Referring Doctor Wise Sale Report">
+                        <div class="row">
+                            <div class="col-md-2">
+                                <h:outputLabel value="Bill Date From" for="calFrom"/>
+                                <p:calendar id="calFrom" class="w-100 mx-4"
+                                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                            styleClass="dateTimePicker" inputStyleClass="form-control"
+                                            value="#{referringDoctorSaleReportController.fromDate}"/>
+                                <h:outputLabel value="Bill Date To" for="calTo"/>
+                                <p:calendar id="calTo" class="w-100 mx-4"
+                                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                            styleClass="dateTimePicker" inputStyleClass="form-control"
+                                            value="#{referringDoctorSaleReportController.toDate}"/>
+                                <p:outputLabel value="Department" for="acDept"/>
+                                <p:autoComplete id="acDept" completeMethod="#{departmentController.completeDept}"
+                                                var="dept" itemLabel="#{dept.name}" itemValue="#{dept}"
+                                                forceSelection="true" value="#{referringDoctorSaleReportController.department}"
+                                                class="w-100" inputStyleClass="w-100"/>
+                                <p:outputLabel value="Referring Doctor" for="cmbDoc"/>
+                                <p:autoComplete id="cmbDoc" forceSelection="true" value="#{referringDoctorSaleReportController.referringDoctor}"
+                                                completeMethod="#{doctorController.completeDoctor}"
+                                                var="ix" itemLabel="#{ix.person.name}" itemValue="#{ix}"
+                                                size="30" class="w-100" inputStyleClass="form-control"/>
+                                <h:panelGroup layout="block" styleClass="my-2">
+                                    <p:selectBooleanCheckbox id="chkNoDoctor" value="#{referringDoctorSaleReportController.onlyWithoutDoctor}" itemLabel="Only bills without a referring doctor"/>
+                                </h:panelGroup>
+                                <p:commandButton class="ui-button-warning w-100 my-1" icon="fas fa-cogs" ajax="false" value="Doctor Summary" action="#{referringDoctorSaleReportController.processSummary()}"/>
+                                <p:commandButton class="ui-button-warning w-100 my-1" icon="fas fa-cogs" ajax="false" value="Bill List" action="#{referringDoctorSaleReportController.processBillList()}"/>
+                                <p:commandButton class="ui-button-warning w-100 my-1" icon="fas fa-cogs" ajax="false" value="Item Summary" action="#{referringDoctorSaleReportController.processItemList()}"/>
+                                <h:panelGroup rendered="#{referringDoctorSaleReportController.summaryRows ne null}">
+                                    <p:commandButton class="ui-button-success w-100 mt-1" icon="fas fa-file-excel" ajax="false" value="Excel - Doctor Summary" title="Export Doctor Summary to Excel">
+                                        <p:dataExporter type="xlsx" target="tblSummary" fileName="referring_doctor_sale_summary"/>
+                                    </p:commandButton>
+                                </h:panelGroup>
+                                <h:panelGroup rendered="#{referringDoctorSaleReportController.billRows ne null}">
+                                    <p:commandButton class="ui-button-success w-100 mt-1" icon="fas fa-file-excel" ajax="false" value="Excel - Bill List" title="Export Bill List to Excel">
+                                        <p:dataExporter type="xlsx" target="tblBills" fileName="referring_doctor_sale_bills"/>
+                                    </p:commandButton>
+                                </h:panelGroup>
+                                <h:panelGroup rendered="#{referringDoctorSaleReportController.itemRows ne null}">
+                                    <p:commandButton class="ui-button-success w-100 mt-1" icon="fas fa-file-excel" ajax="false" value="Excel - Item Summary" title="Export Item Summary to Excel">
+                                        <p:dataExporter type="xlsx" target="tblItems" fileName="referring_doctor_sale_items"/>
+                                    </p:commandButton>
+                                </h:panelGroup>
+                                <h:outputText class="d-block text-muted small mt-2" value="Sales are counted by bill date and time. Sale for Cashier bills are counted only once they are settled at the cashier. Cancellations, refunds and returns are deducted from the doctor of the original sale, on the date they were made. Bills with no referring doctor are shown as 'No referring doctor'."/>
+                            </div>
+                            <div class="col-md-10">
+                                <h:panelGroup layout="block" rendered="#{referringDoctorSaleReportController.summaryRows ne null}" styleClass="mb-3">
+                                    <p:dataTable id="tblSummary" widgetVar="wtblSummary" value="#{referringDoctorSaleReportController.summaryRows}" var="row"
+                                                 paginator="true" rows="20" paginatorPosition="bottom"
+                                                 emptyMessage="No records found for the selected period and filters">
+                                    <p:column headerText="Doctor">
+                                        <p:commandLink ajax="false" value="#{row.doctorName}" title="Bills of #{row.doctorName}" action="#{referringDoctorSaleReportController.listBillsForDoctor(row.doctorId)}"/>
+                                        <f:facet name="footer"><h:outputText value="Total"/></f:facet>
+                                    </p:column>
+                                    <p:column headerText="Sale Bills" style="text-align: right;">
+                                        <h:outputText value="#{row.saleCount}"><f:convertNumber pattern="#,##0"/></h:outputText>
+                                        <f:facet name="footer"><h:outputText value="#{referringDoctorSaleReportController.totalSaleCount}"><f:convertNumber pattern="#,##0"/></h:outputText></f:facet>
+                                    </p:column>
+                                    <p:column headerText="Gross" style="text-align: right;">
+                                        <h:outputText value="#{row.saleGross}"><f:convertNumber pattern="#,##0.00"/></h:outputText>
+                                        <f:facet name="footer"><h:outputText value="#{referringDoctorSaleReportController.totalSaleGross}"><f:convertNumber pattern="#,##0.00"/></h:outputText></f:facet>
+                                    </p:column>
+                                    <p:column headerText="Discount" style="text-align: right;">
+                                        <h:outputText value="#{row.saleDiscount}"><f:convertNumber pattern="#,##0.00"/></h:outputText>
+                                        <f:facet name="footer"><h:outputText value="#{referringDoctorSaleReportController.totalSaleDiscount}"><f:convertNumber pattern="#,##0.00"/></h:outputText></f:facet>
+                                    </p:column>
+                                    <p:column headerText="Net Sale" style="text-align: right;">
+                                        <h:outputText value="#{row.saleNet}"><f:convertNumber pattern="#,##0.00"/></h:outputText>
+                                        <f:facet name="footer"><h:outputText value="#{referringDoctorSaleReportController.totalSaleNet}"><f:convertNumber pattern="#,##0.00"/></h:outputText></f:facet>
+                                    </p:column>
+                                    <p:column headerText="Cancelled Bills" style="text-align: right;">
+                                        <h:outputText value="#{row.cancelCount}"><f:convertNumber pattern="#,##0"/></h:outputText>
+                                        <f:facet name="footer"><h:outputText value="#{referringDoctorSaleReportController.totalCancelCount}"><f:convertNumber pattern="#,##0"/></h:outputText></f:facet>
+                                    </p:column>
+                                    <p:column headerText="Cancelled Value" style="text-align: right;">
+                                        <h:outputText value="#{row.cancelValue}"><f:convertNumber pattern="#,##0.00"/></h:outputText>
+                                        <f:facet name="footer"><h:outputText value="#{referringDoctorSaleReportController.totalCancelValue}"><f:convertNumber pattern="#,##0.00"/></h:outputText></f:facet>
+                                    </p:column>
+                                    <p:column headerText="Return Bills" style="text-align: right;">
+                                        <h:outputText value="#{row.returnCount}"><f:convertNumber pattern="#,##0"/></h:outputText>
+                                        <f:facet name="footer"><h:outputText value="#{referringDoctorSaleReportController.totalReturnCount}"><f:convertNumber pattern="#,##0"/></h:outputText></f:facet>
+                                    </p:column>
+                                    <p:column headerText="Returned Value" style="text-align: right;">
+                                        <h:outputText value="#{row.returnValue}"><f:convertNumber pattern="#,##0.00"/></h:outputText>
+                                        <f:facet name="footer"><h:outputText value="#{referringDoctorSaleReportController.totalReturnValue}"><f:convertNumber pattern="#,##0.00"/></h:outputText></f:facet>
+                                    </p:column>
+                                    <p:column headerText="Net Value" style="text-align: right;">
+                                        <h:outputText value="#{row.netValue}"><f:convertNumber pattern="#,##0.00"/></h:outputText>
+                                        <f:facet name="footer"><h:outputText value="#{referringDoctorSaleReportController.totalNetValue}"><f:convertNumber pattern="#,##0.00"/></h:outputText></f:facet>
+                                    </p:column>
+                                    <p:column headerText="Items" exportable="false" style="text-align: center;">
+                                        <p:commandButton ajax="false" icon="fas fa-list" styleClass="ui-button-info ui-button-outlined" value="Items" title="Items of #{row.doctorName}" action="#{referringDoctorSaleReportController.listItemsForDoctor(row.doctorId)}"/>
+                                    </p:column>
+                                    </p:dataTable>
+                                </h:panelGroup>
+                                <h:panelGroup layout="block" rendered="#{referringDoctorSaleReportController.billRows ne null}" styleClass="mb-3">
+                                    <p:dataTable id="tblBills" widgetVar="wtblBills" value="#{referringDoctorSaleReportController.billRows}" var="row" rowKey="#{row.billId}"
+                                                 paginator="true" rows="20" paginatorPosition="bottom"
+                                                 emptyMessage="No records found for the selected period and filters">
+                                        <f:facet name="header"><h:outputText value="Bills#{empty referringDoctorSaleReportController.selectedDoctorName ? '' : ' - '}#{referringDoctorSaleReportController.selectedDoctorName}"/></f:facet>
+                                    <p:column headerText="Bill No">
+                                        <h:outputText value="#{row.billNo}"/>
+                                        <f:facet name="footer"><h:outputText value="Total"/></f:facet>
+                                    </p:column>
+                                    <p:column headerText="Date/Time">
+                                        <h:outputText value="#{row.createdAt}"><f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/></h:outputText>
+                                    </p:column>
+                                    <p:column headerText="Type">
+                                        <h:outputText value="#{row.rowType}"/>
+                                    </p:column>
+                                    <p:column headerText="Bill Type">
+                                        <h:outputText value="#{row.billTypeLabel}"/>
+                                    </p:column>
+                                    <p:column headerText="Doctor">
+                                        <h:outputText value="#{row.doctorName}"/>
+                                    </p:column>
+                                    <p:column headerText="Patient">
+                                        <h:outputText value="#{row.patientName}"/>
+                                    </p:column>
+                                    <p:column headerText="Payment Method">
+                                        <h:outputText value="#{row.paymentMethod}"/>
+                                    </p:column>
+                                    <p:column headerText="Department">
+                                        <h:outputText value="#{row.departmentName}"/>
+                                    </p:column>
+                                    <p:column headerText="Gross" style="text-align: right;">
+                                        <h:outputText value="#{row.grossTotal}"><f:convertNumber pattern="#,##0.00"/></h:outputText>
+                                        <f:facet name="footer"><h:outputText value="#{referringDoctorSaleReportController.billTotalGross}"><f:convertNumber pattern="#,##0.00"/></h:outputText></f:facet>
+                                    </p:column>
+                                    <p:column headerText="Discount" style="text-align: right;">
+                                        <h:outputText value="#{row.discount}"><f:convertNumber pattern="#,##0.00"/></h:outputText>
+                                        <f:facet name="footer"><h:outputText value="#{referringDoctorSaleReportController.billTotalDiscount}"><f:convertNumber pattern="#,##0.00"/></h:outputText></f:facet>
+                                    </p:column>
+                                    <p:column headerText="Net" style="text-align: right;">
+                                        <h:outputText value="#{row.netTotal}"><f:convertNumber pattern="#,##0.00"/></h:outputText>
+                                        <f:facet name="footer"><h:outputText value="#{referringDoctorSaleReportController.billTotalNet}"><f:convertNumber pattern="#,##0.00"/></h:outputText></f:facet>
+                                    </p:column>
+                                    </p:dataTable>
+                                </h:panelGroup>
+                                <h:panelGroup layout="block" rendered="#{referringDoctorSaleReportController.itemRows ne null}" styleClass="mb-3">
+                                    <p:dataTable id="tblItems" widgetVar="wtblItems" value="#{referringDoctorSaleReportController.itemRows}" var="row"
+                                                 paginator="true" rows="20" paginatorPosition="bottom"
+                                                 emptyMessage="No records found for the selected period and filters">
+                                    <p:column headerText="Doctor">
+                                        <h:outputText value="#{row.doctorName}"/>
+                                        <f:facet name="footer"><h:outputText value="Total"/></f:facet>
+                                    </p:column>
+                                    <p:column headerText="Item">
+                                        <h:outputText value="#{row.itemName}"/>
+                                    </p:column>
+                                    <p:column headerText="Quantity" style="text-align: right;">
+                                        <h:outputText value="#{row.quantity}"><f:convertNumber pattern="#,##0.###"/></h:outputText>
+                                        <f:facet name="footer"><h:outputText value="#{referringDoctorSaleReportController.itemTotalQuantity}"><f:convertNumber pattern="#,##0.###"/></h:outputText></f:facet>
+                                    </p:column>
+                                    <p:column headerText="Net Value" style="text-align: right;">
+                                        <h:outputText value="#{row.netValue}"><f:convertNumber pattern="#,##0.00"/></h:outputText>
+                                        <f:facet name="footer"><h:outputText value="#{referringDoctorSaleReportController.itemTotalNetValue}"><f:convertNumber pattern="#,##0.00"/></h:outputText></f:facet>
+                                    </p:column>
+                                    </p:dataTable>
+                                </h:panelGroup>
+                            </div>
+                        </div>
+                    </p:panel>
+                </h:form>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

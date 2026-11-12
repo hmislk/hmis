@@ -142,7 +142,7 @@
                                     <h:outputText value="#{reportsStock.department.name}"/>
                                     <h:outputText value="" style="width: 2em!important;" class="text-center"/>
                                     <h:outputText value="Supplier - "/>
-                                    <h:outputText value="#{reportsStock.institution.name}"/>
+                                    <h:outputText value="#{reportsStock.institution ne null ? reportsStock.institution.name : 'All'}"/>
                                 </div>
                                 <div class="d-flex justify-content-center text-5 gap-2"
                                      style="font-weight: 600; font-size: 15px;margin-bottom: 5px;">
@@ -167,6 +167,8 @@
                                         <th style="text-align: center;">No</th>
                                         <th style="text-align: center;">Item</th>
                                         <th style="text-align: center;">Code</th>
+                                        <th style="text-align: center;">Batch No</th>
+                                        <th style="text-align: center;">Supplier</th>
                                         <th style="text-align: center;">Stock Quantity</th>
                                         <th style="text-align: center;">Expiry</th>
                                         <th style="text-align: center;">Purchase Rate</th>
@@ -176,15 +178,21 @@
                                     </tr>
                                     </thead>
                                     <tbody>
-                                    <ui:repeat value="#{reportsStock.stocks}" var="i" rowIndexVar="ii">
+                                    <ui:repeat value="#{reportsStock.stocks}" var="i" varStatus="rowStatus">
                                         <tr>
-                                            <td><h:outputText value="#{ii+1}"/></td>
+                                            <td><h:outputText value="#{rowStatus.index+1}"/></td>
                                             <td>
                                                 <h:outputText value="#{i.itemBatch.item.name}"/>
                                             </td>
                                             <td><h:outputText value="#{i.itemBatch.item.code}"/></td>
-                                            <td><h:outputText value="#{i.stock}"/></td>
-                                            <td>
+                                            <td><h:outputText value="#{i.itemBatch.batchNo}"/></td>
+                                            <td><h:outputText value="#{i.itemBatch.lastPurchaseBillItem.bill.fromInstitution.name}"/></td>
+                                            <td style="text-align: right;">
+                                                <h:outputText value="#{i.stock}">
+                                                    <f:convertNumber pattern="#,###"/>
+                                                </h:outputText>
+                                            </td>
+                                            <td style="text-align: right;">
                                                 <h:outputText value="#{i.itemBatch.dateOfExpire}">
                                                     <f:convertDateTime pattern="dd MMM yy"/>
                                                 </h:outputText>
@@ -214,7 +222,7 @@
                                     </tbody>
                                     <tfoot>
                                     <tr>
-                                        <td colspan="6" style="text-align: left; font-weight: 700;">
+                                        <td colspan="8" style="text-align: left; font-weight: 700;">
                                             <h:outputText value="Total"/>
                                         </td>
                                         <td style="text-align: right;">
@@ -232,11 +240,11 @@
                                         </td>
                                     </tr>
                                     <tr>
-                                        <td colspan="9" style="text-align: right; font-weight: 700;">
-                                            <h:outputLabel value="Printed By "/>
+                                        <td colspan="11" style="text-align: right; font-weight: 700;">
+                                            <h:outputLabel value="Printed By &nbsp;"/>
                                             <h:outputLabel value="#{sessionController.loggedUser.webUserPerson.name}" />
                                             <h:outputText value="   |   "/>
-                                            <h:outputLabel value="Printed At "/>
+                                            <h:outputLabel value="Printed At &nbsp;"/>
                                             <h:outputLabel value="#{sessionController.currentDate}">
                                                 <f:convertDateTime pattern="dd MMMM yyyy - hh:mm a"/>
                                             </h:outputLabel>

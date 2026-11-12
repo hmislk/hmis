@@ -1153,6 +1153,7 @@ public class ConfigOptionApplicationController implements Serializable {
                 "Pharmacy Analytics - Show Slow Moving",
                 "Pharmacy Analytics - Show Non Moving",
                 "Pharmacy Analytics - Show Prescription Summary",
+                "Pharmacy Analytics - Show Referring Doctor Wise Sale Report",
                 "Pharmacy Analytics - Show Presciption List",
                 "Pharmacy Analytics - Show List of Pharmacy Bills",
                 "Pharmacy Analytics - Show Retail Sale Bill List",

@@ -74,8 +74,15 @@ When working on any UI/XHTML task, follow these rules and patterns.
 - **Secondary actions**: `ui-button-warning` or `ui-button-secondary`
 - **Always add icons**: Use Font Awesome (`fa fa-*`) icons
 
+## Report Pages
+
+- **One layout for every report**, top to bottom and full width: panel header → 8-column filter grid → one row of action buttons (Process, then exports) → compact results table with footer totals
+- **Never put filters in a side column** (`col-md-2` + `col-md-10`) or stack one filter per line; this is a web application, so save space
+- **Standard filters**: From / To, Institution / Site / Department on one row, then report-specific filters; not Department alone
+- Reference page: `pharmacy/reports/summary_reports/pharmacy_income_report.xhtml`. Rules: [comprehensive-ui-guidelines.md § Report Page Layout](../../../developer_docs/ui/comprehensive-ui-guidelines.md#report-page-layout-all-report-pages-look-the-same)
+
 ## For complete reference
 
-Read [developer_docs/ui/comprehensive-ui-guidelines.md](../../developer_docs/ui/comprehensive-ui-guidelines.md) for the full UI handbook including responsive design, accessibility, datatables, dialogs, and more.
+Read [developer_docs/ui/comprehensive-ui-guidelines.md](../../../developer_docs/ui/comprehensive-ui-guidelines.md) for the full UI handbook including responsive design, accessibility, datatables, dialogs, and more.
 
-For data-dense pages (large tables, many inputs, many buttons), also read [developer_docs/ui/data-dense-page-patterns.md](../../developer_docs/ui/data-dense-page-patterns.md) — sticky headers/action bars, keyboard-first entry (`p:defaultCommand`, `p:focus`), lazy loading, and busy indicators.
+For data-dense pages (large tables, many inputs, many buttons), also read [developer_docs/ui/data-dense-page-patterns.md](../../../developer_docs/ui/data-dense-page-patterns.md) — sticky headers/action bars, keyboard-first entry (`p:defaultCommand`, `p:focus`), lazy loading, and busy indicators.
