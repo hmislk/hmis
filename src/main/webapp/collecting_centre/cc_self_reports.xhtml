@@ -1,0 +1,68 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:ez="http://xmlns.jcp.org/jsf/composite/ezcomp">
+    <h:head>
+        <title>Collecting Centre Self Billing - Reports</title>
+    </h:head>
+    <h:body>
+        <ui:composition template="/resources/template/template_without_menu.xhtml">
+            <ui:define name="content">
+                <h:panelGroup rendered="#{not collectingCentreSelfCommonController.collectingCentreDepartment}">
+                    <h:outputStylesheet library="css" name="collecting_centre_self_billing_not_available.css"/>
+                    <h:form id="ccNotAvailableForm">
+                        <ez:cc_self_billing_not_available/>
+                    </h:form>
+                </h:panelGroup>
+
+                <h:panelGroup rendered="#{collectingCentreSelfCommonController.collectingCentreDepartment and not collectingCentreSelfReportController.canOpenReports}">
+                    <h:outputStylesheet library="css" name="collecting_centre_self_billing_not_available.css"/>
+                    <h:form id="ccUnauthorizedForm">
+                        <ez:cc_self_billing_unauthorized/>
+                    </h:form>
+                </h:panelGroup>
+
+                <h:panelGroup rendered="#{collectingCentreSelfCommonController.collectingCentreDepartment and collectingCentreSelfReportController.canOpenReports}">
+                    <h:outputStylesheet library="css" name="collecting_centre_self_billing_bill.css"/>
+                    <h:outputStylesheet library="css" name="collecting_centre_self_billing_home.css"/>
+                    <div class="cc-bill-page">
+                        <h:form id="form">
+                            <ez:cc_self_billing_header
+                                pageTitle="Reports"
+                                highlightCode="#{sessionController.institution.code}"
+                                highlightName="#{sessionController.institution.name}"
+                                pageIcon="fas fa-chart-bar"
+                                backAction="#{collectingCentreSelfCommonController.navigateToCollectingCentreSelfBillingHome}"
+                                backLabel="Back to Dashboard"/>
+
+                            <p:growl id="msg"/>
+
+                            <p:panel styleClass="cc-bill-card cc-c-orange">
+                                <f:facet name="header">
+                                    <h:outputText styleClass="fas fa-chart-bar"/>
+                                    <h:outputText value="Collecting Centre Reports" class="mx-2"/>
+                                </f:facet>
+
+                                <div class="cc-action-grid">
+                                    <h:commandLink
+                                        id="lnkReceiptReport"
+                                        styleClass="cc-action-card cc-c-green"
+                                        action="#{collectingCentreSelfReportController.navigateToReceiptReport()}">
+                                        <div class="cc-action-icon">
+                                            <h:outputText styleClass="fas fa-receipt"/>
+                                        </div>
+                                        <h:outputText styleClass="cc-action-label" value="Receipt Report"/>
+                                    </h:commandLink>
+                                </div>
+                            </p:panel>
+                        </h:form>
+                    </div>
+                </h:panelGroup>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>
