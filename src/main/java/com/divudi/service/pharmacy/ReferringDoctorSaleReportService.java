@@ -39,6 +39,7 @@ public class ReferringDoctorSaleReportService {
     public static final String ROW_SALE = "Sale";
     public static final String ROW_CANCELLATION = "Cancellation";
     public static final String ROW_RETURN = "Return";
+    public static final String ROW_RETURN_CANCELLATION = "Return Cancellation";
 
     @EJB
     private BillFacade billFacade;
@@ -51,8 +52,17 @@ public class ReferringDoctorSaleReportService {
             BillTypeAtomic.PHARMACY_RETAIL_SALE,
             BillTypeAtomic.PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER);
 
+    private static final List<BillTypeAtomic> RETURN_FINANCE_TYPES = Arrays.asList(
+            BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEM_PAYMENTS,
+            BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS,
+            BillTypeAtomic.PHARMACY_RETAIL_SALE_REFUND);
+
+    private static final List<BillTypeAtomic> RETURN_PRE_TYPES = Arrays.asList(
+            BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_ONLY,
+            BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS_PREBILL);
+
     /**
-     * The three bill sets, each with the LEFT JOINs that reach the original
+     * The bill sets, each with the LEFT JOINs that reach the original
      * sale's doctor. Doctor aliases are d1..dN in priority order.
      */
     private enum BillSet {
@@ -62,7 +72,7 @@ public class ReferringDoctorSaleReportService {
                 " left join b.referenceBill r1"
                 + " left join b.referredBy d1"
                 + " left join r1.referredBy d2",
-                2, false),
+                2, null),
         CANCELLATION(ROW_CANCELLATION,
                 Arrays.asList(BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED),
                 " left join b.billedBill s1"
@@ -70,7 +80,7 @@ public class ReferringDoctorSaleReportService {
                 + " left join b.referredBy d1"
                 + " left join s1.referredBy d2"
                 + " left join s2.referredBy d3",
-                3, true),
+                3, " and s1.billTypeAtomic in :saleTypes"),
         RETURN(ROW_RETURN,
                 Arrays.asList(BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEM_PAYMENTS,
                         BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS,
@@ -79,26 +89,44 @@ public class ReferringDoctorSaleReportService {
                 + " left join q1.billedBill q2"
                 + " left join q2.referenceBill q3"
                 + " left join b.billedBill q4"
-                + " left join q4.referenceBill q5"
                 + " left join b.referredBy d1"
-                + " left join q2.referredBy d2"
-                + " left join q3.referredBy d3"
-                + " left join q4.referredBy d4"
-                + " left join q5.referredBy d5",
-                5, false);
+                + " left join q1.referredBy d2"
+                + " left join q2.referredBy d3"
+                + " left join q3.referredBy d4"
+                + " left join q4.referredBy d5",
+                5, null),
+        // A cancelled return: positive values that add the return back. Counted only when the
+        // cancelled return's refund is itself counted in the RETURN set, i.e. the cancelled bill
+        // is a finance return, or a refund payment bill was made against it.
+        RETURN_CANCELLATION(ROW_RETURN_CANCELLATION,
+                Arrays.asList(BillTypeAtomic.PHARMACY_RETURN_ITEMS_AND_PAYMENTS_CANCELLATION),
+                " left join b.refundedBill c1"
+                + " left join b.referenceBill c2"
+                + " left join c1.billedBill c3"
+                + " left join c3.referenceBill c4"
+                + " left join b.referredBy d1"
+                + " left join c1.referredBy d2"
+                + " left join c2.referredBy d3"
+                + " left join c3.referredBy d4"
+                + " left join c4.referredBy d5",
+                5, " and (c1.billTypeAtomic in :returnFinanceTypes"
+                + " or (c1.billTypeAtomic in :returnPreTypes and exists ("
+                + "select rp.id from Bill rp where rp.referenceBill = c1"
+                + " and rp.billTypeAtomic in :returnFinanceTypes"
+                + " and (rp.retired is null or rp.retired = false))))");
 
         final String rowType;
         final List<BillTypeAtomic> types;
         final String joins;
         final int doctorCount;
-        final boolean originalMustBeSale;
+        final String extraWhere;
 
-        BillSet(String rowType, List<BillTypeAtomic> types, String joins, int doctorCount, boolean originalMustBeSale) {
+        BillSet(String rowType, List<BillTypeAtomic> types, String joins, int doctorCount, String extraWhere) {
             this.rowType = rowType;
             this.types = types;
             this.joins = joins;
             this.doctorCount = doctorCount;
-            this.originalMustBeSale = originalMustBeSale;
+            this.extraWhere = extraWhere;
         }
     }
 
@@ -128,10 +156,16 @@ public class ReferringDoctorSaleReportService {
         params.put("types", set.types);
         params.put("fd", from);
         params.put("td", to);
-        if (set.originalMustBeSale) {
-            // excludes stray wholesale/transfer rows that reuse the cancelled atomic
-            sb.append(" and s1.billTypeAtomic in :saleTypes");
-            params.put("saleTypes", SALE_TYPES);
+        if (set.extraWhere != null) {
+            // CANCELLATION: excludes stray wholesale/transfer rows that reuse the cancelled atomic
+            sb.append(set.extraWhere);
+            if (set.extraWhere.contains(":saleTypes")) {
+                params.put("saleTypes", SALE_TYPES);
+            }
+            if (set.extraWhere.contains(":returnFinanceTypes")) {
+                params.put("returnFinanceTypes", RETURN_FINANCE_TYPES);
+                params.put("returnPreTypes", RETURN_PRE_TYPES);
+            }
         }
         if (department != null) {
             sb.append(" and dep.id = :deptId");
@@ -276,6 +310,10 @@ public class ReferringDoctorSaleReportService {
                     s.setCancelValue(s.getCancelValue() + net);
                 } else if (ROW_RETURN.equals(b.getRowType())) {
                     s.setReturnCount(s.getReturnCount() + 1);
+                    s.setReturnValue(s.getReturnValue() + net);
+                } else if (ROW_RETURN_CANCELLATION.equals(b.getRowType())) {
+                    // a cancelled return is added back: one return fewer, value netted off
+                    s.setReturnCount(s.getReturnCount() - 1);
                     s.setReturnValue(s.getReturnValue() + net);
                 }
             }

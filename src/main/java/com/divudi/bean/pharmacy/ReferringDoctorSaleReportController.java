@@ -63,6 +63,10 @@ public class ReferringDoctorSaleReportController implements Serializable {
             JsfUtil.addErrorMessage("From date cannot be after to date");
             return false;
         }
+        if (referringDoctor != null && onlyWithoutDoctor) {
+            JsfUtil.addErrorMessage("Clear the Referring Doctor or untick Only bills without a referring doctor. Both cannot apply together.");
+            return false;
+        }
         return true;
     }
 
@@ -88,6 +92,7 @@ public class ReferringDoctorSaleReportController implements Serializable {
             return;
         }
         billRows = service.fetchBills(fromDate, toDate, department, referringDoctor, effectiveOnlyWithoutDoctor());
+        itemRows = null;
         selectedDoctorName = currentDoctorLabel();
     }
 
@@ -96,6 +101,7 @@ public class ReferringDoctorSaleReportController implements Serializable {
             return;
         }
         itemRows = service.fetchItems(fromDate, toDate, department, referringDoctor, effectiveOnlyWithoutDoctor());
+        billRows = null;
         selectedDoctorName = currentDoctorLabel();
     }
 
