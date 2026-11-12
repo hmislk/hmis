@@ -163,6 +163,7 @@ public class PharmacyBatchChangeController implements Serializable {
             JsfUtil.addSuccessMessage("Batch changed successfully.");
         } catch (PharmacyBatchChangeException e) {
             JsfUtil.addErrorMessage(e.getMessage());
+            return;
         } catch (RuntimeException e) {
             Logger.getLogger(PharmacyBatchChangeController.class.getName()).log(Level.SEVERE, "Batch change failed", e);
             JsfUtil.addErrorMessage("The batch change could not be saved. Nothing was changed.");
