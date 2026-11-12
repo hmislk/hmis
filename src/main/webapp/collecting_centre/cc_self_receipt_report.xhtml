@@ -201,6 +201,10 @@
                                             </f:facet>
                                         </p:column>
 
+                                        <p:column headerText="Comments" style="padding: 8px;">
+                                            <h:outputText value="#{row.bill.comments}"/>
+                                        </p:column>
+                                        
                                         <p:column headerText="Amount" sortBy="#{row.bill.total}" class="text-end" style="padding: 8px;">
                                             <h:outputText value="#{row.bill.total}">
                                                 <f:convertNumber pattern="#,##0.00"/>
@@ -212,9 +216,7 @@
                                             </f:facet>
                                         </p:column>
 
-                                        <p:column headerText="Comments" style="padding: 8px;">
-                                            <h:outputText value="#{row.bill.comments}"/>
-                                        </p:column>
+                                        
                                     </p:dataTable>
                                 </p:panel>
                             </div>
