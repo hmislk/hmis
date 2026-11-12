@@ -28,6 +28,7 @@
 
                 <h:panelGroup rendered="#{collectingCentreSelfCommonController.collectingCentreDepartment and collectingCentreSelfReportController.canOpenReceiptReport}">
                     <h:outputStylesheet library="css" name="collecting_centre_self_billing_bill.css"/>
+                    <h:outputStylesheet library="css" name="collecting_centre_self_calendar.css"/>
                     <div class="cc-bill-page">
                         <h:form id="form">
                             <ez:cc_self_billing_header
@@ -66,6 +67,7 @@
                                             placeholder="Select from date"
                                             value="#{collectingCentreSelfReportController.fromDate}"
                                             navigator="false"
+                                            timeControlType="select"
                                             pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
                                             class="w-100"
                                             inputStyleClass="form-control"
@@ -80,6 +82,7 @@
                                             placeholder="Select to date"
                                             value="#{collectingCentreSelfReportController.toDate}"
                                             navigator="false"
+                                            timeControlType="select"
                                             pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
                                             class="w-100"
                                             inputStyleClass="form-control"
