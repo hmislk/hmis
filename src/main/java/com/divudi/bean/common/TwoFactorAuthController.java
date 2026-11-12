@@ -56,6 +56,7 @@ public class TwoFactorAuthController implements Serializable {
     public static final String EVENT_LOGIN_FAILED = "2FA Login Failed";
     public static final String EVENT_SETUP_FAILED = "2FA Setup Failed";
     public static final String EVENT_SETUP_QR_RENEWED = "2FA Setup QR Renewed";
+    public static final String EVENT_SETUP_CANCELLED_FAILED_ATTEMPTS = "2FA Setup Cancelled After Failed Attempts";
     public static final String EVENT_SMS_CODE_SENT = "2FA SMS Code Sent";
     public static final String EVENT_SMS_CODE_SEND_FAILED = "2FA SMS Code Send Failed";
     public static final String EVENT_SMS_RATE_LIMITED = "2FA SMS Code Rate Limited";
@@ -374,15 +375,16 @@ public class TwoFactorAuthController implements Serializable {
             attempt.put("failedAttempts", selfSetupFailedAttempts);
             logTwoFactorEvent(u, u, EVENT_SETUP_FAILED, null, attempt, "Failed");
             if (selfSetupFailedAttempts >= MAX_FAILED_ATTEMPTS) {
-                // The password is already verified, so the account is not locked; the guessed QR is replaced instead
-                selfSetupSecret = TotpUtil.generateSecret();
+                // The password is already verified, so the account is not locked; the guessed QR is discarded
+                // and the user is returned to the status screen to start the setup again
+                selfSetupSecret = null;
                 selfSetupFailedAttempts = 0;
-                logTwoFactorEvent(u, u, EVENT_SETUP_QR_RENEWED);
-                JsfUtil.addErrorMessage("Too many invalid codes. A new QR code has been created. "
-                        + "Delete the old entry for this account from your app and scan the new QR code.");
+                logTwoFactorEvent(u, u, EVENT_SETUP_CANCELLED_FAILED_ATTEMPTS);
+                JsfUtil.addErrorMessage("Too many invalid codes. The setup has been cancelled. "
+                        + "Delete the entry for this account from your app, then click Set Up Authenticator App to scan a new QR code.");
             } else {
                 JsfUtil.addErrorMessage("Invalid authenticator code. Check the time on your phone and try again. "
-                        + (MAX_FAILED_ATTEMPTS - selfSetupFailedAttempts) + " attempt(s) left before a new QR code is created.");
+                        + (MAX_FAILED_ATTEMPTS - selfSetupFailedAttempts) + " attempt(s) left before the setup is cancelled.");
             }
             return null;
         }

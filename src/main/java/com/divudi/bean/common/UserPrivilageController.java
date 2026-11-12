@@ -759,11 +759,16 @@ public class UserPrivilageController implements Serializable {
 
         new DefaultTreeNode(new PrivilegeHolder(Privileges.CcSelfStatement, "Statement"), ccSelfNode);
 
+        TreeNode ccSelfReportsNode = new DefaultTreeNode(new PrivilegeHolder(null, "Reports"), ccSelfNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.CcSelfReports, "Reports Menu"), ccSelfReportsNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.CcSelfReceiptReport, "Receipt Report"), ccSelfReportsNode);
+
         TreeNode ccSelfSampleNode = new DefaultTreeNode(new PrivilegeHolder(null, "Sample Management"), ccSelfNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.CcSelfSampleManagement, "Sample Management"), ccSelfSampleNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.CcSelfSampleBarcodePrint, "Generate/Print Barcodes"), ccSelfSampleNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.CcSelfSampleCollect, "Collect Samples"), ccSelfSampleNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.CcSelfSampleSend, "Send Samples"), ccSelfSampleNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.CcSelfSampleEditSendingDepartment, "Edit Sending to Department"), ccSelfSampleNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.CcSelfSampleReject, "Reject Samples"), ccSelfSampleNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.CcSelfSampleRegenerate, "Re-Generate Samples"), ccSelfSampleNode);
 
@@ -1423,6 +1428,7 @@ public class UserPrivilageController implements Serializable {
         new DefaultTreeNode(new PrivilegeHolder(Privileges.ReportsConsumption, "2. Consumption (Legacy)"), reportsPageInventoryReportsNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.ReportsConsumptionDto, "2. Consumption"), reportsPageInventoryReportsNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.ReportsStockTransferReport, "3. Stock Transfers"), reportsPageInventoryReportsNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.ReportsInpatientDirectIssue, "3.1 Inpatient Direct Issue"), reportsPageInventoryReportsNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.ReportsCostOfGoodsSold, "4. Cost Of Good Sold"), reportsPageInventoryReportsNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.ReportsGoodInTransit, "5. Good in Transit"), reportsPageInventoryReportsNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.ReportsGrnReport, "6. GRN Report"), reportsPageInventoryReportsNode);

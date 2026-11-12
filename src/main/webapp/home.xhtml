@@ -1237,7 +1237,7 @@
                         <p:commandLink 
                             id="Return_without_Receipt"
                             ajax="false" 
-                            action="/pharmacy/pharmacy_return_withouttresing?faces-redirect=true"
+                            action="#{searchController.navigateToPharmacyReturnWithoutReceipt()}"
                             styleClass="svg-link" >
                             <p:graphicImage class="img-thumbnail" cache="true" library="images" name="home/pharmacy-default.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Return without Receipt" />

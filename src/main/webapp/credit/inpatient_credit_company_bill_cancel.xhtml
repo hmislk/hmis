@@ -31,7 +31,7 @@
                             </f:facet>
 
                             <div class="row">
-                                <div class="col-2">
+                                <div class="col-12 mb-3">
                                     <p:panel>
                                         <f:facet name="header">
                                             <h:outputText styleClass="fas fa-money-bill" />
@@ -42,39 +42,34 @@
                                             <p:ajax process="cmbPs" update="paymentDetails @all" event="change"
                                                     listener="#{creditCompanyBillSearch.listnerForPaymentMethodChange(inwardSearch.bill)}"/>
                                         </p:selectOneMenu>
-                                        <div class="row ">
-                                            <div class="col-md-2"></div>
-                                            <div class="col-md-8">
-                                                <h:panelGroup id="paymentDetails">
-                                                    <h:panelGroup id="creditCard"
-                                                                  rendered="#{creditCompanyBillSearch.paymentMethod eq 'Card'}">
-                                                        <pa:creditCard
-                                                                paymentMethodData="#{creditCompanyBillSearch.paymentMethodData}"/>
-                                                    </h:panelGroup>
+                                        <h:panelGroup id="paymentDetails">
+                                            <h:panelGroup id="creditCard"
+                                                          rendered="#{creditCompanyBillSearch.paymentMethod eq 'Card'}">
+                                                <pa:creditCard
+                                                        paymentMethodData="#{creditCompanyBillSearch.paymentMethodData}"/>
+                                            </h:panelGroup>
 
-                                                    <h:panelGroup id="cheque"
-                                                                  rendered="#{creditCompanyBillSearch.paymentMethod eq 'Cheque'}">
-                                                        <pa:cheque
-                                                                paymentMethodData="#{creditCompanyBillSearch.paymentMethodData}"
-                                                                valueRequired="false"/>
-                                                    </h:panelGroup>
+                                            <h:panelGroup id="cheque"
+                                                          rendered="#{creditCompanyBillSearch.paymentMethod eq 'Cheque'}">
+                                                <pa:cheque
+                                                        paymentMethodData="#{creditCompanyBillSearch.paymentMethodData}"
+                                                        valueRequired="false"/>
+                                            </h:panelGroup>
 
-                                                    <h:panelGroup id="slip"
-                                                                  rendered="#{creditCompanyBillSearch.paymentMethod eq 'Slip'}">
-                                                        <pa:slip
-                                                                paymentMethodData="#{creditCompanyBillSearch.paymentMethodData}"/>
-                                                    </h:panelGroup>
-                                                    <h:panelGroup
-                                                            class="row my-1"
-                                                            layout="block"
-                                                            id="patientDeposit"
-                                                            rendered="#{creditCompanyBillSearch.paymentMethod eq 'PatientDeposit'}">
-                                                        <pa:patient_deposit
-                                                                paymentMethodData="#{creditCompanyBillSearch.paymentMethodData}"/>
-                                                    </h:panelGroup>
-                                                </h:panelGroup>
-                                            </div>
-                                        </div>
+                                            <h:panelGroup id="slip"
+                                                          rendered="#{creditCompanyBillSearch.paymentMethod eq 'Slip'}">
+                                                <pa:slip
+                                                        paymentMethodData="#{creditCompanyBillSearch.paymentMethodData}"/>
+                                            </h:panelGroup>
+                                            <h:panelGroup
+                                                    class="row my-1"
+                                                    layout="block"
+                                                    id="patientDeposit"
+                                                    rendered="#{creditCompanyBillSearch.paymentMethod eq 'PatientDeposit'}">
+                                                <pa:patient_deposit
+                                                        paymentMethodData="#{creditCompanyBillSearch.paymentMethodData}"/>
+                                            </h:panelGroup>
+                                        </h:panelGroup>
                                     </p:panel>
                                 </div>
                                 <div class="col-6">
@@ -85,7 +80,7 @@
                                         </p:panelGrid>
                                     </p:panel>
                                 </div>
-                                <div class="col-4">
+                                <div class="col-6">
                                     <p:panel header="Bill Detail">
                                         <p:panelGrid columns="2">
                                             <h:outputLabel value="Bill No :" />

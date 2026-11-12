@@ -479,6 +479,9 @@ public class CollectingCentreSelfCommonController implements Serializable {
             JsfUtil.addErrorMessage("Please select the Sample Transporter");
             return;
         }
+        if (!hasSelfPrivilege(Privileges.CcSelfSampleEditSendingDepartment)) {
+            setDefaultSampleSendingDepartment();
+        }
         if (sampleSendingDepartment == null) {
             JsfUtil.addErrorMessage("Please select the Sending to Department");
             return;

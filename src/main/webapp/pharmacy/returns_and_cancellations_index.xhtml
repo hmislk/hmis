@@ -117,7 +117,7 @@
                                 id="Return_without_Receipt"
                                 ajax="false"
                                 rendered="#{webUserController.hasPrivilege('PharmacyReturnWithoutTraising')}"
-                                action="/pharmacy/pharmacy_return_withouttresing?faces-redirect=true"
+                                action="#{searchController.navigateToPharmacyReturnWithoutReceipt()}"
                                 styleClass="w-100 ui-button-primary"  value="Return without Receipt" >
                             </p:commandButton>
                             <h:panelGroup >

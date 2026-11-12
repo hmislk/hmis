@@ -96,6 +96,7 @@ import java.util.Calendar;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -107,6 +108,7 @@ import java.util.TreeMap;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.context.FacesContext;
+import javax.faces.event.PhaseId;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
@@ -1618,6 +1620,16 @@ public class BhtSummeryController implements Serializable {
                     break;
                 default:
                     discountValue = discountSet(cit);
+                    if (cit.getInwardChargeType() == InwardChargeType.ProfessionalCharge
+                            && professionalFeeClassificationService.isSuppressed(InwardChargeType.DoctorAndNurses)) {
+                        // Merged hospital: Assistant Fee services are shown on this
+                        // row (issue #25031) but have no row of their own, so run the
+                        // discount step that row would have run. It is a staff charge,
+                        // so it clears their fee discounts and adds nothing here.
+                        ChargeItemTotal assistantServices = new ChargeItemTotal();
+                        assistantServices.setInwardChargeType(InwardChargeType.DoctorAndNurses);
+                        discountValue += discountSet(assistantServices);
+                    }
             }
 
             // Package-covered rows are held at the package's flat allocated
@@ -2495,8 +2507,29 @@ public class BhtSummeryController implements Serializable {
      * and to render a persistent warning on the room row.
      */
     public boolean hasOverlap(PatientRoom patientRoom) {
-        return !getOverlappingRooms(patientRoom).isEmpty();
+        return !overlappingRoomsForRequest(patientRoom).isEmpty();
     }
+
+    /**
+     * {@link #getOverlappingRooms(PatientRoom)} memoised for one Render Response
+     * pass (Issue #22430). The room-details page asks for the same room's
+     * overlaps from the header, the row tag and its tooltip, so without this the
+     * same query runs several times per row. Kept in the request (FacesContext
+     * attributes), never in this session-scoped bean, and used only while
+     * rendering: action-phase checks (e.g. the save confirmation) always query.
+     */
+    private List<PatientRoom> overlappingRoomsForRequest(PatientRoom patientRoom) {
+        FacesContext fc = FacesContext.getCurrentInstance();
+        if (patientRoom == null || fc == null || fc.getCurrentPhaseId() != PhaseId.RENDER_RESPONSE) {
+            return getOverlappingRooms(patientRoom);
+        }
+        @SuppressWarnings("unchecked")
+        Map<PatientRoom, List<PatientRoom>> memo = (Map<PatientRoom, List<PatientRoom>>) fc.getAttributes()
+                .computeIfAbsent(OVERLAP_MEMO_KEY, k -> new IdentityHashMap<PatientRoom, List<PatientRoom>>());
+        return memo.computeIfAbsent(patientRoom, this::getOverlappingRooms);
+    }
+
+    private static final String OVERLAP_MEMO_KEY = BhtSummeryController.class.getName() + ".overlapsByRoom";
 
     /**
      * Human-readable summary of which specific room(s) this room's time range
@@ -2506,7 +2539,7 @@ public class BhtSummeryController implements Serializable {
      * are 3+ open (non-discharged) room stays.
      */
     public String getOverlapDescription(PatientRoom patientRoom) {
-        return describeOverlaps(patientRoom, getOverlappingRooms(patientRoom), resolveStayWindowPattern());
+        return describeOverlaps(patientRoom, overlappingRoomsForRequest(patientRoom), resolveStayWindowPattern());
     }
 
     /**

@@ -210,7 +210,7 @@
                                 <f:facet name="header">
                                     <h:outputLabel value="Quantity"/>
                                 </f:facet>
-                                <h:outputLabel value="#{empty i.qty ? null : commonFunctionsProxy.abs(i.qty)}" >
+                                <h:outputLabel value="#{empty i.qty ? null : i.signedQty}" >
                                     <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                 </h:outputLabel>
                                 <f:facet name="footer">
@@ -236,11 +236,11 @@
                                 <f:facet name="header">
                                     <h:outputLabel value="Cost Value"/>
                                 </f:facet>
-                                <h:outputLabel value="#{empty i.costValue ? null : commonFunctionsProxy.abs(i.costValue)}">
+                                <h:outputLabel value="#{empty i.costValue ? null : i.signedCostValue}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
                                 <f:facet name="footer">
-                                    <h:outputText value="#{empty reportsTransfer.costValue ? null : commonFunctionsProxy.abs(reportsTransfer.costValue)}" styleClass="font-weight-bold">
+                                    <h:outputText value="#{empty reportsTransfer.costValue ? null : reportsTransfer.costValue}" styleClass="font-weight-bold">
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputText>
                                 </f:facet>
@@ -264,11 +264,11 @@
                                 <f:facet name="header">
                                     <h:outputLabel value="Retail Value"/>
                                 </f:facet>
-                                <h:outputLabel value="#{empty i.retailValue ? null : commonFunctionsProxy.abs(i.retailValue)}">
+                                <h:outputLabel value="#{empty i.retailValue ? null : i.signedRetailValue}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
                                 <f:facet name="footer">
-                                    <h:outputText value="#{empty reportsTransfer.retailValue ? null : commonFunctionsProxy.abs(reportsTransfer.retailValue)}" styleClass="font-weight-bold">
+                                    <h:outputText value="#{empty reportsTransfer.retailValue ? null : reportsTransfer.retailValue}" styleClass="font-weight-bold">
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputText>
                                 </f:facet>
@@ -292,11 +292,11 @@
                                 <f:facet name="header">
                                     <h:outputLabel value="Purchase Value"/>
                                 </f:facet>
-                                <h:outputLabel value="#{empty i.purchaseValue ? null : commonFunctionsProxy.abs(i.purchaseValue)}">
+                                <h:outputLabel value="#{empty i.purchaseValue ? null : i.signedPurchaseValue}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
                                 <f:facet name="footer">
-                                    <h:outputText value="#{empty reportsTransfer.purchaseValue ? null : commonFunctionsProxy.abs(reportsTransfer.purchaseValue)}" styleClass="font-weight-bold">
+                                    <h:outputText value="#{empty reportsTransfer.purchaseValue ? null : reportsTransfer.purchaseValue}" styleClass="font-weight-bold">
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputText>
                                 </f:facet>
@@ -322,11 +322,11 @@
                                 <f:facet name="header">
                                     <h:outputLabel value="Transfer Value"/>
                                 </f:facet>
-                                <h:outputLabel value="#{empty i.transferValue ? null : commonFunctionsProxy.abs(i.transferValue)}">
+                                <h:outputLabel value="#{empty i.transferValue ? null : i.signedTransferValue}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
                                 <f:facet name="footer">
-                                    <h:outputText value="#{empty reportsTransfer.transferValue ? null : commonFunctionsProxy.abs(reportsTransfer.transferValue)}" styleClass="font-weight-bold">
+                                    <h:outputText value="#{empty reportsTransfer.transferValue ? null : reportsTransfer.transferValue}" styleClass="font-weight-bold">
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputText>
                                 </f:facet>

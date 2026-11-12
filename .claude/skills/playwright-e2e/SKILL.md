@@ -103,6 +103,10 @@ risk the user should know about upfront.
 
 ## Workflow
 
+A coordinating session may hand the browser work (steps 3-7) to the
+`hmis-qa-verifier` subagent, which preloads this skill and returns a PASS/FAIL
+table. If you are that subagent, skip this paragraph.
+
 1. **Confirm the target** with the user: which feature/page, which local
    deployment URL, and whether the code under test is already deployed.
 2. **If not yet deployed**, rebuild and redeploy — see
@@ -138,7 +142,10 @@ risk the user should know about upfront.
 6. **Verify in the database** — read-only `mysql` queries against the local
    DB per [§6](../../../developer_docs/testing/playwright-e2e-workflow.md#6-verify-against-the-database).
    Credentials come from `C:\Credentials\` (outside the repo).
-7. **Capture evidence** into the project `tmp/` folder, then follow
+7. **Capture evidence** outside the repo: pass `browser_take_screenshot` an
+   absolute `filename` in the machine's out-of-repo directory (two-tier temp
+   policy in CLAUDE.md), since Playwright MCP otherwise writes to
+   `.playwright-mcp/` inside the repo. Then follow
    [§8](../../../developer_docs/testing/playwright-e2e-workflow.md#8-publishing-screenshot-evidence)
    for anything destined for the wiki/issue. Remove temp screenshots from the
    repo afterward.

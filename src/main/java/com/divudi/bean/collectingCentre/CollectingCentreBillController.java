@@ -1598,7 +1598,7 @@ public class CollectingCentreBillController implements Serializable, ControllerW
                 entryNet += bf.getFeeValue();
                 entryDis += bf.getFeeDiscount();
                 entryVat += bf.getFeeVat();
-                if (bf.getInstitution().getInstitutionType() == InstitutionType.CollectingCentre) {
+                if (bf.getInstitution() != null && bf.getInstitution().getInstitutionType() == InstitutionType.CollectingCentre) {
                     collectingcCenterFee = bf.getFeeValue();
                     totalCCFee += bf.getFeeValue();
                 } else if (bf.getStaff() != null) {
@@ -2367,12 +2367,15 @@ public class CollectingCentreBillController implements Serializable, ControllerW
         String[] tokens = query.toLowerCase().split("\\s+");
 
         for (ItemLight opdItem : getOpdItems()) {
+            if (opdItem.getName() == null) {
+                continue; // unnamed item: cannot be shown or sorted by name
+            }
             boolean matchFound = true;
 
             // Check if all tokens match either the name or code
             for (String token : tokens) {
-                if (!(opdItem.getName().toLowerCase().contains(token)
-                        || opdItem.getCode().toLowerCase().contains(token))) {
+                if (!((opdItem.getName() != null && opdItem.getName().toLowerCase().contains(token))
+                        || (opdItem.getCode() != null && opdItem.getCode().toLowerCase().contains(token)))) {
                     matchFound = false;
                     break;
                 }

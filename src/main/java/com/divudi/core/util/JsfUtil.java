@@ -7,6 +7,7 @@ import javax.faces.convert.Converter;
 import javax.faces.model.SelectItem;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 public class JsfUtil {
@@ -114,6 +115,59 @@ public class JsfUtil {
         CREATE,
         DELETE,
         UPDATE
+    }
+
+    /**
+     * Parses what a user typed into an amount search filter. Commas are accepted
+     * only as thousands separators, so "2,500.50" is valid and "12,5" is not.
+     *
+     * @return the number, or null when the text is not a plain finite amount
+     */
+    public static Double parseAmountFilter(String rawValue) {
+        if (rawValue == null) {
+            return null;
+        }
+        String text = rawValue.trim();
+        if (!text.matches("-?(\\d{1,3}(,\\d{3})+|\\d+)(\\.\\d+)?")) {
+            return null;
+        }
+        double value = Double.parseDouble(text.replace(",", ""));
+        return Double.isInfinite(value) ? null : value;
+    }
+
+    /**
+     * Builds the JPQL condition for a Net Total style search filter on a Double
+     * column, and binds its parameter as a number. Binding "%value%" to an
+     * equality on a Double column makes EclipseLink throw a ConversionException.
+     * <p>
+     * Matches within half a cent because stored totals carry float noise. An amount
+     * typed without a sign matches either sign, because return and cancellation
+     * bills store negative totals while users type the positive amount. An amount
+     * typed with a minus matches only that negative amount.
+     * <p>
+     * When the text is not a number this shows an error and returns a condition
+     * matching nothing, so the search never lists bills that ignore the filter.
+     *
+     * @param fieldPath JPQL path of the column, e.g. "b.netTotal"
+     * @param paramName name of the JPQL parameter to bind
+     * @param rawValue what the user typed
+     * @param label name of the filter, used in the error message
+     * @param params query parameters, receives the numeric parameter
+     * @return the JPQL fragment to append to the query
+     */
+    public static String exactAmountFilter(String fieldPath, String paramName, String rawValue, String label, Map params) {
+        Double value = parseAmountFilter(rawValue);
+        if (value == null) {
+            if (FacesContext.getCurrentInstance() != null) {
+                addErrorMessage("Invalid " + label + " value. Please enter a valid number.");
+            }
+            return " and 1=0 ";
+        }
+        params.put(paramName, value);
+        if (value < 0) {
+            return " and abs(" + fieldPath + " - :" + paramName + ") < 0.005 ";
+        }
+        return " and abs(abs(" + fieldPath + ") - :" + paramName + ") < 0.005 ";
     }
 
     public static boolean isValidationPassed() {

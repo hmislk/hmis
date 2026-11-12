@@ -132,6 +132,20 @@ public class InwardProfessionalFeeClassificationService implements Serializable 
     }
 
     /**
+     * The bill row / report column a charge filed under {@code type} belongs to.
+     * A merged hospital has no Assistant Fee row, so a service, investigation,
+     * timed item or outside charge whose own charge category is
+     * {@code DoctorAndNurses} is shown and totalled under
+     * {@code ProfessionalCharge}, the same as assistant professional fees.
+     * Without this the amount had no row and was left out of the interim and
+     * final bill (issue #25031) while the invoice journal still counted it
+     * (issue #25030). Every other type maps to itself.
+     */
+    public InwardChargeType rowTypeFor(InwardChargeType type) {
+        return isSuppressed(type) ? InwardChargeType.ProfessionalCharge : type;
+    }
+
+    /**
      * A JPQL fragment restricting a BillFee alias to the fees of one charge type.
      *
      * <p>The category is read from the persisted {@code professionalFeeCategory}

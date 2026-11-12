@@ -48,6 +48,7 @@
                         <div class="col-6" >
                             <common:patient_details
                                 editable="true"
+                                additionalUpdateTargets=":#{p:resolveFirstComponentWithId('lblSessionTotal',view).clientId} :#{p:resolveFirstComponentWithId('gpFeeTotal',view).clientId}"
                                 controller="#{bookingController}"/>
 
                             <p:panel class="my-2" id="gdManageBookings">
@@ -71,16 +72,26 @@
                                     <div class="col-4"><p:outputLabel value="Amount"/></div>
                                     <div class="col-8">
                                         <h:panelGroup class="mx-2" id="lblSessionTotal">
-                                            <p:outputLabel
-                                                value="#{bookingController.feeTotalForSelectedBill}"
-                                                rendered="#{bookingController.foriegn}">
-                                                <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                            </p:outputLabel>
-                                            <p:outputLabel
-                                                value="#{bookingController.feeTotalForSelectedBill}"
-                                                rendered="#{!bookingController.foriegn}">
-                                                <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                            </p:outputLabel>
+                                            <div class="d-flex justify-content-between">
+                                                <h:outputText value="Total" />
+                                                <h:outputText id="txtGrossAmount" value="#{bookingController.grossFeeTotalForBooking}">
+                                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                                </h:outputText>
+                                            </div>
+                                            <h:panelGroup rendered="#{bookingController.feeDiscountForBooking gt 0}">
+                                                <div class="d-flex justify-content-between">
+                                                    <h:outputText value="Discount" />
+                                                    <h:outputText id="txtDiscountAmount" value="#{bookingController.feeDiscountForBooking}">
+                                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                                    </h:outputText>
+                                                </div>
+                                            </h:panelGroup>
+                                            <div class="d-flex justify-content-between fw-bold">
+                                                <h:outputText value="Net Amount to Collect" />
+                                                <h:outputText id="txtNetAmount" value="#{bookingController.netFeeTotalForBooking}">
+                                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                                </h:outputText>
+                                            </div>
                                         </h:panelGroup>
                                     </div>
                                 </div>
@@ -112,7 +123,7 @@
                                         <p:selectOneMenu class="w-100" autoWidth="false" id="cmbPs" value="#{bookingController.paymentMethod}">
                                             <f:selectItem itemLabel="Select Payment Method" ></f:selectItem>
                                             <f:selectItems value="#{enumController.paymentMethodsForChanneling}"/>
-                                            <f:ajax execute="@this" render="gdManageBookings :#{p:resolveFirstComponentWithId('lblSessionTotal',view).clientId}" event="change" listener="#{bookingController.generateSessions}" />
+                                            <f:ajax execute="@this" render="gdManageBookings :#{p:resolveFirstComponentWithId('lblSessionTotal',view).clientId} :#{p:resolveFirstComponentWithId('gpFeeTotal',view).clientId}" event="change" listener="#{bookingController.generateSessions}" />
                                         </p:selectOneMenu>
                                         <h:outputScript>
                                             $(document.getElementById('form:cmbPs_focus')).keypress(function (event) {
@@ -346,7 +357,7 @@
                                             <f:selectItems value="#{paymentSchemeController.paymentSchemesForChannel}"
                                                            var="paysch" itemLabel="#{paysch.name}" itemValue="#{paysch}"  />
                                             <p:ajax process="@this"
-                                                    update="lblSessionTotal"
+                                                    update="lblSessionTotal gpFeeTotal"
                                                     event="change"
                                                     listener="#{bookingController.changeListener()}"/>
                                         </p:selectOneMenu>
@@ -413,15 +424,10 @@
                                 </h:panelGroup>
 
                                 <div class="d-flex mt-3 mb-3">
-                                    <p:outputLabel value="Total Fee" style="width: 150px;"/>
+                                    <p:outputLabel value="Net Fee" style="width: 150px;"/>
                                     <p:outputLabel style="width: 50px;"/>
                                     <h:panelGroup id="gpFeeTotal">
-                                        <p:outputLabel  rendered="#{!bookingController.foriegn}"
-                                                        value="#{bookingController.feeTotalForSelectedBill}">
-                                            <f:convertNumber pattern="#,##0.00" />
-                                        </p:outputLabel>
-                                        <p:outputLabel rendered="#{bookingController.foriegn}"
-                                                       value="#{bookingController.feeTotalForSelectedBill}">
+                                        <p:outputLabel value="#{bookingController.netFeeTotalForBooking}">
                                             <f:convertNumber pattern="#,##0.00" />
                                         </p:outputLabel>
                                     </h:panelGroup>

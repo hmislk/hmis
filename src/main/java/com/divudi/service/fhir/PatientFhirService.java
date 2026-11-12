@@ -20,6 +20,7 @@ import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import org.hl7.fhir.r5.model.Bundle;
@@ -27,6 +28,7 @@ import org.hl7.fhir.r5.model.ContactPoint;
 import org.hl7.fhir.r5.model.Enumerations;
 import org.hl7.fhir.r5.model.HumanName;
 import org.hl7.fhir.r5.model.Identifier;
+import org.hl7.fhir.r5.model.StringType;
 
 /**
  * FHIR R5 Patient service — maps between HMIS Patient entities and FHIR R5 Patient resources.
@@ -262,17 +264,34 @@ public class PatientFhirService {
         // Name
         HumanName name = fhirPt.addName();
         name.setUse(HumanName.NameUse.OFFICIAL);
-        if (person.getName() != null) {
-            name.setText(person.getName());
+        if (person.getName() != null && !person.getName().trim().isEmpty()) {
+            name.setText(person.getName().trim());
+        } else {
+            String fn = person.getFullName() != null && !person.getFullName().trim().isEmpty() ? person.getFullName().trim() : null;
+            String ln = person.getLastName() != null && !person.getLastName().trim().isEmpty() ? person.getLastName().trim() : null;
+            if (fn != null && ln != null) {
+                name.setText(fn + " " + ln);
+            } else if (fn != null) {
+                name.setText(fn);
+            } else if (ln != null) {
+                name.setText(ln);
+            }
         }
-        if (person.getFullName() != null) {
-            name.addGiven(person.getFullName());
+        if (person.getFullName() != null && !person.getFullName().trim().isEmpty()) {
+            for (String g : person.getFullName().trim().split("\\s+")) {
+                if (!g.isEmpty()) {
+                    name.addGiven(g);
+                }
+            }
         }
-        if (person.getLastName() != null) {
-            name.setFamily(person.getLastName());
+        if (person.getLastName() != null && !person.getLastName().trim().isEmpty()) {
+            name.setFamily(person.getLastName().trim());
         }
-        if (person.getTitle() != null) {
-            name.addPrefix(person.getTitle().getLabel().trim());
+        if (person.getTitle() != null && person.getTitle().getLabel() != null) {
+            String prefix = person.getTitle().getLabel().trim();
+            if (!prefix.isEmpty()) {
+                name.addPrefix(prefix);
+            }
         }
 
         // Birth date
@@ -328,22 +347,58 @@ public class PatientFhirService {
     // Mapping: FHIR → HMIS (partial — only non-null fields)
     // -------------------------------------------------------------------------
 
-    private void mapFhirToPerson(org.hl7.fhir.r5.model.Patient fhirPt, Person person) {
+    void mapFhirToPerson(org.hl7.fhir.r5.model.Patient fhirPt, Person person) {
         // Name
         if (!fhirPt.getName().isEmpty()) {
-            HumanName name = fhirPt.getName().get(0);
-            if (name.hasText()) {
-                person.setName(name.getText());
+            HumanName name = fhirPt.getName().stream()
+                    .filter(n -> HumanName.NameUse.OFFICIAL.equals(n.getUse()))
+                    .findFirst()
+                    .orElse(fhirPt.getName().get(0));
+
+            String family = name.hasFamily() && name.getFamily() != null && !name.getFamily().trim().isEmpty()
+                    ? name.getFamily().trim()
+                    : null;
+            if (family != null) {
+                person.setLastName(family);
             }
-            if (name.hasFamily()) {
-                person.setLastName(name.getFamily());
-            }
+
+            String given = null;
             if (!name.getGiven().isEmpty()) {
-                person.setFullName(name.getGiven().get(0).getValue());
+                String joinedGiven = name.getGiven().stream()
+                        .map(StringType::getValue)
+                        .filter(s -> s != null && !s.trim().isEmpty())
+                        .map(String::trim)
+                        .collect(Collectors.joining(" "));
+                if (!joinedGiven.isEmpty()) {
+                    given = joinedGiven;
+                    person.setFullName(given);
+                }
             }
+
             if (!name.getPrefix().isEmpty()) {
                 String prefix = name.getPrefix().get(0).getValue();
-                person.setTitle(Title.getTitleEnum(prefix));
+                if (prefix != null && !prefix.trim().isEmpty()) {
+                    person.setTitle(Title.getTitleEnum(prefix.trim()));
+                }
+            }
+
+            if (name.hasText() && name.getText() != null && !name.getText().trim().isEmpty()) {
+                person.setName(name.getText().trim());
+            } else if (given != null || family != null) {
+                String effectiveGiven = (given != null)
+                        ? given
+                        : (person.getFullName() != null && !person.getFullName().trim().isEmpty() ? person.getFullName().trim() : null);
+                String effectiveFamily = (family != null)
+                        ? family
+                        : (person.getLastName() != null && !person.getLastName().trim().isEmpty() ? person.getLastName().trim() : null);
+
+                if (effectiveGiven != null && effectiveFamily != null) {
+                    person.setName(effectiveGiven + " " + effectiveFamily);
+                } else if (person.getName() == null || person.getName().trim().isEmpty()) {
+                    // Only one part is known: use it only when no name is stored yet,
+                    // so a partial PUT never replaces a stored full name.
+                    person.setName(effectiveGiven != null ? effectiveGiven : effectiveFamily);
+                }
             }
         }
 

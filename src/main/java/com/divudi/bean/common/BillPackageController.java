@@ -1021,7 +1021,7 @@ public class BillPackageController implements Serializable, ControllerWithPatien
                     break;
                 case ewallet:
                     paymentMethodData.getEwallet().setInstitution(
-                        originalPayment.getBank() != null ? originalPayment.getBank() : originalPayment.getInstitution());
+                        originalPayment.getBank() != null ? originalPayment.getBank() : originalPayment.getCreditCompany());
                     paymentMethodData.getEwallet().setReferenceNo(originalPayment.getReferenceNo());
                     paymentMethodData.getEwallet().setNo(originalPayment.getReferenceNo());
                     paymentMethodData.getEwallet().setReferralNo(originalPayment.getPolicyNo());
@@ -1114,7 +1114,7 @@ public class BillPackageController implements Serializable, ControllerWithPatien
                         break;
                     case ewallet:
                         cd.getPaymentMethodData().getEwallet().setInstitution(
-                            originalPayment.getBank() != null ? originalPayment.getBank() : originalPayment.getInstitution());
+                            originalPayment.getBank() != null ? originalPayment.getBank() : originalPayment.getCreditCompany());
                         cd.getPaymentMethodData().getEwallet().setReferenceNo(originalPayment.getReferenceNo());
                         cd.getPaymentMethodData().getEwallet().setNo(originalPayment.getReferenceNo());
                         cd.getPaymentMethodData().getEwallet().setReferralNo(originalPayment.getPolicyNo());
@@ -1213,7 +1213,7 @@ public class BillPackageController implements Serializable, ControllerWithPatien
                     break;
                 case ewallet:
                     paymentMethodData.getEwallet().setInstitution(
-                        originalPayment.getBank() != null ? originalPayment.getBank() : originalPayment.getInstitution());
+                        originalPayment.getBank() != null ? originalPayment.getBank() : originalPayment.getCreditCompany());
                     paymentMethodData.getEwallet().setReferenceNo(originalPayment.getReferenceNo());
                     paymentMethodData.getEwallet().setNo(originalPayment.getReferenceNo());
                     paymentMethodData.getEwallet().setReferralNo(originalPayment.getPolicyNo());
@@ -1890,11 +1890,14 @@ public class BillPackageController implements Serializable, ControllerWithPatien
                         p.setPaidValue(cd.getPaymentMethodData().getCash().getTotalValue());
                         break;
                     case ewallet:
-
+                        break;
                     case Agent:
+                        break;
                     case Credit:
                         p.setReferenceNo(cd.getPaymentMethodData().getCredit().getReferralNo());
                         p.setComments(cd.getPaymentMethodData().getCredit().getComment());
+                        p.setPaidValue(cd.getPaymentMethodData().getCredit().getTotalValue());
+                        break;
                     case PatientDeposit:
                         if (getPatient().getRunningBalance() != null) {
                             getPatient().setRunningBalance(getPatient().getRunningBalance() - cd.getPaymentMethodData().getPatient_deposit().getTotalValue());
@@ -1902,19 +1905,32 @@ public class BillPackageController implements Serializable, ControllerWithPatien
                             getPatient().setRunningBalance(0.0 - cd.getPaymentMethodData().getPatient_deposit().getTotalValue());
                         }
                         getPatientFacade().edit(getPatient());
+                        p.setPaidValue(cd.getPaymentMethodData().getPatient_deposit().getTotalValue());
+                        break;
                     case Slip:
                         p.setPaidValue(cd.getPaymentMethodData().getSlip().getTotalValue());
                         p.setBank(cd.getPaymentMethodData().getSlip().getInstitution());
                         p.setRealizedAt(cd.getPaymentMethodData().getSlip().getDate());
-                    case OnCall:
+                        break;
                     case OnlineSettlement:
+                        p.setPaidValue(cd.getPaymentMethodData().getOnlineSettlement().getTotalValue());
+                        p.setBank(cd.getPaymentMethodData().getOnlineSettlement().getInstitution());
+                        p.setPaymentDate(cd.getPaymentMethodData().getOnlineSettlement().getDate());
+                        p.setReferenceNo(cd.getPaymentMethodData().getOnlineSettlement().getReferenceNo());
+                        p.setComments(cd.getPaymentMethodData().getOnlineSettlement().getComment());
+                        break;
+                    case OnCall:
                     case Staff:
                         p.setPaidValue(cd.getPaymentMethodData().getStaffCredit().getTotalValue());
-                        if (cd.getPaymentMethodData().getStaffCredit().getToStaff() != null) {
+                        if (cd.getPaymentMethod() == PaymentMethod.OnCall
+                                && cd.getPaymentMethodData().getStaffCredit().getToStaff() != null) {
                             staffBean.updateStaffCredit(cd.getPaymentMethodData().getStaffCredit().getToStaff(), cd.getPaymentMethodData().getStaffCredit().getTotalValue());
-                            JsfUtil.addSuccessMessage("Staff Welfare Balance Updated");
                         }
-                    case YouOweMe:
+                        if (cd.getPaymentMethodData().getStaffCredit().getToStaff() != null
+                                && cd.getPaymentMethod() == PaymentMethod.Staff) {
+                            p.setToStaff(cd.getPaymentMethodData().getStaffCredit().getToStaff());
+                        }
+                        break;
                     case MultiplePaymentMethods:
                 }
 
@@ -1991,12 +2007,12 @@ public class BillPackageController implements Serializable, ControllerWithPatien
                 // Fixed: Sum only the selected payment method's value for this component
                 multiplePaymentMethodTotalValue += calculateSelectedPaymentTotal(cd);
             }
-            remainAmount = total - multiplePaymentMethodTotalValue;
-            return total - multiplePaymentMethodTotalValue;
+            remainAmount = netTotal - multiplePaymentMethodTotalValue;
+            return netTotal - multiplePaymentMethodTotalValue;
 
         }
-        remainAmount = total;
-        return total;
+        remainAmount = netTotal;
+        return netTotal;
     }
 
     @Override

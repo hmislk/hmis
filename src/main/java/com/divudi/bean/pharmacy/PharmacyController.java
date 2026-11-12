@@ -809,6 +809,12 @@ public class PharmacyController implements Serializable {
         ));
 
         metadata.addConfigOption(new ConfigOptionInfo(
+                "Pharmacy Analytics - Show Referring Doctor Wise Sale Report",
+                "Controls visibility of Referring Doctor Wise Sale Report button",
+                OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
                 "Pharmacy Analytics - Show Presciption List",
                 "Controls visibility of Presciption List button",
                 OptionScope.APPLICATION
