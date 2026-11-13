@@ -1180,7 +1180,9 @@ public class PharmacyBean {
             Stock porterStock = getStockFacade().findFirstByJpql(
                     "SELECT s FROM Stock s WHERE s.itemBatch = :batch AND s.staff = :staff", params, true);
             double available = porterStock == null ? 0.0 : porterStock.getStock();
-            if (available + 0.0001 < e.getValue()) {
+            // Same rule as deductFromStock(PharmaceuticalBillItem, double, Staff), so a
+            // quantity this check approves can always be deducted.
+            if (available < e.getValue()) {
                 return "Cannot cancel: porter no longer holds enough stock of " + bi.getItem().getName()
                         + " batch " + pbi.getItemBatch().getBatchNo()
                         + " (need " + e.getValue() + ", available " + available + ").";
@@ -1190,23 +1192,38 @@ public class PharmacyBean {
     }
 
     /**
-     * Takes back out of the porter's staff stock (with stock history) the
-     * quantities of a cancellation bill created by reAddToStock for an issue
-     * made against a ward request. Call after
-     * porterStockShortfallForIssueCancellation returned null.
+     * Takes the issued quantities of an issue made against a ward request back
+     * out of the porter's staff stock (with stock history). Call after
+     * porterStockShortfallForIssueCancellation returned null and BEFORE the
+     * department stock is restored, so a failure here leaves nothing changed.
+     *
+     * If any line cannot be deducted, the lines already deducted are added back
+     * to the porter and false is returned; the caller must then stop the
+     * cancellation.
+     *
+     * @return true when every line was deducted (or the issue has no porter)
      */
-    public void deductPorterStockForIssueCancellation(Bill issueBill, Bill cancellationBill) {
-        if (issueBill == null || issueBill.getToStaff() == null
-                || cancellationBill == null || cancellationBill.getBillItems() == null) {
-            return;
+    public boolean deductPorterStockForIssueCancellation(Bill issueBill) {
+        if (issueBill == null || issueBill.getToStaff() == null || issueBill.getBillItems() == null) {
+            return true;
         }
-        for (BillItem bi : cancellationBill.getBillItems()) {
+        Staff porter = issueBill.getToStaff();
+        List<PharmaceuticalBillItem> deducted = new ArrayList<>();
+        for (BillItem bi : issueBill.getBillItems()) {
             PharmaceuticalBillItem pbi = bi.getPharmaceuticalBillItem();
             if (pbi == null || pbi.getItemBatch() == null) {
                 continue;
             }
-            deductFromStock(pbi, Math.abs(pbi.getQty()), issueBill.getToStaff());
+            if (deductFromStock(pbi, Math.abs(pbi.getQty()), porter)) {
+                deducted.add(pbi);
+            } else {
+                for (PharmaceuticalBillItem done : deducted) {
+                    addToStock(done, Math.abs(done.getQty()), porter);
+                }
+                return false;
+            }
         }
+        return true;
     }
 
     public boolean deductFromStock(ItemBatch batch, double qty, Department department, boolean minusAllowed) {
