@@ -1212,6 +1212,48 @@ public class CreditBean {
         return getBillFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP);
     }
 
+    // Fully settled OPD credit bills: refunds and settlements are kept on the credit batch
+    // bill, so "settled" is net total less refunds less settlements, never the stored
+    // balance (#25465, same rule as OPD Due Search #25463).
+    private static final String SETTLED_OPD_FINANCE_CREDIT_WHERE = " where b.retired=false "
+            + " and b.cancelled=false "
+            + " and b.netTotal>0 "
+            + " and (b.netTotal-(coalesce(b.refundAmount,0)+coalesce(b.paidAmount,0)))<=:val "
+            + " and b.createdAt between :frm and :to "
+            + " and b.paymentMethod=:pm "
+            + " and b.billTypeAtomic in :billTypeAtomics ";
+
+    public List<Institution> getCreditCompaniesWithSettledOpdFinanceBills(Date fromDate, Date toDate) {
+        String jpql = "Select distinct b.creditCompany From Bill b"
+                + SETTLED_OPD_FINANCE_CREDIT_WHERE
+                + " and b.creditCompany is not null ";
+        HashMap params = settledOpdFinanceCreditParams(fromDate, toDate);
+        List<Institution> companies = new ArrayList<>(getInstitutionFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP));
+        companies.sort(java.util.Comparator.comparing(Institution::getName,
+                java.util.Comparator.nullsLast(String.CASE_INSENSITIVE_ORDER)));
+        return companies;
+    }
+
+    public List<Bill> getSettledOpdFinanceCreditBills(Institution creditCompany, Date fromDate, Date toDate) {
+        String jpql = "Select b From Bill b"
+                + SETTLED_OPD_FINANCE_CREDIT_WHERE
+                + " and b.creditCompany=:cc "
+                + " order by b.createdAt ";
+        HashMap params = settledOpdFinanceCreditParams(fromDate, toDate);
+        params.put("cc", creditCompany);
+        return getBillFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP);
+    }
+
+    private HashMap settledOpdFinanceCreditParams(Date fromDate, Date toDate) {
+        HashMap params = new HashMap();
+        params.put("frm", fromDate);
+        params.put("to", toDate);
+        params.put("pm", PaymentMethod.Credit);
+        params.put("billTypeAtomics", billService.fetchBillTypeAtomicsForOpdFinance());
+        params.put("val", 0.1);
+        return params;
+    }
+
     public List<Bill> getCreditBillsPharmacy(Institution institution, boolean lessThan) {
         String sql;
         HashMap hm = new HashMap();

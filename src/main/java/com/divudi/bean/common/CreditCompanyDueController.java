@@ -1477,13 +1477,14 @@ public class CreditCompanyDueController implements Serializable {
 
     }
 
+    // Settled OPD credit bills. Refunds and settlements are kept on the credit batch bill,
+    // so the list reads batch bills and treats a bill as settled when net total less
+    // refunds less settlements is nil (#25465).
     public void createOpdCreditAccess() {
-        Date startTime = new Date();
-
-        List<Institution> setIns = getCreditBean().getCreditInstitution(BillType.OpdBill, getFromDate(), getToDate(), false);
+        List<Institution> setIns = getCreditBean().getCreditCompaniesWithSettledOpdFinanceBills(getFromDate(), getToDate());
         items = new ArrayList<>();
         for (Institution ins : setIns) {
-            List<Bill> bills = getCreditBean().getCreditBills(ins, BillType.OpdBill, getFromDate(), getToDate(), false);
+            List<Bill> bills = getCreditBean().getSettledOpdFinanceCreditBills(ins, getFromDate(), getToDate());
             InstitutionBills newIns = new InstitutionBills();
             newIns.setInstitution(ins);
             newIns.setBills(bills);
@@ -1491,6 +1492,7 @@ public class CreditCompanyDueController implements Serializable {
             for (Bill b : bills) {
                 newIns.setTotal(newIns.getTotal() + b.getNetTotal());
                 newIns.setPaidTotal(newIns.getPaidTotal() + b.getPaidAmount());
+                newIns.setRefundTotal(newIns.getRefundTotal() + b.getRefundAmount());
             }
 
             items.add(newIns);
