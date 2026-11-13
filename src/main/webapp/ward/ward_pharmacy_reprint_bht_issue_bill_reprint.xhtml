@@ -32,7 +32,7 @@
                                 icon="fas fa-cancel"
                                 ajax="false"
                                 action="#{pharmacyBillSearch.navigateToCancelBhtRequest}"
-                                disabled="#{!(pharmacyBillSearch.bill.returnBhtIssueBills.size() eq 0)}"
+                                disabled="#{!(pharmacyBillSearch.bill.returnBhtIssueBills.size() eq 0) or pharmacyBillSearch.currentBillIssueAcceptedByWard}"
                                 value="Cancel Request">
                             </p:commandButton>
                             <p:commandButton 
