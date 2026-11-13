@@ -355,6 +355,7 @@
                                                 <p:outputLabel for="selAdministerBatch" value="Batch (earliest expiry first):" styleClass="d-block mb-1" />
                                                 <p:selectOneMenu id="selAdministerBatch"
                                                                  value="#{medicationAdministrationController.selectedStock}"
+                                                                 converter="stockConverter"
                                                                  style="width: 100%;">
                                                     <f:selectItems value="#{medicationAdministrationController.availableWardStocks}" var="s"
                                                                    itemLabel="#{s.itemBatch.batchNo} (exp #{s.itemBatch.dateOfExpire}, avail #{s.stock})"
