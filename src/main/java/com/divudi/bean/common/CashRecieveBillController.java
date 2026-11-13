@@ -308,17 +308,24 @@ public class CashRecieveBillController implements Serializable {
         makeNull();
         setCreditCompany(ins);
         if (ins == null) {
+            JsfUtil.addErrorMessage("Please select a credit company");
             return;
         }
         getCurrent().setCreditCompany(ins);
         List<Bill> list = getCreditBean().getUnpaidInwardCCBills(ins, inwardCCFromDate, inwardCCToDate);
         for (Bill b : list) {
-            getCurrentBillItem().setReferenceBill(b);
-            selectBillListener();
-            if (getCurrentBillItem().getNetValue() == 0.0) {
+            // A credit company bill's stored balance stays 0 until its first receive, so the
+            // due is net total less paid amount, as on Inward Payment by BHT (#25561).
+            double outstanding = b.getNetTotal() - b.getPaidAmount();
+            if (outstanding <= 0.01) {
                 continue;
             }
+            getCurrentBillItem().setReferenceBill(b);
+            getCurrentBillItem().setNetValue(outstanding);
             addToBill();
+        }
+        if (getBillItems().isEmpty()) {
+            JsfUtil.addErrorMessage("No due bills for this credit company in the selected dates");
         }
         calTotal();
     }
@@ -715,7 +722,7 @@ public class CashRecieveBillController implements Serializable {
         }
         n = 0.0;
         index = 0;
-        for (BillItem b : selectedBillItems) {
+        for (BillItem b : getSelectedBillItems()) {
             b.setSearialNo(index++);
             n += b.getNetValue();
         }
@@ -877,7 +884,7 @@ public class CashRecieveBillController implements Serializable {
         double n = 0.0;
 //        //// // System.out.println("getBillItems().size() = " + getBillItems().size());
 //        //// // System.out.println("getSelectedBillItems().size() = " + getSelectedBillItems().size());
-        for (BillItem b : selectedBillItems) {
+        for (BillItem b : getSelectedBillItems()) {
 //            //// // System.out.println("b.getNetValue() = " + b.getNetValue());
 //            //// // System.out.println("b.getSearialNo() = " + b.getSearialNo());
             n += b.getNetValue();
@@ -888,7 +895,7 @@ public class CashRecieveBillController implements Serializable {
 
     public void calulateTotalForSettlingCreditForOpdPackageBills() {
         double n = 0.0;
-        for (BillItem b : selectedBillItems) {
+        for (BillItem b : getSelectedBillItems()) {
             n += b.getNetValue();
         }
         getCurrent().setNetTotal(n);
@@ -896,7 +903,7 @@ public class CashRecieveBillController implements Serializable {
 
     public void calulateTotalForSettlingCreditForOpdBatchBills() {
         double n = 0.0;
-        for (BillItem b : selectedBillItems) {
+        for (BillItem b : getSelectedBillItems()) {
             n += b.getNetValue();
         }
         getCurrent().setNetTotal(n);
@@ -904,7 +911,7 @@ public class CashRecieveBillController implements Serializable {
 
     public void calulateTotalForSettlingCreditForInwardCreditCompanyPaymentBills() {
         double n = 0.0;
-        for (BillItem b : selectedBillItems) {
+        for (BillItem b : getSelectedBillItems()) {
             n += b.getNetValue();
         }
         getCurrent().setNetTotal(n);
@@ -914,7 +921,7 @@ public class CashRecieveBillController implements Serializable {
         double n = 0.0;
 //        //// // System.out.println("getBillItems().size() = " + getBillItems().size());
 //        //// // System.out.println("getSelectedBillItems().size() = " + getSelectedBillItems().size());
-        for (BillItem b : selectedBillItems) {
+        for (BillItem b : getSelectedBillItems()) {
 //            //// // System.out.println("b.getNetValue() = " + b.getNetValue());
 //            //// // System.out.println("b.getSearialNo() = " + b.getSearialNo());
             n += b.getNetValue();
@@ -1734,7 +1741,7 @@ public class CashRecieveBillController implements Serializable {
 
     public void removeAll() {
         List<BillItem> tmp = new ArrayList<>();
-        for (BillItem b : selectedBillItems) {
+        for (BillItem b : getSelectedBillItems()) {
             tmp.add(getBillItems().get(b.getSearialNo()));
         }
         billItems.removeAll(tmp);
