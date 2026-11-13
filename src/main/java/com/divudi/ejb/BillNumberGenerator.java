@@ -923,6 +923,22 @@ public class BillNumberGenerator {
         return billNumber;
     }
 
+    /**
+     * Runs {@code action} under a per-encounter lock shared across sessions
+     * (this class is a singleton EJB). Ported from development as the minimal
+     * helper needed by the inward payment/refund final-bill re-read (#25413).
+     */
+    public <T> T withFinalBillVersionLock(com.divudi.core.entity.PatientEncounter pe, java.util.function.Supplier<T> action) {
+        String lockKey = "finalBillVersionSerial-" + pe.getId();
+        ReentrantLock lock = lockMap.computeIfAbsent(lockKey, k -> new ReentrantLock());
+        lock.lock();
+        try {
+            return action.get();
+        } finally {
+            lock.unlock();
+        }
+    }
+
     public PatientFacade getPatientFacade() {
         return patientFacade;
     }
