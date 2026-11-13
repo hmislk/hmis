@@ -37,5 +37,9 @@ Privileges: Direct Issue `PharmacySale` or `PharmacyDirectIssueToBht`; BHT Issue
 | B4. Record administration | `inward/inward_ward_medicines` | Yes (Ward Medications) | Yes (selected patient) | Per patient only |
 | B5. Deduct administered from ward stock | `ward/ward_medication_administration_settle` | Via Ward Medications page | Yes | Inward → Pharmacy → Deduct Administered from Ward Stock; Pharmacy → Inpatient Medication Management → Deduct Administered from Ward Stock |
 
-## Returns and cancellations
-Not covered here; to be decided separately (#25503).
+## Returns and cancellations (decided 2026-11-13)
+
+- Direct issues are cancelled or returned only by the issuing department. Any other department raises a return request that pharmacy approves (#25506). The ward-side return of direct issues is retired (#25505).
+- Request workflow: returns go only ward -> porter -> pharmacy accept. Administered quantities are never returnable (this does not apply to direct issues). The all-patients return entry and removal of the old shortcut are tracked in #25507.
+- A request issue can be cancelled only before the ward accepts it; after that, return it (#25508).
+- The BHT is credited for a ward return only when pharmacy accepts it, not when the ward sends it (#25509).
