@@ -6318,8 +6318,8 @@ public class BhtSummeryController implements Serializable {
         medicineCancellationBtas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_RETURN);
         medicineCancellationBtas.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_CANCELLATION);
         medicineCancellationBtas.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN);
-        medicineCancellationBtas.add(BillTypeAtomic.RETURN_MEDICINE_INWARD);
-        medicineCancellationBtas.add(BillTypeAtomic.RETURN_MEDICINE_INWARD_CANCELLATION);
+        // Credited on pharmacy accept, not on the ward's send (#25509).
+        medicineCancellationBtas.add(BillTypeAtomic.ACCEPT_RETURN_MEDICINE_INWARD);
         medicineCancellationBtas.add(BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_CANCELLATION);
         medicineCancellationBtas.add(BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_RETURN);
 
