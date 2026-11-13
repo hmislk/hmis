@@ -1187,6 +1187,31 @@ public class CreditBean {
 
     }
 
+    /**
+     * Credit OPD finance bills of one company that still have a due, for OPD Due
+     * Age. Same bill set and rule as OPD Due Search (getCreditPayments, #16982):
+     * bill types from fetchBillTypeAtomicsForOpdFinance, no cancelled or negative
+     * bills, due = netTotal - (refundAmount + paidAmount) above 0.1. No date range:
+     * the age buckets cover every open bill.
+     */
+    public List<Bill> getOutstandingOpdFinanceCreditBills(Institution creditCompany) {
+        String jpql = "Select b From Bill b"
+                + " where b.retired=false "
+                + " and b.cancelled=false "
+                + " and b.netTotal>0 "
+                + " and (b.netTotal-(coalesce(b.refundAmount,0)+coalesce(b.paidAmount,0)))>:val "
+                + " and b.createdAt is not null "
+                + " and b.creditCompany=:cc "
+                + " and b.paymentMethod=:pm "
+                + " and b.billTypeAtomic in :billTypeAtomics ";
+        HashMap params = new HashMap();
+        params.put("cc", creditCompany);
+        params.put("pm", PaymentMethod.Credit);
+        params.put("billTypeAtomics", billService.fetchBillTypeAtomicsForOpdFinance());
+        params.put("val", 0.1);
+        return getBillFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP);
+    }
+
     public List<Bill> getCreditBillsPharmacy(Institution institution, boolean lessThan) {
         String sql;
         HashMap hm = new HashMap();

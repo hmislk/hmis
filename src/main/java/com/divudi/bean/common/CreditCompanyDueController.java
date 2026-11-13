@@ -1081,12 +1081,13 @@ public class CreditCompanyDueController implements Serializable {
 
     private void setValues(Institution inst, String1Value5 dataTable5Value) {
 
-        List<Bill> lst = getCreditBean().getCreditBills(inst, true);
+        // Outstanding due per bill, the same rule as OPD Due Search (#25534).
+        List<Bill> lst = getCreditBean().getOutstandingOpdFinanceCreditBills(inst);
         for (Bill b : lst) {
 
             Long dayCount = CommonFunctions.getDayCountTillNow(b.getCreatedAt());
 
-            double finalValue = (b.getNetTotal() + b.getPaidAmount());
+            double finalValue = b.getNetTotal() - (b.getRefundAmount() + b.getPaidAmount());
 
             if (dayCount < 30) {
                 dataTable5Value.setValue1(dataTable5Value.getValue1() + finalValue);
