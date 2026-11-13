@@ -1120,7 +1120,7 @@
                                             value="Direct Issue to BHTs"
                                             action="/inward/pharmacy_bill_issue_bht?faces-redirect=true"
                                             actionListener="#{inpatientDirectIssueNativeSqlController.resetAll()}"
-                                            rendered="#{webUserController.hasPrivilege('PharmacySale')}"
+                                            rendered="#{webUserController.hasPrivilege('PharmacySale') or webUserController.hasPrivilege('PharmacyDirectIssueToBht')}"
                                             icon="pi pi-check"
                                             class="w-100"
                                             ajax="false">

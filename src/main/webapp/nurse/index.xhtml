@@ -606,8 +606,8 @@
                                                                 <p:commandButton
                                                                     value="Direct Issue to BHTs"
                                                                     action="/inward/pharmacy_bill_issue_bht?faces-redirect=true"
-                                                                    actionListener="#{pharmacySaleBhtController.resetAll()}"
-                                                                    rendered="#{webUserController.hasPrivilege('PharmacySale')}"
+                                                                    actionListener="#{inpatientDirectIssueNativeSqlController.resetAll()}"
+                                                                    rendered="#{webUserController.hasPrivilege('PharmacySale') or webUserController.hasPrivilege('PharmacyDirectIssueToBht')}"
                                                                     icon="pi pi-check"
                                                                     class="w-100"
                                                                     ajax="false">
@@ -648,6 +648,18 @@
                                                                     action="#{wardPharmacyBhtIssueReceiveController.navigateToPendingList}"
                                                                     icon="fa fa-truck-medical"
                                                                     rendered="#{webUserController.hasPrivilege('InwardPharmacyBhtReceive')}"
+                                                                    class="w-100">
+                                                                </p:commandButton>
+                                                            </div>
+                                                            <div class="col-6">
+                                                                <p:commandButton
+                                                                    id="btnDeductAdministeredFromWardStockNurse"
+                                                                    value="Deduct Administered from Ward Stock"
+                                                                    title="Review administered doses and deduct them from ward stock"
+                                                                    ajax="false"
+                                                                    action="#{medicationAdministrationStockSettlementController.navigateToSettle}"
+                                                                    icon="fa fa-syringe"
+                                                                    rendered="#{webUserController.hasPrivilege('InwardWardMedicationsView')}"
                                                                     class="w-100">
                                                                 </p:commandButton>
                                                             </div>

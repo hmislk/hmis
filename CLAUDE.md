@@ -31,6 +31,7 @@
 - **🚨 Never gate behavior on a hospital's name** (`applicationInstitution eq 'Ruhuna'` etc.). Use a `ConfigOption`. See [Institution-Specific Behavior](developer_docs/configuration/institution-specific-behavior.md). Fix existing violations only when already touching that code.
 - **🚨 Multiple Payment Methods never includes a credit method** (Staff Credit, Credit); non-credit methods such as Staff Welfare are fine. See [Multiple Payment Methods policy](developer_docs/billing/multiple-payment-methods-policy.md).
 - **🚨 Cancellation is whole-bill only.** Never build item-level cancellation; reversing some items is a Return/Refund, which most bill types already have. See [Cancellation vs. Return](developer_docs/billing/cancellation-vs-return-policy.md).
+- **🚨 Inpatient medicines have exactly two workflows (Direct Issue; Request → porter → ward receive), both always on.** Never add a config option to switch either or any step off. See [Inpatient Medicine Issue Policy](developer_docs/pharmacy/inpatient-medicine-issue-policy.md).
 
 ### persistence.xml
 - **🚨 After every `git push`**, without being asked, restore local JNDI and leave it unstaged: `${JDBC_DATASOURCE}` → `jdbc/coop`, `${JDBC_AUDIT_DATASOURCE}` → `jdbc/ruhunuAudit`.
