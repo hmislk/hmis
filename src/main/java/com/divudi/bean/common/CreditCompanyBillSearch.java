@@ -31,12 +31,15 @@ import com.divudi.core.facade.PaymentFacade;
 import com.divudi.core.facade.RefundBillFacade;
 import com.divudi.core.util.CommonFunctions;
 import java.io.Serializable;
+import com.divudi.core.entity.PatientEncounter;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
@@ -450,8 +453,16 @@ public class CreditCompanyBillSearch implements Serializable {
                 getBilledBillFacade().edit(getBill());
                 JsfUtil.addSuccessMessage("Cancelled");
                 WebUser wb = getCashTransactionBean().saveBillCashOutTransaction(cb, getSessionController().getLoggedUser());
-                for(BillItem cancellingBillItem : cb.getBillItems()){
-                    BillBeanController.FinalBillLinkResult link = getBillBean().linkToFreshFinalBill(cancellingBillItem.getPatientEncounter(), cb);
+                // cancelBillItems(cb) does not add the new items to cb.getBillItems(),
+                // so read the admissions from the bill being cancelled. Link each
+                // admission once, even when the payment has several items for it (#25542).
+                Set<Long> linkedEncounterIds = new HashSet<>();
+                for (BillItem paidBillItem : getBillItems()) {
+                    PatientEncounter encounter = paidBillItem.getPatientEncounter();
+                    if (encounter == null || encounter.getId() == null || !linkedEncounterIds.add(encounter.getId())) {
+                        continue;
+                    }
+                    BillBeanController.FinalBillLinkResult link = getBillBean().linkToFreshFinalBill(encounter, cb);
                     if (!link.isLinked()) {
                         JsfUtil.addErrorMessage("The final bill of an admission in this payment is cancelled, so this cancellation was not added to it. Please check the admission's final bill.");
                     }
