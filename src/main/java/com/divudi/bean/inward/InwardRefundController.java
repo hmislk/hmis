@@ -250,28 +250,35 @@ public class InwardRefundController implements Serializable {
         paymentService.updateBalances(payments);
 
         // Re-read the admission: the page's copy can predate a final bill
-        // settle or cancel, and saving it would undo the cancel (#25413).
+        // settle or cancel, and saving it would undo the cancel (#25413). Held
+        // under the same per-admission lock as final bill settle and cancel.
         PatientEncounter encounter = getCurrent().getPatientEncounter();
+        boolean linked = true;
         if (encounter != null && encounter.getId() != null) {
-            PatientEncounter fresh = patientEncounterFacade.find(encounter.getId());
-            if (fresh != null) {
-                encounter = fresh;
-                getCurrent().setPatientEncounter(fresh);
-            }
-        }
-
-        getBillBean().updateInwardDipositList(encounter, getCurrent());
-
-        if (encounter != null && encounter.isPaymentFinalized() && encounter.getFinalBill() != null) {
-            getInwardBean().updateFinalFill(encounter);
-            if (encounter.getPaymentMethod() == PaymentMethod.Credit) {
-                getInwardBean().updateCreditDetail(encounter, encounter.getFinalBill().getNetTotal());
-            }
+            linked = getBillNumberBean().withFinalBillVersionLock(encounter, () -> {
+                PatientEncounter fresh = patientEncounterFacade.findWithoutCache(getCurrent().getPatientEncounter().getId());
+                if (fresh == null) {
+                    fresh = getCurrent().getPatientEncounter();
+                } else {
+                    getCurrent().setPatientEncounter(fresh);
+                }
+                boolean ok = getBillBean().updateInwardDipositList(fresh, getCurrent());
+                if (ok && fresh.isPaymentFinalized() && fresh.getFinalBill() != null) {
+                    getInwardBean().updateFinalFill(fresh);
+                    if (fresh.getPaymentMethod() == PaymentMethod.Credit) {
+                        getInwardBean().updateCreditDetail(fresh, fresh.getFinalBill().getNetTotal());
+                    }
+                }
+                return ok;
+            });
         }
 
         WebUser wb = getCashTransactionBean().saveBillCashOutTransaction(getCurrent(), getSessionController().getLoggedUser());
         getSessionController().setLoggedUser(wb);
         JsfUtil.addSuccessMessage("Payment Bill Saved");
+        if (!linked) {
+            JsfUtil.addErrorMessage("The final bill of this admission is cancelled, so this refund was not added to it. Please check the admission's final bill.");
+        }
     }
 
     @Inject

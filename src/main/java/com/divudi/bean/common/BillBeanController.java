@@ -2515,16 +2515,24 @@ public class BillBeanController implements Serializable {
 
     }
 
-    public void updateInwardDipositList(PatientEncounter patientEncounter, Bill bill) {
+    /**
+     * Links an inward payment/refund bill to the admission's final bill when
+     * payment is finalized.
+     *
+     * @return false only when the admission says payment is finalized but its
+     * final bill is cancelled, retired or missing in the database, so the bill
+     * was not linked; true otherwise.
+     */
+    public boolean updateInwardDipositList(PatientEncounter patientEncounter, Bill bill) {
         if (patientEncounter != null && bill != null) {
             if (patientEncounter.isPaymentFinalized() && patientEncounter.getFinalBill() != null
                     && patientEncounter.getFinalBill().getId() != null) {
                 // Re-read the final bill: the caller's copy can predate a final
                 // bill cancel, and saving it would write cancelled=false back
                 // over the cancel (#25413).
-                Bill finalBill = getBillFacade().find(patientEncounter.getFinalBill().getId());
+                Bill finalBill = getBillFacade().findWithoutCache(patientEncounter.getFinalBill().getId());
                 if (finalBill == null || finalBill.isCancelled() || finalBill.isRetired()) {
-                    return;
+                    return false;
                 }
                 bill.setForwardReferenceBill(finalBill);
                 getBillFacade().edit(bill);
@@ -2549,7 +2557,7 @@ public class BillBeanController implements Serializable {
                 patientEncounter.setFinalBill(finalBill);
             }
         }
-
+        return true;
     }
 
     public Bill fetchByForwardBill(Bill forwardBill, SurgeryBillType surgeryBillType) {
