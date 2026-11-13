@@ -3530,7 +3530,7 @@ public class CreditCompanyDueController implements Serializable {
             numberStyle.setDataFormat(format.getFormat("#,##0.00"));
 
             int rowIndex = 0;
-            int headerCount = hideStaffFee ? 8 : 9;
+            int headerCount = hideStaffFee ? 9 : 10;
 
             SimpleDateFormat sdf = new SimpleDateFormat(
                     sessionController.getApplicationPreference().getLongDateTimeFormat()
@@ -3586,6 +3586,7 @@ public class CreditCompanyDueController implements Serializable {
             if (!hideStaffFee) {
                 headerIndex = createHeaderCell(headerRow, headerIndex, "Staff Fee", headerStyle);
             }
+            headerIndex = createHeaderCell(headerRow, headerIndex, "Refund Amount", headerStyle);
             headerIndex = createHeaderCell(headerRow, headerIndex, "Paid Amount", headerStyle);
             createHeaderCell(headerRow, headerIndex, "Due Amount", headerStyle);
 
@@ -3659,6 +3660,10 @@ public class CreditCompanyDueController implements Serializable {
                         staffFeeCell.setCellStyle(numberStyle);
                     }
 
+                    Cell refundAmountCell = dataRow.createCell(dataIndex++);
+                    refundAmountCell.setCellValue(bill != null ? bill.getRefundAmount() : 0d);
+                    refundAmountCell.setCellStyle(numberStyle);
+
                     Cell paidAmountCell = dataRow.createCell(dataIndex++);
                     if (bill != null) {
                         paidAmountCell.setCellValue(bill.getPaidAmount());
@@ -3691,11 +3696,16 @@ public class CreditCompanyDueController implements Serializable {
                 billedTotalCell.setCellValue(institutionBills.getTotal());
                 billedTotalCell.setCellStyle(numberStyle);
 
-                int paidIndex = hideStaffFee ? 6 : 7;
+                int refundIndex = hideStaffFee ? 6 : 7;
                 if (!hideStaffFee) {
                     totalRow.createCell(6);
                 }
 
+                Cell refundTotalCell = totalRow.createCell(refundIndex);
+                refundTotalCell.setCellValue(institutionBills.getRefundTotal());
+                refundTotalCell.setCellStyle(numberStyle);
+
+                int paidIndex = refundIndex + 1;
                 Cell paidTotalCell = totalRow.createCell(paidIndex);
                 paidTotalCell.setCellValue(institutionBills.getPaidTotal());
                 paidTotalCell.setCellStyle(numberStyle);
@@ -3792,20 +3802,20 @@ public class CreditCompanyDueController implements Serializable {
             // =========================
             // TABLE
             // =========================
-            int columnCount = hideStaffFee ? 8 : 9;
+            int columnCount = hideStaffFee ? 9 : 10;
 
             PdfPTable table = new PdfPTable(columnCount);
             table.setWidthPercentage(100);
 
             float[] widths = hideStaffFee
-                    ? new float[]{8f, 4f, 4f, 6f, 4f, 4f, 4f, 4f}
-                    : new float[]{8f, 4f, 4f, 6f, 4f, 4f, 4f, 4f, 4f};
+                    ? new float[]{8f, 4f, 4f, 6f, 4f, 4f, 4f, 4f, 4f}
+                    : new float[]{8f, 4f, 4f, 6f, 4f, 4f, 4f, 4f, 4f, 4f};
 
             table.setWidths(widths);
 
             String[] headers = hideStaffFee
-                    ? new String[]{"Bill No", "Policy No", "Ref No", "Client Name", "Bill Date", "Billed Amount", "Paid Amount", "Due Amount"}
-                    : new String[]{"Bill No", "Policy No", "Ref No", "Client Name", "Bill Date", "Billed Amount", "Staff Fee", "Paid Amount", "Due Amount"};
+                    ? new String[]{"Bill No", "Policy No", "Ref No", "Client Name", "Bill Date", "Billed Amount", "Refund Amount", "Paid Amount", "Due Amount"}
+                    : new String[]{"Bill No", "Policy No", "Ref No", "Client Name", "Bill Date", "Billed Amount", "Staff Fee", "Refund Amount", "Paid Amount", "Due Amount"};
 
             for (String h : headers) {
                 PdfPCell cell = new PdfPCell(new Phrase(h, headerFont));
@@ -3877,6 +3887,13 @@ public class CreditCompanyDueController implements Serializable {
                         table.addCell(staff);
                     }
 
+                    // Refund
+                    PdfPCell refund = new PdfPCell(new Phrase(
+                            String.format("%,.2f", bill != null ? bill.getRefundAmount() : 0.0),
+                            dataFont));
+                    refund.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                    table.addCell(refund);
+
                     // Paid
                     PdfPCell paid = new PdfPCell(new Phrase(
                             String.format("%,.2f", bill != null ? bill.getPaidAmount() : 0.0),
@@ -3910,6 +3927,11 @@ public class CreditCompanyDueController implements Serializable {
                 if (!hideStaffFee) {
                     table.addCell(new PdfPCell(new Phrase(" ")));
                 }
+
+                PdfPCell totalRefund = new PdfPCell(new Phrase(
+                        String.format("%,.2f", ib.getRefundTotal()), headerFont));
+                totalRefund.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                table.addCell(totalRefund);
 
                 PdfPCell totalPaid = new PdfPCell(new Phrase(
                         String.format("%,.2f", ib.getPaidTotal()), headerFont));
