@@ -118,16 +118,10 @@ public class BhtIssueReturnController implements Serializable {
 //            JsfUtil.addErrorMessage("U can't return another department's Issue.please log to specific department");
 //            return;
 //        }
-        if (!configOptionApplicationController.getBooleanValueByKey("Inward Pharmacy Request - Enable Receiving Department to Return the Drugs", false)) {
-            if (!getSessionController().getDepartment().getId().equals(bill.getDepartment().getId())) {
-                JsfUtil.addErrorMessage("You can't return another department's Issue.please log to specific department");
-                return null;
-            }
-        } else {
-            if (!getSessionController().getDepartment().getId().equals(bill.getDepartment().getId()) && !getSessionController().getDepartment().getId().equals(bill.getFromDepartment().getId())) {
-                JsfUtil.addErrorMessage("You can't return another department's Issue.please log to specific department");
-                return null;
-            }
+        // Direct issues are returned only by the issuing department (#25505).
+        if (!getSessionController().getDepartment().getId().equals(bill.getDepartment().getId())) {
+            JsfUtil.addErrorMessage("You can't return another department's Issue.please log to specific department");
+            return null;
         }
         returnBill = null;
         getReturnBill();
@@ -322,11 +316,7 @@ public class BhtIssueReturnController implements Serializable {
 
             //   getPharmaceuticalBillItemFacade().edit(i.getPharmaceuticalBillItem());
             //System.err.println("STOCK " + i.getPharmaceuticalBillItem().getStock());
-            if (!configOptionApplicationController.getBooleanValueByKey("Inward Pharmacy Request - Enable Receiving Department to Return the Drugs", false)) {
-                getPharmacyBean().addToStock(i.getPharmaceuticalBillItem().getStock(), Math.abs(i.getPharmaceuticalBillItem().getQtyInUnit()), i.getPharmaceuticalBillItem(), getSessionController().getDepartment());
-            } else {
-                getPharmacyBean().addToStock(i.getPharmaceuticalBillItem().getStock(), Math.abs(i.getPharmaceuticalBillItem().getQtyInUnit()), i.getPharmaceuticalBillItem(), getBill().getDepartment());
-            }
+            getPharmacyBean().addToStock(i.getPharmaceuticalBillItem().getStock(), Math.abs(i.getPharmaceuticalBillItem().getQtyInUnit()), i.getPharmaceuticalBillItem(), getSessionController().getDepartment());
 
             //   i.getBillItem().getTmpReferenceBillItem().getPharmaceuticalBillItem().setRemainingQty(i.getRemainingQty() - i.getQty());
             //   getPharmaceuticalBillItemFacade().edit(i.getBillItem().getTmpReferenceBillItem().getPharmaceuticalBillItem());
