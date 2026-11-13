@@ -405,16 +405,8 @@ public class CashRecieveBillController implements Serializable {
 
         Bill referenceBill = billItem.getReferenceBill();
 
-        // For Credit payment method bills, use the updated balance field directly
-        // This ensures we get the accurate balance after individual bill cancellations
         if (referenceBill.getPaymentMethod() == PaymentMethod.Credit) {
-            // The balance field is automatically maintained during cancellations
-            // and represents the current due amount
-            double currentBalance = Math.abs(referenceBill.getBalance());
-
-            // Additional validation: ensure balance doesn't exceed original amount
-            double originalAmount = Math.abs(referenceBill.getNetTotal() + referenceBill.getVat());
-            return Math.min(currentBalance, originalAmount);
+            return creditBillDue(referenceBill);
         }
 
         // For non-Credit bills, use the original calculation method
@@ -438,16 +430,8 @@ public class CashRecieveBillController implements Serializable {
             return 0.0;
         }
 
-        // For Credit payment method bills, use the updated balance field directly
-        // This ensures we get the accurate balance after individual bill cancellations
         if (bill.getPaymentMethod() == PaymentMethod.Credit) {
-            // The balance field is automatically maintained during cancellations
-            // and represents the current due amount
-            double currentBalance = Math.abs(bill.getBalance());
-
-            // Additional validation: ensure balance doesn't exceed original amount
-            double originalAmount = Math.abs(bill.getNetTotal() + bill.getVat());
-            return Math.min(currentBalance, originalAmount);
+            return creditBillDue(bill);
         }
 
         // For non-Credit bills, use the original calculation method
@@ -456,6 +440,35 @@ public class CashRecieveBillController implements Serializable {
         double paidAmt = Math.abs(getCreditBean().getTotalCreditSettledAmount(bill));
         double balance = neTotal - (paidAmt + refAmount);
         return balance;
+    }
+
+    /**
+     * Due on a credit bill: net total - refunds - settlements (#25467), the same
+     * rule as OPD Due Search (CreditBean, #25463). Refunds and settlements are
+     * recorded on the credit bill itself, so the stored balance is not read; it
+     * can be out of step on older bills. The value is queried from the database,
+     * bypassing the cache, so a payment taken since this page opened counts.
+     */
+    private double creditBillDue(Bill bill) {
+        double due;
+        if (bill.getId() == null) {
+            due = bill.getNetTotal() - (bill.getRefundAmount() + bill.getPaidAmount());
+        } else {
+            String jpql = "select b.netTotal - (coalesce(b.refundAmount,0) + coalesce(b.paidAmount,0)) "
+                    + "from Bill b where b.id = :id";
+            Map<String, Object> params = new HashMap<>();
+            params.put("id", bill.getId());
+            due = getBillFacade().findDoubleByJpql(jpql, params, true);
+        }
+        return Math.max(0, due);
+    }
+
+    private Bill freshBill(Bill bill) {
+        if (bill == null || bill.getId() == null) {
+            return bill;
+        }
+        Bill fresh = getBillFacade().find(bill.getId());
+        return fresh != null ? fresh : bill;
     }
 
     private double getReferenceBhtBallance(BillItem billItem) {
@@ -1828,6 +1841,10 @@ public class CashRecieveBillController implements Serializable {
             throw new RuntimeException("Reference bill is null for BillItem ID: " + tmp.getId()
                     + ". This indicates a data integrity issue.");
         }
+        // Add the payment to a fresh copy, not the one held since the bill was
+        // selected, so a payment recorded meanwhile is not overwritten (#25467).
+        originalBill = freshBill(originalBill);
+        tmp.setReferenceBill(originalBill);
 
         // Update original bill's financial fields
         updateBillFinancialFieldsForPayment(originalBill, paymentValue);
@@ -1835,6 +1852,7 @@ public class CashRecieveBillController implements Serializable {
         // Step 2: Get and update the reference bill's reference bill if it exists
         Bill referenceBillOfOriginal = originalBill.getReferenceBill();
         if (referenceBillOfOriginal != null) {
+            referenceBillOfOriginal = freshBill(referenceBillOfOriginal);
             // Update reference bill's financial fields as well
             updateBillFinancialFieldsForPayment(referenceBillOfOriginal, paymentValue);
         }
@@ -2443,6 +2461,19 @@ public class CashRecieveBillController implements Serializable {
         if (totalSettlementAmount <= 0) {
             JsfUtil.addErrorMessage("Cannot settle bills with zero total amount. Total settlement amount must be greater than zero.");
             return;
+        }
+
+        // Re-check each amount against the bill's current due: a payment may have
+        // been recorded for the same bill since this page loaded it (#25467).
+        for (BillItem item : getBillItems()) {
+            double due = getReferenceBallance(item);
+            if (item.getNetValue() - due > 0.01) {
+                JsfUtil.addErrorMessage(String.format("Bill %s: paying %.2f is more than its current due of %.2f. "
+                        + "It may have been paid since this page was opened. Please start a new bill.",
+                        item.getReferenceBill() != null ? item.getReferenceBill().getDeptId() : "",
+                        item.getNetValue(), due));
+                return;
+            }
         }
 
         // Generate department bill number for OPD credit company payment
