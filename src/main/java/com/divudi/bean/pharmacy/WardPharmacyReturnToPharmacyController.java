@@ -96,6 +96,12 @@ public class WardPharmacyReturnToPharmacyController implements Serializable {
     private boolean printPreview;
     private boolean settling;
     private String comment;
+    /**
+     * True when the return was opened from the all-patients entry (main menu,
+     * Nursing Dashboard): the received-bill list then spans every admission
+     * of the logged department instead of one patient (#25507).
+     */
+    private boolean allPatients;
 
     /**
      * One editable line of the scoped return, wrapping the transient return
@@ -161,6 +167,7 @@ public class WardPharmacyReturnToPharmacyController implements Serializable {
             return null;
         }
         patientEncounter = encounter;
+        allPatients = false;
         printPreview = false;
         selectedReceiveBill = null;
         returnLines = new ArrayList<>();
@@ -179,7 +186,32 @@ public class WardPharmacyReturnToPharmacyController implements Serializable {
      * the print-preview panel's "New Return" button.
      */
     public String navigateToNewReturn() {
+        if (allPatients) {
+            return navigateToReturnAllPatients();
+        }
         return navigateToReturn(patientEncounter);
+    }
+
+    /**
+     * All-patients entry (#25507): lists the logged department's received
+     * medicine bills, across current admissions, that still have a returnable
+     * balance. The user picks one and continues with the same porter return as
+     * the single-patient entry.
+     */
+    public String navigateToReturnAllPatients() {
+        patientEncounter = null;
+        allPatients = true;
+        printPreview = false;
+        selectedReceiveBill = null;
+        returnLines = new ArrayList<>();
+        previewBill = null;
+        previewLines = new ArrayList<>();
+        porter = null;
+        toDepartment = null;
+        comment = null;
+        returnBill = new BilledBill();
+        loadReceiveBills();
+        return "/ward/ward_pharmacy_return_to_pharmacy?faces-redirect=true";
     }
 
     /**
@@ -191,6 +223,10 @@ public class WardPharmacyReturnToPharmacyController implements Serializable {
      */
     public void loadReceiveBills() {
         receiveBills = new ArrayList<>();
+        if (allPatients) {
+            loadReceiveBillsForAllPatients();
+            return;
+        }
         if (patientEncounter == null || patientEncounter.getId() == null) {
             return;
         }
@@ -203,6 +239,35 @@ public class WardPharmacyReturnToPharmacyController implements Serializable {
         params.put("bta", BillTypeAtomic.ACCEPT_ISSUED_MEDICINE_INWARD);
         params.put("enc", patientEncounter);
         List<Bill> candidates = billFacade.findByJpql(jpql, params);
+        for (Bill b : candidates) {
+            if (hasReturnableBalance(b)) {
+                receiveBills.add(b);
+            }
+        }
+    }
+
+    /**
+     * Receive bills of the logged department for admissions that are neither
+     * discharged nor nursing-discharged (a return is refused after nursing
+     * discharge), newest first, keeping only those with a returnable balance.
+     * The candidate query is capped so the netting queries stay bounded.
+     */
+    private void loadReceiveBillsForAllPatients() {
+        if (sessionController.getDepartment() == null) {
+            return;
+        }
+        String jpql = "SELECT b FROM Bill b JOIN b.patientEncounter pe "
+                + "WHERE b.billTypeAtomic = :bta "
+                + "AND b.department = :dept "
+                + "AND b.cancelled = false "
+                + "AND (b.retired = false OR b.retired IS NULL) "
+                + "AND (pe.discharged = false OR pe.discharged IS NULL) "
+                + "AND (pe.nursingDischarged = false OR pe.nursingDischarged IS NULL) "
+                + "ORDER BY b.createdAt DESC";
+        Map<String, Object> params = new HashMap<>();
+        params.put("bta", BillTypeAtomic.ACCEPT_ISSUED_MEDICINE_INWARD);
+        params.put("dept", sessionController.getDepartment());
+        List<Bill> candidates = billFacade.findByJpql(jpql, params, 300);
         for (Bill b : candidates) {
             if (hasReturnableBalance(b)) {
                 receiveBills.add(b);
@@ -809,6 +874,10 @@ public class WardPharmacyReturnToPharmacyController implements Serializable {
 
     public void setPatientEncounter(PatientEncounter patientEncounter) {
         this.patientEncounter = patientEncounter;
+    }
+
+    public boolean isAllPatients() {
+        return allPatients;
     }
 
     public List<Bill> getReceiveBills() {
