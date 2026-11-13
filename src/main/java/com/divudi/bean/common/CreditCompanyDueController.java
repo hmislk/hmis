@@ -1394,6 +1394,7 @@ public class CreditCompanyDueController implements Serializable {
                     newIns.getBills().add(p.getBill());
                     newIns.setTotal(newIns.getTotal() + p.getBill().getNetTotal());
                     newIns.setPaidTotal(newIns.getPaidTotal() + p.getBill().getPaidAmount());
+                    newIns.setRefundTotal(newIns.getRefundTotal() + p.getBill().getRefundAmount());
                 }
 
                 items.add(newIns);
@@ -3668,7 +3669,7 @@ public class CreditCompanyDueController implements Serializable {
 
                     Cell dueAmountCell = dataRow.createCell(dataIndex);
                     if (bill != null) {
-                        dueAmountCell.setCellValue(bill.getNetTotal() - bill.getPaidAmount());
+                        dueAmountCell.setCellValue(bill.getNetTotal() - bill.getRefundAmount() - bill.getPaidAmount());
                         dueAmountCell.setCellStyle(numberStyle);
                     } else {
                         dueAmountCell.setCellValue(0d);
@@ -3699,7 +3700,7 @@ public class CreditCompanyDueController implements Serializable {
                 paidTotalCell.setCellStyle(numberStyle);
 
                 Cell dueTotalCell = totalRow.createCell(paidIndex + 1);
-                dueTotalCell.setCellValue(institutionBills.getTotal() - institutionBills.getPaidTotal());
+                dueTotalCell.setCellValue(institutionBills.getTotal() - institutionBills.getRefundTotal() - institutionBills.getPaidTotal());
                 dueTotalCell.setCellStyle(numberStyle);
             }
 
@@ -3884,7 +3885,7 @@ public class CreditCompanyDueController implements Serializable {
 
                     // Due
                     double dueVal = bill != null
-                            ? bill.getNetTotal() - bill.getPaidAmount() : 0.0;
+                            ? bill.getNetTotal() - bill.getRefundAmount() - bill.getPaidAmount() : 0.0;
 
                     PdfPCell due = new PdfPCell(new Phrase(
                             String.format("%,.2f", dueVal), dataFont));
@@ -3915,7 +3916,7 @@ public class CreditCompanyDueController implements Serializable {
                 table.addCell(totalPaid);
 
                 PdfPCell totalDue = new PdfPCell(new Phrase(
-                        String.format("%,.2f", ib.getTotal() - ib.getPaidTotal()),
+                        String.format("%,.2f", ib.getTotal() - ib.getRefundTotal() - ib.getPaidTotal()),
                         headerFont));
                 totalDue.setHorizontalAlignment(Element.ALIGN_RIGHT);
                 table.addCell(totalDue);
