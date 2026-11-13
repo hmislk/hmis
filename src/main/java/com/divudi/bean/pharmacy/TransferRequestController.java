@@ -54,6 +54,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import javax.persistence.TemporalType;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.WeakHashMap;
@@ -136,6 +137,7 @@ public class TransferRequestController implements Serializable {
     private boolean printPreview;
     private boolean showAllBillFormats = false;
     private Department toDepartment;
+    private static final int RECENT_REQUEST_DAYS = 90;
     private List<Department> recentToDepartments;
     private ItemDTO currentItemDto;
     private ItemRatesDTO currentItemRates;
@@ -164,6 +166,7 @@ public class TransferRequestController implements Serializable {
         rejectionReason = null;
         printPreview = false;
         transferRequestBillPre = null;
+        recentToDepartments = null;
     }
 
     public void changeDepartment() {
@@ -1818,19 +1821,9 @@ public class TransferRequestController implements Serializable {
 
     public List<Department> getRecentToDepartments() {
         if (recentToDepartments == null) {
-            String jpql = "select distinct d from Bill b "
-                    + "join b.toDepartment d "
-                    + "left join fetch d.institution "
-                    + "where b.retired=false "
-                    + "and b.billTypeAtomic=:bt "
-                    + "and b.fromDepartment=:fd "
-                    + "and d.retired=false "
-                    + "and d.inactive=false "
-                    + "order by b.id desc";
-            Map<String, Object> m = new HashMap<>();
-            m.put("bt", BillTypeAtomic.PHARMACY_TRANSFER_REQUEST);
-            m.put("fd", sessionController.getDepartment());
-            recentToDepartments = departmentFacade.findByJpql(jpql, m, 10);
+            // Runs while the page renders: bounded, never throws (see DepartmentFacade).
+            recentToDepartments = departmentFacade.findRecentToDepartments(
+                    BillTypeAtomic.PHARMACY_TRANSFER_REQUEST, sessionController.getDepartment(), RECENT_REQUEST_DAYS, 10);
         }
         return recentToDepartments;
     }

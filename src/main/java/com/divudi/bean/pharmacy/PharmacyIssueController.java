@@ -364,6 +364,7 @@ public class PharmacyIssueController implements Serializable {
     boolean billPreview = false;
 
     Department toDepartment;
+    private static final int RECENT_ISSUE_DAYS = 90;
     private List<Department> recentToDepartments;
     StockDTO stockDto;
 
@@ -2960,17 +2961,8 @@ public class PharmacyIssueController implements Serializable {
     // Recent Departments functionality for department pre-selection
     public List<Department> getRecentToDepartments() {
         if (recentToDepartments == null) {
-            String jpql = "select distinct b.toDepartment from Bill b "
-                    + " where b.retired=false "
-                    + " and b.billTypeAtomic=:bt "
-                    + " and b.fromDepartment=:fd "
-                    + " and b.toDepartment.retired=false "
-                    + " and b.toDepartment.inactive=false "
-                    + " order by b.id desc";
-            Map<String, Object> m = new HashMap<>();
-            m.put("bt", BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE);
-            m.put("fd", sessionController.getDepartment());
-            recentToDepartments = departmentFacade.findByJpql(jpql, m, 10);
+            recentToDepartments = departmentFacade.findRecentToDepartments(
+                    BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE, sessionController.getDepartment(), RECENT_ISSUE_DAYS, 10);
         }
         return recentToDepartments;
     }
