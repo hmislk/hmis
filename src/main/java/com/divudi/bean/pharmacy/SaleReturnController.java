@@ -1524,12 +1524,12 @@ public class SaleReturnController implements Serializable, com.divudi.bean.commo
         double remainAmount = calculatRemainForMultiplePaymentTotal();
 
         if (returnPaymentMethod == PaymentMethod.MultiplePaymentMethods) {
-            int arrSize = paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().size();
+            int arrSize = getPaymentMethodData().getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().size();
             if (arrSize == 0) {
                 return;
             }
 
-            ComponentDetail pm = paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().get(arrSize - 1);
+            ComponentDetail pm = getPaymentMethodData().getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().get(arrSize - 1);
 
             if (pm.getPaymentMethod() == PaymentMethod.Cash) {
                 pm.getPaymentMethodData().getCash().setTotalValue(remainAmount);
