@@ -50,7 +50,9 @@ Key pattern from Pharmacy Retail Sale (639ms -> 50ms):
 ### 🚨 Found a slow report? File an issue
 
 Whenever a report is found slow (during testing, an investigation or a user
-complaint), file a GitHub issue for it then, without waiting to be asked. A
+complaint), file a GitHub issue for it then, without waiting to be asked. The
+one exception is a `demonstrate-issues` session: there, keep its review and
+approval gate and file only after the user has reviewed the write-ups. A
 report that times out makes users think its data is missing. The issue asks for:
 
 - a fast DTO-based report as the default button, and
