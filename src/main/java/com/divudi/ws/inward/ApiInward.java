@@ -443,13 +443,17 @@ public class ApiInward {
 
                 Bill b = pay(PaymentMethod.OnlineSettlement, pe, parsedAmount, pmd, authenticatedUser);
                 if (b != null) {
+                    // Bill.bank and Bill.creditCardRefNo are filled from the credit card data, not the
+                    // online settlement data used here, so fall back to the request values (#25551).
+                    Institution billBank = b.getBank() != null ? b.getBank() : bank;
+                    String billCardRef = b.getCreditCardRefNo() != null ? b.getCreditCardRefNo() : credit_card_ref;
                     JSONObject object = new JSONObject();
-                    object.put("bill_no_ins", b.getInsId());
-                    object.put("bill_no_dept", b.getDeptId());
-                    object.put("bill_bht_no", b.getPatientEncounter().getBhtNo());
+                    object.put("bill_no_ins", b.getInsId() != null ? b.getInsId() : "");
+                    object.put("bill_no_dept", b.getDeptId() != null ? b.getDeptId() : "");
+                    object.put("bill_bht_no", b.getPatientEncounter() != null && b.getPatientEncounter().getBhtNo() != null ? b.getPatientEncounter().getBhtNo() : "");
                     object.put("bill_amount", b.getNetTotal());
-                    object.put("bill_bank", b.getBank().getName());
-                    object.put("bill_crad_ref_no", b.getCreditCardRefNo());
+                    object.put("bill_bank", billBank != null && billBank.getName() != null ? billBank.getName() : "");
+                    object.put("bill_crad_ref_no", billCardRef != null ? billCardRef : "");
 
                     jSONObjectOut.put("bill", object);
                     jSONObjectOut.put("error", "0");
