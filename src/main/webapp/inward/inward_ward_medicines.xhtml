@@ -358,7 +358,7 @@
                                                                  converter="stockConverter"
                                                                  style="width: 100%;">
                                                     <f:selectItems value="#{medicationAdministrationController.availableWardStocks}" var="s"
-                                                                   itemLabel="#{s.itemBatch.batchNo} (exp #{s.itemBatch.dateOfExpire}, avail #{s.stock})"
+                                                                   itemLabel="#{s.itemBatch.item.name} - #{s.itemBatch.batchNo} (exp #{s.itemBatch.dateOfExpire}, avail #{s.stock})"
                                                                    itemValue="#{s}" />
                                                 </p:selectOneMenu>
                                             </div>
