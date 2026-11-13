@@ -23,6 +23,7 @@ import com.divudi.core.entity.inward.Admission;
 import com.divudi.core.facade.BillFacade;
 import com.divudi.core.facade.BillFeeFacade;
 import com.divudi.core.facade.BillItemFacade;
+import com.divudi.core.facade.PatientEncounterFacade;
 import com.divudi.service.PaymentService;
 
 import java.io.Serializable;
@@ -56,6 +57,8 @@ public class InwardRefundController implements Serializable {
     private BillFeeFacade billFeeFacade;
     @EJB
     PaymentService paymentService;
+    @EJB
+    private PatientEncounterFacade patientEncounterFacade;
     @Inject
     private SessionController sessionController;
     @Inject
@@ -246,18 +249,36 @@ public class InwardRefundController implements Serializable {
         List<Payment> payments = paymentService.createPayment(getCurrent(), paymentMethodData);
         paymentService.updateBalances(payments);
 
-        getBillBean().updateInwardDipositList(getCurrent().getPatientEncounter(), getCurrent());
-
-        if (getCurrent().getPatientEncounter().isPaymentFinalized()) {
-            getInwardBean().updateFinalFill(getCurrent().getPatientEncounter());
-            if (getCurrent().getPatientEncounter().getPaymentMethod() == PaymentMethod.Credit) {
-                getInwardBean().updateCreditDetail(getCurrent().getPatientEncounter(), getCurrent().getPatientEncounter().getFinalBill().getNetTotal());
-            }
+        // Re-read the admission: the page's copy can predate a final bill
+        // settle or cancel, and saving it would undo the cancel (#25413). Held
+        // under the same per-admission lock as final bill settle and cancel.
+        PatientEncounter encounter = getCurrent().getPatientEncounter();
+        boolean linked = true;
+        if (encounter != null && encounter.getId() != null) {
+            linked = getBillNumberBean().withFinalBillVersionLock(encounter, () -> {
+                PatientEncounter fresh = patientEncounterFacade.findWithoutCache(getCurrent().getPatientEncounter().getId());
+                if (fresh == null) {
+                    fresh = getCurrent().getPatientEncounter();
+                } else {
+                    getCurrent().setPatientEncounter(fresh);
+                }
+                boolean ok = getBillBean().updateInwardDipositList(fresh, getCurrent());
+                if (ok && fresh.isPaymentFinalized() && fresh.getFinalBill() != null) {
+                    getInwardBean().updateFinalFill(fresh);
+                    if (fresh.getPaymentMethod() == PaymentMethod.Credit) {
+                        getInwardBean().updateCreditDetail(fresh, fresh.getFinalBill().getNetTotal());
+                    }
+                }
+                return ok;
+            });
         }
 
         WebUser wb = getCashTransactionBean().saveBillCashOutTransaction(getCurrent(), getSessionController().getLoggedUser());
         getSessionController().setLoggedUser(wb);
         JsfUtil.addSuccessMessage("Payment Bill Saved");
+        if (!linked) {
+            JsfUtil.addErrorMessage("The final bill of this admission is cancelled, so this refund was not added to it. Please check the admission's final bill.");
+        }
     }
 
     @Inject
