@@ -179,4 +179,73 @@ public class InpatientCreditCompanyPaymentMultiAdmissionFinalBillTest {
         assertEquals(4000.0, finalBill.getPaidAmount(), 0.001);
         assertEquals(4000.0, finalBill.getSettledAmountByPatient(), 0.001);
     }
+
+    private PatientEncounter admissionWithFinalBill(long encId, long billId, double net, double paid, double balance) {
+        PatientEncounter admission = new PatientEncounter();
+        admission.setId(encId);
+        admission.setPaymentFinalized(true);
+        Bill finalBill = new BilledBill();
+        finalBill.setId(billId);
+        finalBill.setNetTotal(net);
+        finalBill.setBalance(balance);
+        finalBill.setPaidAmount(paid);
+        admission.setFinalBill(finalBill);
+        billStore.put(billId, finalBill);
+        return admission;
+    }
+
+    private Bill ccBill(long id, BillTypeAtomic type, double net) {
+        Bill b = type == BillTypeAtomic.INPATIENT_CREDIT_COMPANY_PAYMENT_CANCELLATION ? new CancelledBill() : new BilledBill();
+        b.setId(id);
+        b.setBillTypeAtomic(type);
+        b.setNetTotal(net);
+        return b;
+    }
+
+    @Test
+    @DisplayName("Receiving the full net then cancelling restores the balance exactly (#25570)")
+    void receiveFullNetThenCancelRestoresBalance() {
+        PatientEncounter admission = admissionWithFinalBill(301L, 3001L, 1000.0, 0.0, 1000.0);
+        Bill finalBill = admission.getFinalBill();
+
+        billBeanController.updateInwardDipositList(admission,
+                ccBill(8001L, BillTypeAtomic.INPATIENT_CREDIT_COMPANY_PAYMENT_RECEIVED, 1000.0), 1000.0);
+        assertEquals(0.0, finalBill.getBalance(), 0.001);
+        assertEquals(1000.0, finalBill.getPaidAmount(), 0.001);
+
+        billBeanController.updateInwardDipositList(admission,
+                ccBill(8002L, BillTypeAtomic.INPATIENT_CREDIT_COMPANY_PAYMENT_CANCELLATION, -1000.0), -1000.0);
+        assertEquals(1000.0, finalBill.getBalance(), 0.001);
+        assertEquals(0.0, finalBill.getPaidAmount(), 0.001);
+        assertEquals(0.0, finalBill.getSettledAmountBySponsor(), 0.001);
+    }
+
+    @Test
+    @DisplayName("Receiving a partial amount then cancelling restores the balance exactly (#25570)")
+    void receivePartialThenCancelRestoresBalance() {
+        PatientEncounter admission = admissionWithFinalBill(302L, 3002L, 1000.0, 0.0, 1000.0);
+        Bill finalBill = admission.getFinalBill();
+
+        billBeanController.updateInwardDipositList(admission,
+                ccBill(8003L, BillTypeAtomic.INPATIENT_CREDIT_COMPANY_PAYMENT_RECEIVED, 400.0), 400.0);
+        assertEquals(600.0, finalBill.getBalance(), 0.001);
+
+        billBeanController.updateInwardDipositList(admission,
+                ccBill(8004L, BillTypeAtomic.INPATIENT_CREDIT_COMPANY_PAYMENT_CANCELLATION, -400.0), -400.0);
+        assertEquals(1000.0, finalBill.getBalance(), 0.001);
+        assertEquals(0.0, finalBill.getPaidAmount(), 0.001);
+    }
+
+    @Test
+    @DisplayName("A final bill saved with prior payments (paid 300 of 1000, balance never set) gives balance 500 after a 200 receipt (#25570)")
+    void finalBillWithPriorPaymentGivesCorrectBalance() {
+        PatientEncounter admission = admissionWithFinalBill(303L, 3003L, 1000.0, 300.0, 0.0);
+        Bill finalBill = admission.getFinalBill();
+
+        billBeanController.updateInwardDipositList(admission,
+                ccBill(8005L, BillTypeAtomic.INWARD_PAYMENT, 200.0), 200.0);
+        assertEquals(500.0, finalBill.getBalance(), 0.001);
+        assertEquals(500.0, finalBill.getPaidAmount(), 0.001);
+        assertEquals(200.0, finalBill.getSettledAmountByPatient(), 0.001);
+    }
 }
