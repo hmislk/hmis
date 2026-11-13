@@ -606,7 +606,7 @@
                                                                 <p:commandButton
                                                                     value="Direct Issue to BHTs"
                                                                     action="/inward/pharmacy_bill_issue_bht?faces-redirect=true"
-                                                                    actionListener="#{pharmacySaleBhtController.resetAll()}"
+                                                                    actionListener="#{inpatientDirectIssueNativeSqlController.resetAll()}"
                                                                     rendered="#{webUserController.hasPrivilege('PharmacySale') or webUserController.hasPrivilege('PharmacyDirectIssueToBht')}"
                                                                     icon="pi pi-check"
                                                                     class="w-100"
