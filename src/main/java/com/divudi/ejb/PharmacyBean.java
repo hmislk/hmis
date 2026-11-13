@@ -1146,6 +1146,86 @@ public class PharmacyBean {
         return true;
     }
 
+    /**
+     * Checks that the porter named on an issue made against a ward request
+     * still holds, in staff stock, everything that was handed to them at issue
+     * (see PharmacySaleBhtController.transferIssuedStockToPorter). Cancelling
+     * the issue before ward receipt has to take that stock back out.
+     *
+     * @return null when the porter holds enough (or the issue has no porter);
+     * otherwise a message for the user naming the first short item and batch.
+     */
+    public String porterStockShortfallForIssueCancellation(Bill issueBill) {
+        if (issueBill == null || issueBill.getToStaff() == null || issueBill.getBillItems() == null) {
+            return null;
+        }
+        Staff porter = issueBill.getToStaff();
+        Map<Long, Double> requiredByBatch = new HashMap<>();
+        Map<Long, BillItem> sampleByBatch = new HashMap<>();
+        for (BillItem bi : issueBill.getBillItems()) {
+            PharmaceuticalBillItem pbi = bi.getPharmaceuticalBillItem();
+            if (pbi == null || pbi.getItemBatch() == null || pbi.getItemBatch().getId() == null) {
+                continue;
+            }
+            Long batchId = pbi.getItemBatch().getId();
+            requiredByBatch.merge(batchId, Math.abs(pbi.getQty()), Double::sum);
+            sampleByBatch.put(batchId, bi);
+        }
+        for (Map.Entry<Long, Double> e : requiredByBatch.entrySet()) {
+            BillItem bi = sampleByBatch.get(e.getKey());
+            PharmaceuticalBillItem pbi = bi.getPharmaceuticalBillItem();
+            Map<String, Object> params = new HashMap<>();
+            params.put("batch", pbi.getItemBatch());
+            params.put("staff", porter);
+            Stock porterStock = getStockFacade().findFirstByJpql(
+                    "SELECT s FROM Stock s WHERE s.itemBatch = :batch AND s.staff = :staff", params, true);
+            double available = porterStock == null ? 0.0 : porterStock.getStock();
+            // Same rule as deductFromStock(PharmaceuticalBillItem, double, Staff), so a
+            // quantity this check approves can always be deducted.
+            if (available < e.getValue()) {
+                return "Cannot cancel: porter no longer holds enough stock of " + bi.getItem().getName()
+                        + " batch " + pbi.getItemBatch().getBatchNo()
+                        + " (need " + e.getValue() + ", available " + available + ").";
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Takes the issued quantities of an issue made against a ward request back
+     * out of the porter's staff stock (with stock history). Call after
+     * porterStockShortfallForIssueCancellation returned null and BEFORE the
+     * department stock is restored, so a failure here leaves nothing changed.
+     *
+     * If any line cannot be deducted, the lines already deducted are added back
+     * to the porter and false is returned; the caller must then stop the
+     * cancellation.
+     *
+     * @return true when every line was deducted (or the issue has no porter)
+     */
+    public boolean deductPorterStockForIssueCancellation(Bill issueBill) {
+        if (issueBill == null || issueBill.getToStaff() == null || issueBill.getBillItems() == null) {
+            return true;
+        }
+        Staff porter = issueBill.getToStaff();
+        List<PharmaceuticalBillItem> deducted = new ArrayList<>();
+        for (BillItem bi : issueBill.getBillItems()) {
+            PharmaceuticalBillItem pbi = bi.getPharmaceuticalBillItem();
+            if (pbi == null || pbi.getItemBatch() == null) {
+                continue;
+            }
+            if (deductFromStock(pbi, Math.abs(pbi.getQty()), porter)) {
+                deducted.add(pbi);
+            } else {
+                for (PharmaceuticalBillItem done : deducted) {
+                    addToStock(done, Math.abs(done.getQty()), porter);
+                }
+                return false;
+            }
+        }
+        return true;
+    }
+
     public boolean deductFromStock(ItemBatch batch, double qty, Department department, boolean minusAllowed) {
         if (!minusAllowed) {
             return deductFromStock(batch, qty, department);
