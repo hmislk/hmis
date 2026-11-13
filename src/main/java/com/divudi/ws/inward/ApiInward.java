@@ -604,14 +604,9 @@ public class ApiInward {
         // Record payment to payment table (before updateInwardDipositList, matching UI order)
         paymentService.createPayment(bill, paymentMethod, pmd, bill.getInstitution(), bill.getDepartment(), createdBy);
 
-        getBillBeanController().updateInwardDipositList(bill.getPatientEncounter(), bill);
-
-        if (bill.getPatientEncounter().isPaymentFinalized()) {
-            getInwardBeanController().updateFinalFill(bill.getPatientEncounter());
-            if (bill.getPatientEncounter().getPaymentMethod() == PaymentMethod.Credit) {
-                getInwardBeanController().updateCreditDetail(bill.getPatientEncounter(), bill.getPatientEncounter().getFinalBill().getNetTotal());
-            }
-        }
+        // Re-reads the admission and final bill under the final bill lock (#25521).
+        BillBeanController.FinalBillLinkResult link = getBillBeanController().linkToFreshFinalBillAndRefresh(bill.getPatientEncounter(), bill);
+        bill.setPatientEncounter(link.getEncounter());
 
         return getBillFacade().find(bill.getId());
     }
@@ -637,15 +632,9 @@ public class ApiInward {
 
         saveBillItem(bill, createdBy);
 
-        getBillBeanController().updateInwardDipositList(bill.getPatientEncounter(), bill);
-
-        if (bill.getPatientEncounter().isPaymentFinalized()) {
-            getInwardBeanController().updateFinalFill(bill.getPatientEncounter());
-
-            if (bill.getPatientEncounter().getPaymentMethod() == PaymentMethod.Credit) {
-                getInwardBeanController().updateCreditDetail(bill.getPatientEncounter(), bill.getPatientEncounter().getFinalBill().getNetTotal());
-            }
-        }
+        // Re-reads the admission and final bill under the final bill lock (#25521).
+        BillBeanController.FinalBillLinkResult link = getBillBeanController().linkToFreshFinalBillAndRefresh(bill.getPatientEncounter(), bill);
+        bill.setPatientEncounter(link.getEncounter());
 
         return getBillFacade().find(bill.getId());
     }
