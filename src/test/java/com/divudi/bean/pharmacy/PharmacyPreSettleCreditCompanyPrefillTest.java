@@ -25,10 +25,10 @@ public class PharmacyPreSettleCreditCompanyPrefillTest {
         controller = new PharmacyPreSettleController();
 
         creditCompany = new Institution();
-        creditCompany.setName("Sri Lanka Insurance");
+        creditCompany.setName("Insurer A");
 
         alternateCompany = new Institution();
-        alternateCompany.setName("Ceylinco General Insurance");
+        alternateCompany.setName("Insurer B");
     }
 
     @Test
