@@ -3500,6 +3500,13 @@ public class PharmacyBillSearch implements Serializable {
         } else {
             cancellationAtomic = BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION;
         }
+        String porterShortfall = getBill().getBillTypeAtomic() == BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD
+                ? getPharmacyBean().porterStockShortfallForIssueCancellation(getBillFacade().findWithoutCache(getBill().getId()))
+                : null;
+        if (porterShortfall != null) {
+            JsfUtil.addErrorMessage(porterShortfall);
+            return;
+        }
         String deptId = billNumberBean.departmentBillNumberGeneratorYearly(sessionController.getDepartment(), cancellationAtomic);
         // Bills settled through InpatientDirectIssueNativeSqlService write their real netTotal
         // and BillItem rows via native SQL after this session-scoped bean's `bill` reference was
@@ -3509,6 +3516,10 @@ public class PharmacyBillSearch implements Serializable {
         Bill billToCancel = getBillFacade().findWithoutCache(getBill().getId());
         Bill originalForwardReferenceBill = billToCancel.getForwardReferenceBill();
         Bill newlyCreatedCancellationBill = getPharmacyBean().reAddToStock(billToCancel, getSessionController().getLoggedUser(), getSessionController().getDepartment(), BillNumberSuffix.PHISSCAN);
+        if (billToCancel.getBillTypeAtomic() == BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD) {
+            // The issue moved the quantity to the porter's staff stock; take it back out (#25525).
+            getPharmacyBean().deductPorterStockForIssueCancellation(billToCancel, newlyCreatedCancellationBill);
+        }
         newlyCreatedCancellationBill.setForwardReferenceBill(originalForwardReferenceBill);
         newlyCreatedCancellationBill.setBillTypeAtomic(cancellationAtomic);
         newlyCreatedCancellationBill.setDeptId(deptId);
@@ -3685,8 +3696,18 @@ public class PharmacyBillSearch implements Serializable {
         if (checkDepartment(getBill())) {
             return;
         }
+        boolean requestIssue = getBill().getBillTypeAtomic() == BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD;
+        String porterShortfall = requestIssue ? getPharmacyBean().porterStockShortfallForIssueCancellation(getBill()) : null;
+        if (porterShortfall != null) {
+            JsfUtil.addErrorMessage(porterShortfall);
+            return;
+        }
         String deptId = billNumberBean.departmentBillNumberGeneratorYearly(sessionController.getDepartment(), BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_CANCELLATION);
         Bill newlyCreatedCancellationBill = getPharmacyBean().reAddToStock(getBill(), getSessionController().getLoggedUser(), getSessionController().getDepartment(), BillNumberSuffix.PHISSCAN);
+        // The issue moved the quantity to the porter's staff stock; take it back out (#25525).
+        if (requestIssue) {
+            getPharmacyBean().deductPorterStockForIssueCancellation(getBill(), newlyCreatedCancellationBill);
+        }
         newlyCreatedCancellationBill.setForwardReferenceBill(getBill().getForwardReferenceBill());
         newlyCreatedCancellationBill.setBillTypeAtomic(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_CANCELLATION);
         newlyCreatedCancellationBill.setDeptId(deptId);

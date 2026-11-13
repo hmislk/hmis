@@ -1146,6 +1146,69 @@ public class PharmacyBean {
         return true;
     }
 
+    /**
+     * Checks that the porter named on an issue made against a ward request
+     * still holds, in staff stock, everything that was handed to them at issue
+     * (see PharmacySaleBhtController.transferIssuedStockToPorter). Cancelling
+     * the issue before ward receipt has to take that stock back out.
+     *
+     * @return null when the porter holds enough (or the issue has no porter);
+     * otherwise a message for the user naming the first short item and batch.
+     */
+    public String porterStockShortfallForIssueCancellation(Bill issueBill) {
+        if (issueBill == null || issueBill.getToStaff() == null || issueBill.getBillItems() == null) {
+            return null;
+        }
+        Staff porter = issueBill.getToStaff();
+        Map<Long, Double> requiredByBatch = new HashMap<>();
+        Map<Long, BillItem> sampleByBatch = new HashMap<>();
+        for (BillItem bi : issueBill.getBillItems()) {
+            PharmaceuticalBillItem pbi = bi.getPharmaceuticalBillItem();
+            if (pbi == null || pbi.getItemBatch() == null || pbi.getItemBatch().getId() == null) {
+                continue;
+            }
+            Long batchId = pbi.getItemBatch().getId();
+            requiredByBatch.merge(batchId, Math.abs(pbi.getQty()), Double::sum);
+            sampleByBatch.put(batchId, bi);
+        }
+        for (Map.Entry<Long, Double> e : requiredByBatch.entrySet()) {
+            BillItem bi = sampleByBatch.get(e.getKey());
+            PharmaceuticalBillItem pbi = bi.getPharmaceuticalBillItem();
+            Map<String, Object> params = new HashMap<>();
+            params.put("batch", pbi.getItemBatch());
+            params.put("staff", porter);
+            Stock porterStock = getStockFacade().findFirstByJpql(
+                    "SELECT s FROM Stock s WHERE s.itemBatch = :batch AND s.staff = :staff", params, true);
+            double available = porterStock == null ? 0.0 : porterStock.getStock();
+            if (available + 0.0001 < e.getValue()) {
+                return "Cannot cancel: porter no longer holds enough stock of " + bi.getItem().getName()
+                        + " batch " + pbi.getItemBatch().getBatchNo()
+                        + " (need " + e.getValue() + ", available " + available + ").";
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Takes back out of the porter's staff stock (with stock history) the
+     * quantities of a cancellation bill created by reAddToStock for an issue
+     * made against a ward request. Call after
+     * porterStockShortfallForIssueCancellation returned null.
+     */
+    public void deductPorterStockForIssueCancellation(Bill issueBill, Bill cancellationBill) {
+        if (issueBill == null || issueBill.getToStaff() == null
+                || cancellationBill == null || cancellationBill.getBillItems() == null) {
+            return;
+        }
+        for (BillItem bi : cancellationBill.getBillItems()) {
+            PharmaceuticalBillItem pbi = bi.getPharmaceuticalBillItem();
+            if (pbi == null || pbi.getItemBatch() == null) {
+                continue;
+            }
+            deductFromStock(pbi, Math.abs(pbi.getQty()), issueBill.getToStaff());
+        }
+    }
+
     public boolean deductFromStock(ItemBatch batch, double qty, Department department, boolean minusAllowed) {
         if (!minusAllowed) {
             return deductFromStock(batch, qty, department);
