@@ -50,7 +50,7 @@
                                 <f:selectItem itemLabel="All Institutions"/>
                                 <f:selectItems value="#{institutionController.companies}" var="ins"
                                                itemLabel="#{ins.name}" itemValue="#{ins}"/>
-                                <p:ajax process="cmbIns" update="cmbDept"/>
+                                <p:ajax process="cmbIns" update="cmbDept" listener="#{prescriptionListController.clearDepartment()}"/>
                             </p:selectOneMenu>
                             <p:spacer/>
                             <h:panelGroup layout="block" styleClass="form-group">
@@ -64,7 +64,7 @@
                                 <f:selectItem itemLabel="All Sites"/>
                                 <f:selectItems value="#{institutionController.sites}" var="site"
                                                itemLabel="#{site.name}" itemValue="#{site}"/>
-                                <p:ajax process="cmbSite" update="cmbDept"/>
+                                <p:ajax process="cmbSite" update="cmbDept" listener="#{prescriptionListController.clearDepartment()}"/>
                             </p:selectOneMenu>
                             <p:spacer/>
                             <h:panelGroup layout="block" styleClass="form-group">
@@ -225,7 +225,8 @@
                                     </h:outputText>
                                 </f:facet>
                             </p:column>
-                            <p:column headerText="Net" width="8em" styleClass="text-end">
+                            <p:column headerText="Net" width="8em" styleClass="text-end"
+                                      rendered="#{prescriptionListController.isColumnVisible('net')}">
                                 <h:outputText value="#{row.netTotal}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>

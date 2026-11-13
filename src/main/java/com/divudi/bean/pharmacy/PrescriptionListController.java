@@ -163,6 +163,7 @@ public class PrescriptionListController implements Serializable {
             columnSettings.add(new ColumnSetting("paymentMethod", "Payment Method"));
             columnSettings.add(new ColumnSetting("gross", "Gross"));
             columnSettings.add(new ColumnSetting("discount", "Discount"));
+            columnSettings.add(new ColumnSetting("net", "Net"));
         }
         return columnSettings;
     }
@@ -195,6 +196,11 @@ public class PrescriptionListController implements Serializable {
                 userSettingsController.toggleColumnVisibility(PAGE_ID, id);
             }
         }
+    }
+
+    /** Institution or Site changed: the old department may not belong to the new choice. */
+    public void clearDepartment() {
+        department = null;
     }
 
     // ---- getters / setters ----
