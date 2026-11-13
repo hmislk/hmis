@@ -1604,6 +1604,13 @@ public class BookingController implements Serializable, ControllerWithPatient, C
             return;
         }
 
+        if (paymentMethod == PaymentMethod.Agent
+                && getNetFeeTotalForBooking() > institution.getBallance() + institution.getAllowedCredit()) {
+            JsfUtil.addErrorMessage("Agency Balance is Not Enough. Please Increase Credit Limit or Balance");
+            settleSucessFully = false;
+            return;
+        }
+
         if (paymentMethod == PaymentMethod.OnCall) {
             if (selectedSessionInstance.getOriginatingSession() != null && selectedSessionInstance.getOriginatingSession().isPaidAppointmentsOnly()) {
                 JsfUtil.addErrorMessage("This Session is Paid Appointments Only");
