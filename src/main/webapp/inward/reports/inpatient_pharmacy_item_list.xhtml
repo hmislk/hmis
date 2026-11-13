@@ -294,6 +294,13 @@
                                     <h:outputLabel value="#{bip.item.name}" />
                                 </p:column>
 
+                                <p:column width="5em" style="padding: 2px" styleClass="#{(bip.referanceBillItem ne null and bip.referanceBillItem.bill.billTypeAtomic ne 'REQUEST_MEDICINE_INWARD') and !bip.referanceBillItem.bill.cancelled ? 'ui-messages-warn' : bip.referanceBillItem ne null and bip.referanceBillItem.bill.cancelled ? 'ui-messages-fatal' : ''}">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Status" />
+                                    </f:facet>
+                                    <h:outputLabel value="#{bip.referanceBillItem ne null ? (bip.referanceBillItem.bill.cancelled ? 'Cancelled' : (bip.referanceBillItem.bill.billTypeAtomic ne 'REQUEST_MEDICINE_INWARD' ? 'Return' : '')) : ''}" />
+                                </p:column>
+
                                 <p:column width="2em" style="padding: 2px" styleClass="#{(bip.referanceBillItem ne null and bip.referanceBillItem.bill.billTypeAtomic ne 'REQUEST_MEDICINE_INWARD') and !bip.referanceBillItem.bill.cancelled ? 'ui-messages-warn' : bip.referanceBillItem ne null and bip.referanceBillItem.bill.cancelled ? 'ui-messages-fatal' : ''}">
                                     <f:facet name="header">
                                         <h:outputLabel value="QTY" />

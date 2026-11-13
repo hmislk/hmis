@@ -178,6 +178,13 @@
                                     <h:outputLabel value="#{dto.itemName}" />
                                 </p:column>
 
+                                <p:column width="5em" style="padding: 2px" styleClass="#{dto.cancellationOrReturn and !dto.billCancelled ? 'ui-messages-warn' : dto.cancellationOrReturn and dto.billCancelled ? 'ui-messages-fatal' : ''}">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Status" />
+                                    </f:facet>
+                                    <h:outputLabel value="#{dto.cancellationOrReturn ? (dto.billCancelled ? 'Cancelled' : 'Return') : ''}" />
+                                </p:column>
+
                                 <p:column width="2em" style="padding: 2px" styleClass="#{dto.cancellationOrReturn and !dto.billCancelled ? 'ui-messages-warn' : dto.cancellationOrReturn and dto.billCancelled ? 'ui-messages-fatal' : ''}">
                                     <f:facet name="header">
                                         <h:outputLabel value="QTY" />
