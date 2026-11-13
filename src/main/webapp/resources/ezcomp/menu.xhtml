@@ -686,6 +686,13 @@
 
                         <p:menuitem
                             ajax="false"
+                            action="#{wardPharmacyReturnToPharmacyController.navigateToReturnAllPatients}"
+                            value="Return Medicines to Pharmacy"
+                            icon="fa fa-truck-ramp-box"
+                            rendered="#{webUserController.hasPrivilege('InwardPharmacyReturnSubmit')}" >
+                        </p:menuitem>
+                        <p:menuitem
+                            ajax="false"
                             action="#{pharmacyReturnFromWardReceiveController.navigateToPendingList}"
                             value="Accept Returns from Ward"
                             icon="fa fa-truck-ramp-box"
@@ -1268,6 +1275,13 @@
                                      value="BHT Issue Requests" icon="fas fa-clipboard-list"
                                      actionListener="#{pharmacySaleBhtController.resetAll()}"
                                      rendered="#{webUserController.hasPrivilege('PharmacyBhtIssueRequest')}" />
+                        <p:menuitem
+                            ajax="false"
+                            action="#{wardPharmacyReturnToPharmacyController.navigateToReturnAllPatients}"
+                            value="Return Medicines to Pharmacy"
+                            icon="fa fa-truck-ramp-box"
+                            rendered="#{webUserController.hasPrivilege('InwardPharmacyReturnSubmit')}" >
+                        </p:menuitem>
                         <p:menuitem
                             ajax="false"
                             action="#{pharmacyReturnFromWardReceiveController.navigateToPendingList}"
