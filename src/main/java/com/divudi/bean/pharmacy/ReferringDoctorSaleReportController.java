@@ -309,6 +309,11 @@ public class ReferringDoctorSaleReportController implements Serializable {
         this.toDate = toDate;
     }
 
+    /** Institution or Site changed: the old department may not belong to the new choice. */
+    public void clearDepartment() {
+        department = null;
+    }
+
     public Institution getInstitution() {
         return institution;
     }

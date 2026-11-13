@@ -42,7 +42,7 @@
                                              value="#{referringDoctorSaleReportController.institution}" filter="true">
                                 <f:selectItem itemLabel="All Institutions"/>
                                 <f:selectItems value="#{institutionController.companies}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}"/>
-                                <p:ajax process="cmbIns" update="pnlDept"/>
+                                <p:ajax process="cmbIns" update="pnlDept" listener="#{referringDoctorSaleReportController.clearDepartment()}"/>
                             </p:selectOneMenu>
                             <p:spacer/>
                             <h:panelGroup layout="block" styleClass="form-group">
@@ -53,7 +53,7 @@
                                              value="#{referringDoctorSaleReportController.site}" filter="true">
                                 <f:selectItem itemLabel="All Sites"/>
                                 <f:selectItems value="#{institutionController.sites}" var="site" itemLabel="#{site.name}" itemValue="#{site}"/>
-                                <p:ajax process="siteMenu" update="pnlDept"/>
+                                <p:ajax process="siteMenu" update="pnlDept" listener="#{referringDoctorSaleReportController.clearDepartment()}"/>
                             </p:selectOneMenu>
                             <p:spacer/>
                             <h:panelGroup layout="block" styleClass="form-group">
