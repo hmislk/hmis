@@ -443,21 +443,23 @@ public class CashRecieveBillController implements Serializable {
     }
 
     /**
-     * Due on a credit bill: net total + VAT - refunds - settlements (#25467).
-     * Refunds and settlements are recorded on the credit bill itself (#25463),
-     * so the stored balance is not read; it can be out of step on older bills.
-     * The bill is read fresh so a payment taken since this page opened counts.
+     * Due on a credit bill: net total - refunds - settlements (#25467), the same
+     * rule as OPD Due Search (CreditBean, #25463). Refunds and settlements are
+     * recorded on the credit bill itself, so the stored balance is not read; it
+     * can be out of step on older bills. The value is queried from the database,
+     * bypassing the cache, so a payment taken since this page opened counts.
      */
     private double creditBillDue(Bill bill) {
-        Bill fresh = bill;
-        if (bill.getId() != null) {
-            Bill found = getBillFacade().find(bill.getId());
-            if (found != null) {
-                fresh = found;
-            }
+        double due;
+        if (bill.getId() == null) {
+            due = bill.getNetTotal() - (bill.getRefundAmount() + bill.getPaidAmount());
+        } else {
+            String jpql = "select b.netTotal - (coalesce(b.refundAmount,0) + coalesce(b.paidAmount,0)) "
+                    + "from Bill b where b.id = :id";
+            Map<String, Object> params = new HashMap<>();
+            params.put("id", bill.getId());
+            due = getBillFacade().findDoubleByJpql(jpql, params, true);
         }
-        double gross = Math.abs(fresh.getNetTotal() + fresh.getVat());
-        double due = gross - (Math.abs(fresh.getRefundAmount()) + Math.abs(fresh.getPaidAmount()));
         return Math.max(0, due);
     }
 
