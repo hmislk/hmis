@@ -1379,9 +1379,9 @@ public class CashRecieveBillController implements Serializable {
             } else {
                 getBillItemFacade().edit(savingBillItem);
             }
-            linkToFinalBillOrWarn(savingBillItem.getPatientEncounter(), getCurrent());
             updateReferenceBht(savingBillItem);
         }
+        linkToFinalBillsOrWarn(getCurrent(), getBillItems());
         paymentService.createPayment(current, getPaymentMethodData());
         JsfUtil.addSuccessMessage("Bill Saved");
         recreateModel();
@@ -1798,10 +1798,10 @@ public class CashRecieveBillController implements Serializable {
             getCurrent().getBillItems().add(tmp);
             getBillItemFacade().create(tmp);
 
-            linkToFinalBillOrWarn(tmp.getPatientEncounter(), getCurrent());
             updateReferenceBht(tmp);
 
         }
+        linkToFinalBillsOrWarn(getCurrent(), getSelectedBillItems());
 
     }
 
@@ -1887,11 +1887,11 @@ public class CashRecieveBillController implements Serializable {
         getBillFacade().edit(referenceBill);
     }
 
-    // Links the payment to the admission's final bill using a fresh read, so a
+    // Links the payment to each admission's final bill once, using a fresh read, so a
     // final bill cancelled since this page opened is not written back as live (#25521).
-    private void linkToFinalBillOrWarn(PatientEncounter patientEncounter, Bill payment) {
-        BillBeanController.FinalBillLinkResult link = getBillBean().linkToFreshFinalBill(patientEncounter, payment);
-        if (!link.isLinked()) {
+    // A payment for several admissions gives each final bill only its own share (#25547).
+    private void linkToFinalBillsOrWarn(Bill payment, List<BillItem> items) {
+        if (!getBillBean().linkToFreshFinalBillsPerAdmission(payment, items)) {
             JsfUtil.addErrorMessage("The final bill of an admission in this payment is cancelled, so this payment was not added to it. Please check the admission's final bill.");
         }
     }

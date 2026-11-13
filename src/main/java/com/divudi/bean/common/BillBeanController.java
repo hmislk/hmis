@@ -83,6 +83,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.LinkedHashMap;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -2524,6 +2525,16 @@ public class BillBeanController implements Serializable {
      * was not linked; true otherwise.
      */
     public boolean updateInwardDipositList(PatientEncounter patientEncounter, Bill bill) {
+        return updateInwardDipositList(patientEncounter, bill, bill == null ? 0 : bill.getNetTotal());
+    }
+
+    /**
+     * Same as {@link #updateInwardDipositList(PatientEncounter, Bill)}, but the
+     * final bill changes by {@code amount} (same sign as the bill's netTotal)
+     * instead of the bill's whole netTotal. Used when one payment covers more
+     * than one admission, so each final bill takes only its own share (#25547).
+     */
+    public boolean updateInwardDipositList(PatientEncounter patientEncounter, Bill bill, double amount) {
         if (patientEncounter != null && bill != null) {
             if (patientEncounter.isPaymentFinalized() && patientEncounter.getFinalBill() != null
                     && patientEncounter.getFinalBill().getId() != null) {
@@ -2541,16 +2552,16 @@ public class BillBeanController implements Serializable {
                     if (finalBill.getBalance() <= 0) {
                         finalBill.setBalance(finalBill.getNetTotal());
                     }
-                    finalBill.setBalance(finalBill.getBalance() - bill.getNetTotal());
-                    finalBill.setPaidAmount(finalBill.getPaidAmount() + bill.getNetTotal());
+                    finalBill.setBalance(finalBill.getBalance() - amount);
+                    finalBill.setPaidAmount(finalBill.getPaidAmount() + amount);
 
                     if (bill.getBillTypeAtomic() == BillTypeAtomic.INWARD_PAYMENT
                             || bill.getBillTypeAtomic() == BillTypeAtomic.INWARD_DEPOSIT) {
-                        finalBill.setSettledAmountByPatient(finalBill.getSettledAmountByPatient() + bill.getNetTotal());
+                        finalBill.setSettledAmountByPatient(finalBill.getSettledAmountByPatient() + amount);
                     } else if (bill.getBillTypeAtomic() == BillTypeAtomic.INPATIENT_CREDIT_COMPANY_PAYMENT_RECEIVED) {
-                        finalBill.setSettledAmountBySponsor(finalBill.getSettledAmountBySponsor() + bill.getNetTotal());
+                        finalBill.setSettledAmountBySponsor(finalBill.getSettledAmountBySponsor() + amount);
                     } else if (bill.getBillTypeAtomic() == BillTypeAtomic.INPATIENT_CREDIT_COMPANY_PAYMENT_CANCELLATION) {
-                        finalBill.setSettledAmountBySponsor(finalBill.getSettledAmountBySponsor() - Math.abs(bill.getNetTotal()));
+                        finalBill.setSettledAmountBySponsor(finalBill.getSettledAmountBySponsor() - Math.abs(amount));
                     }
                 }
                 getBillFacade().edit(finalBill);
@@ -2618,7 +2629,50 @@ public class BillBeanController implements Serializable {
         return linkToFreshFinalBill(patientEncounter, bill, false);
     }
 
+    /**
+     * Links a payment (or its cancellation) to the final bill of every admission
+     * in its items, once per admission. A payment for one admission links with
+     * the bill's netTotal, as before. A payment for several admissions gives
+     * each final bill only the total of that admission's items, with the sign
+     * of the bill's netTotal (#25547).
+     *
+     * @return false when any admission's final bill was cancelled, so the bill
+     * was not added to it.
+     */
+    public boolean linkToFreshFinalBillsPerAdmission(Bill bill, List<BillItem> items) {
+        if (bill == null || items == null) {
+            return true;
+        }
+        Map<Long, PatientEncounter> encounters = new LinkedHashMap<>();
+        Map<Long, Double> shares = new HashMap<>();
+        for (BillItem item : items) {
+            PatientEncounter encounter = item == null ? null : item.getPatientEncounter();
+            if (encounter == null || encounter.getId() == null) {
+                continue;
+            }
+            encounters.putIfAbsent(encounter.getId(), encounter);
+            shares.merge(encounter.getId(), Math.abs(item.getNetValue()), Double::sum);
+        }
+        boolean allLinked = true;
+        if (encounters.size() == 1) {
+            PatientEncounter only = encounters.values().iterator().next();
+            return linkToFreshFinalBill(only, bill).isLinked();
+        }
+        double sign = bill.getNetTotal() < 0 ? -1 : 1;
+        for (Map.Entry<Long, PatientEncounter> e : encounters.entrySet()) {
+            double share = sign * shares.get(e.getKey());
+            if (!linkToFreshFinalBill(e.getValue(), bill, false, share).isLinked()) {
+                allLinked = false;
+            }
+        }
+        return allLinked;
+    }
+
     private FinalBillLinkResult linkToFreshFinalBill(PatientEncounter patientEncounter, Bill bill, boolean refresh) {
+        return linkToFreshFinalBill(patientEncounter, bill, refresh, bill == null ? 0 : bill.getNetTotal());
+    }
+
+    private FinalBillLinkResult linkToFreshFinalBill(PatientEncounter patientEncounter, Bill bill, boolean refresh, double amount) {
         if (patientEncounter == null || patientEncounter.getId() == null || bill == null) {
             return new FinalBillLinkResult(patientEncounter, true);
         }
@@ -2627,7 +2681,7 @@ public class BillBeanController implements Serializable {
             if (fresh == null) {
                 fresh = patientEncounter;
             }
-            boolean ok = updateInwardDipositList(fresh, bill);
+            boolean ok = updateInwardDipositList(fresh, bill, amount);
             if (refresh && ok && fresh.isPaymentFinalized() && fresh.getFinalBill() != null) {
                 getInwardBean().updateFinalFill(fresh);
                 if (fresh.getPaymentMethod() == PaymentMethod.Credit) {
