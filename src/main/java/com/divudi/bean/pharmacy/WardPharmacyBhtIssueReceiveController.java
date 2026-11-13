@@ -26,6 +26,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import javax.persistence.TemporalType;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
@@ -125,7 +126,9 @@ public class WardPharmacyBhtIssueReceiveController implements Serializable {
         params.put("acceptBta", BillTypeAtomic.ACCEPT_ISSUED_MEDICINE_INWARD);
         params.put("fromDate", fromDate);
         params.put("toDate", toDate);
-        pendingIssueBills = billFacade.findByJpql(jpql, params);
+        // TIMESTAMP, not the two-argument overload: that binds Date parameters as
+        // TemporalType.DATE, which cuts toDate back to 00:00 and hides today's issues.
+        pendingIssueBills = billFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
     }
 
     /**
