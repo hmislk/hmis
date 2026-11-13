@@ -11916,7 +11916,8 @@ public class PharmacyReportController implements Serializable {
             // NOTE: hide zero-stock batches (normal, expected), but never hide negative
             // quantities - a negative batch qty means oversold/backorder data that must
             // stay visible instead of being silently dropped from the report (issue #23026).
-            double batchQty = row.getStockQty() != null ? row.getStockQty() : 0.0;
+            applyBatchScopeValues(row);
+            double batchQty = row.getQuantity() != null ? row.getQuantity() : 0.0;
             if (isConsignmentItem()) {
                 if (batchQty > 0) {
                     continue;
@@ -11924,27 +11925,6 @@ public class PharmacyReportController implements Serializable {
             } else {
                 if (batchQty == 0) {
                     continue;
-                }
-            }
-
-            // Set quantity and values based on department/institution scope
-            // The DTO constructor already stored all values, we just assign them to the correct properties
-            if (department != null) {
-                // Department-level: use qty, purchaseValue, saleValue, purchaseRate (already set in constructor)
-                // No additional assignment needed - constructor already set these
-            } else {
-                if (institution != null) {
-                    // Institution-level: use values from grossTotal, discount, netTotal, hospitalTotal
-                    row.setQuantity(row.getGrossTotal());  // instituionBatchQty
-                    row.setPurchaseValue(row.getDiscount());  // institutionBatchStockValueAtPurchaseRate
-                    row.setSaleValue(row.getNetTotal());  // institutionBatchStockValueAtSaleRate
-                    row.setCostValue(row.getHospitalTotal());  // institutionBatchStockValueAtCostRate
-                } else {
-                    // Total-level: use values from paidTotal, tax, actualTotal, staffTotal
-                    row.setQuantity(row.getPaidTotal());  // totalBatchQty
-                    row.setPurchaseValue(row.getTax());  // totalBatchStockValueAtPurchaseRate
-                    row.setSaleValue(row.getActualTotal());  // totalBatchStockValueAtSaleRate
-                    row.setCostValue(row.getStaffTotal());  // totalBatchStockValueAtCostRate
                 }
             }
 
@@ -11968,7 +11948,8 @@ public class PharmacyReportController implements Serializable {
                 if (liveBatchIds.contains(row.getItemBatch().getId())) {
                     continue;
                 }
-                double batchQty = row.getStockQty() != null ? row.getStockQty() : 0.0;
+                applyBatchScopeValues(row);
+                double batchQty = row.getQuantity() != null ? row.getQuantity() : 0.0;
                 if (isConsignmentItem()) {
                     if (batchQty > 0) {
                         continue;
@@ -11978,20 +11959,31 @@ public class PharmacyReportController implements Serializable {
                         continue;
                     }
                 }
-                if (institution != null && department == null) {
-                    row.setQuantity(row.getGrossTotal());
-                    row.setPurchaseValue(row.getDiscount());
-                    row.setSaleValue(row.getNetTotal());
-                    row.setCostValue(row.getHospitalTotal());
-                } else if (department == null) {
-                    row.setQuantity(row.getPaidTotal());
-                    row.setPurchaseValue(row.getTax());
-                    row.setSaleValue(row.getActualTotal());
-                    row.setCostValue(row.getStaffTotal());
-                }
                 rows.add(row);
             }
             rows.sort(java.util.Comparator.comparing(r -> r.getItem() != null ? r.getItem().getName() : ""));
+        }
+    }
+
+    /**
+     * Sets the quantity and values a batch-wise closing stock row displays and
+     * totals, based on the report scope (department, institution or total).
+     * The department scope must also set quantity, otherwise the footer total
+     * (which sums quantity) shows 0 (issue #18981).
+     */
+    private void applyBatchScopeValues(PharmacyRow row) {
+        if (department != null) {
+            row.setQuantity(row.getStockQty());
+        } else if (institution != null) {
+            row.setQuantity(row.getGrossTotal());
+            row.setPurchaseValue(row.getDiscount());
+            row.setSaleValue(row.getNetTotal());
+            row.setCostValue(row.getHospitalTotal());
+        } else {
+            row.setQuantity(row.getPaidTotal());
+            row.setPurchaseValue(row.getTax());
+            row.setSaleValue(row.getActualTotal());
+            row.setCostValue(row.getStaffTotal());
         }
     }
 
@@ -15069,7 +15061,7 @@ public class PharmacyReportController implements Serializable {
                 addCellToPdfTable(table, f.getItem().getMeasurementUnit() != null ? f.getItem().getMeasurementUnit().getName() : "-", dataFont);
                 addCellToPdfTable(table, f.getItemBatch() != null && f.getItemBatch().getDateOfExpire() != null ? sdf.format(f.getItemBatch().getDateOfExpire()) : "-", dataFont);
                 addCellToPdfTable(table, f.getItemBatch() != null ? f.getItemBatch().getBatchNo() : "-", dataFont);
-                addCellToPdfTable(table, f.getStockQty() != null ? String.format("%,.2f", f.getStockQty()) : "0.00", dataFont, null, Element.ALIGN_RIGHT);
+                addCellToPdfTable(table, f.getQuantity() != null ? String.format("%,.2f", f.getQuantity()) : "0.00", dataFont, null, Element.ALIGN_RIGHT);
                 addCellToPdfTable(table, f.getPurchaseRate() != null ? String.format("%,.2f", f.getPurchaseRate()) : "0.00", dataFont, null, Element.ALIGN_RIGHT);
                 addCellToPdfTable(table, f.getPurchaseValue() != null ? String.format("%,.2f", f.getPurchaseValue()) : "0.00", dataFont, null, Element.ALIGN_RIGHT);
                 addCellToPdfTable(table, f.getCostRate() != null ? String.format("%,.2f", f.getCostRate()) : "0.00", dataFont, null, Element.ALIGN_RIGHT);
