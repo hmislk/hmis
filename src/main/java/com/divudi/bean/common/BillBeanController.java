@@ -2560,6 +2560,89 @@ public class BillBeanController implements Serializable {
         return true;
     }
 
+    /**
+     * Result of {@link #linkToFreshFinalBillAndRefresh}: the admission as re-read from
+     * the database and whether the bill was linked to a live final bill.
+     */
+    public static class FinalBillLinkResult implements Serializable {
+
+        private final PatientEncounter encounter;
+        private final boolean linked;
+
+        public FinalBillLinkResult(PatientEncounter encounter, boolean linked) {
+            this.encounter = encounter;
+            this.linked = linked;
+        }
+
+        /**
+         * The re-read admission, or the caller's own copy when it could not
+         * be re-read (unsaved admission).
+         */
+        public PatientEncounter getEncounter() {
+            return encounter;
+        }
+
+        /**
+         * False only when the admission's final bill is cancelled, retired or
+         * missing, so the bill was not linked to it.
+         */
+        public boolean isLinked() {
+            return linked;
+        }
+    }
+
+    /**
+     * The one place that updates an admission's final bill after an inward
+     * payment, deposit, refund or credit company payment (or the cancel of
+     * one) is saved (#25413, #25521).
+     *
+     * The admission a page holds was loaded when the page opened, so it can
+     * predate a final bill settle or cancel by another user or tab; saving it
+     * writes the old final bill state back over the cancel. This re-reads the
+     * admission by id bypassing the cache, under the same per-admission lock
+     * that final bill settle and cancel hold, then links the bill to the final
+     * bill (see {@link #updateInwardDipositList}) and refreshes the paid
+     * amount and credit detail. Callers must use the returned admission for
+     * the rest of their work instead of their own copy.
+     */
+    public FinalBillLinkResult linkToFreshFinalBillAndRefresh(PatientEncounter patientEncounter, Bill bill) {
+        return linkToFreshFinalBill(patientEncounter, bill, true);
+    }
+
+    /**
+     * Same as {@link #linkToFreshFinalBillAndRefresh} but only links the bill
+     * to the final bill; for paths that never recompute the paid amount or
+     * credit detail (credit company payments).
+     */
+    public FinalBillLinkResult linkToFreshFinalBill(PatientEncounter patientEncounter, Bill bill) {
+        return linkToFreshFinalBill(patientEncounter, bill, false);
+    }
+
+    private FinalBillLinkResult linkToFreshFinalBill(PatientEncounter patientEncounter, Bill bill, boolean refresh) {
+        if (patientEncounter == null || patientEncounter.getId() == null || bill == null) {
+            return new FinalBillLinkResult(patientEncounter, true);
+        }
+        return finalBillLockBean.withFinalBillVersionLock(patientEncounter, () -> {
+            PatientEncounter fresh = finalBillPatientEncounterFacade.findWithoutCache(patientEncounter.getId());
+            if (fresh == null) {
+                fresh = patientEncounter;
+            }
+            boolean ok = updateInwardDipositList(fresh, bill);
+            if (refresh && ok && fresh.isPaymentFinalized() && fresh.getFinalBill() != null) {
+                getInwardBean().updateFinalFill(fresh);
+                if (fresh.getPaymentMethod() == PaymentMethod.Credit) {
+                    getInwardBean().updateCreditDetail(fresh, fresh.getFinalBill().getNetTotal());
+                }
+            }
+            return new FinalBillLinkResult(fresh, ok);
+        });
+    }
+
+    @EJB
+    private com.divudi.ejb.BillNumberGenerator finalBillLockBean;
+    @EJB
+    private com.divudi.core.facade.PatientEncounterFacade finalBillPatientEncounterFacade;
+
     public Bill fetchByForwardBill(Bill forwardBill, SurgeryBillType surgeryBillType) {
         String sql = "Select bf from Bill bf "
                 + " where bf.cancelled=false "

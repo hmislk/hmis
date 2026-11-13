@@ -23,7 +23,6 @@ import com.divudi.core.entity.inward.Admission;
 import com.divudi.core.facade.BillFacade;
 import com.divudi.core.facade.BillFeeFacade;
 import com.divudi.core.facade.BillItemFacade;
-import com.divudi.core.facade.PatientEncounterFacade;
 import com.divudi.service.PaymentService;
 
 import java.io.Serializable;
@@ -57,8 +56,6 @@ public class InwardRefundController implements Serializable {
     private BillFeeFacade billFeeFacade;
     @EJB
     PaymentService paymentService;
-    @EJB
-    private PatientEncounterFacade patientEncounterFacade;
     @Inject
     private SessionController sessionController;
     @Inject
@@ -252,26 +249,9 @@ public class InwardRefundController implements Serializable {
         // Re-read the admission: the page's copy can predate a final bill
         // settle or cancel, and saving it would undo the cancel (#25413). Held
         // under the same per-admission lock as final bill settle and cancel.
-        PatientEncounter encounter = getCurrent().getPatientEncounter();
-        boolean linked = true;
-        if (encounter != null && encounter.getId() != null) {
-            linked = getBillNumberBean().withFinalBillVersionLock(encounter, () -> {
-                PatientEncounter fresh = patientEncounterFacade.findWithoutCache(getCurrent().getPatientEncounter().getId());
-                if (fresh == null) {
-                    fresh = getCurrent().getPatientEncounter();
-                } else {
-                    getCurrent().setPatientEncounter(fresh);
-                }
-                boolean ok = getBillBean().updateInwardDipositList(fresh, getCurrent());
-                if (ok && fresh.isPaymentFinalized() && fresh.getFinalBill() != null) {
-                    getInwardBean().updateFinalFill(fresh);
-                    if (fresh.getPaymentMethod() == PaymentMethod.Credit) {
-                        getInwardBean().updateCreditDetail(fresh, fresh.getFinalBill().getNetTotal());
-                    }
-                }
-                return ok;
-            });
-        }
+        BillBeanController.FinalBillLinkResult link = getBillBean().linkToFreshFinalBillAndRefresh(getCurrent().getPatientEncounter(), getCurrent());
+        getCurrent().setPatientEncounter(link.getEncounter());
+        boolean linked = link.isLinked();
 
         WebUser wb = getCashTransactionBean().saveBillCashOutTransaction(getCurrent(), getSessionController().getLoggedUser());
         getSessionController().setLoggedUser(wb);
