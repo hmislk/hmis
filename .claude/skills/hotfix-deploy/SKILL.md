@@ -260,7 +260,7 @@ added/renamed, and similarly-named branches are NOT interchangeable.
 | Ruhunu hospital | `rh-production` | `rh-staging` is live again (since 2026-10-28) and writes to the same production DB. |
 | Southern Lanka | `southernlanka-production` | The only live app. `southernlanka-staging` is not used (app disabled, checked 2026-11-06); don't hotfix it. |
 | RMH | `rmh-production` | `rmh-staging` is not used (app disabled, checked 2026-11-06); don't hotfix it. |
-| Others | `suwani-production`, `asiripharmacy-production`, `digasiri-production`, `horizon-production`, `mp-production`, `mpold-production`, `roseth-production`, `ewc-production` | |
+| Others | `suwani-production`, `asiripharmacy-production`, `digasiri-production`, `horizon-production`, `mp-production`, `roseth-production`, `ewc-production` | `mpold-production` is decommissioned and `bms-production` is disabled; don't hotfix either. |
 
 The old `*-prod`, `*-prod-migrated` and `*-stg-migrated` branches were retired on
 2026-10-11 (archived as `archive/2026-10-11/<branch>` tags). Never target them.
