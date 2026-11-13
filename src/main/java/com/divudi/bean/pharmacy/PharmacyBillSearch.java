@@ -3505,6 +3505,10 @@ public class PharmacyBillSearch implements Serializable {
                 JsfUtil.addErrorMessage(ISSUE_ALREADY_CANCELLED_MESSAGE);
                 return;
             }
+            // Cancel from the database copy, not the page's: the checks, the porter
+            // and stock reversal and the final save all read getBill(). The field is
+            // set directly; setBill() would run recreateModel().
+            bill = fresh;
             cancel.run();
         } finally {
             lock.unlock();
