@@ -178,11 +178,18 @@
                                     <h:outputLabel value="#{dto.itemName}" />
                                 </p:column>
 
+                                <p:column width="5em" style="padding: 2px" styleClass="#{dto.cancellationOrReturn and !dto.billCancelled ? 'ui-messages-warn' : dto.cancellationOrReturn and dto.billCancelled ? 'ui-messages-fatal' : ''}">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Status" />
+                                    </f:facet>
+                                    <h:outputLabel value="#{dto.cancellationOrReturn ? (dto.billCancelled ? 'Cancelled' : 'Return') : ''}" />
+                                </p:column>
+
                                 <p:column width="2em" style="padding: 2px" styleClass="#{dto.cancellationOrReturn and !dto.billCancelled ? 'ui-messages-warn' : dto.cancellationOrReturn and dto.billCancelled ? 'ui-messages-fatal' : ''}">
                                     <f:facet name="header">
                                         <h:outputLabel value="QTY" />
                                     </f:facet>
-                                    <p:outputLabel value="#{dto.cancellationOrReturn and !dto.billCancelled ? 0 - dto.qty : dto.qty}">
+                                    <p:outputLabel value="#{dto.cancellationOrReturn ? (dto.qty lt 0 ? -dto.qty : dto.qty) : dto.qty}">
                                         <f:convertNumber pattern="#0" />
                                     </p:outputLabel>
                                 </p:column>
@@ -191,7 +198,7 @@
                                     <f:facet name="header">
                                         <h:outputLabel value="Rate" />
                                     </f:facet>
-                                    <h:outputLabel value="#{dto.rate}" >
+                                    <h:outputLabel value="#{dto.cancellationOrReturn ? (dto.rate lt 0 ? -dto.rate : dto.rate) : dto.rate}" >
                                         <f:convertNumber pattern="#0.00" />
                                     </h:outputLabel>
                                 </p:column>
@@ -200,7 +207,7 @@
                                     <f:facet name="header">
                                         <h:outputLabel value="Gross Value" />
                                     </f:facet>
-                                    <h:outputLabel value="#{dto.cancellationOrReturn and !dto.billCancelled ? 0 - dto.grossValue : dto.grossValue}">
+                                    <h:outputLabel value="#{dto.cancellationOrReturn ? (dto.grossValue lt 0 ? -dto.grossValue : dto.grossValue) : dto.grossValue}">
                                         <f:convertNumber pattern="#0.00" />
                                     </h:outputLabel>
                                     <f:facet name="footer">
@@ -228,7 +235,7 @@
                                     <f:facet name="header">
                                         <h:outputLabel value="Service Charge" />
                                     </f:facet>
-                                    <h:outputLabel value="#{dto.cancellationOrReturn and !dto.billCancelled ? 0 - dto.marginValue : dto.marginValue}">
+                                    <h:outputLabel value="#{dto.cancellationOrReturn ? (dto.marginValue lt 0 ? -dto.marginValue : dto.marginValue) : dto.marginValue}">
                                         <f:convertNumber pattern="#0.00" />
                                     </h:outputLabel>
                                     <f:facet name="footer">
@@ -242,7 +249,7 @@
                                     <f:facet name="header">
                                         <h:outputLabel value="Net Value" />
                                     </f:facet>
-                                    <h:outputLabel value="#{dto.cancellationOrReturn and !dto.billCancelled ? 0 - dto.netValue : dto.netValue}">
+                                    <h:outputLabel value="#{dto.cancellationOrReturn ? (dto.netValue lt 0 ? -dto.netValue : dto.netValue) : dto.netValue}">
                                         <f:convertNumber pattern="#0.00" />
                                     </h:outputLabel>
                                     <f:facet name="footer">
