@@ -751,6 +751,10 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
         getSaleBill().setInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
 
         getBillBean().setPaymentMethodData(getSaleBill(), getSaleBill().getPaymentMethod(), paymentMethodData);
+        if (getSaleBill().getPaymentMethod() == PaymentMethod.Credit && paymentMethodData != null && paymentMethodData.getCredit() != null) {
+            getSaleBill().setCreditCompany(paymentMethodData.getCredit().getInstitution());
+            getSaleBill().setToInstitution(paymentMethodData.getCredit().getInstitution());
+        }
 
         getSaleBill().setBillDate(new Date());
         getSaleBill().setBillTime(new Date());
@@ -1618,6 +1622,16 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
             }
         }
 
+        // Synchronize Credit company selection if it exists in preBill but not in paymentMethodData (#25325)
+        if (getPreBill().getPaymentMethod() == PaymentMethod.Credit) {
+            Institution creditCompany = getPreBill().getCreditCompany() != null
+                    ? getPreBill().getCreditCompany()
+                    : getPreBill().getToInstitution();
+            if (creditCompany != null && getPaymentMethodData().getCredit().getInstitution() == null) {
+                getPaymentMethodData().getCredit().setInstitution(creditCompany);
+            }
+        }
+
         // Initialize PatientDeposit for PatientDeposit payment method
         if (getPreBill().getPaymentMethod() == PaymentMethod.PatientDeposit) {
             System.out.println("=== PATIENTDEPOSIT INIT DEBUG ===");
@@ -2263,6 +2277,14 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
                     } else {
                         System.out.println("WARNING: Staff_Welfare payment method but args.getToStaff() is NULL");
                     }
+                } else if (billToSettle.getPaymentMethod() == PaymentMethod.Credit || billToSettle.getCreditCompany() != null) {
+                    Institution creditCompany = billToSettle.getCreditCompany() != null
+                            ? billToSettle.getCreditCompany()
+                            : (billToSettle.getPaymentMethod() == PaymentMethod.Credit ? billToSettle.getToInstitution() : null);
+                    if (creditCompany != null) {
+                        getPreBill().setCreditCompany(creditCompany);
+                        getPaymentMethodData().getCredit().setInstitution(creditCompany);
+                    }
                 } else {
                     System.out.println("Not Staff_Welfare payment method, skipping staff extraction");
                 }
@@ -2297,7 +2319,14 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
         this.preBill = preBill;
         //System.err.println("Setting Bill " + preBill);
         billPreview = false;
-
+        if (preBill != null) {
+            Institution creditCompany = preBill.getCreditCompany() != null
+                    ? preBill.getCreditCompany()
+                    : (preBill.getPaymentMethod() == PaymentMethod.Credit ? preBill.getToInstitution() : null);
+            if (creditCompany != null) {
+                getPaymentMethodData().getCredit().setInstitution(creditCompany);
+            }
+        }
     }
 
     public Bill getSaleBill() {
