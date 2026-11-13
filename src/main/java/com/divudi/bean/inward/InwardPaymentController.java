@@ -930,13 +930,26 @@ public class InwardPaymentController implements Serializable, ControllerWithMult
                 sessionController.getDepartment(),
                 sessionController.getLoggedUser());
 
-        getBillBean().updateInwardDipositList(getCurrent().getPatientEncounter(), getCurrent());
+        // The admission on this page was loaded when the page opened. A final
+        // bill settled or cancelled since then (another tab or user) is not in
+        // that copy, and saving it would undo the cancel (#25413). Work on the
+        // admission as it is in the database now.
+        PatientEncounter encounter = getCurrent().getPatientEncounter();
+        if (encounter != null && encounter.getId() != null) {
+            PatientEncounter fresh = patientEncounterFacade.find(encounter.getId());
+            if (fresh != null) {
+                encounter = fresh;
+                getCurrent().setPatientEncounter(fresh);
+            }
+        }
 
-        if (getCurrent().getPatientEncounter().isPaymentFinalized()) {
-            getInwardBean().updateFinalFill(getCurrent().getPatientEncounter());
+        getBillBean().updateInwardDipositList(encounter, getCurrent());
 
-            if (getCurrent().getPatientEncounter().getPaymentMethod() == PaymentMethod.Credit) {
-                getInwardBean().updateCreditDetail(getCurrent().getPatientEncounter(), getCurrent().getPatientEncounter().getFinalBill().getNetTotal());
+        if (encounter != null && encounter.isPaymentFinalized() && encounter.getFinalBill() != null) {
+            getInwardBean().updateFinalFill(encounter);
+
+            if (encounter.getPaymentMethod() == PaymentMethod.Credit) {
+                getInwardBean().updateCreditDetail(encounter, encounter.getFinalBill().getNetTotal());
             }
         }
         JsfUtil.addSuccessMessage("Payment Bill Saved");

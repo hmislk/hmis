@@ -2517,27 +2517,36 @@ public class BillBeanController implements Serializable {
 
     public void updateInwardDipositList(PatientEncounter patientEncounter, Bill bill) {
         if (patientEncounter != null && bill != null) {
-            if (patientEncounter.isPaymentFinalized() && patientEncounter.getFinalBill() != null) {
-                bill.setForwardReferenceBill(patientEncounter.getFinalBill());
+            if (patientEncounter.isPaymentFinalized() && patientEncounter.getFinalBill() != null
+                    && patientEncounter.getFinalBill().getId() != null) {
+                // Re-read the final bill: the caller's copy can predate a final
+                // bill cancel, and saving it would write cancelled=false back
+                // over the cancel (#25413).
+                Bill finalBill = getBillFacade().find(patientEncounter.getFinalBill().getId());
+                if (finalBill == null || finalBill.isCancelled() || finalBill.isRetired()) {
+                    return;
+                }
+                bill.setForwardReferenceBill(finalBill);
                 getBillFacade().edit(bill);
-                if (!patientEncounter.getFinalBill().getBackwardReferenceBills().contains(bill)) {
-                    patientEncounter.getFinalBill().getBackwardReferenceBills().add(bill);
-                    if (patientEncounter.getFinalBill().getBalance() <= 0) {
-                        patientEncounter.getFinalBill().setBalance(patientEncounter.getFinalBill().getNetTotal());
+                if (!finalBill.getBackwardReferenceBills().contains(bill)) {
+                    finalBill.getBackwardReferenceBills().add(bill);
+                    if (finalBill.getBalance() <= 0) {
+                        finalBill.setBalance(finalBill.getNetTotal());
                     }
-                    patientEncounter.getFinalBill().setBalance(patientEncounter.getFinalBill().getBalance() - bill.getNetTotal());
-                    patientEncounter.getFinalBill().setPaidAmount(patientEncounter.getFinalBill().getPaidAmount() + bill.getNetTotal());
+                    finalBill.setBalance(finalBill.getBalance() - bill.getNetTotal());
+                    finalBill.setPaidAmount(finalBill.getPaidAmount() + bill.getNetTotal());
 
                     if (bill.getBillTypeAtomic() == BillTypeAtomic.INWARD_PAYMENT
                             || bill.getBillTypeAtomic() == BillTypeAtomic.INWARD_DEPOSIT) {
-                        patientEncounter.getFinalBill().setSettledAmountByPatient(patientEncounter.getFinalBill().getSettledAmountByPatient() + bill.getNetTotal());
+                        finalBill.setSettledAmountByPatient(finalBill.getSettledAmountByPatient() + bill.getNetTotal());
                     } else if (bill.getBillTypeAtomic() == BillTypeAtomic.INPATIENT_CREDIT_COMPANY_PAYMENT_RECEIVED) {
-                        patientEncounter.getFinalBill().setSettledAmountBySponsor(patientEncounter.getFinalBill().getSettledAmountBySponsor() + bill.getNetTotal());
+                        finalBill.setSettledAmountBySponsor(finalBill.getSettledAmountBySponsor() + bill.getNetTotal());
                     } else if (bill.getBillTypeAtomic() == BillTypeAtomic.INPATIENT_CREDIT_COMPANY_PAYMENT_CANCELLATION) {
-                        patientEncounter.getFinalBill().setSettledAmountBySponsor(patientEncounter.getFinalBill().getSettledAmountBySponsor() - Math.abs(bill.getNetTotal()));
+                        finalBill.setSettledAmountBySponsor(finalBill.getSettledAmountBySponsor() - Math.abs(bill.getNetTotal()));
                     }
                 }
-                getBillFacade().edit(patientEncounter.getFinalBill());
+                getBillFacade().edit(finalBill);
+                patientEncounter.setFinalBill(finalBill);
             }
         }
 

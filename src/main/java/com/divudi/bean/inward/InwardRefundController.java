@@ -23,6 +23,7 @@ import com.divudi.core.entity.inward.Admission;
 import com.divudi.core.facade.BillFacade;
 import com.divudi.core.facade.BillFeeFacade;
 import com.divudi.core.facade.BillItemFacade;
+import com.divudi.core.facade.PatientEncounterFacade;
 import com.divudi.service.PaymentService;
 
 import java.io.Serializable;
@@ -56,6 +57,8 @@ public class InwardRefundController implements Serializable {
     private BillFeeFacade billFeeFacade;
     @EJB
     PaymentService paymentService;
+    @EJB
+    private PatientEncounterFacade patientEncounterFacade;
     @Inject
     private SessionController sessionController;
     @Inject
@@ -246,12 +249,23 @@ public class InwardRefundController implements Serializable {
         List<Payment> payments = paymentService.createPayment(getCurrent(), paymentMethodData);
         paymentService.updateBalances(payments);
 
-        getBillBean().updateInwardDipositList(getCurrent().getPatientEncounter(), getCurrent());
+        // Re-read the admission: the page's copy can predate a final bill
+        // settle or cancel, and saving it would undo the cancel (#25413).
+        PatientEncounter encounter = getCurrent().getPatientEncounter();
+        if (encounter != null && encounter.getId() != null) {
+            PatientEncounter fresh = patientEncounterFacade.find(encounter.getId());
+            if (fresh != null) {
+                encounter = fresh;
+                getCurrent().setPatientEncounter(fresh);
+            }
+        }
 
-        if (getCurrent().getPatientEncounter().isPaymentFinalized()) {
-            getInwardBean().updateFinalFill(getCurrent().getPatientEncounter());
-            if (getCurrent().getPatientEncounter().getPaymentMethod() == PaymentMethod.Credit) {
-                getInwardBean().updateCreditDetail(getCurrent().getPatientEncounter(), getCurrent().getPatientEncounter().getFinalBill().getNetTotal());
+        getBillBean().updateInwardDipositList(encounter, getCurrent());
+
+        if (encounter != null && encounter.isPaymentFinalized() && encounter.getFinalBill() != null) {
+            getInwardBean().updateFinalFill(encounter);
+            if (encounter.getPaymentMethod() == PaymentMethod.Credit) {
+                getInwardBean().updateCreditDetail(encounter, encounter.getFinalBill().getNetTotal());
             }
         }
 
