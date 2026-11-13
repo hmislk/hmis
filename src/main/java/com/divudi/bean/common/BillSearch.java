@@ -8187,10 +8187,8 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
         // Update refundAmount - add the return amount
         batchBill.setRefundAmount(batchBill.getRefundAmount() + refundAmount);
 
-        // Update paidAmount - deduct the return amount (only if payment exists)
-        if (batchBill.getPaidAmount() > 0) {
-            batchBill.setPaidAmount(Math.max(0d, batchBill.getPaidAmount() - refundAmount));
-        }
+        // paidAmount is left unchanged: it records settlements only. Due = netTotal - refundAmount - paidAmount,
+        // the same definition the OPD Due Search uses, so the balance below agrees with it (#16982).
 
         // Update balance (due amount) - deduct the return amount (only if balance > 0)
         if (batchBill.getBalance() > 0) {
