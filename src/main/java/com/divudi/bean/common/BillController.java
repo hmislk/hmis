@@ -2602,6 +2602,23 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
 
     private List<Bill> cancelSingleBills = new ArrayList<>();
 
+    /**
+     * VAT of the individual bills of a batch. Settle adds net total + VAT to
+     * staff credit or welfare, but the batch bill itself does not store VAT, so
+     * the cancellation reverses the individual bills' VAT instead (#25349).
+     */
+    private double individualBillsVat(List<Bill> individualBills) {
+        double total = 0;
+        if (individualBills != null) {
+            for (Bill b : individualBills) {
+                if (b != null) {
+                    total += b.getVat();
+                }
+            }
+        }
+        return total;
+    }
+
     public String cancelOpdBatchBill() {
 
         batchBillCancellationStarted = true;
@@ -2705,14 +2722,14 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
         } else if (cancellationBatchBill.getPaymentMethod() == PaymentMethod.Credit
                 || cancellationBatchBill.getPaymentMethod() == PaymentMethod.Staff) { // Staff credit too (#25339)
             if (cancellationBatchBill.getToStaff() != null) {
-                staffService.updateStaffCredit(cancellationBatchBill.getToStaff(), 0 - Math.abs(cancellationBatchBill.getNetTotal() + getBill().getVat()));
+                staffService.updateStaffCredit(cancellationBatchBill.getToStaff(), 0 - (Math.abs(cancellationBatchBill.getNetTotal()) + Math.abs(individualBillsVat(bills))));
                 JsfUtil.addSuccessMessage("Staff Credit Updated");
                 cancellationBatchBill.setFromStaff(cancellationBatchBill.getToStaff());
                 getBillFacade().edit(cancellationBatchBill);
             }
         } else if (cancellationBatchBill.getPaymentMethod() == PaymentMethod.Staff_Welfare) {
             if (cancellationBatchBill.getToStaff() != null) {
-                staffService.updateStaffWelfare(cancellationBatchBill.getToStaff(), 0 - Math.abs(cancellationBatchBill.getNetTotal() + getBill().getVat()));
+                staffService.updateStaffWelfare(cancellationBatchBill.getToStaff(), 0 - (Math.abs(cancellationBatchBill.getNetTotal()) + Math.abs(individualBillsVat(bills))));
                 JsfUtil.addSuccessMessage("Staff Welfare Updated");
                 cancellationBatchBill.setFromStaff(cancellationBatchBill.getToStaff());
                 getBillFacade().edit(cancellationBatchBill);
@@ -2849,7 +2866,7 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
         } else if (cancellationBatchBill.getPaymentMethod() == PaymentMethod.Credit
                 || cancellationBatchBill.getPaymentMethod() == PaymentMethod.Staff) { // Staff credit too (#25339)
             if (cancellationBatchBill.getToStaff() != null) {
-                staffService.updateStaffCredit(cancellationBatchBill.getToStaff(), 0 - Math.abs(cancellationBatchBill.getNetTotal() + getBill().getVat()));
+                staffService.updateStaffCredit(cancellationBatchBill.getToStaff(), 0 - (Math.abs(cancellationBatchBill.getNetTotal()) + Math.abs(individualBillsVat(bills))));
                 JsfUtil.addSuccessMessage("Staff Credit Updated");
                 cancellationBatchBill.setFromStaff(cancellationBatchBill.getToStaff());
                 getBillFacade().edit(cancellationBatchBill);
