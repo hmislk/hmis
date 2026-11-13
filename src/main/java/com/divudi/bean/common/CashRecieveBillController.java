@@ -26,6 +26,7 @@ import com.divudi.core.entity.BillItem;
 import com.divudi.core.entity.BilledBill;
 import com.divudi.core.entity.CancelledBill;
 import com.divudi.core.entity.Department;
+import com.divudi.core.entity.PatientEncounter;
 import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.Payment;
 import com.divudi.core.entity.WebUser;
@@ -1378,7 +1379,7 @@ public class CashRecieveBillController implements Serializable {
             } else {
                 getBillItemFacade().edit(savingBillItem);
             }
-            getBillBean().updateInwardDipositList(savingBillItem.getPatientEncounter(), getCurrent());
+            linkToFinalBillOrWarn(savingBillItem.getPatientEncounter(), getCurrent());
             updateReferenceBht(savingBillItem);
         }
         paymentService.createPayment(current, getPaymentMethodData());
@@ -1797,7 +1798,7 @@ public class CashRecieveBillController implements Serializable {
             getCurrent().getBillItems().add(tmp);
             getBillItemFacade().create(tmp);
 
-            getBillBean().updateInwardDipositList(tmp.getPatientEncounter(), getCurrent());
+            linkToFinalBillOrWarn(tmp.getPatientEncounter(), getCurrent());
             updateReferenceBht(tmp);
 
         }
@@ -1884,6 +1885,15 @@ public class CashRecieveBillController implements Serializable {
         }
 
         getBillFacade().edit(referenceBill);
+    }
+
+    // Links the payment to the admission's final bill using a fresh read, so a
+    // final bill cancelled since this page opened is not written back as live (#25521).
+    private void linkToFinalBillOrWarn(PatientEncounter patientEncounter, Bill payment) {
+        BillBeanController.FinalBillLinkResult link = getBillBean().linkToFreshFinalBill(patientEncounter, payment);
+        if (!link.isLinked()) {
+            JsfUtil.addErrorMessage("The final bill of an admission in this payment is cancelled, so this payment was not added to it. Please check the admission's final bill.");
+        }
     }
 
     private void updateReferenceBht(BillItem tmp) {

@@ -719,16 +719,14 @@ public class InwardDepositController implements Serializable, ControllerWithMult
                 sessionController.getDepartment(),
                 sessionController.getLoggedUser());
 
-        getBillBean().updateInwardDipositList(getCurrent().getPatientEncounter(), getCurrent());
-
-        if (getCurrent().getPatientEncounter().isPaymentFinalized()) {
-            getInwardBean().updateFinalFill(getCurrent().getPatientEncounter());
-
-            if (getCurrent().getPatientEncounter().getPaymentMethod() == PaymentMethod.Credit) {
-                getInwardBean().updateCreditDetail(getCurrent().getPatientEncounter(), getCurrent().getPatientEncounter().getFinalBill().getNetTotal());
-            }
-        }
+        // Re-reads the admission and final bill so a final bill cancelled since
+        // this page opened is not written back as live (#25521).
+        BillBeanController.FinalBillLinkResult link = getBillBean().linkToFreshFinalBillAndRefresh(getCurrent().getPatientEncounter(), getCurrent());
+        getCurrent().setPatientEncounter(link.getEncounter());
         JsfUtil.addSuccessMessage("Deposit Bill Saved");
+        if (!link.isLinked()) {
+            JsfUtil.addErrorMessage("The final bill of this admission is cancelled, so this deposit was not added to it. Please check the admission's final bill.");
+        }
         paymentMethod = null;
         printPreview = true;
     }

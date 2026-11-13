@@ -602,11 +602,29 @@ public class InwardSearch implements Serializable {
             return;
         }
 
-        patientEncounterFacade.edit(getBill().getPatientEncounter());
-
-        if (getBill().getPatientEncounter().getPaymentMethod() == PaymentMethod.Credit) {
-            getInwardBean().updateCreditDetail(getBill().getPatientEncounter(), getBill().getPatientEncounter().getFinalBill().getNetTotal());
+        PatientEncounter pageCopy = getBill().getPatientEncounter();
+        if (pageCopy.getId() == null) {
+            patientEncounterFacade.edit(pageCopy);
+            return;
         }
+        // This page only edits the credit limit. The admission held in the
+        // session predates any final bill settle or cancel since the page
+        // opened, so saving it whole would undo that (#25521): save only the
+        // credit limit onto the admission as it is in the database now.
+        getBillNumberBean().withFinalBillVersionLock(pageCopy, () -> {
+            PatientEncounter fresh = patientEncounterFacade.findWithoutCache(pageCopy.getId());
+            if (fresh == null) {
+                fresh = pageCopy;
+            } else {
+                fresh.setCreditLimit(pageCopy.getCreditLimit());
+            }
+            patientEncounterFacade.edit(fresh);
+            if (fresh.getPaymentMethod() == PaymentMethod.Credit && fresh.getFinalBill() != null) {
+                getInwardBean().updateCreditDetail(fresh, fresh.getFinalBill().getNetTotal());
+            }
+            getBill().setPatientEncounter(fresh);
+            return null;
+        });
     }
 
     public PaymentMethod getPaymentMethod() {
@@ -2233,21 +2251,16 @@ public class InwardSearch implements Serializable {
             getBill().setCancelledBill(cb);
             getBillFacade().edit((BilledBill) getBill());
 
-            getBillBean().updateInwardDipositList(getBill().getPatientEncounter(), cb);
+            BillBeanController.FinalBillLinkResult link = getBillBean().linkToFreshFinalBillAndRefresh(getBill().getPatientEncounter(), cb);
+            if (!link.isLinked()) {
+                JsfUtil.addErrorMessage("The final bill of this admission is cancelled, so this cancellation was not added to it. Please check the admission's final bill.");
+            }
 
             List<Payment> payments = createReversalPayments(cb, getBill(), cb.getPaymentMethod());
             if (payments == null) {
                 return;
             }
             paymentService.updateBalances(payments);
-
-            if (getBill().getPatientEncounter().isPaymentFinalized()) {
-                getInwardBean().updateFinalFill(getBill().getPatientEncounter());
-                if (getBill().getPatientEncounter().getPaymentMethod() == PaymentMethod.Credit) {
-                    getInwardBean().updateCreditDetail(getBill().getPatientEncounter(), getBill().getPatientEncounter().getFinalBill().getNetTotal());
-                }
-
-            }
 
             WebUser wb = getCashTransactionBean().saveBillCashOutTransaction(cb, getSessionController().getLoggedUser());
             getSessionController().setLoggedUser(wb);
@@ -2298,7 +2311,10 @@ public class InwardSearch implements Serializable {
             getBill().setCancelledBill(cb);
             getBillFacade().edit((BilledBill) getBill());
 
-            getBillBean().updateInwardDipositList(getBill().getPatientEncounter(), cb);
+            BillBeanController.FinalBillLinkResult link = getBillBean().linkToFreshFinalBillAndRefresh(getBill().getPatientEncounter(), cb);
+            if (!link.isLinked()) {
+                JsfUtil.addErrorMessage("The final bill of this admission is cancelled, so this cancellation was not added to it. Please check the admission's final bill.");
+            }
 
             List<Payment> reversalPayments = createReversalPayments(cb, getBill(), cb.getPaymentMethod());
             if (reversalPayments == null) {
@@ -2307,14 +2323,6 @@ public class InwardSearch implements Serializable {
             // These two paths do not call updateBalances (it would also touch staff and
             // credit rows), so restore only the patient deposit balance (#25178).
             paymentService.restorePatientDepositBalances(reversalPayments, getBill());
-
-            if (getBill().getPatientEncounter().isPaymentFinalized()) {
-                getInwardBean().updateFinalFill(getBill().getPatientEncounter());
-                if (getBill().getPatientEncounter().getPaymentMethod() == PaymentMethod.Credit) {
-                    getInwardBean().updateCreditDetail(getBill().getPatientEncounter(), getBill().getPatientEncounter().getFinalBill().getNetTotal());
-                }
-
-            }
 
             WebUser wb = getCashTransactionBean().saveBillCashOutTransaction(cb, getSessionController().getLoggedUser());
             getSessionController().setLoggedUser(wb);
@@ -2361,7 +2369,10 @@ public class InwardSearch implements Serializable {
             getBill().setCancelledBill(cb);
             getBillFacade().edit((BilledBill) getBill());
 
-            getBillBean().updateInwardDipositList(getBill().getPatientEncounter(), cb);
+            BillBeanController.FinalBillLinkResult link = getBillBean().linkToFreshFinalBillAndRefresh(getBill().getPatientEncounter(), cb);
+            if (!link.isLinked()) {
+                JsfUtil.addErrorMessage("The final bill of this admission is cancelled, so this cancellation was not added to it. Please check the admission's final bill.");
+            }
 
             List<Payment> reversalPayments = createReversalPayments(cb, getBill(), cb.getPaymentMethod());
             if (reversalPayments == null) {
@@ -2370,14 +2381,6 @@ public class InwardSearch implements Serializable {
             // These two paths do not call updateBalances (it would also touch staff and
             // credit rows), so restore only the patient deposit balance (#25178).
             paymentService.restorePatientDepositBalances(reversalPayments, getBill());
-
-            if (getBill().getPatientEncounter().isPaymentFinalized()) {
-                getInwardBean().updateFinalFill(getBill().getPatientEncounter());
-                if (getBill().getPatientEncounter().getPaymentMethod() == PaymentMethod.Credit) {
-                    getInwardBean().updateCreditDetail(getBill().getPatientEncounter(), getBill().getPatientEncounter().getFinalBill().getNetTotal());
-                }
-
-            }
 
             WebUser wb = getCashTransactionBean().saveBillCashOutTransaction(cb, getSessionController().getLoggedUser());
             getSessionController().setLoggedUser(wb);
@@ -2433,14 +2436,9 @@ public class InwardSearch implements Serializable {
             }
             paymentService.updateBalances(payments);
 
-            getBillBean().updateInwardDipositList(getBill().getPatientEncounter(), cb);
-
-            if (getBill().getPatientEncounter().isPaymentFinalized()) {
-                getInwardBean().updateFinalFill(getBill().getPatientEncounter());
-                if (getBill().getPatientEncounter().getPaymentMethod() == PaymentMethod.Credit) {
-                    getInwardBean().updateCreditDetail(getBill().getPatientEncounter(), getBill().getPatientEncounter().getFinalBill().getNetTotal());
-                }
-
+            BillBeanController.FinalBillLinkResult link = getBillBean().linkToFreshFinalBillAndRefresh(getBill().getPatientEncounter(), cb);
+            if (!link.isLinked()) {
+                JsfUtil.addErrorMessage("The final bill of this admission is cancelled, so this cancellation was not added to it. Please check the admission's final bill.");
             }
 
             WebUser wb = getCashTransactionBean().saveBillCashInTransaction(cb, getSessionController().getLoggedUser());
