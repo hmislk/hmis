@@ -998,6 +998,9 @@ public class PharmacyBillSearch implements Serializable {
         billFacade.edit(bill);
         // Session-scoped: clear so this comment is not reused for the next cancellation.
         comment = null;
+        JsfUtil.addSuccessMessage("Transfer Request Cancelled Successfully");
+        // Keep the message across the redirect below; without this it is discarded.
+        javax.faces.context.FacesContext.getCurrentInstance().getExternalContext().getFlash().setKeepMessages(true);
         return "/pharmacy/pharmacy_transfer_request_list?faces-redirect=true";
     }
 
