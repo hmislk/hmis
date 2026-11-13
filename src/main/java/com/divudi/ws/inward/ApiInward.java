@@ -63,6 +63,9 @@ import org.json.JSONObject;
 @RequestScoped
 public class ApiInward {
 
+    private static final String FINAL_BILL_CANCELLED_MESSAGE
+            = "The final bill of this admission is cancelled. Payment not recorded; please contact the hospital.";
+
     @Context
     private UriInfo context;
 
@@ -379,6 +382,13 @@ public class ApiInward {
             pmd.getOnlineSettlement().setTotalValue(amount);
             pmd.getOnlineSettlement().setDate(paymentDate);
 
+            if (hasCancelledFinalBill(pe)) {
+                jSONObjectOut.put("bill", "");
+                jSONObjectOut.put("error", "1");
+                jSONObjectOut.put("error_description", FINAL_BILL_CANCELLED_MESSAGE);
+                return jSONObjectOut.toString();
+            }
+
             Bill b = payWithPaymentRecord(PaymentMethod.OnlineSettlement, pe, amount, pmd, authenticatedUser);
             if (b != null) {
                 JSONObject object = new JSONObject();
@@ -422,7 +432,11 @@ public class ApiInward {
             PatientEncounter pe = fetchPatientEncounter(bht_no);
             Institution bank = fetchBank(Long.parseLong(bank_id));
             double parsedAmount = Double.parseDouble(amount);
-            if (pe != null && bank != null && parsedAmount > 0) {
+            if (pe != null && bank != null && parsedAmount > 0 && hasCancelledFinalBill(pe)) {
+                jSONObjectOut.put("bill", "");
+                jSONObjectOut.put("error", "1");
+                jSONObjectOut.put("error_description", FINAL_BILL_CANCELLED_MESSAGE);
+            } else if (pe != null && bank != null && parsedAmount > 0) {
                 PaymentMethodData pmd = new PaymentMethodData();
                 pmd.getOnlineSettlement().setReferenceNo(credit_card_ref);
                 pmd.getOnlineSettlement().setInstitution(bank);
@@ -588,6 +602,20 @@ public class ApiInward {
      * New payment method: creates bill AND records to payment table.
      */
     public Bill payWithPaymentRecord(PaymentMethod paymentMethod, PatientEncounter patientEncounter, double value, PaymentMethodData pmd, WebUser createdBy) {
+        if (patientEncounter == null || patientEncounter.getId() == null) {
+            return null;
+        }
+        // Check and save under the final bill lock, so a final bill cancelled
+        // between the check and the save cannot take this payment (#25533).
+        return getBillNumberGenerator().withFinalBillVersionLockOutsideTransaction(patientEncounter, () -> {
+            if (hasCancelledFinalBill(patientEncounter)) {
+                return null;
+            }
+            return payWithPaymentRecordUnderLock(paymentMethod, patientEncounter, value, pmd, createdBy);
+        });
+    }
+
+    private Bill payWithPaymentRecordUnderLock(PaymentMethod paymentMethod, PatientEncounter patientEncounter, double value, PaymentMethodData pmd, WebUser createdBy) {
         BilledBill bill = new BilledBill();
         bill.setPatientEncounter(patientEncounter);
         bill.setPaymentMethod(paymentMethod);
@@ -618,6 +646,39 @@ public class ApiInward {
      * Legacy pay method (used by GET /payment endpoint) — no payment table record.
      */
     public Bill pay(PaymentMethod paymentMethod, PatientEncounter patientEncounter, double value, PaymentMethodData pmd, WebUser createdBy) {
+        if (patientEncounter == null || patientEncounter.getId() == null) {
+            return null;
+        }
+        // Same as payWithPaymentRecord: check and save under the final bill lock (#25533).
+        return getBillNumberGenerator().withFinalBillVersionLockOutsideTransaction(patientEncounter, () -> {
+            if (hasCancelledFinalBill(patientEncounter)) {
+                return null;
+            }
+            return payUnderLock(paymentMethod, patientEncounter, value, pmd, createdBy);
+        });
+    }
+
+    /**
+     * True when the admission, as it is in the database now, still points to a
+     * final bill that is cancelled or retired. A payment must not be recorded
+     * then: it could not be added to that final bill, and the patient's paid
+     * total would be wrong (#25533). An admission without a final bill (a normal
+     * deposit before final billing) returns false.
+     */
+    private boolean hasCancelledFinalBill(PatientEncounter patientEncounter) {
+        if (patientEncounter == null || patientEncounter.getId() == null) {
+            return false;
+        }
+        PatientEncounter fresh = getPatientEncounterFacade().findWithoutCache(patientEncounter.getId());
+        if (fresh == null || !fresh.isPaymentFinalized() || fresh.getFinalBill() == null
+                || fresh.getFinalBill().getId() == null) {
+            return false;
+        }
+        Bill finalBill = getBillFacade().findWithoutCache(fresh.getFinalBill().getId());
+        return finalBill == null || finalBill.isCancelled() || finalBill.isRetired();
+    }
+
+    private Bill payUnderLock(PaymentMethod paymentMethod, PatientEncounter patientEncounter, double value, PaymentMethodData pmd, WebUser createdBy) {
         BilledBill bill = new BilledBill();
         bill.setPatientEncounter(patientEncounter);
         bill.setPaymentMethod(paymentMethod);
