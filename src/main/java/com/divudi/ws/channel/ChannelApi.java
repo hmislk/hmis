@@ -3336,6 +3336,8 @@ public class ChannelApi {
         getPatientFacade().create(p);
 
         bill.setBillType(BillType.ChannelAgent);
+        // Same atomic type the UI agent booking uses (BookingController.createBill, case Agent), #24601
+        bill.setBillTypeAtomic(BillTypeAtomic.CHANNEL_BOOKING_WITH_PAYMENT);
         Institution institution = institutionFacade.find(agent);
         bill.setCreditCompany(institution);
 
