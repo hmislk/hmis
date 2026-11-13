@@ -102,12 +102,10 @@
                                         <h:outputLabel value="Net Total " ></h:outputLabel>
                                         <h:outputLabel value=":" ></h:outputLabel>
                                         <h:outputLabel value="#{inwardSearch.bill.netTotal}" ></h:outputLabel>
-                                        <h:outputLabel value="" ></h:outputLabel>
-                                        <h:outputLabel value="" ></h:outputLabel>
-                                        <h:outputLabel value="" ></h:outputLabel>
-                                        <h:outputLabel value="" ></h:outputLabel>
-                                        <h:outputLabel value="" ></h:outputLabel>
-                                        <h:outputLabel value="" ></h:outputLabel>
+                                        <h:outputLabel value="Doctor " ></h:outputLabel>
+                                        <h:outputLabel value=":" ></h:outputLabel>
+                                        <h:outputLabel id="lblDoctorName"
+                                                       value="#{inwardSearch.bill.staff ne null ? inwardSearch.bill.staff.person.nameWithTitle : inwardSearch.billFees[0].staff.person.nameWithTitle}" ></h:outputLabel>
                                     </h:panelGrid>
                                 </p:panel>
                             </div>
