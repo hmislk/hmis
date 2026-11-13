@@ -22,6 +22,7 @@
 - **🚨 Never modify or remove existing constructors.** Only add new ones, delegating via `this(...)`. See [DTO Guidelines](developer_docs/dto/implementation-guidelines.md).
 - **🚨 JPQL first.** Native SQL only for a demonstrated performance need JPQL can't meet.
 - **🚨 `COUNT(...)` queries use `findLongByJpql`**, never `findDoubleByJpql` (silently returns 0.0).
+- **🚨 Date-time ranges: pass `TemporalType.TIMESTAMP`.** `findByJpql(jpql, params)` binds every `Date` as `TemporalType.DATE`, so an end-of-day `toDate` becomes 00:00 and today's rows vanish (#25526).
 - **🚨 Save a new entity with the facade's `create()`, never `edit()`.** `edit()` merges a copy and leaves the object without an id, so every later save of it, or of anything pointing to it, inserts another row (#25200: one cancel wrote 7 bills).
 - **🚨 Bind id lists, not entity lists, for a root entity in JPQL.** EclipseLink serialises the entities for `b in :bills`, so the query silently matches nothing. Use `b.id in :billIds`.
 - **🚨 Business errors thrown from a `@Stateless` service use an `@ApplicationException(rollback = true)` exception.** A plain `IllegalStateException`/`IllegalArgumentException` reaches the JSF controller or REST class as `EJBException`, so its `catch` never fires and the user sees no message.
@@ -68,6 +69,7 @@
 - **🚨 Mirror every merged hotfix into `development`** unless its commits were cherry-picked from `development` (hotfix-deploy Step 9a).
 - **🚨 Dependabot PRs: green CI isn't enough.** Triage them with the [dependabot-triage skill](.claude/skills/dependabot-triage/SKILL.md): bytecode ≤ Java 11, no `jakarta.*`, sibling artifacts on one version (e.g. `poi`/`poi-ooxml`), no `pom.xml` pin holding back a transitive (e.g. `commons-io`), release notes read, a combined JDK 11 build, and a local Payara smoke test of each runtime jar. Close a rejected bump with the evidence and add a `.github/dependabot.yml` ignore rule. CI compile catches none of these runtime failures.
 - **🚨 After applying a CodeRabbit/Codex fix**, verify the getter names exist on the entity (e.g. `isCompleted()`, not `getCompleted()`). See [PR Review §4a](developer_docs/git/pr-review-workflow.md).
+- **🚨 Decline bot suggestions that change the design or flow, or bring a pattern most of the codebase does not use.** Reply, resolve the thread, don't implement; raise any you still think valid with the lead developer later. See [PR Review §2a](developer_docs/git/pr-review-workflow.md#2a-decline-design-flow-and-off-pattern-suggestions-lead-developer-rule-2026-11-13).
 
 ## Reference (read when relevant)
 - Persistence/deployment: [JNDI dev vs prod](developer_docs/deployment/persistence-verification.md) · [Windows remote access](developer_docs/deployment/windows-remote-access-tips.md) · [Migrating a stale hospital DB](developer_docs/deployment/migrating-a-stale-hospital-to-development.md) (always E2E-test a real OPD bill settle)
