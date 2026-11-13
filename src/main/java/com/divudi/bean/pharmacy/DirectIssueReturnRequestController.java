@@ -64,7 +64,7 @@ public class DirectIssueReturnRequestController implements Serializable {
     private BillItemFacade billItemFacade;
     @EJB
     private PharmaceuticalBillItemFacade pharmaceuticalBillItemFacade;
-    @EJB
+    @Inject
     private PharmacyCalculation pharmacyCalculation;
     @EJB
     private BillNumberGenerator billNumberBean;
