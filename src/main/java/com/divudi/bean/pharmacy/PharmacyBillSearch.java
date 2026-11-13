@@ -81,6 +81,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -3470,7 +3472,50 @@ public class PharmacyBillSearch implements Serializable {
         return isIssueAcceptedByWard(getBill());
     }
 
+    /**
+     * One lock per issue bill, shared by every session, so a double click or a
+     * second user cannot cancel the same inward issue twice (#25530 follow-up).
+     */
+    private static final ConcurrentHashMap<Long, ReentrantLock> ISSUE_CANCEL_LOCKS = new ConcurrentHashMap<>();
+
+    private static final String ISSUE_ALREADY_CANCELLED_MESSAGE
+            = "This issue was already cancelled, possibly by another user. It was not cancelled again.";
+
+    /**
+     * Runs one inward issue cancel under that bill's lock, after re-reading the
+     * bill from the database: a cancelled bill is refused before any stock is
+     * moved. Facade calls inside still commit on their own.
+     */
+    private void cancelIssueToBhtOnce(Runnable cancel) {
+        if (getBill() == null || getBill().getId() == null) {
+            JsfUtil.addErrorMessage("No Bill Found");
+            return;
+        }
+        ReentrantLock lock = ISSUE_CANCEL_LOCKS.computeIfAbsent(getBill().getId(), k -> new ReentrantLock());
+        lock.lock();
+        try {
+            Bill fresh = getBillFacade().findWithoutCache(getBill().getId());
+            if (fresh == null) {
+                JsfUtil.addErrorMessage("No Bill Found");
+                return;
+            }
+            if (fresh.isCancelled() || fresh.getCancelledBill() != null) {
+                // Show the page as cancelled; nothing is saved.
+                getBill().setCancelled(true);
+                JsfUtil.addErrorMessage(ISSUE_ALREADY_CANCELLED_MESSAGE);
+                return;
+            }
+            cancel.run();
+        } finally {
+            lock.unlock();
+        }
+    }
+
     public void cancelPharmacyDirectIssueToBht() {
+        cancelIssueToBhtOnce(this::cancelPharmacyDirectIssueToBhtUnderLock);
+    }
+
+    private void cancelPharmacyDirectIssueToBhtUnderLock() {
         if (getBill().getBillType() != BillType.PharmacyBhtPre) {
             return;
         }
@@ -3675,6 +3720,10 @@ public class PharmacyBillSearch implements Serializable {
     }
 
     public void cancelPharmacyRequestIssueToBht() {
+        cancelIssueToBhtOnce(this::cancelPharmacyRequestIssueToBhtUnderLock);
+    }
+
+    private void cancelPharmacyRequestIssueToBhtUnderLock() {
         if (getBill() == null) {
             JsfUtil.addErrorMessage("No Bill Found");
             return;
