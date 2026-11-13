@@ -405,16 +405,8 @@ public class CashRecieveBillController implements Serializable {
 
         Bill referenceBill = billItem.getReferenceBill();
 
-        // For Credit payment method bills, use the updated balance field directly
-        // This ensures we get the accurate balance after individual bill cancellations
         if (referenceBill.getPaymentMethod() == PaymentMethod.Credit) {
-            // The balance field is automatically maintained during cancellations
-            // and represents the current due amount
-            double currentBalance = Math.abs(referenceBill.getBalance());
-
-            // Additional validation: ensure balance doesn't exceed original amount
-            double originalAmount = Math.abs(referenceBill.getNetTotal() + referenceBill.getVat());
-            return Math.min(currentBalance, originalAmount);
+            return creditBillDue(referenceBill);
         }
 
         // For non-Credit bills, use the original calculation method
@@ -438,16 +430,8 @@ public class CashRecieveBillController implements Serializable {
             return 0.0;
         }
 
-        // For Credit payment method bills, use the updated balance field directly
-        // This ensures we get the accurate balance after individual bill cancellations
         if (bill.getPaymentMethod() == PaymentMethod.Credit) {
-            // The balance field is automatically maintained during cancellations
-            // and represents the current due amount
-            double currentBalance = Math.abs(bill.getBalance());
-
-            // Additional validation: ensure balance doesn't exceed original amount
-            double originalAmount = Math.abs(bill.getNetTotal() + bill.getVat());
-            return Math.min(currentBalance, originalAmount);
+            return creditBillDue(bill);
         }
 
         // For non-Credit bills, use the original calculation method
@@ -456,6 +440,25 @@ public class CashRecieveBillController implements Serializable {
         double paidAmt = Math.abs(getCreditBean().getTotalCreditSettledAmount(bill));
         double balance = neTotal - (paidAmt + refAmount);
         return balance;
+    }
+
+    /**
+     * Due on a credit bill: net total + VAT - refunds - settlements (#25467).
+     * Refunds and settlements are recorded on the credit bill itself (#25463),
+     * so the stored balance is not read; it can be out of step on older bills.
+     * The bill is read fresh so a payment taken since this page opened counts.
+     */
+    private double creditBillDue(Bill bill) {
+        Bill fresh = bill;
+        if (bill.getId() != null) {
+            Bill found = getBillFacade().find(bill.getId());
+            if (found != null) {
+                fresh = found;
+            }
+        }
+        double gross = Math.abs(fresh.getNetTotal() + fresh.getVat());
+        double due = gross - (Math.abs(fresh.getRefundAmount()) + Math.abs(fresh.getPaidAmount()));
+        return Math.max(0, due);
     }
 
     private double getReferenceBhtBallance(BillItem billItem) {
