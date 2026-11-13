@@ -385,9 +385,6 @@ public class PharmacyFastRetailSaleController implements Serializable, Controlle
                     case Slip:
                         multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getSlip().getTotalValue();
                         break;
-                    case Credit:
-                        multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCredit().getTotalValue();
-                        break;
                     default:
                         break;
                 }

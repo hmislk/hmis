@@ -3471,9 +3471,6 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
                         case Staff_Welfare:
                             multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getStaffWelfare().getTotalValue();
                             break;
-                        case Credit:
-                            multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCredit().getTotalValue();
-                            break;
                         case OnlineSettlement:
                             multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getOnlineSettlement().getTotalValue();
                             break;
