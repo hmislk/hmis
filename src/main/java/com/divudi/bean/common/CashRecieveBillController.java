@@ -1351,6 +1351,12 @@ public class CashRecieveBillController implements Serializable {
             return;
         }
 
+        // The dues were read when the bills were loaded; another user may have received some
+        // since. Check against the database before any number or record is created (#25561).
+        if (isBhtOverPayment(getBillItems())) {
+            return;
+        }
+
         String deptId = billNumberBean.departmentBillNumberGeneratorYearly(sessionController.getDepartment(), BillTypeAtomic.INPATIENT_CREDIT_COMPANY_PAYMENT_RECEIVED);
         calulateTotalForSettlingCreditForInwardCreditCompanyPaymentBills();
         getBillBean().setPaymentMethodData(getCurrent(), getCurrent().getPaymentMethod(), getPaymentMethodData());
