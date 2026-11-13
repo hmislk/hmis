@@ -448,8 +448,14 @@ public class TransferRequestController implements Serializable {
         }
         bill.setDepartment(sessionController.getDepartment());
         bill.setFromDepartment(sessionController.getDepartment());
-        bill = createNewApprovedTransferRequestBill(transferRequestBillPre, billItems, bill);
+        Bill approvedBill = createNewApprovedTransferRequestBill(transferRequestBillPre, billItems, bill);
+        if (approvedBill == null) {
+            // createNewApprovedTransferRequestBill() has already shown the reason.
+            return;
+        }
+        bill = approvedBill;
         printPreview = true;
+        JsfUtil.addSuccessMessage("Transfer Request Approved Successfully");
     }
 
     /**
