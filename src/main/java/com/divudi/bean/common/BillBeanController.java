@@ -2549,11 +2549,12 @@ public class BillBeanController implements Serializable {
                 getBillFacade().edit(bill);
                 if (!finalBill.getBackwardReferenceBills().contains(bill)) {
                     finalBill.getBackwardReferenceBills().add(bill);
-                    if (finalBill.getBalance() <= 0) {
-                        finalBill.setBalance(finalBill.getNetTotal());
-                    }
-                    finalBill.setBalance(finalBill.getBalance() - amount);
                     finalBill.setPaidAmount(finalBill.getPaidAmount() + amount);
+                    // Balance is derived from net - paid (#25570). The old "balance <= 0 means
+                    // not set" reset could not tell a settled bill from a new one, so a
+                    // cancel of a receipt that cleared the balance doubled it, and it also
+                    // ignored payments taken at finalization.
+                    finalBill.setBalance(finalBill.getNetTotal() - finalBill.getPaidAmount());
 
                     if (bill.getBillTypeAtomic() == BillTypeAtomic.INWARD_PAYMENT
                             || bill.getBillTypeAtomic() == BillTypeAtomic.INWARD_DEPOSIT) {
