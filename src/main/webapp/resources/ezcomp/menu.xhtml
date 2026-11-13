@@ -650,7 +650,7 @@
 
                         <p:menuitem
                             ajax="false"
-                            action="#{wardPharmacyBhtIssueReceiveController.navigateToPendingList}"
+                            action="#{wardPharmacyBhtIssueReceiveController.openPendingList}"
                             value="Receive Medicines from Pharmacy"
                             icon="fa fa-truck-medical"
                             rendered="#{webUserController.hasPrivilege('InwardPharmacyBhtReceive')}">
@@ -1294,7 +1294,7 @@
                                      rendered="#{webUserController.hasPrivilege('PharmacyBHTIssueAccept') or webUserController.hasPrivilege('PharmacyBhtIssueRequest')}" />
                         <p:menuitem
                             ajax="false"
-                            action="#{wardPharmacyBhtIssueReceiveController.navigateToPendingList}"
+                            action="#{wardPharmacyBhtIssueReceiveController.openPendingList}"
                             value="Receive Medicines from Pharmacy"
                             icon="fa fa-truck-medical"
                             rendered="#{webUserController.hasPrivilege('InwardPharmacyBhtReceive')}" />
