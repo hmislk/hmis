@@ -276,6 +276,11 @@ codebase and the known false-positive patterns from `review-pr` /
 - Bootstrap CSS classes where the project uses PrimeFaces.
 - A filter/column that looks "wrong" but matches how a sibling report in
   the same module does it (verify against that sibling before "fixing").
+- A bot suggestion that changes the design or flow, or brings a pattern
+  most of the codebase does not use (row locking on one entity, a new
+  layer, a config toggle): **Declined**. Reply, resolve the thread, do not
+  implement; list it for the lead developer if you still think it has
+  merit ([PR Review §2a](../../../developer_docs/git/pr-review-workflow.md#2a-decline-design-flow-and-off-pattern-suggestions-lead-developer-rule-2026-11-13)).
 
 For each candidate, state: **Valid — will fix** / **False positive —
 <reason>** / **Discuss**. Wait for the user on anything marked Discuss;
