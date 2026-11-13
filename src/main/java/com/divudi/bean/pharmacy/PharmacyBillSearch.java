@@ -3442,8 +3442,37 @@ public class PharmacyBillSearch implements Serializable {
 
     }
 
+    private static final String WARD_ALREADY_RECEIVED_MESSAGE = "The ward has already received this issue. Return it instead.";
+
+    /**
+     * True when the bill is an issue made against a ward request and the ward has
+     * accepted it (a non-cancelled ACCEPT_ISSUED_MEDICINE_INWARD bill references it).
+     * Such an issue can no longer be cancelled; it has to be returned (#25508).
+     */
+    public boolean isIssueAcceptedByWard(Bill issue) {
+        if (issue == null || issue.getId() == null
+                || issue.getBillTypeAtomic() != BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD) {
+            return false;
+        }
+        String jpql = "SELECT count(r) FROM Bill r WHERE r.backwardReferenceBill.id = :issueId "
+                + "AND r.billTypeAtomic = :acceptBta AND r.cancelled = false";
+        Map<String, Object> params = new HashMap<>();
+        params.put("issueId", issue.getId());
+        params.put("acceptBta", BillTypeAtomic.ACCEPT_ISSUED_MEDICINE_INWARD);
+        Long count = getBillFacade().findLongByJpql(jpql, params);
+        return count != null && count > 0;
+    }
+
+    public boolean isCurrentBillIssueAcceptedByWard() {
+        return isIssueAcceptedByWard(getBill());
+    }
+
     public void cancelPharmacyDirectIssueToBht() {
         if (getBill().getBillType() != BillType.PharmacyBhtPre) {
+            return;
+        }
+        if (isIssueAcceptedByWard(getBill())) {
+            JsfUtil.addErrorMessage(WARD_ALREADY_RECEIVED_MESSAGE);
             return;
         }
         if (getBill().getPatientEncounter().isPaymentFinalized()) {
@@ -3635,6 +3664,10 @@ public class PharmacyBillSearch implements Serializable {
             return;
         }
         if (getBill().getBillType() != BillType.PharmacyBhtPre) {
+            return;
+        }
+        if (isIssueAcceptedByWard(getBill())) {
+            JsfUtil.addErrorMessage(WARD_ALREADY_RECEIVED_MESSAGE);
             return;
         }
         if (getBill().getPatientEncounter().isPaymentFinalized()) {

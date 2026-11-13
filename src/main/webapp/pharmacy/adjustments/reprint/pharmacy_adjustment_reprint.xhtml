@@ -37,7 +37,12 @@
                         </f:facet>
 
                         <h:panelGroup id="printArea">
-                            <ph:adjustmentBill bill="#{billSearch.bill}" />
+                            <h:panelGroup rendered="#{billSearch.bill.billType ne 'PharmacyAdjustmentBatchChange'}">
+                                <ph:adjustmentBill bill="#{billSearch.bill}" />
+                            </h:panelGroup>
+                            <h:panelGroup rendered="#{billSearch.bill.billType eq 'PharmacyAdjustmentBatchChange'}">
+                                <ph:adjustmentBill_batch_change bill="#{billSearch.bill}" />
+                            </h:panelGroup>
                         </h:panelGroup>
 
                     </p:panel>
