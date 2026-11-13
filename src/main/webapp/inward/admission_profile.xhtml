@@ -1178,6 +1178,17 @@
                                             rendered="#{webUserController.hasPrivilege('InwardPharmacyReturnSubmit')}"
                                             class="w-100"/>
                                     </div>
+                                    <div class="col-6">
+                                        <p:commandButton
+                                            id="btnRequestDirectIssueReturnInpatient"
+                                            value="Request Return of Direct Issue"
+                                            title="Ask the issuing pharmacy to take back medicines it issued directly to this patient"
+                                            ajax="false"
+                                            action="#{directIssueReturnRequestController.navigateToRequestForEncounter(admissionController.current)}"
+                                            icon="fa fa-rotate-left"
+                                            rendered="#{webUserController.hasPrivilege('InwardPharmacyReturnSubmit')}"
+                                            class="w-100"/>
+                                    </div>
                                 </div>
                             </div>
 

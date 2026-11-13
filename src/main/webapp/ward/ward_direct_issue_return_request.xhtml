@@ -1,0 +1,231 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <ui:define name="content">
+        <h:form id="formDirectIssueReturnRequest">
+
+            <p:messages id="msgDirectIssueReturnRequest" showDetail="true" autoUpdate="true"/>
+
+            <p:panel rendered="#{!directIssueReturnRequestController.printPreview}">
+                <f:facet name="header">
+                    <h:outputText styleClass="fa-solid fa-rotate-left"/>
+                    <p:outputLabel value="Request Return of Direct Issued Medicines - BHT #{directIssueReturnRequestController.patientEncounter.bhtNo} - #{directIssueReturnRequestController.patientEncounter.patient.person.nameWithTitle}" class="mx-4"
+                                   rendered="#{!directIssueReturnRequestController.allPatients}"/>
+                    <p:outputLabel value="Request Return of Direct Issued Medicines - All Patients" class="mx-4"
+                                   rendered="#{directIssueReturnRequestController.allPatients}"/>
+                </f:facet>
+
+                <p:outputLabel styleClass="d-block mb-2"
+                               value="A direct issue is returned only by the pharmacy that issued it. Send a request here; no stock or bill changes until that pharmacy approves it."/>
+
+                <p:dataTable
+                    id="tblIssueBills"
+                    rowKey="#{p.id}"
+                    value="#{directIssueReturnRequestController.issueBills}"
+                    var="p"
+                    class="w-100"
+                    emptyMessage="No direct issues with a quantity that can still be returned.">
+
+                    <f:facet name="header">
+                        <h:outputText value="Direct Issues with a Returnable Balance"/>
+                    </f:facet>
+
+                    <p:column headerText="BHT" rendered="#{directIssueReturnRequestController.allPatients}">
+                        <h:outputText value="#{p.patientEncounter.bhtNo}"/>
+                    </p:column>
+
+                    <p:column headerText="Patient" rendered="#{directIssueReturnRequestController.allPatients}">
+                        <h:outputText value="#{p.patientEncounter.patient.person.nameWithTitle}"/>
+                    </p:column>
+
+                    <p:column headerText="Bill No">
+                        <h:outputText value="#{p.deptId}"/>
+                    </p:column>
+
+                    <p:column headerText="Issued By Department">
+                        <h:outputText value="#{p.department.name}"/>
+                    </p:column>
+
+                    <p:column headerText="Issued At">
+                        <h:outputText value="#{p.createdAt}">
+                            <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                        </h:outputText>
+                    </p:column>
+
+                    <p:column headerText="Actions" style="width: 8rem;">
+                        <p:commandButton
+                            value="Select"
+                            title="Request a return against bill #{p.deptId}"
+                            icon="fa fa-check"
+                            class="ui-button-success m-1"
+                            process="@this"
+                            actionListener="#{directIssueReturnRequestController.selectIssueBill(p)}"
+                            update=":formDirectIssueReturnRequest:panelRequestLines"/>
+                    </p:column>
+                </p:dataTable>
+
+                <h:panelGroup id="panelRequestLines" layout="block" styleClass="mt-3">
+                    <h:outputText rendered="#{directIssueReturnRequestController.selectedIssueBill eq null}"
+                                  value="Select a direct issue above to load its items."
+                                  styleClass="text-muted"/>
+
+                    <h:panelGroup rendered="#{directIssueReturnRequestController.selectedIssueBill ne null}">
+                        <p:dataTable
+                            id="tblRequestLines"
+                            value="#{directIssueReturnRequestController.lines}"
+                            var="line"
+                            class="w-100"
+                            emptyMessage="No items on this bill.">
+
+                            <f:facet name="header">
+                                <h:outputText value="Return Request Against Bill #{directIssueReturnRequestController.selectedIssueBill.deptId}"/>
+                            </f:facet>
+
+                            <p:column headerText="Item">
+                                <h:outputText value="#{line.issueItem.item.name}"/>
+                            </p:column>
+
+                            <p:column headerText="Issued">
+                                <h:outputText value="#{line.issuedQty}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputText>
+                            </p:column>
+
+                            <p:column headerText="Already Returned">
+                                <h:outputText value="#{line.returnedQty}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputText>
+                            </p:column>
+
+                            <p:column headerText="In Pending Requests">
+                                <h:outputText value="#{line.pendingRequestedQty}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputText>
+                            </p:column>
+
+                            <p:column headerText="Can Request">
+                                <h:outputText value="#{line.requestableQty}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputText>
+                            </p:column>
+
+                            <p:column headerText="Return Quantity">
+                                <p:inputText autocomplete="off" value="#{line.requestedQty}" style="width:96%"
+                                             disabled="#{line.requestableQty le 0}"/>
+                            </p:column>
+                        </p:dataTable>
+
+                        <p:outputLabel for="txtRequestComment" value="Reason for the return request:" styleClass="d-block mt-3"/>
+                        <p:inputTextarea id="txtRequestComment" rows="2" class="w-100"
+                                         value="#{directIssueReturnRequestController.comment}"/>
+
+                        <div class="d-flex justify-content-end mt-3">
+                            <p:commandButton
+                                id="btnSendRequest"
+                                value="Send Return Request to Pharmacy"
+                                icon="fas fa-paper-plane"
+                                class="ui-button-success"
+                                update=":formDirectIssueReturnRequest"
+                                actionListener="#{directIssueReturnRequestController.submit}"
+                                disabled="#{not webUserController.hasPrivilege('InwardPharmacyReturnSubmit')}"/>
+                        </div>
+                    </h:panelGroup>
+                </h:panelGroup>
+
+                <p:separator/>
+
+                <p:dataTable
+                    id="tblRecentRequests"
+                    value="#{directIssueReturnRequestController.recentRequests}"
+                    var="r"
+                    class="w-100"
+                    emptyMessage="No return requests from this department yet.">
+
+                    <f:facet name="header">
+                        <h:outputText value="Return Requests from this Department"/>
+                    </f:facet>
+
+                    <p:column headerText="Request No">
+                        <h:outputText value="#{r.deptId}"/>
+                    </p:column>
+
+                    <p:column headerText="BHT">
+                        <h:outputText value="#{r.patientEncounter.bhtNo}"/>
+                    </p:column>
+
+                    <p:column headerText="Issue Bill">
+                        <h:outputText value="#{r.referenceBill.deptId}"/>
+                    </p:column>
+
+                    <p:column headerText="To">
+                        <h:outputText value="#{r.toDepartment.name}"/>
+                    </p:column>
+
+                    <p:column headerText="Requested At">
+                        <h:outputText value="#{r.createdAt}">
+                            <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                        </h:outputText>
+                    </p:column>
+
+                    <p:column headerText="Status">
+                        <h:outputText value="#{directIssueReturnRequestController.statusOf(r)}"/>
+                    </p:column>
+
+                    <p:column headerText="Comments">
+                        <h:outputText value="#{r.comments}"/>
+                    </p:column>
+
+                    <p:column headerText="Actions" style="width: 8rem;">
+                        <p:commandButton
+                            value="Withdraw"
+                            icon="fas fa-cancel"
+                            class="ui-button-warning m-1"
+                            process="@this"
+                            update=":formDirectIssueReturnRequest"
+                            rendered="#{directIssueReturnRequestController.isPending(r)}"
+                            disabled="#{not webUserController.hasPrivilege('InwardPharmacyReturnSubmit')}"
+                            actionListener="#{directIssueReturnRequestController.withdraw(r)}"
+                            onclick="return confirm('Withdraw this return request?');"/>
+                    </p:column>
+                </p:dataTable>
+            </p:panel>
+
+            <p:panel rendered="#{directIssueReturnRequestController.printPreview}">
+                <f:facet name="header">
+                    <p:outputLabel value="Return Request Sent - No #{directIssueReturnRequestController.submittedRequest.deptId}"/>
+                </f:facet>
+
+                <p:outputLabel styleClass="d-block mb-2"
+                               value="Sent to #{directIssueReturnRequestController.submittedRequest.toDepartment.name} for approval. No stock or bill has changed."/>
+
+                <p:dataTable
+                    id="tblSubmittedItems"
+                    value="#{directIssueReturnRequestController.submittedRequest.billItems}"
+                    var="i"
+                    class="w-100">
+                    <p:column headerText="Item">
+                        <h:outputText value="#{i.item.name}"/>
+                    </p:column>
+                    <p:column headerText="Quantity Requested">
+                        <h:outputText value="#{i.qty}">
+                            <f:convertNumber pattern="#,##0.00"/>
+                        </h:outputText>
+                    </p:column>
+                </p:dataTable>
+
+                <p:commandButton
+                    id="btnNewRequest"
+                    value="New Request"
+                    icon="fas fa-arrow-left"
+                    ajax="false"
+                    class="ui-button-secondary mt-3"
+                    action="#{directIssueReturnRequestController.navigateToNewRequest}"/>
+            </p:panel>
+        </h:form>
+    </ui:define>
+</ui:composition>
