@@ -36,10 +36,8 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
@@ -454,18 +452,11 @@ public class CreditCompanyBillSearch implements Serializable {
                 JsfUtil.addSuccessMessage("Cancelled");
                 WebUser wb = getCashTransactionBean().saveBillCashOutTransaction(cb, getSessionController().getLoggedUser());
                 // cancelBillItems(cb) does not add the new items to cb.getBillItems(),
-                // so read the admissions from the bill being cancelled. Link each
-                // admission once, even when the payment has several items for it (#25542).
-                Set<Long> linkedEncounterIds = new HashSet<>();
-                for (BillItem paidBillItem : getBillItems()) {
-                    PatientEncounter encounter = paidBillItem.getPatientEncounter();
-                    if (encounter == null || encounter.getId() == null || !linkedEncounterIds.add(encounter.getId())) {
-                        continue;
-                    }
-                    BillBeanController.FinalBillLinkResult link = getBillBean().linkToFreshFinalBill(encounter, cb);
-                    if (!link.isLinked()) {
-                        JsfUtil.addErrorMessage("The final bill of an admission in this payment is cancelled, so this cancellation was not added to it. Please check the admission's final bill.");
-                    }
+                // so read the admissions from the bill being cancelled (#25542). Each
+                // admission is linked once; a payment for several admissions reverses
+                // only that admission's share on each final bill (#25547).
+                if (!getBillBean().linkToFreshFinalBillsPerAdmission(cb, getBillItems())) {
+                    JsfUtil.addErrorMessage("The final bill of an admission in this payment is cancelled, so this cancellation was not added to it. Please check the admission's final bill.");
                 }
                 getSessionController().setLoggedUser(wb);
                 paymentService.createPayment(cb, getPaymentMethodData());
