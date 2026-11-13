@@ -619,7 +619,7 @@ public class InwardSearch implements Serializable {
                 fresh.setCreditLimit(pageCopy.getCreditLimit());
             }
             patientEncounterFacade.edit(fresh);
-            if (fresh.getPaymentMethod() == PaymentMethod.Credit) {
+            if (fresh.getPaymentMethod() == PaymentMethod.Credit && fresh.getFinalBill() != null) {
                 getInwardBean().updateCreditDetail(fresh, fresh.getFinalBill().getNetTotal());
             }
             getBill().setPatientEncounter(fresh);
