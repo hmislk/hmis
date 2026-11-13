@@ -3365,6 +3365,8 @@ public class ChannelApi {
         getPatientFacade().create(p);
 
         bill.setBillType(BillType.ChannelAgent);
+        // Same atomic type the UI agent booking uses (BookingController.createBill, case Agent), #24601
+        bill.setBillTypeAtomic(BillTypeAtomic.CHANNEL_BOOKING_WITH_PAYMENT);
         Institution institution = institutionFacade.find(agent);
         bill.setCreditCompany(institution);
 
@@ -3431,6 +3433,33 @@ public class ChannelApi {
         return bi;
     }
 
+    private SessionInstance findSessionInstanceForLegacySession(ServiceSession ss) {
+        if (ss == null || ss.getOriginatingSession() == null || ss.getSessionDate() == null) {
+            return null;
+        }
+        String jpql = "select si from SessionInstance si "
+                + " where si.retired=false "
+                + " and si.originatingSession=:os "
+                + " and si.sessionDate between :fd and :td "
+                + " order by si.id";
+        Map<String, Object> m = new HashMap<>();
+        m.put("os", ss.getOriginatingSession());
+        m.put("fd", CommonFunctions.getStartOfDay(ss.getSessionDate()));
+        m.put("td", CommonFunctions.getEndOfDay(ss.getSessionDate()));
+        List<SessionInstance> list = sessionInstanceFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
+        if (list == null || list.isEmpty()) {
+            return null;
+        }
+        if (list.size() > 1 && ss.getSessionTime() != null) {
+            for (SessionInstance si : list) {
+                if (si.getSessionTime() != null && si.getSessionTime().equals(ss.getSessionTime())) {
+                    return si;
+                }
+            }
+        }
+        return list.get(0);
+    }
+
     private BillSession createBillSession(Bill bill, BillItem billItem, ServiceSession ss) {
         BillSession bs = new BillSession();
         bs.setAbsent(false);
@@ -3443,6 +3472,8 @@ public class ChannelApi {
         bs.setItem(ss);
 
         bs.setServiceSession(ss);
+        // The channel income reports join BillSession.sessionInstance, as the UI booking sets it (#24601)
+        bs.setSessionInstance(findSessionInstanceForLegacySession(ss));
         bs.setSessionDate(ss.getSessionDate());
         bs.setSessionTime(ss.getSessionTime());
         bs.setStaff(ss.getStaff());
