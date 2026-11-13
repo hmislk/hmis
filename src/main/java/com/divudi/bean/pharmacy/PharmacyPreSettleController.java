@@ -1960,6 +1960,21 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
     @EJB
     private TokenFacade tokenFacade;
 
+    // Back To Search from the Accept Payment page: a token whose payment was
+    // started but not settled goes back to the plain "called" state, so it does
+    // not stay ranked as a payment in progress on the token board. A settled
+    // (completed) token is left as it is.
+    public String backToSearchWithoutSettling() {
+        Bill b = getPreBill();
+        if (b != null) {
+            Token t = findTokenFromBill(b);
+            if (t != null && t.isCalled() && t.isInProgress() && !t.isCompleted()) {
+                markToken(b);
+            }
+        }
+        return "pharmacy_search_pre_bill";
+    }
+
     public void markToken(Bill bill) {
         Token t = findTokenFromBill(bill);
         if (t == null) {
