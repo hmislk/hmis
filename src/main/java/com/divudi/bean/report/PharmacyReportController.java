@@ -11589,7 +11589,9 @@ public class PharmacyReportController implements Serializable {
         // Department filter: GROUP BY (department, item) - one row per department per item
         // Institution filter: GROUP BY (institution, item) - one row per institution per item
         // No filter (Total): GROUP BY (item) - one row per item across all institutions
-        if (department != null) {
+        // Site filter without a department: one row per department per item, summed
+        // per item below (#25464).
+        if (department != null || site != null) {
             jpql.append("  GROUP BY sh2.department, sh2.item) ");
         } else if (institution != null) {
             jpql.append("  GROUP BY sh2.institution, sh2.item) ");
@@ -11628,6 +11630,7 @@ public class PharmacyReportController implements Serializable {
         // Execute DTO projection query - returns PharmacyRow objects directly with all values pre-populated
         @SuppressWarnings("unchecked")
         List<PharmacyRow> dtoRows = (List<PharmacyRow>) facade.findLightsByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+        dtoRows = sumSiteRowsPerItem(dtoRows);
 
         rows = new ArrayList<>();
 
@@ -11655,8 +11658,8 @@ public class PharmacyReportController implements Serializable {
 
             // Set quantity and values based on department/institution/total scope
             // The DTO constructor stored item-level values in specific fields
-            if (department != null) {
-                // Department-level: Use itemStock and department item values
+            if (department != null || site != null) {
+                // Department-level (or a site's department sums): itemStock and item values
                 row.setQuantity(row.getStockQty());  // itemStock
                 row.setPurchaseValue(row.getPurchaseValue());  // itemStockValueAtPurchaseRate
                 row.setSaleValue(row.getSaleValue());  // itemStockValueAtSaleRate
@@ -11684,6 +11687,7 @@ public class PharmacyReportController implements Serializable {
             String archiveJpql = jpql.toString().replace("FROM StockHistory ", "FROM StockHistoryArchive ");
             @SuppressWarnings("unchecked")
             List<PharmacyRow> archiveDtoRows = (List<PharmacyRow>) facade.findLightsByJpql(archiveJpql, params, TemporalType.TIMESTAMP);
+            archiveDtoRows = sumSiteRowsPerItem(archiveDtoRows);
             java.util.Set<Long> liveItemIds = new java.util.HashSet<>();
             for (PharmacyRow r : dtoRows) {
                 if (r.getItem() != null) {
@@ -11707,7 +11711,7 @@ public class PharmacyReportController implements Serializable {
                         continue;
                     }
                 }
-                if (department != null) {
+                if (department != null || site != null) {
                     row.setQuantity(row.getStockQty());
                 } else if (institution != null) {
                     row.setQuantity(row.getGrossTotal());
@@ -11864,7 +11868,9 @@ public class PharmacyReportController implements Serializable {
         // Department filter: GROUP BY (department, itemBatch) - one row per department per batch
         // Institution filter: GROUP BY (institution, itemBatch) - one row per institution per batch
         // No filter (Total): GROUP BY (itemBatch) - one row per batch across all institutions
-        if (department != null) {
+        // Site filter without a department: one row per department per batch, summed
+        // per batch below, because stock history has no site-level aggregate (#25464).
+        if (department != null || site != null) {
             jpql.append("  GROUP BY sh2.department, sh2.itemBatch) ");
         } else if (institution != null) {
             jpql.append("  GROUP BY sh2.institution, sh2.itemBatch) ");
@@ -11903,6 +11909,7 @@ public class PharmacyReportController implements Serializable {
         // Execute DTO projection query - returns PharmacyRow objects directly with all values pre-populated
         @SuppressWarnings("unchecked")
         List<PharmacyRow> dtoRows = (List<PharmacyRow>) facade.findLightsByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+        dtoRows = sumSiteRowsPerBatch(dtoRows);
 
         rows = new ArrayList<>();
 
@@ -11935,6 +11942,7 @@ public class PharmacyReportController implements Serializable {
             String archiveJpql = jpql.toString().replace("FROM StockHistory ", "FROM StockHistoryArchive ");
             @SuppressWarnings("unchecked")
             List<PharmacyRow> archiveDtoRows = (List<PharmacyRow>) facade.findLightsByJpql(archiveJpql, params, TemporalType.TIMESTAMP);
+            archiveDtoRows = sumSiteRowsPerBatch(archiveDtoRows);
             java.util.Set<Long> liveBatchIds = new java.util.HashSet<>();
             for (PharmacyRow r : dtoRows) {
                 if (r.getItemBatch() != null) {
@@ -11972,7 +11980,8 @@ public class PharmacyReportController implements Serializable {
      * (which sums quantity) shows 0 (issue #18981).
      */
     private void applyBatchScopeValues(PharmacyRow row) {
-        if (department != null) {
+        if (department != null || site != null) {
+            // Site rows carry the site's department sums (sumSiteRowsPerBatch)
             row.setQuantity(row.getStockQty());
         } else if (institution != null) {
             row.setQuantity(row.getGrossTotal());
@@ -11985,6 +11994,48 @@ public class PharmacyReportController implements Serializable {
             row.setSaleValue(row.getActualTotal());
             row.setCostValue(row.getStaffTotal());
         }
+    }
+
+    /**
+     * With a site selected and no department, the query returns each site
+     * department's latest row per batch (or per item). Add them up so one row per
+     * batch (or item) shows the site's quantity and values at the report date
+     * (#25464); stock history has no site-level aggregate. Other scopes are
+     * returned unchanged.
+     */
+    private List<PharmacyRow> sumSiteRowsPerBatch(List<PharmacyRow> departmentRows) {
+        return sumSiteRows(departmentRows, r -> r.getItemBatch() == null ? null : r.getItemBatch().getId());
+    }
+
+    private List<PharmacyRow> sumSiteRowsPerItem(List<PharmacyRow> departmentRows) {
+        return sumSiteRows(departmentRows, r -> r.getItem() == null ? null : r.getItem().getId());
+    }
+
+    private List<PharmacyRow> sumSiteRows(List<PharmacyRow> departmentRows, java.util.function.Function<PharmacyRow, Long> key) {
+        if (site == null || department != null || departmentRows == null) {
+            return departmentRows;
+        }
+        Map<Long, PharmacyRow> perKey = new java.util.LinkedHashMap<>();
+        for (PharmacyRow r : departmentRows) {
+            Long k = r == null ? null : key.apply(r);
+            if (k == null) {
+                continue;
+            }
+            PharmacyRow sum = perKey.get(k);
+            if (sum == null) {
+                perKey.put(k, r);
+                continue;
+            }
+            sum.setStockQty(nz(sum.getStockQty()) + nz(r.getStockQty()));
+            sum.setPurchaseValue(nz(sum.getPurchaseValue()) + nz(r.getPurchaseValue()));
+            sum.setSaleValue(nz(sum.getSaleValue()) + nz(r.getSaleValue()));
+            sum.setCostValue(nz(sum.getCostValue()) + nz(r.getCostValue()));
+        }
+        return new ArrayList<>(perKey.values());
+    }
+
+    private static double nz(Double d) {
+        return d == null ? 0.0 : d;
     }
 
     public static <T> T safeGet(Supplier<T> supplier, T defaultValue) {
