@@ -2517,13 +2517,31 @@ public class BillBeanController implements Serializable {
 
     /**
      * Links an inward payment/refund bill to the admission's final bill when
-     * payment is finalized.
+     * payment is finalized, adjusting the final bill by the bill's full net total.
      *
      * @return false only when the admission says payment is finalized but its
      * final bill is cancelled, retired or missing in the database, so the bill
      * was not linked; true otherwise.
      */
     public boolean updateInwardDipositList(PatientEncounter patientEncounter, Bill bill) {
+        return updateInwardDipositList(patientEncounter, bill, bill != null ? bill.getNetTotal() : 0.0);
+    }
+
+    /**
+     * Links an inward payment/refund bill to the admission's final bill when
+     * payment is finalized, adjusting the final bill by the specified amount
+     * (used when a single bill covers multiple admissions, such as inpatient
+     * credit company payments, #25547).
+     *
+     * @param patientEncounter the admission whose final bill is being adjusted
+     * @param bill the payment or cancellation bill being linked
+     * @param amount the admission's share of the payment (positive for payment,
+     *               negative for cancellation)
+     * @return false only when the admission says payment is finalized but its
+     * final bill is cancelled, retired or missing in the database, so the bill
+     * was not linked; true otherwise.
+     */
+    public boolean updateInwardDipositList(PatientEncounter patientEncounter, Bill bill, double amount) {
         if (patientEncounter != null && bill != null) {
             if (patientEncounter.isPaymentFinalized() && patientEncounter.getFinalBill() != null
                     && patientEncounter.getFinalBill().getId() != null) {
@@ -2541,16 +2559,16 @@ public class BillBeanController implements Serializable {
                     if (finalBill.getBalance() <= 0) {
                         finalBill.setBalance(finalBill.getNetTotal());
                     }
-                    finalBill.setBalance(finalBill.getBalance() - bill.getNetTotal());
-                    finalBill.setPaidAmount(finalBill.getPaidAmount() + bill.getNetTotal());
+                    finalBill.setBalance(finalBill.getBalance() - amount);
+                    finalBill.setPaidAmount(finalBill.getPaidAmount() + amount);
 
                     if (bill.getBillTypeAtomic() == BillTypeAtomic.INWARD_PAYMENT
                             || bill.getBillTypeAtomic() == BillTypeAtomic.INWARD_DEPOSIT) {
-                        finalBill.setSettledAmountByPatient(finalBill.getSettledAmountByPatient() + bill.getNetTotal());
+                        finalBill.setSettledAmountByPatient(finalBill.getSettledAmountByPatient() + amount);
                     } else if (bill.getBillTypeAtomic() == BillTypeAtomic.INPATIENT_CREDIT_COMPANY_PAYMENT_RECEIVED) {
-                        finalBill.setSettledAmountBySponsor(finalBill.getSettledAmountBySponsor() + bill.getNetTotal());
+                        finalBill.setSettledAmountBySponsor(finalBill.getSettledAmountBySponsor() + amount);
                     } else if (bill.getBillTypeAtomic() == BillTypeAtomic.INPATIENT_CREDIT_COMPANY_PAYMENT_CANCELLATION) {
-                        finalBill.setSettledAmountBySponsor(finalBill.getSettledAmountBySponsor() - Math.abs(bill.getNetTotal()));
+                        finalBill.setSettledAmountBySponsor(finalBill.getSettledAmountBySponsor() - Math.abs(amount));
                     }
                 }
                 getBillFacade().edit(finalBill);
@@ -2606,7 +2624,11 @@ public class BillBeanController implements Serializable {
      * the rest of their work instead of their own copy.
      */
     public FinalBillLinkResult linkToFreshFinalBillAndRefresh(PatientEncounter patientEncounter, Bill bill) {
-        return linkToFreshFinalBill(patientEncounter, bill, true);
+        return linkToFreshFinalBill(patientEncounter, bill, true, bill != null ? bill.getNetTotal() : 0.0);
+    }
+
+    public FinalBillLinkResult linkToFreshFinalBillAndRefresh(PatientEncounter patientEncounter, Bill bill, double amount) {
+        return linkToFreshFinalBill(patientEncounter, bill, true, amount);
     }
 
     /**
@@ -2615,10 +2637,14 @@ public class BillBeanController implements Serializable {
      * credit detail (credit company payments).
      */
     public FinalBillLinkResult linkToFreshFinalBill(PatientEncounter patientEncounter, Bill bill) {
-        return linkToFreshFinalBill(patientEncounter, bill, false);
+        return linkToFreshFinalBill(patientEncounter, bill, false, bill != null ? bill.getNetTotal() : 0.0);
     }
 
-    private FinalBillLinkResult linkToFreshFinalBill(PatientEncounter patientEncounter, Bill bill, boolean refresh) {
+    public FinalBillLinkResult linkToFreshFinalBill(PatientEncounter patientEncounter, Bill bill, double amount) {
+        return linkToFreshFinalBill(patientEncounter, bill, false, amount);
+    }
+
+    private FinalBillLinkResult linkToFreshFinalBill(PatientEncounter patientEncounter, Bill bill, boolean refresh, double amount) {
         if (patientEncounter == null || patientEncounter.getId() == null || bill == null) {
             return new FinalBillLinkResult(patientEncounter, true);
         }
@@ -2627,7 +2653,7 @@ public class BillBeanController implements Serializable {
             if (fresh == null) {
                 fresh = patientEncounter;
             }
-            boolean ok = updateInwardDipositList(fresh, bill);
+            boolean ok = updateInwardDipositList(fresh, bill, amount);
             if (refresh && ok && fresh.isPaymentFinalized() && fresh.getFinalBill() != null) {
                 getInwardBean().updateFinalFill(fresh);
                 if (fresh.getPaymentMethod() == PaymentMethod.Credit) {

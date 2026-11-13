@@ -455,14 +455,22 @@ public class CreditCompanyBillSearch implements Serializable {
                 WebUser wb = getCashTransactionBean().saveBillCashOutTransaction(cb, getSessionController().getLoggedUser());
                 // cancelBillItems(cb) does not add the new items to cb.getBillItems(),
                 // so read the admissions from the bill being cancelled. Link each
-                // admission once, even when the payment has several items for it (#25542).
-                Set<Long> linkedEncounterIds = new HashSet<>();
+                // admission once with that admission's total share of the payment (#25547),
+                // reversing only its share rather than the whole payment bill.
+                Map<Long, Double> encounterTotals = new HashMap<>();
+                Map<Long, PatientEncounter> encounterMap = new HashMap<>();
                 for (BillItem paidBillItem : getBillItems()) {
                     PatientEncounter encounter = paidBillItem.getPatientEncounter();
-                    if (encounter == null || encounter.getId() == null || !linkedEncounterIds.add(encounter.getId())) {
-                        continue;
+                    if (encounter != null && encounter.getId() != null) {
+                        encounterTotals.merge(encounter.getId(), paidBillItem.getNetValue(), Double::sum);
+                        encounterMap.putIfAbsent(encounter.getId(), encounter);
                     }
-                    BillBeanController.FinalBillLinkResult link = getBillBean().linkToFreshFinalBill(encounter, cb);
+                }
+                for (Map.Entry<Long, Double> entry : encounterTotals.entrySet()) {
+                    PatientEncounter encounter = encounterMap.get(entry.getKey());
+                    double paidAmountForEncounter = entry.getValue();
+                    double cancelAmountForEncounter = -Math.abs(paidAmountForEncounter);
+                    BillBeanController.FinalBillLinkResult link = getBillBean().linkToFreshFinalBill(encounter, cb, cancelAmountForEncounter);
                     if (!link.isLinked()) {
                         JsfUtil.addErrorMessage("The final bill of an admission in this payment is cancelled, so this cancellation was not added to it. Please check the admission's final bill.");
                     }

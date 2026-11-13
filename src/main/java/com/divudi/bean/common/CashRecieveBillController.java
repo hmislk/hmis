@@ -1368,6 +1368,16 @@ public class CashRecieveBillController implements Serializable {
 
        updateReferanceBills();
 
+        Map<Long, Double> encounterTotals = new HashMap<>();
+        Map<Long, PatientEncounter> encounterMap = new HashMap<>();
+        for (BillItem item : getBillItems()) {
+            PatientEncounter pe = item.getPatientEncounter();
+            if (pe != null && pe.getId() != null) {
+                encounterTotals.merge(pe.getId(), item.getNetValue(), Double::sum);
+                encounterMap.putIfAbsent(pe.getId(), pe);
+            }
+        }
+
         for (BillItem savingBillItem : getBillItems()) {
             savingBillItem.setCreatedAt(new Date());
             savingBillItem.setCreater(getSessionController().getLoggedUser());
@@ -1379,8 +1389,12 @@ public class CashRecieveBillController implements Serializable {
             } else {
                 getBillItemFacade().edit(savingBillItem);
             }
-            linkToFinalBillOrWarn(savingBillItem.getPatientEncounter(), getCurrent());
             updateReferenceBht(savingBillItem);
+        }
+
+        for (Map.Entry<Long, Double> entry : encounterTotals.entrySet()) {
+            PatientEncounter pe = encounterMap.get(entry.getKey());
+            linkToFinalBillOrWarn(pe, getCurrent(), entry.getValue());
         }
         paymentService.createPayment(current, getPaymentMethodData());
         JsfUtil.addSuccessMessage("Bill Saved");
@@ -1790,6 +1804,16 @@ public class CashRecieveBillController implements Serializable {
     }
 
     private void saveBillItemBht() {
+        Map<Long, Double> encounterTotals = new HashMap<>();
+        Map<Long, PatientEncounter> encounterMap = new HashMap<>();
+        for (BillItem item : getSelectedBillItems()) {
+            PatientEncounter pe = item.getPatientEncounter();
+            if (pe != null && pe.getId() != null) {
+                encounterTotals.merge(pe.getId(), item.getNetValue(), Double::sum);
+                encounterMap.putIfAbsent(pe.getId(), pe);
+            }
+        }
+
         for (BillItem tmp : getSelectedBillItems()) {
             tmp.setCreatedAt(new Date());
             tmp.setCreater(getSessionController().getLoggedUser());
@@ -1797,10 +1821,12 @@ public class CashRecieveBillController implements Serializable {
             tmp.setNetValue(tmp.getNetValue());
             getCurrent().getBillItems().add(tmp);
             getBillItemFacade().create(tmp);
-
-            linkToFinalBillOrWarn(tmp.getPatientEncounter(), getCurrent());
             updateReferenceBht(tmp);
+        }
 
+        for (Map.Entry<Long, Double> entry : encounterTotals.entrySet()) {
+            PatientEncounter pe = encounterMap.get(entry.getKey());
+            linkToFinalBillOrWarn(pe, getCurrent(), entry.getValue());
         }
 
     }
@@ -1888,9 +1914,10 @@ public class CashRecieveBillController implements Serializable {
     }
 
     // Links the payment to the admission's final bill using a fresh read, so a
-    // final bill cancelled since this page opened is not written back as live (#25521).
-    private void linkToFinalBillOrWarn(PatientEncounter patientEncounter, Bill payment) {
-        BillBeanController.FinalBillLinkResult link = getBillBean().linkToFreshFinalBill(patientEncounter, payment);
+    // final bill cancelled since this page opened is not written back as live (#25521),
+    // applying the admission's item total rather than the whole payment bill (#25547).
+    private void linkToFinalBillOrWarn(PatientEncounter patientEncounter, Bill payment, double amount) {
+        BillBeanController.FinalBillLinkResult link = getBillBean().linkToFreshFinalBill(patientEncounter, payment, amount);
         if (!link.isLinked()) {
             JsfUtil.addErrorMessage("The final bill of an admission in this payment is cancelled, so this payment was not added to it. Please check the admission's final bill.");
         }
