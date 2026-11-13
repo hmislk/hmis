@@ -117,18 +117,19 @@ public class InwardRefundController implements Serializable {
         List<Payment> payments = paymentService.createPayment(getCurrent(), paymentMethodData);
         paymentService.updateBalances(payments);
 
-        getBillBean().updateInwardDipositList(getCurrent().getPatientEncounter(), getCurrent());
-
-        if (getCurrent().getPatientEncounter().isPaymentFinalized()) {
-            getInwardBean().updateFinalFill(getCurrent().getPatientEncounter());
-            if (getCurrent().getPatientEncounter().getPaymentMethod() == PaymentMethod.Credit) {
-                getInwardBean().updateCreditDetail(getCurrent().getPatientEncounter(), getCurrent().getPatientEncounter().getFinalBill().getNetTotal());
-            }
-        }
+        // Re-read the admission: the page's copy can predate a final bill
+        // settle or cancel, and saving it would undo the cancel (#25413). Held
+        // under the same per-admission lock as final bill settle and cancel.
+        BillBeanController.FinalBillLinkResult link = getBillBean().linkToFreshFinalBillAndRefresh(getCurrent().getPatientEncounter(), getCurrent());
+        getCurrent().setPatientEncounter(link.getEncounter());
+        boolean linked = link.isLinked();
 
         WebUser wb = getCashTransactionBean().saveBillCashOutTransaction(getCurrent(), getSessionController().getLoggedUser());
         getSessionController().setLoggedUser(wb);
         JsfUtil.addSuccessMessage("Payment Bill Saved");
+        if (!linked) {
+            JsfUtil.addErrorMessage("The final bill of this admission is cancelled, so this refund was not added to it. Please check the admission's final bill.");
+        }
     }
 
     @Inject

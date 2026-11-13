@@ -451,7 +451,10 @@ public class CreditCompanyBillSearch implements Serializable {
                 JsfUtil.addSuccessMessage("Cancelled");
                 WebUser wb = getCashTransactionBean().saveBillCashOutTransaction(cb, getSessionController().getLoggedUser());
                 for(BillItem cancellingBillItem : cb.getBillItems()){
-                    getBillBean().updateInwardDipositList(cancellingBillItem.getPatientEncounter(), cb);
+                    BillBeanController.FinalBillLinkResult link = getBillBean().linkToFreshFinalBill(cancellingBillItem.getPatientEncounter(), cb);
+                    if (!link.isLinked()) {
+                        JsfUtil.addErrorMessage("The final bill of an admission in this payment is cancelled, so this cancellation was not added to it. Please check the admission's final bill.");
+                    }
                 }
                 getSessionController().setLoggedUser(wb);
                 paymentService.createPayment(cb, getPaymentMethodData());
