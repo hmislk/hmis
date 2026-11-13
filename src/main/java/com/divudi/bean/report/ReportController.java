@@ -4,6 +4,7 @@ import com.divudi.bean.common.*;
 import com.divudi.bean.lab.PatientInvestigationController;
 import com.divudi.bean.inward.InwardReportController;
 import com.divudi.bean.pharmacy.PharmacyController;
+import com.divudi.bean.pharmacy.PrescriptionListController;
 import com.divudi.core.data.reports.*;
 import com.divudi.core.entity.*;
 import com.divudi.core.util.JsfUtil;
@@ -167,6 +168,8 @@ public class ReportController implements Serializable, ControllerWithReportFilte
     private InstitutionController institutionController;
     @Inject
     DoctorController doctorController;
+    @Inject
+    PrescriptionListController prescriptionListController;
     @Inject
     PersonController personController;
     @Inject
@@ -2431,7 +2434,7 @@ public class ReportController implements Serializable, ControllerWithReportFilte
     }
 
     public String navigateToPrescriptionList() {
-        return "/pharmacy/prescription_list?faces-redirect=true";
+        return prescriptionListController.navigateToPrescriptionList();
     }
 
     public String navigateToCourierLabReportsPrint() {
@@ -2518,7 +2521,7 @@ public class ReportController implements Serializable, ControllerWithReportFilte
 
     public String navigateToPrescriptionListFromPrescriptionSummery(Long personId) {
         if (personId == null || personId == 0) {
-            JsfUtil.addErrorMessage("Error 1");
+            JsfUtil.addErrorMessage("This row has no referring doctor to list bills for");
             return "";
         }
 
@@ -2527,13 +2530,11 @@ public class ReportController implements Serializable, ControllerWithReportFilte
         doctor = doctorController.findDoctor(person);
 
         if (doctor == null) {
-            JsfUtil.addErrorMessage("Error 2");
+            JsfUtil.addErrorMessage("No doctor record found for this referring doctor");
             return "";
         }
 
-        processPresciptionList();
-
-        return navigateToPrescriptionList();
+        return prescriptionListController.navigateToPrescriptionListForDoctor(doctor, fromDate, toDate, department);
     }
 
     public void makeNull() {

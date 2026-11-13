@@ -2,6 +2,7 @@ package com.divudi.bean.report;
 
 import com.divudi.bean.common.*;
 import com.divudi.bean.pharmacy.PharmacyController;
+import com.divudi.bean.pharmacy.PrescriptionListController;
 import com.divudi.core.data.reports.FinancialReport;
 import com.divudi.core.data.reports.InventoryReports;
 import com.divudi.core.data.reports.PharmacyReports;
@@ -1250,8 +1251,11 @@ public class PharmacyReportController implements Serializable {
     }
 
     public String navigateToPrescriptionList() {
-        return "/pharmacy/prescription_list?faces-redirect=true";
+        return prescriptionListController.navigateToPrescriptionList();
     }
+
+    @Inject
+    private PrescriptionListController prescriptionListController;
 
     public String navigateToExpiryItemReport() {
         initExpiryReportDefaults();

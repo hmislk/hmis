@@ -8,106 +8,260 @@
     <h:body>
         <ui:composition template="/pharmacy/pharmacy_analytics.xhtml">
             <ui:define name="subcontent">
-                <h:form >
-                    <p:panel header="Prescription List by Referral Doctor" >
-                        <div class="row">
-                            <div class="col-md-2">
-                                <h:outputLabel value="Bill Date From" ></h:outputLabel>
-                                <p:calendar 
-                                    class="w-100 mx-4"
-                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
-                                    styleClass="dateTimePicker" 
-                                    inputStyleClass="form-control"
-                                    value="#{reportController.fromDate}">
-                                </p:calendar>
-                                <h:outputLabel value="Bill Date To" ></h:outputLabel>
-                                <p:calendar 
-                                    class="w-100 mx-4" 
-                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
-                                    styleClass="dateTimePicker" 
-                                    inputStyleClass="form-control" 
-                                    value="#{reportController.toDate}">
-                                </p:calendar>
-                                <p:outputLabel value="Department" ></p:outputLabel>
-                                <p:autoComplete 
-                                    completeMethod="#{departmentController.completeDept}" 
-                                    var="dept" 
-                                    itemLabel="#{dept.name}" 
-                                    itemValue="#{dept}" 
-                                    forceSelection="true" 
-                                    value="#{reportController.department}" 
-                                    class="w-100"
-                                    inputStyleClass="w-100">
-                                </p:autoComplete>
+                <h:form id="frmPrescriptionList">
+                    <p:panel header="Prescription List by Referring Doctor">
+                        <p:defaultCommand target="btnProcess"/>
 
-                                <p:outputLabel value="Referring Doctor" ></p:outputLabel>
-                                <p:autoComplete 
-                                    forceSelection="true" 
-                                    id="cmbDoc" 
-                                    value="#{reportController.referringDoctor}" 
-                                    completeMethod="#{doctorController.completeDoctor}" 
-                                    var="ix" itemLabel="#{ix.person.name}" 
-                                    itemValue="#{ix}" 
-                                    size="30" 
-                                    class=" w-100"
-                                    inputStyleClass="form-control"
-                                    >
-                                </p:autoComplete>
+                        <h:panelGrid columns="8" styleClass="w-100 form-grid"
+                                     columnClasses="label-icon-column, input-column">
+                            <!-- Row 1: date range -->
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf073;" styleClass="fa mr-2"/>
+                                <h:outputLabel value="From" for="fromDate" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:calendar id="fromDate"
+                                        styleClass="w-100"
+                                        inputStyleClass="w-100 form-control"
+                                        value="#{prescriptionListController.fromDate}"
+                                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                            <p:spacer/>
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf073;" styleClass="fa mr-2"/>
+                                <h:outputLabel value="To" for="toDate" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:calendar id="toDate"
+                                        styleClass="w-100"
+                                        inputStyleClass="w-100 form-control"
+                                        value="#{prescriptionListController.toDate}"
+                                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                            <p:spacer/>
+                            <p:spacer/>
+                            <p:spacer/>
 
-                                <p:commandButton 
-                                    class="ui-button-warning w-100 my-2" 
-                                    icon="fas fa-cogs" 
-                                    ajax="false" 
-                                    value="Process" 
-                                    action="#{reportController.processPresciptionList()}" > 
-                                </p:commandButton>
-                                <p:commandButton 
-                                    class="ui-button-success w-100" 
-                                    icon="fas fa-file-excel" 
-                                    ajax="false" 
-                                    value="Excel" 
-                                    > 
-                                </p:commandButton>
-                            </div>
-                            
-                            <div class="col-md-10">
-                                <p:dataTable 
-                                    id="tbl" 
-                                    value="#{reportController.billLights}" 
-                                    var="doc"
-                                    paginator="true"
-                                    paginatorPosition="bottom"
-                                    rows="10"
-                                    >
-                                    <p:column headerText="Bill ID">
-                                        <p:commandLink>
-                                            <h:outputText value="#{doc.billNo}" />
-                                        </p:commandLink>
-                                    </p:column>
-                                    <p:column headerText="Date">
-                                        <h:outputText value="#{doc.billDate}" >
-                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" ></f:convertDateTime>
-                                        </h:outputText>
-                                    </p:column>
-                                    <p:column headerText="Time">
-                                        <h:outputText value="#{doc.billTime}" >
-                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longTimeFormat}" ></f:convertDateTime>
-                                        </h:outputText>
-                                    </p:column>
+                            <!-- Row 2: location -->
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf19c;" styleClass="fa mr-2"/>
+                                <h:outputLabel value="Institution" for="cmbIns" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu id="cmbIns"
+                                             styleClass="w-100 form-control"
+                                             value="#{prescriptionListController.institution}"
+                                             filter="true">
+                                <f:selectItem itemLabel="All Institutions"/>
+                                <f:selectItems value="#{institutionController.companies}" var="ins"
+                                               itemLabel="#{ins.name}" itemValue="#{ins}"/>
+                                <p:ajax process="cmbIns" update="cmbDept"/>
+                            </p:selectOneMenu>
+                            <p:spacer/>
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf3c5;" styleClass="fa mr-2"/>
+                                <h:outputLabel value="Site" for="cmbSite" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu id="cmbSite"
+                                             styleClass="w-100 form-control"
+                                             value="#{prescriptionListController.site}"
+                                             filter="true">
+                                <f:selectItem itemLabel="All Sites"/>
+                                <f:selectItems value="#{institutionController.sites}" var="site"
+                                               itemLabel="#{site.name}" itemValue="#{site}"/>
+                                <p:ajax process="cmbSite" update="cmbDept"/>
+                            </p:selectOneMenu>
+                            <p:spacer/>
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf0e8;" styleClass="fa mr-2"/>
+                                <h:outputLabel value="Department" class="mx-3"/>
+                            </h:panelGroup>
+                            <h:panelGroup id="cmbDept">
+                                <p:selectOneMenu id="cmbDeptAll" rendered="#{prescriptionListController.institution eq null and prescriptionListController.site eq null}"
+                                                 styleClass="w-100 form-control"
+                                                 value="#{prescriptionListController.department}"
+                                                 filterMatchMode="contains" filter="true">
+                                    <f:selectItem itemLabel="All Departments"/>
+                                    <f:selectItems value="#{departmentController.getDepartmentsOfInstitutionAndSite()}"
+                                                   var="d" itemLabel="#{d.name}" itemValue="#{d}"/>
+                                </p:selectOneMenu>
+                                <p:selectOneMenu id="cmbDeptSite" rendered="#{prescriptionListController.institution eq null and prescriptionListController.site ne null}"
+                                                 styleClass="w-100 form-control"
+                                                 value="#{prescriptionListController.department}"
+                                                 filterMatchMode="contains" filter="true">
+                                    <f:selectItem itemLabel="All Departments"/>
+                                    <f:selectItems value="#{departmentController.getDepartmentsOfInstitutionAndSite(prescriptionListController.site)}"
+                                                   var="d" itemLabel="#{d.name}" itemValue="#{d}"/>
+                                </p:selectOneMenu>
+                                <p:selectOneMenu id="cmbDeptIns" rendered="#{prescriptionListController.institution ne null and prescriptionListController.site eq null}"
+                                                 styleClass="w-100 form-control"
+                                                 value="#{prescriptionListController.department}"
+                                                 filterMatchMode="contains" filter="true">
+                                    <f:selectItem itemLabel="All Departments"/>
+                                    <f:selectItems value="#{departmentController.getDepartmentsOfInstitutionAndSiteForInstitution(prescriptionListController.institution)}"
+                                                   var="d" itemLabel="#{d.name}" itemValue="#{d}"/>
+                                </p:selectOneMenu>
+                                <p:selectOneMenu id="cmbDeptInsSite" rendered="#{prescriptionListController.institution ne null and prescriptionListController.site ne null}"
+                                                 styleClass="w-100 form-control"
+                                                 value="#{prescriptionListController.department}"
+                                                 filterMatchMode="contains" filter="true">
+                                    <f:selectItem itemLabel="All Departments"/>
+                                    <f:selectItems value="#{departmentController.getDepartmentsOfInstitutionAndSite(prescriptionListController.institution, prescriptionListController.site)}"
+                                                   var="d" itemLabel="#{d.name}" itemValue="#{d}"/>
+                                </p:selectOneMenu>
+                            </h:panelGroup>
 
-                                    <p:column headerText="Patient">
-                                        <p:commandLink>
-                                            <h:outputText value="#{doc.patientName}" />
-                                        </p:commandLink>
-                                    </p:column>
+                            <!-- Row 3: report-specific -->
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf0f0;" styleClass="fa mr-2"/>
+                                <h:outputLabel value="Referring Doctor" for="cmbDoc" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:autoComplete id="cmbDoc"
+                                            forceSelection="true"
+                                            value="#{prescriptionListController.referringDoctor}"
+                                            completeMethod="#{doctorController.completeDoctor}"
+                                            var="ix" itemLabel="#{ix.person.name}" itemValue="#{ix}"
+                                            styleClass="w-100" inputStyleClass="w-100 form-control"/>
+                            <p:spacer/>
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf0b0;" styleClass="fa mr-2"/>
+                                <h:outputLabel value="No Doctor" for="chkNoDoctor" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:selectBooleanCheckbox id="chkNoDoctor"
+                                                     value="#{prescriptionListController.onlyWithoutDoctor}"
+                                                     itemLabel="Only bills without a referring doctor"/>
+                            <p:spacer/>
+                            <p:spacer/>
+                            <p:spacer/>
+                        </h:panelGrid>
 
-                                    <p:column headerText="Total Bill Income" style="text-align: right;">
-                                        <h:outputText value="#{doc.netValue}">
-                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                        </h:outputText>
-                                    </p:column>
-                                </p:dataTable>
-                            </div>
+                        <p:commandButton id="btnProcess"
+                                         value="Process"
+                                         ajax="false"
+                                         action="#{prescriptionListController.process()}"
+                                         styleClass="ui-button-success m-1"
+                                         icon="pi pi-cog"/>
+                        <p:commandButton value="Download"
+                                         ajax="false"
+                                         styleClass="ui-button-info m-1"
+                                         icon="pi pi-download"
+                                         disabled="#{empty prescriptionListController.rows}">
+                            <p:dataExporter type="xlsx" target="tbl"
+                                            fileName="prescription_list_#{prescriptionListController.fromDateFormatted}_to_#{prescriptionListController.toDateFormatted}"/>
+                        </p:commandButton>
+                        <p:commandButton value="Print"
+                                         ajax="false"
+                                         styleClass="ui-button-warning m-1"
+                                         icon="pi pi-print"
+                                         disabled="#{empty prescriptionListController.rows}">
+                            <p:printer target="tbl"/>
+                        </p:commandButton>
+                        <p:commandButton value="PDF"
+                                         ajax="false"
+                                         styleClass="ui-button-danger m-1"
+                                         icon="pi pi-file-pdf"
+                                         disabled="#{empty prescriptionListController.rows}">
+                            <p:dataExporter type="pdf" target="tbl"
+                                            fileName="prescription_list_#{prescriptionListController.fromDateFormatted}_to_#{prescriptionListController.toDateFormatted}"/>
+                        </p:commandButton>
+
+                        <p:dataTable id="tbl"
+                                     widgetVar="prescriptionListTable"
+                                     styleClass="ui-datatable-borderless ui-datatable-sm compact-datatable w-100"
+                                     value="#{prescriptionListController.rows}"
+                                     var="row"
+                                     rowKey="#{row.billId}"
+                                     emptyMessage="No records found"
+                                     paginator="true"
+                                     paginatorPosition="bottom"
+                                     rows="#{prescriptionListController.rowsPerPage}"
+                                     rowsPerPageTemplate="#{prescriptionListController.rowsPerPage},10,15,50,100,500,1000,2000,5000,10000">
+                            <p:column headerText="Bill No" width="12em">
+                                <h:outputText value="#{row.billNo}"/>
+                                <f:facet name="footer">
+                                    <h:outputText value="Total (#{prescriptionListController.billCount} bills)" style="font-weight: bold"/>
+                                </f:facet>
+                            </p:column>
+                            <p:column headerText="Date / Time" width="10em">
+                                <h:outputText value="#{row.createdAt}">
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateTimeFormat}"
+                                                       timeZone="#{configOptionApplicationController.getShortTextValueByKey('TimeZone','Asia/Colombo')}"/>
+                                </h:outputText>
+                            </p:column>
+                            <p:column headerText="Bill Type" width="12em"
+                                      rendered="#{prescriptionListController.isColumnVisible('billType')}">
+                                <h:outputText value="#{row.rowType}"/>
+                            </p:column>
+                            <p:column headerText="Referring Doctor"
+                                      rendered="#{prescriptionListController.isColumnVisible('doctor')}">
+                                <h:outputText value="#{row.doctorName}"/>
+                            </p:column>
+                            <p:column headerText="Patient"
+                                      rendered="#{prescriptionListController.isColumnVisible('patient')}">
+                                <h:outputText value="#{empty row.patientName ? 'No patient' : row.patientName}"/>
+                            </p:column>
+                            <p:column headerText="Department"
+                                      rendered="#{prescriptionListController.isColumnVisible('department')}">
+                                <h:outputText value="#{row.departmentName}"/>
+                            </p:column>
+                            <p:column headerText="Payment Method" width="9em"
+                                      rendered="#{prescriptionListController.isColumnVisible('paymentMethod')}">
+                                <h:outputText value="#{row.paymentMethod.label}"/>
+                            </p:column>
+                            <p:column headerText="Gross" width="8em" styleClass="text-end"
+                                      rendered="#{prescriptionListController.isColumnVisible('gross')}">
+                                <h:outputText value="#{row.grossTotal}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputText>
+                                <f:facet name="footer">
+                                    <h:outputText value="#{prescriptionListController.totalGross}" style="font-weight: bold">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                </f:facet>
+                            </p:column>
+                            <p:column headerText="Discount" width="8em" styleClass="text-end"
+                                      rendered="#{prescriptionListController.isColumnVisible('discount')}">
+                                <h:outputText value="#{row.discount}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputText>
+                                <f:facet name="footer">
+                                    <h:outputText value="#{prescriptionListController.totalDiscount}" style="font-weight: bold">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                </f:facet>
+                            </p:column>
+                            <p:column headerText="Net" width="8em" styleClass="text-end">
+                                <h:outputText value="#{row.netTotal}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputText>
+                                <f:facet name="footer">
+                                    <h:outputText value="#{prescriptionListController.totalNet}" style="font-weight: bold">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                </f:facet>
+                            </p:column>
+                            <p:column headerText="Actions" exportable="false" width="5em">
+                                <p:commandLink value="View"
+                                               title="Open bill #{row.billNo}"
+                                               ajax="false"
+                                               action="#{billSearch.navigateToViewBillByAtomicBillTypeByBillId(row.billId)}"/>
+                            </p:column>
+                        </p:dataTable>
+
+                        <div class="mt-3 pt-2" style="border-top: 1px solid #e9ecef;">
+                            <p:panel toggleable="true" collapsed="true" styleClass="ui-panel-sm">
+                                <f:facet name="header">
+                                    <span style="font-size: 0.85rem; color: #6c757d;">
+                                        <i class="fas fa-eye me-1"></i>
+                                        Customize Columns
+                                    </span>
+                                </f:facet>
+                                <div class="d-flex flex-wrap gap-3" style="font-size: 0.8rem;">
+                                    <ui:repeat value="#{prescriptionListController.columnSettings}" var="col">
+                                        <span class="d-inline-flex align-items-center me-3">
+                                            <h:selectBooleanCheckbox id="chkCol" value="#{col.visible}" title="Show #{col.label}">
+                                                <f:ajax render=":frmPrescriptionList:tbl"/>
+                                            </h:selectBooleanCheckbox>
+                                            <h:outputLabel for="chkCol" value="#{col.label}" styleClass="ms-1"/>
+                                        </span>
+                                    </ui:repeat>
+                                </div>
+                            </p:panel>
                         </div>
                     </p:panel>
                 </h:form>
