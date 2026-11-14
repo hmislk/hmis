@@ -438,25 +438,15 @@ public class CreditCompanyDueController implements Serializable {
     }
 
     public void createInwardAgeTable() {
-        Date startTime = new Date();
-
         makeNull();
-        loadCcFigures(null);
-        Set<Institution> setIns = new HashSet<>();
-
-        List<Institution> list = getCreditBean().getCreditCompanyFromBht(true, PaymentMethod.Credit);
-        setIns.addAll(list);
-
         creditCompanyAge = new ArrayList<>();
-        for (Institution ins : setIns) {
-            if (ins == null) {
-                continue;
-            }
-
+        // Admissions picked and valued from the commitment and payment bills (#25601),
+        // not from the encounter's creditPaidAmount, which is no longer written.
+        for (Map.Entry<Institution, List<PatientEncounter>> entry
+                : dischargedAdmissionsByCreditCompany(PaymentMethod.Credit, true, null, null, null).entrySet()) {
             String1Value5 newRow = new String1Value5();
-            newRow.setInstitution(ins);
-            setInwardValues(ins, newRow, PaymentMethod.Credit);
-
+            newRow.setInstitution(entry.getKey());
+            setInwardDueAgeValues(entry.getValue(), newRow);
             if (newRow.getValue1() != 0
                     || newRow.getValue2() != 0
                     || newRow.getValue3() != 0
@@ -865,22 +855,14 @@ public class CreditCompanyDueController implements Serializable {
 
     public void createInwardCashAgeTable() {
         makeNull();
-        loadCcFigures(null);
-        Set<Institution> setIns = new HashSet<>();
-
-        List<Institution> list = getCreditBean().getCreditCompanyFromBht(true, PaymentMethod.Cash);
-        setIns.addAll(list);
-
         creditCompanyAge = new ArrayList<>();
-        for (Institution ins : setIns) {
-            if (ins == null) {
-                continue;
-            }
-
+        // Admissions picked and valued from the commitment and payment bills (#25601),
+        // not from the encounter's creditPaidAmount, which is no longer written.
+        for (Map.Entry<Institution, List<PatientEncounter>> entry
+                : dischargedAdmissionsByCreditCompany(PaymentMethod.Cash, true, null, null, null).entrySet()) {
             String1Value5 newRow = new String1Value5();
-            newRow.setString(ins.getName());
-            setInwardValues(ins, newRow, PaymentMethod.Cash);
-
+            newRow.setString(entry.getKey().getName());
+            setInwardDueAgeValues(entry.getValue(), newRow);
             if (newRow.getValue1() != 0
                     || newRow.getValue2() != 0
                     || newRow.getValue3() != 0
@@ -888,30 +870,18 @@ public class CreditCompanyDueController implements Serializable {
                 creditCompanyAge.add(newRow);
             }
         }
-
     }
 
     public void createInwardAgeTableAccess() {
-        Date startTime = new Date();
-
         makeNull();
-        loadCcFigures(null);
-        Set<Institution> setIns = new HashSet<>();
-
-        List<Institution> list = getCreditBean().getCreditCompanyFromBht(false, PaymentMethod.Credit);
-
-        setIns.addAll(list);
-
         creditCompanyAge = new ArrayList<>();
-        for (Institution ins : setIns) {
-            if (ins == null) {
-                continue;
-            }
-
+        // Admissions picked and valued from the commitment and payment bills (#25601),
+        // not from the encounter's creditPaidAmount, which is no longer written.
+        for (Map.Entry<Institution, List<PatientEncounter>> entry
+                : dischargedAdmissionsByCreditCompany(PaymentMethod.Credit, false, null, null, null).entrySet()) {
             String1Value5 newRow = new String1Value5();
-            newRow.setString(ins.getName());
-            setInwardValuesAccess(ins, newRow, PaymentMethod.Credit);
-
+            newRow.setString(entry.getKey().getName());
+            setInwardAccessAgeValues(entry.getValue(), newRow);
             if (newRow.getValue1() != 0
                     || newRow.getValue2() != 0
                     || newRow.getValue3() != 0
@@ -919,7 +889,6 @@ public class CreditCompanyDueController implements Serializable {
                 creditCompanyAge.add(newRow);
             }
         }
-
     }
 
 //    public void createInwardAgeTableAccessWithFilters() {
@@ -1024,26 +993,15 @@ public class CreditCompanyDueController implements Serializable {
     }
 
     public void createInwardCashAgeTableAccess() {
-        Date startTime = new Date();
-
         makeNull();
-        loadCcFigures(null);
-        Set<Institution> setIns = new HashSet<>();
-
-        List<Institution> list = getCreditBean().getCreditCompanyFromBht(false, PaymentMethod.Cash);
-
-        setIns.addAll(list);
-
         creditCompanyAge = new ArrayList<>();
-        for (Institution ins : setIns) {
-            if (ins == null) {
-                continue;
-            }
-
+        // Admissions picked and valued from the commitment and payment bills (#25601),
+        // not from the encounter's creditPaidAmount, which is no longer written.
+        for (Map.Entry<Institution, List<PatientEncounter>> entry
+                : dischargedAdmissionsByCreditCompany(PaymentMethod.Cash, false, null, null, null).entrySet()) {
             String1Value5 newRow = new String1Value5();
-            newRow.setString(ins.getName());
-            setInwardValuesAccess(ins, newRow, PaymentMethod.Cash);
-
+            newRow.setString(entry.getKey().getName());
+            setInwardAccessAgeValues(entry.getValue(), newRow);
             if (newRow.getValue1() != 0
                     || newRow.getValue2() != 0
                     || newRow.getValue3() != 0
@@ -1054,27 +1012,15 @@ public class CreditCompanyDueController implements Serializable {
     }
 
     public void createInwardCashAgeTableAccessWithFilters() {
-        Date startTime = new Date();
-
         makeNull();
-        loadCcFigures(null);
-        Set<Institution> setIns = new HashSet<>();
-
-        List<Institution> list = getCreditBean().getCreditCompanyFromBht(
-                false, PaymentMethod.Cash, institutionOfDepartment, department, site);
-
-        setIns.addAll(list);
-
         creditCompanyAge = new ArrayList<>();
-        for (Institution ins : setIns) {
-            if (ins == null) {
-                continue;
-            }
-
+        // Admissions picked and valued from the commitment and payment bills (#25601),
+        // not from the encounter's creditPaidAmount, which is no longer written.
+        for (Map.Entry<Institution, List<PatientEncounter>> entry
+                : dischargedAdmissionsByCreditCompany(PaymentMethod.Cash, false, institutionOfDepartment, department, site).entrySet()) {
             String1Value5 newRow = new String1Value5();
-            newRow.setString(ins.getName());
-            setInwardValuesAccess(ins, newRow, PaymentMethod.Cash);
-
+            newRow.setString(entry.getKey().getName());
+            setInwardAccessAgeValues(entry.getValue(), newRow);
             if (newRow.getValue1() != 0
                     || newRow.getValue2() != 0
                     || newRow.getValue3() != 0
@@ -1154,17 +1100,68 @@ public class CreditCompanyDueController implements Serializable {
 
     }
 
-    private void setInwardValues(Institution inst, String1Value5 dataTable5Value, PaymentMethod paymentMethod) {
-        List<PatientEncounter> lst = getCreditBean().getCreditPatientEncounters(inst, true, paymentMethod);
-        addCcFigures(lst);
+    /**
+     * Discharged admissions of the given payment method that have a credit
+     * company, grouped by company in name order. With {@code withCompanyDue},
+     * only admissions the companies still owe on (ccDue above 1 cent);
+     * otherwise only fully covered ones (net total less patient money less
+     * company money not above 1 cent), as on the access searches. Figures are
+     * loaded once for the whole result (#25601).
+     */
+    private Map<Institution, List<PatientEncounter>> dischargedAdmissionsByCreditCompany(PaymentMethod pm,
+            boolean withCompanyDue, Institution insd, Department dep, Institution siteFilter) {
+        HashMap<String, Object> m = new HashMap<>();
+        String sql = "Select b From PatientEncounter b"
+                + " JOIN b.finalBill fb"
+                + " where b.retired=false"
+                + " and b.discharged=true"
+                + " and b.paymentMethod=:pm"
+                + " and b.creditCompany is not null";
+        if (insd != null) {
+            sql += " and fb.institution = :insd";
+            m.put("insd", insd);
+        }
+        if (dep != null) {
+            sql += " and fb.department = :dep";
+            m.put("dep", dep);
+        }
+        if (siteFilter != null) {
+            sql += " and fb.department.site = :site";
+            m.put("site", siteFilter);
+        }
+        sql += " order by b.creditCompany.name";
+        m.put("pm", pm);
+        List<PatientEncounter> candidates = patientEncounterFacade.findByJpql(sql, m, TemporalType.TIMESTAMP);
+
+        Map<Institution, List<PatientEncounter>> grouped = new LinkedHashMap<>();
+        if (candidates == null) {
+            return grouped;
+        }
+        loadCcFigures(candidates);
+        for (PatientEncounter b : candidates) {
+            if (b.getFinalBill() == null) {
+                continue;
+            }
+            boolean keep;
+            if (withCompanyDue) {
+                keep = getCcDue(b) > 0.01;
+            } else {
+                double outstanding = Math.round((b.getFinalBill().getNetTotal() - getPatientPaid(b) - getCcPaid(b)) * 100.0) / 100.0;
+                keep = outstanding <= 0.01;
+            }
+            if (keep) {
+                grouped.computeIfAbsent(b.getCreditCompany(), k -> new ArrayList<>()).add(b);
+            }
+        }
+        return grouped;
+    }
+
+    /** Ages each admission's company due (ccDue) into the four buckets by admission creation date. */
+    private void setInwardDueAgeValues(List<PatientEncounter> lst, String1Value5 dataTable5Value) {
         for (PatientEncounter b : lst) {
             Long dayCount = CommonFunctions.getDayCountTillNow(b.getCreatedAt());
             b.setTransDayCount(dayCount);
-            // Amount the credit companies still owe (commitment bills), see #25601
             double finalValue = getCcDue(b);
-            if (finalValue <= 0.01) {
-                continue;
-            }
             if (dayCount < 30) {
                 dataTable5Value.setValue1(dataTable5Value.getValue1() + finalValue);
                 dataTable5Value.getValue1PatientEncounters().add(b);
@@ -1180,6 +1177,25 @@ public class CreditCompanyDueController implements Serializable {
             }
         }
     }
+
+    /** Same buckets for the access (settled) age tables: committed less paid by the companies. */
+    private void setInwardAccessAgeValues(List<PatientEncounter> lst, String1Value5 dataTable5Value) {
+        for (PatientEncounter b : lst) {
+            Long dayCount = CommonFunctions.getDayCountTillNow(b.getCreatedAt());
+            double finalValue = getCcDue(b);
+            if (dayCount < 30) {
+                dataTable5Value.setValue1(dataTable5Value.getValue1() + finalValue);
+            } else if (dayCount < 60) {
+                dataTable5Value.setValue2(dataTable5Value.getValue2() + finalValue);
+            } else if (dayCount < 90) {
+                dataTable5Value.setValue3(dataTable5Value.getValue3() + finalValue);
+            } else {
+                dataTable5Value.setValue4(dataTable5Value.getValue4() + finalValue);
+            }
+        }
+    }
+
+    
 
     private void setInwardValues(Institution inst, String1Value5 dataTable5Value, PaymentMethod paymentMethod,
             Institution institutionOfDepartment, Department department, Institution site) {
@@ -1239,30 +1255,7 @@ public class CreditCompanyDueController implements Serializable {
         }
     }
 
-    private void setInwardValuesAccess(Institution inst, String1Value5 dataTable5Value, PaymentMethod paymentMethod) {
-
-        List<PatientEncounter> lst = getCreditBean().getCreditPatientEncounters(inst, false, paymentMethod);
-        addCcFigures(lst);
-        for (PatientEncounter b : lst) {
-
-            Long dayCount = CommonFunctions.getDayCountTillNow(b.getCreatedAt());
-
-            // Committed less paid by the credit companies (commitment bills), see #25601
-            double finalValue = getCcDue(b);
-
-            if (dayCount < 30) {
-                dataTable5Value.setValue1(dataTable5Value.getValue1() + finalValue);
-            } else if (dayCount < 60) {
-                dataTable5Value.setValue2(dataTable5Value.getValue2() + finalValue);
-            } else if (dayCount < 90) {
-                dataTable5Value.setValue3(dataTable5Value.getValue3() + finalValue);
-            } else {
-                dataTable5Value.setValue4(dataTable5Value.getValue4() + finalValue);
-            }
-
-        }
-
-    }
+    
 
     private void setInwardValuesAccessForExcess(Institution inst, String1Value5 dataTable5Value, PaymentMethod paymentMethod) {
         List<PatientEncounter> lst = getCreditBean().getCreditPatientEncounters(inst, false, paymentMethod);
