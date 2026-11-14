@@ -37,6 +37,7 @@ import com.divudi.core.facade.StaffFacade;
 import com.divudi.core.util.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -249,6 +250,35 @@ public class BhtSummeryFinalizedController implements Serializable {
      * such a line with the bill sign so returns reduce the section instead of
      * adding to it. Lines already stored negative are left as they are.
      */
+    /**
+     * A final bill made before #25509 credited a porter-flow ward return from
+     * the return request bill, one made after it from the accepted return. The
+     * stored Medicine line says which: the old request rows are added only when
+     * that brings the listed rows closer to it.
+     */
+    private void addLegacyWardReturnsIfFinalBillHasThem(List<PatientEncounter> cpts) {
+        List<BillItem> legacy = getInwardBean().fetchLegacyWardReturnRequestItems(getPatientEncounter(), cpts);
+        Double finalMedicine = getInwardBean().fetchFinalBillMedicineNet(getPatientEncounter());
+        if (legacy.isEmpty() || finalMedicine == null) {
+            return;
+        }
+        double listed = 0.0;
+        for (BillItem bi : pharmacyItems) {
+            listed += signedByBill(bi, bi.getNetValue());
+        }
+        double legacySum = 0.0;
+        for (BillItem bi : legacy) {
+            legacySum += signedByBill(bi, bi.getNetValue());
+        }
+        if (Math.abs(listed + legacySum - finalMedicine) < Math.abs(listed - finalMedicine)) {
+            List<BillItem> all = new ArrayList<>(pharmacyItems);
+            all.addAll(legacy);
+            all.sort(Comparator.comparing((BillItem b) -> b.getBill().getCreatedAt(),
+                    Comparator.nullsLast(Comparator.naturalOrder())));
+            pharmacyItems = all;
+        }
+    }
+
     public double signedByBill(BillItem item, double value) {
         if (item != null && item.getBill() != null && item.getBill().getNetTotal() < 0 && value > 0) {
             return -value;
@@ -815,6 +845,7 @@ public class BhtSummeryFinalizedController implements Serializable {
         paymentBills = getInwardBean().fetchPatientPaymentBillsForBreakDown(getPatientEncounter(), cpts);
         paidbyPatientTotalValue = getInwardReportControllerBht().calPaidbyPatient(paymentBills);
         pharmacyItems = getInwardBean().fetchInwardMedicineBillItems(getPatientEncounter(), cpts);
+        addLegacyWardReturnsIfFinalBillHasThem(cpts);
         storeItems = getInwardBean().fetchStoreIssueBillItems(getPatientEncounter(), cpts);
         creditPayment = getInwardBean().fetchCreditCompanyReceiptItems(getPatientEncounter(), cpts);
         creditCompanyPaymentTotal = getInwardReportControllerBht().calTotalCreditCompany(creditPayment);

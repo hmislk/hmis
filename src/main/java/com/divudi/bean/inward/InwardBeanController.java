@@ -2491,9 +2491,11 @@ public class InwardBeanController implements Serializable {
         if (ids.isEmpty()) {
             return new ArrayList<>();
         }
-        String jpql = "select b from Bill b "
+        // An original is dropped only while its cancellation bill is live; if the
+        // cancellation was itself cancelled the money stands and the row stays.
+        String jpql = "select b from Bill b left join b.cancelledBill cb "
                 + " where b.retired = false "
-                + " and b.cancelled = false "
+                + " and (b.cancelled = false or cb.cancelled = true) "
                 + " and b.patientEncounter.id in :peIds "
                 + " and b.billTypeAtomic in :bts "
                 + " and (b.paymentMethod is null or b.paymentMethod <> :pm) "
@@ -2539,6 +2541,50 @@ public class InwardBeanController implements Serializable {
     }
 
     /**
+     * Ward return request bills ({@code RETURN_MEDICINE_INWARD}) saved before
+     * #25509, when the BHT was credited from the request and the accept bill had
+     * no value and no encounter. Only requests that have accept bills, none of
+     * them valued, qualify, so a return is never counted twice. Whether the
+     * final bill actually contains them is decided by the caller.
+     */
+    public List<BillItem> fetchLegacyWardReturnRequestItems(PatientEncounter patientEncounter, List<PatientEncounter> cpts) {
+        List<Long> ids = encounterIdsWithChildren(patientEncounter, cpts);
+        if (ids.isEmpty()) {
+            return new ArrayList<>();
+        }
+        String jpql = "select bi from BillItem bi "
+                + " where bi.retired = false "
+                + " and bi.bill.retired = false "
+                + " and bi.bill.patientEncounter.id in :peIds "
+                + " and bi.bill.billTypeAtomic = :retBta "
+                + " and exists (select a.id from Bill a where a.backwardReferenceBill = bi.bill and a.retired = false and a.billTypeAtomic = :accBta) "
+                + " and not exists (select v.id from Bill v where v.backwardReferenceBill = bi.bill and v.retired = false and v.billTypeAtomic = :accBta and v.netTotal <> 0) "
+                + " order by bi.bill.createdAt, bi.id";
+        Map<String, Object> params = new HashMap<>();
+        params.put("peIds", ids);
+        params.put("retBta", BillTypeAtomic.RETURN_MEDICINE_INWARD);
+        params.put("accBta", BillTypeAtomic.ACCEPT_RETURN_MEDICINE_INWARD);
+        List<BillItem> list = getBillItemFacade().findByJpql(jpql, params);
+        return list == null ? new ArrayList<>() : list;
+    }
+
+    /** The Medicine charge line stored on the admission's final bill, or null. */
+    public Double fetchFinalBillMedicineNet(PatientEncounter patientEncounter) {
+        if (patientEncounter == null || patientEncounter.getFinalBill() == null
+                || patientEncounter.getFinalBill().getId() == null) {
+            return null;
+        }
+        String jpql = "select sum(bi.netValue) from BillItem bi "
+                + " where bi.retired = false "
+                + " and bi.bill.id = :fbId "
+                + " and bi.inwardChargeType = :ict";
+        Map<String, Object> params = new HashMap<>();
+        params.put("fbId", patientEncounter.getFinalBill().getId());
+        params.put("ict", InwardChargeType.Pharmacy_Medicine);
+        return getBillItemFacade().findDoubleByJpql(jpql, params);
+    }
+
+    /**
      * Bill items of the Store Issue section of the BHT break down pages: all
      * store-to-inward bills (issues, returns, cancellations), the same set
      * {@link #calCostOfIssue(PatientEncounter, BillType, List)} totals.
@@ -2571,10 +2617,10 @@ public class InwardBeanController implements Serializable {
         if (ids.isEmpty()) {
             return new ArrayList<>();
         }
-        String jpql = "select bi from BillItem bi "
+        String jpql = "select bi from BillItem bi left join bi.bill bl left join bl.cancelledBill cb "
                 + " where bi.retired = false "
                 + " and bi.bill.retired = false "
-                + " and bi.bill.cancelled = false "
+                + " and (bi.bill.cancelled = false or cb.cancelled = true) "
                 + " and bi.bill.billTypeAtomic = :bta "
                 + " and bi.patientEncounter.id in :peIds "
                 + " order by bi.bill.createdAt, bi.id";
