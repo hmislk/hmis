@@ -446,7 +446,7 @@ public class CreditCompanyDueController implements Serializable {
                 : dischargedAdmissionsByCreditCompany(PaymentMethod.Credit, true, null, null, null).entrySet()) {
             String1Value5 newRow = new String1Value5();
             newRow.setInstitution(entry.getKey());
-            setInwardDueAgeValues(entry.getValue(), newRow);
+            setInwardDueAgeValues(entry.getValue(), entry.getKey(), newRow);
             if (newRow.getValue1() != 0
                     || newRow.getValue2() != 0
                     || newRow.getValue3() != 0
@@ -780,6 +780,7 @@ public class CreditCompanyDueController implements Serializable {
 
             for (int i = 0; i < rowsForDealer; i++) {
                 DealerDueDetailRow rowi = new DealerDueDetailRow();
+                rowi.setCompany(dealer);
                 if (s.getValue1PatientEncounters().size() > i) {
                     rowi.setZeroToThirtyEncounter(s.getValue1PatientEncounters().get(i));
                 }
@@ -834,6 +835,7 @@ public class CreditCompanyDueController implements Serializable {
 
             for (int i = 0; i < rowsForDealer; i++) {
                 DealerDueDetailRow rowi = new DealerDueDetailRow();
+                rowi.setCompany(dealer);
                 if (s.getValue1PatientEncounters().size() > i) {
                     rowi.setZeroToThirtyEncounter(s.getValue1PatientEncounters().get(i));
                 }
@@ -862,7 +864,7 @@ public class CreditCompanyDueController implements Serializable {
                 : dischargedAdmissionsByCreditCompany(PaymentMethod.Cash, true, null, null, null).entrySet()) {
             String1Value5 newRow = new String1Value5();
             newRow.setString(entry.getKey().getName());
-            setInwardDueAgeValues(entry.getValue(), newRow);
+            setInwardDueAgeValues(entry.getValue(), entry.getKey(), newRow);
             if (newRow.getValue1() != 0
                     || newRow.getValue2() != 0
                     || newRow.getValue3() != 0
@@ -881,7 +883,7 @@ public class CreditCompanyDueController implements Serializable {
                 : dischargedAdmissionsByCreditCompany(PaymentMethod.Credit, false, null, null, null).entrySet()) {
             String1Value5 newRow = new String1Value5();
             newRow.setString(entry.getKey().getName());
-            setInwardAccessAgeValues(entry.getValue(), newRow);
+            setInwardAccessAgeValues(entry.getValue(), entry.getKey(), newRow);
             if (newRow.getValue1() != 0
                     || newRow.getValue2() != 0
                     || newRow.getValue3() != 0
@@ -1001,7 +1003,7 @@ public class CreditCompanyDueController implements Serializable {
                 : dischargedAdmissionsByCreditCompany(PaymentMethod.Cash, false, null, null, null).entrySet()) {
             String1Value5 newRow = new String1Value5();
             newRow.setString(entry.getKey().getName());
-            setInwardAccessAgeValues(entry.getValue(), newRow);
+            setInwardAccessAgeValues(entry.getValue(), entry.getKey(), newRow);
             if (newRow.getValue1() != 0
                     || newRow.getValue2() != 0
                     || newRow.getValue3() != 0
@@ -1020,7 +1022,7 @@ public class CreditCompanyDueController implements Serializable {
                 : dischargedAdmissionsByCreditCompany(PaymentMethod.Cash, false, institutionOfDepartment, department, site).entrySet()) {
             String1Value5 newRow = new String1Value5();
             newRow.setString(entry.getKey().getName());
-            setInwardAccessAgeValues(entry.getValue(), newRow);
+            setInwardAccessAgeValues(entry.getValue(), entry.getKey(), newRow);
             if (newRow.getValue1() != 0
                     || newRow.getValue2() != 0
                     || newRow.getValue3() != 0
@@ -1115,8 +1117,7 @@ public class CreditCompanyDueController implements Serializable {
                 + " JOIN b.finalBill fb"
                 + " where b.retired=false"
                 + " and b.discharged=true"
-                + " and b.paymentMethod=:pm"
-                + " and b.creditCompany is not null";
+                + " and b.paymentMethod=:pm";
         if (insd != null) {
             sql += " and fb.institution = :insd";
             m.put("insd", insd);
@@ -1129,39 +1130,36 @@ public class CreditCompanyDueController implements Serializable {
             sql += " and fb.department.site = :site";
             m.put("site", siteFilter);
         }
-        sql += " order by b.creditCompany.name";
         m.put("pm", pm);
         List<PatientEncounter> candidates = patientEncounterFacade.findByJpql(sql, m, TemporalType.TIMESTAMP);
 
-        Map<Institution, List<PatientEncounter>> grouped = new LinkedHashMap<>();
         if (candidates == null) {
-            return grouped;
+            return new LinkedHashMap<>();
         }
         loadCcFigures(candidates);
+        List<PatientEncounter> kept = new ArrayList<>();
         for (PatientEncounter b : candidates) {
             if (b.getFinalBill() == null) {
                 continue;
             }
-            boolean keep;
-            if (withCompanyDue) {
-                keep = getCcDue(b) > 0.01;
-            } else {
+            // The fully covered test stays on the whole admission; only the rows are split by company.
+            if (!withCompanyDue) {
                 double outstanding = Math.round((b.getFinalBill().getNetTotal() - getPatientPaid(b) - getCcPaid(b)) * 100.0) / 100.0;
-                keep = outstanding <= 0.01;
+                if (outstanding > 0.01) {
+                    continue;
+                }
             }
-            if (keep) {
-                grouped.computeIfAbsent(b.getCreditCompany(), k -> new ArrayList<>()).add(b);
-            }
+            kept.add(b);
         }
-        return grouped;
+        return groupByCommitmentCompany(kept, withCompanyDue);
     }
 
-    /** Ages each admission's company due (ccDue) into the four buckets by admission creation date. */
-    private void setInwardDueAgeValues(List<PatientEncounter> lst, String1Value5 dataTable5Value) {
+    /** Ages each admission's due of the given commitment company into the four buckets by admission creation date. */
+    private void setInwardDueAgeValues(List<PatientEncounter> lst, Institution company, String1Value5 dataTable5Value) {
         for (PatientEncounter b : lst) {
             Long dayCount = CommonFunctions.getDayCountTillNow(b.getCreatedAt());
             b.setTransDayCount(dayCount);
-            double finalValue = getCcDue(b);
+            double finalValue = getCcDueForCompany(b, company);
             if (dayCount < 30) {
                 dataTable5Value.setValue1(dataTable5Value.getValue1() + finalValue);
                 dataTable5Value.getValue1PatientEncounters().add(b);
@@ -1179,10 +1177,10 @@ public class CreditCompanyDueController implements Serializable {
     }
 
     /** Same buckets for the access (settled) age tables: committed less paid by the companies. */
-    private void setInwardAccessAgeValues(List<PatientEncounter> lst, String1Value5 dataTable5Value) {
+    private void setInwardAccessAgeValues(List<PatientEncounter> lst, Institution company, String1Value5 dataTable5Value) {
         for (PatientEncounter b : lst) {
             Long dayCount = CommonFunctions.getDayCountTillNow(b.getCreatedAt());
-            double finalValue = getCcDue(b);
+            double finalValue = getCcDueForCompany(b, company);
             if (dayCount < 30) {
                 dataTable5Value.setValue1(dataTable5Value.getValue1() + finalValue);
             } else if (dayCount < 60) {
@@ -2245,10 +2243,7 @@ public class CreditCompanyDueController implements Serializable {
             sql += " and b.admissionType =:ad ";
             m.put("ad", admissionType);
         }
-        if (institution != null) {
-            sql += " and b.creditCompany =:ins ";
-            m.put("ins", institution);
-        }
+        // The company filter applies to the commitment bills' company (below), not the admission's own company.
 
         if (paymentMethod != null) {
             sql += " and b.paymentMethod =:pm ";
@@ -2277,6 +2272,7 @@ public class CreditCompanyDueController implements Serializable {
         List<PatientEncounter> candidates = patientEncounterFacade.findByJpql(sql, m, TemporalType.TIMESTAMP);
 
         patientEncounters = new ArrayList<>();
+        ccDueRows = new ArrayList<>();
         billed = 0;
         paidByPatient = 0;
         paidByCompany = 0;
@@ -2284,22 +2280,45 @@ public class CreditCompanyDueController implements Serializable {
         if (candidates == null) {
             return;
         }
-        // Figures come from the commitment bills and payment bills (#25601), loaded once for the whole result
+        // Figures come from the commitment bills and payment bills (#25601), loaded once for the whole result.
+        // One row per admission and commitment company with that company's due above 1 cent.
         loadCcFigures(candidates);
         for (PatientEncounter p : candidates) {
             if (p.getFinalBill() == null) {
                 continue;
             }
-            double ccDue = getCcDue(p);
-            if (ccDue <= 0.1) {
-                continue;
+            boolean first = true;
+            for (CcCompanyFigures f : ccCompanyFigures(p)) {
+                if (f.due() <= 0.01) {
+                    continue;
+                }
+                if (institution != null && !isSameCompany(f.company, institution)) {
+                    continue;
+                }
+                ccDueRows.add(new CompanyDueRow(p, f.company, f.committed, f.paid, first));
+                if (first) {
+                    // Admission-level figures are counted once per admission, not per company row
+                    patientEncounters.add(p);
+                    billed += p.getFinalBill().getNetTotal();
+                    paidByPatient += getPatientPaid(p);
+                    first = false;
+                }
+                paidByCompany += f.paid;
+                dueByCompany += f.due();
             }
-            patientEncounters.add(p);
-            billed += p.getFinalBill().getNetTotal();
-            paidByPatient += getPatientPaid(p);
-            paidByCompany += getCcPaid(p);
-            dueByCompany += ccDue;
         }
+    }
+
+    /** Rows of the last Inward CC Due Search: one per admission and commitment company. */
+    private List<CompanyDueRow> ccDueRows = new ArrayList<>();
+
+    public List<CompanyDueRow> getCcDueRows() {
+        return ccDueRows;
+    }
+
+    /** Number of distinct admissions in the last Inward CC Due Search (one admission can have a row per company). */
+    public int getCcDueAdmissionCount() {
+        return patientEncounters == null ? 0 : patientEncounters.size();
     }
 
     /** Total still owed by the credit companies over the last Inward CC Due Search. */
@@ -3118,7 +3137,8 @@ public class CreditCompanyDueController implements Serializable {
     /**
      * Discharged admissions of the given payment method whose bill is fully
      * covered (net total less patient money less credit company money is not
-     * above 1 cent), grouped by credit company in name order. Patient and
+     * above 1 cent; tested on the whole admission), listed under each
+     * commitment company the admission has figures for, in name order. Patient and
      * company money come from the payment and commitment bills, loaded once
      * for the whole result (#25601), not from the encounter's creditPaidAmount.
      */
@@ -3130,7 +3150,6 @@ public class CreditCompanyDueController implements Serializable {
                 + " where b.retired=false"
                 + " and b.discharged=true"
                 + " and b.paymentMethod=:pm"
-                + " and b.creditCompany is not null"
                 + " and b.dateOfDischarge between :frm and :to";
         if (applyDepartmentFilters) {
             if (institutionOfDepartment != null) {
@@ -3146,28 +3165,29 @@ public class CreditCompanyDueController implements Serializable {
                 m.put("site", site);
             }
         }
-        sql += " order by b.creditCompany.name, b.dateOfDischarge";
+        sql += " order by b.dateOfDischarge";
         m.put("pm", pm);
         m.put("frm", getFromDate());
         m.put("to", getToDate());
         List<PatientEncounter> candidates = patientEncounterFacade.findByJpql(sql, m, TemporalType.TIMESTAMP);
 
-        Map<Institution, List<PatientEncounter>> grouped = new LinkedHashMap<>();
         if (candidates == null) {
-            return grouped;
+            return new LinkedHashMap<>();
         }
         loadCcFigures(candidates);
+        List<PatientEncounter> kept = new ArrayList<>();
         for (PatientEncounter b : candidates) {
             if (b.getFinalBill() == null) {
                 continue;
             }
+            // The fully covered test stays on the whole admission; only the rows are split by company.
             double outstanding = Math.round((b.getFinalBill().getNetTotal() - getPatientPaid(b) - getCcPaid(b)) * 100.0) / 100.0;
             if (outstanding > 0.01) {
                 continue;
             }
-            grouped.computeIfAbsent(b.getCreditCompany(), k -> new ArrayList<>()).add(b);
+            kept.add(b);
         }
-        return grouped;
+        return groupByCommitmentCompany(kept, false);
     }
 
 //    public void createInwardCreditAccessWithFilters() {
@@ -3457,8 +3477,8 @@ public class CreditCompanyDueController implements Serializable {
             newIns.setPatientEncounters(entry.getValue());
 
             for (PatientEncounter b : entry.getValue()) {
-                newIns.setTotal(newIns.getTotal() + getCcCommitted(b));
-                newIns.setPaidTotal(newIns.getPaidTotal() + getCcPaid(b));
+                newIns.setTotal(newIns.getTotal() + getCcCommittedForCompany(b, entry.getKey()));
+                newIns.setPaidTotal(newIns.getPaidTotal() + getCcPaidForCompany(b, entry.getKey()));
             }
 
             institutionEncounters.add(newIns);
@@ -4294,6 +4314,8 @@ public class CreditCompanyDueController implements Serializable {
      */
     private void loadCcFigures(List<PatientEncounter> encounters) {
         ccFiguresByFinalBillId.clear();
+        ccCompanyRawByFinalBillId.clear();
+        ccCompanyMergedByFinalBillId.clear();
         patientPaidByEncounterId.clear();
         addCcFigures(encounters);
     }
@@ -4380,6 +4402,235 @@ public class CreditCompanyDueController implements Serializable {
             double paid = row[2] == null ? 0.0 : ((Number) row[2]).doubleValue();
             ccFiguresByFinalBillId.put(id, new double[]{committed, paid});
         }
+        putCcCompanyFigures(finalBillIds);
+    }
+
+    /**
+     * Per-company split of the same commitment bills (same filters as the
+     * admission totals above): one grouped query per chunk, grouped by final
+     * bill and commitment bill company. A bill with no company is kept under a
+     * null company id so the split always adds up to the admission total.
+     */
+    private void putCcCompanyFigures(List<Long> finalBillIds) {
+        String jpql = "SELECT c.referenceBill.id, cc.id, SUM(c.netTotal), SUM(c.settledAmountBySponsor) FROM Bill c"
+                + " LEFT JOIN c.creditCompany cc"
+                + " WHERE c.billTypeAtomic = :bta"
+                + " AND c.referenceBill.id IN :ids"
+                + " AND c.cancelled = false"
+                + " AND c.retired = false"
+                + " GROUP BY c.referenceBill.id, cc.id";
+        Map<String, Object> params = new HashMap<>();
+        params.put("bta", BillTypeAtomic.INWARD_FINAL_BILL_PAYMENT_BY_CREDIT_COMPANY);
+        params.put("ids", new ArrayList<>(finalBillIds));
+        List<Object[]> rows = billFacade.findAggregates(jpql, params);
+        if (rows == null) {
+            return;
+        }
+        for (Object[] row : rows) {
+            Long finalBillId = (Long) row[0];
+            Long companyId = row[1] == null ? null : ((Number) row[1]).longValue();
+            double committed = row[2] == null ? 0.0 : ((Number) row[2]).doubleValue();
+            double paid = row[3] == null ? 0.0 : ((Number) row[3]).doubleValue();
+            ccCompanyRawByFinalBillId.computeIfAbsent(finalBillId, k -> new LinkedHashMap<>())
+                    .put(companyId, new double[]{committed, paid});
+        }
+    }
+
+    /** Final bill id -> commitment company id (null = bill has none) -> {committed, paid}. */
+    private final Map<Long, Map<Long, double[]>> ccCompanyRawByFinalBillId = new HashMap<>();
+
+    /** Final bill id -> per-company figures after the company fallback (cached). */
+    private final Map<Long, List<CcCompanyFigures>> ccCompanyMergedByFinalBillId = new HashMap<>();
+
+    private final Map<Long, Institution> institutionsById = new HashMap<>();
+
+    /** One company's share of one admission: committed and paid from its commitment bills. */
+    private static class CcCompanyFigures {
+
+        private final Institution company;
+        private double committed;
+        private double paid;
+
+        private CcCompanyFigures(Institution company, double committed, double paid) {
+            this.company = company;
+            this.committed = committed;
+            this.paid = paid;
+        }
+
+        private double due() {
+            return Math.max(0.0, committed - paid);
+        }
+    }
+
+    /** One row of the Inward CC Due Search: an admission and one company's figures. */
+    public static class CompanyDueRow {
+
+        private final PatientEncounter encounter;
+        private final Institution company;
+        private final double committed;
+        private final double paid;
+        private final boolean firstOfAdmission;
+
+        private CompanyDueRow(PatientEncounter encounter, Institution company, double committed, double paid, boolean firstOfAdmission) {
+            this.encounter = encounter;
+            this.company = company;
+            this.committed = committed;
+            this.paid = paid;
+            this.firstOfAdmission = firstOfAdmission;
+        }
+
+        public PatientEncounter getEncounter() {
+            return encounter;
+        }
+
+        public Institution getCompany() {
+            return company;
+        }
+
+        public double getCommitted() {
+            return committed;
+        }
+
+        public double getPaid() {
+            return paid;
+        }
+
+        public double getDue() {
+            return Math.max(0.0, committed - paid);
+        }
+
+        /** True on the first row of an admission; admission-level figures (final total, paid by patient) are shown there only, so they are not counted per company. */
+        public boolean isFirstOfAdmission() {
+            return firstOfAdmission;
+        }
+    }
+
+    private Institution institutionById(Long id) {
+        Institution i = institutionsById.get(id);
+        if (i == null) {
+            i = institutionFacade.find(id);
+            if (i != null) {
+                institutionsById.put(id, i);
+            }
+        }
+        return i;
+    }
+
+    private static boolean isSameCompany(Institution a, Institution b) {
+        Long ai = a == null ? null : a.getId();
+        Long bi = b == null ? null : b.getId();
+        return ai == null ? bi == null : ai.equals(bi);
+    }
+
+    /**
+     * The admission's commitment figures split by commitment company. A bill
+     * with no company falls back to the admission's own company; if that is
+     * missing too it stays under a null company. An admission with no
+     * commitment bills (older admissions) gets one row from the legacy
+     * figures, so the rows always add up to getCcCommitted / getCcPaid.
+     */
+    private List<CcCompanyFigures> ccCompanyFigures(PatientEncounter pe) {
+        if (pe == null || pe.getFinalBill() == null || pe.getFinalBill().getId() == null) {
+            return Collections.emptyList();
+        }
+        double[] admissionFigures = ccFigures(pe); // loads the admission and its split when not yet loaded
+        Long fbId = pe.getFinalBill().getId();
+        List<CcCompanyFigures> merged = ccCompanyMergedByFinalBillId.get(fbId);
+        if (merged != null) {
+            return merged;
+        }
+        merged = new ArrayList<>();
+        Map<Long, double[]> raw = ccCompanyRawByFinalBillId.get(fbId);
+        if (admissionFigures == null || raw == null || raw.isEmpty()) {
+            double used = pe.getCreditUsedAmount();
+            double settled = pe.getFinalBill().getSettledAmountBySponsor();
+            if (pe.getCreditCompany() != null || used != 0 || settled != 0) {
+                merged.add(new CcCompanyFigures(pe.getCreditCompany(), used, settled));
+            }
+        } else {
+            Map<Long, CcCompanyFigures> byCompany = new LinkedHashMap<>();
+            for (Map.Entry<Long, double[]> e : raw.entrySet()) {
+                Institution company = e.getKey() == null ? pe.getCreditCompany() : institutionById(e.getKey());
+                Long key = company == null ? null : company.getId();
+                CcCompanyFigures f = byCompany.get(key);
+                if (f == null) {
+                    byCompany.put(key, new CcCompanyFigures(company, e.getValue()[0], e.getValue()[1]));
+                } else {
+                    f.committed += e.getValue()[0];
+                    f.paid += e.getValue()[1];
+                }
+            }
+            merged.addAll(byCompany.values());
+        }
+        ccCompanyMergedByFinalBillId.put(fbId, merged);
+        return merged;
+    }
+
+    private CcCompanyFigures ccFiguresForCompany(PatientEncounter pe, Institution company) {
+        for (CcCompanyFigures f : ccCompanyFigures(pe)) {
+            if (isSameCompany(f.company, company)) {
+                return f;
+            }
+        }
+        return null;
+    }
+
+    /** Amount this company took on for the admission (its commitment bills). */
+    public double getCcCommittedForCompany(PatientEncounter pe, Institution company) {
+        CcCompanyFigures f = ccFiguresForCompany(pe, company);
+        return f == null ? 0.0 : f.committed;
+    }
+
+    /** Amount this company has paid for the admission (receipts less cancels on its commitment bills). */
+    public double getCcPaidForCompany(PatientEncounter pe, Institution company) {
+        CcCompanyFigures f = ccFiguresForCompany(pe, company);
+        return f == null ? 0.0 : f.paid;
+    }
+
+    /** Amount this company still owes for the admission, never below 0. */
+    public double getCcDueForCompany(PatientEncounter pe, Institution company) {
+        CcCompanyFigures f = ccFiguresForCompany(pe, company);
+        return f == null ? 0.0 : f.due();
+    }
+
+    /** Placeholder shown for commitment figures that have no company at all. */
+    private static Institution noCompanyPlaceholder() {
+        Institution i = new Institution();
+        i.setName("(no company)");
+        return i;
+    }
+
+    /**
+     * Groups admissions by commitment company, keeping an admission under each
+     * company it has figures for. The key is the same object for one company
+     * across admissions; null-company figures go under one placeholder.
+     * With {@code dueOnly} a company row needs a due above 1 cent.
+     */
+    private Map<Institution, List<PatientEncounter>> groupByCommitmentCompany(List<PatientEncounter> admissions, boolean dueOnly) {
+        Map<Long, Institution> canonical = new HashMap<>();
+        Institution placeholder = noCompanyPlaceholder();
+        Map<Institution, List<PatientEncounter>> grouped = new LinkedHashMap<>();
+        for (PatientEncounter pe : admissions) {
+            for (CcCompanyFigures f : ccCompanyFigures(pe)) {
+                if (dueOnly && f.due() <= 0.01) {
+                    continue;
+                }
+                Institution key;
+                if (f.company == null || f.company.getId() == null) {
+                    key = placeholder;
+                } else {
+                    key = canonical.computeIfAbsent(f.company.getId(), k -> f.company);
+                }
+                grouped.computeIfAbsent(key, k -> new ArrayList<>()).add(pe);
+            }
+        }
+        List<Map.Entry<Institution, List<PatientEncounter>>> entries = new ArrayList<>(grouped.entrySet());
+        entries.sort((a, b) -> String.valueOf(a.getKey().getName()).compareToIgnoreCase(String.valueOf(b.getKey().getName())));
+        Map<Institution, List<PatientEncounter>> sorted = new LinkedHashMap<>();
+        for (Map.Entry<Institution, List<PatientEncounter>> e : entries) {
+            sorted.put(e.getKey(), e.getValue());
+        }
+        return sorted;
     }
 
     /** Commitment bill totals of the admission's final bill, or null when it has none (older admissions). */

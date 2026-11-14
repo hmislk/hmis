@@ -103,17 +103,17 @@
                                 <h:outputLabel value="#{b.patient.person.nameWithTitle}" />                                 
                             </p:column>
                             <p:column style="text-align: right;">                                
-                                <h:outputLabel value="#{creditCompanyDueController.getCcCommitted(b)}" >
+                                <h:outputLabel value="#{creditCompanyDueController.getCcCommittedForCompany(b, i.institution)}" >
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>                                 
                             </p:column>
                             <p:column style="text-align: right;">                              
-                                <h:outputLabel value="#{creditCompanyDueController.getCcPaid(b)}" >
+                                <h:outputLabel value="#{creditCompanyDueController.getCcPaidForCompany(b, i.institution)}" >
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
                             </p:column>
                             <p:column style="text-align: right;">                              
-                                <h:outputLabel value="#{creditCompanyDueController.getCcCommitted(b)-creditCompanyDueController.getCcPaid(b)}" >
+                                <h:outputLabel value="#{creditCompanyDueController.getCcCommittedForCompany(b, i.institution)-creditCompanyDueController.getCcPaidForCompany(b, i.institution)}" >
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
                             </p:column>
