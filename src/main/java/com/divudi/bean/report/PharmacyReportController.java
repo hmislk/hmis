@@ -4381,7 +4381,13 @@ public class PharmacyReportController implements Serializable {
             addFilter(billJpql, billParams, "b.department", "dep", department);
             addFilter(billJpql, billParams, "b.paymentMethod", "pmFilter", this.paymentMethod);
 
-            cogsBillDtos = (List<CostOfGoodSoldBillDTO>) billFacade.findLightsByJpql(billJpql.toString(), billParams, TemporalType.TIMESTAMP);
+            if (selectedDepartmentTypes != null && !selectedDepartmentTypes.isEmpty()) {
+                billJpql.append("AND b.departmentType IN :departmentTypes ");
+                billParams.put("departmentTypes", selectedDepartmentTypes);
+            }
+
+            // Strict query: a database error must reach the catch below, not look like an empty report.
+            cogsBillDtos = (List<CostOfGoodSoldBillDTO>) billFacade.findLightsByJpqlStrict(billJpql.toString(), billParams, TemporalType.TIMESTAMP);
             // STEP 2: Collect all Bill IDs from the results.
             List<Long> billIds = cogsBillDtos.stream()
                     .map(CostOfGoodSoldBillDTO::getBillId)
@@ -4409,7 +4415,10 @@ public class PharmacyReportController implements Serializable {
             Map<String, Object> itemParams = new HashMap<>();
             itemParams.put("billIds", billIds);
 
-            List<BillItemDTO> allBillItems = (List<BillItemDTO>) billItemFacade.findLightsByJpql(itemJpql.toString(), itemParams);
+            // No bills: skip the item query, since "IN :billIds" with an empty list is invalid SQL.
+            List<BillItemDTO> allBillItems = billIds.isEmpty()
+                    ? new ArrayList<>()
+                    : (List<BillItemDTO>) billItemFacade.findLightsByJpqlStrict(itemJpql.toString(), itemParams, TemporalType.TIMESTAMP);
             // STEP 4: Group the fetched BillItems by their parent Bill's ID.
             Map<Long, List<BillItemDTO>> itemsGroupedByBillId = allBillItems.stream().collect(Collectors.groupingBy(BillItemDTO::getBillId));
 

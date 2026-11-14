@@ -866,6 +866,27 @@ public abstract class AbstractFacade<T> {
         return qry.getResultList();
     }
 
+    /**
+     * Same as {@link #findLightsByJpql(String, Map, TemporalType)}, but a query
+     * failure propagates instead of being turned into an empty list.
+     *
+     * <p>Use this for a report whose empty result is shown as "No records found",
+     * so a database error surfaces as an error rather than as an empty report.
+     */
+    public List<?> findLightsByJpqlStrict(String jpql, Map<String, Object> parameters, TemporalType tt) {
+        Query qry = getEntityManager().createQuery(jpql);
+        if (parameters != null) {
+            for (Map.Entry<String, Object> entry : parameters.entrySet()) {
+                if (entry.getValue() instanceof Date) {
+                    qry.setParameter(entry.getKey(), (Date) entry.getValue(), tt);
+                } else {
+                    qry.setParameter(entry.getKey(), entry.getValue());
+                }
+            }
+        }
+        return qry.getResultList();
+    }
+
     public List<?> findLightsByJpql(String jpql) {
         Query qry = getEntityManager().createQuery(jpql);
         return qry.getResultList();
