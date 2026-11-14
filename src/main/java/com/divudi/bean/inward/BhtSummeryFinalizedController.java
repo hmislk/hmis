@@ -254,7 +254,7 @@ public class BhtSummeryFinalizedController implements Serializable {
      * A final bill made before #25509 credited a porter-flow ward return from
      * the return request bill, one made after it from the accepted return. The
      * stored Medicine line says which: the old request rows are added only when
-     * that brings the listed rows closer to it.
+     * they make the listed rows equal that stored Medicine total; otherwise nothing is added.
      */
     private void addLegacyWardReturnsIfFinalBillHasThem(List<PatientEncounter> cpts) {
         List<BillItem> legacy = getInwardBean().fetchLegacyWardReturnRequestItems(getPatientEncounter(), cpts);
@@ -270,7 +270,7 @@ public class BhtSummeryFinalizedController implements Serializable {
         for (BillItem bi : legacy) {
             legacySum += signedByBill(bi, bi.getNetValue());
         }
-        if (Math.abs(listed + legacySum - finalMedicine) < Math.abs(listed - finalMedicine)) {
+        if (Math.abs(listed + legacySum - finalMedicine) < 0.01) {
             List<BillItem> all = new ArrayList<>(pharmacyItems);
             all.addAll(legacy);
             all.sort(Comparator.comparing((BillItem b) -> b.getBill().getCreatedAt(),
