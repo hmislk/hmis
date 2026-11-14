@@ -99,7 +99,7 @@
                                         </h:outputLabel>                                      
                                     </p:column>
                                     <p:column>
-                                        <h:outputLabel value="#{p1.finalBill.netTotal-(p1.finalBill.paidAmount+p1.creditPaidAmount)}" >
+                                        <h:outputLabel value="#{creditCompanyDueController.getCcDue(p1)}" >
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputLabel>  
                                         <f:facet name="footer" >
@@ -149,7 +149,7 @@
                                     </h:outputLabel>                                      
                                 </p:column>
                                 <p:column>
-                                    <h:outputLabel value="#{p1.finalBill.netTotal-(p1.finalBill.paidAmount+p1.creditPaidAmount)}" >
+                                    <h:outputLabel value="#{creditCompanyDueController.getCcDue(p1)}" >
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputLabel>  
                                     <f:facet name="footer" >
@@ -196,7 +196,7 @@
                                     </h:outputLabel>                                      
                                 </p:column>
                                 <p:column>
-                                    <h:outputLabel value="#{p1.finalBill.netTotal-(p1.finalBill.paidAmount+p1.creditPaidAmount)}" >
+                                    <h:outputLabel value="#{creditCompanyDueController.getCcDue(p1)}" >
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputLabel>  
                                     <f:facet name="footer" >
@@ -246,7 +246,7 @@
                                     </h:outputLabel>                                      
                                 </p:column>
                                 <p:column>
-                                    <h:outputLabel value="#{p1.finalBill.netTotal-(p1.finalBill.paidAmount+p1.creditPaidAmount)}" >
+                                    <h:outputLabel value="#{creditCompanyDueController.getCcDue(p1)}" >
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputLabel>
                                     <f:facet name="footer" >
@@ -360,7 +360,7 @@
                             </h:outputLabel>                                      
                         </p:column>
                         <p:column>
-                            <h:outputLabel value="#{r.zeroToThirtyEncounter.finalBill.netTotal-(r.zeroToThirtyEncounter.finalBill.paidAmount+r.zeroToThirtyEncounter.creditPaidAmount)}" rendered="#{(r.zeroToThirtyEncounter.finalBill.netTotal-(r.zeroToThirtyEncounter.finalBill.paidAmount+r.zeroToThirtyEncounter.creditPaidAmount))ne 0.0}" >
+                            <h:outputLabel value="#{creditCompanyDueController.getCcDue(r.zeroToThirtyEncounter)}" rendered="#{(creditCompanyDueController.getCcDue(r.zeroToThirtyEncounter))ne 0.0}" >
                                 <f:convertNumber pattern="#,##0.00"/>
                             </h:outputLabel>  
                         </p:column>
@@ -399,7 +399,7 @@
                             </h:outputLabel>                                      
                         </p:column>
                         <p:column>
-                            <h:outputLabel value="#{r.thirtyToSixtyEncounter.finalBill.netTotal-(r.thirtyToSixtyEncounter.finalBill.paidAmount+r.thirtyToSixtyEncounter.creditPaidAmount)}" rendered="#{(r.thirtyToSixtyEncounter.finalBill.netTotal-(r.thirtyToSixtyEncounter.finalBill.paidAmount+r.thirtyToSixtyEncounter.creditPaidAmount))ne 0.0}">
+                            <h:outputLabel value="#{creditCompanyDueController.getCcDue(r.thirtyToSixtyEncounter)}" rendered="#{(creditCompanyDueController.getCcDue(r.thirtyToSixtyEncounter))ne 0.0}">
                                 <f:convertNumber pattern="#,##0.00"/>
                             </h:outputLabel>  
                         </p:column>
@@ -438,7 +438,7 @@
                             </h:outputLabel>                                      
                         </p:column>
                         <p:column styleClass="numberCol" >
-                            <h:outputLabel value="#{r.sixtyToNintyEncounter.finalBill.netTotal-(r.sixtyToNintyEncounter.finalBill.paidAmount+r.sixtyToNintyEncounter.creditPaidAmount)}" rendered="#{(r.sixtyToNintyEncounter.finalBill.netTotal-(r.sixtyToNintyEncounter.finalBill.paidAmount+r.sixtyToNintyEncounter.creditPaidAmount))ne 0.0}" >
+                            <h:outputLabel value="#{creditCompanyDueController.getCcDue(r.sixtyToNintyEncounter)}" rendered="#{(creditCompanyDueController.getCcDue(r.sixtyToNintyEncounter))ne 0.0}" >
                                 <f:convertNumber pattern="#,##0.00"/>
                             </h:outputLabel>  
                         </p:column>
@@ -477,7 +477,7 @@
                             </h:outputLabel>                                      
                         </p:column>
                         <p:column styleClass="numberCol" >
-                            <h:outputLabel value="#{r.moreThanNintyEncounter.finalBill.netTotal-(r.moreThanNintyEncounter.finalBill.paidAmount+r.moreThanNintyEncounter.creditPaidAmount)}" rendered="#{(r.moreThanNintyEncounter.finalBill.netTotal-(r.moreThanNintyEncounter.finalBill.paidAmount+r.moreThanNintyEncounter.creditPaidAmount))ne 0.0}" >
+                            <h:outputLabel value="#{creditCompanyDueController.getCcDue(r.moreThanNintyEncounter)}" rendered="#{(creditCompanyDueController.getCcDue(r.moreThanNintyEncounter))ne 0.0}" >
                                 <f:convertNumber pattern="#,##0.00"/>
                             </h:outputLabel>  
                         </p:column>
