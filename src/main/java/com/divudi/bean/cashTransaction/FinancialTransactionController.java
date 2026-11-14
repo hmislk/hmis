@@ -1969,7 +1969,12 @@ public class FinancialTransactionController implements Serializable {
 
         // Fetch and process shift handover component bills
         List<Bill> shiftHandoverCompletionBills = billSearch.fetchReferredBills(BillTypeAtomic.FUND_SHIFT_COMPONANT_HANDOVER_CREATE, selectedBill);
-        if (shiftHandoverCompletionBills == null || shiftHandoverCompletionBills.isEmpty()) {
+        // A float-only handover has no component bills; its value is carried by the
+        // denomination bill and is shown through the synthetic float rows below (#22116).
+        if (shiftHandoverCompletionBills == null) {
+            shiftHandoverCompletionBills = new ArrayList<>();
+        }
+        if (shiftHandoverCompletionBills.isEmpty() && (dts == null || dts.isEmpty())) {
             JsfUtil.addErrorMessage("No component bills found.");
             return null;
         }
@@ -2102,7 +2107,12 @@ public class FinancialTransactionController implements Serializable {
 
         // Fetch and process shift handover component bills
         List<Bill> shiftHandoverCompletionBills = billSearch.fetchReferredBills(BillTypeAtomic.FUND_SHIFT_COMPONANT_HANDOVER_CREATE, selectedBill);
-        if (shiftHandoverCompletionBills == null || shiftHandoverCompletionBills.isEmpty()) {
+        // A float-only handover has no component bills; its value is carried by the
+        // denomination bill and is shown through the synthetic float rows below (#22116).
+        if (shiftHandoverCompletionBills == null) {
+            shiftHandoverCompletionBills = new ArrayList<>();
+        }
+        if (shiftHandoverCompletionBills.isEmpty() && (dts == null || dts.isEmpty())) {
             JsfUtil.addErrorMessage("No component bills found.");
             return null;
         }
