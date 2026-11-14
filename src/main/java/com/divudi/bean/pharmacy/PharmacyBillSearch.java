@@ -2858,20 +2858,13 @@ public class PharmacyBillSearch implements Serializable {
             ph.copy(nB.getPharmaceuticalBillItem());
             ph.invertValue(nB.getPharmaceuticalBillItem());
 
-            if (ph.getId() == null) {
-                getPharmaceuticalBillItemFacade().create(ph);
-            }
-
+            // Link both sides and save once with create(); BillItem cascades to the
+            // PharmaceuticalBillItem. edit() on a new entity merges a copy and leaves
+            // this instance without an id, so every extra save inserted another row (#25625).
             b.setPharmaceuticalBillItem(ph);
-
-            if (b.getId() == null) {
-                getBillItemFacede().edit(b);
-            }
-
             ph.setBillItem(b);
-            getPharmaceuticalBillItemFacade().edit(ph);
 
-            getBillItemFacede().edit(b);
+            getBillItemFacede().create(b);
 
             can.getBillItems().add(b);
         }
