@@ -2492,10 +2492,12 @@ public class InwardBeanController implements Serializable {
             return new ArrayList<>();
         }
         // An original is dropped only while its cancellation bill is live; if the
-        // cancellation was itself cancelled the money stands and the row stays.
+        // cancellation was itself cancelled (flagged, or cancelled by a bill that
+        // points back to it through billedBill) the money stands and the row stays.
         String jpql = "select b from Bill b left join b.cancelledBill cb "
                 + " where b.retired = false "
-                + " and (b.cancelled = false or cb.cancelled = true) "
+                + " and (b.cancelled = false or cb.cancelled = true "
+                + "      or exists (select x.id from Bill x where x.billedBill = cb and x.retired = false)) "
                 + " and b.patientEncounter.id in :peIds "
                 + " and b.billTypeAtomic in :bts "
                 + " and (b.paymentMethod is null or b.paymentMethod <> :pm) "
@@ -2622,7 +2624,8 @@ public class InwardBeanController implements Serializable {
         String jpql = "select bi from BillItem bi left join bi.bill bl left join bl.cancelledBill cb "
                 + " where bi.retired = false "
                 + " and bi.bill.retired = false "
-                + " and (bi.bill.cancelled = false or cb.cancelled = true) "
+                + " and (bi.bill.cancelled = false or cb.cancelled = true "
+                + "      or exists (select x.id from Bill x where x.billedBill = cb and x.retired = false)) "
                 + " and bi.bill.billTypeAtomic = :bta "
                 + " and bi.patientEncounter.id in :peIds "
                 + " order by bi.bill.createdAt, bi.id";
