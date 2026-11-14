@@ -391,10 +391,16 @@ public class WebUserController implements Serializable {
             } catch (Exception e) {
                 return hasPri;
             }
-            if (w.getPrivilege() != null && w.getPrivilege().equals(p)) {
-
-                hasPri = true;
-                return hasPri;
+            if (w.getPrivilege() != null) {
+                if (w.getPrivilege().equals(p)) {
+                    hasPri = true;
+                    return hasPri;
+                }
+                if ((p == Privileges.PharmacySaleWithoutStock && w.getPrivilege() == Privileges.PharmacySaleWithOutStock)
+                        || (p == Privileges.PharmacySaleWithOutStock && w.getPrivilege() == Privileges.PharmacySaleWithoutStock)) {
+                    hasPri = true;
+                    return hasPri;
+                }
             }
         }
         return hasPri;
