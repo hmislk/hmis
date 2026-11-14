@@ -1914,8 +1914,8 @@ public class CreditCompanyDueController implements Serializable {
      * One row per admission and commitment company for the filtered excess
      * pages (#25601). Company committed and paid come from that company's own
      * commitment bills on the admission's current final bill; patient money from
-     * the patient payment bills. The excess columns keep their sign (negative
-     * when the company, or the patient, paid more than was due). The patient
+     * the patient payment bills. The excess columns are Paid less Used, positive
+     * when the company, or the patient, paid more than was due (as the Credit Access page). The patient
      * excess is carried on the admission's first row only, so an admission with
      * two companies is not counted twice. With {@code includePatientExcess} an
      * admission whose only excess is the patient's is listed too.
@@ -1945,11 +1945,11 @@ public class CreditCompanyDueController implements Serializable {
                     continue;
                 }
                 double companyBalance = f.committed - f.paid;
-                double companyExcess = companyBalance < 0 ? companyBalance : 0.0;
-                double patientExcess = first && patientBalance < 0 ? patientBalance : 0.0;
+                double companyExcess = companyBalance < 0 ? -companyBalance : 0.0;
+                double patientExcess = first && patientBalance < 0 ? -patientBalance : 0.0;
                 first = false;
 
-                boolean listed = companyExcess < 0 || (includePatientExcess && patientExcess < 0);
+                boolean listed = companyExcess > 0 || (includePatientExcess && patientExcess > 0);
                 if (!listed) {
                     continue;
                 }
@@ -3440,7 +3440,7 @@ public class CreditCompanyDueController implements Serializable {
 
             Row headerRow = sheet.createRow(rowIndex++);
             String[] headers = {"BHT No", "Date Of Discharge", "Patient Name", "Policy Number", "Reference Number",
-                "Billed Amount", "Paid by Patient", "Paid by Company", "Excess Amount"};
+                "Billed Amount", "Paid by Patient", "Paid by Company", "Excess (Paid - Used)"};
             for (int i = 0; i < headers.length; i++) {
                 Cell cell = headerRow.createCell(i);
                 cell.setCellValue(headers[i]);
@@ -3468,7 +3468,7 @@ public class CreditCompanyDueController implements Serializable {
                     dataRow.createCell(5).setCellValue(b.getNetTotal());
                     dataRow.createCell(6).setCellValue(b.getPaidByPatient());
                     dataRow.createCell(7).setCellValue(b.getPaidByCompany());
-                    dataRow.createCell(8).setCellValue(b.getCompanyDue());
+                    dataRow.createCell(8).setCellValue(b.getCompanyExcess() + b.getPatientExcess());
 
                     for (int j = 5; j <= 8; j++) {
                         dataRow.getCell(j).setCellStyle(amountStyle);
@@ -3539,7 +3539,7 @@ public class CreditCompanyDueController implements Serializable {
             table.setWidths(new float[]{1.2f, 2.5f, 3f, 1.2f, 1.2f, 2f, 2f, 2f, 2f});
 
             String[] headers = {"BHT No", "Date Of Discharge", "Patient Name", "Policy Number", "Reference Number",
-                "Billed Amount", "Paid by Patient", "Paid by Company", "Excess Amount"};
+                "Billed Amount", "Paid by Patient", "Paid by Company", "Excess (Paid - Used)"};
 
             for (String h : headers) {
                 PdfPCell cell = new PdfPCell(new Phrase(h, boldFont));
@@ -3567,7 +3567,7 @@ public class CreditCompanyDueController implements Serializable {
                     table.addCell(new Phrase(df.format(b.getNetTotal()), normalFont));
                     table.addCell(new Phrase(df.format(b.getPaidByPatient()), normalFont));
                     table.addCell(new Phrase(df.format(b.getPaidByCompany()), normalFont));
-                    table.addCell(new Phrase(df.format(b.getCompanyDue()), normalFont));
+                    table.addCell(new Phrase(df.format(b.getCompanyExcess() + b.getPatientExcess()), normalFont));
                 }
 
                 PdfPCell subtotalLabel = new PdfPCell(new Phrase("Sub Total", boldFont));
