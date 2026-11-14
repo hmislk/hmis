@@ -14,6 +14,8 @@ import com.divudi.core.entity.PatientEncounter;
  */
 public class DealerDueDetailRow {
     Institution dealer;
+    /** Commitment company of this row's encounters (set on every row, unlike dealer). */
+    Institution company;
     Double zeroToThirty;
     PatientEncounter zeroToThirtyEncounter;
 
@@ -30,6 +32,14 @@ public class DealerDueDetailRow {
 
     public void setDealer(Institution dealer) {
         this.dealer = dealer;
+    }
+
+    public Institution getCompany() {
+        return company;
+    }
+
+    public void setCompany(Institution company) {
+        this.company = company;
     }
 
     public Double getZeroToThirty() {
