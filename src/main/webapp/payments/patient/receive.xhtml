@@ -65,20 +65,29 @@
                                         <p:inputText value="#{patientController.bill.comments}" id="comment"/>
                                                                             </h:panelGroup>
 
-                                    <h:panelGroup id="creditCard" class="m-1" style="display: #{patientController.bill.paymentMethod eq 'Card' ? 'block' : 'none'};">
-                                        <pa:creditCard paymentMethodData="#{patientController.paymentMethodData}"/>
+                                    <!-- rendered, not display:none: Settle submits the whole form, so hidden required inputs would block it (#25643) -->
+                                    <h:panelGroup id="creditCard">
+                                        <h:panelGroup layout="block" class="m-1" rendered="#{patientController.bill.paymentMethod eq 'Card'}">
+                                            <pa:creditCard paymentMethodData="#{patientController.paymentMethodData}"/>
+                                        </h:panelGroup>
                                     </h:panelGroup>
 
-                                    <h:panelGroup id="cheque" style="display: #{patientController.bill.paymentMethod eq 'Cheque' ? 'block' : 'none'};">
-                                        <pa:cheque paymentMethodData="#{patientController.paymentMethodData}"/>
+                                    <h:panelGroup id="cheque">
+                                        <h:panelGroup layout="block" rendered="#{patientController.bill.paymentMethod eq 'Cheque'}">
+                                            <pa:cheque paymentMethodData="#{patientController.paymentMethodData}"/>
+                                        </h:panelGroup>
                                     </h:panelGroup>
 
-                                    <h:panelGroup id="slip" style="display: #{patientController.bill.paymentMethod eq 'Slip' ? 'block' : 'none'};">
-                                        <pa:slip paymentMethodData="#{patientController.paymentMethodData}"/>
+                                    <h:panelGroup id="slip">
+                                        <h:panelGroup layout="block" rendered="#{patientController.bill.paymentMethod eq 'Slip'}">
+                                            <pa:slip paymentMethodData="#{patientController.paymentMethodData}"/>
+                                        </h:panelGroup>
                                     </h:panelGroup>
-                                    
-                                    <h:panelGroup id="eWallet" style="display: #{patientController.bill.paymentMethod ne 'ewallet' ? 'none' : 'block'} ;">
-                                        <pa:ewallet class="m-2" paymentMethodData="#{patientController.paymentMethodData}"/>
+
+                                    <h:panelGroup id="eWallet">
+                                        <h:panelGroup layout="block" rendered="#{patientController.bill.paymentMethod eq 'ewallet'}">
+                                            <pa:ewallet class="m-2" paymentMethodData="#{patientController.paymentMethodData}"/>
+                                        </h:panelGroup>
                                     </h:panelGroup>
                                 </div>
 
