@@ -243,6 +243,19 @@ public class BhtSummeryFinalizedController implements Serializable {
         this.creditPayment = creditPayment;
     }
 
+    /**
+     * Amounts on the lines of a return or cancellation bill are stored with a
+     * positive sign by some older flows while the bill itself is negative. Show
+     * such a line with the bill sign so returns reduce the section instead of
+     * adding to it. Lines already stored negative are left as they are.
+     */
+    public double signedByBill(BillItem item, double value) {
+        if (item != null && item.getBill() != null && item.getBill().getNetTotal() < 0 && value > 0) {
+            return -value;
+        }
+        return value;
+    }
+
     public List<Bill> getCreditCompanyCommitments() {
         return creditCompanyCommitments;
     }
