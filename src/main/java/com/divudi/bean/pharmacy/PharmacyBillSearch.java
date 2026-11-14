@@ -2835,6 +2835,11 @@ public class PharmacyBillSearch implements Serializable {
 
     private void pharmacyCancelBillItems(CancelledBill can) {
         for (BillItem nB : getBill().getBillItems()) {
+            // A removed or zero-qty line stays on the bill as retired (#25621);
+            // it was never ordered, so it gets no cancellation line
+            if (nB.isRetired()) {
+                continue;
+            }
             BillItem b = new BillItem();
             b.setBill(can);
             b.copy(nB);
