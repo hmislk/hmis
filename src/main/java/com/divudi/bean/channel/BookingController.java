@@ -95,6 +95,8 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
+import javax.faces.context.FacesContext;
+import javax.faces.event.PhaseId;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.Temporal;
@@ -422,6 +424,22 @@ public class BookingController implements Serializable, ControllerWithPatient, C
      * membership scheme), using the same rules as createBillFeeForSessions.
      */
     public double getFeeDiscountForBooking() {
+        // The page reads this several times while rendering; the inputs cannot
+        // change during render, so look the discount up once per render (#25345).
+        FacesContext fc = FacesContext.getCurrentInstance();
+        boolean rendering = fc != null && fc.getCurrentPhaseId() == PhaseId.RENDER_RESPONSE;
+        String memoKey = "BookingController.feeDiscountForBooking";
+        if (rendering && fc.getAttributes().get(memoKey) instanceof Double) {
+            return (Double) fc.getAttributes().get(memoKey);
+        }
+        double discount = calculateFeeDiscountForBooking();
+        if (rendering) {
+            fc.getAttributes().put(memoKey, discount);
+        }
+        return discount;
+    }
+
+    private double calculateFeeDiscountForBooking() {
         double discount = 0.0;
         if (selectedItemFees == null) {
             return discount;
@@ -445,6 +463,20 @@ public class BookingController implements Serializable, ControllerWithPatient, C
      */
     public double getNetFeeTotalForBooking() {
         return getGrossFeeTotalForBooking() - getFeeDiscountForBooking();
+    }
+
+    /**
+     * Agency selected on Add Booking: warn when its balance plus allowed credit
+     * does not cover the amount this booking will charge it (#25345). The page
+     * has called this listener since it was added, but the method was missing.
+     */
+    public void validateAgentBalance() {
+        if (institution == null) {
+            return;
+        }
+        if (getNetFeeTotalForBooking() > institution.getBallance() + institution.getAllowedCredit()) {
+            JsfUtil.addErrorMessage("Please Increase Credit Limit or Balance");
+        }
     }
 
     public double calculatRemainForMultiplePaymentTotal() {
@@ -1568,6 +1600,13 @@ public class BookingController implements Serializable, ControllerWithPatient, C
         }
         if (paymentMethodErrorPresent()) {
             JsfUtil.addErrorMessage("Please Enter Payment Details");
+            settleSucessFully = false;
+            return;
+        }
+
+        if (paymentMethod == PaymentMethod.Agent
+                && getNetFeeTotalForBooking() > institution.getBallance() + institution.getAllowedCredit()) {
+            JsfUtil.addErrorMessage("Agency Balance is Not Enough. Please Increase Credit Limit or Balance");
             settleSucessFully = false;
             return;
         }
@@ -3226,7 +3265,7 @@ public class BookingController implements Serializable, ControllerWithPatient, C
                 return true;
             }
 
-            if (institution.getBallance() - getSelectedSessionInstance().getOriginatingSession().getTotal() < 0 - institution.getAllowedCredit()) {
+            if (institution.getBallance() - getNetFeeTotalForBooking() < 0 - institution.getAllowedCredit()) {
                 errorText = "Agency Balance is Not Enough";
                 JsfUtil.addErrorMessage("Agency Balance is Not Enough");
                 return true;
@@ -3374,6 +3413,13 @@ public class BookingController implements Serializable, ControllerWithPatient, C
         savingBill.setSingleBillSession(savingBillSession);
         savingBill.setBillItems(savingBillItems);
         savingBill.setBillFees(savingBillFees);
+
+        // Totals come from the bill fees, which carry any discount, so the agent
+        // balance, the balance and the paid amount below use the net total (#25345).
+        calculateBillTotalsFromBillFees(savingBill, savingBillFees);
+        if (savingBill.getBillType().getParent() == BillType.ChannelCashFlow) {
+            savingBill.setPaidAmount(savingBill.getNetTotal());
+        }
 
         if (savingBill.getBillType() == BillType.ChannelAgent) {
             updateBallance(savingBill.getCreditCompany(), 0 - savingBill.getNetTotal(), HistoryType.ChannelBooking, savingBill, savingBillItem, savingBillSession, savingBillItem.getAgentRefNo());

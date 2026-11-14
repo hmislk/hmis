@@ -27,7 +27,16 @@ public class InstitutionBills {
     private double returned;
     private double total;
     private double paidTotal;
+    private double refundTotal;
     double paidByPatient;
+
+    public double getRefundTotal() {
+        return refundTotal;
+    }
+
+    public void setRefundTotal(double refundTotal) {
+        this.refundTotal = refundTotal;
+    }
 
     public Institution getInstitution() {
         return institution;

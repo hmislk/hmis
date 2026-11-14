@@ -930,16 +930,18 @@ public class InwardPaymentController implements Serializable, ControllerWithMult
                 sessionController.getDepartment(),
                 sessionController.getLoggedUser());
 
-        getBillBean().updateInwardDipositList(getCurrent().getPatientEncounter(), getCurrent());
-
-        if (getCurrent().getPatientEncounter().isPaymentFinalized()) {
-            getInwardBean().updateFinalFill(getCurrent().getPatientEncounter());
-
-            if (getCurrent().getPatientEncounter().getPaymentMethod() == PaymentMethod.Credit) {
-                getInwardBean().updateCreditDetail(getCurrent().getPatientEncounter(), getCurrent().getPatientEncounter().getFinalBill().getNetTotal());
-            }
-        }
+        // The admission on this page was loaded when the page opened. A final
+        // bill settled or cancelled since then (another tab or user) is not in
+        // that copy, and saving it would undo the cancel (#25413). Work on the
+        // admission as it is in the database now, under the same per-admission
+        // lock that final bill settle and cancel hold.
+        BillBeanController.FinalBillLinkResult link = getBillBean().linkToFreshFinalBillAndRefresh(getCurrent().getPatientEncounter(), getCurrent());
+        getCurrent().setPatientEncounter(link.getEncounter());
+        boolean linked = link.isLinked();
         JsfUtil.addSuccessMessage("Payment Bill Saved");
+        if (!linked) {
+            JsfUtil.addErrorMessage("The final bill of this admission is cancelled, so this payment was not added to it. Please check the admission's final bill.");
+        }
         paymentMethod = null;
         printPreview = true;
     }

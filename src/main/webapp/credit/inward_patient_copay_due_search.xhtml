@@ -116,12 +116,12 @@
                                 </h:outputLabel>
                             </p:column>
                             <p:column style="text-align:right">
-                                <h:outputLabel value="#{pe.creditUsedAmount}">
+                                <h:outputLabel value="#{creditCompanyDueController.getCcCommitted(pe)}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
                             </p:column>
                             <p:column style="text-align:right">
-                                <h:outputLabel value="#{pe.paidByCreditCompany}">
+                                <h:outputLabel value="#{creditCompanyDueController.getCcPaid(pe)}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
                             </p:column>
@@ -129,12 +129,12 @@
                                 <h:outputLabel value="#{creditCompanyDueController.getPatientCcStatus(pe)}"/>
                             </p:column>
                             <p:column style="text-align:right">
-                                <h:outputLabel value="#{(pe.finalBill.netTotal - pe.creditUsedAmount) gt 0 ? pe.finalBill.netTotal - pe.creditUsedAmount : 0}">
+                                <h:outputLabel value="#{(pe.finalBill.netTotal - creditCompanyDueController.getCcCommitted(pe)) gt 0 ? pe.finalBill.netTotal - creditCompanyDueController.getCcCommitted(pe) : 0}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
                             </p:column>
                             <p:column style="text-align:right">
-                                <h:outputLabel value="#{pe.finalBill.paidAmount}">
+                                <h:outputLabel value="#{creditCompanyDueController.getPatientPaid(pe)}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
                             </p:column>

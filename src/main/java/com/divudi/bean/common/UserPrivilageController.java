@@ -1587,14 +1587,9 @@ public class UserPrivilageController implements Serializable {
                     System.err.println("Failed to log audit event for null privilege: " + e.getMessage());
                 }
 
-                tmpWup.setRetired(true);
-                tmpWup.setRetiredAt(new Date());
-                tmpWup.setRetirer(sessionController.getLoggedUser());
-                if (tmpWup.getId() == null) {
-                    webUserPrivilegeFacade.create(tmpWup);
-                } else {
-                    webUserPrivilegeFacade.edit(tmpWup);
-                }
+                // Skip the row but do not retire it: a privilege name this build does not
+                // know also reads as null (PrivilegesConverter), and retiring it would drop
+                // a privilege that a newer build still grants.
                 continue;
             }
             PrivilegeHolder ph = new PrivilegeHolder();
@@ -1612,6 +1607,9 @@ public class UserPrivilageController implements Serializable {
         }
 
         for (WebUserRolePrivilege tmpWup : ps) {
+            if (tmpWup.getPrivilege() == null) {
+                continue;
+            }
             PrivilegeHolder ph = new PrivilegeHolder();
             ph.setPrivilege(tmpWup.getPrivilege());
             ph.setName(tmpWup.getPrivilege().getLabel());
@@ -1625,8 +1623,9 @@ public class UserPrivilageController implements Serializable {
         department = dept;
         List<PrivilegeHolder> selectedPrivileges = selected;
         for (WebUserPrivilege wup : getCurrentWebUserPrivileges()) {
-            wup.setRetired(true);
-
+            if (wup.getPrivilege() != null) {
+                wup.setRetired(true);
+            }
         }
         getFacade().batchEdit(getCurrentWebUserPrivileges());
         if (selectedPrivileges == null) {
@@ -1673,8 +1672,12 @@ public class UserPrivilageController implements Serializable {
 
         // Retire all current web user privileges initially
         List<WebUserPrivilege> currentPrivileges = getCurrentWebUserPrivileges();
+        // A row whose privilege name this build does not know reads as null
+        // (PrivilegesConverter); leave it untouched so a newer build keeps it.
         for (WebUserPrivilege wup : currentPrivileges) {
-            wup.setRetired(true);
+            if (wup.getPrivilege() != null) {
+                wup.setRetired(true);
+            }
         }
 
         if (selectedPrivileges == null) {
@@ -1760,7 +1763,9 @@ public class UserPrivilageController implements Serializable {
         List<PrivilegeHolder> selectedPrivileges = extractPrivileges(selectedNodes);
 
         for (WebUserRolePrivilege wup : getCurrentWebUserRolePrivileges()) {
-            wup.setRetired(true);
+            if (wup.getPrivilege() != null) {
+                wup.setRetired(true);
+            }
         }
 
         getRoleFacede().batchEdit(getCurrentWebUserRolePrivileges());

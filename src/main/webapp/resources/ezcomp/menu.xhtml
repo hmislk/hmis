@@ -650,11 +650,18 @@
 
                         <p:menuitem
                             ajax="false"
-                            action="/inward/pharmacy_bill_issue_bht?faces-redirect=true"
-                            value="Direct Issue to BHTs"
-                            icon="fa fa-capsules"
-                            rendered="#{webUserController.hasPrivilege('PharmacySale')}"
-                            actionListener="#{inpatientDirectIssueNativeSqlController.resetAll()}">
+                            action="#{wardPharmacyBhtIssueReceiveController.openPendingList}"
+                            value="Receive Medicines from Pharmacy"
+                            icon="fa fa-truck-medical"
+                            rendered="#{webUserController.hasPrivilege('InwardPharmacyBhtReceive')}">
+                        </p:menuitem>
+
+                        <p:menuitem
+                            ajax="false"
+                            action="#{medicationAdministrationStockSettlementController.navigateToSettle}"
+                            value="Deduct Administered from Ward Stock"
+                            icon="fa fa-syringe"
+                            rendered="#{webUserController.hasPrivilege('InwardWardMedicationsView')}">
                         </p:menuitem>
 
                         <p:menuitem
@@ -662,7 +669,7 @@
                             action="/inward/pharmacy_bill_issue_bht?faces-redirect=true"
                             value="Direct Issue to BHTs (Native SQL)"
                             icon="fa fa-bolt"
-                            rendered="#{webUserController.hasPrivilege('PharmacyDirectIssueToBht')}"
+                            rendered="#{webUserController.hasPrivilege('PharmacySale') or webUserController.hasPrivilege('PharmacyDirectIssueToBht')}"
                             actionListener="#{inpatientDirectIssueNativeSqlController.resetAll()}">
                         </p:menuitem>
 
@@ -681,14 +688,35 @@
                             value="BHT Issue Requests"
                             icon="fa fa-notes-medical"
                             actionListener="#{pharmacySaleBhtController.resetAll()}"
-                            rendered="#{webUserController.hasPrivilege('PharmacyBHTIssueAccept')}" >
+                            rendered="#{webUserController.hasPrivilege('PharmacyBHTIssueAccept') or webUserController.hasPrivilege('PharmacyBhtIssueRequest')}" >
                         </p:menuitem>
 
+                        <p:menuitem
+                            ajax="false"
+                            action="#{wardPharmacyReturnToPharmacyController.navigateToReturnAllPatients}"
+                            value="Return Medicines to Pharmacy"
+                            icon="fa fa-truck-ramp-box"
+                            rendered="#{webUserController.hasPrivilege('InwardPharmacyReturnSubmit')}" >
+                        </p:menuitem>
                         <p:menuitem
                             ajax="false"
                             action="#{pharmacyReturnFromWardReceiveController.navigateToPendingList}"
                             value="Accept Returns from Ward"
                             icon="fa fa-truck-ramp-box"
+                            rendered="#{webUserController.hasPrivilege('PharmacyBHTIssueAccept')}" >
+                        </p:menuitem>
+                        <p:menuitem
+                            ajax="false"
+                            action="#{directIssueReturnRequestController.navigateToRequestAllPatients}"
+                            value="Request Return of Direct Issues"
+                            icon="fa fa-rotate-left"
+                            rendered="#{webUserController.hasPrivilege('InwardPharmacyReturnSubmit')}" >
+                        </p:menuitem>
+                        <p:menuitem
+                            ajax="false"
+                            action="#{directIssueReturnRequestController.navigateToPendingRequests}"
+                            value="Direct Issue Return Requests"
+                            icon="fa fa-rotate-left"
                             rendered="#{webUserController.hasPrivilege('PharmacyBHTIssueAccept')}" >
                         </p:menuitem>
 
@@ -1249,12 +1277,8 @@
 
                     <p:submenu label="Inpatient Medication Management" icon="fas fa-procedures" rendered="#{webUserController.hasPrivilege('InpatientMedicationManagementMenue')}">
                         <p:menuitem ajax="false" action="/inward/pharmacy_bill_issue_bht?faces-redirect=true"
-                                    value="Direct Issue to BHTs" icon="fas fa-prescription-bottle-alt"
-                                    rendered="#{webUserController.hasPrivilege('PharmacyDirectIssueToBht')}"
-                                    actionListener="#{inpatientDirectIssueNativeSqlController.resetAll()}"/>
-                        <p:menuitem ajax="false" action="/inward/pharmacy_bill_issue_bht?faces-redirect=true"
                                     value="Direct Issue to BHTs (Native SQL)" icon="fa fa-bolt"
-                                    rendered="#{webUserController.hasPrivilege('PharmacyDirectIssueToBht')}"
+                                    rendered="#{webUserController.hasPrivilege('PharmacySale') or webUserController.hasPrivilege('PharmacyDirectIssueToBht')}"
                                     actionListener="#{inpatientDirectIssueNativeSqlController.resetAll()}"/>
                         <p:menuitem ajax="false" action="/inward/pharmacy_discharge_medicine_issue?faces-redirect=true"
                                     value="Issue Discharge Medicines" icon="fas fa-prescription-bottle-alt"
@@ -1267,12 +1291,38 @@
                         <p:menuitem  ajax="false"  action="/ward/ward_pharmacy_bht_issue_request_list_for_issue?faces-redirect=true"
                                      value="BHT Issue Requests" icon="fas fa-clipboard-list"
                                      actionListener="#{pharmacySaleBhtController.resetAll()}"
-                                     rendered="#{webUserController.hasPrivilege('PharmacyBhtIssueRequest')}" />
+                                     rendered="#{webUserController.hasPrivilege('PharmacyBHTIssueAccept') or webUserController.hasPrivilege('PharmacyBhtIssueRequest')}" />
+                        <p:menuitem
+                            ajax="false"
+                            action="#{wardPharmacyBhtIssueReceiveController.openPendingList}"
+                            value="Receive Medicines from Pharmacy"
+                            icon="fa fa-truck-medical"
+                            rendered="#{webUserController.hasPrivilege('InwardPharmacyBhtReceive')}" />
+                        <p:menuitem
+                            ajax="false"
+                            action="#{medicationAdministrationStockSettlementController.navigateToSettle}"
+                            value="Deduct Administered from Ward Stock"
+                            icon="fa fa-syringe"
+                            rendered="#{webUserController.hasPrivilege('InwardWardMedicationsView')}" />
+                        <p:menuitem
+                            ajax="false"
+                            action="#{wardPharmacyReturnToPharmacyController.navigateToReturnAllPatients}"
+                            value="Return Medicines to Pharmacy"
+                            icon="fa fa-truck-ramp-box"
+                            rendered="#{webUserController.hasPrivilege('InwardPharmacyReturnSubmit')}" >
+                        </p:menuitem>
                         <p:menuitem
                             ajax="false"
                             action="#{pharmacyReturnFromWardReceiveController.navigateToPendingList}"
                             value="Accept Returns from Ward"
                             icon="fa fa-truck-ramp-box"
+                            rendered="#{webUserController.hasPrivilege('PharmacyBHTIssueAccept')}" >
+                        </p:menuitem>
+                        <p:menuitem
+                            ajax="false"
+                            action="#{directIssueReturnRequestController.navigateToPendingRequests}"
+                            value="Direct Issue Return Requests"
+                            icon="fa fa-rotate-left"
                             rendered="#{webUserController.hasPrivilege('PharmacyBHTIssueAccept')}" >
                         </p:menuitem>
                         <p:menuitem  ajax="false" action="#{inwardReportControllerBht.navigateToInpatientPharmacyRequestedAndIssuedOverviewInPharmacy()}"  value="Pharmacy Requested &amp; Issued Drug Overview" icon="fas fa-list" rendered="#{webUserController.hasPrivilege('PharmacySummaryViews')}" ></p:menuitem>

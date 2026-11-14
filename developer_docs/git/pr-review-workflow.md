@@ -50,6 +50,20 @@ authorship), then retarget.
 - Use Claude to read the relevant code context (`Read`, `Grep`, `Glob`)
 - Understand *why* the comment was raised before deciding if it's valid
 
+### 2a. Decline design, flow and off-pattern suggestions (lead developer rule, 2026-11-13)
+
+Review bots (CodeRabbit, Codex) fix bugs inside the PR's design; they do not change the design. **Decline the suggestion and resolve the thread yourself** when it:
+
+- changes the design or the business flow: new workflow steps or states, moving a task to another page, role or department, adding a config option, changing who may do what;
+- brings in a pattern most of the codebase does not use (e.g. row locking or `@Version` on one entity, a new library, a new layer, a different transaction model), unless introducing that pattern is the PR's purpose;
+- contradicts a documented policy (CLAUDE.md, `developer_docs/**/*-policy.md`).
+
+Reply in one line, then resolve: `Declined: <changes the design/flow | not the pattern used elsewhere, e.g. <where>>. Out of scope for this PR.` Do not use "please …" wording (it starts CodeRabbit Chat, see below).
+
+If you still think the suggestion has merit, do **not** implement it. Note it and raise it with the lead developer later (final report, or a hub `ask_user` with real options).
+
+Still fix as usual: concrete defects within the PR's own design, such as a wrong condition, a missing null or failure check, a check and an action that use different rules, or a missing rollback of the PR's own steps.
+
 ### 3. Discuss Before Fixing (SOS)
 
 - Not all review comments are correct — automated tools often flag false positives
@@ -94,7 +108,7 @@ Then on GitHub, reply to **each reviewer comment individually** with:
 - What was fixed (if valid)
 - Why it was not changed (if dismissed) — be specific
 
-Do **not** resolve other reviewers' conversations yourself. CodeRabbit auto-resolves when it detects the fix. For human reviewers, let them resolve.
+Do **not** resolve human reviewers' conversations yourself; let them resolve. Bot threads (CodeRabbit, Codex): CodeRabbit often auto-resolves on a fix, but resolve a bot thread yourself once you have replied with a fix or a §2a decline. The repository refuses to merge while any conversation is unresolved.
 
 See [§ Posting PR Comments via gh CLI](#posting-pr-comments-via-gh-cli) below for the correct API endpoints — using the wrong one bundles comments under a review wrapper or posts them as general PR comments that aren't tied to a line.
 

@@ -278,8 +278,14 @@ public class PharmacyReturnFromWardReceiveController implements Serializable {
         receivedBill.setFromDepartment(returnedBill.getFromDepartment());
         receivedBill.setToDepartment(sessionController.getDepartment());
         receivedBill.setToStaff(returnedBill.getToStaff());
+        receivedBill.setPatient(returnedBill.getPatient());
+        receivedBill.setPatientEncounter(returnedBill.getPatientEncounter());
         receivedBill.setBackwardReferenceBill(returnedBill);
-        receivedBill.setReferenceBill(returnedBill);
+        // Reference the original receive bill (not the return) so the department-split
+        // Medicine totals attribute this credit to the department that issued the
+        // medicine, exactly as the ward return bill used to be (#25509).
+        receivedBill.setReferenceBill(returnedBill.getReferenceBill() != null
+                ? returnedBill.getReferenceBill() : returnedBill);
         receivedBill.setBillItems(new ArrayList<>());
 
         List<BillItem> returnedItems = billService.fetchBillItems(returnedBill);
@@ -301,6 +307,13 @@ public class PharmacyReturnFromWardReceiveController implements Serializable {
             newItem.setQty(remaining);
             newItem.setReferanceBillItem(returnedItem);
             newItem.setSearialNo(serial++);
+            // Price from the return line (itself traced to the originally priced issue
+            // line) so the accept can credit the BHT at the accepted quantity (#25509).
+            newItem.setRate(returnedItem.getRate());
+            newItem.setNetRate(returnedItem.getNetRate());
+            newItem.setMarginRate(returnedItem.getMarginRate());
+            newItem.setDiscountRate(returnedItem.getDiscountRate());
+            newItem.setPatientEncounter(returnedItem.getPatientEncounter());
 
             PharmaceuticalBillItem newPbi = new PharmaceuticalBillItem();
             newPbi.copy(returnedPbi);
@@ -490,6 +503,29 @@ public class PharmacyReturnFromWardReceiveController implements Serializable {
                 return;
             }
         } else {
+            // The BHT is credited for a ward return only when the pharmacy accepts it
+            // (#25509): value this accept as a negative mirror of the issue, at the accepted
+            // quantity, the way WardPharmacyReturnToPharmacyController used to value the
+            // return bill (so Bill.netTotal sums net it out of the Medicine charge).
+            double grossTotal = 0.0;
+            double netTotal = 0.0;
+            double marginTotal = 0.0;
+            for (BillItem bi : itemsToAccept) {
+                double lineQty = bi.getQty();
+                double lineGross = 0 - Math.abs(bi.getRate() * lineQty);
+                double lineNet = 0 - Math.abs(bi.getNetRate() * lineQty);
+                double lineMargin = 0 - Math.abs(bi.getMarginRate() * lineQty);
+                bi.setGrossValue(lineGross);
+                bi.setNetValue(lineNet);
+                bi.setMarginValue(lineMargin);
+                grossTotal += lineGross;
+                netTotal += lineNet;
+                marginTotal += lineMargin;
+            }
+            receivedBill.setTotal(grossTotal);
+            receivedBill.setNetTotal(netTotal);
+            receivedBill.setMargin(marginTotal);
+
             String deptId = billNumberBean.departmentBillNumberGeneratorYearly(sessionController.getDepartment(), BillTypeAtomic.ACCEPT_RETURN_MEDICINE_INWARD);
             receivedBill.setDeptId(deptId);
             receivedBill.setInsId(deptId);
@@ -503,6 +539,7 @@ public class PharmacyReturnFromWardReceiveController implements Serializable {
             billFacade.create(receivedBill);
             receivedBill.setBillItems(items);
 
+            boolean totalsAdjusted = false;
             for (BillItem bi : itemsToAccept) {
                 PharmaceuticalBillItem pbi = bi.getPharmaceuticalBillItem();
                 double qty = Math.abs(pbi.getQty());
@@ -521,11 +558,26 @@ public class PharmacyReturnFromWardReceiveController implements Serializable {
                     pbi.setStock(addedStock);
                 } else {
                     JsfUtil.addErrorMessage("Insufficient in-transit (porter) stock for " + bi.getItem().getName() + " - received as zero.");
+                    // Back the line's credit out of the bill totals (rare race after the
+                    // quantity check above), so netTotal matches the persisted item values.
+                    receivedBill.setTotal(receivedBill.getTotal() - bi.getGrossValue());
+                    receivedBill.setNetTotal(receivedBill.getNetTotal() - bi.getNetValue());
+                    receivedBill.setMargin(receivedBill.getMargin() - bi.getMarginValue());
+                    bi.setGrossValue(0.0);
+                    bi.setNetValue(0.0);
+                    bi.setMarginValue(0.0);
+                    totalsAdjusted = true;
                     pbi.setQty(0);
                     bi.setQty(0.0);
                 }
 
                 billItemFacade.edit(bi);
+            }
+            if (totalsAdjusted) {
+                List<BillItem> persistedItems = receivedBill.getBillItems();
+                receivedBill.setBillItems(new ArrayList<>());
+                billFacade.edit(receivedBill);
+                receivedBill.setBillItems(persistedItems);
             }
         }
 
