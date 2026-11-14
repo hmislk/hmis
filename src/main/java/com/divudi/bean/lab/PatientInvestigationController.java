@@ -2455,6 +2455,55 @@ public class PatientInvestigationController implements Serializable {
         this.sampleCollectionCancelReason = sampleCollectionCancelReason;
     }
 
+    // Row buttons on lab/samples_to_collect.xhtml (#25564). Each runs the same
+    // code as the Sample Management page buttons, for the one sample in the row.
+    public void collectSampleFromRow(PatientSample ps) {
+        if (!selectRowSample(ps)) {
+            return;
+        }
+        collectSamples();
+        afterRowSampleAction();
+    }
+
+    public void sendSampleToLabFromRow(PatientSample ps) {
+        if (!selectRowSample(ps)) {
+            return;
+        }
+        sendSamplesToLab(true);
+        afterRowSampleAction();
+    }
+
+    public void revertSampleCollectionFromRow(PatientSample ps) {
+        if (!selectRowSample(ps)) {
+            return;
+        }
+        cancelSampleCollection();
+        afterRowSampleAction();
+    }
+
+    private boolean selectRowSample(PatientSample ps) {
+        if (ps == null || ps.getId() == null) {
+            JsfUtil.addErrorMessage("No sample selected");
+            return false;
+        }
+        selectedPatientSamples = new ArrayList<>();
+        selectedPatientSamples.add(ps);
+        return true;
+    }
+
+    private void afterRowSampleAction() {
+        selectedPatientSamples = new ArrayList<>();
+        if (patientSamples == null) {
+            return;
+        }
+        List<PatientSample> refreshed = new ArrayList<>();
+        for (PatientSample listed : patientSamples) {
+            PatientSample fresh = listed.getId() == null ? null : patientSampleFacade.find(listed.getId());
+            refreshed.add(fresh != null ? fresh : listed);
+        }
+        patientSamples = refreshed;
+    }
+
     public void rejectSamples() {
         if (selectedPatientSamples == null || selectedPatientSamples.isEmpty()) {
             JsfUtil.addErrorMessage("No samples selected");
@@ -5249,11 +5298,30 @@ public class PatientInvestigationController implements Serializable {
     }
 
     public void listBarcodeGeneratedPatientSamplesYetToCollect() {
-        patientSamples = findGeneratedSamplesYetToCollect();
+        patientSamples = findSamplesByBarcodeTime(false);
     }
 
     public void listBarcodeGeneratedPatientSamplesCollected() {
-        patientSamples = findGeneratedSamplesCollected();
+        patientSamples = findSamplesByBarcodeTime(true);
+    }
+
+    // Lists for lab/samples_to_collect.xhtml (#25564). Sample Management's
+    // Generate Barcodes sets barcodeGeneratedAt but not the barcodeGenerated
+    // flag, so filter on the time; a new sample has sampleCollected null.
+    private List<PatientSample> findSamplesByBarcodeTime(boolean collected) {
+        String jpql = "SELECT ps FROM PatientSample ps"
+                + " WHERE ps.retired=:ret"
+                + " AND ps.barcodeGeneratedAt between :fromDate and :toDate"
+                + (collected
+                        ? " AND ps.sampleCollected=:sc"
+                        : " AND (ps.sampleCollected=:sc OR ps.sampleCollected IS NULL)")
+                + " ORDER BY ps.id";
+        Map<String, Object> params = new HashMap<>();
+        params.put("ret", false);
+        params.put("sc", collected);
+        params.put("fromDate", getFromDate());
+        params.put("toDate", getToDate());
+        return patientSampleFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
     }
 
     public List<PatientSample> findGeneratedSamplesYetToCollect() {
