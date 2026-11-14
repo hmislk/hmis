@@ -1693,7 +1693,7 @@ public class UserPrivilageController implements Serializable {
 
             boolean found = false;
             for (WebUserPrivilege wup : currentPrivileges) {
-                if (wup.getPrivilege() == ph.getPrivilege()) {
+                if (isSamePrivilege(wup.getPrivilege(), ph.getPrivilege())) {
                     wup.setRetired(false);
                     nonRetiredPrivileges.add(wup);
                     found = true;
@@ -2118,6 +2118,16 @@ public class UserPrivilageController implements Serializable {
         this.selectedRoleItems = selectedRoleItems;
     }
 
+    // PharmacySaleWithoutStock and PharmacySaleWithOutStock are one permission
+    // (#25602). Stored rows may hold either spelling; never rename the constants.
+    static Privileges canonicalPrivilege(Privileges p) {
+        return p == Privileges.PharmacySaleWithOutStock ? Privileges.PharmacySaleWithoutStock : p;
+    }
+
+    static boolean isSamePrivilege(Privileges a, Privileges b) {
+        return canonicalPrivilege(a) == canonicalPrivilege(b);
+    }
+
     public TreeNode getRootTreeNode() {
         if (rootTreeNode == null) {
             rootTreeNode = createPrivilegeHolderTreeNodes();
@@ -2311,8 +2321,7 @@ public class UserPrivilageController implements Serializable {
         @Override
         public int hashCode() {
             int hash = 7;
-            Privileges canon = (this.privilege == Privileges.PharmacySaleWithOutStock) ? Privileges.PharmacySaleWithoutStock : this.privilege;
-            hash = 73 * hash + Objects.hashCode(canon);
+            hash = 73 * hash + Objects.hashCode(canonicalPrivilege(this.privilege));
             return hash;
         }
 
@@ -2328,14 +2337,7 @@ public class UserPrivilageController implements Serializable {
                 return false;
             }
             final PrivilegeHolder other = (PrivilegeHolder) obj;
-            if (this.privilege == other.privilege) {
-                return true;
-            }
-            if ((this.privilege == Privileges.PharmacySaleWithoutStock && other.privilege == Privileges.PharmacySaleWithOutStock)
-                    || (this.privilege == Privileges.PharmacySaleWithOutStock && other.privilege == Privileges.PharmacySaleWithoutStock)) {
-                return true;
-            }
-            return false;
+            return isSamePrivilege(this.privilege, other.privilege);
         }
 
     }

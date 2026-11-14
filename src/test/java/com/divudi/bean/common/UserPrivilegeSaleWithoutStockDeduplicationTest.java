@@ -6,6 +6,8 @@ import org.junit.jupiter.api.Test;
 import org.primefaces.model.TreeNode;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Unit tests for Issue #25602:
@@ -38,6 +40,18 @@ public class UserPrivilegeSaleWithoutStockDeduplicationTest {
         assertEquals(holder1, holder2);
         assertEquals(holder2, holder1);
         assertEquals(holder1.hashCode(), holder2.hashCode());
+    }
+
+    @Test
+    public void testSaveMatchingKeepsLegacyRowForCanonicalNode() {
+        // saveWebUserPrivileges() matches stored rows with isSamePrivilege, so a
+        // user holding only the legacy spelling keeps that row when the
+        // (canonical) tree node is saved unchanged.
+        assertTrue(UserPrivilageController.isSamePrivilege(Privileges.PharmacySaleWithOutStock, Privileges.PharmacySaleWithoutStock));
+        assertTrue(UserPrivilageController.isSamePrivilege(Privileges.PharmacySaleWithoutStock, Privileges.PharmacySaleWithOutStock));
+        assertTrue(UserPrivilageController.isSamePrivilege(Privileges.PharmacySaleWithoutStock, Privileges.PharmacySaleWithoutStock));
+        assertFalse(UserPrivilageController.isSamePrivilege(Privileges.PharmacySaleWithoutStock, Privileges.PharmacySaleQuick));
+        assertFalse(UserPrivilageController.isSamePrivilege(null, Privileges.PharmacySaleWithoutStock));
     }
 
     private int countPrivilegeInTree(TreeNode node, Privileges target) {
