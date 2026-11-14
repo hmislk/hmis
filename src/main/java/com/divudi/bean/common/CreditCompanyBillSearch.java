@@ -306,7 +306,7 @@ public class CreditCompanyBillSearch implements Serializable {
 
         // Check if this is a cancellation bill (bill created during cancellation process)
         if (isBillACancellationBill(getBill())) {
-            JsfUtil.addErrorMessage("This is a Cancellation Bill and cannot be cancelled again.");
+            JsfUtil.addErrorMessage("This is a cancellation or refund bill and cannot be cancelled.");
             return true;
         }
 
@@ -343,7 +343,8 @@ public class CreditCompanyBillSearch implements Serializable {
         if (bill.getBillTypeAtomic() == null) {
             return false;
         }
-        if (bill.getBillTypeAtomic().getBillCategory() == BillCategory.CANCELLATION) {
+        if (bill.getBillTypeAtomic().getBillCategory() == BillCategory.CANCELLATION
+                || bill.getBillTypeAtomic().getBillCategory() == BillCategory.REFUND) {
             return true;
         }
 
