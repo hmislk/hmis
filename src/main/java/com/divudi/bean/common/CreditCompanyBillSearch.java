@@ -5,6 +5,7 @@
 package com.divudi.bean.common;
 
 import com.divudi.bean.cashTransaction.CashBookEntryController;
+import com.divudi.core.data.BillCategory;
 import com.divudi.core.data.BillClassType;
 import com.divudi.core.data.BillNumberSuffix;
 import com.divudi.core.data.BillType;
@@ -333,8 +334,17 @@ public class CreditCompanyBillSearch implements Serializable {
      * @return true if the bill is a cancellation bill, false otherwise
      */
     private boolean isBillACancellationBill(Bill bill) {
-        if (bill == null || bill.getBillTypeAtomic() == null) {
+        if (bill == null) {
             return false;
+        }
+        if (bill instanceof CancelledBill) {
+            return true;
+        }
+        if (bill.getBillTypeAtomic() == null) {
+            return false;
+        }
+        if (bill.getBillTypeAtomic().getBillCategory() == BillCategory.CANCELLATION) {
+            return true;
         }
 
         BillTypeAtomic billType = bill.getBillTypeAtomic();

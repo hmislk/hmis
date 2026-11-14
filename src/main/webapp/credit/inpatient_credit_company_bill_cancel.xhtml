@@ -24,6 +24,7 @@
                                             icon="fa fa-cancel"
                                             class="ui-button-danger"
                                             style="width: 150px;"
+                                            disabled="#{creditCompanyBillSearch.bill.cancelled eq true or creditCompanyBillSearch.bill.refunded eq true or creditCompanyBillSearch.billACancellationBill}"
                                             action="#{creditCompanyBillSearch.cancelCreditCompanyPaymentBill()}" >
                                         </p:commandButton>
                                     </div>
