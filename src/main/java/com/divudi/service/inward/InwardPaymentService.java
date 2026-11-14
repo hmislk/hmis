@@ -55,8 +55,13 @@ public class InwardPaymentService {
         item.setCreater(webUser);
         billItemFacade.create(item);
 
-        paymentService.createPaymentAndUpdateDrawer(bill, bill.getPaymentMethod(), paymentMethodData,
-                institution, department, webUser);
+        java.util.List<com.divudi.core.entity.Payment> payments = paymentService.createPaymentAndUpdateDrawer(
+                bill, bill.getPaymentMethod(), paymentMethodData, institution, department, webUser);
+        if (payments == null || payments.isEmpty()) {
+            // Rolls back the bill and bill item too: never save a payment bill
+            // with no Payment behind it.
+            throw new InwardPaymentException("No payment was recorded. Please check the payment details.");
+        }
         return bill;
     }
 }

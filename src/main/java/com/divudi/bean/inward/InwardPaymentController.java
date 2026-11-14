@@ -75,6 +75,8 @@ public class InwardPaymentController implements Serializable, ControllerWithMult
     @EJB
     private com.divudi.service.inward.InwardPaymentService inwardPaymentService;
     @EJB
+    private com.divudi.core.facade.PatientDepositFacade patientDepositFacade;
+    @EJB
     CashTransactionBean cashTransactionBean;
     @EJB
     PatientDepositService patientDepositService;
@@ -931,6 +933,10 @@ public class InwardPaymentController implements Serializable, ControllerWithMult
             // Rolled back: nothing was saved. Clear the id the failed attempt
             // gave the bill so the user can submit again.
             current.setId(null);
+            // PatientDepositService lowered the balance on the deposit objects
+            // held in paymentMethodData; the rollback restored only the rows.
+            // Reload them so a retry does not debit the failed amount again.
+            reloadPatientDepositsAfterRollback();
             paymentInProgress = false;
             Throwable cause = e instanceof javax.ejb.EJBException && e.getCause() != null ? e.getCause() : e;
             String detail = cause.getMessage() != null ? " " + cause.getMessage() : "";
@@ -1106,6 +1112,28 @@ public class InwardPaymentController implements Serializable, ControllerWithMult
         if (getCurrent().getId() == null) {
             getBilledBillFacade().create(getCurrent());
         }
+    }
+
+    private void reloadPatientDepositsAfterRollback() {
+        if (paymentMethodData == null) {
+            return;
+        }
+        reloadPatientDeposit(paymentMethodData.getPatient_deposit());
+        ComponentDetail multiple = paymentMethodData.getPaymentMethodMultiple();
+        if (multiple != null && multiple.getMultiplePaymentMethodComponentDetails() != null) {
+            for (ComponentDetail cd : multiple.getMultiplePaymentMethodComponentDetails()) {
+                if (cd != null && cd.getPaymentMethodData() != null) {
+                    reloadPatientDeposit(cd.getPaymentMethodData().getPatient_deposit());
+                }
+            }
+        }
+    }
+
+    private void reloadPatientDeposit(ComponentDetail detail) {
+        if (detail == null || detail.getPatientDepost() == null || detail.getPatientDepost().getId() == null) {
+            return;
+        }
+        detail.setPatientDepost(patientDepositFacade.find(detail.getPatientDepost().getId()));
     }
 
     private void prepareBill() {
