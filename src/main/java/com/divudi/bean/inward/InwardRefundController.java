@@ -230,7 +230,7 @@ public class InwardRefundController implements Serializable {
     @EJB
     private com.divudi.service.inward.InwardPaymentService inwardPaymentService;
 
-    public void pay() {
+    public synchronized void pay() {
         if (getCurrent() != null && getCurrent().getId() != null) {
             // Already saved: a repeated click must not reach the service, whose
             // rejection would clear the id of a committed bill (#25641).
@@ -245,6 +245,10 @@ public class InwardRefundController implements Serializable {
         // Payment rows and balance updates are saved in ONE transaction
         // (#25641): if any step fails, nothing is saved.
         prepareBill();
+        // Keep the original bill's refund state so a failed save can put it back
+        // (a partly refunded deposit already has refunded=true and a refundedBill).
+        boolean previousRefunded = getOriginalBillToRefund().isRefunded();
+        Bill previousRefundedBill = getOriginalBillToRefund().getRefundedBill();
         try {
             inwardPaymentService.saveRefundBillWithPayments(
                     getCurrent(),
@@ -258,8 +262,8 @@ public class InwardRefundController implements Serializable {
             // errorCheck() validates the retry against the fresh remaining amount.
             current.setTotal(Math.abs(current.getTotal()));
             current.setNetTotal(Math.abs(current.getNetTotal()));
-            getOriginalBillToRefund().setRefunded(false);
-            getOriginalBillToRefund().setRefundedBill(null);
+            getOriginalBillToRefund().setRefunded(previousRefunded);
+            getOriginalBillToRefund().setRefundedBill(previousRefundedBill);
             inwardPaymentService.reloadPatientDeposits(paymentMethodData);
             Throwable cause = e instanceof javax.ejb.EJBException && e.getCause() != null ? e.getCause() : e;
             String detail = cause.getMessage() != null ? " " + cause.getMessage() : "";

@@ -696,7 +696,7 @@ public class InwardDepositController implements Serializable, ControllerWithMult
                 || bill.getPatientEncounter().getPatient().getPerson() == null;
     }
 
-    public void pay() {
+    public synchronized void pay() {
         if (getCurrent() != null && getCurrent().getId() != null) {
             // Already saved: a repeated click must not reach the service, whose
             // rejection would clear the id of a committed bill (#25641).
