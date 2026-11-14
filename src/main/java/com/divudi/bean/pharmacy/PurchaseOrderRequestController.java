@@ -126,7 +126,7 @@ public class PurchaseOrderRequestController implements Serializable {
         }
         saveRequestWithoutMessage();
         for (BillItem b : selectedBillItems) {
-            b.setBill(null);
+            // Keep the bill link: see syncBillItemsCollectionFromDatabase()
             b.setRetired(true);
             b.setRetirer(sessionController.getLoggedUser());
             b.setRetiredAt(new Date());
@@ -290,8 +290,8 @@ public class PurchaseOrderRequestController implements Serializable {
         }
         saveRequestWithoutMessage();
         Date now = new Date();
+        // Keep the bill link: see syncBillItemsCollectionFromDatabase()
         bi.setRetired(true);
-        bi.setBill(null);
         bi.setRetirer(sessionController.getLoggedUser());
         bi.setRetiredAt(now);
 
@@ -592,7 +592,31 @@ public class PurchaseOrderRequestController implements Serializable {
         } else {
             getCurrentBill().setEditedAt(Calendar.getInstance().getTime());
             getCurrentBill().setEditor(getSessionController().getLoggedUser());
+            syncBillItemsCollectionFromDatabase();
             getBillFacade().edit(getCurrentBill());
+        }
+    }
+
+    /**
+     * Bill.billItems has orphanRemoval=true, but this controller saves each
+     * BillItem through billItemFacade and never adds it to that collection.
+     * Once the bill's cache entry is refreshed or evicted, edit(currentBill)
+     * merges the stale or empty collection and orphan-deletes the saved
+     * items, which the PharmaceuticalBillItem foreign key rejects (#25621,
+     * same as #21900). Load the persisted items, retired ones included,
+     * before every edit(currentBill) so nothing looks orphaned.
+     */
+    private void syncBillItemsCollectionFromDatabase() {
+        if (getCurrentBill().getId() == null) {
+            return;
+        }
+        Map<String, Object> params = new HashMap<>();
+        params.put("billId", getCurrentBill().getId());
+        List<BillItem> persistedItems = billItemFacade.findByJpql(
+                "select bi from BillItem bi where bi.bill.id = :billId", params);
+        getCurrentBill().getBillItems().clear();
+        if (persistedItems != null) {
+            getCurrentBill().getBillItems().addAll(persistedItems);
         }
     }
 
@@ -659,6 +683,7 @@ public class PurchaseOrderRequestController implements Serializable {
         if (currentBill.getId() == null) {
             getBillFacade().create(getCurrentBill());
         } else {
+            syncBillItemsCollectionFromDatabase();
             getBillFacade().edit(getCurrentBill());
         }
         notificationController.createNotification(getCurrentBill());
