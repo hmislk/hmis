@@ -1130,7 +1130,7 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
         HashMap hash = new HashMap();
 
         sql = "select b from BilledBill b  where"
-                + " (abs(b.netTotal)-abs(b.paidAmount))>:val "
+                + " (b.netTotal-(coalesce(b.refundAmount,0)+coalesce(b.paidAmount,0)))>:val "
                 + " and b.billType in :btps"
                 + " and b.createdAt is not null "
                 + " and b.deptId is not null "

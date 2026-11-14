@@ -1249,9 +1249,11 @@ public class PharmacyRefundForItemReturnsController implements Serializable, Con
         double currentRefundAmount = billToUpdate.getRefundAmount();
         billToUpdate.setRefundAmount(currentRefundAmount + refundAmount);
 
-        // Update paidAmount - deduct the refund amount only when paid amount exists
+        // Update paidAmount - deduct the refund amount only when paid amount exists.
+        // A credit bill's paidAmount records credit settlements only, so a refund leaves
+        // it unchanged; its due is netTotal - refundAmount - paidAmount (#25465, as #25463 for OPD).
         double currentPaidAmount = billToUpdate.getPaidAmount();
-        if (currentPaidAmount > 0) {
+        if (currentPaidAmount > 0 && billToUpdate.getPaymentMethod() != PaymentMethod.Credit) {
             double updatedPaidAmount = currentPaidAmount - refundAmount;
             billToUpdate.setPaidAmount(Math.max(0d, updatedPaidAmount));
         }
