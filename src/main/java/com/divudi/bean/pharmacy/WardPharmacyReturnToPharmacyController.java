@@ -380,6 +380,7 @@ public class WardPharmacyReturnToPharmacyController implements Serializable {
                 + "AND bi.bill.patientEncounter = :enc "
                 + "AND bi.bill.cancelled = false "
                 + "AND (bi.bill.retired = false OR bi.bill.retired IS NULL) "
+                + "AND bi.retired = false "
                 + "AND bi.item = :item "
                 + "AND bi.pharmaceuticalBillItem.itemBatch = :batch "
                 + "ORDER BY bi.bill.createdAt, bi.id";
