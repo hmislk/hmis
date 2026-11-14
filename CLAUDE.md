@@ -13,6 +13,7 @@
 - **🚨 Removing or hiding a feature? Check production usage first.** Run a read-only query of its bill types/tables on every production DB before coding, not at merge. Keep the results in `tmp/`.
 - **🚨 Live config: apply agreed values exactly**, check the deployed branch has the code, then verify a newly created record, not the config row. See [app-configuration skill](.claude/skills/app-configuration/SKILL.md).
 - **🚨 Retrospect after nontrivial work.** If a documented fact would have prevented a mistake, propose the CLAUDE.md/doc/skill fix, open the PR and report it (the dev-hub merge gate below still applies). Write it as a short rule, not a story. See [Retrospective](developer_docs/process/continuous-improvement-retrospective.md).
+- **🚨 Write short, plain, to the point.** Applies to replies, hub messages, issues, PRs and docs. Lead with the point. Use the words on screen (menu, page, button), not code names; put code names in a "For developers" section. Ask one question at a time, with options and a recommendation. See [Writing Style](developer_docs/process/writing-style.md).
 
 ### Code
 - Line endings differ by machine (many files are CRLF on Windows). Edit with the Edit tool; if you script a replacement, match the file's line endings and check the diff for whole-file changes.
