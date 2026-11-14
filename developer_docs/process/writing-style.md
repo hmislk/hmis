@@ -35,7 +35,7 @@ issues, PR bodies, comments and docs.
 |---|---|
 | the action is not decoded / not in `process` | the click is ignored |
 | `PatientSample`, `PatientInvestigation` | sample, test |
-| persisted, merged | saved |
+| persisted (to the database) | saved |
 | navigates to `/lab/x.xhtml` | opens the X page |
 | rendered=false | hidden |
 | regression | it used to work and now doesn't |
