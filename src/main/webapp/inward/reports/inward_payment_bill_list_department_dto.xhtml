@@ -26,7 +26,7 @@
                         </style>
 
                         <h:panelGrid columns="8" styleClass="w-100 form-grid"
-                                     columnClasses="label-icon-column, input-column">
+                                     columnClasses="label-icon-column, input-column, label-icon-column, input-column, label-icon-column, input-column, label-icon-column, input-column">
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf073;" styleClass="fa mr-2"/>
                                 <h:outputLabel value="From Date" for="fromDate" class="mx-3"/>
@@ -39,8 +39,6 @@
                                 styleClass="w-100"
                                 inputStyleClass="w-100 form-control">
                             </p:calendar>
-
-                            <p:spacer width="50"/>
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf073;" styleClass="fa mr-2"/>
@@ -55,17 +53,11 @@
                                 inputStyleClass="w-100 form-control">
                             </p:calendar>
 
-                            <p:spacer width="50"/>
-                            <p:spacer/>
-                            <p:spacer/>
-
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf0f8;" styleClass="fa mr-2"/>
                                 <h:outputLabel value="BHT No" for="bhtNo" class="mx-3"/>
                             </h:panelGroup>
                             <p:inputText id="bhtNo" autocomplete="off" value="#{inwardReportControllerBht.bhtNoFilter}" styleClass="w-100 form-control"/>
-
-                            <p:spacer width="50"/>
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf007;" styleClass="fa mr-2"/>
@@ -80,12 +72,14 @@
                                 ajax="false"
                                 action="#{inwardReportControllerBht.navigateToInwardPaymentBillListForDepartment()}"
                                 value="Search"
+                                title="Search payments"
                                 styleClass="ui-button-warning m-1"
                                 icon="fas fa-search">
                             </p:commandButton>
 
                             <p:commandButton
                                 value="Excel"
+                                title="Export to Excel"
                                 ajax="false"
                                 styleClass="ui-button-success m-1"
                                 icon="fa fa-file-excel">
@@ -93,11 +87,14 @@
                             </p:commandButton>
 
                             <p:commandButton
-                                value="Print"
+                                value="To Print"
+                                title="Open a printable list of all rows"
                                 ajax="false"
+                                immediate="true"
                                 styleClass="ui-button-info m-1"
-                                icon="fa fa-print">
-                                <p:printer target="tbl1"></p:printer>
+                                icon="fa fa-print"
+                                disabled="#{empty inwardReportControllerBht.paymentBillDtosForDepartment}"
+                                action="/inward/reports/inward_payment_bill_list_department_dto_print?faces-redirect=true">
                             </p:commandButton>
                         </div>
                         <p:defaultCommand target="btnSearch"/>
@@ -112,6 +109,7 @@
                             paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                             rowsPerPageTemplate="20,50,100"
                             value="#{inwardReportControllerBht.paymentBillDtosForDepartment}"
+                            emptyMessage="No payments found for the selected filters"
                             var="dto">
 
                             <p:column width="2em" style="padding: 2px" styleClass="#{dto.cancelled ? 'ui-messages-fatal' : ''}">
