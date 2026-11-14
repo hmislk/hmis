@@ -883,7 +883,7 @@ public class CreditCompanyDueController implements Serializable {
                 : dischargedAdmissionsByCreditCompany(PaymentMethod.Credit, false, null, null, null).entrySet()) {
             String1Value5 newRow = new String1Value5();
             newRow.setString(entry.getKey().getName());
-            setInwardAccessAgeValues(entry.getValue(), entry.getKey(), newRow);
+            setInwardAccessAgeValues(entry.getValue(), entry.getKey(), newRow, true);
             if (newRow.getValue1() != 0
                     || newRow.getValue2() != 0
                     || newRow.getValue3() != 0
@@ -1003,7 +1003,7 @@ public class CreditCompanyDueController implements Serializable {
                 : dischargedAdmissionsByCreditCompany(PaymentMethod.Cash, false, null, null, null).entrySet()) {
             String1Value5 newRow = new String1Value5();
             newRow.setString(entry.getKey().getName());
-            setInwardAccessAgeValues(entry.getValue(), entry.getKey(), newRow);
+            setInwardAccessAgeValues(entry.getValue(), entry.getKey(), newRow, false);
             if (newRow.getValue1() != 0
                     || newRow.getValue2() != 0
                     || newRow.getValue3() != 0
@@ -1022,7 +1022,7 @@ public class CreditCompanyDueController implements Serializable {
                 : dischargedAdmissionsByCreditCompany(PaymentMethod.Cash, false, institutionOfDepartment, department, site).entrySet()) {
             String1Value5 newRow = new String1Value5();
             newRow.setString(entry.getKey().getName());
-            setInwardAccessAgeValues(entry.getValue(), entry.getKey(), newRow);
+            setInwardAccessAgeValues(entry.getValue(), entry.getKey(), newRow, false);
             if (newRow.getValue1() != 0
                     || newRow.getValue2() != 0
                     || newRow.getValue3() != 0
@@ -1176,11 +1176,18 @@ public class CreditCompanyDueController implements Serializable {
         }
     }
 
-    /** Same buckets for the access (settled) age tables: committed less paid by the companies. */
-    private void setInwardAccessAgeValues(List<PatientEncounter> lst, Institution company, String1Value5 dataTable5Value) {
+    /**
+     * Same buckets for the access (settled) age tables, from the company's own
+     * figures, signed. With {@code paidLessUsed} the value is paid less committed
+     * (the Credit Access excess direction, positive when the company overpaid);
+     * otherwise committed less paid (the cash access direction).
+     */
+    private void setInwardAccessAgeValues(List<PatientEncounter> lst, Institution company, String1Value5 dataTable5Value,
+            boolean paidLessUsed) {
         for (PatientEncounter b : lst) {
             Long dayCount = CommonFunctions.getDayCountTillNow(b.getCreatedAt());
-            double finalValue = getCcDueForCompany(b, company);
+            double balance = getCcBalanceForCompany(b, company);
+            double finalValue = paidLessUsed ? -balance : balance;
             if (dayCount < 30) {
                 dataTable5Value.setValue1(dataTable5Value.getValue1() + finalValue);
             } else if (dayCount < 60) {
@@ -3109,29 +3116,97 @@ public class CreditCompanyDueController implements Serializable {
     }
 
     public void createInwardCreditAccess() {
-        Date startTime = new Date();
-
         institutionEncounters = new ArrayList<>();
+        creditAccessGroups = new ArrayList<>();
+        // An admission is listed under each company it has figures for; each row shows that
+        // company's own committed, paid and balance. Admission-level figures (final total,
+        // paid by patient) are shown and counted on the admission's first row only (#25601).
+        Set<Long> seenAdmissions = new HashSet<>();
         for (Map.Entry<Institution, List<PatientEncounter>> entry
                 : searchSettledAdmissionsByCreditCompany(PaymentMethod.Credit, false).entrySet()) {
+            Institution company = entry.getKey();
+            CreditAccessGroup group = new CreditAccessGroup(company);
             InstitutionEncounters newIns = new InstitutionEncounters();
-            newIns.setInstitution(entry.getKey());
+            newIns.setInstitution(company);
             newIns.setPatientEncounters(entry.getValue());
 
             for (PatientEncounter b : entry.getValue()) {
-                b.getFinalBill().setNetTotal(com.divudi.core.util.CommonFunctions.round(b.getFinalBill().getNetTotal()));
-                // Paid = patient money + credit company money, from the payment and commitment bills (#25601).
-                // The encounter's creditPaidAmount is no longer written or read.
-                b.setTransPaid(com.divudi.core.util.CommonFunctions.round(getPatientPaid(b) + getCcPaid(b)));
-
-                newIns.setTotal(newIns.getTotal() + b.getFinalBill().getNetTotal());
-                newIns.setPaidTotal(newIns.getPaidTotal() + b.getTransPaid());
+                boolean first = b.getId() == null || seenAdmissions.add(b.getId());
+                CompanyDueRow row = new CompanyDueRow(b, company,
+                        getCcCommittedForCompany(b, company), getCcPaidForCompany(b, company), first);
+                group.rows.add(row);
+                group.committedTotal += row.getCommitted();
+                group.paidTotal += row.getPaid();
+                if (first) {
+                    group.finalTotal += b.getFinalBill().getNetTotal();
+                    group.patientPaidTotal += getPatientPaid(b);
+                }
             }
-            newIns.setTotal(com.divudi.core.util.CommonFunctions.round(newIns.getTotal()));
-            newIns.setPaidTotal(com.divudi.core.util.CommonFunctions.round(newIns.getPaidTotal()));
+            group.committedTotal = com.divudi.core.util.CommonFunctions.round(group.committedTotal);
+            group.paidTotal = com.divudi.core.util.CommonFunctions.round(group.paidTotal);
+            group.finalTotal = com.divudi.core.util.CommonFunctions.round(group.finalTotal);
+            group.patientPaidTotal = com.divudi.core.util.CommonFunctions.round(group.patientPaidTotal);
+            newIns.setTotal(group.committedTotal);
+            newIns.setPaidTotal(group.paidTotal);
             institutionEncounters.add(newIns);
+            creditAccessGroups.add(group);
+        }
+    }
+
+    /** Groups of the last Inward Credit Access search: one per commitment company. */
+    private List<CreditAccessGroup> creditAccessGroups = new ArrayList<>();
+
+    public List<CreditAccessGroup> getCreditAccessGroups() {
+        return creditAccessGroups;
+    }
+
+    /** One company's rows on the Inward Credit Access page, with its totals (admission-level totals count each admission once across the whole page). */
+    public static class CreditAccessGroup implements Serializable {
+
+        private final Institution institution;
+        private final List<CompanyDueRow> rows = new ArrayList<>();
+        private double committedTotal;
+        private double paidTotal;
+        private double finalTotal;
+        private double patientPaidTotal;
+
+        private CreditAccessGroup(Institution institution) {
+            this.institution = institution;
         }
 
+        public Institution getInstitution() {
+            return institution;
+        }
+
+        public List<CompanyDueRow> getRows() {
+            return rows;
+        }
+
+        public double getCommittedTotal() {
+            return committedTotal;
+        }
+
+        public double getPaidTotal() {
+            return paidTotal;
+        }
+
+        /** Committed less paid for the company, signed. */
+        public double getBalanceTotal() {
+            return committedTotal - paidTotal;
+        }
+
+        /** Paid less committed for the company, signed (the Credit Access page direction). */
+        public double getExcessTotal() {
+            return paidTotal - committedTotal;
+        }
+
+        public double getFinalTotal() {
+            return finalTotal;
+        }
+
+        public double getPatientPaidTotal() {
+            return patientPaidTotal;
+        }
     }
 
     /**
@@ -4445,7 +4520,7 @@ public class CreditCompanyDueController implements Serializable {
     private final Map<Long, Institution> institutionsById = new HashMap<>();
 
     /** One company's share of one admission: committed and paid from its commitment bills. */
-    private static class CcCompanyFigures {
+    private static class CcCompanyFigures implements Serializable {
 
         private final Institution company;
         private double committed;
@@ -4463,7 +4538,7 @@ public class CreditCompanyDueController implements Serializable {
     }
 
     /** One row of the Inward CC Due Search: an admission and one company's figures. */
-    public static class CompanyDueRow {
+    public static class CompanyDueRow implements Serializable {
 
         private final PatientEncounter encounter;
         private final Institution company;
@@ -4497,6 +4572,16 @@ public class CreditCompanyDueController implements Serializable {
 
         public double getDue() {
             return Math.max(0.0, committed - paid);
+        }
+
+        /** Committed less paid, signed (negative when the company has overpaid). */
+        public double getBalance() {
+            return committed - paid;
+        }
+
+        /** Paid less committed, signed (positive when the company has overpaid); the Credit Access (excess) page direction. */
+        public double getExcess() {
+            return paid - committed;
         }
 
         /** True on the first row of an admission; admission-level figures (final total, paid by patient) are shown there only, so they are not counted per company. */
@@ -4591,6 +4676,12 @@ public class CreditCompanyDueController implements Serializable {
     public double getCcDueForCompany(PatientEncounter pe, Institution company) {
         CcCompanyFigures f = ccFiguresForCompany(pe, company);
         return f == null ? 0.0 : f.due();
+    }
+
+    /** Committed less paid for this company and admission, signed: an excess page shows a negative value when the company has overpaid. */
+    public double getCcBalanceForCompany(PatientEncounter pe, Institution company) {
+        CcCompanyFigures f = ccFiguresForCompany(pe, company);
+        return f == null ? 0.0 : f.committed - f.paid;
     }
 
     /** Placeholder shown for commitment figures that have no company at all. */
