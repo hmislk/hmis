@@ -224,8 +224,7 @@
                             icon="fas fa-file-excel"
                             ajax="false"
                             value="Excel"
-                            action="#{creditCompanyDueController.exportInwardCashDueToExcel}"
-                            actionListener="#{creditCompanyDueController.createInwardAgeDetailAnalysis}">
+                            action="#{creditCompanyDueController.exportInwardCashDueToExcel}">
                     </p:commandButton>
 
                     <p:commandButton
@@ -234,8 +233,7 @@
                             icon="fas fa-file-pdf"
                             ajax="false"
                             value="PDF"
-                            action="#{creditCompanyDueController.exportInwardCashDueToPdf()}"
-                            actionListener="#{creditCompanyDueController.createInwardAgeDetailAnalysis}">
+                            action="#{creditCompanyDueController.exportInwardCashDueToPdf()}">
                     </p:commandButton>
 
                     <h:panelGroup id="printPanel">
@@ -243,7 +241,7 @@
                             <table id="tblExport1" style="width: 100%; border-collapse: collapse;">
                                 <thead>
                                 <tr>
-                                    <th colspan="11"
+                                    <th colspan="12"
                                         style="font-size: 18px; font-weight: bold; text-align: center; background-color: lightgrey;">
                                         Inward Cash Due
                                     </th>
@@ -259,6 +257,7 @@
                                     <th style="width: 6rem; background-color: #f2f2f2; border-bottom: 1px solid #d9d9d9;">Patient Due</th>
                                     <th style="width: 6rem; background-color: #f2f2f2; border-bottom: 1px solid #d9d9d9;">Paid by Companies</th>
                                     <th style="width: 6rem; background-color: #f2f2f2; border-bottom: 1px solid #d9d9d9;">Total Due</th>
+                                    <th style="width: 6rem; background-color: #f2f2f2; border-bottom: 1px solid #d9d9d9;">Excess (Paid - Used)</th>
                                     <th style="width: 6rem; background-color: #f2f2f2; border-bottom: 1px solid #d9d9d9;">Company Details</th>
                                 </tr>
                                 </thead>
@@ -311,7 +310,12 @@
                                         </td>
                                         <td>
                                             <h:outputText
-                                                    value="#{entry.value.get(0).totalDue}">
+                                                    value="#{entry.value.get(0).totalDuePositive}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText></td>
+                                        <td>
+                                            <h:outputText
+                                                    value="#{entry.value.get(0).totalExcessPositive}">
                                                 <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputText></td>
                                         <td>
@@ -325,6 +329,7 @@
                                                     <th style="width: 6rem; background-color: #f2f2f2; border-bottom: 1px solid #d9d9d9; text-align: right;">GOP by Company</th>
                                                     <th style="width: 6rem; background-color: #f2f2f2; border-bottom: 1px solid #d9d9d9; text-align: right;">Paid by Company</th>
                                                     <th style="width: 6rem; background-color: #f2f2f2; border-bottom: 1px solid #d9d9d9; text-align: right;">Company Due</th>
+                                                    <th style="width: 6rem; background-color: #f2f2f2; border-bottom: 1px solid #d9d9d9; text-align: right;">Excess (Paid - Used)</th>
                                                 </tr>
                                                 </thead>
                                                 <tbody>
@@ -344,8 +349,12 @@
                                                             </h:outputText>
                                                         </td>
                                                         <td style="width: 6rem; text-align: right">
-                                                            <h:outputText
-                                                                    value="#{b.companyDue ne 0 ? b.companyDue : b.companyExcess}">
+                                                            <h:outputText value="#{b.companyDue}">
+                                                                <f:convertNumber pattern="#,##0.00"/>
+                                                            </h:outputText>
+                                                        </td>
+                                                        <td style="width: 6rem; text-align: right">
+                                                            <h:outputText value="#{b.companyExcess}">
                                                                 <f:convertNumber pattern="#,##0.00"/>
                                                             </h:outputText>
                                                         </td>
@@ -371,7 +380,14 @@
                                                     </td>
                                                     <td style="text-align: right">
                                                         <h:outputText
-                                                                value="#{creditCompanyDueController.patientEncounterGopMap.get(entry.key) - creditCompanyDueController.patientEncounterPaidByCompanyMap.get(entry.key)}"
+                                                                value="#{creditCompanyDueController.getCompanyDueTotal(entry.key)}"
+                                                                style="font-weight: bold;">
+                                                            <f:convertNumber pattern="#,##0.00"/>
+                                                        </h:outputText>
+                                                    </td>
+                                                    <td style="text-align: right">
+                                                        <h:outputText
+                                                                value="#{creditCompanyDueController.getCompanyExcessTotal(entry.key)}"
                                                                 style="font-weight: bold;">
                                                             <f:convertNumber pattern="#,##0.00"/>
                                                         </h:outputText>
@@ -409,7 +425,7 @@
                                     </td>
                                     <td style="vertical-align: middle;">
                                         <h:outputText
-                                                value="#{creditCompanyDueController.payableByPatient - creditCompanyDueController.paidByPatient}"
+                                                value="#{creditCompanyDueController.anyPatientDueTotal}"
                                                 style="font-weight: bold;">
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputText>
@@ -423,11 +439,37 @@
                                     </td>
                                     <td style="vertical-align: middle;">
                                         <h:outputText
-                                                value="#{creditCompanyDueController.billed - creditCompanyDueController.paidByPatient - creditCompanyDueController.paidByCompany}"
+                                                value="#{creditCompanyDueController.anyTotalDueTotal}"
                                                 style="font-weight: bold;">
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputText>
                                     </td>
+                                    <td style="vertical-align: middle;">
+                                        <h:outputText
+                                                value="#{creditCompanyDueController.anyExcessTotal}"
+                                                style="font-weight: bold;">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="font-weight: bold; text-align: center;" colspan="7">Net (Due - Excess)</td>
+                                    <td style="vertical-align: middle;">
+                                        <h:outputText
+                                                value="#{creditCompanyDueController.payableByPatient - creditCompanyDueController.paidByPatient}"
+                                                style="font-weight: bold;">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
+                                    </td>
+                                    <td></td>
+                                    <td style="vertical-align: middle;">
+                                        <h:outputText
+                                                value="#{creditCompanyDueController.anyNetTotal}"
+                                                style="font-weight: bold;">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
+                                    </td>
+                                    <td></td>
                                 </tr>
                                 </tfoot>
                             </table>
