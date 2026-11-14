@@ -4316,7 +4316,9 @@ public class CreditCompanyDueController implements Serializable {
         if (pe == null || pe.getFinalBill() == null) {
             return 0.0;
         }
-        return pe.getFinalBill().getPaidAmount() - getCcPaid(pe);
+        // Clamp at 0: duplicate final bills or old receipts can leave
+        // finalBill.paidAmount below the company total, which would show a fake patient due.
+        return Math.max(0.0, pe.getFinalBill().getPaidAmount() - getCcPaid(pe));
     }
 
     /**
@@ -4540,7 +4542,9 @@ public class CreditCompanyDueController implements Serializable {
         if (pe == null || pe.getFinalBill() == null) {
             return 0.0;
         }
-        return Math.max(0.0, pe.getFinalBill().getNetTotal() - getCcCommitted(pe) - getPatientPaid(pe));
+        double due = pe.getFinalBill().getNetTotal() - getCcCommitted(pe) - getPatientPaid(pe);
+        // Round to cents so floating-point noise never crosses the 0.01 threshold.
+        return Math.max(0.0, Math.round(due * 100.0) / 100.0);
     }
 
 }
