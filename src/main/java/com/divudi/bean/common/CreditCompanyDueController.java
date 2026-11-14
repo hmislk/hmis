@@ -4222,10 +4222,15 @@ public class CreditCompanyDueController implements Serializable {
     //
     // Company receipts and cancels recalculate each commitment bill
     // (INWARD_FINAL_BILL_PAYMENT_BY_CREDIT_COMPANY, referenceBill = final bill)
-    // from the database, and they also add to finalBill.paidAmount. So
-    // finalBill.paidAmount is patient + company money, and the encounter's
-    // creditPaidAmount (no longer written) must not be read.
+    // from the database. finalBill.paidAmount is not used: company receipts add
+    // to it, but the next patient payment resets it to patient money only
+    // (InwardBeanController.updateFinalFill). Patient money is read from the
+    // InwardPaymentBill bills instead, and the encounter's creditPaidAmount
+    // (no longer written) must not be read.
     // -------------------------------------------------------------------------
+
+    /** Admission id -> patient money paid (non-Credit InwardPaymentBill bills, signed). */
+    private final Map<Long, Double> patientPaidByEncounterId = new HashMap<>();
 
     /** Final bill id -> {committed, paid by company}; an empty array means the final bill has no commitment bills. */
     private final Map<Long, double[]> ccFiguresByFinalBillId = new HashMap<>();
@@ -4236,8 +4241,18 @@ public class CreditCompanyDueController implements Serializable {
      */
     private void loadCcFigures(List<PatientEncounter> encounters) {
         ccFiguresByFinalBillId.clear();
+        patientPaidByEncounterId.clear();
         if (encounters == null || encounters.isEmpty()) {
             return;
+        }
+        List<Long> encounterIds = new ArrayList<>();
+        for (PatientEncounter pe : encounters) {
+            if (pe != null && pe.getId() != null && !encounterIds.contains(pe.getId())) {
+                encounterIds.add(pe.getId());
+            }
+        }
+        for (int from = 0; from < encounterIds.size(); from += 500) {
+            putPatientPaid(encounterIds.subList(from, Math.min(from + 500, encounterIds.size())));
         }
         List<Long> finalBillIds = new ArrayList<>();
         for (PatientEncounter pe : encounters) {
@@ -4252,6 +4267,36 @@ public class CreditCompanyDueController implements Serializable {
                 ccFiguresByFinalBillId.put(id, new double[0]);
             }
             putCcFigures(chunk);
+        }
+    }
+
+    /**
+     * Same filter as InwardBeanController.getPaidByPatientValue (used at
+     * finalization): non-retired InwardPaymentBill bills, leaving out the
+     * Credit method, which old flows used for company money. Cancellation and
+     * refund bills carry a negative net total, so the sum is net of them.
+     */
+    private void putPatientPaid(List<Long> encounterIds) {
+        for (Long id : encounterIds) {
+            patientPaidByEncounterId.put(id, 0.0);
+        }
+        String jpql = "SELECT b.patientEncounter.id, SUM(b.netTotal) FROM Bill b"
+                + " WHERE b.retired = false"
+                + " AND b.billType = :btp"
+                + " AND b.paymentMethod <> :pm"
+                + " AND b.patientEncounter.id IN :ids"
+                + " GROUP BY b.patientEncounter.id";
+        Map<String, Object> params = new HashMap<>();
+        params.put("btp", BillType.InwardPaymentBill);
+        params.put("pm", PaymentMethod.Credit);
+        params.put("ids", new ArrayList<>(encounterIds));
+        List<Object[]> rows = billFacade.findAggregates(jpql, params);
+        if (rows == null) {
+            return;
+        }
+        for (Object[] row : rows) {
+            Long id = (Long) row[0];
+            patientPaidByEncounterId.put(id, row[1] == null ? 0.0 : ((Number) row[1]).doubleValue());
         }
     }
 
@@ -4311,14 +4356,15 @@ public class CreditCompanyDueController implements Serializable {
         return Math.max(0.0, getCcCommitted(pe) - getCcPaid(pe));
     }
 
-    /** Patient money on the final bill: its paidAmount less the companies' payments. */
+    /** Patient money paid for this admission (payments less cancels and refunds), never below 0. */
     public double getPatientPaid(PatientEncounter pe) {
-        if (pe == null || pe.getFinalBill() == null) {
+        if (pe == null || pe.getId() == null) {
             return 0.0;
         }
-        // Clamp at 0: duplicate final bills or old receipts can leave
-        // finalBill.paidAmount below the company total, which would show a fake patient due.
-        return Math.max(0.0, pe.getFinalBill().getPaidAmount() - getCcPaid(pe));
+        if (!patientPaidByEncounterId.containsKey(pe.getId())) {
+            putPatientPaid(Collections.singletonList(pe.getId()));
+        }
+        return Math.max(0.0, patientPaidByEncounterId.get(pe.getId()));
     }
 
     /**
