@@ -748,13 +748,7 @@
                             </p:commandButton>
 
                             <p:dataTable id="pharmacy" value="#{bhtSummeryFinalizedController.pharmacyItems}" var="iss"
-                                         sortBy="#{iss.bill.deptId}"
-                                         rowStyleClass="#{(iss.bill.netTotal ne 0 )
-                                                          and
-                                                          ((iss.bill.billClass eq 'class com.divudi.core.entity.PreBill')
-                                                          or
-                                                          (iss.bill.billedBill ne null
-                                                          and iss.bill.billClass eq 'class com.divudi.core.entity.RefundBill'))? '':'noDisplayRow'}">
+                                         sortBy="#{iss.bill.deptId}">
                                 <p:column headerText="Bill No">
                                     <f:facet name="header">
                                         <h:outputLabel value="Bill No"/>
@@ -1193,12 +1187,7 @@
                             </p:commandButton>
                             <p:dataTable id="pay"
                                          value="#{bhtSummeryFinalizedController.paymentBills}"
-                                         var="p"
-                                         rowStyleClass="#{(p.netTotal ne 0 )
-                                                          and
-                                                          ((p.billClass eq 'class com.divudi.core.entity.BilledBill')
-                                                          or
-                                                          (p.billedBill eq null and p.billClass eq 'class com.divudi.core.entity.RefundBill'))? '':'noDisplayRow'}" >
+                                         var="p">
                                 <p:column headerText="Bill No">
                                     <f:facet name="header">
                                         <h:outputLabel value="Bill No"/>

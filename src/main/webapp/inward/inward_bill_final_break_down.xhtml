@@ -71,13 +71,7 @@
                         </p:panelGrid>
 
                         <p:dataTable id="pharmacyIssue" value="#{bhtSummeryFinalizedController.pharmacyItems}"
-                                     var="iss"
-                                     sortBy="#{iss.bill.billClass}"
-                                     rowStyleClass="#{(iss.grossValue+iss.marginValue ne 0 )
-                                                      and
-                                                      ((iss.bill.billClass eq 'class com.divudi.core.entity.PreBill')
-                                                      or
-                                                      (iss.bill.billedBill ne null and iss.bill.billClass eq 'class com.divudi.core.entity.RefundBill'))? '':'noDisplayRow'}">
+                                     var="iss">
                             <p:column headerText="Bill No">
                                 <f:facet name="header">
                                     <h:outputLabel value="Bill No"/>
@@ -134,7 +128,7 @@
 
                         <p:panelGrid columns="2">
                         <p:commandButton ajax="false" value="Print Store Issue" styleClass="noPrintButton" style="float: right;" >
-                            <p:printer target="pharmacyIssue" />
+                            <p:printer target="storeIssue" />
                         </p:commandButton>
                         <p:commandButton value="Export Excel" ajax="false"
                                          styleClass="noPrintButton"  >
@@ -144,9 +138,7 @@
                         </p:panelGrid>
 
                         <p:dataTable id="storeIssue" value="#{bhtSummeryFinalizedController.storeItems}"
-                                     var="iss"
-                                     sortBy="#{iss.bill.billClass}"
-                                     rowStyleClass="#{(iss.grossValue+iss.marginValue ne 0 )? '':'noDisplayRow'}">
+                                     var="iss">
                             <p:column headerText="Bill No">
                                 <f:facet name="header">
                                     <h:outputLabel value="Bill No"/>
@@ -205,12 +197,7 @@
                     <p:panel header="Paid by Patient" style="text-align: center;">
                         <p:dataTable id="pay"
                                          value="#{bhtSummeryFinalizedController.paymentBills}"
-                                         var="p"
-                                         rowStyleClass="#{(p.netTotal ne 0 )
-                                                          and
-                                                          ((p.billClass eq 'class com.divudi.core.entity.BilledBill')
-                                                          or
-                                                          (p.billedBill eq null and p.billClass eq 'class com.divudi.core.entity.RefundBill'))? '':'noDisplayRow'}" >
+                                         var="p">
                                 <p:column headerText="Bill No">
                                     <f:facet name="header">
                                         <h:outputLabel value="Bill No"/>
@@ -290,6 +277,44 @@
                             </p:dataTable>
                     </p:panel>
 
+                    <p:panel header="Credit Company Commitment (Final Bill)">
+                        <p:dataTable id="ccCommit"
+                                     value="#{bhtSummeryFinalizedController.creditCompanyCommitments}"
+                                     var="cm">
+                            <p:column headerText="Bill No">
+                                <h:outputLabel value="#{cm.deptId}"/>
+                            </p:column>
+                            <p:column headerText="Credit Company">
+                                <h:outputLabel value="#{cm.creditCompany.name}"/>
+                            </p:column>
+                            <p:column style="text-align: right;" headerText="Committed">
+                                <h:outputLabel value="#{cm.netTotal}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputLabel>
+                                <f:facet name="footer">
+                                    <h:outputLabel value="#{bhtSummeryFinalizedController.creditCompanyCommittedTotal}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputLabel>
+                                </f:facet>
+                            </p:column>
+                            <p:column style="text-align: right;" headerText="Paid by Company">
+                                <h:outputLabel value="#{cm.settledAmountBySponsor}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputLabel>
+                                <f:facet name="footer">
+                                    <h:outputLabel value="#{bhtSummeryFinalizedController.creditCompanyCommittedPaidTotal}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputLabel>
+                                </f:facet>
+                            </p:column>
+                            <p:column headerText="Created At" exportable="false">
+                                <h:outputLabel value="#{cm.createdAt}">
+                                    <f:convertDateTime timeZone="Asia/Colombo" pattern="dd/MMM/yyyy - hh:mm a"/>
+                                </h:outputLabel>
+                            </p:column>
+                        </p:dataTable>
+                    </p:panel>
+                    <p:spacer height="30"/>
                     <p:spacer height="30"/>
                     <p:panel header="Credit Company Payment">
                         <p:dataTable id="cre"
@@ -307,9 +332,13 @@
                                     <f:facet name="header">
                                         <h:outputLabel value="Value"/>
                                     </f:facet>
-                                    <h:outputLabel value="#{cre.netValue}"/>
+                                    <h:outputLabel value="#{cre.netValue}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputLabel>
                                     <f:facet name="footer">
-                                        <h:outputLabel value="#{bhtSummeryFinalizedController.creditCompanyPaymentTotal}"></h:outputLabel>
+                                        <h:outputLabel value="#{bhtSummeryFinalizedController.creditCompanyPaymentTotal}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel>
                                     </f:facet>
                                 </p:column>
 

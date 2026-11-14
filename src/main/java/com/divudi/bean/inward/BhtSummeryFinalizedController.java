@@ -75,6 +75,7 @@ public class BhtSummeryFinalizedController implements Serializable {
     List<Bill> paymentBills;
     List<Bill> paidbyPatientBillList;
     List<BillItem> creditPayment;
+    List<Bill> creditCompanyCommitments;
     List<BillItem> billItemsInward;
     List<bhtWithVat> bhtWithVats;
 
@@ -104,6 +105,8 @@ public class BhtSummeryFinalizedController implements Serializable {
     double billFeeNetValue;
     double paidbyPatientTotalValue;
     double creditCompanyPaymentTotal;
+    double creditCompanyCommittedTotal;
+    double creditCompanyCommittedPaidTotal;
 
     boolean activeBackButton = false;
     PaymentMethod paymentMethod;
@@ -238,6 +241,18 @@ public class BhtSummeryFinalizedController implements Serializable {
 
     public void setCreditPayment(List<BillItem> creditPayment) {
         this.creditPayment = creditPayment;
+    }
+
+    public List<Bill> getCreditCompanyCommitments() {
+        return creditCompanyCommitments;
+    }
+
+    public double getCreditCompanyCommittedTotal() {
+        return creditCompanyCommittedTotal;
+    }
+
+    public double getCreditCompanyCommittedPaidTotal() {
+        return creditCompanyCommittedPaidTotal;
     }
 
     public double getCreditCompanyPaymentTotal() {
@@ -746,6 +761,13 @@ public class BhtSummeryFinalizedController implements Serializable {
         outSideBills = null;
         paymentBills = null;
         pharmacyItems = null;
+        storeItems = null;
+        creditPayment = null;
+        creditCompanyCommitments = null;
+        paidbyPatientTotalValue = 0.0;
+        creditCompanyPaymentTotal = 0.0;
+        creditCompanyCommittedTotal = 0.0;
+        creditCompanyCommittedPaidTotal = 0.0;
     }
 
     public void makeNull() {
@@ -777,12 +799,19 @@ public class BhtSummeryFinalizedController implements Serializable {
         proBillFee = getInwardBean().createProfesionallFee(getPatientEncounter(),cpts);
         assistBillFee = getInwardBean().createDoctorAndNurseFee(getPatientEncounter(),cpts);
         technicianBillFee = getInwardBean().createTechnicianFee(getPatientEncounter(), cpts, false);
-        paymentBills = getInwardBean().fetchPaymentBill(getPatientEncounter(),cpts);
+        paymentBills = getInwardBean().fetchPatientPaymentBillsForBreakDown(getPatientEncounter(), cpts);
         paidbyPatientTotalValue = getInwardReportControllerBht().calPaidbyPatient(paymentBills);
-        pharmacyItems = getInwardBean().fetchPharmacyIssueBillItem(getPatientEncounter(), BillType.PharmacyBhtPre);
-        storeItems = getInwardBean().fetchPharmacyIssueBillItem(getPatientEncounter(), BillType.StoreBhtPre);
-        creditPayment = getInwardReportControllerBht().createCreditPayment(getPatientEncounter());
+        pharmacyItems = getInwardBean().fetchInwardMedicineBillItems(getPatientEncounter(), cpts);
+        storeItems = getInwardBean().fetchStoreIssueBillItems(getPatientEncounter(), cpts);
+        creditPayment = getInwardBean().fetchCreditCompanyReceiptItems(getPatientEncounter(), cpts);
         creditCompanyPaymentTotal = getInwardReportControllerBht().calTotalCreditCompany(creditPayment);
+        creditCompanyCommitments = getInwardBean().fetchCreditCompanyCommitmentBills(getPatientEncounter());
+        creditCompanyCommittedTotal = 0.0;
+        creditCompanyCommittedPaidTotal = 0.0;
+        for (Bill c : creditCompanyCommitments) {
+            creditCompanyCommittedTotal += c.getNetTotal();
+            creditCompanyCommittedPaidTotal += c.getSettledAmountBySponsor();
+        }
 
     }
 
