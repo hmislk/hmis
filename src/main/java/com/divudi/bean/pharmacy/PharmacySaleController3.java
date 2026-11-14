@@ -431,16 +431,43 @@ public class PharmacySaleController3 implements Serializable, ControllerWithPati
 
         if (paymentMethod == PaymentMethod.MultiplePaymentMethods) {
             double multiplePaymentMethodTotalValue = 0.0;
-            for (ComponentDetail cd : paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {
-                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCash().getTotalValue();
-                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCreditCard().getTotalValue();
-                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCheque().getTotalValue();
-                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getEwallet().getTotalValue();
-                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getPatient_deposit().getTotalValue();
-                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getSlip().getTotalValue();
-                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getStaffCredit().getTotalValue();
-                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getStaffWelfare().getTotalValue();
-
+            for (ComponentDetail cd : getPaymentMethodData().getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {
+                if (cd == null) {
+                    continue;
+                }
+                if (cd.getPaymentMethodData() != null && cd.getPaymentMethod() != null) {
+                    switch (cd.getPaymentMethod()) {
+                        case Cash:
+                            multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCash().getTotalValue();
+                            break;
+                        case Card:
+                            multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCreditCard().getTotalValue();
+                            break;
+                        case Cheque:
+                            multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCheque().getTotalValue();
+                            break;
+                        case ewallet:
+                            multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getEwallet().getTotalValue();
+                            break;
+                        case PatientDeposit:
+                            multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getPatient_deposit().getTotalValue();
+                            break;
+                        case Slip:
+                            multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getSlip().getTotalValue();
+                            break;
+                        case Staff:
+                            multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getStaffCredit().getTotalValue();
+                            break;
+                        case Staff_Welfare:
+                            multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getStaffWelfare().getTotalValue();
+                            break;
+                        case OnlineSettlement:
+                            multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getOnlineSettlement().getTotalValue();
+                            break;
+                        default:
+                            break;
+                    }
+                }
             }
             return getPreBill().getNetTotal() - multiplePaymentMethodTotalValue;
         }
@@ -451,8 +478,14 @@ public class PharmacySaleController3 implements Serializable, ControllerWithPati
     public void recieveRemainAmountAutomatically() {
         double remainAmount = calculatRemainForMultiplePaymentTotal();
         if (paymentMethod == PaymentMethod.MultiplePaymentMethods) {
-            int arrSize = paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().size();
-            ComponentDetail pm = paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().get(arrSize - 1);
+            int arrSize = getPaymentMethodData().getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().size();
+            if (arrSize == 0) {
+                return;
+            }
+            ComponentDetail pm = getPaymentMethodData().getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().get(arrSize - 1);
+            if (pm.getPaymentMethodData() == null) {
+                return;
+            }
             if (pm.getPaymentMethod() == PaymentMethod.Cash) {
                 // Only set value automatically if not already set by user
                 if (pm.getPaymentMethodData().getCash().getTotalValue() == 0.0) {
@@ -520,14 +553,13 @@ public class PharmacySaleController3 implements Serializable, ControllerWithPati
     @Override
     public boolean isLastPaymentEntry(ComponentDetail cd) {
         if (cd == null ||
-            paymentMethodData == null ||
-            paymentMethodData.getPaymentMethodMultiple() == null ||
-            paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails() == null ||
-            paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().isEmpty()) {
+            getPaymentMethodData().getPaymentMethodMultiple() == null ||
+            getPaymentMethodData().getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails() == null ||
+            getPaymentMethodData().getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().isEmpty()) {
             return false;
         }
 
-        List<ComponentDetail> details = paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails();
+        List<ComponentDetail> details = getPaymentMethodData().getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails();
         int lastIndex = details.size() - 1;
         int currentIndex = details.indexOf(cd);
         return currentIndex != -1 && currentIndex == lastIndex;
@@ -2129,7 +2161,29 @@ public class PharmacySaleController3 implements Serializable, ControllerWithPati
         setToken(currentToken);
     }
 
-    public String settlePreBillAndNavigateToPrint() {
+    /**
+     * Guarded entry point (#21153): a double-submit must never run the settle
+     * twice or create an empty PreBill. The flag is reset in finally so every
+     * early return of the internal method releases it.
+     */
+    public synchronized String settlePreBillAndNavigateToPrint() {
+        if (billSettlingStarted) {
+            JsfUtil.addErrorMessage("Settlement is already in progress. Please wait.");
+            return null;
+        }
+        if (getPreBill() == null || getPreBill().getBillItems() == null || getPreBill().getBillItems().isEmpty()) {
+            JsfUtil.addErrorMessage("No Items added to bill to sale");
+            return null;
+        }
+        billSettlingStarted = true;
+        try {
+            return settlePreBillAndNavigateToPrintInternal();
+        } finally {
+            billSettlingStarted = false;
+        }
+    }
+
+    private String settlePreBillAndNavigateToPrintInternal() {
         configOptionFacade.flush();
         editingQty = null;
 
@@ -2666,7 +2720,7 @@ public class PharmacySaleController3 implements Serializable, ControllerWithPati
                 return true;
             }
             double multiplePaymentMethodTotalValue = 0.0;
-            for (ComponentDetail cd : paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {
+            for (ComponentDetail cd : getPaymentMethodData().getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {
                 if (cd.getPaymentMethod() != null) {
                     if (cd.getPaymentMethod().equals(PaymentMethod.PatientDeposit)) {
                         double creditLimitAbsolute = 0.0;
@@ -2733,6 +2787,9 @@ public class PharmacySaleController3 implements Serializable, ControllerWithPati
                         case Staff_Welfare:
                             multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getStaffWelfare().getTotalValue();
                             break;
+                        case OnlineSettlement:
+                            multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getOnlineSettlement().getTotalValue();
+                            break;
                         default:
                             break;
                     }
@@ -2759,7 +2816,7 @@ public class PharmacySaleController3 implements Serializable, ControllerWithPati
     public List<Payment> createMultiplePayments(Bill bill, PaymentMethod pm) {
         List<Payment> ps = new ArrayList<>();
         if (paymentMethod == PaymentMethod.MultiplePaymentMethods) {
-            for (ComponentDetail cd : paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {
+            for (ComponentDetail cd : getPaymentMethodData().getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {
                 Payment p = new Payment();
                 p.setBill(bill);
                 p.setInstitution(getSessionController().getInstitution());
@@ -2824,18 +2881,12 @@ public class PharmacySaleController3 implements Serializable, ControllerWithPati
                     case Staff:
                         p.setToStaff(cd.getPaymentMethodData().getStaffCredit().getToStaff());
                         p.setPaidValue(cd.getPaymentMethodData().getStaffCredit().getTotalValue());
-                        if (cd.getPaymentMethodData().getStaffCredit().getToStaff() != null) {
-                            staffBean.updateStaffCredit(cd.getPaymentMethodData().getStaffCredit().getToStaff(), cd.getPaymentMethodData().getStaffCredit().getTotalValue());
-                            JsfUtil.addSuccessMessage("Staff Credit Updated");
-                        }
+                        // Staff credit is applied once by paymentService.updateBalances in settleBillWithPay (#25339).
                         break;
                     case Staff_Welfare:
                         p.setToStaff(cd.getPaymentMethodData().getStaffWelfare().getToStaff());
                         p.setPaidValue(cd.getPaymentMethodData().getStaffWelfare().getTotalValue());
-                        if (cd.getPaymentMethodData().getStaffWelfare().getToStaff() != null) {
-                            staffBean.updateStaffWelfare(cd.getPaymentMethodData().getStaffWelfare().getToStaff(), cd.getPaymentMethodData().getStaffWelfare().getTotalValue());
-                            JsfUtil.addSuccessMessage("Staff Welfare Balance Updated");
-                        }
+                        // Staff welfare is applied once by paymentService.updateBalances in settleBillWithPay (#25339).
                         break;
                     case YouOweMe:
                     case MultiplePaymentMethods:
@@ -2912,18 +2963,12 @@ public class PharmacySaleController3 implements Serializable, ControllerWithPati
                 case Staff:
                     p.setToStaff(paymentMethodData.getStaffCredit().getToStaff());
                     p.setPaidValue(paymentMethodData.getStaffCredit().getTotalValue());
-                    if (paymentMethodData.getStaffCredit().getToStaff() != null) {
-                        staffBean.updateStaffCredit(paymentMethodData.getStaffCredit().getToStaff(), paymentMethodData.getStaffCredit().getTotalValue());
-                        JsfUtil.addSuccessMessage("Staff Credit Updated");
-                    }
+                    // Staff credit is applied once by paymentService.updateBalances in settleBillWithPay (#25339).
                     break;
                 case Staff_Welfare:
                     p.setToStaff(paymentMethodData.getStaffWelfare().getToStaff());
                     p.setPaidValue(paymentMethodData.getStaffWelfare().getTotalValue());
-                    if (paymentMethodData.getStaffWelfare().getToStaff() != null) {
-                        staffBean.updateStaffWelfare(paymentMethodData.getStaffWelfare().getToStaff(), paymentMethodData.getStaffWelfare().getTotalValue());
-                        JsfUtil.addSuccessMessage("Staff Welfare Balance Updated");
-                    }
+                    // Staff welfare is applied once by paymentService.updateBalances in settleBillWithPay (#25339).
                     break;
                 case YouOweMe:
                 case MultiplePaymentMethods:
@@ -3569,7 +3614,7 @@ public class PharmacySaleController3 implements Serializable, ControllerWithPati
                 }
             }
         } else if (inputPaymentMethod == PaymentMethod.MultiplePaymentMethods) {
-            for (ComponentDetail cd : paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {
+            for (ComponentDetail cd : getPaymentMethodData().getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {
                 Payment p = new Payment();
                 p.setBill(cancellationBill);
                 p.setInstitution(getSessionController().getInstitution());

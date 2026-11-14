@@ -2223,6 +2223,11 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
 
         saveRefundBill(refundingBill);
 
+        // Keep the credit batch bill's refundAmount, paidAmount and balance in step with
+        // the refund, as Return Items and individual cancellation already do (#16982).
+        // The method is a no-op for a bill with no batch bill or a non-credit batch bill.
+        updateBatchBillFinancialFieldsForIndividualCancellation(bill, refundingBill);
+
         Payment p = getOpdPreSettleController().createPaymentForCancellationsAndRefunds(refundingBill, paymentMethod);
 
         //TODO: Create Payments for Bill Items
@@ -2990,7 +2995,8 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
         // double-deduct from the drawer balance. See issue #19796.
         JsfUtil.addSuccessMessage("Cancelled");
 
-        if (cancellationBill.getPaymentMethod() == PaymentMethod.Credit) {
+        if (cancellationBill.getPaymentMethod() == PaymentMethod.Credit
+                || cancellationBill.getPaymentMethod() == PaymentMethod.Staff) { // Staff credit too (#25339)
             //TODO: Manage Credit Balances for Company, Staff
             if (cancellationBill.getToStaff() != null) {
                 staffBean.updateStaffCredit(cancellationBill.getToStaff(), 0 - (getBill().getNetTotal() + getBill().getVat()));
@@ -3922,7 +3928,7 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
                     getPaymentMethodData().getSlip().setTotalValue(Math.abs(bill.getNetTotal()));
                     break;
                 case ewallet:
-                    getPaymentMethodData().getEwallet().setInstitution(originalPayment.getBank() != null ? originalPayment.getBank() : originalPayment.getInstitution());
+                    getPaymentMethodData().getEwallet().setInstitution(originalPayment.getBank() != null ? originalPayment.getBank() : originalPayment.getCreditCompany());
                     getPaymentMethodData().getEwallet().setReferenceNo(originalPayment.getReferenceNo());
                     getPaymentMethodData().getEwallet().setNo(originalPayment.getReferenceNo());
                     getPaymentMethodData().getEwallet().setReferralNo(originalPayment.getPolicyNo());
@@ -4009,7 +4015,7 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
                         cd.getPaymentMethodData().getSlip().setTotalValue(refundAmount);
                         break;
                     case ewallet:
-                        cd.getPaymentMethodData().getEwallet().setInstitution(originalPayment.getBank() != null ? originalPayment.getBank() : originalPayment.getInstitution());
+                        cd.getPaymentMethodData().getEwallet().setInstitution(originalPayment.getBank() != null ? originalPayment.getBank() : originalPayment.getCreditCompany());
                         cd.getPaymentMethodData().getEwallet().setReferenceNo(originalPayment.getReferenceNo());
                         cd.getPaymentMethodData().getEwallet().setNo(originalPayment.getReferenceNo());
                         cd.getPaymentMethodData().getEwallet().setReferralNo(originalPayment.getPolicyNo());
@@ -7552,17 +7558,9 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
     }
 
     public PaymentMethodData getPaymentMethodData() {
-        // If we're viewing a bill that was paid with multiple payment methods,
-        // and we have stored original payment data, use that for the "Original Payment Details" section
-        if (this.bill != null
-                && this.bill.getPaymentMethod() == PaymentMethod.MultiplePaymentMethods
-                && originalPaymentMethodData != null
-                && originalPaymentMethodData.getPaymentMethodMultiple() != null
-                && !originalPaymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().isEmpty()) {
-            return originalPaymentMethodData;
-        }
-
-        // Otherwise return the normal payment method data for editing
+        // Always the new bill's own payment data: the cancel/refund save code
+        // uses this object, so the page must edit it. The original bill's
+        // payments are read from getOriginalPaymentMethodData() instead.
         if (paymentMethodData == null) {
             paymentMethodData = new PaymentMethodData();
         }
@@ -8189,10 +8187,8 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
         // Update refundAmount - add the return amount
         batchBill.setRefundAmount(batchBill.getRefundAmount() + refundAmount);
 
-        // Update paidAmount - deduct the return amount (only if payment exists)
-        if (batchBill.getPaidAmount() > 0) {
-            batchBill.setPaidAmount(Math.max(0d, batchBill.getPaidAmount() - refundAmount));
-        }
+        // paidAmount is left unchanged: it records settlements only. Due = netTotal - refundAmount - paidAmount,
+        // the same definition the OPD Due Search uses, so the balance below agrees with it (#16982).
 
         // Update balance (due amount) - deduct the return amount (only if balance > 0)
         if (batchBill.getBalance() > 0) {

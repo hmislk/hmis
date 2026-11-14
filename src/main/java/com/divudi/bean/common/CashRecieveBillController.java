@@ -26,6 +26,7 @@ import com.divudi.core.entity.BillItem;
 import com.divudi.core.entity.BilledBill;
 import com.divudi.core.entity.CancelledBill;
 import com.divudi.core.entity.Department;
+import com.divudi.core.entity.PatientEncounter;
 import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.Payment;
 import com.divudi.core.entity.WebUser;
@@ -285,8 +286,11 @@ public class CashRecieveBillController implements Serializable {
 
         List<Bill> list = getAdmissionController().getCreditPaymentBillsBht(ins);
         for (Bill b : list) {
+            if (b.getNetTotal() - b.getPaidAmount() <= 0.01) {
+                continue;
+            }
             getCurrentBillItem().setPatientEncounter(b.getPatientEncounter());
-            getCurrentBillItem().setNetValue(b.getNetTotal());
+            getCurrentBillItem().setNetValue(Math.max(0, b.getNetTotal() - b.getPaidAmount()));
             getCurrentBillItem().getPatientEncounter().setCreditCompany(b.getCreditCompany());
             getCurrentBillItem().setReferenceBill(b);
             getCurrentBillItem().setBill(b);
@@ -304,17 +308,24 @@ public class CashRecieveBillController implements Serializable {
         makeNull();
         setCreditCompany(ins);
         if (ins == null) {
+            JsfUtil.addErrorMessage("Please select a credit company");
             return;
         }
         getCurrent().setCreditCompany(ins);
         List<Bill> list = getCreditBean().getUnpaidInwardCCBills(ins, inwardCCFromDate, inwardCCToDate);
         for (Bill b : list) {
-            getCurrentBillItem().setReferenceBill(b);
-            selectBillListener();
-            if (getCurrentBillItem().getNetValue() == 0.0) {
+            // A credit company bill's stored balance stays 0 until its first receive, so the
+            // due is net total less paid amount, as on Inward Payment by BHT (#25561).
+            double outstanding = b.getNetTotal() - b.getPaidAmount();
+            if (outstanding <= 0.01) {
                 continue;
             }
+            getCurrentBillItem().setReferenceBill(b);
+            getCurrentBillItem().setNetValue(outstanding);
             addToBill();
+        }
+        if (getBillItems().isEmpty()) {
+            JsfUtil.addErrorMessage("No due bills for this credit company in the selected dates");
         }
         calTotal();
     }
@@ -394,16 +405,8 @@ public class CashRecieveBillController implements Serializable {
 
         Bill referenceBill = billItem.getReferenceBill();
 
-        // For Credit payment method bills, use the updated balance field directly
-        // This ensures we get the accurate balance after individual bill cancellations
         if (referenceBill.getPaymentMethod() == PaymentMethod.Credit) {
-            // The balance field is automatically maintained during cancellations
-            // and represents the current due amount
-            double currentBalance = Math.abs(referenceBill.getBalance());
-
-            // Additional validation: ensure balance doesn't exceed original amount
-            double originalAmount = Math.abs(referenceBill.getNetTotal() + referenceBill.getVat());
-            return Math.min(currentBalance, originalAmount);
+            return creditBillDue(referenceBill);
         }
 
         // For non-Credit bills, use the original calculation method
@@ -427,16 +430,8 @@ public class CashRecieveBillController implements Serializable {
             return 0.0;
         }
 
-        // For Credit payment method bills, use the updated balance field directly
-        // This ensures we get the accurate balance after individual bill cancellations
         if (bill.getPaymentMethod() == PaymentMethod.Credit) {
-            // The balance field is automatically maintained during cancellations
-            // and represents the current due amount
-            double currentBalance = Math.abs(bill.getBalance());
-
-            // Additional validation: ensure balance doesn't exceed original amount
-            double originalAmount = Math.abs(bill.getNetTotal() + bill.getVat());
-            return Math.min(currentBalance, originalAmount);
+            return creditBillDue(bill);
         }
 
         // For non-Credit bills, use the original calculation method
@@ -445,6 +440,35 @@ public class CashRecieveBillController implements Serializable {
         double paidAmt = Math.abs(getCreditBean().getTotalCreditSettledAmount(bill));
         double balance = neTotal - (paidAmt + refAmount);
         return balance;
+    }
+
+    /**
+     * Due on a credit bill: net total - refunds - settlements (#25467), the same
+     * rule as OPD Due Search (CreditBean, #25463). Refunds and settlements are
+     * recorded on the credit bill itself, so the stored balance is not read; it
+     * can be out of step on older bills. The value is queried from the database,
+     * bypassing the cache, so a payment taken since this page opened counts.
+     */
+    private double creditBillDue(Bill bill) {
+        double due;
+        if (bill.getId() == null) {
+            due = bill.getNetTotal() - (bill.getRefundAmount() + bill.getPaidAmount());
+        } else {
+            String jpql = "select b.netTotal - (coalesce(b.refundAmount,0) + coalesce(b.paidAmount,0)) "
+                    + "from Bill b where b.id = :id";
+            Map<String, Object> params = new HashMap<>();
+            params.put("id", bill.getId());
+            due = getBillFacade().findDoubleByJpql(jpql, params, true);
+        }
+        return Math.max(0, due);
+    }
+
+    private Bill freshBill(Bill bill) {
+        if (bill == null || bill.getId() == null) {
+            return bill;
+        }
+        Bill fresh = getBillFacade().find(bill.getId());
+        return fresh != null ? fresh : bill;
     }
 
     private double getReferenceBhtBallance(BillItem billItem) {
@@ -617,6 +641,46 @@ public class CashRecieveBillController implements Serializable {
         return false;
     }
 
+    /**
+     * Inpatient credit company payment must never exceed the outstanding due of the
+     * bill it settles. The due is read fresh from the database, so a payment made in
+     * the meantime is respected. Lines without a reference bill (legacy admission
+     * aggregates) are not checked here. Returns true (after showing an error) when
+     * the payment exceeds the due.
+     */
+    private boolean isBhtOverPayment(List<BillItem> items) {
+        java.util.Map<Long, Double> payingByBill = new java.util.LinkedHashMap<>();
+        for (BillItem bi : items) {
+            if (bi == null || bi.getReferenceBill() == null || bi.getReferenceBill().getId() == null) {
+                continue;
+            }
+            payingByBill.merge(bi.getReferenceBill().getId(), bi.getNetValue(), Double::sum);
+        }
+        for (java.util.Map.Entry<Long, Double> e : payingByBill.entrySet()) {
+            Bill fresh = getBillFacade().find(e.getKey());
+            if (fresh == null) {
+                continue;
+            }
+            // Scalar query reads the database, not the (possibly stale) cached entity.
+            java.util.HashMap<String, Object> p = new java.util.HashMap<>();
+            p.put("id", e.getKey());
+            double due = Math.max(0, getBillFacade().findDoubleByJpql(
+                    "select b.netTotal - coalesce(b.paidAmount, 0) from Bill b where b.id = :id", p, true));
+            double paying = e.getValue();
+            if (paying - due > 0.01) {
+                if (due <= 0.01) {
+                    JsfUtil.addErrorMessage("Bill " + fresh.getDeptId() + " is already fully paid. Nothing was saved.");
+                } else {
+                    JsfUtil.addErrorMessage(String.format(
+                            "Payment amount (%.2f) cannot exceed the outstanding due amount (%.2f) of bill %s. Nothing was saved.",
+                            paying, due, fresh.getDeptId()));
+                }
+                return true;
+            }
+        }
+        return false;
+    }
+
     private boolean errorCheckForAddingBht() {
         Institution currentCc = null;
         if (getCurrentBillItem().getReferenceBill() != null) {
@@ -626,6 +690,23 @@ public class CashRecieveBillController implements Serializable {
         }
         if (currentCc == null) {
             JsfUtil.addErrorMessage("U cant add without credit company name");
+            return true;
+        }
+
+        // Only the bill being added is checked: existing lines for the same bill are summed
+        // in memory with the current line, so this costs one due query per add.
+        List<BillItem> toCheck = new ArrayList<>();
+        Bill currentRef = getCurrentBillItem().getReferenceBill();
+        if (currentRef != null) {
+            for (BillItem existing : getBillItems()) {
+                if (existing.getReferenceBill() != null
+                        && Objects.equals(existing.getReferenceBill().getId(), currentRef.getId())) {
+                    toCheck.add(existing);
+                }
+            }
+        }
+        toCheck.add(getCurrentBillItem());
+        if (isBhtOverPayment(toCheck)) {
             return true;
         }
 
@@ -654,7 +735,7 @@ public class CashRecieveBillController implements Serializable {
         }
         n = 0.0;
         index = 0;
-        for (BillItem b : selectedBillItems) {
+        for (BillItem b : getSelectedBillItems()) {
             b.setSearialNo(index++);
             n += b.getNetValue();
         }
@@ -816,7 +897,7 @@ public class CashRecieveBillController implements Serializable {
         double n = 0.0;
 //        //// // System.out.println("getBillItems().size() = " + getBillItems().size());
 //        //// // System.out.println("getSelectedBillItems().size() = " + getSelectedBillItems().size());
-        for (BillItem b : selectedBillItems) {
+        for (BillItem b : getSelectedBillItems()) {
 //            //// // System.out.println("b.getNetValue() = " + b.getNetValue());
 //            //// // System.out.println("b.getSearialNo() = " + b.getSearialNo());
             n += b.getNetValue();
@@ -827,7 +908,7 @@ public class CashRecieveBillController implements Serializable {
 
     public void calulateTotalForSettlingCreditForOpdPackageBills() {
         double n = 0.0;
-        for (BillItem b : selectedBillItems) {
+        for (BillItem b : getSelectedBillItems()) {
             n += b.getNetValue();
         }
         getCurrent().setNetTotal(n);
@@ -835,7 +916,7 @@ public class CashRecieveBillController implements Serializable {
 
     public void calulateTotalForSettlingCreditForOpdBatchBills() {
         double n = 0.0;
-        for (BillItem b : selectedBillItems) {
+        for (BillItem b : getSelectedBillItems()) {
             n += b.getNetValue();
         }
         getCurrent().setNetTotal(n);
@@ -843,7 +924,7 @@ public class CashRecieveBillController implements Serializable {
 
     public void calulateTotalForSettlingCreditForInwardCreditCompanyPaymentBills() {
         double n = 0.0;
-        for (BillItem b : selectedBillItems) {
+        for (BillItem b : getSelectedBillItems()) {
             n += b.getNetValue();
         }
         getCurrent().setNetTotal(n);
@@ -853,7 +934,7 @@ public class CashRecieveBillController implements Serializable {
         double n = 0.0;
 //        //// // System.out.println("getBillItems().size() = " + getBillItems().size());
 //        //// // System.out.println("getSelectedBillItems().size() = " + getSelectedBillItems().size());
-        for (BillItem b : selectedBillItems) {
+        for (BillItem b : getSelectedBillItems()) {
 //            //// // System.out.println("b.getNetValue() = " + b.getNetValue());
 //            //// // System.out.println("b.getSearialNo() = " + b.getSearialNo());
             n += b.getNetValue();
@@ -954,6 +1035,10 @@ public class CashRecieveBillController implements Serializable {
 
         if (getCurrent().getFromInstitution() == null) {
             JsfUtil.addErrorMessage("Select Credit Company");
+            return true;
+        }
+
+        if (isBhtOverPayment(getSelectedBillItems())) {
             return true;
         }
 
@@ -1279,6 +1364,12 @@ public class CashRecieveBillController implements Serializable {
             return;
         }
 
+        // The dues were read when the bills were loaded; another user may have received some
+        // since. Check against the database before any number or record is created (#25561).
+        if (isBhtOverPayment(getBillItems())) {
+            return;
+        }
+
         String deptId = billNumberBean.departmentBillNumberGeneratorYearly(sessionController.getDepartment(), BillTypeAtomic.INPATIENT_CREDIT_COMPANY_PAYMENT_RECEIVED);
         calulateTotalForSettlingCreditForInwardCreditCompanyPaymentBills();
         getBillBean().setPaymentMethodData(getCurrent(), getCurrent().getPaymentMethod(), getPaymentMethodData());
@@ -1314,9 +1405,9 @@ public class CashRecieveBillController implements Serializable {
             } else {
                 getBillItemFacade().edit(savingBillItem);
             }
-            getBillBean().updateInwardDipositList(savingBillItem.getPatientEncounter(), getCurrent());
             updateReferenceBht(savingBillItem);
         }
+        linkToFinalBillsOrWarn(getCurrent(), getBillItems());
         paymentService.createPayment(current, getPaymentMethodData());
         JsfUtil.addSuccessMessage("Bill Saved");
         recreateModel();
@@ -1506,12 +1597,24 @@ public class CashRecieveBillController implements Serializable {
 
     }
 
-    public void updateReferanceBills(){
-        for(BillItem b : getBillItems()){
-            b.getReferenceBill().setPaid(true);
-            b.getReferenceBill().setPaidAmount(b.getReferenceBill().getPaidAmount() + b.getNetValue());
-            b.getReferenceBill().setPaidBill(getCurrent());
-            billFacade.edit(b.getReferenceBill());
+    /**
+     * Links the payment bill to each reference bill. The paid amount is NOT added to here:
+     * it is recomputed from the saved payment bill items (updateSettlingCreditBillSettledValues),
+     * so a stale session copy of the reference bill can never overwrite another payment.
+     */
+    public void updateReferanceBills() {
+        for (BillItem b : getBillItems()) {
+            if (b.getReferenceBill() == null || b.getReferenceBill().getId() == null) {
+                continue;
+            }
+            Bill fresh = billFacade.find(b.getReferenceBill().getId());
+            if (fresh == null) {
+                continue;
+            }
+            fresh.setPaid(true);
+            fresh.setPaidBill(getCurrent());
+            billFacade.edit(fresh);
+            b.setReferenceBill(fresh);
         }
     }
 
@@ -1657,7 +1760,7 @@ public class CashRecieveBillController implements Serializable {
 
     public void removeAll() {
         List<BillItem> tmp = new ArrayList<>();
-        for (BillItem b : selectedBillItems) {
+        for (BillItem b : getSelectedBillItems()) {
             tmp.add(getBillItems().get(b.getSearialNo()));
         }
         billItems.removeAll(tmp);
@@ -1721,10 +1824,10 @@ public class CashRecieveBillController implements Serializable {
             getCurrent().getBillItems().add(tmp);
             getBillItemFacade().create(tmp);
 
-            getBillBean().updateInwardDipositList(tmp.getPatientEncounter(), getCurrent());
             updateReferenceBht(tmp);
 
         }
+        linkToFinalBillsOrWarn(getCurrent(), getSelectedBillItems());
 
     }
 
@@ -1738,6 +1841,10 @@ public class CashRecieveBillController implements Serializable {
             throw new RuntimeException("Reference bill is null for BillItem ID: " + tmp.getId()
                     + ". This indicates a data integrity issue.");
         }
+        // Add the payment to a fresh copy, not the one held since the bill was
+        // selected, so a payment recorded meanwhile is not overwritten (#25467).
+        originalBill = freshBill(originalBill);
+        tmp.setReferenceBill(originalBill);
 
         // Update original bill's financial fields
         updateBillFinancialFieldsForPayment(originalBill, paymentValue);
@@ -1745,6 +1852,7 @@ public class CashRecieveBillController implements Serializable {
         // Step 2: Get and update the reference bill's reference bill if it exists
         Bill referenceBillOfOriginal = originalBill.getReferenceBill();
         if (referenceBillOfOriginal != null) {
+            referenceBillOfOriginal = freshBill(referenceBillOfOriginal);
             // Update reference bill's financial fields as well
             updateBillFinancialFieldsForPayment(referenceBillOfOriginal, paymentValue);
         }
@@ -1771,7 +1879,16 @@ public class CashRecieveBillController implements Serializable {
     }
 
     private void updateSettlingCreditBillSettledValues(BillItem billItemWithReferanceToCreditBill) {
+        // Work on a fresh copy of the reference bill, not the copy held in this session bean
+        // since the bill was selected, so other payments are never overwritten.
         Bill referenceBill = billItemWithReferanceToCreditBill.getReferenceBill();
+        if (referenceBill != null && referenceBill.getId() != null) {
+            Bill fresh = getBillFacade().find(referenceBill.getId());
+            if (fresh != null) {
+                referenceBill = fresh;
+                billItemWithReferanceToCreditBill.setReferenceBill(fresh);
+            }
+        }
 
         double settledCreditValueByCompanies = getCreditBean().getSettledAmountByCompany(referenceBill);
         double settledCreditValueByPatient = getCreditBean().getSettledAmountByPatient(referenceBill);
@@ -1799,6 +1916,15 @@ public class CashRecieveBillController implements Serializable {
         }
 
         getBillFacade().edit(referenceBill);
+    }
+
+    // Links the payment to each admission's final bill once, using a fresh read, so a
+    // final bill cancelled since this page opened is not written back as live (#25521).
+    // A payment for several admissions gives each final bill only its own share (#25547).
+    private void linkToFinalBillsOrWarn(Bill payment, List<BillItem> items) {
+        if (!getBillBean().linkToFreshFinalBillsPerAdmission(payment, items)) {
+            JsfUtil.addErrorMessage("The final bill of an admission in this payment is cancelled, so this payment was not added to it. Please check the admission's final bill.");
+        }
     }
 
     private void updateReferenceBht(BillItem tmp) {
@@ -2335,6 +2461,19 @@ public class CashRecieveBillController implements Serializable {
         if (totalSettlementAmount <= 0) {
             JsfUtil.addErrorMessage("Cannot settle bills with zero total amount. Total settlement amount must be greater than zero.");
             return;
+        }
+
+        // Re-check each amount against the bill's current due: a payment may have
+        // been recorded for the same bill since this page loaded it (#25467).
+        for (BillItem item : getBillItems()) {
+            double due = getReferenceBallance(item);
+            if (item.getNetValue() - due > 0.01) {
+                JsfUtil.addErrorMessage(String.format("Bill %s: paying %.2f is more than its current due of %.2f. "
+                        + "It may have been paid since this page was opened. Please start a new bill.",
+                        item.getReferenceBill() != null ? item.getReferenceBill().getDeptId() : "",
+                        item.getNetValue(), due));
+                return;
+            }
         }
 
         // Generate department bill number for OPD credit company payment

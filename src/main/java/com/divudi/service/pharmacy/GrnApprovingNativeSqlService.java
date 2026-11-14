@@ -587,7 +587,7 @@ public class GrnApprovingNativeSqlService {
     // -----------------------------------------------------------------------
 
     /**
-     * Two bugs fixed here (#22893):
+     * Three bugs fixed here (#22893, #25302):
      * - {@code ABS(completedQty) + ABS(?)}: MySQL {@code ABS(NULL)} is
      *   {@code NULL} and {@code NULL + x} is {@code NULL}, so with the column
      *   starting {@code NULL} it never became non-null, on any GRN.
@@ -599,12 +599,15 @@ public class GrnApprovingNativeSqlService {
      *   {@code GrnCostingNativeSqlController.validateGrnQuantities()}, which
      *   blocks Finalize/Approve with an error before this UPDATE ever runs
      *   (product decision: block, not silently clamp -- see #22893).
+     * - Removed {@code ABS(...)} on stored {@code remainingQty} and
+     *   {@code remainingFreeQty} (#25302): if an earlier over-receipt or legacy
+     *   write left a negative remainder, {@code ABS} flipped it to positive.
      */
     private void decrementPoRemainingQty(long poBillItemId, double qty, double freeQty) {
         em.createNativeQuery(
                 "UPDATE " + pharmBillItemTable()
-                + " SET remainingQty = GREATEST(ABS(COALESCE(remainingQty,0)) - ABS(?), 0),"
-                + " remainingFreeQty = GREATEST(ABS(COALESCE(remainingFreeQty,0)) - ABS(?), 0),"
+                + " SET remainingQty = GREATEST(COALESCE(remainingQty,0) - ABS(?), 0),"
+                + " remainingFreeQty = GREATEST(COALESCE(remainingFreeQty,0) - ABS(?), 0),"
                 + " completedQty = ABS(COALESCE(completedQty,0)) + ABS(?),"
                 + " completedFreeQty = ABS(COALESCE(completedFreeQty,0)) + ABS(?)"
                 + " WHERE billItem_ID=?")

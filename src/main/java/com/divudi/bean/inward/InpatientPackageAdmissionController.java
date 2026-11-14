@@ -65,6 +65,9 @@ public class InpatientPackageAdmissionController implements Serializable {
         admissionController.setPatientAllergies(null);
         admissionController.setCurrentReservation(null);
         admissionController.setBhtText("");
+        // The package pre-fills the Admission Type, so generate the BHT number for it
+        // now, the same as picking that type from the dropdown on a normal admission.
+        admissionController.bhtNumberCalculation();
         // Clear a stale "Patient Already Admitted" warning left on the session-scoped
         // AdmissionController by an earlier abandoned attempt. (Issue #24000)
         admissionController.cancelActiveAdmissionWarning();

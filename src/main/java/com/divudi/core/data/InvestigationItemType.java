@@ -24,6 +24,12 @@ public enum InvestigationItemType {
     MeasurementUnit,
     ReportImage,
     WarningFlag,
+    /**
+     * Free-text comment for one organism (antibiotic group) in a
+     * Microbiology report. One value is created per organism when the
+     * organism is added.
+     */
+    OrganismComment,
     @Deprecated
     List,
     @Deprecated

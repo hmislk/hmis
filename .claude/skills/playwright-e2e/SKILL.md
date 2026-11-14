@@ -151,6 +151,9 @@ table. If you are that subagent, skip this paragraph.
    repo afterward.
 8. If Playwright can't find a control, treat it as a product accessibility gap
    (§7) — fix the page, not the test.
+9. If a report is slow or times out while you test, file a GitHub issue for it
+   (fast DTO-based report as the default, legacy report kept for cross-check).
+   See the [performance-optimization skill](../performance-optimization/SKILL.md#-found-a-slow-report-file-an-issue).
 
 ## Required permissions
 

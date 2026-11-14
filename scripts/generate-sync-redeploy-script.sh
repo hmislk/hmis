@@ -53,7 +53,7 @@ echo "JAVA_HOME detected: ${JAVA_HOME_DETECTED:-NOT FOUND}"
 # --- 3. Payara home detection ---
 PAYARA_HOME_DETECTED="${PAYARA_HOME:-}"
 if [ -z "$PAYARA_HOME_DETECTED" ]; then
-    for candidate in "$HOME/payara" "/opt/payara5" "/opt/payara6" "/home/carecode/payara"; do
+    for candidate in "$HOME/payara" "/opt/payara5" "/opt/payara6"; do
         if [ -x "$candidate/bin/asadmin" ]; then
             PAYARA_HOME_DETECTED="$candidate"
             break
@@ -194,8 +194,31 @@ if [ ! -f "$CONFIG_FILE" ]; then
     echo "ERROR: $CONFIG_FILE not found. Re-run scripts/generate-sync-redeploy-script.sh."
     exit 1
 fi
+# An environment MIN_FREE_MB (the documented one-command override) wins over the config file.
+ENV_MIN_FREE_MB="${MIN_FREE_MB:-}"
 # shellcheck source=/dev/null
 source "$CONFIG_FILE"
+[ -n "$ENV_MIN_FREE_MB" ] && MIN_FREE_MB="$ENV_MIN_FREE_MB"
+
+# Usage: sync-and-redeploy.sh [--deploy-only]
+#   --deploy-only  (or DEPLOY_ONLY=1) skips git sync and rebuild and re-deploys
+#                  the WAR already in target/. Use it to recover after a deploy
+#                  was killed (e.g. out of memory) - no 150 MB rebuild needed.
+# MIN_FREE_MB (env or config file) is the free RAM required before deploying.
+DEPLOY_ONLY="${DEPLOY_ONLY:-0}"
+for arg in "$@"; do
+    case "$arg" in
+        --deploy-only) DEPLOY_ONLY=1 ;;
+        *) echo "Unknown argument: $arg"; exit 1 ;;
+    esac
+done
+MIN_FREE_MB="${MIN_FREE_MB:-3000}"
+# Whole number of MB, no leading zero, at most 7 digits (under 10 TB), so the
+# numeric test below can never overflow or error into the "OK" branch.
+if ! [[ "$MIN_FREE_MB" =~ ^[1-9][0-9]{0,6}$ ]]; then
+    echo "ERROR: MIN_FREE_MB must be a whole number of MB from 1 to 9999999, no leading zero (got '$MIN_FREE_MB')."
+    exit 1
+fi
 
 PERSISTENCE_FILE="$REPO_ROOT/src/main/resources/META-INF/persistence.xml"
 
@@ -207,58 +230,81 @@ if [ -n "${JAVA_HOME_DETECTED:-}" ]; then
     export PATH="$JAVA_HOME/bin:$PATH"
 fi
 
-# 1. Stash a local persistence.xml edit separately, so it never lands in a commit.
-STASHED_PERSISTENCE=0
-if ! git diff --quiet -- "$PERSISTENCE_FILE" 2>/dev/null; then
-    echo "Stashing local persistence.xml edit..."
-    git stash push -m "sync-and-redeploy: local JNDI" -- "$PERSISTENCE_FILE"
-    STASHED_PERSISTENCE=1
-fi
-
-# 2. Commit anything else uncommitted.
-if [ -n "$(git status --porcelain)" ]; then
-    echo "Committing other uncommitted changes..."
-    git add -A
-    git commit -m "WIP: auto-commit before sync-and-redeploy"
-fi
-
-# 3. Fetch and merge development. Stop on conflict - no auto-resolution.
-echo "Fetching origin/development..."
-git fetch origin development
-echo "Merging origin/development..."
-if ! git merge origin/development --no-edit; then
-    echo ""
-    echo "ERROR: merge conflict. Resolve manually, then re-run this script."
-    echo "Repository left mid-merge intentionally - no automatic conflict resolution."
-    exit 1
-fi
-
-# 4. Restore local JNDI.
-if [ "$STASHED_PERSISTENCE" -eq 1 ]; then
-    echo "Restoring stashed persistence.xml edit..."
-    git stash pop
-elif [ -f "$REPO_ROOT/.jndi-backup-main" ] && [ -f "$REPO_ROOT/.jndi-backup-audit" ]; then
-    echo "Restoring local JNDI via restore-local-jndi.sh..."
-    (cd "$REPO_ROOT" && ./scripts/restore-local-jndi.sh)
+if [ "$DEPLOY_ONLY" = "1" ]; then
+    echo "Deploy-only: skipping git sync and build, using the existing WAR."
 else
-    echo "Setting local JNDI from generator config..."
-    sed -i "s|<jta-data-source>\${JDBC_DATASOURCE}</jta-data-source>|<jta-data-source>$MAIN_JNDI</jta-data-source>|" "$PERSISTENCE_FILE"
-    sed -i "s|<jta-data-source>\${JDBC_AUDIT_DATASOURCE}</jta-data-source>|<jta-data-source>$AUDIT_JNDI</jta-data-source>|" "$PERSISTENCE_FILE"
-fi
+    # 1. Stash a local persistence.xml edit separately, so it never lands in a commit.
+    STASHED_PERSISTENCE=0
+    if ! git diff --quiet -- "$PERSISTENCE_FILE" 2>/dev/null; then
+        echo "Stashing local persistence.xml edit..."
+        git stash push -m "sync-and-redeploy: local JNDI" -- "$PERSISTENCE_FILE"
+        STASHED_PERSISTENCE=1
+    fi
 
-# 5. Build.
-MVN_CMD="mvn"
-if [ -x "$REPO_ROOT/detect-maven.sh" ]; then
-    MVN_CMD="$REPO_ROOT/detect-maven.sh"
+    # 2. Commit tracked changes only. Untracked files (screenshots, exports,
+    #    scratch files) are never staged, so they cannot reach the public repo.
+    if [ -n "$(git status --porcelain)" ]; then
+        echo "Uncommitted changes:"
+        git status --porcelain
+        UNTRACKED="$(git ls-files --others --exclude-standard)"
+        if [ -n "$UNTRACKED" ]; then
+            echo "WARNING: these untracked files were NOT committed:"
+            echo "$UNTRACKED"
+        fi
+        if ! git diff --quiet || ! git diff --cached --quiet; then
+            echo "Committing tracked changes only..."
+            git add -u
+            git commit -m "WIP: auto-commit before sync-and-redeploy"
+        fi
+    fi
+
+    # 3. Fetch and merge development. Stop on conflict - no auto-resolution.
+    echo "Fetching origin/development..."
+    git fetch origin development
+    echo "Merging origin/development..."
+    if ! git merge origin/development --no-edit; then
+        echo ""
+        echo "ERROR: merge conflict. Resolve manually, then re-run this script."
+        echo "Repository left mid-merge intentionally - no automatic conflict resolution."
+        exit 1
+    fi
+
+    # 4. Restore local JNDI.
+    if [ "$STASHED_PERSISTENCE" -eq 1 ]; then
+        echo "Restoring stashed persistence.xml edit..."
+        git stash pop
+    elif [ -f "$REPO_ROOT/.jndi-backup-main" ] && [ -f "$REPO_ROOT/.jndi-backup-audit" ]; then
+        echo "Restoring local JNDI via restore-local-jndi.sh..."
+        (cd "$REPO_ROOT" && ./scripts/restore-local-jndi.sh)
+    else
+        echo "Setting local JNDI from generator config..."
+        sed -i "s|<jta-data-source>\${JDBC_DATASOURCE}</jta-data-source>|<jta-data-source>$MAIN_JNDI</jta-data-source>|" "$PERSISTENCE_FILE"
+        sed -i "s|<jta-data-source>\${JDBC_AUDIT_DATASOURCE}</jta-data-source>|<jta-data-source>$AUDIT_JNDI</jta-data-source>|" "$PERSISTENCE_FILE"
+    fi
+
+    # 5. Build.
+    MVN_CMD="mvn"
+    if [ -x "$REPO_ROOT/detect-maven.sh" ]; then
+        MVN_CMD="$REPO_ROOT/detect-maven.sh"
+    fi
+    echo "Building with $MVN_CMD ..."
+    (cd "$REPO_ROOT" && "$MVN_CMD" clean package -DskipTests)
 fi
-echo "Building with $MVN_CMD ..."
-(cd "$REPO_ROOT" && "$MVN_CMD" clean package -DskipTests)
 
 # 6. Verify the WAR, rebuild once if it looks stale/empty.
 WAR_FILE="$(ls -t "$REPO_ROOT"/target/*.war 2>/dev/null | head -1)"
 MIN_WAR_SIZE=1048576
 if [ -z "$WAR_FILE" ] || [ "$(stat -c%s "$WAR_FILE" 2>/dev/null || echo 0)" -lt "$MIN_WAR_SIZE" ]; then
+    if [ "$DEPLOY_ONLY" = "1" ]; then
+        echo "ERROR: --deploy-only needs a valid WAR in $REPO_ROOT/target but none was found."
+        echo "Run without --deploy-only to build one."
+        exit 1
+    fi
     echo "WAR missing or suspiciously small, rebuilding once..."
+    MVN_CMD="mvn"
+    if [ -x "$REPO_ROOT/detect-maven.sh" ]; then
+        MVN_CMD="$REPO_ROOT/detect-maven.sh"
+    fi
     (cd "$REPO_ROOT" && "$MVN_CMD" clean package -DskipTests)
     WAR_FILE="$(ls -t "$REPO_ROOT"/target/*.war 2>/dev/null | head -1)"
     if [ -z "$WAR_FILE" ] || [ "$(stat -c%s "$WAR_FILE" 2>/dev/null || echo 0)" -lt "$MIN_WAR_SIZE" ]; then
@@ -267,6 +313,45 @@ if [ -z "$WAR_FILE" ] || [ "$(stat -c%s "$WAR_FILE" 2>/dev/null || echo 0)" -lt 
     fi
 fi
 echo "WAR ready: $WAR_FILE"
+
+# 6b. Free-memory pre-check. 'deploy --force' undeploys the running app first, so a
+# kill (out of memory) mid-deploy leaves NO app deployed. Never start an undeploy
+# that cannot finish: abort here, while the old app is still running.
+free_mb() {
+    local v=""
+    v="$(awk '/^MemAvailable:/ {print int($2/1024)}' /proc/meminfo 2>/dev/null)"
+    if [ -z "$v" ] && command -v powershell.exe >/dev/null 2>&1; then
+        v="$(powershell.exe -NoProfile -Command '[int]((Get-CimInstance Win32_OperatingSystem).FreePhysicalMemory/1024)' 2>/dev/null | tr -d '\r')"
+    fi
+    if [ -z "$v" ] && command -v free >/dev/null 2>&1; then
+        v="$(free -m | awk '/^Mem:/ {print $7}')"
+    fi
+    echo "$v"
+}
+FREE_MB="$(free_mb)"
+# Fail closed: anything that is not a plain number (empty, "N/A", an error text)
+# aborts, because the old app is still running and must stay deployed.
+if [ "${SKIP_MEMORY_CHECK:-0}" = "1" ]; then
+    echo "WARNING: SKIP_MEMORY_CHECK=1 set; deploying WITHOUT the free-memory check (free memory read: '${FREE_MB}')."
+elif ! [[ "$FREE_MB" =~ ^[0-9]{1,9}$ ]]; then
+    echo ""
+    echo "ERROR: could not measure free memory (got '${FREE_MB}'). Aborting BEFORE touching the running app."
+    echo "Fix the memory reading (/proc/meminfo, PowerShell Get-CimInstance or 'free'), or, after checking RAM"
+    echo "yourself, opt out explicitly: SKIP_MEMORY_CHECK=1 $0 --deploy-only"
+    exit 1
+elif [ "$((10#$FREE_MB))" -lt "$MIN_FREE_MB" ]; then
+    echo ""
+    echo "ERROR: only ${FREE_MB} MB RAM free, need at least ${MIN_FREE_MB} MB (MIN_FREE_MB) to deploy safely."
+    echo "Aborting BEFORE touching the running app, so it stays deployed."
+    echo "Options:"
+    echo "  - Close the browser, Playwright and IDE to free RAM, then re-run with --deploy-only"
+    echo "  - Build on a roomier machine and copy the WAR here, then run with --deploy-only"
+    echo "  - Test on staging instead of this machine"
+    echo "  - Override at your own risk: MIN_FREE_MB=<lower value> $0 --deploy-only"
+    exit 1
+else
+    echo "Free memory OK: ${FREE_MB} MB (minimum ${MIN_FREE_MB} MB)."
+fi
 
 # 7. Deploy with the discovered name/contextroot - never derived from the WAR filename.
 ASADMIN="$PAYARA_HOME/bin/asadmin"

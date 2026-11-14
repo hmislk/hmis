@@ -79,28 +79,28 @@
                             </div>
 
                         </f:facet>
-                        <p:dataTable id="lstDue" value="#{creditCompanyDueController.patientEncounters}"  var="p" rowIndexVar="i" >
+                        <p:dataTable id="lstDue" value="#{creditCompanyDueController.ccDueRows}"  var="r" rowIndexVar="i" >
                             <p:column>
                                 <p:outputLabel value="#{i+1}" />
                             </p:column>
                             <p:column headerText="BHT">
-                                <p:outputLabel value="#{p.bhtNo}" />
+                                <p:outputLabel value="#{r.encounter.bhtNo}" />
                             </p:column>
                             <p:column headerText="Company">
-                                <p:outputLabel value="#{p.creditCompany.name}" />
+                                <p:outputLabel value="#{r.company eq null ? '(no company)' : r.company.name}" />
                             </p:column>
                             <p:column headerText="Admissted At">
-                                <p:outputLabel value="#{p.dateOfAdmission}" >
+                                <p:outputLabel value="#{r.encounter.dateOfAdmission}" >
                                     <f:convertDateTime pattern="yy MM dd hh:mmss a" />
                                 </p:outputLabel>
                             </p:column>
                             <p:column headerText="Discharged At">
-                                <p:outputLabel value="#{p.dateOfDischarge}" >
+                                <p:outputLabel value="#{r.encounter.dateOfDischarge}" >
                                     <f:convertDateTime pattern="yy MM dd hh:mmss a" />
                                 </p:outputLabel>
                             </p:column>
                             <p:column headerText="Final Total"  style="text-align: right;">
-                                <h:outputLabel value="#{p.finalBill.netTotal}">
+                                <h:outputLabel value="#{r.encounter.finalBill.netTotal}" rendered="#{r.firstOfAdmission}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
                                 <f:facet name="footer">
@@ -110,7 +110,7 @@
                                 </f:facet>
                             </p:column>
                             <p:column headerText="Paid By Patient" style="text-align: right;">
-                                <h:outputLabel value="#{p.finalBill.paidAmount}">
+                                <h:outputLabel value="#{creditCompanyDueController.getPatientPaid(r.encounter)}" rendered="#{r.firstOfAdmission}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
                                 <f:facet name="footer">
@@ -121,7 +121,7 @@
                                 </f:facet>
                             </p:column>
                             <p:column headerText="Paid By Company"  style="text-align: right;">
-                                <h:outputLabel value="#{p.paidByCreditCompany}">
+                                <h:outputLabel value="#{r.paid}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>                            
                                 <f:facet name="footer">
@@ -132,13 +132,13 @@
                             </p:column>
 
 
-                            <p:column headerText="Due"  style="text-align: right;" >
+                            <p:column headerText="Company Due"  style="text-align: right;" >
 
-                                <h:outputLabel value="#{(p.finalBill.netTotal-(p.finalBill.paidAmount+p.paidByCreditCompany)) gt 0? (p.finalBill.netTotal-(p.finalBill.paidAmount+p.paidByCreditCompany)):0.00}">
+                                <h:outputLabel value="#{r.due}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
                                 <f:facet name="footer">
-                                    <h:outputLabel value="#{creditCompanyDueController.billed-(creditCompanyDueController.paidByCompany+creditCompanyDueController.paidByPatient)}">
+                                    <h:outputLabel value="#{creditCompanyDueController.dueByCompany}">
                                         <f:convertNumber pattern="#,##0.00"/>                                    
                                     </h:outputLabel>
                                 </f:facet>

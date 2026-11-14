@@ -88,7 +88,7 @@
                                 </p:column>
                                 <p:column headerText="Paid Amount">                                    
                                 </p:column>
-                                 <p:column headerText="Net Amount">                                    
+                                 <p:column headerText="Balance (Used - Paid)">                                    
                                 </p:column>
                             </p:row>
                         </p:columnGroup>
@@ -103,17 +103,17 @@
                                 <h:outputLabel value="#{b.patient.person.nameWithTitle}" />                                 
                             </p:column>
                             <p:column style="text-align: right;">                                
-                                <h:outputLabel value="#{b.creditUsedAmount}" >
+                                <h:outputLabel value="#{creditCompanyDueController.getCcCommittedForCompany(b, i.institution)}" >
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>                                 
                             </p:column>
                             <p:column style="text-align: right;">                              
-                                <h:outputLabel value="#{b.creditPaidAmount}" >
+                                <h:outputLabel value="#{creditCompanyDueController.getCcPaidForCompany(b, i.institution)}" >
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
                             </p:column>
                             <p:column style="text-align: right;">                              
-                                <h:outputLabel value="#{b.creditUsedAmount+b.creditPaidAmount}" >
+                                <h:outputLabel value="#{creditCompanyDueController.getCcCommittedForCompany(b, i.institution)-creditCompanyDueController.getCcPaidForCompany(b, i.institution)}" >
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
                             </p:column>
@@ -136,7 +136,7 @@
                                     </p:column>
                                      <p:column style="text-align: right;" >
                                         <f:facet name="footer">
-                                            <h:outputLabel value="#{i.total+i.paidTotal}">
+                                            <h:outputLabel value="#{i.total-i.paidTotal}">
                                                 <f:convertNumber pattern="#,##0.00" />
                                             </h:outputLabel>
                                         </f:facet>

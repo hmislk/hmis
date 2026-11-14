@@ -15,9 +15,23 @@
                             size: landscape;
                             margin: 1cm;
                         }
+                        /* The theme's own datatable font size and 1rem cell padding
+                           override body font-size, which pushed the last (Consultant)
+                           column off the page in print. */
+                        .ui-datatable,
+                        .ui-datatable .ui-datatable-tablewrapper {
+                            overflow: visible !important;
+                            font-size: 9px !important;
+                        }
                         .ui-datatable table {
                             width: 100% !important;
                             table-layout: auto !important;
+                        }
+                        .ui-datatable thead th,
+                        .ui-datatable tbody td {
+                            padding: 2px 4px !important;
+                            width: auto !important;
+                            font-size: 9px !important;
                         }
                         .ui-datatable .ui-datatable-header,
                         .ui-datatable .ui-datatable-footer {

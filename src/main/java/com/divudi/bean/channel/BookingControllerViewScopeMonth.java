@@ -556,6 +556,12 @@ public class BookingControllerViewScopeMonth implements Serializable, Controller
         bill.setNetTotal(getSelectedSessionInstanceForRechedule().getOriginatingSession().getTotal());
         bill.setPaymentMethod(bs.getBill().getPaymentMethod());
         bill.setPatient(bs.getBill().getPatient());
+        if (bs.getBill().getPaidBill() != null) {
+            bill.setPaidBill(bs.getBill().getPaidBill());
+            // Cancel/refund check paidAmount, so a settled booking must keep it (as the by-date page does).
+            bill.setPaidAmount(bs.getBill().getPaidAmount());
+            bill.setPaidAt(bs.getBill().getPaidAt());
+        }
         switch (bs.getBill().getPaymentMethod()) {
             case OnCall:
                 bill.setBillType(BillType.ChannelResheduleWithOutPayment);
@@ -6437,6 +6443,12 @@ public class BookingControllerViewScopeMonth implements Serializable, Controller
         getBillSession().getBill().setPaidBill(b);
 
         getBillFacade().edit(getBillSession().getBill());
+
+        if (selectedBillSession != null && selectedBillSession.getBillItem() != null && selectedBillSession.getBillItem().getBill() != null) {
+            selectedBillSession.getBillItem().getBill().setPaidAmount(b.getPaidAmount());
+            selectedBillSession.getBillItem().getBill().setBalance(0.0);
+            selectedBillSession.getBillItem().getBill().setPaidBill(b);
+        }
 
         b.setSingleBillItem(billItemForPaidSession);
         b.setSingleBillSession(bs);

@@ -657,6 +657,7 @@ public class TransferIssueNativeSqlController implements Serializable {
         enrichPrintDto(printDto, fresh);
         printPreview = true;
         draftMode = false;
+        JsfUtil.addSuccessMessage("Transfer Issue Approved Successfully");
         return null;
     }
 

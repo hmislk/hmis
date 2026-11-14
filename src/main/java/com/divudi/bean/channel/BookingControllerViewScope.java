@@ -924,6 +924,9 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         bill.setNetTotal(getSelectedSessionInstanceForRechedule().getOriginatingSession().getTotal());
         bill.setPaymentMethod(bs.getBill().getPaymentMethod());
         bill.setPatient(bs.getBill().getPatient());
+        if (bs.getBill().getPaidBill() != null) {
+            bill.setPaidBill(bs.getBill().getPaidBill());
+        }
         switch (bs.getBill().getPaymentMethod()) {
             case OnCall:
                 bill.setBillType(BillType.ChannelOnCall);
@@ -8210,6 +8213,12 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         getBillSession().getBill().setPaidBill(b);
 
         getBillFacade().edit(getBillSession().getBill());
+
+        if (selectedBillSession != null && selectedBillSession.getBillItem() != null && selectedBillSession.getBillItem().getBill() != null) {
+            selectedBillSession.getBillItem().getBill().setPaidAmount(b.getPaidAmount());
+            selectedBillSession.getBillItem().getBill().setBalance(0.0);
+            selectedBillSession.getBillItem().getBill().setPaidBill(b);
+        }
 
         b.setSingleBillItem(billItemForPaidSession);
         b.setSingleBillSession(bs);

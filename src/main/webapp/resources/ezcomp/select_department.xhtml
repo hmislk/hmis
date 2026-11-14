@@ -15,18 +15,69 @@
     <cc:implementation class="w-100">
         <!-- Fixed to the viewport so the body's bottom padding (kept for the watermarks) adds no page scroll bar;
              a taller card scrolls inside this box instead -->
+        <style>
+            /* Desktop keeps the original wide card; phones/tablets shrink it to the viewport */
+            .select-dept-form { width: 100%; max-width: 56em; }
+            .select-dept-card { background-color: rgba(255, 255, 255, 0.9); border: 2px solid red; }
+            .select-dept-notice { width: 100%; max-width: 600px; height: 400px; border: 0; }
+            .select-dept-menu.ui-selectonemenu { width: 100% !important; min-width: 0 !important; }
+            .select-dept-panel { max-width: calc(100vw - 2rem); }
+            .select-dept-panel .ui-selectonemenu-items-wrapper { overflow-x: auto; }
+            /* Desktop: keep the original wide card, dropdown and list (card 50em, dropdown 35em+) */
+            @media (min-width: 992px) {
+                .select-dept-card { min-width: 50em; }
+                .select-dept-menu.ui-selectonemenu { min-width: 35em !important; }
+                .select-dept-panel { min-width: 35em; }
+            }
+            /* Dropdown detail rows: wrap long names instead of forcing a wide panel */
+            .select-dept-panel .ui-selectonemenu-table { width: 100%; }
+            .select-dept-panel .ui-selectonemenu-table td { white-space: normal; word-break: break-word; }
+            /* Phones/tablets: each department row becomes a stacked block (Department / Institution / Site) */
+            @media (max-width: 767.98px) {
+                .select-dept-panel .ui-selectonemenu-items-wrapper { overflow-x: hidden; }
+                .select-dept-panel .ui-selectonemenu-table thead { display: none; }
+                .select-dept-panel .ui-selectonemenu-table,
+                .select-dept-panel .ui-selectonemenu-table tbody { display: block; width: 100%; }
+                .select-dept-panel .ui-selectonemenu-table tr.ui-selectonemenu-item {
+                    display: block;
+                    padding: 0.5rem 0.75rem;
+                    border-bottom: 1px solid #dee2e6;
+                }
+                .select-dept-panel .ui-selectonemenu-table tr.ui-selectonemenu-item td {
+                    display: block;
+                    padding: 0;
+                    border: 0;
+                }
+                .select-dept-panel .ui-selectonemenu-table tr.ui-selectonemenu-item td:nth-child(1) {
+                    font-weight: 600;
+                    font-size: 1rem;
+                }
+                .select-dept-panel .ui-selectonemenu-table tr.ui-selectonemenu-item td:nth-child(2),
+                .select-dept-panel .ui-selectonemenu-table tr.ui-selectonemenu-item td:nth-child(3) {
+                    font-size: 0.85rem;
+                    opacity: 0.8;
+                }
+                .select-dept-panel .ui-selectonemenu-table tr.ui-selectonemenu-item td:nth-child(2):not(:empty)::before { content: "Institution: "; }
+                .select-dept-panel .ui-selectonemenu-table tr.ui-selectonemenu-item td:nth-child(3):not(:empty)::before { content: "Site: "; }
+            }
+            @media (max-width: 575.98px) {
+                .select-dept-title { font-size: 13pt !important; }
+                .select-dept-icon { width: 64px !important; }
+                .select-dept-notice { height: 260px; }
+            }
+        </style>
         <div style="position: fixed; top: 0; right: 0; bottom: 0; left: 0; overflow: auto; background-color: rgba(211, 211, 211,0.7);">
-        <div class="d-flex justify-content-center align-items-center w-100" style="min-height: 100%; min-width: 30rem; ">
-            <h:form id="formDept" class="my-5 p-5">
-                <div class="card shadow-lg p-5 w-100" style="background-color: rgba(255, 255, 255, 0.9); border: 2px solid red; min-width: 50em;" >
+        <div class="d-flex justify-content-center align-items-center w-100 px-3" style="min-height: 100%;">
+            <h:form id="formDept" styleClass="my-3 my-md-5 p-0 p-md-5 select-dept-form">
+                <div class="card shadow-lg p-3 p-md-5 w-100 select-dept-card" >
                     <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Display the payment notice')}" >
-                        <iframe src="#{configOptionApplicationController.getLongTextValueByKey('Payment Notice URL')}" 
-                                width="600" height="400" frameborder="0"></iframe>
+                        <iframe src="#{configOptionApplicationController.getLongTextValueByKey('Payment Notice URL')}"
+                                class="select-dept-notice"></iframe>
                     </h:panelGroup>
                     <h:panelGroup rendered="#{not configOptionApplicationController.getBooleanValueByKey('Execute the payment notice')}" >
-                        <div class="text-black text-center p-3 w-100" style="font-size: 16pt;font-weight: bolder" >
+                        <div class="text-black text-center p-2 p-md-3 w-100 select-dept-title" style="font-size: 16pt;font-weight: bolder" >
                             <div class=" w-100 d-flex justify-content-center align-items-center my-2 p-1">
-                                <img src="https://cdn-icons-png.flaticon.com/512/1642/1642357.png" alt="Department Icon" style="width: 100px;"/>
+                                <img src="https://cdn-icons-png.flaticon.com/512/1642/1642357.png" alt="Department Icon" class="select-dept-icon" style="width: 100px;"/>
                             </div>
                             <p>Select Department</p>
                         </div>
@@ -45,8 +96,8 @@
                                 filterMatchMode="contains" 
                                 required="true" 
                                 var="d" 
-                                style="width: 35em;"
-                                class="w-100 form-select form-select-lg p-1"
+                                panelStyleClass="select-dept-panel"
+                                class="w-100 form-select form-select-lg p-1 select-dept-menu"
                                 requiredMessage="Please select the Department you have to log.">
                                 <f:selectItems value="#{sessionController.departments}"
                                                var="dept"

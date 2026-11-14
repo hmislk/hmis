@@ -407,7 +407,10 @@ public enum BillTypeAtomic {
     SUPPLIER_PAYMENT_CANCELLED("GRN Payment Cancelled", BillCategory.CANCELLATION, ServiceType.SETTLEMENT, BillFinanceType.CASH_IN, CountedServiceType.SUPPLIER_PAYMENT, PaymentCategory.NON_CREDIT_COLLECTION, BillType.GrnPayment),
     SUPPLIER_PAYMENT_RETURNED("Supplier Payment Returned", BillCategory.REFUND, ServiceType.SETTLEMENT, BillFinanceType.CASH_IN, CountedServiceType.SUPPLIER_PAYMENT, PaymentCategory.NON_CREDIT_COLLECTION, BillType.GrnPayment),
     // Drawer Adjustment
-    DRAWER_ADJUSTMENT("Drawer Adjustment", BillCategory.BILL, ServiceType.OTHER, BillFinanceType.FLOAT_CHANGE, CountedServiceType.OTHER, PaymentCategory.OTHER, BillType.DrawerAdjustment);
+    DRAWER_ADJUSTMENT("Drawer Adjustment", BillCategory.BILL, ServiceType.OTHER, BillFinanceType.FLOAT_CHANGE, CountedServiceType.OTHER, PaymentCategory.OTHER, BillType.DrawerAdjustment),
+    // Ward request to the issuing pharmacy to return a direct issue to an inpatient (#25506).
+    // No stock and no bill value until the pharmacy approves and settles the return.
+    REQUEST_DIRECT_ISSUE_RETURN_INWARD("Request Return of Direct Issued Medicines for Inward Patients", BillCategory.BILL, ServiceType.INWARD_SERVICE, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.OTHER, PaymentCategory.NO_PAYMENT, BillType.InwardDirectIssueReturnRequest);
 
     public static List<BillTypeAtomic> findOpdAndInpatientServiceAndInvestigationIndividualBillTypes() {
         List<BillTypeAtomic> btas = new ArrayList<>();

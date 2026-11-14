@@ -126,7 +126,16 @@
                         </td>
                     </tr>
 
-                    <tr> 
+                    <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Worksheet 5x5 - Show Patient Mobile', true) and not empty cc.attrs.patientInvestigation.billItem.bill.patient.person.mobile}">
+                        <tr>
+                            <td style="padding: 2px; font-size: 11px;">Mobile</td>
+                            <td style="padding: 2px; font-size: 11px;">
+                                <h:outputText value="#{cc.attrs.patientInvestigation.billItem.bill.patient.person.mobile}"/>
+                            </td>
+                        </tr>
+                    </h:panelGroup>
+
+                    <tr>
                         <td style="padding: 2px; font-size: 13px; font-weight: 700;">
                             <h:outputText value="Bill No"/>
                         </td>
@@ -144,7 +153,7 @@
                         </tr>
                     </h:panelGroup>
 
-                    <h:panelGroup rendered="#{cc.attrs.patientInvestigation.billItem.bill.patientEncounter ne null}">
+                    <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Worksheet 5x5 - Show Room No', true) and cc.attrs.patientInvestigation.billItem.bill.patientEncounter ne null}">
                         <tr>
                             <td style="padding: 2px; font-size: 11px;">Room No</td>
                             <td style="padding: 2px; font-size: 11px;">
@@ -153,7 +162,7 @@
                         </tr>
                     </h:panelGroup>
 
-                    <h:panelGroup rendered="#{cc.attrs.patientInvestigation.billItem.bill.collectingCentre ne null}">
+                    <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Worksheet 5x5 - Show CC Name', true) and cc.attrs.patientInvestigation.billItem.bill.collectingCentre ne null}">
                         <tr> 
                             <td style="padding: 2px; font-size: 11px;">CC Name</td>
                             <td style="padding: 2px; font-size: 11px;">
@@ -171,32 +180,38 @@
                         </tr>
                     </h:panelGroup>
 
-                    <tr> 
-                        <td style="padding: 2px; font-size: 11px;">Bill At</td>
-                        <td style="padding: 2px; font-size: 11px;">
-                            <h:outputText value="#{cc.attrs.patientInvestigation.billItem.bill.createdAt}">
-                                <f:convertDateTime pattern="yyyy MMM dd hh:mm:ss a" />
-                            </h:outputText>
-                        </td>
-                    </tr>
+                    <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Worksheet 5x5 - Show Bill At', true)}">
+                        <tr>
+                            <td style="padding: 2px; font-size: 11px;">Bill At</td>
+                            <td style="padding: 2px; font-size: 11px;">
+                                <h:outputText value="#{cc.attrs.patientInvestigation.billItem.bill.createdAt}">
+                                    <f:convertDateTime pattern="yyyy MMM dd hh:mm:ss a" />
+                                </h:outputText>
+                            </td>
+                        </tr>
+                    </h:panelGroup>
 
-                    <tr> 
-                        <td style="padding: 2px; font-size: 11px;">Collected At</td>
-                        <td style="padding: 2px; font-size: 11px;">
-                            <h:outputText value="#{cc.attrs.patientInvestigation.sampleCollectedAt}">
-                                <f:convertDateTime pattern="yyyy MMM dd hh:mm:ss a" />
-                            </h:outputText>
-                        </td>
-                    </tr>
-                    
-                    <tr> 
-                        <td style="padding: 2px; font-size: 11px;">Received At</td>
-                        <td style="padding: 2px; font-size: 11px;">
-                            <h:outputText value="#{cc.attrs.patientInvestigation.receivedAt}">
-                                <f:convertDateTime pattern="yyyy MMM dd hh:mm:ss a" />
-                            </h:outputText>
-                        </td>
-                    </tr>
+                    <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Worksheet 5x5 - Show Collected At', true)}">
+                        <tr>
+                            <td style="padding: 2px; font-size: 11px;">Collected At</td>
+                            <td style="padding: 2px; font-size: 11px;">
+                                <h:outputText value="#{cc.attrs.patientInvestigation.sampleCollectedAt}">
+                                    <f:convertDateTime pattern="yyyy MMM dd hh:mm:ss a" />
+                                </h:outputText>
+                            </td>
+                        </tr>
+                    </h:panelGroup>
+
+                    <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Worksheet 5x5 - Show Received At', true)}">
+                        <tr>
+                            <td style="padding: 2px; font-size: 11px;">Received At</td>
+                            <td style="padding: 2px; font-size: 11px;">
+                                <h:outputText value="#{cc.attrs.patientInvestigation.receivedAt}">
+                                    <f:convertDateTime pattern="yyyy MMM dd hh:mm:ss a" />
+                                </h:outputText>
+                            </td>
+                        </tr>
+                    </h:panelGroup>
 
                     <tr> 
                         <td style="padding: 2px; font-size: 13px; font-weight: 700;">Investigation</td>
@@ -215,7 +230,7 @@
                     </h:panelGroup>
 
                     <tr> 
-                        <td style="padding: 2px; font-size: 13px; font-weight: 700;">Sample ID</td>
+                        <td style="padding: 2px; font-size: 13px; font-weight: 700;">Sample IDs</td>
                         <td style="padding: 2px; font-size: 13px; font-weight: 700;">
                             <ui:repeat value="#{patientInvestigationController.getPatientSampleComponentsByInvestigation(cc.attrs.patientInvestigation)}" var="psc">
                                 <div class="d-flex gap-2">

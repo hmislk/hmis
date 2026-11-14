@@ -1,0 +1,230 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:cc="http://xmlns.jcp.org/jsf/composite"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+
+    <h:body>
+        <cc:interface>
+            <cc:attribute name="patientInvestigations" required="true" />
+            <cc:attribute name="tubeName" />
+            <cc:attribute name="sampleIds" />
+            <cc:attribute name="billNumbers" />
+        </cc:interface>
+
+        <cc:implementation>
+
+            <ui:param name="firstIx" value="#{cc.attrs.patientInvestigations[0]}" />
+            <ui:param name="firstBill" value="#{cc.attrs.patientInvestigations[0].billItem.bill}" />
+
+            <style>
+                @media screen{
+                    .combined-ws-container {
+                        zoom: 1.4;
+                    }
+                }
+
+                .combined-ws-container {
+                    font-family: "Courier New", "Liberation Mono", monospace;
+                    width: 14cm !important;
+                    margin: auto;
+                    box-sizing: border-box;
+                    border: 1px solid #000;
+                    padding: 1cm;
+                    display: flex;
+                    flex-direction: column;
+                }
+
+                .combined-ws-container .ws-footer {
+                    margin-top: auto;
+                    padding: 10px;
+                    text-align: center;
+                    font-size: 11px;
+                }
+
+                .combined-ws-container .ws-ix-title {
+                    font-size: 13px;
+                    font-weight: 700;
+                    margin-top: 6px;
+                    margin-bottom: 2px;
+                }
+
+                .combined-ws-container .ws-info td {
+                    font-size: 11px;
+                    padding: 2px;
+                }
+
+                .combined-ws-container .ws-info .ws-bold td {
+                    font-size: 13px;
+                    font-weight: 700;
+                }
+
+                .combined-ws-container .ws-items {
+                    line-height: 1.2;
+                }
+
+                @media print {
+                    @page {
+                        size: auto;
+                        margin: 0;
+                    }
+                    .combined-ws-container {
+                        width: 14cm !important;
+                        border: none;
+                        padding: 1cm;
+                        min-height: 100vh;
+                    }
+                    .combined-ws-container .ws-items {
+                        line-height: 0.8;
+                    }
+                    .combined-ws-container .ws-footer {
+                        font-size: 9px;
+                    }
+                }
+            </style>
+
+            <div class="combined-ws-container">
+
+                <div class="d-flex justify-content-center text-center" style="font-weight: 700; font-size: 18px;">
+                    <h:outputLabel value="Combined Worksheet"/>
+                </div>
+
+                <table class="ws-info mt-2" style="width: 100%; border-collapse: collapse;">
+                    <tr>
+                        <td>Patient Name</td>
+                        <td><h:outputLabel value="#{firstBill.patient.person.nameWithTitle}"/></td>
+                    </tr>
+
+                    <tr>
+                        <td>Age / Gender</td>
+                        <td>
+                            <h:outputText value="#{empty firstBill.patient.person.ageAsShortString ? 'N/A' : firstBill.patient.person.ageAsShortString} / #{firstBill.patient.person.sex.label}"/>
+                        </td>
+                    </tr>
+
+                    <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Worksheet 5x5 - Show Patient Mobile', true) and not empty firstBill.patient.person.mobile}">
+                        <tr>
+                            <td>Mobile</td>
+                            <td><h:outputText value="#{firstBill.patient.person.mobile}"/></td>
+                        </tr>
+                    </h:panelGroup>
+
+                    <tr class="ws-bold">
+                        <td>Bill No</td>
+                        <td><h:outputText value="#{cc.attrs.billNumbers}"/></td>
+                    </tr>
+
+                    <h:panelGroup rendered="#{firstBill.patientEncounter ne null}">
+                        <tr class="ws-bold">
+                            <td>BHT No</td>
+                            <td><h:outputLabel value="#{firstBill.patientEncounter.bhtNo}"/></td>
+                        </tr>
+                    </h:panelGroup>
+
+                    <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Worksheet 5x5 - Show Room No', true) and firstBill.patientEncounter ne null}">
+                        <tr>
+                            <td>Room No</td>
+                            <td><h:outputLabel value="#{firstBill.patientEncounter.currentPatientRoom.roomFacilityCharge.room.name}"/></td>
+                        </tr>
+                    </h:panelGroup>
+
+                    <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Worksheet 5x5 - Show CC Name', true) and firstBill.collectingCentre ne null}">
+                        <tr>
+                            <td>CC Name</td>
+                            <td><h:outputText value="#{firstBill.collectingCentre.name}"/></td>
+                        </tr>
+                    </h:panelGroup>
+
+                    <h:panelGroup rendered="#{firstBill.referredBy ne null}">
+                        <tr>
+                            <td>Ref. Doctor</td>
+                            <td><h:outputLabel value="#{firstBill.referredBy.person.nameWithTitle}"/></td>
+                        </tr>
+                    </h:panelGroup>
+
+                    <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Worksheet 5x5 - Show Bill At', true)}">
+                        <tr>
+                            <td>Bill At</td>
+                            <td>
+                                <h:outputText value="#{firstBill.createdAt}">
+                                    <f:convertDateTime pattern="yyyy MMM dd hh:mm:ss a" />
+                                </h:outputText>
+                            </td>
+                        </tr>
+                    </h:panelGroup>
+
+                    <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Worksheet 5x5 - Show Collected At', true)}">
+                        <tr>
+                            <td>Collected At</td>
+                            <td>
+                                <h:outputText value="#{firstIx.sampleCollectedAt}">
+                                    <f:convertDateTime pattern="yyyy MMM dd hh:mm:ss a" />
+                                </h:outputText>
+                            </td>
+                        </tr>
+                    </h:panelGroup>
+
+                    <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Worksheet 5x5 - Show Received At', true)}">
+                        <tr>
+                            <td>Received At</td>
+                            <td>
+                                <h:outputText value="#{firstIx.receivedAt}">
+                                    <f:convertDateTime pattern="yyyy MMM dd hh:mm:ss a" />
+                                </h:outputText>
+                            </td>
+                        </tr>
+                    </h:panelGroup>
+
+                    <tr class="ws-bold">
+                        <td>Sample Tube</td>
+                        <td><h:outputText value="#{cc.attrs.tubeName}"/></td>
+                    </tr>
+
+                    <tr class="ws-bold">
+                        <td>Sample IDs</td>
+                        <td>
+                            <ui:repeat value="#{cc.attrs.sampleIds}" var="sid">
+                                <div><h:outputText value="#{sid}"/></div>
+                            </ui:repeat>
+                        </td>
+                    </tr>
+                </table>
+
+                <ui:repeat value="#{cc.attrs.patientInvestigations}" var="ix">
+                    <hr style="margin: 6px 0;"/>
+                    <div class="ws-ix-title">
+                        <h:outputText value="#{ix.billItem.item.name}"/>
+                        <h:outputText value=" (#{ix.billItem.priority})"
+                                      rendered="#{ix.billItem.priority ne null and ix.billItem.priority ne 'NORMAL'}"/>
+                    </div>
+
+                    <h:panelGroup rendered="#{ix.investigation.reportType ne 'Microbiology'}">
+                        <div class="ws-items">
+                            <ui:repeat value="#{ix.investigation.reportItems}" var="myix">
+                                <h:panelGroup rendered="#{myix.retired==false and myix.ixItemType eq 'Value'}">
+                                    <div class="row">
+                                        <div class="col-5">
+                                            <h:outputLabel value="#{myix.name}" style="font-size: 11px!important;" class="mt-1"/>
+                                        </div>
+                                        <div class="col-7">
+                                            <h:outputLabel value="_______________________________" style="font-size: 11px!important;"/>
+                                        </div>
+                                    </div>
+                                </h:panelGroup>
+                            </ui:repeat>
+                        </div>
+                    </h:panelGroup>
+                </ui:repeat>
+
+                <div class="ws-footer">
+                    <h:outputLabel value="Powered by CareCode (Pvt) Ltd."/>
+                </div>
+
+            </div>
+
+        </cc:implementation>
+
+    </h:body>
+</html>

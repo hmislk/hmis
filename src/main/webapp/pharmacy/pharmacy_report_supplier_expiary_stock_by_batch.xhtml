@@ -140,7 +140,7 @@
 
                             <f:facet name="header">
                                 <h:outputLabel value="Department - #{reportsStock.department.name} "/> <br/>
-                                <h:outputLabel value="Supplier - #{reportsStock.institution.name}"/>
+                                <h:outputLabel value="Supplier - #{reportsStock.institution ne null ? reportsStock.institution.name : 'All'}"/>
                             </f:facet>
 
                             <p:column width="40px;" headerText="No" sortBy="#{ii}">
@@ -166,6 +166,20 @@
                                 <h:outputLabel value="#{i.itemBatch.item.code}" style="width: 100px!important;"/>
                             </p:column>
 
+                            <p:column headerText="Batch No"
+                                      sortBy="#{i.itemBatch.batchNo}"
+                                      filterBy="#{i.itemBatch.batchNo}"
+                                      filterMatchMode="contains">
+                                <h:outputLabel value="#{i.itemBatch.batchNo}"/>
+                            </p:column>
+
+                            <p:column headerText="Supplier"
+                                      sortBy="#{i.itemBatch.lastPurchaseBillItem.bill.fromInstitution.name}"
+                                      filterBy="#{i.itemBatch.lastPurchaseBillItem.bill.fromInstitution.name}"
+                                      filterMatchMode="contains">
+                                <h:outputLabel value="#{i.itemBatch.lastPurchaseBillItem.bill.fromInstitution.name}"/>
+                            </p:column>
+
                             <p:column headerText="Stock Quantity"
                                       styleClass="averageNumericColumn"
                                       sortBy="#{i.stock}">
@@ -178,7 +192,7 @@
                             </p:column>
 
                             <p:column headerText="Expiry"
-                                      sortBy="#{i.itemBatch.item.name}"
+                                      sortBy="#{i.itemBatch.dateOfExpire}"
                                       styleClass="averageNumericColumn">
                                 <f:facet name="header">
                                     <h:outputLabel value="Expiry"/>
@@ -247,7 +261,7 @@
                             </p:column>
                             <p:columnGroup type="footer">
                                 <p:row>
-                                    <p:column colspan="6" footerText="Total">
+                                    <p:column colspan="8" footerText="Total">
                                         <f:facet name="footer">
                                             <h:outputLabel value="Total"/>
                                         </f:facet>
@@ -275,7 +289,7 @@
                                 </p:row>
 
                                 <p:row>
-                                    <p:column colspan="9">
+                                    <p:column colspan="11">
                                         <f:facet name="footer">
                                             <h:outputLabel value="Printed At "/>
                                             <h:outputLabel value="#{sessionController.currentDate}">

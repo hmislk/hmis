@@ -82,7 +82,58 @@ HOOK
   echo "[OK] Minimal gitleaks hook installed in .git/hooks/pre-commit"
 fi
 
+# ---- 4. Install the changeset-guard pre-push hook -----------
+# A thin wrapper that runs the tracked scripts/hooks/pre-push, so later
+# changes to the hook or .github/changeset-guard-patterns.txt apply without
+# reinstalling. On a branch without the hook (cut from a deploy branch) it runs
+# origin/development's copy, and blocks the push if that cannot be loaded.
+# Re-run this script to upgrade an older wrapper. An unrelated existing
+# pre-push hook is left alone.
+HOOKS_DIR="$(git rev-parse --git-path hooks)"
+mkdir -p "$HOOKS_DIR"
+PRE_PUSH="$HOOKS_DIR/pre-push"
+GUARD_INSTALLED=0
+if [ -f "$PRE_PUSH" ] && ! grep -q "HMIS changeset-guard pre-push" "$PRE_PUSH"; then
+  echo "[WARN] $PRE_PUSH already exists and is not ours; not overwriting."
+  echo "       Call scripts/hooks/pre-push from it to enable the changeset guard."
+else
+  cat > "$PRE_PUSH" << 'HOOK'
+#!/usr/bin/env bash
+# HMIS changeset-guard pre-push (installed by scripts/install-dev-hooks.sh)
+HOOK_SCRIPT="$(git rev-parse --show-toplevel)/scripts/hooks/pre-push"
+[ -f "$HOOK_SCRIPT" ] && exec bash "$HOOK_SCRIPT" "$@"
+# The branch predates the hook (e.g. a hotfix cut from a deploy branch): run
+# development's copy instead of skipping the check.
+if [ "${HMIS_ALLOW_RISKY_PUSH:-}" = "1" ]; then
+  echo "pre-push: HMIS_ALLOW_RISKY_PUSH=1 set, changeset guard skipped."
+  exit 0
+fi
+# Stop Git Bash on Windows rewriting the "<rev>:<path>" argument of git show.
+export MSYS_NO_PATHCONV=1
+git fetch -q origin +development:refs/remotes/origin/development 2>/dev/null ||
+  echo "pre-push: WARNING: could not fetch origin development (offline?); using the local copy." >&2
+TMP_HOOK="$(mktemp)" || exit 1
+trap 'rm -f "$TMP_HOOK"' EXIT
+if ! git show origin/development:scripts/hooks/pre-push > "$TMP_HOOK" 2>/dev/null || [ ! -s "$TMP_HOOK" ]; then
+  echo "pre-push: BLOCKED. The changeset guard hook could not be loaded from" >&2
+  echo "origin/development. Run 'git fetch origin development' and retry." >&2
+  exit 1
+fi
+echo "pre-push: scripts/hooks/pre-push is missing on this branch; using the copy from origin/development." >&2
+HMIS_GUARD_FETCHED=1 bash "$TMP_HOOK" "$@"
+HOOK
+  chmod +x "$PRE_PUSH"
+  GUARD_INSTALLED=1
+  echo "[OK] changeset-guard pre-push hook installed in $PRE_PUSH"
+fi
+
 echo ""
 echo "=== Done ==="
 echo "Your commits will now be scanned for secrets before they are created."
+if [ "$GUARD_INSTALLED" = "1" ]; then
+  echo "Pushes that add risky files (screenshots, PDFs, dumps, tmp/ files) are"
+  echo "blocked. Bypass one push only with: HMIS_ALLOW_RISKY_PUSH=1 git push"
+else
+  echo "[WARN] The changeset guard is NOT active on push: see the warning above."
+fi
 echo "To test: gitleaks detect --config=.gitleaks.toml -v"

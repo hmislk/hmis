@@ -32,67 +32,88 @@
 
                         <p:growl ></p:growl>
 
-                        <div class="row" >
-                            <div class="col-md-3">
-                                <p:panel>
-                                    <f:facet name="header">
+                        <div class="row g-2">
+                            <div class="col-md-4">
+                                <div class="card h-100">
+                                    <div class="card-header bg-light">
                                         <h:outputText styleClass="fas fa-id-card-alt"></h:outputText>
-                                        <h:outputLabel value="Patient Details" class="mx-2"></h:outputLabel>
-                                    </f:facet>
-                                    <common:patient patient="#{billReturnController.originalBillToReturn.patient}" class="w-100"/>
-                                </p:panel>
+                                        <h:outputLabel value="Patient Details" ></h:outputLabel>
+                                    </div>
+                                    <div class="card-body">
+                                        <common:patient patient="#{billReturnController.originalBillToReturn.patient}" class="w-100"/>
+                                    </div>
+                                </div>
                             </div>
-                            <div class="col-md-3">
-                                <p:panel>
-                                    <f:facet name="header">
+                            <div class="col-md-4">
+                                <div class="card h-100">
+                                    <div class="card-header bg-light">
                                         <h:outputText styleClass="fas fa-list-alt"></h:outputText>
-                                        <h:outputLabel value="Bill Details" class="mx-2"></h:outputLabel>
-                                    </f:facet>
-                                    <p:panelGrid columns="2">
-                                        <h:outputLabel value="Bill No :" ></h:outputLabel>
-                                        <h:outputLabel value="#{billReturnController.originalBillToReturn.deptId}" ></h:outputLabel>
-                                        <h:outputLabel value="Payment Method:" ></h:outputLabel>
-                                        <h:outputLabel value="#{billReturnController.originalBillToReturn.paymentMethod}" ></h:outputLabel>
-                                        <h:outputLabel value="Total :" ></h:outputLabel>
-                                        <h:outputLabel value="#{billReturnController.originalBillToReturn.total}" >
-                                            <f:convertNumber pattern="#,##0.00" />
-                                        </h:outputLabel>
-                                        <h:outputLabel value="Discount :" ></h:outputLabel>
-                                        <h:outputLabel value="#{billReturnController.originalBillToReturn.discount}" >
-                                            <f:convertNumber pattern="#,##0.00" />
-                                        </h:outputLabel>
-                                        <h:outputLabel value="Net Total :" ></h:outputLabel>
-                                        <h:outputLabel value="#{billReturnController.originalBillToReturn.netTotal}" >
-                                            <f:convertNumber pattern="#,##0.00" />
-                                        </h:outputLabel>
-                                    </p:panelGrid>
-                                </p:panel>
+                                        <h:outputLabel value="Bill Details"></h:outputLabel>
+                                    </div>
+                                    <div class="card-body">
+                                    <table class="table table-sm table-borderless mb-0">
+                                        <tr>
+                                            <td style="padding: 8px 8px;"><h:outputLabel value="Bill No :" ></h:outputLabel></td>
+                                            <td style="padding: 8px 8px;"><h:outputLabel value="#{billReturnController.originalBillToReturn.deptId}" ></h:outputLabel></td>
+                                        </tr>
+                                        <tr>
+                                            <td style="padding: 8px 8px;"><h:outputLabel value="Payment Method:" ></h:outputLabel></td>
+                                            <td style="padding: 8px 8px;"><h:outputLabel value="#{billReturnController.originalBillToReturn.paymentMethod}" ></h:outputLabel></td>
+                                        </tr>
+                                        <tr>
+                                            <td style="padding: 8px 8px;"><h:outputLabel value="Total :" ></h:outputLabel></td>
+                                            <td style="padding: 8px 8px;">
+                                                <h:outputLabel value="#{billReturnController.originalBillToReturn.total}" >
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                </h:outputLabel>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td style="padding: 8px 8px;"><h:outputLabel value="Discount :" ></h:outputLabel></td>
+                                            <td style="padding: 8px 8px;">
+                                                <h:outputLabel value="#{billReturnController.originalBillToReturn.discount}" >
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                </h:outputLabel>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td style="padding: 8px 8px;"><h:outputLabel value="Net Total :" ></h:outputLabel></td>
+                                            <td style="padding: 8px 8px;">
+                                                <h:outputLabel value="#{billReturnController.originalBillToReturn.netTotal}" >
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                </h:outputLabel>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                    </div>
+                                </div>
 
                             </div>
-                            <div class="col-md-3">
+                            <div class="col-md-4">
                                 <!-- Original Payment Details Panel -->
-                                <p:panel rendered="#{not empty billReturnController.originalBillPayments}">
-                                    <f:facet name="header">
+                                <h:panelGroup layout="block" styleClass="card h-100" rendered="#{not empty billReturnController.originalBillPayments}">
+                                    <div class="card-header bg-light">
                                         <h:outputText styleClass="fas fa-receipt"></h:outputText>
-                                        <h:outputLabel value="Original Payment Details" class="mx-2"></h:outputLabel>
-                                    </f:facet>
+                                        <h:outputLabel value="Original Payment Details"></h:outputLabel>
+                                    </div>
+                                    <div class="card-body">
 
                                     <p:dataTable value="#{billReturnController.originalBillPayments}"
                                                  var="origPayment"
                                                  styleClass="table table-sm"
                                                  emptyMessage="No payment details available">
 
-                                        <p:column headerText="Method">
+                                        <p:column headerText="Method" style="padding-top: 10px; padding-bottom: 10px;">
                                             <h:outputText value="#{origPayment.paymentMethod}" />
                                         </p:column>
 
-                                        <p:column headerText="Amount" styleClass="text-end">
+                                        <p:column headerText="Amount" style="padding-top: 10px; padding-bottom: 10px;" styleClass="text-end">
                                             <h:outputText value="#{origPayment.paidValue}">
                                                 <f:convertNumber pattern="#,##0.00" />
                                             </h:outputText>
                                         </p:column>
 
-                                        <p:column headerText="Staff">
+                                        <p:column headerText="Staff" style="padding-top: 10px; padding-bottom: 10px;">
                                             <h:outputText value="#{origPayment.toStaff.person.nameWithTitle}"
                                                           rendered="#{origPayment.toStaff != null and (origPayment.paymentMethod eq 'Staff_Welfare' or origPayment.paymentMethod eq 'Staff')}"/>
                                             <h:outputText value="-"
@@ -100,7 +121,7 @@
                                                           styleClass="text-muted"/>
                                         </p:column>
 
-                                        <p:column headerText="Company">
+                                        <p:column headerText="Company" style="padding-top: 10px; padding-bottom: 10px;">
                                             <h:outputText value="#{origPayment.creditCompany.name}"
                                                           rendered="#{origPayment.creditCompany != null and origPayment.paymentMethod eq 'Credit'}"/>
                                             <h:outputText value="-"
@@ -108,7 +129,7 @@
                                                           styleClass="text-muted"/>
                                         </p:column>
 
-                                        <p:column headerText="Reference">
+                                        <p:column headerText="Reference" style="padding-top: 10px; padding-bottom: 10px;">
                                             <h:outputText value="#{origPayment.creditCardRefNo}"
                                                           rendered="#{origPayment.paymentMethod eq 'Card'}"/>
                                             <h:outputText value="#{origPayment.chequeRefNo}"
@@ -118,10 +139,12 @@
                                         </p:column>
 
                                     </p:dataTable>
-
-                                </p:panel>
+                                    </div>
+                                </h:panelGroup>
                             </div>
-                            <div class="col-md-3">
+                        </div>
+                        <div class="row mt-2" >
+                            <div class="col-md-12">
                                 <p:panel >
                                     <f:facet name="header" >
                                         <h:outputText value="Return Details" class="mt-2" ></h:outputText>
@@ -136,22 +159,39 @@
                                         </p:commandButton>
                                     </f:facet>
 
-                                    <p:panelGrid columns="2" >
-                                        <p:outputLabel value="Return Comments" ></p:outputLabel>
-                                        <p:inputText value="#{billReturnController.refundComment}"  class="w-100"></p:inputText>
-                                        <p:outputLabel value="Return Payment Method" ></p:outputLabel>
-                                        <p:selectOneMenu
-                                            id="cmbPs"
-                                            value="#{billReturnController.paymentMethod}"
-                                            disabled="#{billReturnController.paymentMethod eq 'Credit'}">
-                                            <f:selectItem itemLabel="Select paymentMethod"/>
-                                            <f:selectItems value="#{billReturnController.paymentMethods}"/>
-                                            <p:ajax process="@this" update="paymentDetails" event="change" listener="#{billReturnController.onPaymentMethodChange()}" />
-                                        </p:selectOneMenu>
-                                    </p:panelGrid>
+                                    <div class="row mb-2">
+                                        <div class="col-md-6">
+                                            <div class="row align-items-center">
+                                                <div class="col-4">
+                                                    <p:outputLabel for="txtReturnComment" value="Return Comments"></p:outputLabel>
+                                                </div>
+                                                <div class="col-8">
+                                                    <p:inputText id="txtReturnComment" value="#{billReturnController.refundComment}" style="width: 100%;"></p:inputText>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="row align-items-center">
+                                                <div class="col-4">
+                                                    <p:outputLabel for="cmbPs" value="Return Payment Method"></p:outputLabel>
+                                                </div>
+                                                <div class="col-8">
+                                                    <p:selectOneMenu
+                                                        id="cmbPs"
+                                                        style="width: 100%;"
+                                                        value="#{billReturnController.paymentMethod}"
+                                                        disabled="#{billReturnController.paymentMethod eq 'Credit'}">
+                                                        <f:selectItem itemLabel="Select paymentMethod"/>
+                                                        <f:selectItems value="#{billReturnController.paymentMethods}"/>
+                                                        <p:ajax process="@this" update="paymentDetails" event="change" listener="#{billReturnController.onPaymentMethodChange()}" />
+                                                    </p:selectOneMenu>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
 
                                     <h:panelGroup id="paymentDetails">
-                                        <fieldset disabled="#{billReturnController.paymentMethod eq 'Credit'}"
+                                        <fieldset disabled="#{billReturnController.paymentMethod eq 'Credit' ? 'disabled' : null}"
                                                  style="border: none; padding: 0; margin: 0;">
                                         <h:panelGroup
                                             class="row"
@@ -166,7 +206,7 @@
                                             <pa:staffCreditAsRefundPayment paymentMethodData="#{billReturnController.paymentMethodData}"/>
                                         </h:panelGroup>
                                         <h:panelGroup
-                                            class="row my-1"
+                                            class="my-1"
                                             layout="block"
                                             rendered="#{billReturnController.paymentMethod eq 'Staff_Welfare'}" >
                                             <pa:staffWelfareAsRefundPayment paymentMethodData="#{billReturnController.paymentMethodData}"/>

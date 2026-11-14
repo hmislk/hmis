@@ -63,6 +63,7 @@ import com.divudi.core.facade.StockFacade;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.bean.opd.OpdBillController;
 import com.divudi.bean.pharmacy.GrnReturnWorkflowController;
+import com.divudi.bean.pharmacy.PharmacyReturnwithouttresing;
 import com.divudi.bean.pharmacy.PharmacyBillSearch;
 import com.divudi.bean.pharmacy.PharmacyController;
 import com.divudi.core.data.BillCategory;
@@ -279,6 +280,9 @@ public class SearchController implements Serializable {
 
     @Inject
     private GrnReturnWorkflowController grnReturnWorkflowController;
+
+    @Inject
+    private PharmacyReturnwithouttresing pharmacyReturnwithouttresing;
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Class Variables">
     private String visitType;
@@ -532,6 +536,8 @@ public class SearchController implements Serializable {
     }
 
     public String navigateToPharmacyReturnWithoutReceipt() {
+        // Start a fresh return; otherwise the session bean still shows the last settled bill's print preview (#16854).
+        pharmacyReturnwithouttresing.resetAll();
         return "/pharmacy/pharmacy_return_withouttresing?faces-redirect=true";
     }
 
@@ -5329,6 +5335,13 @@ public class SearchController implements Serializable {
     /**
      * Populates {@link #transferRequestDtos} using DTO projections. Each
      * request DTO additionally loads its issued bill DTOs for display.
+     *
+     * <p>Cancelled requests are listed too, with their cancelled flag, time and
+     * canceller, so a request cancelled from this list stays visible with a
+     * Cancelled status instead of disappearing (#18282). The page already
+     * disables Issue for a cancelled row. LEFT JOINs on the cancellation bill:
+     * an implicit path (b.cancelledBill.createdAt) would be an inner join and
+     * drop every request that was never cancelled.</p>
      */
     public void createRequestTableDto() {
         String jpql = "select new com.divudi.core.data.dto.PharmacyTransferRequestListDTO("
@@ -5338,10 +5351,15 @@ public class SearchController implements Serializable {
                 + " b.department.name, "
                 + " b.creater.webUserPerson.name, "
                 + " b.completed, "
-                + " b.fullyIssued)"
+                + " b.fullyIssued, "
+                + " b.cancelled, "
+                + " cb.createdAt, "
+                + " cbp.name)"
                 + " from Bill b"
+                + " left join b.cancelledBill cb"
+                + " left join cb.creater cbu"
+                + " left join cbu.webUserPerson cbp"
                 + " where b.retired=false "
-                + " and b.cancelled=false "
                 + " and  b.toDepartment=:toDep"
                 + " and b.billTypeAtomic = :billTypeAtomic"
                 + " and b.createdAt between :fromDate and :toDate";
@@ -5356,7 +5374,9 @@ public class SearchController implements Serializable {
             params.put("billNo", "%" + getSearchKeyword().getBillNo().trim().toUpperCase() + "%");
         }
 
-        jpql += " order by b.createdAt desc";
+        // Open requests first, so cancelled ones never push them out of the 50-row limit.
+        // CASE keeps the order null-safe for databases where the cancelled column holds NULL.
+        jpql += " order by case when b.cancelled = true then 1 else 0 end, b.createdAt desc";
 
         transferRequestDtos = (List<PharmacyTransferRequestListDTO>) billFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP, 50, true);
 
@@ -5378,12 +5398,12 @@ public class SearchController implements Serializable {
         // LEFT JOINs are required: implicit path navigation (b.referenceBill.id) generates
         // an inner join that silently excludes bills where referenceBill_ID is NULL
         // (e.g. bills created via native SQL that only set backwardReferenceBill).
-        String jpql = "select new com.divudi.core.data.dto.PharmacyTransferRequestIssueDTO(b.id, b.deptId)"
+        // Cancelled issue bills are kept so the page can show them in red (#25374).
+        String jpql = "select new com.divudi.core.data.dto.PharmacyTransferRequestIssueDTO(b.id, b.deptId, b.cancelled)"
                 + " from Bill b"
                 + " left join b.referenceBill ref"
                 + " left join b.backwardReferenceBill bref"
                 + " where b.retired = false"
-                + " and b.cancelled = false"
                 + " and b.billTypeAtomic = :bta"
                 + " and (ref.id = :rid or bref.id = :rid)";
         HashMap<String, Object> params = new HashMap<>();
@@ -8318,7 +8338,9 @@ public class SearchController implements Serializable {
         }
 
         if (getSearchKeyword().getBhtNo() != null && !getSearchKeyword().getBhtNo().trim().equals("")) {
-            sql += " and  ((b.paidForBillFee.bill.patientEncounter.bhtNo) like :bht )";
+            // Split-mode OPD bills keep the BHT only on their batch bill (backwardReferenceBill).
+            sql += " and (b.bill.id in (select eb.id from Bill eb where eb.patientEncounter.bhtNo like :bht)"
+                    + " or b.bill.id in (select ib.id from Bill ib where ib.backwardReferenceBill.patientEncounter.bhtNo like :bht)) ";
             temMap.put("bht", "%" + getSearchKeyword().getBhtNo().trim().toUpperCase() + "%");
         }
 
@@ -8396,7 +8418,9 @@ public class SearchController implements Serializable {
         }
 
         if (getSearchKeyword().getBhtNo() != null && !getSearchKeyword().getBhtNo().trim().equals("")) {
-            sql += " and  ((b.paidForBillFee.bill.patientEncounter.bhtNo) like :bht )";
+            // Split-mode OPD bills keep the BHT only on their batch bill (backwardReferenceBill).
+            sql += " and (b.bill.id in (select eb.id from Bill eb where eb.patientEncounter.bhtNo like :bht)"
+                    + " or b.bill.id in (select ib.id from Bill ib where ib.backwardReferenceBill.patientEncounter.bhtNo like :bht)) ";
             temMap.put("bht", "%" + getSearchKeyword().getBhtNo().trim().toUpperCase() + "%");
         }
         sql += "  order by b.staff.id    ";

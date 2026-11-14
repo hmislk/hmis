@@ -64,6 +64,8 @@ public class TokenController implements Serializable, ControllerWithPatient {
     PatientController patientController;
     @Inject
     PharmacyBillSearch pharmacyBillSearch;
+    @Inject
+    ConfigOptionApplicationController configOptionApplicationController;
 
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Class variables">
@@ -190,6 +192,24 @@ public class TokenController implements Serializable, ControllerWithPatient {
         return "/token/pharmacy_tokens_called_counter_wise"; // Adjust the navigation string as per your page structure
     }
 
+    private Date startOfToday() {
+        java.util.Calendar c = java.util.Calendar.getInstance();
+        c.set(java.util.Calendar.HOUR_OF_DAY, 0);
+        c.set(java.util.Calendar.MINUTE, 0);
+        c.set(java.util.Calendar.SECOND, 0);
+        c.set(java.util.Calendar.MILLISECOND, 0);
+        return c.getTime();
+    }
+
+    // Exclusive upper bound, so a bill dated tomorrow (server clock corrected
+    // after it was saved) does not show on today's TV.
+    private Date startOfTomorrow() {
+        java.util.Calendar c = java.util.Calendar.getInstance();
+        c.setTime(startOfToday());
+        c.add(java.util.Calendar.DATE, 1);
+        return c.getTime();
+    }
+
     public void fillSaleForCashierCalledBillsTokens(){
         Map m = new HashMap();
         String j = "Select t "
@@ -202,6 +222,8 @@ public class TokenController implements Serializable, ControllerWithPatient {
                 + " and t.tokenType=:ty"
                 + " and t.completed=:com"
                 + " and t.displayToken = true"
+                + " and t.bill.createdAt >= :fd"
+                + " and t.bill.createdAt < :td"
                 + " and t.retired = false";
         
         Bill b = new Bill();
@@ -211,8 +233,12 @@ public class TokenController implements Serializable, ControllerWithPatient {
         m.put("cal", true); // Tokens that are called
         m.put("com", false); // Tokens that are not completed
         m.put("ty", TokenType.PHARMACY_TOKEN_SALE_FOR_CASHIER);
-        j += " order by t.id";
-        currentTokensSaleForCashier = tokenFacade.findByJpql(j, m, TemporalType.DATE);
+        // Only today's tokens: token numbers restart daily, and called but
+        // never completed tokens from earlier days cluttered the TV.
+        m.put("fd", startOfToday());
+        m.put("td", startOfTomorrow());
+        currentTokensSaleForCashier = findTokensForDisplay(j, m,
+                "Pharmacy Sale for Cashier Token Display - Maximum Number of Called Tokens to Show (0 for All)", true);
     }
     
     public void fillInprogressSaleForCashierBillsTokens(){
@@ -228,6 +254,8 @@ public class TokenController implements Serializable, ControllerWithPatient {
                 + " and t.inProgress=:prog "
                 + " and t.completed=:com "
                 + " and t.displayToken = true"
+                + " and t.bill.createdAt >= :fd"
+                + " and t.bill.createdAt < :td"
                 + " and t.retired = false";
         
         Bill b = new Bill();
@@ -238,8 +266,53 @@ public class TokenController implements Serializable, ControllerWithPatient {
         m.put("prog", true); // Tokens that are not in progress
         m.put("com", false); // Tokens that are not completed
         m.put("ty", TokenType.PHARMACY_TOKEN_SALE_FOR_CASHIER);
-        j += " order by t.id";
-        inprogressTokensSaleForCashier = tokenFacade.findByJpql(j, m, TemporalType.DATE);
+        // Only today's tokens: token numbers restart daily, and called but
+        // never completed tokens from earlier days cluttered the TV.
+        m.put("fd", startOfToday());
+        m.put("td", startOfTomorrow());
+        inprogressTokensSaleForCashier = findTokensForDisplay(j, m,
+                "Pharmacy Sale for Cashier Token Display - Maximum Number of In-Progress Tokens to Show (0 for All)", false);
+    }
+
+    // Limit for the Sale for Cashier TV board. Today's tokens are read in id
+    // order (exactly as before). With no limit (unset, 0 or negative) that list
+    // is returned unchanged. With a limit:
+    // - called list (byCalledAt = true): the tokens called MOST RECENTLY are kept
+    //   (calledAt desc; a token with no calledAt counts as oldest, except one in
+    //   payment (in progress), which counts as newest; id desc breaks ties), so
+    //   a low-numbered token called late still reaches the TV and the token
+    //   called longest ago drops off. The kept tokens are shown oldest call
+    //   first, so the latest call is the last row.
+    // - in-progress list (byCalledAt = false): marking a token in progress does
+    //   not store a timestamp (calledAt is cleared, startedAt is not set), so the
+    //   highest token ids (the newest bills) are kept, shown in id order.
+    private List<Token> findTokensForDisplay(String jpql, Map m, String maxCountKey, boolean byCalledAt) {
+        List<Token> all = tokenFacade.findByJpql(jpql + " order by t.id", m, TemporalType.DATE);
+        Integer max = configOptionApplicationController.getIntegerValueByKey(maxCountKey, 0);
+        if (all == null || max == null || max <= 0 || all.size() <= max) {
+            return all;
+        }
+        if (!byCalledAt) {
+            return new java.util.ArrayList<>(all.subList(all.size() - max, all.size()));
+        }
+        List<Token> kept = new java.util.ArrayList<>(all);
+        // Oldest call first; the last 'max' are the most recent calls. A token whose
+        // payment is being taken (in progress) has its calledAt cleared but is the
+        // most current on the board, so it ranks newest and is never dropped before
+        // an older call. Other tokens without calledAt rank oldest.
+        kept.sort(java.util.Comparator
+                .comparingInt((Token t) -> t.isInProgress() ? 2 : (t.getCalledAt() == null ? 0 : 1))
+                .thenComparing(Token::getCalledAt, java.util.Comparator.nullsFirst(java.util.Comparator.<Date>naturalOrder()))
+                .thenComparing(Token::getId, java.util.Comparator.nullsFirst(java.util.Comparator.<Long>naturalOrder())));
+        return new java.util.ArrayList<>(kept.subList(kept.size() - max, kept.size()));
+    }
+
+    // Size/width options for the Sale for Cashier TV board: a blank, non-numeric
+    // or non-positive stored value falls back to the default instead of
+    // rendering "width: px" or invisible numbers.
+    public int saleForCashierDisplaySize(String key, int defaultValue) {
+        Integer v = configOptionApplicationController.getIntegerValueByKey(key, defaultValue);
+        return (v == null || v <= 0) ? defaultValue : v;
     }
 
     public void fillPharmacyTokensCalled() {

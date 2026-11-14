@@ -95,6 +95,8 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
+import javax.faces.context.FacesContext;
+import javax.faces.event.PhaseId;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.Temporal;
@@ -361,11 +363,127 @@ public class BookingController implements Serializable, ControllerWithPatient, C
         }
     }
 
+    /**
+     * Whether a fee is charged for the selected payment method. Shared by the
+     * booking display and the save so both use the same fee set.
+     */
+    private boolean isFeeChargedForPaymentMethod(ItemFee f) {
+        if (paymentMethod != PaymentMethod.Agent) {
+            if (f.getFeeType() == FeeType.OtherInstitution) {
+                return false;
+            }
+        }
+        if (paymentMethod != PaymentMethod.OnCall) {
+            if (f.getFeeType() == FeeType.OwnInstitution && f.getName() != null && f.getName().equalsIgnoreCase("On-Call Fee")) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Discount for one fee value: the payment scheme percent wins; the patient's
+     * membership scheme percent is used only when no payment scheme discount
+     * exists. Zero when the fee does not allow discounts. Shared by the save and
+     * the booking display.
+     */
+    private double calculateFeeDiscount(ItemFee f, double feeValue, PaymentSchemeDiscount paymentSchemeDiscount, MembershipScheme membershipScheme) {
+        if (paymentSchemeDiscount != null) {
+            if (f.isDiscountAllowed()) {
+                return feeValue * (paymentSchemeDiscount.getDiscountPercent() / 100);
+            }
+        } else if (membershipScheme != null) {
+            PriceMatrix priceMatrix = priceMatrixController.getChannellingDisCount(paymentMethod, membershipScheme, f.getDepartment());
+            if (priceMatrix != null && f.isDiscountAllowed()) {
+                return feeValue * (priceMatrix.getDiscountPercent() / 100);
+            }
+        }
+        return 0.0;
+    }
+
+    /**
+     * Gross fee total of the current selection, limited to the fees the save
+     * charges for the selected payment method.
+     */
+    public double getGrossFeeTotalForBooking() {
+        double gross = 0.0;
+        if (selectedItemFees == null) {
+            return gross;
+        }
+        for (ItemFee f : selectedItemFees) {
+            if (!isFeeChargedForPaymentMethod(f)) {
+                continue;
+            }
+            gross += foriegn ? f.getFfee() : f.getFee();
+        }
+        return gross;
+    }
+
+    /**
+     * Discount the save will apply to the current selection (payment scheme or
+     * membership scheme), using the same rules as createBillFeeForSessions.
+     */
+    public double getFeeDiscountForBooking() {
+        // The page reads this several times while rendering; the inputs cannot
+        // change during render, so look the discount up once per render (#25345).
+        FacesContext fc = FacesContext.getCurrentInstance();
+        boolean rendering = fc != null && fc.getCurrentPhaseId() == PhaseId.RENDER_RESPONSE;
+        String memoKey = "BookingController.feeDiscountForBooking";
+        if (rendering && fc.getAttributes().get(memoKey) instanceof Double) {
+            return (Double) fc.getAttributes().get(memoKey);
+        }
+        double discount = calculateFeeDiscountForBooking();
+        if (rendering) {
+            fc.getAttributes().put(memoKey, discount);
+        }
+        return discount;
+    }
+
+    private double calculateFeeDiscountForBooking() {
+        double discount = 0.0;
+        if (selectedItemFees == null) {
+            return discount;
+        }
+        PaymentSchemeDiscount paymentSchemeDiscount = priceMatrixController.fetchPaymentSchemeDiscount(paymentScheme, paymentMethod);
+        MembershipScheme membershipScheme = null;
+        if (getPatient() != null && getPatient().getPerson() != null) {
+            membershipScheme = getPatient().getPerson().getMembershipScheme();
+        }
+        for (ItemFee f : selectedItemFees) {
+            if (!isFeeChargedForPaymentMethod(f)) {
+                continue;
+            }
+            discount += calculateFeeDiscount(f, foriegn ? f.getFfee() : f.getFee(), paymentSchemeDiscount, membershipScheme);
+        }
+        return discount;
+    }
+
+    /**
+     * Net amount the cashier must collect: what the saved bill will total.
+     */
+    public double getNetFeeTotalForBooking() {
+        return getGrossFeeTotalForBooking() - getFeeDiscountForBooking();
+    }
+
+    /**
+     * Agency selected on Add Booking: warn when its balance plus allowed credit
+     * does not cover the amount this booking will charge it (#25345). The page
+     * has called this listener since it was added, but the method was missing.
+     */
+    public void validateAgentBalance() {
+        if (institution == null) {
+            return;
+        }
+        if (getNetFeeTotalForBooking() > institution.getBallance() + institution.getAllowedCredit()) {
+            JsfUtil.addErrorMessage("Please Increase Credit Limit or Balance");
+        }
+    }
+
     public double calculatRemainForMultiplePaymentTotal() {
-        total = getFeeTotalForSelectedBill();
+        total = getNetFeeTotalForBooking();
         if (paymentMethod == PaymentMethod.MultiplePaymentMethods) {
             double multiplePaymentMethodTotalValue = 0.0;
-            for (ComponentDetail cd : paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {
+            for (ComponentDetail cd : getPaymentMethodData().getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {
                 multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCash().getTotalValue();
                 multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCreditCard().getTotalValue();
                 multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCheque().getTotalValue();
@@ -387,8 +505,8 @@ public class BookingController implements Serializable, ControllerWithPatient, C
     public void recieveRemainAmountAutomatically() {
         //double remainAmount = calculatRemainForMultiplePaymentTotal();
         if (paymentMethod == PaymentMethod.MultiplePaymentMethods) {
-            int arrSize = paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().size();
-            ComponentDetail pm = paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().get(arrSize - 1);
+            int arrSize = getPaymentMethodData().getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().size();
+            ComponentDetail pm = getPaymentMethodData().getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().get(arrSize - 1);
             switch (pm.getPaymentMethod()) {
                 case Cash:
                     pm.getPaymentMethodData().getCash().setTotalValue(remainAmount);
@@ -443,7 +561,7 @@ public class BookingController implements Serializable, ControllerWithPatient, C
     }
 
     public void calculateBalance() {
-        balance = getTenderedAmount() - getFeeTotalForSelectedBill();
+        balance = getTenderedAmount() - getNetFeeTotalForBooking();
     }
 
 //    public double calculatRemainForMultiplePaymentTotal() {
@@ -1465,6 +1583,11 @@ public class BookingController implements Serializable, ControllerWithPatient, C
 
     public void addChannelBooking(boolean reservedBooking) {
         errorText = "";
+        if (selectedSessionInstance == null) {
+            JsfUtil.addErrorMessage("Please select a session.");
+            settleSucessFully = false;
+            return;
+        }
         if (billSessionErrorPresent()) {
             JsfUtil.addErrorMessage("Session Selection Error. Please Retry From Beginning");
             settleSucessFully = false;
@@ -1481,8 +1604,15 @@ public class BookingController implements Serializable, ControllerWithPatient, C
             return;
         }
 
+        if (paymentMethod == PaymentMethod.Agent
+                && getNetFeeTotalForBooking() > institution.getBallance() + institution.getAllowedCredit()) {
+            JsfUtil.addErrorMessage("Agency Balance is Not Enough. Please Increase Credit Limit or Balance");
+            settleSucessFully = false;
+            return;
+        }
+
         if (paymentMethod == PaymentMethod.OnCall) {
-            if (selectedSessionInstance.getOriginatingSession().isPaidAppointmentsOnly() == true) {
+            if (selectedSessionInstance.getOriginatingSession() != null && selectedSessionInstance.getOriginatingSession().isPaidAppointmentsOnly()) {
                 JsfUtil.addErrorMessage("This Session is Paid Appointments Only");
                 settleSucessFully = false;
                 return;
@@ -2956,6 +3086,11 @@ public class BookingController implements Serializable, ControllerWithPatient, C
     }
 
     public void fillBillSessions() {
+        if (selectedSessionInstance == null) {
+            billSessions = new ArrayList<>();
+            selectedBillSession = null;
+            return;
+        }
 
         BillType[] billTypes = {
             BillType.ChannelAgent,
@@ -3130,7 +3265,7 @@ public class BookingController implements Serializable, ControllerWithPatient, C
                 return true;
             }
 
-            if (institution.getBallance() - getSelectedSessionInstance().getOriginatingSession().getTotal() < 0 - institution.getAllowedCredit()) {
+            if (institution.getBallance() - getNetFeeTotalForBooking() < 0 - institution.getAllowedCredit()) {
                 errorText = "Agency Balance is Not Enough";
                 JsfUtil.addErrorMessage("Agency Balance is Not Enough");
                 return true;
@@ -3278,6 +3413,13 @@ public class BookingController implements Serializable, ControllerWithPatient, C
         savingBill.setSingleBillSession(savingBillSession);
         savingBill.setBillItems(savingBillItems);
         savingBill.setBillFees(savingBillFees);
+
+        // Totals come from the bill fees, which carry any discount, so the agent
+        // balance, the balance and the paid amount below use the net total (#25345).
+        calculateBillTotalsFromBillFees(savingBill, savingBillFees);
+        if (savingBill.getBillType().getParent() == BillType.ChannelCashFlow) {
+            savingBill.setPaidAmount(savingBill.getNetTotal());
+        }
 
         if (savingBill.getBillType() == BillType.ChannelAgent) {
             updateBallance(savingBill.getCreditCompany(), 0 - savingBill.getNetTotal(), HistoryType.ChannelBooking, savingBill, savingBillItem, savingBillSession, savingBillItem.getAgentRefNo());
@@ -3618,15 +3760,8 @@ public class BookingController implements Serializable, ControllerWithPatient, C
         }
         
         for (ItemFee f : sessionsFees) {
-            if (paymentMethod != PaymentMethod.Agent) {
-                if (f.getFeeType() == FeeType.OtherInstitution) {
-                    continue;
-                }
-            }
-            if (paymentMethod != PaymentMethod.OnCall) {
-                if (f.getFeeType() == FeeType.OwnInstitution && f.getName().equalsIgnoreCase("On-Call Fee")) {
-                    continue;
-                }
+            if (!isFeeChargedForPaymentMethod(f)) {
+                continue;
             }
             BillFee bf = new BillFee();
             bf.setBill(bill);
@@ -3672,29 +3807,11 @@ public class BookingController implements Serializable, ControllerWithPatient, C
                 bf.setFeeGrossValue(f.getFee());
             }
 
-            if (paymentSchemeDiscount != null) {
-                if (f.isDiscountAllowed()) {
-                    d = bf.getFeeValue() * (paymentSchemeDiscount.getDiscountPercent() / 100);
-                    bf.setFeeDiscount(d);
-                    bf.setFeeGrossValue(bf.getFeeGrossValue());
-                    bf.setFeeValue(bf.getFeeGrossValue() - bf.getFeeDiscount());
-                    tmpDiscount += d;
-                }
-            } else if (membershipScheme != null) {
-//                MembershipScheme membershipScheme = membershipSchemeController.fetchPatientMembershipScheme(bill.getPatient());
-                PriceMatrix priceMatrix = priceMatrixController.getChannellingDisCount(paymentMethod, membershipScheme, f.getDepartment());
-//                priceMatrix.getDiscountPercent();
-//                //System.out.println("priceMatrix.getDiscountPercent() = " + priceMatrix.getDiscountPercent());
-
-                if (priceMatrix != null) {
-                    if (f.isDiscountAllowed()) {
-                        d = bf.getFeeValue() * (priceMatrix.getDiscountPercent() / 100);
-                        bf.setFeeDiscount(d);
-                        bf.setFeeGrossValue(bf.getFeeGrossValue());
-                        bf.setFeeValue(bf.getFeeGrossValue() - bf.getFeeDiscount());
-                        tmpDiscount += d;
-                    }        
-                }
+            d = calculateFeeDiscount(f, bf.getFeeValue(), paymentSchemeDiscount, membershipScheme);
+            if (d != 0.0) {
+                bf.setFeeDiscount(d);
+                bf.setFeeValue(bf.getFeeGrossValue() - bf.getFeeDiscount());
+                tmpDiscount += d;
             }
 
             tmpGrossTotal += bf.getFeeGrossValue();

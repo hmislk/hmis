@@ -1130,7 +1130,7 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
         HashMap hash = new HashMap();
 
         sql = "select b from BilledBill b  where"
-                + " (abs(b.netTotal)-abs(b.paidAmount))>:val "
+                + " (b.netTotal-(coalesce(b.refundAmount,0)+coalesce(b.paidAmount,0)))>:val "
                 + " and b.billType in :btps"
                 + " and b.createdAt is not null "
                 + " and b.deptId is not null "
@@ -2069,7 +2069,7 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
                     getPaymentMethodData().getSlip().setTotalValue(Math.abs(batchBill.getNetTotal()));
                     break;
                 case ewallet:
-                    getPaymentMethodData().getEwallet().setInstitution(originalPayment.getBank() != null ? originalPayment.getBank() : originalPayment.getInstitution());
+                    getPaymentMethodData().getEwallet().setInstitution(originalPayment.getBank() != null ? originalPayment.getBank() : originalPayment.getCreditCompany());
                     getPaymentMethodData().getEwallet().setReferenceNo(originalPayment.getReferenceNo());
                     getPaymentMethodData().getEwallet().setNo(originalPayment.getReferenceNo());
                     getPaymentMethodData().getEwallet().setReferralNo(originalPayment.getPolicyNo());
@@ -2158,7 +2158,7 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
                         cd.getPaymentMethodData().getSlip().setTotalValue(refundAmount);
                         break;
                     case ewallet:
-                        cd.getPaymentMethodData().getEwallet().setInstitution(originalPayment.getBank() != null ? originalPayment.getBank() : originalPayment.getInstitution());
+                        cd.getPaymentMethodData().getEwallet().setInstitution(originalPayment.getBank() != null ? originalPayment.getBank() : originalPayment.getCreditCompany());
                         cd.getPaymentMethodData().getEwallet().setReferenceNo(originalPayment.getReferenceNo());
                         cd.getPaymentMethodData().getEwallet().setNo(originalPayment.getReferenceNo());
                         cd.getPaymentMethodData().getEwallet().setReferralNo(originalPayment.getPolicyNo());
@@ -2602,6 +2602,23 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
 
     private List<Bill> cancelSingleBills = new ArrayList<>();
 
+    /**
+     * VAT of the individual bills of a batch. Settle adds net total + VAT to
+     * staff credit or welfare, but the batch bill itself does not store VAT, so
+     * the cancellation reverses the individual bills' VAT instead (#25349).
+     */
+    private double individualBillsVat(List<Bill> individualBills) {
+        double total = 0;
+        if (individualBills != null) {
+            for (Bill b : individualBills) {
+                if (b != null) {
+                    total += b.getVat();
+                }
+            }
+        }
+        return total;
+    }
+
     public String cancelOpdBatchBill() {
 
         batchBillCancellationStarted = true;
@@ -2702,16 +2719,17 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
         if (cancellationBatchBill.getPaymentMethod() == PaymentMethod.PatientDeposit) {
             PatientDeposit pd = patientDepositService.getDepositOfThePatient(cancellationBatchBill.getPatient(), sessionController.getDepartment());
             patientDepositService.updateBalance(cancellationBatchBill, pd);
-        } else if (cancellationBatchBill.getPaymentMethod() == PaymentMethod.Credit) {
+        } else if (cancellationBatchBill.getPaymentMethod() == PaymentMethod.Credit
+                || cancellationBatchBill.getPaymentMethod() == PaymentMethod.Staff) { // Staff credit too (#25339)
             if (cancellationBatchBill.getToStaff() != null) {
-                staffService.updateStaffCredit(cancellationBatchBill.getToStaff(), 0 - Math.abs(cancellationBatchBill.getNetTotal() + getBill().getVat()));
+                staffService.updateStaffCredit(cancellationBatchBill.getToStaff(), 0 - (Math.abs(cancellationBatchBill.getNetTotal()) + Math.abs(individualBillsVat(bills))));
                 JsfUtil.addSuccessMessage("Staff Credit Updated");
                 cancellationBatchBill.setFromStaff(cancellationBatchBill.getToStaff());
                 getBillFacade().edit(cancellationBatchBill);
             }
         } else if (cancellationBatchBill.getPaymentMethod() == PaymentMethod.Staff_Welfare) {
             if (cancellationBatchBill.getToStaff() != null) {
-                staffService.updateStaffWelfare(cancellationBatchBill.getToStaff(), 0 - Math.abs(cancellationBatchBill.getNetTotal() + getBill().getVat()));
+                staffService.updateStaffWelfare(cancellationBatchBill.getToStaff(), 0 - (Math.abs(cancellationBatchBill.getNetTotal()) + Math.abs(individualBillsVat(bills))));
                 JsfUtil.addSuccessMessage("Staff Welfare Updated");
                 cancellationBatchBill.setFromStaff(cancellationBatchBill.getToStaff());
                 getBillFacade().edit(cancellationBatchBill);
@@ -2845,9 +2863,10 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
         if (cancellationBatchBill.getPaymentMethod() == PaymentMethod.PatientDeposit) {
             PatientDeposit pd = patientDepositService.getDepositOfThePatient(cancellationBatchBill.getPatient(), sessionController.getDepartment());
             patientDepositService.updateBalance(cancellationBatchBill, pd);
-        } else if (cancellationBatchBill.getPaymentMethod() == PaymentMethod.Credit) {
+        } else if (cancellationBatchBill.getPaymentMethod() == PaymentMethod.Credit
+                || cancellationBatchBill.getPaymentMethod() == PaymentMethod.Staff) { // Staff credit too (#25339)
             if (cancellationBatchBill.getToStaff() != null) {
-                staffService.updateStaffCredit(cancellationBatchBill.getToStaff(), 0 - Math.abs(cancellationBatchBill.getNetTotal() + getBill().getVat()));
+                staffService.updateStaffCredit(cancellationBatchBill.getToStaff(), 0 - (Math.abs(cancellationBatchBill.getNetTotal()) + Math.abs(individualBillsVat(bills))));
                 JsfUtil.addSuccessMessage("Staff Credit Updated");
                 cancellationBatchBill.setFromStaff(cancellationBatchBill.getToStaff());
                 getBillFacade().edit(cancellationBatchBill);
@@ -5567,12 +5586,12 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
                 multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getOnlineSettlement().getTotalValue();
 
             }
-            remainAmount = total - multiplePaymentMethodTotalValue;
-            return total - multiplePaymentMethodTotalValue;
+            remainAmount = netTotal - multiplePaymentMethodTotalValue;
+            return netTotal - multiplePaymentMethodTotalValue;
 
         }
-        remainAmount = total;
-        return total;
+        remainAmount = netTotal;
+        return netTotal;
     }
 
     @Override

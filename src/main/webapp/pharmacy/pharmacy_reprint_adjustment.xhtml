@@ -29,6 +29,10 @@
 
                         <h:panelGroup id="gpBillPreview" class="d-flex justify-content-center">
                             
+                            <h:panelGroup rendered="#{pharmacyBillSearch.bill.billType eq 'PharmacyAdjustmentBatchChange' }" >
+                                <ph:adjustmentBill_batch_change bill="#{pharmacyBillSearch.bill}" />
+                            </h:panelGroup>
+
                             <h:panelGroup rendered="#{pharmacyBillSearch.bill.billType eq 'PharmacyAdjustmentDepartmentStock' }" >
                                 <ph:adjustmentBill bill="#{pharmacyBillSearch.bill}" />
                             </h:panelGroup>

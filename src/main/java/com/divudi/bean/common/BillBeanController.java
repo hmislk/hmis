@@ -83,6 +83,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.LinkedHashMap;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -2118,6 +2119,75 @@ public class BillBeanController implements Serializable {
         return getBillFeeFacade().findAggregates(sql, temMap, TemporalType.TIMESTAMP);
     }
 
+    /**
+     * Transfer Receive summary totals per from/to department, in the stock-in
+     * view (#18285/#18286): a receive counts positive and a cancellation or
+     * refund negative, whatever sign is stored. The other rules match the
+     * Transfer Receive by Bill query (b.retired = false, the same
+     * finance-detail columns), plus the PHARMACY_RECEIVE_PRE exclusion.
+     */
+    public List<Object[]> fetchSignedTransferReceiveDepartmentTotals(Date fromDate, Date toDate,
+            Department fromDepartment, Department toDepartment) {
+        // Sum magnitudes per department pair and atomic, then apply the atomic's sign here.
+        String sql = "select b.fromDepartment, b.toDepartment, b.billTypeAtomic, "
+                + "sum(ABS(COALESCE(bfd.lineNetTotal, 0.0))), "
+                + "sum(ABS(COALESCE(bfd.totalPurchaseValue, 0.0))), "
+                + "sum(ABS(COALESCE(bfd.totalRetailSaleValue, 0.0))), "
+                + "sum(ABS(COALESCE(bfd.totalCostValue, 0.0))) "
+                + " FROM Bill b "
+                + " LEFT JOIN b.billFinanceDetails bfd "
+                + " where b.billType = :bTp "
+                + " and b.retired = false "
+                + " and (b.billTypeAtomic is null or b.billTypeAtomic <> :preAtomic) "
+                + " and b.createdAt between :fromDate and :toDate ";
+
+        Map temMap = new HashMap();
+        if (fromDepartment != null) {
+            sql += " and b.fromDepartment = :fromDept ";
+            temMap.put("fromDept", fromDepartment);
+        }
+        if (toDepartment != null) {
+            sql += " and b.toDepartment = :toDept ";
+            temMap.put("toDept", toDepartment);
+        }
+
+        sql += " group by b.fromDepartment, b.toDepartment, b.billTypeAtomic "
+                + " order by b.fromDepartment.name, b.toDepartment.name ";
+
+        temMap.put("toDate", toDate);
+        temMap.put("fromDate", fromDate);
+        temMap.put("bTp", BillType.PharmacyTransferReceive);
+        temMap.put("preAtomic", BillTypeAtomic.PHARMACY_RECEIVE_PRE);
+
+        List<Object[]> rows = getBillFeeFacade().findAggregates(sql, temMap, TemporalType.TIMESTAMP);
+        // Merge into one row per department pair: [fromDept, toDept, transfer, purchase, sale, cost].
+        java.util.LinkedHashMap<String, Object[]> merged = new java.util.LinkedHashMap<>();
+        if (rows != null) {
+            for (Object[] r : rows) {
+                Department fromDept = (Department) r[0];
+                Department toDept = (Department) r[1];
+                BillTypeAtomic atomic = (BillTypeAtomic) r[2];
+                boolean negative = atomic != null
+                        && (atomic.getBillCategory() == com.divudi.core.data.BillCategory.CANCELLATION
+                        || atomic.getBillCategory() == com.divudi.core.data.BillCategory.REFUND);
+                double sign = negative ? -1.0 : 1.0;
+                String key = (fromDept == null ? "null" : String.valueOf(fromDept.getId()))
+                        + "|" + (toDept == null ? "null" : String.valueOf(toDept.getId()));
+                Object[] m = merged.get(key);
+                if (m == null) {
+                    m = new Object[]{fromDept, toDept, 0.0, 0.0, 0.0, 0.0};
+                    merged.put(key, m);
+                }
+                for (int i = 0; i < 4; i++) {
+                    Object v = r[3 + i];
+                    double d = v instanceof Number ? ((Number) v).doubleValue() : 0.0;
+                    m[2 + i] = (Double) m[2 + i] + sign * d;
+                }
+            }
+        }
+        return new ArrayList<>(merged.values());
+    }
+
     public List<Object[]> fetchBilledDepartmentItemStore(Date fromDate, Date toDate, Department department) {
         String sql;
         Map temMap = new HashMap();
@@ -2446,33 +2516,187 @@ public class BillBeanController implements Serializable {
 
     }
 
-    public void updateInwardDipositList(PatientEncounter patientEncounter, Bill bill) {
+    /**
+     * Links an inward payment/refund bill to the admission's final bill when
+     * payment is finalized.
+     *
+     * @return false only when the admission says payment is finalized but its
+     * final bill is cancelled, retired or missing in the database, so the bill
+     * was not linked; true otherwise.
+     */
+    public boolean updateInwardDipositList(PatientEncounter patientEncounter, Bill bill) {
+        return updateInwardDipositList(patientEncounter, bill, bill == null ? 0 : bill.getNetTotal());
+    }
+
+    /**
+     * Same as {@link #updateInwardDipositList(PatientEncounter, Bill)}, but the
+     * final bill changes by {@code amount} (same sign as the bill's netTotal)
+     * instead of the bill's whole netTotal. Used when one payment covers more
+     * than one admission, so each final bill takes only its own share (#25547).
+     */
+    public boolean updateInwardDipositList(PatientEncounter patientEncounter, Bill bill, double amount) {
         if (patientEncounter != null && bill != null) {
-            if (patientEncounter.isPaymentFinalized() && patientEncounter.getFinalBill() != null) {
-                bill.setForwardReferenceBill(patientEncounter.getFinalBill());
+            if (patientEncounter.isPaymentFinalized() && patientEncounter.getFinalBill() != null
+                    && patientEncounter.getFinalBill().getId() != null) {
+                // Re-read the final bill: the caller's copy can predate a final
+                // bill cancel, and saving it would write cancelled=false back
+                // over the cancel (#25413).
+                Bill finalBill = getBillFacade().findWithoutCache(patientEncounter.getFinalBill().getId());
+                if (finalBill == null || finalBill.isCancelled() || finalBill.isRetired()) {
+                    return false;
+                }
+                bill.setForwardReferenceBill(finalBill);
                 getBillFacade().edit(bill);
-                if (!patientEncounter.getFinalBill().getBackwardReferenceBills().contains(bill)) {
-                    patientEncounter.getFinalBill().getBackwardReferenceBills().add(bill);
-                    if (patientEncounter.getFinalBill().getBalance() <= 0) {
-                        patientEncounter.getFinalBill().setBalance(patientEncounter.getFinalBill().getNetTotal());
-                    }
-                    patientEncounter.getFinalBill().setBalance(patientEncounter.getFinalBill().getBalance() - bill.getNetTotal());
-                    patientEncounter.getFinalBill().setPaidAmount(patientEncounter.getFinalBill().getPaidAmount() + bill.getNetTotal());
+                if (!finalBill.getBackwardReferenceBills().contains(bill)) {
+                    finalBill.getBackwardReferenceBills().add(bill);
+                    finalBill.setPaidAmount(finalBill.getPaidAmount() + amount);
+                    // Balance is derived from net - paid (#25570). The old "balance <= 0 means
+                    // not set" reset could not tell a settled bill from a new one, so a
+                    // cancel of a receipt that cleared the balance doubled it, and it also
+                    // ignored payments taken at finalization.
+                    finalBill.setBalance(finalBill.getNetTotal() - finalBill.getPaidAmount());
 
                     if (bill.getBillTypeAtomic() == BillTypeAtomic.INWARD_PAYMENT
                             || bill.getBillTypeAtomic() == BillTypeAtomic.INWARD_DEPOSIT) {
-                        patientEncounter.getFinalBill().setSettledAmountByPatient(patientEncounter.getFinalBill().getSettledAmountByPatient() + bill.getNetTotal());
+                        finalBill.setSettledAmountByPatient(finalBill.getSettledAmountByPatient() + amount);
                     } else if (bill.getBillTypeAtomic() == BillTypeAtomic.INPATIENT_CREDIT_COMPANY_PAYMENT_RECEIVED) {
-                        patientEncounter.getFinalBill().setSettledAmountBySponsor(patientEncounter.getFinalBill().getSettledAmountBySponsor() + bill.getNetTotal());
+                        finalBill.setSettledAmountBySponsor(finalBill.getSettledAmountBySponsor() + amount);
                     } else if (bill.getBillTypeAtomic() == BillTypeAtomic.INPATIENT_CREDIT_COMPANY_PAYMENT_CANCELLATION) {
-                        patientEncounter.getFinalBill().setSettledAmountBySponsor(patientEncounter.getFinalBill().getSettledAmountBySponsor() - Math.abs(bill.getNetTotal()));
+                        finalBill.setSettledAmountBySponsor(finalBill.getSettledAmountBySponsor() - Math.abs(amount));
                     }
                 }
-                getBillFacade().edit(patientEncounter.getFinalBill());
+                getBillFacade().edit(finalBill);
+                patientEncounter.setFinalBill(finalBill);
             }
         }
-
+        return true;
     }
+
+    /**
+     * Result of {@link #linkToFreshFinalBillAndRefresh}: the admission as re-read from
+     * the database and whether the bill was linked to a live final bill.
+     */
+    public static class FinalBillLinkResult implements Serializable {
+
+        private final PatientEncounter encounter;
+        private final boolean linked;
+
+        public FinalBillLinkResult(PatientEncounter encounter, boolean linked) {
+            this.encounter = encounter;
+            this.linked = linked;
+        }
+
+        /**
+         * The re-read admission, or the caller's own copy when it could not
+         * be re-read (unsaved admission).
+         */
+        public PatientEncounter getEncounter() {
+            return encounter;
+        }
+
+        /**
+         * False only when the admission's final bill is cancelled, retired or
+         * missing, so the bill was not linked to it.
+         */
+        public boolean isLinked() {
+            return linked;
+        }
+    }
+
+    /**
+     * The one place that updates an admission's final bill after an inward
+     * payment, deposit, refund or credit company payment (or the cancel of
+     * one) is saved (#25413, #25521).
+     *
+     * The admission a page holds was loaded when the page opened, so it can
+     * predate a final bill settle or cancel by another user or tab; saving it
+     * writes the old final bill state back over the cancel. This re-reads the
+     * admission by id bypassing the cache, under the same per-admission lock
+     * that final bill settle and cancel hold, then links the bill to the final
+     * bill (see {@link #updateInwardDipositList}) and refreshes the paid
+     * amount and credit detail. Callers must use the returned admission for
+     * the rest of their work instead of their own copy.
+     */
+    public FinalBillLinkResult linkToFreshFinalBillAndRefresh(PatientEncounter patientEncounter, Bill bill) {
+        return linkToFreshFinalBill(patientEncounter, bill, true);
+    }
+
+    /**
+     * Same as {@link #linkToFreshFinalBillAndRefresh} but only links the bill
+     * to the final bill; for paths that never recompute the paid amount or
+     * credit detail (credit company payments).
+     */
+    public FinalBillLinkResult linkToFreshFinalBill(PatientEncounter patientEncounter, Bill bill) {
+        return linkToFreshFinalBill(patientEncounter, bill, false);
+    }
+
+    /**
+     * Links a payment (or its cancellation) to the final bill of every admission
+     * in its items, once per admission. A payment for one admission links with
+     * the bill's netTotal, as before. A payment for several admissions gives
+     * each final bill only the total of that admission's items, with the sign
+     * of the bill's netTotal (#25547).
+     *
+     * @return false when any admission's final bill was cancelled, so the bill
+     * was not added to it.
+     */
+    public boolean linkToFreshFinalBillsPerAdmission(Bill bill, List<BillItem> items) {
+        if (bill == null || items == null) {
+            return true;
+        }
+        Map<Long, PatientEncounter> encounters = new LinkedHashMap<>();
+        Map<Long, Double> shares = new HashMap<>();
+        for (BillItem item : items) {
+            PatientEncounter encounter = item == null ? null : item.getPatientEncounter();
+            if (encounter == null || encounter.getId() == null) {
+                continue;
+            }
+            encounters.putIfAbsent(encounter.getId(), encounter);
+            shares.merge(encounter.getId(), Math.abs(item.getNetValue()), Double::sum);
+        }
+        boolean allLinked = true;
+        if (encounters.size() == 1) {
+            PatientEncounter only = encounters.values().iterator().next();
+            return linkToFreshFinalBill(only, bill).isLinked();
+        }
+        double sign = bill.getNetTotal() < 0 ? -1 : 1;
+        for (Map.Entry<Long, PatientEncounter> e : encounters.entrySet()) {
+            double share = sign * shares.get(e.getKey());
+            if (!linkToFreshFinalBill(e.getValue(), bill, false, share).isLinked()) {
+                allLinked = false;
+            }
+        }
+        return allLinked;
+    }
+
+    private FinalBillLinkResult linkToFreshFinalBill(PatientEncounter patientEncounter, Bill bill, boolean refresh) {
+        return linkToFreshFinalBill(patientEncounter, bill, refresh, bill == null ? 0 : bill.getNetTotal());
+    }
+
+    private FinalBillLinkResult linkToFreshFinalBill(PatientEncounter patientEncounter, Bill bill, boolean refresh, double amount) {
+        if (patientEncounter == null || patientEncounter.getId() == null || bill == null) {
+            return new FinalBillLinkResult(patientEncounter, true);
+        }
+        return finalBillLockBean.withFinalBillVersionLock(patientEncounter, () -> {
+            PatientEncounter fresh = finalBillPatientEncounterFacade.findWithoutCache(patientEncounter.getId());
+            if (fresh == null) {
+                fresh = patientEncounter;
+            }
+            boolean ok = updateInwardDipositList(fresh, bill, amount);
+            if (refresh && ok && fresh.isPaymentFinalized() && fresh.getFinalBill() != null) {
+                getInwardBean().updateFinalFill(fresh);
+                if (fresh.getPaymentMethod() == PaymentMethod.Credit) {
+                    getInwardBean().updateCreditDetail(fresh, fresh.getFinalBill().getNetTotal());
+                }
+            }
+            return new FinalBillLinkResult(fresh, ok);
+        });
+    }
+
+    @EJB
+    private com.divudi.ejb.BillNumberGenerator finalBillLockBean;
+    @EJB
+    private com.divudi.core.facade.PatientEncounterFacade finalBillPatientEncounterFacade;
 
     public Bill fetchByForwardBill(Bill forwardBill, SurgeryBillType surgeryBillType) {
         String sql = "Select bf from Bill bf "

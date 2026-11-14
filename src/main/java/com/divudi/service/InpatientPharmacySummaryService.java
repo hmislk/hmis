@@ -47,13 +47,9 @@ public class InpatientPharmacySummaryService {
             BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN,
             BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_RETURN,
             BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN,
-            BillTypeAtomic.RETURN_MEDICINE_INWARD,
+            // Porter-flow return: counted when the pharmacy accepts it (#25509).
+            BillTypeAtomic.ACCEPT_RETURN_MEDICINE_INWARD,
             BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_RETURN
-    );
-
-    // A cancelled porter-flow return puts the medicine back on the patient.
-    private static final List<BillTypeAtomic> RETURN_CANCELLATION_TYPES = Arrays.asList(
-            BillTypeAtomic.RETURN_MEDICINE_INWARD_CANCELLATION
     );
 
     private static final List<BillTypeAtomic> CANCELLATION_TYPES = Arrays.asList(
@@ -86,8 +82,6 @@ public class InpatientPharmacySummaryService {
                 dto.addRequestIssue(qty, value);
             } else if (RETURN_TYPES.contains(bta)) {
                 dto.addReturn(qty, value);
-            } else if (RETURN_CANCELLATION_TYPES.contains(bta)) {
-                dto.addReturn(-qty, -value);
             } else if (CANCELLATION_TYPES.contains(bta)) {
                 dto.addCancelled(qty, value);
             }
@@ -119,8 +113,7 @@ public class InpatientPharmacySummaryService {
     }
 
     private double signOf(BillTypeAtomic bta) {
-        if (DIRECT_ISSUE_TYPES.contains(bta) || REQUEST_ISSUE_TYPES.contains(bta)
-                || RETURN_CANCELLATION_TYPES.contains(bta)) {
+        if (DIRECT_ISSUE_TYPES.contains(bta) || REQUEST_ISSUE_TYPES.contains(bta)) {
             return 1.0;
         }
         return -1.0;
@@ -138,7 +131,6 @@ public class InpatientPharmacySummaryService {
         billTypes.addAll(DIRECT_ISSUE_TYPES);
         billTypes.addAll(REQUEST_ISSUE_TYPES);
         billTypes.addAll(RETURN_TYPES);
-        billTypes.addAll(RETURN_CANCELLATION_TYPES);
         billTypes.addAll(CANCELLATION_TYPES);
 
         String jpql = "SELECT bi.item.id, bi.item.name, bi.bill.billTypeAtomic, "

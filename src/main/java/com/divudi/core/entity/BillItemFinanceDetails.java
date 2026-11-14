@@ -11,6 +11,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
+import javax.persistence.Transient;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
@@ -44,6 +45,9 @@ public class BillItemFinanceDetails implements Serializable {
     // Base price before any deductions
     @Column(precision = 18, scale = 4, nullable = true)
     private BigDecimal lineGrossRate;
+
+    @Transient
+    private BigDecimal enteredLineGrossTotal;
     @Column(precision = 18, scale = 4, nullable = true)
     private BigDecimal billGrossRate;
     @Column(precision = 18, scale = 4, nullable = true)
@@ -695,6 +699,19 @@ public class BillItemFinanceDetails implements Serializable {
 
     public void setUnitsPerPack(BigDecimal unitsPerPack) {
         this.unitsPerPack = unitsPerPack;
+    }
+
+    /**
+     * Purchase value (paid quantity x rate, before line discount) exactly as the user typed it
+     * when the purchase rate is being derived from it (issue #22864). Never persisted; null
+     * unless the user entered a value on this line during the current session.
+     */
+    public BigDecimal getEnteredLineGrossTotal() {
+        return enteredLineGrossTotal;
+    }
+
+    public void setEnteredLineGrossTotal(BigDecimal enteredLineGrossTotal) {
+        this.enteredLineGrossTotal = enteredLineGrossTotal;
     }
 
     public BigDecimal getLineGrossRate() {

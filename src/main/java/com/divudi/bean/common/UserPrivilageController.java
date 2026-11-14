@@ -759,11 +759,16 @@ public class UserPrivilageController implements Serializable {
 
         new DefaultTreeNode(new PrivilegeHolder(Privileges.CcSelfStatement, "Statement"), ccSelfNode);
 
+        TreeNode ccSelfReportsNode = new DefaultTreeNode(new PrivilegeHolder(null, "Reports"), ccSelfNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.CcSelfReports, "Reports Menu"), ccSelfReportsNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.CcSelfReceiptReport, "Receipt Report"), ccSelfReportsNode);
+
         TreeNode ccSelfSampleNode = new DefaultTreeNode(new PrivilegeHolder(null, "Sample Management"), ccSelfNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.CcSelfSampleManagement, "Sample Management"), ccSelfSampleNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.CcSelfSampleBarcodePrint, "Generate/Print Barcodes"), ccSelfSampleNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.CcSelfSampleCollect, "Collect Samples"), ccSelfSampleNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.CcSelfSampleSend, "Send Samples"), ccSelfSampleNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.CcSelfSampleEditSendingDepartment, "Edit Sending to Department"), ccSelfSampleNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.CcSelfSampleReject, "Reject Samples"), ccSelfSampleNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.CcSelfSampleRegenerate, "Re-Generate Samples"), ccSelfSampleNode);
 
@@ -1423,6 +1428,7 @@ public class UserPrivilageController implements Serializable {
         new DefaultTreeNode(new PrivilegeHolder(Privileges.ReportsConsumption, "2. Consumption (Legacy)"), reportsPageInventoryReportsNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.ReportsConsumptionDto, "2. Consumption"), reportsPageInventoryReportsNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.ReportsStockTransferReport, "3. Stock Transfers"), reportsPageInventoryReportsNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.ReportsInpatientDirectIssue, "3.1 Inpatient Direct Issue"), reportsPageInventoryReportsNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.ReportsCostOfGoodsSold, "4. Cost Of Good Sold"), reportsPageInventoryReportsNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.ReportsGoodInTransit, "5. Good in Transit"), reportsPageInventoryReportsNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.ReportsGrnReport, "6. GRN Report"), reportsPageInventoryReportsNode);
@@ -1581,14 +1587,9 @@ public class UserPrivilageController implements Serializable {
                     System.err.println("Failed to log audit event for null privilege: " + e.getMessage());
                 }
 
-                tmpWup.setRetired(true);
-                tmpWup.setRetiredAt(new Date());
-                tmpWup.setRetirer(sessionController.getLoggedUser());
-                if (tmpWup.getId() == null) {
-                    webUserPrivilegeFacade.create(tmpWup);
-                } else {
-                    webUserPrivilegeFacade.edit(tmpWup);
-                }
+                // Skip the row but do not retire it: a privilege name this build does not
+                // know also reads as null (PrivilegesConverter), and retiring it would drop
+                // a privilege that a newer build still grants.
                 continue;
             }
             PrivilegeHolder ph = new PrivilegeHolder();
@@ -1606,6 +1607,9 @@ public class UserPrivilageController implements Serializable {
         }
 
         for (WebUserRolePrivilege tmpWup : ps) {
+            if (tmpWup.getPrivilege() == null) {
+                continue;
+            }
             PrivilegeHolder ph = new PrivilegeHolder();
             ph.setPrivilege(tmpWup.getPrivilege());
             ph.setName(tmpWup.getPrivilege().getLabel());
@@ -1619,8 +1623,9 @@ public class UserPrivilageController implements Serializable {
         department = dept;
         List<PrivilegeHolder> selectedPrivileges = selected;
         for (WebUserPrivilege wup : getCurrentWebUserPrivileges()) {
-            wup.setRetired(true);
-
+            if (wup.getPrivilege() != null) {
+                wup.setRetired(true);
+            }
         }
         getFacade().batchEdit(getCurrentWebUserPrivileges());
         if (selectedPrivileges == null) {
@@ -1667,8 +1672,12 @@ public class UserPrivilageController implements Serializable {
 
         // Retire all current web user privileges initially
         List<WebUserPrivilege> currentPrivileges = getCurrentWebUserPrivileges();
+        // A row whose privilege name this build does not know reads as null
+        // (PrivilegesConverter); leave it untouched so a newer build keeps it.
         for (WebUserPrivilege wup : currentPrivileges) {
-            wup.setRetired(true);
+            if (wup.getPrivilege() != null) {
+                wup.setRetired(true);
+            }
         }
 
         if (selectedPrivileges == null) {
@@ -1754,7 +1763,9 @@ public class UserPrivilageController implements Serializable {
         List<PrivilegeHolder> selectedPrivileges = extractPrivileges(selectedNodes);
 
         for (WebUserRolePrivilege wup : getCurrentWebUserRolePrivileges()) {
-            wup.setRetired(true);
+            if (wup.getPrivilege() != null) {
+                wup.setRetired(true);
+            }
         }
 
         getRoleFacede().batchEdit(getCurrentWebUserRolePrivileges());
