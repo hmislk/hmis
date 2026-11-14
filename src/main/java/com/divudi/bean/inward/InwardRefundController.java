@@ -227,24 +227,51 @@ public class InwardRefundController implements Serializable {
 
     @EJB
     private CashTransactionBean cashTransactionBean;
+    @EJB
+    private com.divudi.service.inward.InwardPaymentService inwardPaymentService;
 
-    public void pay() {
+    public synchronized void pay() {
+        if (getCurrent() != null && getCurrent().getId() != null) {
+            // Already saved: a repeated click must not reach the service, whose
+            // rejection would clear the id of a committed bill (#25641).
+            JsfUtil.addErrorMessage("This bill is already saved.");
+            return;
+        }
         if (errorCheck()) {
             return;
         }
 
-        saveBill();
-        getBillFacade().edit(getCurrent());
-        saveBillItem();
-
-        getOriginalBillToRefund().setRefunded(true);
-        getOriginalBillToRefund().setRefundedBill(getCurrent());
-        getBillFacade().edit(getOriginalBillToRefund());
+        // Refund bill, item, fee, the "refunded" mark on the original bill,
+        // Payment rows and balance updates are saved in ONE transaction
+        // (#25641): if any step fails, nothing is saved.
+        prepareBill();
+        // Keep the original bill's refund state so a failed save can put it back
+        // (a partly refunded deposit already has refunded=true and a refundedBill).
+        boolean previousRefunded = getOriginalBillToRefund().isRefunded();
+        Bill previousRefundedBill = getOriginalBillToRefund().getRefundedBill();
+        try {
+            inwardPaymentService.saveRefundBillWithPayments(
+                    getCurrent(),
+                    getOriginalBillToRefund(),
+                    paymentMethodData,
+                    getSessionController().getLoggedUser());
+        } catch (RuntimeException e) {
+            // Rolled back: undo the in-memory changes so the user can submit again.
+            current.setId(null);
+            // prepareBill() made the entered amount negative; restore it so
+            // errorCheck() validates the retry against the fresh remaining amount.
+            current.setTotal(Math.abs(current.getTotal()));
+            current.setNetTotal(Math.abs(current.getNetTotal()));
+            getOriginalBillToRefund().setRefunded(previousRefunded);
+            getOriginalBillToRefund().setRefundedBill(previousRefundedBill);
+            inwardPaymentService.reloadPatientDeposits(paymentMethodData);
+            Throwable cause = e instanceof javax.ejb.EJBException && e.getCause() != null ? e.getCause() : e;
+            String detail = cause.getMessage() != null ? " " + cause.getMessage() : "";
+            JsfUtil.addErrorMessage("Payment was not saved. Nothing has been recorded." + detail);
+            return;
+        }
 
         printPreview = true;
-
-        List<Payment> payments = paymentService.createPayment(getCurrent(), paymentMethodData);
-        paymentService.updateBalances(payments);
 
         // Re-read the admission: the page's copy can predate a final bill
         // settle or cancel, and saving it would undo the cancel (#25413). Held
@@ -264,7 +291,7 @@ public class InwardRefundController implements Serializable {
     @Inject
     private BillBeanController billBean;
 
-    private void saveBill() {
+    private void prepareBill() {
         getBillBean().setPaymentMethodData(getCurrent(), getCurrent().getPaymentMethod(), getPaymentMethodData());
         getCurrent().setPatient(getCurrent().getPatientEncounter().getPatient());
         getCurrent().setBillType(BillType.InwardPaymentBill);
@@ -290,41 +317,6 @@ public class InwardRefundController implements Serializable {
         getCurrent().setNetTotal(0 - dbl);
         getCurrent().setCreatedAt(new Date());
         getCurrent().setCreater(getSessionController().getLoggedUser());
-
-        if (getCurrent().getId() == null) {
-            getBillFacade().create(getCurrent());
-        }
-
-    }
-
-    private void saveBillItem() {
-        BillItem temBi = new BillItem();
-        temBi.setBill(getCurrent());
-        temBi.setGrossValue(0 - getCurrent().getTotal());
-        temBi.setNetValue(0 - getCurrent().getTotal());
-        temBi.setCreatedAt(new Date());
-        temBi.setCreater(getSessionController().getLoggedUser());
-
-        if (temBi.getId() == null) {
-            getBillItemFacade().create(temBi);
-        }
-
-        saveBillFee(temBi);
-
-    }
-
-    private void saveBillFee(BillItem bt) {
-        BillFee bf = new BillFee();
-        bf.setBill(getCurrent());
-        bf.setBillItem(bt);
-        bf.setCreatedAt(new Date());
-        bf.setCreater(getSessionController().getLoggedUser());
-        bf.setFeeGrossValue(0 - getCurrent().getTotal());
-        bf.setFeeValue(0 - getCurrent().getTotal());
-
-        if (bf.getId() == null) {
-            getBillFeeFacade().create(bf);
-        }
     }
 
     public SessionController getSessionController() {

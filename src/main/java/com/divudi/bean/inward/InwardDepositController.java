@@ -82,6 +82,8 @@ public class InwardDepositController implements Serializable, ControllerWithMult
     @EJB
     PaymentService paymentService;
     @EJB
+    private com.divudi.service.inward.InwardPaymentService inwardPaymentService;
+    @EJB
     CashTransactionBean cashTransactionBean;
     @EJB
     PatientDepositService patientDepositService;
@@ -694,7 +696,13 @@ public class InwardDepositController implements Serializable, ControllerWithMult
                 || bill.getPatientEncounter().getPatient().getPerson() == null;
     }
 
-    public void pay() {
+    public synchronized void pay() {
+        if (getCurrent() != null && getCurrent().getId() != null) {
+            // Already saved: a repeated click must not reach the service, whose
+            // rejection would clear the id of a committed bill (#25641).
+            JsfUtil.addErrorMessage("This bill is already saved.");
+            return;
+        }
         if (errorCheck()) {
             return;
         }
@@ -708,16 +716,26 @@ public class InwardDepositController implements Serializable, ControllerWithMult
             }
         }
 
-        saveBill();
-        saveBillItem();
-
-        paymentService.createPaymentAndUpdateDrawer(
-                current,
-                current.getPaymentMethod(),
-                paymentMethodData,
-                sessionController.getInstitution(),
-                sessionController.getDepartment(),
-                sessionController.getLoggedUser());
+        // Bill, bill item, Payment rows and drawer update are saved in ONE
+        // transaction (#25641): if any step fails, nothing is saved.
+        prepareBill();
+        try {
+            inwardPaymentService.savePaymentBillWithPayments(
+                    current,
+                    paymentMethodData,
+                    sessionController.getInstitution(),
+                    sessionController.getDepartment(),
+                    sessionController.getLoggedUser());
+        } catch (RuntimeException e) {
+            // Rolled back: nothing was saved. Clear the id the failed attempt
+            // gave the bill, and reload deposit balances, so the user can submit again.
+            current.setId(null);
+            inwardPaymentService.reloadPatientDeposits(paymentMethodData);
+            Throwable cause = e instanceof javax.ejb.EJBException && e.getCause() != null ? e.getCause() : e;
+            String detail = cause.getMessage() != null ? " " + cause.getMessage() : "";
+            JsfUtil.addErrorMessage("Payment was not saved. Nothing has been recorded." + detail);
+            return;
+        }
 
         // Re-reads the admission and final bill so a final bill cancelled since
         // this page opened is not written back as live (#25521).
@@ -872,6 +890,13 @@ public class InwardDepositController implements Serializable, ControllerWithMult
     }
 
     private void saveBill() {
+        prepareBill();
+        if (getCurrent().getId() == null) {
+            getBilledBillFacade().create(getCurrent());
+        }
+    }
+
+    private void prepareBill() {
         getCurrent().setInstitution(getSessionController().getInstitution());
         getCurrent().setDepartment(getSessionController().getDepartment());
         getCurrent().setBillType(BillType.InwardPaymentBill);
@@ -889,11 +914,6 @@ public class InwardDepositController implements Serializable, ControllerWithMult
         getCurrent().setCreatedAt(new Date());
         getCurrent().setCreater(getSessionController().getLoggedUser());
         getCurrent().setComments(comment);
-
-        if (getCurrent().getId() == null) {
-            getBilledBillFacade().create(getCurrent());
-        }
-
     }
 
     private void saveBillItem() {
