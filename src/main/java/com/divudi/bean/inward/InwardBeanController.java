@@ -2568,7 +2568,7 @@ public class InwardBeanController implements Serializable {
         return list == null ? new ArrayList<>() : list;
     }
 
-    /** The Medicine charge line stored on the admission's final bill, or null. */
+    /** The Medicine charge lines (all issuing departments) stored on the admission's final bill, summed, or null. */
     public Double fetchFinalBillMedicineNet(PatientEncounter patientEncounter) {
         if (patientEncounter == null || patientEncounter.getFinalBill() == null
                 || patientEncounter.getFinalBill().getId() == null) {
@@ -2577,10 +2577,12 @@ public class InwardBeanController implements Serializable {
         String jpql = "select sum(bi.netValue) from BillItem bi "
                 + " where bi.retired = false "
                 + " and bi.bill.id = :fbId "
-                + " and bi.inwardChargeType = :ict";
+                + " and bi.inwardChargeType in :icts";
         Map<String, Object> params = new HashMap<>();
         params.put("fbId", patientEncounter.getFinalBill().getId());
-        params.put("ict", InwardChargeType.Pharmacy_Medicine);
+        params.put("icts", Arrays.asList(InwardChargeType.Opd_Medicine, InwardChargeType.Etu_Medicine,
+                InwardChargeType.Pharmacy_Medicine, InwardChargeType.Inward_Medicine,
+                InwardChargeType.Theatre_Medicine, InwardChargeType.Other_Medicine));
         return getBillItemFacade().findDoubleByJpql(jpql, params);
     }
 
