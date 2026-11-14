@@ -4340,7 +4340,13 @@ public class PharmacyReportController implements Serializable {
         }
     }
 
-    private void retrieveBill(String billTypeField, Object billTypeValue, Object paymentMethod) {
+    /**
+     * Loads the COGS sale bills and their items into {@code cogsBillDtos}.
+     *
+     * @return {@code true} if the report loaded (possibly with no rows),
+     * {@code false} if the query failed; the error is shown to the user.
+     */
+    private boolean retrieveBill(String billTypeField, Object billTypeValue, Object paymentMethod) {
         try {
             netTotal = 0.0;
             totalCostValue = 0.0;
@@ -4456,11 +4462,18 @@ public class PharmacyReportController implements Serializable {
                     totalSaleValue += billSaleValue;
                 }
             }
+            return true;
         } catch (Exception e) {
-            e.printStackTrace();
+            Logger.getLogger(PharmacyReportController.class.getName()).log(Level.SEVERE, "Error loading COGS sale report", e);
+            JsfUtil.addErrorMessage("Error loading the report. Please try again.");
             cogsBillDtos = new ArrayList<>();
             billItems = new ArrayList<>();
             netTotal = 0.0;
+            totalCostValue = 0.0;
+            totalPurchaseValue = 0.0;
+            totalRetailValue = 0.0;
+            totalSaleValue = 0.0;
+            return false;
         }
     }
 
@@ -9496,6 +9509,22 @@ public class PharmacyReportController implements Serializable {
     }
 
     public void processSaleCreditCard() {
+        loadSaleCreditCard();
+    }
+
+    /**
+     * Re-runs the COGS Sale report with the submitted filters and opens its
+     * print view, so the printed filters always match the printed rows. Stays
+     * on the report page (with the error shown) if the report fails to load.
+     */
+    public String navigateToOpdSalePrint() {
+        if (!loadSaleCreditCard()) {
+            return null;
+        }
+        return "/reports/inventoryReports/opd_sale_print?faces-redirect=true";
+    }
+
+    private boolean loadSaleCreditCard() {
         List<PaymentMethod> nonCreditPaymentMethods = Arrays.stream(PaymentMethod.values())
                 .filter(pm -> pm != PaymentMethod.Credit)
                 .collect(Collectors.toList());
@@ -9503,7 +9532,7 @@ public class PharmacyReportController implements Serializable {
                 BillTypeAtomic.PHARMACY_RETAIL_SALE,
                 BillTypeAtomic.PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER
         );
-        retrieveBill("b.billTypeAtomic", billTypes, nonCreditPaymentMethods);
+        return retrieveBill("b.billTypeAtomic", billTypes, nonCreditPaymentMethods);
     }
 
     public void processAddToStockBills() {

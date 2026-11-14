@@ -211,9 +211,9 @@
                                 action="#{pharmacyReportController.processSaleCreditCard()}">
                             </p:commandButton>
 
-                            <!-- Re-run the report with the submitted filters before opening the print
+                            <!-- Re-runs the report with the submitted filters before opening the print
                                  view, so the printed filters always match the printed rows even if a
-                                 filter was changed after Process. -->
+                                 filter was changed after Process; stays here if the report fails. -->
                             <p:commandButton
                                 class="ui-button-info mx-1"
                                 icon="fas fa-print"
@@ -221,8 +221,7 @@
                                 value="To Print"
                                 title="Open a print view with the filters and every row of the report"
                                 disabled="#{empty pharmacyReportController.cogsBillDtos}"
-                                actionListener="#{pharmacyReportController.processSaleCreditCard()}"
-                                action="/reports/inventoryReports/opd_sale_print?faces-redirect=true">
+                                action="#{pharmacyReportController.navigateToOpdSalePrint()}">
                             </p:commandButton>
 
                             <p:commandButton 
