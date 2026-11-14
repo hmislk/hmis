@@ -1,0 +1,284 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <h:body>
+        <ui:composition template="/reports/index.xhtml">
+            <ui:define name="subcontent">
+                <h:form>
+                    <p:panel styleClass="w-100">
+                        <f:facet name="header">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h:outputText value="OPD Sale - Print"/>
+                                <div class="d-flex gap-2">
+                                    <p:commandButton
+                                        value="Print"
+                                        ajax="false"
+                                        styleClass="ui-button-info m-1"
+                                        icon="fas fa-print">
+                                        <p:printer target="reportView"/>
+                                    </p:commandButton>
+                                    <p:commandButton
+                                        value="Back to Report"
+                                        ajax="false"
+                                        styleClass="ui-button-secondary m-1"
+                                        icon="fas fa-arrow-left"
+                                        action="/reports/inventoryReports/opd_sale?faces-redirect=true">
+                                    </p:commandButton>
+                                </div>
+                            </div>
+                        </f:facet>
+
+                        <style>
+                            .cogs-sale-print .report-title {
+                                text-align: center;
+                                font-weight: 700;
+                            }
+                            .cogs-sale-print .report-meta {
+                                display: flex;
+                                justify-content: center;
+                                flex-wrap: wrap;
+                                gap: 4px 16px;
+                                font-size: 12px;
+                                margin: 2mm 0;
+                            }
+                            .cogs-sale-print .report-meta .meta-label {
+                                font-weight: 600;
+                                margin-right: 4px;
+                            }
+                            .cogs-sale-print table {
+                                border-collapse: collapse;
+                                width: 100%;
+                                table-layout: auto;
+                                font-size: 11px;
+                            }
+                            .cogs-sale-print th,
+                            .cogs-sale-print td {
+                                border: 1px solid #000;
+                                padding: 1px 3px;
+                                text-align: left;
+                                vertical-align: top;
+                                word-wrap: break-word;
+                            }
+                            .cogs-sale-print th {
+                                font-weight: 700;
+                            }
+                            .cogs-sale-print .num {
+                                text-align: right;
+                                white-space: nowrap;
+                            }
+                            .cogs-sale-print .nowrap {
+                                white-space: nowrap;
+                            }
+                            .cogs-sale-print tfoot td {
+                                font-weight: 700;
+                            }
+                            .cogs-sale-print .printed-by {
+                                font-size: 10px;
+                                margin-top: 2mm;
+                            }
+
+                            @media print {
+                                @page {
+                                    size: A4 landscape;
+                                    margin: 6mm;
+                                }
+                                body {
+                                    margin: 0;
+                                }
+                                .cogs-sale-print,
+                                .cogs-sale-print * {
+                                    overflow: visible !important;
+                                    max-height: none !important;
+                                }
+                                .cogs-sale-print table {
+                                    font-size: 9px;
+                                }
+                                .cogs-sale-print thead {
+                                    display: table-header-group;
+                                }
+                                .cogs-sale-print tfoot {
+                                    display: table-footer-group;
+                                }
+                                .cogs-sale-print tr {
+                                    page-break-inside: avoid;
+                                }
+                            }
+                        </style>
+
+                        <h:panelGroup id="reportView" layout="block" styleClass="cogs-sale-print">
+                            <div class="report-title" style="font-size: 16px;">
+                                <h:outputText value="#{sessionController.institution.name}"/>
+                            </div>
+                            <div class="report-title" style="font-size: 14px;">
+                                <h:outputText value="Cost of Goods Sold - OPD Sale"/>
+                            </div>
+
+                            <div class="report-meta">
+                                <div>
+                                    <h:outputText value="From Date" styleClass="meta-label"/>
+                                    <h:outputText value="#{pharmacyReportController.fromDate}">
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                    </h:outputText>
+                                </div>
+                                <div>
+                                    <h:outputText value="To Date" styleClass="meta-label"/>
+                                    <h:outputText value="#{pharmacyReportController.toDate}">
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                    </h:outputText>
+                                </div>
+                                <div>
+                                    <h:outputText value="Department Type" styleClass="meta-label"/>
+                                    <h:outputText value="All" rendered="#{empty pharmacyReportController.selectedDepartmentTypes}"/>
+                                    <ui:repeat value="#{pharmacyReportController.selectedDepartmentTypes}" var="depTypeSel" varStatus="st">
+                                        <h:outputText value="#{depTypeSel.label}#{st.last ? '' : ', '}"/>
+                                    </ui:repeat>
+                                </div>
+                                <div>
+                                    <h:outputText value="Payment Method" styleClass="meta-label"/>
+                                    <h:outputText value="#{pharmacyReportController.paymentMethod eq null ? 'All' : pharmacyReportController.paymentMethod.label}"/>
+                                </div>
+                                <div>
+                                    <h:outputText value="Institution" styleClass="meta-label"/>
+                                    <h:outputText value="#{pharmacyReportController.institution eq null ? 'All Institutions' : pharmacyReportController.institution.name}"/>
+                                </div>
+                                <div>
+                                    <h:outputText value="Site" styleClass="meta-label"/>
+                                    <h:outputText value="#{pharmacyReportController.site eq null ? 'All Sites' : pharmacyReportController.site.name}"/>
+                                </div>
+                                <div>
+                                    <h:outputText value="Department" styleClass="meta-label"/>
+                                    <h:outputText value="#{pharmacyReportController.department eq null ? 'All Departments' : pharmacyReportController.department.name}"/>
+                                </div>
+                            </div>
+
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Bill Number</th>
+                                        <th>Name</th>
+                                        <th>Code</th>
+                                        <th>Batch No</th>
+                                        <th class="num">Qty</th>
+                                        <th class="num">Cost Rate</th>
+                                        <th class="num">Cost Value</th>
+                                        <th class="num">Purchase Rate</th>
+                                        <th class="num">Purchase Value</th>
+                                        <th class="num">MRP</th>
+                                        <th class="num">MRP Value</th>
+                                        <th class="num">Net Total</th>
+                                        <th>Payment Mode/Modes</th>
+                                        <th class="num">Discount</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <ui:repeat value="#{pharmacyReportController.cogsBillDtos}" var="b">
+                                        <ui:repeat value="#{b.billItemsMap.values()}" var="bi" varStatus="is">
+                                            <tr>
+                                                <h:panelGroup rendered="#{is.first}">
+                                                    <td class="nowrap" rowspan="#{b.billItemsMap.size()}">
+                                                        <h:outputText value="#{b.billCreatedAt}">
+                                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
+                                                        </h:outputText>
+                                                    </td>
+                                                    <td class="nowrap" rowspan="#{b.billItemsMap.size()}">
+                                                        <h:outputText value="#{b.billDeptId}"/>
+                                                    </td>
+                                                </h:panelGroup>
+                                                <td><h:outputText value="#{bi.itemName}"/></td>
+                                                <td class="nowrap"><h:outputText value="#{bi.itemCode}"/></td>
+                                                <td class="nowrap"><h:outputText value="#{bi.batchNo}"/></td>
+                                                <td class="num"><h:outputText value="#{bi.qty}"><f:convertNumber pattern="#,##0"/></h:outputText></td>
+                                                <td class="num"><h:outputText value="#{bi.costRate}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td>
+                                                <td class="num"><h:outputText value="#{bi.qty * bi.costRate}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td>
+                                                <td class="num"><h:outputText value="#{bi.purchaseRate}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td>
+                                                <td class="num"><h:outputText value="#{bi.qty * bi.purchaseRate}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td>
+                                                <td class="num"><h:outputText value="#{bi.retailRate}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td>
+                                                <td class="num"><h:outputText value="#{bi.qty * bi.retailRate}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td>
+                                                <h:panelGroup rendered="#{is.first}">
+                                                    <td class="num" rowspan="#{b.billItemsMap.size()}">
+                                                        <h:outputText value="#{b.netTotal}"><f:convertNumber pattern="#,##0.00"/></h:outputText>
+                                                    </td>
+                                                    <td rowspan="#{b.billItemsMap.size()}">
+                                                        <h:outputText value="Staff credit" rendered="#{b.paymentMethod eq 'Staff'}"/>
+                                                        <h:outputText value="#{b.paymentMethod}" rendered="#{b.paymentMethod ne 'Staff'}"/>
+                                                        <ui:repeat value="#{searchController.getPaymentDetals(b.bill)}" var="payment" rendered="#{b.paymentMethod eq 'MultiplePaymentMethods'}">
+                                                            <div class="nowrap">
+                                                                <h:outputText value="#{payment.paymentMethod} - "/>
+                                                                <h:outputText value="#{payment.paidValue}"><f:convertNumber pattern="#,##0.00"/></h:outputText>
+                                                            </div>
+                                                        </ui:repeat>
+                                                    </td>
+                                                    <td class="num" rowspan="#{b.billItemsMap.size()}">
+                                                        <h:outputText value="#{b.discount}"><f:convertNumber pattern="#,##0.00"/></h:outputText>
+                                                    </td>
+                                                </h:panelGroup>
+                                            </tr>
+                                        </ui:repeat>
+                                        <h:panelGroup rendered="#{empty b.billItemsMap}">
+                                            <tr>
+                                                <td class="nowrap">
+                                                    <h:outputText value="#{b.billCreatedAt}">
+                                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
+                                                    </h:outputText>
+                                                </td>
+                                                <td class="nowrap"><h:outputText value="#{b.billDeptId}"/></td>
+                                                <td colspan="10"></td>
+                                                <td class="num"><h:outputText value="#{b.netTotal}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td>
+                                                <td>
+                                                    <h:outputText value="Staff credit" rendered="#{b.paymentMethod eq 'Staff'}"/>
+                                                    <h:outputText value="#{b.paymentMethod}" rendered="#{b.paymentMethod ne 'Staff'}"/>
+                                                    <ui:repeat value="#{searchController.getPaymentDetals(b.bill)}" var="payment" rendered="#{b.paymentMethod eq 'MultiplePaymentMethods'}">
+                                                        <div class="nowrap">
+                                                            <h:outputText value="#{payment.paymentMethod} - "/>
+                                                            <h:outputText value="#{payment.paidValue}"><f:convertNumber pattern="#,##0.00"/></h:outputText>
+                                                        </div>
+                                                    </ui:repeat>
+                                                </td>
+                                                <td class="num"><h:outputText value="#{b.discount}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td>
+                                            </tr>
+                                        </h:panelGroup>
+                                    </ui:repeat>
+                                    <h:panelGroup rendered="#{empty pharmacyReportController.cogsBillDtos}">
+                                        <tr>
+                                            <td colspan="15" style="text-align: center;">No records found</td>
+                                        </tr>
+                                    </h:panelGroup>
+                                </tbody>
+                                <tfoot>
+                                    <tr>
+                                        <td colspan="7">Total</td>
+                                        <td class="num">
+                                            <h:outputText value="#{pharmacyReportController.totalCostValue}"><f:convertNumber pattern="#,##0.00"/></h:outputText>
+                                        </td>
+                                        <td></td>
+                                        <td class="num">
+                                            <h:outputText value="#{pharmacyReportController.totalPurchaseValue}"><f:convertNumber pattern="#,##0.00"/></h:outputText>
+                                        </td>
+                                        <td colspan="2"></td>
+                                        <td class="num">
+                                            <h:outputText value="#{pharmacyReportController.netTotal}"><f:convertNumber pattern="#,##0.00"/></h:outputText>
+                                        </td>
+                                        <td colspan="2"></td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+
+                            <div class="printed-by">
+                                <h:outputText value="Printed by: #{sessionController.loggedUser.webUserPerson.name}"/>
+                                <h:outputText value="&nbsp;&nbsp;|&nbsp;&nbsp;Printed at: "/>
+                                <h:outputText value="#{sessionController.currentDate}">
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                </h:outputText>
+                            </div>
+                        </h:panelGroup>
+                    </p:panel>
+                </h:form>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>
