@@ -174,6 +174,7 @@ public class ConfigOptionApplicationController implements Serializable {
             loadStockHistoryArchiveConfigurationDefaults();
             loadSapIntegrationConfigurationDefaults();
             loadInwardConfigurationDefaults();
+            loadSaleForCashierTokenDisplayConfigurationDefaults();
             enumController.resetPaymentMethods();
         } finally {
             isLoadingApplicationOptions = false;
@@ -1280,6 +1281,26 @@ public class ConfigOptionApplicationController implements Serializable {
     private String buildAllCashierCollectionOptionKey(PaymentMethod paymentMethod) {
         String label = paymentMethod != null ? paymentMethod.getLabel() : "Unknown";
         return "Include " + label + " in Collection Total";
+    }
+
+    // Registers the Sale for Cashier TV board options so an admin finds them in
+    // Application Options before the board is first opened. Defaults match the page.
+    private void loadSaleForCashierTokenDisplayConfigurationDefaults() {
+        getBooleanValueByKey("Pharmacy Sale for Cashier Token Display - Show Header", true);
+        getBooleanValueByKey("Pharmacy Sale for Cashier Token Display - Show Date and Time", true);
+        getBooleanValueByKey("Pharmacy Sale for Cashier Token Display - Show Patient Name", true);
+        getBooleanValueByKey("Pharmacy Sale for Cashier Token Display - Show Bill Number", false);
+        getBooleanValueByKey("Pharmacy Sale for Cashier Token Display - Show Bill Value", false);
+        getBooleanValueByKey("Pharmacy Sale for Cashier Token Display - Show Status Picture", true);
+        getBooleanValueByKey("Pharmacy Sale for Cashier Token Display - Show Status Label", true);
+        getBooleanValueByKey("Pharmacy Sale for Cashier Token Display - Show In-Progress Tokens", true);
+        getIntegerValueByKey("Pharmacy Sale for Cashier Token Display - Called Token Number Font Size in Points", 70);
+        getIntegerValueByKey("Pharmacy Sale for Cashier Token Display - In-Progress Token Number Font Size in Points", 25);
+        getIntegerValueByKey("Pharmacy Sale for Cashier Token Display - Patient Details Font Size in Points", 28);
+        getIntegerValueByKey("Pharmacy Sale for Cashier Token Display - Status Picture Width in Pixels", 250);
+        getIntegerValueByKey("Pharmacy Sale for Cashier Token Display - Status Label Font Size in Pixels", 20);
+        getIntegerValueByKey("Pharmacy Sale for Cashier Token Display - Maximum Number of Called Tokens to Show (0 for All)", 0);
+        getIntegerValueByKey("Pharmacy Sale for Cashier Token Display - Maximum Number of In-Progress Tokens to Show (0 for All)", 0);
     }
 
     private void loadStockHistoryArchiveConfigurationDefaults() {

@@ -129,6 +129,8 @@ public class FavouriteMedicineApi {
 
             return successResponse(responseData);
 
+        } catch (IllegalArgumentException e) {
+            return errorResponse("Invalid request: " + e.getMessage(), 400);
         } catch (Exception e) {
             return errorResponse("An error occurred: " + e.getMessage(), 500);
         }

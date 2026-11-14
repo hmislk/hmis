@@ -2223,6 +2223,11 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
 
         saveRefundBill(refundingBill);
 
+        // Keep the credit batch bill's refundAmount, paidAmount and balance in step with
+        // the refund, as Return Items and individual cancellation already do (#16982).
+        // The method is a no-op for a bill with no batch bill or a non-credit batch bill.
+        updateBatchBillFinancialFieldsForIndividualCancellation(bill, refundingBill);
+
         Payment p = getOpdPreSettleController().createPaymentForCancellationsAndRefunds(refundingBill, paymentMethod);
 
         //TODO: Create Payments for Bill Items
@@ -8182,10 +8187,8 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
         // Update refundAmount - add the return amount
         batchBill.setRefundAmount(batchBill.getRefundAmount() + refundAmount);
 
-        // Update paidAmount - deduct the return amount (only if payment exists)
-        if (batchBill.getPaidAmount() > 0) {
-            batchBill.setPaidAmount(Math.max(0d, batchBill.getPaidAmount() - refundAmount));
-        }
+        // paidAmount is left unchanged: it records settlements only. Due = netTotal - refundAmount - paidAmount,
+        // the same definition the OPD Due Search uses, so the balance below agrees with it (#16982).
 
         // Update balance (due amount) - deduct the return amount (only if balance > 0)
         if (batchBill.getBalance() > 0) {

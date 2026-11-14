@@ -1,6 +1,8 @@
 package com.divudi.service.pharmacy;
 
 import com.divudi.core.data.BillTypeAtomic;
+import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.entity.Institution;
 import com.divudi.core.data.dto.ReferringDoctorSaleBillDTO;
 import com.divudi.core.data.dto.ReferringDoctorSaleItemDTO;
 import com.divudi.core.data.dto.ReferringDoctorSaleSummaryDTO;
@@ -81,6 +83,20 @@ public class ReferringDoctorSaleReportService {
                 + " left join s1.referredBy d2"
                 + " left join s2.referredBy d3",
                 3, " and s1.billTypeAtomic in :saleTypes"),
+        // Cancelling a "return items and payments" bill writes the same cancelled atomic, with
+        // billedBill = the finance return it reverses. Positive values that add the return back.
+        RETURN_CANCELLED_AS_SALE_CANCEL(ROW_RETURN_CANCELLATION,
+                Arrays.asList(BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED),
+                " left join b.billedBill s1"
+                + " left join s1.referenceBill s2"
+                + " left join s2.billedBill s3"
+                + " left join s3.referenceBill s4"
+                + " left join b.referredBy d1"
+                + " left join s1.referredBy d2"
+                + " left join s2.referredBy d3"
+                + " left join s3.referredBy d4"
+                + " left join s4.referredBy d5",
+                5, " and s1.billTypeAtomic in :returnFinanceTypes"),
         RETURN(ROW_RETURN,
                 Arrays.asList(BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEM_PAYMENTS,
                         BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS,
@@ -145,7 +161,8 @@ public class ReferringDoctorSaleReportService {
         return sb.toString();
     }
 
-    private String whereClause(BillSet set, Department department, Map<String, Object> params,
+    private String whereClause(BillSet set, Institution institution, Institution site, Department department,
+            PaymentMethod paymentMethod, Map<String, Object> params,
             Date from, Date to, boolean forItems) {
         StringBuilder sb = new StringBuilder(" where (b.retired is null or b.retired = false)");
         if (forItems) {
@@ -164,6 +181,8 @@ public class ReferringDoctorSaleReportService {
             }
             if (set.extraWhere.contains(":returnFinanceTypes")) {
                 params.put("returnFinanceTypes", RETURN_FINANCE_TYPES);
+            }
+            if (set.extraWhere.contains(":returnPreTypes")) {
                 params.put("returnPreTypes", RETURN_PRE_TYPES);
             }
         }
@@ -171,10 +190,23 @@ public class ReferringDoctorSaleReportService {
             sb.append(" and dep.id = :deptId");
             params.put("deptId", department.getId());
         }
+        if (institution != null) {
+            sb.append(" and ins.id = :insId");
+            params.put("insId", institution.getId());
+        }
+        if (site != null) {
+            sb.append(" and st.id = :siteId");
+            params.put("siteId", site.getId());
+        }
+        if (paymentMethod != null) {
+            sb.append(" and b.paymentMethod = :pm");
+            params.put("pm", paymentMethod);
+        }
         return sb.toString();
     }
 
-    private List<ReferringDoctorSaleBillDTO> fetchBillSet(BillSet set, Date from, Date to, Department department) {
+    private List<ReferringDoctorSaleBillDTO> fetchBillSet(BillSet set, Date from, Date to,
+            Institution institution, Institution site, Department department, PaymentMethod paymentMethod) {
         Map<String, Object> params = new HashMap<>();
         String jpql = "select new com.divudi.core.data.dto.ReferringDoctorSaleBillDTO("
                 + "b.id, b.deptId, b.createdAt, b.billTypeAtomic, pp.name, b.paymentMethod, dep.name, "
@@ -182,7 +214,8 @@ public class ReferringDoctorSaleReportService {
                 + " from Bill b"
                 + set.joins
                 + " left join b.patient pt left join pt.person pp left join b.department dep"
-                + whereClause(set, department, params, from, to, false);
+                + " left join dep.institution ins left join dep.site st"
+                + whereClause(set, institution, site, department, paymentMethod, params, from, to, false);
         @SuppressWarnings("unchecked")
         List<ReferringDoctorSaleBillDTO> rows
                 = (List<ReferringDoctorSaleBillDTO>) billFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
@@ -195,7 +228,8 @@ public class ReferringDoctorSaleReportService {
         return rows;
     }
 
-    private List<ReferringDoctorSaleItemDTO> fetchItemSet(BillSet set, Date from, Date to, Department department) {
+    private List<ReferringDoctorSaleItemDTO> fetchItemSet(BillSet set, Date from, Date to,
+            Institution institution, Institution site, Department department, PaymentMethod paymentMethod) {
         Map<String, Object> params = new HashMap<>();
         String jpql = "select new com.divudi.core.data.dto.ReferringDoctorSaleItemDTO("
                 + doctorIdSelect(set) + ", it.id, it.name, p.qty, i.netValue)"
@@ -203,7 +237,8 @@ public class ReferringDoctorSaleReportService {
                 + " left join i.item it left join i.pharmaceuticalBillItem p"
                 + set.joins
                 + " left join b.department dep"
-                + whereClause(set, department, params, from, to, true);
+                + " left join dep.institution ins left join dep.site st"
+                + whereClause(set, institution, site, department, paymentMethod, params, from, to, true);
         @SuppressWarnings("unchecked")
         List<ReferringDoctorSaleItemDTO> rows
                 = (List<ReferringDoctorSaleItemDTO>) billItemFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
@@ -264,9 +299,15 @@ public class ReferringDoctorSaleReportService {
     // ------------------------------------------------------------------
     public List<ReferringDoctorSaleBillDTO> fetchBills(Date from, Date to, Department department,
             Doctor doctor, boolean onlyWithoutDoctor) {
+        return fetchBills(from, to, null, null, department, doctor, onlyWithoutDoctor, null);
+    }
+
+    public List<ReferringDoctorSaleBillDTO> fetchBills(Date from, Date to, Institution institution,
+            Institution site, Department department, Doctor doctor, boolean onlyWithoutDoctor,
+            PaymentMethod paymentMethod) {
         List<ReferringDoctorSaleBillDTO> all = new ArrayList<>();
         for (BillSet set : BillSet.values()) {
-            all.addAll(fetchBillSet(set, from, to, department));
+            all.addAll(fetchBillSet(set, from, to, institution, site, department, paymentMethod));
         }
         Set<Long> ids = new HashSet<>();
         for (ReferringDoctorSaleBillDTO r : all) {
@@ -328,9 +369,20 @@ public class ReferringDoctorSaleReportService {
 
     public List<ReferringDoctorSaleItemDTO> fetchItems(Date from, Date to, Department department,
             Doctor doctor, boolean onlyWithoutDoctor) {
+        return fetchItems(from, to, null, null, department, doctor, onlyWithoutDoctor);
+    }
+
+    public List<ReferringDoctorSaleItemDTO> fetchItems(Date from, Date to, Institution institution,
+            Institution site, Department department, Doctor doctor, boolean onlyWithoutDoctor) {
+        return fetchItems(from, to, institution, site, department, doctor, onlyWithoutDoctor, null);
+    }
+
+    public List<ReferringDoctorSaleItemDTO> fetchItems(Date from, Date to, Institution institution,
+            Institution site, Department department, Doctor doctor, boolean onlyWithoutDoctor,
+            PaymentMethod paymentMethod) {
         List<ReferringDoctorSaleItemDTO> all = new ArrayList<>();
         for (BillSet set : BillSet.values()) {
-            all.addAll(fetchItemSet(set, from, to, department));
+            all.addAll(fetchItemSet(set, from, to, institution, site, department, paymentMethod));
         }
         Set<Long> ids = new HashSet<>();
         for (ReferringDoctorSaleItemDTO r : all) {

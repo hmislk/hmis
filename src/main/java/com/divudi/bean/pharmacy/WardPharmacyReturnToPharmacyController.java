@@ -12,8 +12,10 @@ import com.divudi.core.entity.BilledBill;
 import com.divudi.core.entity.BillItem;
 import com.divudi.core.entity.CancelledBill;
 import com.divudi.core.entity.Department;
+import com.divudi.core.entity.Item;
 import com.divudi.core.entity.PatientEncounter;
 import com.divudi.core.entity.Staff;
+import com.divudi.core.entity.pharmacy.ItemBatch;
 import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
 import com.divudi.core.entity.pharmacy.Stock;
 import com.divudi.core.facade.BillFacade;
@@ -96,6 +98,12 @@ public class WardPharmacyReturnToPharmacyController implements Serializable {
     private boolean printPreview;
     private boolean settling;
     private String comment;
+    /**
+     * True when the return was opened from the all-patients entry (main menu,
+     * Nursing Dashboard): the received-bill list then spans every admission
+     * of the logged department instead of one patient (#25507).
+     */
+    private boolean allPatients;
 
     /**
      * One editable line of the scoped return, wrapping the transient return
@@ -161,6 +169,7 @@ public class WardPharmacyReturnToPharmacyController implements Serializable {
             return null;
         }
         patientEncounter = encounter;
+        allPatients = false;
         printPreview = false;
         selectedReceiveBill = null;
         returnLines = new ArrayList<>();
@@ -179,7 +188,32 @@ public class WardPharmacyReturnToPharmacyController implements Serializable {
      * the print-preview panel's "New Return" button.
      */
     public String navigateToNewReturn() {
+        if (allPatients) {
+            return navigateToReturnAllPatients();
+        }
         return navigateToReturn(patientEncounter);
+    }
+
+    /**
+     * All-patients entry (#25507): lists the logged department's received
+     * medicine bills, across current admissions, that still have a returnable
+     * balance. The user picks one and continues with the same porter return as
+     * the single-patient entry.
+     */
+    public String navigateToReturnAllPatients() {
+        patientEncounter = null;
+        allPatients = true;
+        printPreview = false;
+        selectedReceiveBill = null;
+        returnLines = new ArrayList<>();
+        previewBill = null;
+        previewLines = new ArrayList<>();
+        porter = null;
+        toDepartment = null;
+        comment = null;
+        returnBill = new BilledBill();
+        loadReceiveBills();
+        return "/ward/ward_pharmacy_return_to_pharmacy?faces-redirect=true";
     }
 
     /**
@@ -191,6 +225,10 @@ public class WardPharmacyReturnToPharmacyController implements Serializable {
      */
     public void loadReceiveBills() {
         receiveBills = new ArrayList<>();
+        if (allPatients) {
+            loadReceiveBillsForAllPatients();
+            return;
+        }
         if (patientEncounter == null || patientEncounter.getId() == null) {
             return;
         }
@@ -203,6 +241,35 @@ public class WardPharmacyReturnToPharmacyController implements Serializable {
         params.put("bta", BillTypeAtomic.ACCEPT_ISSUED_MEDICINE_INWARD);
         params.put("enc", patientEncounter);
         List<Bill> candidates = billFacade.findByJpql(jpql, params);
+        for (Bill b : candidates) {
+            if (hasReturnableBalance(b)) {
+                receiveBills.add(b);
+            }
+        }
+    }
+
+    /**
+     * Receive bills of the logged department for admissions that are neither
+     * discharged nor nursing-discharged (a return is refused after nursing
+     * discharge), newest first, keeping only those with a returnable balance.
+     * The candidate query is capped so the netting queries stay bounded.
+     */
+    private void loadReceiveBillsForAllPatients() {
+        if (sessionController.getDepartment() == null) {
+            return;
+        }
+        String jpql = "SELECT b FROM Bill b JOIN b.patientEncounter pe "
+                + "WHERE b.billTypeAtomic = :bta "
+                + "AND b.department = :dept "
+                + "AND b.cancelled = false "
+                + "AND (b.retired = false OR b.retired IS NULL) "
+                + "AND (pe.discharged = false OR pe.discharged IS NULL) "
+                + "AND (pe.nursingDischarged = false OR pe.nursingDischarged IS NULL) "
+                + "ORDER BY b.createdAt DESC";
+        Map<String, Object> params = new HashMap<>();
+        params.put("bta", BillTypeAtomic.ACCEPT_ISSUED_MEDICINE_INWARD);
+        params.put("dept", sessionController.getDepartment());
+        List<Bill> candidates = billFacade.findByJpql(jpql, params, 300);
         for (Bill b : candidates) {
             if (hasReturnableBalance(b)) {
                 receiveBills.add(b);
@@ -243,10 +310,16 @@ public class WardPharmacyReturnToPharmacyController implements Serializable {
     }
 
     /**
-     * Quantity already administered to the patient for the same
-     * item/batch/encounter as the receive bill line, counted as soon as the
-     * stage-1 {@code MedicationAdministrationRecord} exists (status GIVEN),
-     * regardless of whether the stage-2 stock settlement has run (#22224).
+     * This receive bill line's share of the doses already administered to the
+     * patient from the same item/batch, counted as soon as the stage-1
+     * {@code MedicationAdministrationRecord} exists (status GIVEN), regardless
+     * of whether the stage-2 stock settlement has run (#22224).
+     * <p>
+     * Administration records are not linked to a receive line, so the
+     * encounter's administered total for the item/batch is allocated across
+     * its receive lines oldest receipt first, each line taking at most its
+     * received-minus-returned quantity. The total is therefore subtracted
+     * once, not from every receive line of the same batch (#25583).
      */
     public double getAdministeredQty(BillItem receiveItem) {
         if (receiveItem == null || receiveItem.getId() == null) {
@@ -262,6 +335,27 @@ public class WardPharmacyReturnToPharmacyController implements Serializable {
         if (enc == null) {
             return 0.0;
         }
+        double remainingAdministered = getTotalAdministeredQty(enc, receiveItem.getItem(), receivePbi.getItemBatch());
+        if (remainingAdministered <= 0.0) {
+            return 0.0;
+        }
+        for (BillItem line : fetchReceiveLinesOldestFirst(enc, receiveItem.getItem(), receivePbi.getItemBatch())) {
+            double lineNet = Math.max(0.0, Math.abs(line.getPharmaceuticalBillItem().getQty()) - getAlreadyReturnedQty(line));
+            double share = Math.min(lineNet, remainingAdministered);
+            if (line.getId().equals(receiveItem.getId())) {
+                return share;
+            }
+            remainingAdministered -= share;
+            if (remainingAdministered <= 0.0) {
+                return 0.0;
+            }
+        }
+        // The line was not among the encounter's live receive lines (e.g. its
+        // bill is cancelled): give it whatever the live lines did not absorb.
+        return remainingAdministered;
+    }
+
+    private double getTotalAdministeredQty(PatientEncounter enc, Item item, ItemBatch batch) {
         String jpql = "SELECT SUM(m.qty) FROM MedicationAdministrationRecord m "
                 + "WHERE m.patientEncounter = :enc "
                 + "AND m.item = :item "
@@ -270,10 +364,32 @@ public class WardPharmacyReturnToPharmacyController implements Serializable {
                 + "AND m.retired = false";
         Map<String, Object> params = new HashMap<>();
         params.put("enc", enc);
-        params.put("item", receiveItem.getItem());
-        params.put("batch", receivePbi.getItemBatch());
+        params.put("item", item);
+        params.put("batch", batch);
         params.put("given", MedicationAdministrationStatus.GIVEN);
         return medicationAdministrationRecordFacade.findDoubleByJpql(jpql, params);
+    }
+
+    /**
+     * The encounter's non-cancelled receive bill lines for one item/batch,
+     * oldest receipt first (same bill filter as {@link #loadReceiveBills()}).
+     */
+    private List<BillItem> fetchReceiveLinesOldestFirst(PatientEncounter enc, Item item, ItemBatch batch) {
+        String jpql = "SELECT bi FROM BillItem bi "
+                + "WHERE bi.bill.billTypeAtomic = :bta "
+                + "AND bi.bill.patientEncounter = :enc "
+                + "AND bi.bill.cancelled = false "
+                + "AND (bi.bill.retired = false OR bi.bill.retired IS NULL) "
+                + "AND bi.retired = false "
+                + "AND bi.item = :item "
+                + "AND bi.pharmaceuticalBillItem.itemBatch = :batch "
+                + "ORDER BY bi.bill.createdAt, bi.id";
+        Map<String, Object> params = new HashMap<>();
+        params.put("bta", BillTypeAtomic.ACCEPT_ISSUED_MEDICINE_INWARD);
+        params.put("enc", enc);
+        params.put("item", item);
+        params.put("batch", batch);
+        return billItemFacade.findByJpql(jpql, params);
     }
 
     /**
@@ -809,6 +925,10 @@ public class WardPharmacyReturnToPharmacyController implements Serializable {
 
     public void setPatientEncounter(PatientEncounter patientEncounter) {
         this.patientEncounter = patientEncounter;
+    }
+
+    public boolean isAllPatients() {
+        return allPatients;
     }
 
     public List<Bill> getReceiveBills() {

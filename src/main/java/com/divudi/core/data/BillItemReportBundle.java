@@ -17,14 +17,17 @@ public class BillItemReportBundle implements Serializable {
     private Map<PaymentMethod, Double> paymentMethodSubtotals = new HashMap<>();
     private Map<PaymentMethod, Double> paymentMethodHospitalFeeSubtotals = new HashMap<>();
     private Map<PaymentMethod, Double> paymentMethodStaffFeeSubtotals = new HashMap<>();
+    private Map<PaymentMethod, Double> paymentMethodDiscountSubtotals = new HashMap<>();
 
     // Enhanced nested grouping structure
     private Map<PaymentMethod, Map<BillCategory, List<BillItemReportDTO>>> nestedPaymentMethodGroups = new HashMap<>();
     private Map<PaymentMethod, Map<BillCategory, Double>> nestedSubtotals = new HashMap<>();
     private Map<PaymentMethod, Map<BillCategory, Double>> nestedHospitalFeeSubtotals = new HashMap<>();
     private Map<PaymentMethod, Map<BillCategory, Double>> nestedStaffFeeSubtotals = new HashMap<>();
+    private Map<PaymentMethod, Map<BillCategory, Double>> nestedDiscountSubtotals = new HashMap<>();
 
     private Double grandTotal = 0.0;
+    private Double grandDiscountTotal = 0.0;
     private Double grandHospitalFeeTotal = 0.0;
     private Double grandStaffFeeTotal = 0.0;
     private Long totalCount = 0L;
@@ -76,22 +79,26 @@ public class BillItemReportBundle implements Serializable {
             double netTotal = 0.0;
             double hospitalFeeTotal = 0.0;
             double staffFeeTotal = 0.0;
+            double discountTotal = 0.0;
 
             for (BillItemReportDTO dto : groupDtos) {
                 // DTOs already have correct signs (negative for cancellations), so no multiplier needed
                 netTotal += (dto.getNetValue() != null ? dto.getNetValue() : 0.0);
                 hospitalFeeTotal += (dto.getHospitalFee() != null ? dto.getHospitalFee() : 0.0);
                 staffFeeTotal += (dto.getStaffFee() != null ? dto.getStaffFee() : 0.0);
+                discountTotal += (dto.getDiscount() != null ? dto.getDiscount() : 0.0);
             }
 
             paymentMethodSubtotals.put(paymentMethod, netTotal);
             paymentMethodHospitalFeeSubtotals.put(paymentMethod, hospitalFeeTotal);
             paymentMethodStaffFeeSubtotals.put(paymentMethod, staffFeeTotal);
+            paymentMethodDiscountSubtotals.put(paymentMethod, discountTotal);
 
             // Add to grand totals
             grandTotal += netTotal;
             grandHospitalFeeTotal += hospitalFeeTotal;
             grandStaffFeeTotal += staffFeeTotal;
+            grandDiscountTotal += discountTotal;
         }
 
         totalCount = (long) dtos.size();
@@ -124,6 +131,10 @@ public class BillItemReportBundle implements Serializable {
             // OPD Batch Bill Types - Cancellations
             case OPD_BATCH_BILL_CANCELLATION:
             case PACKAGE_OPD_BATCH_BILL_CANCELLATION:
+            // Inward Service Bill Cancellations
+            case INWARD_SERVICE_BILL_CANCELLATION:
+            case INWARD_SERVICE_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION:
+            case INWARD_SERVICE_BATCH_BILL_CANCELLATION:
                 return BillCategory.CANCELLATION;
             case OPD_BILL_REFUND:
             case INWARD_SERVICE_BILL_REFUND:
@@ -143,6 +154,7 @@ public class BillItemReportBundle implements Serializable {
         Map<BillCategory, Double> netSubtotals = new HashMap<>();
         Map<BillCategory, Double> hospitalFeeSubtotals = new HashMap<>();
         Map<BillCategory, Double> staffFeeSubtotals = new HashMap<>();
+        Map<BillCategory, Double> discountSubtotals = new HashMap<>();
 
         for (Map.Entry<BillCategory, List<BillItemReportDTO>> categoryEntry : categoryMap.entrySet()) {
             BillCategory category = categoryEntry.getKey();
@@ -151,22 +163,26 @@ public class BillItemReportBundle implements Serializable {
             double categoryNetTotal = 0.0;
             double categoryHospitalFeeTotal = 0.0;
             double categoryStaffFeeTotal = 0.0;
+            double categoryDiscountTotal = 0.0;
 
             for (BillItemReportDTO dto : categoryDtos) {
                 // DTOs already have correct signs (negative for cancellations), so no multiplier needed
                 categoryNetTotal += (dto.getNetValue() != null ? dto.getNetValue() : 0.0);
                 categoryHospitalFeeTotal += (dto.getHospitalFee() != null ? dto.getHospitalFee() : 0.0);
                 categoryStaffFeeTotal += (dto.getStaffFee() != null ? dto.getStaffFee() : 0.0);
+                categoryDiscountTotal += (dto.getDiscount() != null ? dto.getDiscount() : 0.0);
             }
 
             netSubtotals.put(category, categoryNetTotal);
             hospitalFeeSubtotals.put(category, categoryHospitalFeeTotal);
             staffFeeSubtotals.put(category, categoryStaffFeeTotal);
+            discountSubtotals.put(category, categoryDiscountTotal);
         }
 
         nestedSubtotals.put(paymentMethod, netSubtotals);
         nestedHospitalFeeSubtotals.put(paymentMethod, hospitalFeeSubtotals);
         nestedStaffFeeSubtotals.put(paymentMethod, staffFeeSubtotals);
+        nestedDiscountSubtotals.put(paymentMethod, discountSubtotals);
     }
 
     public Map<PaymentMethod, List<BillItemReportDTO>> getPaymentMethodGroups() {
@@ -255,6 +271,21 @@ public class BillItemReportBundle implements Serializable {
     }
 
     /**
+     * Get discount subtotal for a specific payment method
+     */
+    public Double getDiscountSubtotalForPaymentMethod(PaymentMethod paymentMethod) {
+        return paymentMethodDiscountSubtotals.getOrDefault(paymentMethod, 0.0);
+    }
+
+    public Double getGrandDiscountTotal() {
+        return grandDiscountTotal;
+    }
+
+    public void setGrandDiscountTotal(Double grandDiscountTotal) {
+        this.grandDiscountTotal = grandDiscountTotal;
+    }
+
+    /**
      * Get all payment methods that have data
      */
     public Set<PaymentMethod> getPaymentMethods() {
@@ -293,6 +324,8 @@ public class BillItemReportBundle implements Serializable {
             case "STAFF":
             case "DOCTOR":
                 return nestedStaffFeeSubtotals.getOrDefault(paymentMethod, new HashMap<>()).getOrDefault(category, 0.0);
+            case "DISCOUNT":
+                return nestedDiscountSubtotals.getOrDefault(paymentMethod, new HashMap<>()).getOrDefault(category, 0.0);
             default:
                 return 0.0;
         }

@@ -998,6 +998,9 @@ public class PharmacyBillSearch implements Serializable {
         billFacade.edit(bill);
         // Session-scoped: clear so this comment is not reused for the next cancellation.
         comment = null;
+        JsfUtil.addSuccessMessage("Transfer Request Cancelled Successfully");
+        // Keep the message across the redirect below; without this it is discarded.
+        javax.faces.context.FacesContext.getCurrentInstance().getExternalContext().getFlash().setKeepMessages(true);
         return "/pharmacy/pharmacy_transfer_request_list?faces-redirect=true";
     }
 
@@ -2832,6 +2835,11 @@ public class PharmacyBillSearch implements Serializable {
 
     private void pharmacyCancelBillItems(CancelledBill can) {
         for (BillItem nB : getBill().getBillItems()) {
+            // A removed or zero-qty line stays on the bill as retired (#25621);
+            // it was never ordered, so it gets no cancellation line
+            if (nB.isRetired()) {
+                continue;
+            }
             BillItem b = new BillItem();
             b.setBill(can);
             b.copy(nB);
@@ -3442,8 +3450,37 @@ public class PharmacyBillSearch implements Serializable {
 
     }
 
+    private static final String WARD_ALREADY_RECEIVED_MESSAGE = "The ward has already received this issue. Return it instead.";
+
+    /**
+     * True when the bill is an issue made against a ward request and the ward has
+     * accepted it (a non-cancelled ACCEPT_ISSUED_MEDICINE_INWARD bill references it).
+     * Such an issue can no longer be cancelled; it has to be returned (#25508).
+     */
+    public boolean isIssueAcceptedByWard(Bill issue) {
+        if (issue == null || issue.getId() == null
+                || issue.getBillTypeAtomic() != BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD) {
+            return false;
+        }
+        String jpql = "SELECT count(r) FROM Bill r WHERE r.backwardReferenceBill.id = :issueId "
+                + "AND r.billTypeAtomic = :acceptBta AND r.cancelled = false";
+        Map<String, Object> params = new HashMap<>();
+        params.put("issueId", issue.getId());
+        params.put("acceptBta", BillTypeAtomic.ACCEPT_ISSUED_MEDICINE_INWARD);
+        Long count = getBillFacade().findLongByJpql(jpql, params);
+        return count != null && count > 0;
+    }
+
+    public boolean isCurrentBillIssueAcceptedByWard() {
+        return isIssueAcceptedByWard(getBill());
+    }
+
     public void cancelPharmacyDirectIssueToBht() {
         if (getBill().getBillType() != BillType.PharmacyBhtPre) {
+            return;
+        }
+        if (isIssueAcceptedByWard(getBill())) {
+            JsfUtil.addErrorMessage(WARD_ALREADY_RECEIVED_MESSAGE);
             return;
         }
         if (getBill().getPatientEncounter().isPaymentFinalized()) {
@@ -3471,13 +3508,26 @@ public class PharmacyBillSearch implements Serializable {
         } else {
             cancellationAtomic = BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION;
         }
-        String deptId = billNumberBean.departmentBillNumberGeneratorYearly(sessionController.getDepartment(), cancellationAtomic);
         // Bills settled through InpatientDirectIssueNativeSqlService write their real netTotal
         // and BillItem rows via native SQL after this session-scoped bean's `bill` reference was
         // already populated from an earlier (now stale) query, so getBill() here can still show
         // netTotal=0 and an empty item list even though the database row is correct. Bypassing the
         // cache guarantees the reversal is built from the real billed amount (#22599).
         Bill billToCancel = getBillFacade().findWithoutCache(getBill().getId());
+        if (billToCancel.getBillTypeAtomic() == BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD) {
+            // The issue moved the quantity to the porter's staff stock; take it back out
+            // before the department stock is restored, and stop if that fails (#25525).
+            String porterShortfall = getPharmacyBean().porterStockShortfallForIssueCancellation(billToCancel);
+            if (porterShortfall != null) {
+                JsfUtil.addErrorMessage(porterShortfall);
+                return;
+            }
+            if (!getPharmacyBean().deductPorterStockForIssueCancellation(billToCancel)) {
+                JsfUtil.addErrorMessage("Cannot cancel: the porter's stock changed while cancelling. Nothing was changed; please try again.");
+                return;
+            }
+        }
+        String deptId = billNumberBean.departmentBillNumberGeneratorYearly(sessionController.getDepartment(), cancellationAtomic);
         Bill originalForwardReferenceBill = billToCancel.getForwardReferenceBill();
         Bill newlyCreatedCancellationBill = getPharmacyBean().reAddToStock(billToCancel, getSessionController().getLoggedUser(), getSessionController().getDepartment(), BillNumberSuffix.PHISSCAN);
         newlyCreatedCancellationBill.setForwardReferenceBill(originalForwardReferenceBill);
@@ -3637,6 +3687,10 @@ public class PharmacyBillSearch implements Serializable {
         if (getBill().getBillType() != BillType.PharmacyBhtPre) {
             return;
         }
+        if (isIssueAcceptedByWard(getBill())) {
+            JsfUtil.addErrorMessage(WARD_ALREADY_RECEIVED_MESSAGE);
+            return;
+        }
         if (getBill().getPatientEncounter().isPaymentFinalized()) {
             JsfUtil.addErrorMessage("This Bill Already Discharged");
             return;
@@ -3651,6 +3705,20 @@ public class PharmacyBillSearch implements Serializable {
         }
         if (checkDepartment(getBill())) {
             return;
+        }
+        boolean requestIssue = getBill().getBillTypeAtomic() == BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD;
+        if (requestIssue) {
+            // The issue moved the quantity to the porter's staff stock; take it back out
+            // before the department stock is restored, and stop if that fails (#25525).
+            String porterShortfall = getPharmacyBean().porterStockShortfallForIssueCancellation(getBill());
+            if (porterShortfall != null) {
+                JsfUtil.addErrorMessage(porterShortfall);
+                return;
+            }
+            if (!getPharmacyBean().deductPorterStockForIssueCancellation(getBill())) {
+                JsfUtil.addErrorMessage("Cannot cancel: the porter's stock changed while cancelling. Nothing was changed; please try again.");
+                return;
+            }
         }
         String deptId = billNumberBean.departmentBillNumberGeneratorYearly(sessionController.getDepartment(), BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_CANCELLATION);
         Bill newlyCreatedCancellationBill = getPharmacyBean().reAddToStock(getBill(), getSessionController().getLoggedUser(), getSessionController().getDepartment(), BillNumberSuffix.PHISSCAN);

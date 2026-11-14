@@ -277,9 +277,9 @@
                                         id="dRate"
                                         onfocus="this.select()">
                                         <f:ajax
-                                            event="blur"
+                                            event="change"
                                             execute="dRate"
-                                            render=":#{p:resolveFirstComponentWithId('panelBillDetails',view).clientId} colItem dialog total doeDateOnlyShort profMargin batch pRate rRate :#{p:resolveFirstComponentWithId('diff', view).clientId} :#{p:resolveFirstComponentWithId('txtBillNetTotal', view).clientId} :#{p:resolveFirstComponentWithId('billFinanceDetails', view).clientId}"
+                                            render=":#{p:resolveFirstComponentWithId('panelBillDetails',view).clientId} colItem dialog total profMargin :#{p:resolveFirstComponentWithId('diff', view).clientId} :#{p:resolveFirstComponentWithId('txtBillNetTotal', view).clientId} :#{p:resolveFirstComponentWithId('billFinanceDetails', view).clientId}"
                                             listener="#{grnCostingNativeSqlController.lineDiscountRateChangedListner(bi)}"></f:ajax>
                                     </p:inputText>
                                 </p:column>

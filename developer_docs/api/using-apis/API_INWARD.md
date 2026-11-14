@@ -165,6 +165,15 @@ Response:
 }
 ```
 
+Refused when the admission is still marked final-billed but its final bill is cancelled. Nothing is saved, and the caller should not treat the money as received by the hospital (both payment endpoints):
+```json
+{
+  "bill": "",
+  "error": "1",
+  "error_description": "The final bill of this admission is cancelled. Payment not recorded; please contact the hospital."
+}
+```
+
 ---
 
 ### GET `/api/apiInward/payment/{bht_no}/{bank_id}/{credit_card_ref}/{amount}` — Process payment (GET form)

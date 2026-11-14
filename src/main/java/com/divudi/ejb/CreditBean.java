@@ -24,8 +24,10 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.persistence.TemporalType;
@@ -112,7 +114,10 @@ public class CreditBean {
                 + " and p.bill.createdAt  between :frm and :to ";
 
         if (lessThan) {
-            jpql += " and (abs(p.bill.netTotal)-abs(p.bill.paidAmount))>:val ";
+            // Due = net total less refunds less settlements. Negative bills (refund and
+            // cancellation bills) are not receivables, so they are never listed (#16982).
+            jpql += " and p.bill.netTotal>0 and p.bill.cancelled=false "
+                    + " and (p.bill.netTotal-(coalesce(p.bill.refundAmount,0)+coalesce(p.bill.paidAmount,0)))>:val ";
         } else {
             jpql += " and (abs(p.bill.netTotal)-abs(p.bill.paidAmount))<:val ";
         }
@@ -154,9 +159,9 @@ public class CreditBean {
                 + " and b.createdAt  between :frm and :to ");
 
         if (lessThan) {
-            sql.append(" and (abs(b.netTotal)-abs(b.paidAmount))>:val ");
+            sql.append(" and (b.netTotal-(coalesce(b.refundAmount,0)+coalesce(b.paidAmount,0)))>:val ");
         } else {
-            sql.append(" and (abs(b.netTotal)-abs(b.paidAmount))<:val ");
+            sql.append(" and (b.netTotal-(coalesce(b.refundAmount,0)+coalesce(b.paidAmount,0)))<:val ");
         }
 
         sql.append(" and b.cancelledBill is null  "
@@ -276,7 +281,10 @@ public class CreditBean {
                 .append("WHERE b.retired = FALSE ");
 
         if (lessThan) {
-            jpqlBuilder.append("AND (ABS(b.netTotal) - ABS(b.paidAmount)) > :val ");
+            // Due = net total less refunds less settlements; refund and cancellation
+            // bills (negative net total) are not receivables (#16982).
+            jpqlBuilder.append("AND b.netTotal > 0 AND b.cancelled = FALSE ")
+                    .append("AND (b.netTotal - (COALESCE(b.refundAmount, 0) + COALESCE(b.paidAmount, 0))) > :val ");
         } else {
             jpqlBuilder.append("AND (ABS(b.netTotal) - ABS(b.paidAmount)) < :val ");
         }
@@ -320,13 +328,12 @@ public class CreditBean {
                 + " where b.retired=false ");
 
         if (lessThan) {
-            sql.append(" and (abs(b.netTotal)-abs(b.paidAmount))>:val ");
+            sql.append(" and (b.netTotal-(coalesce(b.refundAmount,0)+coalesce(b.paidAmount,0)))>:val ");
         } else {
-            sql.append(" and (abs(b.netTotal)-abs(b.paidAmount))<:val ");
+            sql.append(" and (b.netTotal-(coalesce(b.refundAmount,0)+coalesce(b.paidAmount,0)))<:val ");
         }
 
         sql.append(" and b.cancelled=false "
-                + " and b.refunded=false "
                 + " and b.createdAt between :frm and :to "
                 + " and b.paymentMethod=:pm "
                 + " and b.billType in :tps "
@@ -841,43 +848,44 @@ public class CreditBean {
     }
 
     public double getRefundAmount(Bill b) {
-        // Query to find refunds for a bill, handling different bill structures:
-        // 1. Direct refunds: b.billedBill = :b (refund directly linked to the bill)
-        // 2. Via referenceBill: b.billedBill.referenceBill = :b (pharmacy/other bills)
-        // 3. OPD batch bills returns: b.referenceBill.backwardReferenceBill = :b
-        //    (OPD refunds link via referenceBill to individual bill, which has backwardReferenceBill to batch)
-        // 4. OPD batch bills cancellations: b.billedBill.backwardReferenceBill = :b
-        //    (OPD cancellations link via billedBill to individual bill, which has backwardReferenceBill to batch)
-
-        double totalRefund = 0.0;
+        // Finds the refund/cancellation bills linked to a bill, handling different structures:
+        // 1. Direct refunds: rb.billedBill = b
+        // 2. Via billedBill.referenceBill: rb.billedBill.referenceBill = b (pharmacy/other bills)
+        // 3. OPD batch bill returns: rb.referenceBill.backwardReferenceBill = b
+        //    (the refund links via referenceBill to the individual bill, which points to the batch bill)
+        // 4. OPD batch bill cancellations: rb.billedBill.backwardReferenceBill = b
+        //    (the cancellation links via billedBill to the individual bill, which points to the batch bill)
+        // A refund bill can match more than one of these (an OPD fee refund has billedBill and
+        // referenceBill both pointing to the individual bill), so the ids are collected first and
+        // each bill is counted once (#16982).
+        if (b == null || b.getId() == null) {
+            return 0.0;
+        }
         HashMap params = new HashMap();
-        params.put("b", b);
+        params.put("bid", b.getId());
 
-        // Query 1: Direct refunds (b.billedBill = :b)
-        String jpql1 = "Select sum(b.netTotal+b.vat) From Bill b "
-                + " where b.retired=false and b.billedBill=:b ";
-        double refund1 = getBillItemFacade().findDoubleByJpql(jpql1, params);
+        Set<Long> refundBillIds = new HashSet<>();
+        String[] conditions = {
+            "rb.billedBill.id=:bid",
+            "rb.billedBill.referenceBill.id=:bid",
+            "rb.referenceBill.backwardReferenceBill.id=:bid",
+            "rb.billedBill.backwardReferenceBill.id=:bid"
+        };
+        for (String condition : conditions) {
+            String jpql = "Select rb.id From Bill rb where rb.retired=false and " + condition;
+            List<Long> ids = getBillFacade().findLongList(jpql, params);
+            if (ids != null) {
+                refundBillIds.addAll(ids);
+            }
+        }
+        if (refundBillIds.isEmpty()) {
+            return 0.0;
+        }
 
-        // Query 2: Via billedBill.referenceBill (b.billedBill.referenceBill = :b)
-        String jpql2 = "Select sum(b.netTotal+b.vat) From Bill b "
-                + " where b.retired=false and b.billedBill.referenceBill=:b ";
-        double refund2 = getBillItemFacade().findDoubleByJpql(jpql2, params);
-
-        // Query 3: OPD batch bills returns (b.referenceBill.backwardReferenceBill = :b)
-        String jpql3 = "Select sum(b.netTotal+b.vat) From Bill b "
-                + " where b.retired=false and b.referenceBill.backwardReferenceBill=:b ";
-        double refund3 = getBillItemFacade().findDoubleByJpql(jpql3, params);
-
-        // Query 4: OPD batch bills cancellations (b.billedBill.backwardReferenceBill = :b)
-        // This handles individual bill cancellations where cancellation bill links via billedBill
-        // to the individual bill, which has backwardReferenceBill pointing to the batch bill
-        String jpql4 = "Select sum(b.netTotal+b.vat) From Bill b "
-                + " where b.retired=false and b.billedBill.backwardReferenceBill=:b ";
-        double refund4 = getBillItemFacade().findDoubleByJpql(jpql4, params);
-
-        totalRefund = refund1 + refund2 + refund3 + refund4;
-
-        return totalRefund;
+        HashMap sumParams = new HashMap();
+        sumParams.put("ids", new ArrayList<>(refundBillIds));
+        return getBillItemFacade().findDoubleByJpql(
+                "Select sum(rb.netTotal+rb.vat) From Bill rb where rb.id in :ids", sumParams);
     }
 
     public Object[] getRefundAmounts(Bill b) {
@@ -1086,9 +1094,9 @@ public class CreditBean {
                 + " and b.toStaff is null ";
 
         if (lessThan) {
-            sql += " and ((abs(b.netTotal)-abs(b.paidAmount))> :val) ";
+            sql += " and ((b.netTotal-(coalesce(b.refundAmount,0)+coalesce(b.paidAmount,0)))> :val) ";
         } else {
-            sql += " and ((abs(b.netTotal)-abs(b.paidAmount))< :val) ";
+            sql += " and ((b.netTotal-(coalesce(b.refundAmount,0)+coalesce(b.paidAmount,0)))< :val) ";
         }
 
         hm = new HashMap();
@@ -1178,6 +1186,73 @@ public class CreditBean {
 
     }
 
+    /**
+     * Credit OPD finance bills of one company that still have a due, for OPD Due
+     * Age. Same bill set and rule as OPD Due Search (getCreditPayments, #16982):
+     * bill types from fetchBillTypeAtomicsForOpdFinance, no cancelled or negative
+     * bills, due = netTotal - (refundAmount + paidAmount) above 0.1. No date range:
+     * the age buckets cover every open bill.
+     */
+    public List<Bill> getOutstandingOpdFinanceCreditBills(Institution creditCompany) {
+        String jpql = "Select b From Bill b"
+                + " where b.retired=false "
+                + " and b.cancelled=false "
+                + " and b.netTotal>0 "
+                + " and (b.netTotal-(coalesce(b.refundAmount,0)+coalesce(b.paidAmount,0)))>:val "
+                + " and b.createdAt is not null "
+                + " and b.creditCompany=:cc "
+                + " and b.paymentMethod=:pm "
+                + " and b.billTypeAtomic in :billTypeAtomics ";
+        HashMap params = new HashMap();
+        params.put("cc", creditCompany);
+        params.put("pm", PaymentMethod.Credit);
+        params.put("billTypeAtomics", billService.fetchBillTypeAtomicsForOpdFinance());
+        params.put("val", 0.1);
+        return getBillFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP);
+    }
+
+    // Fully settled OPD credit bills: refunds and settlements are kept on the credit batch
+    // bill, so "settled" is net total less refunds less settlements, never the stored
+    // balance (#25465, same rule as OPD Due Search #25463).
+    private static final String SETTLED_OPD_FINANCE_CREDIT_WHERE = " where b.retired=false "
+            + " and b.cancelled=false "
+            + " and b.netTotal>0 "
+            + " and (b.netTotal-(coalesce(b.refundAmount,0)+coalesce(b.paidAmount,0)))<=:val "
+            + " and b.createdAt between :frm and :to "
+            + " and b.paymentMethod=:pm "
+            + " and b.billTypeAtomic in :billTypeAtomics ";
+
+    public List<Institution> getCreditCompaniesWithSettledOpdFinanceBills(Date fromDate, Date toDate) {
+        String jpql = "Select distinct b.creditCompany From Bill b"
+                + SETTLED_OPD_FINANCE_CREDIT_WHERE
+                + " and b.creditCompany is not null ";
+        HashMap params = settledOpdFinanceCreditParams(fromDate, toDate);
+        List<Institution> companies = new ArrayList<>(getInstitutionFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP));
+        companies.sort(java.util.Comparator.comparing(Institution::getName,
+                java.util.Comparator.nullsLast(String.CASE_INSENSITIVE_ORDER)));
+        return companies;
+    }
+
+    public List<Bill> getSettledOpdFinanceCreditBills(Institution creditCompany, Date fromDate, Date toDate) {
+        String jpql = "Select b From Bill b"
+                + SETTLED_OPD_FINANCE_CREDIT_WHERE
+                + " and b.creditCompany=:cc "
+                + " order by b.createdAt ";
+        HashMap params = settledOpdFinanceCreditParams(fromDate, toDate);
+        params.put("cc", creditCompany);
+        return getBillFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP);
+    }
+
+    private HashMap settledOpdFinanceCreditParams(Date fromDate, Date toDate) {
+        HashMap params = new HashMap();
+        params.put("frm", fromDate);
+        params.put("to", toDate);
+        params.put("pm", PaymentMethod.Credit);
+        params.put("billTypeAtomics", billService.fetchBillTypeAtomicsForOpdFinance());
+        params.put("val", 0.1);
+        return params;
+    }
+
     public List<Bill> getCreditBillsPharmacy(Institution institution, boolean lessThan) {
         String sql;
         HashMap hm = new HashMap();
@@ -1191,9 +1266,9 @@ public class CreditBean {
                 + " and b.toStaff is null ";
 
         if (lessThan) {
-            sql += " and ((abs(b.netTotal)-abs(b.paidAmount))> :val) ";
+            sql += " and ((b.netTotal-(coalesce(b.refundAmount,0)+coalesce(b.paidAmount,0)))> :val) ";
         } else {
-            sql += " and ((abs(b.netTotal)-abs(b.paidAmount))< :val) ";
+            sql += " and ((b.netTotal-(coalesce(b.refundAmount,0)+coalesce(b.paidAmount,0)))< :val) ";
         }
 
         hm.put("val", 0.1);
