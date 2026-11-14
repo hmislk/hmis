@@ -73,6 +73,8 @@ public class InwardPaymentController implements Serializable, ControllerWithMult
     @EJB
     PaymentService paymentService;
     @EJB
+    private com.divudi.service.inward.InwardPaymentService inwardPaymentService;
+    @EJB
     CashTransactionBean cashTransactionBean;
     @EJB
     PatientDepositService patientDepositService;
@@ -912,23 +914,29 @@ public class InwardPaymentController implements Serializable, ControllerWithMult
             }
         }
 
-        saveBill();
-        saveBillItem();
-
-        // Once createPayment() below succeeds, the Payment exists in the
-        // database - paymentInProgress must stay true for the rest of this
-        // method and is never reset back to false afterwards (see the
-        // class-level latch comment above), whether the post-payment
-        // bookkeeping below succeeds or throws. Resetting it here would let
-        // either a queued duplicate request or a retry after a later
-        // failure reach createPayment() again and create a second Payment.
-        paymentService.createPaymentAndUpdateDrawer(
-                current,
-                current.getPaymentMethod(),
-                paymentMethodData,
-                sessionController.getInstitution(),
-                sessionController.getDepartment(),
-                sessionController.getLoggedUser());
+        // The bill, its bill item, the Payment rows and the drawer update are
+        // saved in ONE transaction in the service (#25610): if any step fails,
+        // nothing is saved. The latch stays set once the transaction commits
+        // (see the class-level latch comment above), so neither a queued
+        // duplicate request nor a retry can create a second Payment.
+        prepareBill();
+        try {
+            inwardPaymentService.savePaymentBillWithPayments(
+                    current,
+                    paymentMethodData,
+                    sessionController.getInstitution(),
+                    sessionController.getDepartment(),
+                    sessionController.getLoggedUser());
+        } catch (RuntimeException e) {
+            // Rolled back: nothing was saved. Clear the id the failed attempt
+            // gave the bill so the user can submit again.
+            current.setId(null);
+            paymentInProgress = false;
+            Throwable cause = e instanceof javax.ejb.EJBException && e.getCause() != null ? e.getCause() : e;
+            String detail = cause.getMessage() != null ? " " + cause.getMessage() : "";
+            JsfUtil.addErrorMessage("Payment was not saved. Nothing has been recorded." + detail);
+            return;
+        }
 
         // The admission on this page was loaded when the page opened. A final
         // bill settled or cancelled since then (another tab or user) is not in
@@ -1094,6 +1102,13 @@ public class InwardPaymentController implements Serializable, ControllerWithMult
     }
 
     private void saveBill() {
+        prepareBill();
+        if (getCurrent().getId() == null) {
+            getBilledBillFacade().create(getCurrent());
+        }
+    }
+
+    private void prepareBill() {
         getCurrent().setInstitution(getSessionController().getInstitution());
         getCurrent().setDepartment(getSessionController().getDepartment());
         getCurrent().setBillType(BillType.InwardPaymentBill);
@@ -1111,11 +1126,6 @@ public class InwardPaymentController implements Serializable, ControllerWithMult
         getCurrent().setCreatedAt(new Date());
         getCurrent().setCreater(getSessionController().getLoggedUser());
         getCurrent().setComments(comment);
-
-        if (getCurrent().getId() == null) {
-            getBilledBillFacade().create(getCurrent());
-        }
-
     }
 
     private void saveBillItem() {
