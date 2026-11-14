@@ -81,6 +81,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -2835,6 +2837,11 @@ public class PharmacyBillSearch implements Serializable {
 
     private void pharmacyCancelBillItems(CancelledBill can) {
         for (BillItem nB : getBill().getBillItems()) {
+            // A removed or zero-qty line stays on the bill as retired (#25621);
+            // it was never ordered, so it gets no cancellation line
+            if (nB.isRetired()) {
+                continue;
+            }
             BillItem b = new BillItem();
             b.setBill(can);
             b.copy(nB);
@@ -2853,20 +2860,13 @@ public class PharmacyBillSearch implements Serializable {
             ph.copy(nB.getPharmaceuticalBillItem());
             ph.invertValue(nB.getPharmaceuticalBillItem());
 
-            if (ph.getId() == null) {
-                getPharmaceuticalBillItemFacade().create(ph);
-            }
-
+            // Link both sides and save once with create(); BillItem cascades to the
+            // PharmaceuticalBillItem. edit() on a new entity merges a copy and leaves
+            // this instance without an id, so every extra save inserted another row (#25625).
             b.setPharmaceuticalBillItem(ph);
-
-            if (b.getId() == null) {
-                getBillItemFacede().edit(b);
-            }
-
             ph.setBillItem(b);
-            getPharmaceuticalBillItemFacade().edit(ph);
 
-            getBillItemFacede().edit(b);
+            getBillItemFacede().create(b);
 
             can.getBillItems().add(b);
         }
@@ -3470,7 +3470,54 @@ public class PharmacyBillSearch implements Serializable {
         return isIssueAcceptedByWard(getBill());
     }
 
+    /**
+     * One lock per issue bill, shared by every session, so a double click or a
+     * second user cannot cancel the same inward issue twice (#25530 follow-up).
+     */
+    private static final ConcurrentHashMap<Long, ReentrantLock> ISSUE_CANCEL_LOCKS = new ConcurrentHashMap<>();
+
+    private static final String ISSUE_ALREADY_CANCELLED_MESSAGE
+            = "This issue was already cancelled, possibly by another user. It was not cancelled again.";
+
+    /**
+     * Runs one inward issue cancel under that bill's lock, after re-reading the
+     * bill from the database: a cancelled bill is refused before any stock is
+     * moved. Facade calls inside still commit on their own.
+     */
+    private void cancelIssueToBhtOnce(Runnable cancel) {
+        if (getBill() == null || getBill().getId() == null) {
+            JsfUtil.addErrorMessage("No Bill Found");
+            return;
+        }
+        ReentrantLock lock = ISSUE_CANCEL_LOCKS.computeIfAbsent(getBill().getId(), k -> new ReentrantLock());
+        lock.lock();
+        try {
+            Bill fresh = getBillFacade().findWithoutCache(getBill().getId());
+            if (fresh == null) {
+                JsfUtil.addErrorMessage("No Bill Found");
+                return;
+            }
+            if (fresh.isCancelled() || fresh.getCancelledBill() != null) {
+                // Show the page as cancelled; nothing is saved.
+                getBill().setCancelled(true);
+                JsfUtil.addErrorMessage(ISSUE_ALREADY_CANCELLED_MESSAGE);
+                return;
+            }
+            // Cancel from the database copy, not the page's: the checks, the porter
+            // and stock reversal and the final save all read getBill(). The field is
+            // set directly; setBill() would run recreateModel().
+            bill = fresh;
+            cancel.run();
+        } finally {
+            lock.unlock();
+        }
+    }
+
     public void cancelPharmacyDirectIssueToBht() {
+        cancelIssueToBhtOnce(this::cancelPharmacyDirectIssueToBhtUnderLock);
+    }
+
+    private void cancelPharmacyDirectIssueToBhtUnderLock() {
         if (getBill().getBillType() != BillType.PharmacyBhtPre) {
             return;
         }
@@ -3675,6 +3722,10 @@ public class PharmacyBillSearch implements Serializable {
     }
 
     public void cancelPharmacyRequestIssueToBht() {
+        cancelIssueToBhtOnce(this::cancelPharmacyRequestIssueToBhtUnderLock);
+    }
+
+    private void cancelPharmacyRequestIssueToBhtUnderLock() {
         if (getBill() == null) {
             JsfUtil.addErrorMessage("No Bill Found");
             return;

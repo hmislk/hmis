@@ -37,6 +37,7 @@ import com.divudi.core.facade.StaffFacade;
 import com.divudi.core.util.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -75,6 +76,7 @@ public class BhtSummeryFinalizedController implements Serializable {
     List<Bill> paymentBills;
     List<Bill> paidbyPatientBillList;
     List<BillItem> creditPayment;
+    List<Bill> creditCompanyCommitments;
     List<BillItem> billItemsInward;
     List<bhtWithVat> bhtWithVats;
 
@@ -104,6 +106,8 @@ public class BhtSummeryFinalizedController implements Serializable {
     double billFeeNetValue;
     double paidbyPatientTotalValue;
     double creditCompanyPaymentTotal;
+    double creditCompanyCommittedTotal;
+    double creditCompanyCommittedPaidTotal;
 
     boolean activeBackButton = false;
     PaymentMethod paymentMethod;
@@ -238,6 +242,60 @@ public class BhtSummeryFinalizedController implements Serializable {
 
     public void setCreditPayment(List<BillItem> creditPayment) {
         this.creditPayment = creditPayment;
+    }
+
+    /**
+     * Amounts on the lines of a return or cancellation bill are stored with a
+     * positive sign by some older flows while the bill itself is negative. Show
+     * such a line with the bill sign so returns reduce the section instead of
+     * adding to it. Lines already stored negative are left as they are.
+     */
+    /**
+     * A final bill made before #25509 credited a porter-flow ward return from
+     * the return request bill, one made after it from the accepted return. The
+     * stored Medicine line says which: the old request rows are added only when
+     * they make the listed rows equal that stored Medicine total; otherwise nothing is added.
+     */
+    private void addLegacyWardReturnsIfFinalBillHasThem(List<PatientEncounter> cpts) {
+        List<BillItem> legacy = getInwardBean().fetchLegacyWardReturnRequestItems(getPatientEncounter(), cpts);
+        Double finalMedicine = getInwardBean().fetchFinalBillMedicineNet(getPatientEncounter());
+        if (legacy.isEmpty() || finalMedicine == null) {
+            return;
+        }
+        double listed = 0.0;
+        for (BillItem bi : pharmacyItems) {
+            listed += signedByBill(bi, bi.getNetValue());
+        }
+        double legacySum = 0.0;
+        for (BillItem bi : legacy) {
+            legacySum += signedByBill(bi, bi.getNetValue());
+        }
+        if (Math.abs(listed + legacySum - finalMedicine) < 0.01) {
+            List<BillItem> all = new ArrayList<>(pharmacyItems);
+            all.addAll(legacy);
+            all.sort(Comparator.comparing((BillItem b) -> b.getBill().getCreatedAt(),
+                    Comparator.nullsLast(Comparator.naturalOrder())));
+            pharmacyItems = all;
+        }
+    }
+
+    public double signedByBill(BillItem item, double value) {
+        if (item != null && item.getBill() != null && item.getBill().getNetTotal() < 0 && value > 0) {
+            return -value;
+        }
+        return value;
+    }
+
+    public List<Bill> getCreditCompanyCommitments() {
+        return creditCompanyCommitments;
+    }
+
+    public double getCreditCompanyCommittedTotal() {
+        return creditCompanyCommittedTotal;
+    }
+
+    public double getCreditCompanyCommittedPaidTotal() {
+        return creditCompanyCommittedPaidTotal;
     }
 
     public double getCreditCompanyPaymentTotal() {
@@ -746,6 +804,13 @@ public class BhtSummeryFinalizedController implements Serializable {
         outSideBills = null;
         paymentBills = null;
         pharmacyItems = null;
+        storeItems = null;
+        creditPayment = null;
+        creditCompanyCommitments = null;
+        paidbyPatientTotalValue = 0.0;
+        creditCompanyPaymentTotal = 0.0;
+        creditCompanyCommittedTotal = 0.0;
+        creditCompanyCommittedPaidTotal = 0.0;
     }
 
     public void makeNull() {
@@ -777,12 +842,20 @@ public class BhtSummeryFinalizedController implements Serializable {
         proBillFee = getInwardBean().createProfesionallFee(getPatientEncounter(),cpts);
         assistBillFee = getInwardBean().createDoctorAndNurseFee(getPatientEncounter(),cpts);
         technicianBillFee = getInwardBean().createTechnicianFee(getPatientEncounter(), cpts, false);
-        paymentBills = getInwardBean().fetchPaymentBill(getPatientEncounter(),cpts);
+        paymentBills = getInwardBean().fetchPatientPaymentBillsForBreakDown(getPatientEncounter(), cpts);
         paidbyPatientTotalValue = getInwardReportControllerBht().calPaidbyPatient(paymentBills);
-        pharmacyItems = getInwardBean().fetchPharmacyIssueBillItem(getPatientEncounter(), BillType.PharmacyBhtPre);
-        storeItems = getInwardBean().fetchPharmacyIssueBillItem(getPatientEncounter(), BillType.StoreBhtPre);
-        creditPayment = getInwardReportControllerBht().createCreditPayment(getPatientEncounter());
+        pharmacyItems = getInwardBean().fetchInwardMedicineBillItems(getPatientEncounter(), cpts);
+        addLegacyWardReturnsIfFinalBillHasThem(cpts);
+        storeItems = getInwardBean().fetchStoreIssueBillItems(getPatientEncounter(), cpts);
+        creditPayment = getInwardBean().fetchCreditCompanyReceiptItems(getPatientEncounter(), cpts);
         creditCompanyPaymentTotal = getInwardReportControllerBht().calTotalCreditCompany(creditPayment);
+        creditCompanyCommitments = getInwardBean().fetchCreditCompanyCommitmentBills(getPatientEncounter());
+        creditCompanyCommittedTotal = 0.0;
+        creditCompanyCommittedPaidTotal = 0.0;
+        for (Bill c : creditCompanyCommitments) {
+            creditCompanyCommittedTotal += c.getNetTotal();
+            creditCompanyCommittedPaidTotal += c.getSettledAmountBySponsor();
+        }
 
     }
 

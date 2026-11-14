@@ -75,7 +75,6 @@
                             value="Process"
                             icon="fas fa-cogs"
                             action="#{creditCompanyDueController.createInwardCashExcess()}">
-                        <!--                            action="#{creditCompanyDueController.createInwardPaymentBills()}">-->
                     </p:commandButton>
 
                     <p:commandButton
@@ -87,15 +86,13 @@
                         <p:printer target="lst"/>
                     </p:commandButton>
 
-                    <!--*Check the actionListener and name in Excel button and PDF Button (This is how old report was, correct it if needed)-->
                     <p:commandButton
                             class="ui-button-success my-4 mx-2"
                             style="width: 150px"
                             icon="fas fa-file-excel"
                             ajax="false"
-                            value="Excel"
-                            actionListener="#{creditCompanyDueController.createInwardPaymentBills()}">
-                        <p:dataExporter type="xlsx" target="lst" fileName="Due Search(Credit Company)"/>
+                            value="Excel">
+                        <p:dataExporter type="xlsx" target="lst" fileName="Inward Excess"/>
                     </p:commandButton>
 
                     <p:commandButton
@@ -103,9 +100,8 @@
                             style="width: 150px"
                             icon="fas fa-file-pdf"
                             ajax="false"
-                            value="PDF"
-                            actionListener="#{creditCompanyDueController.createInwardPaymentBills()}">
-                        <p:dataExporter type="pdf" target="lst" fileName="Due Search(Credit Company)"/>
+                            value="PDF">
+                        <p:dataExporter type="pdf" target="lst" fileName="Inward Excess"/>
                     </p:commandButton>
 
                     <!--                    <p:dataTable id="lst" value="#{creditCompanyDueController.bills}" var="bb">-->
@@ -202,7 +198,7 @@
                         </p:column>
                         <p:column headerText="Paid Amount" width="50px;">
                             <h:outputLabel
-                                    value="#{entry.key.finalBill.settledAmountByPatient + entry.key.finalBill.settledAmountBySponsor}">
+                                    value="#{creditCompanyDueController.getAdmissionPaid(entry.key)}">
                                 <f:convertNumber pattern="#,##0.00"/>
                             </h:outputLabel>
                             <f:facet name="footer">
@@ -212,14 +208,14 @@
                                 </h:outputLabel>
                             </f:facet>
                         </p:column>
-                        <p:column headerText="Excess Amount" width="50px;">
+                        <p:column headerText="Excess (Paid - Used)" width="50px;">
                             <h:outputLabel
-                                    value="#{ entry.key.finalBill.netTotal - entry.key.finalBill.settledAmountByPatient - entry.key.finalBill.settledAmountBySponsor}">
+                                    value="#{creditCompanyDueController.getAdmissionExcess(entry.key)}">
                                 <f:convertNumber pattern="#,##0.00"/>
                             </h:outputLabel>
                             <f:facet name="footer">
                                 <h:outputLabel
-                                        value="#{creditCompanyDueController.billed-(creditCompanyDueController.paidByCompany+creditCompanyDueController.paidByPatient)}">
+                                        value="#{creditCompanyDueController.paidByCompany+creditCompanyDueController.paidByPatient-creditCompanyDueController.billed}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
                             </f:facet>
