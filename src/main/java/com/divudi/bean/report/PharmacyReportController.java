@@ -4473,7 +4473,11 @@ public class PharmacyReportController implements Serializable {
             }
             return true;
         } catch (Exception e) {
-            Logger.getLogger(PharmacyReportController.class.getName()).log(Level.SEVERE, "Error loading COGS sale report", e);
+            // Log a redacted cause chain, not the raw exception: a strict query failure
+            // carries the generated SQL and bound bill IDs.
+            Logger.getLogger(PharmacyReportController.class.getName()).log(Level.SEVERE,
+                    "Error loading COGS sale report | Cause: {0}",
+                    com.divudi.core.facade.AbstractFacade.sanitizedCauseChain(e));
             JsfUtil.addErrorMessage("Error loading the report. Please try again.");
             cogsBillDtos = new ArrayList<>();
             billItems = new ArrayList<>();

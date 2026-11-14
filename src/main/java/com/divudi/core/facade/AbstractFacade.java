@@ -166,9 +166,10 @@ public abstract class AbstractFacade<T> {
     /**
      * Describes a throwable and its causes as "Class: message" items joined
      * by " <- ", with bound values removed (see {@link #redactBoundValues}).
-     * Package-private for unit testing.
+     * Public so a caller that uses a strict query (one that lets the failure
+     * propagate) can log the failure with the same redaction.
      */
-    static String sanitizedCauseChain(Throwable t) {
+    public static String sanitizedCauseChain(Throwable t) {
         try {
             return describeCauseChain(t);
         } catch (Throwable e) {
