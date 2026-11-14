@@ -1144,7 +1144,9 @@ public class PharmacySaleBhtController implements Serializable {
 
         Department matrixDept = determineMatrixDepartment();
 
-        settleBhtIssueRequestAccept(bt, bta, matrixDept, BillNumberSuffix.PHISSUE);
+        if (!settleBhtIssueRequestAccept(bt, bta, matrixDept, BillNumberSuffix.PHISSUE)) {
+            return;
+        }
         
         //update Bill
         if(completed){
@@ -1503,16 +1505,20 @@ public class PharmacySaleBhtController implements Serializable {
         }
     }
     
-    private void settleBhtIssueRequestAccept(BillType btp, BillTypeAtomic bta, Department matrixDepartment, BillNumberSuffix billNumberSuffix) {
+    private boolean hasRetailRate(Stock s) {
+        return s != null && s.getItemBatch() != null && s.getItemBatch().getRetailsaleRate() > 0;
+    }
+
+    private boolean settleBhtIssueRequestAccept(BillType btp, BillTypeAtomic bta, Department matrixDepartment, BillNumberSuffix billNumberSuffix) {
 
         if (matrixDepartment == null) {
             JsfUtil.addErrorMessage("This Bht can't issue as this Surgery Has No Department");
-            return;
+            return false;
         }
         List<BillItem> tmpBillItems = getBillItems();
 
         if (hasAllergyConflicts(tmpBillItems)) {
-            return;
+            return false;
         }
 
         if (!getBillItems().isEmpty()) {
@@ -1522,11 +1528,21 @@ public class PharmacySaleBhtController implements Serializable {
         for (BillItem tbi : tmpBillItems) {
             if (tbi.getPharmaceuticalBillItem().getQty() == 0.0) {
                 JsfUtil.addErrorMessage("Item Qty is Zero " + tbi.getItem().getName());
-                return;
+                return false;
             }
             if (tbi.getPharmaceuticalBillItem().getQty() > tbi.getPharmaceuticalBillItem().getStock().getStock()) {
                 JsfUtil.addErrorMessage("Not Enough Stock " + tbi.getItem().getName());
-                return;
+                return false;
+            }
+            // A priced stock line must never be saved at rate 0 (the later return
+            // would copy the zero rate). Re-read the rate from the item batch first.
+            if (tbi.getRate() == 0.0 && hasRetailRate(tbi.getPharmaceuticalBillItem().getStock())) {
+                calculateRates(tbi);
+                if (tbi.getRate() == 0.0) {
+                    JsfUtil.addErrorMessage("The rate for " + tbi.getItem().getName()
+                            + " could not be determined. Please re-select the stock and try again.");
+                    return false;
+                }
             }
         }
 
@@ -1548,6 +1564,7 @@ public class PharmacySaleBhtController implements Serializable {
         clearBill();
         clearBillItem();
         billPreview = true;
+        return true;
 
     }
 
@@ -2026,7 +2043,11 @@ public class PharmacySaleBhtController implements Serializable {
 
         if (selectedStockDto != null
                 && bi.getPharmaceuticalBillItem().getStock() != null
-                && Objects.equals(selectedStockDto.getId(), bi.getPharmaceuticalBillItem().getStock().getId())) {
+                && Objects.equals(selectedStockDto.getId(), bi.getPharmaceuticalBillItem().getStock().getId())
+                && selectedStockDto.getRetailRate() != null
+                && selectedStockDto.getRetailRate() > 0) {
+            // A missing or zero DTO rate is never trusted: fall through and read
+            // the rate from the stock's item batch instead.
             calculateRates(bi, selectedStockDto.getRetailRate());
             return;
         }
