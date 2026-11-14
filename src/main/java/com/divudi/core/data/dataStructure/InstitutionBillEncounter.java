@@ -436,16 +436,6 @@ public class InstitutionBillEncounter {
         this.totalPaidByCompanies = totalPaidByCompanies;
     }
 
-    /** Admission total due as a positive figure (0 when paid in full or over). */
-    public double getTotalDuePositive() {
-        return totalDue != null && totalDue > 0 ? totalDue : 0.0;
-    }
-
-    /** Admission excess (paid less used) as a positive figure (0 when nothing is over-paid). */
-    public double getTotalExcessPositive() {
-        return totalDue != null && totalDue < 0 ? -totalDue : 0.0;
-    }
-
     public Double getTotalDue() {
         return totalDue;
     }
