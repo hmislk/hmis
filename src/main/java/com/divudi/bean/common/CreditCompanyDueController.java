@@ -2504,17 +2504,13 @@ public class CreditCompanyDueController implements Serializable {
                 return;
             }
 
-            updateSettledAmountsForIPByInwardFinalBillPaymentForCreditCompany(patientEncounters);
+            // Company and patient figures from the current final bill's commitment bills and
+            // the patient payment bills, loaded once for the whole result (#25601).
+            List<InstitutionBillEncounter> anyRows = buildDueRows(patientEncounters, institution);
 
-            setBillPatientEncounterMap(getCreditCompanyBills(patientEncounters, "any", null));
+            setInstitutionBillPatientEncounterMap(InstitutionBillEncounter.createPatientEncounterBillEncounterMap(anyRows));
 
-            setInstitutionBillPatientEncounterMap(InstitutionBillEncounter.createPatientEncounterBillEncounterMap(
-                    InstitutionBillEncounter.createInstitutionBillEncounter(getBillPatientEncounterMap(),
-                            "due", "any", institution, null)));
-
-            calculateCreditCompanyAmounts();
-
-            setEncounterCreditCompanyMap(getEncounterCreditCompanies());
+            setEncounterCreditCompanyMap(getEncounterCreditCompanies(getInstitutionBillPatientEncounterMap().keySet()));
 
             billed = 0;
             paidByPatient = 0;
@@ -2701,221 +2697,10 @@ public class CreditCompanyDueController implements Serializable {
         return encounterCreditCompanyMap;
     }
 
-    private Map<PatientEncounter, List<Bill>> getCreditCompanyBills(List<PatientEncounter> patientEncounters, String dueType,
-            Institution filteringCreditCompany) {
-        if (dueType == null || (!dueType.equalsIgnoreCase("due") && !dueType.equalsIgnoreCase("any")
-                && !dueType.equalsIgnoreCase("excess") && !dueType.equalsIgnoreCase("settled"))) {
-            return Collections.emptyMap();
-        }
-
-        List<Long> patientEncounterIds = patientEncounters.stream()
-                .map(PatientEncounter::getId)
-                .collect(Collectors.toList());
-
-        Map<String, Object> parameters = new HashMap<>();
-        List<BillTypeAtomic> bts = new ArrayList<>();
-
-        bts.add(BillTypeAtomic.INWARD_FINAL_BILL_PAYMENT_BY_CREDIT_COMPANY);
-
-        String jpql = "SELECT bill from Bill bill "
-                + "WHERE bill.retired <> :br "
-                + "AND bill.patientEncounter.id in :patientEncounterIds ";
-
-        parameters.put("br", true);
-        parameters.put("patientEncounterIds", patientEncounterIds);
-
-        jpql += "AND bill.billTypeAtomic in :bts ";
-        parameters.put("bts", bts);
-
-        jpql += "AND bill.patientEncounter.finalBill is not null ";
-        jpql += "AND bill.referenceBill.id = bill.patientEncounter.finalBill.id ";
-        jpql += "AND (bill.cancelled = false OR bill.cancelled IS NULL) ";
-
-        if (filteringCreditCompany != null) {
-            jpql += " and bill.creditCompany =:ins ";
-            parameters.put("ins", filteringCreditCompany);
-        }
-
-        List<Bill> rs = (List<Bill>) billFacade.findByJpql(jpql, parameters);
-
-        List<Bill> detachedClones = rs.stream()
-                .map(b -> {
-                    Bill clonedBill = new Bill();
-                    clonedBill.clone(b);
-                    return clonedBill;
-                })
-                .collect(Collectors.toList());
-
-        Map<Long, PatientEncounter> encounterMap = patientEncounters.stream()
-                .collect(Collectors.toMap(PatientEncounter::getId, pe -> pe));
-
-        if (dueType.equalsIgnoreCase("settled")) {
-            return detachedClones.stream()
-                    .filter(bill -> {
-                        PatientEncounter pe = encounterMap.get(bill.getPatientEncounter().getId());
-                        Bill referenceBill = bill.getReferenceBill();
-
-                        if (pe == null || pe.getFinalBill() == null || referenceBill == null) {
-                            return false;
-                        }
-
-                        if (referenceBill.isCancelled() || referenceBill.isRefunded()) {
-                            bill.setNetTotal(0.0);
-                        }
-
-                        double netTotal = pe.getFinalBill().getNetTotal();
-                        double settledByPatient = pe.getFinalBill().getSettledAmountByPatient();
-                        double settledBySponsor = pe.getFinalBill().getSettledAmountBySponsor();
-
-                        return (netTotal - settledByPatient - settledBySponsor) == 0;
-                    })
-                    .collect(Collectors.groupingBy(
-                            bill -> encounterMap.get(bill.getPatientEncounter().getId())
-                    ));
-        }
-
-        if (dueType.equalsIgnoreCase("excess")) {
-            return detachedClones.stream()
-                    .filter(bill -> {
-                        PatientEncounter pe = encounterMap.get(bill.getPatientEncounter().getId());
-                        Bill referenceBill = bill.getReferenceBill();
-
-                        if (pe == null || pe.getFinalBill() == null || referenceBill == null) {
-                            return false;
-                        }
-
-                        if (referenceBill.isCancelled() || referenceBill.isRefunded()) {
-                            bill.setNetTotal(0.0);
-                        }
-
-                        double netTotal = pe.getFinalBill().getNetTotal();
-                        double settledByPatient = pe.getFinalBill().getSettledAmountByPatient();
-                        double settledBySponsor = pe.getFinalBill().getSettledAmountBySponsor();
-
-                        return (netTotal - settledByPatient - settledBySponsor) < 0;
-                    })
-                    .collect(Collectors.groupingBy(
-                            bill -> encounterMap.get(bill.getPatientEncounter().getId())
-                    ));
-        }
-
-        if (dueType.equalsIgnoreCase("due")) {
-            return detachedClones.stream()
-                    .filter(bill -> {
-                        PatientEncounter pe = encounterMap.get(bill.getPatientEncounter().getId());
-
-                        Bill referenceBill = bill.getReferenceBill();
-
-                        if (pe == null || pe.getFinalBill() == null || referenceBill == null) {
-                            return false;
-                        }
-
-                        if (referenceBill.isCancelled() || referenceBill.isRefunded()) {
-                            bill.setNetTotal(0.0);
-                        }
-
-                        double netTotal = pe.getFinalBill().getNetTotal();
-                        double settledByPatient = pe.getFinalBill().getSettledAmountByPatient();
-                        double settledBySponsor = pe.getFinalBill().getSettledAmountBySponsor();
-
-                        return (netTotal - settledByPatient - settledBySponsor) > 0;
-                    })
-                    .collect(Collectors.groupingBy(
-                            bill -> encounterMap.get(bill.getPatientEncounter().getId())
-                    ));
-        }
-
-        return detachedClones.stream()
-                .collect(Collectors.groupingBy(
-                        bill -> encounterMap.get(bill.getPatientEncounter().getId())
-                ));
-    }
-
-    private void calculateCreditCompanyAmounts() {
-        for (Map.Entry<PatientEncounter, List<Bill>> entry : getBillPatientEncounterMap().entrySet()) {
-
-            PatientEncounter patientEncounter = entry.getKey();
-            List<Bill> bills = entry.getValue();
-
-            double totalPayableByCompanies = bills.stream().mapToDouble(Bill::getNetTotal).sum();
-            double totalPaidByCompanies = bills.stream().mapToDouble(Bill::getPaidAmount).sum();
-
-            patientEncounter.setTransPaid(totalPayableByCompanies);
-            patientEncounter.setTransPaidByCompany(totalPaidByCompanies);
-        }
-    }
-
     private void removeSettledAndExcessBills(List<PatientEncounter> patientEncounters) {
         loadCcFigures(patientEncounters);
         // Outstanding = what the companies still owe + what the patient still owes (#25601)
         patientEncounters.removeIf(p -> getCcDue(p) + getPatientCopaymentDue(p) <= 0);
-    }
-
-    private void updateSettledAmountsForIPByInwardFinalBillPaymentForCreditCompany(List<PatientEncounter> patientEncounters) {
-        if (patientEncounters == null || patientEncounters.isEmpty()) {
-            return;
-        }
-
-        Map<Long, Double> settledAmounts = calculateSettledSponsorBillIP(patientEncounters);
-
-        for (PatientEncounter patientEncounter : patientEncounters) {
-            Bill finalBill = patientEncounter.getFinalBill();
-
-            if (finalBill.isCancelled() || finalBill.isRefunded()) {
-                continue;
-            }
-
-            List<Bill> bills = calculateSettledPatientBillIP(finalBill);
-            double total = bills.stream().mapToDouble(Bill::getNetTotal).sum();
-
-            synchronized (finalBill) {
-                finalBill.setSettledAmountByPatient(total);
-            }
-
-            total = settledAmounts.getOrDefault(patientEncounter.getId(), 0.0);
-
-            synchronized (finalBill) {
-                finalBill.setSettledAmountBySponsor(total);
-            }
-        }
-    }
-
-    private Map<Long, Double> calculateSettledSponsorBillIP(List<PatientEncounter> patientEncounters) {
-        List<Long> patientEncounterIds = patientEncounters.stream()
-                .map(PatientEncounter::getId)
-                .collect(Collectors.toList());
-
-        Map<String, Object> parameters = new HashMap<>();
-        List<BillTypeAtomic> bts = new ArrayList<>();
-
-        bts.add(BillTypeAtomic.INWARD_FINAL_BILL_PAYMENT_BY_CREDIT_COMPANY);
-
-        String jpql = "SELECT bill from Bill bill "
-                + "WHERE bill.retired <> :br "
-                + "AND bill.patientEncounter.id in :patientEncounterIds ";
-
-        parameters.put("br", true);
-        parameters.put("patientEncounterIds", patientEncounterIds);
-
-        jpql += "AND bill.billTypeAtomic in :bts ";
-        parameters.put("bts", bts);
-
-        jpql += "AND bill.patientEncounter.finalBill is not null ";
-        jpql += "AND bill.referenceBill.id = bill.patientEncounter.finalBill.id ";
-        jpql += "AND (bill.cancelled = false OR bill.cancelled IS NULL) ";
-
-        if (institution != null) {
-            jpql += " and bill.creditCompany =:ins ";
-            parameters.put("ins", institution);
-        }
-
-        List<Bill> rs = (List<Bill>) billFacade.findByJpql(jpql, parameters);
-
-        return rs.stream()
-                .collect(Collectors.groupingBy(
-                        bill -> bill.getPatientEncounter().getId(),
-                        Collectors.summingDouble(Bill::getPaidAmount)
-                ));
     }
 
     private void updateSettledAmountsForIP(List<PatientEncounter> patientEncounters) {
@@ -3696,31 +3481,6 @@ public class CreditCompanyDueController implements Serializable {
             }
 
             institutionEncounters.add(newIns);
-        }
-    }
-
-    public void createInwardPaymentBills() {
-        List<Institution> setIns = getCreditBean().getCreditInstitutionByPatientEncounter(getFromDate(), getToDate(),
-                PaymentMethod.Credit, false, institutionOfDepartment, department, site);
-
-        patientEncounters = new ArrayList<>();
-        finalTotal = 0;
-        finalPaidTotal = 0;
-
-        for (Institution ins : setIns) {
-            List<PatientEncounter> lst = getCreditBean().getCreditPatientEncounter(ins, getFromDate(), getToDate(),
-                    PaymentMethod.Credit, false, institutionOfDepartment, department, site);
-
-            if (lst != null && !lst.isEmpty()) {
-                updateSettledAmountsForIP(lst);
-            }
-
-            for (PatientEncounter b : lst) {
-                finalTotal += b.getFinalBill().getNetTotal();
-                finalPaidTotal += b.getFinalBill().getSettledAmountByPatient() + b.getFinalBill().getSettledAmountBySponsor();
-            }
-
-            patientEncounters.addAll(lst);
         }
     }
 
@@ -4766,9 +4526,11 @@ public class CreditCompanyDueController implements Serializable {
         merged = new ArrayList<>();
         Map<Long, double[]> raw = ccCompanyRawByFinalBillId.get(fbId);
         if (admissionFigures == null || raw == null || raw.isEmpty()) {
-            double used = pe.getCreditUsedAmount();
-            double settled = pe.getFinalBill().getSettledAmountBySponsor();
-            if (pe.getCreditCompany() != null || used != 0 || settled != 0) {
+            // Legacy figures only for a Credit admission with a company; a cash admission
+            // with a stale company and no commitment bills has no company share (#25601).
+            if (usesLegacyCompanyFigures(pe)) {
+                double used = pe.getCreditUsedAmount();
+                double settled = pe.getFinalBill().getSettledAmountBySponsor();
                 merged.add(new CcCompanyFigures(pe.getCreditCompany(), used, settled));
             }
         } else {
@@ -4880,7 +4642,19 @@ public class CreditCompanyDueController implements Serializable {
     /** Amount the credit companies took on for this admission. */
     public double getCcCommitted(PatientEncounter pe) {
         double[] f = ccFigures(pe);
-        return f == null ? (pe == null ? 0.0 : pe.getCreditUsedAmount()) : f[0];
+        if (f != null) {
+            return f[0];
+        }
+        return pe != null && usesLegacyCompanyFigures(pe) ? pe.getCreditUsedAmount() : 0.0;
+    }
+
+    /**
+     * An admission with no commitment bills falls back to its own credit figures
+     * only when it is a Credit admission with a credit company; otherwise it has
+     * no company share.
+     */
+    private static boolean usesLegacyCompanyFigures(PatientEncounter pe) {
+        return pe != null && pe.getPaymentMethod() == PaymentMethod.Credit && pe.getCreditCompany() != null;
     }
 
     /** Amount the credit companies have paid for this admission (receipts less cancels). */

@@ -75,7 +75,6 @@
                             value="Process"
                             icon="fas fa-cogs"
                             action="#{creditCompanyDueController.createInwardCashExcess()}">
-                        <!--                            action="#{creditCompanyDueController.createInwardPaymentBills()}">-->
                     </p:commandButton>
 
                     <p:commandButton
@@ -87,15 +86,13 @@
                         <p:printer target="lst"/>
                     </p:commandButton>
 
-                    <!--*Check the actionListener and name in Excel button and PDF Button (This is how old report was, correct it if needed)-->
                     <p:commandButton
                             class="ui-button-success my-4 mx-2"
                             style="width: 150px"
                             icon="fas fa-file-excel"
                             ajax="false"
-                            value="Excel"
-                            actionListener="#{creditCompanyDueController.createInwardPaymentBills()}">
-                        <p:dataExporter type="xlsx" target="lst" fileName="Due Search(Credit Company)"/>
+                            value="Excel">
+                        <p:dataExporter type="xlsx" target="lst" fileName="Inward Excess"/>
                     </p:commandButton>
 
                     <p:commandButton
@@ -103,9 +100,8 @@
                             style="width: 150px"
                             icon="fas fa-file-pdf"
                             ajax="false"
-                            value="PDF"
-                            actionListener="#{creditCompanyDueController.createInwardPaymentBills()}">
-                        <p:dataExporter type="pdf" target="lst" fileName="Due Search(Credit Company)"/>
+                            value="PDF">
+                        <p:dataExporter type="pdf" target="lst" fileName="Inward Excess"/>
                     </p:commandButton>
 
                     <!--                    <p:dataTable id="lst" value="#{creditCompanyDueController.bills}" var="bb">-->
