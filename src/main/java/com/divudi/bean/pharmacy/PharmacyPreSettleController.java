@@ -75,6 +75,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.List;
 import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
@@ -1914,6 +1917,13 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
     }
 
     public void paymentOngoingToken(Bill bill) {
+        // The cashier may have left the previous bill's Accept Payment page by the
+        // menu or the browser Back button, which skips Back To Search. Release that
+        // bill's token before marking this one, so it does not stay "in progress".
+        if (preBill != null && preBill.getId() != null
+                && (bill == null || !preBill.getId().equals(bill.getId()))) {
+            releaseOngoingPaymentToken(preBill);
+        }
         Token t = findTokenFromBill(bill);
         if (t == null) {
             return;
@@ -1958,6 +1968,48 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
 
     @EJB
     private TokenFacade tokenFacade;
+
+    // Back To Search from the Accept Payment page: a token whose payment was
+    // started but not settled goes back to the plain "called" state, so it does
+    // not stay ranked as a payment in progress on the token board. A settled
+    // (completed) token is left as it is.
+    public String backToSearchWithoutSettling() {
+        Bill b = getPreBill();
+        if (b != null && b.getId() != null) {
+            releaseOngoingPaymentToken(b);
+        }
+        return "pharmacy_search_pre_bill";
+    }
+
+    /**
+     * A token whose payment was started but not settled goes back to the plain
+     * "called" state. A settled (completed) token, or one not in payment, is left
+     * as it is.
+     */
+    private void releaseOngoingPaymentToken(Bill bill) {
+        Token t = findTokenFromBill(bill);
+        if (t != null && t.isCalled() && t.isInProgress() && !t.isCompleted()) {
+            markToken(bill);
+        }
+    }
+
+    /**
+     * Session end (timeout or logout) while a payment was open: release its
+     * token so the board does not show it as a payment in progress forever.
+     */
+    @PreDestroy
+    public void releaseOngoingPaymentTokenOnSessionEnd() {
+        try {
+            if (preBill != null && preBill.getId() != null) {
+                releaseOngoingPaymentToken(preBill);
+            }
+        } catch (RuntimeException e) {
+            // The container may be shutting down; a token left in progress is
+            // cosmetic and must not block session destruction.
+            Logger.getLogger(PharmacyPreSettleController.class.getName())
+                    .log(Level.WARNING, "Could not release the payment token at session end", e);
+        }
+    }
 
     public void markToken(Bill bill) {
         Token t = findTokenFromBill(bill);

@@ -93,6 +93,7 @@ import javax.persistence.TemporalType;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.POST;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import org.json.JSONArray;
@@ -109,6 +110,9 @@ public class ChannelApi {
 
     @Context
     private UriInfo context;
+
+    @Context
+    private HttpServletRequest servletRequest;
 
     @EJB
     StaffFacade staffFacade;
@@ -208,6 +212,16 @@ public class ChannelApi {
         response.put("data", data);
 
         return Response.status(Response.Status.ACCEPTED).entity(response.toString()).build();
+    }
+
+    private void requireValidKey() {
+        String key = servletRequest == null ? null : servletRequest.getHeader("Token");
+        if (!isValidKey(key)) {
+            throw new WebApplicationException(Response.status(Response.Status.UNAUTHORIZED)
+                    .entity(errorMessageNotValidKey().toString())
+                    .type(MediaType.APPLICATION_JSON)
+                    .build());
+        }
     }
 
     private boolean isValidKey(String key) {
@@ -1933,6 +1947,7 @@ public class ChannelApi {
     @Path("/test")
     @Produces(MediaType.TEXT_PLAIN)
     public Response testAPI() {
+        requireValidKey();
 
         // Create a simple JSON object to return as response
         JSONObject responseObject = new JSONObject();
@@ -2064,6 +2079,7 @@ public class ChannelApi {
     @Path("/json")
     @Produces("application/json")
     public String getJson() {
+        requireValidKey();
         //TODO return proper representation object
         return "<html><h:body><h1>Hello, World!!</h:body></h1></html>";
     }
@@ -2072,6 +2088,7 @@ public class ChannelApi {
     @Path("/json2")
     @Produces("text/html")
     public String getJson2() {
+        requireValidKey();
         //TODO return proper representation object
         return "<html><h:body><h1>Hello, World 2!!</h:body></h1></html>";
     }
@@ -2080,6 +2097,7 @@ public class ChannelApi {
     @Path("/doctors")
     @Produces("application/json")
     public String getDoctors() {
+        requireValidKey();
         List<Object[]> consultants = doctorsListAll();
         JSONArray array = new JSONArray();
         JSONObject jSONObjectOut = new JSONObject();
@@ -2159,6 +2177,7 @@ public class ChannelApi {
     @Path("/doctors/{doc_code}")
     @Produces("application/json")
     public String getDoctor(@PathParam("doc_code") String doc_code) {
+        requireValidKey();
         JSONArray array = new JSONArray();
         JSONObject jSONObjectOut = new JSONObject();
         try {
@@ -2202,6 +2221,7 @@ public class ChannelApi {
     @Path("/sessions/{doc_code}")
     @Produces("application/json")
     public String getSessions(@PathParam("doc_code") String doc_code) {
+        requireValidKey();
         JSONObject object = new JSONObject();
         JSONArray array = new JSONArray();
         JSONArray array1 = new JSONArray();
@@ -2322,6 +2342,7 @@ public class ChannelApi {
     public String makeBooking(@PathParam("name") String name, @PathParam("phone") String phone,
             @PathParam("hospital_id") String hospital_id, @PathParam("session_id") String session_id, @PathParam("doc_code") String doc_code,
             @PathParam("agent_id") String agent_id, @PathParam("agent_reference_no") String agent_reference_no) {
+        requireValidKey();
         JSONArray bill = new JSONArray();
         String json = new String();
         List<Object[]> list = new ArrayList<>();
@@ -2388,6 +2409,7 @@ public class ChannelApi {
             @PathParam("hospital_id") String hospital_id, @PathParam("session_id") String session_id, @PathParam("doc_code") String doc_code,
             @PathParam("agent_id") String agent_id, @PathParam("agent_reference_no") String agent_reference_no,
             @PathParam("foriegn") String st_foriegn) {
+        requireValidKey();
         JSONArray bill = new JSONArray();
         String json = new String();
         List<Object[]> list = new ArrayList<>();
@@ -2464,6 +2486,7 @@ public class ChannelApi {
     @Path("/bookings/{bill_id}")
     @Produces("application/json")
     public String getBookings(@PathParam("bill_id") String bill_id) {
+        requireValidKey();
 //        /bookings/20058204
         //        /bookings/20058204
         JSONObject jSONObjectOut = new JSONObject();
@@ -2495,6 +2518,7 @@ public class ChannelApi {
     @Path("/bookings/{agent_id}/{from_date}/{to_date}")
     @Produces("application/json")
     public String getAllBookings(@PathParam("agent_id") String agent_id, @PathParam("from_date") String from_date, @PathParam("to_date") String to_date) {
+        requireValidKey();
 //        /bookings/20058554/2016-08-01/2016-08-15
         //        /bookings/20058554/2016-08-01/2016-08-15
         JSONObject jSONObjectOut = new JSONObject();
@@ -2527,6 +2551,7 @@ public class ChannelApi {
     @Path("/specility/")
     @Produces("application/json")
     public String getAllSpecilities() {
+        requireValidKey();
         List<Object[]> specilities = specilityList();
         JSONArray array = new JSONArray();
         JSONObject jSONObjectOut = new JSONObject();
@@ -2549,6 +2574,7 @@ public class ChannelApi {
     @Path("/docs/")
     @Produces("application/json")
     public String getAllDoctors() {
+        requireValidKey();
         List<Object[]> consultants = doctorsList(null, null);
         JSONArray array = new JSONArray();
         if (!consultants.isEmpty()) {
@@ -2580,6 +2606,7 @@ public class ChannelApi {
     @Path("/doc/{spec_id}/")
     @Produces("application/json")
     public String getDoctorsSelectedSpecility(@PathParam("spec_id") String spec_id) {
+        requireValidKey();
         long sp_id = Long.parseLong(spec_id);
         List<Object[]> consultants = doctorsList(null, sp_id);
         JSONArray array = new JSONArray();
@@ -2612,6 +2639,7 @@ public class ChannelApi {
     @Path("/ses/{doc_code}")
     @Produces("application/json")
     public String getDocSessions(@PathParam("doc_code") String doc_code) {
+        requireValidKey();
         JSONObject object = new JSONObject();
         JSONArray array = new JSONArray();
         JSONArray array1 = new JSONArray();
@@ -2660,6 +2688,7 @@ public class ChannelApi {
     @Path("/apps/{ses_id}/")
     @Produces("application/json")
     public String getBillSessions(@PathParam("ses_id") String ses_id) {
+        requireValidKey();
         long sp_id = Long.parseLong(ses_id);
         List<BillSession> billSessions = fillBillSessions(sp_id);
         JSONArray array = new JSONArray();
@@ -3720,6 +3749,7 @@ public class ChannelApi {
     @PUT
     @Consumes("application/json")
     public void putJson(String content) {
+        requireValidKey();
     }
 
     public StaffFacade getStaffFacade() {
