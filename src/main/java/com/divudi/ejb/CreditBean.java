@@ -159,9 +159,9 @@ public class CreditBean {
                 + " and b.createdAt  between :frm and :to ");
 
         if (lessThan) {
-            sql.append(" and (abs(b.netTotal)-abs(b.paidAmount))>:val ");
+            sql.append(" and (b.netTotal-(coalesce(b.refundAmount,0)+coalesce(b.paidAmount,0)))>:val ");
         } else {
-            sql.append(" and (abs(b.netTotal)-abs(b.paidAmount))<:val ");
+            sql.append(" and (b.netTotal-(coalesce(b.refundAmount,0)+coalesce(b.paidAmount,0)))<:val ");
         }
 
         sql.append(" and b.cancelledBill is null  "
@@ -328,13 +328,12 @@ public class CreditBean {
                 + " where b.retired=false ");
 
         if (lessThan) {
-            sql.append(" and (abs(b.netTotal)-abs(b.paidAmount))>:val ");
+            sql.append(" and (b.netTotal-(coalesce(b.refundAmount,0)+coalesce(b.paidAmount,0)))>:val ");
         } else {
-            sql.append(" and (abs(b.netTotal)-abs(b.paidAmount))<:val ");
+            sql.append(" and (b.netTotal-(coalesce(b.refundAmount,0)+coalesce(b.paidAmount,0)))<:val ");
         }
 
         sql.append(" and b.cancelled=false "
-                + " and b.refunded=false "
                 + " and b.createdAt between :frm and :to "
                 + " and b.paymentMethod=:pm "
                 + " and b.billType in :tps "
@@ -1095,9 +1094,9 @@ public class CreditBean {
                 + " and b.toStaff is null ";
 
         if (lessThan) {
-            sql += " and ((abs(b.netTotal)-abs(b.paidAmount))> :val) ";
+            sql += " and ((b.netTotal-(coalesce(b.refundAmount,0)+coalesce(b.paidAmount,0)))> :val) ";
         } else {
-            sql += " and ((abs(b.netTotal)-abs(b.paidAmount))< :val) ";
+            sql += " and ((b.netTotal-(coalesce(b.refundAmount,0)+coalesce(b.paidAmount,0)))< :val) ";
         }
 
         hm = new HashMap();
@@ -1267,9 +1266,9 @@ public class CreditBean {
                 + " and b.toStaff is null ";
 
         if (lessThan) {
-            sql += " and ((abs(b.netTotal)-abs(b.paidAmount))> :val) ";
+            sql += " and ((b.netTotal-(coalesce(b.refundAmount,0)+coalesce(b.paidAmount,0)))> :val) ";
         } else {
-            sql += " and ((abs(b.netTotal)-abs(b.paidAmount))< :val) ";
+            sql += " and ((b.netTotal-(coalesce(b.refundAmount,0)+coalesce(b.paidAmount,0)))< :val) ";
         }
 
         hm.put("val", 0.1);
