@@ -53,7 +53,7 @@
                                             ajax="false" value="To Cancel"
                                             icon="fa fa-ban"
                                             action="#{inwardSearch.navigateToDepositBillCancellation()}"
-                                            disabled="#{inwardSearch.bill.cancelled or inwardSearch.bill.refunded}"  >
+                                            disabled="#{inwardSearch.bill.cancelled or inwardSearch.bill.refunded or inwardSearch.billACancellationBill}"  >
                                     </p:commandButton>
                                     <p:commandButton styleClass="ui-button-warning"
                                             id="btnToRefund"
