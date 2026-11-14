@@ -85,7 +85,7 @@
                                     <p:column headerText="Paid By Patient" />
                                     <p:column headerText="Company Used" />
                                     <p:column headerText="Company Paid" />
-                                    <p:column headerText="Balance (Used - Paid)" />
+                                    <p:column headerText="Excess (Paid - Used)" />
                                 </p:row>
                             </p:columnGroup>
                             <p:subTable value="#{i.rows}" var="r">
@@ -122,7 +122,7 @@
                                     </h:outputLabel>
                                 </p:column>
                                 <p:column style="text-align: right;">
-                                    <h:outputLabel value="#{r.balance}">
+                                    <h:outputLabel value="#{r.excess}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </p:column>
@@ -159,7 +159,7 @@
                                         </p:column>
                                         <p:column style="text-align: right;">
                                             <f:facet name="footer">
-                                                <h:outputLabel value="#{i.balanceTotal}">
+                                                <h:outputLabel value="#{i.excessTotal}">
                                                     <f:convertNumber pattern="#,##0.00" />
                                                 </h:outputLabel>
                                             </f:facet>

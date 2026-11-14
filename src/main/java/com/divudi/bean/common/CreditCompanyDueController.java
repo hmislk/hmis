@@ -883,7 +883,7 @@ public class CreditCompanyDueController implements Serializable {
                 : dischargedAdmissionsByCreditCompany(PaymentMethod.Credit, false, null, null, null).entrySet()) {
             String1Value5 newRow = new String1Value5();
             newRow.setString(entry.getKey().getName());
-            setInwardAccessAgeValues(entry.getValue(), entry.getKey(), newRow);
+            setInwardAccessAgeValues(entry.getValue(), entry.getKey(), newRow, true);
             if (newRow.getValue1() != 0
                     || newRow.getValue2() != 0
                     || newRow.getValue3() != 0
@@ -1003,7 +1003,7 @@ public class CreditCompanyDueController implements Serializable {
                 : dischargedAdmissionsByCreditCompany(PaymentMethod.Cash, false, null, null, null).entrySet()) {
             String1Value5 newRow = new String1Value5();
             newRow.setString(entry.getKey().getName());
-            setInwardAccessAgeValues(entry.getValue(), entry.getKey(), newRow);
+            setInwardAccessAgeValues(entry.getValue(), entry.getKey(), newRow, false);
             if (newRow.getValue1() != 0
                     || newRow.getValue2() != 0
                     || newRow.getValue3() != 0
@@ -1022,7 +1022,7 @@ public class CreditCompanyDueController implements Serializable {
                 : dischargedAdmissionsByCreditCompany(PaymentMethod.Cash, false, institutionOfDepartment, department, site).entrySet()) {
             String1Value5 newRow = new String1Value5();
             newRow.setString(entry.getKey().getName());
-            setInwardAccessAgeValues(entry.getValue(), entry.getKey(), newRow);
+            setInwardAccessAgeValues(entry.getValue(), entry.getKey(), newRow, false);
             if (newRow.getValue1() != 0
                     || newRow.getValue2() != 0
                     || newRow.getValue3() != 0
@@ -1176,11 +1176,18 @@ public class CreditCompanyDueController implements Serializable {
         }
     }
 
-    /** Same buckets for the access (settled) age tables: the company's own committed less paid, signed (negative when it overpaid). */
-    private void setInwardAccessAgeValues(List<PatientEncounter> lst, Institution company, String1Value5 dataTable5Value) {
+    /**
+     * Same buckets for the access (settled) age tables, from the company's own
+     * figures, signed. With {@code paidLessUsed} the value is paid less committed
+     * (the Credit Access excess direction, positive when the company overpaid);
+     * otherwise committed less paid (the cash access direction).
+     */
+    private void setInwardAccessAgeValues(List<PatientEncounter> lst, Institution company, String1Value5 dataTable5Value,
+            boolean paidLessUsed) {
         for (PatientEncounter b : lst) {
             Long dayCount = CommonFunctions.getDayCountTillNow(b.getCreatedAt());
-            double finalValue = getCcBalanceForCompany(b, company);
+            double balance = getCcBalanceForCompany(b, company);
+            double finalValue = paidLessUsed ? -balance : balance;
             if (dayCount < 30) {
                 dataTable5Value.setValue1(dataTable5Value.getValue1() + finalValue);
             } else if (dayCount < 60) {
@@ -3188,6 +3195,11 @@ public class CreditCompanyDueController implements Serializable {
             return committedTotal - paidTotal;
         }
 
+        /** Paid less committed for the company, signed (the Credit Access page direction). */
+        public double getExcessTotal() {
+            return paidTotal - committedTotal;
+        }
+
         public double getFinalTotal() {
             return finalTotal;
         }
@@ -4562,9 +4574,14 @@ public class CreditCompanyDueController implements Serializable {
             return Math.max(0.0, committed - paid);
         }
 
-        /** Committed less paid, signed (negative when the company has overpaid); used by the excess pages. */
+        /** Committed less paid, signed (negative when the company has overpaid). */
         public double getBalance() {
             return committed - paid;
+        }
+
+        /** Paid less committed, signed (positive when the company has overpaid); the Credit Access (excess) page direction. */
+        public double getExcess() {
+            return paid - committed;
         }
 
         /** True on the first row of an admission; admission-level figures (final total, paid by patient) are shown there only, so they are not counted per company. */
