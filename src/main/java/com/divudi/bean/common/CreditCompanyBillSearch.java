@@ -723,9 +723,6 @@ public class CreditCompanyBillSearch implements Serializable {
                 updateReferenceBill(b);
             }
 
-            if (b.getPatientEncounter() != null) {
-                updateReferenceBht(b);
-            }
         }
     }
 
@@ -760,21 +757,6 @@ public class CreditCompanyBillSearch implements Serializable {
         referenceBill.setBalance(Math.max(0, currentBalance)); // Ensure balance doesn't go negative
 
         getBillFacade().edit(referenceBill);
-
-    }
-
-    private void updateReferenceBht(BillItem cancellationBillItem) {
-        PatientEncounter encounter = cancellationBillItem.getPatientEncounter();
-
-        // The cancellation bill item has negative netValue (inverted from original)
-        // The amount that was originally added during settlement is the absolute value
-        double originalSettlementAmount = Math.abs(cancellationBillItem.getNetValue());
-
-        // Reverse the settlement by subtracting the original amount from creditPaidAmount
-        double currentPaidAmount = encounter.getCreditPaidAmount();
-        encounter.setCreditPaidAmount(currentPaidAmount - originalSettlementAmount);
-
-        getPatientEncounterFacade().edit(encounter);
 
     }
 
