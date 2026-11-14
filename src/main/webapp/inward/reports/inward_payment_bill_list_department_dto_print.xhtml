@@ -1,0 +1,236 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:body>
+        <ui:composition template="/resources/template/template.xhtml">
+            <ui:define name="content">
+                <h:form id="form">
+                    <p:panel styleClass="w-100">
+                        <f:facet name="header">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h:outputText styleClass="fa fa-money-bill-wave"></h:outputText>
+                                    <h:outputText value="&nbsp;&nbsp;&nbsp;Department Payments &amp; Cancellations - Print" class="m-2"/>
+                                </div>
+                                <div class="d-flex gap-2">
+                                    <p:commandButton
+                                        value="Print"
+                                        ajax="false"
+                                        styleClass="ui-button-info m-1"
+                                        icon="fa fa-print">
+                                        <p:printer target="reportView"/>
+                                    </p:commandButton>
+                                    <p:commandButton
+                                        value="Back to Report"
+                                        ajax="false"
+                                        styleClass="ui-button-secondary m-1"
+                                        icon="fa fa-arrow-left"
+                                        action="/inward/reports/inward_payment_bill_list_department_dto?faces-redirect=true">
+                                    </p:commandButton>
+                                </div>
+                            </div>
+                        </f:facet>
+
+                        <style>
+                            .dept-pay-print .paper {
+                                width: 100%;
+                            }
+                            .dept-pay-print .report-title {
+                                text-align: center;
+                                font-weight: 700;
+                            }
+                            .dept-pay-print .report-meta {
+                                display: flex;
+                                justify-content: center;
+                                flex-wrap: wrap;
+                                gap: 16px;
+                                font-size: 12px;
+                                margin: 2mm 0;
+                            }
+                            .dept-pay-print .report-meta .meta-label {
+                                font-weight: 600;
+                                margin-right: 4px;
+                            }
+                            .dept-pay-print table {
+                                border-collapse: collapse;
+                                width: 100%;
+                                font-size: 12px;
+                            }
+                            .dept-pay-print th,
+                            .dept-pay-print td {
+                                border: 1px solid #000;
+                                padding: 1px 4px;
+                                text-align: left;
+                                vertical-align: top;
+                            }
+                            .dept-pay-print th {
+                                font-weight: 700;
+                            }
+                            .dept-pay-print .num {
+                                text-align: right;
+                                white-space: nowrap;
+                            }
+                            .dept-pay-print .nowrap {
+                                white-space: nowrap;
+                            }
+                            .dept-pay-print tfoot td {
+                                font-weight: 700;
+                            }
+                            .dept-pay-print .printed-by {
+                                font-size: 10px;
+                                margin-top: 2mm;
+                            }
+
+                            @media print {
+                                @page {
+                                    size: A4 landscape;
+                                    margin: 8mm;
+                                }
+                                body {
+                                    margin: 0;
+                                }
+                                .dept-pay-print table {
+                                    font-size: 10px;
+                                }
+                                .dept-pay-print thead {
+                                    display: table-header-group;
+                                }
+                                .dept-pay-print tfoot {
+                                    display: table-footer-group;
+                                }
+                                .dept-pay-print tr {
+                                    page-break-inside: avoid;
+                                }
+                            }
+                        </style>
+
+                        <h:panelGroup id="reportView" layout="block" styleClass="dept-pay-print">
+                            <div class="paper">
+                                <div class="report-title" style="font-size: 18px;">
+                                    <h:outputText value="#{sessionController.institution.name}"/>
+                                </div>
+                                <div class="report-title" style="font-size: 15px;">
+                                    <h:outputText value="Department Payments &amp; Cancellations"/>
+                                    <h:outputText value=" - #{inwardReportControllerBht.department.name}"
+                                                  rendered="#{inwardReportControllerBht.department ne null}"/>
+                                </div>
+
+                                <div class="report-meta">
+                                    <div>
+                                        <h:outputText value="From Date" styleClass="meta-label"/>
+                                        <h:outputText value="#{inwardReportControllerBht.fromDate}">
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                        </h:outputText>
+                                    </div>
+                                    <div>
+                                        <h:outputText value="To Date" styleClass="meta-label"/>
+                                        <h:outputText value="#{inwardReportControllerBht.toDate}">
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                        </h:outputText>
+                                    </div>
+                                    <div>
+                                        <h:outputText value="BHT No" styleClass="meta-label"/>
+                                        <h:outputText value="#{empty inwardReportControllerBht.bhtNoFilter ? 'All' : inwardReportControllerBht.bhtNoFilter}"/>
+                                    </div>
+                                    <div>
+                                        <h:outputText value="Patient Name" styleClass="meta-label"/>
+                                        <h:outputText value="#{empty inwardReportControllerBht.patientNameFilter ? 'All' : inwardReportControllerBht.patientNameFilter}"/>
+                                    </div>
+                                </div>
+
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th style="width: 6mm;">No</th>
+                                            <th style="width: 26mm;">Bill No</th>
+                                            <th style="width: 20mm;">BHT</th>
+                                            <th>Patient</th>
+                                            <th style="width: 30mm;">Date</th>
+                                            <th style="width: 22mm;">Payment Method</th>
+                                            <th style="width: 24mm;">Billed By</th>
+                                            <th class="num" style="width: 20mm;">Total</th>
+                                            <th class="num" style="width: 18mm;">Discount</th>
+                                            <th class="num" style="width: 20mm;">Net Total</th>
+                                            <th style="width: 20mm;">Type</th>
+                                            <th style="width: 16mm;">Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <ui:repeat value="#{inwardReportControllerBht.paymentBillDtosForDepartment}" var="dto" varStatus="s">
+                                            <tr>
+                                                <td><h:outputText value="#{s.index + 1}"/></td>
+                                                <td class="nowrap"><h:outputText value="#{dto.deptId}"/></td>
+                                                <td class="nowrap"><h:outputText value="#{dto.bhtNo}"/></td>
+                                                <td><h:outputText value="#{dto.patientName}"/></td>
+                                                <td class="nowrap">
+                                                    <h:outputText value="#{dto.createdAt}">
+                                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                                    </h:outputText>
+                                                </td>
+                                                <td><h:outputText value="#{dto.paymentMethod}"/></td>
+                                                <td><h:outputText value="#{dto.createdUserName}"/></td>
+                                                <td class="num">
+                                                    <h:outputText value="#{dto.total}">
+                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                    </h:outputText>
+                                                </td>
+                                                <td class="num">
+                                                    <h:outputText value="#{dto.discount}">
+                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                    </h:outputText>
+                                                </td>
+                                                <td class="num">
+                                                    <h:outputText value="#{dto.netTotal}">
+                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                    </h:outputText>
+                                                </td>
+                                                <td>
+                                                    <h:outputText value="Cancellation" rendered="#{not empty dto.billTypeAtomic and dto.billTypeAtomic.contains('CANCEL')}"/>
+                                                    <h:outputText value="Refund / Return" rendered="#{not empty dto.billTypeAtomic and dto.billTypeAtomic.contains('REFUND') and not dto.billTypeAtomic.contains('CANCEL')}"/>
+                                                    <h:outputText value="Payment" rendered="#{empty dto.billTypeAtomic or (not dto.billTypeAtomic.contains('CANCEL') and not dto.billTypeAtomic.contains('REFUND'))}"/>
+                                                </td>
+                                                <td>
+                                                    <h:outputText value="Cancelled" rendered="#{dto.cancelled}"/>
+                                                    <h:outputText value="Returned" rendered="#{dto.refunded and not dto.cancelled}"/>
+                                                </td>
+                                            </tr>
+                                        </ui:repeat>
+                                        <h:panelGroup rendered="#{empty inwardReportControllerBht.paymentBillDtosForDepartment}">
+                                            <tr>
+                                                <td colspan="12" style="text-align: center;">No records found</td>
+                                            </tr>
+                                        </h:panelGroup>
+                                    </tbody>
+                                    <tfoot>
+                                        <tr>
+                                            <td colspan="9" class="num">Net Total</td>
+                                            <td class="num">
+                                                <h:outputText value="#{inwardReportControllerBht.paymentBillDtosForDepartmentNetTotal}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputText>
+                                            </td>
+                                            <td colspan="2"></td>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+
+                                <div class="printed-by">
+                                    <h:outputText value="Printed by: #{sessionController.loggedUser.webUserPerson.name}"/>
+                                    <h:outputText value="&nbsp;&nbsp;|&nbsp;&nbsp;Printed at: "/>
+                                    <h:outputText value="#{sessionController.currentDate}">
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                    </h:outputText>
+                                </div>
+                            </div>
+                        </h:panelGroup>
+                    </p:panel>
+                </h:form>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>
