@@ -167,16 +167,19 @@
                                     <table>
                                         <thead>
                                             <tr>
-                                                <th style="width: 90mm; font-weight: 700;">
+                                                <th style="width: 70mm; font-weight: 700;">
                                                     <h:outputText value="Payment Method" style="margin-left: 2mm;"/>
                                                 </th>
-                                                <th style="width: 40mm; font-weight: 700; text-align: right;">
+                                                <th style="width: 35mm; font-weight: 700; text-align: right;">
                                                     <h:outputText value="Hospital Fee Total" style="margin-right: 2mm;"/>
                                                 </th>
-                                                <th style="width: 40mm; font-weight: 700; text-align: right;">
+                                                <th style="width: 35mm; font-weight: 700; text-align: right;">
                                                     <h:outputText value="Doctor Fee Total" style="margin-right: 2mm;"/>
                                                 </th>
-                                                <th style="width: 40mm; font-weight: 700; text-align: right;">
+                                                <th style="width: 35mm; font-weight: 700; text-align: right;">
+                                                    <h:outputText value="Discount Total" style="margin-right: 2mm;"/>
+                                                </th>
+                                                <th style="width: 35mm; font-weight: 700; text-align: right;">
                                                     <h:outputText value="Net Total" style="margin-right: 2mm;"/>
                                                 </th>
                                             </tr>
@@ -195,6 +198,11 @@
                                                 </td>
                                                 <td class="text-end">
                                                     <h:outputText value="#{opdReportController.billItemReportBundle.getStaffFeeSubtotalForPaymentMethod(entry.key)}" style="margin-right: 2mm;">
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputText>
+                                                </td>
+                                                <td class="text-end">
+                                                    <h:outputText value="#{opdReportController.billItemReportBundle.getDiscountSubtotalForPaymentMethod(entry.key)}" style="margin-right: 2mm;">
                                                         <f:convertNumber pattern="#,##0.00" />
                                                     </h:outputText>
                                                 </td>
@@ -220,13 +228,13 @@
                                                 <th style="width: 20mm; font-weight: 700; text-align: left;">
                                                     <h:outputText value="Bill Time" style="margin-left: 1mm;"/>
                                                 </th>
-                                                <th style="width: 35mm; font-weight: 700; text-align: left;">
+                                                <th style="width: 30mm; font-weight: 700; text-align: left;">
                                                     <h:outputText value="Patient Name" style="margin-left:  1mm;"/>
                                                 </th>
-                                                <th style="width: 35mm; font-weight: 700; text-align: left;">
+                                                <th style="width: 30mm; font-weight: 700; text-align: left;">
                                                     <h:outputText value="Item Name" style="margin-left:  1mm;"/>
                                                 </th>
-                                                <th style="width: 30mm; font-weight: 700; text-align: left;">
+                                                <th style="width: 25mm; font-weight: 700; text-align: left;">
                                                     <h:outputText value="Doctor Name" style="margin-left:  1mm;"/>
                                                 </th>
                                                 <th style="width: 14mm; font-weight: 700; text-align: left;">
@@ -238,6 +246,9 @@
                                                 <th style="width: 16mm; font-weight: 700; text-align: right;">
                                                     <h:outputText value="Doc. Fee" style="margin-right: 1mm;"/>
                                                 </th>
+                                                <th style="width: 15mm; font-weight: 700; text-align: right;">
+                                                    <h:outputText value="Disc." style="margin-right: 1mm;"/>
+                                                </th>
                                                 <th style="width: 18mm; font-weight: 700; text-align: right;">
                                                     <h:outputText value="Net Total" style="margin-right: 1mm;"/>
                                                 </th>
@@ -247,7 +258,7 @@
                                         <tbody>
                                             <ui:repeat value="#{opdReportController.billItemReportBundle.nestedPaymentMethodGroups.entrySet()}" var="paymentEntry">
                                                 <tr class="payment-method-header paymetRow" style="text-align: left; background-color: #9DB2BF;">
-                                                    <td colspan="9" style=" text-align: left;">
+                                                    <td colspan="10" style=" text-align: left;">
                                                         <h:outputText value="#{paymentEntry.key.label} Payment Method" style="margin-left: 1mm; font-weight: 500;"/>
                                                     </td>
                                                 </tr>
@@ -255,7 +266,7 @@
                                                 <ui:repeat value="#{paymentEntry.value.entrySet()}" var="categoryEntry">
 
                                                     <tr class="category-header catRow" style="text-align: left; background-color: #DDE6ED;">
-                                                        <td colspan="9">
+                                                        <td colspan="10">
                                                             <h:outputText value=" #{categoryEntry.key == 'BILL' ? 'Normal Bills' :
                                                                                     categoryEntry.key == 'CANCELLATION' ? 'Cancellations' : 'Returns'}
                                                                           (#{categoryEntry.value.size()} items)" style="margin-left: 1mm;"/>
@@ -296,6 +307,11 @@
                                                                     <f:convertNumber pattern="#,##0.00" />
                                                                 </h:outputText>
                                                             </td>
+                                                            <td class="text-end">
+                                                                <h:outputText value="#{bill.discount}" style="margin-right: 1mm;">
+                                                                    <f:convertNumber pattern="#,##0.00" />
+                                                                </h:outputText>
+                                                            </td>
                                                             <td class="text-end" >
                                                                 <h:outputText value="#{bill.netValue}" style="margin-right: 1mm;">
                                                                     <f:convertNumber pattern="#,##0.00" />
@@ -316,6 +332,11 @@
                                                         </td>
                                                         <td class="text-end">
                                                             <h:outputText value="#{opdReportController.billItemReportBundle.getBillCategorySubtotal(paymentEntry.key, categoryEntry.key, 'STAFF')}" style="margin-right: 1mm;">
+                                                                <f:convertNumber pattern="#,##0.00" />
+                                                            </h:outputText>
+                                                        </td>
+                                                        <td class="text-end">
+                                                            <h:outputText value="#{opdReportController.billItemReportBundle.getBillCategorySubtotal(paymentEntry.key, categoryEntry.key, 'DISCOUNT')}" style="margin-right: 1mm;">
                                                                 <f:convertNumber pattern="#,##0.00" />
                                                             </h:outputText>
                                                         </td>
@@ -342,6 +363,11 @@
                                                         </h:outputText>
                                                     </td>
                                                     <td class="text-end">
+                                                        <h:outputText value="#{opdReportController.billItemReportBundle.getDiscountSubtotalForPaymentMethod(paymentEntry.key)}" style="margin-right: 1mm;">
+                                                            <f:convertNumber pattern="#,##0.00" />
+                                                        </h:outputText>
+                                                    </td>
+                                                    <td class="text-end">
                                                         <h:outputText value="#{opdReportController.billItemReportBundle.getSubtotalForPaymentMethod(paymentEntry.key)}" style="margin-right: 1mm;">
                                                             <f:convertNumber pattern="#,##0.00" />
                                                         </h:outputText>
@@ -360,6 +386,11 @@
                                                 </td>
                                                 <td class="text-end">
                                                     <h:outputText value="#{opdReportController.billItemReportBundle.grandStaffFeeTotal}" style="margin-right: 1mm;">
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputText>
+                                                </td>
+                                                <td class="text-end">
+                                                    <h:outputText value="#{opdReportController.billItemReportBundle.grandDiscountTotal}" style="margin-right: 1mm;">
                                                         <f:convertNumber pattern="#,##0.00" />
                                                     </h:outputText>
                                                 </td>
