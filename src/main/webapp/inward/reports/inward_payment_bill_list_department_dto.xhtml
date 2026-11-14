@@ -56,12 +56,16 @@
                             </p:calendar>
 
                             <p:spacer width="50"/>
+                            <p:spacer/>
+                            <p:spacer/>
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf0f8;" styleClass="fa mr-2"/>
                                 <h:outputLabel value="BHT No" for="bhtNo" class="mx-3"/>
                             </h:panelGroup>
                             <p:inputText id="bhtNo" autocomplete="off" value="#{inwardReportControllerBht.bhtNoFilter}" styleClass="w-100 form-control"/>
+
+                            <p:spacer width="50"/>
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf007;" styleClass="fa mr-2"/>
@@ -76,14 +80,14 @@
                                 ajax="false"
                                 action="#{inwardReportControllerBht.navigateToInwardPaymentBillListForDepartment()}"
                                 value="Search"
-                                styleClass="ui-button-success m-1"
+                                styleClass="ui-button-warning m-1"
                                 icon="fas fa-search">
                             </p:commandButton>
 
                             <p:commandButton
                                 value="Excel"
                                 ajax="false"
-                                styleClass="ui-button-info m-1"
+                                styleClass="ui-button-success m-1"
                                 icon="fa fa-file-excel">
                                 <p:dataExporter fileName="Department Payments" target="tbl1" type="xlsx"></p:dataExporter>
                             </p:commandButton>
@@ -91,7 +95,7 @@
                             <p:commandButton
                                 value="Print"
                                 ajax="false"
-                                styleClass="ui-button-warning m-1"
+                                styleClass="ui-button-info m-1"
                                 icon="fa fa-print">
                                 <p:printer target="tbl1"></p:printer>
                             </p:commandButton>
