@@ -772,12 +772,12 @@
                                     </h:outputLabel>
                                 </p:column>
                                 <p:column style="text-align: right;" headerText="Total Value"  exportable="false">
-                                    <h:outputLabel  value="#{iss.grossValue}">
+                                    <h:outputLabel  value="#{bhtSummeryFinalizedController.signedByBill(iss, iss.grossValue)}">
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputLabel>
                                 </p:column>
                                 <p:column style="text-align: right;" headerText="Margin Value" exportable="false">
-                                    <h:outputLabel  value="#{iss.marginValue}">
+                                    <h:outputLabel  value="#{bhtSummeryFinalizedController.signedByBill(iss, iss.marginValue)}">
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputLabel>
                                 </p:column>
@@ -785,7 +785,7 @@
                                     <f:facet name="header">
                                         <h:outputLabel value="Gross Value"/>
                                     </f:facet>
-                                    <h:outputLabel  value="#{iss.grossValue+iss.marginValue}">
+                                    <h:outputLabel  value="#{bhtSummeryFinalizedController.signedByBill(iss, iss.grossValue+iss.marginValue)}">
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputLabel>
                                 </p:column>
@@ -793,7 +793,7 @@
                                     <f:facet name="header">
                                         <h:outputLabel value="Discount Value"/>
                                     </f:facet>
-                                    <h:outputLabel  value="#{iss.discount}">
+                                    <h:outputLabel  value="#{bhtSummeryFinalizedController.signedByBill(iss, iss.discount)}">
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputLabel>
                                 </p:column>
@@ -801,7 +801,7 @@
                                     <f:facet name="header">
                                         <h:outputLabel value="Net Value"/>
                                     </f:facet>
-                                    <h:outputLabel  value="#{iss.netValue}">
+                                    <h:outputLabel  value="#{bhtSummeryFinalizedController.signedByBill(iss, iss.netValue)}">
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputLabel>
                                 </p:column>
@@ -809,7 +809,7 @@
                                     <f:facet name="header">
                                         <h:outputLabel value="Adjusted Value"/>
                                     </f:facet>
-                                    <h:outputLabel  value="#{iss.adjustedValue}">
+                                    <h:outputLabel  value="#{bhtSummeryFinalizedController.signedByBill(iss, iss.adjustedValue)}">
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputLabel>
                                 </p:column>

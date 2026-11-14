@@ -94,7 +94,7 @@
                                 <f:facet name="header">
                                     <h:outputLabel value="Total Value"/>
                                 </f:facet>
-                                <h:outputLabel value="#{bhtSummeryFinalizedController.signedByBill(iss, iss.netValue+iss.discount)}">
+                                <h:outputLabel value="#{bhtSummeryFinalizedController.signedByBill(iss, iss.netValue)+bhtSummeryFinalizedController.signedByBill(iss, iss.discount)}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
                             </p:column>
