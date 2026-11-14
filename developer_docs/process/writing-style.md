@@ -40,7 +40,10 @@ issues, PR bodies, comments and docs.
 | rendered=false | hidden |
 | regression | it used to work and now doesn't |
 | slice, delta, head sha | part, the new change, the latest commit |
-| REV OK, e2e | review passed, tested end to end |
+| REV OK, e2e (in messages to the user) | review passed, tested end to end |
+
+Keep fixed gate words exactly as written where a rule or tool reads them,
+for example the "REV OK <sha>" comment on a PR.
 
 ## Example (#25564)
 
