@@ -5319,8 +5319,8 @@ public class PatientInvestigationController implements Serializable {
         Map<String, Object> params = new HashMap<>();
         params.put("ret", false);
         params.put("sc", collected);
-        params.put("fromDate", fromDate);
-        params.put("toDate", toDate);
+        params.put("fromDate", getFromDate());
+        params.put("toDate", getToDate());
         return patientSampleFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
     }
 
