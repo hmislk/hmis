@@ -441,6 +441,7 @@ public class CreditCompanyDueController implements Serializable {
         Date startTime = new Date();
 
         makeNull();
+        loadCcFigures(null);
         Set<Institution> setIns = new HashSet<>();
 
         List<Institution> list = getCreditBean().getCreditCompanyFromBht(true, PaymentMethod.Credit);
@@ -864,6 +865,7 @@ public class CreditCompanyDueController implements Serializable {
 
     public void createInwardCashAgeTable() {
         makeNull();
+        loadCcFigures(null);
         Set<Institution> setIns = new HashSet<>();
 
         List<Institution> list = getCreditBean().getCreditCompanyFromBht(true, PaymentMethod.Cash);
@@ -893,6 +895,7 @@ public class CreditCompanyDueController implements Serializable {
         Date startTime = new Date();
 
         makeNull();
+        loadCcFigures(null);
         Set<Institution> setIns = new HashSet<>();
 
         List<Institution> list = getCreditBean().getCreditCompanyFromBht(false, PaymentMethod.Credit);
@@ -1024,6 +1027,7 @@ public class CreditCompanyDueController implements Serializable {
         Date startTime = new Date();
 
         makeNull();
+        loadCcFigures(null);
         Set<Institution> setIns = new HashSet<>();
 
         List<Institution> list = getCreditBean().getCreditCompanyFromBht(false, PaymentMethod.Cash);
@@ -1053,6 +1057,7 @@ public class CreditCompanyDueController implements Serializable {
         Date startTime = new Date();
 
         makeNull();
+        loadCcFigures(null);
         Set<Institution> setIns = new HashSet<>();
 
         List<Institution> list = getCreditBean().getCreditCompanyFromBht(
@@ -1151,10 +1156,15 @@ public class CreditCompanyDueController implements Serializable {
 
     private void setInwardValues(Institution inst, String1Value5 dataTable5Value, PaymentMethod paymentMethod) {
         List<PatientEncounter> lst = getCreditBean().getCreditPatientEncounters(inst, true, paymentMethod);
+        addCcFigures(lst);
         for (PatientEncounter b : lst) {
             Long dayCount = CommonFunctions.getDayCountTillNow(b.getCreatedAt());
             b.setTransDayCount(dayCount);
-            double finalValue = b.getFinalBill().getNetTotal() - (Math.abs(b.getFinalBill().getPaidAmount()) + Math.abs(b.getCreditPaidAmount()));
+            // Amount the credit companies still owe (commitment bills), see #25601
+            double finalValue = getCcDue(b);
+            if (finalValue <= 0.01) {
+                continue;
+            }
             if (dayCount < 30) {
                 dataTable5Value.setValue1(dataTable5Value.getValue1() + finalValue);
                 dataTable5Value.getValue1PatientEncounters().add(b);
@@ -1232,11 +1242,13 @@ public class CreditCompanyDueController implements Serializable {
     private void setInwardValuesAccess(Institution inst, String1Value5 dataTable5Value, PaymentMethod paymentMethod) {
 
         List<PatientEncounter> lst = getCreditBean().getCreditPatientEncounters(inst, false, paymentMethod);
+        addCcFigures(lst);
         for (PatientEncounter b : lst) {
 
             Long dayCount = CommonFunctions.getDayCountTillNow(b.getCreatedAt());
 
-            double finalValue = (Math.abs(b.getCreditUsedAmount()) - Math.abs(b.getCreditPaidAmount()));
+            // Committed less paid by the credit companies (commitment bills), see #25601
+            double finalValue = getCcDue(b);
 
             if (dayCount < 30) {
                 dataTable5Value.setValue1(dataTable5Value.getValue1() + finalValue);
@@ -2234,8 +2246,7 @@ public class CreditCompanyDueController implements Serializable {
                 + " JOIN b.finalBill fb"
                 + " where b.retired=false "
                 + " and b.paymentFinalized=true "
-                + " and " + dateField + " between :fd and :td "
-                + " and (abs(b.finalBill.netTotal)-(abs(b.finalBill.paidAmount)+abs(b.creditPaidAmount))) > 0.1 ";
+                + " and " + dateField + " between :fd and :td ";
 
         if (admissionType != null) {
             sql += " and b.admissionType =:ad ";
@@ -2270,20 +2281,37 @@ public class CreditCompanyDueController implements Serializable {
 
         m.put("fd", fromDate);
         m.put("td", toDate);
-        patientEncounters = patientEncounterFacade.findByJpql(sql, m, TemporalType.TIMESTAMP);
+        List<PatientEncounter> candidates = patientEncounterFacade.findByJpql(sql, m, TemporalType.TIMESTAMP);
 
-        if (patientEncounters == null) {
-            return;
-        }
+        patientEncounters = new ArrayList<>();
         billed = 0;
         paidByPatient = 0;
         paidByCompany = 0;
-        for (PatientEncounter p : patientEncounters) {
-            billed += p.getFinalBill().getNetTotal();
-            paidByPatient += p.getFinalBill().getPaidAmount();
-            paidByCompany += p.getPaidByCreditCompany();
-
+        dueByCompany = 0;
+        if (candidates == null) {
+            return;
         }
+        // Figures come from the commitment bills and payment bills (#25601), loaded once for the whole result
+        loadCcFigures(candidates);
+        for (PatientEncounter p : candidates) {
+            if (p.getFinalBill() == null) {
+                continue;
+            }
+            double ccDue = getCcDue(p);
+            if (ccDue <= 0.1) {
+                continue;
+            }
+            patientEncounters.add(p);
+            billed += p.getFinalBill().getNetTotal();
+            paidByPatient += getPatientPaid(p);
+            paidByCompany += getCcPaid(p);
+            dueByCompany += ccDue;
+        }
+    }
+
+    /** Total still owed by the credit companies over the last Inward CC Due Search. */
+    public double getDueByCompany() {
+        return dueByCompany;
     }
 
     public void createInwardCashDueData() {
@@ -2658,7 +2686,9 @@ public class CreditCompanyDueController implements Serializable {
     }
 
     private void removeSettledAndExcessBills(List<PatientEncounter> patientEncounters) {
-        patientEncounters.removeIf(p -> p.getFinalBill().getNetTotal() - (Math.abs(p.getFinalBill().getPaidAmount()) + Math.abs(p.getCreditPaidAmount())) <= 0);
+        loadCcFigures(patientEncounters);
+        // Outstanding = what the companies still owe + what the patient still owes (#25601)
+        patientEncounters.removeIf(p -> getCcDue(p) + getPatientCopaymentDue(p) <= 0);
     }
 
     private void updateSettledAmountsForIPByInwardFinalBillPaymentForCreditCompany(List<PatientEncounter> patientEncounters) {
@@ -2812,6 +2842,7 @@ public class CreditCompanyDueController implements Serializable {
     double billed;
     double paidByPatient;
     double paidByCompany;
+    private double dueByCompany;
 
     public double getBilled() {
         return billed;
@@ -3068,36 +3099,82 @@ public class CreditCompanyDueController implements Serializable {
     public void createInwardCreditAccess() {
         Date startTime = new Date();
 
-        List<Institution> setIns = getCreditBean().getCreditInstitutionByPatientEncounter(getFromDate(), getToDate(), PaymentMethod.Credit, false);
-
         institutionEncounters = new ArrayList<>();
-        for (Institution ins : setIns) {
-            List<PatientEncounter> lst = getCreditBean().getCreditPatientEncounter(ins, getFromDate(), getToDate(), PaymentMethod.Credit, false);
+        for (Map.Entry<Institution, List<PatientEncounter>> entry
+                : searchSettledAdmissionsByCreditCompany(PaymentMethod.Credit, false).entrySet()) {
             InstitutionEncounters newIns = new InstitutionEncounters();
-            newIns.setInstitution(ins);
-            newIns.setPatientEncounters(lst);
+            newIns.setInstitution(entry.getKey());
+            newIns.setPatientEncounters(entry.getValue());
 
-            for (PatientEncounter b : lst) {
-//                newIns.setTotal(newIns.getTotal() + b.getCreditUsedAmount());
-//                newIns.setPaidTotal(newIns.getPaidTotal() + b.getCreditPaidAmount());
+            for (PatientEncounter b : entry.getValue()) {
                 b.getFinalBill().setNetTotal(com.divudi.core.util.CommonFunctions.round(b.getFinalBill().getNetTotal()));
-                b.setCreditPaidAmount(Math.abs(b.getCreditPaidAmount()));
-                b.setCreditPaidAmount(com.divudi.core.util.CommonFunctions.round(b.getCreditPaidAmount()));
-                b.getFinalBill().setPaidAmount(com.divudi.core.util.CommonFunctions.round(b.getFinalBill().getPaidAmount()));
-                b.setTransPaid(b.getFinalBill().getPaidAmount() + b.getCreditPaidAmount());
-                //// // System.out.println("b.getTransPaid() = " + b.getTransPaid());
-                b.setTransPaid(com.divudi.core.util.CommonFunctions.round(b.getTransPaid()));
+                // Paid = patient money + credit company money, from the payment and commitment bills (#25601).
+                // The encounter's creditPaidAmount is no longer written or read.
+                b.setTransPaid(com.divudi.core.util.CommonFunctions.round(getPatientPaid(b) + getCcPaid(b)));
 
                 newIns.setTotal(newIns.getTotal() + b.getFinalBill().getNetTotal());
-//                newIns.setPaidTotal(newIns.getPaidTotal() + (Math.abs(b.getCreditPaidAmount()) + Math.abs(b.getFinalBill().getPaidAmount())));
                 newIns.setPaidTotal(newIns.getPaidTotal() + b.getTransPaid());
-
             }
             newIns.setTotal(com.divudi.core.util.CommonFunctions.round(newIns.getTotal()));
             newIns.setPaidTotal(com.divudi.core.util.CommonFunctions.round(newIns.getPaidTotal()));
             institutionEncounters.add(newIns);
         }
 
+    }
+
+    /**
+     * Discharged admissions of the given payment method whose bill is fully
+     * covered (net total less patient money less credit company money is not
+     * above 1 cent), grouped by credit company in name order. Patient and
+     * company money come from the payment and commitment bills, loaded once
+     * for the whole result (#25601), not from the encounter's creditPaidAmount.
+     */
+    private Map<Institution, List<PatientEncounter>> searchSettledAdmissionsByCreditCompany(
+            PaymentMethod pm, boolean applyDepartmentFilters) {
+        HashMap<String, Object> m = new HashMap<>();
+        String sql = "Select b From PatientEncounter b"
+                + " JOIN b.finalBill fb"
+                + " where b.retired=false"
+                + " and b.discharged=true"
+                + " and b.paymentMethod=:pm"
+                + " and b.creditCompany is not null"
+                + " and b.dateOfDischarge between :frm and :to";
+        if (applyDepartmentFilters) {
+            if (institutionOfDepartment != null) {
+                sql += " and fb.institution = :insd";
+                m.put("insd", institutionOfDepartment);
+            }
+            if (department != null) {
+                sql += " and fb.department = :dep";
+                m.put("dep", department);
+            }
+            if (site != null) {
+                sql += " and fb.department.site = :site";
+                m.put("site", site);
+            }
+        }
+        sql += " order by b.creditCompany.name, b.dateOfDischarge";
+        m.put("pm", pm);
+        m.put("frm", getFromDate());
+        m.put("to", getToDate());
+        List<PatientEncounter> candidates = patientEncounterFacade.findByJpql(sql, m, TemporalType.TIMESTAMP);
+
+        Map<Institution, List<PatientEncounter>> grouped = new LinkedHashMap<>();
+        if (candidates == null) {
+            return grouped;
+        }
+        loadCcFigures(candidates);
+        for (PatientEncounter b : candidates) {
+            if (b.getFinalBill() == null) {
+                continue;
+            }
+            double outstanding = Math.round((b.getFinalBill().getNetTotal() - getPatientPaid(b) - getCcPaid(b)) * 100.0) / 100.0;
+            if (outstanding > 0.01) {
+                continue;
+            }
+            grouped.computeIfAbsent(b.getCreditCompany(), k -> new ArrayList<>()).add(b);
+        }
+        return grouped;
     }
 
 //    public void createInwardCreditAccessWithFilters() {
@@ -3370,43 +3447,25 @@ public class CreditCompanyDueController implements Serializable {
 
     public void createInwardCashAccess() {
         Date startTime = new Date();
-
-        List<Institution> setIns = getCreditBean().getCreditInstitutionByPatientEncounter(getFromDate(), getToDate(), PaymentMethod.Cash, false);
-
-        institutionEncounters = new ArrayList<>();
-        for (Institution ins : setIns) {
-            List<PatientEncounter> lst = getCreditBean().getCreditPatientEncounter(ins, getFromDate(), getToDate(), PaymentMethod.Cash, false);
-            InstitutionEncounters newIns = new InstitutionEncounters();
-            newIns.setInstitution(ins);
-            newIns.setPatientEncounters(lst);
-
-            for (PatientEncounter b : lst) {
-                newIns.setTotal(newIns.getTotal() + b.getCreditUsedAmount());
-                newIns.setPaidTotal(newIns.getPaidTotal() + b.getCreditPaidAmount());
-            }
-
-            institutionEncounters.add(newIns);
-        }
-
+        fillCashAccess(false);
     }
 
     public void createInwardCashAccessWithFilters() {
         Date startTime = new Date();
+        fillCashAccess(true);
+    }
 
-        List<Institution> setIns = getCreditBean().getCreditInstitutionByPatientEncounter(getFromDate(), getToDate(),
-                PaymentMethod.Cash, false, institutionOfDepartment, department, site);
-
+    private void fillCashAccess(boolean applyDepartmentFilters) {
         institutionEncounters = new ArrayList<>();
-        for (Institution ins : setIns) {
-            List<PatientEncounter> lst = getCreditBean().getCreditPatientEncounter(ins, getFromDate(), getToDate(),
-                    PaymentMethod.Cash, false, institutionOfDepartment, department, site);
+        for (Map.Entry<Institution, List<PatientEncounter>> entry
+                : searchSettledAdmissionsByCreditCompany(PaymentMethod.Cash, applyDepartmentFilters).entrySet()) {
             InstitutionEncounters newIns = new InstitutionEncounters();
-            newIns.setInstitution(ins);
-            newIns.setPatientEncounters(lst);
+            newIns.setInstitution(entry.getKey());
+            newIns.setPatientEncounters(entry.getValue());
 
-            for (PatientEncounter b : lst) {
-                newIns.setTotal(newIns.getTotal() + b.getCreditUsedAmount());
-                newIns.setPaidTotal(newIns.getPaidTotal() + b.getCreditPaidAmount());
+            for (PatientEncounter b : entry.getValue()) {
+                newIns.setTotal(newIns.getTotal() + getCcCommitted(b));
+                newIns.setPaidTotal(newIns.getPaidTotal() + getCcPaid(b));
             }
 
             institutionEncounters.add(newIns);
@@ -4243,12 +4302,18 @@ public class CreditCompanyDueController implements Serializable {
     private void loadCcFigures(List<PatientEncounter> encounters) {
         ccFiguresByFinalBillId.clear();
         patientPaidByEncounterId.clear();
+        addCcFigures(encounters);
+    }
+
+    /** Same as {@link #loadCcFigures(List)} but keeps what is already loaded (searches that gather admissions in several steps). */
+    private void addCcFigures(List<PatientEncounter> encounters) {
         if (encounters == null || encounters.isEmpty()) {
             return;
         }
         List<Long> encounterIds = new ArrayList<>();
         for (PatientEncounter pe : encounters) {
-            if (pe != null && pe.getId() != null && !encounterIds.contains(pe.getId())) {
+            if (pe != null && pe.getId() != null && !patientPaidByEncounterId.containsKey(pe.getId())
+                    && !encounterIds.contains(pe.getId())) {
                 encounterIds.add(pe.getId());
             }
         }
@@ -4258,6 +4323,7 @@ public class CreditCompanyDueController implements Serializable {
         List<Long> finalBillIds = new ArrayList<>();
         for (PatientEncounter pe : encounters) {
             if (pe != null && pe.getFinalBill() != null && pe.getFinalBill().getId() != null
+                    && !ccFiguresByFinalBillId.containsKey(pe.getFinalBill().getId())
                     && !finalBillIds.contains(pe.getFinalBill().getId())) {
                 finalBillIds.add(pe.getFinalBill().getId());
             }

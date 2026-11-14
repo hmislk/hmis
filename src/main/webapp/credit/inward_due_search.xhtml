@@ -110,7 +110,7 @@
                                 </f:facet>
                             </p:column>
                             <p:column headerText="Paid By Patient" style="text-align: right;">
-                                <h:outputLabel value="#{p.finalBill.paidAmount}">
+                                <h:outputLabel value="#{creditCompanyDueController.getPatientPaid(p)}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
                                 <f:facet name="footer">
@@ -121,7 +121,7 @@
                                 </f:facet>
                             </p:column>
                             <p:column headerText="Paid By Company"  style="text-align: right;">
-                                <h:outputLabel value="#{p.paidByCreditCompany}">
+                                <h:outputLabel value="#{creditCompanyDueController.getCcPaid(p)}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>                            
                                 <f:facet name="footer">
@@ -134,11 +134,11 @@
 
                             <p:column headerText="Due"  style="text-align: right;" >
 
-                                <h:outputLabel value="#{(p.finalBill.netTotal-(p.finalBill.paidAmount+p.paidByCreditCompany)) gt 0? (p.finalBill.netTotal-(p.finalBill.paidAmount+p.paidByCreditCompany)):0.00}">
+                                <h:outputLabel value="#{creditCompanyDueController.getCcDue(p)}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
                                 <f:facet name="footer">
-                                    <h:outputLabel value="#{creditCompanyDueController.billed-(creditCompanyDueController.paidByCompany+creditCompanyDueController.paidByPatient)}">
+                                    <h:outputLabel value="#{creditCompanyDueController.dueByCompany}">
                                         <f:convertNumber pattern="#,##0.00"/>                                    
                                     </h:outputLabel>
                                 </f:facet>
