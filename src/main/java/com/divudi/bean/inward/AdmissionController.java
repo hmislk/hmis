@@ -844,7 +844,10 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         sql = "select b from Bill b "
                 + " where b.retired=false "
                 + " and b.creditCompany=:ins"
-                + " and b.billTypeAtomic=:bta ";
+                + " and b.billTypeAtomic=:bta "
+                + " and (b.cancelled=false or b.cancelled is null) "
+                + " and b.patientEncounter.finalBill is not null "
+                + " and b.referenceBill.id = b.patientEncounter.finalBill.id ";
 
         hash.put("ins", institution);
         hash.put("bta", BillTypeAtomic.INWARD_FINAL_BILL_PAYMENT_BY_CREDIT_COMPANY);
