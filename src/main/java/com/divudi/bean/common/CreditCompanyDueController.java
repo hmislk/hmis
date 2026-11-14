@@ -1935,7 +1935,9 @@ public class CreditCompanyDueController implements Serializable {
             double patientPaid = getPatientPaid(pe);
             double totalCommitted = getCcCommitted(pe);
             double totalCompanyPaid = getCcPaid(pe);
-            double patientBalance = netTotal - totalCommitted - patientPaid;
+            // Round to cents before the sign tests: the final bill net can carry
+            // more decimals than the bills, which would list a 0.00 excess row.
+            double patientBalance = Math.round((netTotal - totalCommitted - patientPaid) * 100.0) / 100.0;
             boolean first = true;
             for (CcCompanyFigures f : ccCompanyFigures(pe)) {
                 if (f.company == null) {
@@ -1944,7 +1946,7 @@ public class CreditCompanyDueController implements Serializable {
                 if (companyFilter != null && !isSameCompany(f.company, companyFilter)) {
                     continue;
                 }
-                double companyBalance = f.committed - f.paid;
+                double companyBalance = Math.round((f.committed - f.paid) * 100.0) / 100.0;
                 double companyExcess = companyBalance < 0 ? -companyBalance : 0.0;
                 double patientExcess = first && patientBalance < 0 ? -patientBalance : 0.0;
                 first = false;
