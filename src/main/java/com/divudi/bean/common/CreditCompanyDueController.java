@@ -4217,12 +4217,115 @@ public class CreditCompanyDueController implements Serializable {
     // Inward Patient Co-payment Due Reports
     // =========================================================================
 
+    // -------------------------------------------------------------------------
+    // Per-admission credit company figures (#25601)
+    //
+    // Company receipts and cancels recalculate each commitment bill
+    // (INWARD_FINAL_BILL_PAYMENT_BY_CREDIT_COMPANY, referenceBill = final bill)
+    // from the database, and they also add to finalBill.paidAmount. So
+    // finalBill.paidAmount is patient + company money, and the encounter's
+    // creditPaidAmount (no longer written) must not be read.
+    // -------------------------------------------------------------------------
+
+    /** Final bill id -> {committed, paid by company}; an empty array means the final bill has no commitment bills. */
+    private final Map<Long, double[]> ccFiguresByFinalBillId = new HashMap<>();
+
+    /**
+     * Loads the commitment bill totals of these admissions' final bills in a
+     * few grouped queries, replacing what was loaded before.
+     */
+    private void loadCcFigures(List<PatientEncounter> encounters) {
+        ccFiguresByFinalBillId.clear();
+        if (encounters == null || encounters.isEmpty()) {
+            return;
+        }
+        List<Long> finalBillIds = new ArrayList<>();
+        for (PatientEncounter pe : encounters) {
+            if (pe != null && pe.getFinalBill() != null && pe.getFinalBill().getId() != null
+                    && !finalBillIds.contains(pe.getFinalBill().getId())) {
+                finalBillIds.add(pe.getFinalBill().getId());
+            }
+        }
+        for (int from = 0; from < finalBillIds.size(); from += 500) {
+            List<Long> chunk = finalBillIds.subList(from, Math.min(from + 500, finalBillIds.size()));
+            for (Long id : chunk) {
+                ccFiguresByFinalBillId.put(id, new double[0]);
+            }
+            putCcFigures(chunk);
+        }
+    }
+
+    private void putCcFigures(List<Long> finalBillIds) {
+        String jpql = "SELECT c.referenceBill.id, SUM(c.netTotal), SUM(c.settledAmountBySponsor) FROM Bill c"
+                + " WHERE c.billTypeAtomic = :bta"
+                + " AND c.referenceBill.id IN :ids"
+                + " AND c.cancelled = false"
+                + " AND c.retired = false"
+                + " GROUP BY c.referenceBill.id";
+        Map<String, Object> params = new HashMap<>();
+        params.put("bta", BillTypeAtomic.INWARD_FINAL_BILL_PAYMENT_BY_CREDIT_COMPANY);
+        params.put("ids", new ArrayList<>(finalBillIds));
+        List<Object[]> rows = billFacade.findAggregates(jpql, params);
+        if (rows == null) {
+            return;
+        }
+        for (Object[] row : rows) {
+            Long id = (Long) row[0];
+            double committed = row[1] == null ? 0.0 : ((Number) row[1]).doubleValue();
+            double paid = row[2] == null ? 0.0 : ((Number) row[2]).doubleValue();
+            ccFiguresByFinalBillId.put(id, new double[]{committed, paid});
+        }
+    }
+
+    /** Commitment bill totals of the admission's final bill, or null when it has none (older admissions). */
+    private double[] ccFigures(PatientEncounter pe) {
+        if (pe == null || pe.getFinalBill() == null || pe.getFinalBill().getId() == null) {
+            return null;
+        }
+        Long id = pe.getFinalBill().getId();
+        if (!ccFiguresByFinalBillId.containsKey(id)) {
+            ccFiguresByFinalBillId.put(id, new double[0]);
+            putCcFigures(Collections.singletonList(id));
+        }
+        double[] figures = ccFiguresByFinalBillId.get(id);
+        return figures.length == 0 ? null : figures;
+    }
+
+    /** Amount the credit companies took on for this admission. */
+    public double getCcCommitted(PatientEncounter pe) {
+        double[] f = ccFigures(pe);
+        return f == null ? (pe == null ? 0.0 : pe.getCreditUsedAmount()) : f[0];
+    }
+
+    /** Amount the credit companies have paid for this admission (receipts less cancels). */
+    public double getCcPaid(PatientEncounter pe) {
+        double[] f = ccFigures(pe);
+        if (f != null) {
+            return f[1];
+        }
+        return pe == null || pe.getFinalBill() == null ? 0.0 : pe.getFinalBill().getSettledAmountBySponsor();
+    }
+
+    /** Amount still owed by the credit companies for this admission. */
+    public double getCcDue(PatientEncounter pe) {
+        return Math.max(0.0, getCcCommitted(pe) - getCcPaid(pe));
+    }
+
+    /** Patient money on the final bill: its paidAmount less the companies' payments. */
+    public double getPatientPaid(PatientEncounter pe) {
+        if (pe == null || pe.getFinalBill() == null) {
+            return 0.0;
+        }
+        return pe.getFinalBill().getPaidAmount() - getCcPaid(pe);
+    }
+
     /**
      * Populates {@code patientEncounters} with all finalized inward admissions
      * (with or without CC coverage) where the patient still has an outstanding
      * co-payment balance.
      *
-     * Patient due = max(0, finalBill.netTotal - creditUsedAmount) - finalBill.paidAmount
+     * Patient due = max(0, finalBill.netTotal - ccCommitted - patientPaid), see
+     * {@link #getPatientCopaymentDue(PatientEncounter)}.
      *
      * Also resets {@code billed}, {@code paidByPatient}, {@code paidByCompany}
      * and {@code payableByPatient} to the matching totals.
@@ -4234,8 +4337,7 @@ public class CreditCompanyDueController implements Serializable {
                 + " JOIN b.finalBill fb"
                 + " WHERE b.retired = false"
                 + " AND b.paymentFinalized = true"
-                + " AND " + dateField + " BETWEEN :fd AND :td"
-                + " AND (abs(fb.netTotal) - abs(b.creditUsedAmount) - abs(fb.paidAmount)) > 0.01";
+                + " AND " + dateField + " BETWEEN :fd AND :td";
         if (admissionType != null) {
             sql += " AND b.admissionType = :ad";
             m.put("ad", admissionType);
@@ -4251,22 +4353,28 @@ public class CreditCompanyDueController implements Serializable {
         sql += " ORDER BY " + dateField;
         m.put("fd", fromDate);
         m.put("td", toDate);
-        patientEncounters = patientEncounterFacade.findByJpql(sql, m, TemporalType.TIMESTAMP);
+        List<PatientEncounter> candidates = patientEncounterFacade.findByJpql(sql, m, TemporalType.TIMESTAMP);
+        loadCcFigures(candidates);
 
+        patientEncounters = new ArrayList<>();
         billed = 0;
         paidByPatient = 0;
         paidByCompany = 0;
         payableByPatient = 0;
-        if (patientEncounters != null) {
-            for (PatientEncounter pe : patientEncounters) {
+        if (candidates != null) {
+            for (PatientEncounter pe : candidates) {
                 if (pe.getFinalBill() == null) {
                     continue;
                 }
+                double patientDue = getPatientCopaymentDue(pe);
+                if (patientDue <= 0.01) {
+                    continue;
+                }
+                patientEncounters.add(pe);
                 billed += pe.getFinalBill().getNetTotal();
-                paidByPatient += pe.getFinalBill().getPaidAmount();
-                paidByCompany += Math.abs(pe.getCreditPaidAmount());
-                double portion = Math.max(0.0, pe.getFinalBill().getNetTotal() - pe.getCreditUsedAmount());
-                payableByPatient += Math.max(0.0, portion - pe.getFinalBill().getPaidAmount());
+                paidByPatient += getPatientPaid(pe);
+                paidByCompany += getCcPaid(pe);
+                payableByPatient += patientDue;
             }
         }
     }
@@ -4288,8 +4396,7 @@ public class CreditCompanyDueController implements Serializable {
             if (pe.getFinalBill() == null) {
                 continue;
             }
-            double due = Math.max(0.0,
-                    pe.getFinalBill().getNetTotal() - pe.getCreditUsedAmount() - pe.getFinalBill().getPaidAmount());
+            double due = getPatientCopaymentDue(pe);
             if (due <= 0.01) {
                 continue;
             }
@@ -4347,6 +4454,7 @@ public class CreditCompanyDueController implements Serializable {
         m.put("fd", fromDate);
         m.put("td", toDate);
         List<PatientEncounter> allAdmissions = patientEncounterFacade.findByJpql(sql, m, TemporalType.TIMESTAMP);
+        loadCcFigures(allAdmissions);
 
         String1Value5 ccRow = new String1Value5();
         ccRow.setString("CC Receivable");
@@ -4361,9 +4469,8 @@ public class CreditCompanyDueController implements Serializable {
                 if (pe.getFinalBill() == null) {
                     continue;
                 }
-                double ccDue = Math.max(0.0, pe.getCreditUsedAmount() - Math.abs(pe.getCreditPaidAmount()));
-                double patientDue = Math.max(0.0,
-                        pe.getFinalBill().getNetTotal() - pe.getCreditUsedAmount() - pe.getFinalBill().getPaidAmount());
+                double ccDue = getCcDue(pe);
+                double patientDue = getPatientCopaymentDue(pe);
                 if (ccDue <= 0.01 && patientDue <= 0.01) {
                     continue;
                 }
@@ -4410,11 +4517,12 @@ public class CreditCompanyDueController implements Serializable {
      * N/A      – no CC coverage on this encounter
      */
     public String getPatientCcStatus(PatientEncounter pe) {
-        if (pe.getCreditUsedAmount() <= 0.01) {
+        double ccCommitted = getCcCommitted(pe);
+        if (ccCommitted <= 0.01) {
             return "N/A";
         }
-        double ccPaid = Math.abs(pe.getCreditPaidAmount());
-        if (ccPaid >= pe.getCreditUsedAmount() - 0.01) {
+        double ccPaid = getCcPaid(pe);
+        if (ccPaid >= ccCommitted - 0.01) {
             return "SETTLED";
         }
         if (ccPaid > 0.01) {
@@ -4425,14 +4533,14 @@ public class CreditCompanyDueController implements Serializable {
 
     /**
      * Returns the outstanding patient co-payment for a given encounter.
-     * Formula: max(0, finalBill.netTotal − creditUsedAmount) − finalBill.paidAmount
+     * Formula: max(0, finalBill.netTotal − ccCommitted − patientPaid), where
+     * patientPaid is finalBill.paidAmount less the companies' payments (#25601).
      */
     public double getPatientCopaymentDue(PatientEncounter pe) {
-        if (pe.getFinalBill() == null) {
+        if (pe == null || pe.getFinalBill() == null) {
             return 0.0;
         }
-        double portion = Math.max(0.0, pe.getFinalBill().getNetTotal() - pe.getCreditUsedAmount());
-        return Math.max(0.0, portion - pe.getFinalBill().getPaidAmount());
+        return Math.max(0.0, pe.getFinalBill().getNetTotal() - getCcCommitted(pe) - getPatientPaid(pe));
     }
 
 }
