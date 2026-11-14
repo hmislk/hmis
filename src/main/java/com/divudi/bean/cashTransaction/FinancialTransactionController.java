@@ -2021,6 +2021,11 @@ public class FinancialTransactionController implements Serializable {
             bundle.setDenominatorValue(physicalCash);
             double rebuiltCash = bundle.getCashValue();
             double floatNet = physicalCash - rebuiltCash;
+            // Float-only handover where the cashier floated everything out and counted
+            // zero: there is no cash to rebuild from, so the float is the create bill net.
+            if (shiftHandoverCompletionBills.isEmpty() && Math.abs(physicalCash) < 0.001) {
+                floatNet = selectedBill.getNetTotal();
+            }
             if (floatNet > 0.001) {
                 bundle.setCashFloatInTotal(floatNet);
             } else if (floatNet < -0.001) {
@@ -2160,6 +2165,10 @@ public class FinancialTransactionController implements Serializable {
             bundle.setDenominatorValue(physicalCash);
             double rebuiltCash = bundle.getCashValue();
             double floatNet = physicalCash - rebuiltCash;
+            // Same zero-count float-only rule as navigateToReceiveNewHandoverBill().
+            if (shiftHandoverCompletionBills.isEmpty() && Math.abs(physicalCash) < 0.001) {
+                floatNet = selectedBill.getNetTotal();
+            }
             if (floatNet > 0.001) {
                 bundle.setCashFloatInTotal(floatNet);
             } else if (floatNet < -0.001) {
