@@ -612,6 +612,12 @@ public class PostFinalBillInwardPaymentController implements Serializable, Contr
     }
 
     public void pay() {
+        if (getCurrent() != null && getCurrent().getId() != null) {
+            // Already saved: a repeated click must not reach the service, whose
+            // rejection would clear the id of a committed bill (#25641).
+            JsfUtil.addErrorMessage("This bill is already saved.");
+            return;
+        }
         if (errorCheck()) {
             return;
         }

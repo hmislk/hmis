@@ -231,6 +231,12 @@ public class InwardRefundController implements Serializable {
     private com.divudi.service.inward.InwardPaymentService inwardPaymentService;
 
     public void pay() {
+        if (getCurrent() != null && getCurrent().getId() != null) {
+            // Already saved: a repeated click must not reach the service, whose
+            // rejection would clear the id of a committed bill (#25641).
+            JsfUtil.addErrorMessage("This bill is already saved.");
+            return;
+        }
         if (errorCheck()) {
             return;
         }
@@ -248,6 +254,10 @@ public class InwardRefundController implements Serializable {
         } catch (RuntimeException e) {
             // Rolled back: undo the in-memory changes so the user can submit again.
             current.setId(null);
+            // prepareBill() made the entered amount negative; restore it so
+            // errorCheck() validates the retry against the fresh remaining amount.
+            current.setTotal(Math.abs(current.getTotal()));
+            current.setNetTotal(Math.abs(current.getNetTotal()));
             getOriginalBillToRefund().setRefunded(false);
             getOriginalBillToRefund().setRefundedBill(null);
             inwardPaymentService.reloadPatientDeposits(paymentMethodData);
