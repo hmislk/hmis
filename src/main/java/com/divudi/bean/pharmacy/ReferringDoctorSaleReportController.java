@@ -1,5 +1,7 @@
 package com.divudi.bean.pharmacy;
 
+import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.entity.Institution;
 import com.divudi.core.data.dto.ReferringDoctorSaleBillDTO;
 import com.divudi.core.data.dto.ReferringDoctorSaleItemDTO;
 import com.divudi.core.data.dto.ReferringDoctorSaleSummaryDTO;
@@ -33,6 +35,9 @@ public class ReferringDoctorSaleReportController implements Serializable {
 
     private Date fromDate;
     private Date toDate;
+    private Institution institution;
+    private Institution site;
+    private PaymentMethod paymentMethod;
     private Department department;
     private Doctor referringDoctor;
     private boolean onlyWithoutDoctor;
@@ -44,6 +49,9 @@ public class ReferringDoctorSaleReportController implements Serializable {
     public String navigateToReferringDoctorSaleReport() {
         fromDate = CommonFunctions.getStartOfMonth();
         toDate = CommonFunctions.getEndOfDay();
+        institution = null;
+        site = null;
+        paymentMethod = null;
         department = null;
         referringDoctor = null;
         onlyWithoutDoctor = false;
@@ -79,8 +87,8 @@ public class ReferringDoctorSaleReportController implements Serializable {
         if (!datesValid()) {
             return;
         }
-        List<ReferringDoctorSaleBillDTO> bills = service.fetchBills(fromDate, toDate, department,
-                referringDoctor, effectiveOnlyWithoutDoctor());
+        List<ReferringDoctorSaleBillDTO> bills = service.fetchBills(fromDate, toDate, institution, site,
+                department, referringDoctor, effectiveOnlyWithoutDoctor(), paymentMethod);
         summaryRows = service.summarize(bills);
         billRows = null;
         itemRows = null;
@@ -91,7 +99,8 @@ public class ReferringDoctorSaleReportController implements Serializable {
         if (!datesValid()) {
             return;
         }
-        billRows = service.fetchBills(fromDate, toDate, department, referringDoctor, effectiveOnlyWithoutDoctor());
+        billRows = service.fetchBills(fromDate, toDate, institution, site,
+                department, referringDoctor, effectiveOnlyWithoutDoctor(), paymentMethod);
         itemRows = null;
         selectedDoctorName = currentDoctorLabel();
     }
@@ -100,7 +109,8 @@ public class ReferringDoctorSaleReportController implements Serializable {
         if (!datesValid()) {
             return;
         }
-        itemRows = service.fetchItems(fromDate, toDate, department, referringDoctor, effectiveOnlyWithoutDoctor());
+        itemRows = service.fetchItems(fromDate, toDate, institution, site,
+                department, referringDoctor, effectiveOnlyWithoutDoctor(), paymentMethod);
         billRows = null;
         selectedDoctorName = currentDoctorLabel();
     }
@@ -297,6 +307,35 @@ public class ReferringDoctorSaleReportController implements Serializable {
 
     public void setToDate(Date toDate) {
         this.toDate = toDate;
+    }
+
+    /** Institution or Site changed: the old department may not belong to the new choice. */
+    public void clearDepartment() {
+        department = null;
+    }
+
+    public Institution getInstitution() {
+        return institution;
+    }
+
+    public void setInstitution(Institution institution) {
+        this.institution = institution;
+    }
+
+    public Institution getSite() {
+        return site;
+    }
+
+    public void setSite(Institution site) {
+        this.site = site;
+    }
+
+    public PaymentMethod getPaymentMethod() {
+        return paymentMethod;
+    }
+
+    public void setPaymentMethod(PaymentMethod paymentMethod) {
+        this.paymentMethod = paymentMethod;
     }
 
     public Department getDepartment() {

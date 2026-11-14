@@ -14,7 +14,10 @@
             <p:panel rendered="#{!wardPharmacyReturnToPharmacyController.printPreview}">
                 <f:facet name="header">
                     <h:outputText styleClass="fa-solid fa-truck-ramp-box"/>
-                    <p:outputLabel value="Return Medicines to Pharmacy - BHT #{wardPharmacyReturnToPharmacyController.patientEncounter.bhtNo} - #{wardPharmacyReturnToPharmacyController.patientEncounter.patient.person.nameWithTitle}" class="mx-4"/>
+                    <p:outputLabel value="Return Medicines to Pharmacy - BHT #{wardPharmacyReturnToPharmacyController.patientEncounter.bhtNo} - #{wardPharmacyReturnToPharmacyController.patientEncounter.patient.person.nameWithTitle}" class="mx-4"
+                                   rendered="#{!wardPharmacyReturnToPharmacyController.allPatients}"/>
+                    <p:outputLabel value="Return Medicines to Pharmacy - All Patients" class="mx-4"
+                                   rendered="#{wardPharmacyReturnToPharmacyController.allPatients}"/>
                 </f:facet>
 
                 <p:dataTable
@@ -24,11 +27,19 @@
                     value="#{wardPharmacyReturnToPharmacyController.receiveBills}"
                     var="p"
                     class="w-100"
-                    emptyMessage="No received medicines with a returnable balance for this admission.">
+                    emptyMessage="No received medicines with a returnable balance.">
 
                     <f:facet name="header">
                         <h:outputText value="Received Medicine Bills with a Returnable Balance"/>
                     </f:facet>
+
+                    <p:column headerText="BHT" rendered="#{wardPharmacyReturnToPharmacyController.allPatients}">
+                        <h:outputText value="#{p.patientEncounter.bhtNo}"/>
+                    </p:column>
+
+                    <p:column headerText="Patient" rendered="#{wardPharmacyReturnToPharmacyController.allPatients}">
+                        <h:outputText value="#{p.patientEncounter.patient.person.nameWithTitle}"/>
+                    </p:column>
 
                     <p:column headerText="Bill No">
                         <h:outputText value="#{p.deptId}"/>

@@ -287,6 +287,7 @@ public class PharmacyAdjustmentController implements Serializable {
                 BillType.PharmacyStockAdjustmentBill,
                 BillType.PharmacyAdjustmentDepartmentStock,
                 BillType.PharmacyAdjustmentDepartmentSingleStock,
+                BillType.PharmacyAdjustmentBatchChange,
                 BillType.PharmacyAdjustmentStaffStock,
                 BillType.PharmacyAdjustmentSaleRate,
                 BillType.PharmacyAdjustmentWholeSaleRate,

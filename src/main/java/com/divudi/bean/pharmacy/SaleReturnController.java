@@ -941,9 +941,11 @@ public class SaleReturnController implements Serializable, com.divudi.bean.commo
         double currentRefundAmount = billToUpdate.getRefundAmount();
         billToUpdate.setRefundAmount(currentRefundAmount + returnAmount);
 
-        // Update paidAmount - deduct the return amount only when a payment exists
+        // Update paidAmount - deduct the return amount only when a payment exists.
+        // A credit bill's paidAmount records credit settlements only, so a return leaves
+        // it unchanged; its due is netTotal - refundAmount - paidAmount (#25465, as #25463 for OPD).
         double currentPaidAmount = billToUpdate.getPaidAmount();
-        if (currentPaidAmount > 0) {
+        if (currentPaidAmount > 0 && billToUpdate.getPaymentMethod() != PaymentMethod.Credit) {
             double updatedPaidAmount = currentPaidAmount - returnAmount;
             billToUpdate.setPaidAmount(Math.max(0d, updatedPaidAmount));
         }
@@ -1524,12 +1526,12 @@ public class SaleReturnController implements Serializable, com.divudi.bean.commo
         double remainAmount = calculatRemainForMultiplePaymentTotal();
 
         if (returnPaymentMethod == PaymentMethod.MultiplePaymentMethods) {
-            int arrSize = paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().size();
+            int arrSize = getPaymentMethodData().getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().size();
             if (arrSize == 0) {
                 return;
             }
 
-            ComponentDetail pm = paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().get(arrSize - 1);
+            ComponentDetail pm = getPaymentMethodData().getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().get(arrSize - 1);
 
             if (pm.getPaymentMethod() == PaymentMethod.Cash) {
                 pm.getPaymentMethodData().getCash().setTotalValue(remainAmount);

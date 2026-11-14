@@ -2725,6 +2725,23 @@ public class OpdBatchBillCancellationController implements Serializable, Control
 
     private List<Bill> cancelSingleBills = new ArrayList<>();
 
+    /**
+     * VAT of the individual bills of a batch. Settle adds net total + VAT to
+     * staff credit or welfare, but the batch bill itself does not store VAT, so
+     * the cancellation reverses the individual bills' VAT instead (#25349).
+     */
+    private double individualBillsVat(List<Bill> individualBills) {
+        double total = 0;
+        if (individualBills != null) {
+            for (Bill b : individualBills) {
+                if (b != null) {
+                    total += b.getVat();
+                }
+            }
+        }
+        return total;
+    }
+
     public String cancelOpdBatchBill() {
 
         batchBillCancellationStarted = true;
@@ -2844,7 +2861,7 @@ public class OpdBatchBillCancellationController implements Serializable, Control
                 staffForCredit = paymentMethodData.getStaffCredit().getToStaff();
             }
             if (staffForCredit != null) {
-                staffService.updateStaffCredit(staffForCredit, 0 - Math.abs(cancellationBatchBill.getNetTotal() + getBill().getVat()));
+                staffService.updateStaffCredit(staffForCredit, 0 - (Math.abs(cancellationBatchBill.getNetTotal()) + Math.abs(individualBillsVat(bills))));
                 JsfUtil.addSuccessMessage("Staff Credit Updated");
                 cancellationBatchBill.setFromStaff(staffForCredit);
                 cancellationBatchBill.setToStaff(staffForCredit);
@@ -2852,7 +2869,7 @@ public class OpdBatchBillCancellationController implements Serializable, Control
             }
         } else if (cancellationBatchBill.getPaymentMethod() == PaymentMethod.Credit) {
             if (cancellationBatchBill.getToStaff() != null) {
-                staffService.updateStaffCredit(cancellationBatchBill.getToStaff(), 0 - Math.abs(cancellationBatchBill.getNetTotal() + getBill().getVat()));
+                staffService.updateStaffCredit(cancellationBatchBill.getToStaff(), 0 - (Math.abs(cancellationBatchBill.getNetTotal()) + Math.abs(individualBillsVat(bills))));
                 JsfUtil.addSuccessMessage("Staff Credit Updated");
                 cancellationBatchBill.setFromStaff(cancellationBatchBill.getToStaff());
                 getBillFacade().edit(cancellationBatchBill);
@@ -2866,7 +2883,7 @@ public class OpdBatchBillCancellationController implements Serializable, Control
                 staffForWelfare = paymentMethodData.getStaffWelfare().getToStaff();
             }
             if (staffForWelfare != null) {
-                staffService.updateStaffWelfare(staffForWelfare, 0 - Math.abs(cancellationBatchBill.getNetTotal() + getBill().getVat()));
+                staffService.updateStaffWelfare(staffForWelfare, 0 - (Math.abs(cancellationBatchBill.getNetTotal()) + Math.abs(individualBillsVat(bills))));
                 JsfUtil.addSuccessMessage("Staff Welfare Updated");
                 cancellationBatchBill.setFromStaff(staffForWelfare);
                 cancellationBatchBill.setToStaff(staffForWelfare);
@@ -3019,7 +3036,7 @@ public class OpdBatchBillCancellationController implements Serializable, Control
                 staffForCredit = paymentMethodData.getStaffCredit().getToStaff();
             }
             if (staffForCredit != null) {
-                staffService.updateStaffCredit(staffForCredit, 0 - Math.abs(cancellationBatchBill.getNetTotal() + getBill().getVat()));
+                staffService.updateStaffCredit(staffForCredit, 0 - (Math.abs(cancellationBatchBill.getNetTotal()) + Math.abs(individualBillsVat(bills))));
                 JsfUtil.addSuccessMessage("Staff Credit Updated");
                 cancellationBatchBill.setFromStaff(staffForCredit);
                 cancellationBatchBill.setToStaff(staffForCredit);
@@ -3027,7 +3044,7 @@ public class OpdBatchBillCancellationController implements Serializable, Control
             }
         } else if (cancellationBatchBill.getPaymentMethod() == PaymentMethod.Credit) {
             if (cancellationBatchBill.getToStaff() != null) {
-                staffService.updateStaffCredit(cancellationBatchBill.getToStaff(), 0 - Math.abs(cancellationBatchBill.getNetTotal() + getBill().getVat()));
+                staffService.updateStaffCredit(cancellationBatchBill.getToStaff(), 0 - (Math.abs(cancellationBatchBill.getNetTotal()) + Math.abs(individualBillsVat(bills))));
                 JsfUtil.addSuccessMessage("Staff Credit Updated");
                 cancellationBatchBill.setFromStaff(cancellationBatchBill.getToStaff());
                 getBillFacade().edit(cancellationBatchBill);
@@ -3041,7 +3058,7 @@ public class OpdBatchBillCancellationController implements Serializable, Control
                 staffForWelfare = paymentMethodData.getStaffWelfare().getToStaff();
             }
             if (staffForWelfare != null) {
-                staffService.updateStaffWelfare(staffForWelfare, 0 - Math.abs(cancellationBatchBill.getNetTotal() + getBill().getVat()));
+                staffService.updateStaffWelfare(staffForWelfare, 0 - (Math.abs(cancellationBatchBill.getNetTotal()) + Math.abs(individualBillsVat(bills))));
                 JsfUtil.addSuccessMessage("Staff Welfare Updated");
                 cancellationBatchBill.setFromStaff(staffForWelfare);
                 cancellationBatchBill.setToStaff(staffForWelfare);

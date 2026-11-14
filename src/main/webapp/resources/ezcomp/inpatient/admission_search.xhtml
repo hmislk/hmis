@@ -29,7 +29,8 @@
              related tables the moment a BHT is picked, not only when its own Continue button is
              clicked. Defaults to a no-op so pages that don't need one (the majority) are
              unaffected. Runs before itemSelectUpdate's components are re-rendered, same as any
-             p:ajax listener. -->
+             p:ajax listener. A listener needs itemSelectUpdate set: without it the pick processes
+             nothing (see the itemSelect p:ajax below), so the listener would not run. -->
         <cc:attribute name="itemSelectListener" method-signature="void listener()"
                       default="#{admissionSearchSupportController.noop}" />
         <cc:attribute name="placeholder" type="java.lang.String"
@@ -59,7 +60,12 @@
             style="width: 100%;"
             inputStyleClass="form-control form-control-lg">
             <p:ajax event="query" oncomplete="HmisAdmissionSearch.onQueryComplete('#{cc.attrs.widgetVar}', '#{cc.attrs.continueClientId}')" />
-            <p:ajax event="itemSelect" listener="#{cc.attrs.itemSelectListener}" update="#{cc.attrs.itemSelectUpdate}" oncomplete="HmisAdmissionSearch.onItemSelectComplete('#{cc.attrs.continueClientId}')" />
+            <!-- With no itemSelectUpdate the pick must NOT write the admission into the bean
+                 (process @none). The page's Continue button (a full submit) applies it and runs its
+                 action. If the pick wrote it first, a Continue button inside a panel rendered only
+                 while no admission is chosen is no longer decoded, so its action silently never
+                 runs (#25527: Refund lists no bills; #25528: Payment shows Due 0.00). -->
+            <p:ajax event="itemSelect" process="#{empty cc.attrs.itemSelectUpdate ? '@none' : '@this'}" listener="#{cc.attrs.itemSelectListener}" update="#{cc.attrs.itemSelectUpdate}" oncomplete="HmisAdmissionSearch.onItemSelectComplete('#{cc.attrs.continueClientId}')" />
             <p:column headerText="PHN" style="padding: 8px; min-width: 100px;">
                 <div class="d-flex align-items-center">
                     <i class="fa-solid fa-id-card me-2 text-info"></i>

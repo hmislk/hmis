@@ -2,6 +2,7 @@ package com.divudi.bean.report;
 
 import com.divudi.bean.common.*;
 import com.divudi.bean.pharmacy.PharmacyController;
+import com.divudi.bean.pharmacy.PrescriptionListController;
 import com.divudi.core.data.reports.FinancialReport;
 import com.divudi.core.data.reports.InventoryReports;
 import com.divudi.core.data.reports.PharmacyReports;
@@ -1250,8 +1251,11 @@ public class PharmacyReportController implements Serializable {
     }
 
     public String navigateToPrescriptionList() {
-        return "/pharmacy/prescription_list?faces-redirect=true";
+        return prescriptionListController.navigateToPrescriptionList();
     }
+
+    @Inject
+    private PrescriptionListController prescriptionListController;
 
     public String navigateToExpiryItemReport() {
         initExpiryReportDefaults();
@@ -5754,6 +5758,7 @@ public class PharmacyReportController implements Serializable {
             List<BillType> billTypes = new ArrayList<>();
             billTypes.add(BillType.PharmacyAdjustmentDepartmentSingleStock);
             billTypes.add(BillType.PharmacyAdjustmentDepartmentStock);
+            billTypes.add(BillType.PharmacyAdjustmentBatchChange);
             billTypes.add(BillType.PharmacyStockAdjustmentBill);
             billItemsDtos = new ArrayList<>();
             netTotal = 0.0;
@@ -11584,7 +11589,9 @@ public class PharmacyReportController implements Serializable {
         // Department filter: GROUP BY (department, item) - one row per department per item
         // Institution filter: GROUP BY (institution, item) - one row per institution per item
         // No filter (Total): GROUP BY (item) - one row per item across all institutions
-        if (department != null) {
+        // Site filter without a department: one row per department per item, summed
+        // per item below (#25464).
+        if (department != null || site != null) {
             jpql.append("  GROUP BY sh2.department, sh2.item) ");
         } else if (institution != null) {
             jpql.append("  GROUP BY sh2.institution, sh2.item) ");
@@ -11623,6 +11630,7 @@ public class PharmacyReportController implements Serializable {
         // Execute DTO projection query - returns PharmacyRow objects directly with all values pre-populated
         @SuppressWarnings("unchecked")
         List<PharmacyRow> dtoRows = (List<PharmacyRow>) facade.findLightsByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+        dtoRows = sumSiteRowsPerItem(dtoRows);
 
         rows = new ArrayList<>();
 
@@ -11650,8 +11658,8 @@ public class PharmacyReportController implements Serializable {
 
             // Set quantity and values based on department/institution/total scope
             // The DTO constructor stored item-level values in specific fields
-            if (department != null) {
-                // Department-level: Use itemStock and department item values
+            if (department != null || site != null) {
+                // Department-level (or a site's department sums): itemStock and item values
                 row.setQuantity(row.getStockQty());  // itemStock
                 row.setPurchaseValue(row.getPurchaseValue());  // itemStockValueAtPurchaseRate
                 row.setSaleValue(row.getSaleValue());  // itemStockValueAtSaleRate
@@ -11679,6 +11687,7 @@ public class PharmacyReportController implements Serializable {
             String archiveJpql = jpql.toString().replace("FROM StockHistory ", "FROM StockHistoryArchive ");
             @SuppressWarnings("unchecked")
             List<PharmacyRow> archiveDtoRows = (List<PharmacyRow>) facade.findLightsByJpql(archiveJpql, params, TemporalType.TIMESTAMP);
+            archiveDtoRows = sumSiteRowsPerItem(archiveDtoRows);
             java.util.Set<Long> liveItemIds = new java.util.HashSet<>();
             for (PharmacyRow r : dtoRows) {
                 if (r.getItem() != null) {
@@ -11702,7 +11711,7 @@ public class PharmacyReportController implements Serializable {
                         continue;
                     }
                 }
-                if (department != null) {
+                if (department != null || site != null) {
                     row.setQuantity(row.getStockQty());
                 } else if (institution != null) {
                     row.setQuantity(row.getGrossTotal());
@@ -11859,7 +11868,9 @@ public class PharmacyReportController implements Serializable {
         // Department filter: GROUP BY (department, itemBatch) - one row per department per batch
         // Institution filter: GROUP BY (institution, itemBatch) - one row per institution per batch
         // No filter (Total): GROUP BY (itemBatch) - one row per batch across all institutions
-        if (department != null) {
+        // Site filter without a department: one row per department per batch, summed
+        // per batch below, because stock history has no site-level aggregate (#25464).
+        if (department != null || site != null) {
             jpql.append("  GROUP BY sh2.department, sh2.itemBatch) ");
         } else if (institution != null) {
             jpql.append("  GROUP BY sh2.institution, sh2.itemBatch) ");
@@ -11898,6 +11909,7 @@ public class PharmacyReportController implements Serializable {
         // Execute DTO projection query - returns PharmacyRow objects directly with all values pre-populated
         @SuppressWarnings("unchecked")
         List<PharmacyRow> dtoRows = (List<PharmacyRow>) facade.findLightsByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+        dtoRows = sumSiteRowsPerBatch(dtoRows);
 
         rows = new ArrayList<>();
 
@@ -11911,7 +11923,8 @@ public class PharmacyReportController implements Serializable {
             // NOTE: hide zero-stock batches (normal, expected), but never hide negative
             // quantities - a negative batch qty means oversold/backorder data that must
             // stay visible instead of being silently dropped from the report (issue #23026).
-            double batchQty = row.getStockQty() != null ? row.getStockQty() : 0.0;
+            applyBatchScopeValues(row);
+            double batchQty = row.getQuantity() != null ? row.getQuantity() : 0.0;
             if (isConsignmentItem()) {
                 if (batchQty > 0) {
                     continue;
@@ -11922,27 +11935,6 @@ public class PharmacyReportController implements Serializable {
                 }
             }
 
-            // Set quantity and values based on department/institution scope
-            // The DTO constructor already stored all values, we just assign them to the correct properties
-            if (department != null) {
-                // Department-level: use qty, purchaseValue, saleValue, purchaseRate (already set in constructor)
-                // No additional assignment needed - constructor already set these
-            } else {
-                if (institution != null) {
-                    // Institution-level: use values from grossTotal, discount, netTotal, hospitalTotal
-                    row.setQuantity(row.getGrossTotal());  // instituionBatchQty
-                    row.setPurchaseValue(row.getDiscount());  // institutionBatchStockValueAtPurchaseRate
-                    row.setSaleValue(row.getNetTotal());  // institutionBatchStockValueAtSaleRate
-                    row.setCostValue(row.getHospitalTotal());  // institutionBatchStockValueAtCostRate
-                } else {
-                    // Total-level: use values from paidTotal, tax, actualTotal, staffTotal
-                    row.setQuantity(row.getPaidTotal());  // totalBatchQty
-                    row.setPurchaseValue(row.getTax());  // totalBatchStockValueAtPurchaseRate
-                    row.setSaleValue(row.getActualTotal());  // totalBatchStockValueAtSaleRate
-                    row.setCostValue(row.getStaffTotal());  // totalBatchStockValueAtCostRate
-                }
-            }
-
             rows.add(row);
         }
 
@@ -11950,6 +11942,7 @@ public class PharmacyReportController implements Serializable {
             String archiveJpql = jpql.toString().replace("FROM StockHistory ", "FROM StockHistoryArchive ");
             @SuppressWarnings("unchecked")
             List<PharmacyRow> archiveDtoRows = (List<PharmacyRow>) facade.findLightsByJpql(archiveJpql, params, TemporalType.TIMESTAMP);
+            archiveDtoRows = sumSiteRowsPerBatch(archiveDtoRows);
             java.util.Set<Long> liveBatchIds = new java.util.HashSet<>();
             for (PharmacyRow r : dtoRows) {
                 if (r.getItemBatch() != null) {
@@ -11963,7 +11956,8 @@ public class PharmacyReportController implements Serializable {
                 if (liveBatchIds.contains(row.getItemBatch().getId())) {
                     continue;
                 }
-                double batchQty = row.getStockQty() != null ? row.getStockQty() : 0.0;
+                applyBatchScopeValues(row);
+                double batchQty = row.getQuantity() != null ? row.getQuantity() : 0.0;
                 if (isConsignmentItem()) {
                     if (batchQty > 0) {
                         continue;
@@ -11973,21 +11967,75 @@ public class PharmacyReportController implements Serializable {
                         continue;
                     }
                 }
-                if (institution != null && department == null) {
-                    row.setQuantity(row.getGrossTotal());
-                    row.setPurchaseValue(row.getDiscount());
-                    row.setSaleValue(row.getNetTotal());
-                    row.setCostValue(row.getHospitalTotal());
-                } else if (department == null) {
-                    row.setQuantity(row.getPaidTotal());
-                    row.setPurchaseValue(row.getTax());
-                    row.setSaleValue(row.getActualTotal());
-                    row.setCostValue(row.getStaffTotal());
-                }
                 rows.add(row);
             }
             rows.sort(java.util.Comparator.comparing(r -> r.getItem() != null ? r.getItem().getName() : ""));
         }
+    }
+
+    /**
+     * Sets the quantity and values a batch-wise closing stock row displays and
+     * totals, based on the report scope (department, institution or total).
+     * The department scope must also set quantity, otherwise the footer total
+     * (which sums quantity) shows 0 (issue #18981).
+     */
+    private void applyBatchScopeValues(PharmacyRow row) {
+        if (department != null || site != null) {
+            // Site rows carry the site's department sums (sumSiteRowsPerBatch)
+            row.setQuantity(row.getStockQty());
+        } else if (institution != null) {
+            row.setQuantity(row.getGrossTotal());
+            row.setPurchaseValue(row.getDiscount());
+            row.setSaleValue(row.getNetTotal());
+            row.setCostValue(row.getHospitalTotal());
+        } else {
+            row.setQuantity(row.getPaidTotal());
+            row.setPurchaseValue(row.getTax());
+            row.setSaleValue(row.getActualTotal());
+            row.setCostValue(row.getStaffTotal());
+        }
+    }
+
+    /**
+     * With a site selected and no department, the query returns each site
+     * department's latest row per batch (or per item). Add them up so one row per
+     * batch (or item) shows the site's quantity and values at the report date
+     * (#25464); stock history has no site-level aggregate. Other scopes are
+     * returned unchanged.
+     */
+    private List<PharmacyRow> sumSiteRowsPerBatch(List<PharmacyRow> departmentRows) {
+        return sumSiteRows(departmentRows, r -> r.getItemBatch() == null ? null : r.getItemBatch().getId());
+    }
+
+    private List<PharmacyRow> sumSiteRowsPerItem(List<PharmacyRow> departmentRows) {
+        return sumSiteRows(departmentRows, r -> r.getItem() == null ? null : r.getItem().getId());
+    }
+
+    private List<PharmacyRow> sumSiteRows(List<PharmacyRow> departmentRows, java.util.function.Function<PharmacyRow, Long> key) {
+        if (site == null || department != null || departmentRows == null) {
+            return departmentRows;
+        }
+        Map<Long, PharmacyRow> perKey = new java.util.LinkedHashMap<>();
+        for (PharmacyRow r : departmentRows) {
+            Long k = r == null ? null : key.apply(r);
+            if (k == null) {
+                continue;
+            }
+            PharmacyRow sum = perKey.get(k);
+            if (sum == null) {
+                perKey.put(k, r);
+                continue;
+            }
+            sum.setStockQty(nz(sum.getStockQty()) + nz(r.getStockQty()));
+            sum.setPurchaseValue(nz(sum.getPurchaseValue()) + nz(r.getPurchaseValue()));
+            sum.setSaleValue(nz(sum.getSaleValue()) + nz(r.getSaleValue()));
+            sum.setCostValue(nz(sum.getCostValue()) + nz(r.getCostValue()));
+        }
+        return new ArrayList<>(perKey.values());
+    }
+
+    private static double nz(Double d) {
+        return d == null ? 0.0 : d;
     }
 
     public static <T> T safeGet(Supplier<T> supplier, T defaultValue) {
@@ -14213,6 +14261,7 @@ public class PharmacyReportController implements Serializable {
             List<BillType> billTypes = new ArrayList<>();
             billTypes.add(BillType.PharmacyAdjustmentDepartmentSingleStock);
             billTypes.add(BillType.PharmacyAdjustmentDepartmentStock);
+            billTypes.add(BillType.PharmacyAdjustmentBatchChange);
             billTypes.add(BillType.PharmacyStockAdjustmentBill);
 
             // Query for Stock Adjustment Issues (negative quantities)
@@ -14220,7 +14269,7 @@ public class PharmacyReportController implements Serializable {
             StringBuilder jpqlIssue = new StringBuilder();
             jpqlIssue.append("SELECT ")
                     .append("SUM(bi.pharmaceuticalBillItem.qty * bi.pharmaceuticalBillItem.itemBatch.purcahseRate), ")
-                    .append("SUM(bi.pharmaceuticalBillItem.qty * bi.pharmaceuticalBillItem.itemBatch.costRate), ")
+                    .append("SUM(bi.pharmaceuticalBillItem.qty * (CASE WHEN bi.bill.billType = :batchChangeType THEN COALESCE(bi.pharmaceuticalBillItem.itemBatch.costRate, bi.pharmaceuticalBillItem.itemBatch.purcahseRate) ELSE bi.pharmaceuticalBillItem.itemBatch.costRate END)), ")
                     .append("SUM(bi.pharmaceuticalBillItem.qty * bi.pharmaceuticalBillItem.itemBatch.retailsaleRate) ")
                     .append("FROM BillItem bi ")
                     .append("WHERE bi.retired = :ret ")
@@ -14231,6 +14280,7 @@ public class PharmacyReportController implements Serializable {
 
             paramsIssue.put("ret", false);
             paramsIssue.put("btas", billTypes);
+            paramsIssue.put("batchChangeType", BillType.PharmacyAdjustmentBatchChange);
             paramsIssue.put("fd", fromDate);
             paramsIssue.put("td", toDate);
             addFilter(jpqlIssue, paramsIssue, "bi.bill.institution", "ins", institution);
@@ -14247,7 +14297,7 @@ public class PharmacyReportController implements Serializable {
             StringBuilder jpqlReceive = new StringBuilder();
             jpqlReceive.append("SELECT ")
                     .append("SUM(bi.pharmaceuticalBillItem.qty * bi.pharmaceuticalBillItem.itemBatch.purcahseRate), ")
-                    .append("SUM(bi.pharmaceuticalBillItem.qty * bi.pharmaceuticalBillItem.itemBatch.costRate), ")
+                    .append("SUM(bi.pharmaceuticalBillItem.qty * (CASE WHEN bi.bill.billType = :batchChangeType THEN COALESCE(bi.pharmaceuticalBillItem.itemBatch.costRate, bi.pharmaceuticalBillItem.itemBatch.purcahseRate) ELSE bi.pharmaceuticalBillItem.itemBatch.costRate END)), ")
                     .append("SUM(bi.pharmaceuticalBillItem.qty * bi.pharmaceuticalBillItem.itemBatch.retailsaleRate) ")
                     .append("FROM BillItem bi ")
                     .append("WHERE bi.retired = :ret ")
@@ -14258,6 +14308,7 @@ public class PharmacyReportController implements Serializable {
 
             paramsReceive.put("ret", false);
             paramsReceive.put("btas", billTypes);
+            paramsReceive.put("batchChangeType", BillType.PharmacyAdjustmentBatchChange);
             paramsReceive.put("fd", fromDate);
             paramsReceive.put("td", toDate);
             addFilter(jpqlReceive, paramsReceive, "bi.bill.institution", "ins", institution);
@@ -15061,7 +15112,7 @@ public class PharmacyReportController implements Serializable {
                 addCellToPdfTable(table, f.getItem().getMeasurementUnit() != null ? f.getItem().getMeasurementUnit().getName() : "-", dataFont);
                 addCellToPdfTable(table, f.getItemBatch() != null && f.getItemBatch().getDateOfExpire() != null ? sdf.format(f.getItemBatch().getDateOfExpire()) : "-", dataFont);
                 addCellToPdfTable(table, f.getItemBatch() != null ? f.getItemBatch().getBatchNo() : "-", dataFont);
-                addCellToPdfTable(table, f.getStockQty() != null ? String.format("%,.2f", f.getStockQty()) : "0.00", dataFont, null, Element.ALIGN_RIGHT);
+                addCellToPdfTable(table, f.getQuantity() != null ? String.format("%,.2f", f.getQuantity()) : "0.00", dataFont, null, Element.ALIGN_RIGHT);
                 addCellToPdfTable(table, f.getPurchaseRate() != null ? String.format("%,.2f", f.getPurchaseRate()) : "0.00", dataFont, null, Element.ALIGN_RIGHT);
                 addCellToPdfTable(table, f.getPurchaseValue() != null ? String.format("%,.2f", f.getPurchaseValue()) : "0.00", dataFont, null, Element.ALIGN_RIGHT);
                 addCellToPdfTable(table, f.getCostRate() != null ? String.format("%,.2f", f.getCostRate()) : "0.00", dataFont, null, Element.ALIGN_RIGHT);

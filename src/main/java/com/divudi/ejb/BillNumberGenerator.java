@@ -1393,6 +1393,25 @@ public class BillNumberGenerator {
     }
 
     /**
+     * Same lock as {@link #withFinalBillVersionLock}, but runs the action outside
+     * a container transaction, so each facade call inside it commits on its own,
+     * as it does when called without the lock. Use it from callers that are not
+     * transactional themselves (REST resources) and create new bills inside the
+     * action: in one shared transaction an IDENTITY id stays null until flush.
+     */
+    @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
+    public <T> T withFinalBillVersionLockOutsideTransaction(com.divudi.core.entity.PatientEncounter pe, java.util.function.Supplier<T> action) {
+        String lockKey = "finalBillVersionSerial-" + pe.getId();
+        ReentrantLock lock = lockMap.computeIfAbsent(lockKey, k -> new ReentrantLock());
+        lock.lock();
+        try {
+            return action.get();
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    /**
      * Counts existing final-bill versions for the admission. Must only be
      * called while holding the lock from {@link #withFinalBillVersionLock}
      * — on its own this count-then-caller-increments pattern is racy.
