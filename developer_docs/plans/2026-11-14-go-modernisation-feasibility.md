@@ -1,6 +1,6 @@
 # Go and modern stack: high-level feasibility study
 
-Status: OPTIONS ONLY. No decision taken. Written 2026-11-14 to keep the options for future planning.
+Status: OPTIONS ONLY. No decision taken; the recommendation in section 6 is advice, not a decision. Written 2026-11-14 to keep the options for future planning.
 
 ## 1. Current system (measured 2026-11-14)
 
@@ -44,7 +44,7 @@ Components:
 - **Data access:** `sqlc` (type-safe SQL), `pgx` (or the MySQL driver), `goose` or `atlas` for migrations. Go has no JPA/EclipseLink equivalent, so the query layer is written fresh.
 - **API:** OpenAPI-first with generated clients. A FHIR/HL7 gateway as its own component.
 - **Frontend:** A new SPA, or server-rendered Go templates with HTMX. HTMX is much cheaper for a form- and table-heavy HIS.
-- **Platform:** Containers; CI/CD on GitHub Actions; OpenTelemetry tracing; multi-tenant by schema or database instead of JNDI-per-hospital.
+- **Platform:** Containers (for the current per-hospital VM estate, plain Docker with systemd is the realistic first step before Kubernetes or Nomad); CI/CD on GitHub Actions; OpenTelemetry tracing; multi-tenant by schema or database instead of JNDI-per-hospital.
 - **Events:** Outbox plus NATS or Kafka for stock movements, accounting export, notifications and audit.
 
 ## 3. Potential gains
@@ -57,7 +57,7 @@ Components:
 
 ## 4. Risks and costs
 
-- **Rewrite scale:** At about 10-20K lines per developer-year including tests, 2M lines is dozens of person-years. Go would need perhaps 40-60% of the lines, but 4,000 pages must also be rebuilt.
+- **Rewrite scale:** At about 10-20K lines per developer-year including tests (a rough industry rule of thumb, not a measured team rate), 2M lines is dozens of person-years. Go would need perhaps 40-60% of the lines, but 4,000 pages must also be rebuilt.
 - **Hidden rules:** A rewrite re-introduces bugs already fixed. In billing and stock these are expensive.
 - **Data migration:** Several live hospitals hold years of data. The schema should stay compatible, with the new code reading and writing the existing DB.
 - **Parity freeze:** Two codebases for a long time. Every feature and hotfix would be built twice.
@@ -77,7 +77,7 @@ Components:
 
 1. **Keep the existing schema as the shared contract.** Add a gateway in front so some routes go to Go and the rest to Payara.
 2. **Start with low-coupling, high-pain slices.** Heavy reports (read-only, easy to compare against old output), then REST/FHIR and lab-analyzer integrations, then the AI chat service.
-3. **Move writes later.** Billing, pharmacy stock and inward charging come last. Run old and new side by side, or shadow-write with a diff, before cutover.
+3. **Move writes later.** Billing, pharmacy stock and inward charging come last. Run old and new side by side, or shadow-write with a diff, before cutover. Shadow writes must use an isolated database, not the shared production database, and must suppress external effects such as payments and notifications.
 4. **Build the new UI slice by slice** behind the same login, and retire JSF pages as routes move.
 5. **Exit criterion:** Payara serves nothing, then retire it.
 
