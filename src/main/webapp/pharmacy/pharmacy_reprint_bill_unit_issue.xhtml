@@ -72,14 +72,6 @@
                                 rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Disposal Issue Receipt is Custom 2',false)}"
                                 bill="#{pharmacyBillSearch.bill}"/>
                         </h:panelGroup>
-                        <div class="row">
-                            <div class="col-12">
-                                <h:panelGroup 
-                                    rendered="#{not configOptionApplicationController.getBooleanValueByKey('Pharmacy Disposal Cancellation is allowed', false)}" >
-                                    <p:outputLabel value="Consumption Cancellation is Disabled by Configuration - Pharmacy Disposal Cancellation is allowed" ></p:outputLabel>
-                                </h:panelGroup>
-                            </div>
-                        </div>
                     </p:panel>
 
                     <!-- Disposal Issue Configuration Dialog -->
