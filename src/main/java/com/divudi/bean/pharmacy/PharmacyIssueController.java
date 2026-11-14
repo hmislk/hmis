@@ -1167,6 +1167,9 @@ public class PharmacyIssueController implements Serializable {
                 }
             }
         }
+        // Items are saved on their own, so the cached Bill still has an empty
+        // billItems list. Evict it so View, Cancel and Return load the items.
+        getBillFacade().evictFromSharedCache(getPreBill().getId());
 
         JsfUtil.addSuccessMessage("Disposal Issue Draft Saved Successfully");
         billPreview = false;
@@ -1492,6 +1495,7 @@ public class PharmacyIssueController implements Serializable {
             }
         }
 
+        getBillFacade().evictFromSharedCache(billId);
         setPrintBill(getBillFacade().find(billId));
         getPrintBill().setBillItems(items);
         preBill = null;

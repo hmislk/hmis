@@ -45,6 +45,7 @@ import com.divudi.core.facade.PatientItemFacade;
 import com.divudi.core.facade.PersonFacade;
 import com.divudi.core.util.FinalBillPdfSnapshotCacheEntry;
 import com.divudi.core.util.JsfUtil;
+import com.divudi.core.data.BillCategory;
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.DepartmentType;
 import com.divudi.core.data.lab.PatientInvestigationStatus;
@@ -369,9 +370,33 @@ public class InwardSearch implements Serializable {
 
     private List<PaymentMethod> inwardDepositCancelationPaymentMethods;
     
+    private boolean isCancellationBill(Bill b) {
+        if (b == null) {
+            return false;
+        }
+        return b instanceof CancelledBill
+                || (b.getBillTypeAtomic() != null && b.getBillTypeAtomic().getBillCategory() == BillCategory.CANCELLATION);
+    }
+
+    private boolean isRefundBill(Bill b) {
+        if (b == null) {
+            return false;
+        }
+        return b instanceof RefundBill
+                || (b.getBillTypeAtomic() != null && b.getBillTypeAtomic().getBillCategory() == BillCategory.REFUND);
+    }
+
+    public boolean isBillACancellationBill() {
+        return isCancellationBill(bill);
+    }
+
     public String navigateToPaymentBillCancellation() {
         if (bill == null) {
             JsfUtil.addErrorMessage("No bill is selected");
+            return "";
+        }
+        if (isCancellationBill(bill)) {
+            JsfUtil.addErrorMessage("This is a cancellation bill and cannot be cancelled. To reverse it, take the payment again.");
             return "";
         }
         if (bill.getCheckeAt() != null) {
@@ -411,6 +436,10 @@ public class InwardSearch implements Serializable {
     public String navigateToDepositBillCancellation() {
         if (bill == null) {
             JsfUtil.addErrorMessage("No bill is selected");
+            return "";
+        }
+        if (isCancellationBill(bill)) {
+            JsfUtil.addErrorMessage("This is a cancellation bill and cannot be cancelled. To reverse it, take the payment again.");
             return "";
         }
         if (bill.getCheckeAt() != null) {
@@ -1842,6 +1871,11 @@ public class InwardSearch implements Serializable {
     }
 
     private boolean check() {
+        if (isCancellationBill(getBill())) {
+            JsfUtil.addErrorMessage("This is a cancellation bill and cannot be cancelled. To reverse it, take the payment again.");
+            return true;
+        }
+
         if (getBill().isCancelled()) {
             JsfUtil.addErrorMessage("Already Cancelled. Can not cancel again");
             return true;
@@ -2227,6 +2261,11 @@ public class InwardSearch implements Serializable {
                 return;
             }
 
+            if (isRefundBill(getBill())) {
+                JsfUtil.addErrorMessage("This is a refund bill and cannot be cancelled here.");
+                return;
+            }
+
             if (getBill().getCheckedBy() != null) {
                 JsfUtil.addErrorMessage("Checked Bill. Can not cancel");
                 return;
@@ -2279,6 +2318,11 @@ public class InwardSearch implements Serializable {
         if (getBill() != null && getBill().getId() != null && getBill().getId() != 0) {
 
             if (check()) {
+                return;
+            }
+
+            if (isRefundBill(getBill())) {
+                JsfUtil.addErrorMessage("This is a refund bill and cannot be cancelled here.");
                 return;
             }
 
@@ -2341,6 +2385,11 @@ public class InwardSearch implements Serializable {
         if (getBill() != null && getBill().getId() != null && getBill().getId() != 0) {
 
             if (check()) {
+                return;
+            }
+
+            if (isRefundBill(getBill())) {
+                JsfUtil.addErrorMessage("This is a refund bill and cannot be cancelled here.");
                 return;
             }
 
@@ -2460,6 +2509,16 @@ public class InwardSearch implements Serializable {
             if (check()) {
                 return true;
             }
+
+            if (isCancellationBill(bill)) {
+                JsfUtil.addErrorMessage("This is a cancellation bill and cannot be cancelled. To reverse it, take the payment again.");
+                return true;
+            }
+            if (isRefundBill(bill)) {
+                JsfUtil.addErrorMessage("This is a refund bill and cannot be cancelled here.");
+                return true;
+            }
+
 
             CancelledBill cb = createCancelBill();
             //Copy & paste
