@@ -25,11 +25,12 @@
                             </p:commandButton>
 
                             <p:commandButton
-                                value="Print"
+                                value="To Print"
                                 ajax="false"
-                                class="ui-button-primary m-1"
-                                icon="fa fa-print">
-                                <p:printer target="tbl1"></p:printer>
+                                class="ui-button-info m-1"
+                                icon="fa fa-print"
+                                disabled="#{empty inwardReportControllerBht.paymentBillDtosForDepartment}"
+                                action="/inward/reports/inward_payment_bill_list_department_dto_print?faces-redirect=true">
                             </p:commandButton>
                         </f:facet>
 
