@@ -3161,7 +3161,7 @@ public class CreditCompanyDueController implements Serializable {
     }
 
     /** One company's rows on the Inward Credit Access page, with its totals (admission-level totals count each admission once across the whole page). */
-    public static class CreditAccessGroup {
+    public static class CreditAccessGroup implements Serializable {
 
         private final Institution institution;
         private final List<CompanyDueRow> rows = new ArrayList<>();
@@ -4520,7 +4520,7 @@ public class CreditCompanyDueController implements Serializable {
     private final Map<Long, Institution> institutionsById = new HashMap<>();
 
     /** One company's share of one admission: committed and paid from its commitment bills. */
-    private static class CcCompanyFigures {
+    private static class CcCompanyFigures implements Serializable {
 
         private final Institution company;
         private double committed;
@@ -4538,7 +4538,7 @@ public class CreditCompanyDueController implements Serializable {
     }
 
     /** One row of the Inward CC Due Search: an admission and one company's figures. */
-    public static class CompanyDueRow {
+    public static class CompanyDueRow implements Serializable {
 
         private final PatientEncounter encounter;
         private final Institution company;
