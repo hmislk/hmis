@@ -202,7 +202,7 @@
                         </p:column>
                         <p:column headerText="Paid Amount" width="50px;">
                             <h:outputLabel
-                                    value="#{entry.key.finalBill.settledAmountByPatient + entry.key.finalBill.settledAmountBySponsor}">
+                                    value="#{creditCompanyDueController.getAdmissionPaid(entry.key)}">
                                 <f:convertNumber pattern="#,##0.00"/>
                             </h:outputLabel>
                             <f:facet name="footer">
@@ -212,14 +212,14 @@
                                 </h:outputLabel>
                             </f:facet>
                         </p:column>
-                        <p:column headerText="Excess Amount" width="50px;">
+                        <p:column headerText="Excess (Paid - Used)" width="50px;">
                             <h:outputLabel
-                                    value="#{ entry.key.finalBill.netTotal - entry.key.finalBill.settledAmountByPatient - entry.key.finalBill.settledAmountBySponsor}">
+                                    value="#{creditCompanyDueController.getAdmissionExcess(entry.key)}">
                                 <f:convertNumber pattern="#,##0.00"/>
                             </h:outputLabel>
                             <f:facet name="footer">
                                 <h:outputLabel
-                                        value="#{creditCompanyDueController.billed-(creditCompanyDueController.paidByCompany+creditCompanyDueController.paidByPatient)}">
+                                        value="#{creditCompanyDueController.paidByCompany+creditCompanyDueController.paidByPatient-creditCompanyDueController.billed}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
                             </f:facet>

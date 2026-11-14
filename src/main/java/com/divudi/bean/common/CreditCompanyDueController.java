@@ -1867,18 +1867,15 @@ public class CreditCompanyDueController implements Serializable {
                 return;
             }
 
-            updateSettledAmountsForIPByInwardFinalBillPaymentForCreditCompany(patientEncounters);
-
-            setBillPatientEncounterMap(getCreditCompanyBills(patientEncounters, "due", institution));
-            calculateCreditCompanyAmounts();
-
-            List<InstitutionBillEncounter> institutionEncounters = new ArrayList<>(
-                    InstitutionBillEncounter.createInstitutionBillEncounter(getBillPatientEncounterMap(), "due"));
+            // Company and patient figures from the current final bill's commitment bills and
+            // the patient payment bills, loaded once for the whole result (#25601).
+            List<InstitutionBillEncounter> institutionEncounters = buildDueRows(patientEncounters, institution);
 
             setBillInstitutionEncounterMap(InstitutionBillEncounter.createInstitutionBillEncounterMap(institutionEncounters));
             calculateCreditCompanyDueTotals();
 
-            setEncounterCreditCompanyMap(getEncounterCreditCompanies());
+            setEncounterCreditCompanyMap(getEncounterCreditCompanies(
+                    institutionEncounters.stream().map(InstitutionBillEncounter::getPatientEncounter).collect(Collectors.toList())));
         }, CreditReport.INWARD_CREDIT_DUE, sessionController.getLoggedUser());
     }
 
@@ -1918,7 +1915,8 @@ public class CreditCompanyDueController implements Serializable {
      * when the company, or the patient, paid more than was due (as the Credit Access page). The patient
      * excess is carried on the admission's first row only, so an admission with
      * two companies is not counted twice. With {@code includePatientExcess} an
-     * admission whose only excess is the patient's is listed too.
+     * admission whose only excess is the patient's is listed on its company row
+     * (admissions with no company commitment are not on these company pages).
      */
     private List<InstitutionBillEncounter> buildExcessRows(List<PatientEncounter> encounters,
             Institution companyFilter, boolean includePatientExcess) {
@@ -1968,6 +1966,63 @@ public class CreditCompanyDueController implements Serializable {
                 row.setPaidByCompany(f.paid);
                 row.setCompanyDue(companyBalance > 0 ? companyBalance : 0.0);
                 row.setCompanyExcess(companyExcess);
+                row.setPatientEncounter(pe);
+                row.setTotalPaidByCompanies(totalCompanyPaid);
+                row.setTotalDue(netTotal - (patientPaid + totalCompanyPaid));
+                row.setPatientGopAmount(netTotal - totalCommitted);
+                rows.add(row);
+            }
+        }
+        return rows;
+    }
+
+    /**
+     * Rows for the Due Search (Credit Company) page (#25601), one per commitment
+     * company of each admission, in the same shape as {@link #buildExcessRows}.
+     * An admission is listed on a company's row when that company still owes
+     * something or the patient still owes something (due is positive). The
+     * patient's balance is shown on every row of the admission but the page
+     * totals add only company columns, so nothing is counted twice.
+     */
+    private List<InstitutionBillEncounter> buildDueRows(List<PatientEncounter> encounters, Institution companyFilter) {
+        List<InstitutionBillEncounter> rows = new ArrayList<>();
+        if (encounters == null || encounters.isEmpty()) {
+            return rows;
+        }
+        loadCcFigures(encounters);
+        for (PatientEncounter pe : encounters) {
+            if (pe == null || pe.getFinalBill() == null) {
+                continue;
+            }
+            double netTotal = pe.getFinalBill().getNetTotal();
+            double patientPaid = getPatientPaid(pe);
+            double totalCommitted = getCcCommitted(pe);
+            double totalCompanyPaid = getCcPaid(pe);
+            double patientBalance = Math.round((netTotal - totalCommitted - patientPaid) * 100.0) / 100.0;
+            for (CcCompanyFigures f : ccCompanyFigures(pe)) {
+                if (f.company == null) {
+                    continue;
+                }
+                if (companyFilter != null && !isSameCompany(f.company, companyFilter)) {
+                    continue;
+                }
+                double companyBalance = Math.round((f.committed - f.paid) * 100.0) / 100.0;
+                if (!(companyBalance > 0 || patientBalance > 0)) {
+                    continue;
+                }
+                InstitutionBillEncounter row = new InstitutionBillEncounter();
+                row.setInstitution(f.company);
+                row.setBhtNo(pe.getBhtNo());
+                row.setDateOfDischarge(pe.getDateOfDischarge());
+                row.setPatient(pe.getPatient());
+                row.setNetTotal(netTotal);
+                row.setGopAmount(f.committed);
+                row.setPaidByPatient(patientPaid);
+                row.setPatientDue(patientBalance > 0 ? patientBalance : 0.0);
+                row.setPatientExcess(0.0);
+                row.setPaidByCompany(f.paid);
+                row.setCompanyDue(companyBalance > 0 ? companyBalance : 0.0);
+                row.setCompanyExcess(0.0);
                 row.setPatientEncounter(pe);
                 row.setTotalPaidByCompanies(totalCompanyPaid);
                 row.setTotalDue(netTotal - (patientPaid + totalCompanyPaid));
@@ -2581,26 +2636,45 @@ public class CreditCompanyDueController implements Serializable {
                 return;
             }
 
-            updateSettledAmountsForIPByInwardFinalBillPaymentForCreditCompany(patientEncounters);
-
-            setBillPatientEncounterMap(getCreditCompanyBills(patientEncounters, "excess", institution));
-            calculateCreditCompanyAmounts();
-
+            // Admission excess = paid (patient + companies) less used, from the commitment and
+            // payment bills; positive when more was paid than was due (#25601).
+            loadCcFigures(patientEncounters);
+            Map<PatientEncounter, List<Bill>> excessMap = new LinkedHashMap<>();
             billed = 0;
             paidByPatient = 0;
             paidByCompany = 0;
-            for (PatientEncounter p : getBillPatientEncounterMap().keySet()) {
+            for (PatientEncounter p : patientEncounters) {
+                if (p == null || p.getFinalBill() == null) {
+                    continue;
+                }
+                boolean onCompanyPage = false;
+                for (CcCompanyFigures f : ccCompanyFigures(p)) {
+                    if (institution == null || isSameCompany(f.company, institution)) {
+                        onCompanyPage = true;
+                        break;
+                    }
+                }
+                if (!onCompanyPage || getAdmissionExcess(p) <= 0) {
+                    continue;
+                }
+                excessMap.put(p, new ArrayList<>());
                 billed += p.getFinalBill().getNetTotal();
-                paidByPatient += p.getFinalBill().getSettledAmountByPatient();
-                paidByCompany += p.getFinalBill().getSettledAmountBySponsor();
+                paidByPatient += getPatientPaid(p);
+                paidByCompany += getCcPaid(p);
             }
+            setBillPatientEncounterMap(excessMap);
         }, FinancialReport.INWARD_CASH_EXCESS, sessionController.getLoggedUser());
     }
 
     // Map<bht, Map<Credit Company, Encounter Credit Company>>
     private Map<String, Map<String, EncounterCreditCompany>> getEncounterCreditCompanies() {
-        List<Long> patientEncounterIds = getBillPatientEncounterMap().keySet().stream()
+        return getEncounterCreditCompanies(getBillPatientEncounterMap().keySet());
+    }
+
+    private Map<String, Map<String, EncounterCreditCompany>> getEncounterCreditCompanies(java.util.Collection<PatientEncounter> encounters) {
+        List<Long> patientEncounterIds = encounters.stream()
                 .map(PatientEncounter::getId)
+                .distinct()
                 .collect(Collectors.toList());
 
         if (patientEncounterIds.isEmpty()) {
@@ -4816,6 +4890,19 @@ public class CreditCompanyDueController implements Serializable {
             return f[1];
         }
         return pe == null || pe.getFinalBill() == null ? 0.0 : pe.getFinalBill().getSettledAmountBySponsor();
+    }
+
+    /** Everything paid for this admission: patient money plus the companies' payments. */
+    public double getAdmissionPaid(PatientEncounter pe) {
+        return Math.round((getPatientPaid(pe) + getCcPaid(pe)) * 100.0) / 100.0;
+    }
+
+    /** Paid less used for the whole admission, to cents; positive when more was paid than the final bill. */
+    public double getAdmissionExcess(PatientEncounter pe) {
+        if (pe == null || pe.getFinalBill() == null) {
+            return 0.0;
+        }
+        return Math.round((getPatientPaid(pe) + getCcPaid(pe) - pe.getFinalBill().getNetTotal()) * 100.0) / 100.0;
     }
 
     /** Amount still owed by the credit companies for this admission. */
