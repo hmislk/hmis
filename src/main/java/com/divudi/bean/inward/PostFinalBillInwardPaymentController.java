@@ -82,6 +82,8 @@ public class PostFinalBillInwardPaymentController implements Serializable, Contr
     @EJB
     PaymentService paymentService;
     @EJB
+    private com.divudi.service.inward.InwardPaymentService inwardPaymentService;
+    @EJB
     CashTransactionBean cashTransactionBean;
     @EJB
     PatientFacade patientFacade;
@@ -614,16 +616,28 @@ public class PostFinalBillInwardPaymentController implements Serializable, Contr
             return;
         }
 
-        saveBill();
-        saveBillItem();
-
-        paymentService.createPayment(
-                current,
-                current.getPaymentMethod(),
-                paymentMethodData,
-                sessionController.getInstitution(),
-                sessionController.getDepartment(),
-                sessionController.getLoggedUser());
+        // Bill, bill item and Payment rows are saved in ONE transaction
+        // (#25641): if any step fails, nothing is saved. No drawer update,
+        // as before.
+        prepareBill();
+        try {
+            inwardPaymentService.savePaymentBillWithPayments(
+                    current,
+                    paymentMethodData,
+                    sessionController.getInstitution(),
+                    sessionController.getDepartment(),
+                    sessionController.getLoggedUser(),
+                    false);
+        } catch (RuntimeException e) {
+            // Rolled back: nothing was saved. Clear the id the failed attempt
+            // gave the bill, and reload deposit balances, so the user can submit again.
+            current.setId(null);
+            inwardPaymentService.reloadPatientDeposits(paymentMethodData);
+            Throwable cause = e instanceof javax.ejb.EJBException && e.getCause() != null ? e.getCause() : e;
+            String detail = cause.getMessage() != null ? " " + cause.getMessage() : "";
+            JsfUtil.addErrorMessage("Payment was not saved. Nothing has been recorded." + detail);
+            return;
+        }
 
         JsfUtil.addSuccessMessage("Payment Bill Saved");
         paymentMethod = null;
@@ -675,6 +689,13 @@ public class PostFinalBillInwardPaymentController implements Serializable, Contr
     }
 
     private void saveBill() {
+        prepareBill();
+        if (getCurrent().getId() == null) {
+            getBilledBillFacade().create(getCurrent());
+        }
+    }
+
+    private void prepareBill() {
         getCurrent().setInstitution(getSessionController().getInstitution());
         getCurrent().setDepartment(getSessionController().getDepartment());
         getCurrent().setBillType(BillType.PostFinalBillInwardPayment);
@@ -703,10 +724,6 @@ public class PostFinalBillInwardPaymentController implements Serializable, Contr
         getCurrent().setCreatedAt(new Date());
         getCurrent().setCreater(getSessionController().getLoggedUser());
         getCurrent().setComments(comment);
-
-        if (getCurrent().getId() == null) {
-            getBilledBillFacade().create(getCurrent());
-        }
     }
 
     /**
