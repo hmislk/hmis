@@ -12,7 +12,7 @@
             <ui:define name="admin">
                 <h:form>
                     <p:panel header="Search Bills" >
-                         <f:facet name="header">
+                        <f:facet name="header">
                             <h:outputLabel value="Inward Payments Due Search"/>
                             <p:commandButton value="Back" icon="fas fa-arrow-left" class="ui-button-warning" style="float: right;" action="/payments/pay_index?faces-redirect=true" ajax="false"/>     
                         </f:facet>
@@ -34,8 +34,8 @@
                                     <p:dataExporter type="xlsx" target="tblFee" fileName="Detailed_Transfer_Listing"  />
                                 </p:commandButton>
                                 <p:commandButton ajax="false" value="Print" icon="fa-solid fa-print" class="w-100 ui-button-info my-1">
-                                <p:printer target="tblFee" />
-                            </p:commandButton>
+                                    <p:printer target="tblFee" />
+                                </p:commandButton>
                                 <h:outputLabel value="Bill No"/>
                                 <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.billNo}" class="w-100 my-1"/>
                                 <h:outputLabel value="BHT No"/>
@@ -45,9 +45,39 @@
                                 <h:outputLabel value="MRN / PHN No"/>
                                 <p:inputText autocomplete="off" value="#{searchController.searchKeyword.number}" class="w-100 my-1"/>
                                 <h:outputLabel value="Speciality"/>
-                                <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.speciality}" class="w-100 my-1"/>
-                                <h:outputLabel value="Doctor Name"/> 
-                                <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.staffName}" class="w-100 my-1"/>
+                                <p:autoComplete 
+                                    id="acSpeciality" 
+                                    forceSelection="true"
+                                    value="#{searchController.searchKeyword.speciality}"
+                                    completeMethod="#{specialityController.completeSpecialityNames}"
+                                    minQueryLength="3" 
+                                    maxResults="15"
+                                    class="w-100 my-1" 
+                                    inputStyleClass="w-100">
+                                    <!-- send the Speciality to the server so the Doctor Name list is limited to it -->
+                                    <p:ajax event="itemSelect" process="@this"/>
+                                    <p:ajax event="change" process="@this"/>
+                                </p:autoComplete>
+                                <h:outputLabel value="Doctor Name"/>
+                                <p:autoComplete 
+                                    id="acDoctor" 
+                                    forceSelection="true"
+                                    value="#{searchController.searchKeyword.staffName}"
+                                    completeMethod="#{searchController.completeStaffForSearchKeywordSpeciality}"
+                                    var="dr" 
+                                    itemLabel="#{dr.getClass().simpleName eq 'String' ? dr : dr.person.name}"
+                                    itemValue="#{dr.person.name}"
+                                    minQueryLength="3" 
+                                    maxResults="20"
+                                    class="w-100 my-1" 
+                                    inputStyleClass="w-100">
+                                    <p:column headerText="Doctor Name" style="padding: 6px;">
+                                        <h:outputText value="#{dr.person.name}"/>
+                                    </p:column>
+                                    <p:column headerText="Speciality" style="padding: 6px;">
+                                        <h:outputText value="#{dr.speciality.name}"/>
+                                    </p:column>
+                                </p:autoComplete>
                                 <h:outputLabel value="Service Name"/> 
                                 <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.itemName}" class="w-100 my-1"/>
                                 <h:outputLabel value="Charges"/>
@@ -172,7 +202,7 @@
 
 
                         <p:defaultCommand target="btnSearch" />
-                        
+
 
 
 
