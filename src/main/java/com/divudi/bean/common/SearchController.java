@@ -17612,12 +17612,8 @@ public class SearchController implements Serializable {
     public String navigateToCancelPurchaseOrder() {
         grnReturnWorkflowController.setActiveIndex(2);
         makeNull();
-        Calendar c1 = Calendar.getInstance();
-        c1.set(Calendar.MONTH, c1.get(Calendar.MONTH) - 2);
-        fromDate = c1.getTime();
-        Calendar c2 = Calendar.getInstance();
-        c2.set(Calendar.MONTH, c2.get(Calendar.MONTH) - 1);
-        toDate = c2.getTime();
+        fromDate = CommonFunctions.getStartOfMonth();
+        toDate = CommonFunctions.getEndOfDay();
         return "/pharmacy/pharmacy_purhcase_order_list_to_cancel?faces-redirect=true";
     }
 
