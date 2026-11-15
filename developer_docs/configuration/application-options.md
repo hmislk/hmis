@@ -176,3 +176,15 @@ All rules live in `AdmissionGuardianRules` (`com.divudi.service.inward`) and ret
 | `Inward Admission - Guardian Checks Treat Whitespace-Only Values as Missing` | Boolean | `false` | Uses `trim()` for guardian name, NIC, address, mobile and home phone in every place the guardian checks run. Off keeps the original `isEmpty()` behaviour (a single space passes). |
 
 **Shared database, two servers:** each server caches config in memory, so a key changed through one server reaches the other only after **Reload Config** (Application Options page) or its next cache reload. A key with no stored row is created with the default of whichever server reads it first; `Guardian Home Phone Number is Required in Patient Admission` defaulted to `true` in older deployed code and is `false` in current `development`. Before enabling the guardian check at a hospital, save every per-field row explicitly.
+
+## Inward Admission: BHT Number Series
+
+BHT counters are `AdmissionNumber` rows, drawn by `BillNumberGenerator` (`fetchNextAdmissionNumber`, `peekNextAdmissionNumber`, `resetAdmissionNumber`, `returnAdmissionNumber`). The text of the number is built in `InwardBeanController.formatBhtText`. See issue #22142.
+
+| Key | Type | Default | Description |
+| --- | --- | --- | --- |
+| `Generate Separate BHT Number Series for Each Institution` | Boolean | `false` | Existing key, unchanged. One counter per institution, with the institution code as a prefix. |
+| `BHT Number Series Is Shared Across Admission Types` | Boolean | `false` | When true, every admission type draws from one counter (per institution when the key above is on). The shared counter is the `AdmissionNumber` row with no admission type and no enum. When it does not exist yet it starts from the highest existing counter in the same scope (so numbers never go lower), or the admission count if there is none. The per-type rows are left in place and unused while the key is on. Turning it off returns to the per-type rows, which stay at their old values. |
+| `Reset BHT Number Series Every Year` | Boolean | `false` | When true, the counter key includes the current calendar year (`AdmissionNumber.counterYear`, nullable; null is the single never-resetting series). A year with no counter row starts from the admissions already created in that year (0 in a new year), so the first number is 1. The admission type's addition to count is not applied. Cancelling an admission returns its number to that admission's own year. This key changes the counter only; to show the year in the number, also turn on the existing Bht Number With Year preference (`bhtNumberWithYear`). |
+
+The two new keys combine: shared plus yearly gives one series per year for all admission types. Both are read on every draw, so a change takes effect after the config cache reloads. The `counterYear` column is a nullable schema addition, added by Add Missing Fields; no data migration script is needed.

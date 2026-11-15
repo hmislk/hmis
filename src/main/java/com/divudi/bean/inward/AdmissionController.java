@@ -301,6 +301,24 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
                 OptionScope.APPLICATION
         ));
 
+        configOptionApplicationController.getBooleanValueByKey(
+                "BHT Number Series Is Shared Across Admission Types", false);
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "BHT Number Series Is Shared Across Admission Types",
+                "When enabled, all admission types draw BHT numbers from one series (per institution when each institution has its own series); the shared series starts from the highest existing counter so numbers never go lower (default false)",
+                "inward/inward_admission",
+                OptionScope.APPLICATION
+        ));
+
+        configOptionApplicationController.getBooleanValueByKey(
+                "Reset BHT Number Series Every Year", false);
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Reset BHT Number Series Every Year",
+                "When enabled, the BHT number series restarts at 1 each calendar year, e.g. 2026/1, 2026/2, then 2027/1. Use with the preference that adds the year to the BHT number (default false)",
+                "inward/inward_admission",
+                OptionScope.APPLICATION
+        ));
+
         metadata.addConfigOption(new ConfigOptionInfo(
                 "Patient admission and room assignment are simultaneous processes.",
                 "Room is assigned at the time of admission (default true)",
