@@ -1602,6 +1602,12 @@ public class InwardReportControllerBht implements Serializable {
             int nonRowspanColumnCount = columnKeys.size()
                     - (bhtVisible ? 1 : 0) - (admittedVisible ? 1 : 0)
                     - (dischargedVisible ? 1 : 0) - (finalBillVisible ? 1 : 0);
+            // Columns that get one cell per fee row and per Total row. If all
+            // are hidden, a consultant takes a single row (or none, when
+            // Consultant and Speciality are hidden too).
+            boolean feeColumnsVisible = addedFeeDateVisible || addedFeeValueVisible || paidDateVisible
+                    || paidBillNumberVisible || commentsVisible || paidFeeValueVisible;
+            int consultantBlockRows = (consultantVisible || specialityVisible) ? 1 : 0;
 
             Map<String, Float> columnWidths = new HashMap<>();
             columnWidths.put("bhtNo", 3f);
@@ -1632,8 +1638,17 @@ public class InwardReportControllerBht implements Serializable {
             }
 
             for (InwardProfessionalPaymentAdmissionGroupDTO group : professionalPaymentReportGroups) {
-                int admissionSpan = detailedAdmissionRowSpan(group);
                 List<InwardProfessionalPaymentDetailRowDTO> detailedRows = group.getDetailedRows();
+                // The PDF keeps a Total row per consultant, which the on-screen
+                // table does not have, so the DTO row spans (screen layout) are
+                // one row short per consultant. Count the PDF's own rows here.
+                int admissionSpan = 0;
+                if (detailedRows != null) {
+                    for (InwardProfessionalPaymentDetailRowDTO detail : detailedRows) {
+                        admissionSpan += feeColumnsVisible ? detailedConsultantBlockRowSpan(detail) + 1 : consultantBlockRows;
+                    }
+                }
+                admissionSpan = Math.max(admissionSpan, 1);
 
                 if (bhtVisible) {
                     PdfPCell bhtCell = new PdfPCell(new Phrase(group.getBhtNo() != null ? group.getBhtNo() : "", normalFont));
@@ -1664,8 +1679,9 @@ public class InwardReportControllerBht implements Serializable {
                 }
 
                 for (InwardProfessionalPaymentDetailRowDTO detail : detailedRows) {
-                    int blockSpan = detailedConsultantBlockRowSpan(detail);
-                    int dataRows = Math.max(detail.rowCount(), 1);
+                    // Fee rows plus the Total row below.
+                    int blockSpan = feeColumnsVisible ? detailedConsultantBlockRowSpan(detail) + 1 : 1;
+                    int dataRows = feeColumnsVisible ? Math.max(detail.rowCount(), 1) : 0;
 
                     if (consultantVisible) {
                         PdfPCell consultantCell = new PdfPCell(new Phrase(detail.getConsultantName() != null ? detail.getConsultantName() : "", normalFont));
