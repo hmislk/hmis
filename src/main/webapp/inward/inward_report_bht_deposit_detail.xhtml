@@ -26,8 +26,9 @@
                             }
                             .printOnlyReport .printSubTitle {
                                 text-align: center;
-                                margin-bottom: 6px;
+                                margin-bottom: 2px;
                             }
+                            .printOnlyReport table { margin-top: 6px; }
                             .printOnlyReport table {
                                 width: 99.5%;
                                 max-width: 99.5%;
@@ -432,6 +433,14 @@
                                 </h:outputText>
                                 <h:outputText value=" | Date Basis: #{bhtDepositDetailReportController.dateBasis eq 'admissionDate' ? 'Admission Date' : (bhtDepositDetailReportController.dateBasis eq 'paymentDate' ? 'Payment Date' : 'Discharge Date')}" />
                                 <h:outputText value=" | Report Type: #{bhtDepositDetailReportController.reportType eq 'DEPOSIT' ? 'Inpatient Deposits' : (bhtDepositDetailReportController.reportType eq 'PAYMENT' ? 'Inpatient Payment' : (bhtDepositDetailReportController.reportType eq 'POST_FINAL' ? 'Post Final Bill Payments' : 'All'))}" />
+                            </div>
+                            <div class="printSubTitle">
+                                <h:outputText value="Admission Status: #{bhtDepositDetailReportController.admissionStatus != null ? bhtDepositDetailReportController.admissionStatus.label : 'All'}" />
+                                <h:outputText value=" | Admission Type: #{bhtDepositDetailReportController.admissionType != null ? bhtDepositDetailReportController.admissionType.name : 'All'}" />
+                                <h:outputText value=" | Payment Method: #{bhtDepositDetailReportController.paymentMethod != null ? bhtDepositDetailReportController.paymentMethod.label : 'All Methods'}" />
+                                <h:outputText value=" | Institution: #{bhtDepositDetailReportController.institution != null ? bhtDepositDetailReportController.institution.name : 'All Institutions'}" />
+                                <h:outputText value=" | Site: #{bhtDepositDetailReportController.site != null ? bhtDepositDetailReportController.site.name : 'All Sites'}" />
+                                <h:outputText value=" | Department: #{bhtDepositDetailReportController.department != null ? bhtDepositDetailReportController.department.name : 'All Departments'}" />
                             </div>
                             <table>
                                 <thead>
