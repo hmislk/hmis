@@ -235,7 +235,7 @@ public class PharmacyBatchChangeService {
         }
         bill.setDeptId(deptId);
         if (insPrefixIns) {
-            bill.setInsId(billNumberGenerator.institutionBillNumberGeneratorYearlyWithPrefixInsYearCountInstitutionWide(dept, BillTypeAtomic.PHARMACY_STOCK_ADJUSTMENT));
+            bill.setInsId(deptPrefixIns ? deptId : billNumberGenerator.institutionBillNumberGeneratorYearlyWithPrefixInsYearCountInstitutionWide(dept, BillTypeAtomic.PHARMACY_STOCK_ADJUSTMENT));
         } else {
             bill.setInsId(deptId);
         }

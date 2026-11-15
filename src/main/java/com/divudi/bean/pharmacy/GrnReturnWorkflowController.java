@@ -1041,7 +1041,7 @@ public class GrnReturnWorkflowController implements Serializable {
 
             // Independent institution ID generation
             if (billNumberGenerationStrategyForInstitutionIdIsPrefixInsYearCount) {
-                billId = billNumberBean.institutionBillNumberGeneratorYearlyWithPrefixInsYearCountInstitutionWide(sessionController.getDepartment(), BillTypeAtomic.PHARMACY_GRN_RETURN);
+                billId = (billNumberGenerationStrategyForDepartmentIdIsPrefixInsYearCount) ? currentBill.getDeptId() : billNumberBean.institutionBillNumberGeneratorYearlyWithPrefixInsYearCountInstitutionWide(sessionController.getDepartment(), BillTypeAtomic.PHARMACY_GRN_RETURN);
                 currentBill.setInsId(billId);
             } else {
                 String billNumber = billNumberBean.departmentBillNumberGeneratorYearly(
