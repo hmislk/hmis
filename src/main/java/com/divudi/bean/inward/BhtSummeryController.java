@@ -34,6 +34,7 @@ import com.divudi.core.data.inward.AdmissionTypeEnum;
 import com.divudi.core.data.inward.InwardChargeType;
 import static com.divudi.core.data.inward.InwardChargeType.RoomCharges;
 import com.divudi.ejb.BillNumberGenerator;
+import com.divudi.ejb.FinalBillLockBean;
 
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.BillFee;
@@ -157,6 +158,8 @@ public class BhtSummeryController implements Serializable {
 
     @EJB
     private BillNumberGenerator billNumberBean;
+    @EJB
+    private FinalBillLockBean finalBillLockBean;
     @Inject
     WebUserController webUserController;
     @Inject
@@ -2921,7 +2924,7 @@ public class BhtSummeryController implements Serializable {
         // saveProvisionalBill() for a bill that is about to become BillType.InwardProvisionalBill,
         // not a final bill — flipping confirmedFinalBill there would wrongly unconfirm the real
         // confirmed version on every provisional save.
-        boolean saved = getBillNumberBean().withFinalBillVersionLock(getPatientEncounter(), () -> {
+        boolean saved = getFinalBillLockBean().withFinalBillVersionLock(getPatientEncounter(), () -> {
             if (getCurrent().getId() != null || (!creatingNewVersion && isFinalizedInDatabase())) {
                 return false;
             }
@@ -2947,7 +2950,7 @@ public class BhtSummeryController implements Serializable {
         // The last write of this bill, under the lock: every edit(getCurrent())
         // re-saves the session's confirmed flag, so a later one could undo the
         // unconfirming done by a concurrent save of another version.
-        getBillNumberBean().withFinalBillVersionLock(getPatientEncounter(), () -> {
+        getFinalBillLockBean().withFinalBillVersionLock(getPatientEncounter(), () -> {
             getCurrent().setReferenceBill(originalBill);
             getInwardBean().unconfirmOtherFinalBills(getPatientEncounter(), getCurrent());
             getBillFacade().edit(getCurrent());
@@ -3040,7 +3043,7 @@ public class BhtSummeryController implements Serializable {
 
         setPatientEncounter(b.getPatientEncounter());
 
-        boolean settled = getBillNumberBean().withFinalBillVersionLock(getPatientEncounter(), () -> convertProvisionalToFinalBill(b));
+        boolean settled = getFinalBillLockBean().withFinalBillVersionLock(getPatientEncounter(), () -> convertProvisionalToFinalBill(b));
         if (!settled) {
             JsfUtil.addErrorMessage(PAYMENT_FINALIZED_MESSAGE);
             return "";
@@ -3740,7 +3743,7 @@ public class BhtSummeryController implements Serializable {
 
         Map<String, Object> before = new LinkedHashMap<>();
         // Under the lock, so a final bill can't be saved while the discharge is cancelled.
-        boolean cancelled = getBillNumberBean().withFinalBillVersionLock(getPatientEncounter(), () -> {
+        boolean cancelled = getFinalBillLockBean().withFinalBillVersionLock(getPatientEncounter(), () -> {
             if (isFinalizedInDatabase()) {
                 return false;
             }
@@ -4224,7 +4227,7 @@ public class BhtSummeryController implements Serializable {
         // (held for the read-count-then-write span, not just the read) so two
         // concurrent final-bill saves for the same admission cannot both compute
         // the same serial before either insert commits.
-        getBillNumberBean().withFinalBillVersionLock(patientEncounter, () -> {
+        getFinalBillLockBean().withFinalBillVersionLock(patientEncounter, () -> {
             int versionSerial = getBillNumberBean().computeNextFinalBillVersionSerial(patientEncounter);
             getCurrent().setFinalBillVersionSerial(versionSerial);
             getCurrent().setDeptId(getBillNumberBean().departmentBillNumberGenerator(patientEncounter.getDepartment(), BillType.InwardFinalBill, BillClassType.BilledBill, BillNumberSuffix.INWFINAL) + "/" + versionSerial);
@@ -6738,6 +6741,14 @@ public class BhtSummeryController implements Serializable {
 
     public void setBillNumberBean(BillNumberGenerator billNumberBean) {
         this.billNumberBean = billNumberBean;
+    }
+
+    public FinalBillLockBean getFinalBillLockBean() {
+        return finalBillLockBean;
+    }
+
+    public void setFinalBillLockBean(FinalBillLockBean finalBillLockBean) {
+        this.finalBillLockBean = finalBillLockBean;
     }
 
     public DischargeController getDischargeController() {

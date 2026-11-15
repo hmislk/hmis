@@ -22,6 +22,7 @@ import com.divudi.core.data.dataStructure.PaymentMethodData;
 import com.divudi.core.entity.ApiKey;
 import com.divudi.core.entity.WebUser;
 import com.divudi.ejb.BillNumberGenerator;
+import com.divudi.ejb.FinalBillLockBean;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.BillItem;
 import com.divudi.core.entity.BilledBill;
@@ -81,6 +82,8 @@ public class ApiInward {
     InstitutionFacade institutionFacade;
     @EJB
     BillNumberGenerator billNumberGenerator;
+    @EJB
+    FinalBillLockBean finalBillLockBean;
     @EJB
     PaymentService paymentService;
 
@@ -611,7 +614,7 @@ public class ApiInward {
         }
         // Check and save under the final bill lock, so a final bill cancelled
         // between the check and the save cannot take this payment (#25533).
-        return getBillNumberGenerator().withFinalBillVersionLockOutsideTransaction(patientEncounter, () -> {
+        return getFinalBillLockBean().withFinalBillVersionLockOutsideTransaction(patientEncounter, () -> {
             if (hasCancelledFinalBill(patientEncounter)) {
                 return null;
             }
@@ -654,7 +657,7 @@ public class ApiInward {
             return null;
         }
         // Same as payWithPaymentRecord: check and save under the final bill lock (#25533).
-        return getBillNumberGenerator().withFinalBillVersionLockOutsideTransaction(patientEncounter, () -> {
+        return getFinalBillLockBean().withFinalBillVersionLockOutsideTransaction(patientEncounter, () -> {
             if (hasCancelledFinalBill(patientEncounter)) {
                 return null;
             }
@@ -887,6 +890,14 @@ public class ApiInward {
 
     public BillNumberGenerator getBillNumberGenerator() {
         return billNumberGenerator;
+    }
+
+    public FinalBillLockBean getFinalBillLockBean() {
+        return finalBillLockBean;
+    }
+
+    public void setFinalBillLockBean(FinalBillLockBean finalBillLockBean) {
+        this.finalBillLockBean = finalBillLockBean;
     }
 
     public BilledBillFacade getBilledBillFacade() {

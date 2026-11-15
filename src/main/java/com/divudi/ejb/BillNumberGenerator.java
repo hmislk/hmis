@@ -74,6 +74,8 @@ public class BillNumberGenerator {
     AdmissionNumberFacade admissionNumberFacade;
     @EJB
     AdmissionFacade admissionFacade;
+    @EJB
+    private FinalBillLockBean finalBillLockBean;
 
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
@@ -1382,6 +1384,9 @@ public class BillNumberGenerator {
      * shared across different users' sessions.
      */
     public <T> T withFinalBillVersionLock(com.divudi.core.entity.PatientEncounter pe, java.util.function.Supplier<T> action) {
+        if (finalBillLockBean != null) {
+            return finalBillLockBean.withFinalBillVersionLock(pe, action);
+        }
         String lockKey = "finalBillVersionSerial-" + pe.getId();
         ReentrantLock lock = lockMap.computeIfAbsent(lockKey, k -> new ReentrantLock());
         lock.lock();
@@ -1401,6 +1406,9 @@ public class BillNumberGenerator {
      */
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
     public <T> T withFinalBillVersionLockOutsideTransaction(com.divudi.core.entity.PatientEncounter pe, java.util.function.Supplier<T> action) {
+        if (finalBillLockBean != null) {
+            return finalBillLockBean.withFinalBillVersionLockOutsideTransaction(pe, action);
+        }
         String lockKey = "finalBillVersionSerial-" + pe.getId();
         ReentrantLock lock = lockMap.computeIfAbsent(lockKey, k -> new ReentrantLock());
         lock.lock();
