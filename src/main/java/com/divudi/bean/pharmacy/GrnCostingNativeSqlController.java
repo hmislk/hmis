@@ -886,7 +886,7 @@ public class GrnCostingNativeSqlController implements Serializable {
 
         String insId;
         if (stratInsIdInsYear) {
-            insId = billNumberBean.institutionBillNumberGeneratorYearlyWithPrefixInsYearCountInstitutionWide(
+            insId = (stratInsYear) ? deptId : billNumberBean.institutionBillNumberGeneratorYearlyWithPrefixInsYearCountInstitutionWide(
                     sessionController.getDepartment(), BillTypeAtomic.PHARMACY_GRN);
         } else {
             if (stratInsDeptYear || stratInsYear) {

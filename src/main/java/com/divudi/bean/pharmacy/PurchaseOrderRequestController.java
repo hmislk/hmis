@@ -943,7 +943,7 @@ public class PurchaseOrderRequestController implements Serializable {
 
         if (billNumberGenerationStrategyForInstitutionIdIsPrefixInsYearCount) {
             if (getCurrentBill().getInsId() == null || getCurrentBill().getInsId().trim().equals("")) {
-                String insId = billNumberBean.institutionBillNumberGeneratorYearlyWithPrefixInsYearCountInstitutionWide(getSessionController().getDepartment(), BillTypeAtomic.PHARMACY_ORDER_PRE);
+                String insId = (billNumberGenerationStrategyForDepartmentIdIsPrefixInsYearCount) ? getCurrentBill().getDeptId() : billNumberBean.institutionBillNumberGeneratorYearlyWithPrefixInsYearCountInstitutionWide(getSessionController().getDepartment(), BillTypeAtomic.PHARMACY_ORDER_PRE);
                 getCurrentBill().setInsId(insId);
             }
         } else {

@@ -702,7 +702,7 @@ public class PharmacyAdjustmentController implements Serializable {
 
         if (billNumberGenerationStrategyForInstitutionIdIsPrefixInsYearCount) {
             if (getDeptAdjustmentPreBill().getInsId() == null || getDeptAdjustmentPreBill().getInsId().trim().equals("")) {
-                String insId = getBillNumberBean().institutionBillNumberGeneratorYearlyWithPrefixInsYearCountInstitutionWide(dept, BillTypeAtomic.PHARMACY_STOCK_ADJUSTMENT);
+                String insId = (billNumberGenerationStrategyForDepartmentIdIsPrefixInsYearCount) ? getDeptAdjustmentPreBill().getDeptId() : getBillNumberBean().institutionBillNumberGeneratorYearlyWithPrefixInsYearCountInstitutionWide(dept, BillTypeAtomic.PHARMACY_STOCK_ADJUSTMENT);
                 getDeptAdjustmentPreBill().setInsId(insId);
             }
         } else {
