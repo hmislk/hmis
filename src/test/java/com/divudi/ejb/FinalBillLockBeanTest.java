@@ -10,6 +10,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Supplier;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -49,7 +50,7 @@ public class FinalBillLockBeanTest {
             lockBean.withFinalBillVersionLock(admissionA, () -> {
                 aStarted.countDown();
                 try {
-                    releaseA.await(5, TimeUnit.SECONDS);
+                    releaseA.await(30, TimeUnit.SECONDS);
                 } catch (InterruptedException ignored) {
                 }
                 return null;
@@ -72,12 +73,14 @@ public class FinalBillLockBeanTest {
         threadA.start();
         threadB.start();
 
-        assertTrue(bFinished.await(5, TimeUnit.SECONDS), "Admission B should finish without waiting for A to release");
-        assertTrue(bCompletedWhileAHeld.get(), "Admission B must complete while Admission A is still holding its lock");
-
-        releaseA.countDown();
-        threadA.join(2000);
-        threadB.join(2000);
+        try {
+            assertTrue(bFinished.await(5, TimeUnit.SECONDS), "Admission B should finish without waiting for A to release");
+            assertTrue(bCompletedWhileAHeld.get(), "Admission B must complete while Admission A is still holding its lock");
+        } finally {
+            releaseA.countDown();
+            threadA.join(3000);
+            threadB.join(3000);
+        }
     }
 
     @Test
@@ -119,15 +122,17 @@ public class FinalBillLockBeanTest {
         thread1.start();
         thread2.start();
 
-        assertTrue(firstEntered.await(5, TimeUnit.SECONDS));
-        // Give thread 2 time to attempt acquiring lock
-        Thread.sleep(100);
-        assertFalse(secondEnteredWhileFirstHeld.get(), "Second thread must NOT enter while first holds the lock");
-        assertFalse(secondFinished.get(), "Second thread must be waiting");
-
-        releaseFirst.countDown();
-        thread1.join(2000);
-        thread2.join(2000);
+        try {
+            assertTrue(firstEntered.await(5, TimeUnit.SECONDS));
+            // Give thread 2 time to attempt acquiring lock
+            Thread.sleep(100);
+            assertFalse(secondEnteredWhileFirstHeld.get(), "Second thread must NOT enter while first holds the lock");
+            assertFalse(secondFinished.get(), "Second thread must be waiting");
+        } finally {
+            releaseFirst.countDown();
+            thread1.join(3000);
+            thread2.join(3000);
+        }
 
         assertTrue(secondFinished.get(), "Second thread should finish after first releases");
     }
@@ -147,7 +152,7 @@ public class FinalBillLockBeanTest {
                 counter.incrementAndGet();
                 insideEntered.countDown();
                 try {
-                    releaseInside.await(5, TimeUnit.SECONDS);
+                    releaseInside.await(30, TimeUnit.SECONDS);
                 } catch (InterruptedException ignored) {
                 }
                 return null;
@@ -171,14 +176,16 @@ public class FinalBillLockBeanTest {
         t1.start();
         t2.start();
 
-        assertTrue(insideEntered.await(5, TimeUnit.SECONDS));
-        Thread.sleep(100);
-        assertFalse(outsideEnteredPrematurely.get());
-        assertEquals(1, counter.get());
-
-        releaseInside.countDown();
-        t1.join(2000);
-        t2.join(2000);
+        try {
+            assertTrue(insideEntered.await(5, TimeUnit.SECONDS));
+            Thread.sleep(100);
+            assertFalse(outsideEnteredPrematurely.get());
+            assertEquals(1, counter.get());
+        } finally {
+            releaseInside.countDown();
+            t1.join(3000);
+            t2.join(3000);
+        }
 
         assertEquals(2, counter.get());
     }
@@ -186,16 +193,39 @@ public class FinalBillLockBeanTest {
     @Test
     @DisplayName("BillNumberGenerator delegates to FinalBillLockBean")
     public void testBillNumberGeneratorDelegatesToFinalBillLockBean() throws Exception {
+        AtomicBoolean standardDelegated = new AtomicBoolean(false);
+        AtomicBoolean outsideDelegated = new AtomicBoolean(false);
+        PatientEncounter pe = createEncounter(505L);
+
+        FinalBillLockBean recordingBean = new FinalBillLockBean() {
+            @Override
+            public <T> T withFinalBillVersionLock(PatientEncounter encounter, Supplier<T> action) {
+                if (encounter == pe) {
+                    standardDelegated.set(true);
+                }
+                return action.get();
+            }
+
+            @Override
+            public <T> T withFinalBillVersionLockOutsideTransaction(PatientEncounter encounter, Supplier<T> action) {
+                if (encounter == pe) {
+                    outsideDelegated.set(true);
+                }
+                return action.get();
+            }
+        };
+
         BillNumberGenerator generator = new BillNumberGenerator();
         Field field = BillNumberGenerator.class.getDeclaredField("finalBillLockBean");
         field.setAccessible(true);
-        field.set(generator, lockBean);
+        field.set(generator, recordingBean);
 
-        PatientEncounter pe = createEncounter(505L);
         String result = generator.withFinalBillVersionLock(pe, () -> "delegated-ok");
         assertEquals("delegated-ok", result);
+        assertTrue(standardDelegated.get(), "BillNumberGenerator must invoke FinalBillLockBean.withFinalBillVersionLock");
 
         String resultOutside = generator.withFinalBillVersionLockOutsideTransaction(pe, () -> "delegated-outside-ok");
         assertEquals("delegated-outside-ok", resultOutside);
+        assertTrue(outsideDelegated.get(), "BillNumberGenerator must invoke FinalBillLockBean.withFinalBillVersionLockOutsideTransaction");
     }
 }
