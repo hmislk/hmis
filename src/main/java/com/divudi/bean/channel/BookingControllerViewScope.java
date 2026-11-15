@@ -681,6 +681,12 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             return;
         }
 
+        String totalMismatch = BookingController.rescheduleTotalMismatchMessage(selectedBillSession, getSelectedSessionInstanceForRechedule());
+        if (totalMismatch != null) {
+            JsfUtil.addErrorMessage(totalMismatch);
+            return;
+        }
+
         if (getSelectedSessionInstanceForRechedule().getMaxNo() != 0 && configOptionApplicationController.getBooleanValueByKey("Limited appoinments session can't get appoinement more than max amount.")) {
             if (getSelectedSessionInstanceForRechedule().getBookedPatientCount() != null) {
                 int maxNo = getSelectedSessionInstanceForRechedule().getMaxNo();

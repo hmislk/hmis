@@ -652,6 +652,37 @@ public class BookingController implements Serializable, ControllerWithPatient, C
         sessionInstanceByDoctor = sessionInstanceFacade.findByJpql(jpql.toString(), m, TemporalType.DATE);
     }
 
+    /**
+     * A reschedule must not change what the patient was charged. Returns an
+     * error message when the target session's total differs from the source
+     * session's total (the booking bill is charged the originating session's
+     * total), otherwise null.
+     */
+    public static String rescheduleTotalMismatchMessage(BillSession from, SessionInstance to) {
+        if (from == null || to == null || from.getSessionInstance() == null) {
+            return null;
+        }
+        double fromTotal = sessionTotal(from.getSessionInstance());
+        double toTotal = sessionTotal(to);
+        if (Math.abs(fromTotal - toTotal) > 0.005) {
+            return "Cannot reschedule: the selected session's fee total (" + String.format("%.2f", toTotal)
+                    + ") differs from the current session's fee total (" + String.format("%.2f", fromTotal)
+                    + "). Choose a session with the same total.";
+        }
+        return null;
+    }
+
+    private static double sessionTotal(SessionInstance si) {
+        Double t = null;
+        if (si.getOriginatingSession() != null) {
+            t = si.getOriginatingSession().getTotal();
+        }
+        if (t == null) {
+            t = si.getTotal();
+        }
+        return t == null ? 0.0 : t;
+    }
+
     public void sessionReschedule() {
         if (getSelectedSessionInstanceForRechedule() == null) {
             JsfUtil.addErrorMessage("Pleace Select Session For Rechedule");
@@ -660,6 +691,12 @@ public class BookingController implements Serializable, ControllerWithPatient, C
 
         if (selectedBillSession == null) {
             JsfUtil.addErrorMessage("Bill session is not valid !");
+            return;
+        }
+
+        String totalMismatch = BookingController.rescheduleTotalMismatchMessage(selectedBillSession, getSelectedSessionInstanceForRechedule());
+        if (totalMismatch != null) {
+            JsfUtil.addErrorMessage(totalMismatch);
             return;
         }
 
