@@ -24533,6 +24533,12 @@ public class SearchController implements Serializable {
         this.staff = staff;
     }
 
+    // Doctor Name suggestions for the search keyword filters: limited to the
+    // Speciality filter when it is filled, all doctors when it is empty
+    public List<Staff> completeStaffForSearchKeywordSpeciality(String query) {
+        return staffController.completeStaffByNameAndSpecialityName(query, getSearchKeyword().getSpeciality());
+    }
+
     // fetch staff list for filtering based on speciality change in the search criteria
     public List<Staff> getstaffListBySpeciality() {
         if (staffListBySpeciality == null) {
