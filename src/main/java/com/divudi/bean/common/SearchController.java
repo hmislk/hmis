@@ -8652,18 +8652,18 @@ public class SearchController implements Serializable {
         }
 
         if (getSearchKeyword().getSpeciality() != null && !getSearchKeyword().getSpeciality().trim().equals("")) {
-            sql += " and  ((b.staff.speciality.name) like :special )";
-            temMap.put("special", "%" + getSearchKeyword().getSpeciality().trim().toUpperCase() + "%");
+            sql += " and  b.staff.speciality.name = :special ";
+            temMap.put("special", getSearchKeyword().getSpeciality().trim());
         }
 
         if (getSearchKeyword().getStaffName() != null && !getSearchKeyword().getStaffName().trim().equals("")) {
-            sql += " and  ((b.staff.person.name) like :staff )";
-            temMap.put("staff", "%" + getSearchKeyword().getStaffName().trim().toUpperCase() + "%");
+            sql += " and  b.staff.person.name = :staffName ";
+            temMap.put("staffName", getSearchKeyword().getStaffName().trim());
         }
 
         if (getSearchKeyword().getItemName() != null && !getSearchKeyword().getItemName().trim().equals("")) {
-            sql += " and  ((b.billItem.item.name) like :staff )";
-            temMap.put("staff", "%" + getSearchKeyword().getItemName().trim().toUpperCase() + "%");
+            sql += " and  ((b.billItem.item.name) like :itemName )";
+            temMap.put("itemName", "%" + getSearchKeyword().getItemName().trim().toUpperCase() + "%");
         }
 
         sql += "  order by b.createdAt desc   ";
@@ -8746,18 +8746,18 @@ public class SearchController implements Serializable {
         }
 
         if (getSearchKeyword().getSpeciality() != null && !getSearchKeyword().getSpeciality().trim().equals("")) {
-            sql += " and  ((b.staff.speciality.name) like :special )";
-            temMap.put("special", "%" + getSearchKeyword().getSpeciality().trim().toUpperCase() + "%");
+            sql += " and  b.staff.speciality.name = :special ";
+            temMap.put("special", getSearchKeyword().getSpeciality().trim());
         }
 
         if (getSearchKeyword().getStaffName() != null && !getSearchKeyword().getStaffName().trim().equals("")) {
-            sql += " and  ((b.staff.person.name) like :staff )";
-            temMap.put("staff", "%" + getSearchKeyword().getStaffName().trim().toUpperCase() + "%");
+            sql += " and  b.staff.person.name = :staffName ";
+            temMap.put("staffName", getSearchKeyword().getStaffName().trim());
         }
 
         if (getSearchKeyword().getItemName() != null && !getSearchKeyword().getItemName().trim().equals("")) {
-            sql += " and  ((b.billItem.item.name) like :staff )";
-            temMap.put("staff", "%" + getSearchKeyword().getItemName().trim().toUpperCase() + "%");
+            sql += " and  ((b.billItem.item.name) like :itemName )";
+            temMap.put("itemName", "%" + getSearchKeyword().getItemName().trim().toUpperCase() + "%");
         }
 
         sql += "  order by b.staff.id    ";
@@ -24531,6 +24531,12 @@ public class SearchController implements Serializable {
 
     public void setStaff(Staff staff) {
         this.staff = staff;
+    }
+
+    // Doctor Name suggestions for the search keyword filters: limited to the
+    // Speciality filter when it is filled, all doctors when it is empty
+    public List<Staff> completeStaffForSearchKeywordSpeciality(String query) {
+        return staffController.completeStaffByNameAndSpecialityName(query, getSearchKeyword().getSpeciality());
     }
 
     // fetch staff list for filtering based on speciality change in the search criteria
