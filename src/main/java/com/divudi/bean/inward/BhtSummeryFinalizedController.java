@@ -9,6 +9,7 @@ import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.pharmacy.BhtIssueReturnController;
 import com.divudi.core.data.BillType;
+import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.FeeType;
 import com.divudi.core.data.PaymentMethod;
 import com.divudi.core.data.inward.InwardChargeType;
@@ -785,6 +786,58 @@ public class BhtSummeryFinalizedController implements Serializable {
 
     public void setPatientEncounter(PatientEncounter patientEncounter) {
         this.patientEncounter = patientEncounter;
+        loadPaidFigures();
+    }
+
+    private double ccPaid;
+    private double patientPaid;
+
+    /**
+     * Loads the company paid and patient paid figures once, when the admission
+     * is set (#25601). Company paid is the sum of the non-cancelled commitment
+     * bills' settledAmountBySponsor, or the final bill's own figure when there
+     * are none. Patient paid is the non-Credit inward payment bills (signed),
+     * the same rule as the Inward Due Search pages.
+     */
+    private void loadPaidFigures() {
+        ccPaid = 0.0;
+        patientPaid = 0.0;
+        if (patientEncounter == null || patientEncounter.getId() == null) {
+            return;
+        }
+        Bill fb = patientEncounter.getFinalBill();
+        if (fb != null && fb.getId() != null) {
+            Map<String, Object> m = new HashMap<>();
+            m.put("bta", BillTypeAtomic.INWARD_FINAL_BILL_PAYMENT_BY_CREDIT_COMPANY);
+            m.put("fbId", fb.getId());
+            List<Object[]> rows = billfacade.findAggregates(
+                    "SELECT COUNT(c), SUM(c.settledAmountBySponsor) FROM Bill c"
+                    + " WHERE c.billTypeAtomic = :bta AND c.referenceBill.id = :fbId"
+                    + " AND c.cancelled = false AND c.retired = false", m);
+            if (rows != null && !rows.isEmpty() && ((Number) rows.get(0)[0]).longValue() > 0) {
+                ccPaid = rows.get(0)[1] == null ? 0.0 : ((Number) rows.get(0)[1]).doubleValue();
+            } else {
+                ccPaid = fb.getSettledAmountBySponsor();
+            }
+        }
+        Map<String, Object> m2 = new HashMap<>();
+        m2.put("btp", BillType.InwardPaymentBill);
+        m2.put("pm", PaymentMethod.Credit);
+        m2.put("peId", patientEncounter.getId());
+        List<Object[]> rows2 = billfacade.findAggregates(
+                "SELECT SUM(b.netTotal), COUNT(b) FROM Bill b WHERE b.retired = false AND b.billType = :btp"
+                + " AND b.paymentMethod <> :pm AND b.patientEncounter.id = :peId", m2);
+        if (rows2 != null && !rows2.isEmpty() && rows2.get(0) != null && rows2.get(0)[0] != null) {
+            patientPaid = Math.max(0.0, ((Number) rows2.get(0)[0]).doubleValue());
+        }
+    }
+
+    public double getCcPaidAmount() {
+        return ccPaid;
+    }
+
+    public double getPatientPaidAmount() {
+        return patientPaid;
     }
 
     public List<BillFee> getBillFees() {
