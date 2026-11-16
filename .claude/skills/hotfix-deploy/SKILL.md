@@ -222,8 +222,9 @@ When you plan or schedule several hotfix merges for one window:
   the `single_deploy_pr_sweep` workflow re-runs (every 15 minutes), and a
   scheduled merge of it can stop on that status. Put both fixes in one PR
   (Step 1a). If two PRs already exist, give the second a slot at least 20
-  minutes after the first, or run the sweep by hand
-  (`gh workflow run single_deploy_pr_sweep.yml`) and wait for a green status.
+  minutes after the first, and before it merges confirm its
+  `single-deploy-pr` status is green; if not, run the sweep by hand
+  (`gh workflow run single_deploy_pr_sweep.yml`) and wait for green.
 
 ## Step 7b — Verify the Deploy Run
 
@@ -238,10 +239,13 @@ gh run list --branch $0 --workflow <workflow file> --limit 3 --json databaseId,h
   (e.g. `coop_production_ci_cd.yml`); without it the list mixes in other
   workflows. The newest deploy run's `headSha` must be the merge commit, `status` must be
   `completed` and `conclusion` must be `success`.
-- No run for the merge commit, or `failure` / `cancelled`: open the log
-  (`gh run view <id> --log-failed`), tell the user, and re-run only after
-  you know why (`gh run rerun <id>`). A re-run keeps the same run id; check
-  `run_attempt` (`gh run view <id> --json attempt`) when you watch for it.
+- `failure` / `cancelled`: open the log (`gh run view <id> --log-failed`),
+  tell the user, and re-run only after you know why (`gh run rerun <id>`).
+  A re-run keeps the same run id; check `attempt`
+  (`gh run view <id> --json attempt`) when you watch for it.
+- No run for the merge commit after a few minutes: there is nothing to re-run.
+  Tell the user; check the branch's workflow trigger and the Actions page
+  before anyone deploys another way.
 - Then do one quick in-app check of the fixed function, starting from the
   app root.
 
