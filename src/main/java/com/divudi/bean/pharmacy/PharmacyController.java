@@ -4046,7 +4046,6 @@ public class PharmacyController implements Serializable {
             for (Object[] row : rows) {
                 BillTypeAtomic bta = row[26] != null ? (BillTypeAtomic) row[26] : null;
                 double valueSign = consumptionValueSign(bta);
-                double qtySign = consumptionQtySign(bta);
 
                 double rawPurchaseVal = row[18] != null ? ((Number) row[18]).doubleValue() : 0.0;
                 double rawRetailVal = row[20] != null ? ((Number) row[20]).doubleValue() : 0.0;
@@ -4056,7 +4055,7 @@ public class PharmacyController implements Serializable {
                 double purchaseVal = valueSign * rawPurchaseVal;
                 double retailVal = valueSign * rawRetailVal;
                 double costVal = valueSign * rawCostVal;
-                double qty = qtySign * rawQty;
+                double qty = consumptionQty(bta, rawQty);
 
                 ConsumptionBillItemDto dto = new ConsumptionBillItemDto(
                         row[0] != null ? ((Number) row[0]).longValue() : null,
@@ -4172,7 +4171,6 @@ public class PharmacyController implements Serializable {
             try {
                 List<Object[]> results = getBillItemFacade().findObjectsArrayByJpql(jpql, parameters, TemporalType.TIMESTAMP);
                 double valueSign = consumptionValueSign(billType);
-                double qtySign = consumptionQtySign(billType);
 
                 for (Object[] row : results) {
                     String sourceDeptName = (String) row[0];
@@ -4183,7 +4181,7 @@ public class PharmacyController implements Serializable {
                     Double cost = row[5] != null ? valueSign * ((Number) row[5]).doubleValue() : 0.0;
                     Double retail = row[6] != null ? valueSign * ((Number) row[6]).doubleValue() : 0.0;
                     Double net = row[7] != null ? ((Number) row[7]).doubleValue() : 0.0;
-                    Double qty = row[8] != null ? qtySign * ((Number) row[8]).doubleValue() : 0.0;
+                    Double qty = row[8] != null ? consumptionQty(billType, ((Number) row[8]).doubleValue()) : 0.0;
 
                     ConsumptionCategoryItemDto dto = new ConsumptionCategoryItemDto(
                             sourceDeptName, deptName, catName, iName, qty, purchase, cost, retail, net);
@@ -4426,19 +4424,23 @@ public class PharmacyController implements Serializable {
     }
 
     /**
-     * Multiplier to convert a stored {@code billItem.qty} into consumption-direction qty.
-     * Issues add to consumption (+1); returns and cancellations subtract (-1).
+     * Consumption-direction quantity for a stored {@code billItem.qty}, decided by bill type
+     * and independent of the stored sign (disposal issues store negative qty, returns store
+     * positive qty since #23448). An issue is negative; a return or cancellation is positive,
+     * matching the Stock Ledger. Other bill types keep the stored quantity.
      */
-    private static double consumptionQtySign(BillTypeAtomic bta) {
+    private static double consumptionQty(BillTypeAtomic bta, double storedQty) {
         if (bta == null) {
-            return 1.0;
+            return storedQty;
         }
         switch (bta) {
+            case PHARMACY_DISPOSAL_ISSUE:
+                return -Math.abs(storedQty);
             case PHARMACY_DISPOSAL_ISSUE_RETURN:
             case PHARMACY_DISPOSAL_ISSUE_CANCELLED:
-                return -1.0;
+                return Math.abs(storedQty);
             default:
-                return 1.0;
+                return storedQty;
         }
     }
 
@@ -4725,12 +4727,11 @@ public class PharmacyController implements Serializable {
                             ? row.getBillItem().getBill().getBillTypeAtomic()
                             : null;
                     double valueSign = consumptionValueSign(bta);
-                    double qtySign = consumptionQtySign(bta);
 
                     double rowPurchase = valueAtPurchase != null ? valueSign * valueAtPurchase.doubleValue() : 0.0;
                     double rowCost = valueAtCost != null ? valueSign * valueAtCost.doubleValue() : 0.0;
                     double rowRetail = valueAtRetail != null ? valueSign * valueAtRetail.doubleValue() : 0.0;
-                    double rowQty = qtySign * (row.getBillItem().getQty() != null ? row.getBillItem().getQty() : 0.0);
+                    double rowQty = consumptionQty(bta, row.getBillItem().getQty() != null ? row.getBillItem().getQty() : 0.0);
 
                     row.setConsumptionPurchaseValue(rowPurchase);
                     row.setConsumptionCostValue(rowCost);
@@ -5133,7 +5134,6 @@ public class PharmacyController implements Serializable {
                 // from net consumption rather than adding (issue #21025). netTotal is
                 // already stored with the correct sign, so it does not need flipping.
                 double valueSign = consumptionValueSign(billType);
-                double qtySign = consumptionQtySign(billType);
 
                 // Convert Object[] to DepartmentCategoryWiseItems
                 for (Object[] row : results) {
@@ -5145,7 +5145,7 @@ public class PharmacyController implements Serializable {
                     Double costValue = row[4] != null ? valueSign * ((Number) row[4]).doubleValue() : 0.0;
                     Double retailValue = row[5] != null ? valueSign * ((Number) row[5]).doubleValue() : 0.0;
                     Double netTotal = row[6] != null ? ((Number) row[6]).doubleValue() : 0.0;
-                    Double qty = row[7] != null ? qtySign * ((Number) row[7]).doubleValue() : 0.0;
+                    Double qty = row[7] != null ? consumptionQty(billType, ((Number) row[7]).doubleValue()) : 0.0;
 
                     DepartmentCategoryWiseItems dtoItem = new DepartmentCategoryWiseItems(
                             mainDept, consumptionDept, item, category,
