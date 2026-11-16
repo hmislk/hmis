@@ -231,10 +231,12 @@ After each merge, check the deploy run's result. A login page that loads
 proves nothing: it can be the old WAR still running.
 
 ```bash
-gh run list --branch $0 --limit 3 --json databaseId,headSha,status,conclusion,createdAt
+gh run list --branch $0 --workflow <workflow file> --limit 3 --json databaseId,headSha,status,conclusion,createdAt
 ```
 
-- The newest run's `headSha` must be the merge commit, `status` must be
+- `<workflow file>` is the branch's deploy workflow from the deployment map
+  (e.g. `coop_production_ci_cd.yml`); without it the list mixes in other
+  workflows. The newest deploy run's `headSha` must be the merge commit, `status` must be
   `completed` and `conclusion` must be `success`.
 - No run for the merge commit, or `failure` / `cancelled`: open the log
   (`gh run view <id> --log-failed`), tell the user, and re-run only after
