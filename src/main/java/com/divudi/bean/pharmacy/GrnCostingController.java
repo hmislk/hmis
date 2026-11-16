@@ -3478,7 +3478,7 @@ public class GrnCostingController implements Serializable {
         // Handle Institution ID generation separately
         String insId;
         if (billNumberGenerationStrategyForInstitutionIdIsPrefixInsYearCount) {
-            insId = getBillNumberBean().institutionBillNumberGeneratorYearlyWithPrefixInsYearCountInstitutionWide(
+            insId = (billNumberGenerationStrategyForDepartmentIdIsPrefixInsYearCount) ? deptId : getBillNumberBean().institutionBillNumberGeneratorYearlyWithPrefixInsYearCountInstitutionWide(
                     sessionController.getDepartment(),
                     BillTypeAtomic.PHARMACY_GRN
             );

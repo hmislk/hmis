@@ -329,8 +329,7 @@ public class PreReturnController implements Serializable {
         // Handle Institution ID generation (completely separate)
         String insId;
         if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Sale Return Items only - Prefix + Institution Code + Year + Yearly Number", false)) {
-            insId = billNumberBean.institutionBillNumberGeneratorYearlyWithPrefixInsYearCountInstitutionWide(
-                    sessionController.getDepartment(), BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_ONLY);
+            insId = deptId; // Same number as deptId: do not consume the yearly counter twice
         } else if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Sale Return Items only - Prefix + Institution Code + Department Code + Year + Yearly Number", false)) {
             insId = deptId;
         } else if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Sale Return Items only - Prefix + Department Code + Institution Code + Year + Yearly Number", false)) {

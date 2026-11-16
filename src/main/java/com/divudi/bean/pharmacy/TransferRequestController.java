@@ -740,8 +740,7 @@ public class TransferRequestController implements Serializable {
 
             String insId;
             if (useInsFormat) {
-                insId = getBillNumberBean().institutionBillNumberGeneratorYearlyWithPrefixInsYearCountInstitutionWide(
-                        getSessionController().getDepartment(), BillTypeAtomic.PHARMACY_TRANSFER_REQUEST);
+                insId = deptId; // Same number as deptId: do not consume the yearly counter twice
             } else if (useDeptInsFormat) {
                 insId = deptId;
             } else {
@@ -874,8 +873,7 @@ public class TransferRequestController implements Serializable {
 
             String insId;
             if (useInsFormat) {
-                insId = billNumberBean.institutionBillNumberGeneratorYearlyWithPrefixInsYearCountInstitutionWide(
-                        getSessionController().getDepartment(), BillTypeAtomic.PHARMACY_TRANSFER_REQUEST_PRE);
+                insId = deptId; // Same number as deptId: do not consume the yearly counter twice
             } else if (useDeptInsFormat) {
                 insId = deptId;
             } else {

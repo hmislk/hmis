@@ -415,8 +415,7 @@ public class SaleReturnController implements Serializable, com.divudi.bean.commo
         // Handle Institution ID generation (completely separate)
         String insId;
         if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Sale Refund Pre Bill - Prefix + Institution Code + Year + Yearly Number", false)) {
-            insId = getBillNumberBean().institutionBillNumberGeneratorYearlyWithPrefixInsYearCountInstitutionWide(
-                    getSessionController().getDepartment(), BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS_PREBILL);
+            insId = deptId; // Same number as deptId: do not consume the yearly counter twice
         } else {
             if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Sale Refund Pre Bill - Prefix + Department Code + Institution Code + Year + Yearly Number", false)) {
                 insId = deptId; // Use same number as department
@@ -475,8 +474,7 @@ public class SaleReturnController implements Serializable, com.divudi.bean.commo
         // Handle Institution ID generation (completely separate)
         String insId;
         if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Sale Return Items and Payments - Prefix + Institution Code + Year + Yearly Number", false)) {
-            insId = billNumberBean.institutionBillNumberGeneratorYearlyWithPrefixInsYearCountInstitutionWide(
-                    sessionController.getDepartment(), BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS);
+            insId = deptId; // Same number as deptId: do not consume the yearly counter twice
         } else if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Sale Return Items and Payments - Prefix + Institution Code + Department Code + Year + Yearly Number", false)) {
             insId = deptId;
         } else if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Sale Return Items and Payments - Prefix + Department Code + Institution Code + Year + Yearly Number", false)) {

@@ -343,8 +343,7 @@ public class TransferIssueDirectController implements Serializable {
         if (issuedBill.getInsId() == null || issuedBill.getInsId().isEmpty()) {
             String insId;
             if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Transfer Issue - Prefix + Institution Code + Year + Yearly Number", false)) {
-                insId = getBillNumberBean().institutionBillNumberGeneratorYearlyWithPrefixInsYearCountInstitutionWide(
-                        sessionController.getDepartment(), BillTypeAtomic.PHARMACY_DIRECT_ISSUE);
+                insId = issuedBill.getDeptId(); // Same number as deptId: do not consume the yearly counter twice
             } else {
                 // Check if department strategy is enabled
                 if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Transfer Issue - Prefix + Department Code + Institution Code + Year + Yearly Number", false)) {
