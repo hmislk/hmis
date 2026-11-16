@@ -4005,7 +4005,7 @@ public class PharmacyController implements Serializable {
                     + "SUM(COALESCE(bi.billItemFinanceDetails.valueAtCostRate, 0.0)), "
                     + "SUM(COALESCE(bi.billItemFinanceDetails.valueAtRetailRate, 0.0)), "
                     + "SUM(COALESCE(bi.billItemFinanceDetails.netTotal, 0.0)), "
-                    + "SUM(bi.qty) "
+                    + consumptionQtySumJpql(billType) + " "
                     + "FROM BillItem bi "
                     + "JOIN bi.bill b "
                     + "WHERE (bi.retired = false OR bi.retired IS NULL) "
@@ -4316,6 +4316,22 @@ public class PharmacyController implements Serializable {
      * positive qty since #23448). An issue is negative; a return or cancellation is positive,
      * matching the Stock Ledger. Other bill types keep the stored quantity.
      */
+    /**
+     * JPQL aggregate for the quantity column of the grouped consumption queries.
+     * Disposal issues, returns and cancellations sum absolute quantities so a group
+     * with mixed stored signs (rows saved before #23448) still adds up;
+     * {@link #consumptionQty} then applies the direction. Other bill types keep the
+     * signed sum.
+     */
+    private static String consumptionQtySumJpql(BillTypeAtomic bta) {
+        if (bta == BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE
+                || bta == BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE_RETURN
+                || bta == BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE_CANCELLED) {
+            return "SUM(ABS(bi.qty))";
+        }
+        return "SUM(bi.qty)";
+    }
+
     private static double consumptionQty(BillTypeAtomic bta, double storedQty) {
         if (bta == null) {
             return storedQty;
@@ -4960,7 +4976,7 @@ public class PharmacyController implements Serializable {
                     + "SUM(COALESCE(bi.billItemFinanceDetails.valueAtCostRate, 0.0)), "
                     + "SUM(COALESCE(bi.billItemFinanceDetails.valueAtRetailRate, 0.0)), "
                     + "SUM(COALESCE(bi.billItemFinanceDetails.netTotal, 0.0)), "
-                    + "SUM(bi.qty) "
+                    + consumptionQtySumJpql(billType) + " "
                     + "FROM BillItem bi "
                     + "WHERE (bi.retired = false OR bi.retired IS NULL) "
                     + "AND (bi.bill.retired = false OR bi.bill.retired IS NULL)  "
