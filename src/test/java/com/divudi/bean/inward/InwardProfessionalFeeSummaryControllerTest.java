@@ -3,6 +3,8 @@ package com.divudi.bean.inward;
 import com.divudi.core.data.inward.InwardChargeType;
 import org.junit.jupiter.api.Test;
 
+import java.util.Calendar;
+import java.util.Date;
 import java.util.EnumMap;
 import java.util.Map;
 
@@ -51,5 +53,32 @@ class InwardProfessionalFeeSummaryControllerTest {
     @Test
     void sumOtherGross_returnsZero_whenMapIsEmpty() {
         assertEquals(0.0, InwardProfessionalFeeSummaryController.sumOtherGross(new EnumMap<>(InwardChargeType.class)));
+    }
+
+    @Test
+    void toDate_defaultsToEndOfDay() {
+        InwardProfessionalFeeSummaryController controller = new InwardProfessionalFeeSummaryController();
+        Date toDate = controller.getToDate();
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(toDate);
+
+        assertEquals(23, cal.get(Calendar.HOUR_OF_DAY));
+        assertEquals(59, cal.get(Calendar.MINUTE));
+        assertEquals(59, cal.get(Calendar.SECOND));
+    }
+
+    @Test
+    void makeNull_resetsToDateToEndOfDay() {
+        InwardProfessionalFeeSummaryController controller = new InwardProfessionalFeeSummaryController();
+        controller.setToDate(new Date(0));
+        controller.makeNull();
+
+        Date toDate = controller.getToDate();
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(toDate);
+
+        assertEquals(23, cal.get(Calendar.HOUR_OF_DAY));
+        assertEquals(59, cal.get(Calendar.MINUTE));
+        assertEquals(59, cal.get(Calendar.SECOND));
     }
 }
