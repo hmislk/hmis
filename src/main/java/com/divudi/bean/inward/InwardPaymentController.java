@@ -211,7 +211,27 @@ public class InwardPaymentController implements Serializable, ControllerWithMult
         if (current == null || current.getPatientEncounter() == null) {
             return 0.0;
         }
-        return current.getPatientEncounter().getCreditPaidAmount();
+        Bill finalBill = current.getPatientEncounter().getFinalBill();
+        if (finalBill == null || finalBill.getId() == null) {
+            return 0.0;
+        }
+        // Same figure as CreditCompanyDueController.getCcPaid: receipts less cancels on the
+        // current final bill's commitment bills, read fresh because this page is used while
+        // payments are being taken. Admissions with no commitment bills use the final bill's sponsor total.
+        String jpql = "SELECT SUM(c.settledAmountBySponsor), COUNT(c) FROM Bill c"
+                + " WHERE c.billTypeAtomic = :bta"
+                + " AND c.referenceBill.id = :fbId"
+                + " AND c.cancelled = false"
+                + " AND c.retired = false";
+        HashMap<String, Object> m = new HashMap<>();
+        m.put("bta", BillTypeAtomic.INWARD_FINAL_BILL_PAYMENT_BY_CREDIT_COMPANY);
+        m.put("fbId", finalBill.getId());
+        List<Object[]> rows = getBilledBillFacade().findAggregates(jpql, m);
+        if (rows != null && !rows.isEmpty() && rows.get(0)[1] != null && ((Number) rows.get(0)[1]).longValue() > 0) {
+            Object sum = rows.get(0)[0];
+            return sum == null ? 0.0 : ((Number) sum).doubleValue();
+        }
+        return finalBill.getSettledAmountBySponsor();
     }
 
     public double getFinalBillTotal() {
