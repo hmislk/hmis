@@ -688,8 +688,7 @@ public class TransferReceiveController implements Serializable {
         // Handle Institution ID generation (completely separate)
         String insId;
         if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Transfer Receive - Prefix + Institution Code + Year + Yearly Number", false)) {
-            insId = getBillNumberBean().institutionBillNumberGeneratorYearlyWithPrefixInsYearCountInstitutionWide(
-                    getSessionController().getDepartment(), BillTypeAtomic.PHARMACY_RECEIVE);
+            insId = deptId; // Same number as deptId: do not consume the yearly counter twice
         } else {
             // Smart fallback logic
             if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Transfer Receive - Prefix + Department Code + Institution Code + Year + Yearly Number", false) ||

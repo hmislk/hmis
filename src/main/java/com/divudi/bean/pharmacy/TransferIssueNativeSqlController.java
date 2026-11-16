@@ -995,8 +995,7 @@ public class TransferIssueNativeSqlController implements Serializable {
         String insId;
         if (configOptionApplicationController.getBooleanValueByKey(
                 "Bill Number Generation Strategy for Pharmacy Transfer Issue - Prefix + Institution Code + Year + Yearly Number", false)) {
-            insId = billNumberBean.institutionBillNumberGeneratorYearlyWithPrefixInsYearCountInstitutionWide(
-                    sessionController.getDepartment(), BillTypeAtomic.PHARMACY_ISSUE);
+            insId = deptId; // Same number as deptId: do not consume the yearly counter twice
         } else if (configOptionApplicationController.getBooleanValueByKey(
                 "Bill Number Generation Strategy for Pharmacy Transfer Issue - Prefix + Department Code + Institution Code + Year + Yearly Number", false)) {
             insId = deptId;

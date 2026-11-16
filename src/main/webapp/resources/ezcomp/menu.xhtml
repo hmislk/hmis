@@ -1204,7 +1204,7 @@
                             action="#{pharmacySaleWithoutStockController.navigateToPharmacySaleWithoutStocks()}"
                             value="Sale without Stocks"
                             icon="fas fa-store-slash"
-                            rendered="#{webUserController.hasPrivilege('PharmacySaleWithOutStock')}" ></p:menuitem>
+                            rendered="#{webUserController.hasPrivilege('PharmacySaleWithoutStock') or webUserController.hasPrivilege('PharmacySaleWithOutStock')}" ></p:menuitem>
                         <p:menuitem
                             ajax="false" action="/pharmacy/pharmacy_search_sale_bill_item?faces-redirect=true"
                             value="Search Sale Bill Items" icon="fas fa-list" actionListener="#{searchController.makeListNull}"

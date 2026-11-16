@@ -1969,7 +1969,12 @@ public class FinancialTransactionController implements Serializable {
 
         // Fetch and process shift handover component bills
         List<Bill> shiftHandoverCompletionBills = billSearch.fetchReferredBills(BillTypeAtomic.FUND_SHIFT_COMPONANT_HANDOVER_CREATE, selectedBill);
-        if (shiftHandoverCompletionBills == null || shiftHandoverCompletionBills.isEmpty()) {
+        // A float-only handover has no component bills; its value is carried by the
+        // denomination bill and is shown through the synthetic float rows below (#22116).
+        if (shiftHandoverCompletionBills == null) {
+            shiftHandoverCompletionBills = new ArrayList<>();
+        }
+        if (shiftHandoverCompletionBills.isEmpty() && (dts == null || dts.isEmpty())) {
             JsfUtil.addErrorMessage("No component bills found.");
             return null;
         }
@@ -2016,6 +2021,11 @@ public class FinancialTransactionController implements Serializable {
             bundle.setDenominatorValue(physicalCash);
             double rebuiltCash = bundle.getCashValue();
             double floatNet = physicalCash - rebuiltCash;
+            // Float-only handover where the cashier floated everything out and counted
+            // zero: there is no cash to rebuild from, so the float is the create bill net.
+            if (shiftHandoverCompletionBills.isEmpty() && Math.abs(physicalCash) < 0.001) {
+                floatNet = selectedBill.getNetTotal();
+            }
             if (floatNet > 0.001) {
                 bundle.setCashFloatInTotal(floatNet);
             } else if (floatNet < -0.001) {
@@ -2102,7 +2112,12 @@ public class FinancialTransactionController implements Serializable {
 
         // Fetch and process shift handover component bills
         List<Bill> shiftHandoverCompletionBills = billSearch.fetchReferredBills(BillTypeAtomic.FUND_SHIFT_COMPONANT_HANDOVER_CREATE, selectedBill);
-        if (shiftHandoverCompletionBills == null || shiftHandoverCompletionBills.isEmpty()) {
+        // A float-only handover has no component bills; its value is carried by the
+        // denomination bill and is shown through the synthetic float rows below (#22116).
+        if (shiftHandoverCompletionBills == null) {
+            shiftHandoverCompletionBills = new ArrayList<>();
+        }
+        if (shiftHandoverCompletionBills.isEmpty() && (dts == null || dts.isEmpty())) {
             JsfUtil.addErrorMessage("No component bills found.");
             return null;
         }
@@ -2150,6 +2165,10 @@ public class FinancialTransactionController implements Serializable {
             bundle.setDenominatorValue(physicalCash);
             double rebuiltCash = bundle.getCashValue();
             double floatNet = physicalCash - rebuiltCash;
+            // Same zero-count float-only rule as navigateToReceiveNewHandoverBill().
+            if (shiftHandoverCompletionBills.isEmpty() && Math.abs(physicalCash) < 0.001) {
+                floatNet = selectedBill.getNetTotal();
+            }
             if (floatNet > 0.001) {
                 bundle.setCashFloatInTotal(floatNet);
             } else if (floatNet < -0.001) {

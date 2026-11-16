@@ -1218,7 +1218,8 @@ public class TransferIssueNativeSqlService {
 
     /**
      * Creates BillItemFinanceDetails and BillFinanceDetails rows via JPA.
-     * Values are stored as positive for the issue bill (revenue direction).
+     * Line totals are positive (revenue direction); valueAt* inventory valuations are
+     * negative (stock out, #23071).
      *
      * @return double[] {netTotal, totalCostValue, totalPurchaseValue, totalRetailSaleValue, totalWholesaleValue}
      */
@@ -1280,10 +1281,12 @@ public class TransferIssueNativeSqlService {
             bifd.setBillCost(BigDecimal.ZERO);
             bifd.setTotalCost(itemCostValue.negate());
 
-            bifd.setValueAtCostRate(costRate.multiply(qtyByUnits));
-            bifd.setValueAtPurchaseRate(batchPurchase.multiply(qtyByUnits));
-            bifd.setValueAtRetailRate(batchRetail.multiply(qtyByUnits));
-            bifd.setValueAtWholesaleRate(batchWholesale.multiply(qtyByUnits));
+            // Stock-out: inventory valuations are NEGATIVE (#23071), so the
+            // cancellation's positive values net the issue to zero.
+            bifd.setValueAtCostRate(itemCostValue.negate());
+            bifd.setValueAtPurchaseRate(itemPurchaseValue.negate());
+            bifd.setValueAtRetailRate(itemRetailValue.negate());
+            bifd.setValueAtWholesaleRate(itemWholesaleValue.negate());
 
             // Quantities — negative for issue (stock going out)
             bifd.setQuantity(qty.negate());

@@ -391,8 +391,7 @@ public class WebUserController implements Serializable {
             } catch (Exception e) {
                 return hasPri;
             }
-            if (w.getPrivilege() != null && w.getPrivilege().equals(p)) {
-
+            if (w.getPrivilege() != null && UserPrivilageController.isSamePrivilege(w.getPrivilege(), p)) {
                 hasPri = true;
                 return hasPri;
             }

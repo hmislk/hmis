@@ -349,7 +349,7 @@ public class PharmacyBatchApiService implements Serializable {
             amp.setDosageForm(vmp.getDosageForm());
         }
 
-        ampFacade.create(amp);
+        ampFacade.createAndFlush(amp); // flush so getId() in the response is guaranteed populated
         return amp;
     }
 
