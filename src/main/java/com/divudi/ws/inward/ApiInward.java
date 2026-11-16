@@ -719,10 +719,10 @@ public class ApiInward {
         b.setBillType(BillType.InwardPaymentBill);
         b.setBillTypeAtomic(BillTypeAtomic.INWARD_PAYMENT);
         if (temp.getInstitution() != null) {
-            b.setInsId(getBillNumberGenerator().institutionBillNumberGenerator(temp.getInstitution(), b.getBillType(), BillClassType.BilledBill, BillNumberSuffix.INWPAY));
+            b.setInsId(getBillNumberGenerator().institutionBillNumberGeneratorInNewTransaction(temp.getInstitution(), b.getBillType(), BillClassType.BilledBill, BillNumberSuffix.INWPAY));
         }
         if (temp.getDepartment() != null) {
-            b.setDeptId(getBillNumberGenerator().institutionBillNumberGenerator(temp.getDepartment(), b.getBillType(), BillClassType.BilledBill, BillNumberSuffix.INWPAY));
+            b.setDeptId(getBillNumberGenerator().institutionBillNumberGeneratorInNewTransaction(temp.getDepartment(), b.getBillType(), BillClassType.BilledBill, BillNumberSuffix.INWPAY));
         }
         b.setInstitution(temp.getInstitution());
         b.setDepartment(temp.getDepartment());

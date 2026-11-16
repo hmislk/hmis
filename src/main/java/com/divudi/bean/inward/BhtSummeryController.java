@@ -4230,8 +4230,8 @@ public class BhtSummeryController implements Serializable {
         getFinalBillLockBean().withFinalBillVersionLock(patientEncounter, () -> {
             int versionSerial = getBillNumberBean().computeNextFinalBillVersionSerial(patientEncounter);
             getCurrent().setFinalBillVersionSerial(versionSerial);
-            getCurrent().setDeptId(getBillNumberBean().departmentBillNumberGenerator(patientEncounter.getDepartment(), BillType.InwardFinalBill, BillClassType.BilledBill, BillNumberSuffix.INWFINAL) + "/" + versionSerial);
-            getCurrent().setInsId(getBillNumberBean().institutionBillNumberGenerator(patientEncounter.getInstitution(), BillType.InwardFinalBill, BillClassType.BilledBill, BillNumberSuffix.INWFINAL) + "/" + versionSerial);
+            getCurrent().setDeptId(getBillNumberBean().departmentBillNumberGeneratorInNewTransaction(patientEncounter.getDepartment(), BillType.InwardFinalBill, BillClassType.BilledBill, BillNumberSuffix.INWFINAL) + "/" + versionSerial);
+            getCurrent().setInsId(getBillNumberBean().institutionBillNumberGeneratorInNewTransaction(patientEncounter.getInstitution(), BillType.InwardFinalBill, BillClassType.BilledBill, BillNumberSuffix.INWFINAL) + "/" + versionSerial);
 
             if (getCurrent().getId() == null) {
                 getBillFacade().create(getCurrent());
@@ -4291,8 +4291,8 @@ public class BhtSummeryController implements Serializable {
         getOriginalBill().setInstitution(patientEncounter.getInstitution());
         getOriginalBill().setDepartment(patientEncounter.getDepartment());
         getOriginalBill().setBillTypeAtomic(BillTypeAtomic.INWARD_ORIGINAL_FINAL_BILL);
-        getOriginalBill().setDeptId(getBillNumberBean().departmentBillNumberGenerator(patientEncounter.getDepartment(), BillType.InwardOriginalFinalBill, BillClassType.BilledBill, BillNumberSuffix.INWFINALORG));
-        getOriginalBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(patientEncounter.getInstitution(), BillType.InwardOriginalFinalBill, BillClassType.BilledBill, BillNumberSuffix.INWFINALORG));
+        getOriginalBill().setDeptId(getBillNumberBean().departmentBillNumberGeneratorInNewTransaction(patientEncounter.getDepartment(), BillType.InwardOriginalFinalBill, BillClassType.BilledBill, BillNumberSuffix.INWFINALORG));
+        getOriginalBill().setInsId(getBillNumberBean().institutionBillNumberGeneratorInNewTransaction(patientEncounter.getInstitution(), BillType.InwardOriginalFinalBill, BillClassType.BilledBill, BillNumberSuffix.INWFINALORG));
 
         getOriginalBill().setBillType(BillType.InwardOriginalFinalBill);
 
@@ -4324,8 +4324,8 @@ public class BhtSummeryController implements Serializable {
         creditCompanyBill.setCreditCompany(ecc.getInstitution());
         creditCompanyBill.setPaymentMethod(PaymentMethod.Credit);
 
-        creditCompanyBill.setDeptId(getBillNumberBean().departmentBillNumberGenerator(patientEncounter.getDepartment(), BillType.InwardFinalBillCCPayment, BillClassType.BilledBill, BillNumberSuffix.INWFINALCCPAY));
-        creditCompanyBill.setInsId(getBillNumberBean().institutionBillNumberGenerator(patientEncounter.getInstitution(), BillType.InwardFinalBillCCPayment, BillClassType.BilledBill, BillNumberSuffix.INWFINALCCPAY));
+        creditCompanyBill.setDeptId(getBillNumberBean().departmentBillNumberGeneratorInNewTransaction(patientEncounter.getDepartment(), BillType.InwardFinalBillCCPayment, BillClassType.BilledBill, BillNumberSuffix.INWFINALCCPAY));
+        creditCompanyBill.setInsId(getBillNumberBean().institutionBillNumberGeneratorInNewTransaction(patientEncounter.getInstitution(), BillType.InwardFinalBillCCPayment, BillClassType.BilledBill, BillNumberSuffix.INWFINALCCPAY));
 
         creditCompanyBill.setBillType(BillType.InwardFinalBillCCPayment);
         creditCompanyBill.setBillTypeAtomic(BillTypeAtomic.INWARD_FINAL_BILL_PAYMENT_BY_CREDIT_COMPANY);
@@ -4358,8 +4358,8 @@ public class BhtSummeryController implements Serializable {
         creditCompanyBill.setCreditCompany(company);
         creditCompanyBill.setPaymentMethod(PaymentMethod.Credit);
 
-        creditCompanyBill.setDeptId(getBillNumberBean().departmentBillNumberGenerator(patientEncounter.getDepartment(), BillType.InwardFinalBillCCPayment, BillClassType.BilledBill, BillNumberSuffix.INWFINALCCPAY));
-        creditCompanyBill.setInsId(getBillNumberBean().institutionBillNumberGenerator(patientEncounter.getInstitution(), BillType.InwardFinalBillCCPayment, BillClassType.BilledBill, BillNumberSuffix.INWFINALCCPAY));
+        creditCompanyBill.setDeptId(getBillNumberBean().departmentBillNumberGeneratorInNewTransaction(patientEncounter.getDepartment(), BillType.InwardFinalBillCCPayment, BillClassType.BilledBill, BillNumberSuffix.INWFINALCCPAY));
+        creditCompanyBill.setInsId(getBillNumberBean().institutionBillNumberGeneratorInNewTransaction(patientEncounter.getInstitution(), BillType.InwardFinalBillCCPayment, BillClassType.BilledBill, BillNumberSuffix.INWFINALCCPAY));
 
         creditCompanyBill.setBillType(BillType.InwardFinalBillCCPayment);
         creditCompanyBill.setBillTypeAtomic(BillTypeAtomic.INWARD_FINAL_BILL_PAYMENT_BY_CREDIT_COMPANY);

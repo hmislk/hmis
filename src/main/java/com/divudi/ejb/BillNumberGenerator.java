@@ -2911,6 +2911,21 @@ public class BillNumberGenerator {
         return departmentBillNumberGeneratorYearly(dep, billType);
     }
 
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+    public String departmentBillNumberGeneratorInNewTransaction(Department dep, BillType billType, BillClassType billClassType, BillNumberSuffix billNumberSuffix) {
+        return departmentBillNumberGenerator(dep, billType, billClassType, billNumberSuffix);
+    }
+
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+    public String institutionBillNumberGeneratorInNewTransaction(Institution ins, BillType billType, BillClassType billClassType, BillNumberSuffix billNumberSuffix) {
+        return institutionBillNumberGenerator(ins, billType, billClassType, billNumberSuffix);
+    }
+
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+    public String institutionBillNumberGeneratorInNewTransaction(Department dep, BillType billType, BillClassType billClassType, BillNumberSuffix billNumberSuffix) {
+        return institutionBillNumberGenerator(dep, billType, billClassType, billNumberSuffix);
+    }
+
     public String departmentBillNumberGeneratorYearly(Department dep, BillTypeAtomic billType) {
         return departmentBillNumberGeneratorYearly(dep, billType, "");
     }
