@@ -5496,6 +5496,75 @@ public class InwardReportController implements Serializable {
             creditPaid += p.getPaidByCreditCompany();
             calTotal += p.getTransTotal();
         }
+        loadCcPaidForRows();
+    }
+
+    private final Map<Long, Double> ccPaidByEncounterId = new HashMap<>();
+    private double ccPaidTotal;
+
+    /**
+     * Amount the credit companies have paid, per admission, for the Discharge
+     * Detail page (#25601): the sum of the non-cancelled commitment bills'
+     * settledAmountBySponsor, or the final bill's own figure when the admission
+     * has no commitment bills. One grouped query per 500 final bills.
+     */
+    private void loadCcPaidForRows() {
+        ccPaidByEncounterId.clear();
+        ccPaidTotal = 0;
+        if (patientEncounters == null) {
+            return;
+        }
+        Map<Long, Double> paidByFinalBillId = new HashMap<>();
+        List<Long> finalBillIds = new ArrayList<>();
+        for (PatientEncounter p : patientEncounters) {
+            if (p != null && p.getFinalBill() != null && p.getFinalBill().getId() != null
+                    && !finalBillIds.contains(p.getFinalBill().getId())) {
+                finalBillIds.add(p.getFinalBill().getId());
+            }
+        }
+        for (int from = 0; from < finalBillIds.size(); from += 500) {
+            String jpql = "SELECT c.referenceBill.id, SUM(c.settledAmountBySponsor) FROM Bill c"
+                    + " WHERE c.billTypeAtomic = :bta"
+                    + " AND c.referenceBill.id IN :fbIds"
+                    + " AND c.cancelled = false"
+                    + " AND c.retired = false"
+                    + " GROUP BY c.referenceBill.id";
+            Map<String, Object> params = new HashMap<>();
+            params.put("bta", BillTypeAtomic.INWARD_FINAL_BILL_PAYMENT_BY_CREDIT_COMPANY);
+            params.put("fbIds", new ArrayList<>(finalBillIds.subList(from, Math.min(from + 500, finalBillIds.size()))));
+            List<Object[]> rows = getBillFacade().findAggregates(jpql, params);
+            if (rows == null) {
+                continue;
+            }
+            for (Object[] row : rows) {
+                paidByFinalBillId.put((Long) row[0], row[1] == null ? 0.0 : ((Number) row[1]).doubleValue());
+            }
+        }
+        for (PatientEncounter p : patientEncounters) {
+            if (p == null || p.getId() == null) {
+                continue;
+            }
+            double v = 0.0;
+            if (p.getFinalBill() != null) {
+                Double fromCommitments = paidByFinalBillId.get(p.getFinalBill().getId());
+                v = fromCommitments != null ? fromCommitments : p.getFinalBill().getSettledAmountBySponsor();
+            }
+            ccPaidByEncounterId.put(p.getId(), v);
+            ccPaidTotal += v;
+        }
+    }
+
+    /** Company paid for one row of the Discharge Detail page. */
+    public double getCcPaidForRow(PatientEncounter p) {
+        if (p == null || p.getId() == null) {
+            return 0.0;
+        }
+        Double v = ccPaidByEncounterId.get(p.getId());
+        return v == null ? 0.0 : v;
+    }
+
+    public double getCcPaidTotal() {
+        return ccPaidTotal;
     }
 
     public void calTotalDischargedNoChanges() {
