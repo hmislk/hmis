@@ -878,6 +878,8 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
                     + " and c.cancelledBill is null "
                     + " and c.refundedBill is null "
                     + " and c.retired=false "
+                    + " and c.patientEncounter.finalBill is not null "
+                    + " and c.referenceBill.id = c.patientEncounter.finalBill.id "
                     + " and ((c.deptId) like :q or"
                     + " (c.patient.person.name) like :q "
                     + " or (c.creditCompany.name) like :q "

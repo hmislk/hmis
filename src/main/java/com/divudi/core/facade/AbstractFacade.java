@@ -697,6 +697,19 @@ public abstract class AbstractFacade<T> {
         }
     }
 
+    /**
+     * Removes one entity from the shared (second-level) cache so the next load
+     * reads it, and its lazy collections, from the database. Use it after
+     * children were saved on their own (child.setParent + create) without
+     * adding them to the parent's collection.
+     */
+    public void evictFromSharedCache(Object id) {
+        if (id == null) {
+            return;
+        }
+        getEntityManager().getEntityManagerFactory().getCache().evict(entityClass, id);
+    }
+
     public void remove(T entity) {
         getEntityManager().remove(getEntityManager().merge(entity));
     }

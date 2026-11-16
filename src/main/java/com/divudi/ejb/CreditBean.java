@@ -567,7 +567,8 @@ public class CreditBean {
                 + " where b.retired=false "
                 + " and (b.cancelled=false or b.cancelled is null) "
                 + " and b.billTypeAtomic=:bta "
-                + " and b.referenceBill.confirmedFinalBill=true "
+                + " and b.patientEncounter.finalBill is not null "
+                + " and b.referenceBill.id = b.patientEncounter.finalBill.id "
                 + " and b.creditCompany=:cc "
                 + " and b.billDate between :frm and :to "
                 + " and (abs(b.netTotal)-abs(b.paidAmount)) >:val "
@@ -590,7 +591,8 @@ public class CreditBean {
                 + " where b.retired=false "
                 + " and (b.cancelled=false or b.cancelled is null) "
                 + " and b.billTypeAtomic=:bta "
-                + " and b.referenceBill.confirmedFinalBill=true "
+                + " and b.patientEncounter.finalBill is not null "
+                + " and b.referenceBill.id = b.patientEncounter.finalBill.id "
                 + " and b.creditCompany=:cc "
                 + " and " + dateField + " between :frm and :to "
                 + " and (abs(b.netTotal)-abs(b.paidAmount)) >:val ";
@@ -625,7 +627,8 @@ public class CreditBean {
                 + " where b.retired=false "
                 + " and (b.cancelled=false or b.cancelled is null) "
                 + " and b.billTypeAtomic=:bta "
-                + " and b.referenceBill.confirmedFinalBill=true "
+                + " and b.patientEncounter.finalBill is not null "
+                + " and b.referenceBill.id = b.patientEncounter.finalBill.id "
                 + " and " + dateField + " between :frm and :to "
                 + " and (abs(b.netTotal)-abs(b.paidAmount)) >:val ";
         HashMap hm = new HashMap();

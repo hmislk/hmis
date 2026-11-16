@@ -73,6 +73,10 @@ public class InwardPaymentController implements Serializable, ControllerWithMult
     @EJB
     PaymentService paymentService;
     @EJB
+    private com.divudi.service.inward.InwardPaymentService inwardPaymentService;
+    @EJB
+    private com.divudi.core.facade.PatientDepositFacade patientDepositFacade;
+    @EJB
     CashTransactionBean cashTransactionBean;
     @EJB
     PatientDepositService patientDepositService;
@@ -207,7 +211,27 @@ public class InwardPaymentController implements Serializable, ControllerWithMult
         if (current == null || current.getPatientEncounter() == null) {
             return 0.0;
         }
-        return current.getPatientEncounter().getCreditPaidAmount();
+        Bill finalBill = current.getPatientEncounter().getFinalBill();
+        if (finalBill == null || finalBill.getId() == null) {
+            return 0.0;
+        }
+        // Same figure as CreditCompanyDueController.getCcPaid: receipts less cancels on the
+        // current final bill's commitment bills, read fresh because this page is used while
+        // payments are being taken. Admissions with no commitment bills use the final bill's sponsor total.
+        String jpql = "SELECT SUM(c.settledAmountBySponsor), COUNT(c) FROM Bill c"
+                + " WHERE c.billTypeAtomic = :bta"
+                + " AND c.referenceBill.id = :fbId"
+                + " AND c.cancelled = false"
+                + " AND c.retired = false";
+        HashMap<String, Object> m = new HashMap<>();
+        m.put("bta", BillTypeAtomic.INWARD_FINAL_BILL_PAYMENT_BY_CREDIT_COMPANY);
+        m.put("fbId", finalBill.getId());
+        List<Object[]> rows = getBilledBillFacade().findAggregates(jpql, m);
+        if (rows != null && !rows.isEmpty() && rows.get(0)[1] != null && ((Number) rows.get(0)[1]).longValue() > 0) {
+            Object sum = rows.get(0)[0];
+            return sum == null ? 0.0 : ((Number) sum).doubleValue();
+        }
+        return finalBill.getSettledAmountBySponsor();
     }
 
     public double getFinalBillTotal() {
@@ -912,23 +936,33 @@ public class InwardPaymentController implements Serializable, ControllerWithMult
             }
         }
 
-        saveBill();
-        saveBillItem();
-
-        // Once createPayment() below succeeds, the Payment exists in the
-        // database - paymentInProgress must stay true for the rest of this
-        // method and is never reset back to false afterwards (see the
-        // class-level latch comment above), whether the post-payment
-        // bookkeeping below succeeds or throws. Resetting it here would let
-        // either a queued duplicate request or a retry after a later
-        // failure reach createPayment() again and create a second Payment.
-        paymentService.createPaymentAndUpdateDrawer(
-                current,
-                current.getPaymentMethod(),
-                paymentMethodData,
-                sessionController.getInstitution(),
-                sessionController.getDepartment(),
-                sessionController.getLoggedUser());
+        // The bill, its bill item, the Payment rows and the drawer update are
+        // saved in ONE transaction in the service (#25610): if any step fails,
+        // nothing is saved. The latch stays set once the transaction commits
+        // (see the class-level latch comment above), so neither a queued
+        // duplicate request nor a retry can create a second Payment.
+        prepareBill();
+        try {
+            inwardPaymentService.savePaymentBillWithPayments(
+                    current,
+                    paymentMethodData,
+                    sessionController.getInstitution(),
+                    sessionController.getDepartment(),
+                    sessionController.getLoggedUser());
+        } catch (RuntimeException e) {
+            // Rolled back: nothing was saved. Clear the id the failed attempt
+            // gave the bill so the user can submit again.
+            current.setId(null);
+            // PatientDepositService lowered the balance on the deposit objects
+            // held in paymentMethodData; the rollback restored only the rows.
+            // Reload them so a retry does not debit the failed amount again.
+            reloadPatientDepositsAfterRollback();
+            paymentInProgress = false;
+            Throwable cause = e instanceof javax.ejb.EJBException && e.getCause() != null ? e.getCause() : e;
+            String detail = cause.getMessage() != null ? " " + cause.getMessage() : "";
+            JsfUtil.addErrorMessage("Payment was not saved. Nothing has been recorded." + detail);
+            return;
+        }
 
         // The admission on this page was loaded when the page opened. A final
         // bill settled or cancelled since then (another tab or user) is not in
@@ -1094,6 +1128,35 @@ public class InwardPaymentController implements Serializable, ControllerWithMult
     }
 
     private void saveBill() {
+        prepareBill();
+        if (getCurrent().getId() == null) {
+            getBilledBillFacade().create(getCurrent());
+        }
+    }
+
+    private void reloadPatientDepositsAfterRollback() {
+        if (paymentMethodData == null) {
+            return;
+        }
+        reloadPatientDeposit(paymentMethodData.getPatient_deposit());
+        ComponentDetail multiple = paymentMethodData.getPaymentMethodMultiple();
+        if (multiple != null && multiple.getMultiplePaymentMethodComponentDetails() != null) {
+            for (ComponentDetail cd : multiple.getMultiplePaymentMethodComponentDetails()) {
+                if (cd != null && cd.getPaymentMethodData() != null) {
+                    reloadPatientDeposit(cd.getPaymentMethodData().getPatient_deposit());
+                }
+            }
+        }
+    }
+
+    private void reloadPatientDeposit(ComponentDetail detail) {
+        if (detail == null || detail.getPatientDepost() == null || detail.getPatientDepost().getId() == null) {
+            return;
+        }
+        detail.setPatientDepost(patientDepositFacade.find(detail.getPatientDepost().getId()));
+    }
+
+    private void prepareBill() {
         getCurrent().setInstitution(getSessionController().getInstitution());
         getCurrent().setDepartment(getSessionController().getDepartment());
         getCurrent().setBillType(BillType.InwardPaymentBill);
@@ -1111,11 +1174,6 @@ public class InwardPaymentController implements Serializable, ControllerWithMult
         getCurrent().setCreatedAt(new Date());
         getCurrent().setCreater(getSessionController().getLoggedUser());
         getCurrent().setComments(comment);
-
-        if (getCurrent().getId() == null) {
-            getBilledBillFacade().create(getCurrent());
-        }
-
     }
 
     private void saveBillItem() {

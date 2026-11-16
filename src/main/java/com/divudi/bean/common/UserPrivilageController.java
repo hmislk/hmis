@@ -819,7 +819,7 @@ public class UserPrivilageController implements Serializable {
         TreeNode PharmacySaleForCashier = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacySaleForCashier, "Pharmacy Sale For Cashier"), retailTransaction);
         TreeNode PharmacySaleQuick = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacySaleQuick, "Pharmacy Sale - Quick"), retailTransaction);
         TreeNode PharmacySaleForCashierQuick = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacySaleForCashierQuick, "Pharmacy Sale For Cashier - Quick"), retailTransaction);
-        TreeNode PharmacySaleWithOutStock = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacySaleWithOutStock, "Pharmacy Sale With Out Stock"), retailTransaction);
+        TreeNode PharmacySaleWithOutStock = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacySaleWithoutStock, "Pharmacy Sale Without Stock"), retailTransaction);
         TreeNode PharmacySearchSaleBill = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacySearchSaleBill, "Pharmacy Search Sale Bill"), retailTransaction);
         TreeNode PharmacySearchSalePreBill = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacySearchSalePreBill, "Pharmacy Search Sale PreBill"), retailTransaction);
         TreeNode PharmacySearchSaleBillItems = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacySearchSaleBillItems, "Pharmacy Search Sale BillItems"), retailTransaction);
@@ -986,7 +986,6 @@ public class UserPrivilageController implements Serializable {
         // Retail transaction extras
         new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyRetailTransaction, "Pharmacy Retail Transaction"), retailTransaction);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacySaleReturn, "Pharmacy Sale Return"), retailTransaction);
-        new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacySaleWithoutStock, "Pharmacy Sale Without Stock"), retailTransaction);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyReturnWithoutTraising, "Pharmacy Return Without Traising"), retailTransaction);
         // Wholesale extras
         new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyWholeSaleTransaction, "Pharmacy Wholesale Transaction"), PharmacyWholeSaleTransAction);
@@ -1026,7 +1025,6 @@ public class UserPrivilageController implements Serializable {
         new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyTransfer, "Pharmacy Transfer"), pharmacyNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacySummery, "Pharmacy Summary"), pharmacyNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacySetReorderLevel, "Pharmacy Set Reorder Level"), pharmacyNode);
-        new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacySaleWithoutStock, "Pharmacy Sale Without Stock (Legacy)"), pharmacyNode);
 
         // Request Privileges
         TreeNode requestNode = new DefaultTreeNode(new PrivilegeHolder(null, "Request Manage"), allNode);
@@ -1695,7 +1693,7 @@ public class UserPrivilageController implements Serializable {
 
             boolean found = false;
             for (WebUserPrivilege wup : currentPrivileges) {
-                if (wup.getPrivilege() == ph.getPrivilege()) {
+                if (isSamePrivilege(wup.getPrivilege(), ph.getPrivilege())) {
                     wup.setRetired(false);
                     nonRetiredPrivileges.add(wup);
                     found = true;
@@ -2120,7 +2118,20 @@ public class UserPrivilageController implements Serializable {
         this.selectedRoleItems = selectedRoleItems;
     }
 
+    // PharmacySaleWithoutStock and PharmacySaleWithOutStock are one permission
+    // (#25602). Stored rows may hold either spelling; never rename the constants.
+    static Privileges canonicalPrivilege(Privileges p) {
+        return p == Privileges.PharmacySaleWithOutStock ? Privileges.PharmacySaleWithoutStock : p;
+    }
+
+    static boolean isSamePrivilege(Privileges a, Privileges b) {
+        return canonicalPrivilege(a) == canonicalPrivilege(b);
+    }
+
     public TreeNode getRootTreeNode() {
+        if (rootTreeNode == null) {
+            rootTreeNode = createPrivilegeHolderTreeNodes();
+        }
         return rootTreeNode;
     }
 
@@ -2310,7 +2321,7 @@ public class UserPrivilageController implements Serializable {
         @Override
         public int hashCode() {
             int hash = 7;
-            hash = 73 * hash + Objects.hashCode(this.privilege);
+            hash = 73 * hash + Objects.hashCode(canonicalPrivilege(this.privilege));
             return hash;
         }
 
@@ -2326,7 +2337,7 @@ public class UserPrivilageController implements Serializable {
                 return false;
             }
             final PrivilegeHolder other = (PrivilegeHolder) obj;
-            return this.privilege == other.privilege;
+            return isSamePrivilege(this.privilege, other.privilege);
         }
 
     }

@@ -866,8 +866,7 @@ public class PharmacyIssueController implements Serializable {
         // Handle Institution ID generation (completely separate)
         String insId;
         if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Disposal Issue - Prefix + Institution Code + Year + Yearly Number", false)) {
-            insId = getBillNumberBean().institutionBillNumberGeneratorYearlyWithPrefixInsYearCountInstitutionWide(
-                    getSessionController().getDepartment(), BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE);
+            insId = deptId; // Same number as deptId: do not consume the yearly counter twice
         } else {
             // Check if any of the new prefix strategies are enabled
             if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Disposal Issue - Prefix + Department Code + Institution Code + Year + Yearly Number", false)
@@ -1167,6 +1166,9 @@ public class PharmacyIssueController implements Serializable {
                 }
             }
         }
+        // Items are saved on their own, so the cached Bill still has an empty
+        // billItems list. Evict it so View, Cancel and Return load the items.
+        getBillFacade().evictFromSharedCache(getPreBill().getId());
 
         JsfUtil.addSuccessMessage("Disposal Issue Draft Saved Successfully");
         billPreview = false;
@@ -1442,8 +1444,7 @@ public class PharmacyIssueController implements Serializable {
         String insId;
         if (configOptionApplicationController.getBooleanValueByKey(
                 "Bill Number Generation Strategy for Pharmacy Disposal Issue - Prefix + Institution Code + Year + Yearly Number", false)) {
-            insId = getBillNumberBean().institutionBillNumberGeneratorYearlyWithPrefixInsYearCountInstitutionWide(
-                    sessionController.getDepartment(), BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE);
+            insId = deptId; // Same number as deptId: do not consume the yearly counter twice
         } else if (configOptionApplicationController.getBooleanValueByKey(
                 "Bill Number Generation Strategy for Pharmacy Disposal Issue - Prefix + Department Code + Institution Code + Year + Yearly Number", false)) {
             insId = deptId;
@@ -1492,6 +1493,7 @@ public class PharmacyIssueController implements Serializable {
             }
         }
 
+        getBillFacade().evictFromSharedCache(billId);
         setPrintBill(getBillFacade().find(billId));
         getPrintBill().setBillItems(items);
         preBill = null;

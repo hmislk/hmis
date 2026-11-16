@@ -5,6 +5,7 @@
 package com.divudi.bean.common;
 
 import com.divudi.bean.cashTransaction.CashBookEntryController;
+import com.divudi.core.data.BillCategory;
 import com.divudi.core.data.BillClassType;
 import com.divudi.core.data.BillNumberSuffix;
 import com.divudi.core.data.BillType;
@@ -305,7 +306,7 @@ public class CreditCompanyBillSearch implements Serializable {
 
         // Check if this is a cancellation bill (bill created during cancellation process)
         if (isBillACancellationBill(getBill())) {
-            JsfUtil.addErrorMessage("This is a Cancellation Bill and cannot be cancelled again.");
+            JsfUtil.addErrorMessage("This is a cancellation or refund bill and cannot be cancelled.");
             return true;
         }
 
@@ -333,8 +334,18 @@ public class CreditCompanyBillSearch implements Serializable {
      * @return true if the bill is a cancellation bill, false otherwise
      */
     private boolean isBillACancellationBill(Bill bill) {
-        if (bill == null || bill.getBillTypeAtomic() == null) {
+        if (bill == null) {
             return false;
+        }
+        if (bill instanceof CancelledBill) {
+            return true;
+        }
+        if (bill.getBillTypeAtomic() == null) {
+            return false;
+        }
+        if (bill.getBillTypeAtomic().getBillCategory() == BillCategory.CANCELLATION
+                || bill.getBillTypeAtomic().getBillCategory() == BillCategory.REFUND) {
+            return true;
         }
 
         BillTypeAtomic billType = bill.getBillTypeAtomic();

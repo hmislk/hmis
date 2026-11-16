@@ -10,6 +10,7 @@ package com.divudi.bean.inward;
 
 import com.divudi.bean.common.NotificationController;
 import com.divudi.bean.common.SessionController;
+import com.divudi.bean.common.WebUserController;
 import com.divudi.core.entity.Institution;
 
 import com.divudi.core.data.inward.AdmissionTypeEnum;
@@ -61,6 +62,8 @@ public class RoomChangeController implements Serializable {
     private static final long serialVersionUID = 1L;
     @Inject
     SessionController sessionController;
+    @Inject
+    WebUserController webUserController;
     @Inject
     private RoomFacilityChargeController roomFacilityChargeController;
     @Inject
@@ -502,6 +505,10 @@ public class RoomChangeController implements Serializable {
     }
 
     public void removeRoom(PatientRoom pR) {
+        if (!webUserController.hasPrivilege("InwardRoomRoomChange")) {
+            JsfUtil.addErrorMessage("You are not authorized to remove a patient room.");
+            return;
+        }
         if (pR == null) {
             JsfUtil.addErrorMessage("No Patient Room Detected");
             return;

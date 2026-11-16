@@ -4210,7 +4210,7 @@ public class PharmacyStockTakeController implements Serializable {
 
         if (billNumberGenerationStrategyForInstitutionIdIsPrefixInsYearCount) {
             if (adjustmentBill.getInsId() == null || adjustmentBill.getInsId().trim().equals("")) {
-                String insId = billNumberBean.institutionBillNumberGeneratorYearlyWithPrefixInsYearCountInstitutionWide(dept, BillTypeAtomic.PHARMACY_STOCK_ADJUSTMENT_BILL);
+                String insId = (billNumberGenerationStrategyForDepartmentIdIsPrefixInsYearCount) ? adjustmentBill.getDeptId() : billNumberBean.institutionBillNumberGeneratorYearlyWithPrefixInsYearCountInstitutionWide(dept, BillTypeAtomic.PHARMACY_STOCK_ADJUSTMENT_BILL);
                 adjustmentBill.setInsId(insId);
             }
         } else {
