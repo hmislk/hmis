@@ -868,6 +868,8 @@ public class BhtSummeryFinalizedController implements Serializable {
 
     public void makeNull() {
         patientEncounter = null;
+        ccPaid = 0.0;
+        patientPaid = 0.0;
         activeBackButton = false;
         makeNullList();
     }
