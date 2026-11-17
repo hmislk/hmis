@@ -5496,8 +5496,27 @@ public class InwardReportController implements Serializable {
             creditPaid += p.getPaidByCreditCompany();
             calTotal += p.getTransTotal();
         }
+        rebuildPaidCaches();
+    }
+
+    /** The row list the paid figures below were last built for. */
+    private List<PatientEncounter> paidCachesBuiltFor;
+
+    private void rebuildPaidCaches() {
+        paidCachesBuiltFor = patientEncounters;
         loadCcPaidForRows();
         loadPatientPaidForRows();
+    }
+
+    /**
+     * Rebuilds the paid figures when another action of this session bean has
+     * replaced the row list since they were built, so the Discharge Detail
+     * columns and footers never show figures of an earlier list.
+     */
+    private void ensurePaidCaches() {
+        if (paidCachesBuiltFor != patientEncounters) {
+            rebuildPaidCaches();
+        }
     }
 
     private final Map<Long, Double> patientPaidByEncounterId = new HashMap<>();
@@ -5558,6 +5577,7 @@ public class InwardReportController implements Serializable {
         if (p == null || p.getId() == null) {
             return 0.0;
         }
+        ensurePaidCaches();
         Double v = patientPaidByEncounterId.get(p.getId());
         return v == null ? 0.0 : v;
     }
@@ -5571,10 +5591,12 @@ public class InwardReportController implements Serializable {
     }
 
     public double getPatientPaidTotal() {
+        ensurePaidCaches();
         return patientPaidTotal;
     }
 
     public double getDueTotal() {
+        ensurePaidCaches();
         return dueTotal;
     }
 
@@ -5638,11 +5660,13 @@ public class InwardReportController implements Serializable {
         if (p == null || p.getId() == null) {
             return 0.0;
         }
+        ensurePaidCaches();
         Double v = ccPaidByEncounterId.get(p.getId());
         return v == null ? 0.0 : v;
     }
 
     public double getCcPaidTotal() {
+        ensurePaidCaches();
         return ccPaidTotal;
     }
 
