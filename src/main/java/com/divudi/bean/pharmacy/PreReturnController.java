@@ -446,8 +446,7 @@ public class PreReturnController implements Serializable {
 
 //        getBill().getReturnPreBills().add(getReturnBill());
         // Flag the sale bill as refunded, as the items-and-payment return does (issue #24489).
-        getBill().setRefunded(true);
-        getBillFacade().edit(getBill());
+
         // Calculate and record financial details for the pre-return bill
 
         calculateAndRecordCostingValues(getReturnBill());

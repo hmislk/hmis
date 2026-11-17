@@ -1520,6 +1520,14 @@ public class PharmacyRefundForItemReturnsController implements Serializable, Con
 
             //        getPharmacyBean().deductFromStock(tbi.getItem(), tbi.getQty(), tbi.getBill().getDepartment());
 //            getRefundBill().getBillItems().add(sbi);
+
+            BillItem originalBillItem = tbi.getReferanceBillItem();
+
+            if (originalBillItem != null) {
+                originalBillItem.setRefunded(true);
+                originalBillItem.setBillItemRefunded(true);
+                getBillItemFacade().editAndFlush(originalBillItem);
+            }
         }
     }
 
