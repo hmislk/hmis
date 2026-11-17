@@ -321,13 +321,17 @@ public class InwardPaymentController implements Serializable, ControllerWithMult
      * Final Payment page is not collected a second time here.
      */
     double calculateFinalBillDue(Bill finalBill) {
-        // Patient portion = bill total minus the CC committed amount (not paid yet).
+        // Patient portion = bill total minus the CC committed amount (not paid yet), where
+        // committed is the net total of the final bill's commitment bills (the figure the page
+        // shows), or the encounter's credit used amount when it has none.
         // This correctly shows patient due before the company has actually remitted.
         // The encounter is taken from the freshly fetched final bill rather than
         // the session copy, so a re-settled CC commitment is picked up.
         PatientEncounter pe = finalBill.getPatientEncounter() != null
                 ? finalBill.getPatientEncounter() : getCurrent().getPatientEncounter();
-        double patientPortion = Math.max(0.0, finalBill.getNetTotal() - pe.getCreditUsedAmount());
+        double[] commitment = finalBill.getId() == null ? null : commitmentFigures(finalBill);
+        double committed = commitment != null ? commitment[0] : pe.getCreditUsedAmount();
+        double patientPortion = Math.max(0.0, finalBill.getNetTotal() - committed);
         double paidByPatient = getInwardBean().getPaidValue(pe) + getPostFinalPaymentTotal(pe);
         return Math.max(0.0, patientPortion - paidByPatient);
     }
