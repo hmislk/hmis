@@ -192,6 +192,8 @@ public class BhtSummeryController implements Serializable {
     InwardRefundController inwardRefundController;
     @Inject
     PostFinalBillInwardPaymentController postFinalBillInwardPaymentController;
+    @Inject
+    InwardDepositController inwardDepositController;
     @EJB
     private com.divudi.service.FinalBillPdfSnapshotService finalBillPdfSnapshotService;
     @EJB
@@ -5298,6 +5300,25 @@ public class BhtSummeryController implements Serializable {
      */
     public String navigateToIntrimBillRefreshFromPostFinalPayment() {
         PatientEncounter pe = postFinalBillInwardPaymentController.getCurrent().getPatientEncounter();
+        if (pe == null) {
+            JsfUtil.addErrorMessage("No Admission Selected");
+            return "";
+        }
+        this.patientEncounter = pe;
+        childPatientEncouters = null;
+        createTables();
+        return "/inward/inward_bill_intrim?faces-redirect=true";
+    }
+
+    /**
+     * Interim Bill button on the Inward Deposit receipt. Takes the
+     * admission from the deposit just saved, not from the Make a
+     * Payment bean, which may hold a different admission (issue #24266).
+     * With no admission it stops rather than fall back to whatever admission
+     * this session bean already holds.
+     */
+    public String navigateToIntrimBillRefreshFromDeposit() {
+        PatientEncounter pe = inwardDepositController.getCurrent().getPatientEncounter();
         if (pe == null) {
             JsfUtil.addErrorMessage("No Admission Selected");
             return "";
