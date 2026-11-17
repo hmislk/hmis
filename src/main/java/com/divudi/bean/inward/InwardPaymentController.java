@@ -203,7 +203,15 @@ public class InwardPaymentController implements Serializable, ControllerWithMult
         if (current == null || current.getPatientEncounter() == null) {
             return 0.0;
         }
-        return current.getPatientEncounter().getCreditUsedAmount();
+        PatientEncounter pe = current.getPatientEncounter();
+        Bill finalBill = pe.getFinalBill();
+        if (finalBill == null || finalBill.getId() == null) {
+            return pe.getCreditUsedAmount();
+        }
+        // Same figure as CreditCompanyDueController.getCcCommitted: the net total of the final bill's
+        // commitment bills. Admissions with no commitment bills use the encounter's credit used amount.
+        double[] f = commitmentFigures(finalBill);
+        return f != null ? f[0] : pe.getCreditUsedAmount();
     }
 
     /** CC amount already received from credit companies for this admission. */
@@ -218,7 +226,13 @@ public class InwardPaymentController implements Serializable, ControllerWithMult
         // Same figure as CreditCompanyDueController.getCcPaid: receipts less cancels on the
         // current final bill's commitment bills, read fresh because this page is used while
         // payments are being taken. Admissions with no commitment bills use the final bill's sponsor total.
-        String jpql = "SELECT SUM(c.settledAmountBySponsor), COUNT(c) FROM Bill c"
+        double[] f = commitmentFigures(finalBill);
+        return f != null ? f[1] : finalBill.getSettledAmountBySponsor();
+    }
+
+    /** {committed, paid} summed over the final bill's commitment bills, or null when it has none. */
+    private double[] commitmentFigures(Bill finalBill) {
+        String jpql = "SELECT SUM(c.netTotal), SUM(c.settledAmountBySponsor), COUNT(c) FROM Bill c"
                 + " WHERE c.billTypeAtomic = :bta"
                 + " AND c.referenceBill.id = :fbId"
                 + " AND c.cancelled = false"
@@ -227,11 +241,13 @@ public class InwardPaymentController implements Serializable, ControllerWithMult
         m.put("bta", BillTypeAtomic.INWARD_FINAL_BILL_PAYMENT_BY_CREDIT_COMPANY);
         m.put("fbId", finalBill.getId());
         List<Object[]> rows = getBilledBillFacade().findAggregates(jpql, m);
-        if (rows != null && !rows.isEmpty() && rows.get(0)[1] != null && ((Number) rows.get(0)[1]).longValue() > 0) {
-            Object sum = rows.get(0)[0];
-            return sum == null ? 0.0 : ((Number) sum).doubleValue();
+        if (rows == null || rows.isEmpty() || rows.get(0)[2] == null || ((Number) rows.get(0)[2]).longValue() == 0) {
+            return null;
         }
-        return finalBill.getSettledAmountBySponsor();
+        Object[] r = rows.get(0);
+        return new double[]{
+            r[0] == null ? 0.0 : ((Number) r[0]).doubleValue(),
+            r[1] == null ? 0.0 : ((Number) r[1]).doubleValue()};
     }
 
     public double getFinalBillTotal() {
