@@ -1,7 +1,8 @@
 # ═══════════════════════════════════════════════════════════════════════════
 #  roseth — Roseth staging
-#  VM: staging on the India South Central estate. Reads a COPY of the Roseth
-#  database (not production), for demos on the latest development.
+#  VM: staging on the India South Central estate. Reads the LIVE Roseth
+#  databases (schemas roseth and rosethaudit, shared with roseth-production),
+#  for demos and clinical testing on the latest development.
 #
 #  Branch:  roseth-staging
 #  Serves:  https://stg-migrated.carecode.org/roseth
