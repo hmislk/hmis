@@ -37,5 +37,6 @@ public enum MessageType {
     @Deprecated
     OTP,
     PatientPortalOTP,
-    PatientPortal_Link
+    PatientPortal_Link,
+    StaffTwoFactorOTP
 }

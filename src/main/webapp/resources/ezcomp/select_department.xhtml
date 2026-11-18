@@ -13,7 +13,10 @@
 
     <!-- IMPLEMENTATION -->
     <cc:implementation class="w-100">
-        <div class="d-flex justify-content-center align-items-center w-100" style="background-color: rgba(211, 211, 211,0.7); height: 100vh; min-width: 30rem; ">
+        <!-- Fixed to the viewport so the body's bottom padding (kept for the watermarks) adds no page scroll bar;
+             a taller card scrolls inside this box instead -->
+        <div style="position: fixed; top: 0; right: 0; bottom: 0; left: 0; overflow: auto; background-color: rgba(211, 211, 211,0.7);">
+        <div class="d-flex justify-content-center align-items-center w-100" style="min-height: 100%; min-width: 30rem; ">
             <h:form id="formDept" class="my-5 p-5">
                 <div class="card shadow-lg p-5 w-100" style="background-color: rgba(255, 255, 255, 0.9); border: 2px solid red; min-width: 50em;" >
                     <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Display the payment notice')}" >
@@ -86,6 +89,7 @@
 
             </h:form>
 
+        </div>
         </div>
     </cc:implementation>
 </html>
