@@ -1146,6 +1146,22 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
         return patientAllergies;
     }
 
+    /**
+     * Allergies of the given patient. Used by the Inpatient Dashboard, which shows
+     * admissionController's admission: {@link #getPatientAllergies()} prefers this
+     * bean's own admission, which still holds the last one opened in Edit BHT or
+     * Manage Allergies, so it could show another patient's allergies.
+     */
+    public List<ClinicalFindingValue> patientAllergiesOf(Patient pt) {
+        if (pt == null || pt.getId() == null) {
+            return new ArrayList<>();
+        }
+        if (patientAllergies == null || !pt.getId().equals(patientAllergiesLoadedForPatientId)) {
+            fillCurrentPatientAllergies(pt);
+        }
+        return patientAllergies;
+    }
+
     public void setPatientAllergies(List<ClinicalFindingValue> patientAllergies) {
         this.patientAllergies = patientAllergies;
     }
