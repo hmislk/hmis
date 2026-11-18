@@ -157,6 +157,10 @@ public class AdmissionPatientChangeController implements Serializable, Controlle
 
         // Store the original patient
         originalPatient = current.getPatient();
+        if (originalPatient == null) {
+            JsfUtil.addErrorMessage("The selected admission has no patient");
+            return;
+        }
 
         // Initialize new patient as null (will be selected by user)
         newPatient = null;
@@ -167,11 +171,30 @@ public class AdmissionPatientChangeController implements Serializable, Controlle
     }
 
     /**
+     * The original patient is normally set by loadAdmission(), but the user can
+     * pick an admission and carry on without pressing Load. Derive it from the
+     * selected admission in that case.
+     *
+     * @return true if an original patient is available
+     */
+    private boolean resolveOriginalPatient() {
+        if (originalPatient == null && current != null) {
+            originalPatient = current.getPatient();
+        }
+        return originalPatient != null;
+    }
+
+    /**
      * Prepare to confirm the patient change
      */
     public void prepareConfirmation() {
         if (current == null) {
             JsfUtil.addErrorMessage("No admission selected");
+            return;
+        }
+
+        if (!resolveOriginalPatient()) {
+            JsfUtil.addErrorMessage("The selected admission has no patient. Please select an admission first.");
             return;
         }
 
@@ -211,6 +234,11 @@ public class AdmissionPatientChangeController implements Serializable, Controlle
     public String confirmPatientChange() {
         if (current == null || newPatient == null) {
             JsfUtil.addErrorMessage("Invalid operation");
+            return "";
+        }
+
+        if (!resolveOriginalPatient()) {
+            JsfUtil.addErrorMessage("The selected admission has no patient. Please select an admission first.");
             return "";
         }
 
