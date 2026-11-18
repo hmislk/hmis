@@ -2470,7 +2470,9 @@ public class InpatientClinicalDataController implements Serializable {
             return null;
         }
         List<ClinicalFindingValue> allergies = patientAllergies;
-        if ((allergies == null || allergies.isEmpty()) && patient != null) {
+        // Always the current patient's allergies: the session list may still hold an
+        // earlier patient's, which would hide this patient's alert.
+        if (patient != null) {
             allergies = fillPatientAllergies(patient);
             patientAllergies = allergies;
         }
