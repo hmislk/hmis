@@ -1786,6 +1786,19 @@ public class ConfigOptionApplicationController implements Serializable {
     }
 
     /**
+     * Key that lets an inward professional fee be marked "Collected by Doctor" when it is added.
+     * Such a fee is left out of the patient's bill total, due and claimable amount, is
+     * recorded as already paid to the doctor, and is printed on patient bills only as the note
+     * "Fees Collected by the Doctor". Default false: with the key off nothing changes.
+     */
+    public static final String INWARD_PROFESSIONAL_FEE_ALLOW_FEE_COLLECTED_BY_DOCTOR
+            = "Inward Professional Fee - Allow Fee Collected By Doctor";
+
+    public boolean isInwardProfessionalFeeCollectedByDoctorAllowed() {
+        return getBooleanValueByKey(INWARD_PROFESSIONAL_FEE_ALLOW_FEE_COLLECTED_BY_DOCTOR, false);
+    }
+
+    /**
      * Read-only variant of {@link #getBooleanValueByKey(String, boolean)} —
      * returns {@code defaultValue} without persisting a new ConfigOption row
      * when the key does not yet exist. Use this for {@code rendered="..."}

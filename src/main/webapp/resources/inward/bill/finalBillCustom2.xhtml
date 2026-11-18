@@ -397,6 +397,11 @@
                         <f:convertNumber pattern="#,##0.00" />
                     </h:outputLabel>
                 </div>
+                <h:panelGroup layout="block" rendered="#{inwardBeanController.hasFeesCollectedByDoctor(cc.attrs.bill.patientEncounter)}">
+                    <div style="font-size: 11px; margin-top: 6px; text-align: left;">
+                        <h:outputText value="Fees Collected by the Doctor" />
+                    </div>
+                </h:panelGroup>
 
                 <div class="d-flex justify-content-between mt-5" style="font-size: 11px;">
                     <div>

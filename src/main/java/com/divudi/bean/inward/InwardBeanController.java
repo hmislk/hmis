@@ -783,6 +783,35 @@ public class InwardBeanController implements Serializable {
         return totalsMap;
     }
 
+    /**
+     * True when the admission (or one of its child encounters) has a live
+     * professional fee marked "Collected by Doctor". Patient bills use it to
+     * print the single note "Fees Collected by the Doctor" outside the net
+     * total; the fee amount and doctor are never printed. Always false while
+     * "Inward Professional Fee - Allow Fee Collected By Doctor" is off.
+     */
+    public boolean hasFeesCollectedByDoctor(PatientEncounter patientEncounter) {
+        if (patientEncounter == null || patientEncounter.getId() == null
+                || !configOptionApplicationController.isInwardProfessionalFeeCollectedByDoctorAllowed()) {
+            return false;
+        }
+        HashMap hm = new HashMap();
+        String sql = "SELECT count(bf) FROM BillFee bf"
+                + " WHERE bf.retired=false"
+                + " and bf.feeCollectedByDoctor=true"
+                + " and bf.bill.retired=false"
+                + " and bf.bill.cancelled=false"
+                + " and bf.bill.billType=:btp"
+                + " and bf.bill.patientEncounter.id IN :peIds";
+        hm.put("btp", BillType.InwardProfessional);
+        List<Long> peIds = new ArrayList<>();
+        for (PatientEncounter e : encounterWithChildren(patientEncounter, fetchChildPatientEncounter(patientEncounter))) {
+            peIds.add(e.getId());
+        }
+        hm.put("peIds", peIds);
+        return getBillFeeFacade().findLongByJpql(sql, hm, TemporalType.TIMESTAMP) > 0;
+    }
+
     public double calculateProfessionalCharges(PatientEncounter patientEncounter, List<PatientEncounter> cpts, boolean isEstimatedBill) {
         HashMap hm = new HashMap();
         String sql = "SELECT sum(bt.feeValue)"
