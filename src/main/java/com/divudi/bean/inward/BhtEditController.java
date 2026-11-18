@@ -161,6 +161,8 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
     private ClinicalFindingValue currentPatientAllergy;
     private List<ClinicalFindingValue> patientAllergies;
     private Long patientAllergiesLoadedForPatientId;
+    private List<ClinicalFindingValue> dashboardAllergies;
+    private Long dashboardAllergiesPatientId;
     Map<String, Object> originalAdmission;
     Map<String, Object> updatedAdmission;
     // </editor-fold>
@@ -177,9 +179,9 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
             return;
         }
         currentPatientAllergy.applyAllergyInputs();
-        if (currentPatientAllergy.getPatient() == null) {
-            currentPatientAllergy.setPatient(getCurrent().getPatient());
-        }
+        // Always the admission on this page: a form object created for an earlier
+        // admission may still carry that patient.
+        currentPatientAllergy.setPatient(getCurrent().getPatient());
         if (currentPatientAllergy.getClinicalFindingValueType() == null) {
             currentPatientAllergy.setClinicalFindingValueType(ClinicalFindingValueType.PatientAllergy);
         }
@@ -189,6 +191,7 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
                 "ClinicalFindingValue", currentPatientAllergy.getId());
         patientAllergies.add(currentPatientAllergy);
         currentPatientAllergy = null;
+        dashboardAllergies = null;
     }
 
     /**
@@ -217,6 +220,7 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
                 before, allergyAuditMap(pa), sessionController.getLoggedUser(),
                 "ClinicalFindingValue", pa.getId());
         patientAllergies.remove(pa);
+        dashboardAllergies = null;
     }
 
     public void savePatientAllergies() {
@@ -910,6 +914,8 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
             JsfUtil.addErrorMessage("No Admission Selected");
             return "";
         }
+        // Drop an entry started for another admission, so it can't be saved to that patient.
+        currentPatientAllergy = null;
         fillCurrentPatientAllergies(current.getPatient());
         return "/inward/inward_manage_allergies?faces-redirect=true";
     }
@@ -1156,10 +1162,21 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
         if (pt == null || pt.getId() == null) {
             return new ArrayList<>();
         }
-        if (patientAllergies == null || !pt.getId().equals(patientAllergiesLoadedForPatientId)) {
-            fillCurrentPatientAllergies(pt);
+        // Own list, not patientAllergies: Manage Allergies (maybe in another tab, for
+        // another patient) edits that one.
+        if (dashboardAllergies == null || !pt.getId().equals(dashboardAllergiesPatientId)) {
+            Map<String, Object> params = new HashMap<>();
+            params.put("pt", pt);
+            params.put("types", ClinicalFindingValueType.patientAllergyTypes());
+            dashboardAllergies = clinicalFindingValueFacade.findByJpql(
+                    "SELECT c FROM ClinicalFindingValue c WHERE c.retired = false AND c.patient = :pt AND c.clinicalFindingValueType in :types",
+                    params);
+            if (dashboardAllergies == null) {
+                dashboardAllergies = new ArrayList<>();
+            }
+            dashboardAllergiesPatientId = pt.getId();
         }
-        return patientAllergies;
+        return dashboardAllergies;
     }
 
     public void setPatientAllergies(List<ClinicalFindingValue> patientAllergies) {

@@ -513,10 +513,10 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             return;
         }
         for (ClinicalFindingValue al : patientAllergies) {
-            if (al.getPatient() == null || al.getPatient().getId() == null) {
-                al.setPatient(patient);
-            }
             if (al.getId() == null) {
+                // A new entry always belongs to the patient being admitted, even if the
+                // form object was created while another patient was on the page.
+                al.setPatient(patient);
                 clinicalFindingValueFacade.create(al);
             } else {
                 clinicalFindingValueFacade.edit(al);
@@ -2070,6 +2070,9 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         // earlier Select / "To Admit"; otherwise updateAppointment() would link it. (#25707)
         appointmentBill = null;
         currentReservation = null;
+        // The previous patient's allergies must not show on, or save with, the next admission.
+        patientAllergies = null;
+        currentPatientAllergy = null;
         patientRoom = null;
         items = null;
         bhtText = "";

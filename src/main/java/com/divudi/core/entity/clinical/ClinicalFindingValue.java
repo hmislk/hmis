@@ -115,6 +115,10 @@ public class ClinicalFindingValue implements Serializable {
 
     public String getAllergyRemark() {
         String r = isMedicineAllergy() ? stringValue : lobValue;
+        // Some older medicine rows keep their remark in lobValue.
+        if (isMedicineAllergy() && (r == null || r.trim().isEmpty())) {
+            r = lobValue;
+        }
         return r != null ? r : "";
     }
 
