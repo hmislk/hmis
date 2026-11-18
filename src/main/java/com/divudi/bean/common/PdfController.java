@@ -306,6 +306,9 @@ public class PdfController {
         sb.append("<div class='section'><h3>Financial Summary</h3><table>");
         sb.append("<tr><td>Gross Total</td><td class='txt-right'>").append(df.format(grantTotal)).append("</td></tr>");
         sb.append("<tr><td>Discount</td><td class='txt-right'>").append(df.format(discount)).append("</td></tr>");
+        if (bill != null && discount != 0.0 && bill.getDiscountCommentText() != null && !bill.getDiscountCommentText().isEmpty()) {
+            sb.append("<tr><td colspan='2'>Discount Comment: ").append(escapeHtml(bill.getDiscountCommentText())).append("</td></tr>");
+        }
         sb.append("<tr><td>Claimable Total</td><td class='txt-right'>").append(df.format(claimableTotal)).append("</td></tr>");
         sb.append("<tr><td><b>Net Total</b></td><td class='txt-right'><b>").append(df.format(netTotal)).append("</b></td></tr>");
         sb.append("<tr><td>Paid Amount</td><td class='txt-right'>").append(df.format(paidAmount)).append("</td></tr>");

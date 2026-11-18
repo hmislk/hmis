@@ -302,6 +302,14 @@
                                 <td style="text-align: right;"><h:outputLabel value="-------------------" /></td>
                             </tr>
 
+                            <h:panelGroup rendered="#{cc.attrs.bill.discount ne 0.0 and not empty cc.attrs.bill.discountCommentText}">
+                                <tr>
+                                    <td colspan="3" style="text-align: left;font-size: 12px;">
+                                        <h:outputLabel value="Discount Comment: "/><h:outputText value="#{cc.attrs.bill.discountCommentText}"/>
+                                    </td>
+                                </tr>
+                            </h:panelGroup>
+
                             <h:panelGroup >
                                 <tr style="width: 100%;">
                                     <td style="text-align: left; font-size: 13px!important;font-weight: bold!important;">

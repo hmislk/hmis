@@ -789,6 +789,9 @@ public class AppointmentController implements Serializable, ControllerWithPatien
             appointmentScheduleInstanceFacade.edit(selectedScheduleInstance);
         }
 
+        // The patient is now saved; the next booking must start from a new, unsaved one.
+        newPatient = null;
+
         JsfUtil.addSuccessMessage("Bill Saved");
         printPreview = true;
 
@@ -1648,6 +1651,7 @@ public class AppointmentController implements Serializable, ControllerWithPatien
         printPreview = false;
         searchedPatient = null;
         patient = null;
+        newPatient = null;
         currentBill = null;
         currentAppointment = null;
         reservation = null;

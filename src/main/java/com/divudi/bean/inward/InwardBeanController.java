@@ -3715,18 +3715,35 @@ public class InwardBeanController implements Serializable {
     private String formatBhtText(AdmissionType admissionType, Long temp, boolean institutionBasedBht, Institution currentInstitution) {
         String bhtText;
 
-        if (getSessionController().getApplicationPreference().isBhtNumberWithOutAdmissionType()) {
-            bhtText = "BHT";
+        // Zero-pad the running number (0 = no padding, the old behaviour).
+        Integer minDigits = configOptionApplicationController
+                .getIntegerValueByKey("BHT Number Minimum Digits", 0);
+        // Bounded (0..12) so a bad setting cannot overflow the bhtNo column; padded as
+        // plain ASCII so the digits never depend on the server locale.
+        int width = minDigits == null ? 0 : Math.max(0, Math.min(12, minDigits));
+        StringBuilder number = new StringBuilder(Long.toString(temp));
+        while (number.length() < width) {
+            number.insert(0, '0');
+        }
+
+        if (configOptionApplicationController.getBooleanValueByKey("BHT Number Shows Only Year And Number", false)) {
+            // YYYY/NNNN: no admission type code, no "BHT". The institution code
+            // is still added below when each institution has its own series.
+            bhtText = Calendar.getInstance().get(Calendar.YEAR) + "/" + number;
         } else {
-            bhtText = admissionType.getCode().trim();
-        }
+            if (getSessionController().getApplicationPreference().isBhtNumberWithOutAdmissionType()) {
+                bhtText = "BHT";
+            } else {
+                bhtText = admissionType.getCode().trim();
+            }
 
-        if (getSessionController().getApplicationPreference().isBhtNumberWithYear()) {
-            Calendar c = Calendar.getInstance();
-            bhtText = bhtText + "/" + c.get(Calendar.YEAR);
-        }
+            if (billNumberGenerator.isYearInBhtText()) {
+                Calendar c = Calendar.getInstance();
+                bhtText = bhtText + "/" + c.get(Calendar.YEAR);
+            }
 
-        bhtText += "/" + Long.toString(temp);
+            bhtText += "/" + number;
+        }
 
         if (institutionBasedBht && currentInstitution != null
                 && currentInstitution.getInstitutionCode() != null

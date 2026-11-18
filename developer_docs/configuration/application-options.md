@@ -83,6 +83,12 @@ A print or settings dialog must use the **same** controller as the page or templ
 | `Inward Appointment - Allow Saving Without Payment` | Boolean | `false` | Inpatient > Appointment > Add Appointment. When on, any appointment type (room, procedure, consultant, department and their combinations) saves with no payment method and no amount: the appointment bill carries no value, and no payment, cashier drawer, cashbook or patient balance entry is written. If a payment method is chosen, the normal payment flow runs unchanged. Manage Appointment shows a Paid / Not paid column; an unpaid appointment has no deposit, so the appointment-to-admission deposit conversion skips it. Off keeps payment compulsory (#17371). See issues #25706, #17487. |
 | `Inward Appointment - Allow Appointment Without Referring Doctor` | Boolean | `false` | When on, the Referring Doctor is not required to save an inward appointment. See issue #17487. |
 
+## Inward Final Bill
+
+| Key | Type | Default | Description |
+| --- | --- | --- | --- |
+| `Inward Final Bill - Discount Comment Required` | Boolean (application scope) | `false` | When `true`, a discounted inpatient bill cannot be saved without a Discount Comment. On the Inward Final Bill page, **Save Final Bill** stops when the bill has any discount (item, charge type or bill level). On the Edit Provisional Bill page, **Save Bill** and **Settle Bill** stop when the Discount box is above zero. When `false` the comment is optional. The comment prints under the discount on the final bill. See issue #25699. |
+
 ## Inpatient Reports
 
 | Key                                                              | Type      | Default | Description                                                                                             |
@@ -183,3 +189,30 @@ All rules live in `AdmissionGuardianRules` (`com.divudi.service.inward`) and ret
 | `Inward Admission - Guardian Checks Treat Whitespace-Only Values as Missing` | Boolean | `false` | Uses `trim()` for guardian name, NIC, address, mobile and home phone in every place the guardian checks run. Off keeps the original `isEmpty()` behaviour (a single space passes). |
 
 **Shared database, two servers:** each server caches config in memory, so a key changed through one server reaches the other only after **Reload Config** (Application Options page) or its next cache reload. A key with no stored row is created with the default of whichever server reads it first; `Guardian Home Phone Number is Required in Patient Admission` defaulted to `true` in older deployed code and is `false` in current `development`. Before enabling the guardian check at a hospital, save every per-field row explicitly.
+
+## Inward Admission: BHT Number Series
+
+BHT counters are `AdmissionNumber` rows, drawn by `BillNumberGenerator` (`fetchNextAdmissionNumber`, `peekNextAdmissionNumber`, `resetAdmissionNumber`, `returnAdmissionNumber`). The text of the number is built in `InwardBeanController.formatBhtText`. See issue #22142.
+
+| Key | Type | Default | Description |
+| --- | --- | --- | --- |
+| `Generate Separate BHT Number Series for Each Institution` | Boolean | `false` | Existing key, unchanged. One counter per institution, with the institution code as a prefix. |
+| `BHT Number Series Is Shared Across Admission Types` | Boolean | `false` | When true, every admission type draws from one counter (per institution when the key above is on). The shared counter is the `AdmissionNumber` row with no admission type and no enum. When it does not exist yet it starts from the highest existing counter in the same scope (so numbers never go lower), or the admission count if there is none. The per-type rows are left in place and unused while the key is on. Turning it off returns to the per-type rows, which stay at their old values. |
+| `Reset BHT Number Series Every Year` | Boolean | `false` | When true, the counter key includes the current calendar year (`AdmissionNumber.counterYear`, nullable; null is the single never-resetting series). **Applies only when the year is in the BHT text**: the existing Bht Number With Year preference (`bhtNumberWithYear`) is on, or `BHT Number Shows Only Year And Number` is on. Otherwise the key is ignored and a warning is logged, because the series would restart in January and repeat printed numbers. A year with no counter row starts from the higher of the admissions already created that year (0 in a new year) and, when the text keeps its old prefix (type code or BHT, then year), the lifetime counter of the same scope, so a key switched on mid-year does not climb back into numbers already printed this year. Turning the key off and on again within one year can reissue numbers already printed that year (the counters are not reconciled); avoid doing so. The first yearly counter can continue from the lifetime counter (e.g. start at 501 after 500); a later year with no admissions starts at 1. The lifetime counter is used only for the first yearly row of the scope; once a yearly row exists, a new year starts from its admission count. In the year-and-number format only the admission count is used (the text prefix is new). The admission type's addition to count is not applied. Cancelling an admission returns its number to that admission's own year. |
+| `BHT Number Shows Only Year And Number` | Boolean | `false` | When true, the text is `YYYY/NNNN` (e.g. `2026/0001`): no admission type code and no `BHT`. The institution code is still added in front when `Generate Separate BHT Number Series for Each Institution` is on, because each institution then has its own series. Because the text cannot tell admission types apart, the series is always shared across admission types while this key is on, whatever the shared key says. Ignores `Bht Number With Year` and `Bht Number Without Admission Type`. For a series that restarts each year, also turn on `Reset BHT Number Series Every Year`; without it the number carries on across years under a new year prefix. |
+| `BHT Number Minimum Digits` | Integer | `0` | Pads the running number with leading zeros to at least this many digits (4 gives `0001`). 0 means no padding, the old behaviour. Applies to every text format; it changes only how the number is printed, not the counter. Numbers wider than the setting print in full. The setting is clamped to 0..12 in code, so a bad value cannot overflow the BHT column. |
+
+The shared and yearly keys combine: shared plus yearly gives one series per year for all admission types. Both are read on every draw, so a change takes effect after the config cache reloads. The `counterYear` column is a nullable schema addition, added by Add Missing Fields; no data migration script is needed.
+
+**Warning: switching the shared series back off.** With `Bht Number Without Admission Type` on (text `BHT/<year>/<n>`, no type code), the per-type counters resume at their old values, which are below numbers the shared series has already issued, so numbers repeat. While the text omits the admission type, keep the shared key on; do not switch it off, because even per-type counters reset above the shared maximum can issue the same number to two types. To switch it off, first restore distinct type prefixes in the text and reconcile the counters (BHT Number Management page). The same applies to `BHT Number Shows Only Year And Number`, which keeps the series shared while it is on.
+
+**Deploy order.** `AdmissionNumber.counterYear` is mapped on the entity, so every BHT number read fails until the column exists, even with all keys off. Add it **before** the WAR containing it is deployed: a nullable integer column `counterYear` on the admission number table (check that table's name case on the target database; the build being replaced cannot add it). Add Missing Fields in the new build also adds it, but only after the deploy, when BHT reads already fail.
+
+## Inward Final Bill - Custom Bill 3 Claimable / Not Claimable copies
+
+Issue #17566. Both keys are application-wide Booleans, default `false` (existing "Custom Bill 3" and "Custom Bill 3 (Duplicate)" buttons are unchanged when both are off). Set either or both.
+
+| Key | Type | Default | Description |
+| --- | --- | --- | --- |
+| `Inward Final Bill - Custom Bill 3 - Show Claimable Copies` | Boolean | `false` | Adds Claimable Patient, Hospital and Duplicate copy buttons (Custom Bill 3 layout, professional fees included) to the inward Final Bill page. |
+| `Inward Final Bill - Custom Bill 3 - Show Not Claimable Copies` | Boolean | `false` | Adds Not Claimable Patient, Hospital and Duplicate copy buttons (Custom Bill 3 layout, without professional fees) and a Professional Fees copy button. |
