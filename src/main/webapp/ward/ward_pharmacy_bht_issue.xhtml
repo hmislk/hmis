@@ -251,12 +251,12 @@
                                   style="width:25px!important; text-align: right; padding: 6px;">
                             <p:cellEditor>
                                 <f:facet name="output">
-                                    <h:outputText value="#{bItm.pharmaceuticalBillItem.qty}" >
+                                    <h:outputText value="#{bItm.qty}" >
                                         <f:convertNumber integerOnly="true" />
                                     </h:outputText>
                                 </f:facet>
                                 <f:facet name="input">
-                                    <p:inputText autocomplete="off" value="#{bItm.pharmaceuticalBillItem.qty}" style="width:96%"/>
+                                    <p:inputText autocomplete="off" value="#{bItm.qty}" style="width:96%"/>
                                 </f:facet>
                             </p:cellEditor>
                         </p:column>

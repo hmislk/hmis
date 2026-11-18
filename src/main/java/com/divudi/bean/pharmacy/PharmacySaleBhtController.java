@@ -377,15 +377,14 @@ public class PharmacySaleBhtController implements Serializable {
     public void onEditing(RowEditEvent event) {
         BillItem tmp = (BillItem) event.getObject();
 
-        tmp.setQty(tmp.getPharmaceuticalBillItem().getQtyInUnit());
-        if (tmp.getPharmaceuticalBillItem().getQtyInUnit() <= 0) {
+        if (tmp.getQty() == null || tmp.getQty() <= 0) {
             setZeroToQty(tmp);
             recalculateEditedIssueRow(tmp);
             JsfUtil.addErrorMessage("Can not enter a minus value");
             return;
         }
         Stock fetchedStock = tmp.getPharmaceuticalBillItem().getStock();
-        if (tmp.getPharmaceuticalBillItem().getQtyInUnit() > fetchedStock.getStock()) {
+        if (fetchedStock != null && tmp.getQty() > fetchedStock.getStock()) {
             setZeroToQty(tmp);
             recalculateEditedIssueRow(tmp);
             JsfUtil.addErrorMessage("No Sufficient Stocks?");
@@ -412,7 +411,7 @@ public class PharmacySaleBhtController implements Serializable {
         if (tmp == null || tmp.getPharmaceuticalBillItem() == null) {
             return;
         }
-        double editedQty = Math.abs(tmp.getPharmaceuticalBillItem().getQtyInUnit());
+        double editedQty = Math.abs(tmp.getQty());
         tmp.setQty(editedQty);
         tmp.getPharmaceuticalBillItem().setQtyInUnit((float) (0 - editedQty));
         tmp.getPharmaceuticalBillItem().setQty(0 - editedQty);
