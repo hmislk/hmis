@@ -434,7 +434,7 @@ public class PurchaseOrderApprovingNativeSqlController implements Serializable {
 
         String insId;
         if (stratInsIdInsYear) {
-            insId = billNumberBean.institutionBillNumberGeneratorYearlyWithPrefixInsYearCountInstitutionWide(sessionController.getDepartment(), BillTypeAtomic.PHARMACY_ORDER_APPROVAL);
+            insId = (stratInsYear) ? deptId : billNumberBean.institutionBillNumberGeneratorYearlyWithPrefixInsYearCountInstitutionWide(sessionController.getDepartment(), BillTypeAtomic.PHARMACY_ORDER_APPROVAL);
         } else {
             insId = deptId;
         }

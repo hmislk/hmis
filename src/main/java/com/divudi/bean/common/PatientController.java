@@ -949,12 +949,14 @@ public class PatientController implements Serializable, ControllerWithPatient {
         quickSearchPhoneNumber = null;
         admissionController.setPatientAllergies(null);
         admissionController.setCurrentReservation(null);
+        admissionController.setAppointmentBill(null);
         // AdmissionController is session-scoped: clear a "Patient Already Admitted"
         // warning left over from an earlier abandoned attempt so it does not
         // reappear over this fresh, blank form. (Issue #24000)
         admissionController.cancelActiveAdmissionWarning();
 
         admissionController.setPatientForiegner(false);
+        admissionController.loadPendingAppointments();
         return "/inward/inward_admission?faces-redirect=true";
 
     }
@@ -967,6 +969,8 @@ public class PatientController implements Serializable, ControllerWithPatient {
         ad.setPatient(nonBhtAd.getPatient());
         admissionController.setCurrentNonBht(nonBhtAd);
         admissionController.setCurrent(ad);
+        admissionController.setAppointmentBill(null);
+        admissionController.setCurrentReservation(null);
         admissionController.setPrintPreview(false);
         return "/inward/convert_inward_admission?faces-redirect=true";
 
@@ -989,6 +993,8 @@ public class PatientController implements Serializable, ControllerWithPatient {
             JsfUtil.addErrorMessage("No patient selected");
             return "";
         }
+        admissionController.setAppointmentBill(null);
+        admissionController.setCurrentReservation(null);
         inpatientPackageAdmissionController.setPatient(current);
         inpatientPackageAdmissionController.setInpatientPackage(null);
         return "/inward/package_admit?faces-redirect=true";

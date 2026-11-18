@@ -76,6 +76,12 @@ A print or settings dialog must use the **same** controller as the page or templ
 | ---------------------------------------------------------------- | --------- | ------- | ------------------------------------------------------------------------------------------------------- |
 | `Inward Administrative Discharge - Require Nursing Discharge`   | Boolean   | `true`  | Controls whether `BhtSummeryController.checkDischargeTime()` requires `PatientEncounter.isNursingDischarged()` before allowing administrative discharge (the "Discharge" action on the Interim Bill) for room-charged admissions. Some hospitals do not use the nursing discharge workflow; setting this to `false` for those institutions lets administrative discharge proceed without it. See issue #22607. |
 
+## Inward Final Bill
+
+| Key | Type | Default | Description |
+| --- | --- | --- | --- |
+| `Inward Final Bill - Discount Comment Required` | Boolean (application scope) | `false` | When `true`, a discounted inpatient bill cannot be saved without a Discount Comment. On the Inward Final Bill page, **Save Final Bill** stops when the bill has any discount (item, charge type or bill level). On the Edit Provisional Bill page, **Save Bill** and **Settle Bill** stop when the Discount box is above zero. When `false` the comment is optional. The comment prints under the discount on the final bill. See issue #25699. |
+
 ## Inpatient Reports
 
 | Key                                                              | Type      | Default | Description                                                                                             |
@@ -194,3 +200,12 @@ The shared and yearly keys combine: shared plus yearly gives one series per year
 **Warning: switching the shared series back off.** With `Bht Number Without Admission Type` on (text `BHT/<year>/<n>`, no type code), the per-type counters resume at their old values, which are below numbers the shared series has already issued, so numbers repeat. Do not switch the shared key off again in that case without first resetting each per-type counter above the shared maximum (BHT Number Management page). The same applies to `BHT Number Shows Only Year And Number`, which keeps the series shared while it is on.
 
 **Deploy order.** `AdmissionNumber.counterYear` is mapped on the entity, so every BHT number read fails until the column exists, even with all keys off. Add it **before** the WAR containing it is deployed: a nullable integer column `counterYear` on the admission number table (check that table's name case on the target database; the build being replaced cannot add it). Add Missing Fields in the new build also adds it, but only after the deploy, when BHT reads already fail.
+
+## Inward Final Bill - Custom Bill 3 Claimable / Not Claimable copies
+
+Issue #17566. Both keys are application-wide Booleans, default `false` (existing "Custom Bill 3" and "Custom Bill 3 (Duplicate)" buttons are unchanged when both are off). Set either or both.
+
+| Key | Type | Default | Description |
+| --- | --- | --- | --- |
+| `Inward Final Bill - Custom Bill 3 - Show Claimable Copies` | Boolean | `false` | Adds Claimable Patient, Hospital and Duplicate copy buttons (Custom Bill 3 layout, professional fees included) to the inward Final Bill page. |
+| `Inward Final Bill - Custom Bill 3 - Show Not Claimable Copies` | Boolean | `false` | Adds Not Claimable Patient, Hospital and Duplicate copy buttons (Custom Bill 3 layout, without professional fees) and a Professional Fees copy button. |

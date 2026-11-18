@@ -1123,8 +1123,7 @@ public class PharmacyRefundForItemReturnsController implements Serializable, Con
         // Generate Institution ID independently according to configuration
         String insId;
         if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Retail Sale Return Item Payments - Prefix + Institution Code + Year + Yearly Number", false)) {
-            insId = getBillNumberBean().institutionBillNumberGeneratorYearlyWithPrefixInsYearCountInstitutionWide(
-                    getSessionController().getDepartment(), BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEM_PAYMENTS);
+            insId = deptId; // Same number as deptId: do not consume the yearly counter twice
         } else if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Retail Sale Return Item Payments - Prefix + Institution Code + Department Code + Year + Yearly Number", false)
                 || configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Retail Sale Return Item Payments - Prefix + Department Code + Institution Code + Year + Yearly Number", false)) {
             insId = deptId;
