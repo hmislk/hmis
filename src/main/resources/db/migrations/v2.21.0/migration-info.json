@@ -1,0 +1,14 @@
+{
+  "version": "v2.21.0",
+  "description": "Add BILLFEE.COLLECTEDBYDOCTORATBILLING (fee collected by the doctor at billing)",
+  "issue": "#17490 - Inward professional fee collected by the doctor",
+  "author": "Dr M H B Ariyaratne",
+  "date": "2026-11-18",
+  "type": "schema",
+  "tables_affected": ["billfee"],
+  "data_changes": false,
+  "requires_downtime": false,
+  "estimated_duration_minutes": 1,
+  "note": "BillFee maps a new boolean COLLECTEDBYDOCTORATBILLING, set only by the Collected by Doctor switch on the inward professional fee add page. Run this migration before deploying the build that maps it: every BillFee query names the column. Idempotent; existing rows default to 0.",
+  "rollback": "rollback.sql"
+}
