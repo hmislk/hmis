@@ -2933,6 +2933,30 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             JsfUtil.addErrorMessage("Appointment not found");
             return;
         }
+        // The list is a session-held snapshot: re-check against the database that the
+        // appointment is still pending and not linked to an admission, otherwise
+        // updateAppointment() would move the link away from another admission.
+        String cj = "select count(a) from Appointment a"
+                + " join a.bill b"
+                + " where b.id = :billId"
+                + " and a.retired = false"
+                + " and a.appointmentCancel = false"
+                + " and a.appointmentType = :type"
+                + " and a.status = :status"
+                + " and b.retired = false"
+                + " and b.cancelled = false"
+                + " and b.refunded = false"
+                + " and a.patientEncounter is null";
+        Map<String, Object> cm = new HashMap<>();
+        cm.put("billId", billId);
+        cm.put("type", AppointmentType.IP_APPOINTMENT);
+        cm.put("status", AppointmentStatus.PENDING);
+        long stillPending = getAppointmentFacade().findLongByJpql(cj, cm, TemporalType.TIMESTAMP);
+        if (stillPending == 0L) {
+            JsfUtil.addErrorMessage("This appointment is no longer pending (it was cancelled, refunded, or already admitted). The list has been refreshed.");
+            loadPendingAppointments();
+            return;
+        }
         String rj = "select r from Reservation r where r.retired = false"
                 + " and r.appointment.bill.id = :billId order by r.id desc";
         Map<String, Object> m = new HashMap<>();

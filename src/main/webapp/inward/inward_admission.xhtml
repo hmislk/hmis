@@ -384,7 +384,7 @@
                                                         <f:facet name="header">
                                                             <div class="d-flex justify-content-between align-items-center">
                                                                 <h:outputText value="Pending Appointments" class="fw-bold" />
-                                                                <p:inputText id="pendingAppointmentsFilter"
+                                                                <p:inputText id="globalFilter"
                                                                              placeholder="Filter appointments..."
                                                                              title="Filter pending appointments"
                                                                              onkeyup="PF('tblPendingAppointmentsWidget').filter()" />
@@ -427,7 +427,7 @@
                                                                              icon="fas fa-check"
                                                                              styleClass="ui-button-success"
                                                                              process="@this"
-                                                                             update="panSearch2 :#{p:resolveFirstComponentWithId('ptd',view).clientId} @all"
+                                                                             update=":#{p:resolveFirstComponentWithId('ptd',view).clientId} @all"
                                                                              action="#{admissionController.selectPendingAppointment(pa.billId)}" />
                                                         </p:column>
                                                     </p:dataTable>
