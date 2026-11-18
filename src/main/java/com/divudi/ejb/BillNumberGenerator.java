@@ -32,6 +32,8 @@ import com.divudi.core.facade.DepartmentFacade;
 import com.divudi.core.facade.InstitutionFacade;
 import com.divudi.core.facade.ItemFacade;
 import com.divudi.core.facade.PatientFacade;
+import com.divudi.core.facade.UserPreferenceFacade;
+import com.divudi.core.entity.UserPreference;
 import java.text.DecimalFormat;
 import java.time.Month;
 import java.util.Arrays;
@@ -40,6 +42,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.logging.Logger;
 import javax.persistence.TemporalType;
 import java.util.stream.Collectors;
 import javax.ejb.EJB;
@@ -75,6 +78,8 @@ public class BillNumberGenerator {
     AdmissionNumberFacade admissionNumberFacade;
     @EJB
     AdmissionFacade admissionFacade;
+    @EJB
+    UserPreferenceFacade userPreferenceFacade;
 
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
@@ -4534,6 +4539,8 @@ public class BillNumberGenerator {
 
     private static final String BHT_SHARED_SERIES_KEY = "BHT Number Series Is Shared Across Admission Types";
     private static final String BHT_YEARLY_RESET_KEY = "Reset BHT Number Series Every Year";
+    private static final String BHT_YEAR_AND_NUMBER_ONLY_KEY = "BHT Number Shows Only Year And Number";
+    private static final Logger LOGGER = Logger.getLogger(BillNumberGenerator.class.getName());
 
     /**
      * True when every admission type draws from one BHT counter (#22142).
@@ -4541,7 +4548,32 @@ public class BillNumberGenerator {
      * counter per admission type (or per admission type enum) as before.
      */
     private boolean isBhtSeriesShared() {
-        return configOptionApplicationController.getBooleanValueByKey(BHT_SHARED_SERIES_KEY, false);
+        return configOptionApplicationController.getBooleanValueByKey(BHT_SHARED_SERIES_KEY, false)
+                || isBhtYearAndNumberOnly();
+    }
+
+    /**
+     * True when the BHT text is only the year and the number (no admission type
+     * code). That text cannot tell admission types apart, so the series is
+     * always shared across admission types while it is on.
+     */
+    private boolean isBhtYearAndNumberOnly() {
+        return configOptionApplicationController.getBooleanValueByKey(BHT_YEAR_AND_NUMBER_ONLY_KEY, false);
+    }
+
+    /**
+     * True when the printed BHT text carries the year: the year-and-number
+     * format always does, otherwise it follows the "Bht Number With Year"
+     * preference (read fresh, so a change on the preferences page applies at once).
+     */
+    private boolean isYearInBhtText() {
+        if (isBhtYearAndNumberOnly()) {
+            return true;
+        }
+        UserPreference p = userPreferenceFacade.findFreshByJpql(
+                "select p from UserPreference p where p.institution is null and p.department is null"
+                + " and p.webUser is null order by p.id desc", new HashMap<String, Object>());
+        return p != null && p.isBhtNumberWithYear();
     }
 
     /**
@@ -4552,8 +4584,22 @@ public class BillNumberGenerator {
         return bhtCounterYearFor(Calendar.getInstance().get(Calendar.YEAR));
     }
 
+    /**
+     * The yearly reset applies only when the year is in the BHT text. Without
+     * the year, the series would restart in January and print numbers already
+     * issued, so the key is ignored (and a line logged).
+     */
     private Integer bhtCounterYearFor(int year) {
-        return configOptionApplicationController.getBooleanValueByKey(BHT_YEARLY_RESET_KEY, false) ? year : null;
+        if (!configOptionApplicationController.getBooleanValueByKey(BHT_YEARLY_RESET_KEY, false)) {
+            return null;
+        }
+        if (!isYearInBhtText()) {
+            LOGGER.warning("'" + BHT_YEARLY_RESET_KEY + "' is on but the BHT number text has no year; "
+                    + "ignoring the yearly reset. Switch on 'Bht Number With Year' or '"
+                    + BHT_YEAR_AND_NUMBER_ONLY_KEY + "'.");
+            return null;
+        }
+        return year;
     }
 
     private String getBhtLockKey(AdmissionType admissionType, Institution institution, boolean institutionBased,
@@ -4604,11 +4650,7 @@ public class BillNumberGenerator {
                 // No counter yet: compute what the first number would be
                 return seedLastAdmissionNumber(admissionType, institution, institutionBased, shared, year) + 1;
             } else {
-                Long last = an.getLastAdmissionNumber();
-                if (last == null) {
-                    last = 0L;
-                }
-                return last + 1;
+                return effectiveLast(an, institution, institutionBased, shared, year) + 1;
             }
         } finally {
             lock.unlock();
@@ -4633,6 +4675,27 @@ public class BillNumberGenerator {
         return an;
     }
 
+    /**
+     * The counter value to count on from. In a shared series it is never below
+     * the highest counter in scope, whichever row was found: an old row with no
+     * type and no enum (written by the per-type code) can match the shared
+     * lookup while another counter is far ahead of it (#22142).
+     */
+    private Long effectiveLast(AdmissionNumber an, Institution institution, boolean institutionBased,
+            boolean shared, Integer year) {
+        Long last = an.getLastAdmissionNumber();
+        if (last == null) {
+            last = 0L;
+        }
+        if (shared) {
+            Long max = findHighestExistingCounter(institution, institutionBased, year);
+            if (max != null && max > last) {
+                last = max;
+            }
+        }
+        return last;
+    }
+
     private AdmissionNumber fetchNextAdmissionNumberSynchronized(AdmissionType admissionType, Institution institution,
             boolean institutionBased, boolean shared, Integer year) {
         AdmissionNumber an = findAdmissionNumberRecord(admissionType, institution, institutionBased, shared, year);
@@ -4645,10 +4708,7 @@ public class BillNumberGenerator {
         }
 
         // Increment
-        Long last = an.getLastAdmissionNumber();
-        if (last == null) {
-            last = 0L;
-        }
+        Long last = effectiveLast(an, institution, institutionBased, shared, year);
         an.setLastAdmissionNumber(last + 1);
         admissionNumberFacade.editAndFlush(an);
 
@@ -4821,21 +4881,7 @@ public class BillNumberGenerator {
         StringBuilder sql = new StringBuilder("SELECT an FROM AdmissionNumber an WHERE an.retired=false");
         HashMap<String, Object> hm = new HashMap<>();
 
-        if (shared) {
-            // One series for every admission type: the row carries neither a type nor an enum.
-            sql.append(" AND an.admissionType IS NULL AND an.admissionTypeEnum IS NULL");
-        } else if (admissionType != null && admissionType.isGenerateSeparateAdmissionNumber()) {
-            sql.append(" AND an.admissionType=:adType");
-            hm.put("adType", admissionType);
-        } else {
-            sql.append(" AND an.admissionType IS NULL");
-            if (admissionType != null && admissionType.getAdmissionTypeEnum() != null) {
-                sql.append(" AND an.admissionTypeEnum=:adTypeEnum");
-                hm.put("adTypeEnum", admissionType.getAdmissionTypeEnum());
-            } else {
-                sql.append(" AND an.admissionTypeEnum IS NULL");
-            }
-        }
+        appendSeriesScope(sql, hm, admissionType, shared);
 
         if (institutionBased && institution != null) {
             sql.append(" AND an.institution=:ins");
@@ -4854,30 +4900,102 @@ public class BillNumberGenerator {
         return admissionNumberFacade.findFreshByJpql(sql.toString(), hm);
     }
 
+    private void appendSeriesScope(StringBuilder sql, HashMap<String, Object> hm,
+            AdmissionType admissionType, boolean shared) {
+        if (shared) {
+            // One series for every admission type: the row carries neither a type nor an enum.
+            sql.append(" AND an.admissionType IS NULL AND an.admissionTypeEnum IS NULL");
+        } else if (admissionType != null && admissionType.isGenerateSeparateAdmissionNumber()) {
+            sql.append(" AND an.admissionType=:adType");
+            hm.put("adType", admissionType);
+        } else {
+            sql.append(" AND an.admissionType IS NULL");
+            if (admissionType != null && admissionType.getAdmissionTypeEnum() != null) {
+                sql.append(" AND an.admissionTypeEnum=:adTypeEnum");
+                hm.put("adTypeEnum", admissionType.getAdmissionTypeEnum());
+            } else {
+                sql.append(" AND an.admissionTypeEnum IS NULL");
+            }
+        }
+    }
+
+    /**
+     * True when the series (same type scope and institution scope) already has
+     * a row for some calendar year, i.e. the yearly reset has been running.
+     */
+    private boolean hasYearlyRow(AdmissionType admissionType, Institution institution,
+            boolean institutionBased, boolean shared) {
+        StringBuilder sql = new StringBuilder("SELECT an FROM AdmissionNumber an WHERE an.retired=false"
+                + " AND an.counterYear IS NOT NULL");
+        HashMap<String, Object> hm = new HashMap<>();
+        if (!shared) {
+            appendSeriesScope(sql, hm, admissionType, false);
+        }
+        // Shared: a yearly row of any admission type counts, as the shared
+        // series takes the highest counter in scope.
+        if (institutionBased && institution != null) {
+            sql.append(" AND an.institution=:ins");
+            hm.put("ins", institution);
+        } else {
+            sql.append(" AND an.institution IS NULL");
+        }
+        return admissionNumberFacade.findFreshByJpql(sql.toString(), hm) != null;
+    }
+
     /**
      * The lastAdmissionNumber a series starts from when it has no counter row.
      * <ul>
      * <li>Per-type, no yearly reset: the existing admission count plus the
      * admission type's addition (unchanged behaviour).</li>
-     * <li>Yearly reset: the admissions already made this year (0 in a new
-     * year), so the first BHT of a year is 1. The type's addition is not
-     * applied, as it belongs to the lifetime count.</li>
-     * <li>Shared series: the highest existing counter in the same institution
-     * scope (and year when the yearly reset is on), so numbers never go
-     * lower; with no counter yet, the admission count.</li>
+     * <li>Shared, no yearly reset: the highest existing counter in the same
+     * institution scope, so numbers never go lower; with no counter yet, the
+     * admission count.</li>
+     * <li>Yearly reset: the higher of the admissions already made this year (0 in
+     * a new year) and, when the number is printed as before (type code or BHT,
+     * then year, then number), the lifetime counter of the same scope. The
+     * lifetime counter is used only for the first yearly row of the scope (the
+     * key was switched on mid-year, and this year's numbers were issued from the
+     * lifetime counter under the same text prefix); once a yearly row exists, a
+     * new year starts from its admission count, so the series resets. In the
+     * year-and-number format the text prefix is new, so only this year's
+     * admissions count. The type's addition is not applied (it belongs to the
+     * lifetime count).</li>
      * </ul>
      */
     private Long seedLastAdmissionNumber(AdmissionType admissionType, Institution institution,
             boolean institutionBased, boolean shared, Integer year) {
+        if (year == null) {
+            if (shared) {
+                Long max = findHighestExistingCounter(institution, institutionBased, null);
+                if (max != null) {
+                    return max;
+                }
+            }
+            Long count = computeAdmissionCount(admissionType, institution, institutionBased, shared, null);
+            long addition = (!shared && admissionType != null) ? admissionType.getAdditionToCount() : 0;
+            return count + addition;
+        }
+
+        long seed = computeAdmissionCount(admissionType, institution, institutionBased, shared, year);
         if (shared) {
-            Long max = findHighestExistingCounter(institution, institutionBased, year);
-            if (max != null) {
-                return max;
+            Long sameYear = findHighestExistingCounter(institution, institutionBased, year);
+            if (sameYear != null && sameYear > seed) {
+                seed = sameYear;
             }
         }
-        Long count = computeAdmissionCount(admissionType, institution, institutionBased, shared, year);
-        long addition = (!shared && year == null && admissionType != null) ? admissionType.getAdditionToCount() : 0;
-        return count + addition;
+        if (!isBhtYearAndNumberOnly() && !hasYearlyRow(admissionType, institution, institutionBased, shared)) {
+            Long lifetime;
+            if (shared) {
+                lifetime = findHighestExistingCounter(institution, institutionBased, null);
+            } else {
+                AdmissionNumber row = findAdmissionNumberRecord(admissionType, institution, institutionBased, false, null);
+                lifetime = row != null ? row.getLastAdmissionNumber() : null;
+            }
+            if (lifetime != null && lifetime > seed) {
+                seed = lifetime;
+            }
+        }
+        return seed;
     }
 
     private Long findHighestExistingCounter(Institution institution, boolean institutionBased, Integer year) {

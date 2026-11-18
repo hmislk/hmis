@@ -314,7 +314,25 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
                 "Reset BHT Number Series Every Year", false);
         metadata.addConfigOption(new ConfigOptionInfo(
                 "Reset BHT Number Series Every Year",
-                "When enabled, the BHT number series restarts at 1 each calendar year, e.g. 2026/1, 2026/2, then 2027/1. Use with the preference that adds the year to the BHT number (default false)",
+                "When enabled, the BHT number series restarts at 1 each calendar year, e.g. 2026/1, 2026/2, then 2027/1. Applies only when the BHT number shows the year (the preference that adds the year, or the year-and-number format); otherwise it is ignored (default false)",
+                "inward/inward_admission",
+                OptionScope.APPLICATION
+        ));
+
+        configOptionApplicationController.getBooleanValueByKey(
+                "BHT Number Shows Only Year And Number", false);
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "BHT Number Shows Only Year And Number",
+                "When enabled, the BHT number is the year and the running number only, e.g. 2026/0001: no admission type code and no BHT prefix (the institution code is still added when each institution has its own series). All admission types then share one series (default false)",
+                "inward/inward_admission",
+                OptionScope.APPLICATION
+        ));
+
+        configOptionApplicationController.getIntegerValueByKey(
+                "BHT Number Minimum Digits", 0);
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "BHT Number Minimum Digits",
+                "Pads the running number of the BHT number with leading zeros to at least this many digits, e.g. 4 gives 0001. 0 means no padding (default 0)",
                 "inward/inward_admission",
                 OptionScope.APPLICATION
         ));
