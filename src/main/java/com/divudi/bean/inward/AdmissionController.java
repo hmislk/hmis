@@ -3548,7 +3548,13 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             }
         }
 
-        if (currentReservation != null) {
+        // Use the reservation only for the appointment actually being admitted; a stale
+        // one (e.g. autocomplete cleared or changed after a table Select) is ignored. (#25707)
+        boolean reservationMatchesAppointment = currentReservation != null
+                && currentReservation.getAppointment() != null
+                && currentReservation.getAppointment().getBill() != null
+                && currentReservation.getAppointment().getBill().equals(getAppointmentBill());
+        if (reservationMatchesAppointment) {
             System.out.println("DEBUG: currentReservation is not null. ID: " + currentReservation.getId());
 
             System.out.println("DEBUG: Setting encounterReservation on current Admission...");
