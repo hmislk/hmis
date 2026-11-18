@@ -2908,12 +2908,17 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
                     + " and r.appointment.id in :ids";
             Map<String, Object> rm = new HashMap<>();
             rm.put("ids", appointmentIds);
-            List<Object[]> roomRows = reservationFacade.findObjectsArrayByJpql(rj, rm, TemporalType.TIMESTAMP);
-            for (Object[] r : roomRows) {
-                PendingAppointmentDTO d = byAppointment.get((Long) r[0]);
-                if (d != null) {
-                    d.setRoomName((String) r[1]);
+            try {
+                List<Object[]> roomRows = reservationFacade.findObjectsArrayByJpql(rj, rm, TemporalType.TIMESTAMP);
+                for (Object[] r : roomRows) {
+                    PendingAppointmentDTO d = byAppointment.get((Long) r[0]);
+                    if (d != null) {
+                        d.setRoomName((String) r[1]);
+                    }
                 }
+            } catch (Exception e) {
+                // Room names are display-only; never let this interrupt the admission save.
+                logger.log(Level.WARNING, "Pending appointments: room name lookup failed", e);
             }
         }
         pendingAppointments = list;
