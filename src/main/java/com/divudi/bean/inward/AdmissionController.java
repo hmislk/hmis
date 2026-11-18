@@ -2991,6 +2991,16 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         if (ap == null) {
             return;
         }
+        // currentReservation belongs to the appointment chosen from the pending table or
+        // the calendar. If another appointment is picked now (autocomplete), drop it, or
+        // save would link that reservation to this admission and complete the wrong
+        // appointment. The matching bill (table Select, calendar To Admit) keeps it. (#25707)
+        if (currentReservation != null
+                && (currentReservation.getAppointment() == null
+                || currentReservation.getAppointment().getBill() == null
+                || !currentReservation.getAppointment().getBill().equals(ap))) {
+            currentReservation = null;
+        }
         setPatient(ap.getPatient());
         prefillAdmissionFromAppointment(ap);
     }
