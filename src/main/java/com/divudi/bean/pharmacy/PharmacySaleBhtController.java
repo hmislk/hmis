@@ -377,18 +377,46 @@ public class PharmacySaleBhtController implements Serializable {
     public void onEditing(RowEditEvent event) {
         BillItem tmp = (BillItem) event.getObject();
 
-        tmp.setQty(tmp.getPharmaceuticalBillItem().getQtyInUnit());
-        if (tmp.getPharmaceuticalBillItem().getQtyInUnit() <= 0) {
+        if (tmp.getQty() == null || tmp.getQty() <= 0) {
             setZeroToQty(tmp);
+            recalculateEditedIssueRow(tmp);
             JsfUtil.addErrorMessage("Can not enter a minus value");
             return;
         }
         Stock fetchedStock = tmp.getPharmaceuticalBillItem().getStock();
-        if (tmp.getPharmaceuticalBillItem().getQtyInUnit() > fetchedStock.getStock()) {
+        if (fetchedStock != null && tmp.getQty() > fetchedStock.getStock()) {
             setZeroToQty(tmp);
+            recalculateEditedIssueRow(tmp);
             JsfUtil.addErrorMessage("No Sufficient Stocks?");
         }
 
+        recalculateEditedIssueRow(tmp);
+    }
+
+    /**
+     * After a row-edit on the BHT issue page, restore the issue sign convention
+     * (unit qty is stored NEGATIVE for issues, exactly as
+     * generateIssueBillComponentsForBhtRequest builds the rows) and recalculate
+     * this row's financials (rate/margin/gross/net) plus the running bill total
+     * for the edited quantity.
+     *
+     * Without this, a partially-issued row settled after a qty edit keeps the
+     * ORIGINAL requested-quantity gross/margin/net values while stock moves by
+     * the edited quantity, and the positive unit qty flips the sign of the
+     * movement in the Cost Of Goods Sold report (found via COGS E2E
+     * verification: request 20, issue 10 → bill said 458.70, stock moved 10,
+     * COGS saw +10 instead of -10).
+     */
+    private void recalculateEditedIssueRow(BillItem tmp) {
+        if (tmp == null || tmp.getPharmaceuticalBillItem() == null) {
+            return;
+        }
+        double editedQty = Math.abs(tmp.getQty());
+        tmp.setQty(editedQty);
+        tmp.getPharmaceuticalBillItem().setQtyInUnit((float) (0 - editedQty));
+        tmp.getPharmaceuticalBillItem().setQty(0 - editedQty);
+        calculateRates(tmp);
+        calCurrentBillItemTotal(getBillItems());
     }
 
     private void setZeroToQty(BillItem tmp) {
@@ -1530,7 +1558,7 @@ public class PharmacySaleBhtController implements Serializable {
                 JsfUtil.addErrorMessage("Item Qty is Zero " + tbi.getItem().getName());
                 return false;
             }
-            if (tbi.getPharmaceuticalBillItem().getQty() > tbi.getPharmaceuticalBillItem().getStock().getStock()) {
+            if (Math.abs(tbi.getPharmaceuticalBillItem().getQty()) > tbi.getPharmaceuticalBillItem().getStock().getStock()) {
                 JsfUtil.addErrorMessage("Not Enough Stock " + tbi.getItem().getName());
                 return false;
             }
@@ -2282,8 +2310,8 @@ public class PharmacySaleBhtController implements Serializable {
                     }
                     billItem = new BillItem();
                     billItem.setPharmaceuticalBillItem(new PharmaceuticalBillItem());
-                    billItem.getPharmaceuticalBillItem().setQtyInUnit(sq.getQty());
-//                billItem.getPharmaceuticalBillItem().setQtyInUnit((double) (0 - sq.getQty()));
+                    billItem.getPharmaceuticalBillItem().setQtyInUnit(0 - sq.getQty());
+                    billItem.getPharmaceuticalBillItem().setQty(0 - sq.getQty());
                     billItem.getPharmaceuticalBillItem().setStock(sq.getStock());
                     billItem.getPharmaceuticalBillItem().setItemBatch(sq.getStock().getItemBatch());
 
@@ -2294,11 +2322,6 @@ public class PharmacySaleBhtController implements Serializable {
                     billItem.getPharmaceuticalBillItem().setDoe(sq.getStock().getItemBatch().getDateOfExpire());
                     billItem.getPharmaceuticalBillItem().setFreeQty(0.0f);
                     billItem.getPharmaceuticalBillItem().setItemBatch(sq.getStock().getItemBatch());
-                    billItem.getPharmaceuticalBillItem().setQtyInUnit(sq.getQty());
-//                billItem.getPharmaceuticalBillItem().setQtyInUnit((double) (0 - sq.getQty()));
-//                billItem.getPharmaceuticalBillItem().setQtyInUnit((double) (0 - sq.getQty()));
-//                billItem.getPharmaceuticalBillItem().setQtyInUnit((double) (0 - sq.getQty()));
-//                billItem.getPharmaceuticalBillItem().setQtyInUnit((double) (0 - sq.getQty()));
                     billItem.setGrossValue(sq.getStock().getItemBatch().getRetailsaleRate() * sq.getQty());
                     billItem.setNetValue(sq.getQty() * sq.getStock().getItemBatch().getRetailsaleRate());
 
@@ -2314,7 +2337,8 @@ public class PharmacySaleBhtController implements Serializable {
             } else {
                 billItem = new BillItem();
                 billItem.setPharmaceuticalBillItem(new PharmaceuticalBillItem());
-                billItem.getPharmaceuticalBillItem().setQtyInUnit(issuableQty);
+                billItem.getPharmaceuticalBillItem().setQtyInUnit(0 - issuableQty);
+                billItem.getPharmaceuticalBillItem().setQty(0 - issuableQty);
                 billItem.getPharmaceuticalBillItem().setStock(null);
                 billItem.getPharmaceuticalBillItem().setItemBatch(null);
                 billItem.setItem(i.getItem());
