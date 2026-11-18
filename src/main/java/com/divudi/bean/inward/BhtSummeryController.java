@@ -1605,6 +1605,10 @@ public class BhtSummeryController implements Serializable {
                         discountValue += updateTheatreRoomMembershipDiscounts();
                     }
                     break;
+                case ComputedVAT:
+                    // Computed by applyComputedVat() after the discounts are known;
+                    // it is never discounted and never has a price-matrix row.
+                    break;
                 case Medicine:
                     // Discount/margin for pharmacy issues (PharmacyBhtPre) is already
                     // calculated and persisted on the BillItem/Bill at issue time.
@@ -4223,6 +4227,8 @@ public class BhtSummeryController implements Serializable {
         getCurrent().setTotal(grantTotal);
         getCurrent().setDiscount(discount);
         getCurrent().setNetTotal(grantTotal - discount);
+        getCurrent().setVat(computedVatTotal);
+        getCurrent().setVatPlusNetTotal(grantTotal - discount);
         getCurrent().setPaidAmount(paid);
         getCurrent().setClaimableTotal(adjustedTotal);
         getCurrent().setSettledAmountBySponsor(paidByCompany);
@@ -4278,6 +4284,8 @@ public class BhtSummeryController implements Serializable {
         getTempBill().setTotal(grantTotal);
         getTempBill().setDiscount(discount);
         getTempBill().setNetTotal(grantTotal - discount);
+        getTempBill().setVat(computedVatTotal);
+        getTempBill().setVatPlusNetTotal(grantTotal - discount);
         getTempBill().setPaidAmount(paid);
         getTempBill().setClaimableTotal(adjustedTotal);
         getTempBill().setSettledAmountBySponsor(paidByCompany);
@@ -4305,6 +4313,8 @@ public class BhtSummeryController implements Serializable {
         getOriginalBill().setTotal(grantTotal);
         getOriginalBill().setDiscount(discount);
         getOriginalBill().setNetTotal(grantTotal - discount);
+        getOriginalBill().setVat(computedVatTotal);
+        getOriginalBill().setVatPlusNetTotal(grantTotal - discount);
         getOriginalBill().setPaidAmount(paid);
         getOriginalBill().setClaimableTotal(adjustedTotal);
         getOriginalBill().setSettledAmountBySponsor(paidByCompany);
@@ -4416,6 +4426,9 @@ public class BhtSummeryController implements Serializable {
             temBi.setChargeTypeDiscount(cit.getChargeTypeDiscount());
             temBi.setNetValue(cit.getNetTotal());
             temBi.setAdjustedValue(cit.getAdjustedTotal());
+            if (cit.getInwardChargeType() == InwardChargeType.ComputedVAT) {
+                temBi.setVat(cit.getTotal());
+            }
             temBi.setDescreption(cit.getComments());
             temBi.setCreatedAt(new Date());
             temBi.setCreater(getSessionController().getLoggedUser());
@@ -4472,6 +4485,9 @@ public class BhtSummeryController implements Serializable {
             temBi.setChargeTypeDiscount(cit.getChargeTypeDiscount());
             temBi.setNetValue(cit.getNetTotal());
             temBi.setAdjustedValue(cit.getAdjustedTotal());
+            if (cit.getInwardChargeType() == InwardChargeType.ComputedVAT) {
+                temBi.setVat(cit.getTotal());
+            }
             temBi.setDescreption(cit.getComments());
             temBi.setCreatedAt(new Date());
             temBi.setCreater(getSessionController().getLoggedUser());
@@ -4516,6 +4532,9 @@ public class BhtSummeryController implements Serializable {
             temBi.setChargeTypeDiscount(cit.getChargeTypeDiscount());
             temBi.setNetValue(cit.getNetTotal());
             temBi.setAdjustedValue(cit.getAdjustedTotal());
+            if (cit.getInwardChargeType() == InwardChargeType.ComputedVAT) {
+                temBi.setVat(cit.getTotal());
+            }
             temBi.setDescreption(cit.getComments());
             temBi.setCreatedAt(new Date());
             temBi.setCreater(getSessionController().getLoggedUser());
@@ -5569,6 +5588,9 @@ public class BhtSummeryController implements Serializable {
         grossTotal = 0;
         marginTotal = 0;
         vatTotal = 0;
+        // Add / refresh the computed VAT row first, from the rows' net after
+        // discounts, so every total below (and the due) includes it (#17491).
+        applyComputedVat(getChargeItemTotals());
         for (ChargeItemTotal c : getChargeItemTotals()) {
             grantTotal += c.getTotal();
             itemDiscountTotal += c.getDiscount();
@@ -5585,6 +5607,92 @@ public class BhtSummeryController implements Serializable {
     double grossTotal = 0;
     double marginTotal = 0;
     double vatTotal = 0;
+    /**
+     * Sum of the computed VAT row (issue #17491), 0 when no charge type has a
+     * rate. Written to Bill.vat / Bill.vatPlusNetTotal on the final bill.
+     */
+    private double computedVatTotal = 0.0;
+
+    /**
+     * Adds (or refreshes, or removes) the single ComputedVAT row (issue #17491).
+     * <p>
+     * VAT = sum over rows with a rate above 0 ("Inward VAT Percentage - &lt;type
+     * name&gt;", set on the Inward Charge Type Labels page) of
+     * round2(row net after item and charge-type discounts &times; rate / 100).
+     * The new row is an ordinary charge row, so the grand total, net total, due,
+     * credit-company split and the final bill items all include it without any
+     * special handling. It is never taxed itself, and package-covered rows
+     * (held at the package's fixed allocated price) are not taxed. With every
+     * rate at 0 no row exists and nothing changes.
+     * <p>
+     * Idempotent: it is called from {@link #calFinalValue()} on every
+     * recalculation, reuses the existing ComputedVAT row (keeping its comment)
+     * and replaces its amount, so the VAT is never counted twice.
+     */
+    private void applyComputedVat(List<ChargeItemTotal> rows) {
+        computedVatTotal = 0.0;
+        if (rows == null) {
+            return;
+        }
+        ChargeItemTotal vatRow = null;
+        for (java.util.Iterator<ChargeItemTotal> it = rows.iterator(); it.hasNext();) {
+            ChargeItemTotal row = it.next();
+            if (row.getInwardChargeType() == InwardChargeType.ComputedVAT) {
+                if (vatRow == null) {
+                    vatRow = row;
+                } else {
+                    it.remove();
+                }
+            }
+        }
+
+        Map<InwardChargeType, Double> packageAllocations = null;
+        double vatSum = 0.0;
+        for (ChargeItemTotal row : rows) {
+            InwardChargeType type = row.getInwardChargeType();
+            if (type == InwardChargeType.ComputedVAT) {
+                continue;
+            }
+            double rate = configOptionApplicationController.getInwardVatPercentage(type);
+            if (rate <= 0) {
+                continue;
+            }
+            double net = row.getNetTotal();
+            if (net <= 0) {
+                continue;
+            }
+            if (getPatientEncounter() != null && getPatientEncounter().getInpatientPackage() != null) {
+                if (packageAllocations == null) {
+                    packageAllocations = resolvePackageChargeTypeAllocationsIfApplicable(getPatientEncounter().getInpatientPackage());
+                }
+                if (packageAllocations.containsKey(type)) {
+                    continue;
+                }
+            }
+            vatSum += BigDecimal.valueOf(net).multiply(BigDecimal.valueOf(rate))
+                    .divide(BigDecimal.valueOf(100), 2, java.math.RoundingMode.HALF_UP).doubleValue();
+        }
+        vatSum = BigDecimal.valueOf(vatSum).setScale(2, java.math.RoundingMode.HALF_UP).doubleValue();
+
+        if (vatSum <= 0) {
+            if (vatRow != null) {
+                rows.remove(vatRow);
+            }
+            return;
+        }
+        if (vatRow == null) {
+            vatRow = new ChargeItemTotal();
+            vatRow.setInwardChargeType(InwardChargeType.ComputedVAT);
+            rows.add(vatRow);
+        }
+        vatRow.setTotal(vatSum);
+        vatRow.setGross(vatSum);
+        vatRow.setDiscount(0.0);
+        vatRow.setChargeTypeDiscount(0.0);
+        vatRow.setMargin(0.0);
+        vatRow.setAdjustedTotal(vatSum);
+        computedVatTotal = vatSum;
+    }
 
     public double getGrantTotal() {
         return grantTotal;
