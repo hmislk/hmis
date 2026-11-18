@@ -1211,6 +1211,56 @@ public class InpatientClinicalDataController implements Serializable {
         getEncounterDocuments().add(ref);
     }
 
+    /**
+     * True when an AI key is configured. AI generation is an optional extra;
+     * diagnosis cards must never depend on it.
+     */
+    public boolean isAiConfigured() {
+        String apiKey = configOptionApplicationController.getShortTextValueByKey("AI Chat - Claude API Key", "");
+        return apiKey != null && !apiKey.trim().isEmpty();
+    }
+
+    /**
+     * Creates a diagnosis card without AI: from the selected template (with
+     * placeholders filled), or a blank editable card when no template is chosen.
+     */
+    public void createDiagnosisCardManually() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("No encounter selected");
+            return;
+        }
+        if (requiresCreditCompanySelection()) {
+            JsfUtil.addErrorMessage("This admission has multiple linked credit companies. Please select one before creating.");
+            return;
+        }
+        String html = "";
+        String cardTitle = "Diagnosis Card";
+        if (selectedDocumentTemplate != null) {
+            html = generateDocumentFromTemplate(selectedDocumentTemplate, current);
+            if (selectedDocumentTemplate.getName() != null && !selectedDocumentTemplate.getName().trim().isEmpty()) {
+                cardTitle = selectedDocumentTemplate.getName();
+            }
+        }
+        if (html == null || html.trim().isEmpty()) {
+            html = "<p><br/></p>";
+        }
+        ClinicalFindingValue ref = new ClinicalFindingValue();
+        ref.setClinicalFindingValueType(ClinicalFindingValueType.VisitDocument);
+        if (selectedDocumentTemplate != null) {
+            ref.setItemValue(selectedDocumentTemplate.getItem());
+            ref.setDocumentTemplate(selectedDocumentTemplate);
+        }
+        ref.setLobValue(html);
+        ref.setStringValue(cardTitle);
+        ref.setEncounter(current);
+        ref.setOrderNo(getEncounterDocuments().size() + 1);
+        clinicalFindingValueFacade.create(ref);
+        encounterReferral = ref;
+        getEncounterDocuments().add(ref);
+        editingDiagnosisCard = true;
+        JsfUtil.addSuccessMessage("Diagnosis card created. Edit it, then Save and Print.");
+    }
+
     public void generateDiagnosisCardWithAi() {
         if (current == null) {
             JsfUtil.addErrorMessage("No encounter selected");
