@@ -101,6 +101,8 @@ public class WebUserController implements Serializable {
     @Inject
     UserIconController userIconController;
     @Inject
+    private TwoFactorAuthController twoFactorAuthController;
+    @Inject
     TriggerSubscriptionController triggerSubscriptionController;
     @Inject
     UserNotificationController userNotificationController;
@@ -257,7 +259,18 @@ public class WebUserController implements Serializable {
             getFacade().create(current);
             JsfUtil.addSuccessMessage("Saved");
         } else {
+            WebUser saved = getFacade().find(current.getId());
+            boolean wasTwoFactorRequired = saved != null && saved.isTwoFactorRequired();
+            boolean wasTwoFactorSmsAllowed = saved != null && saved.isTwoFactorSmsAllowed();
+            // Authenticator enrollment is written only by TwoFactorAuthController; don't let a stale copy overwrite it
+            TwoFactorAuthController.copyEnrollment(saved, current);
             getFacade().edit(current);
+            if (wasTwoFactorRequired != current.isTwoFactorRequired()) {
+                twoFactorAuthController.logRequiredChange(current, wasTwoFactorRequired);
+            }
+            if (wasTwoFactorSmsAllowed != current.isTwoFactorSmsAllowed()) {
+                twoFactorAuthController.logSmsAllowedChange(current, wasTwoFactorSmsAllowed);
+            }
             JsfUtil.addSuccessMessage("Updated");
         }
     }
@@ -621,6 +634,12 @@ public class WebUserController implements Serializable {
         getCurrent().setName((getCurrent().getName()));
         getCurrent().setWebUserPassword(getSecurityController().hashAndCheck(getCurrent().getWebUserPassword()));
         getFacade().create(getCurrent());
+        if (getCurrent().isTwoFactorRequired()) {
+            twoFactorAuthController.logRequiredChange(getCurrent(), false);
+        }
+        if (getCurrent().isTwoFactorSmsAllowed()) {
+            twoFactorAuthController.logSmsAllowedChange(getCurrent(), false);
+        }
         if (createOnlyUser) {
             JsfUtil.addSuccessMessage("Add New User Only");
         } else if (createOnlyUserForExsistingUser) {
