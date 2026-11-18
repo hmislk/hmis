@@ -2,6 +2,7 @@ package com.divudi.bean.inward;
 
 import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.core.data.inward.InwardChargeType;
+import com.divudi.core.util.JsfUtil;
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -68,6 +69,9 @@ public class InwardChargeTypeLabelController implements Serializable {
     }
 
     public void saveAll() {
+        if (!validateVatInputs(chargeTypes)) {
+            return;
+        }
         for (InwardChargeType type : chargeTypes) {
             String custom = labelMap.get(type.name());
             configOptionApplicationController.saveInwardChargeTypeLabel(type, custom);
@@ -79,6 +83,9 @@ public class InwardChargeTypeLabelController implements Serializable {
     }
 
     public void saveOne(InwardChargeType type) {
+        if (!validateVatInputs(Arrays.asList(type))) {
+            return;
+        }
         String custom = labelMap.get(type.name());
         configOptionApplicationController.saveInwardChargeTypeLabel(type, custom);
         configOptionApplicationController.saveInwardChargeTypeReportOrder(type, orderOrDefault(reportOrderMap, type));
@@ -102,6 +109,36 @@ public class InwardChargeTypeLabelController implements Serializable {
         if (entered != configOptionApplicationController.getInwardVatPercentage(type)) {
             configOptionApplicationController.saveInwardVatPercentage(type, entered);
         }
+    }
+
+    /**
+     * Rejects a VAT rate outside 0-100 (blank counts as 0). On a bad value
+     * nothing is saved, an error message names the charge type, and the box is
+     * reset to the stored rate so the page never shows a rate that is not stored.
+     */
+    private boolean validateVatInputs(List<InwardChargeType> types) {
+        boolean ok = true;
+        for (InwardChargeType type : types) {
+            if (type == InwardChargeType.ComputedVAT) {
+                continue;
+            }
+            String text = vatPercentageMap.get(type.name());
+            if (text == null || text.trim().isEmpty()) {
+                continue;
+            }
+            boolean valid;
+            try {
+                valid = ConfigOptionApplicationController.isValidInwardVatPercentage(Double.parseDouble(text.trim()));
+            } catch (NumberFormatException e) {
+                valid = false;
+            }
+            if (!valid) {
+                ok = false;
+                JsfUtil.addErrorMessage("VAT % for " + type.name() + " must be a number from 0 to 100. Nothing was saved.");
+                vatPercentageMap.put(type.name(), formatPercentage(configOptionApplicationController.getInwardVatPercentage(type)));
+            }
+        }
+        return ok;
     }
 
     private double parsePercentage(String text) {

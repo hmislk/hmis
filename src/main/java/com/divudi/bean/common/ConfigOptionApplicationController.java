@@ -1694,14 +1694,19 @@ public class ConfigOptionApplicationController implements Serializable {
         }
         try {
             double rate = Double.parseDouble(option.getOptionValue());
-            return rate > 0 ? rate : 0.0;
+            return isValidInwardVatPercentage(rate) && rate > 0 ? rate : 0.0;
         } catch (NumberFormatException | NullPointerException e) {
             return 0.0;
         }
     }
 
+    /** A usable VAT rate is a finite number from 0 to 100 (percent). */
+    public static boolean isValidInwardVatPercentage(double rate) {
+        return Double.isFinite(rate) && rate >= 0 && rate <= 100;
+    }
+
     public void saveInwardVatPercentage(InwardChargeType type, double percentage) {
-        if (type == null || type == InwardChargeType.ComputedVAT) {
+        if (type == null || type == InwardChargeType.ComputedVAT || !isValidInwardVatPercentage(percentage)) {
             return;
         }
         setDoubleValueByKey(inwardVatPercentageKey(type), percentage > 0 ? percentage : 0.0);

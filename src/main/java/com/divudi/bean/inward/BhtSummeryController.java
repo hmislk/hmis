@@ -5634,7 +5634,7 @@ public class BhtSummeryController implements Serializable {
         }
 
         Map<InwardChargeType, Double> packageAllocations = null;
-        double vatSum = 0.0;
+        BigDecimal vatSumExact = BigDecimal.ZERO;
         for (ChargeItemTotal row : rows) {
             InwardChargeType type = row.getInwardChargeType();
             if (type == InwardChargeType.ComputedVAT) {
@@ -5644,8 +5644,11 @@ public class BhtSummeryController implements Serializable {
             if (rate <= 0) {
                 continue;
             }
-            double net = row.getNetTotal();
-            if (net <= 0) {
+            // Net built from decimal operands so 1.15 - 0.10 is exactly 1.05, not 1.0499999999999998.
+            BigDecimal net = BigDecimal.valueOf(row.getTotal())
+                    .subtract(BigDecimal.valueOf(row.getDiscount()))
+                    .subtract(BigDecimal.valueOf(row.getChargeTypeDiscount()));
+            if (net.signum() <= 0) {
                 continue;
             }
             if (getPatientEncounter() != null && getPatientEncounter().getInpatientPackage() != null) {
@@ -5656,10 +5659,10 @@ public class BhtSummeryController implements Serializable {
                     continue;
                 }
             }
-            vatSum += BigDecimal.valueOf(net).multiply(BigDecimal.valueOf(rate))
-                    .divide(BigDecimal.valueOf(100), 2, java.math.RoundingMode.HALF_UP).doubleValue();
+            vatSumExact = vatSumExact.add(net.multiply(BigDecimal.valueOf(rate))
+                    .divide(BigDecimal.valueOf(100), 2, java.math.RoundingMode.HALF_UP));
         }
-        vatSum = BigDecimal.valueOf(vatSum).setScale(2, java.math.RoundingMode.HALF_UP).doubleValue();
+        double vatSum = vatSumExact.doubleValue();
 
         if (vatSum <= 0) {
             if (vatRow != null) {

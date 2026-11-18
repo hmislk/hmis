@@ -648,7 +648,7 @@
                                     disabled="#{c.total eq 0 or c.inwardChargeType eq 'ComputedVAT'}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                     <p:ajax process="@this"
-                                            update="@this catNetTotal :#{p:resolveFirstComponentWithId('tot',view).clientId}"
+                                            update="@this catNetTotal :#{p:resolveFirstComponentWithId('tot',view).clientId} :#{p:resolveFirstComponentWithId('dList',view).clientId}"
                                             event="blur"
                                             listener="#{bhtSummeryController.changeDiscountListener(c)}"/>
                                     <p:ajax process="@this" event="keyup"
