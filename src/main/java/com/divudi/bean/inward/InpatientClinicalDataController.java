@@ -1229,10 +1229,9 @@ public class InpatientClinicalDataController implements Serializable {
             JsfUtil.addErrorMessage("No encounter selected");
             return;
         }
-        if (requiresCreditCompanySelection()) {
-            JsfUtil.addErrorMessage("This admission has multiple linked credit companies. Please select one before creating.");
-            return;
-        }
+        // No credit-company check here: the Diagnosis Cards page has no picker, and the
+        // card is edited before printing. Template placeholders fall back to the first
+        // linked credit company, as the AI card does.
         String html = "";
         String cardTitle = "Diagnosis Card";
         if (selectedDocumentTemplate != null) {
