@@ -80,7 +80,7 @@ A print or settings dialog must use the **same** controller as the page or templ
 
 | Key | Type | Default | Description |
 | --- | --- | --- | --- |
-| `Inward Final Bill - Discount Comment Required` | Boolean (application scope) | `false` | When `true`, `BhtSummeryController.errorCheck()` refuses to settle a final bill, and `InwardSearch.saveProvisionalBill` and `BhtSummeryController.settleProvisionalBill` refuse to save or settle a provisional bill, that has any discount (item, charge-type or bill level) and an empty Discount Comment. When `false` the comment is optional. The comment is stored in `Bill.comments` of the final bill and printed under the discount on the final bill formats. See issue #25699. |
+| `Inward Final Bill - Discount Comment Required` | Boolean (application scope) | `false` | When `true`, a discounted inpatient bill cannot be saved without a Discount Comment. On the Inward Final Bill page, **Save Final Bill** stops when the bill has any discount (item, charge type or bill level). On the Edit Provisional Bill page, **Save Bill** and **Settle Bill** stop when the Discount box is above zero. When `false` the comment is optional. The comment prints under the discount on the final bill. See issue #25699. |
 
 ## Inpatient Reports
 
