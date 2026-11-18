@@ -36,6 +36,7 @@ import com.divudi.core.facade.PatientRoomFacade;
 import com.divudi.core.facade.SpecialityFacade;
 import com.divudi.core.facade.StaffFacade;
 import com.divudi.core.util.CommonFunctions;
+import com.divudi.service.inward.InwardBhtChargeAggregationService;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -43,6 +44,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
@@ -850,6 +852,7 @@ public class BhtSummeryFinalizedController implements Serializable {
 
     public void makeNullList() {
         patientRooms = null;
+        chargeTypeTotals = null;
         billItems = null;
         proBillFee = null;
         assistBillFee = null;
@@ -890,6 +893,7 @@ public class BhtSummeryFinalizedController implements Serializable {
         List<PatientEncounter> cpts = getInwardBean().fetchChildPatientEncounter(patientEncounter);
         makeNullList();
         patientRooms = getInwardBean().fetchPatientRoomAll(getPatientEncounter(),cpts);
+        chargeTypeTotals = createChargeTypeTotals();
         billItems = getInwardBean().fetchEagerBillItems(getPatientEncounter());
         billFees = getInwardBean().fetchBillFees(getPatientEncounter());
         patientItems = getInwardBean().fetchPatientItem(getPatientEncounter(),cpts);
@@ -912,6 +916,69 @@ public class BhtSummeryFinalizedController implements Serializable {
             creditCompanyCommittedPaidTotal += c.getSettledAmountBySponsor();
         }
 
+    }
+
+    /**
+     * One row of the "Charge Type Totals" table: a final-bill heading and its total.
+     */
+    public static class ChargeTypeTotal implements java.io.Serializable {
+
+        private final InwardChargeType inwardChargeType;
+        private final double total;
+
+        public ChargeTypeTotal(InwardChargeType inwardChargeType, double total) {
+            this.inwardChargeType = inwardChargeType;
+            this.total = total;
+        }
+
+        public InwardChargeType getInwardChargeType() {
+            return inwardChargeType;
+        }
+
+        public String getHeading() {
+            return inwardChargeType.getLabel();
+        }
+
+        public double getTotal() {
+            return total;
+        }
+    }
+
+    @EJB
+    private InwardBhtChargeAggregationService chargeAggregationService;
+
+    private List<ChargeTypeTotal> chargeTypeTotals;
+
+    /**
+     * Total per final-bill heading (Admission Fee, Room, Nursing, Linen,
+     * Ward Procedure, services, ...) for the selected admission, taken from the
+     * same aggregation the interim bill and the BHT charge reports use, so the
+     * figures agree with the bill headings (issue #17560).
+     */
+    private List<ChargeTypeTotal> createChargeTypeTotals() {
+        List<ChargeTypeTotal> rows = new ArrayList<>();
+        if (getPatientEncounter() == null) {
+            return rows;
+        }
+        List<PatientEncounter> encounters = new ArrayList<>();
+        encounters.add(getPatientEncounter());
+        Map<Long, Map<InwardChargeType, Double>> byEncounter = chargeAggregationService.fetchChargesByEncounter(encounters);
+        Map<InwardChargeType, Double> charges = byEncounter.get(getPatientEncounter().getId());
+        if (charges == null) {
+            return rows;
+        }
+        // Heading order follows the InwardChargeType declaration, as on the final bill.
+        Map<InwardChargeType, Double> ordered = new TreeMap<>(charges);
+        for (Map.Entry<InwardChargeType, Double> e : ordered.entrySet()) {
+            if (e.getValue() != null && e.getValue() != 0.0) {
+                rows.add(new ChargeTypeTotal(e.getKey(), e.getValue()));
+            }
+        }
+        return rows;
+    }
+
+    public List<ChargeTypeTotal> getChargeTypeTotals() {
+        return chargeTypeTotals;
     }
 
     /**
