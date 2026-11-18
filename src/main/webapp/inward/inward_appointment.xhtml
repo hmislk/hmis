@@ -504,7 +504,7 @@
                         </div>
 
                         <h:panelGroup id="gpBillPreview">
-                            <ez:inward_appointment_print reservation="#{appointmentController.reservation}"/>
+                            <ez:inward_appointment_print reservation="#{appointmentController.reservation}" appointment="#{appointmentController.currentAppointment}"/>
                         </h:panelGroup>
 
                     </p:panel>
