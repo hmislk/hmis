@@ -1068,6 +1068,39 @@
                                     <p:commandButton value="Custom Bill 3 (Duplicate)" type="button"
                                                      class="ui-button-info mx-1" icon="fas fa-print"
                                                      onclick="printCustom4Bill('#{p:resolveFirstComponentWithId('custom4BillOnlyDuplicate',view).clientId}', '#{resource['js:paged.polyfill.js']}'); return false;" />
+                                    <h:panelGroup id="c3ClaimButtons" rendered="#{configOptionApplicationController.getBooleanValueByKey('Inward Final Bill - Custom Bill 3 - Show Claimable Copies', false)}">
+                                        <p:commandButton id="btnC3ClaimPatient" value="Claimable - Patient Copy" type="button"
+                                                         class="ui-button-info mx-1" icon="fas fa-print"
+                                                         title="Custom Bill 3: Claimable - Patient Copy"
+                                                         onclick="printCustom4Bill('#{p:resolveFirstComponentWithId('c3ClaimPatient',view).clientId}', '#{resource['js:paged.polyfill.js']}'); return false;" />
+                                        <p:commandButton id="btnC3ClaimHospital" value="Claimable - Hospital Copy" type="button"
+                                                         class="ui-button-info mx-1" icon="fas fa-print"
+                                                         title="Custom Bill 3: Claimable - Hospital Copy"
+                                                         onclick="printCustom4Bill('#{p:resolveFirstComponentWithId('c3ClaimHospital',view).clientId}', '#{resource['js:paged.polyfill.js']}'); return false;" />
+                                        <p:commandButton id="btnC3ClaimDuplicate" value="Claimable - Duplicate Copy" type="button"
+                                                         class="ui-button-info mx-1" icon="fas fa-print"
+                                                         title="Custom Bill 3: Claimable - Duplicate Copy"
+                                                         onclick="printCustom4Bill('#{p:resolveFirstComponentWithId('c3ClaimDuplicate',view).clientId}', '#{resource['js:paged.polyfill.js']}'); return false;" />
+                                    </h:panelGroup>
+                                    <h:panelGroup id="c3NoClaimButtons" rendered="#{configOptionApplicationController.getBooleanValueByKey('Inward Final Bill - Custom Bill 3 - Show Not Claimable Copies', false)}">
+                                        <p:commandButton id="btnC3NoClaimPatient" value="Not Claimable - Patient Copy without Professional" type="button"
+                                                         class="ui-button-info mx-1" icon="fas fa-print"
+                                                         title="Custom Bill 3: Not Claimable - Patient Copy without Professional"
+                                                         onclick="printCustom4Bill('#{p:resolveFirstComponentWithId('c3NoClaimPatient',view).clientId}', '#{resource['js:paged.polyfill.js']}'); return false;" />
+                                        <p:commandButton id="btnC3NoClaimHospital" value="Not Claimable - Hospital Copy without Professional" type="button"
+                                                         class="ui-button-info mx-1" icon="fas fa-print"
+                                                         title="Custom Bill 3: Not Claimable - Hospital Copy without Professional"
+                                                         onclick="printCustom4Bill('#{p:resolveFirstComponentWithId('c3NoClaimHospital',view).clientId}', '#{resource['js:paged.polyfill.js']}'); return false;" />
+                                        <p:commandButton id="btnC3NoClaimDuplicate" value="Not Claimable - Duplicate Copy without Professional" type="button"
+                                                         class="ui-button-info mx-1" icon="fas fa-print"
+                                                         title="Custom Bill 3: Not Claimable - Duplicate Copy without Professional"
+                                                         onclick="printCustom4Bill('#{p:resolveFirstComponentWithId('c3NoClaimDuplicate',view).clientId}', '#{resource['js:paged.polyfill.js']}'); return false;" />
+                                        <p:commandButton id="btnC3ProfessionalFees" value="Not Claimable - Professional Fees" ajax="false"
+                                                         class="ui-button-info mx-1" icon="fas fa-print"
+                                                         title="Professional Fees copy">
+                                            <p:printer target="c3ProfessionalFees"/>
+                                        </p:commandButton>
+                                    </h:panelGroup>
                                                      <p:commandButton styleClass="ui-button-info mx-1" id="btnFinalRawText"
                                                          rendered="#{inwardRawTextReceiptController.rawTextPaper}"
                                                          value="Print (Raw Text)" ajax="false" icon="fa fa-file-lines"
@@ -1174,6 +1207,47 @@
                             <bi:finalBillCustom4
                                 bill="#{bhtSummeryController.showOrginalBill ? bhtSummeryController.current.referenceBill : bhtSummeryController.current}"
                                 duplicate="true" showProfessional="true"/>
+                        </h:panelGroup>
+
+                        <h:panelGroup id="c3ClaimPatient" styleClass="noBorder" rendered="#{configOptionApplicationController.getBooleanValueByKey('Inward Final Bill - Custom Bill 3 - Show Claimable Copies', false)}">
+                            <bi:finalBillCustom4
+                                bill="#{bhtSummeryController.showOrginalBill ? bhtSummeryController.current.referenceBill : bhtSummeryController.current}"
+                                duplicate="false" showProfessional="true"/>
+                        </h:panelGroup>
+
+                        <h:panelGroup id="c3ClaimHospital" styleClass="noBorder" rendered="#{configOptionApplicationController.getBooleanValueByKey('Inward Final Bill - Custom Bill 3 - Show Claimable Copies', false)}">
+                            <bi:finalBillCustom4
+                                bill="#{bhtSummeryController.showOrginalBill ? bhtSummeryController.current.referenceBill : bhtSummeryController.current}"
+                                hosCopy="true" duplicate="false" showProfessional="true"/>
+                        </h:panelGroup>
+
+                        <h:panelGroup id="c3ClaimDuplicate" styleClass="noBorder" rendered="#{configOptionApplicationController.getBooleanValueByKey('Inward Final Bill - Custom Bill 3 - Show Claimable Copies', false)}">
+                            <bi:finalBillCustom4
+                                bill="#{bhtSummeryController.showOrginalBill ? bhtSummeryController.current.referenceBill : bhtSummeryController.current}"
+                                duplicate="true" showProfessional="true"/>
+                        </h:panelGroup>
+
+                        <h:panelGroup id="c3NoClaimPatient" styleClass="noBorder" rendered="#{configOptionApplicationController.getBooleanValueByKey('Inward Final Bill - Custom Bill 3 - Show Not Claimable Copies', false)}">
+                            <bi:finalBillCustom4
+                                bill="#{bhtSummeryController.showOrginalBill ? bhtSummeryController.current.referenceBill : bhtSummeryController.current}"
+                                duplicate="false" showProfessional="false"/>
+                        </h:panelGroup>
+
+                        <h:panelGroup id="c3NoClaimHospital" styleClass="noBorder" rendered="#{configOptionApplicationController.getBooleanValueByKey('Inward Final Bill - Custom Bill 3 - Show Not Claimable Copies', false)}">
+                            <bi:finalBillCustom4
+                                bill="#{bhtSummeryController.showOrginalBill ? bhtSummeryController.current.referenceBill : bhtSummeryController.current}"
+                                hosCopy="true" duplicate="false" showProfessional="false"/>
+                        </h:panelGroup>
+
+                        <h:panelGroup id="c3NoClaimDuplicate" styleClass="noBorder" rendered="#{configOptionApplicationController.getBooleanValueByKey('Inward Final Bill - Custom Bill 3 - Show Not Claimable Copies', false)}">
+                            <bi:finalBillCustom4
+                                bill="#{bhtSummeryController.showOrginalBill ? bhtSummeryController.current.referenceBill : bhtSummeryController.current}"
+                                duplicate="true" showProfessional="false"/>
+                        </h:panelGroup>
+
+                        <h:panelGroup id="c3ProfessionalFees" styleClass="noBorder" rendered="#{configOptionApplicationController.getBooleanValueByKey('Inward Final Bill - Custom Bill 3 - Show Not Claimable Copies', false)}">
+                            <bi:finalProfessionalBill
+                                bill="#{bhtSummeryController.showOrginalBill ? bhtSummeryController.current.referenceBill : bhtSummeryController.current}"/>
                         </h:panelGroup>
 
                         <h:panelGroup id="professionalAndFinaBill" styleClass="noBorder"

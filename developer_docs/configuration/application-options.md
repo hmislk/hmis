@@ -176,3 +176,12 @@ All rules live in `AdmissionGuardianRules` (`com.divudi.service.inward`) and ret
 | `Inward Admission - Guardian Checks Treat Whitespace-Only Values as Missing` | Boolean | `false` | Uses `trim()` for guardian name, NIC, address, mobile and home phone in every place the guardian checks run. Off keeps the original `isEmpty()` behaviour (a single space passes). |
 
 **Shared database, two servers:** each server caches config in memory, so a key changed through one server reaches the other only after **Reload Config** (Application Options page) or its next cache reload. A key with no stored row is created with the default of whichever server reads it first; `Guardian Home Phone Number is Required in Patient Admission` defaulted to `true` in older deployed code and is `false` in current `development`. Before enabling the guardian check at a hospital, save every per-field row explicitly.
+
+## Inward Final Bill - Custom Bill 3 Claimable / Not Claimable copies
+
+Issue #17566. Both keys are application-wide Booleans, default `false` (existing "Custom Bill 3" and "Custom Bill 3 (Duplicate)" buttons are unchanged when both are off). Set either or both.
+
+| Key | Type | Default | Description |
+| --- | --- | --- | --- |
+| `Inward Final Bill - Custom Bill 3 - Show Claimable Copies` | Boolean | `false` | Adds Claimable Patient, Hospital and Duplicate copy buttons (Custom Bill 3 layout, professional fees included) to the inward Final Bill page. |
+| `Inward Final Bill - Custom Bill 3 - Show Not Claimable Copies` | Boolean | `false` | Adds Not Claimable Patient, Hospital and Duplicate copy buttons (Custom Bill 3 layout, without professional fees) and a Professional Fees copy button. |
