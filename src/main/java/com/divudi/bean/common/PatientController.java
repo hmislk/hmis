@@ -969,6 +969,8 @@ public class PatientController implements Serializable, ControllerWithPatient {
         ad.setPatient(nonBhtAd.getPatient());
         admissionController.setCurrentNonBht(nonBhtAd);
         admissionController.setCurrent(ad);
+        admissionController.setAppointmentBill(null);
+        admissionController.setCurrentReservation(null);
         admissionController.setPrintPreview(false);
         return "/inward/convert_inward_admission?faces-redirect=true";
 
@@ -991,6 +993,8 @@ public class PatientController implements Serializable, ControllerWithPatient {
             JsfUtil.addErrorMessage("No patient selected");
             return "";
         }
+        admissionController.setAppointmentBill(null);
+        admissionController.setCurrentReservation(null);
         inpatientPackageAdmissionController.setPatient(current);
         inpatientPackageAdmissionController.setInpatientPackage(null);
         return "/inward/package_admit?faces-redirect=true";

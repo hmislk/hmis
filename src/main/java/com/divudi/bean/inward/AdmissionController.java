@@ -3665,6 +3665,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         // Need to create EncounterCredit
         admittingProcessStarted = false;
         currentReservation = null;
+        appointmentBill = null;
         patientForiegner = false;
         printPreview = true;
     }
@@ -3758,6 +3759,8 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
 
         // Save EncounterCreditCompanies
         // Need to create EncounterCredit
+        currentReservation = null;
+        appointmentBill = null;
         printPreview = true;
     }
 
