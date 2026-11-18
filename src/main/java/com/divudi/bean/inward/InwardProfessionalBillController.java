@@ -784,7 +784,7 @@ public class InwardProfessionalBillController implements Serializable {
 
     /**
      * Set on the add page when the doctor collects this fee from the patient
-     * directly. Only honoured when the hospital has switched on
+     * directly. Only settable when the hospital has switched on
      * "Inward Professional Fee - Allow Fee Collected By Doctor".
      */
     private boolean feeCollectedByDoctorProfessionalPayment;
@@ -914,7 +914,7 @@ public class InwardProfessionalBillController implements Serializable {
         for (BillFee bf : getLstBillFees()) {
             bf.setOrderNo(index++);
             // A fee collected by the doctor is not a hospital charge.
-            if (bf.isCollectedByDoctorAtBilling() && isFeeCollectedByDoctorAllowed()) {
+            if (bf.isCollectedByDoctorAtBilling()) {
                 continue;
             }
             tot += bf.getFeeValue();
@@ -1170,6 +1170,8 @@ public class InwardProfessionalBillController implements Serializable {
 
     public void makeNullList() {
         currentBillFee = null;
+        // Per-fee switch: cleared with the fee form (a failed add keeps both).
+        feeCollectedByDoctorProfessionalPayment = false;
         billItem = null;
         lstBillEntries = null;
         lstBillFees = null;

@@ -191,19 +191,18 @@ public class InwardProfessionalFeeClassificationService implements Serializable 
     /**
      * A JPQL fragment that leaves out the fees marked "Collected by Doctor"
      * (the patient pays the doctor directly, so the fee is not part of the
-     * hospital bill, the patient's due or the claimable amount). Empty unless
-     * the hospital has switched on
-     * {@link ConfigOptionApplicationController#INWARD_PROFESSIONAL_FEE_ALLOW_FEE_COLLECTED_BY_DOCTOR},
-     * so with the key off every query is exactly as before.
+     * hospital bill, the patient's due or the claimable amount). It honours the
+     * flag saved on the fee whatever the current value of
+     * {@link ConfigOptionApplicationController#INWARD_PROFESSIONAL_FEE_ALLOW_FEE_COLLECTED_BY_DOCTOR}:
+     * that option only shows or hides the switch on the add page, so turning it
+     * off later never changes bills already saved. Until a fee is flagged the
+     * column is false or NULL and every query returns what it did before.
      *
      * <p>{@link #staffCondition} already appends it, so every bill total, fee
      * list and report column built from it agrees. A fee saved before the flag
      * existed may hold NULL, hence the explicit null test.
      */
     public String excludeCollectedByDoctor(String feeAlias) {
-        if (!configOptionApplicationController.isInwardProfessionalFeeCollectedByDoctorAllowed()) {
-            return "";
-        }
         return " and (" + feeAlias + ".collectedByDoctorAtBilling = false or " + feeAlias + ".collectedByDoctorAtBilling is null) ";
     }
 

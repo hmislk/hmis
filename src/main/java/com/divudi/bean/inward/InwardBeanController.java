@@ -787,12 +787,12 @@ public class InwardBeanController implements Serializable {
      * True when the admission (or one of its child encounters) has a live
      * professional fee marked "Collected by Doctor". Patient bills use it to
      * print the single note "Fees Collected by the Doctor" outside the net
-     * total; the fee amount and doctor are never printed. Always false while
-     * "Inward Professional Fee - Allow Fee Collected By Doctor" is off.
+     * total; the fee amount and doctor are never printed. Reads the saved flag
+     * only, so it does not depend on
+     * "Inward Professional Fee - Allow Fee Collected By Doctor" being on.
      */
     public boolean hasFeesCollectedByDoctor(PatientEncounter patientEncounter) {
-        if (patientEncounter == null || patientEncounter.getId() == null
-                || !configOptionApplicationController.isInwardProfessionalFeeCollectedByDoctorAllowed()) {
+        if (patientEncounter == null || patientEncounter.getId() == null) {
             return false;
         }
         HashMap hm = new HashMap();
