@@ -159,9 +159,9 @@
                         </h:outputLabel>
                     </td>
                 </tr>
-                <h:panelGroup rendered="#{cc.attrs.bill.discount ne 0.0 and not empty cc.attrs.bill.comments}">
+                <h:panelGroup rendered="#{cc.attrs.bill.discount ne 0.0 and not empty cc.attrs.bill.discountCommentText}">
                     <tr>
-                        <td colspan="2" style="text-align: left;">Discount Comment: <h:outputText value="#{cc.attrs.bill.comments}"/></td>
+                        <td colspan="2" style="text-align: left;">Discount Comment: <h:outputText value="#{cc.attrs.bill.discountCommentText}"/></td>
                     </tr>
                 </h:panelGroup>
                 <tr style="font-size: 13px; border-top: 1px solid #000;">

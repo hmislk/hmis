@@ -2879,7 +2879,7 @@ public class BhtSummeryController implements Serializable {
     }
 
     public void saveProvisionalBill() {
-        if (errorCheck()) {
+        if (errorCheck() || discountCommentMissing("saving")) {
             return;
         }
 
@@ -2902,7 +2902,7 @@ public class BhtSummeryController implements Serializable {
     }
 
     public void settle() {
-        if (errorCheck()) {
+        if (errorCheck() || discountCommentMissing("settling")) {
             return;
         }
 
@@ -3040,7 +3040,7 @@ public class BhtSummeryController implements Serializable {
         }
 
         if (b.getDiscount() > 0
-                && (b.getComments() == null || b.getComments().trim().isEmpty())
+                && (b.getDiscountCommentText() == null || b.getDiscountCommentText().isEmpty())
                 && configOptionApplicationController.getBooleanValueByKey("Inward Final Bill - Discount Comment Required", false)) {
             JsfUtil.addErrorMessage("Please enter a Discount Comment (reason or approver) before settling a bill with a discount.");
             return "";
@@ -3164,7 +3164,7 @@ public class BhtSummeryController implements Serializable {
             discount = itemDiscountTotal + chargeTypeDiscountTotal + billLevelDiscount;
             due = (grantTotal - discount) - paid;
         }
-        discountComment = sourceBill.getComments();
+        discountComment = sourceBill.getDiscountCommentText();
 
         creditCompanyAllocations = rebuildAllocationsFromSourceBill(sourceBill);
 
@@ -3925,15 +3925,23 @@ public class BhtSummeryController implements Serializable {
             return true;
         }
 
+        return false;
+
+    }
+
+    /**
+     * Discount Comment rule for the actions that save or settle a bill. Kept
+     * out of errorCheck() because settleOriginalBill() also uses that and must
+     * still create the original snapshot.
+     */
+    private boolean discountCommentMissing(String action) {
         if (discount > 0
                 && (discountComment == null || discountComment.trim().isEmpty())
                 && configOptionApplicationController.getBooleanValueByKey("Inward Final Bill - Discount Comment Required", false)) {
-            JsfUtil.addErrorMessage("Please enter a Discount Comment (reason or approver) before settling a bill with a discount.");
+            JsfUtil.addErrorMessage("Please enter a Discount Comment (reason or approver) before " + action + " a bill with a discount.");
             return true;
         }
-
         return false;
-
     }
 
     private boolean checkCatTotal() {
@@ -4261,7 +4269,7 @@ public class BhtSummeryController implements Serializable {
         bfd.setLineDiscount(BigDecimal.valueOf(itemDiscountTotal + chargeTypeDiscountTotal));
         bfd.setTotalDiscount(BigDecimal.valueOf(discount));
         String trimmed = discountComment == null ? null : discountComment.trim();
-        bill.setComments(trimmed == null || trimmed.isEmpty() ? null : trimmed);
+        bill.setDiscountCommentText(trimmed);
     }
 
     private void saveTempBill() {
@@ -5901,7 +5909,7 @@ public class BhtSummeryController implements Serializable {
                 && getPatientEncounter().getFinalBill().getBillFinanceDetails().getBillDiscount() != null) {
             billLevelDiscount = getPatientEncounter().getFinalBill().getBillFinanceDetails().getBillDiscount().doubleValue();
         }
-        discountComment = getPatientEncounter().getFinalBill().getComments();
+        discountComment = getPatientEncounter().getFinalBill().getDiscountCommentText();
 
         for (BillItem existing : getPatientEncounter().getFinalBill().getBillItems()) {
             for (ChargeItemTotal cit : chargeItemTotals) {
