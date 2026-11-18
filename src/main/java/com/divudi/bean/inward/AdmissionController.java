@@ -2968,6 +2968,16 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         m.put("billId", billId);
         setCurrentReservation(reservationFacade.findFirstByJpql(rj, m));
         setAppointmentBill(b);
+        // The table Select is an explicit choice of one appointment: drop what an earlier
+        // Select (or the autocomplete) prefilled, otherwise the previous room, consultant
+        // and admission type would stay and the admission would take the wrong reservation.
+        if (getCurrent() != null) {
+            getCurrent().setReferringConsultant(null);
+            getCurrent().setAdmissionType(null);
+        }
+        if (getPatientRoom() != null) {
+            getPatientRoom().setRoomFacilityCharge(null);
+        }
         listnerForAppoimentSelect(b);
     }
 
