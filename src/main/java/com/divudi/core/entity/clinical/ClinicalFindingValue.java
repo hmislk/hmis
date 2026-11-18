@@ -22,6 +22,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
+import javax.persistence.Transient;
 
 /**
  *
@@ -72,6 +73,110 @@ public class ClinicalFindingValue implements Serializable {
 
     @Enumerated(EnumType.STRING)
     private ClinicalFindingValueType clinicalFindingValueType;
+
+    // Form inputs for the allergy entry panels; moved to the stored columns by applyAllergyInputs().
+    @Transient
+    private String allergyTextInput;
+    @Transient
+    private String allergyRemarkInput;
+
+    /**
+     * Allergy rows: Medicine keeps the medicine in itemValue and the remark in
+     * stringValue (unchanged). Food, Plaster and Other keep the free text in
+     * stringValue and the remark in lobValue.
+     */
+    public boolean isMedicineAllergy() {
+        return clinicalFindingValueType == null
+                || clinicalFindingValueType == ClinicalFindingValueType.PatientAllergy;
+    }
+
+    public String getAllergyTypeLabel() {
+        if (clinicalFindingValueType == null) {
+            return "Medicine";
+        }
+        switch (clinicalFindingValueType) {
+            case PatientFoodAllergy:
+                return "Food";
+            case PatientPlasterAllergy:
+                return "Plaster";
+            case PatientOtherAllergy:
+                return "Other";
+            default:
+                return "Medicine";
+        }
+    }
+
+    public String getAllergyName() {
+        if (isMedicineAllergy()) {
+            return itemValue != null && itemValue.getName() != null ? itemValue.getName() : "";
+        }
+        return stringValue != null ? stringValue : "";
+    }
+
+    public String getAllergyRemark() {
+        String r = isMedicineAllergy() ? stringValue : lobValue;
+        return r != null ? r : "";
+    }
+
+    /** For example "Food: Prawns" or "Medicine: Penicillin". */
+    public String getAllergyTypeAndName() {
+        return getAllergyTypeLabel() + ": " + getAllergyName();
+    }
+
+    public String getAllergyDisplay() {
+        String r = getAllergyRemark();
+        return getAllergyTypeAndName() + (r.isEmpty() ? "" : " - " + r);
+    }
+
+    public String getAllergyTextInput() {
+        return allergyTextInput;
+    }
+
+    public void setAllergyTextInput(String allergyTextInput) {
+        this.allergyTextInput = allergyTextInput;
+    }
+
+    public String getAllergyRemarkInput() {
+        return allergyRemarkInput;
+    }
+
+    public void setAllergyRemarkInput(String allergyRemarkInput) {
+        this.allergyRemarkInput = allergyRemarkInput;
+    }
+
+    /**
+     * Checks the entry panel inputs. Returns an error message, or null when valid.
+     */
+    public String validateAllergyInputs() {
+        if (isMedicineAllergy()) {
+            if (itemValue == null) {
+                return "Please select the allergy drug.";
+            }
+            return null;
+        }
+        if (allergyTextInput == null || allergyTextInput.trim().isEmpty()) {
+            return "Please enter the " + getAllergyTypeLabel().toLowerCase() + " allergy.";
+        }
+        return null;
+    }
+
+    /**
+     * Moves the entry panel inputs to the stored columns. Call after validateAllergyInputs().
+     */
+    public void applyAllergyInputs() {
+        String remark = allergyRemarkInput != null && !allergyRemarkInput.trim().isEmpty()
+                ? allergyRemarkInput.trim() : null;
+        if (isMedicineAllergy()) {
+            if (clinicalFindingValueType == null) {
+                clinicalFindingValueType = ClinicalFindingValueType.PatientAllergy;
+            }
+            stringValue = remark;
+        } else {
+            itemValue = null;
+            stringValue = allergyTextInput.trim();
+            lobValue = remark;
+        }
+    }
 
 
 

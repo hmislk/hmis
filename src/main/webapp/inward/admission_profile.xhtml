@@ -215,15 +215,7 @@
                                     <ui:repeat value="#{bhtEditController.patientAllergies}" var="al">
                                         <div class="alert alert-warning py-1 px-2 my-1" role="alert">
                                             <h:outputText styleClass="fa-solid fa-triangle-exclamation me-1"/>
-                                            <h:outputText
-                                                rendered="#{not empty al.itemValue and not empty al.stringValue}"
-                                                value="#{al.itemValue.name} - #{al.stringValue}"/>
-                                            <h:outputText
-                                                rendered="#{not empty al.itemValue and empty al.stringValue}"
-                                                value="#{al.itemValue.name}"/>
-                                            <h:outputText
-                                                rendered="#{empty al.itemValue}"
-                                                value="#{al.stringValue}"/>
+                                            <h:outputText value="#{al.allergyDisplay}"/>
                                         </div>
                                     </ui:repeat>
                                 </h:panelGroup>

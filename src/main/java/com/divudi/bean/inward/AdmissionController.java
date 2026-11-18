@@ -468,6 +468,15 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         if (currentPatientAllergy == null) {
             return;
         }
+        String allergyError = currentPatientAllergy.validateAllergyInputs();
+        if (allergyError != null) {
+            JsfUtil.addErrorMessage(allergyError);
+            return;
+        }
+        currentPatientAllergy.applyAllergyInputs();
+        if (patientAllergies == null) {
+            patientAllergies = new ArrayList<>();
+        }
         patientAllergies.add(currentPatientAllergy);
         currentPatientAllergy = null;
     }
@@ -479,12 +488,14 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         }
         try {
             Map<String, Object> before = new LinkedHashMap<>();
-            before.put("allergy", pa.getItemValue() != null ? pa.getItemValue().getName() : null);
+            before.put("allergyType", pa.getAllergyTypeLabel());
+            before.put("allergy", pa.getAllergyName());
             before.put("retired", pa.isRetired());
             pa.setRetired(true);
             clinicalFindingValueFacade.edit(pa);
             Map<String, Object> after = new LinkedHashMap<>();
-            after.put("allergy", pa.getItemValue() != null ? pa.getItemValue().getName() : null);
+            after.put("allergyType", pa.getAllergyTypeLabel());
+            after.put("allergy", pa.getAllergyName());
             after.put("retired", pa.isRetired());
             auditService.logEncounterAudit(current, "Patient Allergy Removed",
                     before, after, getSessionController().getLoggedUser(),
@@ -519,9 +530,9 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         }
         patientAllergies = new ArrayList<>();
         Map params = new HashMap<>();
-        String s = "SELECT c FROM ClinicalFindingValue c WHERE c.retired = false AND c.patient = :pt AND c.clinicalFindingValueType = :type";
+        String s = "SELECT c FROM ClinicalFindingValue c WHERE c.retired = false AND c.patient = :pt AND c.clinicalFindingValueType in :types";
         params.put("pt", pt);
-        params.put("type", ClinicalFindingValueType.PatientAllergy);
+        params.put("types", ClinicalFindingValueType.patientAllergyTypes());
         patientAllergies = clinicalFindingValueFacade.findByJpql(s, params);
     }
 
@@ -4076,7 +4087,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         this.patient = patient;
         if (current != null) {
             current.setPatient(patient);
-            patientAllergies = clinicalFindingValueController.findClinicalFindingValues(patient, ClinicalFindingValueType.PatientAllergy);
+            patientAllergies = clinicalFindingValueController.findPatientAllergies(patient);
         }
         // When a patient is searched/selected, reflect their foreigner status on the
         // "Mark as Foreigner" checkbox so it is ticked automatically for foreigners.

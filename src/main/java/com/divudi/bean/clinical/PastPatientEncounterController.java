@@ -927,8 +927,7 @@ public class PastPatientEncounterController implements Serializable {
     }
 
     public List<ClinicalFindingValue> fillPatientAllergies(Patient patient) {
-        List<ClinicalFindingValueType> clinicalFindingValueTypes = new ArrayList<>();
-        clinicalFindingValueTypes.add(ClinicalFindingValueType.PatientAllergy);
+        List<ClinicalFindingValueType> clinicalFindingValueTypes = new ArrayList<>(ClinicalFindingValueType.patientAllergyTypes());
         return fillCurrentPatientClinicalFindingValues(patient, clinicalFindingValueTypes);
     }
 
@@ -1122,6 +1121,9 @@ public class PastPatientEncounterController implements Serializable {
             }
             switch (tcfv.getClinicalFindingValueType()) {
                 case PatientAllergy:
+                case PatientFoodAllergy:
+                case PatientPlasterAllergy:
+                case PatientOtherAllergy:
                     patientAllergies.add(tcfv);
                     break;
                 case PatientDiagnosis:
@@ -1315,8 +1317,8 @@ public class PastPatientEncounterController implements Serializable {
         String allergiesAsString = "";
         for (ClinicalFindingValue cf : getPatientAllergies()) {
             if (cf != null) {
-                String allergyName = cf.getItemValue() != null && cf.getItemValue().getName() != null ? cf.getItemValue().getName() : "";
-                String details = cf.getStringValue() != null ? cf.getStringValue() : "";
+                String allergyName = cf.getAllergyTypeAndName();
+                String details = cf.getAllergyRemark();
                 allergiesAsString += allergyName + (details.isEmpty() ? "" : " - " + details) + "<br/>";
             }
         }
@@ -1448,12 +1450,13 @@ public class PastPatientEncounterController implements Serializable {
     }
 
     public void addPatientAllergy() {
-        if (getPatientAllergy().getItemValue() == null) {
-            JsfUtil.addErrorMessage("Select Allergy");
+        String allergyError = getPatientAllergy().validateAllergyInputs();
+        if (allergyError != null) {
+            JsfUtil.addErrorMessage(allergyError);
             return;
         }
+        getPatientAllergy().applyAllergyInputs();
         getPatientAllergy().setPatient(patient);
-        getPatientAllergy().setClinicalFindingValueType(ClinicalFindingValueType.PatientAllergy);
         clinicalFindingValueFacade.create(getPatientAllergy());
         getPatientAllergies().add(getPatientAllergy());
         setPatientAllergy(null);

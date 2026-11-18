@@ -167,10 +167,16 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
     
     // <editor-fold defaultstate="collapsed" desc="Functons">
     public void addPatientAllergy() {
-        if (currentPatientAllergy == null || currentPatientAllergy.getItemValue() == null) {
+        if (currentPatientAllergy == null) {
             JsfUtil.addErrorMessage("Please select the allergy drug.");
             return;
         }
+        String allergyError = currentPatientAllergy.validateAllergyInputs();
+        if (allergyError != null) {
+            JsfUtil.addErrorMessage(allergyError);
+            return;
+        }
+        currentPatientAllergy.applyAllergyInputs();
         if (currentPatientAllergy.getPatient() == null) {
             currentPatientAllergy.setPatient(getCurrent().getPatient());
         }
@@ -193,8 +199,9 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
         if (pa == null) {
             return m;
         }
-        m.put("allergy", pa.getItemValue() != null ? pa.getItemValue().getName() : null);
-        m.put("value", pa.getStringValue());
+        m.put("allergyType", pa.getAllergyTypeLabel());
+        m.put("allergy", pa.getAllergyName());
+        m.put("value", pa.getAllergyRemark());
         m.put("retired", pa.isRetired());
         return m;
     }
@@ -234,9 +241,9 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
         }
         patientAllergies = new ArrayList<>();
         Map params = new HashMap<>();
-        String s = "SELECT c FROM ClinicalFindingValue c WHERE c.retired = false AND c.patient = :pt AND c.clinicalFindingValueType = :type";
+        String s = "SELECT c FROM ClinicalFindingValue c WHERE c.retired = false AND c.patient = :pt AND c.clinicalFindingValueType in :types";
         params.put("pt", pt);
-        params.put("type", ClinicalFindingValueType.PatientAllergy);
+        params.put("types", ClinicalFindingValueType.patientAllergyTypes());
         patientAllergies = clinicalFindingValueFacade.findByJpql(s, params);
         patientAllergiesLoadedForPatientId = pt.getId();
     }
