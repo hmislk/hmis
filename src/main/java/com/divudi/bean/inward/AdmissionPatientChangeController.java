@@ -284,6 +284,7 @@ public class AdmissionPatientChangeController implements Serializable, Controlle
             return destination;
 
         } catch (Exception e) {
+            current.setPatient(originalPatient);
             JsfUtil.addErrorMessage("Error changing patient: " + e.getMessage());
             return "";
         }
