@@ -43,6 +43,7 @@ public class ReservationDTO implements Serializable {
     private String procedureName;
     private String categoryName;
     private Date appointmentDate;
+    private Boolean paid;
     
     public ReservationDTO() {
         
@@ -73,6 +74,20 @@ public class ReservationDTO implements Serializable {
         this.procedureName = procedureName;
         this.categoryName = categoryName;
         this.appointmentDate = appointmentDate;
+    }
+
+    // Manage Appointment list: adds the paid state (false when booked without payment)
+    public ReservationDTO(Long id, Date reservedFrom, Date reservedTo, String appointmentNumber, Date createdAt, String roomNo, Title patientTitle, String patientName, Date patientDob, String patientGender, String patientMobile, Title refDoctorTitle, String refDoctorName, AppointmentStatus status, String procedureName, String categoryName, Date appointmentDate, Boolean paid) {
+        this(id, reservedFrom, reservedTo, appointmentNumber, createdAt, roomNo, patientTitle, patientName, patientDob, patientGender, patientMobile, refDoctorTitle, refDoctorName, status, procedureName, categoryName, appointmentDate);
+        this.paid = paid;
+    }
+
+    public Boolean getPaid() {
+        return paid;
+    }
+
+    public void setPaid(Boolean paid) {
+        this.paid = paid;
     }
 
     public Long getId() {

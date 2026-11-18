@@ -522,7 +522,8 @@ public class AppointmentController implements Serializable, ControllerWithPatien
                     apt.getStatus(),
                     apt.getItem() != null ? apt.getItem().getName() : "",
                     appointmentCategoryLabel(apt, res != null),
-                    apt.getAppointmentDate()
+                    apt.getAppointmentDate(),
+                    aptBill != null && aptBill.getTotal() > 0
             );
             dtos.add(dto);
         }
@@ -767,7 +768,7 @@ public class AppointmentController implements Serializable, ControllerWithPatien
         boolean noPayment = isNoPaymentAppointment();
         if (noPayment) {
             // No money is taken: the bill carries no value, no method and no Payment row,
-            // so no drawer or cashbook entry is written and payment-based reports see nothing.
+            // so no drawer, cashbook or patient balance entry is written.
             getCurrentBill().setPaymentMethod(null);
             getCurrentBill().setTotal(0.0);
             getCurrentBill().setNetTotal(0.0);
@@ -1153,11 +1154,12 @@ public class AppointmentController implements Serializable, ControllerWithPatien
     }
 
     /**
-     * Config key: when true, a non-room appointment (Procedure, Consultant, Department
-     * and their combinations) may be booked with no payment method chosen. Default false.
+     * Config key: when true, any inward appointment (room, procedure, consultant,
+     * department and their combinations) may be saved with no payment method chosen.
+     * Default false, so payment stays compulsory.
      */
     public static final String KEY_ALLOW_APPOINTMENT_WITHOUT_PAYMENT
-            = "Inward Appointment - Allow Non-Room Appointment Without Payment";
+            = "Inward Appointment - Allow Saving Without Payment";
 
     /**
      * Config key: when true, the Referring Doctor is not required to book an
@@ -1168,7 +1170,6 @@ public class AppointmentController implements Serializable, ControllerWithPatien
 
     public boolean isPaymentOptionalForCategory() {
         return appointmentCategory != null
-                && !appointmentCategory.needsRoom()
                 && configOptionApplicationController.getBooleanValueByKey(KEY_ALLOW_APPOINTMENT_WITHOUT_PAYMENT, false);
     }
 
@@ -1177,8 +1178,8 @@ public class AppointmentController implements Serializable, ControllerWithPatien
     }
 
     /**
-     * True only when the key is on, the category needs no room and no payment
-     * method was chosen. Room appointments always take a payment.
+     * True only when the key is on and no payment method was chosen. When a
+     * payment method is chosen, the normal payment flow runs unchanged.
      */
     private boolean isNoPaymentAppointment() {
         return isPaymentOptionalForCategory()

@@ -159,6 +159,12 @@
                                         </h:outputLabel>
                                     </p:column>
 
+                                    <p:column headerText="Payment" width="7em;" style="padding: 8px;">
+                                        <h:outputText id="paymentState" value="#{r.paid ? 'Paid' : 'Not paid'}"
+                                                      title="Payment state of appointment #{r.appointmentNumber}"
+                                                      style="#{r.paid ? '' : 'font-weight: bold; color: #b45309;'}" />
+                                    </p:column>
+
                                     <p:column headerText="Room" width="12em;" style="padding: 8px;">
                                         <h:outputLabel value="#{r.roomNo}" />
                                     </p:column>
