@@ -15,9 +15,9 @@
 
     <cc:implementation>
         <p:dataTable id="chargeTypeTotalsTable" value="#{bhtSummeryFinalizedController.chargeTypeTotals}" var="ct"
-                     rowKey="#{ct.inwardChargeType}" emptyMessage="No charges">
+                     rowKey="#{ct.heading}" emptyMessage="No charges">
             <f:facet name="header">
-                <h:outputLabel value="Charge Type Totals (same headings as the final bill)"/>
+                <h:outputLabel value="Charge Type Totals (as on the final bill)"/>
             </f:facet>
             <p:column headerText="Charge Type">
                 <h:outputLabel value="#{ct.heading}"/>
@@ -26,6 +26,16 @@
                 <h:outputLabel value="#{ct.total}">
                     <f:convertNumber pattern="#,##0.00" />
                 </h:outputLabel>
+                <f:facet name="footer">
+                    <h:outputLabel value="Discount: "/>
+                    <h:outputLabel value="#{bhtSummeryFinalizedController.finalBillDiscount}">
+                        <f:convertNumber pattern="#,##0.00" />
+                    </h:outputLabel>
+                    <h:outputLabel value="  Net: "/>
+                    <h:outputLabel value="#{bhtSummeryFinalizedController.finalBillNetTotal}">
+                        <f:convertNumber pattern="#,##0.00" />
+                    </h:outputLabel>
+                </f:facet>
             </p:column>
         </p:dataTable>
     </cc:implementation>

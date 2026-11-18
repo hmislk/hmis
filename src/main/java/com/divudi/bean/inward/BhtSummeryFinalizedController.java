@@ -36,7 +36,6 @@ import com.divudi.core.facade.PatientRoomFacade;
 import com.divudi.core.facade.SpecialityFacade;
 import com.divudi.core.facade.StaffFacade;
 import com.divudi.core.util.CommonFunctions;
-import com.divudi.service.inward.InwardBhtChargeAggregationService;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -44,7 +43,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.TreeMap;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
@@ -923,20 +921,16 @@ public class BhtSummeryFinalizedController implements Serializable {
      */
     public static class ChargeTypeTotal implements java.io.Serializable {
 
-        private final InwardChargeType inwardChargeType;
+        private final String heading;
         private final double total;
 
-        public ChargeTypeTotal(InwardChargeType inwardChargeType, double total) {
-            this.inwardChargeType = inwardChargeType;
+        public ChargeTypeTotal(String heading, double total) {
+            this.heading = heading;
             this.total = total;
         }
 
-        public InwardChargeType getInwardChargeType() {
-            return inwardChargeType;
-        }
-
         public String getHeading() {
-            return inwardChargeType.getLabel();
+            return heading;
         }
 
         public double getTotal() {
@@ -944,37 +938,65 @@ public class BhtSummeryFinalizedController implements Serializable {
         }
     }
 
-    @EJB
-    private InwardBhtChargeAggregationService chargeAggregationService;
+    @Inject
+    private com.divudi.bean.common.ConfigOptionApplicationController configOptionApplicationController;
+    @Inject
+    private com.divudi.bean.common.ConfigOptionController configOptionController;
 
     private List<ChargeTypeTotal> chargeTypeTotals;
+    private double finalBillDiscount;
+    private double finalBillNetTotal;
 
     /**
-     * Total per final-bill heading (Admission Fee, Room, Nursing, Linen,
-     * Ward Procedure, services, ...) for the selected admission, taken from the
-     * same aggregation the interim bill and the BHT charge reports use, so the
-     * figures agree with the bill headings (issue #17560).
+     * Headings and totals read from the settled final bill itself (its bill
+     * items hold the amount each heading printed, margin included), grouped and
+     * named the way the final bill prints them: the Final Bill label, and the
+     * Final Bill Group when "Inward Final Bill - Bundle Grouped Charge Types" is
+     * on. Uses {@link BhtSummeryController#buildBundledRows}, the same row
+     * builder as the bundled final bill (issue #17560).
      */
     private List<ChargeTypeTotal> createChargeTypeTotals() {
         List<ChargeTypeTotal> rows = new ArrayList<>();
+        finalBillDiscount = 0.0;
+        finalBillNetTotal = 0.0;
         if (getPatientEncounter() == null) {
             return rows;
         }
-        List<PatientEncounter> encounters = new ArrayList<>();
-        encounters.add(getPatientEncounter());
-        Map<Long, Map<InwardChargeType, Double>> byEncounter = chargeAggregationService.fetchChargesByEncounter(encounters);
-        Map<InwardChargeType, Double> charges = byEncounter.get(getPatientEncounter().getId());
-        if (charges == null) {
+        Bill finalBill = getPatientEncounter().getFinalBill();
+        if (finalBill == null) {
             return rows;
         }
-        // Heading order follows the InwardChargeType declaration, as on the final bill.
-        Map<InwardChargeType, Double> ordered = new TreeMap<>(charges);
-        for (Map.Entry<InwardChargeType, Double> e : ordered.entrySet()) {
-            if (e.getValue() != null && e.getValue() != 0.0) {
-                rows.add(new ChargeTypeTotal(e.getKey(), e.getValue()));
+        finalBillDiscount = finalBill.getDiscount();
+        finalBillNetTotal = finalBill.getNetTotal();
+        List<BillItem> items = finalBill.getBillItems();
+        if (items == null) {
+            return rows;
+        }
+        boolean bundled = configOptionController.getBooleanValueByKeyReadOnly("Inward Final Bill - Bundle Grouped Charge Types", false);
+        Map<InwardChargeType, String> groupByType = new java.util.EnumMap<>(InwardChargeType.class);
+        Map<InwardChargeType, Integer> orderByType = new java.util.EnumMap<>(InwardChargeType.class);
+        Map<InwardChargeType, String> labelByType = new java.util.EnumMap<>(InwardChargeType.class);
+        for (BillItem bi : items) {
+            InwardChargeType type = bi == null ? null : bi.getInwardChargeType();
+            if (type == null || groupByType.containsKey(type)) {
+                continue;
             }
+            groupByType.put(type, bundled ? configOptionApplicationController.getInwardChargeTypeFinalBillGroup(type) : "");
+            orderByType.put(type, configOptionApplicationController.getInwardChargeTypeFinalBillOrder(type));
+            labelByType.put(type, configOptionApplicationController.getInwardChargeTypeFinalBillLabel(type));
+        }
+        for (com.divudi.core.data.dto.FinalBillPrintRowDTO r : BhtSummeryController.buildBundledRows(items, groupByType, orderByType, labelByType)) {
+            rows.add(new ChargeTypeTotal(r.getLabel(), r.getAmount()));
         }
         return rows;
+    }
+
+    public double getFinalBillDiscount() {
+        return finalBillDiscount;
+    }
+
+    public double getFinalBillNetTotal() {
+        return finalBillNetTotal;
     }
 
     public List<ChargeTypeTotal> getChargeTypeTotals() {
