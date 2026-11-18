@@ -169,7 +169,7 @@
                 <h:panelGroup rendered="#{d.componentPresentationType eq 'TextEditor'}">
                     <p:textEditor value="#{d.longTextValue}" 
                                   id="txtTextEditorValue" secure="false">
-                        <p:ajax event="blur" process="txtTextEditorValue" 
+                        <p:ajax event="change" process="txtTextEditorValue" 
                                 listener="#{captureComponentController.saveByAjax(d)}" ></p:ajax></p:textEditor>
                 </h:panelGroup>
 
@@ -334,7 +334,7 @@
                     <h:panelGroup rendered="#{d.componentPresentationType eq 'TextEditor'}">
                         <p:textEditor value="#{d.longTextValue}" 
                                       id="txtTextEditorValue" secure="false">
-                            <p:ajax event="blur" process="txtTextEditorValue" 
+                            <p:ajax event="change" process="txtTextEditorValue" 
                                     listener="#{captureComponentController.saveByAjax(d)}" ></p:ajax></p:textEditor>
                     </h:panelGroup>
 
