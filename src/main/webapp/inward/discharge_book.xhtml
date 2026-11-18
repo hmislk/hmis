@@ -295,11 +295,11 @@
                                     <f:facet name="header">
                                         <h:outputLabel value="Paid BY PATIENT"/>
                                     </f:facet>                                    
-                                    <h:outputLabel value="#{i.finalBill.paidAmount}"  >
+                                    <h:outputLabel value="#{inwardReportController.getPatientPaidForRow(i)}"  >
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputLabel>
                                     <f:facet name="footer">
-                                        <h:outputLabel value="#{inwardReportController.paid}"  >
+                                        <h:outputLabel value="#{inwardReportController.patientPaidTotal}"  >
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputLabel>
                                     </f:facet>
@@ -309,11 +309,11 @@
                                     <f:facet name="header">
                                         <h:outputLabel value="Credit Paid Amount"/>
                                     </f:facet>                                    
-                                    <h:outputLabel value="#{i.creditPaidAmount}"  >
+                                    <h:outputLabel value="#{inwardReportController.getCcPaidForRow(i)}"  >
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputLabel>
                                     <f:facet name="footer">
-                                        <h:outputLabel value="#{inwardReportController.creditPaid}"  >
+                                        <h:outputLabel value="#{inwardReportController.ccPaidTotal}"  >
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputLabel>
                                     </f:facet>
@@ -323,11 +323,11 @@
                                     <f:facet name="header">
                                         <h:outputLabel value="Due Amount"/>
                                     </f:facet>                                    
-                                    <h:outputLabel value="#{i.finalBill.netTotal-(i.finalBill.paidAmount+i.paidByCreditCompany)}"  >
+                                    <h:outputLabel value="#{inwardReportController.getDueForRow(i)}"  >
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputLabel>
                                     <f:facet name="footer">
-                                        <h:outputLabel value="#{inwardReportController.total-(inwardReportController.paid+inwardReportController.creditPaid)}"  >
+                                        <h:outputLabel value="#{inwardReportController.dueTotal}"  >
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputLabel>
                                     </f:facet>
