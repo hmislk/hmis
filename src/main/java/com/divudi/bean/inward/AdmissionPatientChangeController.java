@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.Map;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
+import javax.faces.context.FacesContext;
 import javax.inject.Inject;
 import javax.inject.Named;
 
@@ -99,6 +100,8 @@ public class AdmissionPatientChangeController implements Serializable, Controlle
         prepareForNew();
         current = admissionController.getCurrent();
         if (current != null) {
+            // Keep loadAdmission()'s messages across the redirect below, or they never show.
+            FacesContext.getCurrentInstance().getExternalContext().getFlash().setKeepMessages(true);
             loadAdmission();
         }
         return "/inward/inward_change_patient?faces-redirect=true";
@@ -171,14 +174,15 @@ public class AdmissionPatientChangeController implements Serializable, Controlle
     }
 
     /**
-     * The original patient is normally set by loadAdmission(), but the user can
-     * pick an admission and carry on without pressing Load. Derive it from the
-     * selected admission in that case.
+     * Always take the original patient from the selected admission. The user
+     * can load one admission, then pick another without pressing Load, so a
+     * value kept from an earlier load can be stale. Call this before the new
+     * patient is assigned to the admission.
      *
      * @return true if an original patient is available
      */
     private boolean resolveOriginalPatient() {
-        if (originalPatient == null && current != null) {
+        if (current != null) {
             originalPatient = current.getPatient();
         }
         return originalPatient != null;
