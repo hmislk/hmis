@@ -371,7 +371,7 @@
                                                                   rendered="#{inwardProfessionalBillController.feeCollectedByDoctorAllowed}">
                                                         <p:toggleSwitch
                                                             id="collectedByDoctor"
-                                                            title="The doctor collects this fee from the patient directly. It is left out of the patient bill and recorded as already paid to the doctor."
+                                                            title="The doctor collects this fee from the patient directly. The hospital does not charge it on the patient bill and does not pay it to the doctor."
                                                             value="#{inwardProfessionalBillController.feeCollectedByDoctorProfessionalPayment}">
                                                             <p:ajax update="collectedByDoctorLabel" process="@this" />
                                                         </p:toggleSwitch>

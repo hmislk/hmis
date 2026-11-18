@@ -32,7 +32,9 @@ SET @has_col = (
 );
 
 SET @sql = IF(@billfee_table IS NULL,
-    'SELECT "SKIPPED: BILLFEE table not found" AS status',
+    -- BILLFEE missing: run an ALTER that must fail, so the runner records FAILED and v2.21.0
+    -- stays pending (the runner ignores SELECT output, so a status row would count as success).
+    'ALTER TABLE BILLFEE ADD COLUMN COLLECTEDBYDOCTORATBILLING TINYINT(1) NOT NULL DEFAULT 0',
     IF(@has_col > 0,
         'SELECT "SKIPPED: COLLECTEDBYDOCTORATBILLING already exists" AS status',
         CONCAT('ALTER TABLE ', @billfee_table, ' ADD COLUMN COLLECTEDBYDOCTORATBILLING TINYINT(1) NOT NULL DEFAULT 0')

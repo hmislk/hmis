@@ -60,10 +60,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
@@ -1836,10 +1838,19 @@ public class InwardReportControllerBht implements Serializable {
         // Issue #22803 - "admissions without professional fees" filter.
         // detailRows/detailedRows are always empty/non-empty together, since
         // both are derived from the same feeRowsByEncounter map.
+        // A fee the doctor collected at billing is not a payable row but is still a professional
+        // fee, so an admission that has only such a fee is not "without professional fees" (#17490).
         if (onlyAdmissionsWithoutProfessionalFees) {
-            groups = groups.stream()
-                    .filter(g -> g.getDetailRows() == null || g.getDetailRows().isEmpty())
-                    .collect(Collectors.toList());
+            Set<Long> encountersWithDoctorCollectedFees = fetchEncounterIdsWithDoctorCollectedFees(encounterIds);
+            List<InwardProfessionalPaymentAdmissionGroupDTO> kept = new ArrayList<>();
+            for (int i = 0; i < groups.size(); i++) {
+                InwardProfessionalPaymentAdmissionGroupDTO g = groups.get(i);
+                boolean noPayableRows = g.getDetailRows() == null || g.getDetailRows().isEmpty();
+                if (noPayableRows && !encountersWithDoctorCollectedFees.contains(admissions.get(i).getPatientEncounterId())) {
+                    kept.add(g);
+                }
+            }
+            groups = kept;
         }
 
         return groups;
@@ -1967,6 +1978,33 @@ public class InwardReportControllerBht implements Serializable {
 
         List<InwardProfessionalPaymentAdmissionDTO> result = (List<InwardProfessionalPaymentAdmissionDTO>) billFacade.findLightsByJpqlWithoutCache(jpql, params, TemporalType.TIMESTAMP);
         return result != null ? result : new ArrayList<>();
+    }
+
+    private Set<Long> fetchEncounterIdsWithDoctorCollectedFees(List<Long> encounterIds) {
+        Set<Long> result = new HashSet<>();
+        if (encounterIds == null || encounterIds.isEmpty()) {
+            return result;
+        }
+        String jpql = "SELECT DISTINCT b.patientEncounter.id "
+                + "FROM BillFee bf JOIN bf.bill b "
+                + "WHERE bf.retired = false "
+                + "AND b.retired = false "
+                + "AND b.cancelled = false "
+                + "AND b.billType = :billType "
+                + "AND bf.collectedByDoctorAtBilling = true "
+                + "AND b.patientEncounter.id IN :encounterIds";
+        Map<String, Object> params = new HashMap<>();
+        params.put("billType", BillType.InwardProfessional);
+        params.put("encounterIds", encounterIds);
+        List<?> rows = billFacade.findLightsByJpqlWithoutCache(jpql, params, TemporalType.TIMESTAMP);
+        if (rows != null) {
+            for (Object r : rows) {
+                if (r != null) {
+                    result.add(((Number) r).longValue());
+                }
+            }
+        }
+        return result;
     }
 
     private List<InwardProfessionalPaymentFeeRowDTO> fetchProfessionalFeeRowsForDepartment() {

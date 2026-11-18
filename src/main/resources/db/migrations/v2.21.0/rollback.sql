@@ -1,5 +1,10 @@
 -- Rollback v2.21.0: drop BILLFEE.COLLECTEDBYDOCTORATBILLING
 -- Idempotent and case-insensitive: only drops what exists. The flag values are lost.
+--
+-- DEPLOY ORDER: stop every instance that maps BILLFEE.COLLECTEDBYDOCTORATBILLING (the current
+-- build reads it when loading BillFee and in its billing queries) and restore the prior WAR
+-- BEFORE running this script. Run while the current WAR still serves, those queries fail.
+-- WARNING: dropping the column loses every saved "Collected by Doctor" flag.
 
 SET @billfee_table = (
     SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES
