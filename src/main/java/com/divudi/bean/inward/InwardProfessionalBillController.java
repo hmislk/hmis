@@ -850,7 +850,7 @@ public class InwardProfessionalBillController implements Serializable {
             }
             // Settled at once: the hospital never owes this fee, so it must not reach
             // a doctor payment due list. No Payment, drawer or cashbook entry is made.
-            currentBillFee.setFeeCollectedByDoctor(true);
+            currentBillFee.setCollectedByDoctorAtBilling(true);
             currentBillFee.setPaidValue(currentBillFee.getFeeValue());
             currentBillFee.setSettleValue(currentBillFee.getFeeValue());
         }
@@ -916,7 +916,7 @@ public class InwardProfessionalBillController implements Serializable {
         for (BillFee bf : getLstBillFees()) {
             bf.setOrderNo(index++);
             // A fee collected by the doctor is not a hospital charge.
-            if (bf.isFeeCollectedByDoctor() && isFeeCollectedByDoctorAllowed()) {
+            if (bf.isCollectedByDoctorAtBilling() && isFeeCollectedByDoctorAllowed()) {
                 continue;
             }
             tot += bf.getFeeValue();

@@ -798,7 +798,7 @@ public class InwardBeanController implements Serializable {
         HashMap hm = new HashMap();
         String sql = "SELECT count(bf) FROM BillFee bf"
                 + " WHERE bf.retired=false"
-                + " and bf.feeCollectedByDoctor=true"
+                + " and bf.collectedByDoctorAtBilling=true"
                 + " and bf.bill.retired=false"
                 + " and bf.bill.cancelled=false"
                 + " and bf.bill.billType=:btp"

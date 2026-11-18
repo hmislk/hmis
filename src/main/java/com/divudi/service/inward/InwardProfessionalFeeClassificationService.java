@@ -204,7 +204,7 @@ public class InwardProfessionalFeeClassificationService implements Serializable 
         if (!configOptionApplicationController.isInwardProfessionalFeeCollectedByDoctorAllowed()) {
             return "";
         }
-        return " and (" + feeAlias + ".feeCollectedByDoctor = false or " + feeAlias + ".feeCollectedByDoctor is null) ";
+        return " and (" + feeAlias + ".collectedByDoctorAtBilling = false or " + feeAlias + ".collectedByDoctorAtBilling is null) ";
     }
 
     private String categoryCondition(String feeAlias, InwardChargeType target) {

@@ -80,7 +80,7 @@ A print or settings dialog must use the **same** controller as the page or templ
 
 | Key | Type | Default | Description |
 | --- | --- | --- | --- |
-| `Inward Professional Fee - Allow Fee Collected By Doctor` | Boolean | `false` | When `true`, the inward professional fee add page offers a "Collected by Doctor" switch beside FOC. A fee added with it on is left out of the patient bill total, due and claimable amount (final and interim), is recorded as already paid to the doctor (never in a payment due list), makes no Payment/drawer/cashbook entry, and patient bills print only the note "Fees Collected by the Doctor" outside the net total. The exclusion covers every fee already flagged `feeCollectedByDoctor`, including fees flagged earlier on the surgery payment page. When `false`, behaviour is unchanged. See issue #17490. |
+| `Inward Professional Fee - Allow Fee Collected By Doctor` | Boolean | `false` | When `true`, the inward professional fee add page offers a "Collected by Doctor" switch beside FOC. A fee added with it on is left out of the patient bill total, due and claimable amount (final and interim), is recorded as already paid to the doctor (never in a payment due list), makes no Payment/drawer/cashbook entry, and patient bills print only the note "Fees Collected by the Doctor" outside the net total. The exclusion covers only fees ticked on the add page (stored in `BillFee.collectedByDoctorAtBilling`); fees flagged on the surgery payment page (`feeCollectedByDoctor`) behave as before, with the key on or off. When `false`, behaviour is unchanged. See issue #17490. |
 
 ## Inpatient Reports
 
