@@ -76,6 +76,12 @@ A print or settings dialog must use the **same** controller as the page or templ
 | ---------------------------------------------------------------- | --------- | ------- | ------------------------------------------------------------------------------------------------------- |
 | `Inward Administrative Discharge - Require Nursing Discharge`   | Boolean   | `true`  | Controls whether `BhtSummeryController.checkDischargeTime()` requires `PatientEncounter.isNursingDischarged()` before allowing administrative discharge (the "Discharge" action on the Interim Bill) for room-charged admissions. Some hospitals do not use the nursing discharge workflow; setting this to `false` for those institutions lets administrative discharge proceed without it. See issue #22607. |
 
+## Inward Final Bill
+
+| Key | Type | Default | Description |
+| --- | --- | --- | --- |
+| `Inward Final Bill - Discount Comment Required` | Boolean (application scope) | `false` | When `true`, a discounted inpatient bill cannot be saved without a Discount Comment. On the Inward Final Bill page, **Save Final Bill** stops when the bill has any discount (item, charge type or bill level). On the Edit Provisional Bill page, **Save Bill** and **Settle Bill** stop when the Discount box is above zero. When `false` the comment is optional. The comment prints under the discount on the final bill. See issue #25699. |
+
 ## Inpatient Reports
 
 | Key                                                              | Type      | Default | Description                                                                                             |
