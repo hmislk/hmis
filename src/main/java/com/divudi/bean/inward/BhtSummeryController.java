@@ -3039,6 +3039,13 @@ public class BhtSummeryController implements Serializable {
             return "";
         }
 
+        if (b.getDiscount() > 0
+                && (b.getComments() == null || b.getComments().trim().isEmpty())
+                && configOptionApplicationController.getBooleanValueByKey("Inward Final Bill - Discount Comment Required", false)) {
+            JsfUtil.addErrorMessage("Please enter a Discount Comment (reason or approver) before settling a bill with a discount.");
+            return "";
+        }
+
         setPatientEncounter(b.getPatientEncounter());
 
         boolean settled = getBillNumberBean().withFinalBillVersionLock(getPatientEncounter(), () -> convertProvisionalToFinalBill(b));

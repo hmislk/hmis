@@ -3748,6 +3748,12 @@ public class InwardSearch implements Serializable {
     }
 
     public void saveProvisionalBill(Bill b) {
+        if (b.getDiscount() > 0
+                && (b.getComments() == null || b.getComments().trim().isEmpty())
+                && configOptionApplicationController.getBooleanValueByKey("Inward Final Bill - Discount Comment Required", false)) {
+            JsfUtil.addErrorMessage("Please enter a Discount Comment (reason or approver) before settling a bill with a discount.");
+            return;
+        }
         b.setEditor(sessionController.getLoggedUser());
         b.setEditedAt(new Date());
         billFacade.edit(b);

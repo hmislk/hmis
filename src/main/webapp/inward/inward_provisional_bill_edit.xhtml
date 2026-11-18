@@ -134,10 +134,26 @@
                                                 <div class="col-md-6">
                                                     <p:inputText value="#{inwardSearch.bill.discount}" class="text-end" style="float: right;" onfocus="this.select()">
                                                         <f:convertNumber pattern="#,##0.00" />
-                                                        <p:ajax process="@this" update="@all"
+                                                        <p:ajax process="@this provisionalDiscountComment" update="@all"
                                                                 event="change"
                                                                 listener="#{inwardSearch.updateTotal()}"/>
                                                     </p:inputText>
+                                                </div>
+                                            </div>
+
+                                            <div class="row mt-3">
+                                                <div class="col-md-5">
+                                                    <h:outputLabel value="Discount Comment" for="provisionalDiscountComment" class="mt-2"></h:outputLabel>
+                                                </div>
+                                                <div class="col-md-1 justify-content-end d-flex">
+                                                    <p:outputLabel value=":" class="mx-2 mt-2"/>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <p:inputTextarea id="provisionalDiscountComment" rows="2" maxlength="500"
+                                                                     style="width: 100%;"
+                                                                     title="Reason for the discount or who approved it"
+                                                                     placeholder="Reason / approved by"
+                                                                     value="#{inwardSearch.bill.comments}"/>
                                                 </div>
                                             </div>
 
