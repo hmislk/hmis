@@ -96,7 +96,7 @@
                                             class="col-12 mt-2"
                                             autoWidth="false"
                                             >
-                                            <f:selectItem itemLabel="Any Status" ></f:selectItem>
+                                            <f:selectItem itemLabel="All" itemValue="#{null}" noSelectionOption="true" ></f:selectItem>
                                             <f:selectItems
                                                 value="#{enumController.getAppointmentStatus()}"
                                                 var="rs"
@@ -141,6 +141,20 @@
 
                                     <p:column headerText="Reserve To" width="13em;" style="padding: 8px;">
                                         <h:outputLabel value="#{r.reservedTo}" >
+                                            <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></f:convertDateTime>
+                                        </h:outputLabel>
+                                    </p:column>
+
+                                    <p:column headerText="Procedure" width="14em;" style="padding: 8px;">
+                                        <h:outputLabel id="procedure" value="#{r.procedureName}" />
+                                    </p:column>
+
+                                    <p:column headerText="Category" width="12em;" style="padding: 8px;">
+                                        <h:outputLabel id="category" value="#{r.categoryName}" />
+                                    </p:column>
+
+                                    <p:column headerText="Appointment Date" width="11em;" style="padding: 8px;">
+                                        <h:outputLabel id="appointmentDate" value="#{r.appointmentDate}" >
                                             <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></f:convertDateTime>
                                         </h:outputLabel>
                                     </p:column>

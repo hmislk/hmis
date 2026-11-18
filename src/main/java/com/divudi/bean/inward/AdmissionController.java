@@ -2656,7 +2656,9 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
                 + " and a.patientEncounter = :enc "
                 + " and a.bill is not null "
                 + " and a.bill.billTypeAtomic = :bta "
-                + " and a.bill.cancelled = false ";
+                + " and a.bill.cancelled = false "
+                // an appointment booked with no payment has no deposit to convert
+                + " and a.bill.total > 0 ";
         HashMap<String, Object> m = new HashMap<>();
         m.put("enc", enc);
         m.put("bta", BillTypeAtomic.INWARD_APPOINTMENT_BILL);

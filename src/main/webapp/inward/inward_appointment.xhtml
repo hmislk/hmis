@@ -328,6 +328,11 @@
                                                         <p:ajax process="cmbPs @this" update="paymentMethods" event="change" listener="#{appointmentController.updatePaymentData()}"/>
                                                     </p:selectOneMenu>
                                                     <br></br>
+                                                    <h:outputText
+                                                        id="paymentOptionalNote"
+                                                        class="text-muted"
+                                                        value="Payment is optional for this appointment type. Leave 'Select' to book without taking a payment."
+                                                        rendered="#{appointmentController.paymentOptionalForCategory}" />
                                                 </div>
                                                 <h:panelGroup id="paymentMethods" class="my-3">
                                                     <h:panelGroup

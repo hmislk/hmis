@@ -40,6 +40,9 @@ public class ReservationDTO implements Serializable {
     private String refDoctorName;
     private String refDoctorNameWithTitle;
     private AppointmentStatus status;
+    private String procedureName;
+    private String categoryName;
+    private Date appointmentDate;
     
     public ReservationDTO() {
         
@@ -64,8 +67,40 @@ public class ReservationDTO implements Serializable {
         
     }
     
+    // Manage Appointment list: adds the procedure, category and appointment date
+    public ReservationDTO(Long id, Date reservedFrom, Date reservedTo, String appointmentNumber, Date createdAt, String roomNo, Title patientTitle, String patientName, Date patientDob, String patientGender, String patientMobile, Title refDoctorTitle, String refDoctorName, AppointmentStatus status, String procedureName, String categoryName, Date appointmentDate) {
+        this(id, reservedFrom, reservedTo, appointmentNumber, createdAt, roomNo, patientTitle, patientName, patientDob, patientGender, patientMobile, refDoctorTitle, refDoctorName, status);
+        this.procedureName = procedureName;
+        this.categoryName = categoryName;
+        this.appointmentDate = appointmentDate;
+    }
+
     public Long getId() {
         return id;
+    }
+
+    public String getProcedureName() {
+        return procedureName;
+    }
+
+    public void setProcedureName(String procedureName) {
+        this.procedureName = procedureName;
+    }
+
+    public String getCategoryName() {
+        return categoryName;
+    }
+
+    public void setCategoryName(String categoryName) {
+        this.categoryName = categoryName;
+    }
+
+    public Date getAppointmentDate() {
+        return appointmentDate;
+    }
+
+    public void setAppointmentDate(Date appointmentDate) {
+        this.appointmentDate = appointmentDate;
     }
 
     public void setId(Long id) {

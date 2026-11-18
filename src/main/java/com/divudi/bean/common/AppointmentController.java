@@ -503,48 +503,63 @@ public class AppointmentController implements Serializable, ControllerWithPatien
             }
             
             Reservation res = findReservationForAppointment(apt);
-            ReservationDTO dto;
-            
-            if (res != null) {
-                // Room Reservation details (ROOM_ADMISSION)
-                dto = new ReservationDTO(
+            Bill aptBill = apt.getBill();
+            boolean hasRef = aptBill != null && aptBill.getReferredBy() != null && aptBill.getReferredBy().getPerson() != null;
+            ReservationDTO dto = new ReservationDTO(
                     apt.getId(), // ReservationDTO.id is always the Appointment ID - see ReservationDTO
-                    res.getReservedFrom(),
-                    res.getReservedTo(),
+                    res != null ? res.getReservedFrom() : combineDateAndTime(apt.getAppointmentDate(), apt.getAppointmentTimeFrom()),
+                    res != null ? res.getReservedTo() : combineDateAndTime(apt.getAppointmentDate(), apt.getAppointmentTimeTo()),
                     apt.getAppointmentNumber(),
                     apt.getCreatedAt(),
-                    res.getRoom() != null ? res.getRoom().getName() : "N/A",
+                    res != null ? (res.getRoom() != null ? res.getRoom().getName() : "N/A") : "N/A",
                     apt.getPatient().getPerson().getTitle(),
                     apt.getPatient().getPerson().getName() != null ? apt.getPatient().getPerson().getName() : "",
                     apt.getPatient().getPerson().getDob(),
                     apt.getPatient().getPerson().getSex() != null ? apt.getPatient().getPerson().getSex().getLabel() : "",
                     apt.getPatient().getPerson().getMobile() != null ? apt.getPatient().getPerson().getMobile() : "",
-                    apt.getBill() != null && apt.getBill().getReferredBy() != null && apt.getBill().getReferredBy().getPerson() != null ? apt.getBill().getReferredBy().getPerson().getTitle() : null,
-                    apt.getBill() != null && apt.getBill().getReferredBy() != null && apt.getBill().getReferredBy().getPerson() != null ? apt.getBill().getReferredBy().getPerson().getName() : "",
-                    apt.getStatus()
-                );
-            } else {
-                // Non-room Appointment details (Procedure, Consultant, etc.)
-                dto = new ReservationDTO(
-                    apt.getId(), // ReservationDTO.id is always the Appointment ID - see ReservationDTO
-                    combineDateAndTime(apt.getAppointmentDate(), apt.getAppointmentTimeFrom()), // Combined date and time
-                    combineDateAndTime(apt.getAppointmentDate(), apt.getAppointmentTimeTo()), 
-                    apt.getAppointmentNumber(),
-                    apt.getCreatedAt(),
-                    "N/A", // Mark Room as N/A
-                    apt.getPatient().getPerson().getTitle(),
-                    apt.getPatient().getPerson().getName() != null ? apt.getPatient().getPerson().getName() : "",
-                    apt.getPatient().getPerson().getDob(),
-                    apt.getPatient().getPerson().getSex() != null ? apt.getPatient().getPerson().getSex().getLabel() : "",
-                    apt.getPatient().getPerson().getMobile() != null ? apt.getPatient().getPerson().getMobile() : "",
-                    apt.getBill() != null && apt.getBill().getReferredBy() != null && apt.getBill().getReferredBy().getPerson() != null ? apt.getBill().getReferredBy().getPerson().getTitle() : null,
-                    apt.getBill() != null && apt.getBill().getReferredBy() != null && apt.getBill().getReferredBy().getPerson() != null ? apt.getBill().getReferredBy().getPerson().getName() : "",
-                    apt.getStatus()
-                );
-            }
+                    hasRef ? aptBill.getReferredBy().getPerson().getTitle() : null,
+                    hasRef ? aptBill.getReferredBy().getPerson().getName() : "",
+                    apt.getStatus(),
+                    apt.getItem() != null ? apt.getItem().getName() : "",
+                    appointmentCategoryLabel(apt, res != null),
+                    apt.getAppointmentDate()
+            );
             dtos.add(dto);
         }
         reservationDTOs = dtos;
+    }
+
+    /**
+     * The category is not stored on the appointment, so it is derived from what
+     * was saved: a reservation means Room Admission, otherwise the procedure,
+     * consultant and department that are present.
+     */
+    private String appointmentCategoryLabel(Appointment apt, boolean hasReservation) {
+        if (hasReservation) {
+            return InwardAppointmentCategory.ROOM_ADMISSION.getDisplayName();
+        }
+        boolean proc = apt.getItem() != null;
+        boolean cons = apt.getOpdDoctor() != null;
+        boolean dept = apt.getDepartment() != null;
+        InwardAppointmentCategory c;
+        if (proc && cons && dept) {
+            c = InwardAppointmentCategory.CONSULTANT_PROCEDURE_AND_DEPARTMENT;
+        } else if (proc && cons) {
+            c = InwardAppointmentCategory.CONSULTANT_AND_PROCEDURE;
+        } else if (proc && dept) {
+            c = InwardAppointmentCategory.PROCEDURE_AND_DEPARTMENT;
+        } else if (cons && dept) {
+            c = InwardAppointmentCategory.CONSULTANT_AND_DEPARTMENT;
+        } else if (proc) {
+            c = InwardAppointmentCategory.PROCEDURE;
+        } else if (cons) {
+            c = InwardAppointmentCategory.CONSULTANT;
+        } else if (dept) {
+            c = InwardAppointmentCategory.DEPARTMENT;
+        } else {
+            return "";
+        }
+        return c.getDisplayName();
     }
 
     public List<Reservation> searcheservations(String quary) {
@@ -711,7 +726,7 @@ public class AppointmentController implements Serializable, ControllerWithPatien
             }
         }
 
-        if (currentBill.getReferredBy() == null) {
+        if (currentBill.getReferredBy() == null && !isReferringDoctorOptional()) {
             JsfUtil.addErrorMessage("Referring Doctor is Missing.");
             return;
         }
@@ -749,12 +764,23 @@ public class AppointmentController implements Serializable, ControllerWithPatien
 
         Patient p = savePatient(getPatient());
 
+        boolean noPayment = isNoPaymentAppointment();
+        if (noPayment) {
+            // No money is taken: the bill carries no value, no method and no Payment row,
+            // so no drawer or cashbook entry is written and payment-based reports see nothing.
+            getCurrentBill().setPaymentMethod(null);
+            getCurrentBill().setTotal(0.0);
+            getCurrentBill().setNetTotal(0.0);
+        }
+
         saveBill(p);
         saveAppointment(p);
         if (appointmentCategory.needsRoom()) {
             saveReservation(p, currentAppointment);
         }
-        createPayment(getCurrentBill(), getCurrentBill().getPaymentMethod());
+        if (!noPayment) {
+            createPayment(getCurrentBill(), getCurrentBill().getPaymentMethod());
+        }
 
         // Increment booked count on schedule instance
         if (selectedScheduleInstance != null) {
@@ -1110,6 +1136,10 @@ public class AppointmentController implements Serializable, ControllerWithPatien
         }
 
         //}
+        if (isNoPaymentAppointment()) {
+            return false;
+        }
+
         if (getCurrentBill().getPaymentMethod() == null) {
             JsfUtil.addErrorMessage("Please Select a Payment Method");
             return true;
@@ -1120,6 +1150,40 @@ public class AppointmentController implements Serializable, ControllerWithPatien
         }
 
         return false;
+    }
+
+    /**
+     * Config key: when true, a non-room appointment (Procedure, Consultant, Department
+     * and their combinations) may be booked with no payment method chosen. Default false.
+     */
+    public static final String KEY_ALLOW_APPOINTMENT_WITHOUT_PAYMENT
+            = "Inward Appointment - Allow Non-Room Appointment Without Payment";
+
+    /**
+     * Config key: when true, the Referring Doctor is not required to book an
+     * appointment. Default false.
+     */
+    public static final String KEY_ALLOW_APPOINTMENT_WITHOUT_REFERRING_DOCTOR
+            = "Inward Appointment - Allow Appointment Without Referring Doctor";
+
+    public boolean isPaymentOptionalForCategory() {
+        return appointmentCategory != null
+                && !appointmentCategory.needsRoom()
+                && configOptionApplicationController.getBooleanValueByKey(KEY_ALLOW_APPOINTMENT_WITHOUT_PAYMENT, false);
+    }
+
+    public boolean isReferringDoctorOptional() {
+        return configOptionApplicationController.getBooleanValueByKey(KEY_ALLOW_APPOINTMENT_WITHOUT_REFERRING_DOCTOR, false);
+    }
+
+    /**
+     * True only when the key is on, the category needs no room and no payment
+     * method was chosen. Room appointments always take a payment.
+     */
+    private boolean isNoPaymentAppointment() {
+        return isPaymentOptionalForCategory()
+                && getCurrentBill() != null
+                && getCurrentBill().getPaymentMethod() == null;
     }
 
     @EJB
