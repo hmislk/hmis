@@ -2000,7 +2000,9 @@ public class InwardReportControllerBht implements Serializable {
                 // Issue #23846 - staff fees on inward service bills are professional
                 // payables too, even though no separate professional fee bill exists.
                 + "AND (b.billType = :billType "
-                + "OR (b.billTypeAtomic = :serviceBillAtomic AND bf.staff IS NOT NULL AND bf.feeValue > 0)) ";
+                + "OR (b.billTypeAtomic = :serviceBillAtomic AND bf.staff IS NOT NULL AND bf.feeValue > 0)) "
+                // Collected by the doctor at billing: not a hospital payable (#17490).
+                + " and (bf.collectedByDoctorAtBilling = false or bf.collectedByDoctorAtBilling is null) ";
 
         Map<String, Object> params = new HashMap<>();
         params.put("billType", BillType.InwardProfessional);

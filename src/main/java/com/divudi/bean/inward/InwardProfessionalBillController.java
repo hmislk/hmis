@@ -848,11 +848,9 @@ public class InwardProfessionalBillController implements Serializable {
                 JsfUtil.addErrorMessage("A fee cannot be both Free of Charge and Collected by Doctor.");
                 return;
             }
-            // Settled at once: the hospital never owes this fee, so it must not reach
-            // a doctor payment due list. No Payment, drawer or cashbook entry is made.
+            // paidValue/settleValue stay 0 so the bill can still be cancelled and the fee
+            // removed or edited; the doctor payment due lists and reports skip this flag.
             currentBillFee.setCollectedByDoctorAtBilling(true);
-            currentBillFee.setPaidValue(currentBillFee.getFeeValue());
-            currentBillFee.setSettleValue(currentBillFee.getFeeValue());
         }
 
         if (getCurrent().getId() == null) {
