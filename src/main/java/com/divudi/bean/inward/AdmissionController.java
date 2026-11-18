@@ -64,11 +64,13 @@ import com.divudi.bean.pharmacy.PharmacyRequestForBhtController;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import com.divudi.core.data.AppointmentStatus;
+import com.divudi.core.data.AppointmentType;
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.clinical.ClinicalFindingValueType;
 import com.divudi.core.data.dto.InwardBillReceiptDTO;
 import com.divudi.core.data.dto.PatientEncounterDto;
+import com.divudi.core.data.dto.PendingAppointmentDTO;
 import com.divudi.core.entity.Area;
 import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Staff;
@@ -2068,6 +2070,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         encounterCreditCompanies = new ArrayList<>();
         encounterCreditCompany = new EncounterCreditCompany();
         showActiveAdmissionWarning = false;
+        loadPendingAppointments();
         bhtNumberCalculation();
     }
 
@@ -2613,6 +2616,8 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         Appointment apt = getAppointmentFacade().findFirstByJpql(sql, hm);
         apt.setPatientEncounter(getCurrent());
         getAppointmentFacade().edit(apt);
+        // The admitted appointment must drop off the Admit page list. (#25707)
+        loadPendingAppointments();
 
     }
 
@@ -2850,6 +2855,106 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         }
         pmd.setPaymentMethod(method);
         return pmd;
+    }
+    // </editor-fold>
+
+    // <editor-fold defaultstate="collapsed" desc="Pending appointments list on the Admit page (#25707)">
+    private List<PendingAppointmentDTO> pendingAppointments;
+    private String pendingAppointmentsGlobalFilter;
+
+    /**
+     * Loads the table shown on the Appointment tab of the Admit page: inward
+     * appointments that are still pending, i.e. not retired or cancelled, bill
+     * not cancelled or refunded, and not yet linked to an admission
+     * ({@code Appointment.patientEncounter}, which {@link #updateAppointment()}
+     * sets when the patient is admitted). Paid state is derived from the
+     * appointment bill total, so unpaid (zero value) appointments are listed.
+     * Called from the navigation methods and after an admission is saved.
+     */
+    public void loadPendingAppointments() {
+        pendingAppointmentsGlobalFilter = null;
+        String jpql = "select new com.divudi.core.data.dto.PendingAppointmentDTO("
+                + " a.id, b.id, a.appointmentNumber, a.appointmentDate, a.appointmentTimeFrom,"
+                + " p.person.title, p.person.name, p.person.mobile, i.name, b.total)"
+                + " from Appointment a"
+                + " join a.bill b"
+                + " join a.patient p"
+                + " left join a.item i"
+                + " where a.retired = false"
+                + " and a.appointmentCancel = false"
+                + " and a.appointmentType = :type"
+                + " and a.status = :status"
+                + " and b.retired = false"
+                + " and b.cancelled = false"
+                + " and b.refunded = false"
+                + " and a.patientEncounter is null"
+                + " order by a.appointmentDate, a.appointmentTimeFrom, a.id";
+        Map<String, Object> m = new HashMap<>();
+        m.put("type", AppointmentType.IP_APPOINTMENT);
+        m.put("status", AppointmentStatus.PENDING);
+        List<PendingAppointmentDTO> list = new ArrayList<>();
+        List<?> rows = getAppointmentFacade().findLightsByJpql(jpql, m, TemporalType.TIMESTAMP);
+        List<Long> appointmentIds = new ArrayList<>();
+        Map<Long, PendingAppointmentDTO> byAppointment = new HashMap<>();
+        for (Object o : rows) {
+            PendingAppointmentDTO d = (PendingAppointmentDTO) o;
+            list.add(d);
+            appointmentIds.add(d.getAppointmentId());
+            byAppointment.put(d.getAppointmentId(), d);
+        }
+        if (!appointmentIds.isEmpty()) {
+            String rj = "select r.appointment.id, r.room.name from Reservation r"
+                    + " where r.retired = false and r.room is not null"
+                    + " and r.appointment.id in :ids";
+            Map<String, Object> rm = new HashMap<>();
+            rm.put("ids", appointmentIds);
+            List<Object[]> roomRows = reservationFacade.findObjectsArrayByJpql(rj, rm, TemporalType.TIMESTAMP);
+            for (Object[] r : roomRows) {
+                PendingAppointmentDTO d = byAppointment.get((Long) r[0]);
+                if (d != null) {
+                    d.setRoomName((String) r[1]);
+                }
+            }
+        }
+        pendingAppointments = list;
+    }
+
+    /**
+     * Select button of the pending appointments table: same effect as picking
+     * the appointment bill in the autocomplete ({@link #listnerForAppoimentSelect(Bill)}),
+     * plus the reservation, so the room is pre-filled for room appointments.
+     */
+    public void selectPendingAppointment(Long billId) {
+        if (billId == null) {
+            return;
+        }
+        Bill b = getBillFacade().find(billId);
+        if (b == null) {
+            JsfUtil.addErrorMessage("Appointment not found");
+            return;
+        }
+        String rj = "select r from Reservation r where r.retired = false"
+                + " and r.appointment.bill.id = :billId order by r.id desc";
+        Map<String, Object> m = new HashMap<>();
+        m.put("billId", billId);
+        setCurrentReservation(reservationFacade.findFirstByJpql(rj, m));
+        setAppointmentBill(b);
+        listnerForAppoimentSelect(b);
+    }
+
+    public List<PendingAppointmentDTO> getPendingAppointments() {
+        if (pendingAppointments == null) {
+            loadPendingAppointments();
+        }
+        return pendingAppointments;
+    }
+
+    public String getPendingAppointmentsGlobalFilter() {
+        return pendingAppointmentsGlobalFilter;
+    }
+
+    public void setPendingAppointmentsGlobalFilter(String pendingAppointmentsGlobalFilter) {
+        this.pendingAppointmentsGlobalFilter = pendingAppointmentsGlobalFilter;
     }
     // </editor-fold>
 

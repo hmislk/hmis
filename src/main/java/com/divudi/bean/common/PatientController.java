@@ -955,6 +955,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
         admissionController.cancelActiveAdmissionWarning();
 
         admissionController.setPatientForiegner(false);
+        admissionController.loadPendingAppointments();
         return "/inward/inward_admission?faces-redirect=true";
 
     }
