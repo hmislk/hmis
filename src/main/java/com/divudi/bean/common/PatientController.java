@@ -949,6 +949,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
         quickSearchPhoneNumber = null;
         admissionController.setPatientAllergies(null);
         admissionController.setCurrentReservation(null);
+        admissionController.setAppointmentBill(null);
         // AdmissionController is session-scoped: clear a "Patient Already Admitted"
         // warning left over from an earlier abandoned attempt so it does not
         // reappear over this fresh, blank form. (Issue #24000)

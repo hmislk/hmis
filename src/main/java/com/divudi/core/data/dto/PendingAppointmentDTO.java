@@ -25,6 +25,8 @@ public class PendingAppointmentDTO implements Serializable {
     private double billTotal;
     /** Set after the main query, from the reservation (room appointments only). */
     private String roomName;
+    /** True when the appointment has a room reservation, even if its room name could not be read. */
+    private boolean roomBooking;
 
     public PendingAppointmentDTO() {
     }
@@ -45,7 +47,7 @@ public class PendingAppointmentDTO implements Serializable {
     }
 
     public boolean isRoomAppointment() {
-        return roomName != null && !roomName.trim().isEmpty();
+        return roomBooking || (roomName != null && !roomName.trim().isEmpty());
     }
 
     public String getTypeLabel() {
@@ -108,5 +110,9 @@ public class PendingAppointmentDTO implements Serializable {
 
     public void setRoomName(String roomName) {
         this.roomName = roomName;
+    }
+
+    public void setRoomBooking(boolean roomBooking) {
+        this.roomBooking = roomBooking;
     }
 }

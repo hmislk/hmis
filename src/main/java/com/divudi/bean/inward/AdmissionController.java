@@ -2055,6 +2055,10 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
 
     public void prepereToAdmitNewPatient() {
         current = null;
+        // A new admission starts with no appointment or reservation carried over from an
+        // earlier Select / "To Admit"; otherwise updateAppointment() would link it. (#25707)
+        appointmentBill = null;
+        currentReservation = null;
         patientRoom = null;
         items = null;
         bhtText = "";
@@ -2076,6 +2080,8 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
 
     public String toAdmitAMember() {
         patientRoom = null;
+        appointmentBill = null;
+        currentReservation = null;
         items = null;
         bhtText = "";
         ageText = null;
@@ -2903,12 +2909,29 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             byAppointment.put(d.getAppointmentId(), d);
         }
         if (!appointmentIds.isEmpty()) {
-            String rj = "select r.appointment.id, r.room.name from Reservation r"
-                    + " where r.retired = false and r.room is not null"
-                    + " and r.appointment.id in :ids";
             Map<String, Object> rm = new HashMap<>();
             rm.put("ids", appointmentIds);
+            // Which appointments are room bookings is kept apart from the room name, so a
+            // failed name lookup still labels the row Room (blank name), not Procedure.
             try {
+                String bj = "select r.appointment.id from Reservation r"
+                        + " where r.retired = false and r.room is not null"
+                        + " and r.appointment.id in :ids";
+                List<?> bookingRows = reservationFacade.findLightsByJpql(bj, rm, TemporalType.TIMESTAMP);
+                for (Object o : bookingRows) {
+                    PendingAppointmentDTO d = byAppointment.get((Long) o);
+                    if (d != null) {
+                        d.setRoomBooking(true);
+                    }
+                }
+            } catch (Exception e) {
+                // Display-only; never let this interrupt the admission save.
+                logger.log(Level.WARNING, "Pending appointments: room booking lookup failed", e);
+            }
+            try {
+                String rj = "select r.appointment.id, r.room.name from Reservation r"
+                        + " where r.retired = false and r.room is not null"
+                        + " and r.appointment.id in :ids";
                 List<Object[]> roomRows = reservationFacade.findObjectsArrayByJpql(rj, rm, TemporalType.TIMESTAMP);
                 for (Object[] r : roomRows) {
                     PendingAppointmentDTO d = byAppointment.get((Long) r[0]);
@@ -2917,7 +2940,6 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
                     }
                 }
             } catch (Exception e) {
-                // Room names are display-only; never let this interrupt the admission save.
                 logger.log(Level.WARNING, "Pending appointments: room name lookup failed", e);
             }
         }
