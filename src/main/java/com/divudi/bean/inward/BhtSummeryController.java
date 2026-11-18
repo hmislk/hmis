@@ -4227,8 +4227,6 @@ public class BhtSummeryController implements Serializable {
         getCurrent().setTotal(grantTotal);
         getCurrent().setDiscount(discount);
         getCurrent().setNetTotal(grantTotal - discount);
-        getCurrent().setVat(computedVatTotal);
-        getCurrent().setVatPlusNetTotal(grantTotal - discount);
         getCurrent().setPaidAmount(paid);
         getCurrent().setClaimableTotal(adjustedTotal);
         getCurrent().setSettledAmountBySponsor(paidByCompany);
@@ -4284,8 +4282,6 @@ public class BhtSummeryController implements Serializable {
         getTempBill().setTotal(grantTotal);
         getTempBill().setDiscount(discount);
         getTempBill().setNetTotal(grantTotal - discount);
-        getTempBill().setVat(computedVatTotal);
-        getTempBill().setVatPlusNetTotal(grantTotal - discount);
         getTempBill().setPaidAmount(paid);
         getTempBill().setClaimableTotal(adjustedTotal);
         getTempBill().setSettledAmountBySponsor(paidByCompany);
@@ -4313,8 +4309,6 @@ public class BhtSummeryController implements Serializable {
         getOriginalBill().setTotal(grantTotal);
         getOriginalBill().setDiscount(discount);
         getOriginalBill().setNetTotal(grantTotal - discount);
-        getOriginalBill().setVat(computedVatTotal);
-        getOriginalBill().setVatPlusNetTotal(grantTotal - discount);
         getOriginalBill().setPaidAmount(paid);
         getOriginalBill().setClaimableTotal(adjustedTotal);
         getOriginalBill().setSettledAmountBySponsor(paidByCompany);
@@ -5608,12 +5602,6 @@ public class BhtSummeryController implements Serializable {
     double marginTotal = 0;
     double vatTotal = 0;
     /**
-     * Sum of the computed VAT row (issue #17491), 0 when no charge type has a
-     * rate. Written to Bill.vat / Bill.vatPlusNetTotal on the final bill.
-     */
-    private double computedVatTotal = 0.0;
-
-    /**
      * Adds (or refreshes, or removes) the single ComputedVAT row (issue #17491).
      * <p>
      * VAT = sum over rows with a rate above 0 ("Inward VAT Percentage - &lt;type
@@ -5630,7 +5618,6 @@ public class BhtSummeryController implements Serializable {
      * and replaces its amount, so the VAT is never counted twice.
      */
     private void applyComputedVat(List<ChargeItemTotal> rows) {
-        computedVatTotal = 0.0;
         if (rows == null) {
             return;
         }
@@ -5686,12 +5673,12 @@ public class BhtSummeryController implements Serializable {
             rows.add(vatRow);
         }
         vatRow.setTotal(vatSum);
-        vatRow.setGross(vatSum);
+        vatRow.setGross(0.0);
+        vatRow.setVat(vatSum);
         vatRow.setDiscount(0.0);
         vatRow.setChargeTypeDiscount(0.0);
         vatRow.setMargin(0.0);
         vatRow.setAdjustedTotal(vatSum);
-        computedVatTotal = vatSum;
     }
 
     public double getGrantTotal() {
