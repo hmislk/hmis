@@ -851,12 +851,12 @@ public class InpatientClinicalDataController implements Serializable {
         }
         String letterDate = CommonFunctions.formatDate(new Date(), sessionController.getApplicationPreference().getLongDateFormat());
 
-        output = input.replace("{name}", name)
+        output = input.replace("{name}", escapeHtmlText(name))
                 .replace("{age}", age)
-                .replace("{comments}", comments)
+                .replace("{comments}", escapeHtmlText(comments))
                 .replace("{sex}", sex)
-                .replace("{address}", address)
-                .replace("{phone}", phone)
+                .replace("{address}", escapeHtmlText(address))
+                .replace("{phone}", escapeHtmlText(phone))
                 .replace("{bht}", bht)
                 .replace("{doa}", doa)
                 .replace("{dod}", dod)
@@ -1211,6 +1211,10 @@ public class InpatientClinicalDataController implements Serializable {
         getEncounterDocuments().add(ref);
     }
 
+    private static String escapeHtmlText(String s) {
+        return s == null ? "" : org.apache.commons.text.StringEscapeUtils.escapeHtml4(s);
+    }
+
     /**
      * True when an AI key is configured. AI generation is an optional extra;
      * diagnosis cards must never depend on it.
@@ -1252,12 +1256,18 @@ public class InpatientClinicalDataController implements Serializable {
         ref.setLobValue(html);
         ref.setStringValue(cardTitle);
         ref.setEncounter(current);
-        ref.setOrderNo(getEncounterDocuments().size() + 1);
+        double maxOrderNo = 0;
+        for (ClinicalFindingValue d : getEncounterDocuments()) {
+            if (d.getOrderNo() > maxOrderNo) {
+                maxOrderNo = d.getOrderNo();
+            }
+        }
+        ref.setOrderNo(maxOrderNo + 1);
         clinicalFindingValueFacade.create(ref);
         encounterReferral = ref;
         getEncounterDocuments().add(ref);
         editingDiagnosisCard = true;
-        JsfUtil.addSuccessMessage("Diagnosis card created. Edit it, then Save and Print.");
+        JsfUtil.addSuccessMessage("Diagnosis card created. Edit it, then Save, then View, then Print.");
     }
 
     public void generateDiagnosisCardWithAi() {
