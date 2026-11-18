@@ -3718,9 +3718,12 @@ public class InwardBeanController implements Serializable {
         // Zero-pad the running number (0 = no padding, the old behaviour).
         Integer minDigits = configOptionApplicationController
                 .getIntegerValueByKey("BHT Number Minimum Digits", 0);
-        String number = Long.toString(temp);
-        if (minDigits != null && minDigits > number.length()) {
-            number = String.format("%0" + minDigits + "d", temp);
+        // Bounded (0..12) so a bad setting cannot overflow the bhtNo column; padded as
+        // plain ASCII so the digits never depend on the server locale.
+        int width = minDigits == null ? 0 : Math.max(0, Math.min(12, minDigits));
+        StringBuilder number = new StringBuilder(Long.toString(temp));
+        while (number.length() < width) {
+            number.insert(0, '0');
         }
 
         if (configOptionApplicationController.getBooleanValueByKey("BHT Number Shows Only Year And Number", false)) {
@@ -3734,7 +3737,7 @@ public class InwardBeanController implements Serializable {
                 bhtText = admissionType.getCode().trim();
             }
 
-            if (getSessionController().getApplicationPreference().isBhtNumberWithYear()) {
+            if (billNumberGenerator.isYearInBhtText()) {
                 Calendar c = Calendar.getInstance();
                 bhtText = bhtText + "/" + c.get(Calendar.YEAR);
             }

@@ -4566,7 +4566,7 @@ public class BillNumberGenerator {
      * format always does, otherwise it follows the "Bht Number With Year"
      * preference (read fresh, so a change on the preferences page applies at once).
      */
-    private boolean isYearInBhtText() {
+    public boolean isYearInBhtText() {
         if (isBhtYearAndNumberOnly()) {
             return true;
         }
@@ -4609,9 +4609,11 @@ public class BillNumberGenerator {
             typeKey = "SHARED";
         } else if (admissionType != null && admissionType.isGenerateSeparateAdmissionNumber()) {
             typeKey = "AT-" + (admissionType.getId() != null ? admissionType.getId().toString() : "null");
+        } else if (admissionType == null || admissionType.getAdmissionTypeEnum() == null) {
+            // The untyped row is the shared row, so it uses the shared lock key in both modes.
+            typeKey = "SHARED";
         } else {
-            typeKey = "ATE-" + (admissionType != null && admissionType.getAdmissionTypeEnum() != null
-                    ? admissionType.getAdmissionTypeEnum().name() : "null");
+            typeKey = "ATE-" + admissionType.getAdmissionTypeEnum().name();
         }
         String insKey = (institutionBased && institution != null) ? institution.getId().toString() : "global";
         return "BHT-" + typeKey + "-" + insKey + (year != null ? "-Y" + year : "");
@@ -4759,7 +4761,7 @@ public class BillNumberGenerator {
             if (an == null) {
                 previous = seedLastAdmissionNumber(admissionType, institution, institutionBased, shared, year);
             } else {
-                previous = an.getLastAdmissionNumber();
+                previous = effectiveLast(an, institution, institutionBased, shared, year);
             }
 
             if (expectedLastAdmissionNumber != null && !expectedLastAdmissionNumber.equals(previous)) {

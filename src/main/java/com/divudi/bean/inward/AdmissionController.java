@@ -316,7 +316,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
                 "Reset BHT Number Series Every Year", false);
         metadata.addConfigOption(new ConfigOptionInfo(
                 "Reset BHT Number Series Every Year",
-                "When enabled, the BHT number series restarts at 1 each calendar year, e.g. 2026/1, 2026/2, then 2027/1. Applies only when the BHT number shows the year (the preference that adds the year, or the year-and-number format); otherwise it is ignored (default false)",
+                "When enabled, the BHT number series restarts at 1 each calendar year, e.g. 2026/1, 2026/2, then 2027/1. The first time it is turned on, the first year's series can carry on from the existing lifetime counter (e.g. start at 501 after 500); a later year with no admissions starts at 1. Applies only when the BHT number shows the year (the preference that adds the year, or the year-and-number format); otherwise it is ignored (default false)",
                 "inward/inward_admission",
                 OptionScope.APPLICATION
         ));
