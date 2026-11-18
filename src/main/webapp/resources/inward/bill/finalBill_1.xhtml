@@ -96,6 +96,13 @@
                                     </div>
                                 </td>
                             </tr>
+                            <h:panelGroup rendered="#{cc.attrs.bill.discount ne 0.0 and not empty cc.attrs.bill.comments}">
+                                <tr>
+                                    <td colspan="3" style="text-align: left;font-size: 12px;">
+                                        <h:outputLabel value="Discount Comment: "/><h:outputText value="#{cc.attrs.bill.comments}"/>
+                                    </td>
+                                </tr>
+                            </h:panelGroup>
                             <tr>
                                 <td style="text-align: left;font-size: 13px!important;font-weight: bold!important;">
                                     <h:outputLabel  value="Hospital Bill Total"/>

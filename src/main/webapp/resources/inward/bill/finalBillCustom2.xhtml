@@ -321,6 +321,11 @@
                         <td>Professional Bill Total</td>
                         <td style="text-align: right;"><h:outputLabel value="#{cc.attrs.bill.professionalFee}"><f:convertNumber pattern="#,##0.00" /></h:outputLabel></td>
                     </tr>
+                    <h:panelGroup rendered="#{cc.attrs.bill.discount ne 0.0 and not empty cc.attrs.bill.comments}">
+                        <tr>
+                            <td colspan="2">Discount Comment: <h:outputText value="#{cc.attrs.bill.comments}"/></td>
+                        </tr>
+                    </h:panelGroup>
                     <tr style="font-weight: bold; border-top: 1px solid #000;">
                         <td>Net Total</td>
                         <td style="text-align: right;"><h:outputLabel value="#{cc.attrs.bill.netTotal}"><f:convertNumber pattern="#,##0.00" /></h:outputLabel></td>

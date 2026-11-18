@@ -239,6 +239,7 @@ public class BhtSummeryController implements Serializable {
     private double grantTotal = 0.0;
     private double discount;
     private double billLevelDiscount = 0.0;
+    private String discountComment;
     private double itemDiscountTotal = 0.0;
     private double chargeTypeDiscountTotal = 0.0;
     private double due;
@@ -3156,6 +3157,7 @@ public class BhtSummeryController implements Serializable {
             discount = itemDiscountTotal + chargeTypeDiscountTotal + billLevelDiscount;
             due = (grantTotal - discount) - paid;
         }
+        discountComment = sourceBill.getComments();
 
         creditCompanyAllocations = rebuildAllocationsFromSourceBill(sourceBill);
 
@@ -3916,6 +3918,13 @@ public class BhtSummeryController implements Serializable {
             return true;
         }
 
+        if (discount > 0
+                && (discountComment == null || discountComment.trim().isEmpty())
+                && configOptionApplicationController.getBooleanValueByKey("Inward Final Bill - Discount Comment Required", false)) {
+            JsfUtil.addErrorMessage("Please enter a Discount Comment (reason or approver) before settling a bill with a discount.");
+            return true;
+        }
+
         return false;
 
     }
@@ -4244,6 +4253,8 @@ public class BhtSummeryController implements Serializable {
         bfd.setBillDiscount(BigDecimal.valueOf(billLevelDiscount));
         bfd.setLineDiscount(BigDecimal.valueOf(itemDiscountTotal + chargeTypeDiscountTotal));
         bfd.setTotalDiscount(BigDecimal.valueOf(discount));
+        String trimmed = discountComment == null ? null : discountComment.trim();
+        bill.setComments(trimmed == null || trimmed.isEmpty() ? null : trimmed);
     }
 
     private void saveTempBill() {
@@ -4963,6 +4974,7 @@ public class BhtSummeryController implements Serializable {
         changed = false;
         chargeItemTotals = null;
         billLevelDiscount = 0;
+        discountComment = null;
         itemDiscountTotal = 0;
         chargeTypeDiscountTotal = 0;
         grantTotal = 0.0;
@@ -5575,6 +5587,14 @@ public class BhtSummeryController implements Serializable {
         this.discount = discount;
     }
 
+    public String getDiscountComment() {
+        return discountComment;
+    }
+
+    public void setDiscountComment(String discountComment) {
+        this.discountComment = discountComment;
+    }
+
     public double getBillLevelDiscount() {
         return billLevelDiscount;
     }
@@ -5874,6 +5894,7 @@ public class BhtSummeryController implements Serializable {
                 && getPatientEncounter().getFinalBill().getBillFinanceDetails().getBillDiscount() != null) {
             billLevelDiscount = getPatientEncounter().getFinalBill().getBillFinanceDetails().getBillDiscount().doubleValue();
         }
+        discountComment = getPatientEncounter().getFinalBill().getComments();
 
         for (BillItem existing : getPatientEncounter().getFinalBill().getBillItems()) {
             for (ChargeItemTotal cit : chargeItemTotals) {

@@ -168,6 +168,14 @@
                                         <p:inputText id="billLevelDiscountInput" value="#{bhtSummeryController.billLevelDiscount}">
                                             <p:ajax process="@this" update="@all" event="change" listener="#{bhtSummeryController.listnerDiscontAmmountChanged()}"/>
                                         </p:inputText>
+                                        <h:outputLabel value="Discount Comment        " for="discountCommentInput"/>
+                                        <h:outputLabel value=" :     "/>
+                                        <p:inputTextarea id="discountCommentInput" rows="2" cols="30" maxlength="500"
+                                                         title="Reason for the discount or who approved it"
+                                                         placeholder="Reason / approved by"
+                                                         value="#{bhtSummeryController.discountComment}">
+                                            <p:ajax process="@this" event="change"/>
+                                        </p:inputTextarea>
                                     </h:panelGrid>
                                 </p:panel>
                                 <p:panel class="mx-1 my-3" rendered="#{bhtSummeryController.patientEncounter.paymentMethod eq 'Credit'}">

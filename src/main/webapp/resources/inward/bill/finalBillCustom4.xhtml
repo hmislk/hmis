@@ -1102,6 +1102,15 @@
                                 </tr>
                             </h:panelGroup>
 
+                            <!--DISCOUNT COMMENT (#25699)-->
+                            <h:panelGroup rendered="#{cc.attrs.bill.discount ne 0.0 and not empty cc.attrs.bill.comments}">
+                                <tr>
+                                    <td colspan="3" style="text-align: left;font-size: 12px;">
+                                        <h:outputLabel value="Discount Comment: "/><h:outputText value="#{cc.attrs.bill.comments}"/>
+                                    </td>
+                                </tr>
+                            </h:panelGroup>
+
                             <h:panelGroup >
                                 <tr>
                                     <td>&nbsp;</td>
