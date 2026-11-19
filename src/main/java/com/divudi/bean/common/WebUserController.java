@@ -264,14 +264,17 @@ public class WebUserController implements Serializable {
         boolean activationChanged = saved != null && saved.isActivated() != current.isActivated();
         boolean wasTwoFactorRequired = saved != null && saved.isTwoFactorRequired();
         boolean wasTwoFactorSmsAllowed = saved != null && saved.isTwoFactorSmsAllowed();
+        boolean wasServiceAccount = saved != null && saved.isServiceAccount();
         boolean openSetupWindowAfterSave = false;
         // Manage User is reached only with this privilege, but a form can be posted without the menu; check it here,
         // before the Person merge below (Person.webUser cascades) can write the submitted flags
         if (saved != null
-                && (wasTwoFactorRequired != current.isTwoFactorRequired() || wasTwoFactorSmsAllowed != current.isTwoFactorSmsAllowed())
+                && (wasTwoFactorRequired != current.isTwoFactorRequired() || wasTwoFactorSmsAllowed != current.isTwoFactorSmsAllowed()
+                || wasServiceAccount != current.isServiceAccount())
                 && !hasPrivilege(Privileges.AdminManagingUsers.name())) {
             current.setTwoFactorRequired(wasTwoFactorRequired);
             current.setTwoFactorSmsAllowed(wasTwoFactorSmsAllowed);
+            current.setServiceAccount(wasServiceAccount);
             JsfUtil.addErrorMessage("Two-factor settings were not changed. You do not have the privilege to manage users.");
         }
         // webUserPerson has no cascade, so Contact fields (email, mobile) must be saved on the Person itself
@@ -284,7 +287,20 @@ public class WebUserController implements Serializable {
             }
         }
         if (current.getId() == null || current.getId() == 0) {
+            if (current.isTwoFactorRequired()) {
+                if (!twoFactorAuthController.hasUsableStaffMobile(current)) {
+                    current.setTwoFactorRequired(false);
+                    JsfUtil.addErrorMessage("2FA was not set to Required: the staff record has no valid mobile number. Add it, then tick Required on Manage User.");
+                } else {
+                    // Inserted together with the user
+                    current.setTwoFactorSetupWindowStartedAt(new Date());
+                }
+            }
             getFacade().create(current);
+            if (current.isTwoFactorRequired()) {
+                twoFactorAuthController.logRequiredChange(current, false);
+                twoFactorAuthController.logSetupWindowOpened(current);
+            }
             JsfUtil.addSuccessMessage("Saved");
         } else {
             // Authenticator enrollment is written only by TwoFactorAuthController; don't let a stale copy overwrite it
@@ -315,6 +331,8 @@ public class WebUserController implements Serializable {
             if (wasTwoFactorSmsAllowed != current.isTwoFactorSmsAllowed()) {
                 twoFactorAuthController.logSmsAllowedChange(current, wasTwoFactorSmsAllowed);
             }
+            // Insert-only on the entity, so edit() does not write it
+            twoFactorAuthController.saveServiceAccountFlag(current, wasServiceAccount);
             JsfUtil.addSuccessMessage("Updated");
         }
     }
@@ -704,6 +722,7 @@ public class WebUserController implements Serializable {
         getFacade().create(getCurrent());
         if (getCurrent().isTwoFactorRequired()) {
             twoFactorAuthController.logRequiredChange(getCurrent(), false);
+            twoFactorAuthController.logSetupWindowOpened(getCurrent());
         }
         if (getCurrent().isTwoFactorSmsAllowed()) {
             twoFactorAuthController.logSmsAllowedChange(getCurrent(), false);

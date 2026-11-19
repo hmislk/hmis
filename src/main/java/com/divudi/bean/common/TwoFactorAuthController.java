@@ -83,6 +83,8 @@ public class TwoFactorAuthController implements Serializable {
     public static final String EVENT_LOGIN_REFUSED_NO_KEY = "2FA Login Refused (server key)";
     public static final String EVENT_LOGIN_TIMED_OUT = "2FA Login Timed Out";
     public static final String EVENT_SETUP_WINDOW_OPENED = "2FA Setup Window Opened";
+    public static final String EVENT_SERVICE_ACCOUNT_ON = "2FA Service Account Flag Turned On";
+    public static final String EVENT_SERVICE_ACCOUNT_OFF = "2FA Service Account Flag Turned Off";
     private static final int AUTH_LOG_LIMIT = 15;
 
     @EJB
@@ -264,6 +266,35 @@ public class TwoFactorAuthController implements Serializable {
             logTwoFactorEvent(sessionController.getLoggedUser(), subject, EVENT_SETUP_WINDOW_OPENED);
             copyEnrollment(freshUser(subject.getId()), subject);
         }
+    }
+
+    /**
+     * Writes the service-account flag (insert-only on the entity) with one
+     * UPDATE and records the change in the audit log. Only a user with the
+     * user-management privilege may change it.
+     */
+    public void saveServiceAccountFlag(WebUser subject, boolean wasServiceAccount) {
+        if (subject == null || subject.getId() == null || subject.isServiceAccount() == wasServiceAccount) {
+            return;
+        }
+        Map<String, Object> p = new HashMap<>();
+        p.put("id", subject.getId());
+        p.put("f", subject.isServiceAccount());
+        webUserFacade.updateByJpql("update WebUser u set u.serviceAccount=:f where u.id=:id", p);
+        Map<String, Object> before = new HashMap<>();
+        before.put("serviceAccount", wasServiceAccount);
+        Map<String, Object> after = new HashMap<>();
+        after.put("serviceAccount", subject.isServiceAccount());
+        logTwoFactorEvent(sessionController.getLoggedUser(), subject,
+                subject.isServiceAccount() ? EVENT_SERVICE_ACCOUNT_ON : EVENT_SERVICE_ACCOUNT_OFF, before, after);
+    }
+
+    /**
+     * Records that a set-up window was opened for a user inserted with
+     * "required" ticked (the start time is written with the insert).
+     */
+    public void logSetupWindowOpened(WebUser subject) {
+        logTwoFactorEvent(sessionController.getLoggedUser(), subject, EVENT_SETUP_WINDOW_OPENED);
     }
 
     /**
@@ -553,17 +584,19 @@ public class TwoFactorAuthController implements Serializable {
      * @return true when the account is locked now
      */
     public boolean countFailedCode(WebUser u, String auditTrigger) {
-        // One UPDATE adds the failure and locks at the limit (the lock is decided from the old count, listed
-        // first so it is evaluated before the count changes), so nothing can come between the two
+        // Two UPDATEs, each independent of the order its SET parts are written in: the first adds the failure
+        // (one atomic increment); the second locks when the stored count has reached the limit. The lock uses
+        // only the WHERE clause, so parallel wrong codes all count and the account locks once.
         Map<String, Object> p = new HashMap<>();
         p.put("id", u.getId());
-        p.put("max", MAX_FAILED_ATTEMPTS);
-        p.put("now", new Date());
-        webUserFacade.updateByJpql("update WebUser u set"
-                + " u.twoFactorLockedAt = case when u.twoFactorFailedAttempts + 1 >= :max and u.twoFactorLocked = false then :now else u.twoFactorLockedAt end,"
-                + " u.twoFactorLocked = case when u.twoFactorFailedAttempts + 1 >= :max then true else u.twoFactorLocked end,"
-                + " u.twoFactorFailedAttempts = u.twoFactorFailedAttempts + 1"
+        webUserFacade.updateByJpql("update WebUser u set u.twoFactorFailedAttempts = u.twoFactorFailedAttempts + 1"
                 + " where u.id=:id", p);
+        Map<String, Object> lock = new HashMap<>();
+        lock.put("id", u.getId());
+        lock.put("max", MAX_FAILED_ATTEMPTS);
+        lock.put("now", new Date());
+        webUserFacade.updateByJpql("update WebUser u set u.twoFactorLocked = true, u.twoFactorLockedAt = :now"
+                + " where u.id=:id and u.twoFactorLocked = false and u.twoFactorFailedAttempts >= :max", lock);
         WebUser fresh = freshUser(u.getId());
         int failedAttempts = fresh == null ? MAX_FAILED_ATTEMPTS : fresh.getTwoFactorFailedAttempts();
         u.setTwoFactorFailedAttempts(failedAttempts);

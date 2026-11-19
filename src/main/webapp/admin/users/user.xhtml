@@ -334,6 +334,15 @@
                                                               value="Required for all users by configuration" />
                                             </div>
                                         </div>
+                                        <div class="user-form-row">
+                                            <p:outputLabel value="Service account (lab / channelling API login)" for="serviceAccount" class="user-form-label" />
+                                            <div class="user-form-field">
+                                                <p:selectBooleanCheckbox id="serviceAccount"
+                                                                         value="#{webUserController.current.serviceAccount}" />
+                                                <h:outputText class="small text-muted mx-2"
+                                                              value="For machine logins that cannot enter a second-step code. When 2FA is required for all users, lab and channelling API logins accept only service accounts. Do not tick this for a person." />
+                                            </div>
+                                        </div>
                                         <h:panelGroup layout="block" class="user-form-row"
                                                       rendered="#{configOptionApplicationController.twoFactorSmsLoginEnabled}">
                                             <p:outputLabel value="Allow SMS Code (2FA)" for="twoFactorSmsAllowed" class="user-form-label" />

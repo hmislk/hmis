@@ -2025,14 +2025,17 @@ public class ConfigOptionApplicationController implements Serializable {
     /**
      * Whether two-factor login protects this account one by one: the
      * service-login rule used by machine-to-machine logins (lab analysers,
-     * middleware, channelling API), which cannot ask for a code. The "for
-     * all users" switch is not applied, so unflagged service accounts keep
-     * working; a user who is linked, flagged as required, or allowed SMS
-     * codes is refused.
+     * middleware, channelling API), which cannot ask for a code. A user who
+     * is linked, flagged as required, or allowed SMS codes is refused. When
+     * the "for all users" switch is on, only accounts flagged as service
+     * accounts are accepted; every other account is refused.
      */
     public boolean doesTwoFactorApplyToServiceLogin(WebUser u) {
         if (u == null || !isAuthenticatorAppTwoFactorLoginEnabled()) {
             return false;
+        }
+        if (isAuthenticatorAppTwoFactorLoginRequiredForAllUsers() && !u.isServiceAccount()) {
+            return true;
         }
         return u.isTwoFactorRequired()
                 || u.isTwoFactorEnrolled()
