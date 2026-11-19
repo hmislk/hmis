@@ -52,7 +52,7 @@
                         <h:outputLabel value="Payment Method" for="payMethod"/>
                         <p:selectOneMenu id="payMethod" styleClass="w-100" value="#{creditCompanyDueController.paymentMethod}">
                             <f:selectItem itemLabel="All Methods" itemValue="#{null}"/>
-                            <f:selectItems value="#{enumController.paymentMethodsWithoutCredit}"/>
+                            <f:selectItems value="#{enumController.paymentMethodForAdmission}"/>
                         </p:selectOneMenu>
                         <p:spacer/>
                         <p:spacer/>
