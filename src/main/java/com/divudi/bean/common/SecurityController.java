@@ -204,6 +204,14 @@ public class SecurityController implements Serializable {
     }
 
     public String decrypt(String word) {
+        return decryptLegacy(word);
+    }
+
+    /**
+     * The decryption behind {@link #decrypt(String)}, usable without a
+     * session (e.g. TwoFactorSecretMigration).
+     */
+    public static String decryptLegacy(String word) {
         BasicTextEncryptor en = new BasicTextEncryptor();
         en.setPassword("health");
         try {

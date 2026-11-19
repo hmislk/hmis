@@ -42,6 +42,9 @@
                                                     />
 
                                             </h:panelGroup>
+                                            <h:panelGroup layout="block" class="alert alert-warning" rendered="#{twoFactorAuthController.loginTimedOutNotice and not twoFactorAuthController.pending}">
+                                                <h:outputText value="The sign-in took too long. Please sign in again." />
+                                            </h:panelGroup>
                                             <h:panelGroup rendered="#{twoFactorAuthController.accountLockedNotice and not twoFactorAuthController.pending}">
                                                 <ez:two_factor_locked/>
                                             </h:panelGroup>

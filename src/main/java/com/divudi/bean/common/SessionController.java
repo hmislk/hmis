@@ -62,6 +62,7 @@ import com.divudi.core.entity.cashTransaction.CashBook;
 import com.divudi.core.entity.cashTransaction.Denomination;
 import com.divudi.core.entity.cashTransaction.Drawer;
 import com.divudi.core.facade.StaffFacade;
+import com.divudi.service.ApiUserAuthenticationService;
 import com.divudi.service.ChannelService;
 import java.io.IOException;
 import java.io.Serializable;
@@ -171,6 +172,8 @@ public class SessionController implements Serializable, HttpSessionListener {
     private UserSettingsController userSettingsController;
     @Inject
     private TwoFactorAuthController twoFactorAuthController;
+    @EJB
+    private ApiUserAuthenticationService apiUserAuthenticationService;
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Class Variables">
     private static final long serialVersionUID = 1L;
@@ -207,7 +210,6 @@ public class SessionController implements Serializable, HttpSessionListener {
     private UserPreference currentPreference;
     private Bill bill;
 //    private DashboardModel dashboardModel;
-    private String loginRequestResponse;
     private Boolean firstLogin;
 
     private boolean websiteUserGoingToLog = false;
@@ -1014,15 +1016,6 @@ public class SessionController implements Serializable, HttpSessionListener {
         return uFacade;
     }
 
-    public String loginAction() {
-        if (login()) {
-            return "/index1.xhtml";
-        } else {
-            JsfUtil.addErrorMessage("Login Failure. Please try again");
-            return "";
-        }
-    }
-
     public String loginActionWithoutDepartment() {
         long totalStartTime = System.currentTimeMillis();
         
@@ -1066,55 +1059,6 @@ public class SessionController implements Serializable, HttpSessionListener {
             JsfUtil.addErrorMessage("Invalid User! Login Failure. Please try again");
             return "";
         }
-    }
-
-    private boolean login() {
-        getApplicationController().recordStart();
-        if (userName.trim().isEmpty()) {
-            JsfUtil.addErrorMessage("Please enter a username");
-            return false;
-        }
-        if (getFirstLogin()) {
-            prepareFirstVisit();
-            return true;
-        } else {
-            if (department == null) {
-                JsfUtil.addErrorMessage("Please select a department");
-                return false;
-            }
-            return checkUsers();
-        }
-    }
-
-    private void prepareFirstVisit() {
-        WebUser user = new WebUser();
-        Person person = new Person();
-        person.setName(userName);
-        pFacade.create(person);
-
-        WebUserRole myRole;
-        myRole = new WebUserRole();
-        myRole.setName("circular_editor");
-        rFacade.create(myRole);
-
-        myRole = new WebUserRole();
-        myRole.setName("circular_adder");
-        rFacade.create(myRole);
-
-        myRole = new WebUserRole();
-        myRole.setName("circular_viewer");
-        rFacade.create(myRole);
-
-        myRole = new WebUserRole();
-        myRole.setName("admin");
-        rFacade.create(myRole);
-
-        user.setName(userName);
-        user.setWebUserPassword(getSecurityController().hashAndCheck(password));
-        user.setWebUserPerson(person);
-        user.setActivated(true);
-        user.setRole(myRole);
-        uFacade.create(user);
     }
 
     public String registeUser() {
@@ -1293,100 +1237,6 @@ public class SessionController implements Serializable, HttpSessionListener {
         }
     }
 
-    private boolean checkUsers() {
-        String temSQL;
-        temSQL = "SELECT u FROM WebUser u WHERE u.retired = false";
-        List<WebUser> allUsers = getFacede().findByJpql(temSQL, true);
-        for (WebUser u : allUsers) {
-            if ((u.getName()).equalsIgnoreCase(userName)) {
-                if (SecurityController.matchPassword(password, u.getWebUserPassword())) {
-                    if (!canLogToDept(u, department)) {
-                        JsfUtil.addErrorMessage("No privilage to Login This Department");
-                        return false;
-                    }
-                    if (getApplicationController().isLogged(u) != null) {
-                        JsfUtil.addErrorMessage("This user already logged. Other instances will be logged out now.");
-                    }
-
-                    u.setDepartment(department);
-                    u.setInstitution(institution);
-
-                    getFacede().edit(u);
-
-                    setLoggedUser(u);
-                    loggableDepartments = fillLoggableDepts();
-//                    loggableSubDepartments = fillLoggableSubDepts(loggableDepartments);
-                    loggableInstitutions = fillLoggableInstitutions();
-
-                    // Load recently used departments
-                    //recentDepartments = fillRecentDepartmentsForUser(u);
-                    userIcons = userIconController.fillUserIcons(u, department);
-                    groupedUserIcons = buildGroupedUserIcons(userIcons);
-
-                    // Load user-specific UI settings (column visibility, preferences, etc.)
-                    // Performance-optimized: loads only current user's settings, cached in session
-                    userSettingsController.loadUserSettings();
-
-                    setLogged(Boolean.TRUE);
-                    setActivated(u.isActivated());
-                    setRole(u.getRole());
-
-                    String sql;
-
-                    UserPreference uf;
-                    sql = "select p from UserPreference p where p.webUser=:u order by p.id desc";
-                    Map m = new HashMap();
-                    m.put("u", u);
-                    uf = getUserPreferenceFacade().findFirstByJpql(sql, m);
-                    if (uf == null) {
-                        uf = new UserPreference();
-                        uf.setWebUser(u);
-                        getUserPreferenceFacade().create(uf);
-                    }
-                    setUserPreference(uf);
-
-                    UserPreference insPre;
-
-                    sql = "select p from UserPreference p where p.department =:dep order by p.id desc";
-                    m = new HashMap();
-                    m.put("dep", department);
-
-                    insPre = getUserPreferenceFacade().findFirstByJpql(sql, m);
-
-                    if (insPre == null) {
-
-                        sql = "select p from UserPreference p where p.institution =:ins order by p.id desc";
-                        m = new HashMap();
-                        m.put("ins", institution);
-                        insPre = getUserPreferenceFacade().findFirstByJpql(sql, m);
-
-                        if (insPre == null) {
-                            sql = "select p from UserPreference p where p.institution is null and p.department is null and p.webUser is null order by p.id desc";
-                            insPre = getUserPreferenceFacade().findFirstByJpql(sql);
-
-                        }
-
-                        if (insPre == null) {
-                            insPre = new UserPreference();
-                            insPre.setWebUser(null);
-                            insPre.setDepartment(null);
-                            insPre.setInstitution(null);
-                            getUserPreferenceFacade().create(insPre);
-                        }
-                    }
-                    fillAvailableDepartmentTypesForPharmacyTransactions();
-                    setLoggedPreference(insPre);
-
-                    recordLogin();
-
-                    JsfUtil.addSuccessMessage("Logged successfully");
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
 //
 //    public void decryptAllUsers() {
 //        String temSQL;
@@ -1407,105 +1257,36 @@ public class SessionController implements Serializable, HttpSessionListener {
 //            i++;
 //        }
 //    }
-    public boolean loginForRequests() {
-        return loginForRequests(userName, password);
-    }
-
-    public boolean loginForRequestsForDoctors() {
-        return loginForRequestsForDoctors(userName, password);
-    }
-
+    /**
+     * Username + password check for the lab analyser pages
+     * (requests/mwapi.xhtml, requests/samplebill.xhtml), which cannot ask for
+     * a second-step code. Sets only the logged user those requests act as; it
+     * never marks the session as logged in, so it gives no access to the web
+     * pages. Accounts protected by two-factor login are refused (see
+     * ApiUserAuthenticationService).
+     */
     public boolean loginForRequests(String temUserName, String temPassword) {
         logged = false;
         loggedUser = null;
-        if (temUserName == null) {
-            return false;
-        }
-        if (temPassword == null) {
-            return false;
-        }
-        String temSQL;
-        loginRequestResponse = "#{";
-        temSQL = "SELECT u FROM WebUser u WHERE u.retired = false and (u.name)=:n order by u.id desc";
-        Map m = new HashMap();
-
-        m.put("n", temUserName.trim().toLowerCase());
-        WebUser u = getFacede().findFirstByJpql(temSQL, m);
-
-        //// // System.out.println("temSQL = " + temSQL);
+        WebUser u = apiUserAuthenticationService.authenticateMachine(temUserName, temPassword);
         if (u == null) {
             return false;
         }
-
-        if (SecurityController.matchPassword(temPassword, u.getWebUserPassword())) {
-
-            setLoggedUser(u);
-            loggableDepartments = fillLoggableDepts();
-//            loggableSubDepartments = fillLoggableSubDepts(loggableDepartments);
-            loggableInstitutions = fillLoggableInstitutions();
-
-            // Load user-specific UI settings
-            userSettingsController.loadUserSettings();
-
-            setLogged(Boolean.TRUE);
-            setActivated(u.isActivated());
-            setRole(u.getRole());
-
-            String sql;
-
-            loginRequestResponse += "Login=1|";
-            loginRequestResponse += "User=" + u.getName() + "|";
-            loginRequestResponse += "UserId=" + u.getId() + "|";
-            loginRequestResponse += "}";
-            return true;
-        }
-        loginRequestResponse += "Login=0|}";
-        return false;
-    }
-
-    public boolean loginForRequestsForDoctors(String temUserName, String temPassword) {
-        logged = false;
-        loggedUser = null;
-        if (temUserName == null) {
-            return false;
-        }
-        if (temPassword == null) {
-            return false;
-        }
-        String temSQL;
-        loginRequestResponse = "#{";
-        temSQL = "SELECT u FROM WebUser u WHERE u.retired = false and (u.name)=:n order by u.id desc";
-        Map m = new HashMap();
-
-        m.put("n", temUserName.trim().toLowerCase());
-        WebUser u = getFacede().findFirstByJpql(temSQL, m);
-
-        if (u == null) {
-            return false;
-        }
-
-        if (SecurityController.matchPassword(temPassword, u.getWebUserPassword())) {
-            setLoggedUser(u);
-            loggableDepartments = fillLoggableDepts();
-//            loggableSubDepartments = fillLoggableSubDepts(loggableDepartments);
-            loggableInstitutions = fillLoggableInstitutions();
-            setLogged(Boolean.TRUE);
-            setActivated(u.isActivated());
-            setRole(u.getRole());
-            loginRequestResponse += "Login=1|";
-            loginRequestResponse += "User=" + u.getName() + "|";
-            loginRequestResponse += "UserId=" + u.getId() + "|";
-            loginRequestResponse += "}";
-            return true;
-        }
-        loginRequestResponse += "Login=0|}";
-        return false;
+        setLoggedUser(u);
+        return true;
     }
 
     private boolean checkUsersWithoutDepartment() {
         System.out.println("DEBUG: checkUsersWithoutDepartment() started at " + new Date());
         long startTime = System.currentTimeMillis();
+        if (twoFactorAuthController.isReloginRequired()) {
+            // After a required set-up this session may only be logged out; a rejected attempt must not clear that
+            JsfUtil.addErrorMessage("Please log out and sign in again.");
+            return false;
+        }
         twoFactorAuthController.dismissLockedNotice();
+        // A new login attempt starts clean: no half-finished challenge or forced-setup mark from earlier in this session
+        twoFactorAuthController.resetForNewLogin();
         
         String jpql;
         jpql = "SELECT u FROM WebUser u WHERE u.retired = false and (u.name)=:un";
@@ -1523,9 +1304,24 @@ public class SessionController implements Serializable, HttpSessionListener {
                     passwordIsOk = SecurityController.matchPassword(password, u.getWebUserPassword());
                 }
                 if (passwordIsOk) {
+                    // The two-factor columns are decided from the database row, not from a cached copy
+                    WebUser freshRow = twoFactorAuthController.freshUser(u.getId());
+                    if (freshRow != null) {
+                        u = freshRow;
+                    }
                     if (u.isTwoFactorLocked()) {
                         // Locked by too many invalid authenticator codes; only an admin can unlock
                         twoFactorAuthController.showLockedNotice(u.getName());
+                        return false;
+                    }
+                    if (twoFactorAuthController.isLoginRefusedForMissingKey(u)) {
+                        // The second step cannot work on this server (no key): refuse, never skip the step
+                        twoFactorAuthController.refuseLoginForMissingKey(u);
+                        return false;
+                    }
+                    // Password accepted: a session id known before login must not carry on (session fixation)
+                    if (!renewHttpSessionId()) {
+                        JsfUtil.addErrorMessage("Login Failure. Please try again");
                         return false;
                     }
                     if (!webUserController.isGrantAllPrivilegesToAllUsersForTesting()
@@ -1548,6 +1344,11 @@ public class SessionController implements Serializable, HttpSessionListener {
     public String completeTwoFactorLogin(WebUser u, boolean channelingTabView) {
         department = null;
         institution = null;
+        // Second step accepted: issue a fresh session id again for the now fully logged-in session
+        if (!renewHttpSessionId()) {
+            JsfUtil.addErrorMessage("Login Failure. Please try again");
+            return "";
+        }
         if (!completeLoginWithoutDepartment(u)) {
             return "";
         }
@@ -2174,6 +1975,36 @@ public class SessionController implements Serializable, HttpSessionListener {
         pharmacyBillingAfterShiftStart = null;
         paymentManagementAfterShiftStart = null;
         availableDepartmentTypesForPharmacyTransactions = null;
+        twoFactorAuthController.resetForNewLogin();
+    }
+
+    /**
+     * Gives the current HttpSession a new id, keeping its attributes, so an
+     * id set or seen before login cannot be used after it (session
+     * fixation).
+     */
+    private boolean renewHttpSessionId() {
+        FacesContext ctx = FacesContext.getCurrentInstance();
+        if (ctx == null) {
+            return true;
+        }
+        Object request = ctx.getExternalContext().getRequest();
+        if (!(request instanceof HttpServletRequest)) {
+            return true;
+        }
+        HttpServletRequest httpRequest = (HttpServletRequest) request;
+        if (httpRequest.getSession(false) == null) {
+            return true;
+        }
+        try {
+            httpRequest.changeSessionId();
+            return true;
+        } catch (IllegalStateException e) {
+            // The login must not go on with a session id that was known before it
+            java.util.logging.Logger.getLogger(SessionController.class.getName())
+                    .log(java.util.logging.Level.SEVERE, "Session id could not be renewed; login refused", e);
+            return false;
+        }
     }
 
     public WebUser getCurrent() {
@@ -2619,14 +2450,6 @@ public class SessionController implements Serializable, HttpSessionListener {
 
     public void setDashboards(List<WebUserDashboard> dashboards) {
         this.dashboards = dashboards;
-    }
-
-    public String getLoginRequestResponse() {
-        return loginRequestResponse;
-    }
-
-    public void setLoginRequestResponse(String loginRequestResponse) {
-        this.loginRequestResponse = loginRequestResponse;
     }
 
     public UserPreference getApplicationPreference() {

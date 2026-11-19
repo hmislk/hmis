@@ -35,6 +35,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import com.divudi.service.ApiUserAuthenticationService;
 import javax.ejb.EJB;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Path;
@@ -82,6 +83,8 @@ public class Lims {
     BillItemFacade billItemFacade;
     @EJB
     WebUserFacade webUserFacade;
+    @EJB
+    private ApiUserAuthenticationService apiUserAuthenticationService;
     @EJB
     ItemFacade itemFacade;
     @Inject
@@ -1220,29 +1223,7 @@ public class Lims {
     }
 
     public WebUser findRequestSendingUser(String temUserName, String temPassword) {
-        if (temUserName == null) {
-            return null;
-        }
-        if (temPassword == null) {
-            return null;
-        }
-        String temSQL;
-
-        temSQL = "SELECT u FROM WebUser u WHERE u.retired = false and (u.name)=:n order by u.id desc";
-        Map m = new HashMap();
-
-        m.put("n", temUserName.trim().toLowerCase());
-        WebUser u = webUserFacade.findFirstByJpql(temSQL, m);
-
-        //// // System.out.println("temSQL = " + temSQL);
-        if (u == null) {
-            return null;
-        }
-
-        if (SecurityController.matchPassword(temPassword, u.getWebUserPassword())) {
-            return u;
-        }
-        return null;
+        return apiUserAuthenticationService.authenticateMachine(temUserName, temPassword);
     }
 
     public Long stringToLong(String input) {

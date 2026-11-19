@@ -3434,37 +3434,6 @@ public class SearchController implements Serializable {
         }
     }
 
-    public String searchMyPharmacyBills() {
-        BillType billtype = BillType.PharmacyPre;
-        String sql;
-        if (false) {
-            Bill b = new Bill();
-            b.getPatient().getPerson();
-            sessionController.getLoggedUser().getWebUserPerson();
-        }
-        sql = "Select b from PreBill b where "
-                + " b.billType=:bt"
-                + " and b.billedBill is null "
-                + " and b.patient.person=:person";
-        sql += " order by b.createdAt desc  ";
-        Map m = new HashMap();
-        m.put("bt", billtype);
-        m.put("person", sessionController.getLoggedUser().getWebUserPerson());
-
-        boolean maxNum = true;
-        if (maxNum == true) {
-            bills = getBillFacade().findByJpql(sql, m, TemporalType.TIMESTAMP, 25);
-        } else {
-            bills = getBillFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
-        }
-        netTotal = 0.0;
-        for (Bill b : bills) {
-            netTotal += b.getNetTotal();
-        }
-
-        return "/mobile/my_pharmacy_bills";
-    }
-
     double netTotalValue;
 
     public void createPharmacyStaffBill() {

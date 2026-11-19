@@ -17,6 +17,7 @@ import java.util.HashMap;
 import java.util.Map;
 import com.divudi.core.data.LoginRequest;
 import com.divudi.core.util.JsfUtil;
+import com.divudi.service.ApiUserAuthenticationService;
 import javax.ejb.EJB;
 import javax.enterprise.context.RequestScoped;
 import javax.ws.rs.Consumes;
@@ -105,6 +106,8 @@ public class LimsMiddlewareController {
     PatientReportFacade prFacade;
     @EJB
     WebUserFacade webUserFacade;
+    @EJB
+    private ApiUserAuthenticationService apiUserAuthenticationService;
     @EJB
     ItemFacade itemFacade;
 
@@ -1933,32 +1936,7 @@ public class LimsMiddlewareController {
     }
 
     public WebUser findRequestSendingUser(String temUserName, String temPassword) {
-        if (temUserName == null) {
-            return null;
-        }
-        if (temPassword == null) {
-            return null;
-        }
-        String temSQL;
-
-        temSQL = "SELECT u "
-                + " FROM WebUser u "
-                + " WHERE u.retired=:ret"
-                + " and u.name=:n";
-        Map m = new HashMap();
-
-        m.put("n", temUserName.trim().toLowerCase());
-        m.put("ret", false);
-        WebUser u = webUserFacade.findFirstByJpql(temSQL, m);
-
-        if (u == null) {
-            return null;
-        }
-
-        if (SecurityController.matchPassword(temPassword, u.getWebUserPassword())) {
-            return u;
-        }
-        return null;
+        return apiUserAuthenticationService.authenticateMachine(temUserName, temPassword);
     }
 
     public WebUser getLoggedUser() {
