@@ -239,6 +239,9 @@
                                                                          value="#{webUserController.current.twoFactorRequired}"
                                                                          disabled="#{configOptionApplicationController.authenticatorAppTwoFactorLoginRequiredForAllUsers}" />
                                                 <h:outputText class="small text-muted mx-2"
+                                                              rendered="#{not configOptionApplicationController.authenticatorAppTwoFactorLoginRequiredForAllUsers}"
+                                                              value="Needs a valid mobile number on the staff record. The user then has 24 hours to set up." />
+                                                <h:outputText class="small text-muted mx-2"
                                                               rendered="#{configOptionApplicationController.authenticatorAppTwoFactorLoginRequiredForAllUsers}"
                                                               value="Required for all users by configuration" />
                                             </div>
@@ -296,7 +299,24 @@
                                                 <div class="tfa-card-text">
                                                     <h:outputText value="Setup pending" class="tfa-card-title" />
                                                     <h:outputText value="After the next login the user must link an authenticator app before using the system." class="tfa-card-sub" />
+                                                    <h:panelGroup class="tfa-card-sub" rendered="#{twoFactorAuthController.setupWindowEndOf(webUserController.current) ne null}">
+                                                        <h:outputText value="Set-up period ends " />
+                                                        <h:outputText value="#{twoFactorAuthController.setupWindowEndOf(webUserController.current)}">
+                                                            <f:convertDateTime pattern="dd MMM yyyy, HH:mm" />
+                                                        </h:outputText>
+                                                        <h:outputText value=" (ended)" rendered="#{not twoFactorAuthController.isSetupWindowOpenFor(webUserController.current)}" />
+                                                    </h:panelGroup>
+                                                    <h:outputText value="No valid mobile number on the staff record: the user cannot set up. Add it to the staff record."
+                                                                  rendered="#{not twoFactorAuthController.hasUsableStaffMobile(webUserController.current)}" class="tfa-card-sub" />
                                                 </div>
+                                                <p:commandButton value="Reopen set-up (24 h)"
+                                                                 class="ui-button-outlined"
+                                                                 icon="fa fa-sync"
+                                                                 rendered="#{not webUserController.current.twoFactorLocked}"
+                                                                 process="@this"
+                                                                 update="twoFactorStatusBlock"
+                                                                 title="Give the user 24 hours from now to set up"
+                                                                 action="#{twoFactorAuthController.reopenSetupWindow(webUserController.current)}" />
                                             </h:panelGroup>
                                             <!-- Not required and not linked -->
                                             <h:panelGroup layout="block" class="tfa-card off"

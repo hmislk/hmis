@@ -258,20 +258,44 @@ public class WebUserController implements Serializable {
         // Load the stored state before anything is merged
         WebUser saved = (current.getId() == null || current.getId() == 0) ? null : getFacade().find(current.getId());
         boolean activationChanged = saved != null && saved.isActivated() != current.isActivated();
+        boolean wasTwoFactorRequired = saved != null && saved.isTwoFactorRequired();
+        boolean wasTwoFactorSmsAllowed = saved != null && saved.isTwoFactorSmsAllowed();
+        boolean openSetupWindowAfterSave = false;
+        // Manage User is reached only with this privilege, but a form can be posted without the menu; check it here,
+        // before the save below can write the submitted flags
+        if (saved != null
+                && (wasTwoFactorRequired != current.isTwoFactorRequired() || wasTwoFactorSmsAllowed != current.isTwoFactorSmsAllowed())
+                && !hasPrivilege(Privileges.AdminManagingUsers.name())) {
+            current.setTwoFactorRequired(wasTwoFactorRequired);
+            current.setTwoFactorSmsAllowed(wasTwoFactorSmsAllowed);
+            JsfUtil.addErrorMessage("Two-factor settings were not changed. You do not have the privilege to manage users.");
+        }
         if (current.getId() == null || current.getId() == 0) {
             getFacade().create(current);
             JsfUtil.addSuccessMessage("Saved");
         } else {
+            // Authenticator enrollment is written only by TwoFactorAuthController; don't let a stale copy overwrite it
+            TwoFactorAuthController.copyEnrollment(saved, current);
+            if (current.isTwoFactorRequired() && !wasTwoFactorRequired) {
+                if (!twoFactorAuthController.hasUsableStaffMobile(current)) {
+                    // Set-up is proved by an SMS to the staff-record mobile; without it the user could never set up
+                    current.setTwoFactorRequired(false);
+                    JsfUtil.addErrorMessage("2FA was not set to Required: the staff record of " + current.getName()
+                            + " has no valid mobile number. Add the mobile number to the staff record first.");
+                } else {
+                    openSetupWindowAfterSave = true;
+                }
+            }
             // activatedAt records the last activation-state change, so it is also the inactive date (#25078)
             if (activationChanged) {
                 current.setActivatedAt(new Date());
                 current.setActivator(getSessionController().getLoggedUser());
             }
-            boolean wasTwoFactorRequired = saved != null && saved.isTwoFactorRequired();
-            boolean wasTwoFactorSmsAllowed = saved != null && saved.isTwoFactorSmsAllowed();
-            // Authenticator enrollment is written only by TwoFactorAuthController; don't let a stale copy overwrite it
-            TwoFactorAuthController.copyEnrollment(saved, current);
             getFacade().edit(current);
+            if (wasTwoFactorRequired != current.isTwoFactorRequired() || wasTwoFactorSmsAllowed != current.isTwoFactorSmsAllowed()) {
+                // The two flags are insert-only on the entity, so edit() does not write them
+                twoFactorAuthController.saveAdminFlags(current, openSetupWindowAfterSave);
+            }
             if (wasTwoFactorRequired != current.isTwoFactorRequired()) {
                 twoFactorAuthController.logRequiredChange(current, wasTwoFactorRequired);
             }
@@ -354,7 +378,7 @@ public class WebUserController implements Serializable {
 
     public boolean hasPrivilege(String privilege) {
         boolean hasPri = false;
-        if (grantAllPrivilegesToAllUsersForTesting) {
+        if (isGrantAllPrivilegesToAllUsersForTesting()) {
             return true;
         }
         if (configOptionApplicationController.getBooleanValueByKey("Disabling Developers Privileges in the System", true)) {
@@ -396,7 +420,7 @@ public class WebUserController implements Serializable {
             return false;
         }
 
-        if (grantAllPrivilegesToAllUsersForTesting) {
+        if (isGrantAllPrivilegesToAllUsersForTesting()) {
             return true;
         }
 
@@ -640,6 +664,16 @@ public class WebUserController implements Serializable {
         getCurrent().setCreater(sessionController.getLoggedUser());
         getCurrent().setName((getCurrent().getName()));
         getCurrent().setWebUserPassword(getSecurityController().hashAndCheck(getCurrent().getWebUserPassword()));
+        if (getCurrent().isTwoFactorRequired()) {
+            if (!twoFactorAuthController.hasUsableStaffMobile(getCurrent())) {
+                getCurrent().setTwoFactorRequired(false);
+                JsfUtil.addErrorMessage("2FA was not set to Required: the staff record has no valid mobile number. Add it, then tick Required on Manage User.");
+            }
+        }
+        if (getCurrent().isTwoFactorRequired()) {
+            // Inserted together with the user
+            getCurrent().setTwoFactorSetupWindowStartedAt(new Date());
+        }
         getFacade().create(getCurrent());
         if (getCurrent().isTwoFactorRequired()) {
             twoFactorAuthController.logRequiredChange(getCurrent(), false);
@@ -1525,11 +1559,21 @@ public class WebUserController implements Serializable {
         this.loginPage = loginPage;
     }
 
+    /**
+     * The testing grant (all privileges, no password check). It never works
+     * while two-factor login is switched on, whatever the field holds.
+     */
     public boolean isGrantAllPrivilegesToAllUsersForTesting() {
-        return grantAllPrivilegesToAllUsersForTesting;
+        return grantAllPrivilegesToAllUsersForTesting
+                && !configOptionApplicationController.isAuthenticatorAppTwoFactorLoginEnabled();
     }
 
     public void setGrantAllPrivilegesToAllUsersForTesting(boolean grantAllPrivilegesToAllUsersForTesting) {
+        if (grantAllPrivilegesToAllUsersForTesting
+                && configOptionApplicationController.isAuthenticatorAppTwoFactorLoginEnabled()) {
+            this.grantAllPrivilegesToAllUsersForTesting = false;
+            return;
+        }
         this.grantAllPrivilegesToAllUsersForTesting = grantAllPrivilegesToAllUsersForTesting;
     }
 

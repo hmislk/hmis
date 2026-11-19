@@ -25,6 +25,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import com.divudi.service.ApiUserAuthenticationService;
 import javax.ejb.EJB;
 import org.carecode.lims.libraries.AnalyzerDetails;
 import org.carecode.lims.libraries.DataBundle;
@@ -35,6 +36,8 @@ public class MiddlewareController {
 
     @EJB
     WebUserFacade webUserFacade;
+    @EJB
+    private ApiUserAuthenticationService apiUserAuthenticationService;
     @EJB
     PatientSampleFacade patientSampleFacade;
 
@@ -217,32 +220,7 @@ public class MiddlewareController {
     }
 
     public WebUser findRequestSendingUser(String temUserName, String temPassword) {
-        if (temUserName == null) {
-            return null;
-        }
-        if (temPassword == null) {
-            return null;
-        }
-        String temSQL;
-
-        temSQL = "SELECT u "
-                + " FROM WebUser u "
-                + " WHERE u.retired=:ret"
-                + " and u.name=:n";
-        Map m = new HashMap();
-
-        m.put("n", temUserName.trim().toLowerCase());
-        m.put("ret", false);
-        WebUser u = webUserFacade.findFirstByJpql(temSQL, m);
-
-        if (u == null) {
-            return null;
-        }
-
-        if (SecurityController.matchPassword(temPassword, u.getWebUserPassword())) {
-            return u;
-        }
-        return null;
+        return apiUserAuthenticationService.authenticateMachine(temUserName, temPassword);
     }
 
     public Response processBioRadD10(DataBundle dataBundle) {

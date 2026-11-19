@@ -1,0 +1,14 @@
+{
+  "version": "v2.23.0",
+  "description": "Create the OTPCODE table if missing; add WebUser.TWOFACTORSETUPWINDOWSTARTEDAT",
+  "issue": "#25755-#25762 — two-factor login hardening",
+  "author": "Dr M H B Ariyaratne",
+  "date": "2026-11-19",
+  "type": "schema",
+  "tables_affected": ["otpcode", "webuser"],
+  "data_changes": false,
+  "requires_downtime": false,
+  "estimated_duration_minutes": 1,
+  "note": "The OtpCode entity (SMS login codes) had no migration, so a database that did not get the table from elsewhere fails every SMS code request. The WebUser entity now maps twoFactorSetupWindowStartedAt; every query that loads a WebUser fails without the column. Run this before deploying a build that includes this change. Idempotent; changes no data.",
+  "rollback": "rollback.sql"
+}
