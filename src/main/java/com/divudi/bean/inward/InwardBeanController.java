@@ -802,8 +802,10 @@ public class InwardBeanController implements Serializable {
                 + " and bf.bill.retired=false"
                 + " and bf.bill.cancelled=false"
                 + " and bf.bill.billType=:btp"
+                + " and bf.bill.billTypeAtomic=:bta"
                 + " and bf.bill.patientEncounter.id IN :peIds";
         hm.put("btp", BillType.InwardProfessional);
+        hm.put("bta", BillTypeAtomic.INWARD_PROFESSIONAL_FEE_BILL);
         List<Long> peIds = new ArrayList<>();
         for (PatientEncounter e : encounterWithChildren(patientEncounter, fetchChildPatientEncounter(patientEncounter))) {
             peIds.add(e.getId());

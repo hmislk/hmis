@@ -1991,10 +1991,12 @@ public class InwardReportControllerBht implements Serializable {
                 + "AND b.retired = false "
                 + "AND b.cancelled = false "
                 + "AND b.billType = :billType "
+                + "AND b.billTypeAtomic = :bta "
                 + "AND bf.collectedByDoctorAtBilling = true "
                 + "AND b.patientEncounter.id IN :encounterIds";
         Map<String, Object> params = new HashMap<>();
         params.put("billType", BillType.InwardProfessional);
+        params.put("bta", BillTypeAtomic.INWARD_PROFESSIONAL_FEE_BILL);
         params.put("encounterIds", encounterIds);
         List<?> rows = billFacade.findLightsByJpqlWithoutCache(jpql, params, TemporalType.TIMESTAMP);
         if (rows != null) {
