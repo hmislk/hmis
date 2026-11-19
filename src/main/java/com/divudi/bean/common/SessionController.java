@@ -220,7 +220,6 @@ public class SessionController implements Serializable, HttpSessionListener {
     private UserPreference currentPreference;
     private Bill bill;
 //    private DashboardModel dashboardModel;
-    private String loginRequestResponse;
     private Boolean firstLogin;
 
     private boolean websiteUserGoingToLog = false;
@@ -1468,14 +1467,6 @@ public class SessionController implements Serializable, HttpSessionListener {
 //            i++;
 //        }
 //    }
-    public boolean loginForRequests() {
-        return loginForRequests(userName, password);
-    }
-
-    public boolean loginForRequestsForDoctors() {
-        return loginForRequestsForDoctors(userName, password);
-    }
-
     public boolean loginForRequests(String temUserName, String temPassword) {
         logged = false;
         loggedUser = null;
@@ -1514,45 +1505,6 @@ public class SessionController implements Serializable, HttpSessionListener {
 
             String sql;
 
-            loginRequestResponse += "Login=1|";
-            loginRequestResponse += "User=" + u.getName() + "|";
-            loginRequestResponse += "UserId=" + u.getId() + "|";
-            loginRequestResponse += "}";
-            return true;
-        }
-        loginRequestResponse += "Login=0|}";
-        return false;
-    }
-
-    public boolean loginForRequestsForDoctors(String temUserName, String temPassword) {
-        logged = false;
-        loggedUser = null;
-        if (temUserName == null) {
-            return false;
-        }
-        if (temPassword == null) {
-            return false;
-        }
-        String temSQL;
-        loginRequestResponse = "#{";
-        temSQL = "SELECT u FROM WebUser u WHERE u.retired = false and (u.name)=:n order by u.id desc";
-        Map m = new HashMap();
-
-        m.put("n", temUserName.trim().toLowerCase());
-        WebUser u = getFacede().findFirstByJpql(temSQL, m);
-
-        if (u == null) {
-            return false;
-        }
-
-        if (SecurityController.matchPassword(temPassword, u.getWebUserPassword())) {
-            setLoggedUser(u);
-            loggableDepartments = fillLoggableDepts();
-//            loggableSubDepartments = fillLoggableSubDepts(loggableDepartments);
-            loggableInstitutions = fillLoggableInstitutions();
-            setLogged(Boolean.TRUE);
-            setActivated(u.isActivated());
-            setRole(u.getRole());
             loginRequestResponse += "Login=1|";
             loginRequestResponse += "User=" + u.getName() + "|";
             loginRequestResponse += "UserId=" + u.getId() + "|";
@@ -2754,14 +2706,6 @@ public class SessionController implements Serializable, HttpSessionListener {
 
     public void setDashboards(List<WebUserDashboard> dashboards) {
         this.dashboards = dashboards;
-    }
-
-    public String getLoginRequestResponse() {
-        return loginRequestResponse;
-    }
-
-    public void setLoginRequestResponse(String loginRequestResponse) {
-        this.loginRequestResponse = loginRequestResponse;
     }
 
     public UserPreference getApplicationPreference() {
