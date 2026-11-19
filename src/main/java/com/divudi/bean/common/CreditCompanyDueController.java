@@ -4338,6 +4338,61 @@ public class CreditCompanyDueController implements Serializable {
         this.creditCompanyAge = creditCompanyAge;
     }
 
+    /**
+     * Rows the age tables currently show: the filtered rows when a column
+     * filter is active, otherwise all rows. Used for the footer totals.
+     */
+    private List<String1Value5> getCreditCompanyAgeShownRows() {
+        if (filteredList != null) {
+            return filteredList;
+        }
+        return creditCompanyAge;
+    }
+
+    private double sumCreditCompanyAgeBucket(int bucket) {
+        double total = 0.0;
+        List<String1Value5> rows = getCreditCompanyAgeShownRows();
+        if (rows == null) {
+            return total;
+        }
+        for (String1Value5 r : rows) {
+            if (r == null) {
+                continue;
+            }
+            switch (bucket) {
+                case 1:
+                    total += r.getValue1();
+                    break;
+                case 2:
+                    total += r.getValue2();
+                    break;
+                case 3:
+                    total += r.getValue3();
+                    break;
+                default:
+                    total += r.getValue4();
+                    break;
+            }
+        }
+        return total;
+    }
+
+    public double getCreditCompanyAgeTotal1() {
+        return sumCreditCompanyAgeBucket(1);
+    }
+
+    public double getCreditCompanyAgeTotal2() {
+        return sumCreditCompanyAgeBucket(2);
+    }
+
+    public double getCreditCompanyAgeTotal3() {
+        return sumCreditCompanyAgeBucket(3);
+    }
+
+    public double getCreditCompanyAgeTotal4() {
+        return sumCreditCompanyAgeBucket(4);
+    }
+
     public List<String1Value5> getFilteredList() {
         return filteredList;
     }
@@ -4962,6 +5017,7 @@ public class CreditCompanyDueController implements Serializable {
     public void createInwardPatientCopaymentDueAge() {
         createInwardPatientCopaymentDueSearch();
         creditCompanyAge = new ArrayList<>();
+        filteredList = null;
         if (patientEncounters == null) {
             return;
         }
