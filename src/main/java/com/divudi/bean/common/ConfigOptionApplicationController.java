@@ -2083,11 +2083,25 @@ public class ConfigOptionApplicationController implements Serializable {
      * always has a 24-hour set-up period from the first check.
      */
     private long onAtOf(String timeKey, boolean switchIsOn) {
+        if (!switchIsOn) {
+            // A switch that is off has no activation time, whatever is stored
+            return 0L;
+        }
         Long v = getLongValueByKey(timeKey, 0L);
         long t = v == null ? 0L : v;
-        if (t <= 0 && switchIsOn) {
+        if (t <= 0) {
             t = System.currentTimeMillis();
-            setLongValueByKey(timeKey, t);
+            // Written only while the stored time is still unset, so a concurrent change is never overwritten
+            Map<String, Object> p = new HashMap<>();
+            p.put("k", timeKey);
+            p.put("v", Long.toString(t));
+            int done = optionFacade.updateByJpql("update ConfigOption o set o.optionValue=:v"
+                    + " where o.optionKey=:k and o.retired=false and (o.optionValue='0' or o.optionValue is null)", p);
+            loadApplicationOptions();
+            if (done != 1) {
+                Long again = getLongValueByKey(timeKey, 0L);
+                t = again == null ? 0L : again;
+            }
         }
         return t;
     }

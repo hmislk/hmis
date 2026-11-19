@@ -307,10 +307,7 @@ public class WebUserController implements Serializable {
             getFacade().edit(current);
             if (wasTwoFactorRequired != current.isTwoFactorRequired() || wasTwoFactorSmsAllowed != current.isTwoFactorSmsAllowed()) {
                 // The two flags are insert-only on the entity, so edit() does not write them
-                twoFactorAuthController.saveAdminFlags(current);
-            }
-            if (openSetupWindowAfterSave) {
-                twoFactorAuthController.openSetupWindowInDb(current);
+                twoFactorAuthController.saveAdminFlags(current, openSetupWindowAfterSave);
             }
             if (wasTwoFactorRequired != current.isTwoFactorRequired()) {
                 twoFactorAuthController.logRequiredChange(current, wasTwoFactorRequired);
@@ -700,9 +697,12 @@ public class WebUserController implements Serializable {
                 JsfUtil.addErrorMessage("2FA was not set to Required: the staff record has no valid mobile number. Add it, then tick Required on Manage User.");
             }
         }
+        if (getCurrent().isTwoFactorRequired()) {
+            // Inserted together with the user
+            getCurrent().setTwoFactorSetupWindowStartedAt(new Date());
+        }
         getFacade().create(getCurrent());
         if (getCurrent().isTwoFactorRequired()) {
-            twoFactorAuthController.openSetupWindowInDb(getCurrent());
             twoFactorAuthController.logRequiredChange(getCurrent(), false);
         }
         if (getCurrent().isTwoFactorSmsAllowed()) {

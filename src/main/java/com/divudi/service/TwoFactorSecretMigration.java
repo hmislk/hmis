@@ -37,7 +37,8 @@ public class TwoFactorSecretMigration {
         try {
             reencryptLegacySecrets();
         } catch (Throwable t) {
-            // Never block deployment; logins re-encrypt the secrets as users sign in
+            // Never block deployment. A row left in the old format is read as unreadable once a key is set:
+            // it is retried at the next restart, or the user needs an admin Reset
             LOGGER.log(Level.WARNING, "Two-factor secret re-encryption skipped", t);
         }
     }
@@ -54,6 +55,7 @@ public class TwoFactorSecretMigration {
         List<WebUser> users = webUserFacade.findByJpql(jpql, m);
         int done = 0;
         for (WebUser u : users) {
+            try {
             String plain = TwoFactorSecretCipher.isAnyGcmFormat(u.getTwoFactorSecret())
                     ? TwoFactorSecretCipher.decrypt(u.getTwoFactorSecret(), u.getId())
                     : SecurityController.decryptLegacy(u.getTwoFactorSecret());
@@ -73,6 +75,10 @@ public class TwoFactorSecretMigration {
             p.put("id", u.getId());
             p.put("oldSecret", u.getTwoFactorSecret());
             done += webUserFacade.updateByJpql(update, p);
+            } catch (RuntimeException e) {
+                // One failing row must not stop the rows after it
+                LOGGER.log(Level.WARNING, "Two-factor secret of user {0} was not re-encrypted", u.getId());
+            }
         }
         if (done > 0) {
             LOGGER.log(Level.INFO, "Re-encrypted {0} two-factor secret(s) under the server key", done);

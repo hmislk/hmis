@@ -247,12 +247,23 @@ public class TwoFactorAuthController implements Serializable {
      * Writes the two flags an admin sets on Manage User (Required, Allow
      * SMS) with one UPDATE, because they are insert-only on the entity.
      */
-    public void saveAdminFlags(WebUser subject) {
+    public void saveAdminFlags(WebUser subject, boolean openSetupWindow) {
         Map<String, Object> p = new HashMap<>();
         p.put("id", subject.getId());
         p.put("r", subject.isTwoFactorRequired());
         p.put("s", subject.isTwoFactorSmsAllowed());
-        webUserFacade.updateByJpql("update WebUser u set u.twoFactorRequired=:r, u.twoFactorSmsAllowed=:s where u.id=:id", p);
+        String window = "";
+        if (openSetupWindow) {
+            // Same statement as the flag, so a required user is never left without an open period
+            window = ", u.twoFactorSetupWindowStartedAt=:now";
+            p.put("now", new Date());
+        }
+        webUserFacade.updateByJpql("update WebUser u set u.twoFactorRequired=:r, u.twoFactorSmsAllowed=:s" + window
+                + " where u.id=:id", p);
+        if (openSetupWindow) {
+            logTwoFactorEvent(sessionController.getLoggedUser(), subject, EVENT_SETUP_WINDOW_OPENED);
+            copyEnrollment(freshUser(subject.getId()), subject);
+        }
     }
 
     /**
@@ -542,33 +553,30 @@ public class TwoFactorAuthController implements Serializable {
      * @return true when the account is locked now
      */
     public boolean countFailedCode(WebUser u, String auditTrigger) {
+        // One UPDATE adds the failure and locks at the limit (the lock is decided from the old count, listed
+        // first so it is evaluated before the count changes), so nothing can come between the two
         Map<String, Object> p = new HashMap<>();
         p.put("id", u.getId());
-        webUserFacade.updateByJpql("update WebUser u set u.twoFactorFailedAttempts = u.twoFactorFailedAttempts + 1"
+        p.put("max", MAX_FAILED_ATTEMPTS);
+        p.put("now", new Date());
+        webUserFacade.updateByJpql("update WebUser u set"
+                + " u.twoFactorLockedAt = case when u.twoFactorFailedAttempts + 1 >= :max and u.twoFactorLocked = false then :now else u.twoFactorLockedAt end,"
+                + " u.twoFactorLocked = case when u.twoFactorFailedAttempts + 1 >= :max then true else u.twoFactorLocked end,"
+                + " u.twoFactorFailedAttempts = u.twoFactorFailedAttempts + 1"
                 + " where u.id=:id", p);
         WebUser fresh = freshUser(u.getId());
         int failedAttempts = fresh == null ? MAX_FAILED_ATTEMPTS : fresh.getTwoFactorFailedAttempts();
         u.setTwoFactorFailedAttempts(failedAttempts);
+        boolean wasLocked = u.isTwoFactorLocked();
         Map<String, Object> attempt = new HashMap<>();
         attempt.put("failedAttempts", failedAttempts);
         // The user trying is recorded as the actor
         logTwoFactorEvent(u, u, auditTrigger, null, attempt, "Failed");
-        if (failedAttempts < MAX_FAILED_ATTEMPTS) {
-            return false;
-        }
-        Map<String, Object> lock = new HashMap<>();
-        lock.put("id", u.getId());
-        lock.put("max", MAX_FAILED_ATTEMPTS);
-        lock.put("now", new Date());
-        int locked = webUserFacade.updateByJpql("update WebUser u set u.twoFactorLocked=true, u.twoFactorLockedAt=:now"
-                + " where u.id=:id and u.twoFactorLocked=false and u.twoFactorFailedAttempts >= :max", lock);
-        if (locked > 0) {
+        boolean nowLocked = fresh != null && fresh.isTwoFactorLocked();
+        if (nowLocked && !wasLocked) {
             logTwoFactorEvent(u, u, EVENT_ACCOUNT_LOCKED);
-            return true;
         }
-        // Not locked by this call: report a lock only if the account really is locked
-        WebUser again = freshUser(u.getId());
-        return again != null && again.isTwoFactorLocked();
+        return nowLocked;
     }
 
     /**
@@ -579,6 +587,13 @@ public class TwoFactorAuthController implements Serializable {
         // The code was checked for the pending login; if that login was cancelled or replaced meanwhile, do not finish it
         if (u == null || pendingUserId == null || !pendingUserId.equals(u.getId())) {
             JsfUtil.addErrorMessage("Login Failure. Please try again");
+            return "";
+        }
+        if (isPendingExpired()) {
+            // The deadline passed while this code was being checked
+            clearChallenge();
+            loginTimedOutNotice = true;
+            JsfUtil.addErrorMessage("The sign-in took too long. Please sign in again.");
             return "";
         }
         // Clear the counter with one UPDATE (never on a locked account), then continue with a fresh copy so
@@ -755,10 +770,12 @@ public class TwoFactorAuthController implements Serializable {
         // Only when no app is linked yet: two set-ups at the same moment cannot both win
         int linked = webUserFacade.updateByJpql("update WebUser u set u.twoFactorSecret=:sec, u.twoFactorEnrolled=true,"
                 + " u.twoFactorEnrolledAt=:now, u.twoFactorLastUsedStep=:step"
-                + " where u.id=:id and u.twoFactorEnrolled=false", link);
+                + " where u.id=:id and u.twoFactorEnrolled=false and u.twoFactorLocked=false", link);
         if (linked != 1) {
             selfSetupSecret = null;
-            JsfUtil.addErrorMessage("Your authenticator app is already linked. Ask an administrator to reset it.");
+            WebUser again = freshUser(u.getId());
+            JsfUtil.addErrorMessage(again != null && again.isTwoFactorLocked() ? LOCKED_MESSAGE
+                    : "Your authenticator app is already linked. Ask an administrator to reset it.");
             return null;
         }
         logTwoFactorEvent(u, u, wasForcedSetup ? EVENT_FIRST_LOGIN_SETUP : EVENT_SELF_SETUP);
