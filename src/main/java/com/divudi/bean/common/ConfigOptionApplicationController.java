@@ -1670,6 +1670,48 @@ public class ConfigOptionApplicationController implements Serializable {
         saveShortTextOption(key, group == null ? "" : group.trim());
     }
 
+    /**
+     * Key holding the VAT rate (percent) for one inward charge type (issue
+     * #17491). Uses the enum {@code name()}, not the label, because labels can
+     * be renamed. Default 0 = no VAT.
+     */
+    public static String inwardVatPercentageKey(InwardChargeType type) {
+        return "Inward VAT Percentage - " + type.name();
+    }
+
+    /**
+     * VAT rate (percent) for one inward charge type; 0 when the key was never
+     * set. Read-only: never creates the ConfigOption row, so bill calculation
+     * writes nothing. A malformed or negative stored value counts as 0.
+     */
+    public double getInwardVatPercentage(InwardChargeType type) {
+        if (type == null || type == InwardChargeType.ComputedVAT) {
+            return 0.0;
+        }
+        ConfigOption option = getApplicationOption(inwardVatPercentageKey(type));
+        if (option == null || option.getValueType() != OptionValueType.DOUBLE) {
+            return 0.0;
+        }
+        try {
+            double rate = Double.parseDouble(option.getOptionValue());
+            return isValidInwardVatPercentage(rate) && rate > 0 ? rate : 0.0;
+        } catch (NumberFormatException | NullPointerException e) {
+            return 0.0;
+        }
+    }
+
+    /** A usable VAT rate is a finite number from 0 to 100 (percent). */
+    public static boolean isValidInwardVatPercentage(double rate) {
+        return Double.isFinite(rate) && rate >= 0 && rate <= 100;
+    }
+
+    public void saveInwardVatPercentage(InwardChargeType type, double percentage) {
+        if (type == null || type == InwardChargeType.ComputedVAT || !isValidInwardVatPercentage(percentage)) {
+            return;
+        }
+        setDoubleValueByKey(inwardVatPercentageKey(type), percentage > 0 ? percentage : 0.0);
+    }
+
     public String getColorValueByKey(String key) {
         ConfigOption option = getApplicationOption(key);
         if (option == null || option.getValueType() != OptionValueType.COLOR) {

@@ -214,7 +214,19 @@ public enum InwardChargeType {
     Theatre_Medicine("Theatre Medicine", false),
     Store_Medicine("Store Medicine", false),
     Inventry_Medicine("Inventry Medicine", false),
-    Other_Medicine("Other Medicine", false);
+    Other_Medicine("Other Medicine", false),
+
+    /**
+     * Computed at bill-calculation time only (issue #17491): the sum of the
+     * per-charge-type VAT ("Inward VAT Percentage - &lt;type name&gt;") over each
+     * row's net after discounts. One row per bill, never assigned to an Item,
+     * never taxed itself, and not the same as {@link #VAT} or
+     * {@link #RoomChargesVAT}, which keep their old meaning (manual services).
+     * Appended LAST in the enum; it is stored by name (STRING), so the position
+     * matters only for the default report/final-bill order, which puts it last.
+     * BhtSummeryController.applyComputedVat() appends the row to chargeItemTotals.
+     */
+    ComputedVAT("VAT", false);
     ;
 
     private final String nameAsString;
