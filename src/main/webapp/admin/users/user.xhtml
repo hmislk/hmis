@@ -404,7 +404,7 @@
                                                                  process="@this"
                                                                  update="twoFactorStatusBlock"
                                                                  title="Give the user 24 hours from now to set up"
-                                                                 action="#{twoFactorAuthController.resetAuthenticator(webUserController.current)}" />
+                                                                 action="#{twoFactorAuthController.reopenSetupWindow(webUserController.current)}" />
                                             </h:panelGroup>
                                             <!-- Not required and not linked -->
                                             <h:panelGroup layout="block" class="tfa-card off"

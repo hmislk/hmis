@@ -2070,10 +2070,26 @@ public class ConfigOptionApplicationController implements Serializable {
      * last turned on; null when neither time was recorded.
      */
     public Date getTwoFactorSwitchesOnAt() {
-        Long a = getLongValueByKey(TWO_FACTOR_MASTER_ON_AT_KEY, 0L);
-        Long b = getLongValueByKey(TWO_FACTOR_ALL_USERS_ON_AT_KEY, 0L);
-        long t = Math.max(a == null ? 0L : a, b == null ? 0L : b);
+        long a = onAtOf(TWO_FACTOR_MASTER_ON_AT_KEY, isAuthenticatorAppTwoFactorLoginEnabled());
+        long b = onAtOf(TWO_FACTOR_ALL_USERS_ON_AT_KEY, isAuthenticatorAppTwoFactorLoginRequiredForAllUsers());
+        long t = Math.max(a, b);
         return t > 0 ? new Date(t) : null;
+    }
+
+    /**
+     * The recorded time a switch was turned on. A switch that is on but has
+     * no recorded time (it was on before times were kept, or the write after
+     * a save failed) gets the current time recorded here, so a covered user
+     * always has a 24-hour set-up period from the first check.
+     */
+    private long onAtOf(String timeKey, boolean switchIsOn) {
+        Long v = getLongValueByKey(timeKey, 0L);
+        long t = v == null ? 0L : v;
+        if (t <= 0 && switchIsOn) {
+            t = System.currentTimeMillis();
+            setLongValueByKey(timeKey, t);
+        }
+        return t;
     }
 
     public String getAuthenticatorAppIssuerName() {

@@ -1336,6 +1336,11 @@ public class SessionController implements Serializable, HttpSessionListener {
     private boolean checkUsersWithoutDepartment() {
         System.out.println("DEBUG: checkUsersWithoutDepartment() started at " + new Date());
         long startTime = System.currentTimeMillis();
+        if (twoFactorAuthController.isReloginRequired()) {
+            // After a required set-up this session may only be logged out; a rejected attempt must not clear that
+            JsfUtil.addErrorMessage("Please log out and sign in again.");
+            return false;
+        }
         twoFactorAuthController.dismissLockedNotice();
         // A new login attempt starts clean: no half-finished challenge or forced-setup mark from earlier in this session
         twoFactorAuthController.resetForNewLogin();

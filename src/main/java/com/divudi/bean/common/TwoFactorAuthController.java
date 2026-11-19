@@ -299,6 +299,10 @@ public class TwoFactorAuthController implements Serializable {
         if (isAppLinked(u)) {
             return TwoFactorSecretCipher.isAnyGcmFormat(u.getTwoFactorSecret());
         }
+        if (isFirstSmsLoginPossibleFor(u)) {
+            // The first SMS login needs no key; the user is then held with the message at set-up
+            return false;
+        }
         return isTwoFactorRequiredFor(u);
     }
 
@@ -445,7 +449,7 @@ public class TwoFactorAuthController implements Serializable {
         }
         // One atomic write claims the time step: a second request with the same code (sent at the same moment)
         // finds the step already taken and is refused
-        if (!claimTimeStep(u.getId(), step)) {
+        if (!claimTimeStep(u.getId(), step, u.getTwoFactorSecret())) {
             recordFailedSecondFactor(u, EVENT_LOGIN_FAILED, "That code has already been used. Wait for the next code.");
             return "";
         }
@@ -468,12 +472,15 @@ public class TwoFactorAuthController implements Serializable {
      * Stores the used time step only if it is newer than the one stored, in
      * one UPDATE; false when another request got there first.
      */
-    private boolean claimTimeStep(Long userId, long step) {
+    private boolean claimTimeStep(Long userId, long step, String storedSecret) {
         Map<String, Object> p = new HashMap<>();
         p.put("id", userId);
         p.put("s", step);
+        p.put("sec", storedSecret);
+        // Only while the enrolment that was checked is still the saved one: a reset in between makes this fail
         return webUserFacade.updateByJpql("update WebUser u set u.twoFactorLastUsedStep=:s"
-                + " where u.id=:id and (u.twoFactorLastUsedStep is null or u.twoFactorLastUsedStep < :s)", p) == 1;
+                + " where u.id=:id and u.twoFactorSecret=:sec"
+                + " and (u.twoFactorLastUsedStep is null or u.twoFactorLastUsedStep < :s)", p) == 1;
     }
 
     /**
@@ -557,8 +564,11 @@ public class TwoFactorAuthController implements Serializable {
                 + " where u.id=:id and u.twoFactorLocked=false and u.twoFactorFailedAttempts >= :max", lock);
         if (locked > 0) {
             logTwoFactorEvent(u, u, EVENT_ACCOUNT_LOCKED);
+            return true;
         }
-        return true;
+        // Not locked by this call: report a lock only if the account really is locked
+        WebUser again = freshUser(u.getId());
+        return again != null && again.isTwoFactorLocked();
     }
 
     /**
@@ -566,6 +576,11 @@ public class TwoFactorAuthController implements Serializable {
      * count and completes the login, giving the user access.
      */
     public String completeLoginAfterSecondFactor(WebUser u, String auditTrigger) {
+        // The code was checked for the pending login; if that login was cancelled or replaced meanwhile, do not finish it
+        if (u == null || pendingUserId == null || !pendingUserId.equals(u.getId())) {
+            JsfUtil.addErrorMessage("Login Failure. Please try again");
+            return "";
+        }
         // Clear the counter with one UPDATE (never on a locked account), then continue with a fresh copy so
         // the login does not write an old copy of this user back
         Map<String, Object> p = new HashMap<>();
@@ -820,6 +835,34 @@ public class TwoFactorAuthController implements Serializable {
             copyEnrollment(u, lu);
         }
         JsfUtil.addSuccessMessage("Authenticator reset. The user will set it up again at next login.");
+    }
+
+    /**
+     * Admin action: gives a user whose set-up is still pending a new 24-hour
+     * set-up period. A completed enrolment is never touched.
+     */
+    public void reopenSetupWindow(WebUser user) {
+        if (!hasUserManagementPrivilege()) {
+            return;
+        }
+        if (user == null || user.getId() == null) {
+            JsfUtil.addErrorMessage("Select a user");
+            return;
+        }
+        Map<String, Object> p = new HashMap<>();
+        p.put("id", user.getId());
+        p.put("now", new Date());
+        int done = webUserFacade.updateByJpql("update WebUser u set u.twoFactorSetupWindowStartedAt=:now"
+                + " where u.id=:id and u.twoFactorEnrolled=false", p);
+        WebUser u = freshUser(user.getId());
+        if (done != 1) {
+            copyEnrollment(u, user);
+            JsfUtil.addErrorMessage("This user has already linked an authenticator app. Nothing was changed.");
+            return;
+        }
+        logTwoFactorEvent(sessionController.getLoggedUser(), u, EVENT_SETUP_WINDOW_OPENED);
+        copyEnrollment(u, user);
+        JsfUtil.addSuccessMessage("The user has 24 hours from now to set up.");
     }
 
     /**
