@@ -4,16 +4,22 @@ Developer and administrator note for the authenticator-app and SMS two-factor lo
 
 ## Server key (required before anyone sets up an authenticator app)
 
-Authenticator secrets are stored encrypted (AES-256-GCM, stored value starts with `gcm1:`). The key is **not** in the database and **not** in the source. Set one of these on the application server, to a random string of at least 32 characters, and restart the application server:
+Authenticator secrets are stored encrypted (AES-256-GCM; stored value starts with `gcm2:`, and the user id is authenticated data so a value cannot be moved to another user). The key is **not** in the database and **not** in the source. Give the application server a random key of at least 32 characters (at least 16 different characters), then restart it. Generate it on the server:
 
-- JVM system property `hmis.twofactor.secretkey` (for example `asadmin create-jvm-options "-Dhmis.twofactor.secretkey=<value>"`), or
-- environment variable `HMIS_TWOFACTOR_SECRET_KEY` for the server process.
+```bash
+openssl rand -base64 48
+```
+
+Preferred ways, in the order the server reads them:
+1. **Key file** (recommended): write the key as the first line of a file readable only by the server user (`chmod 600`), outside the application and outside the repository, and point to it with the environment variable `HMIS_TWOFACTOR_SECRET_KEY_FILE` (or the JVM property `hmis.twofactor.secretkeyfile`).
+2. Environment variable `HMIS_TWOFACTOR_SECRET_KEY` for the server process.
+3. JVM property `hmis.twofactor.secretkey`: last resort. A `-D` option is visible in the process list and is stored in the domain configuration file, so avoid it on a shared host.
 
 Rules:
-- Generate the value on the server (for example `openssl rand -base64 48`); never write it in the repository, an issue, a PR or a chat.
-- Keep a copy in the organisation's credentials store. **If the key is lost or changed, every stored secret becomes unreadable** and each linked user needs an admin Reset and a new set-up.
-- Each server has its own key. A database copied to another server (a clone, a restore) cannot be read there; see the next section.
-- At start-up, secrets saved by the older scheme are re-encrypted under the key automatically.
+- Never write the value in the repository, an issue, a PR or a chat. Keep a copy in the organisation's credentials store. **If the key is lost or changed, every stored secret becomes unreadable** and each linked user needs an admin Reset and a new set-up.
+- A weaker value (shorter, or few different characters) is logged and treated as no key.
+- Each server has its own key. A database copied to another server (a clone, a restore) cannot be read there; see the clone step below.
+- At start-up, secrets saved by the older scheme (and `gcm1` values) are re-encrypted as `gcm2`. Once a key is set, an older-scheme value that start-up did not re-encrypt is treated as unreadable (message, then admin Reset).
 
 ### What happens without the key (or with a different key)
 - With the master switch on and no key: a user for whom a code is needed and cannot be checked is refused at login with "Two-factor login is not set up on this server. Ask the administrator." This is never counted as a failed code and never locks the account. Nobody is let in without the second step.
@@ -50,3 +56,8 @@ Table names are upper case on Linux (`lower_case_table_names=0`); on a case-fold
 - Lab analysers, middleware and the channelling API log in with a name and password only. They are refused for a user who is linked, flagged Required or allowed SMS codes; the "all users" switch does not apply to them. Use a dedicated, never-flagged account for each.
 - The testing grant (`grantAllPrivilegesToAllUsersForTesting`) never works while the master switch is on.
 - A login that has passed the password step and waits for a code is dropped after 10 minutes.
+
+## Deploying and rolling back
+1. Run migration `v2.23.0` **before** deploying the new build.
+2. Deploy the new build with the master switch **off**, set the key, restart, check the start-up log line about re-encrypted secrets, then switch on.
+3. **Rollback:** the previous build cannot read `gcm` secrets. First switch **Enable authenticator app two-factor login** off in the admin UI (Administration → Manage Institutions → Application Options), then deploy the old build. Do not set the key on an older build, only on the final one. Users linked before the rollback need an admin Reset when the final build returns.
