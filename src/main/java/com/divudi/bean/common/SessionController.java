@@ -1356,6 +1356,11 @@ public class SessionController implements Serializable, HttpSessionListener {
                     passwordIsOk = SecurityController.matchPassword(password, u.getWebUserPassword());
                 }
                 if (passwordIsOk) {
+                    // The two-factor columns are decided from the database row, not from a cached copy
+                    WebUser freshRow = twoFactorAuthController.freshUser(u.getId());
+                    if (freshRow != null) {
+                        u = freshRow;
+                    }
                     if (!u.isIpAllowed(populateRequestInfo().getIpAddress())) {
                         JsfUtil.addErrorMessage("Login not allowed from this IP address for this user.");
                         return false;
@@ -1371,7 +1376,10 @@ public class SessionController implements Serializable, HttpSessionListener {
                         return false;
                     }
                     // Password accepted: a session id known before login must not carry on (session fixation)
-                    renewHttpSessionId();
+                    if (!renewHttpSessionId()) {
+                        JsfUtil.addErrorMessage("Login Failure. Please try again");
+                        return false;
+                    }
                     if (!webUserController.isGrantAllPrivilegesToAllUsersForTesting()
                             && twoFactorAuthController.isCodeNeededAtLoginFor(u)) {
                         // Login is completed by completeTwoFactorLogin() once the code is verified
@@ -1393,7 +1401,10 @@ public class SessionController implements Serializable, HttpSessionListener {
         department = null;
         institution = null;
         // Second step accepted: issue a fresh session id again for the now fully logged-in session
-        renewHttpSessionId();
+        if (!renewHttpSessionId()) {
+            JsfUtil.addErrorMessage("Login Failure. Please try again");
+            return "";
+        }
         if (!completeLoginWithoutDepartment(u)) {
             return "";
         }
@@ -2065,23 +2076,27 @@ public class SessionController implements Serializable, HttpSessionListener {
      * id set or seen before login cannot be used after it (session
      * fixation).
      */
-    private void renewHttpSessionId() {
+    private boolean renewHttpSessionId() {
         FacesContext ctx = FacesContext.getCurrentInstance();
         if (ctx == null) {
-            return;
+            return true;
         }
         Object request = ctx.getExternalContext().getRequest();
         if (!(request instanceof HttpServletRequest)) {
-            return;
+            return true;
         }
         HttpServletRequest httpRequest = (HttpServletRequest) request;
         if (httpRequest.getSession(false) == null) {
-            return;
+            return true;
         }
         try {
             httpRequest.changeSessionId();
+            return true;
         } catch (IllegalStateException e) {
-            e.printStackTrace();
+            // The login must not go on with a session id that was known before it
+            java.util.logging.Logger.getLogger(SessionController.class.getName())
+                    .log(java.util.logging.Level.SEVERE, "Session id could not be renewed; login refused", e);
+            return false;
         }
     }
 

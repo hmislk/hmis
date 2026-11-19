@@ -418,7 +418,13 @@ public class TwoFactorSmsController implements Serializable {
             twoFactorAuthController.logSmsEvent(u, u, TwoFactorAuthController.EVENT_MOBILE_VERIFICATION_FAILED, details, "Failed");
             switch (r.getStatus()) {
                 case INVALID:
-                    JsfUtil.addErrorMessage("Invalid code. Check the SMS and try again.");
+                    // Same counter and lock as a wrong login code
+                    if (twoFactorAuthController.countFailedCode(u, TwoFactorAuthController.EVENT_MOBILE_VERIFICATION_FAILED)) {
+                        cancelMobileVerification();
+                        JsfUtil.addErrorMessage(TwoFactorAuthController.LOCKED_MESSAGE);
+                    } else {
+                        JsfUtil.addErrorMessage("Invalid code. Check the SMS and try again.");
+                    }
                     break;
                 case EXPIRED:
                     mobileCodeSent = false;
@@ -431,10 +437,9 @@ public class TwoFactorSmsController implements Serializable {
             return;
         }
         boolean wasForcedSetup = twoFactorAuthController.isSetupRequiredNow();
-        u.setTwoFactorMobile(r.getIdentifier());
-        u.setTwoFactorMobileVerifiedAt(new Date());
-        webUserFacade.edit(u);
-        // Keep the session copy in step so a later edit(loggedUser) does not drop the verified number
+        twoFactorAuthController.saveVerifiedLoginMobile(u, r.getIdentifier());
+        u = twoFactorAuthController.freshUser(u.getId());
+        // Keep the session copy in step with the database
         TwoFactorAuthController.copyEnrollment(u, sessionController.getLoggedUser());
         Map<String, Object> details = new HashMap<>();
         details.put("mobile", OtpCodeUtil.maskMobile(r.getIdentifier()));
@@ -510,7 +515,13 @@ public class TwoFactorSmsController implements Serializable {
             twoFactorAuthController.logSmsEvent(u, u, TwoFactorAuthController.EVENT_SETUP_PROOF_FAILED, details, "Failed");
             switch (r.getStatus()) {
                 case INVALID:
-                    JsfUtil.addErrorMessage("Invalid code. Check the SMS and try again.");
+                    // Same counter and lock as a wrong login code
+                    if (twoFactorAuthController.countFailedCode(u, TwoFactorAuthController.EVENT_SETUP_PROOF_FAILED)) {
+                        cancelSetupProof();
+                        JsfUtil.addErrorMessage(TwoFactorAuthController.LOCKED_MESSAGE);
+                    } else {
+                        JsfUtil.addErrorMessage("Invalid code. Check the SMS and try again.");
+                    }
                     break;
                 case EXPIRED:
                     setupProofCodeSent = false;
@@ -648,7 +659,7 @@ public class TwoFactorSmsController implements Serializable {
 
     private WebUser pendingUser() {
         Long id = twoFactorAuthController.getPendingUserId();
-        return id == null ? null : webUserFacade.find(id);
+        return id == null ? null : twoFactorAuthController.freshUser(id);
     }
 
     private WebUser loggedUserFromDb() {
@@ -656,7 +667,7 @@ public class TwoFactorSmsController implements Serializable {
         if (lu == null || lu.getId() == null) {
             return null;
         }
-        return webUserFacade.find(lu.getId());
+        return twoFactorAuthController.freshUser(lu.getId());
     }
 
     private String signingKey() {
