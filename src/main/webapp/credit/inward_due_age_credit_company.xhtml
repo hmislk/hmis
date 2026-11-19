@@ -45,7 +45,7 @@
                         </p:selectOneMenu>
                     </h:panelGrid>
                     <h:panelGroup layout="block" styleClass="my-2">
-                        <p:commandButton id="btnProcess" value="Process Due Age" icon="fas fa-cogs" ajax="false" styleClass="ui-button-success m-1" action="#{creditCompanyDueController.createInwardAgeTableWithFilters()}"/>
+                        <p:commandButton id="btnProcess" value="Process Due Age" icon="fas fa-cogs" ajax="false" styleClass="ui-button-success m-1" action="#{creditCompanyDueController.createInwardAgeTableWithDateRange()}"/>
                         <p:commandButton value="Excel" icon="fas fa-file-excel" ajax="false" styleClass="ui-button-info m-1" title="Download as Excel">
                             <p:dataExporter type="xlsx" target="lst" fileName="Inward_CC_Due_Age"/>
                         </p:commandButton>
@@ -61,6 +61,9 @@
                                  filteredValue="#{creditCompanyDueController.filteredList}"
                                  styleClass="p-datatable-sm" paginator="true" rows="100" paginatorPosition="bottom"
                                  rowsPerPageTemplate="50,100,500" emptyMessage="No records found">
+                        <f:facet name="header">
+                            <h:outputText value="Inward CC Due Age (range by #{creditCompanyDueController.dateBasis eq 'admissionDate' ? 'admission date' : 'discharge date'}; aged from bill date)"/>
+                        </f:facet>
                         <p:column headerText="Credit Company" width="25em" filterBy="#{i.institution.name}" filterMatchMode="contains">
                             <h:outputText value="#{i.institution.name}"/>
                         </p:column>

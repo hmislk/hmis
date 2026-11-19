@@ -485,6 +485,19 @@ public class CreditCompanyDueController implements Serializable {
 //        }
 //    }
     public void createInwardAgeTableWithFilters() {
+        createInwardAgeTable(false);
+    }
+
+    /**
+     * Same as {@link #createInwardAgeTableWithFilters()} but limits the
+     * admissions to those whose date (per {@code dateBasis}) falls between
+     * From and To (#25775). Age buckets are unchanged.
+     */
+    public void createInwardAgeTableWithDateRange() {
+        createInwardAgeTable(true);
+    }
+
+    private void createInwardAgeTable(final boolean applyDateRange) {
         reportTimerController.trackReportExecution(() -> {
             Date startTime = new Date();
 
@@ -492,7 +505,7 @@ public class CreditCompanyDueController implements Serializable {
             creditCompanyAge = null;
             filteredList = null;
 
-            Map<Institution, List<Bill>> institutionMap = getCreditCompanyBillsGroupedByCreditCompany();
+            Map<Institution, List<Bill>> institutionMap = getCreditCompanyBillsGroupedByCreditCompany(applyDateRange);
             final List<PatientEncounter> allPatientEncounters = new ArrayList<>();
 
             creditCompanyAge = new ArrayList<>();
@@ -549,7 +562,7 @@ public class CreditCompanyDueController implements Serializable {
         return encounterCreditCompanyMap;
     }
 
-    private Map<Institution, List<Bill>> getCreditCompanyBillsGroupedByCreditCompany() {
+    private Map<Institution, List<Bill>> getCreditCompanyBillsGroupedByCreditCompany(boolean applyDateRange) {
         Map<String, Object> parameters = new HashMap<>();
         List<BillTypeAtomic> bts = new ArrayList<>();
         bts.add(BillTypeAtomic.INWARD_FINAL_BILL_PAYMENT_BY_CREDIT_COMPANY);
@@ -571,7 +584,34 @@ public class CreditCompanyDueController implements Serializable {
             parameters.put("ins", institutionOfDepartment);
         }
 
-        List<Bill> bills = billFacade.findByJpql(jpql, parameters);
+        if (applyDateRange) {
+            String dateField = "admissionDate".equals(dateBasis)
+                    ? "bill.patientEncounter.dateOfAdmission" : "bill.patientEncounter.dateOfDischarge";
+            jpql += " AND " + dateField + " BETWEEN :frm AND :to";
+            parameters.put("frm", getFromDate());
+            parameters.put("to", getToDate());
+
+            // Inward CC Due Age page only: Institution, Site and Department are read from the admission final bill (as CreditBean.inwardCCAdmissionFilters, #25773)
+            if (institution != null) {
+                jpql += " AND bill.patientEncounter.finalBill.institution = :insd";
+                parameters.put("insd", institution);
+            }
+            if (department != null) {
+                jpql += " AND bill.patientEncounter.finalBill.department = :dep";
+                parameters.put("dep", department);
+            }
+            if (site != null) {
+                jpql += " AND bill.patientEncounter.finalBill.department.site = :site";
+                parameters.put("site", site);
+            }
+        }
+
+        // The TIMESTAMP overload is needed only for the date range; the other
+        // callers keep the original overload, which returns an empty list on a
+        // query error instead of throwing.
+        List<Bill> bills = applyDateRange
+                ? billFacade.findByJpql(jpql, parameters, TemporalType.TIMESTAMP)
+                : billFacade.findByJpql(jpql, parameters);
 
         return bills.stream()
                 .filter(b -> b.getCreditCompany() != null)
