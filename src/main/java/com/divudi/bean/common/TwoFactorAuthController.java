@@ -44,8 +44,15 @@ public class TwoFactorAuthController implements Serializable {
     private static final int QR_SIZE_PX = 200;
     public static final String LOCKED_MESSAGE = "Your account is locked after " + MAX_FAILED_ATTEMPTS
             + " invalid verification codes. Please contact an administrator to unlock it.";
-    public static final String KEY_MISSING_MESSAGE = "Authenticator apps cannot be set up yet: the two-factor secret key is not configured on this server. "
-            + "Please contact your system administrator.";
+    public static final String NOT_SET_UP_MESSAGE = "Two-factor login is not set up on this server. Ask the administrator.";
+    public static final String NO_STAFF_MOBILE_MESSAGE = "Your staff record has no valid mobile number, so two-factor set-up cannot be done. "
+            + "Ask an administrator to add your mobile number to your staff record.";
+    public static final String SETUP_WINDOW_EXPIRED_MESSAGE = "The 24-hour period to set up two-factor login has ended. "
+            + "Ask an administrator to reset your authenticator, then set it up again.";
+    // A user who must set up two-factor login has this long after an admin requires it or resets it
+    public static final long SETUP_WINDOW_MS = 24L * 60 * 60 * 1000;
+    // A password-accepted login that waits for a code is dropped after this long
+    private static final long PENDING_LOGIN_TTL_MS = 10L * 60 * 1000;
 
     // Audit events: entityType is AUDIT_ENTITY_TYPE, objectId is the affected user, webUserId is who did it
     public static final String AUDIT_ENTITY_TYPE = "TwoFactorAuth";
@@ -73,6 +80,9 @@ public class TwoFactorAuthController implements Serializable {
     public static final String EVENT_SMS_ALLOWED_OFF = "2FA SMS Code Not Allowed";
     public static final String EVENT_SETUP_PROOF_VERIFIED = "2FA Setup SMS Check Passed";
     public static final String EVENT_SETUP_PROOF_FAILED = "2FA Setup SMS Check Failed";
+    public static final String EVENT_LOGIN_REFUSED_NO_KEY = "2FA Login Refused (server key)";
+    public static final String EVENT_LOGIN_TIMED_OUT = "2FA Login Timed Out";
+    public static final String EVENT_SETUP_WINDOW_OPENED = "2FA Setup Window Opened";
     private static final int AUTH_LOG_LIMIT = 15;
 
     @EJB
@@ -94,6 +104,7 @@ public class TwoFactorAuthController implements Serializable {
     // Login challenge state (password already verified, code pending)
     private Long pendingUserId;
     private String pendingUserName;
+    private long pendingStartedAt;
     private boolean channelingTabView;
     // Shown on the login card when the account is locked (a growl disappears too quickly)
     private boolean accountLockedNotice;
@@ -123,8 +134,154 @@ public class TwoFactorAuthController implements Serializable {
         if (u == null || !isTwoFactorEnabled()) {
             return false;
         }
+        if (u.isTwoFactorRequired()) {
+            return true;
+        }
+        // "All users" cannot apply to a user who has no linked app and no valid staff-record mobile: such a user
+        // could never set up (the first proof is an SMS to that mobile). They are listed when the switch is saved
+        // (see namesOfUsersWithoutStaffMobile) and are not held out of the system.
         return configOptionApplicationController.isAuthenticatorAppTwoFactorLoginRequiredForAllUsers()
-                || u.isTwoFactorRequired();
+                && (isAppLinked(u) || twoFactorSmsController.hasUsableStaffMobile(u));
+    }
+
+    /**
+     * Names of active users the "all users" switch cannot cover, because
+     * neither an app is linked nor a valid mobile number is on the staff
+     * record. Shown as a warning when the switch is saved.
+     */
+    public List<String> namesOfUsersWithoutStaffMobile() {
+        List<String> names = new ArrayList<>();
+        Map<String, Object> m = new HashMap<>();
+        m.put("ret", false);
+        List<WebUser> all = webUserFacade.findByJpql("select u from WebUser u where u.retired=:ret and u.activated=true order by u.name", m);
+        if (all == null) {
+            return names;
+        }
+        for (WebUser u : all) {
+            if (!u.isTwoFactorRequired() && !isAppLinked(u) && !twoFactorSmsController.hasUsableStaffMobile(u)) {
+                names.add(u.getName());
+            }
+        }
+        return names;
+    }
+
+    /**
+     * Called after the "all users" switch is saved as on: warns, naming up to
+     * 25 users that it cannot cover for lack of a staff-record mobile.
+     */
+    public void warnUsersWithoutStaffMobile() {
+        List<String> names = namesOfUsersWithoutStaffMobile();
+        if (names.isEmpty()) {
+            return;
+        }
+        String shown = String.join(", ", names.size() > 25 ? names.subList(0, 25) : names);
+        JsfUtil.addWarningMessage(names.size() + " user(s) have no valid mobile number on the staff record, so this switch does not cover them yet: "
+                + shown + (names.size() > 25 ? ", ..." : "") + ". Add the mobile number to their staff record.");
+    }
+
+    /**
+     * Whether the staff record of the user holds a valid mobile number.
+     */
+    public boolean hasUsableStaffMobile(WebUser u) {
+        return twoFactorSmsController.hasUsableStaffMobile(u);
+    }
+
+    // <editor-fold defaultstate="collapsed" desc="Set-up window">
+    /**
+     * When the 24 h set-up window of the user began: the latest of the time an
+     * admin required 2FA for the user or reset it, and the time a 2FA switch
+     * was turned on. Null when no time is recorded.
+     */
+    public Date setupWindowStartOf(WebUser u) {
+        Date a = u == null ? null : u.getTwoFactorSetupWindowStartedAt();
+        Date b = configOptionApplicationController.getTwoFactorSwitchesOnAt();
+        if (a == null) {
+            return b;
+        }
+        if (b == null) {
+            return a;
+        }
+        return a.after(b) ? a : b;
+    }
+
+    /**
+     * When the set-up window of the user ends; null when it never began.
+     */
+    public Date setupWindowEndOf(WebUser u) {
+        Date start = setupWindowStartOf(u);
+        return start == null ? null : new Date(start.getTime() + SETUP_WINDOW_MS);
+    }
+
+    /**
+     * Whether the user may still set up: a user for whom 2FA is required has
+     * the window; a user setting up voluntarily has no limit. No recorded
+     * start counts as ended, so an admin reset is needed.
+     */
+    public boolean isSetupWindowOpenFor(WebUser u) {
+        if (!isTwoFactorRequiredFor(u)) {
+            return true;
+        }
+        Date end = setupWindowEndOf(u);
+        return end != null && new Date().before(end);
+    }
+
+    /**
+     * Starts a new set-up window for the user (in memory; the caller saves it).
+     */
+    public void openSetupWindow(WebUser u) {
+        u.setTwoFactorSetupWindowStartedAt(new Date());
+    }
+
+    /**
+     * Why the logged user cannot set up an authenticator right now, or null
+     * when set-up can go ahead. Read from the database so an admin reset
+     * made after login is seen.
+     */
+    public String getSetupBlockedMessage() {
+        if (!TwoFactorSecretCipher.isKeyConfigured()) {
+            return NOT_SET_UP_MESSAGE;
+        }
+        WebUser u = loggedUserFromDb();
+        if (u == null) {
+            return null;
+        }
+        if (!isSetupWindowOpenFor(u)) {
+            return SETUP_WINDOW_EXPIRED_MESSAGE;
+        }
+        if (!isSetupProofSatisfied() && !twoFactorSmsController.hasUsableStaffMobile(u)) {
+            return NO_STAFF_MOBILE_MESSAGE;
+        }
+        return null;
+    }
+
+    public Date getLoggedUserSetupWindowEnd() {
+        return setupWindowEndOf(loggedUserFromDb());
+    }
+    // </editor-fold>
+
+    /**
+     * True when a password-accepted login must be refused because the
+     * second step cannot work on this server: no key is set, and the user
+     * either has an app saved under that key or must set one up. Nobody is
+     * let through without the second step, and nothing is counted as a
+     * failed code.
+     */
+    public boolean isLoginRefusedForMissingKey(WebUser u) {
+        if (u == null || !isTwoFactorEnabled() || TwoFactorSecretCipher.isKeyConfigured() || isSmsUsableFor(u)) {
+            return false;
+        }
+        if (isAppLinked(u)) {
+            return TwoFactorSecretCipher.isCurrentFormat(u.getTwoFactorSecret());
+        }
+        return isTwoFactorRequiredFor(u);
+    }
+
+    /**
+     * Records the refusal in the audit log and shows the message.
+     */
+    public void refuseLoginForMissingKey(WebUser u) {
+        logTwoFactorEvent(u, u, EVENT_LOGIN_REFUSED_NO_KEY, null, null, "Refused");
+        JsfUtil.addErrorMessage(NOT_SET_UP_MESSAGE);
     }
 
     /**
@@ -225,6 +382,7 @@ public class TwoFactorAuthController implements Serializable {
     public void startChallenge(WebUser u) {
         pendingUserId = u.getId();
         pendingUserName = u.getName();
+        pendingStartedAt = System.currentTimeMillis();
         code = null;
         boolean appLinked = isAppLinked(u);
         boolean smsUsable = isSmsUsableFor(u);
@@ -244,21 +402,57 @@ public class TwoFactorAuthController implements Serializable {
             return "";
         }
         String secret = decryptSecret(u.getTwoFactorSecret());
+        if (secret == null) {
+            // The stored secret cannot be read: this server has no key, or a different one. Not the user's
+            // mistake, so no failed attempt is counted and the account is never locked.
+            code = null;
+            logTwoFactorEvent(u, u, EVENT_LOGIN_REFUSED_NO_KEY, null, null, "Refused");
+            JsfUtil.addErrorMessage(NOT_SET_UP_MESSAGE);
+            return "";
+        }
         long step = TotpUtil.verify(secret, code, u.getTwoFactorLastUsedStep());
         code = null;
         if (step < 0) {
             recordFailedSecondFactor(u, EVENT_LOGIN_FAILED, "Invalid authenticator code.");
             return "";
         }
+        // One atomic write claims the time step: a second request with the same code (sent at the same moment)
+        // finds the step already taken and is refused
+        if (!claimTimeStep(u.getId(), step)) {
+            recordFailedSecondFactor(u, EVENT_LOGIN_FAILED, "That code has already been used. Wait for the next code.");
+            return "";
+        }
         if (!TwoFactorSecretCipher.isCurrentFormat(u.getTwoFactorSecret())) {
-            // Saved by the older scheme: store it again under this server's key (saved by completeLoginAfterSecondFactor)
+            // Saved by the older scheme: store it again under this server's key, only if the value is unchanged
             String stored = TwoFactorSecretCipher.encrypt(secret);
             if (stored != null) {
-                u.setTwoFactorSecret(stored);
+                Map<String, Object> p = new HashMap<>();
+                p.put("id", u.getId());
+                p.put("newSecret", stored);
+                p.put("oldSecret", u.getTwoFactorSecret());
+                webUserFacade.updateByJpql("update WebUser u set u.twoFactorSecret=:newSecret"
+                        + " where u.id=:id and u.twoFactorSecret=:oldSecret", p);
             }
         }
-        u.setTwoFactorLastUsedStep(step);
         return completeLoginAfterSecondFactor(u, EVENT_LOGIN_SUCCESS);
+    }
+
+    /**
+     * Stores the used time step only if it is newer than the one stored, in
+     * one UPDATE; false when another request got there first.
+     */
+    private boolean claimTimeStep(Long userId, long step) {
+        Map<String, Object> p = new HashMap<>();
+        p.put("id", userId);
+        p.put("s", step);
+        return webUserFacade.updateByJpql("update WebUser u set u.twoFactorLastUsedStep=:s"
+                + " where u.id=:id and (u.twoFactorLastUsedStep is null or u.twoFactorLastUsedStep < :s)", p) == 1;
+    }
+
+    private WebUser freshUser(Long id) {
+        Map<String, Object> p = new HashMap<>();
+        p.put("id", id);
+        return webUserFacade.findFirstByJpql("select u from WebUser u where u.id=:id", p, true);
     }
 
     /**
@@ -267,6 +461,13 @@ public class TwoFactorAuthController implements Serializable {
      * gone or locked.
      */
     public WebUser findPendingUser() {
+        if (pendingUserId != null && isPendingExpired()) {
+            WebUser expired = webUserFacade.find(pendingUserId);
+            logTwoFactorEvent(expired, expired, EVENT_LOGIN_TIMED_OUT, null, null, "Failed");
+            cancelLogin();
+            JsfUtil.addErrorMessage("The sign-in took too long. Please sign in again.");
+            return null;
+        }
         if (!isPending()) {
             return null;
         }
@@ -291,21 +492,32 @@ public class TwoFactorAuthController implements Serializable {
      * limit locks the account until an administrator unlocks it.
      */
     public void recordFailedSecondFactor(WebUser u, String auditTrigger, String message) {
-        int failedAttempts = u.getTwoFactorFailedAttempts() + 1;
+        // One UPDATE adds the failure and one UPDATE locks at the limit, so requests sent at the same
+        // moment cannot each read the old count and slip extra guesses past the limit
+        Map<String, Object> p = new HashMap<>();
+        p.put("id", u.getId());
+        webUserFacade.updateByJpql("update WebUser u set u.twoFactorFailedAttempts = u.twoFactorFailedAttempts + 1"
+                + " where u.id=:id", p);
+        WebUser fresh = freshUser(u.getId());
+        int failedAttempts = fresh == null ? MAX_FAILED_ATTEMPTS : fresh.getTwoFactorFailedAttempts();
         u.setTwoFactorFailedAttempts(failedAttempts);
         Map<String, Object> attempt = new HashMap<>();
         attempt.put("failedAttempts", failedAttempts);
         // Nobody is logged in yet, so the user trying to log in is recorded as the actor
         logTwoFactorEvent(u, u, auditTrigger, null, attempt, "Failed");
         if (failedAttempts >= MAX_FAILED_ATTEMPTS) {
-            u.setTwoFactorLocked(true);
-            u.setTwoFactorLockedAt(new Date());
-            webUserFacade.edit(u);
-            logTwoFactorEvent(u, u, EVENT_ACCOUNT_LOCKED);
+            Map<String, Object> lock = new HashMap<>();
+            lock.put("id", u.getId());
+            lock.put("max", MAX_FAILED_ATTEMPTS);
+            lock.put("now", new Date());
+            int locked = webUserFacade.updateByJpql("update WebUser u set u.twoFactorLocked=true, u.twoFactorLockedAt=:now"
+                    + " where u.id=:id and u.twoFactorLocked=false and u.twoFactorFailedAttempts >= :max", lock);
+            if (locked > 0) {
+                logTwoFactorEvent(u, u, EVENT_ACCOUNT_LOCKED);
+            }
             cancelLogin();
             showLockedNotice(u.getName());
         } else {
-            webUserFacade.edit(u);
             JsfUtil.addErrorMessage(message + " " + (MAX_FAILED_ATTEMPTS - failedAttempts) + " attempt(s) left.");
         }
     }
@@ -315,8 +527,19 @@ public class TwoFactorAuthController implements Serializable {
      * count and completes the login, giving the user access.
      */
     public String completeLoginAfterSecondFactor(WebUser u, String auditTrigger) {
-        u.setTwoFactorFailedAttempts(0);
-        webUserFacade.edit(u);
+        // Clear the counter with one UPDATE (never on a locked account), then continue with a fresh copy so
+        // the login does not write an old copy of this user back
+        Map<String, Object> p = new HashMap<>();
+        p.put("id", u.getId());
+        webUserFacade.updateByJpql("update WebUser u set u.twoFactorFailedAttempts=0"
+                + " where u.id=:id and u.twoFactorLocked=false", p);
+        WebUser fresh = freshUser(u.getId());
+        if (fresh == null || fresh.isTwoFactorLocked()) {
+            cancelLogin();
+            showLockedNotice(u.getName());
+            return "";
+        }
+        u = fresh;
         boolean channeling = channelingTabView;
         clearChallenge();
         // A full password + code login ends any "sign in again" state from an earlier forced setup
@@ -327,6 +550,19 @@ public class TwoFactorAuthController implements Serializable {
             logTwoFactorEvent(u, u, auditTrigger);
         }
         return outcome;
+    }
+
+    /**
+     * Saves the mobile number confirmed by the first SMS login, writing only
+     * those two columns.
+     */
+    public void saveVerifiedLoginMobile(WebUser u, String mobile) {
+        Map<String, Object> p = new HashMap<>();
+        p.put("id", u.getId());
+        p.put("m", mobile);
+        p.put("t", new Date());
+        webUserFacade.updateByJpql("update WebUser u set u.twoFactorMobile=:m, u.twoFactorMobileVerifiedAt=:t"
+                + " where u.id=:id", p);
     }
 
     /**
@@ -351,7 +587,15 @@ public class TwoFactorAuthController implements Serializable {
     }
 
     public boolean isPending() {
+        if (pendingUserId != null && isPendingExpired()) {
+            // Waited too long for the code: the half-finished login is dropped on its own
+            clearChallenge();
+        }
         return pendingUserId != null;
+    }
+
+    private boolean isPendingExpired() {
+        return System.currentTimeMillis() - pendingStartedAt > PENDING_LOGIN_TTL_MS;
     }
 
     /**
@@ -385,8 +629,9 @@ public class TwoFactorAuthController implements Serializable {
             JsfUtil.addErrorMessage("Your authenticator app is already linked. Ask an administrator to reset it.");
             return;
         }
-        if (!TwoFactorSecretCipher.isKeyConfigured()) {
-            JsfUtil.addErrorMessage(KEY_MISSING_MESSAGE);
+        String blocked = getSetupBlockedMessage();
+        if (blocked != null) {
+            JsfUtil.addErrorMessage(blocked);
             return;
         }
         if (!isSetupProofSatisfied()) {
@@ -410,6 +655,11 @@ public class TwoFactorAuthController implements Serializable {
         if (u == null || selfSetupSecret == null || !isSetupProofSatisfied()) {
             selfSetupSecret = null;
             JsfUtil.addErrorMessage("Start the setup again.");
+            return null;
+        }
+        if (!isSetupWindowOpenFor(u)) {
+            selfSetupSecret = null;
+            JsfUtil.addErrorMessage(SETUP_WINDOW_EXPIRED_MESSAGE);
             return null;
         }
         long step = TotpUtil.verify(selfSetupSecret, selfSetupCode, null);
@@ -436,7 +686,7 @@ public class TwoFactorAuthController implements Serializable {
         selfSetupFailedAttempts = 0;
         String stored = TwoFactorSecretCipher.encrypt(selfSetupSecret);
         if (stored == null) {
-            JsfUtil.addErrorMessage(KEY_MISSING_MESSAGE);
+            JsfUtil.addErrorMessage(NOT_SET_UP_MESSAGE);
             return null;
         }
         boolean wasForcedSetup = isSetupRequiredNow();
@@ -500,6 +750,8 @@ public class TwoFactorAuthController implements Serializable {
             return;
         }
         clearEnrollment(u);
+        // The user has 24 hours from now to set up again
+        openSetupWindow(u);
         webUserFacade.edit(u);
         logTwoFactorEvent(sessionController.getLoggedUser(), u, EVENT_AUTHENTICATOR_RESET);
         copyEnrollment(u, user);
@@ -678,6 +930,7 @@ public class TwoFactorAuthController implements Serializable {
         to.setTwoFactorLockedAt(from.getTwoFactorLockedAt());
         to.setTwoFactorMobile(from.getTwoFactorMobile());
         to.setTwoFactorMobileVerifiedAt(from.getTwoFactorMobileVerifiedAt());
+        to.setTwoFactorSetupWindowStartedAt(from.getTwoFactorSetupWindowStartedAt());
     }
 
     /**

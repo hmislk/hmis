@@ -225,8 +225,7 @@ public class TwoFactorSmsController implements Serializable {
             case VERIFIED:
                 if (!verified) {
                     // The code reached the saved number: it is now the verified mobile
-                    u.setTwoFactorMobile(r.getIdentifier());
-                    u.setTwoFactorMobileVerifiedAt(new Date());
+                    twoFactorAuthController.saveVerifiedLoginMobile(u, r.getIdentifier());
                     Map<String, Object> details = new HashMap<>();
                     details.put("mobile", OtpCodeUtil.maskMobile(r.getIdentifier()));
                     details.put("setAtLogin", true);

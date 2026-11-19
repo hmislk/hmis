@@ -737,7 +737,19 @@
                                 <h:outputText value=" A 6-digit code from your authenticator app is asked at every login." />
                             </h:panelGroup>
 
-                            <h:panelGroup rendered="#{not twoFactorAuthController.loggedUserEnrolled}" layout="block" class="auth-status-action">
+                            <!-- Why set-up cannot start (no server key, 24 h period ended, no staff mobile) -->
+                            <h:panelGroup rendered="#{not twoFactorAuthController.loggedUserEnrolled and twoFactorAuthController.setupBlockedMessage ne null}" layout="block" class="auth-info mb-0" id="setupBlockedNote">
+                                <i class="fa fa-info-circle"></i>
+                                <h:outputText value=" #{twoFactorAuthController.setupBlockedMessage}" />
+                            </h:panelGroup>
+                            <h:panelGroup rendered="#{not twoFactorAuthController.loggedUserEnrolled and twoFactorAuthController.loggedUserRequired and twoFactorAuthController.loggedUserSetupWindowEnd ne null and twoFactorAuthController.setupBlockedMessage eq null}" class="auth-status-date">
+                                <i class="fa fa-clock"></i>
+                                <h:outputText value=" Set up before " />
+                                <h:outputText value="#{twoFactorAuthController.loggedUserSetupWindowEnd}">
+                                    <f:convertDateTime pattern="dd MMM yyyy, HH:mm" />
+                                </h:outputText>
+                            </h:panelGroup>
+                            <h:panelGroup rendered="#{not twoFactorAuthController.loggedUserEnrolled and twoFactorAuthController.setupBlockedMessage eq null}" layout="block" class="auth-status-action">
                                 <p:commandButton value="Set Up Authenticator App"
                                                  icon="fa fa-qrcode"
                                                  class="ui-button-success"

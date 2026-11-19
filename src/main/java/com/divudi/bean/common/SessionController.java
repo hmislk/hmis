@@ -1365,6 +1365,11 @@ public class SessionController implements Serializable, HttpSessionListener {
                         twoFactorAuthController.showLockedNotice(u.getName());
                         return false;
                     }
+                    if (twoFactorAuthController.isLoginRefusedForMissingKey(u)) {
+                        // The second step cannot work on this server (no key): refuse, never skip the step
+                        twoFactorAuthController.refuseLoginForMissingKey(u);
+                        return false;
+                    }
                     // Password accepted: a session id known before login must not carry on (session fixation)
                     renewHttpSessionId();
                     if (!webUserController.isGrantAllPrivilegesToAllUsersForTesting()

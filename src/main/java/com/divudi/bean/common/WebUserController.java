@@ -288,6 +288,16 @@ public class WebUserController implements Serializable {
         } else {
             // Authenticator enrollment is written only by TwoFactorAuthController; don't let a stale copy overwrite it
             TwoFactorAuthController.copyEnrollment(saved, current);
+            if (current.isTwoFactorRequired() && !wasTwoFactorRequired) {
+                if (!twoFactorAuthController.hasUsableStaffMobile(current)) {
+                    // Set-up is proved by an SMS to the staff-record mobile; without it the user could never set up
+                    current.setTwoFactorRequired(false);
+                    JsfUtil.addErrorMessage("2FA was not set to Required: the staff record of " + current.getName()
+                            + " has no valid mobile number. Add the mobile number to the staff record first.");
+                } else {
+                    twoFactorAuthController.openSetupWindow(current);
+                }
+            }
             // activatedAt records the last activation-state change, so it is also the inactive date (#25078)
             if (activationChanged) {
                 current.setActivatedAt(new Date());
@@ -376,7 +386,7 @@ public class WebUserController implements Serializable {
 
     public boolean hasPrivilege(String privilege) {
         boolean hasPri = false;
-        if (grantAllPrivilegesToAllUsersForTesting) {
+        if (isGrantAllPrivilegesToAllUsersForTesting()) {
             return true;
         }
         if (configOptionApplicationController.getBooleanValueByKey("Disabling Developers Privileges in the System", true)) {
@@ -417,7 +427,7 @@ public class WebUserController implements Serializable {
             return false;
         }
 
-        if (grantAllPrivilegesToAllUsersForTesting) {
+        if (isGrantAllPrivilegesToAllUsersForTesting()) {
             return true;
         }
 
@@ -676,6 +686,14 @@ public class WebUserController implements Serializable {
         getCurrent().setCreater(sessionController.getLoggedUser());
         getCurrent().setName((getCurrent().getName()));
         getCurrent().setWebUserPassword(getSecurityController().hashAndCheck(getCurrent().getWebUserPassword()));
+        if (getCurrent().isTwoFactorRequired()) {
+            if (!twoFactorAuthController.hasUsableStaffMobile(getCurrent())) {
+                getCurrent().setTwoFactorRequired(false);
+                JsfUtil.addErrorMessage("2FA was not set to Required: the staff record has no valid mobile number. Add it, then tick Required on Manage User.");
+            } else {
+                twoFactorAuthController.openSetupWindow(getCurrent());
+            }
+        }
         getFacade().create(getCurrent());
         if (getCurrent().isTwoFactorRequired()) {
             twoFactorAuthController.logRequiredChange(getCurrent(), false);
@@ -1568,11 +1586,21 @@ public class WebUserController implements Serializable {
         this.loginPage = loginPage;
     }
 
+    /**
+     * The testing grant (all privileges, no password check). It never works
+     * while two-factor login is switched on, whatever the field holds.
+     */
     public boolean isGrantAllPrivilegesToAllUsersForTesting() {
-        return grantAllPrivilegesToAllUsersForTesting;
+        return grantAllPrivilegesToAllUsersForTesting
+                && !configOptionApplicationController.isAuthenticatorAppTwoFactorLoginEnabled();
     }
 
     public void setGrantAllPrivilegesToAllUsersForTesting(boolean grantAllPrivilegesToAllUsersForTesting) {
+        if (grantAllPrivilegesToAllUsersForTesting
+                && configOptionApplicationController.isAuthenticatorAppTwoFactorLoginEnabled()) {
+            this.grantAllPrivilegesToAllUsersForTesting = false;
+            return;
+        }
         this.grantAllPrivilegesToAllUsersForTesting = grantAllPrivilegesToAllUsersForTesting;
     }
 

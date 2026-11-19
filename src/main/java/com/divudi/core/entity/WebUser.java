@@ -132,6 +132,9 @@ public class WebUser implements Serializable {
     private String twoFactorMobile;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date twoFactorMobileVerifiedAt;
+    // Start of the 24 h set-up window: set when an admin ticks "required" or resets the authenticator
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    private Date twoFactorSetupWindowStartedAt;
 
     public Staff getStaff() {
         return staff;
@@ -538,6 +541,14 @@ public class WebUser implements Serializable {
 
     public void setTwoFactorMobileVerifiedAt(Date twoFactorMobileVerifiedAt) {
         this.twoFactorMobileVerifiedAt = twoFactorMobileVerifiedAt;
+    }
+
+    public Date getTwoFactorSetupWindowStartedAt() {
+        return twoFactorSetupWindowStartedAt;
+    }
+
+    public void setTwoFactorSetupWindowStartedAt(Date twoFactorSetupWindowStartedAt) {
+        this.twoFactorSetupWindowStartedAt = twoFactorSetupWindowStartedAt;
     }
 
     /**
