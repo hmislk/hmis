@@ -584,6 +584,18 @@ public class CreditBean {
 
     public List<Bill> getUnpaidInwardCCBills(Institution creditCompany, Date fromDate, Date toDate,
             AdmissionType admissionType, String dateBasis) {
+        return getUnpaidInwardCCBills(creditCompany, fromDate, toDate, admissionType, dateBasis,
+                null, null, null, null);
+    }
+
+    /**
+     * As above, also limited by the admission's payment method and by the
+     * institution, site and department of its final bill (each only when not
+     * null), the same paths as the other inward credit company reports (#25772).
+     */
+    public List<Bill> getUnpaidInwardCCBills(Institution creditCompany, Date fromDate, Date toDate,
+            AdmissionType admissionType, String dateBasis, PaymentMethod paymentMethod,
+            Institution institution, Institution site, Department department) {
         String dateField = "admissionDate".equals(dateBasis)
                 ? "b.patientEncounter.dateOfAdmission"
                 : "b.patientEncounter.dateOfDischarge";
@@ -606,6 +618,7 @@ public class CreditBean {
             sql += " and b.patientEncounter.admissionType =:at ";
             hm.put("at", admissionType);
         }
+        sql += inwardCCAdmissionFilters(hm, paymentMethod, institution, site, department);
         sql += " order by " + dateField;
         return getBillFacade().findByJpql(sql, hm, TemporalType.TIMESTAMP);
     }
@@ -620,6 +633,41 @@ public class CreditBean {
 
     public List<Institution> getCreditCompaniesWithUnpaidInwardCCBills(Date fromDate, Date toDate,
             AdmissionType admissionType, String dateBasis) {
+        return getCreditCompaniesWithUnpaidInwardCCBills(fromDate, toDate, admissionType, dateBasis,
+                null, null, null, null);
+    }
+
+    /**
+     * JPQL for the optional payment method, institution, site and department
+     * filters of the inward CC due search (#25772). Institution, department and
+     * site are read from the admission's final bill, as in
+     * getCreditCompanyFromBht; payment method from the admission.
+     */
+    private String inwardCCAdmissionFilters(HashMap hm, PaymentMethod paymentMethod,
+            Institution institution, Institution site, Department department) {
+        String sql = "";
+        if (paymentMethod != null) {
+            sql += " and b.patientEncounter.paymentMethod=:pm ";
+            hm.put("pm", paymentMethod);
+        }
+        if (institution != null) {
+            sql += " and b.patientEncounter.finalBill.institution = :insd ";
+            hm.put("insd", institution);
+        }
+        if (department != null) {
+            sql += " and b.patientEncounter.finalBill.department = :dep ";
+            hm.put("dep", department);
+        }
+        if (site != null) {
+            sql += " and b.patientEncounter.finalBill.department.site = :site ";
+            hm.put("site", site);
+        }
+        return sql;
+    }
+
+    public List<Institution> getCreditCompaniesWithUnpaidInwardCCBills(Date fromDate, Date toDate,
+            AdmissionType admissionType, String dateBasis, PaymentMethod paymentMethod,
+            Institution institution, Institution site, Department department) {
         String dateField = "admissionDate".equals(dateBasis)
                 ? "b.patientEncounter.dateOfAdmission"
                 : "b.patientEncounter.dateOfDischarge";
@@ -640,6 +688,7 @@ public class CreditBean {
             sql += " and b.patientEncounter.admissionType =:at ";
             hm.put("at", admissionType);
         }
+        sql += inwardCCAdmissionFilters(hm, paymentMethod, institution, site, department);
         return getInstitutionFacade().findByJpql(sql, hm, TemporalType.TIMESTAMP);
     }
 
