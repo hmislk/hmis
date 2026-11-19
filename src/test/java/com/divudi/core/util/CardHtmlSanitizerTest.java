@@ -34,6 +34,16 @@ class CardHtmlSanitizerTest {
     }
 
     @Test
+    void escapedTextStaysInactiveAfterDisplayUnescape() {
+        // The visit page getter un-escapes entities before display; cleaning again afterwards must leave nothing live
+        String stored = CardHtmlSanitizer.sanitize("<p>&lt;img src=x onerror=z()&gt;</p>");
+        String unescaped = stored.replace("&lt;", "<").replace("&gt;", ">").replace("&amp;", "&")
+                .replace("&quot;", "\"").replace("&#39;", "'");
+        String shown = CardHtmlSanitizer.sanitize(unescaped);
+        assertFalse(shown.contains("onerror"));
+    }
+
+    @Test
     void nullStaysNull() {
         assertNull(CardHtmlSanitizer.sanitize(null));
     }

@@ -625,6 +625,7 @@ public class PastPatientEncounterController implements Serializable {
             JsfUtil.addErrorMessage("Nothing to save");
             return;
         }
+        encounterReferral.setLobValue(com.divudi.core.util.CardHtmlSanitizer.sanitize(encounterReferral.getLobValue()));
         encounterReferral.setRetired(true);
         encounterDocuments.remove(encounterReferral);
         if (encounterReferral.getId() == null) {
@@ -1387,7 +1388,8 @@ public class PastPatientEncounterController implements Serializable {
                 .replace("{patient_age}", age)
                 .replace("{patient_phn_number}", phn)
                 .replace("{patient_nic}", nic);
-        return output;
+        // Shown unescaped: substituted patient values must not become live markup
+        return com.divudi.core.util.CardHtmlSanitizer.sanitize(output);
 
     }
 

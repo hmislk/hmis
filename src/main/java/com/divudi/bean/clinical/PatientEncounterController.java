@@ -791,6 +791,7 @@ public class PatientEncounterController implements Serializable {
             JsfUtil.addErrorMessage("Nothing to save");
             return;
         }
+        encounterReferral.setLobValue(com.divudi.core.util.CardHtmlSanitizer.sanitize(encounterReferral.getLobValue()));
         encounterReferral.setRetired(true);
         encounterDocuments.remove(encounterReferral);
         if (encounterReferral.getId() == null) {
@@ -2096,7 +2097,8 @@ public class PatientEncounterController implements Serializable {
                 .replace("{referral_institution}", referralInstitutionName)
                 .replace("{referral_doctor}", referralDoctorName)
                 .replace("{referring_doctor}", referralDoctorName);
-        return output;
+        // Shown unescaped: substituted patient values must not become live markup
+        return com.divudi.core.util.CardHtmlSanitizer.sanitize(output);
 
     }
 
@@ -3914,7 +3916,8 @@ public class PatientEncounterController implements Serializable {
                 .replace("&amp;", "&")
                 .replace("&quot;", "\"")
                 .replace("&#39;", "'");
-        return content;
+        // Clean after un-escaping, so escaped text cannot turn back into live markup
+        return com.divudi.core.util.CardHtmlSanitizer.sanitize(content);
     }
 
     public void setEncounterReferral(ClinicalFindingValue encounterReferral) {
