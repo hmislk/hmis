@@ -1905,8 +1905,8 @@ public class CreditCompanyDueController implements Serializable {
     public org.primefaces.component.export.PDFOptions getPdfExportOptions() {
         org.primefaces.component.export.PDFOptions options = new org.primefaces.component.export.PDFOptions();
         options.setOrientation(org.primefaces.component.export.PDFOrientationType.LANDSCAPE);
-        options.setCellFontSize("7");
-        options.setFacetFontSize("9");
+        options.setCellFontSize("6");
+        options.setFacetFontSize("7");
         return options;
     }
 

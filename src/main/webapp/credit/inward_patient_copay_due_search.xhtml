@@ -83,7 +83,7 @@
                         <p:column headerText="CC Company" width="12em">
                             <h:outputText value="#{pe.creditCompany != null ? pe.creditCompany.name : 'Self-pay'}"/>
                         </p:column>
-                        <p:column headerText="Final Bill Total" width="7em" styleClass="text-end">
+                        <p:column headerText="Final Bill Total" width="9em" styleClass="text-end">
                             <h:outputText value="#{pe.finalBill.netTotal}">
                                 <f:convertNumber pattern="#,##0.00"/>
                             </h:outputText>
@@ -117,7 +117,7 @@
                                 <h:outputText value="#{creditCompanyDueController.paidByPatient}"><f:convertNumber pattern="#,##0.00"/></h:outputText>
                             </f:facet>
                         </p:column>
-                        <p:column headerText="Patient Outstanding" width="7em" styleClass="text-end">
+                        <p:column headerText="Patient Outstanding" width="9em" styleClass="text-end">
                             <h:outputText value="#{creditCompanyDueController.getPatientCopaymentDue(pe)}">
                                 <f:convertNumber pattern="#,##0.00"/>
                             </h:outputText>
