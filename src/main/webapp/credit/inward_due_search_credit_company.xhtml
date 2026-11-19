@@ -14,59 +14,65 @@
                         <f:facet name="header">
                             <h:outputLabel value="INWARD CREDIT DUE"/>
                         </f:facet>
-                        <h:panelGrid columns="2" class="my-2">
-                                <h:outputLabel value="From Date"/>
-                                <p:calendar class="mx-4 w-100" inputStyleClass="w-100" id="fromDate" value="#{creditCompanyDueController.fromDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
-                                    <f:ajax event="dateSelect" execute="toDate @this"  render="lst"/>
-                                </p:calendar>
-                                <h:outputLabel value="To Date &emsp;"/>
-                                <p:calendar class="mx-4 w-100" inputStyleClass="w-100" id="toDate" value="#{creditCompanyDueController.toDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
-                                    <f:ajax event="dateSelect" execute="@this fromDate"  render="lst"/>
-                                </p:calendar>
-                                <h:outputLabel value="Date Basis"/>
-                                <p:selectOneMenu value="#{creditCompanyDueController.dateBasis}">
-                                    <f:selectItem itemValue="dischargeDate" itemLabel="Discharge Date"/>
-                                    <f:selectItem itemValue="admissionDate" itemLabel="Admission Date"/>
-                                </p:selectOneMenu>
-                                <h:outputLabel value="Admission Type"/>
-                                <p:selectOneMenu value="#{creditCompanyDueController.admissionType}">
-                                    <f:selectItem itemLabel="All Admission Types" itemValue="#{null}"/>
-                                    <f:selectItems value="#{admissionTypeController.items}" var="at" itemValue="#{at}" itemLabel="#{at.name}"/>
-                                </p:selectOneMenu>
-                                <h:outputLabel value="Payment Method"/>
-                                <p:selectOneMenu value="#{creditCompanyDueController.paymentMethod}">
-                                    <f:selectItem itemLabel="All Methods" itemValue="#{null}"/>
-                                    <f:selectItems value="#{enumController.paymentMethodForAdmission}"/>
-                                </p:selectOneMenu>
-                                <h:outputLabel value="Institution"/>
-                                <p:selectOneMenu value="#{creditCompanyDueController.institution}" filter="true">
-                                    <f:selectItem itemLabel="All Institutions" itemValue="#{null}"/>
-                                    <f:selectItems value="#{institutionController.companies}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}"/>
-                                </p:selectOneMenu>
-                                <h:outputLabel value="Site"/>
-                                <p:selectOneMenu value="#{creditCompanyDueController.site}" filter="true">
-                                    <f:selectItem itemLabel="All Sites" itemValue="#{null}"/>
-                                    <f:selectItems value="#{institutionController.sites}" var="dueSite" itemLabel="#{dueSite.name}" itemValue="#{dueSite}"/>
-                                </p:selectOneMenu>
-                                <h:outputLabel value="Department"/>
-                                <p:selectOneMenu value="#{creditCompanyDueController.department}" filter="true" filterMatchMode="contains">
-                                    <f:selectItem itemLabel="All Departments" itemValue="#{null}"/>
-                                    <f:selectItems value="#{departmentController.getDepartmentsOfInstitutionAndSite()}" var="d" itemLabel="#{d.name}" itemValue="#{d}"/>
-                                </p:selectOneMenu>
-                            </h:panelGrid>
-                        <h:panelGrid columns="6" class="my-2">
-                            <p:commandButton class="ui-button-warning" icon="fas fa-cogs" ajax="false" value="Process" action="#{creditCompanyDueController.createInwardCreditDue()}" />
-                            <p:commandButton class="ui-button-info mx-2" icon="fas fa-print" ajax="false" value="Print"  >
-                                <p:printer target="lst"  />
-                            </p:commandButton>
-
-                            <p:commandButton class="ui-button-success" icon="fas fa-file-excel"
-                                             actionListener="#{creditCompanyDueController.createInwardCreditDue()}"
-                                             action="#{creditCompanyDueController.downloadInwardCreditDueExcel()}"
-                                             ajax="false" value="Excel"  />
-
-                        </h:panelGrid>
-                        <p:dataTable id="lst" value="#{creditCompanyDueController.institutionEncounters}" var="i">
+                    <h:panelGrid columns="8" styleClass="w-100" cellpadding="2">
+                        <h:outputLabel value="From" for="fromDate"/>
+                        <p:calendar id="fromDate" styleClass="w-100" inputStyleClass="w-100" value="#{creditCompanyDueController.fromDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                        <p:spacer width="20"/>
+                        <h:outputLabel value="To" for="toDate"/>
+                        <p:calendar id="toDate" styleClass="w-100" inputStyleClass="w-100" value="#{creditCompanyDueController.toDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                        <p:spacer width="20"/>
+                        <h:outputLabel value="Date Basis" for="dateBasis"/>
+                        <p:selectOneMenu id="dateBasis" styleClass="w-100" value="#{creditCompanyDueController.dateBasis}">
+                            <f:selectItem itemValue="dischargeDate" itemLabel="Discharge Date"/>
+                            <f:selectItem itemValue="admissionDate" itemLabel="Admission Date"/>
+                        </p:selectOneMenu>
+                        <h:outputLabel value="Institution" for="cmbIns"/>
+                        <p:selectOneMenu id="cmbIns" styleClass="w-100" value="#{creditCompanyDueController.institution}" filter="true">
+                            <f:selectItem itemLabel="All Institutions" itemValue="#{null}"/>
+                            <f:selectItems value="#{institutionController.companies}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}"/>
+                        </p:selectOneMenu>
+                        <p:spacer width="20"/>
+                        <h:outputLabel value="Site" for="cmbSite"/>
+                        <p:selectOneMenu id="cmbSite" styleClass="w-100" value="#{creditCompanyDueController.site}" filter="true">
+                            <f:selectItem itemLabel="All Sites" itemValue="#{null}"/>
+                            <f:selectItems value="#{institutionController.sites}" var="dueSite" itemLabel="#{dueSite.name}" itemValue="#{dueSite}"/>
+                        </p:selectOneMenu>
+                        <p:spacer width="20"/>
+                        <h:outputLabel value="Department" for="cmbDept"/>
+                        <p:selectOneMenu id="cmbDept" styleClass="w-100" value="#{creditCompanyDueController.department}" filter="true" filterMatchMode="contains">
+                            <f:selectItem itemLabel="All Departments" itemValue="#{null}"/>
+                            <f:selectItems value="#{departmentController.getDepartmentsOfInstitutionAndSite()}" var="d" itemLabel="#{d.name}" itemValue="#{d}"/>
+                        </p:selectOneMenu>
+                        <h:outputLabel value="Admission Type" for="admType"/>
+                        <p:selectOneMenu id="admType" styleClass="w-100" value="#{creditCompanyDueController.admissionType}">
+                            <f:selectItem itemLabel="All Admission Types" itemValue="#{null}"/>
+                            <f:selectItems value="#{admissionTypeController.items}" var="at" itemValue="#{at}" itemLabel="#{at.name}"/>
+                        </p:selectOneMenu>
+                        <p:spacer width="20"/>
+                        <h:outputLabel value="Payment Method" for="payMethod"/>
+                        <p:selectOneMenu id="payMethod" styleClass="w-100" value="#{creditCompanyDueController.paymentMethod}">
+                            <f:selectItem itemLabel="All Methods" itemValue="#{null}"/>
+                            <f:selectItems value="#{enumController.paymentMethodForAdmission}"/>
+                        </p:selectOneMenu>
+                        <p:spacer/>
+                        <p:spacer/>
+                        <p:spacer/>
+                    </h:panelGrid>
+                    <h:panelGroup layout="block" styleClass="my-2">
+                        <p:commandButton id="btnProcess" value="Process" icon="fas fa-cogs" ajax="false" styleClass="ui-button-success m-1" action="#{creditCompanyDueController.createInwardCreditDue()}"/>
+                        <p:commandButton value="Excel" icon="fas fa-file-excel" ajax="false" styleClass="ui-button-info m-1" title="Download as Excel"
+                                         actionListener="#{creditCompanyDueController.createInwardCreditDue()}"
+                                         action="#{creditCompanyDueController.downloadInwardCreditDueExcel()}"/>
+                        <p:commandButton value="Print" icon="fas fa-print" ajax="false" styleClass="ui-button-warning m-1" title="Print the table">
+                            <p:printer target="lst"/>
+                        </p:commandButton>
+                        <p:commandButton value="PDF" icon="fas fa-file-pdf" ajax="false" styleClass="ui-button-danger m-1" title="Download as PDF"
+                                         actionListener="#{creditCompanyDueController.createInwardCreditDue()}"
+                                         action="#{creditCompanyDueController.downloadInwardCreditDuePdf()}"/>
+                    </h:panelGroup>
+                    <p:defaultCommand target="btnProcess"/>
+                        <p:dataTable id="lst" widgetVar="lstWidget" value="#{creditCompanyDueController.institutionEncounters}" var="i"
+                                     styleClass="p-datatable-sm" emptyMessage="No records found">
                             <f:facet name="header">
                                 <h:outputLabel value="Due Search(Credit Company)"/>
                                 <br />
@@ -81,14 +87,14 @@
                             </f:facet>
                             <p:columnGroup type="header">
                                 <p:row>
-                                    <p:column headerText="BHT No"/>
-                                    <p:column headerText="Date Of Admission"/>
-                                    <p:column headerText="Date Of Discharge"/>
-                                    <p:column headerText="Patient Name"/>
-                                    <p:column headerText="Credit Company"/>
-                                    <p:column headerText="Bill Amount" class="text-end"/>
-                                    <p:column headerText="Paid" class="text-end"/>
-                                    <p:column headerText="Outstanding" class="text-end"/>
+                                    <p:column headerText="BHT No" width="7em"/>
+                                    <p:column headerText="Date Of Admission" width="10em"/>
+                                    <p:column headerText="Date Of Discharge" width="10em"/>
+                                    <p:column headerText="Patient Name" width="15em"/>
+                                    <p:column headerText="Credit Company" width="15em"/>
+                                    <p:column headerText="Bill Amount" width="7em" styleClass="text-end"/>
+                                    <p:column headerText="Paid" width="7em" styleClass="text-end"/>
+                                    <p:column headerText="Outstanding" width="7em" styleClass="text-end"/>
                                 </p:row>
                             </p:columnGroup>
                             <p:subTable value="#{i.bills}" var="bill">
