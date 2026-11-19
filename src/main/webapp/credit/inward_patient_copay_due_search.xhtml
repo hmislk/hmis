@@ -55,7 +55,7 @@
                         </p:commandButton>
                         <p:commandButton value="PDF" icon="fas fa-file-pdf" ajax="false" styleClass="ui-button-danger m-1" title="Download as PDF"
                                          actionListener="#{creditCompanyDueController.createInwardPatientCopaymentDueSearch()}">
-                            <p:dataExporter type="pdf" target="lst" fileName="Inward_Patient_Copayment_Due"/>
+                            <p:dataExporter type="pdf" target="lst" fileName="Inward_Patient_Copayment_Due" options="#{creditCompanyDueController.pdfExportOptions}"/>
                         </p:commandButton>
                     </h:panelGroup>
                     <p:defaultCommand target="btnProcess"/>
@@ -63,10 +63,7 @@
                                  styleClass="p-datatable-sm" paginator="true" rows="100" paginatorPosition="bottom"
                                  rowsPerPageTemplate="50,100,500" emptyMessage="No records found">
                         <f:facet name="header">
-                            <h:outputText value="Inward Patient Co-payment Due Search  From : "/>
-                            <h:outputText value="#{creditCompanyDueController.fromDate}"><f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/></h:outputText>
-                            <h:outputText value="  To : "/>
-                            <h:outputText value="#{creditCompanyDueController.toDate}"><f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/></h:outputText>
+                            <h:outputText value="#{creditCompanyDueController.patientDueExportTitle}"/>
                         </f:facet>
                         <p:column headerText="BHT No" width="7em">
                             <h:outputText value="#{pe.bhtNo}"/>

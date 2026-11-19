@@ -1628,9 +1628,7 @@ public class CreditCompanyDueController implements Serializable {
             Row filterRow = sheet.createRow(rowIndex++);
             Cell filterCell = filterRow.createCell(0);
             filterCell.setCellValue(
-                    "Admission Type : " + (admissionType != null ? admissionType.getName() : "All")
-                    + "    Payment Method : " + (paymentMethod != null ? paymentMethod.getLabel() : "All")
-                    + "    Institution : " + (institution != null ? institution.getName() : "All"));
+                    inwardCreditDueFilterLine());
             filterCell.setCellStyle(filterStyle);
             sheet.addMergedRegion(new CellRangeAddress(rowIndex - 1, rowIndex - 1, 0, headerCount - 1));
 
@@ -1744,16 +1742,25 @@ public class CreditCompanyDueController implements Serializable {
                 grandTotalRow.createCell(i);
             }
 
+            double grandTotal = 0.0;
+            double grandPaid = 0.0;
+            for (InstitutionEncounters g : data) {
+                if (g != null) {
+                    grandTotal += g.getTotal();
+                    grandPaid += g.getPaidTotal();
+                }
+            }
+
             Cell grandTotalAmount = grandTotalRow.createCell(5);
-            grandTotalAmount.setCellValue(finalTotal);
+            grandTotalAmount.setCellValue(grandTotal);
             grandTotalAmount.setCellStyle(numberStyle);
 
             Cell grandTotalPaid = grandTotalRow.createCell(6);
-            grandTotalPaid.setCellValue(finalPaidTotal);
+            grandTotalPaid.setCellValue(grandPaid);
             grandTotalPaid.setCellStyle(numberStyle);
 
             Cell grandTotalOutstanding = grandTotalRow.createCell(7);
-            grandTotalOutstanding.setCellValue(finalTotal - finalPaidTotal);
+            grandTotalOutstanding.setCellValue(grandTotal - grandPaid);
             grandTotalOutstanding.setCellStyle(numberStyle);
 
             if (sessionController != null && sessionController.getLoggedUser() != null
@@ -1813,8 +1820,20 @@ public class CreditCompanyDueController implements Serializable {
                     + "    Date Basis : " + ("admissionDate".equals(dateBasis) ? "Admission Date" : "Discharge Date"),
                     normalFont);
             range.setAlignment(Element.ALIGN_CENTER);
-            range.setSpacingAfter(8);
             document.add(range);
+            Paragraph filterLine = new Paragraph(inwardCreditDueFilterLine(), normalFont);
+            filterLine.setAlignment(Element.ALIGN_CENTER);
+            filterLine.setSpacingAfter(8);
+            document.add(filterLine);
+
+            double grandTotal = 0.0;
+            double grandPaid = 0.0;
+            for (InstitutionEncounters g : data) {
+                if (g != null) {
+                    grandTotal += g.getTotal();
+                    grandPaid += g.getPaidTotal();
+                }
+            }
 
             PdfPTable table = new PdfPTable(8);
             table.setWidthPercentage(100);
@@ -1867,9 +1886,9 @@ public class CreditCompanyDueController implements Serializable {
             grandLabel.setColspan(5);
             grandLabel.setHorizontalAlignment(Element.ALIGN_RIGHT);
             table.addCell(grandLabel);
-            addRightCell(table, df.format(finalTotal), boldFont);
-            addRightCell(table, df.format(finalPaidTotal), boldFont);
-            addRightCell(table, df.format(finalTotal - finalPaidTotal), boldFont);
+            addRightCell(table, df.format(grandTotal), boldFont);
+            addRightCell(table, df.format(grandPaid), boldFont);
+            addRightCell(table, df.format(grandTotal - grandPaid), boldFont);
 
             document.add(table);
             document.close();
@@ -1877,6 +1896,36 @@ public class CreditCompanyDueController implements Serializable {
         } catch (Exception e) {
             Logger.getLogger(CreditCompanyDueController.class.getName()).log(Level.SEVERE, e.getMessage(), e);
         }
+    }
+
+    /**
+     * Landscape PDF options for the Inward Patient Due search export, which
+     * has 12 columns and wraps numbers in portrait.
+     */
+    public org.primefaces.component.export.PDFOptions getPdfExportOptions() {
+        org.primefaces.component.export.PDFOptions options = new org.primefaces.component.export.PDFOptions();
+        options.setOrientation(org.primefaces.component.export.PDFOrientationType.LANDSCAPE);
+        options.setCellFontSize("7");
+        options.setFacetFontSize("9");
+        return options;
+    }
+
+    /**
+     * Single-string table header (title, From and To) so the exporters, which
+     * read only the first component of a facet, keep both dates.
+     */
+    public String getPatientDueExportTitle() {
+        SimpleDateFormat sdf = new SimpleDateFormat(sessionController.getApplicationPreference().getLongDateTimeFormat());
+        return "Inward Patient Co-payment Due Search  From : " + (getFromDate() != null ? sdf.format(getFromDate()) : "-")
+                + "  To : " + (getToDate() != null ? sdf.format(getToDate()) : "-");
+    }
+
+    private String inwardCreditDueFilterLine() {
+        return "Institution : " + (institution != null ? institution.getName() : "All")
+                + "    Site : " + (site != null ? site.getName() : "All")
+                + "    Department : " + (department != null ? department.getName() : "All")
+                + "    Admission Type : " + (admissionType != null ? admissionType.getName() : "All")
+                + "    Payment Method : " + (paymentMethod != null ? paymentMethod.getLabel() : "All");
     }
 
     private void addRightCell(PdfPTable table, String text, Font font) {
