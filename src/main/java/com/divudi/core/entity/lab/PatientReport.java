@@ -943,16 +943,32 @@ public class PatientReport implements Serializable, RetirableEntity {
             boolean top1Unset = ii1.getRiTop() == 0.0;
             boolean top2Unset = ii2.getRiTop() == 0.0;
             if (top1Unset && top2Unset) {
-                // riTop is never configured for items such as antibiotics, so
-                // fall back to a stable, alphabetical order instead of an
-                // unconditional "greater than", which is not a valid
-                // comparator (violates antisymmetry and breaks
-                // Collections.sort with an IllegalArgumentException).
-                String n1 = ii1.getName() == null ? "" : ii1.getName();
-                String n2 = ii2.getName() == null ? "" : ii2.getName();
-                int nameCompare = n1.compareToIgnoreCase(n2);
-                if (nameCompare != 0) {
-                    return nameCompare;
+                // riTop is not set for antibiotics, nor for report fields that
+                // were never given a Top position. Antibiotics are listed A-Z.
+                // Other fields keep the order they were created in (the
+                // investigation item id), which is the order they were added
+                // when the report was first created, so reopening a saved
+                // report does not reshuffle them.
+                boolean ab1 = ii1.getIxItemType() == InvestigationItemType.Antibiotic;
+                boolean ab2 = ii2.getIxItemType() == InvestigationItemType.Antibiotic;
+                if (ab1 && ab2) {
+                    String n1 = ii1.getName() == null ? "" : ii1.getName();
+                    String n2 = ii2.getName() == null ? "" : ii2.getName();
+                    int nameCompare = n1.compareToIgnoreCase(n2);
+                    if (nameCompare != 0) {
+                        return nameCompare;
+                    }
+                    return compareByIdNullSafe(o1, o2);
+                }
+                if (ab1) {
+                    return 1;
+                }
+                if (ab2) {
+                    return -1;
+                }
+                int itemIdCompare = compareLongNullSafe(ii1.getId(), ii2.getId());
+                if (itemIdCompare != 0) {
+                    return itemIdCompare;
                 }
                 return compareByIdNullSafe(o1, o2);
             }
@@ -970,8 +986,10 @@ public class PatientReport implements Serializable, RetirableEntity {
         }
 
         private int compareByIdNullSafe(PatientReportItemValue o1, PatientReportItemValue o2) {
-            Long id1 = o1.getId();
-            Long id2 = o2.getId();
+            return compareLongNullSafe(o1.getId(), o2.getId());
+        }
+
+        private int compareLongNullSafe(Long id1, Long id2) {
             if (id1 == null && id2 == null) {
                 return 0;
             }

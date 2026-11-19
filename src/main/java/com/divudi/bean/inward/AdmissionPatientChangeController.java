@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.Map;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
+import javax.faces.context.FacesContext;
 import javax.inject.Inject;
 import javax.inject.Named;
 
@@ -99,6 +100,8 @@ public class AdmissionPatientChangeController implements Serializable, Controlle
         prepareForNew();
         current = admissionController.getCurrent();
         if (current != null) {
+            // Keep loadAdmission()'s messages across the redirect below, or they never show.
+            FacesContext.getCurrentInstance().getExternalContext().getFlash().setKeepMessages(true);
             loadAdmission();
         }
         return "/inward/inward_change_patient?faces-redirect=true";
@@ -157,6 +160,10 @@ public class AdmissionPatientChangeController implements Serializable, Controlle
 
         // Store the original patient
         originalPatient = current.getPatient();
+        if (originalPatient == null) {
+            JsfUtil.addErrorMessage("The selected admission has no patient");
+            return;
+        }
 
         // Initialize new patient as null (will be selected by user)
         newPatient = null;
@@ -167,11 +174,31 @@ public class AdmissionPatientChangeController implements Serializable, Controlle
     }
 
     /**
+     * Always take the original patient from the selected admission. The user
+     * can load one admission, then pick another without pressing Load, so a
+     * value kept from an earlier load can be stale. Call this before the new
+     * patient is assigned to the admission.
+     *
+     * @return true if an original patient is available
+     */
+    private boolean resolveOriginalPatient() {
+        if (current != null) {
+            originalPatient = current.getPatient();
+        }
+        return originalPatient != null;
+    }
+
+    /**
      * Prepare to confirm the patient change
      */
     public void prepareConfirmation() {
         if (current == null) {
             JsfUtil.addErrorMessage("No admission selected");
+            return;
+        }
+
+        if (!resolveOriginalPatient()) {
+            JsfUtil.addErrorMessage("The selected admission has no patient. Please select an admission first.");
             return;
         }
 
@@ -214,6 +241,11 @@ public class AdmissionPatientChangeController implements Serializable, Controlle
             return "";
         }
 
+        if (!resolveOriginalPatient()) {
+            JsfUtil.addErrorMessage("The selected admission has no patient. Please select an admission first.");
+            return "";
+        }
+
         if (originalPatient.getId().equals(newPatient.getId())) {
             JsfUtil.addErrorMessage("Cannot change to the same patient");
             return "";
@@ -252,6 +284,7 @@ public class AdmissionPatientChangeController implements Serializable, Controlle
             return destination;
 
         } catch (Exception e) {
+            current.setPatient(originalPatient);
             JsfUtil.addErrorMessage("Error changing patient: " + e.getMessage());
             return "";
         }
