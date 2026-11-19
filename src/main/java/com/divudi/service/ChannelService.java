@@ -3183,7 +3183,9 @@ public class ChannelService {
         }
 
         if (SecurityController.matchPassword(temPassword, u.getWebUserPassword())) {
-
+            if (configOptionApplicationController.doesTwoFactorApplyToServiceLogin(u)) {
+                return null;
+            }
             return u;
         }
 

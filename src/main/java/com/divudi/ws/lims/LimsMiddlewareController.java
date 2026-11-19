@@ -5,6 +5,7 @@
  */
 package com.divudi.ws.lims;
 
+import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.SecurityController;
 import com.divudi.core.entity.WebUser;
 import com.divudi.core.facade.BillFacade;
@@ -111,6 +112,8 @@ public class LimsMiddlewareController {
     @EJB
     InvestigationItemValueFlagFacade iivfFacade;
 
+    @Inject
+    ConfigOptionApplicationController configOptionApplicationController;
     @Inject
     DepartmentMachineController departmentMachineController;
     @Inject
@@ -1964,6 +1967,9 @@ public class LimsMiddlewareController {
         }
 
         if (SecurityController.matchPassword(temPassword, u.getWebUserPassword())) {
+            if (configOptionApplicationController.doesTwoFactorApplyToServiceLogin(u)) {
+                return null;
+            }
             return u;
         }
         return null;

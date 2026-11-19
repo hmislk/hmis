@@ -7,6 +7,7 @@ package com.divudi.ws.lims;
 
 import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.ItemController;
+import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.SecurityController;
 import com.divudi.bean.pharmacy.StockController;
 import com.divudi.core.data.InvestigationItemType;
@@ -84,6 +85,8 @@ public class Lims {
     WebUserFacade webUserFacade;
     @EJB
     ItemFacade itemFacade;
+    @Inject
+    ConfigOptionApplicationController configOptionApplicationController;
     @Inject
     ItemController itemController;
     @Inject
@@ -1240,6 +1243,9 @@ public class Lims {
         }
 
         if (SecurityController.matchPassword(temPassword, u.getWebUserPassword())) {
+            if (configOptionApplicationController.doesTwoFactorApplyToServiceLogin(u)) {
+                return null;
+            }
             return u;
         }
         return null;

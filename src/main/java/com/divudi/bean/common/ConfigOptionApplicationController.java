@@ -1980,6 +1980,36 @@ public class ConfigOptionApplicationController implements Serializable {
         return getBooleanValueByKey("Require authenticator app two-factor login for all users", false);
     }
 
+    /**
+     * Whether a second login step applies to the user: the master switch is on
+     * and the user is linked, required (or everyone is required), or allowed
+     * SMS codes. Entry points that have no second login step must refuse such users.
+     */
+    public boolean doesTwoFactorApplyTo(WebUser u) {
+        if (u == null || !isAuthenticatorAppTwoFactorLoginEnabled()) {
+            return false;
+        }
+        return isAuthenticatorAppTwoFactorLoginRequiredForAllUsers()
+                || u.isTwoFactorRequired()
+                || u.isTwoFactorEnrolled()
+                || (isTwoFactorSmsLoginEnabled() && u.isTwoFactorSmsAllowed());
+    }
+
+    /**
+     * Same check for machine-to-machine logins (lab analyzers, middleware,
+     * channel agency API). The "for all users" switch is not applied, so
+     * service accounts keep working; only a user who is individually linked,
+     * flagged as required, or allowed SMS codes is refused.
+     */
+    public boolean doesTwoFactorApplyToServiceLogin(WebUser u) {
+        if (u == null || !isAuthenticatorAppTwoFactorLoginEnabled()) {
+            return false;
+        }
+        return u.isTwoFactorRequired()
+                || u.isTwoFactorEnrolled()
+                || (isTwoFactorSmsLoginEnabled() && u.isTwoFactorSmsAllowed());
+    }
+
     public String getAuthenticatorAppIssuerName() {
         return getShortTextValueByKey("Authenticator app issuer name", "HMIS");
     }

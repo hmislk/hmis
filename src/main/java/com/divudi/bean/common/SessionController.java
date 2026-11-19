@@ -1361,6 +1361,10 @@ public class SessionController implements Serializable, HttpSessionListener {
                         JsfUtil.addErrorMessage("Login not allowed from this IP address for this user.");
                         return false;
                     }
+                    if (configOptionApplicationController.doesTwoFactorApplyTo(u)) {
+                        JsfUtil.addErrorMessage("Please use the main login page.");
+                        return false;
+                    }
                     if (!canLogToDept(u, department)) {
                         JsfUtil.addErrorMessage("No privilage to Login This Department");
                         return false;
@@ -1499,6 +1503,10 @@ public class SessionController implements Serializable, HttpSessionListener {
         }
 
         if (SecurityController.matchPassword(temPassword, u.getWebUserPassword())) {
+            if (configOptionApplicationController.doesTwoFactorApplyTo(u)) {
+                loginRequestResponse += "Login=0|Use the main login page|}";
+                return false;
+            }
 
             setLoggedUser(u);
             loggableDepartments = fillLoggableDepts();
@@ -1546,6 +1554,10 @@ public class SessionController implements Serializable, HttpSessionListener {
         }
 
         if (SecurityController.matchPassword(temPassword, u.getWebUserPassword())) {
+            if (configOptionApplicationController.doesTwoFactorApplyTo(u)) {
+                loginRequestResponse += "Login=0|Use the main login page|}";
+                return false;
+            }
             setLoggedUser(u);
             loggableDepartments = fillLoggableDepts();
 //            loggableSubDepartments = fillLoggableSubDepts(loggableDepartments);
@@ -1684,6 +1696,8 @@ public class SessionController implements Serializable, HttpSessionListener {
                     loadDashboards();
                     System.out.println("DEBUG: loadDashboards() took " + (System.currentTimeMillis() - dashboardStartTime) + "ms");
                     setLogged(true);
+                    twoFactorAuthController.clearReloginRequired();
+                    rotateSessionId();
                     setActivated(u.isActivated());
                     setRole(u.getRole());
 
@@ -2254,7 +2268,26 @@ public class SessionController implements Serializable, HttpSessionListener {
         this.applicationController = applicationController;
     }
 
+    /**
+     * Gives the browser a new session id once a login is complete. The session
+     * and its session-scoped beans are kept.
+     */
+    private void rotateSessionId() {
+        FacesContext ctx = FacesContext.getCurrentInstance();
+        if (ctx == null) {
+            return;
+        }
+        Object req = ctx.getExternalContext().getRequest();
+        if (req instanceof HttpServletRequest) {
+            HttpServletRequest hr = (HttpServletRequest) req;
+            if (hr.getSession(false) != null) {
+                hr.changeSessionId();
+            }
+        }
+    }
+
     public void logout() {
+        twoFactorAuthController.resetForLogout();
         userPrivilages = null;
         websiteUserGoingToLog = false;
         recordLogout();

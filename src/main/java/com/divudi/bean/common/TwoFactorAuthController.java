@@ -79,6 +79,8 @@ public class TwoFactorAuthController implements Serializable {
     @Inject
     private SessionController sessionController;
     @Inject
+    private WebUserController webUserController;
+    @Inject
     private SecurityController securityController;
     @Inject
     private ConfigOptionApplicationController configOptionApplicationController;
@@ -188,6 +190,21 @@ public class TwoFactorAuthController implements Serializable {
      */
     public void markReloginRequired() {
         reloginRequired = true;
+    }
+
+    public void clearReloginRequired() {
+        reloginRequired = false;
+    }
+
+    /**
+     * Drops every pending or in-progress two-factor state of the session.
+     */
+    public void resetForLogout() {
+        reloginRequired = false;
+        selfSetupSecret = null;
+        selfSetupCode = null;
+        selfSetupFailedAttempts = 0;
+        clearChallenge();
     }
 
     public void startChallenge(WebUser u) {
@@ -437,6 +454,10 @@ public class TwoFactorAuthController implements Serializable {
      * user sets it up again at the next login.
      */
     public void resetAuthenticator(WebUser user) {
+        if (!sessionController.isLogged() || !webUserController.hasPrivilege("AdminManagingUsers")) {
+            JsfUtil.addErrorMessage("You are not allowed to do this. Ask an administrator.");
+            return;
+        }
         if (user == null || user.getId() == null) {
             JsfUtil.addErrorMessage("Select a user");
             return;
@@ -462,6 +483,10 @@ public class TwoFactorAuthController implements Serializable {
      * authenticator codes.
      */
     public void unlockAccount(WebUser user) {
+        if (!sessionController.isLogged() || !webUserController.hasPrivilege("AdminManagingUsers")) {
+            JsfUtil.addErrorMessage("You are not allowed to do this. Ask an administrator.");
+            return;
+        }
         if (user == null || user.getId() == null) {
             JsfUtil.addErrorMessage("Select a user");
             return;
@@ -482,6 +507,10 @@ public class TwoFactorAuthController implements Serializable {
      * Authenticator App.
      */
     public void resetSmsMobile(WebUser user) {
+        if (!sessionController.isLogged() || !webUserController.hasPrivilege("AdminManagingUsers")) {
+            JsfUtil.addErrorMessage("You are not allowed to do this. Ask an administrator.");
+            return;
+        }
         if (user == null || user.getId() == null) {
             JsfUtil.addErrorMessage("Select a user");
             return;

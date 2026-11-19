@@ -1,5 +1,6 @@
 package com.divudi.ws.lims;
 
+import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.SecurityController;
 import com.divudi.core.data.lab.Analyzer;
 import java.util.ArrayList;
@@ -38,6 +39,8 @@ public class MiddlewareController {
     @EJB
     PatientSampleFacade patientSampleFacade;
 
+    @Inject
+    ConfigOptionApplicationController configOptionApplicationController;
     @Inject
     LimsMiddlewareController limsMiddlewareController;
 
@@ -239,6 +242,9 @@ public class MiddlewareController {
         }
 
         if (SecurityController.matchPassword(temPassword, u.getWebUserPassword())) {
+            if (configOptionApplicationController.doesTwoFactorApplyToServiceLogin(u)) {
+                return null;
+            }
             return u;
         }
         return null;
