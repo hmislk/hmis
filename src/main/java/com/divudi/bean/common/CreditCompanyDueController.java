@@ -606,7 +606,12 @@ public class CreditCompanyDueController implements Serializable {
             }
         }
 
-        List<Bill> bills = billFacade.findByJpql(jpql, parameters, TemporalType.TIMESTAMP);
+        // The TIMESTAMP overload is needed only for the date range; the other
+        // callers keep the original overload, which returns an empty list on a
+        // query error instead of throwing.
+        List<Bill> bills = applyDateRange
+                ? billFacade.findByJpql(jpql, parameters, TemporalType.TIMESTAMP)
+                : billFacade.findByJpql(jpql, parameters);
 
         return bills.stream()
                 .filter(b -> b.getCreditCompany() != null)
