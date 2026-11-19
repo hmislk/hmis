@@ -59,6 +59,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Base64;
 import java.util.Calendar;
 import java.util.Collections;
@@ -66,6 +67,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
@@ -83,6 +86,8 @@ import org.primefaces.model.file.UploadedFile;
 @Named
 @SessionScoped
 public class InwardSearch implements Serializable {
+
+    private static final Logger LOGGER = Logger.getLogger(InwardSearch.class.getName());
 
     /**
      * EJBs
@@ -2478,6 +2483,7 @@ public class InwardSearch implements Serializable {
             getBill().setCancelled(true);
             getBill().setCancelledBill(cb);
             getBillFacade().edit(getBill());
+            clearOriginalRefundedFlagIfNoActiveRefunds(getBill());
 
             List<Payment> payments = createReversalPayments(cb, getBill(), cb.getPaymentMethod());
             if (payments == null) {
@@ -2501,6 +2507,65 @@ public class InwardSearch implements Serializable {
             return;
         }
 
+    }
+
+    /**
+     * After a deposit/payment refund is cancelled, frees the original bill
+     * when no other active refund remains, so it can be cancelled or refunded
+     * again (#25751). If other active refunds remain, keeps the original marked
+     * refunded and points it at the latest active one. A failure here is logged
+     * and never reported as a failed cancellation.
+     *
+     * @param cancelledRefund the refund bill that was just cancelled
+     */
+    private void clearOriginalRefundedFlagIfNoActiveRefunds(Bill cancelledRefund) {
+        try {
+            Bill originalRef = cancelledRefund.getReferenceBill();
+            if (originalRef == null || originalRef.getId() == null) {
+                return;
+            }
+            Bill original = getBillFacade().find(originalRef.getId());
+            if (original == null || !original.isRefunded()) {
+                return;
+            }
+            Map<String, Object> params = new HashMap<>();
+            params.put("origId", original.getId());
+            params.put("btas", Arrays.asList(
+                    BillTypeAtomic.INWARD_DEPOSIT_REFUND,
+                    BillTypeAtomic.INWARD_PAYMENT_REFUND));
+            // countByJpql, not findLongByJpql: findLongByJpql swallows a failure and returns 0,
+            // which would wrongly free the original while a refund is still active.
+            Long activeRefunds = getBillFacade().countByJpql(
+                    "SELECT COUNT(r) FROM Bill r WHERE r.referenceBill.id = :origId "
+                    + "AND r.billTypeAtomic IN :btas "
+                    + "AND r.cancelled = false "
+                    + "AND r.retired = false",
+                    params);
+            if (activeRefunds == null) {
+                return;
+            }
+            if (activeRefunds == 0L) {
+                original.setRefunded(false);
+                original.setRefundedBill(null);
+                getBillFacade().edit(original);
+            } else if (original.getRefundedBill() != null
+                    && cancelledRefund.getId() != null
+                    && cancelledRefund.getId().equals(original.getRefundedBill().getId())) {
+                Bill latest = getBillFacade().findFirstByJpql(
+                        "SELECT r FROM Bill r WHERE r.referenceBill.id = :origId "
+                        + "AND r.billTypeAtomic IN :btas "
+                        + "AND r.cancelled = false "
+                        + "AND r.retired = false ORDER BY r.id DESC",
+                        params);
+                if (latest != null) {
+                    original.setRefundedBill(latest);
+                    getBillFacade().edit(original);
+                }
+            }
+        } catch (RuntimeException e) {
+            LOGGER.log(Level.SEVERE, "Could not recalculate the refunded flag of the original bill after cancelling refund bill id "
+                    + (cancelledRefund == null ? null : cancelledRefund.getId()), e);
+        }
     }
 
     public boolean cancelBillPayment(Bill bill) {
@@ -3399,6 +3464,8 @@ public class InwardSearch implements Serializable {
             BillFee bf = new BillFee();
             bf.copy(nB);
             bf.invertValue(nB);
+            // A reversal mirrors its original, so a doctor-collected fee stays out of the sums (#17490).
+            bf.setCollectedByDoctorAtBilling(nB.isCollectedByDoctorAtBilling());
 
             bf.setBill(can);
             bf.setBillItem(bt);
@@ -3451,6 +3518,8 @@ public class InwardSearch implements Serializable {
             BillFee bf = new BillFee();
             bf.copy(nB);
             bf.invertValue(nB);
+            // A reversal mirrors its original, so a doctor-collected fee stays out of the sums (#17490).
+            bf.setCollectedByDoctorAtBilling(nB.isCollectedByDoctorAtBilling());
 
             bf.setBill(can);
             bf.setBillItem(bt);

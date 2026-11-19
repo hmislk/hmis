@@ -8592,6 +8592,7 @@ public class SearchController implements Serializable {
                 //Ending of newly added code
                 + " and b.fee.feeType=:feeType"
                 + " and (b.feeValue - b.paidValue) > 0"
+                + " and (b.collectedByDoctorAtBilling = false or b.collectedByDoctorAtBilling is null) "
                 //                + " and  b.bill.billTime between :fromDate and :toDate ";
                 + " and  b.bill.createdAt between :fromDate and :toDate ";
 
@@ -8686,6 +8687,7 @@ public class SearchController implements Serializable {
                 //Ending of newly added code
                 + " and b.fee.feeType=:feeType"
                 + " and (b.feeValue - b.paidValue) > 0"
+                + " and (b.collectedByDoctorAtBilling = false or b.collectedByDoctorAtBilling is null) "
                 //                + " and  b.bill.billTime between :fromDate and :toDate ";
                 + " and  b.bill.createdAt between :fromDate and :toDate ";
 
@@ -8762,6 +8764,7 @@ public class SearchController implements Serializable {
                 + " and (b.bill.billType=:btp or b.bill.billType=:btp2 )"
                 + " and b.fee.feeType=:feeType"
                 + " and (b.feeValue - b.paidValue) > 0"
+                + " and (b.collectedByDoctorAtBilling = false or b.collectedByDoctorAtBilling is null) "
                 + " and  b.bill.billDate between :fromDate and :toDate ";
 
         if (getSearchKeyword().getPatientName() != null && !getSearchKeyword().getPatientName().trim().equals("")) {
@@ -8886,6 +8889,7 @@ public class SearchController implements Serializable {
                 + " and (b.bill.billType=:btp or b.bill.billType=:btp2 )"
                 + " and b.bill.cancelled=false "
                 + " and (b.feeValue - b.paidValue) > 0"
+                + " and (b.collectedByDoctorAtBilling = false or b.collectedByDoctorAtBilling is null) "
                 + " and  b.bill.billDate between :fromDate and :toDate ";
 
         if (getSearchKeyword().getPatientName() != null && !getSearchKeyword().getPatientName().trim().equals("")) {
@@ -17782,6 +17786,7 @@ public class SearchController implements Serializable {
                 + " and b.bill.billType in :bts "
                 + " and b.bill.cancelled=false "
                 + " and (b.feeValue - b.paidValue) > 0 "
+                + " and (b.collectedByDoctorAtBilling = false or b.collectedByDoctorAtBilling is null) "
                 + " and b.bill.createdAt between :fromDate and :toDate ";
 
         sql += " order by b.staff.person.name ";

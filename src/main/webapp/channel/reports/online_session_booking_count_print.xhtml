@@ -63,6 +63,11 @@
                                                 pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
                                         </h:outputText>
                                     </div>
+                                    <div class="d-flex justify-content-center text-5 gap-2"
+                                         style="font-weight: 600; font-size: 15px;margin-bottom: 5px;">
+                                        <h:outputText value="Report Type - "/>
+                                        <h:outputText value="#{channelReportTemplateController.generatedReportTypeInOBReport}"/>
+                                    </div>
                                 </div>
 
                                 <div>
@@ -95,6 +100,14 @@
                                                 </f:facet>
                                                 <h:outputText value="#{a.sessionDate}" >
                                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"  />
+                                                </h:outputText>
+                                            </p:column>
+                                            <p:column width="20mm">
+                                                <f:facet name="header">
+                                                    <h:outputText value="Booked Date" />
+                                                </f:facet>
+                                                <h:outputText value="#{a.bookedDate}" >
+                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
                                                 </h:outputText>
                                             </p:column>
                                             <p:column width="30mm">
