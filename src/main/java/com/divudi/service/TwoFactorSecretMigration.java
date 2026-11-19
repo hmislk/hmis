@@ -1,0 +1,74 @@
+package com.divudi.service;
+
+import com.divudi.bean.common.SecurityController;
+import com.divudi.core.entity.WebUser;
+import com.divudi.core.facade.WebUserFacade;
+import com.divudi.core.util.TwoFactorSecretCipher;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.ejb.EJB;
+import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.context.Initialized;
+import javax.enterprise.event.Observes;
+
+/**
+ * At startup, re-encrypts authenticator secrets still saved by the older
+ * scheme under this server's own key (see TwoFactorSecretCipher). Does
+ * nothing when the key is not configured. Secrets of users who log in are
+ * also re-encrypted at login, so a failure here only delays the change.
+ *
+ * Uses the CDI @Initialized observer, not an EJB @Startup singleton, for the
+ * reason given in ApplicationStartupTimeService.
+ *
+ * @author H.K. Damith Deshan | hkddrajapaksha@gmail.com
+ */
+@ApplicationScoped
+public class TwoFactorSecretMigration {
+
+    private static final Logger LOGGER = Logger.getLogger(TwoFactorSecretMigration.class.getName());
+
+    @EJB
+    private WebUserFacade webUserFacade;
+
+    public void onStartup(@Observes @Initialized(ApplicationScoped.class) Object ignored) {
+        try {
+            reencryptLegacySecrets();
+        } catch (Throwable t) {
+            // Never block deployment; logins re-encrypt the secrets as users sign in
+            LOGGER.log(Level.WARNING, "Two-factor secret re-encryption skipped", t);
+        }
+    }
+
+    public int reencryptLegacySecrets() {
+        if (!TwoFactorSecretCipher.isKeyConfigured()) {
+            return 0;
+        }
+        String jpql = "select u from WebUser u"
+                + " where u.twoFactorSecret is not null"
+                + " and u.twoFactorSecret not like :prefix";
+        Map<String, Object> m = new HashMap<>();
+        m.put("prefix", "gcm1:%");
+        List<WebUser> users = webUserFacade.findByJpql(jpql, m);
+        int done = 0;
+        for (WebUser u : users) {
+            String plain = SecurityController.decryptLegacy(u.getTwoFactorSecret());
+            if (plain == null) {
+                continue;
+            }
+            String stored = TwoFactorSecretCipher.encrypt(plain);
+            if (stored == null) {
+                continue;
+            }
+            u.setTwoFactorSecret(stored);
+            webUserFacade.edit(u);
+            done++;
+        }
+        if (done > 0) {
+            LOGGER.log(Level.INFO, "Re-encrypted {0} two-factor secret(s) under the server key", done);
+        }
+        return done;
+    }
+}
