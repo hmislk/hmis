@@ -805,6 +805,7 @@
                                                      update="@form"
                                                      action="#{twoFactorSmsController.confirmSetupProofCode()}" />
                                     <p:commandButton id="btnSendSetupProof"
+                                                     widgetVar="wvSendSetupProof"
                                                      rendered="#{not empty twoFactorSmsController.loggedUserStaffMobileMasked}"
                                                      value="#{twoFactorSmsController.setupProofCodeSent ? 'Resend Code' : 'Send Code'}"
                                                      icon="fa fa-paper-plane"
@@ -824,6 +825,16 @@
                                 </div>
                                 <h:panelGroup rendered="#{twoFactorSmsController.setupProofCodeSent}">
                                     <p:defaultCommand target="btnConfirmSetupProof" />
+                                </h:panelGroup>
+                                <!-- The button renders disabled during the resend wait; enable it when the wait ends -->
+                                <h:panelGroup rendered="#{not empty twoFactorSmsController.loggedUserStaffMobileMasked and twoFactorSmsController.setupProofResendSecondsLeft gt 0}">
+                                    <script>
+                                        setTimeout(function () {
+                                            if (window.PF &amp;&amp; PF('wvSendSetupProof')) {
+                                                PF('wvSendSetupProof').enable();
+                                            }
+                                        }, #{twoFactorSmsController.setupProofResendSecondsLeft} * 1000);
+                                    </script>
                                 </h:panelGroup>
                             </div>
                         </h:panelGroup>
