@@ -177,7 +177,13 @@ public class InwardDepositController implements Serializable, ControllerWithMult
         if (current == null || current.getPatientEncounter() == null) {
             return 0.0;
         }
-        return current.getPatientEncounter().getCreditUsedAmount();
+        PatientEncounter pe = current.getPatientEncounter();
+        Bill finalBill = pe.getFinalBill();
+        if (finalBill == null || finalBill.getId() == null) {
+            return pe.getCreditUsedAmount();
+        }
+        double[] f = commitmentFigures(finalBill);
+        return f != null ? f[0] : pe.getCreditUsedAmount();
     }
 
     /** CC amount already received from credit companies for this admission. */
@@ -185,7 +191,32 @@ public class InwardDepositController implements Serializable, ControllerWithMult
         if (current == null || current.getPatientEncounter() == null) {
             return 0.0;
         }
-        return current.getPatientEncounter().getCreditPaidAmount();
+        Bill finalBill = current.getPatientEncounter().getFinalBill();
+        if (finalBill == null || finalBill.getId() == null) {
+            return 0.0;
+        }
+        double[] f = commitmentFigures(finalBill);
+        return f != null ? f[1] : finalBill.getSettledAmountBySponsor();
+    }
+
+    /** {committed, paid} summed over the final bill's commitment bills, or null when it has none. */
+    private double[] commitmentFigures(Bill finalBill) {
+        String jpql = "SELECT SUM(c.netTotal), SUM(c.settledAmountBySponsor), COUNT(c) FROM Bill c"
+                + " WHERE c.billTypeAtomic = :bta"
+                + " AND c.referenceBill.id = :fbId"
+                + " AND c.cancelled = false"
+                + " AND c.retired = false";
+        HashMap<String, Object> m = new HashMap<>();
+        m.put("bta", BillTypeAtomic.INWARD_FINAL_BILL_PAYMENT_BY_CREDIT_COMPANY);
+        m.put("fbId", finalBill.getId());
+        List<Object[]> rows = getBilledBillFacade().findAggregates(jpql, m);
+        if (rows == null || rows.isEmpty() || rows.get(0)[2] == null || ((Number) rows.get(0)[2]).longValue() == 0) {
+            return null;
+        }
+        Object[] r = rows.get(0);
+        return new double[]{
+            r[0] == null ? 0.0 : ((Number) r[0]).doubleValue(),
+            r[1] == null ? 0.0 : ((Number) r[1]).doubleValue()};
     }
 
     public double getFinalBillTotal() {

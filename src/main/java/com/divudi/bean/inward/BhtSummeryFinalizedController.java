@@ -495,6 +495,10 @@ public class BhtSummeryFinalizedController implements Serializable {
                 if (bi.getInwardChargeType() == InwardChargeType.VAT || bi.getInwardChargeType() == InwardChargeType.HospitalSupportService) {
                     vat += bi.getNetValue();
                 }
+                // Computed VAT line (#25766): amount is on the item; Bill.vat is not read here.
+                if (bi.getInwardChargeType() == InwardChargeType.ComputedVAT) {
+                    vat += bi.getVat();
+                }
                 if (bi.getInwardChargeType() == InwardChargeType.Medicine) {
                     med += bi.getNetValue();
                 }
@@ -505,6 +509,7 @@ public class BhtSummeryFinalizedController implements Serializable {
                 if (bi.getInwardChargeType() != InwardChargeType.ProfessionalCharge && bi.getInwardChargeType() != InwardChargeType.DoctorAndNurses
                         && bi.getInwardChargeType() != InwardChargeType.TechnicianAndParamedicalCharge
                         && bi.getInwardChargeType() != InwardChargeType.Medicine && bi.getInwardChargeType() != InwardChargeType.VAT
+                        && bi.getInwardChargeType() != InwardChargeType.ComputedVAT
                         && bi.getInwardChargeType() != InwardChargeType.RoomCharges
                         && bi.getInwardChargeType() != InwardChargeType.HospitalSupportService) {
                     hos += bi.getNetValue();
@@ -850,6 +855,7 @@ public class BhtSummeryFinalizedController implements Serializable {
 
     public void makeNullList() {
         patientRooms = null;
+        chargeTypeTotals = null;
         billItems = null;
         proBillFee = null;
         assistBillFee = null;
@@ -890,6 +896,7 @@ public class BhtSummeryFinalizedController implements Serializable {
         List<PatientEncounter> cpts = getInwardBean().fetchChildPatientEncounter(patientEncounter);
         makeNullList();
         patientRooms = getInwardBean().fetchPatientRoomAll(getPatientEncounter(),cpts);
+        chargeTypeTotals = createChargeTypeTotals();
         billItems = getInwardBean().fetchEagerBillItems(getPatientEncounter());
         billFees = getInwardBean().fetchBillFees(getPatientEncounter());
         patientItems = getInwardBean().fetchPatientItem(getPatientEncounter(),cpts);
@@ -912,6 +919,93 @@ public class BhtSummeryFinalizedController implements Serializable {
             creditCompanyCommittedPaidTotal += c.getSettledAmountBySponsor();
         }
 
+    }
+
+    /**
+     * One row of the "Charge Type Totals" table: a final-bill heading and its total.
+     */
+    public static class ChargeTypeTotal implements java.io.Serializable {
+
+        private final String heading;
+        private final double total;
+
+        public ChargeTypeTotal(String heading, double total) {
+            this.heading = heading;
+            this.total = total;
+        }
+
+        public String getHeading() {
+            return heading;
+        }
+
+        public double getTotal() {
+            return total;
+        }
+    }
+
+    @Inject
+    private com.divudi.bean.common.ConfigOptionApplicationController configOptionApplicationController;
+    @Inject
+    private com.divudi.bean.common.ConfigOptionController configOptionController;
+
+    private List<ChargeTypeTotal> chargeTypeTotals;
+    private double finalBillDiscount;
+    private double finalBillNetTotal;
+
+    /**
+     * Headings and totals read from the settled final bill itself (its bill
+     * items hold the amount each heading printed, margin included), grouped and
+     * named the way the final bill prints them: the Final Bill label, and the
+     * Final Bill Group when "Inward Final Bill - Bundle Grouped Charge Types" is
+     * on. Uses {@link BhtSummeryController#buildBundledRows}, the same row
+     * builder as the bundled final bill (issue #17560).
+     */
+    private List<ChargeTypeTotal> createChargeTypeTotals() {
+        List<ChargeTypeTotal> rows = new ArrayList<>();
+        finalBillDiscount = 0.0;
+        finalBillNetTotal = 0.0;
+        if (getPatientEncounter() == null) {
+            return rows;
+        }
+        Bill finalBill = getPatientEncounter().getFinalBill();
+        if (finalBill == null) {
+            return rows;
+        }
+        finalBillDiscount = finalBill.getDiscount();
+        finalBillNetTotal = finalBill.getNetTotal();
+        List<BillItem> items = finalBill.getBillItems();
+        if (items == null) {
+            return rows;
+        }
+        boolean bundled = configOptionController.getBooleanValueByKeyReadOnly("Inward Final Bill - Bundle Grouped Charge Types", false);
+        Map<InwardChargeType, String> groupByType = new java.util.EnumMap<>(InwardChargeType.class);
+        Map<InwardChargeType, Integer> orderByType = new java.util.EnumMap<>(InwardChargeType.class);
+        Map<InwardChargeType, String> labelByType = new java.util.EnumMap<>(InwardChargeType.class);
+        for (BillItem bi : items) {
+            InwardChargeType type = bi == null ? null : bi.getInwardChargeType();
+            if (type == null || groupByType.containsKey(type)) {
+                continue;
+            }
+            groupByType.put(type, bundled ? configOptionApplicationController.getInwardChargeTypeFinalBillGroup(type) : "");
+            orderByType.put(type, configOptionApplicationController.getInwardChargeTypeFinalBillOrder(type));
+            labelByType.put(type, configOptionApplicationController.getInwardChargeTypeFinalBillLabel(type));
+        }
+        for (com.divudi.core.data.dto.FinalBillPrintRowDTO r : BhtSummeryController.buildBundledRows(items, groupByType, orderByType, labelByType)) {
+            rows.add(new ChargeTypeTotal(r.getLabel(), r.getAmount()));
+        }
+        return rows;
+    }
+
+    public double getFinalBillDiscount() {
+        return finalBillDiscount;
+    }
+
+    public double getFinalBillNetTotal() {
+        return finalBillNetTotal;
+    }
+
+    public List<ChargeTypeTotal> getChargeTypeTotals() {
+        return chargeTypeTotals;
     }
 
     /**

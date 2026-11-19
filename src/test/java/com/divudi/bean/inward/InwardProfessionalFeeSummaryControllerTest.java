@@ -52,4 +52,13 @@ class InwardProfessionalFeeSummaryControllerTest {
     void sumOtherGross_returnsZero_whenMapIsEmpty() {
         assertEquals(0.0, InwardProfessionalFeeSummaryController.sumOtherGross(new EnumMap<>(InwardChargeType.class)));
     }
+
+    @Test
+    void sumOtherGross_leavesOutComputedVat() {
+        Map<InwardChargeType, Double> charges = new EnumMap<>(InwardChargeType.class);
+        charges.put(InwardChargeType.RoomCharges, 1000.0);
+        charges.put(InwardChargeType.ComputedVAT, 180.0);
+
+        assertEquals(1000.0, InwardProfessionalFeeSummaryController.sumOtherGross(charges));
+    }
 }
