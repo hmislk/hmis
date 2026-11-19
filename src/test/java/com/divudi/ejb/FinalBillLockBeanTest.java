@@ -228,4 +228,18 @@ public class FinalBillLockBeanTest {
         assertEquals("delegated-outside-ok", resultOutside);
         assertTrue(outsideDelegated.get(), "BillNumberGenerator must invoke FinalBillLockBean.withFinalBillVersionLockOutsideTransaction");
     }
+    @Test
+    @DisplayName("A nested call for the same admission on the same thread runs inline, inside the outer call")
+    public void testNestedCallRunsInline() {
+        PatientEncounter pe = createEncounter(303L);
+        AtomicInteger order = new AtomicInteger();
+        Integer result = lockBean.withFinalBillVersionLock(pe, () -> {
+            order.compareAndSet(0, 1);
+            Integer inner = lockBean.withFinalBillVersionLock(pe, () -> order.compareAndSet(1, 2) ? 7 : -1);
+            order.compareAndSet(2, 3);
+            return inner;
+        });
+        assertEquals(7, result);
+        assertEquals(3, order.get());
+    }
 }

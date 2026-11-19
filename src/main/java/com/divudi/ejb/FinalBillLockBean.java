@@ -38,15 +38,36 @@ public class FinalBillLockBean {
      * for the same admission serialise on this lock, while actions for different
      * admissions execute in parallel.
      *
-     * <p>The public method runs with {@code NOT_SUPPORTED} so it does not join an
-     * existing container transaction. It acquires the per-admission lock, runs the
-     * action within a new transaction through {@link #executeInNewTransaction(Supplier)}
-     * on the bean's own EJB proxy, and commits before releasing the lock in {@code finally}.
+     * <p>A first call goes through {@link #lockAndRunInNewTransaction} ({@code NOT_SUPPORTED}):
+     * it acquires the per-admission lock, runs the action within a new transaction through
+     * {@link #executeInNewTransaction(Supplier)} on the bean's own EJB proxy, and commits
+     * before releasing the lock in {@code finally}. A nested call on the same thread, while
+     * the lock is held, runs the action directly in the outer call's transaction.
      * This prevents concurrent operations on the same admission from reading uncommitted
      * state or computing duplicate version serials (#25552).</p>
      */
-    @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public <T> T withFinalBillVersionLock(PatientEncounter pe, Supplier<T> action) {
+        // Nested call (e.g. saveBill() inside settle()): this thread already holds the lock and runs
+        // inside the outer call's transaction. SUPPORTS joins that transaction, so run the action there;
+        // starting another REQUIRES_NEW would commit part of the save on its own.
+        ReentrantLock held = lockMap.get("finalBillVersionSerial-" + pe.getId());
+        if (held != null && held.isHeldByCurrentThread()) {
+            return action.get();
+        }
+        if (sessionContext != null) {
+            return sessionContext.getBusinessObject(FinalBillLockBean.class).lockAndRunInNewTransaction(pe, action);
+        }
+        return lockAndRunInNewTransaction(pe, action);
+    }
+
+    /**
+     * Takes the per-admission lock with no transaction, runs the action in a new
+     * transaction and commits it before the lock is released. Call through
+     * {@link #withFinalBillVersionLock}.
+     */
+    @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
+    public <T> T lockAndRunInNewTransaction(PatientEncounter pe, Supplier<T> action) {
         String lockKey = "finalBillVersionSerial-" + pe.getId();
         ReentrantLock lock = lockMap.computeIfAbsent(lockKey, k -> new ReentrantLock());
         lock.lock();
@@ -66,7 +87,7 @@ public class FinalBillLockBean {
         return action.get();
     }
 
-    @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public void withFinalBillVersionLock(PatientEncounter pe, Runnable action) {
         withFinalBillVersionLock(pe, () -> {
             action.run();
