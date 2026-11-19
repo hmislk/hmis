@@ -4939,7 +4939,7 @@ public class CreditCompanyDueController implements Serializable {
             String1Value5 row = new String1Value5();
             String patientName = (pe.getPatient() != null && pe.getPatient().getPerson() != null)
                     ? pe.getPatient().getPerson().getNameWithTitle() : "";
-            row.setString((pe.getBhtNo() != null ? pe.getBhtNo() : "") + " – " + patientName);
+            row.setString((pe.getBhtNo() != null ? pe.getBhtNo() : "") + " - " + patientName);
             if (days <= 30) {
                 row.setValue1(due);
             } else if (days <= 60) {

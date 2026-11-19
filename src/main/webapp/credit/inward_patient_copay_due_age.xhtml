@@ -64,20 +64,20 @@
                         <f:facet name="header">
                             <h:outputText value="Inward Patient Co-payment Due Age (days since discharge)"/>
                         </f:facet>
-                        <p:column headerText="BHT – Patient Name" width="30em" filterBy="#{row.string}" filterMatchMode="contains">
+                        <p:column headerText="BHT - Patient Name" width="30em" filterBy="#{row.string}" filterMatchMode="contains">
                             <h:outputText value="#{row.string}"/>
                         </p:column>
-                        <p:column headerText="0–30" width="7em" styleClass="text-end">
+                        <p:column headerText="0-30" width="7em" styleClass="text-end">
                             <h:outputText value="#{row.value1}">
                                 <f:convertNumber pattern="#,##0.00"/>
                             </h:outputText>
                         </p:column>
-                        <p:column headerText="31–60" width="7em" styleClass="text-end">
+                        <p:column headerText="31-60" width="7em" styleClass="text-end">
                             <h:outputText value="#{row.value2}">
                                 <f:convertNumber pattern="#,##0.00"/>
                             </h:outputText>
                         </p:column>
-                        <p:column headerText="61–90" width="7em" styleClass="text-end">
+                        <p:column headerText="61-90" width="7em" styleClass="text-end">
                             <h:outputText value="#{row.value3}">
                                 <f:convertNumber pattern="#,##0.00"/>
                             </h:outputText>
