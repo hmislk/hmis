@@ -11,6 +11,7 @@ import javax.ejb.SessionContext;
 import javax.ejb.Singleton;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
+import javax.transaction.TransactionSynchronizationRegistry;
 
 /**
  * Dedicated lock manager for per-admission final bill operations.
@@ -31,6 +32,9 @@ public class FinalBillLockBean {
     @Resource
     private SessionContext sessionContext;
 
+    @Resource
+    private TransactionSynchronizationRegistry transactionRegistry;
+
     private final ConcurrentHashMap<String, ReentrantLock> lockMap = new ConcurrentHashMap<>();
 
     /**
@@ -48,12 +52,19 @@ public class FinalBillLockBean {
      */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public <T> T withFinalBillVersionLock(PatientEncounter pe, Supplier<T> action) {
-        // Nested call (e.g. saveBill() inside settle()): this thread already holds the lock and runs
-        // inside the outer call's transaction. SUPPORTS joins that transaction, so run the action there;
-        // starting another REQUIRES_NEW would commit part of the save on its own.
+        // Nested call (e.g. saveBill() inside settle()): this thread already holds the lock.
+        // When a transaction is active, SUPPORTS has joined it, so run the action there;
+        // another REQUIRES_NEW would commit part of the save on its own. With no
+        // transaction, keep the old behaviour: one new transaction for the action.
         ReentrantLock held = lockMap.get("finalBillVersionSerial-" + pe.getId());
         if (held != null && held.isHeldByCurrentThread()) {
-            return action.get();
+            if (isTransactionActive()) {
+                return action.get();
+            }
+            if (sessionContext != null) {
+                return sessionContext.getBusinessObject(FinalBillLockBean.class).executeInNewTransaction(action);
+            }
+            return executeInNewTransaction(action);
         }
         if (sessionContext != null) {
             return sessionContext.getBusinessObject(FinalBillLockBean.class).lockAndRunInNewTransaction(pe, action);
@@ -80,6 +91,10 @@ public class FinalBillLockBean {
         } finally {
             lock.unlock();
         }
+    }
+
+    private boolean isTransactionActive() {
+        return transactionRegistry != null && transactionRegistry.getTransactionKey() != null;
     }
 
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)

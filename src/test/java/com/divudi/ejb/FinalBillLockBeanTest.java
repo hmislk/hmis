@@ -6,6 +6,8 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Proxy;
+import javax.transaction.TransactionSynchronizationRegistry;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -228,6 +230,52 @@ public class FinalBillLockBeanTest {
         assertEquals("delegated-outside-ok", resultOutside);
         assertTrue(outsideDelegated.get(), "BillNumberGenerator must invoke FinalBillLockBean.withFinalBillVersionLockOutsideTransaction");
     }
+    /** Counts new transactions; the registry stub says whether one is active. */
+    private static class CountingLockBean extends FinalBillLockBean {
+        final AtomicInteger newTransactions = new AtomicInteger();
+
+        @Override
+        public <T> T executeInNewTransaction(Supplier<T> action) {
+            newTransactions.incrementAndGet();
+            return super.executeInNewTransaction(action);
+        }
+    }
+
+    private static TransactionSynchronizationRegistry registry(Object key) {
+        return (TransactionSynchronizationRegistry) Proxy.newProxyInstance(
+                FinalBillLockBeanTest.class.getClassLoader(),
+                new Class<?>[]{TransactionSynchronizationRegistry.class},
+                (proxy, method, args) -> "getTransactionKey".equals(method.getName()) ? key : null);
+    }
+
+    private static void setRegistry(FinalBillLockBean bean, TransactionSynchronizationRegistry r) throws Exception {
+        Field f = FinalBillLockBean.class.getDeclaredField("transactionRegistry");
+        f.setAccessible(true);
+        f.set(bean, r);
+    }
+
+    @Test
+    @DisplayName("Nested call inside an active transaction joins it: no second new transaction")
+    public void testNestedCallInTransactionRunsInline() throws Exception {
+        CountingLockBean bean = new CountingLockBean();
+        setRegistry(bean, registry("tx-1"));
+        PatientEncounter pe = createEncounter(404L);
+        Integer result = bean.withFinalBillVersionLock(pe, () -> bean.withFinalBillVersionLock(pe, () -> 5));
+        assertEquals(5, result);
+        assertEquals(1, bean.newTransactions.get());
+    }
+
+    @Test
+    @DisplayName("Nested call with no active transaction still runs in a new transaction")
+    public void testNestedCallWithoutTransactionGetsNewTransaction() throws Exception {
+        CountingLockBean bean = new CountingLockBean();
+        setRegistry(bean, registry(null));
+        PatientEncounter pe = createEncounter(505L);
+        Integer result = bean.withFinalBillVersionLock(pe, () -> bean.withFinalBillVersionLock(pe, () -> 6));
+        assertEquals(6, result);
+        assertEquals(2, bean.newTransactions.get());
+    }
+
     @Test
     @DisplayName("A nested call for the same admission on the same thread runs inline, inside the outer call")
     public void testNestedCallRunsInline() {
