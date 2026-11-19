@@ -193,6 +193,8 @@ public class BhtSummeryController implements Serializable {
     InwardRefundController inwardRefundController;
     @Inject
     PostFinalBillInwardPaymentController postFinalBillInwardPaymentController;
+    @Inject
+    InwardDepositController inwardDepositController;
     @EJB
     private com.divudi.service.FinalBillPdfSnapshotService finalBillPdfSnapshotService;
     @EJB
@@ -5371,6 +5373,31 @@ public class BhtSummeryController implements Serializable {
         PatientEncounter pe = postFinalBillInwardPaymentController.getCurrent().getPatientEncounter();
         if (pe == null) {
             JsfUtil.addErrorMessage("No Admission Selected");
+            return "";
+        }
+        this.patientEncounter = pe;
+        childPatientEncouters = null;
+        createTables();
+        return "/inward/inward_bill_intrim?faces-redirect=true";
+    }
+
+    /**
+     * Interim Bill button on the Inward Deposit receipt. Takes the
+     * admission from the deposit just saved, not from the Make a
+     * Payment bean, which may hold a different admission (issue #24266).
+     * With no admission it stops rather than fall back to whatever admission
+     * this session bean already holds.
+     */
+    public String navigateToIntrimBillRefreshFromDeposit() {
+        PatientEncounter pe = inwardDepositController.getCurrent() == null ? null : inwardDepositController.getCurrent().getPatientEncounter();
+        if (pe == null) {
+            JsfUtil.addErrorMessage("No Admission Selected");
+            return "";
+        }
+        // Refuse a baby admission before createTables() saves anything for it
+        if (pe.getParentEncounter() != null) {
+            JsfUtil.addErrorMessage("Interim bills can only be generated for the parent (mother) encounter. "
+                    + "Generate it from the mother's admission — it will automatically include this baby's charges.");
             return "";
         }
         this.patientEncounter = pe;
