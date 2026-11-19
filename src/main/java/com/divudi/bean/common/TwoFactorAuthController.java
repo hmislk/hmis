@@ -6,6 +6,7 @@ import com.divudi.core.facade.AuditEventFacade;
 import com.divudi.core.facade.WebUserFacade;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.util.TotpUtil;
+import com.divudi.core.util.TwoFactorSecretCipher;
 import com.divudi.service.AuditService;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -42,6 +43,8 @@ public class TwoFactorAuthController implements Serializable {
     private static final int QR_SIZE_PX = 200;
     public static final String LOCKED_MESSAGE = "Your account is locked after " + MAX_FAILED_ATTEMPTS
             + " invalid verification codes. Please contact an administrator to unlock it.";
+    public static final String KEY_MISSING_MESSAGE = "Authenticator apps cannot be set up yet: the two-factor secret key is not configured on this server. "
+            + "Please contact your system administrator.";
 
     // Audit events: entityType is AUDIT_ENTITY_TYPE, objectId is the affected user, webUserId is who did it
     public static final String AUDIT_ENTITY_TYPE = "TwoFactorAuth";
@@ -78,8 +81,6 @@ public class TwoFactorAuthController implements Serializable {
 
     @Inject
     private SessionController sessionController;
-    @Inject
-    private SecurityController securityController;
     @Inject
     private ConfigOptionApplicationController configOptionApplicationController;
     @Inject
@@ -231,7 +232,12 @@ public class TwoFactorAuthController implements Serializable {
             JsfUtil.addErrorMessage("No authenticator app is linked to your account. Use the SMS code instead.");
             return "";
         }
-        String secret = enrolling ? setupSecret : securityController.decrypt(u.getTwoFactorSecret());
+        if (enrolling && !TwoFactorSecretCipher.isKeyConfigured()) {
+            code = null;
+            JsfUtil.addErrorMessage(KEY_MISSING_MESSAGE);
+            return "";
+        }
+        String secret = enrolling ? setupSecret : decryptSecret(u.getTwoFactorSecret());
         long step = TotpUtil.verify(secret, code, enrolling ? null : u.getTwoFactorLastUsedStep());
         code = null;
         if (step < 0) {
@@ -239,9 +245,20 @@ public class TwoFactorAuthController implements Serializable {
             return "";
         }
         if (enrolling) {
-            u.setTwoFactorSecret(securityController.encrypt(setupSecret));
+            String stored = TwoFactorSecretCipher.encrypt(setupSecret);
+            if (stored == null) {
+                JsfUtil.addErrorMessage(KEY_MISSING_MESSAGE);
+                return "";
+            }
+            u.setTwoFactorSecret(stored);
             u.setTwoFactorEnrolled(true);
             u.setTwoFactorEnrolledAt(new Date());
+        } else if (!TwoFactorSecretCipher.isCurrentFormat(u.getTwoFactorSecret())) {
+            // Saved by the older scheme: store it again under this server's key (saved by completeLoginAfterSecondFactor)
+            String stored = TwoFactorSecretCipher.encrypt(secret);
+            if (stored != null) {
+                u.setTwoFactorSecret(stored);
+            }
         }
         u.setTwoFactorLastUsedStep(step);
         return completeLoginAfterSecondFactor(u, enrolling ? EVENT_FIRST_LOGIN_SETUP : EVENT_LOGIN_SUCCESS);
@@ -366,6 +383,10 @@ public class TwoFactorAuthController implements Serializable {
             JsfUtil.addErrorMessage("Your authenticator app is already linked. Ask an administrator to reset it.");
             return;
         }
+        if (!TwoFactorSecretCipher.isKeyConfigured()) {
+            JsfUtil.addErrorMessage(KEY_MISSING_MESSAGE);
+            return;
+        }
         selfSetupSecret = TotpUtil.generateSecret();
         selfSetupCode = null;
         selfSetupFailedAttempts = 0;
@@ -405,8 +426,13 @@ public class TwoFactorAuthController implements Serializable {
             return null;
         }
         selfSetupFailedAttempts = 0;
+        String stored = TwoFactorSecretCipher.encrypt(selfSetupSecret);
+        if (stored == null) {
+            JsfUtil.addErrorMessage(KEY_MISSING_MESSAGE);
+            return null;
+        }
         boolean wasForcedSetup = isSetupRequiredNow();
-        u.setTwoFactorSecret(securityController.encrypt(selfSetupSecret));
+        u.setTwoFactorSecret(stored);
         u.setTwoFactorEnrolled(true);
         u.setTwoFactorEnrolledAt(new Date());
         u.setTwoFactorLastUsedStep(step);
@@ -623,6 +649,21 @@ public class TwoFactorAuthController implements Serializable {
         to.setTwoFactorLockedAt(from.getTwoFactorLockedAt());
         to.setTwoFactorMobile(from.getTwoFactorMobile());
         to.setTwoFactorMobileVerifiedAt(from.getTwoFactorMobileVerifiedAt());
+    }
+
+    /**
+     * Plain secret from the stored value: the current AES-GCM format, or a
+     * value saved by the older scheme before this server had its own key.
+     */
+    private String decryptSecret(String stored) {
+        if (TwoFactorSecretCipher.isCurrentFormat(stored)) {
+            return TwoFactorSecretCipher.decrypt(stored);
+        }
+        return SecurityController.decryptLegacy(stored);
+    }
+
+    public boolean isSecretKeyConfigured() {
+        return TwoFactorSecretCipher.isKeyConfigured();
     }
 
     private WebUser loggedUserFromDb() {
