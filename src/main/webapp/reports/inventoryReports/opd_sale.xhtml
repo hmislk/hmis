@@ -11,53 +11,48 @@
                 <h:form >
                     <p:panel header="OPD Sale" >
 
-                        <h:panelGrid columns="8" class="w-100">          
+                        <div class="row">
+                            <div class="col-lg-3 col-md-6 mb-3">
+                                <div class="mb-1">
+                                    <h:outputText value="&#xf073;" styleClass="fa mr-2" />
+                                    <p:outputLabel value="From Date" for="fromDate" />
+                                </div>
+                                <p:calendar
+                                    styleClass="w-100"
+                                    inputStyleClass="w-100 form-control"
+                                    id="fromDate"
+                                    value="#{pharmacyReportController.fromDate}"
+                                    navigator="false"
+                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                    />
+                            </div>
 
+                            <div class="col-lg-3 col-md-6 mb-3">
+                                <div class="mb-1">
+                                    <h:outputText value="&#xf073;" styleClass="fa mr-2" />
+                                    <p:outputLabel value="To Date" for="toDate" />
+                                </div>
+                                <p:calendar
+                                    styleClass="w-100"
+                                    inputStyleClass="w-100 form-control"
+                                    id="toDate"
+                                    value="#{pharmacyReportController.toDate}"
+                                    navigator="false"
+                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                    />
+                            </div>
 
-                            <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText value="&#xf073;" styleClass="fa mr-2" />
-                                <p:outputLabel value="From Date" for="fromDate" class="m-3" >
-                                </p:outputLabel>
-                            </h:panelGroup>
-                            <p:calendar 
-                                styleClass="w-100" 
-                                inputStyleClass="w-100 form-control" 
-                                id="fromDate" 
-                                value="#{pharmacyReportController.fromDate}" 
-                                navigator="false" 
-                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
-                                />
-
-                            <p:spacer width="10"></p:spacer>
-
-                            <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText value="&#xf073;" styleClass="fa mr-1" />
-                                <p:outputLabel value="To Date" for="toDate" class="m-3" >
-                                </p:outputLabel>
-                            </h:panelGroup>
-                            <p:calendar 
-                                styleClass="w-100" 
-                                inputStyleClass="w-100 form-control" 
-                                id="toDate" 
-                                value="#{pharmacyReportController.toDate}" 
-                                navigator="false" 
-                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
-                                />
-
-
-                            
-                            <p:spacer width="10"></p:spacer>
-                            <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText styleClass="fa fa-building mr-2"/>
-                                <p:outputLabel value="Department Type" for="departmentTypeFilter" class="m-3"/>
-                            </h:panelGroup>
-                            <h:panelGroup layout="block" styleClass="form-group">
+                            <div class="col-lg-3 col-md-6 mb-3">
+                                <div class="mb-1">
+                                    <h:outputText styleClass="fa fa-building mr-2" />
+                                    <p:outputLabel value="Department Type" for="departmentTypeFilter" />
+                                </div>
                                 <p:selectCheckboxMenu
                                     id="departmentTypeFilter"
                                     value="#{pharmacyReportController.selectedDepartmentTypes}"
                                     label="Select Department Types"
                                     updateLabel="true"
-                                    class="w-100"
+                                    styleClass="w-100"
                                     filter="true"
                                     filterMatchMode="contains"
                                     showHeader="true"
@@ -70,132 +65,155 @@
                                         itemValue="#{depType}"/>
                                 </p:selectCheckboxMenu>
                                 <p:tooltip for="departmentTypeFilter" value="Select one or more department types to filter results. Leave empty to include all departments." position="top"/>
-                            </h:panelGroup>
+                            </div>
 
-                            <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText styleClass="fa fa-university mr-2" />
-                                <p:outputLabel value="Payment Method" for="phmIns" class="m-3" >
-                                </p:outputLabel>
-                            </h:panelGroup>
-                            <p:selectOneMenu 
-                                id="pM"
-                                class="w-100"
-                                value="#{pharmacyReportController.paymentMethod}"
-                                filter="true">
-                                <f:selectItem itemLabel="All" />
-                                <f:selectItems value="#{enumController.paymentMethodsForPharmacyBilling}" var="p" itemLabel="#{p.label}" itemValue="#{p}"/>
-                            </p:selectOneMenu>
-
-                            <p:spacer width="10"></p:spacer>
-                            <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText styleClass="fa fa-university mr-2" />
-                                <p:outputLabel value="Institution" for="phmIns" class="m-3" >
-                                </p:outputLabel>
-                            </h:panelGroup>
-                            <p:selectOneMenu 
-                                id="phmIns"
-                                class="w-100"
-                                value="#{pharmacyReportController.institution}"
-                                filter="true">
-                                <f:selectItem itemLabel="All Institutions" />
-                                <f:selectItems value="#{institutionController.companies}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}" />
-                                <p:ajax process="phmIns" update="phmDept" />
-                            </p:selectOneMenu>        
-
-
-                            <p:spacer width="10"></p:spacer>
-
-
-                            <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText styleClass="fa fa-map-marker-alt mr-2" />
-                                <p:outputLabel value="Site" for="phmSite" class="m-3"></p:outputLabel>
-                            </h:panelGroup>
-                            <p:selectOneMenu 
-                                id="phmSite"
-                                class="w-100"
-                                value="#{pharmacyReportController.site}"
-                                filter="true">
-                                <f:selectItem itemLabel="All Sites" />
-                                <f:selectItems value="#{institutionController.sites}" var="site" itemLabel="#{site.name}" itemValue="#{site}" />
-                                <p:ajax process="phmSite" update="phmDept" />
-                            </p:selectOneMenu>
-
-
-
-
-                            <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText styleClass="fa fa-building mr-2" />
-                                <p:outputLabel value="Department" for="phmDept" class="m-3">
-                                </p:outputLabel>
-                            </h:panelGroup>
-                            <h:panelGroup id="phmDept">
-
-                                <!-- Component 1: Without Institution and Site -->
+                            <div class="col-lg-3 col-md-6 mb-3">
+                                <div class="mb-1">
+                                    <h:outputText styleClass="fa fa-credit-card mr-2" />
+                                    <p:outputLabel value="Payment Method" for="pM" />
+                                </div>
                                 <p:selectOneMenu
-                                    rendered="#{pharmacyReportController.institution eq null and pharmacyReportController.site eq null}"
-                                    styleClass="w-100 form-control"
-                                    value="#{pharmacyReportController.department}"
-                                    filterMatchMode="contains"
-                                    filter="true"> 
-                                    <f:selectItem itemLabel="All Departments" />
-                                    <f:selectItems  
-                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite()}"
-                                        var="dept" 
-                                        itemLabel="#{dept.name}" 
-                                        itemValue="#{dept}" />
+                                    id="pM"
+                                    styleClass="w-100"
+                                    value="#{pharmacyReportController.paymentMethod}"
+                                    filter="true">
+                                    <f:selectItem itemLabel="All" />
+                                    <f:selectItems value="#{enumController.paymentMethodsForPharmacyBilling}" var="p" itemLabel="#{p.label}" itemValue="#{p}"/>
                                 </p:selectOneMenu>
+                            </div>
 
-                                <!-- Component 2: With Site Only -->
+                            <div class="col-lg-3 col-md-6 mb-3">
+                                <div class="mb-1">
+                                    <h:outputText styleClass="fa fa-university mr-2" />
+                                    <p:outputLabel value="Institution" for="phmIns" />
+                                </div>
                                 <p:selectOneMenu
-                                    rendered="#{pharmacyReportController.institution eq null and pharmacyReportController.site ne null}"
-                                    styleClass="w-100 form-control"
-                                    value="#{pharmacyReportController.department}"
-                                    filterMatchMode="contains"
-                                    filter="true"> 
-                                    <f:selectItem itemLabel="All Departments" />
-                                    <f:selectItems  
-                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite(pharmacyReportController.site)}" 
-                                        var="dept" 
-                                        itemLabel="#{dept.name}" 
-                                        itemValue="#{dept}" />
+                                    id="phmIns"
+                                    styleClass="w-100"
+                                    value="#{pharmacyReportController.institution}"
+                                    filter="true">
+                                    <f:selectItem itemLabel="All Institutions" />
+                                    <f:selectItems value="#{institutionController.companies}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}" />
+                                    <p:ajax process="phmIns" update="phmDept" />
                                 </p:selectOneMenu>
-                                
-                                <!-- Component 3: With Institution Only --> 
+                            </div>
+
+                            <div class="col-lg-3 col-md-6 mb-3">
+                                <div class="mb-1">
+                                    <h:outputText styleClass="fa fa-map-marker-alt mr-2" />
+                                    <p:outputLabel value="Site" for="phmSite" />
+                                </div>
                                 <p:selectOneMenu
-                                    rendered="#{pharmacyReportController.institution ne null and pharmacyReportController.site eq null}"
-                                    styleClass="w-100 form-control"
-                                    value="#{pharmacyReportController.department}"
-                                    filterMatchMode="contains"
-                                    filter="true"> 
-                                    <f:selectItem itemLabel="All Departments" />
-                                    <f:selectItems  
-                                        value="#{departmentController.getDepartmentsOfInstitutionAndSiteForInstitution(pharmacyReportController.institution)}" 
-                                        var="dept" 
-                                        itemLabel="#{dept.name}" 
-                                        itemValue="#{dept}" />
+                                    id="phmSite"
+                                    styleClass="w-100"
+                                    value="#{pharmacyReportController.site}"
+                                    filter="true">
+                                    <f:selectItem itemLabel="All Sites" />
+                                    <f:selectItems value="#{institutionController.sites}" var="site" itemLabel="#{site.name}" itemValue="#{site}" />
+                                    <p:ajax process="phmSite" update="phmDept" />
                                 </p:selectOneMenu>
-                                
-                                <!-- Component 4: With Both Institution and Site --> 
-                                <p:selectOneMenu
-                                    rendered="#{pharmacyReportController.institution ne null and pharmacyReportController.site ne null}"
-                                    styleClass="w-100 form-control"
-                                    value="#{pharmacyReportController.department}"
-                                    filterMatchMode="contains"
-                                    filter="true"> 
-                                    <f:selectItem itemLabel="All Departments" />
-                                    <f:selectItems  
-                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite(pharmacyReportController.institution, pharmacyReportController.site)}" 
-                                        var="dept" 
-                                        itemLabel="#{dept.name}" 
-                                        itemValue="#{dept}" />
-                                </p:selectOneMenu>
-                            </h:panelGroup>
+                            </div>
 
+                            <div class="col-lg-3 col-md-6 mb-3">
+                                <div class="mb-1">
+                                    <h:outputText styleClass="fa fa-building mr-2" />
+                                    <h:outputText value="Department" styleClass="ui-outputlabel" />
+                                </div>
+                                <h:panelGroup id="phmDept" layout="block">
 
+                                    <!-- Component 1: Without Institution and Site -->
+                                    <p:selectOneMenu
+                                        rendered="#{pharmacyReportController.institution eq null and pharmacyReportController.site eq null}"
+                                        styleClass="w-100"
+                                        value="#{pharmacyReportController.department}"
+                                        filterMatchMode="contains"
+                                        filter="true">
+                                        <f:selectItem itemLabel="All Departments" />
+                                        <f:selectItems
+                                            value="#{departmentController.getDepartmentsOfInstitutionAndSite()}"
+                                            var="dept"
+                                            itemLabel="#{dept.name}"
+                                            itemValue="#{dept}" />
+                                    </p:selectOneMenu>
 
-                        </h:panelGrid>
+                                    <!-- Component 2: With Site Only -->
+                                    <p:selectOneMenu
+                                        rendered="#{pharmacyReportController.institution eq null and pharmacyReportController.site ne null}"
+                                        styleClass="w-100"
+                                        value="#{pharmacyReportController.department}"
+                                        filterMatchMode="contains"
+                                        filter="true">
+                                        <f:selectItem itemLabel="All Departments" />
+                                        <f:selectItems
+                                            value="#{departmentController.getDepartmentsOfInstitutionAndSite(pharmacyReportController.site)}"
+                                            var="dept"
+                                            itemLabel="#{dept.name}"
+                                            itemValue="#{dept}" />
+                                    </p:selectOneMenu>
 
-                        <div class="d-flex align-items-center mt-5">
+                                    <!-- Component 3: With Institution Only -->
+                                    <p:selectOneMenu
+                                        rendered="#{pharmacyReportController.institution ne null and pharmacyReportController.site eq null}"
+                                        styleClass="w-100"
+                                        value="#{pharmacyReportController.department}"
+                                        filterMatchMode="contains"
+                                        filter="true">
+                                        <f:selectItem itemLabel="All Departments" />
+                                        <f:selectItems
+                                            value="#{departmentController.getDepartmentsOfInstitutionAndSiteForInstitution(pharmacyReportController.institution)}"
+                                            var="dept"
+                                            itemLabel="#{dept.name}"
+                                            itemValue="#{dept}" />
+                                    </p:selectOneMenu>
+
+                                    <!-- Component 4: With Both Institution and Site -->
+                                    <p:selectOneMenu
+                                        rendered="#{pharmacyReportController.institution ne null and pharmacyReportController.site ne null}"
+                                        styleClass="w-100"
+                                        value="#{pharmacyReportController.department}"
+                                        filterMatchMode="contains"
+                                        filter="true">
+                                        <f:selectItem itemLabel="All Departments" />
+                                        <f:selectItems
+                                            value="#{departmentController.getDepartmentsOfInstitutionAndSite(pharmacyReportController.institution, pharmacyReportController.site)}"
+                                            var="dept"
+                                            itemLabel="#{dept.name}"
+                                            itemValue="#{dept}" />
+                                    </p:selectOneMenu>
+                                </h:panelGroup>
+                            </div>
+                        </div>
+
+                        <style>
+                            /* Print: fit every column on the page, no scroll bar (#25497) */
+                            @page { size: A4 landscape; margin: 8mm; }
+                            @media print {
+                                .cogs-sale-print,
+                                .cogs-sale-print .ui-datatable,
+                                .cogs-sale-print .ui-datatable-tablewrapper {
+                                    overflow: visible !important;
+                                    height: auto !important;
+                                    max-height: none !important;
+                                }
+                                .cogs-sale-print .ui-datatable-tablewrapper > table {
+                                    width: 100% !important;
+                                    table-layout: auto !important;
+                                }
+                                .cogs-sale-print .ui-datatable th,
+                                .cogs-sale-print .ui-datatable td {
+                                    width: auto !important;
+                                    padding: 2px 3px !important;
+                                    font-size: 9px !important;
+                                    white-space: normal !important;
+                                    word-break: break-word;
+                                }
+                                .cogs-sale-print .ui-paginator { display: none !important; }
+                                .cogs-sale-print .ui-datatable thead { display: table-header-group; }
+                                .cogs-sale-print .ui-datatable tr { page-break-inside: avoid; }
+                            }
+                        </style>
+
+                        <div class="d-flex align-items-center mt-2">
                             <p:commandButton 
                                 class="ui-button-secondary mx-1" 
                                 icon="fas fa-arrow-left" 
@@ -275,7 +293,7 @@
                             }
                         </h:outputScript>
 
-                        <h:panelGroup id="printPanel" layout="block">
+                        <h:panelGroup id="printPanel" layout="block" styleClass="cogs-sale-print">
                             <h:panelGroup layout="block" styleClass="cogs-print-filters" style="display:none; margin-bottom:8px;">
                                 <h:outputText value="OPD Sale" style="font-weight:bold; font-size:1.2em" />
                                 <h:panelGrid columns="4" cellpadding="3">
@@ -334,7 +352,7 @@
                                 </p:row>
                             </p:columnGroup>
 
-                            <p:column headerText="NAME" width="50em">
+                            <p:column headerText="NAME" width="12em">
                                 <ui:repeat value="#{b.billItemsMap.values()}" var="biObject" >
                                     <h:outputText value="#{biObject.itemName}" /><p:divider/><br/>
                                 </ui:repeat>
