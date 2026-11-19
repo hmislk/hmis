@@ -5389,9 +5389,15 @@ public class BhtSummeryController implements Serializable {
      * this session bean already holds.
      */
     public String navigateToIntrimBillRefreshFromDeposit() {
-        PatientEncounter pe = inwardDepositController.getCurrent().getPatientEncounter();
+        PatientEncounter pe = inwardDepositController.getCurrent() == null ? null : inwardDepositController.getCurrent().getPatientEncounter();
         if (pe == null) {
             JsfUtil.addErrorMessage("No Admission Selected");
+            return "";
+        }
+        // Refuse a baby admission before createTables() saves anything for it
+        if (pe.getParentEncounter() != null) {
+            JsfUtil.addErrorMessage("Interim bills can only be generated for the parent (mother) encounter. "
+                    + "Generate it from the mother's admission — it will automatically include this baby's charges.");
             return "";
         }
         this.patientEncounter = pe;
