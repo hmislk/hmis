@@ -61,6 +61,9 @@
                                  filteredValue="#{creditCompanyDueController.filteredList}"
                                  styleClass="p-datatable-sm" paginator="true" rows="100" paginatorPosition="bottom"
                                  rowsPerPageTemplate="50,100,500" emptyMessage="No records found">
+                        <f:facet name="header">
+                            <h:outputText value="Inward CC Due Age (range by #{creditCompanyDueController.dateBasis eq 'admissionDate' ? 'admission date' : 'discharge date'}; aged from bill date)"/>
+                        </f:facet>
                         <p:column headerText="Credit Company" width="25em" filterBy="#{i.institution.name}" filterMatchMode="contains">
                             <h:outputText value="#{i.institution.name}"/>
                         </p:column>

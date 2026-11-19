@@ -590,6 +590,20 @@ public class CreditCompanyDueController implements Serializable {
             jpql += " AND " + dateField + " BETWEEN :frm AND :to";
             parameters.put("frm", getFromDate());
             parameters.put("to", getToDate());
+
+            // Inward CC Due Age page only: Institution, Site and Department are read from the admission final bill (as CreditBean.inwardCCAdmissionFilters, #25773)
+            if (institution != null) {
+                jpql += " AND bill.patientEncounter.finalBill.institution = :insd";
+                parameters.put("insd", institution);
+            }
+            if (department != null) {
+                jpql += " AND bill.patientEncounter.finalBill.department = :dep";
+                parameters.put("dep", department);
+            }
+            if (site != null) {
+                jpql += " AND bill.patientEncounter.finalBill.department.site = :site";
+                parameters.put("site", site);
+            }
         }
 
         List<Bill> bills = billFacade.findByJpql(jpql, parameters, TemporalType.TIMESTAMP);
