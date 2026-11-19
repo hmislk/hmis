@@ -66,26 +66,47 @@
                         </f:facet>
                         <p:column headerText="BHT - Patient Name" width="30em" filterBy="#{row.string}" filterMatchMode="contains">
                             <h:outputText value="#{row.string}"/>
+                            <f:facet name="footer"><h:outputText value="Total"/></f:facet>
                         </p:column>
                         <p:column headerText="0-30" width="7em" styleClass="text-end">
                             <h:outputText value="#{row.value1}">
                                 <f:convertNumber pattern="#,##0.00"/>
                             </h:outputText>
+                            <f:facet name="footer">
+                                <h:outputText value="#{creditCompanyDueController.creditCompanyAgeTotal1}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputText>
+                            </f:facet>
                         </p:column>
                         <p:column headerText="31-60" width="7em" styleClass="text-end">
                             <h:outputText value="#{row.value2}">
                                 <f:convertNumber pattern="#,##0.00"/>
                             </h:outputText>
+                            <f:facet name="footer">
+                                <h:outputText value="#{creditCompanyDueController.creditCompanyAgeTotal2}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputText>
+                            </f:facet>
                         </p:column>
                         <p:column headerText="61-90" width="7em" styleClass="text-end">
                             <h:outputText value="#{row.value3}">
                                 <f:convertNumber pattern="#,##0.00"/>
                             </h:outputText>
+                            <f:facet name="footer">
+                                <h:outputText value="#{creditCompanyDueController.creditCompanyAgeTotal3}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputText>
+                            </f:facet>
                         </p:column>
                         <p:column headerText="91+" width="7em" styleClass="text-end">
                             <h:outputText value="#{row.value4}">
                                 <f:convertNumber pattern="#,##0.00"/>
                             </h:outputText>
+                            <f:facet name="footer">
+                                <h:outputText value="#{creditCompanyDueController.creditCompanyAgeTotal4}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputText>
+                            </f:facet>
                         </p:column>
                     </p:dataTable>
                     </p:panel>
