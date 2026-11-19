@@ -222,3 +222,13 @@ Issue #17566. Both keys are application-wide Booleans, default `false` (existing
 | --- | --- | --- | --- |
 | `Inward Final Bill - Custom Bill 3 - Show Claimable Copies` | Boolean | `false` | Adds Claimable Patient, Hospital and Duplicate copy buttons (Custom Bill 3 layout, professional fees included) to the inward Final Bill page. |
 | `Inward Final Bill - Custom Bill 3 - Show Not Claimable Copies` | Boolean | `false` | Adds Not Claimable Patient, Hospital and Duplicate copy buttons (Custom Bill 3 layout, without professional fees) and a Professional Fees copy button. |
+
+## Inward VAT per charge type
+
+Issue #17491. One application-wide Double key per inward charge type, default `0` (VAT off). With every rate at 0 an inward bill is exactly as before.
+
+| Key | Type | Default | Description |
+| --- | --- | --- | --- |
+| `Inward VAT Percentage - <InwardChargeType name()>` (e.g. `Inward VAT Percentage - RoomCharges`) | Double | `0` | VAT rate in percent for that charge type. The interim bill and the final bill get one extra "VAT" row (charge type `ComputedVAT`) equal to the sum, over charge types with a rate above 0, of the type's net after item and charge-type discounts × rate ÷ 100, each rounded to 2 decimals. The row counts in the total, net total and due, splits between credit company and patient like any charge, and on the final bill becomes a bill item with `BillItem.vat` set. The VAT row is already part of the bill totals; the bill-header fields `Bill.vat` and `Bill.vatPlusNetTotal` are left unchanged and are not an additional VAT amount. Charge types covered by an inpatient package's fixed price are not taxed. The key uses the enum name, not the label, so renaming a label never loses the rate. A blank, negative, malformed, non-finite or above-100 stored value counts as 0. The settings page rejects a rate above 100 with an error and keeps the stored rate. |
+
+Set the rate at: Administration → Manage Inpatient Services → tab Charge Type Labels → Manage Charge Type Labels → column "VAT %" (Save or Save All). The `ComputedVAT` row has no rate of its own. The existing `VAT` and `RoomChargesVAT` charge types keep their old meaning (manual services) and are not touched.

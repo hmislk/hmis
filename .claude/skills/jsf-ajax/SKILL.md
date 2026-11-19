@@ -97,6 +97,22 @@ Also: bind selection to an **array** (`MyDTO[] selected`), not a `List`. Always 
 
 For complete reference (single-selection, controller pattern, `selectAllFilteredOnly`, troubleshooting), read [developer_docs/jsf/primefaces-datatable-selection.md](../../developer_docs/jsf/primefaces-datatable-selection.md).
 
+### Footer totals that follow a column filter
+
+A dataTable filter response re-renders only the table body, so `<p:ajax event="filter" update="...">` never refreshes column footers. Re-render them after the filter with a remote command placed in the same form:
+
+```xml
+<p:remoteCommand name="refreshTotals" process="@this" update="lst:total1 lst:total2"/>
+<p:dataTable id="lst" filteredValue="#{bean.filteredList}" ...>
+    <p:ajax event="filter" process="@this" oncomplete="refreshTotals()"/>
+    <p:column ...>
+        <f:facet name="footer"><h:outputText id="total1" value="#{bean.total1}"/></f:facet>
+    </p:column>
+</p:dataTable>
+```
+
+The total getters sum `filteredList` when it is set, otherwise the full list, and the Process action resets `filteredList` to null (#25782).
+
 ---
 
 ## Navigation Pattern: Never Use f:viewAction on @SessionScoped Beans

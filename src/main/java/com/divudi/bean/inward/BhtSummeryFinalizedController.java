@@ -495,6 +495,10 @@ public class BhtSummeryFinalizedController implements Serializable {
                 if (bi.getInwardChargeType() == InwardChargeType.VAT || bi.getInwardChargeType() == InwardChargeType.HospitalSupportService) {
                     vat += bi.getNetValue();
                 }
+                // Computed VAT line (#25766): amount is on the item; Bill.vat is not read here.
+                if (bi.getInwardChargeType() == InwardChargeType.ComputedVAT) {
+                    vat += bi.getVat();
+                }
                 if (bi.getInwardChargeType() == InwardChargeType.Medicine) {
                     med += bi.getNetValue();
                 }
@@ -505,6 +509,7 @@ public class BhtSummeryFinalizedController implements Serializable {
                 if (bi.getInwardChargeType() != InwardChargeType.ProfessionalCharge && bi.getInwardChargeType() != InwardChargeType.DoctorAndNurses
                         && bi.getInwardChargeType() != InwardChargeType.TechnicianAndParamedicalCharge
                         && bi.getInwardChargeType() != InwardChargeType.Medicine && bi.getInwardChargeType() != InwardChargeType.VAT
+                        && bi.getInwardChargeType() != InwardChargeType.ComputedVAT
                         && bi.getInwardChargeType() != InwardChargeType.RoomCharges
                         && bi.getInwardChargeType() != InwardChargeType.HospitalSupportService) {
                     hos += bi.getNetValue();

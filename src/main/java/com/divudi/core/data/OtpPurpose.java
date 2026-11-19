@@ -10,5 +10,7 @@ public enum OtpPurpose {
     /** Second step of a staff login (alternative to the authenticator app) */
     STAFF_LOGIN_2FA,
     /** Confirms that a staff user owns the mobile number used for SMS login codes */
-    STAFF_MOBILE_VERIFICATION
+    STAFF_MOBILE_VERIFICATION,
+    /** Proves a staff user holds the staff-record mobile before an authenticator app is linked */
+    STAFF_AUTHENTICATOR_SETUP
 }

@@ -196,6 +196,8 @@ public class InwardBhtChargeAggregationService implements Serializable {
      * mother admission's figures, and a still-admitted patient's rooms are
      * priced up to now (issue #24717). Margins and discounts are returned
      * separately by {@link #fetchDiscountAndMarginByEncounter}.
+     * An admission with a saved final bill also carries that bill's computed
+     * VAT line ({@code ComputedVAT}); one without a final bill has none (#25766).
      */
     public Map<Long, Map<InwardChargeType, Double>> fetchChargesByEncounter(
             List<PatientEncounter> encounters) {
@@ -211,6 +213,53 @@ public class InwardBhtChargeAggregationService implements Serializable {
             Map<InwardChargeType, Double> adjusted = new EnumMap<>(InwardChargeType.class);
             adjusted.putAll(e.getValue().adjustment.getGross());
             result.put(e.getKey(), adjusted);
+        }
+        // The computed VAT line exists only on a saved final bill (#25766).
+        mergeChargeMaps(result, family.foldCharges(fetchComputedVatCharges(family.all)));
+        return result;
+    }
+
+    /**
+     * The computed VAT line of each admission's final bill (issue #25766), as
+     * {@code InwardChargeType.ComputedVAT}. The VAT is known only when the
+     * final bill is processed, so an admission without a live final bill gets
+     * none. A cancelled or retired final bill contributes nothing; a final
+     * bill cancelled through InwardSearch is also detached from the admission.
+     * With every VAT rate at 0 the final bill has no such line and this
+     * returns nothing. The amount is {@code BillItem.vat}, which the final
+     * bill sets from the line's total; the bill header VAT stays 0.
+     * One query for all admissions.
+     */
+    private Map<Long, Map<InwardChargeType, Double>> fetchComputedVatCharges(List<PatientEncounter> encounters) {
+        Map<Long, Map<InwardChargeType, Double>> result = new HashMap<>();
+        List<Long> ids = new ArrayList<>();
+        for (PatientEncounter pe : encounters) {
+            ids.add(pe.getId());
+        }
+        if (ids.isEmpty()) {
+            return result;
+        }
+        String jpql = "select enc.id, sum(bi.vat)"
+                + " from BillItem bi join bi.bill b, PatientEncounter enc"
+                + " where enc.finalBill = b"
+                + " and enc.id in :encIds"
+                + " and bi.retired = false"
+                + " and b.retired = false"
+                + " and b.cancelled = false"
+                + " and bi.inwardChargeType = :vatType"
+                + " group by enc.id";
+        Map<String, Object> params = new HashMap<>();
+        params.put("encIds", ids);
+        params.put("vatType", InwardChargeType.ComputedVAT);
+        List<Object[]> rows = patientEncounterFacade.findObjectArrayByJpql(jpql, params, TemporalType.TIMESTAMP);
+        if (rows != null) {
+            for (Object[] r : rows) {
+                double vat = r[1] == null ? 0.0 : ((Number) r[1]).doubleValue();
+                if (vat != 0.0) {
+                    result.computeIfAbsent((Long) r[0], k -> new EnumMap<>(InwardChargeType.class))
+                            .put(InwardChargeType.ComputedVAT, vat);
+                }
+            }
         }
         return result;
     }
