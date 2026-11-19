@@ -40,6 +40,11 @@ public class AdmissionNumber implements Serializable {
     private AdmissionTypeEnum admissionTypeEnum;
     @ManyToOne
     private Institution institution;
+    /**
+     * Calendar year of the series when "Reset BHT Number Series Every Year" is
+     * on. Null for the single, never-resetting series.
+     */
+    private Integer counterYear;
     //Retiring properties
     boolean retired;
     @ManyToOne
@@ -86,6 +91,14 @@ public class AdmissionNumber implements Serializable {
 
     public void setInstitution(Institution institution) {
         this.institution = institution;
+    }
+
+    public Integer getCounterYear() {
+        return counterYear;
+    }
+
+    public void setCounterYear(Integer counterYear) {
+        this.counterYear = counterYear;
     }
 
     public boolean isRetired() {

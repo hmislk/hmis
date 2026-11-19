@@ -75,6 +75,7 @@ import com.divudi.core.facade.ServiceFacade;
 import com.divudi.core.facade.TimedItemFeeFacade;
 import com.divudi.core.util.FinalBillPdfSnapshotCacheEntry;
 import com.divudi.core.util.InpatientPackagePricing;
+import com.divudi.core.util.InwardVatCalculator;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.dataStructure.CreditCompanyAllocation;
@@ -239,6 +240,7 @@ public class BhtSummeryController implements Serializable {
     private double grantTotal = 0.0;
     private double discount;
     private double billLevelDiscount = 0.0;
+    private String discountComment;
     private double itemDiscountTotal = 0.0;
     private double chargeTypeDiscountTotal = 0.0;
     private double due;
@@ -1604,6 +1606,10 @@ public class BhtSummeryController implements Serializable {
                         discountValue += updateTheatreRoomMembershipDiscounts();
                     }
                     break;
+                case ComputedVAT:
+                    // Computed by applyComputedVat() after the discounts are known;
+                    // it is never discounted and never has a price-matrix row.
+                    break;
                 case Medicine:
                     // Discount/margin for pharmacy issues (PharmacyBhtPre) is already
                     // calculated and persisted on the BillItem/Bill at issue time.
@@ -1645,7 +1651,32 @@ public class BhtSummeryController implements Serializable {
             cit.setAdjustedTotal(cit.getTotal());
 
         }
+        // Item discounts were rewritten above; re-read the own-VAT amounts so the
+        // amount left out of the VAT base is not stale (#17491).
+        refreshOwnVatServiceAmounts();
+    }
 
+    /**
+     * Net of the service items carrying their own VAT, per charge type, as last
+     * read; the service part of each row's ownVatItemsAmount.
+     */
+    private Map<InwardChargeType, Double> ownVatServiceNets = new HashMap<>();
+
+    /**
+     * Re-reads the service own-VAT amounts and swaps them into each row, leaving
+     * the staff-fee part of the row's amount as it is.
+     */
+    private void refreshOwnVatServiceAmounts() {
+        if (chargeItemTotals == null || getPatientEncounter() == null) {
+            return;
+        }
+        Map<InwardChargeType, Double> fresh = getInwardBean().calServiceBillItemsOwnVatNetByInwardChargeTypeBulk(getPatientEncounter(), childPatientEncouters);
+        for (ChargeItemTotal cit : chargeItemTotals) {
+            double old = ownVatServiceNets.getOrDefault(cit.getInwardChargeType(), 0.0);
+            double now = fresh.getOrDefault(cit.getInwardChargeType(), 0.0);
+            cit.setOwnVatItemsAmount(cit.getOwnVatItemsAmount() - old + now);
+        }
+        ownVatServiceNets = fresh;
     }
 
     /**
@@ -2878,7 +2909,9 @@ public class BhtSummeryController implements Serializable {
     }
 
     public void saveProvisionalBill() {
-        if (errorCheck()) {
+        // A bill-level discount typed but not yet blurred is already bound; apply it to the VAT first.
+        recalculateAfterBillLevelDiscountChange();
+        if (errorCheck() || discountCommentMissing("saving")) {
             return;
         }
 
@@ -2901,7 +2934,9 @@ public class BhtSummeryController implements Serializable {
     }
 
     public void settle() {
-        if (errorCheck()) {
+        // A bill-level discount typed but not yet blurred is already bound; apply it to the VAT first.
+        recalculateAfterBillLevelDiscountChange();
+        if (errorCheck() || discountCommentMissing("settling")) {
             return;
         }
 
@@ -3038,6 +3073,13 @@ public class BhtSummeryController implements Serializable {
             return "";
         }
 
+        if (b.getDiscount() > 0
+                && (b.getDiscountCommentText() == null || b.getDiscountCommentText().isEmpty())
+                && configOptionApplicationController.getBooleanValueByKey("Inward Final Bill - Discount Comment Required", false)) {
+            JsfUtil.addErrorMessage("Please enter a Discount Comment (reason or approver) before settling a bill with a discount.");
+            return "";
+        }
+
         setPatientEncounter(b.getPatientEncounter());
 
         boolean settled = getBillNumberBean().withFinalBillVersionLock(getPatientEncounter(), () -> convertProvisionalToFinalBill(b));
@@ -3153,9 +3195,10 @@ public class BhtSummeryController implements Serializable {
             // listnerDiscontAmmountChanged() — done manually (not via that listener)
             // because creditCompanyAllocations isn't seeded yet at this point and the
             // listener would rebuild it from live data before rebuildAllocationsFromSourceBill runs.
-            discount = itemDiscountTotal + chargeTypeDiscountTotal + billLevelDiscount;
-            due = (grantTotal - discount) - paid;
+            // The bill-level discount also changes the VAT, so recompute the totals.
+            recalculateAfterBillLevelDiscountChange();
         }
+        discountComment = sourceBill.getDiscountCommentText();
 
         creditCompanyAllocations = rebuildAllocationsFromSourceBill(sourceBill);
 
@@ -3911,13 +3954,29 @@ public class BhtSummeryController implements Serializable {
             return true;
         }
 
-        if (discount > grantTotal) {
-            JsfUtil.addErrorMessage("Total discount (" + discount + ") exceeds total charges (" + grantTotal + ")");
+        // Charges before VAT: the VAT row falls as the discount rises.
+        if (discount > chargesTotalBeforeVat()) {
+            JsfUtil.addErrorMessage("Total discount (" + discount + ") exceeds total charges (" + chargesTotalBeforeVat() + ")");
             return true;
         }
 
         return false;
 
+    }
+
+    /**
+     * Discount Comment rule for the actions that save or settle a bill. Kept
+     * out of errorCheck() because settleOriginalBill() also uses that and must
+     * still create the original snapshot.
+     */
+    private boolean discountCommentMissing(String action) {
+        if (discount > 0
+                && (discountComment == null || discountComment.trim().isEmpty())
+                && configOptionApplicationController.getBooleanValueByKey("Inward Final Bill - Discount Comment Required", false)) {
+            JsfUtil.addErrorMessage("Please enter a Discount Comment (reason or approver) before " + action + " a bill with a discount.");
+            return true;
+        }
+        return false;
     }
 
     private boolean checkCatTotal() {
@@ -4244,6 +4303,8 @@ public class BhtSummeryController implements Serializable {
         bfd.setBillDiscount(BigDecimal.valueOf(billLevelDiscount));
         bfd.setLineDiscount(BigDecimal.valueOf(itemDiscountTotal + chargeTypeDiscountTotal));
         bfd.setTotalDiscount(BigDecimal.valueOf(discount));
+        String trimmed = discountComment == null ? null : discountComment.trim();
+        bill.setDiscountCommentText(trimmed);
     }
 
     private void saveTempBill() {
@@ -4390,6 +4451,9 @@ public class BhtSummeryController implements Serializable {
             temBi.setChargeTypeDiscount(cit.getChargeTypeDiscount());
             temBi.setNetValue(cit.getNetTotal());
             temBi.setAdjustedValue(cit.getAdjustedTotal());
+            if (cit.getInwardChargeType() == InwardChargeType.ComputedVAT) {
+                temBi.setVat(cit.getTotal());
+            }
             temBi.setDescreption(cit.getComments());
             temBi.setCreatedAt(new Date());
             temBi.setCreater(getSessionController().getLoggedUser());
@@ -4446,6 +4510,9 @@ public class BhtSummeryController implements Serializable {
             temBi.setChargeTypeDiscount(cit.getChargeTypeDiscount());
             temBi.setNetValue(cit.getNetTotal());
             temBi.setAdjustedValue(cit.getAdjustedTotal());
+            if (cit.getInwardChargeType() == InwardChargeType.ComputedVAT) {
+                temBi.setVat(cit.getTotal());
+            }
             temBi.setDescreption(cit.getComments());
             temBi.setCreatedAt(new Date());
             temBi.setCreater(getSessionController().getLoggedUser());
@@ -4490,6 +4557,9 @@ public class BhtSummeryController implements Serializable {
             temBi.setChargeTypeDiscount(cit.getChargeTypeDiscount());
             temBi.setNetValue(cit.getNetTotal());
             temBi.setAdjustedValue(cit.getAdjustedTotal());
+            if (cit.getInwardChargeType() == InwardChargeType.ComputedVAT) {
+                temBi.setVat(cit.getTotal());
+            }
             temBi.setDescreption(cit.getComments());
             temBi.setCreatedAt(new Date());
             temBi.setCreater(getSessionController().getLoggedUser());
@@ -4963,6 +5033,7 @@ public class BhtSummeryController implements Serializable {
         changed = false;
         chargeItemTotals = null;
         billLevelDiscount = 0;
+        discountComment = null;
         itemDiscountTotal = 0;
         chargeTypeDiscountTotal = 0;
         grantTotal = 0.0;
@@ -5542,6 +5613,9 @@ public class BhtSummeryController implements Serializable {
         grossTotal = 0;
         marginTotal = 0;
         vatTotal = 0;
+        // Add / refresh the computed VAT row first, from the rows' net after
+        // discounts, so every total below (and the due) includes it (#17491).
+        applyComputedVat(getChargeItemTotals());
         for (ChargeItemTotal c : getChargeItemTotals()) {
             grantTotal += c.getTotal();
             itemDiscountTotal += c.getDiscount();
@@ -5558,6 +5632,155 @@ public class BhtSummeryController implements Serializable {
     double grossTotal = 0;
     double marginTotal = 0;
     double vatTotal = 0;
+    /**
+     * Adds (or refreshes, or removes) the single ComputedVAT row (issue #17491).
+     * <p>
+     * VAT = sum over rows with a rate above 0 ("Inward VAT Percentage - &lt;type
+     * name&gt;", set on the Inward Charge Type Labels page) of
+     * round2(taxable base &times; rate / 100). The new row is an ordinary charge
+     * row, so the grand total, net total, due, credit-company split and the
+     * final bill items all include it without any special handling. With every
+     * rate at 0 no row exists and nothing changes.
+     * <p>
+     * Tax rules:
+     * <ol>
+     * <li>Package-covered rows (held at the package's fixed allocated price)
+     * are not taxed.</li>
+     * <li>VAT is calculated after discounts: the base is the row net (total
+     * less item and charge-type discounts) less the row's share of the
+     * bill-level discount. That one discount is spread over all rows (taxed or
+     * not, never the VAT row) in proportion to each row's net; a row's share falls
+     * on its taxable part only: share &times; (net - own-VAT items) / net. The base never
+     * goes below 0.</li>
+     * <li>Items that already carry their own VAT (service items, and staff
+     * fees with a fee VAT other than 0) are left out of the base; the other items
+     * of the same row stay taxed. See {@link ChargeItemTotal#getOwnVatItemsAmount()}.</li>
+     * <li>Package excess is taxable: it sits in its own PackageExcessCharges
+     * row, which is not package-covered, so rule 1 does not skip it.</li>
+     * </ol>
+     * The ComputedVAT row itself is never taxed.
+     * <p>
+     * Idempotent: it is called from {@link #calFinalValue()} on every
+     * recalculation, reuses the existing ComputedVAT row (keeping its comment)
+     * and replaces its amount, so the VAT is never counted twice.
+     */
+    private void applyComputedVat(List<ChargeItemTotal> rows) {
+        if (rows == null) {
+            return;
+        }
+        ChargeItemTotal vatRow = null;
+        for (java.util.Iterator<ChargeItemTotal> it = rows.iterator(); it.hasNext();) {
+            ChargeItemTotal row = it.next();
+            if (row.getInwardChargeType() == InwardChargeType.ComputedVAT) {
+                if (vatRow == null) {
+                    vatRow = row;
+                } else {
+                    it.remove();
+                }
+            }
+        }
+
+        // Sum of the nets of every non-VAT row (taxed or not): the divisor for
+        // spreading the bill-level discount (rule 2).
+        BigDecimal sumOfNets = BigDecimal.ZERO;
+        for (ChargeItemTotal row : rows) {
+            if (row.getInwardChargeType() == InwardChargeType.ComputedVAT) {
+                continue;
+            }
+            BigDecimal rowNet = rowNetForVat(row);
+            if (rowNet.signum() > 0) {
+                sumOfNets = sumOfNets.add(rowNet);
+            }
+        }
+        BigDecimal billDiscountExact = BigDecimal.valueOf(billLevelDiscount);
+
+        Map<InwardChargeType, Double> packageAllocations = null;
+        BigDecimal vatSumExact = BigDecimal.ZERO;
+        for (ChargeItemTotal row : rows) {
+            InwardChargeType type = row.getInwardChargeType();
+            if (type == InwardChargeType.ComputedVAT) {
+                continue;
+            }
+            double rate = configOptionApplicationController.getInwardVatPercentage(type);
+            if (rate <= 0) {
+                continue;
+            }
+            BigDecimal net = rowNetForVat(row);
+            if (net.signum() <= 0) {
+                continue;
+            }
+            if (getPatientEncounter() != null && getPatientEncounter().getInpatientPackage() != null) {
+                if (packageAllocations == null) {
+                    packageAllocations = resolvePackageChargeTypeAllocationsIfApplicable(getPatientEncounter().getInpatientPackage());
+                }
+                if (packageAllocations.containsKey(type)) {
+                    continue;
+                }
+            }
+            // The share uses the row's full net, not the reduced base.
+            BigDecimal share = InwardVatCalculator.billDiscountShare(billDiscountExact, net, sumOfNets);
+            BigDecimal base = InwardVatCalculator.taxableBase(net, BigDecimal.valueOf(row.getOwnVatItemsAmount()), share);
+            vatSumExact = vatSumExact.add(InwardVatCalculator.vatOnBase(base, rate));
+        }
+        double vatSum = vatSumExact.doubleValue();
+
+        if (vatSum <= 0) {
+            if (vatRow != null) {
+                rows.remove(vatRow);
+            }
+            return;
+        }
+        if (vatRow == null) {
+            vatRow = new ChargeItemTotal();
+            vatRow.setInwardChargeType(InwardChargeType.ComputedVAT);
+            rows.add(vatRow);
+        }
+        vatRow.setTotal(vatSum);
+        vatRow.setGross(0.0);
+        vatRow.setVat(vatSum);
+        vatRow.setDiscount(0.0);
+        vatRow.setChargeTypeDiscount(0.0);
+        vatRow.setMargin(0.0);
+        vatRow.setAdjustedTotal(vatSum);
+    }
+
+    /**
+     * Row net used by the VAT: total less item and charge-type discounts. Built
+     * from decimal operands so 1.15 - 0.10 is exactly 1.05, not 1.0499999999999998.
+     */
+    private static BigDecimal rowNetForVat(ChargeItemTotal row) {
+        return BigDecimal.valueOf(row.getTotal())
+                .subtract(BigDecimal.valueOf(row.getDiscount()))
+                .subtract(BigDecimal.valueOf(row.getChargeTypeDiscount()));
+    }
+
+    /**
+     * Charges total before the computed VAT row: the figure a bill-level
+     * discount may not exceed (the VAT itself falls when the discount rises).
+     */
+    private double chargesTotalBeforeVat() {
+        double vatRowTotal = 0;
+        if (chargeItemTotals != null) {
+            for (ChargeItemTotal c : chargeItemTotals) {
+                if (c.getInwardChargeType() == InwardChargeType.ComputedVAT) {
+                    vatRowTotal += c.getTotal();
+                }
+            }
+        }
+        return grantTotal - vatRowTotal;
+    }
+
+    /**
+     * Re-runs the totals (and so the VAT row, which depends on the bill-level
+     * discount) after billLevelDiscount changed, then refreshes discount and due.
+     */
+    private void recalculateAfterBillLevelDiscountChange() {
+        calFinalValue();
+        if (configOptionApplicationController.getBooleanValueByKey("Allow Final Bill Total Without Restrictions & Price Difference")) {
+            grantTotal = adjustedTotal;
+        }
+        due = (grantTotal - discount) - paid;
+    }
 
     public double getGrantTotal() {
         return grantTotal;
@@ -5573,6 +5796,14 @@ public class BhtSummeryController implements Serializable {
 
     public void setDiscount(double discount) {
         this.discount = discount;
+    }
+
+    public String getDiscountComment() {
+        return discountComment;
+    }
+
+    public void setDiscountComment(String discountComment) {
+        this.discountComment = discountComment;
     }
 
     public double getBillLevelDiscount() {
@@ -5874,6 +6105,7 @@ public class BhtSummeryController implements Serializable {
                 && getPatientEncounter().getFinalBill().getBillFinanceDetails().getBillDiscount() != null) {
             billLevelDiscount = getPatientEncounter().getFinalBill().getBillFinanceDetails().getBillDiscount().doubleValue();
         }
+        discountComment = getPatientEncounter().getFinalBill().getDiscountCommentText();
 
         for (BillItem existing : getPatientEncounter().getFinalBill().getBillItems()) {
             for (ChargeItemTotal cit : chargeItemTotals) {
@@ -5957,6 +6189,14 @@ public class BhtSummeryController implements Serializable {
         // BillItem half as gross while Total and Net show the full amount.
         Map<InwardChargeType, Double> timedItemTotals = getInwardBean().getTimedItemFeeTotalByInwardChargeTypeBulk(getPatientEncounter(), childPatientEncouters);
 
+        // Net of the service items that carry their own VAT, per charge type;
+        // the computed inward VAT leaves them out (#17491).
+        Map<InwardChargeType, Double> ownVatNets = getInwardBean().calServiceBillItemsOwnVatNetByInwardChargeTypeBulk(getPatientEncounter(), childPatientEncouters);
+        ownVatServiceNets = ownVatNets;
+        for (ChargeItemTotal cit : chargeItemTotals) {
+            cit.setOwnVatItemsAmount(ownVatNets.getOrDefault(cit.getInwardChargeType(), 0.0));
+        }
+
         for (ChargeItemTotal cit : chargeItemTotals) {
             double[] values = serviceBreakdown.get(cit.getInwardChargeType());
             Double timedTotal = timedItemTotals.get(cit.getInwardChargeType());
@@ -5995,10 +6235,18 @@ public class BhtSummeryController implements Serializable {
             }
         }
 
+        // Staff fees that carry their own VAT (fee VAT other than 0, so cancelled fees net out): their fee value
+        // is what the row total counts, so that is what is left out of the VAT base.
+        double proOwnVat = 0.0;
+        double docOwnVat = 0.0;
+        double techOwnVat = 0.0;
         double proGross = 0.0;
         double proMargin = 0.0;
         double proVat = 0.0;
         for (BillFee bf : getProfesionallFee()) {
+            if (bf.getFeeVat() != 0) {
+                proOwnVat += bf.getFeeValue();
+            }
             proGross += bf.getFeeGrossValue() != null ? bf.getFeeGrossValue() : bf.getFeeValue();
             proMargin += bf.getFeeMargin();
             proVat += bf.getFeeVat();
@@ -6008,6 +6256,9 @@ public class BhtSummeryController implements Serializable {
         double docMargin = 0.0;
         double docVat = 0.0;
         for (BillFee bf : getDoctorAndNurseFee()) {
+            if (bf.getFeeVat() != 0) {
+                docOwnVat += bf.getFeeValue();
+            }
             docGross += bf.getFeeGrossValue() != null ? bf.getFeeGrossValue() : bf.getFeeValue();
             docMargin += bf.getFeeMargin();
             docVat += bf.getFeeVat();
@@ -6017,6 +6268,9 @@ public class BhtSummeryController implements Serializable {
         double techMargin = 0.0;
         double techVat = 0.0;
         for (BillFee bf : getTechnicianFee()) {
+            if (bf.getFeeVat() != 0) {
+                techOwnVat += bf.getFeeValue();
+            }
             techGross += bf.getFeeGrossValue() != null ? bf.getFeeGrossValue() : bf.getFeeValue();
             techMargin += bf.getFeeMargin();
             techVat += bf.getFeeVat();
@@ -6042,10 +6296,12 @@ public class BhtSummeryController implements Serializable {
                 cit.setGross(serviceGross + (timedTotal != null ? timedTotal : 0.0) + proGross);
                 cit.setMargin(serviceMargin + proMargin);
                 cit.setVat(serviceVat + proVat);
+                cit.setOwnVatItemsAmount(cit.getOwnVatItemsAmount() + proOwnVat);
             } else if (cit.getInwardChargeType() == InwardChargeType.DoctorAndNurses) {
                 cit.setGross(docGross);
                 cit.setMargin(docMargin);
                 cit.setVat(docVat);
+                cit.setOwnVatItemsAmount(cit.getOwnVatItemsAmount() + docOwnVat);
             } else if (cit.getInwardChargeType() == InwardChargeType.TechnicianAndParamedicalCharge) {
                 // Every source Total holds for this type: the staff fees, any
                 // service/timed items filed under it, and its Outside Charges
@@ -6061,6 +6317,7 @@ public class BhtSummeryController implements Serializable {
                 cit.setGross(serviceGross + (timedTotal != null ? timedTotal : 0.0) + techGross + outsideCharges);
                 cit.setMargin(serviceMargin + techMargin);
                 cit.setVat(serviceVat + techVat);
+                cit.setOwnVatItemsAmount(cit.getOwnVatItemsAmount() + techOwnVat);
             } else if (cit.getInwardChargeType() == InwardChargeType.AdmissionFee) {
                 cit.setGross(cit.getTotal());
                 cit.setMargin(0.0);
@@ -6220,13 +6477,14 @@ public class BhtSummeryController implements Serializable {
             billLevelDiscount = 0;
             JsfUtil.addErrorMessage("Bill level discount cannot be negative");
         }
-        discount = itemDiscountTotal + chargeTypeDiscountTotal + billLevelDiscount;
-        if (discount > grantTotal) {
+        // Compared with the charges before VAT: the VAT row moves with the
+        // discount, so it must not decide whether the discount is too large.
+        if (itemDiscountTotal + chargeTypeDiscountTotal + billLevelDiscount > chargesTotalBeforeVat()) {
             billLevelDiscount = 0;
-            discount = itemDiscountTotal + chargeTypeDiscountTotal;
             JsfUtil.addErrorMessage("Total discount cannot exceed total charges");
         }
-        due = (grantTotal - discount) - paid;
+        // The discount changes the VAT, so recompute the VAT row and all totals.
+        recalculateAfterBillLevelDiscountChange();
         rebuildCreditCompanyAllocations();
     }
 
