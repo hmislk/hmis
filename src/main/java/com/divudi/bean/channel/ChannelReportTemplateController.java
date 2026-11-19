@@ -70,6 +70,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -133,6 +134,26 @@ public class ChannelReportTemplateController implements Serializable {
 
     public void setBillTypeInOBReport(List<String> billTypeInOBReport) {
         this.billTypeInOBReport = billTypeInOBReport;
+    }
+
+    public static final String OB_REPORT_TYPE_BOOKED_DATE = "Booked Date";
+    public static final String OB_REPORT_TYPE_APPOINTMENT_DATE = "Appointment Date";
+    private static final List<String> OB_REPORT_TYPES = Collections.unmodifiableList(Arrays.asList(OB_REPORT_TYPE_BOOKED_DATE, OB_REPORT_TYPE_APPOINTMENT_DATE));
+    private String selectedReportTypeInOBReport = OB_REPORT_TYPE_BOOKED_DATE;
+
+    public List<String> getReportTypesInOBReport() {
+        return OB_REPORT_TYPES;
+    }
+
+    public String getSelectedReportTypeInOBReport() {
+        if (selectedReportTypeInOBReport == null) {
+            selectedReportTypeInOBReport = OB_REPORT_TYPE_BOOKED_DATE;
+        }
+        return selectedReportTypeInOBReport;
+    }
+
+    public void setSelectedReportTypeInOBReport(String selectedReportTypeInOBReport) {
+        this.selectedReportTypeInOBReport = selectedReportTypeInOBReport;
     }
 
     double netTotal;
@@ -1078,7 +1099,7 @@ public class ChannelReportTemplateController implements Serializable {
                 + " COALESCE(ob.phoneNo, ''), COALESCE(b.creditCompany.name, ''), "
                 + " b.cancelled, b.refunded, bs.absent, "
                 + " ob.onlineBookingStatus, "
-                + " b.paidAmount) "
+                + " b.paidAmount, b.createdAt) "
                 + " from BillSession bs "
                 + " left join bs.bill b "
                 + " left join b.referenceBill rb "
@@ -1086,8 +1107,19 @@ public class ChannelReportTemplateController implements Serializable {
                 + " left join b.staff s "
                 + " where bs.retired = false "
                 + " and b.creditCompany is not null "
-                + " and b.billTypeAtomic = :bta"
-                + " and b.createdAt between :fd and :td ";
+                + " and b.billTypeAtomic = :bta";
+
+        boolean appointmentDateMode = OB_REPORT_TYPE_APPOINTMENT_DATE.equals(getSelectedReportTypeInOBReport());
+        if (appointmentDateMode) {
+            // Session dates carry no time, so cover the whole From and To days.
+            j += " and bs.sessionDate between :fd and :td ";
+            m.put("fd", CommonFunctions.getStartOfDay(getFromDate()));
+            m.put("td", CommonFunctions.getEndOfDay(getToDate()));
+        } else {
+            j += " and b.createdAt between :fd and :td ";
+            m.put("fd", getFromDate());
+            m.put("td", getToDate());
+        }
 
         if (institution != null) {
             m.put("ins", institution);
@@ -1128,10 +1160,12 @@ public class ChannelReportTemplateController implements Serializable {
             }
         }
 
-        j += " order by b.createdAt desc";
+        if (appointmentDateMode) {
+            j += " order by bs.sessionDate desc, b.createdAt desc";
+        } else {
+            j += " order by b.createdAt desc";
+        }
 
-        m.put("fd", getFromDate());
-        m.put("td", getToDate());
         m.put("bta", BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT);
 
         onlineBookingDetialRows = (List<OnlineBookingDetialRow>) billFacade.findLightsByJpql(j, m, TemporalType.TIMESTAMP);
@@ -8132,6 +8166,7 @@ public class ChannelReportTemplateController implements Serializable {
         params.put("To Date", getToDate());
         params.put("Institution", institution != null ? institution.getName() : "All Institutions");
         params.put("Bill Type", selectedBillTypeInOBReport != null ? selectedBillTypeInOBReport : "All");
+        params.put("Report Type", getSelectedReportTypeInOBReport());
 
         return params;
     }
@@ -8235,6 +8270,12 @@ public class ChannelReportTemplateController implements Serializable {
         private boolean absent;
         private OnlineBookingStatus onlineBookingStatus;
         private double paidAmount;
+        private Date bookedDate;
+
+        public OnlineBookingDetialRow(Long billId, String billDeptId, Date sessionDate, String sessionName, String consultantName, Title cosultantTitle, String consultantSpeciality, String patientName, String patientPhone, String agentName, boolean billCancelled, boolean billRefunded, boolean absent, OnlineBookingStatus onlineBookingStatus, double paidAmount, Date bookedDate) {
+            this(billId, billDeptId, sessionDate, sessionName, consultantName, cosultantTitle, consultantSpeciality, patientName, patientPhone, agentName, billCancelled, billRefunded, absent, onlineBookingStatus, paidAmount);
+            this.bookedDate = bookedDate;
+        }
 
         public OnlineBookingDetialRow(Long billId, String billDeptId, Date sessionDate, String sessionName, String consultantName, Title cosultantTitle, String consultantSpeciality, String patientName, String patientPhone, String agentName, boolean billCancelled, boolean billRefunded, boolean absent, OnlineBookingStatus onlineBookingStatus, double paidAmount) {
             this.billId = billId;
@@ -8369,6 +8410,14 @@ public class ChannelReportTemplateController implements Serializable {
 
         public void setPaidAmount(double paidAmount) {
             this.paidAmount = paidAmount;
+        }
+
+        public Date getBookedDate() {
+            return bookedDate;
+        }
+
+        public void setBookedDate(Date bookedDate) {
+            this.bookedDate = bookedDate;
         }
     }
 }
