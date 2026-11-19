@@ -1493,6 +1493,8 @@ public class SessionController implements Serializable, HttpSessionListener {
         System.out.println("DEBUG: checkUsersWithoutDepartment() started at " + new Date());
         long startTime = System.currentTimeMillis();
         twoFactorAuthController.dismissLockedNotice();
+        // A new login attempt starts clean: no half-finished challenge or forced-setup mark from earlier in this session
+        twoFactorAuthController.resetForNewLogin();
         
         String jpql;
         jpql = "SELECT u FROM WebUser u WHERE u.retired = false and (u.name)=:un";
@@ -2201,6 +2203,7 @@ public class SessionController implements Serializable, HttpSessionListener {
         paymentManagementAfterShiftStart = null;
         availableDepartmentTypesForPharmacyTransactions = null;
         financialTransactionController.resetForLogout();
+        twoFactorAuthController.resetForNewLogin();
         invalidateHttpSession();
     }
 
