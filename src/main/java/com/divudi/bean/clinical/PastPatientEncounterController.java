@@ -609,6 +609,8 @@ public class PastPatientEncounterController implements Serializable {
             JsfUtil.addErrorMessage("Nothing to save");
             return;
         }
+        // Shown unescaped on the visit and card pages: keep formatting only
+        encounterReferral.setLobValue(com.divudi.core.util.CardHtmlSanitizer.sanitize(encounterReferral.getLobValue()));
         if (encounterReferral.getId() == null) {
             clinicalFindingValueFacade.create(encounterReferral);
             JsfUtil.addSuccessMessage("Saved");
