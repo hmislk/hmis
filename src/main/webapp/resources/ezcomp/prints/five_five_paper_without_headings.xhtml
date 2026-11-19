@@ -321,7 +321,7 @@
 
                             </h:panelGroup>
                             <h:panelGroup rendered="#{bip.item.printFeesForBills}">
-                                <ui:repeat value="#{bip.billFees}" var="bf" >
+                                <ui:repeat value="#{bip.billFees}" var="bf" ><h:panelGroup rendered="#{not bf.collectedByDoctorAtBilling}">
                                     <tr>
                                         <td >
                                             <div class="d-flex justify-content-between">
@@ -348,7 +348,7 @@
                                             </h:outputLabel>
                                         </td>
                                     </tr>
-                                </ui:repeat>
+                                </h:panelGroup></ui:repeat>
                             </h:panelGroup>
 
 
@@ -452,6 +452,12 @@
                 </table>
 
             </div>
+
+            <h:panelGroup layout="block" rendered="#{opdBillController.hasFeesCollectedByDoctor(cc.attrs.bill)}">
+                <div style="font-size: 9pt; margin-top: 4px; text-align: left;">
+                    <h:outputText value="Fees Collected by the Doctor" />
+                </div>
+            </h:panelGroup>
 
             <div style="font-size: 9pt" class="d-flex justify-content-between">
                 <h:outputLabel value="Payment : #{cc.attrs.bill.paymentMethod}" ></h:outputLabel>
