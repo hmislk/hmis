@@ -5620,12 +5620,20 @@ public class PatientInvestigationController implements Serializable {
     }
 
     public void markAsPrinted() {
-        if (getCurrent().getId() != null || getCurrent().getId() != 0) {
-            getCurrent().setPrinted(Boolean.TRUE);
-            getCurrent().setPrintingUser(getSessionController().getLoggedUser());
-            getCurrent().setPrintingAt(new Date());
-            getEjbFacade().edit(getCurrent());
+        if (getCurrent() == null || getCurrent().getId() == null) {
+            return;
         }
+        // Re-read before saving so a stale session copy cannot overwrite a
+        // newer approval (or other changes) when only the print is recorded.
+        PatientInvestigation fresh = getEjbFacade().findWithoutCache(getCurrent().getId());
+        if (fresh == null) {
+            return;
+        }
+        fresh.setPrinted(Boolean.TRUE);
+        fresh.setPrintingUser(getSessionController().getLoggedUser());
+        fresh.setPrintingAt(new Date());
+        getEjbFacade().edit(fresh);
+        setCurrent(fresh);
     }
 
     public void delete() {
