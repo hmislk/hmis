@@ -1,0 +1,199 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:ph="http://xmlns.jcp.org/jsf/composite/pharmacy">
+
+    <h:body>
+        <ui:composition template="/pharmacy/adjustments/pharmacy_adjustment_index.xhtml">
+
+            <ui:define name="subcontent">
+                <h:form id="frmBatchChange">
+                    <h:panelGroup id="batchChangeContent">
+                        <p:panel rendered="#{!pharmacyBatchChangeController.printPreview}">
+                            <f:facet name="header">
+                                <div class="d-flex align-items-center gap-2">
+                                    <i class="fas fa-random text-primary fs-5"></i>
+                                    <h:outputText value="Batch Change - move this department's stock to another batch of the same item" styleClass="fw-bold text-primary"/>
+                                </div>
+                            </f:facet>
+
+                            <h:panelGroup layout="block" styleClass="mb-2"
+                                          rendered="#{pharmacyBatchChangeController.requiresApproval}">
+                                <h:outputText styleClass="ui-messages-warn p-2 d-block"
+                                              value="Batch Change is not available while stock adjustments require approval."/>
+                            </h:panelGroup>
+
+                            <div class="row g-3">
+                                <div class="col-lg-6">
+                                    <p:panel header="1. Batch to move stock from">
+                                        <p:panelGrid columns="1" class="w-100">
+                                            <h:outputLabel for="acAmp" value="Item" />
+                                            <p:autoComplete
+                                                id="acAmp"
+                                                class="w-100"
+                                                inputStyleClass="w-100"
+                                                queryDelay="300"
+                                                completeMethod="#{ampController.completeAmpAny}"
+                                                var="amp"
+                                                itemLabel="#{amp.name}"
+                                                itemValue="#{amp}"
+                                                value="#{pharmacyBatchChangeController.amp}"
+                                                maxResults="10"
+                                                minQueryLength="3">
+                                                <p:column headerText="Item" style="padding: 3px;">
+                                                    <h:outputText value="#{amp.name}" />
+                                                </p:column>
+                                                <p:column headerText="Code" style="padding: 3px;">
+                                                    <h:outputText value="#{amp.code}" />
+                                                </p:column>
+                                                <p:column headerText="Stock" style="padding: 3px;">
+                                                    <h:outputText value="#{stockController.departmentItemStock(sessionController.department, amp)}" />
+                                                </p:column>
+                                            </p:autoComplete>
+
+                                            <p:commandButton
+                                                id="btnListStock"
+                                                value="List Current Stock"
+                                                icon="fas fa-box"
+                                                actionListener="#{pharmacyBatchChangeController.fillStocks}"
+                                                process="@form"
+                                                update="batchChangeContent"
+                                                styleClass="m-1 ui-button-success" />
+
+                                            <h:outputLabel value="Batches with stock in this department" />
+                                            <p:dataTable
+                                                id="tblStocks"
+                                                value="#{pharmacyBatchChangeController.stocks}"
+                                                var="s"
+                                                rows="8"
+                                                paginator="true"
+                                                paginatorAlwaysVisible="false"
+                                                selectionMode="single"
+                                                rowKey="#{s.id}"
+                                                selection="#{pharmacyBatchChangeController.selectedStock}"
+                                                emptyMessage="No stock batches found. Select an item and click 'List Current Stock'.">
+                                                <p:column headerText="Batch Number">
+                                                    <h:outputText value="#{s.itemBatch.batchNo}" />
+                                                </p:column>
+                                                <p:column headerText="Purchase Rate">
+                                                    <h:outputText value="#{s.itemBatch.purcahseRate}">
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputText>
+                                                </p:column>
+                                                <p:column headerText="Rate">
+                                                    <h:outputText value="#{s.itemBatch.retailsaleRate}">
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputText>
+                                                </p:column>
+                                                <p:column headerText="Stocks">
+                                                    <h:outputText value="#{s.stock}">
+                                                        <f:convertNumber pattern="#,###.##" />
+                                                    </h:outputText>
+                                                </p:column>
+                                                <p:column headerText="Expiry">
+                                                    <h:outputText value="#{s.itemBatch.dateOfExpire}">
+                                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" />
+                                                    </h:outputText>
+                                                </p:column>
+                                                <p:ajax event="rowSelect" listener="#{pharmacyBatchChangeController.onStockSelect}" update=":#{p:resolveFirstComponentWithId('pnlMove',view).clientId}" />
+                                            </p:dataTable>
+                                        </p:panelGrid>
+                                    </p:panel>
+                                </div>
+
+                                <div class="col-lg-6">
+                                    <h:panelGroup id="pnlMove">
+                                        <p:panel header="2. Batch to move stock to">
+                                            <h:panelGroup layout="block" rendered="#{pharmacyBatchChangeController.selectedStock eq null}">
+                                                <h:outputText value="Select a batch on the left first." styleClass="text-muted" />
+                                            </h:panelGroup>
+                                            <h:panelGroup layout="block" rendered="#{pharmacyBatchChangeController.selectedStock ne null}">
+                                                <div class="mb-2">
+                                                    <h:outputText value="From batch: " styleClass="fw-semibold" />
+                                                    <h:outputText value="#{pharmacyBatchChangeController.selectedStock.itemBatch.item.name} - #{pharmacyBatchChangeController.selectedStock.itemBatch.batchNo}" />
+                                                    <h:outputText value=" (available " />
+                                                    <h:outputText value="#{pharmacyBatchChangeController.selectedStock.stock}">
+                                                        <f:convertNumber pattern="#,###.##" />
+                                                    </h:outputText>
+                                                    <h:outputText value=")" />
+                                                </div>
+
+                                                <h:outputLabel for="selTarget" value="Move to batch (same item)" />
+                                                <p:selectOneMenu id="selTarget" styleClass="w-100" filter="true" filterMatchMode="contains"
+                                                                 value="#{pharmacyBatchChangeController.targetBatchId}">
+                                                    <f:selectItem itemLabel="Select a batch" itemValue="#{null}" noSelectionOption="true" />
+                                                    <f:selectItems value="#{pharmacyBatchChangeController.targetBatchOptions}" />
+                                                </p:selectOneMenu>
+                                                <h:outputText value="Not in the list? Make the batch first." styleClass="text-muted d-block" />
+                                                <p:commandButton
+                                                    id="btnCreateBatch"
+                                                    value="Create New Batch"
+                                                    icon="fas fa-plus-circle"
+                                                    action="/pharmacy/adjustments/pharmacy_adjustment_batch_create?faces-redirect=true"
+                                                    actionListener="#{pharmacyAdjustmentController.prepareForNewBatchCreation()}"
+                                                    ajax="false"
+                                                    immediate="true"
+                                                    disabled="#{not webUserController.hasPrivilege('PharmacyAdjustmentCreateBatch')}"
+                                                    styleClass="my-1 ui-button-secondary" />
+
+                                                <div class="mt-2">
+                                                    <h:outputLabel for="txtQty" value="Quantity to Move" />
+                                                    <p:inputText id="txtQty" autocomplete="off" styleClass="w-100"
+                                                                 value="#{pharmacyBatchChangeController.qty}" />
+                                                </div>
+                                                <div class="mt-2">
+                                                    <h:outputLabel for="txtComment" value="Comment" />
+                                                    <p:inputTextarea id="txtComment" styleClass="w-100"
+                                                                     value="#{pharmacyBatchChangeController.comment}" />
+                                                </div>
+
+                                                <p:commandButton
+                                                    id="btnChangeBatch"
+                                                    widgetVar="btnChangeBatchW"
+                                                    value="Change Batch"
+                                                    icon="fas fa-random"
+                                                    styleClass="mt-2 ui-button-warning"
+                                                    onclick="PF('btnChangeBatchW').disable();"
+                                                    process="@form"
+                                                    update="batchChangeContent :growl"
+                                                    action="#{pharmacyBatchChangeController.changeBatch}"
+                                                    disabled="#{not pharmacyBatchChangeController.permitted or pharmacyBatchChangeController.requiresApproval}" />
+                                            </h:panelGroup>
+                                        </p:panel>
+                                    </h:panelGroup>
+                                </div>
+                            </div>
+                        </p:panel>
+
+                        <p:panel id="printSection" rendered="#{pharmacyBatchChangeController.printPreview}">
+                            <div class="d-flex gap-2 m-2">
+                                <p:commandButton
+                                    ajax="true"
+                                    process="@this"
+                                    update="batchChangeContent"
+                                    icon="fa fa-plus"
+                                    class="ui-button-success"
+                                    action="#{pharmacyBatchChangeController.startNew}"
+                                    value="New Batch Change"/>
+                                <p:commandButton
+                                    class="ui-button-info"
+                                    icon="fa fa-print"
+                                    ajax="false"
+                                    value="Print">
+                                    <p:printer target="print"/>
+                                </p:commandButton>
+                            </div>
+                            <h:panelGroup id="print">
+                                <ph:adjustmentBill_batch_change id="adjustmentBillBatchChange" bill="#{pharmacyBatchChangeController.bill}" />
+                            </h:panelGroup>
+                        </p:panel>
+                    </h:panelGroup>
+                </h:form>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

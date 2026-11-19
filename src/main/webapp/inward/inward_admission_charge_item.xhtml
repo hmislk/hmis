@@ -74,7 +74,7 @@
                                                       icon="fa fa-search"
                                                       class="ui-button-info ui-button-outlined w-100"
                                                       action="#{admissionChargeItemController.search()}"
-                                                      process="acFilterItem selFilterAdmissionType selFilterPaymentMethod"
+                                                      process="@this acFilterItem selFilterAdmissionType selFilterPaymentMethod"
                                                       update="tblAdmissionCharges"/>
                                     <p:commandButton id="btnClear"
                                                       value="Clear"

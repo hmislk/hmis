@@ -99,6 +99,7 @@ public class TransferIssueDirectController implements Serializable {
     private Stock tmpStock;
     private StockDTO stockDto;
     UserStockContainer userStockContainer;
+    private static final int RECENT_ISSUE_DAYS = 90;
     private List<Department> recentToDepartments;
     private Department toDepartment;
 
@@ -342,8 +343,7 @@ public class TransferIssueDirectController implements Serializable {
         if (issuedBill.getInsId() == null || issuedBill.getInsId().isEmpty()) {
             String insId;
             if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Transfer Issue - Prefix + Institution Code + Year + Yearly Number", false)) {
-                insId = getBillNumberBean().institutionBillNumberGeneratorYearlyWithPrefixInsYearCountInstitutionWide(
-                        sessionController.getDepartment(), BillTypeAtomic.PHARMACY_DIRECT_ISSUE);
+                insId = issuedBill.getDeptId(); // Same number as deptId: do not consume the yearly counter twice
             } else {
                 // Check if department strategy is enabled
                 if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Transfer Issue - Prefix + Department Code + Institution Code + Year + Yearly Number", false)) {
@@ -488,15 +488,8 @@ public class TransferIssueDirectController implements Serializable {
      */
     public List<Department> getRecentToDepartments() {
         if (recentToDepartments == null) {
-            String jpql = "select distinct b.toDepartment from Bill b "
-                    + " where b.retired=false "
-                    + " and b.billTypeAtomic=:bt "
-                    + " and b.fromDepartment=:fd "
-                    + " order by b.id desc";
-            Map<String, Object> m = new HashMap<>();
-            m.put("bt", BillTypeAtomic.PHARMACY_DIRECT_ISSUE);
-            m.put("fd", sessionController.getDepartment());
-            recentToDepartments = departmentFacade.findByJpql(jpql, m, 10);
+            recentToDepartments = departmentFacade.findRecentToDepartments(
+                    BillTypeAtomic.PHARMACY_DIRECT_ISSUE, sessionController.getDepartment(), RECENT_ISSUE_DAYS, 10);
         }
         return recentToDepartments;
     }

@@ -21,11 +21,27 @@
                             .printOnlyReport .printTitle {
                                 text-align: center;
                                 font-weight: bold;
-                                font-size: 13px;
+                                font-size: 15px;
+                                letter-spacing: 0.5px;
+                                text-transform: uppercase;
                                 margin-bottom: 2px;
                             }
                             .printOnlyReport .printSubTitle {
                                 text-align: center;
+                                font-size: 11px;
+                                margin-bottom: 5px;
+                            }
+                            .printOnlyReport .lbl { font-weight: bold; }
+                            .printOnlyReport .lbl.sep { margin-left: 14px; }
+                            .printOnlyReport .printFilters {
+                                display: grid;
+                                grid-template-columns: repeat(4, 1fr);
+                                gap: 2px 12px;
+                                width: 99.5%;
+                                box-sizing: border-box;
+                                border-top: 1px solid #000;
+                                border-bottom: 1px solid #000;
+                                padding: 4px 2px;
                                 margin-bottom: 6px;
                             }
                             .printOnlyReport table {
@@ -423,15 +439,24 @@
                         <h:panelGroup layout="block" id="printReport" styleClass="printOnlyReport">
                             <div class="printTitle">BHT Deposit Detail</div>
                             <div class="printSubTitle">
+                                <span class="lbl">From:</span>
                                 <h:outputText value="#{bhtDepositDetailReportController.fromDate}">
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                 </h:outputText>
-                                <h:outputText value=" to " />
+                                <span class="lbl sep">To:</span>
                                 <h:outputText value="#{bhtDepositDetailReportController.toDate}">
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                 </h:outputText>
-                                <h:outputText value=" | Date Basis: #{bhtDepositDetailReportController.dateBasis eq 'admissionDate' ? 'Admission Date' : (bhtDepositDetailReportController.dateBasis eq 'paymentDate' ? 'Payment Date' : 'Discharge Date')}" />
-                                <h:outputText value=" | Report Type: #{bhtDepositDetailReportController.reportType eq 'DEPOSIT' ? 'Inpatient Deposits' : (bhtDepositDetailReportController.reportType eq 'PAYMENT' ? 'Inpatient Payment' : (bhtDepositDetailReportController.reportType eq 'POST_FINAL' ? 'Post Final Bill Payments' : 'All'))}" />
+                            </div>
+                            <div class="printFilters">
+                                <div><span class="lbl">Date Basis:</span> <h:outputText value="#{bhtDepositDetailReportController.dateBasis eq 'admissionDate' ? 'Admission Date' : (bhtDepositDetailReportController.dateBasis eq 'paymentDate' ? 'Payment Date' : 'Discharge Date')}" /></div>
+                                <div><span class="lbl">Report Type:</span> <h:outputText value="#{bhtDepositDetailReportController.reportType eq 'DEPOSIT' ? 'Inpatient Deposits' : (bhtDepositDetailReportController.reportType eq 'PAYMENT' ? 'Inpatient Payment' : (bhtDepositDetailReportController.reportType eq 'POST_FINAL' ? 'Post Final Bill Payments' : 'All'))}" /></div>
+                                <div><span class="lbl">Admission Status:</span> <h:outputText value="#{bhtDepositDetailReportController.admissionStatus != null ? bhtDepositDetailReportController.admissionStatus.label : 'All'}" /></div>
+                                <div><span class="lbl">Admission Type:</span> <h:outputText value="#{bhtDepositDetailReportController.admissionType != null ? bhtDepositDetailReportController.admissionType.name : 'All'}" /></div>
+                                <div><span class="lbl">Payment Method:</span> <h:outputText value="#{bhtDepositDetailReportController.paymentMethod != null ? bhtDepositDetailReportController.paymentMethod.label : 'All Methods'}" /></div>
+                                <div><span class="lbl">Institution:</span> <h:outputText value="#{bhtDepositDetailReportController.institution != null ? bhtDepositDetailReportController.institution.name : 'All Institutions'}" /></div>
+                                <div><span class="lbl">Site:</span> <h:outputText value="#{bhtDepositDetailReportController.site != null ? bhtDepositDetailReportController.site.name : 'All Sites'}" /></div>
+                                <div><span class="lbl">Department:</span> <h:outputText value="#{bhtDepositDetailReportController.department != null ? bhtDepositDetailReportController.department.name : 'All Departments'}" /></div>
                             </div>
                             <table>
                                 <thead>

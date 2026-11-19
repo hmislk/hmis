@@ -75,6 +75,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.List;
 import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
@@ -299,11 +302,11 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
     public void recieveRemainAmountAutomatically() {
         double remainAmount = calculatRemainForMultiplePaymentTotal();
         if (getPreBill().getPaymentMethod() == PaymentMethod.MultiplePaymentMethods) {
-            int arrSize = paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().size();
+            int arrSize = getPaymentMethodData().getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().size();
             if (arrSize == 0) {
                 return; // No payment methods added yet
             }
-            ComponentDetail pm = paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().get(arrSize - 1);
+            ComponentDetail pm = getPaymentMethodData().getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().get(arrSize - 1);
             if (pm.getPaymentMethodData() == null) {
                 return; // Payment method data not initialized
             }
@@ -751,6 +754,10 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
         getSaleBill().setInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
 
         getBillBean().setPaymentMethodData(getSaleBill(), getSaleBill().getPaymentMethod(), paymentMethodData);
+        if (getSaleBill().getPaymentMethod() == PaymentMethod.Credit && paymentMethodData != null && paymentMethodData.getCredit() != null) {
+            getSaleBill().setCreditCompany(paymentMethodData.getCredit().getInstitution());
+            getSaleBill().setToInstitution(paymentMethodData.getCredit().getInstitution());
+        }
 
         getSaleBill().setBillDate(new Date());
         getSaleBill().setBillTime(new Date());
@@ -1618,6 +1625,16 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
             }
         }
 
+        // Synchronize Credit company selection if it exists in preBill but not in paymentMethodData (#25325)
+        if (getPreBill().getPaymentMethod() == PaymentMethod.Credit) {
+            Institution creditCompany = getPreBill().getCreditCompany() != null
+                    ? getPreBill().getCreditCompany()
+                    : getPreBill().getToInstitution();
+            if (creditCompany != null && getPaymentMethodData().getCredit().getInstitution() == null) {
+                getPaymentMethodData().getCredit().setInstitution(creditCompany);
+            }
+        }
+
         // Initialize PatientDeposit for PatientDeposit payment method
         if (getPreBill().getPaymentMethod() == PaymentMethod.PatientDeposit) {
             System.out.println("=== PATIENTDEPOSIT INIT DEBUG ===");
@@ -1915,6 +1932,13 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
     }
 
     public void paymentOngoingToken(Bill bill) {
+        // The cashier may have left the previous bill's Accept Payment page by the
+        // menu or the browser Back button, which skips Back To Search. Release that
+        // bill's token before marking this one, so it does not stay "in progress".
+        if (preBill != null && preBill.getId() != null
+                && (bill == null || !preBill.getId().equals(bill.getId()))) {
+            releaseOngoingPaymentToken(preBill);
+        }
         Token t = findTokenFromBill(bill);
         if (t == null) {
             return;
@@ -1959,6 +1983,48 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
 
     @EJB
     private TokenFacade tokenFacade;
+
+    // Back To Search from the Accept Payment page: a token whose payment was
+    // started but not settled goes back to the plain "called" state, so it does
+    // not stay ranked as a payment in progress on the token board. A settled
+    // (completed) token is left as it is.
+    public String backToSearchWithoutSettling() {
+        Bill b = getPreBill();
+        if (b != null && b.getId() != null) {
+            releaseOngoingPaymentToken(b);
+        }
+        return "pharmacy_search_pre_bill";
+    }
+
+    /**
+     * A token whose payment was started but not settled goes back to the plain
+     * "called" state. A settled (completed) token, or one not in payment, is left
+     * as it is.
+     */
+    private void releaseOngoingPaymentToken(Bill bill) {
+        Token t = findTokenFromBill(bill);
+        if (t != null && t.isCalled() && t.isInProgress() && !t.isCompleted()) {
+            markToken(bill);
+        }
+    }
+
+    /**
+     * Session end (timeout or logout) while a payment was open: release its
+     * token so the board does not show it as a payment in progress forever.
+     */
+    @PreDestroy
+    public void releaseOngoingPaymentTokenOnSessionEnd() {
+        try {
+            if (preBill != null && preBill.getId() != null) {
+                releaseOngoingPaymentToken(preBill);
+            }
+        } catch (RuntimeException e) {
+            // The container may be shutting down; a token left in progress is
+            // cosmetic and must not block session destruction.
+            Logger.getLogger(PharmacyPreSettleController.class.getName())
+                    .log(Level.WARNING, "Could not release the payment token at session end", e);
+        }
+    }
 
     public void markToken(Bill bill) {
         Token t = findTokenFromBill(bill);
@@ -2248,6 +2314,14 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
                     } else {
                         System.out.println("WARNING: Staff_Welfare payment method but args.getToStaff() is NULL");
                     }
+                } else if (billToSettle.getPaymentMethod() == PaymentMethod.Credit || billToSettle.getCreditCompany() != null) {
+                    Institution creditCompany = billToSettle.getCreditCompany() != null
+                            ? billToSettle.getCreditCompany()
+                            : (billToSettle.getPaymentMethod() == PaymentMethod.Credit ? billToSettle.getToInstitution() : null);
+                    if (creditCompany != null) {
+                        getPreBill().setCreditCompany(creditCompany);
+                        getPaymentMethodData().getCredit().setInstitution(creditCompany);
+                    }
                 } else {
                     System.out.println("Not Staff_Welfare payment method, skipping staff extraction");
                 }
@@ -2282,7 +2356,14 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
         this.preBill = preBill;
         //System.err.println("Setting Bill " + preBill);
         billPreview = false;
-
+        if (preBill != null) {
+            Institution creditCompany = preBill.getCreditCompany() != null
+                    ? preBill.getCreditCompany()
+                    : (preBill.getPaymentMethod() == PaymentMethod.Credit ? preBill.getToInstitution() : null);
+            if (creditCompany != null) {
+                getPaymentMethodData().getCredit().setInstitution(creditCompany);
+            }
+        }
     }
 
     public Bill getSaleBill() {

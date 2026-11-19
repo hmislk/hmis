@@ -787,7 +787,10 @@ public class EnumController implements Serializable {
      * all, so it is filtered out here rather than at each call site (issue #23543).
      */
     public InwardChargeType[] getInwardChargeTypes() {
-        return professionalFeeClassificationService.visible(InwardChargeType.values());
+        // ComputedVAT is a calculated row of the inward bill, never a charge type for a service (#17491).
+        return professionalFeeClassificationService.visible(Arrays.stream(InwardChargeType.values())
+                .filter(t -> t != InwardChargeType.ComputedVAT)
+                .toArray(InwardChargeType[]::new));
     }
 
     /**
@@ -1481,6 +1484,7 @@ public class EnumController implements Serializable {
             BillType.PharmacyAdjustment,
             BillType.PharmacyAdjustmentDepartmentStock,
             BillType.PharmacyAdjustmentDepartmentSingleStock,
+            BillType.PharmacyAdjustmentBatchChange,
             BillType.PharmacyAdjustmentStaffStock,
             BillType.PharmacyAdjustmentSaleRate,
             BillType.PharmacyAdjustmentWholeSaleRate,

@@ -26,18 +26,6 @@
                 </div>
             </div>
 
-            <!-- QA ONLY: temporary link back to the old entity-based page for side-by-side comparison -->
-            <h:panelGroup rendered="#{webUserController.hasPrivilege('SystemAdmin')}">
-                <div class="row mb-2">
-                    <div class="col-12">
-                        <p class="text-muted small mb-0">
-                            <i class="fa-solid fa-flask me-1"></i>
-                            QA: <h:link value="Old entity-based page" outcome="/inward/pharmacy_bill_issue_bht_old" />
-                        </p>
-                    </div>
-                </div>
-            </h:panelGroup>
-
             <!-- ===================== PATIENT SELECTION ===================== -->
             <h:panelGroup rendered="#{inpatientDirectIssueNativeSqlController.patientEncounter eq null}" class="row">
                 <div class="col-12">

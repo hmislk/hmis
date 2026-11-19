@@ -1559,7 +1559,7 @@ public class PharmacyDirectPurchaseController implements Serializable {
         // Handle Institution ID generation (completely separate)
         String insId;
         if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Institution Id is Prefix Ins Year Count", false)) {
-            insId = getBillNumberBean().institutionBillNumberGeneratorYearlyWithPrefixInsYearCountInstitutionWide(
+            insId = (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Department Id is Prefix Ins Year Count", false)) ? deptId : getBillNumberBean().institutionBillNumberGeneratorYearlyWithPrefixInsYearCountInstitutionWide(
                     sessionController.getDepartment(), BillTypeAtomic.PHARMACY_DIRECT_PURCHASE);
         } else {
             // Smart fallback logic
@@ -1911,7 +1911,7 @@ public class PharmacyDirectPurchaseController implements Serializable {
 
         String insId;
         if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Institution Id is Prefix Ins Year Count", false)) {
-            insId = getBillNumberBean().institutionBillNumberGeneratorYearlyWithPrefixInsYearCountInstitutionWide(
+            insId = (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Department Id is Prefix Ins Year Count", false)) ? deptId : getBillNumberBean().institutionBillNumberGeneratorYearlyWithPrefixInsYearCountInstitutionWide(
                     sessionController.getDepartment(), BillTypeAtomic.PHARMACY_DIRECT_PURCHASE);
         } else {
             if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Department Id is Prefix Dept Ins Year Count", false)

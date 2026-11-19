@@ -102,25 +102,25 @@ public class FavouriteMedicineApiService implements Serializable {
             Double toKg = getDoubleValue(requestData.get("toKg"));
 
             if (itemName == null || itemType == null) {
-                throw new IllegalArgumentException("Required fields missing: itemName, itemType");
+                throw new FavouriteMedicineValidationException("Required fields missing: itemName, itemType");
             }
 
             boolean hasAgeRange = fromYears != null && toYears != null;
             boolean hasWeightRange = fromKg != null && toKg != null;
 
             if (!hasAgeRange && !hasWeightRange) {
-                throw new IllegalArgumentException("Required fields missing: provide either fromYears+toYears (age range) or fromKg+toKg (weight range)");
+                throw new FavouriteMedicineValidationException("Required fields missing: provide either fromYears+toYears (age range) or fromKg+toKg (weight range)");
             }
 
             if (hasAgeRange) {
                 if (fromYears < 0 || toYears < 0 || fromYears >= toYears) {
-                    throw new IllegalArgumentException("Invalid age range: fromYears must be less than toYears and both must be >= 0");
+                    throw new FavouriteMedicineValidationException("Invalid age range: fromYears must be less than toYears and both must be >= 0");
                 }
             }
 
             if (hasWeightRange) {
                 if (fromKg < 0 || toKg < 0 || fromKg >= toKg) {
-                    throw new IllegalArgumentException("Invalid weight range: fromKg must be less than toKg and both must be >= 0");
+                    throw new FavouriteMedicineValidationException("Invalid weight range: fromKg must be less than toKg and both must be >= 0");
                 }
             }
 
@@ -157,7 +157,7 @@ public class FavouriteMedicineApiService implements Serializable {
                         break;
                 }
 
-                throw new IllegalArgumentException(errorMessage.toString());
+                throw new FavouriteMedicineValidationException(errorMessage.toString());
             }
 
             // Create the prescription template
@@ -170,7 +170,7 @@ public class FavouriteMedicineApiService implements Serializable {
                 // forItem = the diagnosis this medicine is being suggested for
                 String forItemName = (String) requestData.get("forItemName");
                 if (forItemName == null || forItemName.trim().isEmpty()) {
-                    throw new IllegalArgumentException("forItemName (the diagnosis name) is required for type=FavouriteDiagnosis");
+                    throw new FavouriteMedicineValidationException("forItemName (the diagnosis name) is required for type=FavouriteDiagnosis");
                 }
 
                 ClinicalEntity diagnosis = findClinicalEntityByName(forItemName.trim());
@@ -190,7 +190,7 @@ public class FavouriteMedicineApiService implements Serializable {
                         errorMessage.append("?");
                     }
 
-                    throw new IllegalArgumentException(errorMessage.toString());
+                    throw new FavouriteMedicineValidationException(errorMessage.toString());
                 }
 
                 template.setForItem(diagnosis);
@@ -230,6 +230,8 @@ public class FavouriteMedicineApiService implements Serializable {
 
             return template;
 
+        } catch (FavouriteMedicineValidationException e) {
+            throw e;
         } catch (Exception e) {
             throw new RuntimeException("Failed to create favourite medicine: " + e.getMessage(), e);
         }
@@ -360,6 +362,8 @@ public class FavouriteMedicineApiService implements Serializable {
                 return prescriptionTemplateFacade.findByJpql(jpql, parameters);
             }
 
+        } catch (FavouriteMedicineValidationException e) {
+            throw e;
         } catch (Exception e) {
             throw new RuntimeException("Failed to search favourite medicines: " + e.getMessage(), e);
         }
@@ -370,7 +374,7 @@ public class FavouriteMedicineApiService implements Serializable {
      */
     public PrescriptionTemplate getFavouriteMedicineById(WebUser user, Long id) {
         if (id == null) {
-            throw new IllegalArgumentException("ID cannot be null");
+            throw new FavouriteMedicineValidationException("ID cannot be null");
         }
 
         String jpql = "SELECT p FROM PrescriptionTemplate p " +
@@ -387,7 +391,7 @@ public class FavouriteMedicineApiService implements Serializable {
         PrescriptionTemplate template = prescriptionTemplateFacade.findFirstByJpql(jpql, parameters);
 
         if (template == null) {
-            throw new IllegalArgumentException("Favourite medicine not found or access denied");
+            throw new FavouriteMedicineValidationException("Favourite medicine not found or access denied");
         }
 
         return template;
@@ -406,14 +410,14 @@ public class FavouriteMedicineApiService implements Serializable {
 
             if (fromYears != null) {
                 if (fromYears < 0) {
-                    throw new IllegalArgumentException("fromYears must be >= 0");
+                    throw new FavouriteMedicineValidationException("fromYears must be >= 0");
                 }
                 template.setFromDays(convertYearsToDays(fromYears));
             }
 
             if (toYears != null) {
                 if (toYears < 0) {
-                    throw new IllegalArgumentException("toYears must be >= 0");
+                    throw new FavouriteMedicineValidationException("toYears must be >= 0");
                 }
                 template.setToDays(convertYearsToDays(toYears));
             }
@@ -421,7 +425,7 @@ public class FavouriteMedicineApiService implements Serializable {
             // Validate age range after updates
             if (template.getFromDays() != null && template.getToDays() != null) {
                 if (template.getFromDays() >= template.getToDays()) {
-                    throw new IllegalArgumentException("fromYears must be less than toYears");
+                    throw new FavouriteMedicineValidationException("fromYears must be less than toYears");
                 }
             }
 
@@ -430,19 +434,19 @@ public class FavouriteMedicineApiService implements Serializable {
             Double toKg = getDoubleValue(updateData.get("toKg"));
             if (fromKg != null) {
                 if (fromKg < 0) {
-                    throw new IllegalArgumentException("fromKg must be >= 0");
+                    throw new FavouriteMedicineValidationException("fromKg must be >= 0");
                 }
                 template.setFromKg(fromKg);
             }
             if (toKg != null) {
                 if (toKg < 0) {
-                    throw new IllegalArgumentException("toKg must be >= 0");
+                    throw new FavouriteMedicineValidationException("toKg must be >= 0");
                 }
                 template.setToKg(toKg);
             }
             if (template.getFromKg() != null && template.getToKg() != null
                     && template.getFromKg() >= template.getToKg()) {
-                throw new IllegalArgumentException("fromKg must be less than toKg");
+                throw new FavouriteMedicineValidationException("fromKg must be less than toKg");
             }
 
             // Update other optional fields
@@ -458,6 +462,8 @@ public class FavouriteMedicineApiService implements Serializable {
             prescriptionTemplateFacade.edit(template);
             return template;
 
+        } catch (FavouriteMedicineValidationException e) {
+            throw e;
         } catch (Exception e) {
             throw new RuntimeException("Failed to update favourite medicine: " + e.getMessage(), e);
         }
@@ -476,6 +482,8 @@ public class FavouriteMedicineApiService implements Serializable {
             prescriptionTemplateFacade.edit(template);
             return true;
 
+        } catch (FavouriteMedicineValidationException e) {
+            throw e;
         } catch (Exception e) {
             throw new RuntimeException("Failed to delete favourite medicine: " + e.getMessage(), e);
         }
@@ -994,7 +1002,7 @@ public class FavouriteMedicineApiService implements Serializable {
      */
     private ItemType parseItemType(String itemType) {
         if (itemType == null || itemType.trim().isEmpty()) {
-            throw new IllegalArgumentException("Item type cannot be null or empty");
+            throw new FavouriteMedicineValidationException("Item type cannot be null or empty");
         }
 
         switch (itemType.trim().toLowerCase()) {
@@ -1007,7 +1015,7 @@ public class FavouriteMedicineApiService implements Serializable {
             case "amp":
                 return ItemType.Amp;
             default:
-                throw new IllegalArgumentException("Invalid item type: " + itemType + ". Must be one of: Vtm, Atm, Vmp, Amp");
+                throw new FavouriteMedicineValidationException("Invalid item type: " + itemType + ". Must be one of: Vtm, Atm, Vmp, Amp");
         }
     }
 
@@ -1030,7 +1038,7 @@ public class FavouriteMedicineApiService implements Serializable {
                 // ATM has no subclasses
                 return new Class[]{Atm.class};
             default:
-                throw new IllegalArgumentException("Unsupported item type: " + itemType);
+                throw new FavouriteMedicineValidationException("Unsupported item type: " + itemType);
         }
     }
 
@@ -1179,7 +1187,7 @@ public class FavouriteMedicineApiService implements Serializable {
             case "favouritediagnosis":
                 return PrescriptionTemplateType.FavouriteDiagnosis;
             default:
-                throw new IllegalArgumentException("Invalid type: " + type + ". Must be one of: FavouriteMedicine, FavouriteDiagnosis");
+                throw new FavouriteMedicineValidationException("Invalid type: " + type + ". Must be one of: FavouriteMedicine, FavouriteDiagnosis");
         }
     }
 

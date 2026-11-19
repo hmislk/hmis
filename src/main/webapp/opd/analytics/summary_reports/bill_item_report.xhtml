@@ -324,6 +324,12 @@
                                         </h:outputText>
                                     </p:column>
 
+                                    <p:column headerText="Discount Total" width="15em" styleClass="text-end">
+                                        <h:outputText value="#{opdReportController.billItemReportBundle.getDiscountSubtotalForPaymentMethod(entry.key)}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                    </p:column>
+
                                     <p:column headerText="Net Total" width="15em" styleClass="text-end">
                                         <h:outputText value="#{opdReportController.billItemReportBundle.getSubtotalForPaymentMethod(entry.key)}">
                                             <f:convertNumber pattern="#,##0.00" />
@@ -341,6 +347,11 @@
                                         </p:column>
                                         <p:column styleClass="text-end">
                                             <h:outputText value="#{opdReportController.billItemReportBundle.grandStaffFeeTotal}" styleClass="font-weight-bold">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputText>
+                                        </p:column>
+                                        <p:column styleClass="text-end">
+                                            <h:outputText value="#{opdReportController.billItemReportBundle.grandDiscountTotal}" styleClass="font-weight-bold">
                                                 <f:convertNumber pattern="#,##0.00" />
                                             </h:outputText>
                                         </p:column>
@@ -368,6 +379,7 @@
                                                 <th style="width: 100px;">Bill Type</th>
                                                 <th style="width: 100px;" class="text-end">Hospital Fee</th>
                                                 <th style="width: 100px;" class="text-end">Doctor Fee</th>
+                                                <th style="width: 100px;" class="text-end">Discount</th>
                                                 <th style="width: 100px;" class="text-end">Net Total</th>
                                                 <th style="width: 100px;">Bill Date</th>
                                                 <th style="width: 120px;">Payment Method</th>
@@ -380,7 +392,7 @@
 
                                                 <!-- Payment Method Header Row -->
                                                 <tr class="table-secondary">
-                                                    <td colspan="10" class="font-weight-bold">
+                                                    <td colspan="11" class="font-weight-bold">
                                                         <i class="pi pi-credit-card mr-2"></i>
                                                         #{paymentEntry.key.label} Payment Method
                                                     </td>
@@ -391,7 +403,7 @@
 
                                                     <!-- Bill Category Sub-header Row -->
                                                     <tr class="table-light">
-                                                        <td colspan="10" class="font-weight-medium pl-4">
+                                                        <td colspan="11" class="font-weight-medium pl-4">
                                                             <i class="pi pi-angle-right mr-2"></i>
                                                             #{categoryEntry.key == 'BILL' ? 'Normal Bills' :
                                                               categoryEntry.key == 'CANCELLATION' ? 'Cancellations' : 'Returns'}
@@ -420,6 +432,11 @@
                                                             </td>
                                                             <td class="text-end">
                                                                 <h:outputText value="#{bill.staffFee}">
+                                                                    <f:convertNumber pattern="#,##0.00" />
+                                                                </h:outputText>
+                                                            </td>
+                                                            <td class="text-end">
+                                                                <h:outputText value="#{bill.discount}">
                                                                     <f:convertNumber pattern="#,##0.00" />
                                                                 </h:outputText>
                                                             </td>
@@ -454,6 +471,11 @@
                                                             </h:outputText>
                                                         </td>
                                                         <td class="text-end font-weight-bold">
+                                                            <h:outputText value="#{opdReportController.billItemReportBundle.getBillCategorySubtotal(paymentEntry.key, categoryEntry.key, 'DISCOUNT')}">
+                                                                <f:convertNumber pattern="#,##0.00" />
+                                                            </h:outputText>
+                                                        </td>
+                                                        <td class="text-end font-weight-bold">
                                                             <h:outputText value="#{opdReportController.billItemReportBundle.getBillCategorySubtotal(paymentEntry.key, categoryEntry.key, 'NET')}">
                                                                 <f:convertNumber pattern="#,##0.00" />
                                                             </h:outputText>
@@ -475,6 +497,11 @@
                                                     </td>
                                                     <td class="text-end font-weight-bold">
                                                         <h:outputText value="#{opdReportController.billItemReportBundle.getStaffFeeSubtotalForPaymentMethod(paymentEntry.key)}">
+                                                            <f:convertNumber pattern="#,##0.00" />
+                                                        </h:outputText>
+                                                    </td>
+                                                    <td class="text-end font-weight-bold">
+                                                        <h:outputText value="#{opdReportController.billItemReportBundle.getDiscountSubtotalForPaymentMethod(paymentEntry.key)}">
                                                             <f:convertNumber pattern="#,##0.00" />
                                                         </h:outputText>
                                                     </td>
@@ -502,6 +529,11 @@
                                                 </td>
                                                 <td class="text-end font-weight-bold h5">
                                                     <h:outputText value="#{opdReportController.billItemReportBundle.grandStaffFeeTotal}">
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputText>
+                                                </td>
+                                                <td class="text-end font-weight-bold h5">
+                                                    <h:outputText value="#{opdReportController.billItemReportBundle.grandDiscountTotal}">
                                                         <f:convertNumber pattern="#,##0.00" />
                                                     </h:outputText>
                                                 </td>

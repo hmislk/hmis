@@ -906,8 +906,7 @@ public class RetailSaleForCashierNativeSqlController implements Serializable, Co
     private String generateInstitutionBillNumber(PreBill pb, String deptId) {
         if (configOptionApplicationController.getBooleanValueByKey(
                 "Bill Number Generation Strategy for Pharmacy Sale Cashier Pre Bill - Prefix + Institution Code + Year + Yearly Number", false)) {
-            return billNumberGenerator.institutionBillNumberGeneratorYearlyWithPrefixInsYearCountInstitutionWide(
-                    sessionController.getDepartment(), BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE_TO_SETTLE_AT_CASHIER);
+            return deptId; // Same number as deptId: do not consume the yearly counter twice
         }
         if (configOptionApplicationController.getBooleanValueByKey(
                 "Bill Number Generation Strategy for Pharmacy Sale Cashier Pre Bill - Prefix + Department Code + Institution Code + Year + Yearly Number", false)) {

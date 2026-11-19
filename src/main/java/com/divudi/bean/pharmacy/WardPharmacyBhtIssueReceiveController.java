@@ -26,6 +26,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import javax.persistence.TemporalType;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
@@ -79,6 +80,19 @@ public class WardPharmacyBhtIssueReceiveController implements Serializable {
         printPreview = false;
     }
 
+    /**
+     * Menu/dashboard entry: resets the date range to the last 7 days up to the
+     * end of today (this bean is session scoped, so earlier dates would
+     * otherwise linger and hide today's issues), then opens the pending list.
+     * The Search/Refresh buttons use {@link #navigateToPendingList()} so the
+     * dates the user picked are kept.
+     */
+    public String openPendingList() {
+        fromDate = CommonFunctions.getStartOfDay(CommonFunctions.addDaysToDate(new Date(), -7L));
+        toDate = CommonFunctions.getEndOfDay();
+        return navigateToPendingList();
+    }
+
     public String navigateToPendingList() {
         makeNull();
         admissionScoped = false;
@@ -94,6 +108,10 @@ public class WardPharmacyBhtIssueReceiveController implements Serializable {
         if (toDate == null) {
             toDate = CommonFunctions.getEndOfDay();
         }
+        // The date pickers carry no time, so a chosen To date arrives as 00:00; widen both
+        // ends to whole days so issues made on the To date itself are listed.
+        fromDate = CommonFunctions.getStartOfDay(fromDate);
+        toDate = CommonFunctions.getEndOfDay(toDate);
         String jpql = "SELECT b FROM Bill b WHERE b.billType = :bt AND b.billTypeAtomic = :bta "
                 + "AND b.patientEncounter.currentPatientRoom.roomFacilityCharge.department = :dept "
                 + "AND b.cancelled = false "
@@ -108,7 +126,9 @@ public class WardPharmacyBhtIssueReceiveController implements Serializable {
         params.put("acceptBta", BillTypeAtomic.ACCEPT_ISSUED_MEDICINE_INWARD);
         params.put("fromDate", fromDate);
         params.put("toDate", toDate);
-        pendingIssueBills = billFacade.findByJpql(jpql, params);
+        // TIMESTAMP, not the two-argument overload: that binds Date parameters as
+        // TemporalType.DATE, which cuts toDate back to 00:00 and hides today's issues.
+        pendingIssueBills = billFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
     }
 
     /**

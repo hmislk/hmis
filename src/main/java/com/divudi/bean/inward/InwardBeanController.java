@@ -783,6 +783,46 @@ public class InwardBeanController implements Serializable {
         return totalsMap;
     }
 
+    /**
+     * Bulk query for the amount, per InwardChargeType, of the service /
+     * investigation items that carry their own VAT (BillItem.vat other than 0; cancel and refund lines are negated copies and carry a negative VAT, so they net the same way the row total does), for
+     * the computed inward VAT (issue #17491). The amount is what the item adds
+     * to the charge-type row net: gross + margin - discount. That mirrors the
+     * row total (sum of gross + margin, VAT is kept separately and is not in
+     * it) less the row discount (sum of discount), so subtracting this from the
+     * row net leaves exactly the items without their own VAT.
+     */
+    public Map<InwardChargeType, Double> calServiceBillItemsOwnVatNetByInwardChargeTypeBulk(PatientEncounter patientEncounter, List<PatientEncounter> cpts) {
+        String sql = "SELECT s.item.inwardChargeType, sum(s.grossValue + s.marginValue - s.discount) "
+                + " FROM BillItem s"
+                + " WHERE s.retired=false "
+                + " AND s.vat <> 0 "
+                + " AND s.bill.billType=:btp "
+                + " AND s.bill.patientEncounter IN :pe"
+                + " GROUP BY s.item.inwardChargeType";
+
+        HashMap hm = new HashMap();
+        hm.put("btp", BillType.InwardBill);
+        List<PatientEncounter> pts = new ArrayList<>();
+        pts.add(patientEncounter);
+        if (cpts != null && !cpts.isEmpty()) {
+            pts.addAll(cpts);
+        }
+        hm.put("pe", pts);
+
+        List<Object[]> results = getBillItemFacade().findObjectsArrayByJpql(sql, hm, TemporalType.TIMESTAMP);
+
+        Map<InwardChargeType, Double> map = new HashMap<>();
+        if (results != null) {
+            for (Object[] row : results) {
+                if (row[0] != null && row[1] != null) {
+                    map.merge(professionalFeeClassificationService.rowTypeFor((InwardChargeType) row[0]), ((Number) row[1]).doubleValue(), Double::sum);
+                }
+            }
+        }
+        return map;
+    }
+
     public double calculateProfessionalCharges(PatientEncounter patientEncounter, List<PatientEncounter> cpts, boolean isEstimatedBill) {
         HashMap hm = new HashMap();
         String sql = "SELECT sum(bt.feeValue)"
@@ -2463,6 +2503,202 @@ public class InwardBeanController implements Serializable {
         return getBillFacade().findByJpql(jpql, params);
     }
 
+    private List<Long> encounterIdsWithChildren(PatientEncounter patientEncounter, List<PatientEncounter> cpts) {
+        List<Long> ids = new ArrayList<>();
+        if (patientEncounter != null && patientEncounter.getId() != null) {
+            ids.add(patientEncounter.getId());
+        }
+        if (cpts != null) {
+            for (PatientEncounter c : cpts) {
+                if (c != null && c.getId() != null && !ids.contains(c.getId())) {
+                    ids.add(c.getId());
+                }
+            }
+        }
+        return ids;
+    }
+
+    /**
+     * Rows of the "Paid by Patient" section of the BHT break down pages: the
+     * patient's own money for the admission (and its child encounters) -
+     * deposits, payments and their refunds - without cancelled bills and
+     * without the cancellation bills, so the rows add up to the section
+     * total. Credit-method bills are left out, as in
+     * {@link #getPaidByPatientValue(PatientEncounter)}.
+     */
+    public List<Bill> fetchPatientPaymentBillsForBreakDown(PatientEncounter patientEncounter, List<PatientEncounter> cpts) {
+        List<Long> ids = encounterIdsWithChildren(patientEncounter, cpts);
+        if (ids.isEmpty()) {
+            return new ArrayList<>();
+        }
+        // An original is dropped only while its cancellation bill is live; if the
+        // cancellation was itself cancelled (flagged, or cancelled by a bill that
+        // points back to it through billedBill) the money stands and the row stays.
+        String jpql = "select b from Bill b left join b.cancelledBill cb "
+                + " where b.retired = false "
+                + " and (b.cancelled = false or cb.cancelled = true "
+                + "      or exists (select x.id from Bill x where x.billedBill = cb and x.retired = false)) "
+                + " and b.patientEncounter.id in :peIds "
+                + " and b.billTypeAtomic in :bts "
+                + " and (b.paymentMethod is null or b.paymentMethod <> :pm) "
+                + " order by b.createdAt";
+        Map<String, Object> params = new HashMap<>();
+        params.put("peIds", ids);
+        params.put("bts", Arrays.asList(
+                BillTypeAtomic.INWARD_DEPOSIT,
+                BillTypeAtomic.INWARD_DEPOSIT_REFUND,
+                BillTypeAtomic.INWARD_PAYMENT,
+                BillTypeAtomic.INWARD_PAYMENT_REFUND));
+        params.put("pm", PaymentMethod.Credit);
+        return getBillFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP);
+    }
+
+    /**
+     * Bill items of the Medicine section of the BHT break down pages: every
+     * bill that feeds the Medicine charge total ({@link #INWARD_MEDICINE_BILL_TYPES}:
+     * direct issues, issues on request, theatre issues, their returns and
+     * cancellations, and the porter-flow accepted ward returns), plus the old
+     * refund bills that were saved before bill type atomics existed. Child
+     * encounters are included, as in the total.
+     */
+    public List<BillItem> fetchInwardMedicineBillItems(PatientEncounter patientEncounter, List<PatientEncounter> cpts) {
+        List<Long> ids = encounterIdsWithChildren(patientEncounter, cpts);
+        if (ids.isEmpty()) {
+            return new ArrayList<>();
+        }
+        String jpql = "select bi from BillItem bi "
+                + " where bi.retired = false "
+                + " and bi.bill.retired = false "
+                + " and bi.bill.patientEncounter.id in :peIds "
+                + " and (bi.bill.billTypeAtomic in :btas "
+                + "      or (bi.bill.billTypeAtomic is null and bi.bill.billType = :legacyType and type(bi.bill) = :refundClass)) "
+                + " order by bi.bill.createdAt, bi.id";
+        Map<String, Object> params = new HashMap<>();
+        params.put("peIds", ids);
+        params.put("btas", INWARD_MEDICINE_BILL_TYPES);
+        params.put("legacyType", BillType.PharmacyBhtPre);
+        params.put("refundClass", RefundBill.class);
+        List<BillItem> list = getBillItemFacade().findByJpql(jpql, params);
+        return list == null ? new ArrayList<>() : list;
+    }
+
+    /**
+     * Ward return request bills ({@code RETURN_MEDICINE_INWARD}) saved before
+     * #25509, when the BHT was credited from the request and the accept bill had
+     * no value and no encounter. Only requests that have accept bills, none of
+     * them valued, qualify, so a return is never counted twice. Whether the
+     * final bill actually contains them is decided by the caller.
+     */
+    public List<BillItem> fetchLegacyWardReturnRequestItems(PatientEncounter patientEncounter, List<PatientEncounter> cpts) {
+        List<Long> ids = encounterIdsWithChildren(patientEncounter, cpts);
+        if (ids.isEmpty()) {
+            return new ArrayList<>();
+        }
+        String jpql = "select bi from BillItem bi "
+                + " where bi.retired = false "
+                + " and bi.bill.retired = false "
+                + " and bi.bill.patientEncounter.id in :peIds "
+                + " and bi.bill.billTypeAtomic = :retBta "
+                + " and exists (select a.id from Bill a where a.backwardReferenceBill = bi.bill and a.retired = false and a.billTypeAtomic = :accBta) "
+                + " and not exists (select v.id from Bill v where v.backwardReferenceBill = bi.bill and v.retired = false and v.billTypeAtomic = :accBta and v.netTotal <> 0) "
+                + " order by bi.bill.createdAt, bi.id";
+        Map<String, Object> params = new HashMap<>();
+        params.put("peIds", ids);
+        params.put("retBta", BillTypeAtomic.RETURN_MEDICINE_INWARD);
+        params.put("accBta", BillTypeAtomic.ACCEPT_RETURN_MEDICINE_INWARD);
+        List<BillItem> list = getBillItemFacade().findByJpql(jpql, params);
+        return list == null ? new ArrayList<>() : list;
+    }
+
+    /** The Medicine charge lines (all issuing departments) stored on the admission's final bill, summed, or null. */
+    public Double fetchFinalBillMedicineNet(PatientEncounter patientEncounter) {
+        if (patientEncounter == null || patientEncounter.getFinalBill() == null
+                || patientEncounter.getFinalBill().getId() == null) {
+            return null;
+        }
+        String jpql = "select sum(bi.netValue) from BillItem bi "
+                + " where bi.retired = false "
+                + " and bi.bill.id = :fbId "
+                + " and bi.inwardChargeType in :icts";
+        Map<String, Object> params = new HashMap<>();
+        params.put("fbId", patientEncounter.getFinalBill().getId());
+        params.put("icts", Arrays.asList(InwardChargeType.Opd_Medicine, InwardChargeType.Etu_Medicine,
+                InwardChargeType.Pharmacy_Medicine, InwardChargeType.Inward_Medicine,
+                InwardChargeType.Theatre_Medicine, InwardChargeType.Other_Medicine));
+        return getBillItemFacade().findDoubleByJpql(jpql, params);
+    }
+
+    /**
+     * Bill items of the Store Issue section of the BHT break down pages: all
+     * store-to-inward bills (issues, returns, cancellations), the same set
+     * {@link #calCostOfIssue(PatientEncounter, BillType, List)} totals.
+     */
+    public List<BillItem> fetchStoreIssueBillItems(PatientEncounter patientEncounter, List<PatientEncounter> cpts) {
+        List<Long> ids = encounterIdsWithChildren(patientEncounter, cpts);
+        if (ids.isEmpty()) {
+            return new ArrayList<>();
+        }
+        String jpql = "select bi from BillItem bi "
+                + " where bi.retired = false "
+                + " and bi.bill.retired = false "
+                + " and bi.bill.billType = :bt "
+                + " and bi.bill.patientEncounter.id in :peIds "
+                + " order by bi.bill.createdAt, bi.id";
+        Map<String, Object> params = new HashMap<>();
+        params.put("bt", BillType.StoreBhtPre);
+        params.put("peIds", ids);
+        List<BillItem> list = getBillItemFacade().findByJpql(jpql, params);
+        return list == null ? new ArrayList<>() : list;
+    }
+
+    /**
+     * Receipts from credit companies against the admission for the
+     * "Credit Company Payment" section: one row per receipt item, leaving out
+     * cancelled receipts and their cancellation bills.
+     */
+    public List<BillItem> fetchCreditCompanyReceiptItems(PatientEncounter patientEncounter, List<PatientEncounter> cpts) {
+        List<Long> ids = encounterIdsWithChildren(patientEncounter, cpts);
+        if (ids.isEmpty()) {
+            return new ArrayList<>();
+        }
+        String jpql = "select bi from BillItem bi left join bi.bill bl left join bl.cancelledBill cb "
+                + " where bi.retired = false "
+                + " and bi.bill.retired = false "
+                + " and (bi.bill.cancelled = false or cb.cancelled = true "
+                + "      or exists (select x.id from Bill x where x.billedBill = cb and x.retired = false)) "
+                + " and bi.bill.billTypeAtomic = :bta "
+                + " and bi.patientEncounter.id in :peIds "
+                + " order by bi.bill.createdAt, bi.id";
+        Map<String, Object> params = new HashMap<>();
+        params.put("bta", BillTypeAtomic.INPATIENT_CREDIT_COMPANY_PAYMENT_RECEIVED);
+        params.put("peIds", ids);
+        List<BillItem> list = getBillItemFacade().findByJpql(jpql, params);
+        return list == null ? new ArrayList<>() : list;
+    }
+
+    /**
+     * The amounts committed to credit companies when the admission's final
+     * bill was settled (one bill per company), with what each company has
+     * paid so far in {@code settledAmountBySponsor}.
+     */
+    public List<Bill> fetchCreditCompanyCommitmentBills(PatientEncounter patientEncounter) {
+        if (patientEncounter == null || patientEncounter.getFinalBill() == null
+                || patientEncounter.getFinalBill().getId() == null) {
+            return new ArrayList<>();
+        }
+        String jpql = "select b from Bill b "
+                + " where b.retired = false "
+                + " and b.cancelled = false "
+                + " and b.billTypeAtomic = :bta "
+                + " and b.referenceBill.id = :fbId "
+                + " order by b.createdAt, b.id";
+        Map<String, Object> params = new HashMap<>();
+        params.put("bta", BillTypeAtomic.INWARD_FINAL_BILL_PAYMENT_BY_CREDIT_COMPANY);
+        params.put("fbId", patientEncounter.getFinalBill().getId());
+        List<Bill> list = getBillFacade().findByJpql(jpql, params);
+        return list == null ? new ArrayList<>() : list;
+    }
+
     public List<Bill> fetchPostFinalPaymentBill(PatientEncounter patientEncounter, List<PatientEncounter> cpts) {
 
         HashMap hm = new HashMap();
@@ -3519,18 +3755,35 @@ public class InwardBeanController implements Serializable {
     private String formatBhtText(AdmissionType admissionType, Long temp, boolean institutionBasedBht, Institution currentInstitution) {
         String bhtText;
 
-        if (getSessionController().getApplicationPreference().isBhtNumberWithOutAdmissionType()) {
-            bhtText = "BHT";
+        // Zero-pad the running number (0 = no padding, the old behaviour).
+        Integer minDigits = configOptionApplicationController
+                .getIntegerValueByKey("BHT Number Minimum Digits", 0);
+        // Bounded (0..12) so a bad setting cannot overflow the bhtNo column; padded as
+        // plain ASCII so the digits never depend on the server locale.
+        int width = minDigits == null ? 0 : Math.max(0, Math.min(12, minDigits));
+        StringBuilder number = new StringBuilder(Long.toString(temp));
+        while (number.length() < width) {
+            number.insert(0, '0');
+        }
+
+        if (configOptionApplicationController.getBooleanValueByKey("BHT Number Shows Only Year And Number", false)) {
+            // YYYY/NNNN: no admission type code, no "BHT". The institution code
+            // is still added below when each institution has its own series.
+            bhtText = Calendar.getInstance().get(Calendar.YEAR) + "/" + number;
         } else {
-            bhtText = admissionType.getCode().trim();
-        }
+            if (getSessionController().getApplicationPreference().isBhtNumberWithOutAdmissionType()) {
+                bhtText = "BHT";
+            } else {
+                bhtText = admissionType.getCode().trim();
+            }
 
-        if (getSessionController().getApplicationPreference().isBhtNumberWithYear()) {
-            Calendar c = Calendar.getInstance();
-            bhtText = bhtText + "/" + c.get(Calendar.YEAR);
-        }
+            if (billNumberGenerator.isYearInBhtText()) {
+                Calendar c = Calendar.getInstance();
+                bhtText = bhtText + "/" + c.get(Calendar.YEAR);
+            }
 
-        bhtText += "/" + Long.toString(temp);
+            bhtText += "/" + number;
+        }
 
         if (institutionBasedBht && currentInstitution != null
                 && currentInstitution.getInstitutionCode() != null

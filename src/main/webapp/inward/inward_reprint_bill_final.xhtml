@@ -765,7 +765,7 @@
                                                 
                                                 <bi:unapprovedHeading bill="#{inwardSearch.bill}" />
 
-                                                <h:panelGroup id="originalCustom4BillPriview">
+                                                <h:panelGroup id="originalCustom4BillPriview" styleClass="custom4BillWrapper">
                                                     <bi:finalBillCustom4 bill="#{inwardSearch.showOrginalBill ? inwardSearch.bill.referenceBill : inwardSearch.bill}" duplicate="false" showProfessional="#{inwardSearch.withProfessionalFee}"/>
                                                 </h:panelGroup>
 
@@ -789,7 +789,7 @@
                                                 
                                                 <bi:unapprovedHeading bill="#{inwardSearch.bill}" />
 
-                                                <h:panelGroup id="duplicateCustom4BillPriview">
+                                                <h:panelGroup id="duplicateCustom4BillPriview" styleClass="custom4BillWrapper">
                                                     <bi:finalBillCustom4 bill="#{inwardSearch.showOrginalBill ? inwardSearch.bill.referenceBill : inwardSearch.bill}" duplicate="true" showProfessional="#{inwardSearch.withProfessionalFee}"/>
                                                 </h:panelGroup>
 

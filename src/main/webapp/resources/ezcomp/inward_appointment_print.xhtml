@@ -9,7 +9,8 @@
 
     <!-- INTERFACE -->
     <cc:interface >  
-        <cc:attribute name="reservation"/>  
+        <cc:attribute name="reservation"/>
+        <cc:attribute name="appointment"/>  
 
     </cc:interface>
 
@@ -24,12 +25,12 @@
                     <div class="container-fluid bill-item" style="width: 210mm;">
                         <div class="row text-center">
                             <div class="col-12">
-                                <h3><h:outputLabel value="#{cc.attrs.reservation.appointment.bill.institution.name}" /></h3>
-                                <h4><h:outputLabel value="#{cc.attrs.reservation.appointment.bill.institution.address}" /></h4>
-                                <h5><h:outputLabel value="#{cc.attrs.reservation.appointment.bill.institution.phone}"/></h5>
-                                <h6><h:outputLabel value="#{cc.attrs.reservation.appointment.bill.institution.fax}"/></h6>
-                                <h6><h:outputLabel value="#{cc.attrs.reservation.appointment.bill.institution.email}"/></h6>
-                                <h6><h:outputLabel value="#{cc.attrs.reservation.appointment.bill.institution.web}"/></h6>
+                                <h3><h:outputLabel value="#{(cc.attrs.appointment ne null ? cc.attrs.appointment : cc.attrs.reservation.appointment).bill.institution.name}" /></h3>
+                                <h4><h:outputLabel value="#{(cc.attrs.appointment ne null ? cc.attrs.appointment : cc.attrs.reservation.appointment).bill.institution.address}" /></h4>
+                                <h5><h:outputLabel value="#{(cc.attrs.appointment ne null ? cc.attrs.appointment : cc.attrs.reservation.appointment).bill.institution.phone}"/></h5>
+                                <h6><h:outputLabel value="#{(cc.attrs.appointment ne null ? cc.attrs.appointment : cc.attrs.reservation.appointment).bill.institution.fax}"/></h6>
+                                <h6><h:outputLabel value="#{(cc.attrs.appointment ne null ? cc.attrs.appointment : cc.attrs.reservation.appointment).bill.institution.email}"/></h6>
+                                <h6><h:outputLabel value="#{(cc.attrs.appointment ne null ? cc.attrs.appointment : cc.attrs.reservation.appointment).bill.institution.web}"/></h6>
                             </div>
                         </div>
 
@@ -49,28 +50,21 @@
                                                 <th class="text-left">Name</th>
                                                 <td class="text-right">&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;&nbsp;&nbsp;&nbsp;</td>
                                                 <td class="text-left">
-                                                    <h:outputLabel value="#{cc.attrs.reservation.appointment.patient.person.nameWithTitle}"></h:outputLabel>
+                                                    <h:outputLabel value="#{(cc.attrs.appointment ne null ? cc.attrs.appointment : cc.attrs.reservation.appointment).patient.person.nameWithTitle}"></h:outputLabel>
                                                 </td>
                                             </tr>
                                             <tr>
                                                 <th class="text-left">Address</th>
                                                 <td class="text-right">&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;&nbsp;&nbsp;&nbsp;</td>
                                                 <td class="text-left">
-                                                    <h:outputLabel value="#{cc.attrs.reservation.appointment.patient.person.address}"></h:outputLabel>
+                                                    <h:outputLabel value="#{(cc.attrs.appointment ne null ? cc.attrs.appointment : cc.attrs.reservation.appointment).patient.person.address}"></h:outputLabel>
                                                 </td>
                                             </tr>
                                             <tr>
                                                 <th class="text-left">Age</th>
                                                 <td class="text-center">&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;&nbsp;&nbsp;&nbsp;</td>
                                                 <td class="text-left">
-                                                    <h:outputLabel value="#{cc.attrs.reservation.appointment.patient.age}"></h:outputLabel>
-                                                </td>
-                                            </tr>
-                                            <tr>
-                                                <th class="text-left">Mobile No</th>
-                                                <td class="text-center">&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;&nbsp;&nbsp;&nbsp;</td>
-                                                <td class="text-left">
-                                                    <h:outputLabel value="#{cc.attrs.reservation.appointment.patient.person.mobile}"></h:outputLabel>
+                                                    <h:outputLabel value="#{(cc.attrs.appointment ne null ? cc.attrs.appointment : cc.attrs.reservation.appointment).patient.age}"></h:outputLabel>
                                                 </td>
                                             </tr>
                                         </tbody>
@@ -84,21 +78,21 @@
                                                 <th class="text-left">Sex</th>
                                                 <td class="text-center">&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;&nbsp;&nbsp;&nbsp;</td>
                                                 <td class="text-left">
-                                                    <h:outputLabel value="#{cc.attrs.reservation.appointment.patient.person.sex}"></h:outputLabel>
+                                                    <h:outputLabel value="#{(cc.attrs.appointment ne null ? cc.attrs.appointment : cc.attrs.reservation.appointment).patient.person.sex}"></h:outputLabel>
                                                 </td>
                                             </tr>
                                             <tr>
                                                 <th class="text-left">NIC / Passport</th>
                                                 <td class="text-center">&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;&nbsp;&nbsp;&nbsp;</td>
                                                 <td class="text-left">
-                                                    <h:outputLabel value="#{cc.attrs.reservation.appointment.patient.person.nic}"></h:outputLabel>
+                                                    <h:outputLabel value="#{(cc.attrs.appointment ne null ? cc.attrs.appointment : cc.attrs.reservation.appointment).patient.person.nic}"></h:outputLabel>
                                                 </td>
                                             </tr>
                                             <tr>
-                                                <th class="text-left">Address</th>
+                                                <th class="text-left">Mobile No</th>
                                                 <td class="text-center">&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;&nbsp;&nbsp;&nbsp;</td>
                                                 <td class="text-left">
-                                                    <h:outputLabel value="#{cc.attrs.reservation.appointment.patient.person.address}"></h:outputLabel>
+                                                    <h:outputLabel value="#{(cc.attrs.appointment ne null ? cc.attrs.appointment : cc.attrs.reservation.appointment).patient.person.mobile}"></h:outputLabel>
                                                 </td>
                                             </tr>
 
@@ -118,14 +112,14 @@
                                             <th class="text-left">Doctor Name</th>
                                             <td class="text-center">&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;&nbsp;&nbsp;&nbsp;</td>
                                             <td class="text-left">
-                                                <h:outputLabel value="#{cc.attrs.reservation.appointment.bill.referredBy.person.nameWithTitle}"></h:outputLabel>
+                                                <h:outputLabel value="#{(cc.attrs.appointment ne null ? cc.attrs.appointment : cc.attrs.reservation.appointment).bill.referredBy.person.nameWithTitle}"></h:outputLabel>
                                             </td>
                                         </tr>
                                         <tr>
                                             <th class="text-left">Appointment Date</th>
                                             <td class="text-center">&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;&nbsp;&nbsp;&nbsp;</td>
                                             <td class="text-left">
-                                                <h:outputLabel value="#{cc.attrs.reservation.appointment.appointmentDate}">
+                                                <h:outputLabel value="#{(cc.attrs.appointment ne null ? cc.attrs.appointment : cc.attrs.reservation.appointment).appointmentDate}">
                                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
                                                 </h:outputLabel>
                                             </td>
@@ -134,7 +128,7 @@
                                 </table>
                             </div>
 
-                            <h:panelGroup rendered="#{cc.attrs.reservation ne null}">
+                            <h:panelGroup rendered="#{cc.attrs.reservation ne null and cc.attrs.reservation.id ne null}">
                                 <div class="my-3 text-center" style="font-weight: bold;">
                                     <p:outputLabel   value="RESERVATION DETAILS" />
                                 </div>
@@ -146,7 +140,7 @@
                                                 <th class="text-left">Reservation No</th>
                                                 <td class="text-center">&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;&nbsp;&nbsp;&nbsp;</td>
                                                 <td class="text-left">
-                                                    <h:outputLabel value="#{cc.attrs.reservation.appointment.appointmentNumber}"></h:outputLabel>
+                                                    <h:outputLabel value="#{(cc.attrs.appointment ne null ? cc.attrs.appointment : cc.attrs.reservation.appointment).appointmentNumber}"></h:outputLabel>
                                                 </td>
                                             </tr>
                                             <tr>
@@ -193,7 +187,7 @@
                                             <th class="text-left">Total</th>
                                             <td class="text-center">&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;&nbsp;&nbsp;&nbsp;</td>
                                             <td class="text-left">
-                                                <h:outputLabel value="#{cc.attrs.reservation.appointment.bill.total}">
+                                                <h:outputLabel value="#{(cc.attrs.appointment ne null ? cc.attrs.appointment : cc.attrs.reservation.appointment).bill.total}">
                                                     <f:convertNumber pattern="#,##0.00" />
                                                 </h:outputLabel>
                                             </td>
@@ -202,7 +196,7 @@
                                             <th class="text-left">Payment Method</th>
                                             <td class="text-center">&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;&nbsp;&nbsp;&nbsp;</td>
                                             <td class="text-left">
-                                                <h:outputLabel value="#{cc.attrs.reservation.appointment.bill.paymentMethod.label}"></h:outputLabel>
+                                                <h:outputLabel value="#{(cc.attrs.appointment ne null ? cc.attrs.appointment : cc.attrs.reservation.appointment).bill.paymentMethod.label}"></h:outputLabel>
                                             </td>
                                         </tr>
                                     </tbody>
@@ -210,8 +204,8 @@
                             </div>
 
                             <div class="d-flex justify-content-center">
-                                <h:panelGroup rendered="#{cc.attrs.reservation.appointment.bill.paymentMethod eq 'MultiplePaymentMethods'}" class="mt-2">
-                                    <ui:repeat value="#{billSearch.fetchBillPayments(cc.attrs.reservation.appointment.bill)}" var="ps">
+                                <h:panelGroup rendered="#{(cc.attrs.appointment ne null ? cc.attrs.appointment : cc.attrs.reservation.appointment).bill.paymentMethod eq 'MultiplePaymentMethods'}" class="mt-2">
+                                    <ui:repeat value="#{billSearch.fetchBillPayments((cc.attrs.appointment ne null ? cc.attrs.appointment : cc.attrs.reservation.appointment).bill)}" var="ps">
                                         <div class="d-flex">
                                             <div style="width: 200px;">
                                                 <h:outputText style="font-size: 11pt;"  value="#{ps.paymentMethod.label}"/>
@@ -232,14 +226,14 @@
                             </div>
                             
 
-                            <h:panelGroup class="my-3" rendered="#{cc.attrs.reservation.appointment.appointmentCancel}"  style="font-size: 14px;">
+                            <h:panelGroup class="my-3" rendered="#{(cc.attrs.appointment ne null ? cc.attrs.appointment : cc.attrs.reservation.appointment).appointmentCancel}"  style="font-size: 14px;">
                                 <hr/>
 
                                 <div class="d-flex gap-2">
                                     <h:outputLabel value="Cancel By "></h:outputLabel>
-                                    <h:outputLabel value="#{cc.attrs.reservation.appointment.appointmentCancelBy.webUserPerson.nameWithTitle eq null ? 'N/A' : cc.attrs.reservation.appointment.appointmentCancelBy.webUserPerson.nameWithTitle}"></h:outputLabel>
+                                    <h:outputLabel value="#{(cc.attrs.appointment ne null ? cc.attrs.appointment : cc.attrs.reservation.appointment).appointmentCancelBy.webUserPerson.nameWithTitle eq null ? 'N/A' : (cc.attrs.appointment ne null ? cc.attrs.appointment : cc.attrs.reservation.appointment).appointmentCancelBy.webUserPerson.nameWithTitle}"></h:outputLabel>
                                     <h:outputLabel value="Cancel At "></h:outputLabel>
-                                    <h:outputLabel value="#{cc.attrs.reservation.appointment.appointmentCancelAt}">
+                                    <h:outputLabel value="#{(cc.attrs.appointment ne null ? cc.attrs.appointment : cc.attrs.reservation.appointment).appointmentCancelAt}">
                                         <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
                                     </h:outputLabel>
                                 </div>

@@ -1,4 +1,4 @@
-﻿<?xml version='1.0' encoding='UTF-8' ?>
+<?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
                 template="/resources/template/template.xhtml"
@@ -213,9 +213,9 @@
                                         id="dRate"
                                         onfocus="this.select()">
                                         <f:ajax 
-                                            event="blur" 
+                                            event="change" 
                                             execute="dRate" 
-                                            render=":#{p:resolveFirstComponentWithId('panelBillDetails',view).clientId} colItem dialog total doeDateOnlyShort profMargin batch pRate rRate :#{p:resolveFirstComponentWithId('diff', view).clientId} :#{p:resolveFirstComponentWithId('txtBillNetTotal', view).clientId} :#{p:resolveFirstComponentWithId('billFinanceDetails', view).clientId}" 
+                                            render=":#{p:resolveFirstComponentWithId('panelBillDetails',view).clientId} colItem dialog total profMargin :#{p:resolveFirstComponentWithId('diff', view).clientId} :#{p:resolveFirstComponentWithId('txtBillNetTotal', view).clientId} :#{p:resolveFirstComponentWithId('billFinanceDetails', view).clientId}" 
                                             listener="#{grnCostingController.lineDiscountRateChangedListner(bi)}"></f:ajax>
                                     </p:inputText>
                                 </p:column>

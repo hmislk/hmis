@@ -47,11 +47,13 @@
                                 </p:column>
                                 <p:column headerText="Client Name">                                    
                                 </p:column>
-                                <p:column headerText="Billed Amount">                                    
+                                <p:column headerText="Billed Amount">
                                 </p:column>
-                                <p:column headerText="Paid Amount">                                    
+                                <p:column headerText="Refund Amount">
                                 </p:column>
-                                 <p:column headerText="Net Amount">                                    
+                                <p:column headerText="Paid Amount">
+                                </p:column>
+                                <p:column headerText="Balance">
                                 </p:column>
                             </p:row>
                         </p:columnGroup>
@@ -68,15 +70,20 @@
                             <p:column style="text-align: right;">                                
                                 <h:outputLabel value="#{b.netTotal}" >
                                     <f:convertNumber pattern="#,##0.00" />
-                                </h:outputLabel>                                 
+                                </h:outputLabel>
                             </p:column>
-                            <p:column style="text-align: right;">                              
+                            <p:column style="text-align: right;">
+                                <h:outputLabel value="#{b.refundAmount}" >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputLabel>
+                            </p:column>
+                            <p:column style="text-align: right;">
                                 <h:outputLabel value="#{b.paidAmount}" >
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
                             </p:column>
-                            <p:column style="text-align: right;">                              
-                                <h:outputLabel value="#{b.netTotal+b.paidAmount}" >
+                            <p:column style="text-align: right;">
+                                <h:outputLabel value="#{b.netTotal-(b.refundAmount+b.paidAmount)}" >
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
                             </p:column>
@@ -92,14 +99,21 @@
                                     </p:column>
                                     <p:column style="text-align: right;" >
                                         <f:facet name="footer">
+                                            <h:outputLabel value="#{i.refundTotal}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputLabel>
+                                        </f:facet>
+                                    </p:column>
+                                    <p:column style="text-align: right;" >
+                                        <f:facet name="footer">
                                             <h:outputLabel value="#{i.paidTotal}">
                                                 <f:convertNumber pattern="#,##0.00" />
                                             </h:outputLabel>
                                         </f:facet>
                                     </p:column>
-                                     <p:column style="text-align: right;" >
+                                    <p:column style="text-align: right;" >
                                         <f:facet name="footer">
-                                            <h:outputLabel value="#{i.total+i.paidTotal}">
+                                            <h:outputLabel value="#{i.total-(i.refundTotal+i.paidTotal)}">
                                                 <f:convertNumber pattern="#,##0.00" />
                                             </h:outputLabel>
                                         </f:facet>

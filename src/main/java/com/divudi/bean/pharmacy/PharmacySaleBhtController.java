@@ -2293,6 +2293,10 @@ public class PharmacySaleBhtController implements Serializable {
         return true;
     }
 
+    private boolean hasRetailRate(Stock s) {
+        return s != null && s.getItemBatch() != null && s.getItemBatch().getRetailsaleRate() > 0;
+    }
+
     private boolean settleBhtIssueRequestAccept(BillType btp, BillTypeAtomic bta, Department matrixDepartment, BillNumberSuffix billNumberSuffix) {
 
         if (matrixDepartment == null) {
@@ -2322,6 +2326,16 @@ public class PharmacySaleBhtController implements Serializable {
                         + ". Available: " + availableQty + ", Requested: " + requestedQtyForSettle
                         + ", Remaining not issued: " + (requestedQtyForSettle - availableQty) + ".");
                 return false;
+            }
+            // A priced stock line must never be saved at rate 0 (the later return
+            // would copy the zero rate). Re-read the rate from the item batch first.
+            if (tbi.getRate() == 0.0 && hasRetailRate(tbiStock)) {
+                calculateRates(tbi);
+                if (tbi.getRate() == 0.0) {
+                    JsfUtil.addErrorMessage("The rate for " + tbi.getItem().getName()
+                            + " could not be determined. Please re-select the stock and try again.");
+                    return false;
+                }
             }
         }
 
@@ -2954,7 +2968,11 @@ public class PharmacySaleBhtController implements Serializable {
 
         if (selectedStockDto != null
                 && bi.getPharmaceuticalBillItem().getStock() != null
-                && Objects.equals(selectedStockDto.getId(), bi.getPharmaceuticalBillItem().getStock().getId())) {
+                && Objects.equals(selectedStockDto.getId(), bi.getPharmaceuticalBillItem().getStock().getId())
+                && selectedStockDto.getRetailRate() != null
+                && selectedStockDto.getRetailRate() > 0) {
+            // A missing or zero DTO rate is never trusted: fall through and read
+            // the rate from the stock's item batch instead.
             calculateRates(bi, selectedStockDto.getRetailRate());
             return;
         }

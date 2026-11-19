@@ -352,7 +352,11 @@ public class UserRoleApplicationService {
 
         if (op == RoleOperation.RESET || op == RoleOperation.NARROW) {
             for (WebUserPrivilege w : active) {
-                boolean matchesTemplate = w.getPrivilege() != null && templateSet.contains(w.getPrivilege());
+                if (w.getPrivilege() == null) {
+                    // A name this build does not know reads as null (PrivilegesConverter); leave it as is.
+                    continue;
+                }
+                boolean matchesTemplate = templateSet.contains(w.getPrivilege());
                 boolean shouldRetire = op == RoleOperation.NARROW ? matchesTemplate : !matchesTemplate;
                 if (shouldRetire) {
                     w.setRetired(true);
@@ -399,7 +403,9 @@ public class UserRoleApplicationService {
                 params("role", role));
         Set<Privileges> set = new HashSet<>();
         for (Object o : rows) {
-            set.add((Privileges) o);
+            if (o != null) {
+                set.add((Privileges) o);
+            }
         }
         return set;
     }

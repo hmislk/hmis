@@ -5,6 +5,7 @@
 package com.divudi.bean.common;
 
 import com.divudi.bean.cashTransaction.CashBookEntryController;
+import com.divudi.core.data.BillCategory;
 import com.divudi.core.data.BillClassType;
 import com.divudi.core.data.BillNumberSuffix;
 import com.divudi.core.data.BillType;
@@ -31,6 +32,7 @@ import com.divudi.core.facade.PaymentFacade;
 import com.divudi.core.facade.RefundBillFacade;
 import com.divudi.core.util.CommonFunctions;
 import java.io.Serializable;
+import com.divudi.core.entity.PatientEncounter;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -304,7 +306,7 @@ public class CreditCompanyBillSearch implements Serializable {
 
         // Check if this is a cancellation bill (bill created during cancellation process)
         if (isBillACancellationBill(getBill())) {
-            JsfUtil.addErrorMessage("This is a Cancellation Bill and cannot be cancelled again.");
+            JsfUtil.addErrorMessage("This is a cancellation or refund bill and cannot be cancelled.");
             return true;
         }
 
@@ -332,8 +334,18 @@ public class CreditCompanyBillSearch implements Serializable {
      * @return true if the bill is a cancellation bill, false otherwise
      */
     private boolean isBillACancellationBill(Bill bill) {
-        if (bill == null || bill.getBillTypeAtomic() == null) {
+        if (bill == null) {
             return false;
+        }
+        if (bill instanceof CancelledBill) {
+            return true;
+        }
+        if (bill.getBillTypeAtomic() == null) {
+            return false;
+        }
+        if (bill.getBillTypeAtomic().getBillCategory() == BillCategory.CANCELLATION
+                || bill.getBillTypeAtomic().getBillCategory() == BillCategory.REFUND) {
+            return true;
         }
 
         BillTypeAtomic billType = bill.getBillTypeAtomic();
@@ -450,8 +462,12 @@ public class CreditCompanyBillSearch implements Serializable {
                 getBilledBillFacade().edit(getBill());
                 JsfUtil.addSuccessMessage("Cancelled");
                 WebUser wb = getCashTransactionBean().saveBillCashOutTransaction(cb, getSessionController().getLoggedUser());
-                for(BillItem cancellingBillItem : cb.getBillItems()){
-                    getBillBean().updateInwardDipositList(cancellingBillItem.getPatientEncounter(), cb);
+                // cancelBillItems(cb) does not add the new items to cb.getBillItems(),
+                // so read the admissions from the bill being cancelled (#25542). Each
+                // admission is linked once; a payment for several admissions reverses
+                // only that admission's share on each final bill (#25547).
+                if (!getBillBean().linkToFreshFinalBillsPerAdmission(cb, getBillItems())) {
+                    JsfUtil.addErrorMessage("The final bill of an admission in this payment is cancelled, so this cancellation was not added to it. Please check the admission's final bill.");
                 }
                 getSessionController().setLoggedUser(wb);
                 paymentService.createPayment(cb, getPaymentMethodData());
@@ -718,9 +734,6 @@ public class CreditCompanyBillSearch implements Serializable {
                 updateReferenceBill(b);
             }
 
-            if (b.getPatientEncounter() != null) {
-                updateReferenceBht(b);
-            }
         }
     }
 
@@ -755,21 +768,6 @@ public class CreditCompanyBillSearch implements Serializable {
         referenceBill.setBalance(Math.max(0, currentBalance)); // Ensure balance doesn't go negative
 
         getBillFacade().edit(referenceBill);
-
-    }
-
-    private void updateReferenceBht(BillItem cancellationBillItem) {
-        PatientEncounter encounter = cancellationBillItem.getPatientEncounter();
-
-        // The cancellation bill item has negative netValue (inverted from original)
-        // The amount that was originally added during settlement is the absolute value
-        double originalSettlementAmount = Math.abs(cancellationBillItem.getNetValue());
-
-        // Reverse the settlement by subtracting the original amount from creditPaidAmount
-        double currentPaidAmount = encounter.getCreditPaidAmount();
-        encounter.setCreditPaidAmount(currentPaidAmount - originalSettlementAmount);
-
-        getPatientEncounterFacade().edit(encounter);
 
     }
 

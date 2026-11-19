@@ -30,9 +30,12 @@ public final class InwardMedicineBillTypes {
             BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD,
             BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN,
             BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_CANCELLATION,
-            // Porter-based ward return flow (#21466/#21470) - see issue #22990.
-            BillTypeAtomic.RETURN_MEDICINE_INWARD,
-            BillTypeAtomic.RETURN_MEDICINE_INWARD_CANCELLATION,
+            // Porter-based ward return flow (#21466/#21470) - see issue #22990. The BHT is
+            // credited when the pharmacy ACCEPTS the return (#25509), not when the ward sends
+            // it, so the accept bill (negative value, accepted quantity) is counted and
+            // RETURN_MEDICINE_INWARD / RETURN_MEDICINE_INWARD_CANCELLATION are not. A return
+            // can only be cancelled before any acceptance, so no accept bill exists then.
+            BillTypeAtomic.ACCEPT_RETURN_MEDICINE_INWARD,
             BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE,
             BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_RETURN,
             BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_CANCELLATION

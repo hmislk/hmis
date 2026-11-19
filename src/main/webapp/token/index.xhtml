@@ -43,6 +43,14 @@
                                         ajax="false" 
                                         action="#{tokenController.navigateToManagePharmacyTokensCompleted()}" >
                                     </p:commandButton>
+                                    <p:commandButton
+                                        value="Sale for Cashier Token Display"
+                                        icon="fa-solid fa-desktop"
+                                        ajax="false"
+                                        rendered="#{configOptionController.getBooleanValueByKey('Enable token system in sale for cashier', false)}"
+                                        action="/token/pharmacy_tokens_called_sale_for_cashier?faces-redirect=true"
+                                        actionListener="#{tokenController.fillSaleForCashierCalledBillsTokens()}" >
+                                    </p:commandButton>
                                     <p:commandButton 
                                         value="Scan Bills"
                                         icon=""

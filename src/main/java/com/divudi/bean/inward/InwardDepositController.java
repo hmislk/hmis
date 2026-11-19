@@ -82,6 +82,8 @@ public class InwardDepositController implements Serializable, ControllerWithMult
     @EJB
     PaymentService paymentService;
     @EJB
+    private com.divudi.service.inward.InwardPaymentService inwardPaymentService;
+    @EJB
     CashTransactionBean cashTransactionBean;
     @EJB
     PatientDepositService patientDepositService;
@@ -175,7 +177,13 @@ public class InwardDepositController implements Serializable, ControllerWithMult
         if (current == null || current.getPatientEncounter() == null) {
             return 0.0;
         }
-        return current.getPatientEncounter().getCreditUsedAmount();
+        PatientEncounter pe = current.getPatientEncounter();
+        Bill finalBill = pe.getFinalBill();
+        if (finalBill == null || finalBill.getId() == null) {
+            return pe.getCreditUsedAmount();
+        }
+        double[] f = commitmentFigures(finalBill);
+        return f != null ? f[0] : pe.getCreditUsedAmount();
     }
 
     /** CC amount already received from credit companies for this admission. */
@@ -183,7 +191,32 @@ public class InwardDepositController implements Serializable, ControllerWithMult
         if (current == null || current.getPatientEncounter() == null) {
             return 0.0;
         }
-        return current.getPatientEncounter().getCreditPaidAmount();
+        Bill finalBill = current.getPatientEncounter().getFinalBill();
+        if (finalBill == null || finalBill.getId() == null) {
+            return 0.0;
+        }
+        double[] f = commitmentFigures(finalBill);
+        return f != null ? f[1] : finalBill.getSettledAmountBySponsor();
+    }
+
+    /** {committed, paid} summed over the final bill's commitment bills, or null when it has none. */
+    private double[] commitmentFigures(Bill finalBill) {
+        String jpql = "SELECT SUM(c.netTotal), SUM(c.settledAmountBySponsor), COUNT(c) FROM Bill c"
+                + " WHERE c.billTypeAtomic = :bta"
+                + " AND c.referenceBill.id = :fbId"
+                + " AND c.cancelled = false"
+                + " AND c.retired = false";
+        HashMap<String, Object> m = new HashMap<>();
+        m.put("bta", BillTypeAtomic.INWARD_FINAL_BILL_PAYMENT_BY_CREDIT_COMPANY);
+        m.put("fbId", finalBill.getId());
+        List<Object[]> rows = getBilledBillFacade().findAggregates(jpql, m);
+        if (rows == null || rows.isEmpty() || rows.get(0)[2] == null || ((Number) rows.get(0)[2]).longValue() == 0) {
+            return null;
+        }
+        Object[] r = rows.get(0);
+        return new double[]{
+            r[0] == null ? 0.0 : ((Number) r[0]).doubleValue(),
+            r[1] == null ? 0.0 : ((Number) r[1]).doubleValue()};
     }
 
     public double getFinalBillTotal() {
@@ -694,7 +727,13 @@ public class InwardDepositController implements Serializable, ControllerWithMult
                 || bill.getPatientEncounter().getPatient().getPerson() == null;
     }
 
-    public void pay() {
+    public synchronized void pay() {
+        if (getCurrent() != null && getCurrent().getId() != null) {
+            // Already saved: a repeated click must not reach the service, whose
+            // rejection would clear the id of a committed bill (#25641).
+            JsfUtil.addErrorMessage("This bill is already saved.");
+            return;
+        }
         if (errorCheck()) {
             return;
         }
@@ -708,27 +747,35 @@ public class InwardDepositController implements Serializable, ControllerWithMult
             }
         }
 
-        saveBill();
-        saveBillItem();
-
-        paymentService.createPaymentAndUpdateDrawer(
-                current,
-                current.getPaymentMethod(),
-                paymentMethodData,
-                sessionController.getInstitution(),
-                sessionController.getDepartment(),
-                sessionController.getLoggedUser());
-
-        getBillBean().updateInwardDipositList(getCurrent().getPatientEncounter(), getCurrent());
-
-        if (getCurrent().getPatientEncounter().isPaymentFinalized()) {
-            getInwardBean().updateFinalFill(getCurrent().getPatientEncounter());
-
-            if (getCurrent().getPatientEncounter().getPaymentMethod() == PaymentMethod.Credit) {
-                getInwardBean().updateCreditDetail(getCurrent().getPatientEncounter(), getCurrent().getPatientEncounter().getFinalBill().getNetTotal());
-            }
+        // Bill, bill item, Payment rows and drawer update are saved in ONE
+        // transaction (#25641): if any step fails, nothing is saved.
+        prepareBill();
+        try {
+            inwardPaymentService.savePaymentBillWithPayments(
+                    current,
+                    paymentMethodData,
+                    sessionController.getInstitution(),
+                    sessionController.getDepartment(),
+                    sessionController.getLoggedUser());
+        } catch (RuntimeException e) {
+            // Rolled back: nothing was saved. Clear the id the failed attempt
+            // gave the bill, and reload deposit balances, so the user can submit again.
+            current.setId(null);
+            inwardPaymentService.reloadPatientDeposits(paymentMethodData);
+            Throwable cause = e instanceof javax.ejb.EJBException && e.getCause() != null ? e.getCause() : e;
+            String detail = cause.getMessage() != null ? " " + cause.getMessage() : "";
+            JsfUtil.addErrorMessage("Payment was not saved. Nothing has been recorded." + detail);
+            return;
         }
+
+        // Re-reads the admission and final bill so a final bill cancelled since
+        // this page opened is not written back as live (#25521).
+        BillBeanController.FinalBillLinkResult link = getBillBean().linkToFreshFinalBillAndRefresh(getCurrent().getPatientEncounter(), getCurrent());
+        getCurrent().setPatientEncounter(link.getEncounter());
         JsfUtil.addSuccessMessage("Deposit Bill Saved");
+        if (!link.isLinked()) {
+            JsfUtil.addErrorMessage("The final bill of this admission is cancelled, so this deposit was not added to it. Please check the admission's final bill.");
+        }
         paymentMethod = null;
         printPreview = true;
     }
@@ -874,6 +921,13 @@ public class InwardDepositController implements Serializable, ControllerWithMult
     }
 
     private void saveBill() {
+        prepareBill();
+        if (getCurrent().getId() == null) {
+            getBilledBillFacade().create(getCurrent());
+        }
+    }
+
+    private void prepareBill() {
         getCurrent().setInstitution(getSessionController().getInstitution());
         getCurrent().setDepartment(getSessionController().getDepartment());
         getCurrent().setBillType(BillType.InwardPaymentBill);
@@ -891,11 +945,6 @@ public class InwardDepositController implements Serializable, ControllerWithMult
         getCurrent().setCreatedAt(new Date());
         getCurrent().setCreater(getSessionController().getLoggedUser());
         getCurrent().setComments(comment);
-
-        if (getCurrent().getId() == null) {
-            getBilledBillFacade().create(getCurrent());
-        }
-
     }
 
     private void saveBillItem() {

@@ -174,6 +174,7 @@ public class ConfigOptionApplicationController implements Serializable {
             loadStockHistoryArchiveConfigurationDefaults();
             loadSapIntegrationConfigurationDefaults();
             loadInwardConfigurationDefaults();
+            loadSaleForCashierTokenDisplayConfigurationDefaults();
             enumController.resetPaymentMethods();
         } finally {
             isLoadingApplicationOptions = false;
@@ -1282,6 +1283,26 @@ public class ConfigOptionApplicationController implements Serializable {
         return "Include " + label + " in Collection Total";
     }
 
+    // Registers the Sale for Cashier TV board options so an admin finds them in
+    // Application Options before the board is first opened. Defaults match the page.
+    private void loadSaleForCashierTokenDisplayConfigurationDefaults() {
+        getBooleanValueByKey("Pharmacy Sale for Cashier Token Display - Show Header", true);
+        getBooleanValueByKey("Pharmacy Sale for Cashier Token Display - Show Date and Time", true);
+        getBooleanValueByKey("Pharmacy Sale for Cashier Token Display - Show Patient Name", true);
+        getBooleanValueByKey("Pharmacy Sale for Cashier Token Display - Show Bill Number", false);
+        getBooleanValueByKey("Pharmacy Sale for Cashier Token Display - Show Bill Value", false);
+        getBooleanValueByKey("Pharmacy Sale for Cashier Token Display - Show Status Picture", true);
+        getBooleanValueByKey("Pharmacy Sale for Cashier Token Display - Show Status Label", true);
+        getBooleanValueByKey("Pharmacy Sale for Cashier Token Display - Show In-Progress Tokens", true);
+        getIntegerValueByKey("Pharmacy Sale for Cashier Token Display - Called Token Number Font Size in Points", 70);
+        getIntegerValueByKey("Pharmacy Sale for Cashier Token Display - In-Progress Token Number Font Size in Points", 25);
+        getIntegerValueByKey("Pharmacy Sale for Cashier Token Display - Patient Details Font Size in Points", 28);
+        getIntegerValueByKey("Pharmacy Sale for Cashier Token Display - Status Picture Width in Pixels", 250);
+        getIntegerValueByKey("Pharmacy Sale for Cashier Token Display - Status Label Font Size in Pixels", 20);
+        getIntegerValueByKey("Pharmacy Sale for Cashier Token Display - Maximum Number of Called Tokens to Show (0 for All)", 0);
+        getIntegerValueByKey("Pharmacy Sale for Cashier Token Display - Maximum Number of In-Progress Tokens to Show (0 for All)", 0);
+    }
+
     private void loadStockHistoryArchiveConfigurationDefaults() {
         getIntegerValueByKey("StockHistory Archive - Retention Days", 730);
         getIntegerValueByKey("StockHistory Archive - Batch Size", 2000);
@@ -1649,6 +1670,48 @@ public class ConfigOptionApplicationController implements Serializable {
         saveShortTextOption(key, group == null ? "" : group.trim());
     }
 
+    /**
+     * Key holding the VAT rate (percent) for one inward charge type (issue
+     * #17491). Uses the enum {@code name()}, not the label, because labels can
+     * be renamed. Default 0 = no VAT.
+     */
+    public static String inwardVatPercentageKey(InwardChargeType type) {
+        return "Inward VAT Percentage - " + type.name();
+    }
+
+    /**
+     * VAT rate (percent) for one inward charge type; 0 when the key was never
+     * set. Read-only: never creates the ConfigOption row, so bill calculation
+     * writes nothing. A malformed or negative stored value counts as 0.
+     */
+    public double getInwardVatPercentage(InwardChargeType type) {
+        if (type == null || type == InwardChargeType.ComputedVAT) {
+            return 0.0;
+        }
+        ConfigOption option = getApplicationOption(inwardVatPercentageKey(type));
+        if (option == null || option.getValueType() != OptionValueType.DOUBLE) {
+            return 0.0;
+        }
+        try {
+            double rate = Double.parseDouble(option.getOptionValue());
+            return isValidInwardVatPercentage(rate) && rate > 0 ? rate : 0.0;
+        } catch (NumberFormatException | NullPointerException e) {
+            return 0.0;
+        }
+    }
+
+    /** A usable VAT rate is a finite number from 0 to 100 (percent). */
+    public static boolean isValidInwardVatPercentage(double rate) {
+        return Double.isFinite(rate) && rate >= 0 && rate <= 100;
+    }
+
+    public void saveInwardVatPercentage(InwardChargeType type, double percentage) {
+        if (type == null || type == InwardChargeType.ComputedVAT || !isValidInwardVatPercentage(percentage)) {
+            return;
+        }
+        setDoubleValueByKey(inwardVatPercentageKey(type), percentage > 0 ? percentage : 0.0);
+    }
+
     public String getColorValueByKey(String key) {
         ConfigOption option = getApplicationOption(key);
         if (option == null || option.getValueType() != OptionValueType.COLOR) {
@@ -1957,6 +2020,90 @@ public class ConfigOptionApplicationController implements Serializable {
 
     public boolean isAuthenticatorAppTwoFactorLoginRequiredForAllUsers() {
         return getBooleanValueByKey("Require authenticator app two-factor login for all users", false);
+    }
+
+    /**
+     * Whether two-factor login protects this account one by one: the
+     * service-login rule used by machine-to-machine logins (lab analysers,
+     * middleware, channelling API), which cannot ask for a code. The "for
+     * all users" switch is not applied, so unflagged service accounts keep
+     * working; a user who is linked, flagged as required, or allowed SMS
+     * codes is refused.
+     */
+    public boolean doesTwoFactorApplyToServiceLogin(WebUser u) {
+        if (u == null || !isAuthenticatorAppTwoFactorLoginEnabled()) {
+            return false;
+        }
+        return u.isTwoFactorRequired()
+                || u.isTwoFactorEnrolled()
+                || (isTwoFactorSmsLoginEnabled() && u.isTwoFactorSmsAllowed());
+    }
+
+    // Set-up window (see TwoFactorAuthController): the system records when each 2FA switch was turned on
+    public static final String TWO_FACTOR_MASTER_KEY = "Enable authenticator app two-factor login";
+    public static final String TWO_FACTOR_ALL_USERS_KEY = "Require authenticator app two-factor login for all users";
+    private static final String TWO_FACTOR_MASTER_ON_AT_KEY = "Two-factor login master switch turned on at (set by the system)";
+    private static final String TWO_FACTOR_ALL_USERS_ON_AT_KEY = "Two-factor all-users switch turned on at (set by the system)";
+
+    /**
+     * Called by the Application Options page after a value is saved: when one
+     * of the two switches changed, records the time it was turned on (0 when
+     * turned off). A set-up window for a user starts no earlier than this.
+     */
+    public void recordTwoFactorSwitchChange(String key, boolean wasOn, boolean isOn) {
+        if (wasOn == isOn) {
+            return;
+        }
+        String timeKey;
+        if (TWO_FACTOR_MASTER_KEY.equals(key)) {
+            timeKey = TWO_FACTOR_MASTER_ON_AT_KEY;
+        } else if (TWO_FACTOR_ALL_USERS_KEY.equals(key)) {
+            timeKey = TWO_FACTOR_ALL_USERS_ON_AT_KEY;
+        } else {
+            return;
+        }
+        setLongValueByKey(timeKey, isOn ? System.currentTimeMillis() : 0L);
+    }
+
+    /**
+     * The later of the times the master switch and the all-users switch were
+     * last turned on; null when neither time was recorded.
+     */
+    public Date getTwoFactorSwitchesOnAt() {
+        long a = onAtOf(TWO_FACTOR_MASTER_ON_AT_KEY, isAuthenticatorAppTwoFactorLoginEnabled());
+        long b = onAtOf(TWO_FACTOR_ALL_USERS_ON_AT_KEY, isAuthenticatorAppTwoFactorLoginRequiredForAllUsers());
+        long t = Math.max(a, b);
+        return t > 0 ? new Date(t) : null;
+    }
+
+    /**
+     * The recorded time a switch was turned on. A switch that is on but has
+     * no recorded time (it was on before times were kept, or the write after
+     * a save failed) gets the current time recorded here, so a covered user
+     * always has a 24-hour set-up period from the first check.
+     */
+    private long onAtOf(String timeKey, boolean switchIsOn) {
+        if (!switchIsOn) {
+            // A switch that is off has no activation time, whatever is stored
+            return 0L;
+        }
+        Long v = getLongValueByKey(timeKey, 0L);
+        long t = v == null ? 0L : v;
+        if (t <= 0) {
+            t = System.currentTimeMillis();
+            // Written only while the stored time is still unset, so a concurrent change is never overwritten
+            Map<String, Object> p = new HashMap<>();
+            p.put("k", timeKey);
+            p.put("v", Long.toString(t));
+            int done = optionFacade.updateByJpql("update ConfigOption o set o.optionValue=:v"
+                    + " where o.optionKey=:k and o.retired=false and (o.optionValue='0' or o.optionValue is null)", p);
+            loadApplicationOptions();
+            if (done != 1) {
+                Long again = getLongValueByKey(timeKey, 0L);
+                t = again == null ? 0L : again;
+            }
+        }
+        return t;
     }
 
     public String getAuthenticatorAppIssuerName() {

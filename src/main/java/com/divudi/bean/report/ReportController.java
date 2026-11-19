@@ -4,6 +4,7 @@ import com.divudi.bean.common.*;
 import com.divudi.bean.lab.PatientInvestigationController;
 import com.divudi.bean.inward.InwardReportController;
 import com.divudi.bean.pharmacy.PharmacyController;
+import com.divudi.bean.pharmacy.PrescriptionListController;
 import com.divudi.core.data.reports.*;
 import com.divudi.core.entity.*;
 import com.divudi.core.util.JsfUtil;
@@ -167,6 +168,8 @@ public class ReportController implements Serializable, ControllerWithReportFilte
     private InstitutionController institutionController;
     @Inject
     DoctorController doctorController;
+    @Inject
+    PrescriptionListController prescriptionListController;
     @Inject
     PersonController personController;
     @Inject
@@ -2431,7 +2434,7 @@ public class ReportController implements Serializable, ControllerWithReportFilte
     }
 
     public String navigateToPrescriptionList() {
-        return "/pharmacy/prescription_list?faces-redirect=true";
+        return prescriptionListController.navigateToPrescriptionList();
     }
 
     public String navigateToCourierLabReportsPrint() {
@@ -2518,7 +2521,7 @@ public class ReportController implements Serializable, ControllerWithReportFilte
 
     public String navigateToPrescriptionListFromPrescriptionSummery(Long personId) {
         if (personId == null || personId == 0) {
-            JsfUtil.addErrorMessage("Error 1");
+            JsfUtil.addErrorMessage("This row has no referring doctor to list bills for");
             return "";
         }
 
@@ -2527,13 +2530,11 @@ public class ReportController implements Serializable, ControllerWithReportFilte
         doctor = doctorController.findDoctor(person);
 
         if (doctor == null) {
-            JsfUtil.addErrorMessage("Error 2");
+            JsfUtil.addErrorMessage("No doctor record found for this referring doctor");
             return "";
         }
 
-        processPresciptionList();
-
-        return navigateToPrescriptionList();
+        return prescriptionListController.navigateToPrescriptionListForDoctor(doctor, fromDate, toDate, department);
     }
 
     public void makeNull() {
@@ -5125,8 +5126,9 @@ public class ReportController implements Serializable, ControllerWithReportFilte
             // Porter-based ward return (ward_pharmacy_return_to_pharmacy.xhtml, #21470/#21466)
             // is a separate return path from ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN and was
             // missing here, so those returns never netted against the original issue - the
-            // issue kept being counted in full forever (issue #23210).
-            billtypes.add(BillTypeAtomic.RETURN_MEDICINE_INWARD);
+            // issue kept being counted in full forever (issue #23210). Counted when the
+            // pharmacy accepts the return, not when the ward sends it (#25509).
+            billtypes.add(BillTypeAtomic.ACCEPT_RETURN_MEDICINE_INWARD);
         } else {
             billtypes.add(BillTypeAtomic.PHARMACY_RETAIL_SALE);
             billtypes.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED);
@@ -5144,7 +5146,7 @@ public class ReportController implements Serializable, ControllerWithReportFilte
             billtypes.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD);
             billtypes.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_CANCELLATION);
             billtypes.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN);
-            billtypes.add(BillTypeAtomic.RETURN_MEDICINE_INWARD);
+            billtypes.add(BillTypeAtomic.ACCEPT_RETURN_MEDICINE_INWARD);
         }
 
         StringBuilder jpql = new StringBuilder();
@@ -5178,21 +5180,15 @@ public class ReportController implements Serializable, ControllerWithReportFilte
         jpql.append("WHERE bi.bill.billTypeAtomic IN :bTypes ");
         jpql.append("AND bi.bill.createdAt BETWEEN :fd AND :td ");
         jpql.append("AND bi.retired = :retired ");
-        // Cancelling a porter return (WardPharmacyReturnToPharmacyController.cancelReturnBill())
-        // only flags the original RETURN_MEDICINE_INWARD bill cancelled=true - unlike
-        // PHARMACY_RETAIL_SALE_CANCELLED etc., it creates no offsetting billitem rows of its
-        // own to net against (RETURN_MEDICINE_INWARD_CANCELLATION never appears on any BillItem's
-        // bill), so a cancelled return must be excluded here directly rather than relying on a
-        // sibling atomic - otherwise a cancelled return keeps permanently reducing the report
-        // even though the medicine was never actually returned (issue #23210 follow-up).
-        jpql.append("AND NOT (bi.bill.billTypeAtomic = :returnMedicineInwardType AND bi.bill.cancelled = true) ");
+        // Only the pharmacy's ACCEPT_RETURN_MEDICINE_INWARD bill is counted for the porter
+        // flow (#25509); a ward return cancelled before acceptance never gets one, so the
+        // cancelled-return exclusion that used to sit here is no longer needed.
 
         Map<String, Object> m = new HashMap<>();
         m.put("retired", false);
         m.put("fd", fromDate);
         m.put("td", toDate);
         m.put("bTypes", billtypes);
-        m.put("returnMedicineInwardType", BillTypeAtomic.RETURN_MEDICINE_INWARD);
 
         if (institution != null) {
             jpql.append("AND bi.bill.institution = :ins ");
@@ -5230,10 +5226,10 @@ public class ReportController implements Serializable, ControllerWithReportFilte
             BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN,
             BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_RETURN,
             BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN,
-            // Porter-based ward return (ward_pharmacy_return_to_pharmacy.xhtml) - qty is
-            // stored positive at creation (WardPharmacyReturnToPharmacyController.doSettle()),
-            // so it needs forcing negative here like the other return types (issue #23210).
-            BillTypeAtomic.RETURN_MEDICINE_INWARD,
+            // Pharmacy accept of a porter-based ward return - qty is stored positive
+            // (PharmacyReturnFromWardReceiveController), so it needs forcing negative here
+            // like the other return types (issue #23210, #25509).
+            BillTypeAtomic.ACCEPT_RETURN_MEDICINE_INWARD,
             BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION,
             BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_CANCELLATION,
             BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_CANCELLATION,

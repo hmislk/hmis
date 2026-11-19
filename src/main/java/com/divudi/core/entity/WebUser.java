@@ -113,25 +113,43 @@ public class WebUser implements Serializable {
     private boolean restrictLoginByIp = false;
     private String allowedIpAddresses;
 
-    // Authenticator app (TOTP) two-factor login
+    // Authenticator app (TOTP) two-factor login.
+    // Every twoFactor* column is insert-only here: a merge of a whole WebUser (department switch, theme, role
+    // screens, API) must never write an old copy of these back. They are changed only by the UPDATE statements
+    // in TwoFactorAuthController, TwoFactorSmsController, WebUserController and TwoFactorSecretMigration.
+    @Column(name = "TWOFACTORREQUIRED", updatable = false)
     private boolean twoFactorRequired = false;
+    @Column(name = "TWOFACTORENROLLED", updatable = false)
     private boolean twoFactorEnrolled = false;
     @JsonIgnore
+    @Column(name = "TWOFACTORSECRET", updatable = false)
     private String twoFactorSecret;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    @Column(name = "TWOFACTORENROLLEDAT", updatable = false)
     private Date twoFactorEnrolledAt;
     @JsonIgnore
+    @Column(name = "TWOFACTORLASTUSEDSTEP", updatable = false)
     private Long twoFactorLastUsedStep;
     // Invalid authenticator codes since the last valid one; reaching the limit locks the account until an admin unlocks it
+    @Column(name = "TWOFACTORFAILEDATTEMPTS", updatable = false)
     private int twoFactorFailedAttempts = 0;
+    @Column(name = "TWOFACTORLOCKED", updatable = false)
     private boolean twoFactorLocked = false;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    @Column(name = "TWOFACTORLOCKEDAT", updatable = false)
     private Date twoFactorLockedAt;
     // SMS code as the other two-factor option: allowed by an admin, used only after the user verifies the mobile number
+    @Column(name = "TWOFACTORSMSALLOWED", updatable = false)
     private boolean twoFactorSmsAllowed = false;
+    @Column(name = "TWOFACTORMOBILE", updatable = false)
     private String twoFactorMobile;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    @Column(name = "TWOFACTORMOBILEVERIFIEDAT", updatable = false)
     private Date twoFactorMobileVerifiedAt;
+    // Start of the 24 h set-up window: set when an admin ticks "required" or resets the authenticator
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    @Column(name = "TWOFACTORSETUPWINDOWSTARTEDAT", updatable = false)
+    private Date twoFactorSetupWindowStartedAt;
 
     public Staff getStaff() {
         return staff;
@@ -538,6 +556,14 @@ public class WebUser implements Serializable {
 
     public void setTwoFactorMobileVerifiedAt(Date twoFactorMobileVerifiedAt) {
         this.twoFactorMobileVerifiedAt = twoFactorMobileVerifiedAt;
+    }
+
+    public Date getTwoFactorSetupWindowStartedAt() {
+        return twoFactorSetupWindowStartedAt;
+    }
+
+    public void setTwoFactorSetupWindowStartedAt(Date twoFactorSetupWindowStartedAt) {
+        this.twoFactorSetupWindowStartedAt = twoFactorSetupWindowStartedAt;
     }
 
     /**

@@ -131,6 +131,7 @@
                                         <p:column headerText="Bill Date"/>
                                         <p:column headerText="Billed Amount"/>
                                         <p:column headerText="Staff Fee" rendered="#{!configOptionApplicationController.getBooleanValueByKey('OPD Due Search - Hide Staff Fee',false)}"/>
+                                        <p:column headerText="Refund Amount"/>
                                         <p:column headerText="Paid Amount"/>
                                         <p:column headerText="Due Amount"/>
                                     </p:row>
@@ -194,12 +195,17 @@
                                         </h:outputLabel>
                                     </p:column>
                                     <p:column style="text-align: right;">
+                                        <h:outputLabel value="#{p.bill.refundAmount}" >
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+                                    </p:column>
+                                    <p:column style="text-align: right;">
                                         <h:outputLabel value="#{p.bill.paidAmount}" >
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>
                                     </p:column>
                                     <p:column style="text-align: right;">
-                                        <h:outputLabel value="#{p.bill.netTotal - p.bill.paidAmount}" >
+                                        <h:outputLabel value="#{p.bill.netTotal - p.bill.refundAmount - p.bill.paidAmount}" >
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>
                                     </p:column>
@@ -213,8 +219,15 @@
                                                     </h:outputLabel>
                                                 </f:facet>
                                             </p:column>
-                                            <p:column>
+                                            <p:column rendered="#{!configOptionApplicationController.getBooleanValueByKey('OPD Due Search - Hide Staff Fee',false)}">
 
+                                            </p:column>
+                                            <p:column style="text-align: right;" >
+                                                <f:facet name="footer">
+                                                    <h:outputLabel value="#{i.refundTotal}">
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputLabel>
+                                                </f:facet>
                                             </p:column>
                                             <p:column style="text-align: right;" >
                                                 <f:facet name="footer">
@@ -225,7 +238,7 @@
                                             </p:column>
                                             <p:column style="text-align: right;" >
                                                 <f:facet name="footer">
-                                                    <h:outputLabel value="#{i.total - i.paidTotal}">
+                                                    <h:outputLabel value="#{i.total - i.refundTotal - i.paidTotal}">
                                                         <f:convertNumber pattern="#,##0.00" />
                                                     </h:outputLabel>
                                                 </f:facet>

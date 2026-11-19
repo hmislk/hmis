@@ -159,7 +159,8 @@ public class InwardProfessionalFeeSummaryController implements Serializable {
         }
         double total = 0.0;
         for (Map.Entry<InwardChargeType, Double> e : charges.entrySet()) {
-            if (e.getKey() != InwardChargeType.ProfessionalCharge) {
+            if (e.getKey() != InwardChargeType.ProfessionalCharge
+                    && e.getKey() != InwardChargeType.ComputedVAT) {
                 total += e.getValue() == null ? 0.0 : e.getValue();
             }
         }

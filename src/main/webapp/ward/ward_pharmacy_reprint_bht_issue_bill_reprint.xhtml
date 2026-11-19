@@ -32,12 +32,13 @@
                                 icon="fas fa-cancel"
                                 ajax="false"
                                 action="#{pharmacyBillSearch.navigateToCancelBhtRequest}"
-                                disabled="#{!(pharmacyBillSearch.bill.returnBhtIssueBills.size() eq 0)}"
+                                disabled="#{!(pharmacyBillSearch.bill.returnBhtIssueBills.size() eq 0) or pharmacyBillSearch.currentBillIssueAcceptedByWard}"
                                 value="Cancel Request">
                             </p:commandButton>
                             <p:commandButton 
                                         ajax="false" 
-                                        value="To Return Item"
+                                        value="To Return Item (Deprecated)"
+                                        title="Deprecated: this route will be removed. Return medicines from the ward with Return Medicines to Pharmacy (ward → porter → pharmacy accept)."
                                         style="float: right;"
                                         action="#{bhtIssueReturnController.navigateToReturnPharmacyDirectIssueToInpatients(pharmacyBillSearch.bill)}"   
                                         icon="fa fa-undo"

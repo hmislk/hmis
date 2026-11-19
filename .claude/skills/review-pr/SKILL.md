@@ -43,6 +43,7 @@ For each comment:
 - Read the referenced file and line range with `Read`
 - Search for related patterns with `Grep`
 - Determine if the comment is valid, a false positive, or project-specific intent
+- **Bot suggestion that changes the design or flow, or brings a pattern most of the codebase does not use → Decline** and resolve the thread, no user round needed ([PR Review §2a](../../../developer_docs/git/pr-review-workflow.md#2a-decline-design-flow-and-off-pattern-suggestions-lead-developer-rule-2026-11-13)). If you still think it has merit, list it for the lead developer at the end; never implement it unasked.
 
 **Common false positives in this project:**
 - Null checks where lazy init already handles it (e.g., `getBillFinanceDetails()`)
@@ -55,7 +56,7 @@ For each comment:
 
 For each comment, report:
 - Comment summary
-- Your assessment: **Valid** / **False positive** / **Discuss**
+- Your assessment: **Valid** / **False positive** / **Declined (design/flow/off-pattern, §2a)** / **Discuss**
 - Reasoning with file:line reference
 
 Wait for user confirmation before making any changes.
@@ -132,7 +133,7 @@ gh api -X POST "repos/hmislk/hmis/pulls/<PR>/comments/<COMMENT_ID>/replies" \
   -f body="Fixed in <commit-sha>: <what was changed>."
 ```
 
-Do NOT resolve other reviewers' conversations. CodeRabbit auto-resolves on detection.
+Do NOT resolve human reviewers' conversations. Resolve a bot (CodeRabbit/Codex) thread yourself after replying with a fix or a §2a decline; the repository will not merge with an unresolved conversation.
 
 Full API recipes and cleanup commands: see [Posting PR Comments via gh CLI](../../../developer_docs/git/pr-review-workflow.md#posting-pr-comments-via-gh-cli).
 

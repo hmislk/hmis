@@ -1120,7 +1120,7 @@
                                             value="Direct Issue to BHTs"
                                             action="/inward/pharmacy_bill_issue_bht?faces-redirect=true"
                                             actionListener="#{inpatientDirectIssueNativeSqlController.resetAll()}"
-                                            rendered="#{webUserController.hasPrivilege('PharmacySale')}"
+                                            rendered="#{webUserController.hasPrivilege('PharmacySale') or webUserController.hasPrivilege('PharmacyDirectIssueToBht')}"
                                             icon="pi pi-check"
                                             class="w-100"
                                             ajax="false">
@@ -1175,6 +1175,17 @@
                                             ajax="false"
                                             action="#{wardPharmacyReturnToPharmacyController.navigateToReturn(admissionController.current)}"
                                             icon="fa fa-truck-ramp-box"
+                                            rendered="#{webUserController.hasPrivilege('InwardPharmacyReturnSubmit')}"
+                                            class="w-100"/>
+                                    </div>
+                                    <div class="col-6">
+                                        <p:commandButton
+                                            id="btnRequestDirectIssueReturnInpatient"
+                                            value="Request Return of Direct Issue"
+                                            title="Ask the issuing pharmacy to take back medicines it issued directly to this patient"
+                                            ajax="false"
+                                            action="#{directIssueReturnRequestController.navigateToRequestForEncounter(admissionController.current)}"
+                                            icon="fa fa-rotate-left"
                                             rendered="#{webUserController.hasPrivilege('InwardPharmacyReturnSubmit')}"
                                             class="w-100"/>
                                     </div>

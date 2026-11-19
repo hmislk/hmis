@@ -2452,6 +2452,7 @@ public class BillService {
                 + " coalesce(fs.name, 'N/A'), "         // Doctor name from fromStaff only
                 + " coalesce(bi.hospitalFee,0.0), "     // Hospital fee from BillItem
                 + " coalesce(bi.staffFee,0.0), "        // Staff fee from BillItem
+                + " coalesce(bi.discount,0.0), "        // Discount from BillItem
                 + " coalesce(bi.netValue,0.0), "        // Net value from BillItem
                 + " b.createdAt, "                       // Bill date
                 + " b.paymentMethod, "                   // Payment method

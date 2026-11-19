@@ -41,6 +41,12 @@
         </style>
         <h:form>
             <h:panelGroup rendered="#{!bhtIssueReturnController.printPreview}" styleClass="alignTop" >
+                <p:staticMessage
+                    severity="warn"
+                    summary="Deprecated return route"
+                    detail="Returning a pharmacy issue made against a ward request from this page is deprecated and will be removed. Return medicines from the ward with Return Medicines to Pharmacy (ward → porter → pharmacy accept)."
+                    rendered="#{bhtIssueReturnController.bill.billTypeAtomic eq 'ISSUE_MEDICINE_ON_REQUEST_INWARD'}"
+                    style="width: 100%;"/>
                 <p:panel>
                     <f:facet name="header" >
                         <div class="d-flex justify-content-between align-items-center w-100">

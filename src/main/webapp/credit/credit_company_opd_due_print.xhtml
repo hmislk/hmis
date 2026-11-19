@@ -188,6 +188,9 @@
                                                     </th>
                                                 </ui:fragment>
                                                 <th style="width: 17mm; font-weight: 700; text-align: center;">
+                                                    <h:outputText value="Refund Amount" />
+                                                </th>
+                                                <th style="width: 17mm; font-weight: 700; text-align: center;">
                                                     <h:outputText value="Paid Amount" />
                                                 </th>
                                                 <th style="width: 17mm; font-weight: 700; text-align: center;">
@@ -200,7 +203,7 @@
                                         <tbody>
                                             <ui:repeat value="#{creditCompanyDueController.items}" var="i">
                                                 <tr>
-                                                    <td colspan="#{configOptionApplicationController.getBooleanValueByKey('OPD Due Search - Hide Staff Fee', false) ? 8 : 9}"
+                                                    <td colspan="#{configOptionApplicationController.getBooleanValueByKey('OPD Due Search - Hide Staff Fee', false) ? 9 : 10}"
                                                         style="font-weight:bold; text-align: left;">
 
                                                         <h:outputText value="#{i.institution.name}" style="margin-left: 1mm;" />
@@ -240,12 +243,17 @@
                                                             </td>
                                                         </ui:fragment>
                                                         <td style="width: 17mm; text-align: right;">
+                                                            <h:outputText value="#{p.bill.refundAmount}" style="margin-right: 1mm;">
+                                                                <f:convertNumber pattern="#,##0.00" />
+                                                            </h:outputText>
+                                                        </td>
+                                                        <td style="width: 17mm; text-align: right;">
                                                             <h:outputText value="#{p.bill.paidAmount}" style="margin-right: 1mm;">
                                                                 <f:convertNumber pattern="#,##0.00" />
                                                             </h:outputText>
                                                         </td>
                                                         <td style="width: 17mm; text-align: right;">
-                                                            <h:outputText value="#{p.bill.netTotal - p.bill.paidAmount}" style="margin-right: 1mm;">
+                                                            <h:outputText value="#{p.bill.netTotal - p.bill.refundAmount - p.bill.paidAmount}" style="margin-right: 1mm;">
                                                                 <f:convertNumber pattern="#,##0.00" />
                                                             </h:outputText>
                                                         </td>
@@ -268,13 +276,19 @@
                                                     </ui:fragment>
 
                                                     <td style="text-align:right;">
+                                                        <h:outputText value="#{i.refundTotal}" style="margin-right: 1mm;">
+                                                            <f:convertNumber pattern="#,##0.00"/>
+                                                        </h:outputText>
+                                                    </td>
+
+                                                    <td style="text-align:right;">
                                                         <h:outputText value="#{i.paidTotal}" style="margin-right: 1mm;">
                                                             <f:convertNumber pattern="#,##0.00"/>
                                                         </h:outputText>
                                                     </td>
 
                                                     <td style="text-align:right;">
-                                                        <h:outputText value="#{i.total - i.paidTotal}" style="margin-right: 1mm;">
+                                                        <h:outputText value="#{i.total - i.refundTotal - i.paidTotal}" style="margin-right: 1mm;">
                                                             <f:convertNumber pattern="#,##0.00"/>
                                                         </h:outputText>
                                                     </td>

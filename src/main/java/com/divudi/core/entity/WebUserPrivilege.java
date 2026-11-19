@@ -8,8 +8,8 @@ import com.divudi.core.data.Privileges;
 import java.io.Serializable;
 import java.util.Date;
 import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
+import com.divudi.core.converter.PrivilegesConverter;
+import javax.persistence.Convert;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -30,7 +30,7 @@ public class WebUserPrivilege implements Serializable {
     String description;
     @ManyToOne
     WebUser webUser;
-    @Enumerated(EnumType.STRING)
+    @Convert(converter = PrivilegesConverter.class)
     Privileges privilege;
     @ManyToOne
     private Department department;

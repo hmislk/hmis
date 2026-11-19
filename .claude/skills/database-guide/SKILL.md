@@ -44,6 +44,9 @@ String jpql = "SELECT SUM(b.netTotal) FROM Bill b WHERE ...";
 - Use indexed columns in WHERE clauses
 - Use DTOs instead of full entities for display
 - Limit result sets with pagination
+- If an investigation shows a report is slow or times out, file a GitHub issue
+  for it (fast DTO-based report as the default, legacy report kept for
+  cross-check). See the [performance-optimization skill](../performance-optimization/SKILL.md#-found-a-slow-report-file-an-issue).
 
 ## Local Development Databases
 

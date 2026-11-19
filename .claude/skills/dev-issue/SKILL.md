@@ -428,6 +428,9 @@ Repeat, up to **3 cycles**:
 3. Once checks pass: run the `review-pr` skill for `<PR#>`.
    - Auto-apply fixes for comments matching `review-pr`'s documented
      false-positive/valid-fix patterns.
+   - Decline and resolve bot suggestions that change the design or flow, or
+     bring a pattern most of the codebase does not use (PR Review §2a). Do
+     not implement them; list any you still think have merit in Notify.
    - For genuinely ambiguous comments, pause and ask the user — don't burn a
      cycle guessing.
    - If fixes were applied, push and go to 1.

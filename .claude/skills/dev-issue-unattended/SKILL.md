@@ -510,7 +510,10 @@ Repeat, up to **3 cycles**:
    missed, per this project's autonomous-session pattern.
 2. If checks fail: investigate, fix, push, go to 1.
 3. Once checks pass: run the `review-pr` skill. Auto-apply fixes matching its
-   documented false-positive/valid-fix patterns.
+   documented false-positive/valid-fix patterns. Decline and resolve bot
+   suggestions that change the design or flow, or bring a pattern most of the
+   codebase does not use (PR Review §2a); record each in the PR's judgment-call
+   log for the lead developer instead of implementing it.
    **If CodeRabbit or Codex is rate-limited or out of usage** (its check or
    comment says "rate limited", "usage limit" or similar), the PR has no
    independent review. Dispatch the `hmis-rules-reviewer` agent

@@ -15,20 +15,32 @@
     <cc:implementation>
         <div class="row">
             <div class="col-md-6">
+                <div class="row align-items-center">
+                <div class="col-4">
                 <p:outputLabel for="staffWelfareRefundStaff" value="Staff Member: " />
+                </div>
+                <div class="col-8">
                 <p:autoComplete id="staffWelfareRefundStaff"
                                value="#{cc.attrs.paymentMethodData.staffWelfare.toStaff}"
                                completeMethod="#{staffController.completeStaff}"
                                var="stf" itemLabel="#{stf.person.name}"
                                itemValue="#{stf}"
                                forceSelection="true"
+                               style="width: 100%;"
+                               inputStyle="width: 100%;"
                                placeholder="Select Staff Member">
                     <p:column>#{stf.person.name} - #{stf.speciality.name}</p:column>
                 </p:autoComplete>
+                </div>
+                </div>
             </div>
 
             <div class="col-md-6">
+                <div class="row align-items-center">
+                <div class="col-4">
                 <p:outputLabel for="refundAmount" value="Refund Amount: " />
+                </div>
+                <div class="col-8">
                 <p:inputNumber id="refundAmount"
                               value="#{cc.attrs.paymentMethodData.staffWelfare.totalValue}"
                               symbol=" "
@@ -36,9 +48,12 @@
                               thousandSeparator=","
                               decimalPlaces="2"
                               placeholder="0.00"
-                              styleClass="form-control"
+                              style="width: 100%;"
+                              inputStyle="width: 100%;"
                               readonly="true">
                 </p:inputNumber>
+                </div>
+                </div>
             </div>
         </div>
 
@@ -139,14 +154,16 @@
 
         <!-- Comments Section -->
         <div class="row mt-3">
-            <div class="col-12">
+            <div class="col-md-2">
                 <p:outputLabel for="refundComments" value="Refund Comments (Optional): " />
+            </div>
+            <div class="col-md-10">
                 <p:inputTextarea id="refundComments"
                                 value="#{cc.attrs.paymentMethodData.staffWelfare.comment}"
                                 rows="3"
                                 cols="50"
                                 placeholder="Enter any comments about this refund..."
-                                styleClass="form-control" />
+                                style="width: 100%;" />
             </div>
         </div>
     </cc:implementation>

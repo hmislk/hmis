@@ -326,16 +326,17 @@ public class InwardPharmacyEncounterReportController implements Serializable {
                 }
             }
         }
-        // (ii) ward returns to pharmacy (via the accepted-issue item)
+        // (ii) ward returns to pharmacy, counted when the pharmacy accepts them (#25509).
+        // accept item -> return item -> receive item -> issue item -> issue bill -> request
         params = new HashMap<>();
         params.put("reqs", requests);
-        params.put("retBta", BillTypeAtomic.RETURN_MEDICINE_INWARD);
+        params.put("retBta", BillTypeAtomic.ACCEPT_RETURN_MEDICINE_INWARD);
         rows = billItemFacade.findObjectArrayByJpql(
-                "SELECT bi.referanceBillItem.referanceBillItem.bill.referenceBill.id, SUM(ABS(bi.netValue)) FROM BillItem bi "
+                "SELECT bi.referanceBillItem.referanceBillItem.referanceBillItem.bill.referenceBill.id, SUM(ABS(bi.netValue)) FROM BillItem bi "
                 + "WHERE bi.bill.billTypeAtomic = :retBta "
                 + "AND bi.bill.retired = false AND bi.bill.cancelled = false "
-                + "AND bi.referanceBillItem.referanceBillItem.bill.referenceBill IN :reqs "
-                + "GROUP BY bi.referanceBillItem.referanceBillItem.bill.referenceBill.id", params, TemporalType.TIMESTAMP);
+                + "AND bi.referanceBillItem.referanceBillItem.referanceBillItem.bill.referenceBill IN :reqs "
+                + "GROUP BY bi.referanceBillItem.referanceBillItem.referanceBillItem.bill.referenceBill.id", params, TemporalType.TIMESTAMP);
         if (rows != null) {
             for (Object[] r : rows) {
                 Long reqId = toLong(r[0]);

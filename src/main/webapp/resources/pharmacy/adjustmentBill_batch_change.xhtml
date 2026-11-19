@@ -1,0 +1,156 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:cc="http://xmlns.jcp.org/jsf/composite"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+
+    <!-- INTERFACE -->
+    <cc:interface>
+        <cc:attribute name="bill" type="com.divudi.core.entity.Bill"/>
+    </cc:interface>
+
+    <!-- IMPLEMENTATION -->
+    <cc:implementation>
+        <style>
+            .bc-receipt { font-family: 'Segoe UI', 'Arial', sans-serif; max-width: 100%; margin: 0 auto; padding: 20px; background: white; color: #333; }
+            .bc-header { text-align: center; border-bottom: 3px double #333; padding-bottom: 12px; margin-bottom: 16px; }
+            .bc-title { font-size: 20px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; }
+            .bc-subtitle { font-size: 11px; color: #666; margin-top: 4px; }
+            .bc-info { width: 100%; font-size: 12px; margin-bottom: 14px; border-collapse: collapse; }
+            .bc-info td { padding: 4px 8px 4px 0; vertical-align: top; }
+            .bc-info td.bc-label { font-weight: 600; color: #555; white-space: nowrap; width: 18%; }
+            .bc-table { width: 100%; border-collapse: collapse; font-size: 11px; margin-top: 8px; }
+            .bc-table th { background: #e9ecef; padding: 8px; text-align: left; border-bottom: 2px solid #333; text-transform: uppercase; font-size: 10px; }
+            .bc-table td { padding: 8px; border-bottom: 1px solid #dee2e6; }
+            .bc-table .bc-num { text-align: right; font-family: 'Courier New', monospace; font-weight: 600; }
+            .bc-dir { font-weight: 700; text-transform: uppercase; }
+            .bc-value { width: 60%; margin-top: 14px; border-collapse: collapse; font-size: 12px; }
+            .bc-value td { padding: 4px 8px; border-bottom: 1px dotted #bbb; }
+            .bc-value td.bc-num { text-align: right; font-family: 'Courier New', monospace; font-weight: 600; }
+            .bc-note { margin-top: 8px; font-size: 10px; color: #666; font-style: italic; }
+            .bc-footer { margin-top: 24px; padding-top: 12px; border-top: 1px dashed #999; text-align: center; font-size: 10px; color: #666; }
+        </style>
+        <div class="bc-receipt">
+            <div class="bc-header">
+                <div class="bc-title">Stock Adjustment - Batch Change</div>
+                <div class="bc-subtitle">Stock moved from one batch to another batch of the same item</div>
+            </div>
+
+            <table class="bc-info">
+                <tr>
+                    <td class="bc-label">Bill No</td>
+                    <td><h:outputText value="#{cc.attrs.bill.deptId}"/></td>
+                    <td class="bc-label">Adjusted At</td>
+                    <td>
+                        <h:outputText value="#{cc.attrs.bill.createdAt}">
+                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                        </h:outputText>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="bc-label">Adjusted By</td>
+                    <td><h:outputText value="#{cc.attrs.bill.creater.webUserPerson.name}"/></td>
+                    <td class="bc-label">Department</td>
+                    <td><h:outputText value="#{cc.attrs.bill.department.name}"/></td>
+                </tr>
+                <tr>
+                    <td class="bc-label">Comments</td>
+                    <td colspan="3"><h:outputText value="#{cc.attrs.bill.comments}"/></td>
+                </tr>
+            </table>
+
+            <table class="bc-table">
+                <thead>
+                    <tr>
+                        <th></th>
+                        <th>Item Name</th>
+                        <th>Batch No</th>
+                        <th>Expiry Date</th>
+                        <th class="bc-num">Purchase Rate</th>
+                        <th class="bc-num">Retail Rate</th>
+                        <th class="bc-num">Before Qty</th>
+                        <th class="bc-num">Moved Qty</th>
+                        <th class="bc-num">After Qty</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <ui:repeat value="#{billBeanController.fetchBillItems(cc.attrs.bill)}" var="bip">
+                        <tr>
+                            <td class="bc-dir">
+                                <h:outputText value="From batch" rendered="#{bip.pharmaceuticalBillItem.qty lt 0}"/>
+                                <h:outputText value="To batch" rendered="#{bip.pharmaceuticalBillItem.qty ge 0}"/>
+                            </td>
+                            <td><h:outputText value="#{bip.item.name}"/></td>
+                            <td><h:outputText value="#{bip.pharmaceuticalBillItem.itemBatch.batchNo}"/></td>
+                            <td>
+                                <h:outputText value="#{bip.pharmaceuticalBillItem.itemBatch.dateOfExpire}">
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
+                                </h:outputText>
+                            </td>
+                            <td class="bc-num">
+                                <h:outputText value="#{bip.pharmaceuticalBillItem.purchaseRate}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputText>
+                            </td>
+                            <td class="bc-num">
+                                <h:outputText value="#{bip.netRate}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputText>
+                            </td>
+                            <td class="bc-num">
+                                <h:outputText value="#{bip.pharmaceuticalBillItem.beforeAdjustmentValue}">
+                                    <f:convertNumber pattern="#,##0.##"/>
+                                </h:outputText>
+                            </td>
+                            <td class="bc-num">
+                                <h:outputText value="#{bip.pharmaceuticalBillItem.qty}">
+                                    <f:convertNumber pattern="#,##0.##"/>
+                                </h:outputText>
+                            </td>
+                            <td class="bc-num">
+                                <h:outputText value="#{bip.pharmaceuticalBillItem.afterAdjustmentValue}">
+                                    <f:convertNumber pattern="#,##0.##"/>
+                                </h:outputText>
+                            </td>
+                        </tr>
+                    </ui:repeat>
+                </tbody>
+            </table>
+
+            <table class="bc-value">
+                <tr>
+                    <td colspan="2"><strong>Stock value change of this department (for review)</strong></td>
+                </tr>
+                <tr>
+                    <td>At purchase rate</td>
+                    <td class="bc-num">
+                        <h:outputText value="#{cc.attrs.bill.billFinanceDetails.totalPurchaseValue}">
+                            <f:convertNumber pattern="#,##0.00"/>
+                        </h:outputText>
+                    </td>
+                </tr>
+                <tr>
+                    <td>At cost rate</td>
+                    <td class="bc-num">
+                        <h:outputText value="#{cc.attrs.bill.billFinanceDetails.totalCostValue}">
+                            <f:convertNumber pattern="#,##0.00"/>
+                        </h:outputText>
+                    </td>
+                </tr>
+                <tr>
+                    <td>At retail rate</td>
+                    <td class="bc-num">
+                        <h:outputText value="#{cc.attrs.bill.billFinanceDetails.totalRetailSaleValue}">
+                            <f:convertNumber pattern="#,##0.00"/>
+                        </h:outputText>
+                    </td>
+                </tr>
+            </table>
+            <div class="bc-note">The two batches may have different rates, so the value of the department's stock can change. This is shown for the reviewer to confirm; no payment or financial entry is made.</div>
+
+            <div class="bc-footer">This is a computer-generated document</div>
+        </div>
+    </cc:implementation>
+</html>

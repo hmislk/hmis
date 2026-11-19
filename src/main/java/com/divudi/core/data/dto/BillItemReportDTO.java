@@ -17,6 +17,7 @@ public class BillItemReportDTO implements Serializable {
     private Double hospitalFee;            // From BillItem.hospitalFee
     private Double staffFee;               // From BillItem.staffFee (doctor fee)
     private Double netValue;               // From BillItem.netValue
+    private Double discount;               // From BillItem.discount
     private Date billDate;
     private PaymentMethod paymentMethod;
     private BillTypeAtomic billTypeAtomic;
@@ -52,6 +53,16 @@ public class BillItemReportDTO implements Serializable {
         // Initialize computed fields
         this.billCategory = getBillCategoryFromBillTypeAtomic(billTypeAtomic);
         this.transactionTypeLabel = getBillCategoryDisplayName(billTypeAtomic);
+    }
+
+    // Constructor for JPQL including the bill item discount
+    public BillItemReportDTO(Long billId, Long billItemId, String deptId, String patientName, String itemName,
+                            String doctorName, Double hospitalFee, Double staffFee, Double discount, Double netValue,
+                            Date billDate, PaymentMethod paymentMethod, BillTypeAtomic billTypeAtomic,
+                            Boolean cancelled) {
+        this(billId, billItemId, deptId, patientName, itemName, doctorName, hospitalFee, staffFee, netValue,
+                billDate, paymentMethod, billTypeAtomic, cancelled);
+        this.discount = discount;
     }
 
     public Long getBillId() {
@@ -124,6 +135,14 @@ public class BillItemReportDTO implements Serializable {
 
     public void setNetValue(Double netValue) {
         this.netValue = netValue;
+    }
+
+    public Double getDiscount() {
+        return discount;
+    }
+
+    public void setDiscount(Double discount) {
+        this.discount = discount;
     }
 
     public Date getBillDate() {

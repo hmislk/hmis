@@ -23,6 +23,7 @@ For detailed pharmacy development, refer to these files:
 - [Purchase Order Workflow](../../developer_docs/po-workflow-documentation.md) - PO workflow
 - [Pharmacy Token Workflow](../../../developer_docs/pharmacy/pharmacy-token-workflow.md) - Token issue → Retail Sale / Sale for Cashier → pay → call → complete; which bean backs each sale page
 - [Bulk Stock Verification Adjustment](../../developer_docs/pharmacy/bulk-stock-verification-adjustment-guide.md) - Reconciling a physical stock count spreadsheet against system stock at scale via the adjustment/batch-creation APIs
+- [Inpatient Medicine Issue Policy](../../../developer_docs/pharmacy/inpatient-medicine-issue-policy.md) - Two workflows (Direct Issue; Request → porter → ward receive), both always on; entry-point table
 
 ## Configuration Options
 

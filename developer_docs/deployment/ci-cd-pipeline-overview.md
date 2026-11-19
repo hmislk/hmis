@@ -45,7 +45,7 @@ All production apps run on Payara 5 on five Azure VMs in the
 | Digasiri | `digasiri-production` | `digasiri_production_ci_cd.yml` | shared1 | https://digasiri.carecode.org/digasiri | |
 | Horizon | `horizon-production` | `horizon_production_ci_cd.yml` | shared1 | https://horizon.carecode.org/horizon | |
 | Matara Pharmacy | `mp-production` | `mp_production_ci_cd.yml` | shared2 | https://mp.carecode.org/mp | |
-| Matara Pharmacy (old) | `mpold-production` | `mpold_production_ci_cd.yml` | shared3 | https://mpold.carecode.org/mpold | |
+| Matara Pharmacy (old) | `mpold-production` | `mpold_production_ci_cd.yml` | — | — | **Decommissioned**: app no longer served. Don't hotfix or backport to it. |
 | Roseth | `roseth-production` | `roseth_production_ci_cd.yml` | shared3 | https://roseth.carecode.org/roseth | |
 | Engage Wellness Centre | `ewc-production` | `ewc_production_ci_cd.yml` | shared4 | https://ewc.carecode.org/ewc | |
 | BMS | `bms-production` | — none | shared4 | https://bms.carecode.org/bms | App disabled; branch only keeps the deployed code. No pipeline. |

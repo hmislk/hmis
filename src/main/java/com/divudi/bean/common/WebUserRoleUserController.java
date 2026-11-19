@@ -96,6 +96,9 @@ public class WebUserRoleUserController implements Serializable {
         
         for(WebUserRolePrivilege wurp:rolePrivileges){
             Privileges p = wurp.getPrivilege();
+            if (p == null) {
+                continue;
+            }
             userPrivilageController.addUserPrivilege(p, user, department);
         }
     }

@@ -147,6 +147,17 @@ public class SpecialityController implements Serializable {
         return selectedItems;
     }
 
+    /**
+     * Speciality names for text filters that search by name (e.g. the
+     * Speciality filter of Inward Payments Due Search).
+     */
+    public List<String> completeSpecialityNames(String qry) {
+        Map<String, Object> m = new HashMap<>();
+        m.put("q", "%" + (qry == null ? "" : qry.trim().toUpperCase()) + "%");
+        return getFacade().findStringListByJpql("select distinct c.name from Speciality c"
+                + " where c.retired=false and (c.name) like :q order by c.name", m);
+    }
+
     public List<Speciality> completeDoctorSpeciality(String qry) {
         Map m = new HashMap();
         m.put("class", DoctorSpeciality.class);

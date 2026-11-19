@@ -257,7 +257,10 @@
                                     </tr>
 
                                     <tr>
-                                        <td >Discount</td>
+                                        <td >Discount
+                                            <h:outputText value=": (#{cc.attrs.bill.paymentScheme.name})"
+                                                          rendered="#{cc.attrs.bill.paymentScheme ne null}"/>
+                                        </td>
                                         <td  style="text-align: right;">
                                             <h:outputLabel  value="#{- cc.attrs.bill.discount}">
                                                 <f:convertNumber pattern="#,##0.00" />

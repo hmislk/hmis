@@ -819,7 +819,7 @@ public class UserPrivilageController implements Serializable {
         TreeNode PharmacySaleForCashier = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacySaleForCashier, "Pharmacy Sale For Cashier"), retailTransaction);
         TreeNode PharmacySaleQuick = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacySaleQuick, "Pharmacy Sale - Quick"), retailTransaction);
         TreeNode PharmacySaleForCashierQuick = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacySaleForCashierQuick, "Pharmacy Sale For Cashier - Quick"), retailTransaction);
-        TreeNode PharmacySaleWithOutStock = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacySaleWithOutStock, "Pharmacy Sale With Out Stock"), retailTransaction);
+        TreeNode PharmacySaleWithOutStock = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacySaleWithoutStock, "Pharmacy Sale Without Stock"), retailTransaction);
         TreeNode PharmacySearchSaleBill = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacySearchSaleBill, "Pharmacy Search Sale Bill"), retailTransaction);
         TreeNode PharmacySearchSalePreBill = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacySearchSalePreBill, "Pharmacy Search Sale PreBill"), retailTransaction);
         TreeNode PharmacySearchSaleBillItems = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacySearchSaleBillItems, "Pharmacy Search Sale BillItems"), retailTransaction);
@@ -986,7 +986,6 @@ public class UserPrivilageController implements Serializable {
         // Retail transaction extras
         new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyRetailTransaction, "Pharmacy Retail Transaction"), retailTransaction);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacySaleReturn, "Pharmacy Sale Return"), retailTransaction);
-        new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacySaleWithoutStock, "Pharmacy Sale Without Stock"), retailTransaction);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyReturnWithoutTraising, "Pharmacy Return Without Traising"), retailTransaction);
         // Wholesale extras
         new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyWholeSaleTransaction, "Pharmacy Wholesale Transaction"), PharmacyWholeSaleTransAction);
@@ -1026,7 +1025,6 @@ public class UserPrivilageController implements Serializable {
         new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyTransfer, "Pharmacy Transfer"), pharmacyNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacySummery, "Pharmacy Summary"), pharmacyNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacySetReorderLevel, "Pharmacy Set Reorder Level"), pharmacyNode);
-        new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacySaleWithoutStock, "Pharmacy Sale Without Stock (Legacy)"), pharmacyNode);
 
         // Request Privileges
         TreeNode requestNode = new DefaultTreeNode(new PrivilegeHolder(null, "Request Manage"), allNode);
@@ -1587,14 +1585,9 @@ public class UserPrivilageController implements Serializable {
                     System.err.println("Failed to log audit event for null privilege: " + e.getMessage());
                 }
 
-                tmpWup.setRetired(true);
-                tmpWup.setRetiredAt(new Date());
-                tmpWup.setRetirer(sessionController.getLoggedUser());
-                if (tmpWup.getId() == null) {
-                    webUserPrivilegeFacade.create(tmpWup);
-                } else {
-                    webUserPrivilegeFacade.edit(tmpWup);
-                }
+                // Skip the row but do not retire it: a privilege name this build does not
+                // know also reads as null (PrivilegesConverter), and retiring it would drop
+                // a privilege that a newer build still grants.
                 continue;
             }
             PrivilegeHolder ph = new PrivilegeHolder();
@@ -1612,6 +1605,9 @@ public class UserPrivilageController implements Serializable {
         }
 
         for (WebUserRolePrivilege tmpWup : ps) {
+            if (tmpWup.getPrivilege() == null) {
+                continue;
+            }
             PrivilegeHolder ph = new PrivilegeHolder();
             ph.setPrivilege(tmpWup.getPrivilege());
             ph.setName(tmpWup.getPrivilege().getLabel());
@@ -1625,8 +1621,9 @@ public class UserPrivilageController implements Serializable {
         department = dept;
         List<PrivilegeHolder> selectedPrivileges = selected;
         for (WebUserPrivilege wup : getCurrentWebUserPrivileges()) {
-            wup.setRetired(true);
-
+            if (wup.getPrivilege() != null) {
+                wup.setRetired(true);
+            }
         }
         getFacade().batchEdit(getCurrentWebUserPrivileges());
         if (selectedPrivileges == null) {
@@ -1673,8 +1670,12 @@ public class UserPrivilageController implements Serializable {
 
         // Retire all current web user privileges initially
         List<WebUserPrivilege> currentPrivileges = getCurrentWebUserPrivileges();
+        // A row whose privilege name this build does not know reads as null
+        // (PrivilegesConverter); leave it untouched so a newer build keeps it.
         for (WebUserPrivilege wup : currentPrivileges) {
-            wup.setRetired(true);
+            if (wup.getPrivilege() != null) {
+                wup.setRetired(true);
+            }
         }
 
         if (selectedPrivileges == null) {
@@ -1692,7 +1693,7 @@ public class UserPrivilageController implements Serializable {
 
             boolean found = false;
             for (WebUserPrivilege wup : currentPrivileges) {
-                if (wup.getPrivilege() == ph.getPrivilege()) {
+                if (isSamePrivilege(wup.getPrivilege(), ph.getPrivilege())) {
                     wup.setRetired(false);
                     nonRetiredPrivileges.add(wup);
                     found = true;
@@ -1760,7 +1761,9 @@ public class UserPrivilageController implements Serializable {
         List<PrivilegeHolder> selectedPrivileges = extractPrivileges(selectedNodes);
 
         for (WebUserRolePrivilege wup : getCurrentWebUserRolePrivileges()) {
-            wup.setRetired(true);
+            if (wup.getPrivilege() != null) {
+                wup.setRetired(true);
+            }
         }
 
         getRoleFacede().batchEdit(getCurrentWebUserRolePrivileges());
@@ -2115,7 +2118,20 @@ public class UserPrivilageController implements Serializable {
         this.selectedRoleItems = selectedRoleItems;
     }
 
+    // PharmacySaleWithoutStock and PharmacySaleWithOutStock are one permission
+    // (#25602). Stored rows may hold either spelling; never rename the constants.
+    static Privileges canonicalPrivilege(Privileges p) {
+        return p == Privileges.PharmacySaleWithOutStock ? Privileges.PharmacySaleWithoutStock : p;
+    }
+
+    static boolean isSamePrivilege(Privileges a, Privileges b) {
+        return canonicalPrivilege(a) == canonicalPrivilege(b);
+    }
+
     public TreeNode getRootTreeNode() {
+        if (rootTreeNode == null) {
+            rootTreeNode = createPrivilegeHolderTreeNodes();
+        }
         return rootTreeNode;
     }
 
@@ -2305,7 +2321,7 @@ public class UserPrivilageController implements Serializable {
         @Override
         public int hashCode() {
             int hash = 7;
-            hash = 73 * hash + Objects.hashCode(this.privilege);
+            hash = 73 * hash + Objects.hashCode(canonicalPrivilege(this.privilege));
             return hash;
         }
 
@@ -2321,7 +2337,7 @@ public class UserPrivilageController implements Serializable {
                 return false;
             }
             final PrivilegeHolder other = (PrivilegeHolder) obj;
-            return this.privilege == other.privilege;
+            return isSamePrivilege(this.privilege, other.privilege);
         }
 
     }

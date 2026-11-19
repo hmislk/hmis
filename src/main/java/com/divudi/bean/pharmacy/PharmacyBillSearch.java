@@ -81,6 +81,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -998,6 +1000,9 @@ public class PharmacyBillSearch implements Serializable {
         billFacade.edit(bill);
         // Session-scoped: clear so this comment is not reused for the next cancellation.
         comment = null;
+        JsfUtil.addSuccessMessage("Transfer Request Cancelled Successfully");
+        // Keep the message across the redirect below; without this it is discarded.
+        javax.faces.context.FacesContext.getCurrentInstance().getExternalContext().getFlash().setKeepMessages(true);
         return "/pharmacy/pharmacy_transfer_request_list?faces-redirect=true";
     }
 
@@ -1209,8 +1214,7 @@ public class PharmacyBillSearch implements Serializable {
         // Handle Institution ID generation (completely separate)
         String insId;
         if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Issue Cancelled - Prefix + Institution Code + Year + Yearly Number", false)) {
-            insId = getBillNumberBean().institutionBillNumberGeneratorYearlyWithPrefixInsYearCountInstitutionWide(
-                    sessionController.getLoggedUser().getDepartment(), BillTypeAtomic.PHARMACY_ISSUE_CANCELLED);
+            insId = deptId; // Same number as deptId: do not consume the yearly counter twice
         } else {
             // Smart fallback logic
             if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Issue Cancelled - Prefix + Department Code + Institution Code + Year + Yearly Number", false)
@@ -2832,6 +2836,11 @@ public class PharmacyBillSearch implements Serializable {
 
     private void pharmacyCancelBillItems(CancelledBill can) {
         for (BillItem nB : getBill().getBillItems()) {
+            // A removed or zero-qty line stays on the bill as retired (#25621);
+            // it was never ordered, so it gets no cancellation line
+            if (nB.isRetired()) {
+                continue;
+            }
             BillItem b = new BillItem();
             b.setBill(can);
             b.copy(nB);
@@ -2850,20 +2859,13 @@ public class PharmacyBillSearch implements Serializable {
             ph.copy(nB.getPharmaceuticalBillItem());
             ph.invertValue(nB.getPharmaceuticalBillItem());
 
-            if (ph.getId() == null) {
-                getPharmaceuticalBillItemFacade().create(ph);
-            }
-
+            // Link both sides and save once with create(); BillItem cascades to the
+            // PharmaceuticalBillItem. edit() on a new entity merges a copy and leaves
+            // this instance without an id, so every extra save inserted another row (#25625).
             b.setPharmaceuticalBillItem(ph);
-
-            if (b.getId() == null) {
-                getBillItemFacede().edit(b);
-            }
-
             ph.setBillItem(b);
-            getPharmaceuticalBillItemFacade().edit(ph);
 
-            getBillItemFacede().edit(b);
+            getBillItemFacede().create(b);
 
             can.getBillItems().add(b);
         }
@@ -3304,8 +3306,7 @@ public class PharmacyBillSearch implements Serializable {
             // Handle Institution ID generation
             String insId;
             if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Sale Cancel - Prefix + Institution Code + Year + Yearly Number", false)) {
-                insId = getBillNumberBean().institutionBillNumberGeneratorYearlyWithPrefixInsYearCountInstitutionWide(
-                        getSessionController().getDepartment(), BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED);
+                insId = deptId; // Same number as deptId: do not consume the yearly counter twice
             } else {
                 // Use existing method for backward compatibility
                 insId = deptId;
@@ -3442,8 +3443,84 @@ public class PharmacyBillSearch implements Serializable {
 
     }
 
+    private static final String WARD_ALREADY_RECEIVED_MESSAGE = "The ward has already received this issue. Return it instead.";
+
+    /**
+     * True when the bill is an issue made against a ward request and the ward has
+     * accepted it (a non-cancelled ACCEPT_ISSUED_MEDICINE_INWARD bill references it).
+     * Such an issue can no longer be cancelled; it has to be returned (#25508).
+     */
+    public boolean isIssueAcceptedByWard(Bill issue) {
+        if (issue == null || issue.getId() == null
+                || issue.getBillTypeAtomic() != BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD) {
+            return false;
+        }
+        String jpql = "SELECT count(r) FROM Bill r WHERE r.backwardReferenceBill.id = :issueId "
+                + "AND r.billTypeAtomic = :acceptBta AND r.cancelled = false";
+        Map<String, Object> params = new HashMap<>();
+        params.put("issueId", issue.getId());
+        params.put("acceptBta", BillTypeAtomic.ACCEPT_ISSUED_MEDICINE_INWARD);
+        Long count = getBillFacade().findLongByJpql(jpql, params);
+        return count != null && count > 0;
+    }
+
+    public boolean isCurrentBillIssueAcceptedByWard() {
+        return isIssueAcceptedByWard(getBill());
+    }
+
+    /**
+     * One lock per issue bill, shared by every session, so a double click or a
+     * second user cannot cancel the same inward issue twice (#25530 follow-up).
+     */
+    private static final ConcurrentHashMap<Long, ReentrantLock> ISSUE_CANCEL_LOCKS = new ConcurrentHashMap<>();
+
+    private static final String ISSUE_ALREADY_CANCELLED_MESSAGE
+            = "This issue was already cancelled, possibly by another user. It was not cancelled again.";
+
+    /**
+     * Runs one inward issue cancel under that bill's lock, after re-reading the
+     * bill from the database: a cancelled bill is refused before any stock is
+     * moved. Facade calls inside still commit on their own.
+     */
+    private void cancelIssueToBhtOnce(Runnable cancel) {
+        if (getBill() == null || getBill().getId() == null) {
+            JsfUtil.addErrorMessage("No Bill Found");
+            return;
+        }
+        ReentrantLock lock = ISSUE_CANCEL_LOCKS.computeIfAbsent(getBill().getId(), k -> new ReentrantLock());
+        lock.lock();
+        try {
+            Bill fresh = getBillFacade().findWithoutCache(getBill().getId());
+            if (fresh == null) {
+                JsfUtil.addErrorMessage("No Bill Found");
+                return;
+            }
+            if (fresh.isCancelled() || fresh.getCancelledBill() != null) {
+                // Show the page as cancelled; nothing is saved.
+                getBill().setCancelled(true);
+                JsfUtil.addErrorMessage(ISSUE_ALREADY_CANCELLED_MESSAGE);
+                return;
+            }
+            // Cancel from the database copy, not the page's: the checks, the porter
+            // and stock reversal and the final save all read getBill(). The field is
+            // set directly; setBill() would run recreateModel().
+            bill = fresh;
+            cancel.run();
+        } finally {
+            lock.unlock();
+        }
+    }
+
     public void cancelPharmacyDirectIssueToBht() {
+        cancelIssueToBhtOnce(this::cancelPharmacyDirectIssueToBhtUnderLock);
+    }
+
+    private void cancelPharmacyDirectIssueToBhtUnderLock() {
         if (getBill().getBillType() != BillType.PharmacyBhtPre) {
+            return;
+        }
+        if (isIssueAcceptedByWard(getBill())) {
+            JsfUtil.addErrorMessage(WARD_ALREADY_RECEIVED_MESSAGE);
             return;
         }
         if (getBill().getPatientEncounter().isPaymentFinalized()) {
@@ -3471,13 +3548,26 @@ public class PharmacyBillSearch implements Serializable {
         } else {
             cancellationAtomic = BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION;
         }
-        String deptId = billNumberBean.departmentBillNumberGeneratorYearly(sessionController.getDepartment(), cancellationAtomic);
         // Bills settled through InpatientDirectIssueNativeSqlService write their real netTotal
         // and BillItem rows via native SQL after this session-scoped bean's `bill` reference was
         // already populated from an earlier (now stale) query, so getBill() here can still show
         // netTotal=0 and an empty item list even though the database row is correct. Bypassing the
         // cache guarantees the reversal is built from the real billed amount (#22599).
         Bill billToCancel = getBillFacade().findWithoutCache(getBill().getId());
+        if (billToCancel.getBillTypeAtomic() == BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD) {
+            // The issue moved the quantity to the porter's staff stock; take it back out
+            // before the department stock is restored, and stop if that fails (#25525).
+            String porterShortfall = getPharmacyBean().porterStockShortfallForIssueCancellation(billToCancel);
+            if (porterShortfall != null) {
+                JsfUtil.addErrorMessage(porterShortfall);
+                return;
+            }
+            if (!getPharmacyBean().deductPorterStockForIssueCancellation(billToCancel)) {
+                JsfUtil.addErrorMessage("Cannot cancel: the porter's stock changed while cancelling. Nothing was changed; please try again.");
+                return;
+            }
+        }
+        String deptId = billNumberBean.departmentBillNumberGeneratorYearly(sessionController.getDepartment(), cancellationAtomic);
         Bill originalForwardReferenceBill = billToCancel.getForwardReferenceBill();
         Bill newlyCreatedCancellationBill = getPharmacyBean().reAddToStock(billToCancel, getSessionController().getLoggedUser(), getSessionController().getDepartment(), BillNumberSuffix.PHISSCAN);
         newlyCreatedCancellationBill.setForwardReferenceBill(originalForwardReferenceBill);
@@ -3630,11 +3720,19 @@ public class PharmacyBillSearch implements Serializable {
     }
 
     public void cancelPharmacyRequestIssueToBht() {
+        cancelIssueToBhtOnce(this::cancelPharmacyRequestIssueToBhtUnderLock);
+    }
+
+    private void cancelPharmacyRequestIssueToBhtUnderLock() {
         if (getBill() == null) {
             JsfUtil.addErrorMessage("No Bill Found");
             return;
         }
         if (getBill().getBillType() != BillType.PharmacyBhtPre) {
+            return;
+        }
+        if (isIssueAcceptedByWard(getBill())) {
+            JsfUtil.addErrorMessage(WARD_ALREADY_RECEIVED_MESSAGE);
             return;
         }
         if (getBill().getPatientEncounter().isPaymentFinalized()) {
@@ -3651,6 +3749,20 @@ public class PharmacyBillSearch implements Serializable {
         }
         if (checkDepartment(getBill())) {
             return;
+        }
+        boolean requestIssue = getBill().getBillTypeAtomic() == BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD;
+        if (requestIssue) {
+            // The issue moved the quantity to the porter's staff stock; take it back out
+            // before the department stock is restored, and stop if that fails (#25525).
+            String porterShortfall = getPharmacyBean().porterStockShortfallForIssueCancellation(getBill());
+            if (porterShortfall != null) {
+                JsfUtil.addErrorMessage(porterShortfall);
+                return;
+            }
+            if (!getPharmacyBean().deductPorterStockForIssueCancellation(getBill())) {
+                JsfUtil.addErrorMessage("Cannot cancel: the porter's stock changed while cancelling. Nothing was changed; please try again.");
+                return;
+            }
         }
         String deptId = billNumberBean.departmentBillNumberGeneratorYearly(sessionController.getDepartment(), BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_CANCELLATION);
         Bill newlyCreatedCancellationBill = getPharmacyBean().reAddToStock(getBill(), getSessionController().getLoggedUser(), getSessionController().getDepartment(), BillNumberSuffix.PHISSCAN);
@@ -4117,7 +4229,7 @@ public class PharmacyBillSearch implements Serializable {
             // Handle Institution ID generation separately
             String insId;
             if (billNumberGenerationStrategyForInstitutionIdIsPrefixInsYearCount) {
-                insId = getBillNumberBean().institutionBillNumberGeneratorYearlyWithPrefixInsYearCountInstitutionWide(
+                insId = (billNumberGenerationStrategyForDepartmentIdIsPrefixInsYearCount) ? deptId : getBillNumberBean().institutionBillNumberGeneratorYearlyWithPrefixInsYearCountInstitutionWide(
                         getSessionController().getDepartment(),
                         BillTypeAtomic.PHARMACY_ORDER_CANCELLED
                 );
@@ -4225,7 +4337,7 @@ public class PharmacyBillSearch implements Serializable {
 
             // Independent institution ID generation
             if (billNumberGenerationStrategyForInstitutionIdIsPrefixInsYearCount) {
-                billId = getBillNumberBean().institutionBillNumberGeneratorYearlyWithPrefixInsYearCountInstitutionWide(getSessionController().getDepartment(), BillTypeAtomic.PHARMACY_GRN_CANCELLED);
+                billId = (billNumberGenerationStrategyForDepartmentIdIsPrefixInsYearCount) ? cb.getDeptId() : getBillNumberBean().institutionBillNumberGeneratorYearlyWithPrefixInsYearCountInstitutionWide(getSessionController().getDepartment(), BillTypeAtomic.PHARMACY_GRN_CANCELLED);
                 cb.setInsId(billId);
             } else {
                 cb.setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), cb.getBillType(), BillClassType.CancelledBill, BillNumberSuffix.GRNCAN));
@@ -4440,7 +4552,7 @@ public class PharmacyBillSearch implements Serializable {
             // Handle Institution ID generation (completely separate)
             String insId;
             if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Institution Id is Prefix Ins Year Count", false)) {
-                insId = getBillNumberBean().institutionBillNumberGeneratorYearlyWithPrefixInsYearCountInstitutionWide(
+                insId = (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Department Id is Prefix Ins Year Count", false)) ? deptId : getBillNumberBean().institutionBillNumberGeneratorYearlyWithPrefixInsYearCountInstitutionWide(
                         getSessionController().getDepartment(), BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_CANCELLED);
             } else {
                 if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Department Id is Prefix Dept Ins Year Count", false)
