@@ -301,6 +301,10 @@ public class WebUserController implements Serializable {
                 twoFactorAuthController.logRequiredChange(current, false);
                 twoFactorAuthController.logSetupWindowOpened(current);
             }
+            if (current.isServiceAccount()) {
+                // New user: was=false, so this writes the audit row for the flag
+                twoFactorAuthController.saveServiceAccountFlag(current, false);
+            }
             JsfUtil.addSuccessMessage("Saved");
         } else {
             // Authenticator enrollment is written only by TwoFactorAuthController; don't let a stale copy overwrite it
