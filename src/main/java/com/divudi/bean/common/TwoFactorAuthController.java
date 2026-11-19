@@ -183,6 +183,20 @@ public class TwoFactorAuthController implements Serializable {
     }
 
     /**
+     * Called at the start of every password login and at logout: drops a
+     * half-finished code challenge, an unfinished self setup and the
+     * "sign in again" mark, so none of it carries into the next login on the
+     * same browser session.
+     */
+    public void resetForNewLogin() {
+        clearChallenge();
+        reloginRequired = false;
+        selfSetupSecret = null;
+        selfSetupCode = null;
+        selfSetupFailedAttempts = 0;
+    }
+
+    /**
      * Called when a required setup is completed by verifying a mobile number
      * for SMS codes; the user logs out and signs in again with a code.
      */
@@ -291,6 +305,8 @@ public class TwoFactorAuthController implements Serializable {
         webUserFacade.edit(u);
         boolean channeling = channelingTabView;
         clearChallenge();
+        // A full password + code login ends any "sign in again" state from an earlier forced setup
+        reloginRequired = false;
         String outcome = sessionController.completeTwoFactorLogin(u, channeling);
         if (outcome != null && !outcome.isEmpty()) {
             logTwoFactorEvent(u, u, auditTrigger);
