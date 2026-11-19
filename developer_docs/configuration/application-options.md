@@ -76,6 +76,13 @@ A print or settings dialog must use the **same** controller as the page or templ
 | ---------------------------------------------------------------- | --------- | ------- | ------------------------------------------------------------------------------------------------------- |
 | `Inward Administrative Discharge - Require Nursing Discharge`   | Boolean   | `true`  | Controls whether `BhtSummeryController.checkDischargeTime()` requires `PatientEncounter.isNursingDischarged()` before allowing administrative discharge (the "Discharge" action on the Interim Bill) for room-charged admissions. Some hospitals do not use the nursing discharge workflow; setting this to `false` for those institutions lets administrative discharge proceed without it. See issue #22607. |
 
+## Inward Appointment
+
+| Key | Type | Default | Description |
+| --- | ---- | ------- | ----------- |
+| `Inward Appointment - Allow Saving Without Payment` | Boolean | `false` | Inpatient > Appointment > Add Appointment. When on, any appointment type (room, procedure, consultant, department and their combinations) saves with no payment method and no amount: the appointment bill carries no value, and no payment, cashier drawer, cashbook or patient balance entry is written. If a payment method is chosen, the normal payment flow runs unchanged. Manage Appointment shows a Paid / Not paid column; an unpaid appointment has no deposit, so the appointment-to-admission deposit conversion skips it. Off keeps payment compulsory (#17371). See issues #25706, #17487. |
+| `Inward Appointment - Allow Appointment Without Referring Doctor` | Boolean | `false` | When on, the Referring Doctor is not required to save an inward appointment. See issue #17487. |
+
 ## Inward Final Bill
 
 | Key | Type | Default | Description |
