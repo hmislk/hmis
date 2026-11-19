@@ -319,7 +319,7 @@
 
                 </h:panelGroup>
 
-                <h:form>
+                <h:form id="frmPaymentPreview">
 
                     <p:panel rendered="#{inwardStaffPaymentBillController.printPreview}">
                         <f:facet name="header" >
@@ -346,9 +346,16 @@
                                         value="Print Individual"
                                         icon="fa fa-print"
                                         class="ui-button-danger"
-                                        ajax="false" action="#" >
+                                        ajax="false" action="#"
+                                        onclick="setTimeout(function () { document.getElementById('frmPaymentPreview:btnClearAfterIndividualPrint').click(); }, 2500);" >
                                         <p:printer target="gpIndividualPreview" ></p:printer>
                                     </p:commandButton>
+                                    <!-- Clicked by Print Individual once the print dialog closes: clears the page for the next payment (#25695). -->
+                                    <p:commandButton
+                                        id="btnClearAfterIndividualPrint"
+                                        style="display:none"
+                                        ajax="false"
+                                        action="#{inwardStaffPaymentBillController.navigateToViewInwardPayProfessionalPayments()}" />
                                 </div>
                             </div>
 
