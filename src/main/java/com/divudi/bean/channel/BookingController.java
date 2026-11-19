@@ -658,6 +658,8 @@ public class BookingController implements Serializable, ControllerWithPatient, C
      * session's total (the booking bill is charged the originating session's
      * total), otherwise null.
      */
+    public static final String RESCHEDULE_TOTAL_CHECK_KEY = "Channel Reschedule - Refuse when the target session fee total differs";
+
     public static String rescheduleTotalMismatchMessage(BillSession from, SessionInstance to) {
         if (from == null || to == null || from.getSessionInstance() == null) {
             return null;
@@ -694,7 +696,9 @@ public class BookingController implements Serializable, ControllerWithPatient, C
             return;
         }
 
-        String totalMismatch = BookingController.rescheduleTotalMismatchMessage(selectedBillSession, getSelectedSessionInstanceForRechedule());
+        String totalMismatch = configOptionApplicationController.getBooleanValueByKey(BookingController.RESCHEDULE_TOTAL_CHECK_KEY, true)
+                ? BookingController.rescheduleTotalMismatchMessage(selectedBillSession, getSelectedSessionInstanceForRechedule())
+                : null;
         if (totalMismatch != null) {
             JsfUtil.addErrorMessage(totalMismatch);
             return;

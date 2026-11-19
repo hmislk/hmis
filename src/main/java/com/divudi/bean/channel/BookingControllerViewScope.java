@@ -681,7 +681,9 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             return;
         }
 
-        String totalMismatch = BookingController.rescheduleTotalMismatchMessage(selectedBillSession, getSelectedSessionInstanceForRechedule());
+        String totalMismatch = configOptionApplicationController.getBooleanValueByKey(BookingController.RESCHEDULE_TOTAL_CHECK_KEY, true)
+                ? BookingController.rescheduleTotalMismatchMessage(selectedBillSession, getSelectedSessionInstanceForRechedule())
+                : null;
         if (totalMismatch != null) {
             JsfUtil.addErrorMessage(totalMismatch);
             return;
