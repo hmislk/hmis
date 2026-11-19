@@ -14,6 +14,14 @@
 
     <ui:define name="content"> 
         <h:form id="frmAdmission">
+            <p:messages 
+                id="messages" 
+                showDetail="true" 
+                closable="true"
+                class="w-100">
+                <p:autoUpdate/>
+            </p:messages>
+
             <h:panelGroup id="gpDetail" rendered="#{!admissionController.printPreview}" >
                 <p:panel >
                     <f:facet name="header">
@@ -97,13 +105,6 @@
                     </f:facet>
 
                     <div class="row">
-                        <p:messages 
-                            id="messages" 
-                            showDetail="true" 
-                            closable="true"
-                            class="w-100">
-                            <p:autoUpdate/>
-                        </p:messages>
                         <div class="col-md-3 p-2">
                             <p:outputLabel 
                                 class="m-1 form-label"
