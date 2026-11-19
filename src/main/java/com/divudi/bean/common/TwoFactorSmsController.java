@@ -45,6 +45,8 @@ import javax.servlet.http.HttpServletRequest;
 public class TwoFactorSmsController implements Serializable {
 
     private static final long serialVersionUID = 1L;
+    private static final String NO_STAFF_MOBILE_MESSAGE = "No valid mobile number is saved in the system for your account. "
+            + "Ask your system administrator to add it to your staff record, then try again.";
 
     @EJB
     private OtpService otpService;
@@ -86,6 +88,19 @@ public class TwoFactorSmsController implements Serializable {
     private String mobileCode;
     private long mobileCodeExpiresAtMs;
     private long mobileResendAvailableAtMs;
+
+    // Check before an authenticator app is linked from a password-only session:
+    // a code is sent to the mobile saved in the staff record and must be entered
+    private boolean setupProofInProgress;
+    private boolean setupProofCodeSent;
+    private String setupProofSentToMasked;
+    private String setupProofCode;
+    private long setupProofCodeExpiresAtMs;
+    private long setupProofResendAvailableAtMs;
+
+    private enum CodeKind {
+        LOGIN, MOBILE, SETUP
+    }
 
     // <editor-fold defaultstate="collapsed" desc="Login challenge">
     /**
@@ -185,7 +200,7 @@ public class TwoFactorSmsController implements Serializable {
         maskedMobile = OtpCodeUtil.maskMobile(sendTo);
         OtpIssueResult r = otpService.issueSmsCode(u, OtpPurpose.STAFF_LOGIN_2FA, sendTo,
                 signingKey(), requestIp(), userAgent());
-        handleIssueResult(u, r, true, sendTo);
+        handleIssueResult(u, r, CodeKind.LOGIN, sendTo);
     }
 
     public String verifyLoginCode() {
@@ -359,10 +374,24 @@ public class TwoFactorSmsController implements Serializable {
             JsfUtil.addErrorMessage("Enter a valid mobile number (e.g. 0771234567).");
             return;
         }
+        // Codes go only to the mobile saved in the staff record, so a password alone cannot register another phone
+        String systemMobile = otpService.normalizeMobile(staffMobileOf(u));
+        if (systemMobile == null) {
+            JsfUtil.addErrorMessage(NO_STAFF_MOBILE_MESSAGE);
+            return;
+        }
+        if (!systemMobile.equals(otpService.normalizeMobile(mobileInput))) {
+            Map<String, Object> details = new HashMap<>();
+            details.put("result", "MOBILE_NOT_STAFF_RECORD");
+            twoFactorAuthController.logSmsEvent(u, u, TwoFactorAuthController.EVENT_MOBILE_VERIFICATION_FAILED, details, "Failed");
+            JsfUtil.addErrorMessage("This number does not match the mobile number saved in the system for your account. "
+                    + "If your number has changed, ask your system administrator to update it.");
+            return;
+        }
         mobileCode = null;
         OtpIssueResult r = otpService.issueSmsCode(u, OtpPurpose.STAFF_MOBILE_VERIFICATION, mobileInput.trim(),
                 signingKey(), requestIp(), userAgent());
-        handleIssueResult(u, r, false, mobileInput);
+        handleIssueResult(u, r, CodeKind.MOBILE, mobileInput);
     }
 
     public void confirmMobileVerification() {
@@ -412,6 +441,8 @@ public class TwoFactorSmsController implements Serializable {
         details.put("mobile", OtpCodeUtil.maskMobile(r.getIdentifier()));
         twoFactorAuthController.logSmsEvent(u, u, TwoFactorAuthController.EVENT_MOBILE_VERIFIED, details, null);
         cancelMobileVerification();
+        // The code reached the staff-record mobile: enough proof to link an app in this session too
+        twoFactorAuthController.markSetupProofed();
         if (wasForcedSetup) {
             // Same as a forced app setup: sign in again, this time with an SMS code
             twoFactorAuthController.markReloginRequired();
@@ -421,33 +452,160 @@ public class TwoFactorSmsController implements Serializable {
     }
     // </editor-fold>
 
-    private void handleIssueResult(WebUser u, OtpIssueResult r, boolean login, String sentTo) {
+    // <editor-fold defaultstate="collapsed" desc="SMS check before linking an authenticator app">
+    /**
+     * Called by TwoFactorAuthController.startSelfSetup() when this session
+     * has only a password behind it: shows the step that sends a code to the
+     * mobile saved in the staff record.
+     */
+    public void startSetupProof() {
+        cancelSetupProof();
+        // The step itself says when no valid staff-record mobile is saved
+        setupProofInProgress = true;
+    }
+
+    public void cancelSetupProof() {
+        setupProofInProgress = false;
+        setupProofCodeSent = false;
+        setupProofSentToMasked = null;
+        setupProofCode = null;
+        setupProofCodeExpiresAtMs = 0;
+        setupProofResendAvailableAtMs = 0;
+    }
+
+    public void sendSetupProofCode() {
+        WebUser u = loggedUserFromDb();
+        if (u == null || !setupProofInProgress) {
+            cancelSetupProof();
+            JsfUtil.addErrorMessage("Start the setup again.");
+            return;
+        }
+        String systemMobile = otpService.normalizeMobile(staffMobileOf(u));
+        if (systemMobile == null) {
+            JsfUtil.addErrorMessage(NO_STAFF_MOBILE_MESSAGE);
+            return;
+        }
+        setupProofCode = null;
+        OtpIssueResult r = otpService.issueSmsCode(u, OtpPurpose.STAFF_AUTHENTICATOR_SETUP, staffMobileOf(u),
+                signingKey(), requestIp(), userAgent());
+        handleIssueResult(u, r, CodeKind.SETUP, systemMobile);
+    }
+
+    public void confirmSetupProofCode() {
+        WebUser u = loggedUserFromDb();
+        if (u == null || !setupProofInProgress) {
+            cancelSetupProof();
+            JsfUtil.addErrorMessage("Start the setup again.");
+            return;
+        }
+        if (OtpCodeUtil.cleanCode(setupProofCode) == null) {
+            setupProofCode = null;
+            JsfUtil.addErrorMessage("Enter the 6-digit code from the SMS.");
+            return;
+        }
+        OtpVerifyResult r = otpService.verifyCode(u, OtpPurpose.STAFF_AUTHENTICATOR_SETUP, setupProofCode, signingKey());
+        setupProofCode = null;
+        if (!r.isVerified()) {
+            Map<String, Object> details = new HashMap<>();
+            details.put("result", r.getStatus().name());
+            twoFactorAuthController.logSmsEvent(u, u, TwoFactorAuthController.EVENT_SETUP_PROOF_FAILED, details, "Failed");
+            switch (r.getStatus()) {
+                case INVALID:
+                    JsfUtil.addErrorMessage("Invalid code. Check the SMS and try again.");
+                    break;
+                case EXPIRED:
+                    setupProofCodeSent = false;
+                    JsfUtil.addErrorMessage("The code has expired. Send a new code.");
+                    break;
+                default:
+                    setupProofCodeSent = false;
+                    JsfUtil.addErrorMessage("Too many wrong entries or no active code. Send a new code.");
+            }
+            return;
+        }
         Map<String, Object> details = new HashMap<>();
-        details.put("purpose", login ?OtpPurpose.STAFF_LOGIN_2FA.name() : OtpPurpose.STAFF_MOBILE_VERIFICATION.name());
+        details.put("mobile", OtpCodeUtil.maskMobile(r.getIdentifier()));
+        twoFactorAuthController.logSmsEvent(u, u, TwoFactorAuthController.EVENT_SETUP_PROOF_VERIFIED, details, null);
+        cancelSetupProof();
+        twoFactorAuthController.markSetupProofed();
+        // Straight on to the QR code
+        twoFactorAuthController.startSelfSetup();
+    }
+
+    /**
+     * Masked staff-record mobile of the logged user, or "" when none is
+     * saved or it is not a valid number.
+     */
+    public String getLoggedUserStaffMobileMasked() {
+        WebUser u = sessionController.getLoggedUser();
+        String m = otpService.normalizeMobile(staffMobileOf(u));
+        return m == null ? "" : OtpCodeUtil.maskMobile(m);
+    }
+
+    public boolean isSetupProofInProgress() {
+        return setupProofInProgress;
+    }
+
+    public boolean isSetupProofCodeSent() {
+        return setupProofCodeSent;
+    }
+
+    public String getSetupProofSentToMasked() {
+        return setupProofSentToMasked;
+    }
+
+    public String getSetupProofCode() {
+        return setupProofCode;
+    }
+
+    public void setSetupProofCode(String setupProofCode) {
+        this.setupProofCode = setupProofCode;
+    }
+
+    public long getSetupProofCodeSecondsLeft() {
+        return secondsUntil(setupProofCodeExpiresAtMs);
+    }
+
+    public long getSetupProofResendSecondsLeft() {
+        return secondsUntil(setupProofResendAvailableAtMs);
+    }
+    // </editor-fold>
+
+    private void handleIssueResult(WebUser u, OtpIssueResult r, CodeKind kind, String sentTo) {
+        boolean login = kind == CodeKind.LOGIN;
+        Map<String, Object> details = new HashMap<>();
+        details.put("purpose", purposeOf(kind).name());
         details.put("mobile", OtpCodeUtil.maskMobile(sentTo));
         details.put("ip", requestIp());
         long nowMs = System.currentTimeMillis();
         switch (r.getStatus()) {
             case SENT:
-                if (login) {
+                if (kind == CodeKind.LOGIN) {
                     loginCodeSent = true;
                     loginCodeExpired = false;
                     codeExpiresAtMs = r.getExpiresAt().getTime();
                     resendAvailableAtMs = nowMs + r.getRetryAfterSeconds() * 1000L;
-                } else {
+                } else if (kind == CodeKind.MOBILE) {
                     mobileCodeSent = true;
                     mobileSentToMasked = OtpCodeUtil.maskMobile(sentTo);
                     mobileCodeExpiresAtMs = r.getExpiresAt().getTime();
                     mobileResendAvailableAtMs = nowMs + r.getRetryAfterSeconds() * 1000L;
+                } else {
+                    setupProofCodeSent = true;
+                    setupProofSentToMasked = OtpCodeUtil.maskMobile(sentTo);
+                    setupProofCodeExpiresAtMs = r.getExpiresAt().getTime();
+                    setupProofResendAvailableAtMs = nowMs + r.getRetryAfterSeconds() * 1000L;
                 }
                 twoFactorAuthController.logSmsEvent(u, u, TwoFactorAuthController.EVENT_SMS_CODE_SENT, details, null);
                 // No pop-up message: the screen shows a "Code sent" banner while the code is active
                 break;
             case RATE_LIMITED:
-                if (login) {
+                if (kind == CodeKind.LOGIN) {
                     resendAvailableAtMs = nowMs + r.getRetryAfterSeconds() * 1000L;
-                } else {
+                } else if (kind == CodeKind.MOBILE) {
                     mobileResendAvailableAtMs = nowMs + r.getRetryAfterSeconds() * 1000L;
+                } else {
+                    setupProofResendAvailableAtMs = nowMs + r.getRetryAfterSeconds() * 1000L;
                 }
                 details.put("retryAfterSeconds", r.getRetryAfterSeconds());
                 twoFactorAuthController.logSmsEvent(u, u, TwoFactorAuthController.EVENT_SMS_RATE_LIMITED, details, "Failed");
@@ -460,6 +618,17 @@ public class TwoFactorSmsController implements Serializable {
                 twoFactorAuthController.logSmsEvent(u, u, TwoFactorAuthController.EVENT_SMS_CODE_SEND_FAILED, details, "Failed");
                 JsfUtil.addErrorMessage("The SMS could not be sent. Try again later"
                         + (login && appLinked ? " or use your authenticator app." : "."));
+        }
+    }
+
+    private static OtpPurpose purposeOf(CodeKind kind) {
+        switch (kind) {
+            case LOGIN:
+                return OtpPurpose.STAFF_LOGIN_2FA;
+            case MOBILE:
+                return OtpPurpose.STAFF_MOBILE_VERIFICATION;
+            default:
+                return OtpPurpose.STAFF_AUTHENTICATOR_SETUP;
         }
     }
 
