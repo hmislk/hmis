@@ -783,6 +783,46 @@ public class InwardBeanController implements Serializable {
         return totalsMap;
     }
 
+    /**
+     * Bulk query for the amount, per InwardChargeType, of the service /
+     * investigation items that carry their own VAT (BillItem.vat other than 0; cancel and refund lines are negated copies and carry a negative VAT, so they net the same way the row total does), for
+     * the computed inward VAT (issue #17491). The amount is what the item adds
+     * to the charge-type row net: gross + margin - discount. That mirrors the
+     * row total (sum of gross + margin, VAT is kept separately and is not in
+     * it) less the row discount (sum of discount), so subtracting this from the
+     * row net leaves exactly the items without their own VAT.
+     */
+    public Map<InwardChargeType, Double> calServiceBillItemsOwnVatNetByInwardChargeTypeBulk(PatientEncounter patientEncounter, List<PatientEncounter> cpts) {
+        String sql = "SELECT s.item.inwardChargeType, sum(s.grossValue + s.marginValue - s.discount) "
+                + " FROM BillItem s"
+                + " WHERE s.retired=false "
+                + " AND s.vat <> 0 "
+                + " AND s.bill.billType=:btp "
+                + " AND s.bill.patientEncounter IN :pe"
+                + " GROUP BY s.item.inwardChargeType";
+
+        HashMap hm = new HashMap();
+        hm.put("btp", BillType.InwardBill);
+        List<PatientEncounter> pts = new ArrayList<>();
+        pts.add(patientEncounter);
+        if (cpts != null && !cpts.isEmpty()) {
+            pts.addAll(cpts);
+        }
+        hm.put("pe", pts);
+
+        List<Object[]> results = getBillItemFacade().findObjectsArrayByJpql(sql, hm, TemporalType.TIMESTAMP);
+
+        Map<InwardChargeType, Double> map = new HashMap<>();
+        if (results != null) {
+            for (Object[] row : results) {
+                if (row[0] != null && row[1] != null) {
+                    map.merge(professionalFeeClassificationService.rowTypeFor((InwardChargeType) row[0]), ((Number) row[1]).doubleValue(), Double::sum);
+                }
+            }
+        }
+        return map;
+    }
+
     public double calculateProfessionalCharges(PatientEncounter patientEncounter, List<PatientEncounter> cpts, boolean isEstimatedBill) {
         HashMap hm = new HashMap();
         String sql = "SELECT sum(bt.feeValue)"
@@ -3715,18 +3755,35 @@ public class InwardBeanController implements Serializable {
     private String formatBhtText(AdmissionType admissionType, Long temp, boolean institutionBasedBht, Institution currentInstitution) {
         String bhtText;
 
-        if (getSessionController().getApplicationPreference().isBhtNumberWithOutAdmissionType()) {
-            bhtText = "BHT";
+        // Zero-pad the running number (0 = no padding, the old behaviour).
+        Integer minDigits = configOptionApplicationController
+                .getIntegerValueByKey("BHT Number Minimum Digits", 0);
+        // Bounded (0..12) so a bad setting cannot overflow the bhtNo column; padded as
+        // plain ASCII so the digits never depend on the server locale.
+        int width = minDigits == null ? 0 : Math.max(0, Math.min(12, minDigits));
+        StringBuilder number = new StringBuilder(Long.toString(temp));
+        while (number.length() < width) {
+            number.insert(0, '0');
+        }
+
+        if (configOptionApplicationController.getBooleanValueByKey("BHT Number Shows Only Year And Number", false)) {
+            // YYYY/NNNN: no admission type code, no "BHT". The institution code
+            // is still added below when each institution has its own series.
+            bhtText = Calendar.getInstance().get(Calendar.YEAR) + "/" + number;
         } else {
-            bhtText = admissionType.getCode().trim();
-        }
+            if (getSessionController().getApplicationPreference().isBhtNumberWithOutAdmissionType()) {
+                bhtText = "BHT";
+            } else {
+                bhtText = admissionType.getCode().trim();
+            }
 
-        if (getSessionController().getApplicationPreference().isBhtNumberWithYear()) {
-            Calendar c = Calendar.getInstance();
-            bhtText = bhtText + "/" + c.get(Calendar.YEAR);
-        }
+            if (billNumberGenerator.isYearInBhtText()) {
+                Calendar c = Calendar.getInstance();
+                bhtText = bhtText + "/" + c.get(Calendar.YEAR);
+            }
 
-        bhtText += "/" + Long.toString(temp);
+            bhtText += "/" + number;
+        }
 
         if (institutionBasedBht && currentInstitution != null
                 && currentInstitution.getInstitutionCode() != null

@@ -303,6 +303,42 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
                 OptionScope.APPLICATION
         ));
 
+        configOptionApplicationController.getBooleanValueByKey(
+                "BHT Number Series Is Shared Across Admission Types", false);
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "BHT Number Series Is Shared Across Admission Types",
+                "When enabled, all admission types draw BHT numbers from one series (per institution when each institution has its own series); the shared series starts from the highest existing counter so numbers never go lower (default false)",
+                "inward/inward_admission",
+                OptionScope.APPLICATION
+        ));
+
+        configOptionApplicationController.getBooleanValueByKey(
+                "Reset BHT Number Series Every Year", false);
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Reset BHT Number Series Every Year",
+                "When enabled, the BHT number series restarts at 1 each calendar year, e.g. 2026/1, 2026/2, then 2027/1. The first time it is turned on, the first year's series can carry on from the existing lifetime counter (e.g. start at 501 after 500); a later year with no admissions starts at 1. Applies only when the BHT number shows the year (the preference that adds the year, or the year-and-number format); otherwise it is ignored (default false)",
+                "inward/inward_admission",
+                OptionScope.APPLICATION
+        ));
+
+        configOptionApplicationController.getBooleanValueByKey(
+                "BHT Number Shows Only Year And Number", false);
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "BHT Number Shows Only Year And Number",
+                "When enabled, the BHT number is the year and the running number only, e.g. 2026/0001: no admission type code and no BHT prefix (the institution code is still added when each institution has its own series). All admission types then share one series (default false)",
+                "inward/inward_admission",
+                OptionScope.APPLICATION
+        ));
+
+        configOptionApplicationController.getIntegerValueByKey(
+                "BHT Number Minimum Digits", 0);
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "BHT Number Minimum Digits",
+                "Pads the running number of the BHT number with leading zeros to at least this many digits, e.g. 4 gives 0001. 0 means no padding (default 0)",
+                "inward/inward_admission",
+                OptionScope.APPLICATION
+        ));
+
         metadata.addConfigOption(new ConfigOptionInfo(
                 "Patient admission and room assignment are simultaneous processes.",
                 "Room is assigned at the time of admission (default true)",
@@ -2667,7 +2703,9 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
                 + " and a.patientEncounter = :enc "
                 + " and a.bill is not null "
                 + " and a.bill.billTypeAtomic = :bta "
-                + " and a.bill.cancelled = false ";
+                + " and a.bill.cancelled = false "
+                // an appointment booked with no payment has no deposit to convert
+                + " and a.bill.total > 0 ";
         HashMap<String, Object> m = new HashMap<>();
         m.put("enc", enc);
         m.put("bta", BillTypeAtomic.INWARD_APPOINTMENT_BILL);

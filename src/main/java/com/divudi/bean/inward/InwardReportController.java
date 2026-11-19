@@ -5692,7 +5692,13 @@ public class InwardReportController implements Serializable {
                 if (bi.getInwardChargeType() == InwardChargeType.VAT) {
                     p.getFinalBill().setVat(bi.getNetValue() + p.getFinalBill().getVat());
                 }
-                if (bi.getInwardChargeType() != InwardChargeType.VAT && bi.getInwardChargeType() != InwardChargeType.Medicine) {
+                // Computed VAT line (#25766): its amount is on the item (Bill.vat stays 0), so it adds to the VAT without touching the header VAT twice.
+                if (bi.getInwardChargeType() == InwardChargeType.ComputedVAT) {
+                    p.getFinalBill().setVat(bi.getVat() + p.getFinalBill().getVat());
+                }
+                if (bi.getInwardChargeType() != InwardChargeType.VAT
+                        && bi.getInwardChargeType() != InwardChargeType.ComputedVAT
+                        && bi.getInwardChargeType() != InwardChargeType.Medicine) {
                     p.getFinalBill().setVatCalulatedAmount(bi.getNetValue() + p.getFinalBill().getVatCalulatedAmount());
                 }
             }
