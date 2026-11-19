@@ -1212,19 +1212,28 @@ public class InpatientClinicalDataController implements Serializable {
     }
 
     private static String escapeHtmlText(String s) {
-        return s == null ? "" : org.apache.commons.text.StringEscapeUtils.escapeHtml4(s);
+        return s == null ? "" : org.apache.commons.text.StringEscapeUtils.escapeHtml4(s).replace("'", "&#39;");
     }
 
     /**
-     * AI output is rendered as HTML on the card page, so keep only formatting
-     * markup (relaxed tags, inline style) and drop scripts, event handlers and
-     * links to javascript: URLs.
+     * Card and letter HTML (AI output, or what the editor posts) is shown with
+     * escape="false", so keep only formatting markup and drop scripts, event
+     * handlers and javascript: links. Relative and data: image sources are kept
+     * so logos in templates survive a save.
      */
-    private static String sanitizeAiHtml(String html) {
+    private static String sanitizeCardHtml(String html) {
         if (html == null) {
             return "";
         }
-        return org.jsoup.Jsoup.clean(html, org.jsoup.safety.Safelist.relaxed().addAttributes(":all", "style", "class"));
+        org.jsoup.safety.Safelist safelist = org.jsoup.safety.Safelist.relaxed()
+                .addTags("s", "hr", "font", "center")
+                .addAttributes(":all", "style", "class", "align")
+                .addAttributes("font", "color", "size", "face")
+                .addAttributes("table", "border", "cellpadding", "cellspacing")
+                .addProtocols("img", "src", "data")
+                .preserveRelativeLinks(true);
+        // No pretty-print: keep the editor's own spacing
+        return org.jsoup.Jsoup.clean(html, "http://localhost/", safelist, new org.jsoup.nodes.Document.OutputSettings().prettyPrint(false));
     }
 
     /**
@@ -1336,7 +1345,7 @@ public class InpatientClinicalDataController implements Serializable {
             if (html.endsWith("```")) {
                 html = html.substring(0, html.length() - 3);
             }
-            html = sanitizeAiHtml(html.trim());
+            html = sanitizeCardHtml(html.trim());
 
             ClinicalFindingValue ref = new ClinicalFindingValue();
             ref.setClinicalFindingValueType(ClinicalFindingValueType.VisitDocument);
@@ -1406,7 +1415,7 @@ public class InpatientClinicalDataController implements Serializable {
             if (html.startsWith("```html")) html = html.substring(7);
             else if (html.startsWith("```")) html = html.substring(3);
             if (html.endsWith("```")) html = html.substring(0, html.length() - 3);
-            html = sanitizeAiHtml(html.trim());
+            html = sanitizeCardHtml(html.trim());
 
             ClinicalFindingValue ref = new ClinicalFindingValue();
             ref.setClinicalFindingValueType(ClinicalFindingValueType.VisitDocument);
@@ -1868,6 +1877,8 @@ public class InpatientClinicalDataController implements Serializable {
             JsfUtil.addErrorMessage("Nothing to save");
             return;
         }
+        // The editor posts the HTML through a hidden field; clean it before it is stored and shown unescaped
+        encounterReferral.setLobValue(sanitizeCardHtml(encounterReferral.getLobValue()));
         if (encounterReferral.getId() == null) {
             clinicalFindingValueFacade.create(encounterReferral);
             JsfUtil.addSuccessMessage("Saved");
