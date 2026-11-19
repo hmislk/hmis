@@ -140,6 +140,12 @@ public class ChannelReportTemplateController implements Serializable {
     public static final String OB_REPORT_TYPE_APPOINTMENT_DATE = "Appointment Date";
     private static final List<String> OB_REPORT_TYPES = Collections.unmodifiableList(Arrays.asList(OB_REPORT_TYPE_BOOKED_DATE, OB_REPORT_TYPE_APPOINTMENT_DATE));
     private String selectedReportTypeInOBReport = OB_REPORT_TYPE_BOOKED_DATE;
+    // The report type used by the last Process, shown in the table and print headers.
+    private String generatedReportTypeInOBReport;
+
+    public String getGeneratedReportTypeInOBReport() {
+        return generatedReportTypeInOBReport;
+    }
 
     public List<String> getReportTypesInOBReport() {
         return OB_REPORT_TYPES;
@@ -1102,7 +1108,8 @@ public class ChannelReportTemplateController implements Serializable {
                 + " and b.creditCompany is not null "
                 + " and b.billTypeAtomic = :bta";
 
-        boolean appointmentDateMode = OB_REPORT_TYPE_APPOINTMENT_DATE.equals(getSelectedReportTypeInOBReport());
+        generatedReportTypeInOBReport = getSelectedReportTypeInOBReport();
+        boolean appointmentDateMode = OB_REPORT_TYPE_APPOINTMENT_DATE.equals(generatedReportTypeInOBReport);
         if (appointmentDateMode) {
             // Session dates carry no time, so cover the whole From and To days.
             j += " and bs.sessionDate between :fd and :td ";
