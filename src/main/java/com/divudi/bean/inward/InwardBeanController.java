@@ -785,7 +785,7 @@ public class InwardBeanController implements Serializable {
 
     /**
      * Bulk query for the amount, per InwardChargeType, of the service /
-     * investigation items that carry their own VAT (BillItem.vat above 0), for
+     * investigation items that carry their own VAT (BillItem.vat other than 0; cancel and refund lines are negated copies and carry a negative VAT, so they net the same way the row total does), for
      * the computed inward VAT (issue #17491). The amount is what the item adds
      * to the charge-type row net: gross + margin - discount. That mirrors the
      * row total (sum of gross + margin, VAT is kept separately and is not in
@@ -796,7 +796,7 @@ public class InwardBeanController implements Serializable {
         String sql = "SELECT s.item.inwardChargeType, sum(s.grossValue + s.marginValue - s.discount) "
                 + " FROM BillItem s"
                 + " WHERE s.retired=false "
-                + " AND s.vat > 0 "
+                + " AND s.vat <> 0 "
                 + " AND s.bill.billType=:btp "
                 + " AND s.bill.patientEncounter IN :pe"
                 + " GROUP BY s.item.inwardChargeType";

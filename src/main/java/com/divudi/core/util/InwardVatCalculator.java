@@ -32,16 +32,19 @@ public final class InwardVatCalculator {
     }
 
     /**
-     * The amount of a row that is taxed: its net, less the items that carry
-     * their own VAT, less its share of the bill-level discount; never below 0.
+     * The amount of a row that is taxed. Items that carry their own VAT are left
+     * out of the row. The row's share of the bill-level discount (worked out on
+     * the full net) falls on the taxable part only, in proportion:
+     * share x (net - ownVat) / net. Never below 0.
      */
     public static BigDecimal taxableBase(BigDecimal rowNet, BigDecimal ownVatItemsAmount, BigDecimal billDiscountShare) {
-        BigDecimal base = rowNet;
-        if (ownVatItemsAmount != null) {
-            base = base.subtract(ownVatItemsAmount);
+        BigDecimal taxable = ownVatItemsAmount == null ? rowNet : rowNet.subtract(ownVatItemsAmount);
+        if (taxable.signum() <= 0) {
+            return BigDecimal.ZERO;
         }
-        if (billDiscountShare != null) {
-            base = base.subtract(billDiscountShare);
+        BigDecimal base = taxable;
+        if (billDiscountShare != null && billDiscountShare.signum() > 0 && rowNet.signum() > 0) {
+            base = taxable.subtract(billDiscountShare.multiply(taxable).divide(rowNet, 10, RoundingMode.HALF_UP));
         }
         return base.signum() < 0 ? BigDecimal.ZERO : base;
     }

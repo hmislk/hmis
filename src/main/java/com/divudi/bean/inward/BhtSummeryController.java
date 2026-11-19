@@ -1651,7 +1651,32 @@ public class BhtSummeryController implements Serializable {
             cit.setAdjustedTotal(cit.getTotal());
 
         }
+        // Item discounts were rewritten above; re-read the own-VAT amounts so the
+        // amount left out of the VAT base is not stale (#17491).
+        refreshOwnVatServiceAmounts();
+    }
 
+    /**
+     * Net of the service items carrying their own VAT, per charge type, as last
+     * read; the service part of each row's ownVatItemsAmount.
+     */
+    private Map<InwardChargeType, Double> ownVatServiceNets = new HashMap<>();
+
+    /**
+     * Re-reads the service own-VAT amounts and swaps them into each row, leaving
+     * the staff-fee part of the row's amount as it is.
+     */
+    private void refreshOwnVatServiceAmounts() {
+        if (chargeItemTotals == null || getPatientEncounter() == null) {
+            return;
+        }
+        Map<InwardChargeType, Double> fresh = getInwardBean().calServiceBillItemsOwnVatNetByInwardChargeTypeBulk(getPatientEncounter(), childPatientEncouters);
+        for (ChargeItemTotal cit : chargeItemTotals) {
+            double old = ownVatServiceNets.getOrDefault(cit.getInwardChargeType(), 0.0);
+            double now = fresh.getOrDefault(cit.getInwardChargeType(), 0.0);
+            cit.setOwnVatItemsAmount(cit.getOwnVatItemsAmount() - old + now);
+        }
+        ownVatServiceNets = fresh;
     }
 
     /**
@@ -2884,6 +2909,8 @@ public class BhtSummeryController implements Serializable {
     }
 
     public void saveProvisionalBill() {
+        // A bill-level discount typed but not yet blurred is already bound; apply it to the VAT first.
+        recalculateAfterBillLevelDiscountChange();
         if (errorCheck() || discountCommentMissing("saving")) {
             return;
         }
@@ -2907,6 +2934,8 @@ public class BhtSummeryController implements Serializable {
     }
 
     public void settle() {
+        // A bill-level discount typed but not yet blurred is already bound; apply it to the VAT first.
+        recalculateAfterBillLevelDiscountChange();
         if (errorCheck() || discountCommentMissing("settling")) {
             return;
         }
@@ -5620,10 +5649,11 @@ public class BhtSummeryController implements Serializable {
      * <li>VAT is calculated after discounts: the base is the row net (total
      * less item and charge-type discounts) less the row's share of the
      * bill-level discount. That one discount is spread over all rows (taxed or
-     * not, never the VAT row) in proportion to each row's net. The base never
+     * not, never the VAT row) in proportion to each row's net; a row's share falls
+     * on its taxable part only: share &times; (net - own-VAT items) / net. The base never
      * goes below 0.</li>
      * <li>Items that already carry their own VAT (service items, and staff
-     * fees with a fee VAT above 0) are left out of the base; the other items
+     * fees with a fee VAT other than 0) are left out of the base; the other items
      * of the same row stay taxed. See {@link ChargeItemTotal#getOwnVatItemsAmount()}.</li>
      * <li>Package excess is taxable: it sits in its own PackageExcessCharges
      * row, which is not package-covered, so rule 1 does not skip it.</li>
@@ -6162,6 +6192,7 @@ public class BhtSummeryController implements Serializable {
         // Net of the service items that carry their own VAT, per charge type;
         // the computed inward VAT leaves them out (#17491).
         Map<InwardChargeType, Double> ownVatNets = getInwardBean().calServiceBillItemsOwnVatNetByInwardChargeTypeBulk(getPatientEncounter(), childPatientEncouters);
+        ownVatServiceNets = ownVatNets;
         for (ChargeItemTotal cit : chargeItemTotals) {
             cit.setOwnVatItemsAmount(ownVatNets.getOrDefault(cit.getInwardChargeType(), 0.0));
         }
@@ -6204,7 +6235,7 @@ public class BhtSummeryController implements Serializable {
             }
         }
 
-        // Staff fees that carry their own VAT (fee VAT above 0): their fee value
+        // Staff fees that carry their own VAT (fee VAT other than 0, so cancelled fees net out): their fee value
         // is what the row total counts, so that is what is left out of the VAT base.
         double proOwnVat = 0.0;
         double docOwnVat = 0.0;
@@ -6213,7 +6244,7 @@ public class BhtSummeryController implements Serializable {
         double proMargin = 0.0;
         double proVat = 0.0;
         for (BillFee bf : getProfesionallFee()) {
-            if (bf.getFeeVat() > 0) {
+            if (bf.getFeeVat() != 0) {
                 proOwnVat += bf.getFeeValue();
             }
             proGross += bf.getFeeGrossValue() != null ? bf.getFeeGrossValue() : bf.getFeeValue();
@@ -6225,7 +6256,7 @@ public class BhtSummeryController implements Serializable {
         double docMargin = 0.0;
         double docVat = 0.0;
         for (BillFee bf : getDoctorAndNurseFee()) {
-            if (bf.getFeeVat() > 0) {
+            if (bf.getFeeVat() != 0) {
                 docOwnVat += bf.getFeeValue();
             }
             docGross += bf.getFeeGrossValue() != null ? bf.getFeeGrossValue() : bf.getFeeValue();
@@ -6237,7 +6268,7 @@ public class BhtSummeryController implements Serializable {
         double techMargin = 0.0;
         double techVat = 0.0;
         for (BillFee bf : getTechnicianFee()) {
-            if (bf.getFeeVat() > 0) {
+            if (bf.getFeeVat() != 0) {
                 techOwnVat += bf.getFeeValue();
             }
             techGross += bf.getFeeGrossValue() != null ? bf.getFeeGrossValue() : bf.getFeeValue();
