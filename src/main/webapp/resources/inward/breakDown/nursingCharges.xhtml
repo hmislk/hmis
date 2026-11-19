@@ -1,0 +1,46 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:cc="http://xmlns.jcp.org/jsf/composite"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <!-- INTERFACE -->
+    <cc:interface >
+
+    </cc:interface>
+
+    <!-- IMPLEMENTATION -->
+
+    <cc:implementation>
+        <p:dataTable id="nursingChargeTable" value="#{bhtSummeryFinalizedController.patientRooms}" var="rm" rowKey="#{rm.id}">
+            <f:facet name="header">
+                <h:outputLabel value="Nursing Charge"/>
+            </f:facet>
+            <p:column headerText="Room Name">
+                #{rm.roomFacilityCharge.name}
+            </p:column>
+            <p:column style="text-align: right;"  headerText="Total Charge">
+                <h:outputLabel value="#{rm.calculatedNursingCharge}">
+                    <f:convertNumber pattern="#,##0.00" />
+                </h:outputLabel>
+            </p:column>
+            <p:column style="text-align: right;"  headerText="Discount Charge">
+                <h:outputLabel value="#{rm.discountNursingCharge}">
+                    <f:convertNumber pattern="#,##0.00" />
+                </h:outputLabel>
+            </p:column>
+            <p:column style="text-align: right;"  headerText="Net Charge">
+                <h:outputLabel value="#{rm.calculatedNursingCharge-rm.discountNursingCharge}">
+                    <f:convertNumber pattern="#,##0.00" />
+                </h:outputLabel>
+            </p:column>
+            <p:column style="text-align: right;"  headerText="Adjusted Charge">
+                <h:outputLabel value="#{rm.ajdustedNursingCharge}">
+                    <f:convertNumber pattern="#,##0.00" />
+                </h:outputLabel>
+            </p:column>
+        </p:dataTable>
+    </cc:implementation>
+</html>

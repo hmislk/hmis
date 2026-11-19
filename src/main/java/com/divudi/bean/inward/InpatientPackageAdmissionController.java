@@ -64,6 +64,7 @@ public class InpatientPackageAdmissionController implements Serializable {
         admissionController.setPatientRoom(new PatientRoom());
         admissionController.setPatientAllergies(null);
         admissionController.setCurrentReservation(null);
+        admissionController.setAppointmentBill(null);
         admissionController.setBhtText("");
         // The package pre-fills the Admission Type, so generate the BHT number for it
         // now, the same as picking that type from the dropdown on a normal admission.

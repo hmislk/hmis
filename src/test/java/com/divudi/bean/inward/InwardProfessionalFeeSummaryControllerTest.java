@@ -81,4 +81,13 @@ class InwardProfessionalFeeSummaryControllerTest {
         assertEquals(59, cal.get(Calendar.MINUTE));
         assertEquals(59, cal.get(Calendar.SECOND));
     }
+
+    @Test
+    void sumOtherGross_leavesOutComputedVat() {
+        Map<InwardChargeType, Double> charges = new EnumMap<>(InwardChargeType.class);
+        charges.put(InwardChargeType.RoomCharges, 1000.0);
+        charges.put(InwardChargeType.ComputedVAT, 180.0);
+
+        assertEquals(1000.0, InwardProfessionalFeeSummaryController.sumOtherGross(charges));
+    }
 }
