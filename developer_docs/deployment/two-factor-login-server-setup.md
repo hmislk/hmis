@@ -24,11 +24,11 @@ Rules:
 ### What happens without the key (or with a different key)
 - With the master switch on and no key: a user for whom a code is needed and cannot be checked is refused at login with "Two-factor login is not set up on this server. Ask the administrator." This is never counted as a failed code and never locks the account. Nobody is let in without the second step.
 - Admin Reset, Unlock and the master switch keep working for anyone who can sign in (an admin who is not linked, or who is allowed SMS codes).
-- Recovery: set the key and restart; or switch **Enable authenticator app two-factor login** off from Administration → Manage Institutions → Application Options; or run the clone step below on the database.
+- Recovery on production: set the original key and restart, or switch **Enable authenticator app two-factor login** off from Administration → Manage Institutions → Application Options (use an administrator who is not linked, or ask a database administrator to set that one option to false and restart). Do **not** run the clone step on a production database: it deletes every enrolment and verified mobile number.
 
 ## Set-up period (24 hours)
 
-A user who must set up (Required ticked, or "all users" on) has 24 hours from the moment an admin ticked Required, reset the authenticator, or a 2FA switch was turned on. After that the user sees a message and an admin must Reset (Manage User shows the end of the period and a "Reopen set-up" button). A user with no valid mobile number on the staff record cannot be set to Required, and the "all users" switch skips such a user and lists them when saved. Set-up always starts with an SMS code to the staff-record mobile.
+A user who must set up (Required ticked, or "all users" on) has 24 hours from the moment an admin ticked Required, reset the authenticator, or a 2FA switch was turned on. After that the user sees a message and an admin must Reset (Manage User shows the end of the period and a "Reopen set-up" button). A user with no valid mobile number on the staff record cannot be set to Required, and the "all users" switch skips such a user and lists them when saved. Set-up always starts with an SMS code to the staff-record mobile, except in a session that has already passed a second step. The "all users" switch still covers a user with a linked app even when the staff record has no valid mobile. A switch that is on but has no recorded time gets one the first time it is checked, so covered users get the 24 hours from then.
 
 ## Clone safety: one SQL step after restoring or copying a database
 
@@ -46,14 +46,14 @@ UPDATE WEBUSER SET TWOFACTORENROLLED = 0, TWOFACTORSECRET = NULL, TWOFACTORENROL
 DELETE FROM OTPCODE;
 ```
 
-Table names are upper case on Linux (`lower_case_table_names=0`); on a case-folded server use the lower-case names. The step keeps each user's Required and Allow-SMS flags. It removes secrets and verified mobile numbers, which are useless (and personal data) on a copy.
+Check the table names in the restored schema (`SHOW TABLES LIKE 'webuser'` is case-sensitive on Linux): the dump keeps whatever case it was created with, so use the matching case. Run migration `v2.23.0` on the restored copy first (an older dump lacks `TWOFACTORSETUPWINDOWSTARTEDAT`, and the second statement fails without it), and afterwards check that nothing is left: `SELECT COUNT(*) FROM WEBUSER WHERE TWOFACTORSECRET IS NOT NULL OR TWOFACTORMOBILE IS NOT NULL;` must return 0. The step keeps each user's Required and Allow-SMS flags. It removes secrets and verified mobile numbers, which are useless (and personal data) on a copy.
 
 ## Migration
 
 `v2.23.0` creates the `OTPCODE` table when it is missing and adds `WEBUSER.TWOFACTORSETUPWINDOWSTARTEDAT`. Run it before deploying a build that contains this change.
 
 ## Other rules in this change
-- Lab analysers, middleware and the channelling API log in with a name and password only. They are refused for a user who is linked, flagged Required or allowed SMS codes; the "all users" switch does not apply to them. Use a dedicated, never-flagged account for each.
+- Lab analysers, middleware and the channelling API log in with a name and password only. A locked account is refused whatever the switches say. While the master switch is on they are also refused for a user who is linked or flagged Required, and for a user allowed SMS codes when the SMS login switch is on too; the "all users" switch does not apply to them. Use a dedicated, never-flagged account for each.
 - The testing grant (`grantAllPrivilegesToAllUsersForTesting`) never works while the master switch is on.
 - A login that has passed the password step and waits for a code is dropped after 10 minutes.
 
