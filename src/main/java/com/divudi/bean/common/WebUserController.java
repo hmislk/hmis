@@ -277,6 +277,14 @@ public class WebUserController implements Serializable {
         } else {
             boolean wasTwoFactorRequired = saved != null && saved.isTwoFactorRequired();
             boolean wasTwoFactorSmsAllowed = saved != null && saved.isTwoFactorSmsAllowed();
+            // Manage User is reached only with this privilege, but a form can be posted without the menu; check it here too
+            if (saved != null
+                    && (wasTwoFactorRequired != current.isTwoFactorRequired() || wasTwoFactorSmsAllowed != current.isTwoFactorSmsAllowed())
+                    && !hasPrivilege(Privileges.AdminManagingUsers.name())) {
+                current.setTwoFactorRequired(wasTwoFactorRequired);
+                current.setTwoFactorSmsAllowed(wasTwoFactorSmsAllowed);
+                JsfUtil.addErrorMessage("Two-factor settings were not changed. You do not have the privilege to manage users.");
+            }
             // Authenticator enrollment is written only by TwoFactorAuthController; don't let a stale copy overwrite it
             TwoFactorAuthController.copyEnrollment(saved, current);
             // activatedAt records the last activation-state change, so it is also the inactive date (#25078)
