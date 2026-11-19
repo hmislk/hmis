@@ -204,8 +204,12 @@ public class PharmacyConfigController implements Serializable {
      * Load current configuration values from the department-specific options
      */
     public void loadCurrentConfig() {
+        // BHT Issue Receive (ward receipt) paper types
+        bhtIssueReceiveReceiptA4 = configOptionController.getBooleanValueByKey("Pharmacy BHT Issue Receive Receipt is A4", true);
+        bhtIssueReceiveReceiptPos = configOptionController.getBooleanValueByKey("Pharmacy BHT Issue Receive Receipt is POS", false);
+        bhtIssueReceiveReceiptFiveFive = configOptionController.getBooleanValueByKey("Pharmacy BHT Issue Receive Receipt is FiveFive", false);
         // Paper Type Settings
-        posPaper = configOptionController.getBooleanValueByKey("Pharmacy Retail Sale Bill Paper is POS Paper", true);
+        posPaper =configOptionController.getBooleanValueByKey("Pharmacy Retail Sale Bill Paper is POS Paper", true);
         posPaperCustom1 = configOptionController.getBooleanValueByKey("Pharmacy Retail Sale Bill Paper is POS Paper Custom 1", false);
         fiveFivePaper = configOptionController.getBooleanValueByKey("Pharmacy Retail Sale Bill Paper is FiveFive Paper without Blank Space for Header", true);
         posHeaderPaper = configOptionController.getBooleanValueByKey("Pharmacy Retail Sale Bill Paper is POS paper with header", true);
@@ -382,6 +386,10 @@ public class PharmacyConfigController implements Serializable {
      */
     public void saveConfig() {
         try {
+            // BHT Issue Receive (ward receipt) paper types
+            configOptionController.setBooleanValueByKey("Pharmacy BHT Issue Receive Receipt is A4", bhtIssueReceiveReceiptA4);
+            configOptionController.setBooleanValueByKey("Pharmacy BHT Issue Receive Receipt is POS", bhtIssueReceiveReceiptPos);
+            configOptionController.setBooleanValueByKey("Pharmacy BHT Issue Receive Receipt is FiveFive", bhtIssueReceiveReceiptFiveFive);
             // Paper Type Settings
             configOptionController.setBooleanValueByKey("Pharmacy Retail Sale Bill Paper is POS Paper", posPaper);
             configOptionController.setBooleanValueByKey("Pharmacy Retail Sale Bill Paper is POS Paper Custom 1", posPaperCustom1);
@@ -1812,6 +1820,35 @@ public class PharmacyConfigController implements Serializable {
 
     public void setGrnReceiptCustom3(boolean grnReceiptCustom3) {
         this.grnReceiptCustom3 = grnReceiptCustom3;
+    }
+
+    // BHT Issue Receive (ward receipt) paper types
+    private boolean bhtIssueReceiveReceiptA4;
+    private boolean bhtIssueReceiveReceiptPos;
+    private boolean bhtIssueReceiveReceiptFiveFive;
+
+    public boolean isBhtIssueReceiveReceiptA4() {
+        return bhtIssueReceiveReceiptA4;
+    }
+
+    public void setBhtIssueReceiveReceiptA4(boolean bhtIssueReceiveReceiptA4) {
+        this.bhtIssueReceiveReceiptA4 = bhtIssueReceiveReceiptA4;
+    }
+
+    public boolean isBhtIssueReceiveReceiptPos() {
+        return bhtIssueReceiveReceiptPos;
+    }
+
+    public void setBhtIssueReceiveReceiptPos(boolean bhtIssueReceiveReceiptPos) {
+        this.bhtIssueReceiveReceiptPos = bhtIssueReceiveReceiptPos;
+    }
+
+    public boolean isBhtIssueReceiveReceiptFiveFive() {
+        return bhtIssueReceiveReceiptFiveFive;
+    }
+
+    public void setBhtIssueReceiveReceiptFiveFive(boolean bhtIssueReceiveReceiptFiveFive) {
+        this.bhtIssueReceiveReceiptFiveFive = bhtIssueReceiveReceiptFiveFive;
     }
 
 }

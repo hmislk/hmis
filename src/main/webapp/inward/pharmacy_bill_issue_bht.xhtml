@@ -563,7 +563,7 @@
                         <h:panelGroup id="gpBillPreview" >
 
                             <h:panelGroup id="gpBillPreviewPos" rendered="#{sessionController.departmentPreference.pharmacyBillPaperType eq 'PosPaper'}">
-                                <phe:issueBill bill="#{pharmacySaleBhtController.printBill}"/>
+                                <phe:issueBill bill="#{pharmacySaleBhtController.printBill}" showPositiveDiscount="true"/>
                             </h:panelGroup>
 
                             <h:panelGroup id="gpBillPreviewFiveFive" rendered="#{sessionController.departmentPreference.pharmacyBillPaperType eq 'FiveFivePaper'}">
