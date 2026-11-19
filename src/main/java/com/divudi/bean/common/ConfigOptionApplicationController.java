@@ -2022,6 +2022,90 @@ public class ConfigOptionApplicationController implements Serializable {
         return getBooleanValueByKey("Require authenticator app two-factor login for all users", false);
     }
 
+    /**
+     * Whether two-factor login protects this account one by one: the
+     * service-login rule used by machine-to-machine logins (lab analysers,
+     * middleware, channelling API), which cannot ask for a code. The "for
+     * all users" switch is not applied, so unflagged service accounts keep
+     * working; a user who is linked, flagged as required, or allowed SMS
+     * codes is refused.
+     */
+    public boolean doesTwoFactorApplyToServiceLogin(WebUser u) {
+        if (u == null || !isAuthenticatorAppTwoFactorLoginEnabled()) {
+            return false;
+        }
+        return u.isTwoFactorRequired()
+                || u.isTwoFactorEnrolled()
+                || (isTwoFactorSmsLoginEnabled() && u.isTwoFactorSmsAllowed());
+    }
+
+    // Set-up window (see TwoFactorAuthController): the system records when each 2FA switch was turned on
+    public static final String TWO_FACTOR_MASTER_KEY = "Enable authenticator app two-factor login";
+    public static final String TWO_FACTOR_ALL_USERS_KEY = "Require authenticator app two-factor login for all users";
+    private static final String TWO_FACTOR_MASTER_ON_AT_KEY = "Two-factor login master switch turned on at (set by the system)";
+    private static final String TWO_FACTOR_ALL_USERS_ON_AT_KEY = "Two-factor all-users switch turned on at (set by the system)";
+
+    /**
+     * Called by the Application Options page after a value is saved: when one
+     * of the two switches changed, records the time it was turned on (0 when
+     * turned off). A set-up window for a user starts no earlier than this.
+     */
+    public void recordTwoFactorSwitchChange(String key, boolean wasOn, boolean isOn) {
+        if (wasOn == isOn) {
+            return;
+        }
+        String timeKey;
+        if (TWO_FACTOR_MASTER_KEY.equals(key)) {
+            timeKey = TWO_FACTOR_MASTER_ON_AT_KEY;
+        } else if (TWO_FACTOR_ALL_USERS_KEY.equals(key)) {
+            timeKey = TWO_FACTOR_ALL_USERS_ON_AT_KEY;
+        } else {
+            return;
+        }
+        setLongValueByKey(timeKey, isOn ? System.currentTimeMillis() : 0L);
+    }
+
+    /**
+     * The later of the times the master switch and the all-users switch were
+     * last turned on; null when neither time was recorded.
+     */
+    public Date getTwoFactorSwitchesOnAt() {
+        long a = onAtOf(TWO_FACTOR_MASTER_ON_AT_KEY, isAuthenticatorAppTwoFactorLoginEnabled());
+        long b = onAtOf(TWO_FACTOR_ALL_USERS_ON_AT_KEY, isAuthenticatorAppTwoFactorLoginRequiredForAllUsers());
+        long t = Math.max(a, b);
+        return t > 0 ? new Date(t) : null;
+    }
+
+    /**
+     * The recorded time a switch was turned on. A switch that is on but has
+     * no recorded time (it was on before times were kept, or the write after
+     * a save failed) gets the current time recorded here, so a covered user
+     * always has a 24-hour set-up period from the first check.
+     */
+    private long onAtOf(String timeKey, boolean switchIsOn) {
+        if (!switchIsOn) {
+            // A switch that is off has no activation time, whatever is stored
+            return 0L;
+        }
+        Long v = getLongValueByKey(timeKey, 0L);
+        long t = v == null ? 0L : v;
+        if (t <= 0) {
+            t = System.currentTimeMillis();
+            // Written only while the stored time is still unset, so a concurrent change is never overwritten
+            Map<String, Object> p = new HashMap<>();
+            p.put("k", timeKey);
+            p.put("v", Long.toString(t));
+            int done = optionFacade.updateByJpql("update ConfigOption o set o.optionValue=:v"
+                    + " where o.optionKey=:k and o.retired=false and (o.optionValue='0' or o.optionValue is null)", p);
+            loadApplicationOptions();
+            if (done != 1) {
+                Long again = getLongValueByKey(timeKey, 0L);
+                t = again == null ? 0L : again;
+            }
+        }
+        return t;
+    }
+
     public String getAuthenticatorAppIssuerName() {
         return getShortTextValueByKey("Authenticator app issuer name", "HMIS");
     }
