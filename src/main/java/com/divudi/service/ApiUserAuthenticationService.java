@@ -12,13 +12,14 @@ import javax.inject.Inject;
 
 /**
  * The one username + password check for callers that cannot ask for a
- * second-step code.
+ * second-step code: the channelling API (which hands out API keys), lab
+ * analysers and lab middleware (which run unattended).
  *
- * {@link #authenticate} (channelling API, which hands out API keys): a
- * password alone must never let in an account that two-factor login
- * protects, so such accounts (and accounts locked by invalid codes) are
- * refused. {@link #authenticateMachine} (lab analysers and middleware, which
- * run unattended): name and password only, as before.
+ * Service-login rule: an account is refused when two-factor login is on and
+ * it is protected one by one (an authenticator app linked, "required" ticked
+ * for the user, or SMS codes allowed), or when it is locked by invalid codes.
+ * The "all users" switch is not applied, so unflagged machine accounts keep
+ * working. Use a dedicated, never-flagged account for each machine.
  *
  * @author H.K. Damith Deshan | hkddrajapaksha@gmail.com
  */
@@ -32,22 +33,17 @@ public class ApiUserAuthenticationService {
 
     /**
      * @return the user when the name and password match and the account may
-     * log in with a password alone; otherwise null
+     * log in with a password alone (service-login rule); otherwise null
      */
     public WebUser authenticate(String userName, String password) {
-        WebUser u = authenticateMachine(userName, password);
-        if (u == null || isPasswordOnlyLoginRefused(u)) {
-            return null;
-        }
-        return u;
+        return authenticateMachine(userName, password);
     }
 
     /**
-     * Name + password only, without the two-factor refusal: for lab
-     * analysers and lab middleware, which send results automatically with no
-     * person present to enter a code. Use a dedicated machine account.
+     * Same check under the name the lab callers use.
      *
-     * @return the user when the name and password match; otherwise null
+     * @return the user when the name and password match and the account may
+     * log in with a password alone (service-login rule); otherwise null
      */
     public WebUser authenticateMachine(String userName, String password) {
         if (userName == null || userName.trim().isEmpty() || password == null) {
@@ -67,13 +63,15 @@ public class ApiUserAuthenticationService {
         if (!SecurityController.matchPassword(password, u.getWebUserPassword())) {
             return null;
         }
+        if (isPasswordOnlyLoginRefused(u)) {
+            return null;
+        }
         return u;
     }
 
     /**
-     * True when the account is locked, or two-factor login applies to it in
-     * any way: required (for everyone or for this user), an authenticator app
-     * linked, or SMS codes allowed.
+     * True when the account is locked, or two-factor login protects it one
+     * by one (service-login rule, see the class comment).
      */
     public boolean isPasswordOnlyLoginRefused(WebUser u) {
         if (u == null) {
@@ -82,15 +80,6 @@ public class ApiUserAuthenticationService {
         if (u.isTwoFactorLocked()) {
             return true;
         }
-        if (!configOptionApplicationController.isAuthenticatorAppTwoFactorLoginEnabled()) {
-            return false;
-        }
-        if (configOptionApplicationController.isAuthenticatorAppTwoFactorLoginRequiredForAllUsers()) {
-            return true;
-        }
-        if (u.isTwoFactorRequired() || u.isTwoFactorEnrolled()) {
-            return true;
-        }
-        return configOptionApplicationController.isTwoFactorSmsLoginEnabled() && u.isTwoFactorSmsAllowed();
+        return configOptionApplicationController.doesTwoFactorApplyToServiceLogin(u);
     }
 }

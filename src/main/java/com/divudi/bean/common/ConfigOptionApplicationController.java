@@ -1980,6 +1980,60 @@ public class ConfigOptionApplicationController implements Serializable {
         return getBooleanValueByKey("Require authenticator app two-factor login for all users", false);
     }
 
+    /**
+     * Whether two-factor login protects this account one by one: the
+     * service-login rule used by machine-to-machine logins (lab analysers,
+     * middleware, channelling API), which cannot ask for a code. The "for
+     * all users" switch is not applied, so unflagged service accounts keep
+     * working; a user who is linked, flagged as required, or allowed SMS
+     * codes is refused.
+     */
+    public boolean doesTwoFactorApplyToServiceLogin(WebUser u) {
+        if (u == null || !isAuthenticatorAppTwoFactorLoginEnabled()) {
+            return false;
+        }
+        return u.isTwoFactorRequired()
+                || u.isTwoFactorEnrolled()
+                || (isTwoFactorSmsLoginEnabled() && u.isTwoFactorSmsAllowed());
+    }
+
+    // Set-up window (see TwoFactorAuthController): the system records when each 2FA switch was turned on
+    public static final String TWO_FACTOR_MASTER_KEY = "Enable authenticator app two-factor login";
+    public static final String TWO_FACTOR_ALL_USERS_KEY = "Require authenticator app two-factor login for all users";
+    private static final String TWO_FACTOR_MASTER_ON_AT_KEY = "Two-factor login master switch turned on at (set by the system)";
+    private static final String TWO_FACTOR_ALL_USERS_ON_AT_KEY = "Two-factor all-users switch turned on at (set by the system)";
+
+    /**
+     * Called by the Application Options page after a value is saved: when one
+     * of the two switches changed, records the time it was turned on (0 when
+     * turned off). A set-up window for a user starts no earlier than this.
+     */
+    public void recordTwoFactorSwitchChange(String key, boolean wasOn, boolean isOn) {
+        if (wasOn == isOn) {
+            return;
+        }
+        String timeKey;
+        if (TWO_FACTOR_MASTER_KEY.equals(key)) {
+            timeKey = TWO_FACTOR_MASTER_ON_AT_KEY;
+        } else if (TWO_FACTOR_ALL_USERS_KEY.equals(key)) {
+            timeKey = TWO_FACTOR_ALL_USERS_ON_AT_KEY;
+        } else {
+            return;
+        }
+        setLongValueByKey(timeKey, isOn ? System.currentTimeMillis() : 0L);
+    }
+
+    /**
+     * The later of the times the master switch and the all-users switch were
+     * last turned on; null when neither time was recorded.
+     */
+    public Date getTwoFactorSwitchesOnAt() {
+        Long a = getLongValueByKey(TWO_FACTOR_MASTER_ON_AT_KEY, 0L);
+        Long b = getLongValueByKey(TWO_FACTOR_ALL_USERS_ON_AT_KEY, 0L);
+        long t = Math.max(a == null ? 0L : a, b == null ? 0L : b);
+        return t > 0 ? new Date(t) : null;
+    }
+
     public String getAuthenticatorAppIssuerName() {
         return getShortTextValueByKey("Authenticator app issuer name", "HMIS");
     }
