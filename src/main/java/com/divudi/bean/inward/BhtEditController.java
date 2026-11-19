@@ -161,8 +161,6 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
     private ClinicalFindingValue currentPatientAllergy;
     private List<ClinicalFindingValue> patientAllergies;
     private Long patientAllergiesLoadedForPatientId;
-    private List<ClinicalFindingValue> dashboardAllergies;
-    private Long dashboardAllergiesPatientId;
     Map<String, Object> originalAdmission;
     Map<String, Object> updatedAdmission;
     // </editor-fold>
@@ -191,7 +189,6 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
                 "ClinicalFindingValue", currentPatientAllergy.getId());
         patientAllergies.add(currentPatientAllergy);
         currentPatientAllergy = null;
-        dashboardAllergies = null;
     }
 
     /**
@@ -220,7 +217,6 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
                 before, allergyAuditMap(pa), sessionController.getLoggedUser(),
                 "ClinicalFindingValue", pa.getId());
         patientAllergies.remove(pa);
-        dashboardAllergies = null;
     }
 
     public void savePatientAllergies() {
@@ -1163,20 +1159,30 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
             return new ArrayList<>();
         }
         // Own list, not patientAllergies: Manage Allergies (maybe in another tab, for
-        // another patient) edits that one.
-        if (dashboardAllergies == null || !pt.getId().equals(dashboardAllergiesPatientId)) {
-            Map<String, Object> params = new HashMap<>();
-            params.put("pt", pt);
-            params.put("types", ClinicalFindingValueType.patientAllergyTypes());
-            dashboardAllergies = clinicalFindingValueFacade.findByJpql(
-                    "SELECT c FROM ClinicalFindingValue c WHERE c.retired = false AND c.patient = :pt AND c.clinicalFindingValueType in :types",
-                    params);
-            if (dashboardAllergies == null) {
-                dashboardAllergies = new ArrayList<>();
+        // another patient) edits that one. Cached for this request only, so a save on
+        // any page shows on the next load and two requests never share the list.
+        FacesContext fc = FacesContext.getCurrentInstance();
+        String cacheKey = "bhtEditController.dashboardAllergies." + pt.getId();
+        if (fc != null) {
+            @SuppressWarnings("unchecked")
+            List<ClinicalFindingValue> cached = (List<ClinicalFindingValue>) fc.getAttributes().get(cacheKey);
+            if (cached != null) {
+                return cached;
             }
-            dashboardAllergiesPatientId = pt.getId();
         }
-        return dashboardAllergies;
+        Map<String, Object> params = new HashMap<>();
+        params.put("pt", pt);
+        params.put("types", ClinicalFindingValueType.patientAllergyTypes());
+        List<ClinicalFindingValue> loaded = clinicalFindingValueFacade.findByJpql(
+                "SELECT c FROM ClinicalFindingValue c WHERE c.retired = false AND c.patient = :pt AND c.clinicalFindingValueType in :types",
+                params);
+        if (loaded == null) {
+            loaded = new ArrayList<>();
+        }
+        if (fc != null) {
+            fc.getAttributes().put(cacheKey, loaded);
+        }
+        return loaded;
     }
 
     public void setPatientAllergies(List<ClinicalFindingValue> patientAllergies) {

@@ -1078,6 +1078,9 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         // through to saveSelected() and double-charging the room fee. (#9900)
         patientRoom = new PatientRoom();
         patient = null;
+        // An unsaved allergy left from the previous patient must not be saved for the baby.
+        patientAllergies = null;
+        currentPatientAllergy = null;
         yearMonthDay = null;
         getPatient();
         // A baby registered from the mother's admission profile is a newborn. The

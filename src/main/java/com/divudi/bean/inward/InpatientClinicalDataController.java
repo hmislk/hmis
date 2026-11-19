@@ -2466,14 +2466,22 @@ public class InpatientClinicalDataController implements Serializable {
      * ward-medicine page) set the patient without reloading allergies.
      */
     private String getAllergyWarning(Item prescribedItem) {
+        return getAllergyWarning(prescribedItem, patient);
+    }
+
+    /**
+     * Allergy check against the given patient, the one the medicine is saved for.
+     * The session {@link #patient} can belong to another page (e.g. ward medicines
+     * opened for another patient), so callers pass the patient explicitly.
+     */
+    private String getAllergyWarning(Item prescribedItem, Patient forPatient) {
         if (prescribedItem == null) {
             return null;
         }
-        List<ClinicalFindingValue> allergies = patientAllergies;
-        // Always the current patient's allergies: the session list may still hold an
-        // earlier patient's, which would hide this patient's alert.
-        if (patient != null) {
-            allergies = fillPatientAllergies(patient);
+        List<ClinicalFindingValue> allergies = forPatient == null ? patientAllergies : fillPatientAllergies(forPatient);
+        // Refresh the session list only when it belongs to the same patient
+        if (forPatient != null && patient != null && forPatient.getId() != null
+                && forPatient.getId().equals(patient.getId())) {
             patientAllergies = allergies;
         }
         if (allergies == null || allergies.isEmpty()) {
@@ -2532,7 +2540,7 @@ public class InpatientClinicalDataController implements Serializable {
             JsfUtil.addErrorMessage("Select Medicine");
             return;
         }
-        String allergyWarning = getAllergyWarning(getAdmissionWardMedicine().getPrescription().getItem());
+        String allergyWarning = getAllergyWarning(getAdmissionWardMedicine().getPrescription().getItem(), parentAdmission.getPatient());
         if (allergyWarning != null) {
             JsfUtil.addWarningMessage("ALLERGY ALERT: " + allergyWarning);
         }
@@ -3328,7 +3336,7 @@ public class InpatientClinicalDataController implements Serializable {
             JsfUtil.addErrorMessage("Select Medicine");
             return;
         }
-        String allergyWarning = getAllergyWarning(getEncounterMedicine().getPrescription().getItem());
+        String allergyWarning = getAllergyWarning(getEncounterMedicine().getPrescription().getItem(), current.getPatient());
         if (allergyWarning != null) {
             JsfUtil.addWarningMessage("ALLERGY ALERT: " + allergyWarning);
         }
