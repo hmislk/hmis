@@ -61,7 +61,7 @@
                                  filteredValue="#{creditCompanyDueController.filteredList}"
                                  styleClass="p-datatable-sm" paginator="true" rows="100" paginatorPosition="bottom"
                                  rowsPerPageTemplate="50,100,500" emptyMessage="No records found">
-                        <p:column headerText="Supplier Name" width="25em" filterBy="#{i.institution.name}" filterMatchMode="contains">
+                        <p:column headerText="Credit Company" width="25em" filterBy="#{i.institution.name}" filterMatchMode="contains">
                             <h:outputText value="#{i.institution.name}"/>
                         </p:column>
                         <p:column headerText="0-30" width="7em" styleClass="text-end">
