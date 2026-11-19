@@ -47,6 +47,7 @@ import com.divudi.core.data.lab.PatientInvestigationStatus;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.BillItem;
 import com.divudi.core.entity.Department;
+import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.Person;
 import com.divudi.core.entity.Upload;
 import com.divudi.core.entity.WebUser;
@@ -2689,25 +2690,54 @@ public class PatientReportController implements Serializable {
             return;
         }
 
-        Date printingTime = new Date();
-
-        currentPtIx.setPrinted(true);
-        currentPtIx.setPrintingAt(printingTime);
-        currentPtIx.setPrintingUser(sessionController.getLoggedUser());
-        currentPtIx.setPrintingDepartment(sessionController.getDepartment());
-        currentPtIx.setPrinted(true);
-        getPiFacade().edit(currentPtIx);
-
-        currentPatientReport.setPrinted(Boolean.TRUE);
-        currentPatientReport.setPrintingAt(printingTime);
-        currentPatientReport.setPrintingDepartment(sessionController.getDepartment());
-        currentPatientReport.setPrintingInstitution(sessionController.getInstitution());
-        currentPatientReport.setPrintingUser(sessionController.getLoggedUser());
-
-        getFacade().edit(currentPatientReport);
+        if (!markReportAsPrinted(sessionController.getDepartment(), sessionController.getInstitution())) {
+            return;
+        }
 
         laboratoryManagementController.addReportPrintHistory(currentPatientReport.getId());
 
+    }
+
+    /**
+     * Records the print on FRESH copies of the report and its investigation.
+     * <p>
+     * The session copies ({@code currentPatientReport} / {@code currentPtIx})
+     * may have been loaded before another user approved the report. Merging
+     * those stale objects would write back approved=false and wipe the
+     * approve user/time and QR codes while keeping printed=true. So only the
+     * print fields are changed, on rows re-read from the database (bypassing
+     * the shared cache), and the session copies are then replaced with them.
+     */
+    private boolean markReportAsPrinted(Department printingDepartment, Institution printingInstitution) {
+        PatientReport freshReport = getFacade().findWithoutCache(currentPatientReport.getId());
+        if (freshReport == null) {
+            JsfUtil.addErrorMessage("Patient report not found");
+            return false;
+        }
+
+        Date printingTime = new Date();
+
+        PatientInvestigation freshPtIx = null;
+        if (currentPtIx != null && currentPtIx.getId() != null) {
+            freshPtIx = getPiFacade().findWithoutCache(currentPtIx.getId());
+        }
+        if (freshPtIx != null) {
+            freshPtIx.setPrinted(true);
+            freshPtIx.setPrintingAt(printingTime);
+            freshPtIx.setPrintingUser(sessionController.getLoggedUser());
+            freshPtIx.setPrintingDepartment(sessionController.getDepartment());
+            getPiFacade().edit(freshPtIx);
+            currentPtIx = freshPtIx;
+        }
+
+        freshReport.setPrinted(Boolean.TRUE);
+        freshReport.setPrintingAt(printingTime);
+        freshReport.setPrintingDepartment(printingDepartment);
+        freshReport.setPrintingInstitution(printingInstitution);
+        freshReport.setPrintingUser(sessionController.getLoggedUser());
+        getFacade().edit(freshReport);
+        currentPatientReport = freshReport;
+        return true;
     }
 
     public void reportExport() {
@@ -2735,21 +2765,8 @@ public class PatientReportController implements Serializable {
             JsfUtil.addErrorMessage("Nothing to approve");
             return;
         }
-        currentPtIx.setPrinted(true);
-        currentPtIx.setPrintingAt(Calendar.getInstance().getTime());
-        currentPtIx.setPrintingUser(getSessionController().getLoggedUser());
-        currentPtIx.setPrintingDepartment(getSessionController().getDepartment());
-        currentPtIx.setPrinted(true);
-        getPiFacade().edit(currentPtIx);
-
-        currentPatientReport.setPrinted(Boolean.TRUE);
-        currentPatientReport.setPrintingAt(Calendar.getInstance().getTime());
-        currentPatientReport.setPrintingDepartment(getSessionController().getLoggedUser().getDepartment());
-        currentPatientReport.setPrintingInstitution(getSessionController().getLoggedUser().getInstitution());
-        currentPatientReport.setPrintingUser(getSessionController().getLoggedUser());
-        currentPatientReport.setPrinted(true);
-
-        getFacade().edit(currentPatientReport);
+        markReportAsPrinted(getSessionController().getLoggedUser().getDepartment(),
+                getSessionController().getLoggedUser().getInstitution());
     }
 
 //    public void pdfPatientReport() throws DocumentException, com.lowagie.text.DocumentException, IOException {

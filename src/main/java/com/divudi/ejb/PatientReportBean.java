@@ -261,8 +261,10 @@ public class PatientReportBean {
                 }
             }
         }
+        // Use the same order the report shows when it is reopened later.
+        ptReport.sortValues();
     }
-    
+
     public void addPatientReportItemValuesForTemplateReport(PatientReport ptReport) {
          System.out.println("addPatientReportItemValuesForTemplateReport");
         String sql = "";
@@ -365,6 +367,8 @@ public class PatientReportBean {
                 ptReport.getPatientReportItemValues().add(val);
             }
         }
+        // Use the same order the report shows when it is reopened later.
+        ptReport.sortValues();
     }
 
     public void addMicrobiologyReportItemValuesForReport(PatientReport ptReport) {
@@ -439,7 +443,8 @@ public class PatientReportBean {
 
         }
         //System.err.println("items :" + ptReport.getPatientReportItemValues());
-
+        // Use the same order the report shows when it is reopened later.
+        ptReport.sortValues();
     }
 
     /**
@@ -494,6 +499,8 @@ public class PatientReportBean {
                 }
             }
         }
+        // Use the same order the report shows when it is reopened later.
+        ptReport.sortValues();
     }
 
     /**
