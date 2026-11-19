@@ -244,6 +244,32 @@
                                         <p:inputText autocomplete="off" value="#{webUserController.current.code}" maxlength="10" rendered="#{!webUserController.createOnlyUserForExsistingUser}" style="width: 700px"></p:inputText>
 
                                     </h:panelGrid>
+
+                                    <h:panelGroup rendered="#{twoFactorAuthController.twoFactorEnabled}">
+                                        <hr class="my-2" />
+                                        <h:panelGrid columns="2" style="text-align: left;" >
+                                            <p:outputLabel for="twoFactorRequired" value="Require Authenticator App (2FA)" class=" m-1" style="width: 250px" />
+                                            <h:panelGroup>
+                                                <p:selectBooleanCheckbox id="twoFactorRequired"
+                                                                         value="#{webUserController.current.twoFactorRequired}"
+                                                                         disabled="#{configOptionApplicationController.authenticatorAppTwoFactorLoginRequiredForAllUsers}" />
+                                                <h:outputText class="small text-muted mx-2"
+                                                              rendered="#{configOptionApplicationController.authenticatorAppTwoFactorLoginRequiredForAllUsers}"
+                                                              value="Required for all users by configuration" />
+                                            </h:panelGroup>
+                                            <p:outputLabel for="twoFactorSmsAllowed" value="Allow SMS Code (2FA)" class=" m-1" style="width: 250px"
+                                                           rendered="#{configOptionApplicationController.twoFactorSmsLoginEnabled}" />
+                                            <h:panelGroup rendered="#{configOptionApplicationController.twoFactorSmsLoginEnabled}">
+                                                <p:selectBooleanCheckbox id="twoFactorSmsAllowed"
+                                                                         value="#{webUserController.current.twoFactorSmsAllowed}" />
+                                                <h:outputText class="small text-muted mx-2"
+                                                              value="The user can log in with a code sent by SMS after verifying their mobile number" />
+                                            </h:panelGroup>
+                                        </h:panelGrid>
+                                        <p class="small text-muted mb-0">
+                                            The user links their authenticator app at their first login.
+                                        </p>
+                                    </h:panelGroup>
                                 </p:tab>
                             </p:tabView>
                         </p:panel>

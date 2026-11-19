@@ -169,6 +169,8 @@ public class SessionController implements Serializable, HttpSessionListener {
     private LaboratoryDoctorDashboardController laboratoryDoctorDashboardController;
     @Inject
     private UserSettingsController userSettingsController;
+    @Inject
+    private TwoFactorAuthController twoFactorAuthController;
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Class Variables">
     private static final long serialVersionUID = 1L;
@@ -1032,6 +1034,12 @@ public class SessionController implements Serializable, HttpSessionListener {
                 return selectDepartment();
             }
             return "/index1.xhtml?faces-redirect=true";
+        } else if (twoFactorAuthController.isPending()) {
+            // Password accepted; the template now shows the authenticator code screen
+            twoFactorAuthController.setChannelingTabView(false);
+            return "/index1.xhtml?faces-redirect=true";
+        } else if (twoFactorAuthController.isAccountLockedNotice()) {
+            return "";
         } else {
             JsfUtil.addErrorMessage("Invalid User! Login Failure. Please try again");
             return "";
@@ -1049,6 +1057,11 @@ public class SessionController implements Serializable, HttpSessionListener {
         boolean l = checkUsersWithoutDepartment();
         if (l) {
             return "/index1.xhtml?faces-redirect=true";
+        } else if (twoFactorAuthController.isPending()) {
+            twoFactorAuthController.setChannelingTabView(true);
+            return "";
+        } else if (twoFactorAuthController.isAccountLockedNotice()) {
+            return "";
         } else {
             JsfUtil.addErrorMessage("Invalid User! Login Failure. Please try again");
             return "";
@@ -1492,6 +1505,7 @@ public class SessionController implements Serializable, HttpSessionListener {
     private boolean checkUsersWithoutDepartment() {
         System.out.println("DEBUG: checkUsersWithoutDepartment() started at " + new Date());
         long startTime = System.currentTimeMillis();
+        twoFactorAuthController.dismissLockedNotice();
         
         String jpql;
         jpql = "SELECT u FROM WebUser u WHERE u.retired = false and (u.name)=:un";
@@ -1509,6 +1523,42 @@ public class SessionController implements Serializable, HttpSessionListener {
                     passwordIsOk = SecurityController.matchPassword(password, u.getWebUserPassword());
                 }
                 if (passwordIsOk) {
+                    if (u.isTwoFactorLocked()) {
+                        // Locked by too many invalid authenticator codes; only an admin can unlock
+                        twoFactorAuthController.showLockedNotice(u.getName());
+                        return false;
+                    }
+                    if (!webUserController.isGrantAllPrivilegesToAllUsersForTesting()
+                            && twoFactorAuthController.isCodeNeededAtLoginFor(u)) {
+                        // Login is completed by completeTwoFactorLogin() once the code is verified
+                        twoFactorAuthController.startChallenge(u);
+                        return false;
+                    }
+                    return completeLoginWithoutDepartment(u);
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Called by TwoFactorAuthController after the authenticator code of a user
+     * whose password was already verified is accepted.
+     */
+    public String completeTwoFactorLogin(WebUser u, boolean channelingTabView) {
+        department = null;
+        institution = null;
+        if (!completeLoginWithoutDepartment(u)) {
+            return "";
+        }
+        if (!channelingTabView && department != null) {
+            return selectDepartment();
+        }
+        return "/index1.xhtml?faces-redirect=true";
+    }
+
+    private boolean completeLoginWithoutDepartment(WebUser u) {
+        Map m;
                     System.out.println("DEBUG: Password verification successful, loading departments...");
                     long deptStartTime = System.currentTimeMillis();
                     departments = listLoggableDepts(u);
@@ -1593,11 +1643,7 @@ public class SessionController implements Serializable, HttpSessionListener {
                     if (departments.size() == 1) {
                         department = departments.get(0);
                     }
-                    return true;
-                }
-            }
-        }
-        return false;
+        return true;
     }
 
     public void loadDashboards() {

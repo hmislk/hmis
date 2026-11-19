@@ -101,6 +101,8 @@ public class WebUserController implements Serializable {
     @Inject
     UserIconController userIconController;
     @Inject
+    private TwoFactorAuthController twoFactorAuthController;
+    @Inject
     TriggerSubscriptionController triggerSubscriptionController;
     @Inject
     UserNotificationController userNotificationController;
@@ -253,11 +255,29 @@ public class WebUserController implements Serializable {
         if (current == null) {
             return;
         }
+        // Load the stored state before anything is merged
+        WebUser saved = (current.getId() == null || current.getId() == 0) ? null : getFacade().find(current.getId());
+        boolean activationChanged = saved != null && saved.isActivated() != current.isActivated();
         if (current.getId() == null || current.getId() == 0) {
             getFacade().create(current);
             JsfUtil.addSuccessMessage("Saved");
         } else {
+            // activatedAt records the last activation-state change, so it is also the inactive date (#25078)
+            if (activationChanged) {
+                current.setActivatedAt(new Date());
+                current.setActivator(getSessionController().getLoggedUser());
+            }
+            boolean wasTwoFactorRequired = saved != null && saved.isTwoFactorRequired();
+            boolean wasTwoFactorSmsAllowed = saved != null && saved.isTwoFactorSmsAllowed();
+            // Authenticator enrollment is written only by TwoFactorAuthController; don't let a stale copy overwrite it
+            TwoFactorAuthController.copyEnrollment(saved, current);
             getFacade().edit(current);
+            if (wasTwoFactorRequired != current.isTwoFactorRequired()) {
+                twoFactorAuthController.logRequiredChange(current, wasTwoFactorRequired);
+            }
+            if (wasTwoFactorSmsAllowed != current.isTwoFactorSmsAllowed()) {
+                twoFactorAuthController.logSmsAllowedChange(current, wasTwoFactorSmsAllowed);
+            }
             JsfUtil.addSuccessMessage("Updated");
         }
     }
@@ -621,6 +641,12 @@ public class WebUserController implements Serializable {
         getCurrent().setName((getCurrent().getName()));
         getCurrent().setWebUserPassword(getSecurityController().hashAndCheck(getCurrent().getWebUserPassword()));
         getFacade().create(getCurrent());
+        if (getCurrent().isTwoFactorRequired()) {
+            twoFactorAuthController.logRequiredChange(getCurrent(), false);
+        }
+        if (getCurrent().isTwoFactorSmsAllowed()) {
+            twoFactorAuthController.logSmsAllowedChange(getCurrent(), false);
+        }
         if (createOnlyUser) {
             JsfUtil.addSuccessMessage("Add New User Only");
         } else if (createOnlyUserForExsistingUser) {

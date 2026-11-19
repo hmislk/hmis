@@ -6,6 +6,7 @@ import com.divudi.core.facade.LoginsFacade;
 import com.divudi.core.facade.WebUserFacade;
 import com.divudi.core.facade.WebUserPasswordHistoryFacade;
 import java.io.Serializable;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -76,7 +77,7 @@ public class PasswordResetReportController implements Serializable {
         Map<String, Object> params = new HashMap<>();
         String jpql = "SELECT new com.divudi.core.data.dto.UserPasswordResetDto("
                 + "wu.id, wu.name, wu.code, sp.title, sp.name, wp.title, wp.name, "
-                + "wu.lastPasswordResetAt, wu.retired) "
+                + "wu.lastPasswordResetAt, wu.retired, wu.activated, wu.activatedAt, wu.retiredAt) "
                 + "FROM WebUser wu "
                 + "LEFT JOIN wu.staff s "
                 + "LEFT JOIN s.person sp "
@@ -106,8 +107,12 @@ public class PasswordResetReportController implements Serializable {
         if (users == null) {
             return;
         }
+        // Same date format the report columns use
+        SimpleDateFormat dateFormat = new SimpleDateFormat(sessionController.getApplicationPreference().getLongDateTimeFormat());
         for (UserPasswordResetDto u : users) {
             classify(u, latestHistoryByUser.get(u.getWebUserId()));
+            u.setStatusText(u.isActivated() ? "Active" : withDate("Inactive", "activation record", u.getActivatedAt(), dateFormat));
+            u.setRetiredText(u.isRetired() ? withDate("Yes", u.getRetiredAt(), dateFormat) : "No");
             u.setLastLoginAt(lastLoginByUser.get(u.getWebUserId()));
             switch (u.getUpdatedBy()) {
                 case UserPasswordResetDto.UPDATED_BY_SELF:
@@ -126,6 +131,21 @@ public class PasswordResetReportController implements Serializable {
                 rows.add(u);
             }
         }
+    }
+
+    private static String withDate(String label, Date date, SimpleDateFormat format) {
+        return withDate(label, null, date, format);
+    }
+
+    /**
+     * Older inactive users carry their last activation date in the same field, so the date is named rather than
+     * presented as a deactivation date.
+     */
+    private static String withDate(String label, String dateName, Date date, SimpleDateFormat format) {
+        if (date == null) {
+            return label;
+        }
+        return label + " (" + (dateName == null ? "" : dateName + ": ") + format.format(date) + ")";
     }
 
     /**
