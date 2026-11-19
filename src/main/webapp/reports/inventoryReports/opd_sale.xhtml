@@ -207,6 +207,11 @@
                                     white-space: normal !important;
                                     word-break: break-word;
                                 }
+                                /* Item columns: one line per item so NAME, CODE, BATCH NO, QTY and rates stay aligned */
+                                .cogs-sale-print .ui-datatable td.cogs-item-col {
+                                    white-space: nowrap !important;
+                                    word-break: normal;
+                                }
                                 .cogs-sale-print .ui-paginator { display: none !important; }
                                 .cogs-sale-print .ui-datatable thead { display: table-header-group; }
                                 .cogs-sale-print .ui-datatable tr { page-break-inside: avoid; }
@@ -352,32 +357,32 @@
                                 </p:row>
                             </p:columnGroup>
 
-                            <p:column headerText="NAME" width="12em">
+                            <p:column headerText="NAME" width="12em" styleClass="cogs-item-col">
                                 <ui:repeat value="#{b.billItemsMap.values()}" var="biObject" >
                                     <h:outputText value="#{biObject.itemName}" /><p:divider/><br/>
                                 </ui:repeat>
                             </p:column>
-                            <p:column headerText="CODE">
+                            <p:column headerText="CODE" styleClass="cogs-item-col">
                                 <ui:repeat value="#{b.billItemsMap.values()}" var="biObject">
                                     <h:outputText value="#{biObject.itemCode}" /><p:divider/><br/>
                                 </ui:repeat>
                             </p:column>
-                            <p:column headerText="BATCH NO">
+                            <p:column headerText="BATCH NO" styleClass="cogs-item-col">
                                 <ui:repeat value="#{b.billItemsMap.values()}" var="biObject">
                                     <h:outputText value="#{biObject.batchNo}" /><p:divider/><br/>
                                 </ui:repeat>
                             </p:column>
-                            <p:column headerText="QTY">
+                            <p:column headerText="QTY" styleClass="cogs-item-col">
                                 <ui:repeat value="#{b.billItemsMap.values()}" var="biObject">
                                     <h:outputText value="#{biObject.qty}" ><f:convertNumber pattern="#,##0"/></h:outputText><p:divider/><br/>
                                 </ui:repeat>
                             </p:column>
-                            <p:column headerText="COST RATE">
+                            <p:column headerText="COST RATE" styleClass="cogs-item-col">
                                 <ui:repeat value="#{b.billItemsMap.values()}" var="biObject">
                                     <h:outputText value="#{biObject.costRate}" ><f:convertNumber pattern="#,##0.00"/></h:outputText><p:divider/><br/>
                                 </ui:repeat>
                             </p:column>
-                            <p:column headerText="COST VALUE">
+                            <p:column headerText="COST VALUE" styleClass="cogs-item-col">
                                 <ui:repeat value="#{b.billItemsMap.values()}" var="biObject">
                                     <h:outputText value="#{biObject.qty * biObject.costRate}" ><f:convertNumber pattern="#,##0.00"/></h:outputText><p:divider/><br/>
                                 </ui:repeat>
@@ -387,12 +392,12 @@
                                     </h:outputText>
                                 </f:facet>
                             </p:column>
-                            <p:column headerText="PURCHASE RATE">
+                            <p:column headerText="PURCHASE RATE" styleClass="cogs-item-col">
                                 <ui:repeat value="#{b.billItemsMap.values()}" var="biObject">
                                     <h:outputText value="#{biObject.purchaseRate}" ><f:convertNumber pattern="#,##0.00"/></h:outputText><p:divider/><br/>
                                 </ui:repeat>
                             </p:column>
-                            <p:column headerText="PURCHASE VALUE">
+                            <p:column headerText="PURCHASE VALUE" styleClass="cogs-item-col">
                                 <ui:repeat value="#{b.billItemsMap.values()}" var="biObject">
                                     <h:outputText value="#{biObject.qty * biObject.purchaseRate}" ><f:convertNumber pattern="#,##0.00"/></h:outputText><p:divider/>   <br/>
                                 </ui:repeat>
@@ -403,12 +408,12 @@
                                 </f:facet>
                             </p:column>
                             
-                            <p:column headerText="MRP" width="8em" class="text-end">
+                            <p:column headerText="MRP" width="8em" class="text-end" styleClass="cogs-item-col">
                                 <ui:repeat value="#{b.billItemsMap.values()}" var="biObject">
                                     <h:outputText value="#{biObject.retailRate}" ><f:convertNumber pattern="#,##0.00"/></h:outputText><p:divider/><br/>
                                 </ui:repeat>
                             </p:column>
-                            <p:column headerText="MRP Value" width="8em" class="text-end">
+                            <p:column headerText="MRP Value" width="8em" class="text-end" styleClass="cogs-item-col">
                                 <ui:repeat value="#{b.billItemsMap.values()}" var="biObject">
                                     <h:outputText value="#{biObject.qty * biObject.retailRate}" ><f:convertNumber pattern="#,##0.00"/></h:outputText><p:divider/>   <br/>
                                 </ui:repeat>
