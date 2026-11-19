@@ -57,11 +57,12 @@
                         </p:commandButton>
                     </h:panelGroup>
                     <p:defaultCommand target="btnProcess"/>
+                    <p:remoteCommand name="refreshAgeTotals" process="@this" update="lst:ageTotal1 lst:ageTotal2 lst:ageTotal3 lst:ageTotal4"/>
                     <p:dataTable id="lst" widgetVar="lstWidget" value="#{creditCompanyDueController.creditCompanyAge}" var="row" rowKey="#{row.string}"
                                  filteredValue="#{creditCompanyDueController.filteredList}"
                                  styleClass="p-datatable-sm" paginator="true" rows="100" paginatorPosition="bottom"
                                  rowsPerPageTemplate="50,100,500" emptyMessage="No records found">
-                        <p:ajax event="filter" process="@this" update="ageTotal1 ageTotal2 ageTotal3 ageTotal4"/>
+                        <p:ajax event="filter" process="@this" oncomplete="refreshAgeTotals()"/>
                         <f:facet name="header">
                             <h:outputText value="Inward Patient Co-payment Due Age (days since discharge)"/>
                         </f:facet>
