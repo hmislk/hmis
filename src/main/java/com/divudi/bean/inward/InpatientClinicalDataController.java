@@ -64,6 +64,7 @@ import com.divudi.core.facade.PersonFacade;
 import com.divudi.core.facade.PrescriptionFacade;
 import com.divudi.ejb.PrescriptionService;
 import com.divudi.core.util.JsfUtil;
+import com.divudi.core.util.CardHtmlSanitizer;
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -1217,23 +1218,10 @@ public class InpatientClinicalDataController implements Serializable {
 
     /**
      * Card and letter HTML (AI output, or what the editor posts) is shown with
-     * escape="false", so keep only formatting markup and drop scripts, event
-     * handlers and javascript: links. Relative and data: image sources are kept
-     * so logos in templates survive a save.
+     * escape="false"; see {@link CardHtmlSanitizer}. Null becomes "".
      */
     private static String sanitizeCardHtml(String html) {
-        if (html == null) {
-            return "";
-        }
-        org.jsoup.safety.Safelist safelist = org.jsoup.safety.Safelist.relaxed()
-                .addTags("s", "hr", "font", "center")
-                .addAttributes(":all", "style", "class", "align")
-                .addAttributes("font", "color", "size", "face")
-                .addAttributes("table", "border", "cellpadding", "cellspacing")
-                .addProtocols("img", "src", "data")
-                .preserveRelativeLinks(true);
-        // No pretty-print: keep the editor's own spacing
-        return org.jsoup.Jsoup.clean(html, "http://localhost/", safelist, new org.jsoup.nodes.Document.OutputSettings().prettyPrint(false));
+        return html == null ? "" : CardHtmlSanitizer.sanitize(html);
     }
 
     /**
@@ -1894,6 +1882,9 @@ public class InpatientClinicalDataController implements Serializable {
             return;
         }
         encounterReferral.setRetired(true);
+        if (encounterReferral.getLobValue() != null) {
+            encounterReferral.setLobValue(sanitizeCardHtml(encounterReferral.getLobValue()));
+        }
         encounterDocuments.remove(encounterReferral);
         if (encounterReferral.getId() == null) {
             clinicalFindingValueFacade.create(encounterReferral);
