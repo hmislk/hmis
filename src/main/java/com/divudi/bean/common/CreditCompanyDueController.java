@@ -1778,6 +1778,113 @@ public class CreditCompanyDueController implements Serializable {
         }
     }
 
+    /**
+     * PDF export for the Inward Credit Due search
+     * ({@code credit/inward_due_search_credit_company.xhtml}). Same data and
+     * layout as {@link #downloadInwardCreditDueExcel()}; the grouped
+     * {@code p:subTable} cannot go through {@code p:dataExporter}.
+     */
+    public void downloadInwardCreditDuePdf() {
+        FacesContext facesContext = FacesContext.getCurrentInstance();
+        HttpServletResponse response = (HttpServletResponse) facesContext.getExternalContext().getResponse();
+        List<InstitutionEncounters> data = institutionEncounters == null ? Collections.emptyList() : institutionEncounters;
+
+        response.setContentType("application/pdf");
+        response.setHeader("Content-Disposition", "attachment; filename=Inward_Credit_Due_Report.pdf");
+
+        try (OutputStream out = response.getOutputStream()) {
+            Document document = new Document(PageSize.A4.rotate());
+            PdfWriter.getInstance(document, out);
+            document.open();
+
+            Font titleFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 14);
+            Font boldFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8);
+            Font normalFont = FontFactory.getFont(FontFactory.HELVETICA, 8);
+
+            SimpleDateFormat sdf = new SimpleDateFormat(sessionController.getApplicationPreference().getLongDateTimeFormat());
+            DecimalFormat df = new DecimalFormat("#,##0.00");
+
+            Paragraph title = new Paragraph("Due Search (Credit Company) - Inward", titleFont);
+            title.setAlignment(Element.ALIGN_CENTER);
+            document.add(title);
+            Paragraph range = new Paragraph(
+                    "From : " + (getFromDate() != null ? sdf.format(getFromDate()) : "-")
+                    + "    To : " + (getToDate() != null ? sdf.format(getToDate()) : "-")
+                    + "    Date Basis : " + ("admissionDate".equals(dateBasis) ? "Admission Date" : "Discharge Date"),
+                    normalFont);
+            range.setAlignment(Element.ALIGN_CENTER);
+            range.setSpacingAfter(8);
+            document.add(range);
+
+            PdfPTable table = new PdfPTable(8);
+            table.setWidthPercentage(100);
+            table.setWidths(new float[]{1.2f, 2f, 2f, 3f, 3f, 1.5f, 1.5f, 1.5f});
+            table.setHeaderRows(1);
+
+            String[] headers = {"BHT No", "Date Of Admission", "Date Of Discharge", "Patient Name", "Credit Company",
+                "Bill Amount", "Paid", "Outstanding"};
+            for (String h : headers) {
+                PdfPCell cell = new PdfPCell(new Phrase(h, boldFont));
+                cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+                table.addCell(cell);
+            }
+
+            for (InstitutionEncounters ins : data) {
+                if (ins == null) {
+                    continue;
+                }
+                PdfPCell groupHeader = new PdfPCell(new Phrase(ins.getInstitution() != null ? ins.getInstitution().getName() : "", boldFont));
+                groupHeader.setColspan(8);
+                groupHeader.setBackgroundColor(BaseColor.LIGHT_GRAY);
+                table.addCell(groupHeader);
+
+                for (Bill bill : ins.getBills()) {
+                    if (bill == null) {
+                        continue;
+                    }
+                    PatientEncounter pe = bill.getPatientEncounter();
+                    table.addCell(new Phrase(pe != null && pe.getBhtNo() != null ? pe.getBhtNo() : "", normalFont));
+                    table.addCell(new Phrase(pe != null && pe.getDateOfAdmission() != null ? sdf.format(pe.getDateOfAdmission()) : "", normalFont));
+                    table.addCell(new Phrase(pe != null && pe.getDateOfDischarge() != null ? sdf.format(pe.getDateOfDischarge()) : "", normalFont));
+                    table.addCell(new Phrase(bill.getPatient() != null && bill.getPatient().getPerson() != null
+                            ? bill.getPatient().getPerson().getNameWithTitle() : "", normalFont));
+                    table.addCell(new Phrase(bill.getCreditCompany() != null ? bill.getCreditCompany().getName() : "", normalFont));
+                    addRightCell(table, df.format(bill.getNetTotal()), normalFont);
+                    addRightCell(table, df.format(bill.getPaidAmount()), normalFont);
+                    addRightCell(table, df.format(bill.getNetTotal() - bill.getPaidAmount()), normalFont);
+                }
+
+                PdfPCell subLabel = new PdfPCell(new Phrase("Sub Total", boldFont));
+                subLabel.setColspan(5);
+                subLabel.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                table.addCell(subLabel);
+                addRightCell(table, df.format(ins.getTotal()), boldFont);
+                addRightCell(table, df.format(ins.getPaidTotal()), boldFont);
+                addRightCell(table, df.format(ins.getTotal() - ins.getPaidTotal()), boldFont);
+            }
+
+            PdfPCell grandLabel = new PdfPCell(new Phrase("Grand Total", boldFont));
+            grandLabel.setColspan(5);
+            grandLabel.setHorizontalAlignment(Element.ALIGN_RIGHT);
+            table.addCell(grandLabel);
+            addRightCell(table, df.format(finalTotal), boldFont);
+            addRightCell(table, df.format(finalPaidTotal), boldFont);
+            addRightCell(table, df.format(finalTotal - finalPaidTotal), boldFont);
+
+            document.add(table);
+            document.close();
+            facesContext.responseComplete();
+        } catch (Exception e) {
+            Logger.getLogger(CreditCompanyDueController.class.getName()).log(Level.SEVERE, e.getMessage(), e);
+        }
+    }
+
+    private void addRightCell(PdfPTable table, String text, Font font) {
+        PdfPCell cell = new PdfPCell(new Phrase(text, font));
+        cell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+        table.addCell(cell);
+    }
+
     //    public void createInwardCreditDueWithAdditionalFilters() {
 //        Date startTime = new Date();
 //
