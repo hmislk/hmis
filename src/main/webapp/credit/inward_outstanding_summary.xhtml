@@ -65,7 +65,7 @@
                         <p:dataTable id="lst" widgetVar="lstWidget" value="#{creditCompanyDueController.creditCompanyAge}" var="row" rowKey="#{row.string}"
                                      styleClass="p-datatable-sm" emptyMessage="No records found">
                             <f:facet name="header">
-                                <h:outputLabel value="Inward Outstanding Summary (aged from discharge date)"/>
+                                <h:outputLabel value="Inward Outstanding Summary (aged from #{creditCompanyDueController.dateBasis eq 'admissionDate' ? 'admission date' : 'discharge date'})"/>
                             </f:facet>
                             <p:column headerText="Category" width="14em">
                                 <h:outputText value="#{row.string}" style="font-weight:bold"/>
