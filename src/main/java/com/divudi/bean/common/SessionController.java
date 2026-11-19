@@ -68,6 +68,7 @@ import com.divudi.core.entity.cashTransaction.CashBook;
 import com.divudi.core.entity.cashTransaction.Denomination;
 import com.divudi.core.entity.cashTransaction.Drawer;
 import com.divudi.core.facade.StaffFacade;
+import com.divudi.service.ApiUserAuthenticationService;
 import com.divudi.service.ChannelService;
 import java.io.IOException;
 import java.io.Serializable;
@@ -184,6 +185,8 @@ public class SessionController implements Serializable, HttpSessionListener {
     private UserSettingsController userSettingsController;
     @Inject
     private TwoFactorAuthController twoFactorAuthController;
+    @EJB
+    private ApiUserAuthenticationService apiUserAuthenticationService;
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Class Variables">
     private static final long serialVersionUID = 1L;
@@ -1467,52 +1470,23 @@ public class SessionController implements Serializable, HttpSessionListener {
 //            i++;
 //        }
 //    }
+    /**
+     * Username + password check for the lab analyser pages
+     * (requests/mwapi.xhtml, requests/samplebill.xhtml), which cannot ask for
+     * a second-step code. Sets only the logged user those requests act as; it
+     * never marks the session as logged in, so it gives no access to the web
+     * pages. Accounts protected by two-factor login are refused (see
+     * ApiUserAuthenticationService).
+     */
     public boolean loginForRequests(String temUserName, String temPassword) {
         logged = false;
         loggedUser = null;
-        if (temUserName == null) {
-            return false;
-        }
-        if (temPassword == null) {
-            return false;
-        }
-        String temSQL;
-        loginRequestResponse = "#{";
-        temSQL = "SELECT u FROM WebUser u WHERE u.retired = false and (u.name)=:n order by u.id desc";
-        Map m = new HashMap();
-
-        m.put("n", temUserName.trim().toLowerCase());
-        WebUser u = getFacede().findFirstByJpql(temSQL, m);
-
-        //// // System.out.println("temSQL = " + temSQL);
+        WebUser u = apiUserAuthenticationService.authenticateMachine(temUserName, temPassword);
         if (u == null) {
             return false;
         }
-
-        if (SecurityController.matchPassword(temPassword, u.getWebUserPassword())) {
-
-            setLoggedUser(u);
-            loggableDepartments = fillLoggableDepts();
-//            loggableSubDepartments = fillLoggableSubDepts(loggableDepartments);
-            loggableInstitutions = fillLoggableInstitutions();
-
-            // Load user-specific UI settings
-            userSettingsController.loadUserSettings();
-
-            setLogged(Boolean.TRUE);
-            setActivated(u.isActivated());
-            setRole(u.getRole());
-
-            String sql;
-
-            loginRequestResponse += "Login=1|";
-            loginRequestResponse += "User=" + u.getName() + "|";
-            loginRequestResponse += "UserId=" + u.getId() + "|";
-            loginRequestResponse += "}";
-            return true;
-        }
-        loginRequestResponse += "Login=0|}";
-        return false;
+        setLoggedUser(u);
+        return true;
     }
 
     private boolean checkUsersWithoutDepartment() {
