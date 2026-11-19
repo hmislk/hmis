@@ -105,6 +105,8 @@ public class TwoFactorAuthController implements Serializable {
     private Long pendingUserId;
     private String pendingUserName;
     private long pendingStartedAt;
+    // Set when a waiting login was dropped for taking too long; the login card shows a notice
+    private boolean loginTimedOutNotice;
     private boolean channelingTabView;
     // Shown on the login card when the account is locked (a growl disappears too quickly)
     private boolean accountLockedNotice;
@@ -355,6 +357,7 @@ public class TwoFactorAuthController implements Serializable {
      */
     public void resetForNewLogin() {
         clearChallenge();
+        loginTimedOutNotice = false;
         reloginRequired = false;
         secondFactorVerified = false;
         setupProofed = false;
@@ -461,13 +464,6 @@ public class TwoFactorAuthController implements Serializable {
      * gone or locked.
      */
     public WebUser findPendingUser() {
-        if (pendingUserId != null && isPendingExpired()) {
-            WebUser expired = webUserFacade.find(pendingUserId);
-            logTwoFactorEvent(expired, expired, EVENT_LOGIN_TIMED_OUT, null, null, "Failed");
-            cancelLogin();
-            JsfUtil.addErrorMessage("The sign-in took too long. Please sign in again.");
-            return null;
-        }
         if (!isPending()) {
             return null;
         }
@@ -589,7 +585,10 @@ public class TwoFactorAuthController implements Serializable {
     public boolean isPending() {
         if (pendingUserId != null && isPendingExpired()) {
             // Waited too long for the code: the half-finished login is dropped on its own
+            WebUser expired = webUserFacade.find(pendingUserId);
+            logTwoFactorEvent(expired, expired, EVENT_LOGIN_TIMED_OUT, null, null, "Failed");
             clearChallenge();
+            loginTimedOutNotice = true;
         }
         return pendingUserId != null;
     }
@@ -974,6 +973,10 @@ public class TwoFactorAuthController implements Serializable {
 
     public int getMaxFailedAttempts() {
         return MAX_FAILED_ATTEMPTS;
+    }
+
+    public boolean isLoginTimedOutNotice() {
+        return loginTimedOutNotice;
     }
 
     public boolean isAccountLockedNotice() {

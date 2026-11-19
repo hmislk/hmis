@@ -33,7 +33,7 @@ public class ApiUserAuthenticationService {
 
     /**
      * @return the user when the name and password match and the account may
-     * log in with a password alone (service-login rule); otherwise null
+     * log in with name and password only (service-login rule); otherwise null
      */
     public WebUser authenticate(String userName, String password) {
         return authenticateMachine(userName, password);
@@ -43,7 +43,7 @@ public class ApiUserAuthenticationService {
      * Same check under the name the lab callers use.
      *
      * @return the user when the name and password match and the account may
-     * log in with a password alone (service-login rule); otherwise null
+     * log in with name and password only (service-login rule); otherwise null
      */
     public WebUser authenticateMachine(String userName, String password) {
         if (userName == null || userName.trim().isEmpty() || password == null) {
