@@ -1521,6 +1521,8 @@ public class SessionController implements Serializable, HttpSessionListener {
                         twoFactorAuthController.showLockedNotice(u.getName());
                         return false;
                     }
+                    // Password accepted: a session id known before login must not carry on (session fixation)
+                    renewHttpSessionId();
                     if (!webUserController.isGrantAllPrivilegesToAllUsersForTesting()
                             && twoFactorAuthController.isCodeNeededAtLoginFor(u)) {
                         // Login is completed by completeTwoFactorLogin() once the code is verified
@@ -1541,6 +1543,8 @@ public class SessionController implements Serializable, HttpSessionListener {
     public String completeTwoFactorLogin(WebUser u, boolean channelingTabView) {
         department = null;
         institution = null;
+        // Second step accepted: issue a fresh session id again for the now fully logged-in session
+        renewHttpSessionId();
         if (!completeLoginWithoutDepartment(u)) {
             return "";
         }
@@ -2205,6 +2209,31 @@ public class SessionController implements Serializable, HttpSessionListener {
         financialTransactionController.resetForLogout();
         twoFactorAuthController.resetForNewLogin();
         invalidateHttpSession();
+    }
+
+    /**
+     * Gives the current HttpSession a new id, keeping its attributes, so an
+     * id set or seen before login cannot be used after it (session
+     * fixation).
+     */
+    private void renewHttpSessionId() {
+        FacesContext ctx = FacesContext.getCurrentInstance();
+        if (ctx == null) {
+            return;
+        }
+        Object request = ctx.getExternalContext().getRequest();
+        if (!(request instanceof HttpServletRequest)) {
+            return;
+        }
+        HttpServletRequest httpRequest = (HttpServletRequest) request;
+        if (httpRequest.getSession(false) == null) {
+            return;
+        }
+        try {
+            httpRequest.changeSessionId();
+        } catch (IllegalStateException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
