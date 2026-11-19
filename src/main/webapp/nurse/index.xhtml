@@ -278,6 +278,17 @@
                                                             ajax="false">
                                                         </p:commandButton>
 
+                                                        <p:commandButton
+                                                            id="btnReceiveMedicinesFromPharmacy"
+                                                            value="Receive Medicines from Pharmacy"
+                                                            title="Receive Medicines from Pharmacy"
+                                                            ajax="false"
+                                                            action="#{wardPharmacyBhtIssueReceiveController.openPendingList}"
+                                                            icon="fa fa-truck-medical"
+                                                            rendered="#{webUserController.hasPrivilege('InwardPharmacyBhtReceive')}"
+                                                            class="w-100">
+                                                        </p:commandButton>
+
                                                         <p:commandButton 
                                                             value="View Pharmacy Requests"
                                                             action="#{admissionController.navigateToSearchInwardBills}" 

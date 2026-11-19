@@ -1167,6 +1167,11 @@ public class PharmacySaleBhtController implements Serializable {
         if (hasAllergyConflicts(getBillItems())) {
             return;
         }
+
+        if (getPreBill().getToStaff() == null) {
+            JsfUtil.addErrorMessage("Please select the staff member (porter) who will carry the medicines to the ward.");
+            return;
+        }
         BillTypeAtomic bta = BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD;
         BillType bt = BillType.PharmacyBhtPre;
 
@@ -1453,7 +1458,10 @@ public class PharmacySaleBhtController implements Serializable {
             financeDetails.setValueAtRetailRate(BigDecimal.valueOf(selectedSubstituteStock.getItemBatch().getRetailsaleRate()).multiply(qty));
         }
 
-        calculateBillTotalsForTransferIssue(getPreBill());
+        // Recalculate only the swapped row and the running totals. The transfer-issue
+        // total method negated every row's quantity on this patient bill (#23949).
+        calculateRates(itemForSubstitution);
+        calCurrentBillItemTotal(getBillItems());
 
         JsfUtil.addSuccessMessage("Stock replaced successfully.");
     }
@@ -1581,6 +1589,7 @@ public class PharmacySaleBhtController implements Serializable {
 
         savePreBillFinally(pt, matrixDepartment, btp, bta);
         savePreBillItemsFinally(tmpBillItems);
+        transferIssuedStockToPorter(tmpBillItems, getPreBill().getToStaff());
         billService.createBillFinancialDetailsForInpatientDirectIssueBill(getPreBill());
 
         // Calculation Margin
@@ -1594,6 +1603,26 @@ public class PharmacySaleBhtController implements Serializable {
         billPreview = true;
         return true;
 
+    }
+
+    /**
+     * After stock is deducted from the issuing pharmacy, credit the same
+     * quantities to the porter's staff stock (with stock history), so the
+     * medicines are tracked as carried by the porter on the way to the ward.
+     * The ward then receives them from the porter (Receive Medicines from
+     * Pharmacy). Ported from development (#21467).
+     */
+    private void transferIssuedStockToPorter(List<BillItem> list, com.divudi.core.entity.Staff porter) {
+        if (porter == null) {
+            return;
+        }
+        for (BillItem tbi : list) {
+            PharmaceuticalBillItem pbi = tbi.getPharmaceuticalBillItem();
+            double qty = Math.abs(pbi.getQty());
+            Stock staffStock = getPharmacyBean().addToStock(pbi, qty, porter);
+            pbi.setStaffStock(staffStock);
+            getPharmaceuticalBillItemFacade().edit(pbi);
+        }
     }
 
     public void updateMargin(BillItem bi, Department matrixDepartment, PaymentMethod paymentMethod) {

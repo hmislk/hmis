@@ -32,7 +32,7 @@
                                 icon="fas fa-cancel"
                                 ajax="false"
                                 action="#{pharmacyBillSearch.navigateToCancelBhtRequest}"
-                                disabled="#{!(pharmacyBillSearch.bill.returnBhtIssueBills.size() eq 0)}"
+                                disabled="#{!(pharmacyBillSearch.bill.returnBhtIssueBills.size() eq 0) or pharmacyBillSearch.currentBillIssueAcceptedByWard}"
                                 value="Cancel Request">
                             </p:commandButton>
                             <p:commandButton 
@@ -160,19 +160,19 @@
 
                                         <h:panelGroup   id="gpBillPreviewSingle" rendered="#{sessionController.loggedPreference.pharmacyBillPaperType eq 'PosPaper'}">
                                             <h:panelGroup rendered="#{sessionController.loggedPreference.pharmacyBillPrabodha eq false}" > 
-                                                <ph:issueBill bill="#{pharmacyBillSearch.bill}" duplicate="true" />
+                                                <ph:issueBill bill="#{pharmacyBillSearch.bill}" showPositiveDiscount="true" duplicate="true" />
                                             </h:panelGroup>
                                         </h:panelGroup>
 
                                         <h:panelGroup id="gpBillPreviewDouble" rendered="#{sessionController.loggedPreference.pharmacyBillPaperType eq 'PosPaper'}"> 
                                             <h:panelGroup     rendered="#{sessionController.loggedPreference.pharmacyBillPrabodha eq true}"> 
-                                                <phi:saleBill_prabodha bill="#{pharmacyBillSearch.bill}"></phi:saleBill_prabodha>
+                                                <phi:saleBill_prabodha bill="#{pharmacyBillSearch.bill}" showPositiveDiscount="true"></phi:saleBill_prabodha>
                                             </h:panelGroup>
                                         </h:panelGroup>
 
                                         <h:panelGroup id="gpBillPreviewFiveFive" rendered="#{sessionController.loggedPreference.pharmacyBillPaperType eq 'FiveFivePaper'}"> 
                                             <h:panelGroup rendered="true" > 
-                                                <phi:saleBill_five_five bill="#{pharmacyBillSearch.bill}"></phi:saleBill_five_five>
+                                                <phi:saleBill_five_five bill="#{pharmacyBillSearch.bill}" showPositiveDiscount="true"></phi:saleBill_five_five>
                                             </h:panelGroup>
                                         </h:panelGroup>  
 
@@ -195,7 +195,7 @@
                     </p:panel>
 
                     <!--                    <h:panelGroup id="gpBillPreview" >
-                                            <ph:issueBill bill="#{pharmacyBillSearch.bill}" duplicate="true" />
+                                            <ph:issueBill bill="#{pharmacyBillSearch.bill}" showPositiveDiscount="true" duplicate="true" />
                                         </h:panelGroup>-->
 
 <!--                    <h:panelGroup id="gpBillPreviewFiveFive" rendered="#{sessionController.loggedPreference.pharmacyBillPaperType eq 'FiveFivePaper'}"> 

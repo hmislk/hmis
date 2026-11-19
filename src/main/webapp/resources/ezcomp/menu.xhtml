@@ -562,6 +562,14 @@
 
                         <p:menuitem
                             ajax="false"
+                            action="#{wardPharmacyBhtIssueReceiveController.openPendingList}"
+                            value="Receive Medicines from Pharmacy"
+                            icon="fa fa-truck-medical"
+                            rendered="#{webUserController.hasPrivilege('InwardPharmacyBhtReceive')}">
+                        </p:menuitem>
+
+                        <p:menuitem
+                            ajax="false"
                             action="/inward/pharmacy_bill_issue_bht?faces-redirect=true"
                             value="Direct Issue to BHTs"
                             icon="fa fa-capsules"
@@ -1112,6 +1120,12 @@
                                      value="BHT Issue Requests" icon="fas fa-clipboard-list"
                                      actionListener="#{pharmacySaleBhtController.resetAll()}"
                                      rendered="#{webUserController.hasPrivilege('PharmacyBhtIssueRequest')}" />
+                        <p:menuitem
+                            ajax="false"
+                            action="#{wardPharmacyBhtIssueReceiveController.openPendingList}"
+                            value="Receive Medicines from Pharmacy"
+                            icon="fa fa-truck-medical"
+                            rendered="#{webUserController.hasPrivilege('InwardPharmacyBhtReceive')}" />
                         <p:menuitem  ajax="false" action="#{inwardReportControllerBht.navigateToInpatientPharmacyRequestedAndIssuedOverviewInPharmacy()}"  value="Pharmacy Requested &amp; Issued Drug Overview" icon="fas fa-list" rendered="#{webUserController.hasPrivilege('PharmacySummaryViews')}" ></p:menuitem>
 
                         <p:menuitem  ajax="false" action="#{searchController.navigateToInpatientDirectIssuesByBill()}"

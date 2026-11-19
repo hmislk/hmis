@@ -631,6 +631,16 @@
                                 </div>
                                 <div class="col-6">
                                     <p:commandButton
+                                        id="btnReceiveMedicinesFromPharmacyInpatient"
+                                        value="Receive Medicines from Pharmacy"
+                                        ajax="false"
+                                        action="#{wardPharmacyBhtIssueReceiveController.navigateToPendingListForAdmission(admissionController.current)}"
+                                        icon="fa fa-truck-medical"
+                                        rendered="#{webUserController.hasPrivilege('InwardPharmacyBhtReceive')}"
+                                        class="w-100"/>
+                                </div>
+                                <div class="col-6">
+                                    <p:commandButton
                                         value="View Pharmacy Requests"
                                         action="#{admissionController.navigateToSearchInwardBills}"
                                         rendered="#{webUserController.hasPrivilege('InwardPharmacyIssueRequestSearch')}"

@@ -224,11 +224,11 @@
                                     <h:panelGroup   id="gpBillPreview" class="mt-2"> 
 
                                         <h:panelGroup   id="gpBillPreviewSingle" rendered="#{sessionController.departmentPreference.pharmacyBillPaperType eq 'PosPaper'}">
-                                            <ph:issueBill bill="#{pharmacyBillSearch.bill}" duplicate="true" />
+                                            <ph:issueBill bill="#{pharmacyBillSearch.bill}" showPositiveDiscount="true" duplicate="true" />
                                         </h:panelGroup>
 
                                         <h:panelGroup id="gpBillPreviewFiveFive" rendered="#{sessionController.departmentPreference.pharmacyBillPaperType eq 'FiveFivePaper'}"> 
-                                            <phi:saleBill_five_five bill="#{pharmacyBillSearch.bill}"></phi:saleBill_five_five>
+                                            <phi:saleBill_five_five bill="#{pharmacyBillSearch.bill}" showPositiveDiscount="true"></phi:saleBill_five_five>
                                         </h:panelGroup>        
 
                                         <h:panelGroup id="gpBillPreviewFiveFiveCustom3" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Inward Direct Issue Bill is FiveFiveCustom3',true)}"> 

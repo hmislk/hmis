@@ -229,7 +229,7 @@
                                     </h:outputLabel>
                                 </td>
                                 <td>
-                                    <h:outputLabel class="itemsBlockRightFiveFive"    value="#{-bip.pharmaceuticalBillItem.qty}"     style="text-align: right;" >
+                                    <h:outputLabel class="itemsBlockRightFiveFive"    value="#{bip.pharmaceuticalBillItem.qty lt 0 ? -bip.pharmaceuticalBillItem.qty : bip.pharmaceuticalBillItem.qty}"     style="text-align: right;" >
                                         <f:convertNumber integerOnly="true" />
                                     </h:outputLabel>
                                 </td>
@@ -295,7 +295,7 @@
                                 <h:outputLabel  rendered="#{cc.attrs.bill.discount ne 0.0}" value="Discount " style="font-weight: bolder!important;"/>
                             </td>
                             <td  class="totalsBlock" style="text-align: right!important; ; padding-right: 30px;">
-                                <h:outputLabel rendered="#{cc.attrs.bill.discount ne 0.0}"   value="#{-cc.attrs.bill.discount}" style="font-weight: bolder!important;" >
+                                <h:outputLabel rendered="#{cc.attrs.bill.discount ne 0.0}"   value="#{cc.attrs.bill.discount lt 0 ? -cc.attrs.bill.discount : cc.attrs.bill.discount}" style="font-weight: bolder!important;" >
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
                             </td>
