@@ -1,5 +1,5 @@
 {
-  "version": "v2.21.0",
+  "version": "v2.22.0",
   "description": "Add BILLFEE.COLLECTEDBYDOCTORATBILLING (fee collected by the doctor at billing)",
   "issue": "#17490 - Inward professional fee collected by the doctor",
   "author": "Dr M H B Ariyaratne",

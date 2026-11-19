@@ -1,4 +1,4 @@
--- Migration v2.21.0: Add BILLFEE.COLLECTEDBYDOCTORATBILLING
+-- Migration v2.22.0: Add BILLFEE.COLLECTEDBYDOCTORATBILLING
 -- Issue: #17490 - Inward professional fee "Collected by Doctor" at billing
 --
 -- BillFee gains a boolean COLLECTEDBYDOCTORATBILLING, set only by the "Collected by Doctor"
@@ -15,7 +15,7 @@
 -- UNIVERSAL: detects actual table-name case via INFORMATION_SCHEMA so this works on both
 -- case-sensitive (Linux, lower_case_table_names=0) and case-insensitive (Windows/Azure) MySQL.
 
-SELECT 'Migration v2.21.0 - Add BILLFEE.COLLECTEDBYDOCTORATBILLING' AS status;
+SELECT 'Migration v2.22.0 - Add BILLFEE.COLLECTEDBYDOCTORATBILLING' AS status;
 
 SET @billfee_table = (
     SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES
@@ -32,7 +32,7 @@ SET @has_col = (
 );
 
 SET @sql = IF(@billfee_table IS NULL,
-    -- BILLFEE missing: run an ALTER that must fail, so the runner records FAILED and v2.21.0
+    -- BILLFEE missing: run an ALTER that must fail, so the runner records FAILED and v2.22.0
     -- stays pending (the runner ignores SELECT output, so a status row would count as success).
     'ALTER TABLE BILLFEE ADD COLUMN COLLECTEDBYDOCTORATBILLING TINYINT(1) NOT NULL DEFAULT 0',
     IF(@has_col > 0,
@@ -42,4 +42,4 @@ SET @sql = IF(@billfee_table IS NULL,
 );
 PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
 
-SELECT 'Migration v2.21.0 complete' AS status;
+SELECT 'Migration v2.22.0 complete' AS status;

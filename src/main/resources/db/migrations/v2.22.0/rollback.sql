@@ -1,4 +1,4 @@
--- Rollback v2.21.0: drop BILLFEE.COLLECTEDBYDOCTORATBILLING
+-- Rollback v2.22.0: drop BILLFEE.COLLECTEDBYDOCTORATBILLING
 -- Idempotent and case-insensitive: only drops what exists. The flag values are lost.
 --
 -- DEPLOY ORDER: stop every instance that maps BILLFEE.COLLECTEDBYDOCTORATBILLING (the current
@@ -25,4 +25,4 @@ SET @sql = IF(@billfee_table IS NOT NULL AND @col IS NOT NULL,
 );
 PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
 
-SELECT 'Rollback v2.21.0 complete' AS status;
+SELECT 'Rollback v2.22.0 complete' AS status;
