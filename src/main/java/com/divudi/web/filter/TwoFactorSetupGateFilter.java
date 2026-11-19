@@ -17,11 +17,11 @@ import javax.servlet.http.HttpServletResponse;
 /**
  * Server-side hold for a user who must set up two-factor login before using
  * anything else (see TwoFactorAuthController#isSetupRequiredNow). While the
- * hold lasts, every page request except the set-up page, the login page and
- * the logout page is turned away, whatever template the page uses and
- * whether it is a normal or an AJAX request. The templates also show only
- * the set-up screen; this filter makes the hold hold for pages that do not
- * use them.
+ * hold lasts, every page request (any /faces/ path or .xhtml) except the
+ * set-up page, the login page, the logout page and page resources is turned
+ * away, whatever template the page uses and whether it is a normal or an
+ * AJAX request. If the check itself fails, the request is turned away too
+ * (the hold fails closed). The templates also show only the set-up screen.
  */
 public class TwoFactorSetupGateFilter implements Filter {
 
@@ -54,20 +54,22 @@ public class TwoFactorSetupGateFilter implements Filter {
     }
 
     private static boolean isPageRequest(HttpServletRequest request) {
-        return pathOf(request).endsWith(".xhtml");
+        String path = request.getServletPath() + (request.getPathInfo() == null ? "" : request.getPathInfo());
+        return path.startsWith("/faces/") || path.endsWith(".xhtml");
     }
 
     private static boolean isAllowed(String path) {
-        return SETUP_PAGE.equals(path) || "/index.xhtml".equals(path) || "/logout.xhtml".equals(path);
+        return SETUP_PAGE.equals(path) || "/index.xhtml".equals(path) || "/logout.xhtml".equals(path)
+                || path.startsWith("/javax.faces.resource/") || path.startsWith("/resources/");
     }
 
     private static boolean isHeld() {
         try {
             return CDI.current().select(TwoFactorAuthController.class).get().isSetupRequiredNow();
         } catch (RuntimeException e) {
-            // Never take the whole site down because the check failed; the templates still hold the user
-            LOGGER.log(Level.WARNING, "Two-factor set-up gate check failed", e);
-            return false;
+            // Fail closed: a check that cannot be made is treated as "held"
+            LOGGER.log(Level.SEVERE, "Two-factor set-up gate check failed; request turned away", e);
+            return true;
         }
     }
 
