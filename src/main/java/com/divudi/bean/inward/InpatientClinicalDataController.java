@@ -900,7 +900,7 @@ public class InpatientClinicalDataController implements Serializable {
                 .replace("{patient_name}", escapeHtmlText(name))
                 .replace("{patient_age}", escapeHtmlText(age))
                 .replace("{patient_sex}", escapeHtmlText(sex));
-        return output;
+        return CardHtmlSanitizer.sanitize(output);
 
     }
 
