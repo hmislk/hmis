@@ -376,6 +376,15 @@ WHERE table_schema='<db>' AND table_name <> UPPER(table_name);
 
 Pipe its output back into `mysql <db>`.
 
+### 2.7 — Two-factor clone step (MUST, every restore)
+
+A restored production copy carries the two-factor switches, encrypted authenticator
+secrets and verified mobile numbers, none of which work (or belong) on this machine:
+the secrets need the production server's key. Run the SQL step in
+[Two-factor login: server key, restore and clone safety](../../../developer_docs/deployment/two-factor-login-server-setup.md#clone-safety-one-sql-step-after-restoring-or-copying-a-database)
+against the restored DB, then **restart Payara** (raw SQL on `CONFIGOPTION` is not
+seen by the cached options until restart; this is already part of the Phase 3 restart).
+
 ---
 
 ## Phase 3 — Report
