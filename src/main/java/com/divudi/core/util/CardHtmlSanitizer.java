@@ -23,7 +23,10 @@ public final class CardHtmlSanitizer {
                 .addTags("s", "hr", "font", "center")
                 .addAttributes(":all", "style", "class", "align")
                 .addAttributes("font", "color", "size", "face")
-                .addAttributes("table", "border", "cellpadding", "cellspacing")
+                .addAttributes("table", "border", "cellpadding", "cellspacing", "bgcolor", "height")
+                .addAttributes("tr", "bgcolor", "valign", "height")
+                .addAttributes("td", "bgcolor", "valign", "height")
+                .addAttributes("th", "bgcolor", "valign", "height")
                 .addProtocols("img", "src", "data")
                 .preserveRelativeLinks(true);
     }

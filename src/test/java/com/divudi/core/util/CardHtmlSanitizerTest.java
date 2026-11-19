@@ -12,13 +12,15 @@ class CardHtmlSanitizerTest {
     void keepsFormattingAndImages() {
         String out = CardHtmlSanitizer.sanitize("<p class=\"ql-align-center\"><strong>Card ශ්‍රී</strong></p>"
                 + "<img src=\"/rh/resources/logo.png\"><img src=\"data:image/png;base64,AAA\">"
-                + "<table border=\"1\"><tr><td style=\"width:50%\">x</td></tr></table>");
+                + "<table border=\"1\"><tr><td style=\"width:50%\" bgcolor=\"#eee\" valign=\"top\" height=\"20\">x</td></tr></table>");
         assertTrue(out.contains("class=\"ql-align-center\""));
         assertTrue(out.contains("ශ්‍රී"));
         assertTrue(out.contains("src=\"/rh/resources/logo.png\""));
         assertTrue(out.contains("src=\"data:image/png;base64,AAA\""));
         assertTrue(out.contains("border=\"1\""));
         assertTrue(out.contains("style=\"width:50%\""));
+        assertTrue(out.contains("bgcolor=\"#eee\""));
+        assertTrue(out.contains("valign=\"top\""));
     }
 
     @Test
