@@ -70,6 +70,8 @@ public class TwoFactorAuthController implements Serializable {
     public static final String EVENT_MOBILE_RESET = "2FA Mobile Reset";
     public static final String EVENT_SMS_ALLOWED_ON = "2FA SMS Code Allowed";
     public static final String EVENT_SMS_ALLOWED_OFF = "2FA SMS Code Not Allowed";
+    public static final String EVENT_SETUP_PROOF_VERIFIED = "2FA Setup SMS Check Passed";
+    public static final String EVENT_SETUP_PROOF_FAILED = "2FA Setup SMS Check Failed";
     private static final int AUTH_LOG_LIMIT = 15;
 
     @EJB
@@ -93,8 +95,6 @@ public class TwoFactorAuthController implements Serializable {
     // Shown on the login card when the account is locked (a growl disappears too quickly)
     private boolean accountLockedNotice;
     private String lockedUserName;
-    // Plain secret shown during first-time setup; saved only after a code confirms it
-    private String setupSecret;
     private String code;
 
     // Self-service setup / reset from the user's menu
@@ -104,6 +104,10 @@ public class TwoFactorAuthController implements Serializable {
     private int selfSetupFailedAttempts;
     // Set when a required setup is confirmed; the user must log out and sign in again with a code
     private boolean reloginRequired;
+    // This session's login passed a second step (app or SMS code)
+    private boolean secondFactorVerified;
+    // A code sent to the staff-record mobile was entered in this session (see TwoFactorSmsController)
+    private boolean setupProofed;
 
     // Authentication log popup on Manage User
     private List<AuditEvent> authLogs;
@@ -131,7 +135,7 @@ public class TwoFactorAuthController implements Serializable {
         if (u == null || !isTwoFactorEnabled()) {
             return false;
         }
-        return u.isTwoFactorEnrolled() || isSmsUsableFor(u) || isFirstSmsLoginPossibleFor(u);
+        return isAppLinked(u) || isSmsUsableFor(u) || isFirstSmsLoginPossibleFor(u);
     }
 
     /**
@@ -192,6 +196,10 @@ public class TwoFactorAuthController implements Serializable {
     public void resetForNewLogin() {
         clearChallenge();
         reloginRequired = false;
+        secondFactorVerified = false;
+        setupProofed = false;
+        twoFactorSmsController.cancelSetupProof();
+        twoFactorSmsController.cancelMobileVerification();
         selfSetupSecret = null;
         selfSetupCode = null;
         selfSetupFailedAttempts = 0;
@@ -205,17 +213,18 @@ public class TwoFactorAuthController implements Serializable {
         reloginRequired = true;
     }
 
+    /**
+     * Opens the code screen for a user whose password is accepted. No QR
+     * code is ever shown here: a password alone must not be enough to link
+     * an app. A user without a linked app logs in by SMS (to the staff-record
+     * mobile) and links the app later from My Authenticator App.
+     */
     public void startChallenge(WebUser u) {
         pendingUserId = u.getId();
         pendingUserName = u.getName();
         code = null;
         boolean appLinked = isAppLinked(u);
         boolean smsUsable = isSmsUsableFor(u);
-        if (!appLinked && !smsUsable) {
-            setupSecret = TotpUtil.generateSecret();
-        } else {
-            setupSecret = null;
-        }
         // Allowed SMS but no verified mobile yet: the mobile is set up on this screen
         boolean mobileSetup = !smsUsable && isFirstSmsLoginPossibleFor(u);
         twoFactorSmsController.startChallenge(appLinked, smsUsable, mobileSetup);
@@ -226,34 +235,19 @@ public class TwoFactorAuthController implements Serializable {
         if (u == null) {
             return "";
         }
-        boolean enrolling = setupSecret != null;
-        if (!enrolling && (!u.isTwoFactorEnrolled() || u.getTwoFactorSecret() == null)) {
+        if (!isAppLinked(u)) {
             code = null;
             JsfUtil.addErrorMessage("No authenticator app is linked to your account. Use the SMS code instead.");
             return "";
         }
-        if (enrolling && !TwoFactorSecretCipher.isKeyConfigured()) {
-            code = null;
-            JsfUtil.addErrorMessage(KEY_MISSING_MESSAGE);
-            return "";
-        }
-        String secret = enrolling ? setupSecret : decryptSecret(u.getTwoFactorSecret());
-        long step = TotpUtil.verify(secret, code, enrolling ? null : u.getTwoFactorLastUsedStep());
+        String secret = decryptSecret(u.getTwoFactorSecret());
+        long step = TotpUtil.verify(secret, code, u.getTwoFactorLastUsedStep());
         code = null;
         if (step < 0) {
             recordFailedSecondFactor(u, EVENT_LOGIN_FAILED, "Invalid authenticator code.");
             return "";
         }
-        if (enrolling) {
-            String stored = TwoFactorSecretCipher.encrypt(setupSecret);
-            if (stored == null) {
-                JsfUtil.addErrorMessage(KEY_MISSING_MESSAGE);
-                return "";
-            }
-            u.setTwoFactorSecret(stored);
-            u.setTwoFactorEnrolled(true);
-            u.setTwoFactorEnrolledAt(new Date());
-        } else if (!TwoFactorSecretCipher.isCurrentFormat(u.getTwoFactorSecret())) {
+        if (!TwoFactorSecretCipher.isCurrentFormat(u.getTwoFactorSecret())) {
             // Saved by the older scheme: store it again under this server's key (saved by completeLoginAfterSecondFactor)
             String stored = TwoFactorSecretCipher.encrypt(secret);
             if (stored != null) {
@@ -261,7 +255,7 @@ public class TwoFactorAuthController implements Serializable {
             }
         }
         u.setTwoFactorLastUsedStep(step);
-        return completeLoginAfterSecondFactor(u, enrolling ? EVENT_FIRST_LOGIN_SETUP : EVENT_LOGIN_SUCCESS);
+        return completeLoginAfterSecondFactor(u, EVENT_LOGIN_SUCCESS);
     }
 
     /**
@@ -326,6 +320,7 @@ public class TwoFactorAuthController implements Serializable {
         reloginRequired = false;
         String outcome = sessionController.completeTwoFactorLogin(u, channeling);
         if (outcome != null && !outcome.isEmpty()) {
+            secondFactorVerified = true;
             logTwoFactorEvent(u, u, auditTrigger);
         }
         return outcome;
@@ -347,7 +342,6 @@ public class TwoFactorAuthController implements Serializable {
     private void clearChallenge() {
         pendingUserId = null;
         pendingUserName = null;
-        setupSecret = null;
         code = null;
         channelingTabView = false;
         twoFactorSmsController.clear();
@@ -357,16 +351,21 @@ public class TwoFactorAuthController implements Serializable {
         return pendingUserId != null;
     }
 
-    public boolean isEnrollmentNeeded() {
-        return setupSecret != null;
+    /**
+     * Whether this session may link an authenticator app: its login passed a
+     * second step, or a code sent to the staff-record mobile was entered.
+     * A password alone is never enough.
+     */
+    public boolean isSetupProofSatisfied() {
+        return secondFactorVerified || setupProofed;
     }
 
-    public String getSetupQrSvg() {
-        return qrSvg(setupSecret, pendingUserName);
-    }
-
-    public String getSetupSecretForDisplay() {
-        return TotpUtil.formatSecretForDisplay(setupSecret);
+    /**
+     * Called by TwoFactorSmsController when a code sent to the staff-record
+     * mobile is entered correctly.
+     */
+    public void markSetupProofed() {
+        setupProofed = true;
     }
 
     // <editor-fold defaultstate="collapsed" desc="Self-service setup / reset">
@@ -387,6 +386,11 @@ public class TwoFactorAuthController implements Serializable {
             JsfUtil.addErrorMessage(KEY_MISSING_MESSAGE);
             return;
         }
+        if (!isSetupProofSatisfied()) {
+            // Password-only session: first a code to the staff-record mobile; a correct code calls this again
+            twoFactorSmsController.startSetupProof();
+            return;
+        }
         selfSetupSecret = TotpUtil.generateSecret();
         selfSetupCode = null;
         selfSetupFailedAttempts = 0;
@@ -400,7 +404,8 @@ public class TwoFactorAuthController implements Serializable {
 
     public String confirmSelfSetup() {
         WebUser u = loggedUserFromDb();
-        if (u == null || selfSetupSecret == null) {
+        if (u == null || selfSetupSecret == null || !isSetupProofSatisfied()) {
+            selfSetupSecret = null;
             JsfUtil.addErrorMessage("Start the setup again.");
             return null;
         }
