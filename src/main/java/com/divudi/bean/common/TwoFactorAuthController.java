@@ -1,5 +1,6 @@
 package com.divudi.bean.common;
 
+import com.divudi.core.data.Privileges;
 import com.divudi.core.entity.AuditEvent;
 import com.divudi.core.entity.WebUser;
 import com.divudi.core.facade.AuditEventFacade;
@@ -87,6 +88,8 @@ public class TwoFactorAuthController implements Serializable {
     private ConfigOptionApplicationController configOptionApplicationController;
     @Inject
     private TwoFactorSmsController twoFactorSmsController;
+    @Inject
+    private WebUserController webUserController;
 
     // Login challenge state (password already verified, code pending)
     private Long pendingUserId;
@@ -484,6 +487,9 @@ public class TwoFactorAuthController implements Serializable {
      * user sets it up again at the next login.
      */
     public void resetAuthenticator(WebUser user) {
+        if (!hasUserManagementPrivilege()) {
+            return;
+        }
         if (user == null || user.getId() == null) {
             JsfUtil.addErrorMessage("Select a user");
             return;
@@ -509,6 +515,9 @@ public class TwoFactorAuthController implements Serializable {
      * authenticator codes.
      */
     public void unlockAccount(WebUser user) {
+        if (!hasUserManagementPrivilege()) {
+            return;
+        }
         if (user == null || user.getId() == null) {
             JsfUtil.addErrorMessage("Select a user");
             return;
@@ -529,6 +538,9 @@ public class TwoFactorAuthController implements Serializable {
      * Authenticator App.
      */
     public void resetSmsMobile(WebUser user) {
+        if (!hasUserManagementPrivilege()) {
+            return;
+        }
         if (user == null || user.getId() == null) {
             JsfUtil.addErrorMessage("Select a user");
             return;
@@ -548,6 +560,18 @@ public class TwoFactorAuthController implements Serializable {
             copyEnrollment(u, lu);
         }
         JsfUtil.addSuccessMessage("Verified mobile removed. The user must verify a mobile number again to use SMS codes.");
+    }
+
+    /**
+     * Server-side check for the admin 2FA actions. Manage User is reached
+     * only with this privilege, but an action can be posted without the menu.
+     */
+    public boolean hasUserManagementPrivilege() {
+        if (webUserController.hasPrivilege(Privileges.AdminManagingUsers.name())) {
+            return true;
+        }
+        JsfUtil.addErrorMessage("You do not have the privilege to manage users.");
+        return false;
     }
 
     // <editor-fold defaultstate="collapsed" desc="Audit log">
