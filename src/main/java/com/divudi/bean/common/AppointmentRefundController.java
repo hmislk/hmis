@@ -135,6 +135,11 @@ public class AppointmentRefundController implements Serializable {
             return "";
         }
 
+        if (bill.getTotal() <= 0) {
+            JsfUtil.addErrorMessage("This appointment was booked without a payment, so there is nothing to refund.");
+            return "";
+        }
+
         if (bill.isRefunded()) {
             JsfUtil.addErrorMessage("This bill has already been refunded.");
             return "";

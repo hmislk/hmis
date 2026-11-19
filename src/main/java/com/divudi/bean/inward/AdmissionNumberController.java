@@ -70,7 +70,11 @@ public class AdmissionNumberController implements Serializable {
         if (an.getAdmissionTypeEnum() != null) {
             return an.getAdmissionTypeEnum().name();
         }
-        return "General";
+        return "Not set to a type (legacy or shared series)";
+    }
+
+    public String getYearLabel(AdmissionNumber an) {
+        return an.getCounterYear() != null ? an.getCounterYear().toString() : "All years";
     }
 
     public long getNextBht(AdmissionNumber an) {

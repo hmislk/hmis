@@ -9,6 +9,7 @@ import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.pharmacy.BhtIssueReturnController;
 import com.divudi.core.data.BillType;
+import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.FeeType;
 import com.divudi.core.data.PaymentMethod;
 import com.divudi.core.data.inward.InwardChargeType;
@@ -494,6 +495,10 @@ public class BhtSummeryFinalizedController implements Serializable {
                 if (bi.getInwardChargeType() == InwardChargeType.VAT || bi.getInwardChargeType() == InwardChargeType.HospitalSupportService) {
                     vat += bi.getNetValue();
                 }
+                // Computed VAT line (#25766): amount is on the item; Bill.vat is not read here.
+                if (bi.getInwardChargeType() == InwardChargeType.ComputedVAT) {
+                    vat += bi.getVat();
+                }
                 if (bi.getInwardChargeType() == InwardChargeType.Medicine) {
                     med += bi.getNetValue();
                 }
@@ -504,6 +509,7 @@ public class BhtSummeryFinalizedController implements Serializable {
                 if (bi.getInwardChargeType() != InwardChargeType.ProfessionalCharge && bi.getInwardChargeType() != InwardChargeType.DoctorAndNurses
                         && bi.getInwardChargeType() != InwardChargeType.TechnicianAndParamedicalCharge
                         && bi.getInwardChargeType() != InwardChargeType.Medicine && bi.getInwardChargeType() != InwardChargeType.VAT
+                        && bi.getInwardChargeType() != InwardChargeType.ComputedVAT
                         && bi.getInwardChargeType() != InwardChargeType.RoomCharges
                         && bi.getInwardChargeType() != InwardChargeType.HospitalSupportService) {
                     hos += bi.getNetValue();
@@ -785,6 +791,58 @@ public class BhtSummeryFinalizedController implements Serializable {
 
     public void setPatientEncounter(PatientEncounter patientEncounter) {
         this.patientEncounter = patientEncounter;
+        loadPaidFigures();
+    }
+
+    private double ccPaid;
+    private double patientPaid;
+
+    /**
+     * Loads the company paid and patient paid figures once, when the admission
+     * is set (#25601). Company paid is the sum of the non-cancelled commitment
+     * bills' settledAmountBySponsor, or the final bill's own figure when there
+     * are none. Patient paid is the non-Credit inward payment bills (signed),
+     * the same rule as the Inward Due Search pages.
+     */
+    private void loadPaidFigures() {
+        ccPaid = 0.0;
+        patientPaid = 0.0;
+        if (patientEncounter == null || patientEncounter.getId() == null) {
+            return;
+        }
+        Bill fb = patientEncounter.getFinalBill();
+        if (fb != null && fb.getId() != null) {
+            Map<String, Object> m = new HashMap<>();
+            m.put("bta", BillTypeAtomic.INWARD_FINAL_BILL_PAYMENT_BY_CREDIT_COMPANY);
+            m.put("fbId", fb.getId());
+            List<Object[]> rows = billfacade.findAggregates(
+                    "SELECT COUNT(c), SUM(c.settledAmountBySponsor) FROM Bill c"
+                    + " WHERE c.billTypeAtomic = :bta AND c.referenceBill.id = :fbId"
+                    + " AND c.cancelled = false AND c.retired = false", m);
+            if (rows != null && !rows.isEmpty() && ((Number) rows.get(0)[0]).longValue() > 0) {
+                ccPaid = rows.get(0)[1] == null ? 0.0 : ((Number) rows.get(0)[1]).doubleValue();
+            } else {
+                ccPaid = fb.getSettledAmountBySponsor();
+            }
+        }
+        Map<String, Object> m2 = new HashMap<>();
+        m2.put("btp", BillType.InwardPaymentBill);
+        m2.put("pm", PaymentMethod.Credit);
+        m2.put("peId", patientEncounter.getId());
+        List<Object[]> rows2 = billfacade.findAggregates(
+                "SELECT SUM(b.netTotal), COUNT(b) FROM Bill b WHERE b.retired = false AND b.billType = :btp"
+                + " AND b.paymentMethod <> :pm AND b.patientEncounter.id = :peId", m2);
+        if (rows2 != null && !rows2.isEmpty() && rows2.get(0) != null && rows2.get(0)[0] != null) {
+            patientPaid = Math.max(0.0, ((Number) rows2.get(0)[0]).doubleValue());
+        }
+    }
+
+    public double getCcPaidAmount() {
+        return ccPaid;
+    }
+
+    public double getPatientPaidAmount() {
+        return patientPaid;
     }
 
     public List<BillFee> getBillFees() {
@@ -797,6 +855,7 @@ public class BhtSummeryFinalizedController implements Serializable {
 
     public void makeNullList() {
         patientRooms = null;
+        chargeTypeTotals = null;
         billItems = null;
         proBillFee = null;
         assistBillFee = null;
@@ -815,6 +874,8 @@ public class BhtSummeryFinalizedController implements Serializable {
 
     public void makeNull() {
         patientEncounter = null;
+        ccPaid = 0.0;
+        patientPaid = 0.0;
         activeBackButton = false;
         makeNullList();
     }
@@ -835,6 +896,7 @@ public class BhtSummeryFinalizedController implements Serializable {
         List<PatientEncounter> cpts = getInwardBean().fetchChildPatientEncounter(patientEncounter);
         makeNullList();
         patientRooms = getInwardBean().fetchPatientRoomAll(getPatientEncounter(),cpts);
+        chargeTypeTotals = createChargeTypeTotals();
         billItems = getInwardBean().fetchEagerBillItems(getPatientEncounter());
         billFees = getInwardBean().fetchBillFees(getPatientEncounter());
         patientItems = getInwardBean().fetchPatientItem(getPatientEncounter(),cpts);
@@ -857,6 +919,93 @@ public class BhtSummeryFinalizedController implements Serializable {
             creditCompanyCommittedPaidTotal += c.getSettledAmountBySponsor();
         }
 
+    }
+
+    /**
+     * One row of the "Charge Type Totals" table: a final-bill heading and its total.
+     */
+    public static class ChargeTypeTotal implements java.io.Serializable {
+
+        private final String heading;
+        private final double total;
+
+        public ChargeTypeTotal(String heading, double total) {
+            this.heading = heading;
+            this.total = total;
+        }
+
+        public String getHeading() {
+            return heading;
+        }
+
+        public double getTotal() {
+            return total;
+        }
+    }
+
+    @Inject
+    private com.divudi.bean.common.ConfigOptionApplicationController configOptionApplicationController;
+    @Inject
+    private com.divudi.bean.common.ConfigOptionController configOptionController;
+
+    private List<ChargeTypeTotal> chargeTypeTotals;
+    private double finalBillDiscount;
+    private double finalBillNetTotal;
+
+    /**
+     * Headings and totals read from the settled final bill itself (its bill
+     * items hold the amount each heading printed, margin included), grouped and
+     * named the way the final bill prints them: the Final Bill label, and the
+     * Final Bill Group when "Inward Final Bill - Bundle Grouped Charge Types" is
+     * on. Uses {@link BhtSummeryController#buildBundledRows}, the same row
+     * builder as the bundled final bill (issue #17560).
+     */
+    private List<ChargeTypeTotal> createChargeTypeTotals() {
+        List<ChargeTypeTotal> rows = new ArrayList<>();
+        finalBillDiscount = 0.0;
+        finalBillNetTotal = 0.0;
+        if (getPatientEncounter() == null) {
+            return rows;
+        }
+        Bill finalBill = getPatientEncounter().getFinalBill();
+        if (finalBill == null) {
+            return rows;
+        }
+        finalBillDiscount = finalBill.getDiscount();
+        finalBillNetTotal = finalBill.getNetTotal();
+        List<BillItem> items = finalBill.getBillItems();
+        if (items == null) {
+            return rows;
+        }
+        boolean bundled = configOptionController.getBooleanValueByKeyReadOnly("Inward Final Bill - Bundle Grouped Charge Types", false);
+        Map<InwardChargeType, String> groupByType = new java.util.EnumMap<>(InwardChargeType.class);
+        Map<InwardChargeType, Integer> orderByType = new java.util.EnumMap<>(InwardChargeType.class);
+        Map<InwardChargeType, String> labelByType = new java.util.EnumMap<>(InwardChargeType.class);
+        for (BillItem bi : items) {
+            InwardChargeType type = bi == null ? null : bi.getInwardChargeType();
+            if (type == null || groupByType.containsKey(type)) {
+                continue;
+            }
+            groupByType.put(type, bundled ? configOptionApplicationController.getInwardChargeTypeFinalBillGroup(type) : "");
+            orderByType.put(type, configOptionApplicationController.getInwardChargeTypeFinalBillOrder(type));
+            labelByType.put(type, configOptionApplicationController.getInwardChargeTypeFinalBillLabel(type));
+        }
+        for (com.divudi.core.data.dto.FinalBillPrintRowDTO r : BhtSummeryController.buildBundledRows(items, groupByType, orderByType, labelByType)) {
+            rows.add(new ChargeTypeTotal(r.getLabel(), r.getAmount()));
+        }
+        return rows;
+    }
+
+    public double getFinalBillDiscount() {
+        return finalBillDiscount;
+    }
+
+    public double getFinalBillNetTotal() {
+        return finalBillNetTotal;
+    }
+
+    public List<ChargeTypeTotal> getChargeTypeTotals() {
+        return chargeTypeTotals;
     }
 
     /**

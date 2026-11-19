@@ -206,6 +206,49 @@ production bill numbers, schema names and data-fix steps out of it — those go
 to the developer directly or in `tmp/`. See
 [What May Go Into a GitHub Issue, PR, or Comment](../../../developer_docs/git/github-public-content-policy.md).
 
+## Step 7a — Plan the Merge Window (Several Hotfix PRs)
+
+Merging is the user's call (or a `scheduled-pr-merge` job they approved).
+When you plan or schedule several hotfix merges for one window:
+
+- **Stagger merges whose apps share a VM.** Each deploy restarts an app on
+  Payara and loads the whole VM. Look up each branch's VM in the
+  [Deployment map](../../../developer_docs/deployment/ci-cd-pipeline-overview.md)
+  (VM column) and give apps on the same VM separate slots, at least 30
+  minutes apart. Apps on different VMs may share a slot. The staging VM
+  counts too: its apps are live.
+- **One merge per deploy branch per window.** The second PR to the same
+  branch keeps a red `single-deploy-pr` status after the first merges, until
+  the `single_deploy_pr_sweep` workflow re-runs (every 15 minutes), and a
+  scheduled merge of it can stop on that status. Put both fixes in one PR
+  (Step 1a). If two PRs already exist, give the second a slot at least 20
+  minutes after the first, and before it merges confirm its
+  `single-deploy-pr` status is green; if not, run the sweep by hand
+  (`gh workflow run single_deploy_pr_sweep.yml`) and wait for green.
+
+## Step 7b — Verify the Deploy Run
+
+After each merge, check the deploy run's result. A login page that loads
+proves nothing: it can be the old WAR still running.
+
+```bash
+gh run list --branch $0 --workflow <workflow file> --limit 3 --json databaseId,headSha,status,conclusion,createdAt
+```
+
+- `<workflow file>` is the branch's deploy workflow from the deployment map
+  (e.g. `coop_production_ci_cd.yml`); without it the list mixes in other
+  workflows. The newest deploy run's `headSha` must be the merge commit, `status` must be
+  `completed` and `conclusion` must be `success`.
+- `failure` / `cancelled`: open the log (`gh run view <id> --log-failed`),
+  tell the user, and re-run only after you know why (`gh run rerun <id>`).
+  A re-run keeps the same run id; check `attempt`
+  (`gh run view <id> --json attempt`) when you watch for it.
+- No run for the merge commit after a few minutes: there is nothing to re-run.
+  Tell the user; check the branch's workflow trigger and the Actions page
+  before anyone deploys another way.
+- Then do one quick in-app check of the fixed function, starting from the
+  app root.
+
 ## Step 8 — Restore Stashed Work
 
 ```bash

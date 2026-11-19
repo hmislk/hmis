@@ -27,6 +27,9 @@
                         <p:column headerText="Admission Type">
                             <h:outputText value="#{admissionNumberController.getTypeLabel(an)}" />
                         </p:column>
+                        <p:column headerText="Year">
+                            <h:outputText value="#{admissionNumberController.getYearLabel(an)}" />
+                        </p:column>
                         <p:column headerText="Last Used BHT">
                             <h:outputText value="#{an.lastAdmissionNumber}" />
                         </p:column>
@@ -57,6 +60,10 @@
                             <p:outputLabel value="Admission Type" />
                             <p:outputLabel value=": " style="width: 30px; text-align: center;" />
                             <h:outputText value="#{admissionNumberController.getTypeLabel(admissionNumberController.selected)}" />
+
+                            <p:outputLabel value="Year" />
+                            <p:outputLabel value=": " style="width: 30px; text-align: center;" />
+                            <h:outputText value="#{admissionNumberController.getYearLabel(admissionNumberController.selected)}" />
 
                             <p:outputLabel value="Last Used BHT Number"
                                            for="lastBhtInput" />

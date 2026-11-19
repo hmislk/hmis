@@ -986,6 +986,25 @@ public class StaffController implements Serializable {
         return ss;
     }
 
+    /**
+     * Staff for text filters that search by name. When a speciality
+     * name is given only staff of that speciality are listed; when it is
+     * blank, staff of all specialities are listed.
+     */
+    public List<Staff> completeStaffByNameAndSpecialityName(String query, String specialityName) {
+        HashMap hm = new HashMap();
+        String jpql = "select p from Staff p"
+                + " where p.retired=false"
+                + " and (p.person.name) like :q ";
+        hm.put("q", "%" + (query == null ? "" : query.trim().toUpperCase()) + "%");
+        if (specialityName != null && !specialityName.trim().isEmpty()) {
+            jpql += " and p.speciality.name = :sp ";
+            hm.put("sp", specialityName.trim());
+        }
+        jpql += " order by p.person.name";
+        return getFacade().findByJpql(jpql, hm, 50);
+    }
+
     public List<Staff> completeStaffWithoutDoctors(String query) {
         if (query == null || query.trim().isEmpty()) {
             return new ArrayList<>();

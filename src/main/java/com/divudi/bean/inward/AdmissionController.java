@@ -64,11 +64,13 @@ import com.divudi.bean.pharmacy.PharmacyRequestForBhtController;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import com.divudi.core.data.AppointmentStatus;
+import com.divudi.core.data.AppointmentType;
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.clinical.ClinicalFindingValueType;
 import com.divudi.core.data.dto.InwardBillReceiptDTO;
 import com.divudi.core.data.dto.PatientEncounterDto;
+import com.divudi.core.data.dto.PendingAppointmentDTO;
 import com.divudi.core.entity.Area;
 import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Staff;
@@ -297,6 +299,42 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         metadata.addConfigOption(new ConfigOptionInfo(
                 "Generate Separate BHT Number Series for Each Institution",
                 "When enabled, each institution generates its own independent BHT number series with the institution code as a prefix (default false)",
+                "inward/inward_admission",
+                OptionScope.APPLICATION
+        ));
+
+        configOptionApplicationController.getBooleanValueByKey(
+                "BHT Number Series Is Shared Across Admission Types", false);
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "BHT Number Series Is Shared Across Admission Types",
+                "When enabled, all admission types draw BHT numbers from one series (per institution when each institution has its own series); the shared series starts from the highest existing counter so numbers never go lower (default false)",
+                "inward/inward_admission",
+                OptionScope.APPLICATION
+        ));
+
+        configOptionApplicationController.getBooleanValueByKey(
+                "Reset BHT Number Series Every Year", false);
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Reset BHT Number Series Every Year",
+                "When enabled, the BHT number series restarts at 1 each calendar year, e.g. 2026/1, 2026/2, then 2027/1. The first time it is turned on, the first year's series can carry on from the existing lifetime counter (e.g. start at 501 after 500); a later year with no admissions starts at 1. Applies only when the BHT number shows the year (the preference that adds the year, or the year-and-number format); otherwise it is ignored (default false)",
+                "inward/inward_admission",
+                OptionScope.APPLICATION
+        ));
+
+        configOptionApplicationController.getBooleanValueByKey(
+                "BHT Number Shows Only Year And Number", false);
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "BHT Number Shows Only Year And Number",
+                "When enabled, the BHT number is the year and the running number only, e.g. 2026/0001: no admission type code and no BHT prefix (the institution code is still added when each institution has its own series). All admission types then share one series (default false)",
+                "inward/inward_admission",
+                OptionScope.APPLICATION
+        ));
+
+        configOptionApplicationController.getIntegerValueByKey(
+                "BHT Number Minimum Digits", 0);
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "BHT Number Minimum Digits",
+                "Pads the running number of the BHT number with leading zeros to at least this many digits, e.g. 4 gives 0001. 0 means no padding (default 0)",
                 "inward/inward_admission",
                 OptionScope.APPLICATION
         ));
@@ -2053,6 +2091,10 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
 
     public void prepereToAdmitNewPatient() {
         current = null;
+        // A new admission starts with no appointment or reservation carried over from an
+        // earlier Select / "To Admit"; otherwise updateAppointment() would link it. (#25707)
+        appointmentBill = null;
+        currentReservation = null;
         patientRoom = null;
         items = null;
         bhtText = "";
@@ -2068,11 +2110,14 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         encounterCreditCompanies = new ArrayList<>();
         encounterCreditCompany = new EncounterCreditCompany();
         showActiveAdmissionWarning = false;
+        loadPendingAppointments();
         bhtNumberCalculation();
     }
 
     public String toAdmitAMember() {
         patientRoom = null;
+        appointmentBill = null;
+        currentReservation = null;
         items = null;
         bhtText = "";
         ageText = null;
@@ -2613,6 +2658,8 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         Appointment apt = getAppointmentFacade().findFirstByJpql(sql, hm);
         apt.setPatientEncounter(getCurrent());
         getAppointmentFacade().edit(apt);
+        // The admitted appointment must drop off the Admit page list. (#25707)
+        loadPendingAppointments();
 
     }
 
@@ -2656,7 +2703,9 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
                 + " and a.patientEncounter = :enc "
                 + " and a.bill is not null "
                 + " and a.bill.billTypeAtomic = :bta "
-                + " and a.bill.cancelled = false ";
+                + " and a.bill.cancelled = false "
+                // an appointment booked with no payment has no deposit to convert
+                + " and a.bill.total > 0 ";
         HashMap<String, Object> m = new HashMap<>();
         m.put("enc", enc);
         m.put("bta", BillTypeAtomic.INWARD_APPOINTMENT_BILL);
@@ -2853,9 +2902,174 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     }
     // </editor-fold>
 
+    // <editor-fold defaultstate="collapsed" desc="Pending appointments list on the Admit page (#25707)">
+    private List<PendingAppointmentDTO> pendingAppointments;
+    private String pendingAppointmentsGlobalFilter;
+
+    /**
+     * Loads the table shown on the Appointment tab of the Admit page: inward
+     * appointments that are still pending, i.e. not retired or cancelled, bill
+     * not cancelled or refunded, and not yet linked to an admission
+     * ({@code Appointment.patientEncounter}, which {@link #updateAppointment()}
+     * sets when the patient is admitted). Paid state is derived from the
+     * appointment bill total, so unpaid (zero value) appointments are listed.
+     * Called from the navigation methods and after an admission is saved.
+     */
+    public void loadPendingAppointments() {
+        pendingAppointmentsGlobalFilter = null;
+        String jpql = "select new com.divudi.core.data.dto.PendingAppointmentDTO("
+                + " a.id, b.id, a.appointmentNumber, a.appointmentDate, a.appointmentTimeFrom,"
+                + " p.person.title, p.person.name, p.person.mobile, i.name, b.total)"
+                + " from Appointment a"
+                + " join a.bill b"
+                + " join a.patient p"
+                + " left join a.item i"
+                + " where a.retired = false"
+                + " and a.appointmentCancel = false"
+                + " and a.appointmentType = :type"
+                + " and a.status = :status"
+                + " and b.retired = false"
+                + " and b.cancelled = false"
+                + " and b.refunded = false"
+                + " and a.patientEncounter is null"
+                + " order by a.appointmentDate, a.appointmentTimeFrom, a.id";
+        Map<String, Object> m = new HashMap<>();
+        m.put("type", AppointmentType.IP_APPOINTMENT);
+        m.put("status", AppointmentStatus.PENDING);
+        List<PendingAppointmentDTO> list = new ArrayList<>();
+        List<?> rows = getAppointmentFacade().findLightsByJpql(jpql, m, TemporalType.TIMESTAMP);
+        List<Long> appointmentIds = new ArrayList<>();
+        Map<Long, PendingAppointmentDTO> byAppointment = new HashMap<>();
+        for (Object o : rows) {
+            PendingAppointmentDTO d = (PendingAppointmentDTO) o;
+            list.add(d);
+            appointmentIds.add(d.getAppointmentId());
+            byAppointment.put(d.getAppointmentId(), d);
+        }
+        if (!appointmentIds.isEmpty()) {
+            Map<String, Object> rm = new HashMap<>();
+            rm.put("ids", appointmentIds);
+            // Which appointments are room bookings is kept apart from the room name, so a
+            // failed name lookup still labels the row Room (blank name), not Procedure.
+            try {
+                String bj = "select r.appointment.id from Reservation r"
+                        + " where r.retired = false and r.room is not null"
+                        + " and r.appointment.id in :ids";
+                List<?> bookingRows = reservationFacade.findLightsByJpql(bj, rm, TemporalType.TIMESTAMP);
+                for (Object o : bookingRows) {
+                    PendingAppointmentDTO d = byAppointment.get((Long) o);
+                    if (d != null) {
+                        d.setRoomBooking(true);
+                    }
+                }
+            } catch (Exception e) {
+                // Display-only; never let this interrupt the admission save.
+                logger.log(Level.WARNING, "Pending appointments: room booking lookup failed", e);
+            }
+            try {
+                String rj = "select r.appointment.id, r.room.name from Reservation r"
+                        + " where r.retired = false and r.room is not null"
+                        + " and r.appointment.id in :ids";
+                List<Object[]> roomRows = reservationFacade.findObjectsArrayByJpql(rj, rm, TemporalType.TIMESTAMP);
+                for (Object[] r : roomRows) {
+                    PendingAppointmentDTO d = byAppointment.get((Long) r[0]);
+                    if (d != null) {
+                        d.setRoomName((String) r[1]);
+                    }
+                }
+            } catch (Exception e) {
+                logger.log(Level.WARNING, "Pending appointments: room name lookup failed", e);
+            }
+        }
+        pendingAppointments = list;
+    }
+
+    /**
+     * Select button of the pending appointments table: same effect as picking
+     * the appointment bill in the autocomplete ({@link #listnerForAppoimentSelect(Bill)}),
+     * plus the reservation, so the room is pre-filled for room appointments.
+     */
+    public void selectPendingAppointment(Long billId) {
+        if (billId == null) {
+            return;
+        }
+        Bill b = getBillFacade().find(billId);
+        if (b == null) {
+            JsfUtil.addErrorMessage("Appointment not found");
+            return;
+        }
+        // The list is a session-held snapshot: re-check against the database that the
+        // appointment is still pending and not linked to an admission, otherwise
+        // updateAppointment() would move the link away from another admission.
+        String cj = "select count(a) from Appointment a"
+                + " join a.bill b"
+                + " where b.id = :billId"
+                + " and a.retired = false"
+                + " and a.appointmentCancel = false"
+                + " and a.appointmentType = :type"
+                + " and a.status = :status"
+                + " and b.retired = false"
+                + " and b.cancelled = false"
+                + " and b.refunded = false"
+                + " and a.patientEncounter is null";
+        Map<String, Object> cm = new HashMap<>();
+        cm.put("billId", billId);
+        cm.put("type", AppointmentType.IP_APPOINTMENT);
+        cm.put("status", AppointmentStatus.PENDING);
+        long stillPending = getAppointmentFacade().findLongByJpql(cj, cm, TemporalType.TIMESTAMP);
+        if (stillPending == 0L) {
+            JsfUtil.addErrorMessage("This appointment is no longer pending (it was cancelled, refunded, or already admitted). The list has been refreshed.");
+            loadPendingAppointments();
+            return;
+        }
+        String rj = "select r from Reservation r where r.retired = false"
+                + " and r.appointment.bill.id = :billId order by r.id desc";
+        Map<String, Object> m = new HashMap<>();
+        m.put("billId", billId);
+        setCurrentReservation(reservationFacade.findFirstByJpql(rj, m));
+        setAppointmentBill(b);
+        // The table Select is an explicit choice of one appointment: drop what an earlier
+        // Select (or the autocomplete) prefilled, otherwise the previous room, consultant
+        // and admission type would stay and the admission would take the wrong reservation.
+        if (getCurrent() != null) {
+            getCurrent().setReferringConsultant(null);
+            getCurrent().setAdmissionType(null);
+        }
+        if (getPatientRoom() != null) {
+            getPatientRoom().setRoomFacilityCharge(null);
+        }
+        listnerForAppoimentSelect(b);
+    }
+
+    public List<PendingAppointmentDTO> getPendingAppointments() {
+        if (pendingAppointments == null) {
+            loadPendingAppointments();
+        }
+        return pendingAppointments;
+    }
+
+    public String getPendingAppointmentsGlobalFilter() {
+        return pendingAppointmentsGlobalFilter;
+    }
+
+    public void setPendingAppointmentsGlobalFilter(String pendingAppointmentsGlobalFilter) {
+        this.pendingAppointmentsGlobalFilter = pendingAppointmentsGlobalFilter;
+    }
+    // </editor-fold>
+
     public void listnerForAppoimentSelect(Bill ap) {
         if (ap == null) {
             return;
+        }
+        // currentReservation belongs to the appointment chosen from the pending table or
+        // the calendar. If another appointment is picked now (autocomplete), drop it, or
+        // save would link that reservation to this admission and complete the wrong
+        // appointment. The matching bill (table Select, calendar To Admit) keeps it. (#25707)
+        if (currentReservation != null
+                && (currentReservation.getAppointment() == null
+                || currentReservation.getAppointment().getBill() == null
+                || !currentReservation.getAppointment().getBill().equals(ap))) {
+            currentReservation = null;
         }
         setPatient(ap.getPatient());
         prefillAdmissionFromAppointment(ap);
@@ -3404,7 +3618,13 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             }
         }
 
-        if (currentReservation != null) {
+        // Use the reservation only for the appointment actually being admitted; a stale
+        // one (e.g. autocomplete cleared or changed after a table Select) is ignored. (#25707)
+        boolean reservationMatchesAppointment = currentReservation != null
+                && currentReservation.getAppointment() != null
+                && currentReservation.getAppointment().getBill() != null
+                && currentReservation.getAppointment().getBill().equals(getAppointmentBill());
+        if (reservationMatchesAppointment) {
             System.out.println("DEBUG: currentReservation is not null. ID: " + currentReservation.getId());
 
             System.out.println("DEBUG: Setting encounterReservation on current Admission...");
@@ -3483,6 +3703,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         // Need to create EncounterCredit
         admittingProcessStarted = false;
         currentReservation = null;
+        appointmentBill = null;
         patientForiegner = false;
         printPreview = true;
     }
@@ -3576,6 +3797,8 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
 
         // Save EncounterCreditCompanies
         // Need to create EncounterCredit
+        currentReservation = null;
+        appointmentBill = null;
         printPreview = true;
     }
 

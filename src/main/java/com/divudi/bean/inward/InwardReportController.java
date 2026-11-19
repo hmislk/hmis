@@ -5496,6 +5496,178 @@ public class InwardReportController implements Serializable {
             creditPaid += p.getPaidByCreditCompany();
             calTotal += p.getTransTotal();
         }
+        rebuildPaidCaches();
+    }
+
+    /** The row list the paid figures below were last built for. */
+    private List<PatientEncounter> paidCachesBuiltFor;
+
+    private void rebuildPaidCaches() {
+        paidCachesBuiltFor = patientEncounters;
+        loadCcPaidForRows();
+        loadPatientPaidForRows();
+    }
+
+    /**
+     * Rebuilds the paid figures when another action of this session bean has
+     * replaced the row list since they were built, so the Discharge Detail
+     * columns and footers never show figures of an earlier list.
+     */
+    private void ensurePaidCaches() {
+        if (paidCachesBuiltFor != patientEncounters) {
+            rebuildPaidCaches();
+        }
+    }
+
+    private final Map<Long, Double> patientPaidByEncounterId = new HashMap<>();
+    private double patientPaidTotal;
+    private double dueTotal;
+
+    /**
+     * Patient paid per admission for the Discharge Detail page (#25601): the
+     * sum of non-retired InwardPaymentBill bills that are not the Credit
+     * method (cancellations and refunds are negative), floored at 0. Same rule
+     * as CreditCompanyDueController.putPatientPaid. One grouped query per 500
+     * admissions. Also computes the due totals (needs the company paid figure).
+     */
+    private void loadPatientPaidForRows() {
+        patientPaidByEncounterId.clear();
+        patientPaidTotal = 0;
+        dueTotal = 0;
+        if (patientEncounters == null) {
+            return;
+        }
+        List<Long> encounterIds = new ArrayList<>();
+        for (PatientEncounter p : patientEncounters) {
+            if (p != null && p.getId() != null && !encounterIds.contains(p.getId())) {
+                encounterIds.add(p.getId());
+            }
+        }
+        for (int from = 0; from < encounterIds.size(); from += 500) {
+            String jpql = "SELECT b.patientEncounter.id, SUM(b.netTotal) FROM Bill b"
+                    + " WHERE b.retired = false"
+                    + " AND b.billType = :btp"
+                    + " AND b.paymentMethod <> :pm"
+                    + " AND b.patientEncounter.id IN :ids"
+                    + " GROUP BY b.patientEncounter.id";
+            Map<String, Object> params = new HashMap<>();
+            params.put("btp", BillType.InwardPaymentBill);
+            params.put("pm", PaymentMethod.Credit);
+            params.put("ids", new ArrayList<>(encounterIds.subList(from, Math.min(from + 500, encounterIds.size()))));
+            List<Object[]> rows = getBillFacade().findAggregates(jpql, params);
+            if (rows == null) {
+                continue;
+            }
+            for (Object[] row : rows) {
+                double v = row[1] == null ? 0.0 : ((Number) row[1]).doubleValue();
+                patientPaidByEncounterId.put((Long) row[0], Math.max(0.0, v));
+            }
+        }
+        for (PatientEncounter p : patientEncounters) {
+            if (p == null) {
+                continue;
+            }
+            patientPaidTotal += getPatientPaidForRow(p);
+            dueTotal += getDueForRow(p);
+        }
+    }
+
+    /** Patient paid for one row of the Discharge Detail page. */
+    public double getPatientPaidForRow(PatientEncounter p) {
+        if (p == null || p.getId() == null) {
+            return 0.0;
+        }
+        ensurePaidCaches();
+        Double v = patientPaidByEncounterId.get(p.getId());
+        return v == null ? 0.0 : v;
+    }
+
+    /** Due for one row: final bill net total less patient paid and company paid. */
+    public double getDueForRow(PatientEncounter p) {
+        if (p == null || p.getFinalBill() == null) {
+            return 0.0;
+        }
+        return p.getFinalBill().getNetTotal() - (getPatientPaidForRow(p) + getCcPaidForRow(p));
+    }
+
+    public double getPatientPaidTotal() {
+        ensurePaidCaches();
+        return patientPaidTotal;
+    }
+
+    public double getDueTotal() {
+        ensurePaidCaches();
+        return dueTotal;
+    }
+
+    private final Map<Long, Double> ccPaidByEncounterId = new HashMap<>();
+    private double ccPaidTotal;
+
+    /**
+     * Amount the credit companies have paid, per admission, for the Discharge
+     * Detail page (#25601): the sum of the non-cancelled commitment bills'
+     * settledAmountBySponsor, or the final bill's own figure when the admission
+     * has no commitment bills. One grouped query per 500 final bills.
+     */
+    private void loadCcPaidForRows() {
+        ccPaidByEncounterId.clear();
+        ccPaidTotal = 0;
+        if (patientEncounters == null) {
+            return;
+        }
+        Map<Long, Double> paidByFinalBillId = new HashMap<>();
+        List<Long> finalBillIds = new ArrayList<>();
+        for (PatientEncounter p : patientEncounters) {
+            if (p != null && p.getFinalBill() != null && p.getFinalBill().getId() != null
+                    && !finalBillIds.contains(p.getFinalBill().getId())) {
+                finalBillIds.add(p.getFinalBill().getId());
+            }
+        }
+        for (int from = 0; from < finalBillIds.size(); from += 500) {
+            String jpql = "SELECT c.referenceBill.id, SUM(c.settledAmountBySponsor) FROM Bill c"
+                    + " WHERE c.billTypeAtomic = :bta"
+                    + " AND c.referenceBill.id IN :fbIds"
+                    + " AND c.cancelled = false"
+                    + " AND c.retired = false"
+                    + " GROUP BY c.referenceBill.id";
+            Map<String, Object> params = new HashMap<>();
+            params.put("bta", BillTypeAtomic.INWARD_FINAL_BILL_PAYMENT_BY_CREDIT_COMPANY);
+            params.put("fbIds", new ArrayList<>(finalBillIds.subList(from, Math.min(from + 500, finalBillIds.size()))));
+            List<Object[]> rows = getBillFacade().findAggregates(jpql, params);
+            if (rows == null) {
+                continue;
+            }
+            for (Object[] row : rows) {
+                paidByFinalBillId.put((Long) row[0], row[1] == null ? 0.0 : ((Number) row[1]).doubleValue());
+            }
+        }
+        for (PatientEncounter p : patientEncounters) {
+            if (p == null || p.getId() == null) {
+                continue;
+            }
+            double v = 0.0;
+            if (p.getFinalBill() != null) {
+                Double fromCommitments = paidByFinalBillId.get(p.getFinalBill().getId());
+                v = fromCommitments != null ? fromCommitments : p.getFinalBill().getSettledAmountBySponsor();
+            }
+            ccPaidByEncounterId.put(p.getId(), v);
+            ccPaidTotal += v;
+        }
+    }
+
+    /** Company paid for one row of the Discharge Detail page. */
+    public double getCcPaidForRow(PatientEncounter p) {
+        if (p == null || p.getId() == null) {
+            return 0.0;
+        }
+        ensurePaidCaches();
+        Double v = ccPaidByEncounterId.get(p.getId());
+        return v == null ? 0.0 : v;
+    }
+
+    public double getCcPaidTotal() {
+        ensurePaidCaches();
+        return ccPaidTotal;
     }
 
     public void calTotalDischargedNoChanges() {
@@ -5520,7 +5692,13 @@ public class InwardReportController implements Serializable {
                 if (bi.getInwardChargeType() == InwardChargeType.VAT) {
                     p.getFinalBill().setVat(bi.getNetValue() + p.getFinalBill().getVat());
                 }
-                if (bi.getInwardChargeType() != InwardChargeType.VAT && bi.getInwardChargeType() != InwardChargeType.Medicine) {
+                // Computed VAT line (#25766): its amount is on the item (Bill.vat stays 0), so it adds to the VAT without touching the header VAT twice.
+                if (bi.getInwardChargeType() == InwardChargeType.ComputedVAT) {
+                    p.getFinalBill().setVat(bi.getVat() + p.getFinalBill().getVat());
+                }
+                if (bi.getInwardChargeType() != InwardChargeType.VAT
+                        && bi.getInwardChargeType() != InwardChargeType.ComputedVAT
+                        && bi.getInwardChargeType() != InwardChargeType.Medicine) {
                     p.getFinalBill().setVatCalulatedAmount(bi.getNetValue() + p.getFinalBill().getVatCalulatedAmount());
                 }
             }

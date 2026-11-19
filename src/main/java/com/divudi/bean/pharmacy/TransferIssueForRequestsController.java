@@ -1229,10 +1229,12 @@ public class TransferIssueForRequestsController implements Serializable {
             // set at item-generation time from the REQUESTED qty and were never
             // updated when the user changed the issuing qty (#21266 RC6:
             // valueAtPurchaseRate stayed 990 = 2 x 495 while the line qty became
-            // 1). Positive sign, matching the generation-time convention.
-            f.setValueAtPurchaseRate(BigDecimal.valueOf(batch.getPurcahseRate()).multiply(qtyInUnits));
-            f.setValueAtRetailRate(BigDecimal.valueOf(batch.getRetailsaleRate()).multiply(qtyInUnits));
-            f.setValueAtCostRate(costRate.multiply(qtyInUnits));
+            // 1). Negative sign for stock out (#23071), matching
+            // TransferIssueController / TransferIssueDirectController.
+            BigDecimal absQtyInUnits = qtyInUnits.abs();
+            f.setValueAtPurchaseRate(BigDecimal.ZERO.subtract(BigDecimal.valueOf(batch.getPurcahseRate()).multiply(absQtyInUnits)));
+            f.setValueAtRetailRate(BigDecimal.ZERO.subtract(BigDecimal.valueOf(batch.getRetailsaleRate()).multiply(absQtyInUnits)));
+            f.setValueAtCostRate(BigDecimal.ZERO.subtract(costRate.multiply(absQtyInUnits)));
         } else {
             f.setLineCostRate(BigDecimal.ZERO);
             f.setLineCost(BigDecimal.ZERO);
@@ -1600,10 +1602,11 @@ public class TransferIssueForRequestsController implements Serializable {
             financeDetails.setRetailSaleRate(BigDecimal.valueOf(selectedSubstituteStock.getItemBatch().getRetailsaleRate()));
 
             // Update values at different rates
-            BigDecimal qty = financeDetails.getQuantity() != null ? financeDetails.getQuantity() : BigDecimal.ONE;
-            financeDetails.setValueAtCostRate(BigDecimal.valueOf(selectedSubstituteStock.getItemBatch().getCostRate()).multiply(qty));
-            financeDetails.setValueAtPurchaseRate(BigDecimal.valueOf(selectedSubstituteStock.getItemBatch().getPurcahseRate()).multiply(qty));
-            financeDetails.setValueAtRetailRate(BigDecimal.valueOf(selectedSubstituteStock.getItemBatch().getRetailsaleRate()).multiply(qty));
+            // Stock out: values are negative (#23071)
+            BigDecimal qty = financeDetails.getQuantity() != null ? financeDetails.getQuantity().abs() : BigDecimal.ONE;
+            financeDetails.setValueAtCostRate(BigDecimal.ZERO.subtract(BigDecimal.valueOf(selectedSubstituteStock.getItemBatch().getCostRate()).multiply(qty)));
+            financeDetails.setValueAtPurchaseRate(BigDecimal.ZERO.subtract(BigDecimal.valueOf(selectedSubstituteStock.getItemBatch().getPurcahseRate()).multiply(qty)));
+            financeDetails.setValueAtRetailRate(BigDecimal.ZERO.subtract(BigDecimal.valueOf(selectedSubstituteStock.getItemBatch().getRetailsaleRate()).multiply(qty)));
         }
 
         updateFinancialsForTransferIssue(itemForSubstitution.getBillItemFinanceDetails());
@@ -1868,18 +1871,20 @@ public class TransferIssueForRequestsController implements Serializable {
         financeDetails.setNetTotal(packRate.multiply(qty));
 
         // Purchase rate and value (for purchase value reporting) - use unit quantities
-        financeDetails.setValueAtPurchaseRate(purchaseRate.multiply(qtyInUnits));
+        // Stock out: valueAt* are negative (#23071)
+        BigDecimal absQtyInUnits = qtyInUnits.abs();
+        financeDetails.setValueAtPurchaseRate(BigDecimal.ZERO.subtract(purchaseRate.multiply(absQtyInUnits)));
 
         // Retail rate and value (for sale value reporting) - use unit quantities
         financeDetails.setRetailSaleRate(retailRate);
-        financeDetails.setValueAtRetailRate(retailRate.multiply(qtyInUnits));
+        financeDetails.setValueAtRetailRate(BigDecimal.ZERO.subtract(retailRate.multiply(absQtyInUnits)));
 
         // Cost rate and value - use unit quantities for per-unit cost rates
         financeDetails.setLineCostRate(costRate);
         financeDetails.setLineCost(costRate.multiply(qtyInUnits));
         financeDetails.setTotalCost(costRate.multiply(qtyInUnits));
         financeDetails.setTotalCostRate(costRate);
-        financeDetails.setValueAtCostRate(costRate.multiply(qtyInUnits));
+        financeDetails.setValueAtCostRate(BigDecimal.ZERO.subtract(costRate.multiply(absQtyInUnits)));
     }
 
     /**

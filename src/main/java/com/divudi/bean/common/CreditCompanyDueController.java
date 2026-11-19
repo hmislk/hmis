@@ -485,6 +485,19 @@ public class CreditCompanyDueController implements Serializable {
 //        }
 //    }
     public void createInwardAgeTableWithFilters() {
+        createInwardAgeTable(false);
+    }
+
+    /**
+     * Same as {@link #createInwardAgeTableWithFilters()} but limits the
+     * admissions to those whose date (per {@code dateBasis}) falls between
+     * From and To (#25775). Age buckets are unchanged.
+     */
+    public void createInwardAgeTableWithDateRange() {
+        createInwardAgeTable(true);
+    }
+
+    private void createInwardAgeTable(final boolean applyDateRange) {
         reportTimerController.trackReportExecution(() -> {
             Date startTime = new Date();
 
@@ -492,7 +505,7 @@ public class CreditCompanyDueController implements Serializable {
             creditCompanyAge = null;
             filteredList = null;
 
-            Map<Institution, List<Bill>> institutionMap = getCreditCompanyBillsGroupedByCreditCompany();
+            Map<Institution, List<Bill>> institutionMap = getCreditCompanyBillsGroupedByCreditCompany(applyDateRange);
             final List<PatientEncounter> allPatientEncounters = new ArrayList<>();
 
             creditCompanyAge = new ArrayList<>();
@@ -549,7 +562,7 @@ public class CreditCompanyDueController implements Serializable {
         return encounterCreditCompanyMap;
     }
 
-    private Map<Institution, List<Bill>> getCreditCompanyBillsGroupedByCreditCompany() {
+    private Map<Institution, List<Bill>> getCreditCompanyBillsGroupedByCreditCompany(boolean applyDateRange) {
         Map<String, Object> parameters = new HashMap<>();
         List<BillTypeAtomic> bts = new ArrayList<>();
         bts.add(BillTypeAtomic.INWARD_FINAL_BILL_PAYMENT_BY_CREDIT_COMPANY);
@@ -571,7 +584,34 @@ public class CreditCompanyDueController implements Serializable {
             parameters.put("ins", institutionOfDepartment);
         }
 
-        List<Bill> bills = billFacade.findByJpql(jpql, parameters);
+        if (applyDateRange) {
+            String dateField = "admissionDate".equals(dateBasis)
+                    ? "bill.patientEncounter.dateOfAdmission" : "bill.patientEncounter.dateOfDischarge";
+            jpql += " AND " + dateField + " BETWEEN :frm AND :to";
+            parameters.put("frm", getFromDate());
+            parameters.put("to", getToDate());
+
+            // Inward CC Due Age page only: Institution, Site and Department are read from the admission final bill (as CreditBean.inwardCCAdmissionFilters, #25773)
+            if (institution != null) {
+                jpql += " AND bill.patientEncounter.finalBill.institution = :insd";
+                parameters.put("insd", institution);
+            }
+            if (department != null) {
+                jpql += " AND bill.patientEncounter.finalBill.department = :dep";
+                parameters.put("dep", department);
+            }
+            if (site != null) {
+                jpql += " AND bill.patientEncounter.finalBill.department.site = :site";
+                parameters.put("site", site);
+            }
+        }
+
+        // The TIMESTAMP overload is needed only for the date range; the other
+        // callers keep the original overload, which returns an empty list on a
+        // query error instead of throwing.
+        List<Bill> bills = applyDateRange
+                ? billFacade.findByJpql(jpql, parameters, TemporalType.TIMESTAMP)
+                : billFacade.findByJpql(jpql, parameters);
 
         return bills.stream()
                 .filter(b -> b.getCreditCompany() != null)
@@ -1509,7 +1549,8 @@ public class CreditCompanyDueController implements Serializable {
     }
 
     public void createInwardCreditDue() {
-        List<Institution> companies = getCreditBean().getCreditCompaniesWithUnpaidInwardCCBills(getFromDate(), getToDate(), admissionType, dateBasis);
+        List<Institution> companies = getCreditBean().getCreditCompaniesWithUnpaidInwardCCBills(getFromDate(), getToDate(), admissionType, dateBasis,
+                paymentMethod, institution, site, department);
         institutionEncounters = new ArrayList<>();
         finalTotal = 0.0;
         finalPaidTotal = 0.0;
@@ -1521,7 +1562,8 @@ public class CreditCompanyDueController implements Serializable {
             if (company == null) {
                 continue;
             }
-            List<Bill> bills = getCreditBean().getUnpaidInwardCCBills(company, getFromDate(), getToDate(), admissionType, dateBasis);
+            List<Bill> bills = getCreditBean().getUnpaidInwardCCBills(company, getFromDate(), getToDate(), admissionType, dateBasis,
+                paymentMethod, institution, site, department);
             if (bills.isEmpty()) {
                 continue;
             }
@@ -1628,9 +1670,7 @@ public class CreditCompanyDueController implements Serializable {
             Row filterRow = sheet.createRow(rowIndex++);
             Cell filterCell = filterRow.createCell(0);
             filterCell.setCellValue(
-                    "Admission Type : " + (admissionType != null ? admissionType.getName() : "All")
-                    + "    Payment Method : " + (paymentMethod != null ? paymentMethod.getLabel() : "All")
-                    + "    Institution : " + (institution != null ? institution.getName() : "All"));
+                    inwardCreditDueFilterLine());
             filterCell.setCellStyle(filterStyle);
             sheet.addMergedRegion(new CellRangeAddress(rowIndex - 1, rowIndex - 1, 0, headerCount - 1));
 
@@ -1744,16 +1784,25 @@ public class CreditCompanyDueController implements Serializable {
                 grandTotalRow.createCell(i);
             }
 
+            double grandTotal = 0.0;
+            double grandPaid = 0.0;
+            for (InstitutionEncounters g : data) {
+                if (g != null) {
+                    grandTotal += g.getTotal();
+                    grandPaid += g.getPaidTotal();
+                }
+            }
+
             Cell grandTotalAmount = grandTotalRow.createCell(5);
-            grandTotalAmount.setCellValue(finalTotal);
+            grandTotalAmount.setCellValue(grandTotal);
             grandTotalAmount.setCellStyle(numberStyle);
 
             Cell grandTotalPaid = grandTotalRow.createCell(6);
-            grandTotalPaid.setCellValue(finalPaidTotal);
+            grandTotalPaid.setCellValue(grandPaid);
             grandTotalPaid.setCellStyle(numberStyle);
 
             Cell grandTotalOutstanding = grandTotalRow.createCell(7);
-            grandTotalOutstanding.setCellValue(finalTotal - finalPaidTotal);
+            grandTotalOutstanding.setCellValue(grandTotal - grandPaid);
             grandTotalOutstanding.setCellStyle(numberStyle);
 
             if (sessionController != null && sessionController.getLoggedUser() != null
@@ -1776,6 +1825,155 @@ public class CreditCompanyDueController implements Serializable {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    /**
+     * PDF export for the Inward Credit Due search
+     * ({@code credit/inward_due_search_credit_company.xhtml}). Same data and
+     * layout as {@link #downloadInwardCreditDueExcel()}; the grouped
+     * {@code p:subTable} cannot go through {@code p:dataExporter}.
+     */
+    public void downloadInwardCreditDuePdf() {
+        FacesContext facesContext = FacesContext.getCurrentInstance();
+        HttpServletResponse response = (HttpServletResponse) facesContext.getExternalContext().getResponse();
+        List<InstitutionEncounters> data = institutionEncounters == null ? Collections.emptyList() : institutionEncounters;
+
+        response.setContentType("application/pdf");
+        response.setHeader("Content-Disposition", "attachment; filename=Inward_Credit_Due_Report.pdf");
+
+        try (OutputStream out = response.getOutputStream()) {
+            Document document = new Document(PageSize.A4.rotate());
+            PdfWriter.getInstance(document, out);
+            document.open();
+
+            Font titleFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 14);
+            Font boldFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8);
+            Font normalFont = FontFactory.getFont(FontFactory.HELVETICA, 8);
+
+            SimpleDateFormat sdf = new SimpleDateFormat(sessionController.getApplicationPreference().getLongDateTimeFormat());
+            DecimalFormat df = new DecimalFormat("#,##0.00");
+
+            Paragraph title = new Paragraph("Due Search (Credit Company) - Inward", titleFont);
+            title.setAlignment(Element.ALIGN_CENTER);
+            document.add(title);
+            Paragraph range = new Paragraph(
+                    "From : " + (getFromDate() != null ? sdf.format(getFromDate()) : "-")
+                    + "    To : " + (getToDate() != null ? sdf.format(getToDate()) : "-")
+                    + "    Date Basis : " + ("admissionDate".equals(dateBasis) ? "Admission Date" : "Discharge Date"),
+                    normalFont);
+            range.setAlignment(Element.ALIGN_CENTER);
+            document.add(range);
+            Paragraph filterLine = new Paragraph(inwardCreditDueFilterLine(), normalFont);
+            filterLine.setAlignment(Element.ALIGN_CENTER);
+            filterLine.setSpacingAfter(8);
+            document.add(filterLine);
+
+            double grandTotal = 0.0;
+            double grandPaid = 0.0;
+            for (InstitutionEncounters g : data) {
+                if (g != null) {
+                    grandTotal += g.getTotal();
+                    grandPaid += g.getPaidTotal();
+                }
+            }
+
+            PdfPTable table = new PdfPTable(8);
+            table.setWidthPercentage(100);
+            table.setWidths(new float[]{1.2f, 2f, 2f, 3f, 3f, 1.5f, 1.5f, 1.5f});
+            table.setHeaderRows(1);
+
+            String[] headers = {"BHT No", "Date Of Admission", "Date Of Discharge", "Patient Name", "Credit Company",
+                "Bill Amount", "Paid", "Outstanding"};
+            for (String h : headers) {
+                PdfPCell cell = new PdfPCell(new Phrase(h, boldFont));
+                cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+                table.addCell(cell);
+            }
+
+            for (InstitutionEncounters ins : data) {
+                if (ins == null) {
+                    continue;
+                }
+                PdfPCell groupHeader = new PdfPCell(new Phrase(ins.getInstitution() != null ? ins.getInstitution().getName() : "", boldFont));
+                groupHeader.setColspan(8);
+                groupHeader.setBackgroundColor(BaseColor.LIGHT_GRAY);
+                table.addCell(groupHeader);
+
+                for (Bill bill : ins.getBills()) {
+                    if (bill == null) {
+                        continue;
+                    }
+                    PatientEncounter pe = bill.getPatientEncounter();
+                    table.addCell(new Phrase(pe != null && pe.getBhtNo() != null ? pe.getBhtNo() : "", normalFont));
+                    table.addCell(new Phrase(pe != null && pe.getDateOfAdmission() != null ? sdf.format(pe.getDateOfAdmission()) : "", normalFont));
+                    table.addCell(new Phrase(pe != null && pe.getDateOfDischarge() != null ? sdf.format(pe.getDateOfDischarge()) : "", normalFont));
+                    table.addCell(new Phrase(bill.getPatient() != null && bill.getPatient().getPerson() != null
+                            ? bill.getPatient().getPerson().getNameWithTitle() : "", normalFont));
+                    table.addCell(new Phrase(bill.getCreditCompany() != null ? bill.getCreditCompany().getName() : "", normalFont));
+                    addRightCell(table, df.format(bill.getNetTotal()), normalFont);
+                    addRightCell(table, df.format(bill.getPaidAmount()), normalFont);
+                    addRightCell(table, df.format(bill.getNetTotal() - bill.getPaidAmount()), normalFont);
+                }
+
+                PdfPCell subLabel = new PdfPCell(new Phrase("Sub Total", boldFont));
+                subLabel.setColspan(5);
+                subLabel.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                table.addCell(subLabel);
+                addRightCell(table, df.format(ins.getTotal()), boldFont);
+                addRightCell(table, df.format(ins.getPaidTotal()), boldFont);
+                addRightCell(table, df.format(ins.getTotal() - ins.getPaidTotal()), boldFont);
+            }
+
+            PdfPCell grandLabel = new PdfPCell(new Phrase("Grand Total", boldFont));
+            grandLabel.setColspan(5);
+            grandLabel.setHorizontalAlignment(Element.ALIGN_RIGHT);
+            table.addCell(grandLabel);
+            addRightCell(table, df.format(grandTotal), boldFont);
+            addRightCell(table, df.format(grandPaid), boldFont);
+            addRightCell(table, df.format(grandTotal - grandPaid), boldFont);
+
+            document.add(table);
+            document.close();
+            facesContext.responseComplete();
+        } catch (Exception e) {
+            Logger.getLogger(CreditCompanyDueController.class.getName()).log(Level.SEVERE, e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Landscape PDF options for the Inward Patient Due search export, which
+     * has 12 columns and wraps numbers in portrait.
+     */
+    public org.primefaces.component.export.PDFOptions getPdfExportOptions() {
+        org.primefaces.component.export.PDFOptions options = new org.primefaces.component.export.PDFOptions();
+        options.setOrientation(org.primefaces.component.export.PDFOrientationType.LANDSCAPE);
+        options.setCellFontSize("6");
+        options.setFacetFontSize("7");
+        return options;
+    }
+
+    /**
+     * Single-string table header (title, From and To) so the exporters, which
+     * read only the first component of a facet, keep both dates.
+     */
+    public String getPatientDueExportTitle() {
+        SimpleDateFormat sdf = new SimpleDateFormat(sessionController.getApplicationPreference().getLongDateTimeFormat());
+        return "Inward Patient Co-payment Due Search  From : " + (getFromDate() != null ? sdf.format(getFromDate()) : "-")
+                + "  To : " + (getToDate() != null ? sdf.format(getToDate()) : "-");
+    }
+
+    private String inwardCreditDueFilterLine() {
+        return "Institution : " + (institution != null ? institution.getName() : "All")
+                + "    Site : " + (site != null ? site.getName() : "All")
+                + "    Department : " + (department != null ? department.getName() : "All")
+                + "    Admission Type : " + (admissionType != null ? admissionType.getName() : "All")
+                + "    Payment Method : " + (paymentMethod != null ? paymentMethod.getLabel() : "All");
+    }
+
+    private void addRightCell(PdfPTable table, String text, Font font) {
+        PdfPCell cell = new PdfPCell(new Phrase(text, font));
+        cell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+        table.addCell(cell);
     }
 
     //    public void createInwardCreditDueWithAdditionalFilters() {
@@ -4140,6 +4338,61 @@ public class CreditCompanyDueController implements Serializable {
         this.creditCompanyAge = creditCompanyAge;
     }
 
+    /**
+     * Rows the age tables currently show: the filtered rows when a column
+     * filter is active, otherwise all rows. Used for the footer totals.
+     */
+    private List<String1Value5> getCreditCompanyAgeShownRows() {
+        if (filteredList != null) {
+            return filteredList;
+        }
+        return creditCompanyAge;
+    }
+
+    private double sumCreditCompanyAgeBucket(int bucket) {
+        double total = 0.0;
+        List<String1Value5> rows = getCreditCompanyAgeShownRows();
+        if (rows == null) {
+            return total;
+        }
+        for (String1Value5 r : rows) {
+            if (r == null) {
+                continue;
+            }
+            switch (bucket) {
+                case 1:
+                    total += r.getValue1();
+                    break;
+                case 2:
+                    total += r.getValue2();
+                    break;
+                case 3:
+                    total += r.getValue3();
+                    break;
+                default:
+                    total += r.getValue4();
+                    break;
+            }
+        }
+        return total;
+    }
+
+    public double getCreditCompanyAgeTotal1() {
+        return sumCreditCompanyAgeBucket(1);
+    }
+
+    public double getCreditCompanyAgeTotal2() {
+        return sumCreditCompanyAgeBucket(2);
+    }
+
+    public double getCreditCompanyAgeTotal3() {
+        return sumCreditCompanyAgeBucket(3);
+    }
+
+    public double getCreditCompanyAgeTotal4() {
+        return sumCreditCompanyAgeBucket(4);
+    }
+
     public List<String1Value5> getFilteredList() {
         return filteredList;
     }
@@ -4764,6 +5017,7 @@ public class CreditCompanyDueController implements Serializable {
     public void createInwardPatientCopaymentDueAge() {
         createInwardPatientCopaymentDueSearch();
         creditCompanyAge = new ArrayList<>();
+        filteredList = null;
         if (patientEncounters == null) {
             return;
         }
@@ -4783,7 +5037,7 @@ public class CreditCompanyDueController implements Serializable {
             String1Value5 row = new String1Value5();
             String patientName = (pe.getPatient() != null && pe.getPatient().getPerson() != null)
                     ? pe.getPatient().getPerson().getNameWithTitle() : "";
-            row.setString((pe.getBhtNo() != null ? pe.getBhtNo() : "") + " – " + patientName);
+            row.setString((pe.getBhtNo() != null ? pe.getBhtNo() : "") + " - " + patientName);
             if (days <= 30) {
                 row.setValue1(due);
             } else if (days <= 60) {
