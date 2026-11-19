@@ -1056,15 +1056,6 @@ public class SessionController implements Serializable, HttpSessionListener {
         return uFacade;
     }
 
-    public String loginAction() {
-        if (login()) {
-            return "/index1.xhtml";
-        } else {
-            JsfUtil.addErrorMessage("Login Failure. Please try again");
-            return "";
-        }
-    }
-
     public String loginActionWithoutDepartment() {
         long totalStartTime = System.currentTimeMillis();
         
@@ -1108,55 +1099,6 @@ public class SessionController implements Serializable, HttpSessionListener {
             JsfUtil.addErrorMessage("Invalid User! Login Failure. Please try again");
             return "";
         }
-    }
-
-    private boolean login() {
-        getApplicationController().recordStart();
-        if (userName.trim().isEmpty()) {
-            JsfUtil.addErrorMessage("Please enter a username");
-            return false;
-        }
-        if (getFirstLogin()) {
-            prepareFirstVisit();
-            return true;
-        } else {
-            if (department == null) {
-                JsfUtil.addErrorMessage("Please select a department");
-                return false;
-            }
-            return checkUsers();
-        }
-    }
-
-    private void prepareFirstVisit() {
-        WebUser user = new WebUser();
-        Person person = new Person();
-        person.setName(userName);
-        pFacade.create(person);
-
-        WebUserRole myRole;
-        myRole = new WebUserRole();
-        myRole.setName("circular_editor");
-        rFacade.create(myRole);
-
-        myRole = new WebUserRole();
-        myRole.setName("circular_adder");
-        rFacade.create(myRole);
-
-        myRole = new WebUserRole();
-        myRole.setName("circular_viewer");
-        rFacade.create(myRole);
-
-        myRole = new WebUserRole();
-        myRole.setName("admin");
-        rFacade.create(myRole);
-
-        user.setName(userName);
-        user.setWebUserPassword(getSecurityController().hashAndCheck(password));
-        user.setWebUserPerson(person);
-        user.setActivated(true);
-        user.setRole(myRole);
-        uFacade.create(user);
     }
 
     public String registeUser() {
@@ -1350,104 +1292,6 @@ public class SessionController implements Serializable, HttpSessionListener {
         } else {
             return false;
         }
-    }
-
-    private boolean checkUsers() {
-        String temSQL;
-        temSQL = "SELECT u FROM WebUser u WHERE u.retired = false";
-        List<WebUser> allUsers = getFacede().findByJpql(temSQL, true);
-        for (WebUser u : allUsers) {
-            if ((u.getName()).equalsIgnoreCase(userName)) {
-                if (SecurityController.matchPassword(password, u.getWebUserPassword())) {
-                    if (!u.isIpAllowed(populateRequestInfo().getIpAddress())) {
-                        JsfUtil.addErrorMessage("Login not allowed from this IP address for this user.");
-                        return false;
-                    }
-                    if (!canLogToDept(u, department)) {
-                        JsfUtil.addErrorMessage("No privilage to Login This Department");
-                        return false;
-                    }
-                    if (getApplicationController().isLogged(u) != null) {
-                        JsfUtil.addErrorMessage("This user already logged. Other instances will be logged out now.");
-                    }
-
-                    u.setDepartment(department);
-                    u.setInstitution(institution);
-
-                    getFacede().edit(u);
-
-                    setLoggedUser(u);
-                    loggableDepartments = fillLoggableDepts();
-//                    loggableSubDepartments = fillLoggableSubDepts(loggableDepartments);
-                    loggableInstitutions = fillLoggableInstitutions();
-
-                    // Load recently used departments
-                    //recentDepartments = fillRecentDepartmentsForUser(u);
-                    userIcons = userIconController.fillUserIcons(u, department);
-                    groupedUserIcons = buildGroupedUserIcons(userIcons);
-
-                    // Load user-specific UI settings (column visibility, preferences, etc.)
-                    // Performance-optimized: loads only current user's settings, cached in session
-                    userSettingsController.loadUserSettings();
-
-                    setLogged(Boolean.TRUE);
-                    setActivated(u.isActivated());
-                    setRole(u.getRole());
-
-                    String sql;
-
-                    UserPreference uf;
-                    sql = "select p from UserPreference p where p.webUser=:u order by p.id desc";
-                    Map m = new HashMap();
-                    m.put("u", u);
-                    uf = getUserPreferenceFacade().findFirstByJpql(sql, m);
-                    if (uf == null) {
-                        uf = new UserPreference();
-                        uf.setWebUser(u);
-                        getUserPreferenceFacade().create(uf);
-                    }
-                    setUserPreference(uf);
-
-                    UserPreference insPre;
-
-                    sql = "select p from UserPreference p where p.department =:dep order by p.id desc";
-                    m = new HashMap();
-                    m.put("dep", department);
-
-                    insPre = getUserPreferenceFacade().findFirstByJpql(sql, m);
-
-                    if (insPre == null) {
-
-                        sql = "select p from UserPreference p where p.institution =:ins order by p.id desc";
-                        m = new HashMap();
-                        m.put("ins", institution);
-                        insPre = getUserPreferenceFacade().findFirstByJpql(sql, m);
-
-                        if (insPre == null) {
-                            sql = "select p from UserPreference p where p.institution is null and p.department is null and p.webUser is null order by p.id desc";
-                            insPre = getUserPreferenceFacade().findFirstByJpql(sql);
-
-                        }
-
-                        if (insPre == null) {
-                            insPre = new UserPreference();
-                            insPre.setWebUser(null);
-                            insPre.setDepartment(null);
-                            insPre.setInstitution(null);
-                            getUserPreferenceFacade().create(insPre);
-                        }
-                    }
-                    fillAvailableDepartmentTypesForPharmacyTransactions();
-                    setLoggedPreference(insPre);
-
-                    recordLogin();
-
-                    JsfUtil.addSuccessMessage("Logged successfully");
-                    return true;
-                }
-            }
-        }
-        return false;
     }
 
 //
