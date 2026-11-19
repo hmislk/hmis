@@ -12,6 +12,7 @@ import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.PatientEncounter;
 import com.divudi.core.entity.inward.AdmissionType;
+import com.divudi.core.util.CommonFunctions;
 import com.divudi.core.entity.BillItem;
 import com.divudi.core.entity.PatientItem;
 import com.divudi.core.facade.BillFeeFacade;
@@ -65,7 +66,7 @@ public class InwardChargeTypeDetailController implements Serializable {
     // Filter fields
     // -------------------------------------------------------------------------
     private Date fromDate = startOfCurrentMonth();
-    private Date toDate   = new Date();
+    private Date toDate   = CommonFunctions.getEndOfDay(new Date());
 
     /** "admissionDate" or "dischargeDate" */
     private String dateBasis = "dischargeDate";
@@ -548,7 +549,7 @@ public class InwardChargeTypeDetailController implements Serializable {
 
     public void makeNull() {
         fromDate          = startOfCurrentMonth();
-        toDate            = new Date();
+        toDate            = CommonFunctions.getEndOfDay(new Date());
         dateBasis         = "dischargeDate";
         admissionStatus   = AdmissionStatus.DISCHARGED_AND_FINAL_BILL_COMPLETED;
         admissionType     = null;
