@@ -62,9 +62,15 @@ public class TwoFactorSecretMigration {
             if (stored == null) {
                 continue;
             }
-            u.setTwoFactorSecret(stored);
-            webUserFacade.edit(u);
-            done++;
+            // Only the secret, and only if it still holds the value read above: a reset or change made
+            // meanwhile (e.g. by another server) is kept, and no other column is written
+            String update = "update WebUser u set u.twoFactorSecret=:newSecret"
+                    + " where u.id=:id and u.twoFactorSecret=:oldSecret";
+            Map<String, Object> p = new HashMap<>();
+            p.put("newSecret", stored);
+            p.put("id", u.getId());
+            p.put("oldSecret", u.getTwoFactorSecret());
+            done += webUserFacade.updateByJpql(update, p);
         }
         if (done > 0) {
             LOGGER.log(Level.INFO, "Re-encrypted {0} two-factor secret(s) under the server key", done);
