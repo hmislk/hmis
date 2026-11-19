@@ -3399,6 +3399,8 @@ public class InwardSearch implements Serializable {
             BillFee bf = new BillFee();
             bf.copy(nB);
             bf.invertValue(nB);
+            // A reversal mirrors its original, so a doctor-collected fee stays out of the sums (#17490).
+            bf.setCollectedByDoctorAtBilling(nB.isCollectedByDoctorAtBilling());
 
             bf.setBill(can);
             bf.setBillItem(bt);
@@ -3451,6 +3453,8 @@ public class InwardSearch implements Serializable {
             BillFee bf = new BillFee();
             bf.copy(nB);
             bf.invertValue(nB);
+            // A reversal mirrors its original, so a doctor-collected fee stays out of the sums (#17490).
+            bf.setCollectedByDoctorAtBilling(nB.isCollectedByDoctorAtBilling());
 
             bf.setBill(can);
             bf.setBillItem(bt);

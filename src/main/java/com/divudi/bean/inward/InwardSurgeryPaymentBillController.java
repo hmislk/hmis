@@ -177,6 +177,8 @@ public class InwardSurgeryPaymentBillController implements Serializable {
                 + " and bf.bill.cancelled=false "
                 + " and bf.bill.createdAt between :fd and :td "
                 + " and (bf.feeValue - bf.paidValue) > 0 "
+                // Collected by the doctor at billing: the hospital never pays it (#17490).
+                + " and (bf.collectedByDoctorAtBilling = false or bf.collectedByDoctorAtBilling is null) "
                 // Held fees are listed (flagged "On Hold" in the UI) rather than
                 // hidden, so the payer can see the money exists — issue #22484.
                 + " and bf.staff=:stf ";

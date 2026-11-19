@@ -76,6 +76,12 @@ A print or settings dialog must use the **same** controller as the page or templ
 | ---------------------------------------------------------------- | --------- | ------- | ------------------------------------------------------------------------------------------------------- |
 | `Inward Administrative Discharge - Require Nursing Discharge`   | Boolean   | `true`  | Controls whether `BhtSummeryController.checkDischargeTime()` requires `PatientEncounter.isNursingDischarged()` before allowing administrative discharge (the "Discharge" action on the Interim Bill) for room-charged admissions. Some hospitals do not use the nursing discharge workflow; setting this to `false` for those institutions lets administrative discharge proceed without it. See issue #22607. |
 
+## Inward Professional Fees
+
+| Key | Type | Default | Description |
+| --- | --- | --- | --- |
+| `Inward Professional Fee - Allow Fee Collected By Doctor` | Boolean | `false` | Controls whether the inward professional fee add page offers a "Collected by Doctor" switch beside FOC, that is, whether NEW fees can be marked. A fee added with it on is saved with `BillFee.collectedByDoctorAtBilling` and is not payable by the hospital: it is left out of the patient bill total, due and claimable amount (final and interim) and out of the payment due lists, makes no Payment/drawer/cashbook entry, and patient bills print only the note "Fees Collected by the Doctor" outside the net total. `paidValue` and `settleValue` stay 0 (the fee is not recorded as paid), so the bill can still be cancelled. Turning the option off only stops new fees being marked; fees already marked keep the saved flag, stay excluded and still print the note. Fees flagged on the surgery payment page (`feeCollectedByDoctor`) behave as before, with the key on or off. See issue #17490. |
+
 ## Inward Appointment
 
 | Key | Type | Default | Description |

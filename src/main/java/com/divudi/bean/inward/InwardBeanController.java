@@ -784,6 +784,37 @@ public class InwardBeanController implements Serializable {
     }
 
     /**
+     * True when the admission (or one of its child encounters) has a live
+     * professional fee marked "Collected by Doctor". Patient bills use it to
+     * print the single note "Fees Collected by the Doctor" outside the net
+     * total; the fee amount and doctor are never printed. Reads the saved flag
+     * only, so it does not depend on
+     * "Inward Professional Fee - Allow Fee Collected By Doctor" being on.
+     */
+    public boolean hasFeesCollectedByDoctor(PatientEncounter patientEncounter) {
+        if (patientEncounter == null || patientEncounter.getId() == null) {
+            return false;
+        }
+        HashMap hm = new HashMap();
+        String sql = "SELECT count(bf) FROM BillFee bf"
+                + " WHERE bf.retired=false"
+                + " and bf.collectedByDoctorAtBilling=true"
+                + " and bf.bill.retired=false"
+                + " and bf.bill.cancelled=false"
+                + " and bf.bill.billType=:btp"
+                + " and bf.bill.billTypeAtomic=:bta"
+                + " and bf.bill.patientEncounter.id IN :peIds";
+        hm.put("btp", BillType.InwardProfessional);
+        hm.put("bta", BillTypeAtomic.INWARD_PROFESSIONAL_FEE_BILL);
+        List<Long> peIds = new ArrayList<>();
+        for (PatientEncounter e : encounterWithChildren(patientEncounter, fetchChildPatientEncounter(patientEncounter))) {
+            peIds.add(e.getId());
+        }
+        hm.put("peIds", peIds);
+        return getBillFeeFacade().findLongByJpql(sql, hm, TemporalType.TIMESTAMP) > 0;
+    }
+
+    /**
      * Bulk query for the amount, per InwardChargeType, of the service /
      * investigation items that carry their own VAT (BillItem.vat other than 0; cancel and refund lines are negated copies and carry a negative VAT, so they net the same way the row total does), for
      * the computed inward VAT (issue #17491). The amount is what the item adds

@@ -336,6 +336,8 @@ public class InwardStaffPaymentBillController implements Serializable {
                 + " and bf.bill.cancelled=false "
                 + " and bf.bill.createdAt between :fd and :td "
                 + " and (bf.feeValue - bf.paidValue) > 0 "
+                // Collected by the doctor at billing: the hospital never pays it (#17490).
+                + " and (bf.collectedByDoctorAtBilling = false or bf.collectedByDoctorAtBilling is null) "
                 // Held fees are listed (flagged "On Hold" in the UI) rather than
                 // hidden, so the payer can see the money exists — issue #22484.
                 + " and bf.staff=:stf "
@@ -971,6 +973,7 @@ public class InwardStaffPaymentBillController implements Serializable {
                 + " and b.bill.cancelled=false "
                 + " and b.billItem.bill.patientEncounter.discharged=true "
                 + " and (b.feeValue - b.paidValue) > 0"
+                + " and (b.collectedByDoctorAtBilling = false or b.collectedByDoctorAtBilling is null) "
                 + " and b.bill.billDate between :fromDate and :toDate "
                 + " order by b.staff.id ";
 
@@ -999,6 +1002,7 @@ public class InwardStaffPaymentBillController implements Serializable {
                 + " and b.bill.cancelled=false "
                 + " and b.billItem.bill.patientEncounter.discharged=false "
                 + " and (b.feeValue - b.paidValue) > 0"
+                + " and (b.collectedByDoctorAtBilling = false or b.collectedByDoctorAtBilling is null) "
                 + " and  b.bill.billDate between :fromDate and :toDate "
                 + " order by b.staff.id ";
 
@@ -1337,6 +1341,8 @@ public class InwardStaffPaymentBillController implements Serializable {
                 + " and b.bill.cancelled=false "
                 //                + " and b.bill.refunded=false "
                 + " and (b.feeValue - b.paidValue) > 0 "
+                // Collected by the doctor at billing: the hospital never pays it (#17490).
+                + " and (b.collectedByDoctorAtBilling = false or b.collectedByDoctorAtBilling is null) "
                 // Held fees are listed (flagged "On Hold" in the UI) rather than
                 // hidden, so the payer can see the money exists — issue #22484.
                 + " and b.staff=:stf ";

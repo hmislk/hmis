@@ -84,6 +84,8 @@ public class InwardProfessionalBillController implements Serializable {
     @Inject
     ConfigOptionController configOptionController;
     @Inject
+    com.divudi.bean.common.ConfigOptionApplicationController configOptionApplicationController;
+    @Inject
     private InwardProfessionalFeeClassificationService professionalFeeClassificationService;
     ////////////////////
     @EJB
@@ -760,6 +762,11 @@ public class InwardProfessionalBillController implements Serializable {
     }
 
     public void addToProBill() {
+        if (getCurrent().getId() == null) {
+            // A new bill must be a regular professional bill, so the saved fee is found by the
+            // "Collected by Doctor" notice even after an estimate was entered earlier.
+            getCurrent().setBillType(BillType.InwardProfessional);
+        }
         getCurrent().setBillTypeAtomic(BillTypeAtomic.INWARD_PROFESSIONAL_FEE_BILL);
         addToBill();
     }
@@ -780,6 +787,26 @@ public class InwardProfessionalBillController implements Serializable {
         this.freeOfChargeProfessionalPayment = freeOfChargeProfessionalPayment;
     }
 
+    /**
+     * Set on the add page when the doctor collects this fee from the patient
+     * directly. Only settable when the hospital has switched on
+     * "Inward Professional Fee - Allow Fee Collected By Doctor".
+     */
+    private boolean feeCollectedByDoctorProfessionalPayment;
+
+    public boolean isFeeCollectedByDoctorProfessionalPayment() {
+        return feeCollectedByDoctorProfessionalPayment;
+    }
+
+    public void setFeeCollectedByDoctorProfessionalPayment(boolean feeCollectedByDoctorProfessionalPayment) {
+        this.feeCollectedByDoctorProfessionalPayment = feeCollectedByDoctorProfessionalPayment;
+    }
+
+    /** True when the "Collected by Doctor" option may be offered on the add page. */
+    public boolean isFeeCollectedByDoctorAllowed() {
+        return configOptionApplicationController.isInwardProfessionalFeeCollectedByDoctorAllowed();
+    }
+
     public void addToBill() {
         if (getCurrent().getPatientEncounter() == null) {
             JsfUtil.addErrorMessage("Please Select Patient Encounter");
@@ -787,6 +814,12 @@ public class InwardProfessionalBillController implements Serializable {
         }
 
         if (inwardBean.blockIfDischarged(getCurrent().getPatientEncounter())) {
+            return;
+        }
+
+        if (getCurrent().getPatientEncounter().isNursingDischarged()
+                && !webUserController.hasPrivilege("InwardAddChargesAfterNursingDischarge")) {
+            JsfUtil.addErrorMessage("Cannot add charges: nursing discharge has been confirmed for this patient.");
             return;
         }
 
@@ -809,12 +842,37 @@ public class InwardProfessionalBillController implements Serializable {
             return;
         }
 
+        // The switch was ticked while the option was on, and the option has since been turned off.
+        if (feeCollectedByDoctorProfessionalPayment && !isFeeCollectedByDoctorAllowed()) {
+            feeCollectedByDoctorProfessionalPayment = false;
+            JsfUtil.addErrorMessage("Collected by Doctor is no longer allowed. Review the fee and add it again.");
+            return;
+        }
+
+        // Check both switches before the fee is changed.
         if (isFreeOfChargeProfessionalPayment()) {
             if (currentBillFee.getFeeValue() != 0.0) {
                 JsfUtil.addErrorMessage("Do not add fee when it marked free of charge.");
                 return;
             }
+            if (feeCollectedByDoctorProfessionalPayment) {
+                JsfUtil.addErrorMessage("A fee cannot be both Free of Charge and Collected by Doctor.");
+                return;
+            }
             currentBillFee.setFreeOfCharge(true);
+        }
+
+        // A fee the doctor collects directly from the patient (never for estimates).
+        boolean collectedByDoctor = feeCollectedByDoctorProfessionalPayment
+                && getCurrent().getBillTypeAtomic() == BillTypeAtomic.INWARD_PROFESSIONAL_FEE_BILL;
+        if (collectedByDoctor) {
+            if (getCurrent().getBillType() != BillType.InwardProfessional) {
+                JsfUtil.addErrorMessage("Collected by Doctor cannot be added to this bill. Start a new professional fee bill.");
+                return;
+            }
+            // paidValue/settleValue stay 0 so the bill can still be cancelled and the fee
+            // removed or edited; the doctor payment due lists and reports skip this flag.
+            currentBillFee.setCollectedByDoctorAtBilling(true);
         }
 
         if (getCurrent().getId() == null) {
@@ -833,6 +891,7 @@ public class InwardProfessionalBillController implements Serializable {
 
         save();
         freeOfChargeProfessionalPayment = false;
+        feeCollectedByDoctorProfessionalPayment = false;
         //   JsfUtil.addSuccessMessage("Fee Added");
     }
 
@@ -876,6 +935,10 @@ public class InwardProfessionalBillController implements Serializable {
         int index = 0;
         for (BillFee bf : getLstBillFees()) {
             bf.setOrderNo(index++);
+            // A fee collected by the doctor is not a hospital charge.
+            if (bf.isCollectedByDoctorAtBilling()) {
+                continue;
+            }
             tot += bf.getFeeValue();
         }
 
@@ -1129,6 +1192,8 @@ public class InwardProfessionalBillController implements Serializable {
 
     public void makeNullList() {
         currentBillFee = null;
+        // Per-fee switch: cleared with the fee form (a failed add keeps both).
+        feeCollectedByDoctorProfessionalPayment = false;
         billItem = null;
         lstBillEntries = null;
         lstBillFees = null;
