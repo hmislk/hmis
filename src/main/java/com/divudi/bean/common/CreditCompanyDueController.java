@@ -5017,6 +5017,7 @@ public class CreditCompanyDueController implements Serializable {
     public void createInwardPatientCopaymentDueAge() {
         createInwardPatientCopaymentDueSearch();
         creditCompanyAge = new ArrayList<>();
+        filteredList = null;
         if (patientEncounters == null) {
             return;
         }
