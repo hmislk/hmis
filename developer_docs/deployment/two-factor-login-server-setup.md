@@ -30,6 +30,8 @@ Rules:
 
 A user who must set up (Required ticked, or "all users" on) has 24 hours from the moment an admin ticked Required, reset the authenticator, or a 2FA switch was turned on. After that the user sees a message and an admin must Reset (Manage User shows the end of the period and a "Reopen set-up" button). A user with no valid mobile number on the staff record cannot be set to Required, and the "all users" switch skips such a user and lists them when saved. Set-up always starts with an SMS code to the staff-record mobile, except in a session that has already passed a second step. The "all users" switch still covers a user with a linked app even when the staff record has no valid mobile. A switch that is on but has no recorded time gets one the first time it is checked, so covered users get the 24 hours from then.
 
+Before switching on "Require authenticator app two-factor login for all users", the administrator doing it should link their own authenticator app first. Otherwise their open session is sent to the set-up screen and the next save is refused. Also tick **Service account** (Manage User page) on every lab analyser, middleware and channelling API account first.
+
 ## Clone safety: one SQL step after restoring or copying a database
 
 After restoring a production dump anywhere that is not that production server (local, QA, a copy), run this once, then **restart the application** (raw SQL on `CONFIGOPTION` is not seen by the cached options until restart):
