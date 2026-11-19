@@ -61,7 +61,7 @@
                                  filteredValue="#{creditCompanyDueController.filteredList}"
                                  styleClass="p-datatable-sm" paginator="true" rows="100" paginatorPosition="bottom"
                                  rowsPerPageTemplate="50,100,500" emptyMessage="No records found">
-                        <p:ajax event="filter" process="@this" update="@(.ageTotal)"/>
+                        <p:ajax event="filter" process="@this" update="ageTotal1 ageTotal2 ageTotal3 ageTotal4"/>
                         <f:facet name="header">
                             <h:outputText value="Inward Patient Co-payment Due Age (days since discharge)"/>
                         </f:facet>
@@ -74,7 +74,7 @@
                                 <f:convertNumber pattern="#,##0.00"/>
                             </h:outputText>
                             <f:facet name="footer">
-                                <h:outputText id="ageTotal1" styleClass="ageTotal" value="#{creditCompanyDueController.creditCompanyAgeTotal1}">
+                                <h:outputText id="ageTotal1" value="#{creditCompanyDueController.creditCompanyAgeTotal1}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
                             </f:facet>
@@ -84,7 +84,7 @@
                                 <f:convertNumber pattern="#,##0.00"/>
                             </h:outputText>
                             <f:facet name="footer">
-                                <h:outputText id="ageTotal2" styleClass="ageTotal" value="#{creditCompanyDueController.creditCompanyAgeTotal2}">
+                                <h:outputText id="ageTotal2" value="#{creditCompanyDueController.creditCompanyAgeTotal2}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
                             </f:facet>
@@ -94,7 +94,7 @@
                                 <f:convertNumber pattern="#,##0.00"/>
                             </h:outputText>
                             <f:facet name="footer">
-                                <h:outputText id="ageTotal3" styleClass="ageTotal" value="#{creditCompanyDueController.creditCompanyAgeTotal3}">
+                                <h:outputText id="ageTotal3" value="#{creditCompanyDueController.creditCompanyAgeTotal3}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
                             </f:facet>
@@ -104,7 +104,7 @@
                                 <f:convertNumber pattern="#,##0.00"/>
                             </h:outputText>
                             <f:facet name="footer">
-                                <h:outputText id="ageTotal4" styleClass="ageTotal" value="#{creditCompanyDueController.creditCompanyAgeTotal4}">
+                                <h:outputText id="ageTotal4" value="#{creditCompanyDueController.creditCompanyAgeTotal4}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
                             </f:facet>
