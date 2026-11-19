@@ -36,7 +36,7 @@
                                 <h:outputLabel value="Payment Method"/>
                                 <p:selectOneMenu value="#{creditCompanyDueController.paymentMethod}">
                                     <f:selectItem itemLabel="All Methods" itemValue="#{null}"/>
-                                    <f:selectItems value="#{enumController.paymentMethodsWithoutCredit}"/>
+                                    <f:selectItems value="#{enumController.paymentMethodForAdmission}"/>
                                 </p:selectOneMenu>
                                 <h:outputLabel value="Institution"/>
                                 <p:selectOneMenu value="#{creditCompanyDueController.institution}" filter="true">
