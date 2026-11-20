@@ -456,7 +456,7 @@ public class InwardRefundController implements Serializable {
         if (originalBill == null || originalBill.getId() == null) {
             return 0.0;
         }
-        String sql = "select sum(b.netTotal) from Bill b where b.referenceBill=:orig and b.retired=false";
+        String sql = "select sum(b.netTotal) from Bill b where b.referenceBill=:orig and b.retired=false and b.cancelled=false";
         Map<String, Object> hm = new HashMap<>();
         hm.put("orig", originalBill);
         double refundedSoFar = getBillFacade().findDoubleByJpql(sql, hm, true);
