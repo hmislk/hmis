@@ -1832,6 +1832,20 @@ public class PatientEncounterController implements Serializable {
         refreshIssuableSuggestions();
     }
 
+    /** Line-break marker used while a template value is built; see {@link #cardText}. */
+    private static final String CARD_BR = "\u0001";
+
+    /**
+     * A placeholder value as safe HTML: its text is escaped (typed tags stay text),
+     * then the line-break markers become {@code <br/>}.
+     */
+    private static String cardText(String s) {
+        if (s == null) {
+            return "";
+        }
+        return org.apache.commons.text.StringEscapeUtils.escapeHtml4(s).replace("'", "&#39;").replace(CARD_BR, "<br/>");
+    }
+
     public String generateDocumentFromTemplate(DocumentTemplate t, PatientEncounter e) {
 
         if (t == null) {
@@ -1905,7 +1919,7 @@ public class PatientEncounterController implements Serializable {
             cf.getItemValue().getComments();
         }
 
-        String medicinesAsString = "Rx" + "<br/>";
+        String medicinesAsString = "Rx" + CARD_BR;
 
         for (ClinicalFindingValue cf : getEncounterMedicines()) {
             if (cf != null && cf.getPrescription() != null) {
@@ -1916,7 +1930,7 @@ public class PatientEncounterController implements Serializable {
                 String duration = cf.getPrescription().getDuration() != null ? String.format("%.0f", cf.getPrescription().getDuration()) : "";
                 String durationUnit = cf.getPrescription().getDurationUnit() != null ? cf.getPrescription().getDurationUnit().getName() : "";
 
-                medicinesAsString += rxName + " " + dose + " " + doseUnit + " " + frequencyUnit + " " + duration + " " + durationUnit + "<br/>";
+                medicinesAsString += rxName + " " + dose + " " + doseUnit + " " + frequencyUnit + " " + duration + " " + durationUnit + CARD_BR;
             }
         }
 
@@ -1946,7 +1960,7 @@ public class PatientEncounterController implements Serializable {
                     if (!durationUnit.trim().equals("")) {
                         medicinesOutdoorAsString += " " + durationUnit;
                     }
-                    medicinesOutdoorAsString += "<br/>";
+                    medicinesOutdoorAsString += CARD_BR;
                 }
             }
         }
@@ -1977,7 +1991,7 @@ public class PatientEncounterController implements Serializable {
                     if (!durationUnit.trim().equals("")) {
                         medicinesIndoorAsString += " " + durationUnit;
                     }
-                    medicinesIndoorAsString += "<br/>";
+                    medicinesIndoorAsString += CARD_BR;
                 }
             }
         }
@@ -1988,7 +2002,7 @@ public class PatientEncounterController implements Serializable {
             if (!ix.getLobValue().trim().equals("")) {
                 ixAsString += " - " + ix.getLobValue();
             }
-            ixAsString += "<br/>";
+            ixAsString += CARD_BR;
         }
         String ixSameLine = "";
 
@@ -2003,7 +2017,7 @@ public class PatientEncounterController implements Serializable {
         }
 
         String bpPrSameLine = "";
-        bpPrSameLine += (e.getBp() != null ? "BP - " + e.getBp() + "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" : "BP - &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;");
+        bpPrSameLine += (e.getBp() != null ? "BP - " + e.getBp() + "\u00A0\u00A0\u00A0\u00A0\u00A0" : "BP - \u00A0\u00A0\u00A0\u00A0\u00A0");
         bpPrSameLine += (e.getPr() != null ? "PR - " + e.getPr() : "PR - ");
 
         String visitDx = "";
@@ -2012,12 +2026,12 @@ public class PatientEncounterController implements Serializable {
             if (!ix.getLobValue().trim().equals("")) {
                 visitDx += " - " + ix.getLobValue();
             }
-            visitDx += "<br/>";
+            visitDx += CARD_BR;
         }
 
         String paAsString = "";
         for (ClinicalFindingValue pa : getEncounterPlanOfActions()) {
-            paAsString += pa.getItemValue().getName() + "<br/>";
+            paAsString += pa.getItemValue().getName() + CARD_BR;
         }
 
         String allergiesAsString = "";
@@ -2025,7 +2039,7 @@ public class PatientEncounterController implements Serializable {
             if (cf != null) {
                 String allergyName = cf.getItemValue() != null && cf.getItemValue().getName() != null ? cf.getItemValue().getName() : "";
                 String details = cf.getStringValue() != null ? cf.getStringValue() : "";
-                allergiesAsString += allergyName + (details.isEmpty() ? "" : " - " + details) + "<br/>";
+                allergiesAsString += allergyName + (details.isEmpty() ? "" : " - " + details) + CARD_BR;
             }
         }
 
@@ -2049,7 +2063,7 @@ public class PatientEncounterController implements Serializable {
                 if (!durationUnit.trim().equals("")) {
                     routineMedicinesAsString += " - " + durationUnit;
                 }
-                routineMedicinesAsString += "<br/>";
+                routineMedicinesAsString += CARD_BR;
             }
         }
 
@@ -2059,44 +2073,44 @@ public class PatientEncounterController implements Serializable {
                 String diagnosisName = dx.getItemValue() != null && dx.getItemValue().getName() != null ? dx.getItemValue().getName() : "";
                 String details = dx.getStringValue() != null ? dx.getStringValue() : "";
 
-                diagnosesAsString += diagnosisName + (details.isEmpty() ? "" : " - " + details) + "<br/>";
+                diagnosesAsString += diagnosisName + (details.isEmpty() ? "" : " - " + details) + CARD_BR;
             }
         }
 
-        output = input.replace("{patient_name}", name)
-                .replace("{patient_age}", age)
-                .replace("{comments}", comments)
-                .replace("{sex}", sex)
-                .replace("{address}", address)
-                .replace("{phone}", phone)
-                .replace("{medicines}", medicinesAsString)
-                .replace("{outdoor}", medicinesOutdoorAsString)
-                .replace("{indoor}", medicinesIndoorAsString)
-                .replace("{ix}", ixAsString)
-                .replace("{visit-dx}", visitDx)
-                .replace("{ix-same-line}", ixSameLine)
-                .replace("{bp-pr-sameLine}", bpPrSameLine)
-                .replace("{rr}", rr)
-                .replace("{pa}", paAsString)
-                .replace("{past-dx}", diagnosesAsString)
-                .replace("{routine-medicines}", routineMedicinesAsString)
-                .replace("{allergies}", allergiesAsString)
-                .replace("{visit-date}", visitDate)
-                .replace("{height}", height)
-                .replace("{weight}", weight)
-                .replace("{bmi}", bmi)
-                .replace("{bp}", bp)
-                .replace("{pr}", pulseRate)
-                .replace("{pfr}", pfr)
-                .replace("{sat}", saturation)
-                .replace("{patient_phn_number}", phn)
-                .replace("{patient_nic}", nic)
-                .replace("{medical_start_date}", medicalStartDate)
-                .replace("{medical_end_days}", medicalEndDays)
-                .replace("{medical_certificate_duration}", medicalCertificateDuration)
-                .replace("{referral_institution}", referralInstitutionName)
-                .replace("{referral_doctor}", referralDoctorName)
-                .replace("{referring_doctor}", referralDoctorName);
+        output = input.replace("{patient_name}", cardText(name))
+                .replace("{patient_age}", cardText(age))
+                .replace("{comments}", cardText(comments))
+                .replace("{sex}", cardText(sex))
+                .replace("{address}", cardText(address))
+                .replace("{phone}", cardText(phone))
+                .replace("{medicines}", cardText(medicinesAsString))
+                .replace("{outdoor}", cardText(medicinesOutdoorAsString))
+                .replace("{indoor}", cardText(medicinesIndoorAsString))
+                .replace("{ix}", cardText(ixAsString))
+                .replace("{visit-dx}", cardText(visitDx))
+                .replace("{ix-same-line}", cardText(ixSameLine))
+                .replace("{bp-pr-sameLine}", cardText(bpPrSameLine))
+                .replace("{rr}", cardText(rr))
+                .replace("{pa}", cardText(paAsString))
+                .replace("{past-dx}", cardText(diagnosesAsString))
+                .replace("{routine-medicines}", cardText(routineMedicinesAsString))
+                .replace("{allergies}", cardText(allergiesAsString))
+                .replace("{visit-date}", cardText(visitDate))
+                .replace("{height}", cardText(height))
+                .replace("{weight}", cardText(weight))
+                .replace("{bmi}", cardText(bmi))
+                .replace("{bp}", cardText(bp))
+                .replace("{pr}", cardText(pulseRate))
+                .replace("{pfr}", cardText(pfr))
+                .replace("{sat}", cardText(saturation))
+                .replace("{patient_phn_number}", cardText(phn))
+                .replace("{patient_nic}", cardText(nic))
+                .replace("{medical_start_date}", cardText(medicalStartDate))
+                .replace("{medical_end_days}", cardText(medicalEndDays))
+                .replace("{medical_certificate_duration}", cardText(medicalCertificateDuration))
+                .replace("{referral_institution}", cardText(referralInstitutionName))
+                .replace("{referral_doctor}", cardText(referralDoctorName))
+                .replace("{referring_doctor}", cardText(referralDoctorName));
         // Shown unescaped: substituted patient values must not become live markup
         return com.divudi.core.util.CardHtmlSanitizer.sanitize(output);
 
@@ -3911,12 +3925,16 @@ public class PatientEncounterController implements Serializable {
             return "";
         }
         String content = encounterReferral.getLobValue();
-        content = content.replace("&lt;", "<")
-                .replace("&gt;", ">")
-                .replace("&amp;", "&")
-                .replace("&quot;", "\"")
-                .replace("&#39;", "'");
-        // Clean after un-escaping, so escaped text cannot turn back into live markup
+        // Older documents were stored wholly escaped (no real tags), so they are decoded once
+        // for display. A document that already holds markup keeps its escaped text as text:
+        // decoding it would turn typed tags into live markup.
+        if (content.indexOf('<') < 0) {
+            content = content.replace("&lt;", "<")
+                    .replace("&gt;", ">")
+                    .replace("&quot;", "\"")
+                    .replace("&#39;", "'")
+                    .replace("&amp;", "&");
+        }
         return com.divudi.core.util.CardHtmlSanitizer.sanitize(content);
     }
 
