@@ -88,3 +88,8 @@ February 2025 — noted here only as a historical anchor for "why this guidance
 exists now," not as blame. The pattern was a reasonable shortcut with one or two
 hospitals live; it stopped scaling once a third and fourth customer showed up
 wanting their own variants.
+
+
+## From CLAUDE.md (moved detail)
+
+never gate behavior on a hospital's name (`applicationInstitution eq 'Ruhuna'` etc.); use a `ConfigOption`. Fix existing violations only when already touching that code.

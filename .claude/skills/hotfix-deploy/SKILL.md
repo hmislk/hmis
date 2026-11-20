@@ -312,3 +312,8 @@ before (it had to be closed and redone against the correct branch).
 
 - [Commit Conventions — Hotfix Branches](../../developer_docs/git/commit-conventions.md#hotfix-branches)
 - [Production Deployment Guide](../../wiki-docs/Deployment/Production-Deployment-Guide.md)
+
+
+## From CLAUDE.md (moved detail)
+
+sync `.gitignore` first (`git checkout origin/development -- .gitignore`); mirror every merged hotfix into `development` unless its commits were cherry-picked from `development` (Step 9a).
