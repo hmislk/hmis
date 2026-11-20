@@ -2947,12 +2947,6 @@ public class BhtSummeryController implements Serializable {
 
         persistGroupedProfessionalFeeOrder();
 
-        ensureOriginalBillSaved();
-
-        originalBill.setDiscount(discount);
-        originalBill.setNetTotal(originalBill.getGrantTotal() - discount);
-        getBillFacade().edit(originalBill);
-
         // Checked, saved and confirmed under one lock, so a double submit cannot
         // get past errorCheck() twice (issue #24966). A saved current means the
         // same session has already submitted this bill; saving it again would
@@ -2965,6 +2959,12 @@ public class BhtSummeryController implements Serializable {
             if (getCurrent().getId() != null || (!creatingNewVersion && isFinalizedInDatabase())) {
                 return false;
             }
+            // The original bill is saved under the same lock, after the check, so a
+            // refused concurrent settle does not leave a second original bill (#25822).
+            ensureOriginalBillSaved();
+            originalBill.setDiscount(discount);
+            originalBill.setNetTotal(originalBill.getGrantTotal() - discount);
+            getBillFacade().edit(originalBill);
             saveBill();
             getCurrent().setConfirmedFinalBill(true);
             getBillFacade().edit(getCurrent());
