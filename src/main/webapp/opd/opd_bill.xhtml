@@ -1144,7 +1144,7 @@
                                                                         value="#{billFeeBundleEntry.selectedBillFee.collectedByDoctorAtBilling}">
                                                                         <p:ajax
                                                                             process="@this"
-                                                                            update=":#{p:resolveFirstComponentWithId('panelBillItems',view).clientId} :#{p:resolveFirstComponentWithId('msg',view).clientId} :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId} :#{p:resolveFirstComponentWithId('payment',view).clientId}"
+                                                                            update=":#{p:resolveFirstComponentWithId('panelBillItems',view).clientId} :#{p:resolveFirstComponentWithId('msg',view).clientId} :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}"
                                                                             listener="#{opdBillController.feeCollectedByDoctorChanged(billFeeBundleEntry.selectedBillFee)}" />
                                                                     </p:selectBooleanCheckbox>
                                                                 </h:panelGroup>
