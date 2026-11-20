@@ -2,13 +2,16 @@ name: PR Validator
 
 on:
   pull_request:
-    types: [ opened, synchronize, reopened ]
+    # edited: a PR retargeted onto development must run these checks too
+    # (retro 2026-11-21: two retargeted PRs never ran them). Other edits are skipped below.
+    types: [ opened, synchronize, reopened, edited ]
     branches:
       - development
       - '*-prod'
 
 jobs:
   validate-jdbc-data-sources:
+    if: github.event.action != 'edited' || github.event.changes.base.ref.from
     runs-on: ubuntu-latest
 
     steps:
