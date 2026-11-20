@@ -1,16 +1,6 @@
 ---
 name: identify-chrome-devices
-description: >
-  Identify and name Chrome instances connected to the Claude-in-Chrome
-  extension under the current Claude account, and persist a stable
-  deviceId -> name mapping to a local file outside the repo. Use when the
-  user asks to "identify my chrome devices", "name my browsers", wants to
-  disambiguate list_connected_browsers output, or invokes
-  /identify-chrome-devices. Requires a session with the Claude-in-Chrome
-  extension actually connected — see
-  developer_docs/tools/claude-in-chrome-device-identification.md for
-  background and the policy on preferring Playwright for ordinary browser
-  automation.
+description: 'Name Chrome instances connected to Claude-in-Chrome and save a deviceId -> name map outside the repo. Use for "identify my chrome devices", "name my browsers", /identify-chrome-devices.'
 user-invocable: true
 ---
 

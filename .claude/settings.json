@@ -32,5 +32,9 @@
         ]
       }
     ]
+  },
+  "enabledPlugins": {
+    "andrej-karpathy-skills@karpathy-skills": false,
+    "claude-code-setup@claude-plugins-official": false
   }
 }
