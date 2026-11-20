@@ -395,6 +395,14 @@ public class InwardSearch implements Serializable {
                 || (b.getBillTypeAtomic() != null && b.getBillTypeAtomic().getBillCategory() == BillCategory.REFUND);
     }
 
+    private boolean refuseIfCancellationBill(Bill b) {
+        if (isCancellationBill(b)) {
+            JsfUtil.addErrorMessage("This is a cancellation bill and cannot be cancelled. To reverse it, create the charge again.");
+            return true;
+        }
+        return false;
+    }
+
     public boolean isBillACancellationBill() {
         return isCancellationBill(bill);
     }
@@ -476,6 +484,9 @@ public class InwardSearch implements Serializable {
     }
 
     public String navigateToCancelInwardServiceBillFromReprint() {
+        if (refuseIfCancellationBill(getBill())) {
+            return "";
+        }
         if (bill == null) {
             JsfUtil.addErrorMessage("No bill is selected");
             return "";
@@ -493,6 +504,9 @@ public class InwardSearch implements Serializable {
     }
 
     public String navigateToCancelInwardProfessionalBill() {
+        if (refuseIfCancellationBill(getBill())) {
+            return "";
+        }
         if (bill == null) {
             JsfUtil.addErrorMessage("No bill is selected");
             return "";
@@ -581,6 +595,9 @@ public class InwardSearch implements Serializable {
     private Request currentRequest;
 
     public String navigateToCancelInpatientBill() {
+        if (refuseIfCancellationBill(getBill())) {
+            return "";
+        }
         if (bill == null) {
             JsfUtil.addErrorMessage("No bill is selected");
             return "";
@@ -2002,9 +2019,17 @@ public class InwardSearch implements Serializable {
             JsfUtil.addErrorMessage("This bill's admission has changed. Please search it again.");
             return null;
         }
+        if (lockEncounterId == null && freshBill.getPatientEncounter() != null) {
+            // The bill had no admission when selected, so no lock was taken; it has one now.
+            JsfUtil.addErrorMessage("This bill's admission has changed. Please search it again.");
+            return null;
+        }
         if (this.bill != null && billId.equals(this.bill.getId())) {
             this.bill = freshBill;
             this.billItems = null;
+        }
+        if (refuseIfCancellationBill(freshBill)) {
+            return null;
         }
         if (freshBill.isCancelled() || freshBill.isRetired()) {
             JsfUtil.addErrorMessage("This bill was already cancelled, possibly by another user. It was not cancelled again.");
@@ -2017,15 +2042,19 @@ public class InwardSearch implements Serializable {
         if (isCancelPageOutOfDate()) {
             return;
         }
-        if (getBill() == null || getBill().getId() == null || getBill().getId() == 0) {
+        final Bill selected = getBill();
+        if (refuseIfCancellationBill(selected)) {
+            return;
+        }
+        if (selected == null || selected.getId() == null || selected.getId() == 0) {
             JsfUtil.addErrorMessage("No Bill to cancel");
             return;
         }
         // Bind the target now. This bean is session scoped, so another tab can replace the
         // selected bill while this request waits for the lock; the locked part must only
         // use these captured values, never the page state.
-        final Long targetBillId = getBill().getId();
-        final PatientEncounter lockEncounter = getBill().getPatientEncounter();
+        final Long targetBillId = selected.getId();
+        final PatientEncounter lockEncounter = selected.getPatientEncounter();
         final Long lockEncounterId = lockEncounter == null ? null : lockEncounter.getId();
         final String targetComment = getComment();
         final PaymentMethod targetPaymentMethod = paymentMethod;
@@ -2135,6 +2164,9 @@ public class InwardSearch implements Serializable {
     }
 
     public void cancelInwardProfessionalFeeBill() {
+        if (refuseIfCancellationBill(getBill())) {
+            return;
+        }
         if (getBill() != null && getBill().getId() != null && getBill().getId() != 0) {
 
             if (getBill().getCheckedBy() != null) {
@@ -2196,6 +2228,9 @@ public class InwardSearch implements Serializable {
     }
 
     public void cancelTheatreProfessionalFeeBill() {
+        if (refuseIfCancellationBill(getBill())) {
+            return;
+        }
         if (getBill() != null && getBill().getId() != null && getBill().getId() != 0) {
 
             if (getBill().getCheckedBy() != null) {
@@ -2681,6 +2716,9 @@ public class InwardSearch implements Serializable {
         if (isCancelPageOutOfDate()) {
             return;
         }
+        if (refuseIfCancellationBill(getBill())) {
+            return;
+        }
         if (getBill() != null && getBill().getId() != null && getBill().getId() != 0) {
 
             long dayCount = CommonFunctions.getDayCount(getBill().getCreatedAt(), new Date());
@@ -2842,15 +2880,19 @@ public class InwardSearch implements Serializable {
         if (isCancelPageOutOfDate()) {
             return;
         }
-        if (getBill() == null || getBill().getId() == null || getBill().getId() == 0) {
+        final Bill selected = getBill();
+        if (refuseIfCancellationBill(selected)) {
+            return;
+        }
+        if (selected == null || selected.getId() == null || selected.getId() == 0) {
             JsfUtil.addErrorMessage("No Bill to cancel");
             return;
         }
         // Bind the target now. This bean is session scoped, so another tab can replace the
         // selected bill while this request waits for the lock; the locked part must only
         // use these captured values, never the page state.
-        final Long targetBillId = getBill().getId();
-        final PatientEncounter lockEncounter = getBill().getPatientEncounter();
+        final Long targetBillId = selected.getId();
+        final PatientEncounter lockEncounter = selected.getPatientEncounter();
         final Long lockEncounterId = lockEncounter == null ? null : lockEncounter.getId();
         final String targetComment = getComment();
         final PaymentMethod targetPaymentMethod = paymentMethod;
@@ -2984,6 +3026,9 @@ public class InwardSearch implements Serializable {
     }
 
     public void cancelSurgeryBill() {
+        if (refuseIfCancellationBill(getBill())) {
+            return;
+        }
         if (getBill() != null && getBill().getId() != null && getBill().getId() != 0) {
 
 //            if (check()) {
@@ -3299,15 +3344,19 @@ public class InwardSearch implements Serializable {
         if (isCancelPageOutOfDate()) {
             return;
         }
-        if (getBill() == null || getBill().getId() == null || getBill().getId() == 0) {
+        final Bill selected = getBill();
+        if (refuseIfCancellationBill(selected)) {
+            return;
+        }
+        if (selected == null || selected.getId() == null || selected.getId() == 0) {
             JsfUtil.addErrorMessage("No Bill to cancel");
             return;
         }
         // Bind the target now. This bean is session scoped, so another tab can replace the
         // selected bill while this request waits for the lock; the locked part must only
         // use these captured values, never the page state.
-        final Long targetBillId = getBill().getId();
-        final PatientEncounter lockEncounter = getBill().getPatientEncounter();
+        final Long targetBillId = selected.getId();
+        final PatientEncounter lockEncounter = selected.getPatientEncounter();
         final Long lockEncounterId = lockEncounter == null ? null : lockEncounter.getId();
         final String targetComment = getComment();
         final PaymentMethod targetPaymentMethod = paymentMethod;
@@ -3549,6 +3598,9 @@ public class InwardSearch implements Serializable {
     }
 
     public void cancelPaymentBill() {
+        if (refuseIfCancellationBill(getBill())) {
+            return;
+        }
         if (getBill() != null && getBill().getId() != null && getBill().getId() != 0) {
             if (errorCheck()) {
                 return;

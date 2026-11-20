@@ -34,6 +34,7 @@
                                         icon="fas fa-ban"
                                         class="ui-button-danger"
                                         ajax="false"
+                                        disabled="#{inwardSearch.billACancellationBill}"
                                         action="#{inwardSearch.cancelTheatreProfessionalFeeBill()}"
                                         onclick="return confirm('Are you sure you want to cancel this bill?');"/>
                                     <p:commandButton

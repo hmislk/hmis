@@ -31,6 +31,7 @@
                                             value="Cancel" 
                                             ajax="false"
                                             onclick="PF('cancelProvisionalBillLoadingDlg').show();"
+                                            disabled="#{inwardSearch.billACancellationBill}"
                                             action="#{inwardSearch.cancelProvisionalBillPayment()}" >
                                         </p:commandButton>
                                         <p:commandButton

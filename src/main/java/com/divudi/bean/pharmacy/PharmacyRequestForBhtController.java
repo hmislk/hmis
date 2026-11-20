@@ -1411,6 +1411,19 @@ public class PharmacyRequestForBhtController implements Serializable {
         return false;
     }
 
+    /**
+     * Adds the current item and quantity to the dispense request without
+     * prescription details (Case 3 on ward_pharmacy_bht_issue_request_bill.xhtml).
+     * Clears any prescription details so that no stale directions from an earlier
+     * line or from an unsubmitted prescription panel are attached.
+     */
+    public void addBillItemDispenseOnly() {
+        if (billItem != null) {
+            billItem.setPrescription(null);
+        }
+        addBillItem();
+    }
+
     public void addBillItem() {
 
         if (billItem == null) {
