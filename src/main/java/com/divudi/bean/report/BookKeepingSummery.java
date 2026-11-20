@@ -816,9 +816,9 @@ public class BookKeepingSummery implements Serializable {
                 + " and  bi.bill.billType= :bTp  "
                 + " and  bi.bill.createdAt between :fromDate and :toDate "
                 + " and (bi.bill.paymentMethod = :pm1 "
-                + " and  bi.bill.paymentMethod = :pm2 "
-                + " and  bi.bill.paymentMethod = :pm3 "
-                + " and  bi.bill.paymentMethod = :pm4)"
+                + " or  bi.bill.paymentMethod = :pm2 "
+                + " or  bi.bill.paymentMethod = :pm3 "
+                + " or  bi.bill.paymentMethod = :pm4)"
                 + " group by c.name, i.name,  bf.fee.feeType,  bi.bill.billClassType "
                 + " order by c.name, i.name, bf.fee.feeType";
 
