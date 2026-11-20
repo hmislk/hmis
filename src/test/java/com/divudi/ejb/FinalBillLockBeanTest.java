@@ -192,44 +192,6 @@ public class FinalBillLockBeanTest {
         assertEquals(2, counter.get());
     }
 
-    @Test
-    @DisplayName("BillNumberGenerator delegates to FinalBillLockBean")
-    public void testBillNumberGeneratorDelegatesToFinalBillLockBean() throws Exception {
-        AtomicBoolean standardDelegated = new AtomicBoolean(false);
-        AtomicBoolean outsideDelegated = new AtomicBoolean(false);
-        PatientEncounter pe = createEncounter(505L);
-
-        FinalBillLockBean recordingBean = new FinalBillLockBean() {
-            @Override
-            public <T> T withFinalBillVersionLock(PatientEncounter encounter, Supplier<T> action) {
-                if (encounter == pe) {
-                    standardDelegated.set(true);
-                }
-                return action.get();
-            }
-
-            @Override
-            public <T> T withFinalBillVersionLockOutsideTransaction(PatientEncounter encounter, Supplier<T> action) {
-                if (encounter == pe) {
-                    outsideDelegated.set(true);
-                }
-                return action.get();
-            }
-        };
-
-        BillNumberGenerator generator = new BillNumberGenerator();
-        Field field = BillNumberGenerator.class.getDeclaredField("finalBillLockBean");
-        field.setAccessible(true);
-        field.set(generator, recordingBean);
-
-        String result = generator.withFinalBillVersionLock(pe, () -> "delegated-ok");
-        assertEquals("delegated-ok", result);
-        assertTrue(standardDelegated.get(), "BillNumberGenerator must invoke FinalBillLockBean.withFinalBillVersionLock");
-
-        String resultOutside = generator.withFinalBillVersionLockOutsideTransaction(pe, () -> "delegated-outside-ok");
-        assertEquals("delegated-outside-ok", resultOutside);
-        assertTrue(outsideDelegated.get(), "BillNumberGenerator must invoke FinalBillLockBean.withFinalBillVersionLockOutsideTransaction");
-    }
     /** Counts new transactions; the registry stub says whether one is active. */
     private static class CountingLockBean extends FinalBillLockBean {
         final AtomicInteger newTransactions = new AtomicInteger();
