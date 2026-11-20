@@ -257,7 +257,7 @@ public class CreditSummeryController implements Serializable {
     }
 
     private double getFee(ItemWithFee i, FeeType feeType) {
-        String sql = "SELECT sum(bf.feeValue) FROM BillFee bf WHERE "
+        String sql = "SELECT sum(bf.feeValue) FROM BillFee bf WHERE (bf.collectedByDoctorAtBilling = false or bf.collectedByDoctorAtBilling is null) and "
                 + " bf.bill.billType=:bTp and bf.fee.feeType=:ftp "
                 + " and bf.bill.retired=false "
                 + " and bf.bill.createdAt between :fromDate and :toDate "
@@ -289,7 +289,7 @@ public class CreditSummeryController implements Serializable {
     }
 
     private double getFeeWithOut(ItemWithFee i, FeeType feeType) {
-        String sql = "SELECT sum(bf.feeValue) FROM BillFee bf WHERE "
+        String sql = "SELECT sum(bf.feeValue) FROM BillFee bf WHERE (bf.collectedByDoctorAtBilling = false or bf.collectedByDoctorAtBilling is null) and "
                 + " bf.bill.billType=:bTp "
                 + " and bf.bill.retired=false "
                 + " and bf.fee.feeType!=:ftp "
@@ -322,7 +322,7 @@ public class CreditSummeryController implements Serializable {
     }
 
     private double getFeeVatTotal() {
-        String sql = "SELECT sum(bf.feeValue) FROM BillFee bf WHERE "
+        String sql = "SELECT sum(bf.feeValue) FROM BillFee bf WHERE (bf.collectedByDoctorAtBilling = false or bf.collectedByDoctorAtBilling is null) and "
                 + " bf.bill.billType=:bTp "
                 + " and bf.bill.retired=false "
                 + " and bf.fee.feeType is not null "

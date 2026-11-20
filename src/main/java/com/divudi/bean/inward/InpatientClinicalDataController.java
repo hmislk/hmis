@@ -64,6 +64,7 @@ import com.divudi.core.facade.PersonFacade;
 import com.divudi.core.facade.PrescriptionFacade;
 import com.divudi.ejb.PrescriptionService;
 import com.divudi.core.util.JsfUtil;
+import com.divudi.core.util.CardHtmlSanitizer;
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -482,8 +483,8 @@ public class InpatientClinicalDataController implements Serializable {
         String allergiesAsString = allergyStart;
         for (ClinicalFindingValue cf : getPatientAllergies()) {
             if (cf != null) {
-                String allergyName = cf.getItemValue() != null && cf.getItemValue().getName() != null ? cf.getItemValue().getName() : "";
-                String details = cf.getStringValue() != null ? cf.getStringValue() : "";
+                String allergyName = cf.getAllergyTypeAndName();
+                String details = cf.getAllergyRemark();
                 allergiesAsString += allergyName + (details.isEmpty() ? "" : " - " + details) + "<br/>";
             }
         }
@@ -730,9 +731,9 @@ public class InpatientClinicalDataController implements Serializable {
         String allergiesAsString = allergyStart;
         for (ClinicalFindingValue cf : getPatientAllergies()) {
             if (cf != null) {
-                String allergyName = cf.getItemValue() != null && cf.getItemValue().getName() != null ? cf.getItemValue().getName() : "";
-                String details = cf.getStringValue() != null ? cf.getStringValue() : "";
-                allergiesAsString += escapeHtmlText(allergyName + (details.isEmpty() ? "" : " - " + details)) + "<br/>";
+                String allergyName = cf.getAllergyTypeAndName();
+                String details = cf.getAllergyRemark();
+                allergiesAsString += escapeHtmlText(allergyName + (details == null || details.isEmpty() ? "" : " - " + details)) + "<br/>";
             }
         }
         if (allergiesAsString.equals(allergyStart)) {
@@ -899,7 +900,7 @@ public class InpatientClinicalDataController implements Serializable {
                 .replace("{patient_name}", escapeHtmlText(name))
                 .replace("{patient_age}", escapeHtmlText(age))
                 .replace("{patient_sex}", escapeHtmlText(sex));
-        return output;
+        return CardHtmlSanitizer.sanitize(output);
 
     }
 
@@ -1217,23 +1218,10 @@ public class InpatientClinicalDataController implements Serializable {
 
     /**
      * Card and letter HTML (AI output, or what the editor posts) is shown with
-     * escape="false", so keep only formatting markup and drop scripts, event
-     * handlers and javascript: links. Relative and data: image sources are kept
-     * so logos in templates survive a save.
+     * escape="false"; see {@link CardHtmlSanitizer}. Null becomes "".
      */
     private static String sanitizeCardHtml(String html) {
-        if (html == null) {
-            return "";
-        }
-        org.jsoup.safety.Safelist safelist = org.jsoup.safety.Safelist.relaxed()
-                .addTags("s", "hr", "font", "center")
-                .addAttributes(":all", "style", "class", "align")
-                .addAttributes("font", "color", "size", "face")
-                .addAttributes("table", "border", "cellpadding", "cellspacing")
-                .addProtocols("img", "src", "data")
-                .preserveRelativeLinks(true);
-        // No pretty-print: keep the editor's own spacing
-        return org.jsoup.Jsoup.clean(html, "http://localhost/", safelist, new org.jsoup.nodes.Document.OutputSettings().prettyPrint(false));
+        return html == null ? "" : CardHtmlSanitizer.sanitize(html);
     }
 
     /**
@@ -1573,8 +1561,8 @@ public class InpatientClinicalDataController implements Serializable {
         boolean hasAllergies = false;
         for (ClinicalFindingValue cf : getPatientAllergies()) {
             if (cf != null) {
-                String allergyName = cf.getItemValue() != null && cf.getItemValue().getName() != null ? cf.getItemValue().getName() : "";
-                String details = cf.getStringValue() != null ? cf.getStringValue() : "";
+                String allergyName = cf.getAllergyTypeAndName();
+                String details = cf.getAllergyRemark();
                 sb.append("  - ").append(allergyName);
                 if (!details.isEmpty()) sb.append(" (").append(details).append(")");
                 sb.append("\n");
@@ -1894,6 +1882,9 @@ public class InpatientClinicalDataController implements Serializable {
             return;
         }
         encounterReferral.setRetired(true);
+        if (encounterReferral.getLobValue() != null) {
+            encounterReferral.setLobValue(sanitizeCardHtml(encounterReferral.getLobValue()));
+        }
         encounterDocuments.remove(encounterReferral);
         if (encounterReferral.getId() == null) {
             clinicalFindingValueFacade.create(encounterReferral);
@@ -2195,8 +2186,7 @@ public class InpatientClinicalDataController implements Serializable {
     }
 
     public List<ClinicalFindingValue> fillPatientAllergies(Patient patient) {
-        List<ClinicalFindingValueType> clinicalFindingValueTypes = new ArrayList<>();
-        clinicalFindingValueTypes.add(ClinicalFindingValueType.PatientAllergy);
+        List<ClinicalFindingValueType> clinicalFindingValueTypes = new ArrayList<>(ClinicalFindingValueType.patientAllergyTypes());
         return fillCurrentPatientClinicalFindingValues(patient, clinicalFindingValueTypes);
     }
 
@@ -2549,12 +2539,22 @@ public class InpatientClinicalDataController implements Serializable {
      * ward-medicine page) set the patient without reloading allergies.
      */
     private String getAllergyWarning(Item prescribedItem) {
+        return getAllergyWarning(prescribedItem, patient);
+    }
+
+    /**
+     * Allergy check against the given patient, the one the medicine is saved for.
+     * The session {@link #patient} can belong to another page (e.g. ward medicines
+     * opened for another patient), so callers pass the patient explicitly.
+     */
+    private String getAllergyWarning(Item prescribedItem, Patient forPatient) {
         if (prescribedItem == null) {
             return null;
         }
-        List<ClinicalFindingValue> allergies = patientAllergies;
-        if ((allergies == null || allergies.isEmpty()) && patient != null) {
-            allergies = fillPatientAllergies(patient);
+        List<ClinicalFindingValue> allergies = forPatient == null ? patientAllergies : fillPatientAllergies(forPatient);
+        // Refresh the session list only when it belongs to the same patient
+        if (forPatient != null && patient != null && forPatient.getId() != null
+                && forPatient.getId().equals(patient.getId())) {
             patientAllergies = allergies;
         }
         if (allergies == null || allergies.isEmpty()) {
@@ -2613,7 +2613,7 @@ public class InpatientClinicalDataController implements Serializable {
             JsfUtil.addErrorMessage("Select Medicine");
             return;
         }
-        String allergyWarning = getAllergyWarning(getAdmissionWardMedicine().getPrescription().getItem());
+        String allergyWarning = getAllergyWarning(getAdmissionWardMedicine().getPrescription().getItem(), parentAdmission.getPatient());
         if (allergyWarning != null) {
             JsfUtil.addWarningMessage("ALLERGY ALERT: " + allergyWarning);
         }
@@ -3247,6 +3247,9 @@ public class InpatientClinicalDataController implements Serializable {
             }
             switch (tcfv.getClinicalFindingValueType()) {
                 case PatientAllergy:
+                case PatientFoodAllergy:
+                case PatientPlasterAllergy:
+                case PatientOtherAllergy:
                     patientAllergies.add(tcfv);
                     break;
                 case PatientDiagnosis:
@@ -3347,12 +3350,13 @@ public class InpatientClinicalDataController implements Serializable {
     }
 
     public void addPatientAllergy() {
-        if (getPatientAllergy().getItemValue() == null) {
-            JsfUtil.addErrorMessage("Select Allergy");
+        String allergyError = getPatientAllergy().validateAllergyInputs();
+        if (allergyError != null) {
+            JsfUtil.addErrorMessage(allergyError);
             return;
         }
+        getPatientAllergy().applyAllergyInputs();
         getPatientAllergy().setPatient(patient);
-        getPatientAllergy().setClinicalFindingValueType(ClinicalFindingValueType.PatientAllergy);
         clinicalFindingValueFacade.create(getPatientAllergy());
         getPatientAllergies().add(getPatientAllergy());
         setPatientAllergy(null);
@@ -3405,7 +3409,7 @@ public class InpatientClinicalDataController implements Serializable {
             JsfUtil.addErrorMessage("Select Medicine");
             return;
         }
-        String allergyWarning = getAllergyWarning(getEncounterMedicine().getPrescription().getItem());
+        String allergyWarning = getAllergyWarning(getEncounterMedicine().getPrescription().getItem(), current.getPatient());
         if (allergyWarning != null) {
             JsfUtil.addWarningMessage("ALLERGY ALERT: " + allergyWarning);
         }

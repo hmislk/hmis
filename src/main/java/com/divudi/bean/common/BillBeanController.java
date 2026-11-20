@@ -474,7 +474,8 @@ public class BillBeanController implements Serializable {
                 //                + " and bf.bill.institution=:ins"
                 + " and bf.billItem.item.department.institution=:ins"
                 + " and bf.bill.createdAt between :fromDate and :toDate "
-                + " and bf.bill.paymentMethod in :pms";
+                + " and bf.bill.paymentMethod in :pms"
+                + " and (bf.collectedByDoctorAtBilling = false or bf.collectedByDoctorAtBilling is null)";
 
         HashMap temMap = new HashMap();
 
@@ -547,7 +548,8 @@ public class BillBeanController implements Serializable {
                 + " and bf.bill.department=:dep"
                 + " and bf.bill.institution=:ins"
                 //+ " and bf.billItem.item.department.institution=:ins"
-                + " and bf.bill.createdAt between :fromDate and :toDate ";
+                + " and bf.bill.createdAt between :fromDate and :toDate "
+                + " and (bf.collectedByDoctorAtBilling = false or bf.collectedByDoctorAtBilling is null)";
         //+ " and bf.bill.paymentMethod in :pms";
 
         HashMap temMap = new HashMap();
@@ -2694,7 +2696,7 @@ public class BillBeanController implements Serializable {
     }
 
     @EJB
-    private com.divudi.ejb.BillNumberGenerator finalBillLockBean;
+    private com.divudi.ejb.FinalBillLockBean finalBillLockBean;
     @EJB
     private com.divudi.core.facade.PatientEncounterFacade finalBillPatientEncounterFacade;
 

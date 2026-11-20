@@ -49,7 +49,7 @@
                                             class="ui-button-danger"
                                             value="To Cancel Bill"
                                             action="inward_cancel_bill_provisional?faces-redirect=true"
-                                            disabled="#{inwardSearch.bill.cancelled}"  />
+                                            disabled="#{inwardSearch.bill.cancelled or inwardSearch.billACancellationBill}"  />
                                         <p:commandButton 
                                             ajax="false"
                                             icon="fas fa-id-card"

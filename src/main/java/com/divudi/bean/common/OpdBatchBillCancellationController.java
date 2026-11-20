@@ -1952,6 +1952,9 @@ public class OpdBatchBillCancellationController implements Serializable, Control
     private Request currentRequest;
 
     public String navigateToCancelOpdBatchBill() {
+        if (com.divudi.core.util.CancellationBillCheck.refuse(getBatchBill())) {
+            return "";
+        }
         if (batchBill == null) {
             JsfUtil.addErrorMessage("No Batch bill is selected");
             return "";
@@ -2745,6 +2748,10 @@ public class OpdBatchBillCancellationController implements Serializable, Control
     public String cancelOpdBatchBill() {
 
         batchBillCancellationStarted = true;
+        if (com.divudi.core.util.CancellationBillCheck.refuse(getBatchBill())) {
+            batchBillCancellationStarted = false;
+            return "";
+        }
         if (getBatchBill() == null) {
             JsfUtil.addErrorMessage("No bill");
             batchBillCancellationStarted = false;

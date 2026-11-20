@@ -1281,12 +1281,12 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
         if (billClassType == null) {
             j = "select new com.divudi.core.data.BillSummery(b.paymentMethod, sum(bf.feeGrossValue), sum(bf.feeDiscount), sum(bf.feeValue), sum(bf.feeVat), count(b), b.billType) "
                     + " from BillFee bf inner join bf.bill b "
-                    + " where b.retired=false "
+                    + " where (bf.collectedByDoctorAtBilling = false or bf.collectedByDoctorAtBilling is null) and b.retired=false "
                     + " and b.billTime between :fd and :td ";
         } else {
             j = "select new com.divudi.core.data.BillSummery(b.paymentMethod, b.billClassType, sum(bf.feeGrossValue), sum(bf.feeDiscount), sum(bf.feeValue), sum(bf.feeVat), count(b), b.billType) "
                     + " from BillFee bf inner join bf.bill b "
-                    + " where b.retired=false "
+                    + " where (bf.collectedByDoctorAtBilling = false or bf.collectedByDoctorAtBilling is null) and b.retired=false "
                     + " and b.billTime between :fd and :td ";
         }
 
@@ -2866,6 +2866,9 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
     }
 
     public void cancelOpdBill() {
+        if (com.divudi.core.util.CancellationBillCheck.refuse(getBill())) {
+            return;
+        }
         if (getBill() == null) {
             JsfUtil.addErrorMessage("No Original Bill Selected To Cancel");
             return;
@@ -3842,7 +3845,14 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
         this.selectedBillId = selectedBillId;
     }
 
+    public boolean isBillACancellationBill() {
+        return com.divudi.core.util.CancellationBillCheck.isCancellationBill(getBill());
+    }
+
     public String navigateToCancelOpdBill() {
+        if (com.divudi.core.util.CancellationBillCheck.refuse(getBill())) {
+            return "";
+        }
         if (bill == null) {
             JsfUtil.addErrorMessage("Nothing to cancel");
             return "";

@@ -25,6 +25,7 @@ import com.divudi.core.data.MessageType;
 import com.divudi.core.data.hr.ReportKeyWord;
 import com.divudi.core.data.inward.SurgeryBillType;
 import com.divudi.ejb.BillNumberGenerator;
+import com.divudi.ejb.FinalBillLockBean;
 import com.divudi.ejb.CashTransactionBean;
 
 import com.divudi.ejb.EjbApplication;
@@ -138,6 +139,8 @@ public class InwardSearch implements Serializable {
     private BillBeanController billBean;
     @EJB
     private BillNumberGenerator billNumberBean;
+    @EJB
+    private FinalBillLockBean finalBillLockBean;
     @Inject
     BhtSummeryFinalizedController bhtSummeryFinalizedController;
     @Inject
@@ -391,6 +394,14 @@ public class InwardSearch implements Serializable {
                 || (b.getBillTypeAtomic() != null && b.getBillTypeAtomic().getBillCategory() == BillCategory.REFUND);
     }
 
+    private boolean refuseIfCancellationBill(Bill b) {
+        if (isCancellationBill(b)) {
+            JsfUtil.addErrorMessage("This is a cancellation bill and cannot be cancelled. To reverse it, create the charge again.");
+            return true;
+        }
+        return false;
+    }
+
     public boolean isBillACancellationBill() {
         return isCancellationBill(bill);
     }
@@ -472,6 +483,9 @@ public class InwardSearch implements Serializable {
     }
 
     public String navigateToCancelInwardServiceBillFromReprint() {
+        if (refuseIfCancellationBill(getBill())) {
+            return "";
+        }
         if (bill == null) {
             JsfUtil.addErrorMessage("No bill is selected");
             return "";
@@ -489,6 +503,9 @@ public class InwardSearch implements Serializable {
     }
 
     public String navigateToCancelInwardProfessionalBill() {
+        if (refuseIfCancellationBill(getBill())) {
+            return "";
+        }
         if (bill == null) {
             JsfUtil.addErrorMessage("No bill is selected");
             return "";
@@ -577,6 +594,9 @@ public class InwardSearch implements Serializable {
     private Request currentRequest;
 
     public String navigateToCancelInpatientBill() {
+        if (refuseIfCancellationBill(getBill())) {
+            return "";
+        }
         if (bill == null) {
             JsfUtil.addErrorMessage("No bill is selected");
             return "";
@@ -645,7 +665,7 @@ public class InwardSearch implements Serializable {
         // session predates any final bill settle or cancel since the page
         // opened, so saving it whole would undo that (#25521): save only the
         // credit limit onto the admission as it is in the database now.
-        getBillNumberBean().withFinalBillVersionLock(pageCopy, () -> {
+        getFinalBillLockBean().withFinalBillVersionLock(pageCopy, () -> {
             PatientEncounter fresh = patientEncounterFacade.findWithoutCache(pageCopy.getId());
             if (fresh == null) {
                 fresh = pageCopy;
@@ -1208,7 +1228,7 @@ public class InwardSearch implements Serializable {
         Long previousFinalBillId = pe.getFinalBill() != null ? pe.getFinalBill().getId() : null;
 
         // Same lock as a final bill save, so one confirmed version can't race another.
-        getBillNumberBean().withFinalBillVersionLock(pe, () -> {
+        getFinalBillLockBean().withFinalBillVersionLock(pe, () -> {
             getInwardBean().unconfirmOtherFinalBills(pe, newConfirmed);
 
             newConfirmed.setConfirmedFinalBill(true);
@@ -1915,8 +1935,12 @@ public class InwardSearch implements Serializable {
     }
 
     private boolean checkInvestigation() {
+        return checkInvestigation(getBill());
+    }
+
+    private boolean checkInvestigation(Bill forBill) {
         String sql = "SELECT p FROM PatientInvestigation p where p.retired=false "
-                + " and p.billItem.bill.id=" + getBill().getId();
+                + " and p.billItem.bill.id=" + forBill.getId();
         List<PatientInvestigation> tmp = getPatientInvestigationFacade().findByJpql(sql);
 
         for (PatientInvestigation p : tmp) {
@@ -1966,55 +1990,135 @@ public class InwardSearch implements Serializable {
 
     }
 
-    public void cancelBillService() {
-        if (getBill() != null && getBill().getId() != null && getBill().getId() != 0) {
+    /**
+     * Re-reads the bill with the given id (and its admission) fresh from the database,
+     * for the locked cancel steps, which work only on this copy and never on the
+     * session-scoped page state. The page's bill is refreshed only when it is still
+     * the same bill, so another tab's selection is not replaced.
+     *
+     * @return the fresh bill, or null after an error message when it cannot be found,
+     * is already cancelled or retired, or no longer belongs to the locked admission.
+     */
+    private Bill loadFreshBillOrRefuse(Long billId, Long lockEncounterId) {
+        Bill freshBill = getBillFacade().findWithoutCache(billId);
+        if (freshBill == null) {
+            JsfUtil.addErrorMessage("This bill could not be found. Please search it again.");
+            return null;
+        }
+        if (freshBill.getPatientEncounter() != null && freshBill.getPatientEncounter().getId() != null) {
+            if (lockEncounterId != null && !lockEncounterId.equals(freshBill.getPatientEncounter().getId())) {
+                JsfUtil.addErrorMessage("This bill's admission has changed. Please search it again.");
+                return null;
+            }
+            PatientEncounter freshEncounter = getPatientEncounterFacade().findWithoutCache(freshBill.getPatientEncounter().getId());
+            if (freshEncounter != null) {
+                freshBill.setPatientEncounter(freshEncounter);
+            }
+        } else if (lockEncounterId != null) {
+            JsfUtil.addErrorMessage("This bill's admission has changed. Please search it again.");
+            return null;
+        }
+        if (lockEncounterId == null && freshBill.getPatientEncounter() != null) {
+            // The bill had no admission when selected, so no lock was taken; it has one now.
+            JsfUtil.addErrorMessage("This bill's admission has changed. Please search it again.");
+            return null;
+        }
+        if (this.bill != null && billId.equals(this.bill.getId())) {
+            this.bill = freshBill;
+            this.billItems = null;
+        }
+        if (refuseIfCancellationBill(freshBill)) {
+            return null;
+        }
+        if (freshBill.isCancelled() || freshBill.isRetired()) {
+            JsfUtil.addErrorMessage("This bill was already cancelled, possibly by another user. It was not cancelled again.");
+            return null;
+        }
+        return freshBill;
+    }
 
-            if (getBill().getCheckedBy() != null) {
+    public void cancelBillService() {
+        final Bill selected = getBill();
+        if (refuseIfCancellationBill(selected)) {
+            return;
+        }
+        if (selected == null || selected.getId() == null || selected.getId() == 0) {
+            JsfUtil.addErrorMessage("No Bill to cancel");
+            return;
+        }
+        // Bind the target now. This bean is session scoped, so another tab can replace the
+        // selected bill while this request waits for the lock; the locked part must only
+        // use these captured values, never the page state.
+        final Long targetBillId = selected.getId();
+        final PatientEncounter lockEncounter = selected.getPatientEncounter();
+        final Long lockEncounterId = lockEncounter == null ? null : lockEncounter.getId();
+        final String targetComment = getComment();
+        final PaymentMethod targetPaymentMethod = paymentMethod;
+        // Check and cancellation writes run under the admission's lock and commit before it
+        // is released, so two sessions cancelling the same bill cannot both pass the check.
+        if (lockEncounter == null || lockEncounterId == null) {
+            cancelBillServiceUnderLock(targetBillId, lockEncounterId, targetComment, targetPaymentMethod);
+            return;
+        }
+        getFinalBillLockBean().withFinalBillVersionLock(lockEncounter, () -> {
+            cancelBillServiceUnderLock(targetBillId, lockEncounterId, targetComment, targetPaymentMethod);
+        });
+    }
+
+    private void cancelBillServiceUnderLock(Long billId, Long lockEncounterId, String c, PaymentMethod pm) {
+        {
+
+            Bill b = loadFreshBillOrRefuse(billId, lockEncounterId);
+            if (b == null) {
+                return;
+            }
+
+            if (b.getCheckedBy() != null) {
                 JsfUtil.addErrorMessage("Checked Bill. Can not cancel");
                 return;
             }
 
-            if (getBill().isCancelled()) {
+            if (b.isCancelled()) {
                 JsfUtil.addErrorMessage("Already Cancelled. Can not cancel again");
                 return;
             }
-            if (getBill().isRefunded()) {
+            if (b.isRefunded()) {
                 JsfUtil.addErrorMessage("Already Returned. Can not cancel.");
                 return;
             }
 
-            if (getBill().getPatientEncounter() == null) {
+            if (b.getPatientEncounter() == null) {
                 JsfUtil.addErrorMessage("You can't cancel Because this Bill has no BHT");
                 return;
             }
 
-            if (getBill().getPatientEncounter().isPaymentFinalized()) {
+            if (b.getPatientEncounter().isPaymentFinalized()) {
                 JsfUtil.addErrorMessage("Final Payment is Finalized You can't Cancel");
                 return;
             }
 
-            if (getBill().getPatientEncounter().isDischarged()) {
+            if (b.getPatientEncounter().isDischarged()) {
                 JsfUtil.addErrorMessage("Sorry, patient is discharged.");
                 return;
             }
 
-            if (getBill().getPatientEncounter().isNursingDischarged()
+            if (b.getPatientEncounter().isNursingDischarged()
                     && !getWebUserController().hasPrivilege("InwardProcessCancelAfterNursingDischarge")) {
                 JsfUtil.addErrorMessage("Cannot cancel services: nursing discharge has been confirmed for this patient.");
                 return;
             }
 
-            if (checkPaid()) {
+            if (checkPaid(b)) {
                 JsfUtil.addErrorMessage("Doctor Payment Already Paid So Cant Cancel Bill");
                 return;
             }
 
-            if (!checkCancelBill(getBill())) {
+            if (!checkCancelBill(b)) {
                 JsfUtil.addErrorMessage("This bill is processed in the Laboratory.");
                 return;
             }
 
-            if (checkInvestigation()) {
+            if (checkInvestigation(b)) {
                 JsfUtil.addErrorMessage("Lab Report was already Entered .you cant Cancel");
                 return;
             }
@@ -2027,12 +2131,12 @@ public class InwardSearch implements Serializable {
             }
 
             // Same reversal the admission-cancel path runs, so the two cannot drift.
-            CancelledBill cb = reverseInwardServiceBill(getBill(), comment, BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION);
+            CancelledBill cb = reverseInwardServiceBill(b, c, BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION);
 
             try {
                 if (configOptionApplicationController.getBooleanValueByKey("Lab Test History Enabled", false)) {
-                    for (PatientInvestigation pi : patientInvestigationController.getPatientInvestigationsFromBill(getBill())) {
-                        labTestHistoryController.addCancelHistory(pi, sessionController.getDepartment(), comment);
+                    for (PatientInvestigation pi : patientInvestigationController.getPatientInvestigationsFromBill(b)) {
+                        labTestHistoryController.addCancelHistory(pi, sessionController.getDepartment(), c);
                     }
                 }
             } catch (Exception e) {
@@ -2041,24 +2145,24 @@ public class InwardSearch implements Serializable {
             JsfUtil.addSuccessMessage("Cancelled");
 
             if (configOptionApplicationController.getBooleanValueByKey("Mandatory permission to cancel bills.", false)) {
-                Request billRequest = requestService.findRequest(getBill());
+                Request billRequest = requestService.findRequest(b);
                 if (billRequest != null) {
 
-                    requestController.getBills().add(getBill());
+                    requestController.getBills().add(b);
                     requestController.complteRequest(billRequest);
                 }
             }
 
             printPreview = true;
 
-        } else {
-            JsfUtil.addErrorMessage("No Bill to cancel");
-            return;
         }
 
     }
 
     public void cancelInwardProfessionalFeeBill() {
+        if (refuseIfCancellationBill(getBill())) {
+            return;
+        }
         if (getBill() != null && getBill().getId() != null && getBill().getId() != 0) {
 
             if (getBill().getCheckedBy() != null) {
@@ -2120,6 +2224,9 @@ public class InwardSearch implements Serializable {
     }
 
     public void cancelTheatreProfessionalFeeBill() {
+        if (refuseIfCancellationBill(getBill())) {
+            return;
+        }
         if (getBill() != null && getBill().getId() != null && getBill().getId() != 0) {
 
             if (getBill().getCheckedBy() != null) {
@@ -2602,6 +2709,9 @@ public class InwardSearch implements Serializable {
     }
 
     public void cancelFinalBillPayment() {
+        if (refuseIfCancellationBill(getBill())) {
+            return;
+        }
         if (getBill() != null && getBill().getId() != null && getBill().getId() != 0) {
 
             long dayCount = CommonFunctions.getDayCount(getBill().getCreatedAt(), new Date());
@@ -2644,7 +2754,7 @@ public class InwardSearch implements Serializable {
             // both under the final bill lock and decide on those copies, so a stale
             // page never cancels twice or writes old admission totals back (#25544).
             PatientEncounter pageEncounter = getBill().getPatientEncounter();
-            boolean cancelled = getBillNumberBean().withFinalBillVersionLock(pageEncounter, this::cancelFinalBillPaymentUnderLock);
+            boolean cancelled = getFinalBillLockBean().withFinalBillVersionLock(pageEncounter, this::cancelFinalBillPaymentUnderLock);
             if (!cancelled) {
                 return;
             }
@@ -2760,9 +2870,42 @@ public class InwardSearch implements Serializable {
     }
 
     public void cancelProvisionalBillPayment() {
-        if (getBill() != null && getBill().getId() != null && getBill().getId() != 0) {
+        final Bill selected = getBill();
+        if (refuseIfCancellationBill(selected)) {
+            return;
+        }
+        if (selected == null || selected.getId() == null || selected.getId() == 0) {
+            JsfUtil.addErrorMessage("No Bill to cancel");
+            return;
+        }
+        // Bind the target now. This bean is session scoped, so another tab can replace the
+        // selected bill while this request waits for the lock; the locked part must only
+        // use these captured values, never the page state.
+        final Long targetBillId = selected.getId();
+        final PatientEncounter lockEncounter = selected.getPatientEncounter();
+        final Long lockEncounterId = lockEncounter == null ? null : lockEncounter.getId();
+        final String targetComment = getComment();
+        final PaymentMethod targetPaymentMethod = paymentMethod;
+        // Check and cancellation writes run under the admission's lock and commit before it
+        // is released, so two sessions cancelling the same bill cannot both pass the check.
+        if (lockEncounter == null || lockEncounterId == null) {
+            cancelProvisionalBillPaymentUnderLock(targetBillId, lockEncounterId, targetComment, targetPaymentMethod);
+            return;
+        }
+        getFinalBillLockBean().withFinalBillVersionLock(lockEncounter, () -> {
+            cancelProvisionalBillPaymentUnderLock(targetBillId, lockEncounterId, targetComment, targetPaymentMethod);
+        });
+    }
 
-            long dayCount = CommonFunctions.getDayCount(getBill().getCreatedAt(), new Date());
+    private void cancelProvisionalBillPaymentUnderLock(Long billId, Long lockEncounterId, String c, PaymentMethod pm) {
+        {
+
+            Bill b = loadFreshBillOrRefuse(billId, lockEncounterId);
+            if (b == null) {
+                return;
+            }
+
+            long dayCount = CommonFunctions.getDayCount(b.getCreatedAt(), new Date());
             boolean disableTimeLimit = configOptionApplicationController.getBooleanValueByKey("Disable Time Limit on Provisional Bill Cancellation", false);
             boolean hasPrivilege = true;
 
@@ -2772,50 +2915,47 @@ public class InwardSearch implements Serializable {
                 return;
             }
 
-            if (getBill().isCancelled()) {
+            if (b.isCancelled()) {
                 JsfUtil.addErrorMessage("Already Cancelled. Can not cancel again");
                 return;
             }
-            if (getBill().isRefunded()) {
+            if (b.isRefunded()) {
                 JsfUtil.addErrorMessage("Already Returned. Can not cancel.");
                 return;
             }
 
-            if (getBill().getPatientEncounter() == null) {
+            if (b.getPatientEncounter() == null) {
                 JsfUtil.addErrorMessage("You can't cancel Because this Bill has no BHT");
                 return;
             }
 
-            if (getComment() == null || getComment().trim().equals("")) {
+            if (c == null || c.trim().equals("")) {
                 JsfUtil.addErrorMessage("Please enter a comment");
                 return;
             }
 
-            CancelledBill cb = createCancelBill();
+            CancelledBill cb = createCancelBill(b, c, pm, BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION);
             cb.setBillTypeAtomic(BillTypeAtomic.INWARD_PROVISIONAL_BILL_CANCELLATION);
             //Copy & paste
             if (cb.getId() == null) {
                 getBillFacade().create(cb);
             }
-            cancelBillItems(cb);
-            getBill().setCancelled(true);
-            getBill().setCancelledBill(cb);
-            getBillFacade().edit((BilledBill) getBill());
+            cancelBillItems(cb, b);
+            b.setCancelled(true);
+            b.setCancelledBill(cb);
+            getBillFacade().edit((BilledBill) b);
 
-//            getBill().getPatientEncounter().setGrantTotal(0);
-//            getBill().getPatientEncounter().setDiscount(0);
-//            getBill().getPatientEncounter().setNetTotal(0);
-//            getBill().getPatientEncounter().setAdjustedTotal(0);
-//            getBill().getPatientEncounter().setPaymentFinalized(false);
-//            getBill().getPatientEncounter().setCreditUsedAmount(0);
-//            getPatientEncounterFacade().edit(getBill().getPatientEncounter());
+//            b.getPatientEncounter().setGrantTotal(0);
+//            b.getPatientEncounter().setDiscount(0);
+//            b.getPatientEncounter().setNetTotal(0);
+//            b.getPatientEncounter().setAdjustedTotal(0);
+//            b.getPatientEncounter().setPaymentFinalized(false);
+//            b.getPatientEncounter().setCreditUsedAmount(0);
+//            getPatientEncounterFacade().edit(b.getPatientEncounter());
             JsfUtil.addSuccessMessage("Cancelled");
 
             printPreview = true;
 
-        } else {
-            JsfUtil.addErrorMessage("No Bill to cancel");
-            return;
         }
 
     }
@@ -2876,6 +3016,9 @@ public class InwardSearch implements Serializable {
     }
 
     public void cancelSurgeryBill() {
+        if (refuseIfCancellationBill(getBill())) {
+            return;
+        }
         if (getBill() != null && getBill().getId() != null && getBill().getId() != 0) {
 
 //            if (check()) {
@@ -2951,8 +3094,8 @@ public class InwardSearch implements Serializable {
         cb.setDepartment(getSessionController().getDepartment());
         cb.setInstitution(getSessionController().getInstitution());
 
-        cb.setDeptId(getBillNumberBean().departmentBillNumberGenerator(getSessionController().getDepartment(), source.getBillType(), BillClassType.CancelledBill, BillNumberSuffix.INWCAN));
-        cb.setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), source.getBillType(), BillClassType.CancelledBill, BillNumberSuffix.INWCAN));
+        cb.setDeptId(getBillNumberBean().departmentBillNumberGeneratorInNewTransaction(getSessionController().getDepartment(), source.getBillType(), BillClassType.CancelledBill, BillNumberSuffix.INWCAN));
+        cb.setInsId(getBillNumberBean().institutionBillNumberGeneratorInNewTransaction(getSessionController().getInstitution(), source.getBillType(), BillClassType.CancelledBill, BillNumberSuffix.INWCAN));
 //        cb.setBillType(BillType.InwardProfessional);
         cb.setBillTypeAtomic(cancellationAtomic);
         return cb;
@@ -3188,66 +3331,96 @@ public class InwardSearch implements Serializable {
     }
 
     public void cancelProfessional() {
-        if (getBill() != null && getBill().getId() != null && getBill().getId() != 0) {
+        final Bill selected = getBill();
+        if (refuseIfCancellationBill(selected)) {
+            return;
+        }
+        if (selected == null || selected.getId() == null || selected.getId() == 0) {
+            JsfUtil.addErrorMessage("No Bill to cancel");
+            return;
+        }
+        // Bind the target now. This bean is session scoped, so another tab can replace the
+        // selected bill while this request waits for the lock; the locked part must only
+        // use these captured values, never the page state.
+        final Long targetBillId = selected.getId();
+        final PatientEncounter lockEncounter = selected.getPatientEncounter();
+        final Long lockEncounterId = lockEncounter == null ? null : lockEncounter.getId();
+        final String targetComment = getComment();
+        final PaymentMethod targetPaymentMethod = paymentMethod;
+        // Check and cancellation writes run under the admission's lock and commit before it
+        // is released, so two sessions cancelling the same bill cannot both pass the check.
+        if (lockEncounter == null || lockEncounterId == null) {
+            cancelProfessionalUnderLock(targetBillId, lockEncounterId, targetComment, targetPaymentMethod);
+            return;
+        }
+        getFinalBillLockBean().withFinalBillVersionLock(lockEncounter, () -> {
+            cancelProfessionalUnderLock(targetBillId, lockEncounterId, targetComment, targetPaymentMethod);
+        });
+    }
 
-            if (getComment() == null || getComment().trim().isEmpty()) {
+    private void cancelProfessionalUnderLock(Long billId, Long lockEncounterId, String c, PaymentMethod pm) {
+        {
+
+            Bill b = loadFreshBillOrRefuse(billId, lockEncounterId);
+            if (b == null) {
+                return;
+            }
+
+            if (c == null || c.trim().isEmpty()) {
                 JsfUtil.addErrorMessage("Please enter a comment");
                 return;
             }
 
-            if (getBill().getCheckedBy() != null) {
+            if (b.getCheckedBy() != null) {
                 JsfUtil.addErrorMessage("Checked Bill. Can not cancel");
                 return;
             }
 
-            if (getBill().isCancelled()) {
+            if (b.isCancelled()) {
                 JsfUtil.addErrorMessage("Already Cancelled. Can not cancel again");
                 return;
             }
-            if (getBill().isRefunded()) {
+            if (b.isRefunded()) {
                 JsfUtil.addErrorMessage("Already Returned. Can not cancel.");
                 return;
             }
 
-            if (getBill().getPatientEncounter() == null) {
+            if (b.getPatientEncounter() == null) {
                 JsfUtil.addErrorMessage("You can't cancel Because this Bill has no BHT");
                 return;
             }
 
-            if (getBill().getPatientEncounter().isPaymentFinalized()) {
+            if (b.getPatientEncounter().isPaymentFinalized()) {
                 JsfUtil.addErrorMessage("Final Payment is Finalized You can't Cancel");
                 return;
             }
 
-            if (getBill().getPatientEncounter().isDischarged()) {
+            if (b.getPatientEncounter().isDischarged()) {
                 JsfUtil.addErrorMessage("Sorry, patient is discharged.");
                 return;
             }
 
-            if (checkPaid()) {
+            if (checkPaid(b)) {
                 JsfUtil.addErrorMessage("Doctor Payment Already Paid So Cant Cancel Bill");
                 return;
             }
 
-            CancelledBill cb = createCancelBill(getBill(), comment, paymentMethod, BillTypeAtomic.INWARD_PROFESSIONAL_FEE_BILL_CANCELLATION);
+            CancelledBill cb = createCancelBill(b, c, pm, BillTypeAtomic.INWARD_PROFESSIONAL_FEE_BILL_CANCELLATION);
 
             //Copy & paste
             if (cb.getId() == null) {
                 getBillFacade().create(cb);
             }
-            cancelBillItems(cb);
-            getBill().setCancelled(true);
-            getBill().setCancelledBill(cb);
-            getBillFacade().edit((BilledBill) getBill());
+            cancelBillItems(cb, b);
+            b.setCancelled(true);
+            b.setCancelledBill(cb);
+            getBillFacade().edit((BilledBill) b);
             JsfUtil.addSuccessMessage("Cancelled");
 
             WebUser wb = getCashTransactionBean().saveBillCashInTransaction(cb, getSessionController().getLoggedUser());
             getSessionController().setLoggedUser(wb);
             printPreview = true;
 
-        } else {
-            JsfUtil.addErrorMessage("No Bill to cancel");
-            return;
         }
 
     }
@@ -3412,6 +3585,9 @@ public class InwardSearch implements Serializable {
     }
 
     public void cancelPaymentBill() {
+        if (refuseIfCancellationBill(getBill())) {
+            return;
+        }
         if (getBill() != null && getBill().getId() != null && getBill().getId() != 0) {
             if (errorCheck()) {
                 return;
@@ -3746,6 +3922,14 @@ public class InwardSearch implements Serializable {
 
     public void setBillNumberBean(BillNumberGenerator billNumberBean) {
         this.billNumberBean = billNumberBean;
+    }
+
+    public FinalBillLockBean getFinalBillLockBean() {
+        return finalBillLockBean;
+    }
+
+    public void setFinalBillLockBean(FinalBillLockBean finalBillLockBean) {
+        this.finalBillLockBean = finalBillLockBean;
     }
 
     public BillItemFacade getBillItemFacede() {

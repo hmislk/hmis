@@ -390,7 +390,7 @@ public class InwardReportController1 implements Serializable {
         String sql = "Select b.staff.speciality,"
                 + " sum(b.feeValue) "
                 + " FROM BillFee b "
-                + " where b.retired=false "
+                + " where (b.collectedByDoctorAtBilling = false or b.collectedByDoctorAtBilling is null) and b.retired=false "
                 + " and(b.bill.billType=:refType1 "
                 + " or b.bill.billType=:refType2 )";
 

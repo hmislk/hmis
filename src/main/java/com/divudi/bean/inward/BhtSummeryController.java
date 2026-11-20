@@ -34,6 +34,7 @@ import com.divudi.core.data.inward.AdmissionTypeEnum;
 import com.divudi.core.data.inward.InwardChargeType;
 import static com.divudi.core.data.inward.InwardChargeType.RoomCharges;
 import com.divudi.ejb.BillNumberGenerator;
+import com.divudi.ejb.FinalBillLockBean;
 
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.BillFee;
@@ -158,6 +159,8 @@ public class BhtSummeryController implements Serializable {
 
     @EJB
     private BillNumberGenerator billNumberBean;
+    @EJB
+    private FinalBillLockBean finalBillLockBean;
     @Inject
     WebUserController webUserController;
     @Inject
@@ -524,6 +527,10 @@ public class BhtSummeryController implements Serializable {
     public String navigateToInpatientProfile() {
         if (patientEncounter == null) {
             JsfUtil.addErrorMessage("No Admission Selected");
+            return "";
+        }
+        if (patientEncounter.getId() == null) {
+            JsfUtil.addErrorMessage("This admission is not saved. Open the patient's admission from the admission list.");
             return "";
         }
         fillSurgeryBills();
@@ -2874,11 +2881,13 @@ public class BhtSummeryController implements Serializable {
      * Guarantees the INWARD_ORIGINAL_FINAL_BILL snapshot exists before a final
      * or provisional bill is written against it.
      * <p>
-     * {@code settleOriginalBill()} normally creates it while navigating in
-     * ({@link #toSettle()} / {@link #createNewVersionFromBill(Bill)}), but it is
-     * gated by the full settlement {@link #errorCheck()} and returns silently
-     * when that fails — leaving {@code originalBill} null on a page the cashier
-     * can still settle from. The reproducible case is a new final bill version
+     * It is created only here, at settle / provisional save time (since #25822; the
+     * settle path calls this under the final-bill lock). Before that,
+     * {@code settleOriginalBill()} created it while navigating in
+     * ({@link #toSettle()} / {@link #createNewVersionFromBill(Bill)}), gated by the
+     * full settlement {@link #errorCheck()}, so it could be missing on a page the
+     * cashier can still settle from, and every page open in another session saved
+     * one more. The reproducible case is a new final bill version
      * on a Credit admission: {@link #createNewVersionFromBill(Bill)} seeds the
      * allocation split from the source bill, but a payment or discount recorded
      * since then has already moved the live net due, so
@@ -2892,7 +2901,7 @@ public class BhtSummeryController implements Serializable {
      * settle time with the same values the final bill is settled on.
      */
     private void ensureOriginalBillSaved() {
-        if (originalBill != null) {
+        if (originalBill != null && originalBill.getId() != null) {
             return;
         }
         saveOriginalBill();
@@ -2944,12 +2953,6 @@ public class BhtSummeryController implements Serializable {
 
         persistGroupedProfessionalFeeOrder();
 
-        ensureOriginalBillSaved();
-
-        originalBill.setDiscount(discount);
-        originalBill.setNetTotal(originalBill.getGrantTotal() - discount);
-        getBillFacade().edit(originalBill);
-
         // Checked, saved and confirmed under one lock, so a double submit cannot
         // get past errorCheck() twice (issue #24966). A saved current means the
         // same session has already submitted this bill; saving it again would
@@ -2958,15 +2961,29 @@ public class BhtSummeryController implements Serializable {
         // saveProvisionalBill() for a bill that is about to become BillType.InwardProvisionalBill,
         // not a final bill — flipping confirmedFinalBill there would wrongly unconfirm the real
         // confirmed version on every provisional save.
-        boolean saved = getBillNumberBean().withFinalBillVersionLock(getPatientEncounter(), () -> {
-            if (getCurrent().getId() != null || (!creatingNewVersion && isFinalizedInDatabase())) {
-                return false;
-            }
-            saveBill();
-            getCurrent().setConfirmedFinalBill(true);
-            getBillFacade().edit(getCurrent());
-            return true;
-        });
+        boolean saved;
+        try {
+            saved = getFinalBillLockBean().withFinalBillVersionLock(getPatientEncounter(), () -> {
+                if (getCurrent().getId() != null || (!creatingNewVersion && isFinalizedInDatabase())) {
+                    return false;
+                }
+                // The original bill is saved under the same lock, after the check, so a
+                // refused concurrent settle does not leave a second original bill (#25822).
+                ensureOriginalBillSaved();
+                originalBill.setDiscount(discount);
+                originalBill.setNetTotal(originalBill.getGrantTotal() - discount);
+                getBillFacade().edit(originalBill);
+                saveBill();
+                getCurrent().setConfirmedFinalBill(true);
+                getBillFacade().edit(getCurrent());
+                return true;
+            });
+        } catch (RuntimeException e) {
+            // The locked transaction rolled back: the original bill it created is gone, so
+            // the next Settle must create it again rather than reference it.
+            originalBill = null;
+            throw e;
+        }
         if (!saved) {
             JsfUtil.addErrorMessage(getCurrent().getId() != null ? "This Final Bill is already saved" : PAYMENT_FINALIZED_MESSAGE);
             return;
@@ -2984,7 +3001,7 @@ public class BhtSummeryController implements Serializable {
         // The last write of this bill, under the lock: every edit(getCurrent())
         // re-saves the session's confirmed flag, so a later one could undo the
         // unconfirming done by a concurrent save of another version.
-        getBillNumberBean().withFinalBillVersionLock(getPatientEncounter(), () -> {
+        getFinalBillLockBean().withFinalBillVersionLock(getPatientEncounter(), () -> {
             getCurrent().setReferenceBill(originalBill);
             getInwardBean().unconfirmOtherFinalBills(getPatientEncounter(), getCurrent());
             getBillFacade().edit(getCurrent());
@@ -3084,7 +3101,7 @@ public class BhtSummeryController implements Serializable {
 
         setPatientEncounter(b.getPatientEncounter());
 
-        boolean settled = getBillNumberBean().withFinalBillVersionLock(getPatientEncounter(), () -> convertProvisionalToFinalBill(b));
+        boolean settled = getFinalBillLockBean().withFinalBillVersionLock(getPatientEncounter(), () -> convertProvisionalToFinalBill(b));
         if (!settled) {
             JsfUtil.addErrorMessage(PAYMENT_FINALIZED_MESSAGE);
             return "";
@@ -3204,9 +3221,9 @@ public class BhtSummeryController implements Serializable {
 
         creditCompanyAllocations = rebuildAllocationsFromSourceBill(sourceBill);
 
-        // Initializes `originalBill` (mirrors toSettle()'s sequence) — settle() requires
-        // it to be non-null; without this call it stays null on the create-version path.
-        settleOriginalBill();
+        // As in toSettle(): the original bill is saved at settle time, not here (#25822).
+        originalBill = null;
+        errorCheck();
 
         getCurrent().setPreviousVersion(sourceBill);
 
@@ -3785,7 +3802,7 @@ public class BhtSummeryController implements Serializable {
 
         Map<String, Object> before = new LinkedHashMap<>();
         // Under the lock, so a final bill can't be saved while the discharge is cancelled.
-        boolean cancelled = getBillNumberBean().withFinalBillVersionLock(getPatientEncounter(), () -> {
+        boolean cancelled = getFinalBillLockBean().withFinalBillVersionLock(getPatientEncounter(), () -> {
             if (isFinalizedInDatabase()) {
                 return false;
             }
@@ -4248,7 +4265,11 @@ public class BhtSummeryController implements Serializable {
 
         calculateDiscount();
         updateTotal();
-        settleOriginalBill();
+        // The original bill is saved at Settle / Save Provisional Bill (ensureOriginalBillSaved),
+        // not when the page opens: opening it in two sessions saved two original bills (#25822).
+        // errorCheck() still runs here so the cashier sees the same warnings on opening.
+        originalBill = null;
+        errorCheck();
         refreshFinalBillPdfSnapshot();
         return "inward_bill_final?faces-redirect=true";
 
@@ -4285,11 +4306,11 @@ public class BhtSummeryController implements Serializable {
         // (held for the read-count-then-write span, not just the read) so two
         // concurrent final-bill saves for the same admission cannot both compute
         // the same serial before either insert commits.
-        getBillNumberBean().withFinalBillVersionLock(patientEncounter, () -> {
+        getFinalBillLockBean().withFinalBillVersionLock(patientEncounter, () -> {
             int versionSerial = getBillNumberBean().computeNextFinalBillVersionSerial(patientEncounter);
             getCurrent().setFinalBillVersionSerial(versionSerial);
-            getCurrent().setDeptId(getBillNumberBean().departmentBillNumberGenerator(patientEncounter.getDepartment(), BillType.InwardFinalBill, BillClassType.BilledBill, BillNumberSuffix.INWFINAL) + "/" + versionSerial);
-            getCurrent().setInsId(getBillNumberBean().institutionBillNumberGenerator(patientEncounter.getInstitution(), BillType.InwardFinalBill, BillClassType.BilledBill, BillNumberSuffix.INWFINAL) + "/" + versionSerial);
+            getCurrent().setDeptId(getBillNumberBean().departmentBillNumberGeneratorInNewTransaction(patientEncounter.getDepartment(), BillType.InwardFinalBill, BillClassType.BilledBill, BillNumberSuffix.INWFINAL) + "/" + versionSerial);
+            getCurrent().setInsId(getBillNumberBean().institutionBillNumberGeneratorInNewTransaction(patientEncounter.getInstitution(), BillType.InwardFinalBill, BillClassType.BilledBill, BillNumberSuffix.INWFINAL) + "/" + versionSerial);
 
             if (getCurrent().getId() == null) {
                 getBillFacade().create(getCurrent());
@@ -4351,8 +4372,8 @@ public class BhtSummeryController implements Serializable {
         getOriginalBill().setInstitution(patientEncounter.getInstitution());
         getOriginalBill().setDepartment(patientEncounter.getDepartment());
         getOriginalBill().setBillTypeAtomic(BillTypeAtomic.INWARD_ORIGINAL_FINAL_BILL);
-        getOriginalBill().setDeptId(getBillNumberBean().departmentBillNumberGenerator(patientEncounter.getDepartment(), BillType.InwardOriginalFinalBill, BillClassType.BilledBill, BillNumberSuffix.INWFINALORG));
-        getOriginalBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(patientEncounter.getInstitution(), BillType.InwardOriginalFinalBill, BillClassType.BilledBill, BillNumberSuffix.INWFINALORG));
+        getOriginalBill().setDeptId(getBillNumberBean().departmentBillNumberGeneratorInNewTransaction(patientEncounter.getDepartment(), BillType.InwardOriginalFinalBill, BillClassType.BilledBill, BillNumberSuffix.INWFINALORG));
+        getOriginalBill().setInsId(getBillNumberBean().institutionBillNumberGeneratorInNewTransaction(patientEncounter.getInstitution(), BillType.InwardOriginalFinalBill, BillClassType.BilledBill, BillNumberSuffix.INWFINALORG));
 
         getOriginalBill().setBillType(BillType.InwardOriginalFinalBill);
 
@@ -4384,8 +4405,8 @@ public class BhtSummeryController implements Serializable {
         creditCompanyBill.setCreditCompany(ecc.getInstitution());
         creditCompanyBill.setPaymentMethod(PaymentMethod.Credit);
 
-        creditCompanyBill.setDeptId(getBillNumberBean().departmentBillNumberGenerator(patientEncounter.getDepartment(), BillType.InwardFinalBillCCPayment, BillClassType.BilledBill, BillNumberSuffix.INWFINALCCPAY));
-        creditCompanyBill.setInsId(getBillNumberBean().institutionBillNumberGenerator(patientEncounter.getInstitution(), BillType.InwardFinalBillCCPayment, BillClassType.BilledBill, BillNumberSuffix.INWFINALCCPAY));
+        creditCompanyBill.setDeptId(getBillNumberBean().departmentBillNumberGeneratorInNewTransaction(patientEncounter.getDepartment(), BillType.InwardFinalBillCCPayment, BillClassType.BilledBill, BillNumberSuffix.INWFINALCCPAY));
+        creditCompanyBill.setInsId(getBillNumberBean().institutionBillNumberGeneratorInNewTransaction(patientEncounter.getInstitution(), BillType.InwardFinalBillCCPayment, BillClassType.BilledBill, BillNumberSuffix.INWFINALCCPAY));
 
         creditCompanyBill.setBillType(BillType.InwardFinalBillCCPayment);
         creditCompanyBill.setBillTypeAtomic(BillTypeAtomic.INWARD_FINAL_BILL_PAYMENT_BY_CREDIT_COMPANY);
@@ -4418,8 +4439,8 @@ public class BhtSummeryController implements Serializable {
         creditCompanyBill.setCreditCompany(company);
         creditCompanyBill.setPaymentMethod(PaymentMethod.Credit);
 
-        creditCompanyBill.setDeptId(getBillNumberBean().departmentBillNumberGenerator(patientEncounter.getDepartment(), BillType.InwardFinalBillCCPayment, BillClassType.BilledBill, BillNumberSuffix.INWFINALCCPAY));
-        creditCompanyBill.setInsId(getBillNumberBean().institutionBillNumberGenerator(patientEncounter.getInstitution(), BillType.InwardFinalBillCCPayment, BillClassType.BilledBill, BillNumberSuffix.INWFINALCCPAY));
+        creditCompanyBill.setDeptId(getBillNumberBean().departmentBillNumberGeneratorInNewTransaction(patientEncounter.getDepartment(), BillType.InwardFinalBillCCPayment, BillClassType.BilledBill, BillNumberSuffix.INWFINALCCPAY));
+        creditCompanyBill.setInsId(getBillNumberBean().institutionBillNumberGeneratorInNewTransaction(patientEncounter.getInstitution(), BillType.InwardFinalBillCCPayment, BillClassType.BilledBill, BillNumberSuffix.INWFINALCCPAY));
 
         creditCompanyBill.setBillType(BillType.InwardFinalBillCCPayment);
         creditCompanyBill.setBillTypeAtomic(BillTypeAtomic.INWARD_FINAL_BILL_PAYMENT_BY_CREDIT_COMPANY);
@@ -5331,6 +5352,10 @@ public class BhtSummeryController implements Serializable {
     }
 
     public String navigateToIntrimBillFromPatientProfile() {
+        if (patientEncounter == null || patientEncounter.getId() == null) {
+            JsfUtil.addErrorMessage("No saved admission selected. Open the patient's admission from the admission list.");
+            return "";
+        }
         if (patientEncounter != null && patientEncounter.getParentEncounter() != null) {
             JsfUtil.addErrorMessage("Interim bills can only be generated for the parent (mother) encounter. "
                     + "Generate it from the mother's admission — it will automatically include this baby's charges.");
@@ -6484,6 +6509,10 @@ public class BhtSummeryController implements Serializable {
     }
 
     private void persistLastProcessingSnapshot() {
+        // Never save an unsaved admission here: edit() would insert a new blank row on every call (#25820).
+        if (patientEncounter == null || patientEncounter.getId() == null) {
+            return;
+        }
         patientEncounter.setLastProcessBy(sessionController.getLoggedUser());
         patientEncounter.setLastProcessAt(new Date());
         patientEncounter.setTotalAtFinalProcessing(grantTotal);
@@ -7023,6 +7052,14 @@ public class BhtSummeryController implements Serializable {
 
     public void setBillNumberBean(BillNumberGenerator billNumberBean) {
         this.billNumberBean = billNumberBean;
+    }
+
+    public FinalBillLockBean getFinalBillLockBean() {
+        return finalBillLockBean;
+    }
+
+    public void setFinalBillLockBean(FinalBillLockBean finalBillLockBean) {
+        this.finalBillLockBean = finalBillLockBean;
     }
 
     public DischargeController getDischargeController() {

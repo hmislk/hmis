@@ -200,7 +200,7 @@ public class ServiceSummery implements Serializable {
         Map temMap = new HashMap();
 
         sql = "select sum(bi.feeValue) FROM BillFee bi "
-                + " where bi.bill.institution=:ins "
+                + " where (bi.collectedByDoctorAtBilling = false or bi.collectedByDoctorAtBilling is null) and bi.bill.institution=:ins "
                 + " and bi.bill.billType= :bTp "
                 + " and bi.fee.feeType=:ftp "
                 + " and bi.billItem.item=:itm "
@@ -293,7 +293,7 @@ public class ServiceSummery implements Serializable {
         Map temMap = new HashMap();
 
         sql = "select sum(bi.feeValue) FROM BillFee bi "
-                + " where bi.bill.billType= :bTp "
+                + " where (bi.collectedByDoctorAtBilling = false or bi.collectedByDoctorAtBilling is null) and bi.bill.billType= :bTp "
                 + " and bi.fee.feeType=:ftp "
                 + " and bi.bill.createdAt between :fromDate and :toDate ";
 
@@ -385,7 +385,7 @@ public class ServiceSummery implements Serializable {
         Map temMap = new HashMap();
 
         sql = "select sum(bi.feeValue) FROM BillFee bi "
-                + " where  bi.bill.institution=:ins"
+                + " where (bi.collectedByDoctorAtBilling = false or bi.collectedByDoctorAtBilling is null) and  bi.bill.institution=:ins"
                 + " and  bi.bill.billType= :bTp "
                 + " and bi.fee.feeType=:ftp ";
 
@@ -427,7 +427,7 @@ public class ServiceSummery implements Serializable {
         Map temMap = new HashMap();
 
         sql = "select sum(bi.feeValue) FROM BillFee bi "
-                + " where  bi.bill.institution=:ins"
+                + " where (bi.collectedByDoctorAtBilling = false or bi.collectedByDoctorAtBilling is null) and  bi.bill.institution=:ins"
                 + " and  bi.bill.billType= :bTp "
                 + " and bi.fee.feeType=:ftp "
                 + " and type(bi.bill)=:dtype";
@@ -1488,7 +1488,7 @@ public class ServiceSummery implements Serializable {
     private double calFee(BillItem bi, FeeType feeType) {
         HashMap hm = new HashMap();
         String sql = "Select sum(f.feeValue) from "
-                + " BillFee f where "
+                + " BillFee f where (f.collectedByDoctorAtBilling = false or f.collectedByDoctorAtBilling is null) and "
                 + " f.retired=false "
                 + " and f.billItem=:b and "
                 + " f.fee.feeType=:ftp";
@@ -1502,7 +1502,7 @@ public class ServiceSummery implements Serializable {
     private double calFee(BillItem bi) {
         HashMap hm = new HashMap();
         String sql = "Select sum(f.feeValue) from "
-                + " BillFee f where "
+                + " BillFee f where (f.collectedByDoctorAtBilling = false or f.collectedByDoctorAtBilling is null) and "
                 + " f.retired=false "
                 + " and f.billItem=:b ";
         hm.put("b", bi);
@@ -1567,7 +1567,7 @@ public class ServiceSummery implements Serializable {
     private double calFeeFeeValue(BillItem bi, FeeType feeType) {
         HashMap hm = new HashMap();
         String sql = "Select sum(f.feeValue) from "
-                + " BillFee f where "
+                + " BillFee f where (f.collectedByDoctorAtBilling = false or f.collectedByDoctorAtBilling is null) and "
                 + " f.retired=false "
                 + " and f.billItem=:b and "
                 + " f.fee.feeType=:ftp ";
@@ -1581,7 +1581,7 @@ public class ServiceSummery implements Serializable {
     private double calFeeFeeGrossValue(BillItem bi, FeeType feeType) {
         HashMap hm = new HashMap();
         String sql = "Select sum(f.feeGrossValue) from "
-                + " BillFee f where "
+                + " BillFee f where (f.collectedByDoctorAtBilling = false or f.collectedByDoctorAtBilling is null) and "
                 + " f.retired=false "
                 + " and f.billItem=:b and "
                 + " f.fee.feeType=:ftp ";
@@ -1595,7 +1595,7 @@ public class ServiceSummery implements Serializable {
     private double calFeeFeeGrossValueFeeDiscount(BillItem bi, FeeType feeType) {
         HashMap hm = new HashMap();
         String sql = "Select sum(f.feeDiscount) from "
-                + " BillFee f where "
+                + " BillFee f where (f.collectedByDoctorAtBilling = false or f.collectedByDoctorAtBilling is null) and "
                 + " f.retired=false "
                 + " and f.billItem=:b and "
                 + " f.fee.feeType=:ftp ";
@@ -2043,7 +2043,7 @@ public class ServiceSummery implements Serializable {
         Map temMap = new HashMap();
 
         sql = "select sum(bi.feeValue) FROM BillFee bi "
-                + " where  bi.bill.institution=:ins "
+                + " where (bi.collectedByDoctorAtBilling = false or bi.collectedByDoctorAtBilling is null) and  bi.bill.institution=:ins "
                 + " and  bi.bill.billType= :bTp "
                 + " and bi.fee.feeType=:ftp "
                 + " and bi.billItem.item.category=:cat "
