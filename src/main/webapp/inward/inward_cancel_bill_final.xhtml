@@ -29,6 +29,7 @@
                                             style="float: right;"
                                             value="Cancel" 
                                             ajax="false"
+                                            onclick="PF('cancelFinalBillLoadingDlg').show();"
                                             disabled="#{inwardSearch.billACancellationBill}"
                                             action="#{inwardSearch.cancelFinalBillPayment()}" >
                                         </p:commandButton>
@@ -262,6 +263,18 @@
                             
                         </p:panel>
                     </h:panelGroup>
+                    <p:dialog widgetVar="cancelFinalBillLoadingDlg"
+                              modal="true"
+                              closable="false"
+                              showHeader="true"
+                              header="Processing - Please Wait"
+                              style="min-width: 320px; text-align: center;">
+                        <div style="padding: 20px;">
+                            <i class="pi pi-spin pi-spinner" style="font-size: 3rem; color: #4CAF50;"></i>
+                            <p style="margin-top: 15px; font-size: 1rem;">Cancelling the final bill, please wait...</p>
+                            <p style="color: #888; font-size: 0.85rem;">Do not refresh or close this page.</p>
+                        </div>
+                    </p:dialog>
                 </h:form>                
             </ui:define>
         </ui:composition>
