@@ -152,10 +152,15 @@
                                                 <f:convertNumber integerOnly="true"/>
                                                 <f:validateLongRange minimum="0" />
                                                 <p:ajax
+                                                    event="keyup"
+                                                    process="txtDenoQtyTransfer"
+                                                    listener="#{financialTransactionController.calculateFundTransferDenominationTotal()}"
+                                                    update="txtDenoValTransfer :#{p:resolveFirstComponentWithId('txtDenoTotalTransfer',view).clientId} :growl"/>
+                                                <p:ajax
                                                     event="blur"
                                                     process="txtDenoQtyTransfer"
                                                     listener="#{financialTransactionController.calculateFundTransferDenominationTotal()}"
-                                                    update="txtDenoValTransfer txtDenoTotalTransfer :growl"/>
+                                                    update="txtDenoValTransfer :#{p:resolveFirstComponentWithId('txtDenoTotalTransfer',view).clientId} :growl"/>
                                             </p:inputText>
                                         </p:column>
                                         <p:column headerText="Value" styleClass="text-end">
@@ -186,7 +191,8 @@
                                                 styleClass="ui-button-info w-100"
                                                 title="Copy denomination total to Cash Amount"
                                                 process="@this tblDenoTransfer"
-                                                update="txtValue txtDenoTotalTransfer">
+                                                actionListener="#{financialTransactionController.calculateFundTransferDenominationTotal()}"
+                                                update="txtValue :#{p:resolveFirstComponentWithId('txtDenoTotalTransfer',view).clientId}">
                                                 <f:setPropertyActionListener
                                                     target="#{financialTransactionController.currentPayment.paidValue}"
                                                     value="#{financialTransactionController.fundTransferDenominationTotal}"/>
