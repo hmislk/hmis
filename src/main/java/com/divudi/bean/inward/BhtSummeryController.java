@@ -2877,11 +2877,13 @@ public class BhtSummeryController implements Serializable {
      * Guarantees the INWARD_ORIGINAL_FINAL_BILL snapshot exists before a final
      * or provisional bill is written against it.
      * <p>
-     * {@code settleOriginalBill()} normally creates it while navigating in
-     * ({@link #toSettle()} / {@link #createNewVersionFromBill(Bill)}), but it is
-     * gated by the full settlement {@link #errorCheck()} and returns silently
-     * when that fails — leaving {@code originalBill} null on a page the cashier
-     * can still settle from. The reproducible case is a new final bill version
+     * It is created only here, at settle / provisional save time (since #25822; the
+     * settle path calls this under the final-bill lock). Before that,
+     * {@code settleOriginalBill()} created it while navigating in
+     * ({@link #toSettle()} / {@link #createNewVersionFromBill(Bill)}), gated by the
+     * full settlement {@link #errorCheck()}, so it could be missing on a page the
+     * cashier can still settle from, and every page open in another session saved
+     * one more. The reproducible case is a new final bill version
      * on a Credit admission: {@link #createNewVersionFromBill(Bill)} seeds the
      * allocation split from the source bill, but a payment or discount recorded
      * since then has already moved the live net due, so
@@ -2895,7 +2897,7 @@ public class BhtSummeryController implements Serializable {
      * settle time with the same values the final bill is settled on.
      */
     private void ensureOriginalBillSaved() {
-        if (originalBill != null) {
+        if (originalBill != null && originalBill.getId() != null) {
             return;
         }
         saveOriginalBill();
@@ -2947,12 +2949,6 @@ public class BhtSummeryController implements Serializable {
 
         persistGroupedProfessionalFeeOrder();
 
-        ensureOriginalBillSaved();
-
-        originalBill.setDiscount(discount);
-        originalBill.setNetTotal(originalBill.getGrantTotal() - discount);
-        getBillFacade().edit(originalBill);
-
         // Checked, saved and confirmed under one lock, so a double submit cannot
         // get past errorCheck() twice (issue #24966). A saved current means the
         // same session has already submitted this bill; saving it again would
@@ -2961,15 +2957,29 @@ public class BhtSummeryController implements Serializable {
         // saveProvisionalBill() for a bill that is about to become BillType.InwardProvisionalBill,
         // not a final bill — flipping confirmedFinalBill there would wrongly unconfirm the real
         // confirmed version on every provisional save.
-        boolean saved = getFinalBillLockBean().withFinalBillVersionLock(getPatientEncounter(), () -> {
-            if (getCurrent().getId() != null || (!creatingNewVersion && isFinalizedInDatabase())) {
-                return false;
-            }
-            saveBill();
-            getCurrent().setConfirmedFinalBill(true);
-            getBillFacade().edit(getCurrent());
-            return true;
-        });
+        boolean saved;
+        try {
+            saved = getFinalBillLockBean().withFinalBillVersionLock(getPatientEncounter(), () -> {
+                if (getCurrent().getId() != null || (!creatingNewVersion && isFinalizedInDatabase())) {
+                    return false;
+                }
+                // The original bill is saved under the same lock, after the check, so a
+                // refused concurrent settle does not leave a second original bill (#25822).
+                ensureOriginalBillSaved();
+                originalBill.setDiscount(discount);
+                originalBill.setNetTotal(originalBill.getGrantTotal() - discount);
+                getBillFacade().edit(originalBill);
+                saveBill();
+                getCurrent().setConfirmedFinalBill(true);
+                getBillFacade().edit(getCurrent());
+                return true;
+            });
+        } catch (RuntimeException e) {
+            // The locked transaction rolled back: the original bill it created is gone, so
+            // the next Settle must create it again rather than reference it.
+            originalBill = null;
+            throw e;
+        }
         if (!saved) {
             JsfUtil.addErrorMessage(getCurrent().getId() != null ? "This Final Bill is already saved" : PAYMENT_FINALIZED_MESSAGE);
             return;
@@ -3207,9 +3217,9 @@ public class BhtSummeryController implements Serializable {
 
         creditCompanyAllocations = rebuildAllocationsFromSourceBill(sourceBill);
 
-        // Initializes `originalBill` (mirrors toSettle()'s sequence) — settle() requires
-        // it to be non-null; without this call it stays null on the create-version path.
-        settleOriginalBill();
+        // As in toSettle(): the original bill is saved at settle time, not here (#25822).
+        originalBill = null;
+        errorCheck();
 
         getCurrent().setPreviousVersion(sourceBill);
 
@@ -4251,7 +4261,11 @@ public class BhtSummeryController implements Serializable {
 
         calculateDiscount();
         updateTotal();
-        settleOriginalBill();
+        // The original bill is saved at Settle / Save Provisional Bill (ensureOriginalBillSaved),
+        // not when the page opens: opening it in two sessions saved two original bills (#25822).
+        // errorCheck() still runs here so the cashier sees the same warnings on opening.
+        originalBill = null;
+        errorCheck();
         refreshFinalBillPdfSnapshot();
         return "inward_bill_final?faces-redirect=true";
 
