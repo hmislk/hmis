@@ -878,6 +878,7 @@ public class InwardBhtChargeAggregationService implements Serializable {
                 + " and bf.bill.billType = :btp"
                 + " and (f.id is null or f.feeType != :ftp or s.id is null"
                 + " or" + professionalFeeClassificationService.notProfessionalChargeCategory("bf") + ")"
+                + professionalFeeClassificationService.excludeCollectedByDoctor("bf")
                 + " and bf.bill.patientEncounter in :encs"
                 + " group by bf.bill.patientEncounter.id";
 

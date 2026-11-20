@@ -2408,8 +2408,37 @@ public class PdfController {
         document.add(lineSeparator);
     }
 
+    /**
+     * Date/time pattern for the report header and footer, taken from the
+     * application preference so the exported PDF matches what the page shows
+     * rather than a pattern hardcoded here. UserPreference already falls back
+     * to "dd MMM yyyy HH:mm:ss" when unset; this guards the preference itself
+     * being unavailable.
+     */
+    private String reportDateTimeFormat() {
+        if (sessionController != null && sessionController.getApplicationPreference() != null) {
+            String pattern = sessionController.getApplicationPreference().getLongDateTimeFormat();
+            if (pattern != null && !pattern.trim().isEmpty()) {
+                return pattern;
+            }
+        }
+        return "dd MMM yyyy HH:mm:ss";
+    }
+
+    /**
+     * Formatter for the configured pattern; an invalid stored pattern falls back
+     * to the default instead of failing the whole PDF.
+     */
+    private SimpleDateFormat reportDateTimeFormatter() {
+        try {
+            return new SimpleDateFormat(reportDateTimeFormat());
+        } catch (IllegalArgumentException e) {
+            return new SimpleDateFormat("dd MMM yyyy HH:mm:ss");
+        }
+    }
+
     private void addReportHeader(Document document, ReportTemplateRowBundle bundle) {
-        SimpleDateFormat sdf = new SimpleDateFormat("dd MMM yyyy HH:mm:ss");
+        SimpleDateFormat sdf = reportDateTimeFormatter();
 
         String institutionName = sessionController.getInstitution() != null
                 ? sessionController.getInstitution().getName()
@@ -2562,7 +2591,7 @@ public class PdfController {
         String userName = sessionController.getLoggedUser() != null
                 ? sessionController.getLoggedUser().getName()
                 : "";
-        String printedTime = new SimpleDateFormat("dd MMM yyyy HH:mm:ss").format(new Date());
+        String printedTime = reportDateTimeFormatter().format(new Date());
 
         document.add(new Paragraph(" "));
 

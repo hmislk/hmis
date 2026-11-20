@@ -822,6 +822,69 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         return "/opd/patient_search?faces-redirect=true";
     }
 
+    /** True when the "Collected by Doctor" tick may be offered on the OPD billing page. */
+    public boolean isFeeCollectedByDoctorAllowed() {
+        return configOptionApplicationController.isOpdFeeCollectedByDoctorAllowed();
+    }
+
+    /** True when the fee can carry the "Collected by Doctor" tick: a doctor (staff) fee. */
+    public boolean canFeeBeCollectedByDoctor(BillFee bf) {
+        return bf != null && bf.getFee() != null && bf.getFee().getFeeType() == FeeType.Staff;
+    }
+
+    /** Called when the "Collected by Doctor" tick of a fee is changed on the billing page. */
+    public void feeCollectedByDoctorChanged(BillFee bf) {
+        if (bf == null) {
+            return;
+        }
+        if (bf.isCollectedByDoctorAtBilling() && !canFeeBeCollectedByDoctor(bf)) {
+            bf.setCollectedByDoctorAtBilling(false);
+            JsfUtil.addErrorMessage("Only a doctor fee can be marked as collected by the doctor.");
+        }
+        calTotals();
+    }
+
+    /**
+     * True when a bill just settled has a live fee marked "Collected by Doctor". The print page
+     * uses it to show the note "Fees Collected by the Doctor". It reads the saved flag only, so it
+     * does not depend on the option being on.
+     */
+    public boolean isBillsHaveFeesCollectedByDoctor() {
+        return hasFeesCollectedByDoctor(bills);
+    }
+
+    /** Same note for one bill, used by the bill reprint page. */
+    public boolean hasFeesCollectedByDoctor(Bill bill) {
+        if (bill == null) {
+            return false;
+        }
+        List<Bill> one = new ArrayList<>();
+        one.add(bill);
+        return hasFeesCollectedByDoctor(one);
+    }
+
+    private boolean hasFeesCollectedByDoctor(List<Bill> billList) {
+        if (billList == null || billList.isEmpty()) {
+            return false;
+        }
+        List<Long> billIds = new ArrayList<>();
+        for (Bill b : billList) {
+            if (b != null && b.getId() != null) {
+                billIds.add(b.getId());
+            }
+        }
+        if (billIds.isEmpty()) {
+            return false;
+        }
+        String jpql = "select count(bf) from BillFee bf"
+                + " where bf.retired=false"
+                + " and bf.collectedByDoctorAtBilling=true"
+                + " and bf.bill.id in :billIds";
+        Map<String, Object> m = new HashMap<>();
+        m.put("billIds", billIds);
+        return getBillFeeFacade().findLongByJpql(jpql, m, TemporalType.TIMESTAMP) > 0;
+    }
+
     public void changeTheSelectedFeeFromFeeBundle(BillFee ibf) {
         if (billFeeBundleEntrys == null) {
             return;
@@ -3329,6 +3392,23 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
             JsfUtil.addErrorMessage("No Items are added to the bill to settle");
             return true;
         }
+        for (BillFeeBundleEntry bfbe : getBillFeeBundleEntrys()) {
+            BillFee sf = bfbe.getSelectedBillFee();
+            if (sf != null && sf.isCollectedByDoctorAtBilling()) {
+                if (!isFeeCollectedByDoctorAllowed()) {
+                    sf.setCollectedByDoctorAtBilling(false);
+                    calTotals();
+                    JsfUtil.addErrorMessage("Collected by Doctor is no longer allowed. Review the fees and settle again.");
+                    return true;
+                }
+                if (!canFeeBeCollectedByDoctor(sf)) {
+                    sf.setCollectedByDoctorAtBilling(false);
+                    calTotals();
+                    JsfUtil.addErrorMessage("Only a doctor fee can be marked as collected by the doctor.");
+                    return true;
+                }
+            }
+        }
         if (getPatient() == null) {
             JsfUtil.addErrorMessage("New Patient is NULL. Programming Error. Contact Developer.");
             return true;
@@ -4082,6 +4162,11 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
                         }
                     }
                     bf.setFeeVatPlusValue(bf.getFeeValue() + bf.getFeeVat());
+
+                    // A fee the doctor collects from the patient is not paid at the counter (#25731).
+                    if (bf.isCollectedByDoctorAtBilling()) {
+                        continue;
+                    }
 
                     entryGross += bf.getFeeGrossValue();
                     entryNet += bf.getFeeValue();

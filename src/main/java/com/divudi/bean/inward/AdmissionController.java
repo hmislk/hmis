@@ -504,6 +504,15 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         if (currentPatientAllergy == null) {
             return;
         }
+        String allergyError = currentPatientAllergy.validateAllergyInputs();
+        if (allergyError != null) {
+            JsfUtil.addErrorMessage(allergyError);
+            return;
+        }
+        currentPatientAllergy.applyAllergyInputs();
+        if (patientAllergies == null) {
+            patientAllergies = new ArrayList<>();
+        }
         patientAllergies.add(currentPatientAllergy);
         currentPatientAllergy = null;
     }
@@ -515,12 +524,14 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         }
         try {
             Map<String, Object> before = new LinkedHashMap<>();
-            before.put("allergy", pa.getItemValue() != null ? pa.getItemValue().getName() : null);
+            before.put("allergyType", pa.getAllergyTypeLabel());
+            before.put("allergy", pa.getAllergyName());
             before.put("retired", pa.isRetired());
             pa.setRetired(true);
             clinicalFindingValueFacade.edit(pa);
             Map<String, Object> after = new LinkedHashMap<>();
-            after.put("allergy", pa.getItemValue() != null ? pa.getItemValue().getName() : null);
+            after.put("allergyType", pa.getAllergyTypeLabel());
+            after.put("allergy", pa.getAllergyName());
             after.put("retired", pa.isRetired());
             auditService.logEncounterAudit(current, "Patient Allergy Removed",
                     before, after, getSessionController().getLoggedUser(),
@@ -538,10 +549,10 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             return;
         }
         for (ClinicalFindingValue al : patientAllergies) {
-            if (al.getPatient() == null || al.getPatient().getId() == null) {
-                al.setPatient(patient);
-            }
             if (al.getId() == null) {
+                // A new entry always belongs to the patient being admitted, even if the
+                // form object was created while another patient was on the page.
+                al.setPatient(patient);
                 clinicalFindingValueFacade.create(al);
             } else {
                 clinicalFindingValueFacade.edit(al);
@@ -555,9 +566,9 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         }
         patientAllergies = new ArrayList<>();
         Map params = new HashMap<>();
-        String s = "SELECT c FROM ClinicalFindingValue c WHERE c.retired = false AND c.patient = :pt AND c.clinicalFindingValueType = :type";
+        String s = "SELECT c FROM ClinicalFindingValue c WHERE c.retired = false AND c.patient = :pt AND c.clinicalFindingValueType in :types";
         params.put("pt", pt);
-        params.put("type", ClinicalFindingValueType.PatientAllergy);
+        params.put("types", ClinicalFindingValueType.patientAllergyTypes());
         patientAllergies = clinicalFindingValueFacade.findByJpql(s, params);
     }
 
@@ -1103,6 +1114,9 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         // through to saveSelected() and double-charging the room fee. (#9900)
         patientRoom = new PatientRoom();
         patient = null;
+        // An unsaved allergy left from the previous patient must not be saved for the baby.
+        patientAllergies = null;
+        currentPatientAllergy = null;
         yearMonthDay = null;
         getPatient();
         // A baby registered from the mother's admission profile is a newborn. The
@@ -2095,6 +2109,9 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         // earlier Select / "To Admit"; otherwise updateAppointment() would link it. (#25707)
         appointmentBill = null;
         currentReservation = null;
+        // The previous patient's allergies must not show on, or save with, the next admission.
+        patientAllergies = null;
+        currentPatientAllergy = null;
         patientRoom = null;
         items = null;
         bhtText = "";
@@ -4114,7 +4131,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         this.patient = patient;
         if (current != null) {
             current.setPatient(patient);
-            patientAllergies = clinicalFindingValueController.findClinicalFindingValues(patient, ClinicalFindingValueType.PatientAllergy);
+            patientAllergies = clinicalFindingValueController.findPatientAllergies(patient);
         }
         // When a patient is searched/selected, reflect their foreigner status on the
         // "Mark as Foreigner" checkbox so it is ticked automatically for foreigners.

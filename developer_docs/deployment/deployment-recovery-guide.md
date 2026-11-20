@@ -85,3 +85,8 @@ checks, and correct file permissions.
 - `asadmin undeploy` removes the application directory but leaves `__internal/` and
   `generated/policy/` stale, blocking any subsequent deploy
 - The app ends up completely undeployed with no error visible to users until they try to log in
+
+
+## From CLAUDE.md (moved detail)
+
+never deploy manually as root; deploy only through GitHub Actions CI/CD; if a manual fix is unavoidable, use `appuser`.

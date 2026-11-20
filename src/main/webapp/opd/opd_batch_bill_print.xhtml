@@ -203,6 +203,12 @@
                                                 </ui:repeat>
                                             </h:panelGroup>
 
+                                            <h:panelGroup layout="block" rendered="#{opdBillController.billsHaveFeesCollectedByDoctor and sessionController.departmentPreference.opdBillPaperType ne 'FiveFivePaper' and sessionController.departmentPreference.opdBillPaperType ne 'FiveFivePrintedPaper'}">
+                                                <div style="font-size: 11px; margin-top: 6px; text-align: left;">
+                                                    <h:outputText value="Fees Collected by the Doctor" />
+                                                </div>
+                                            </h:panelGroup>
+
                                         </ui:repeat>
                                     </h:panelGroup>
 

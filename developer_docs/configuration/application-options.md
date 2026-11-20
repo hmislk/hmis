@@ -76,6 +76,18 @@ A print or settings dialog must use the **same** controller as the page or templ
 | ---------------------------------------------------------------- | --------- | ------- | ------------------------------------------------------------------------------------------------------- |
 | `Inward Administrative Discharge - Require Nursing Discharge`   | Boolean   | `true`  | Controls whether `BhtSummeryController.checkDischargeTime()` requires `PatientEncounter.isNursingDischarged()` before allowing administrative discharge (the "Discharge" action on the Interim Bill) for room-charged admissions. Some hospitals do not use the nursing discharge workflow; setting this to `false` for those institutions lets administrative discharge proceed without it. See issue #22607. |
 
+## Inward Professional Fees
+
+| Key | Type | Default | Description |
+| --- | --- | --- | --- |
+| `Inward Professional Fee - Allow Fee Collected By Doctor` | Boolean | `false` | Controls whether the inward professional fee add page offers a "Collected by Doctor" switch beside FOC, that is, whether NEW fees can be marked. A fee added with it on is saved with `BillFee.collectedByDoctorAtBilling` and is not payable by the hospital: it is left out of the patient bill total, due and claimable amount (final and interim) and out of the payment due lists, makes no Payment/drawer/cashbook entry, and patient bills print only the note "Fees Collected by the Doctor" outside the net total. `paidValue` and `settleValue` stay 0 (the fee is not recorded as paid), so the bill can still be cancelled. Turning the option off only stops new fees being marked; fees already marked keep the saved flag, stay excluded and still print the note. Fees flagged on the surgery payment page (`feeCollectedByDoctor`) behave as before, with the key on or off. See issue #17490. |
+
+## OPD Billing Fees
+
+| Key | Type | Default | Description |
+| --- | --- | --- | --- |
+| `OPD Billing - Allow Fee Collected By Doctor` | Boolean | `false` | When true, the OPD billing page (Fees tab) shows a "Collected by Doctor" tick on each doctor fee, so NEW fees can be marked. A marked fee (`BillFee.collectedByDoctorAtBilling`) is left out of the bill net total and the amount paid at the cashier, is left out of the OPD doctor payment due lists, and the printed bill shows the note "Fees Collected by the Doctor". Turning it off later does not change fees already marked (the flag is read from the saved fee). Same flag as the inward key above (#25731). |
+
 ## Inward Appointment
 
 | Key | Type | Default | Description |
@@ -226,3 +238,8 @@ Issue #17491. One application-wide Double key per inward charge type, default `0
 | `Inward VAT Percentage - <InwardChargeType name()>` (e.g. `Inward VAT Percentage - RoomCharges`) | Double | `0` | VAT rate in percent for that charge type. The interim bill and the final bill get one extra "VAT" row (charge type `ComputedVAT`) equal to the sum, over charge types with a rate above 0, of the type's net after item and charge-type discounts × rate ÷ 100, each rounded to 2 decimals. The row counts in the total, net total and due, splits between credit company and patient like any charge, and on the final bill becomes a bill item with `BillItem.vat` set. The VAT row is already part of the bill totals; the bill-header fields `Bill.vat` and `Bill.vatPlusNetTotal` are left unchanged and are not an additional VAT amount. Charge types covered by an inpatient package's fixed price are not taxed. The key uses the enum name, not the label, so renaming a label never loses the rate. A blank, negative, malformed, non-finite or above-100 stored value counts as 0. The settings page rejects a rate above 100 with an error and keeps the stored rate. |
 
 Set the rate at: Administration → Manage Inpatient Services → tab Charge Type Labels → Manage Charge Type Labels → column "VAT %" (Save or Save All). The `ComputedVAT` row has no rate of its own. The existing `VAT` and `RoomChargesVAT` charge types keep their old meaning (manual services) and are not touched.
+
+
+## From CLAUDE.md (moved detail)
+
+never change the meaning of an existing config key (no added/removed `!`, no new default). Hospitals store a value per key; create a new key whose name says what `true` does. CI `config-semantics-guard` fails PRs that do this.
