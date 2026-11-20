@@ -11,7 +11,8 @@
                 <h:form>
                     <h:panelGroup rendered="#{!billSearch.printPreview}" styleClass="alignTop" >
                         <p:panel  header="Cancellation">
-                            <h:commandButton value="Cancel" action="#{billSearch.cancelCashInBill()}" >
+                            <h:commandButton value="Cancel" action="#{billSearch.cancelCashInBill()}"
+                                disabled="#{billSearch.billACancellationBill}" >
                             </h:commandButton>                            
                         </p:panel>
                         <p:panelGrid columns="2" style="width: 100%;">

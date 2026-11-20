@@ -237,6 +237,9 @@ public class PharmacyBillSearch implements Serializable {
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Navigation Methods">
     public String navigateToCancelPharmacyDirectIssueToInpatients() {
+        if (com.divudi.core.util.CancellationBillCheck.refuse(bill)) {
+            return null;
+        }
         if (bill == null) {
             JsfUtil.addErrorMessage("No Bill Selected");
             return null;
@@ -339,6 +342,9 @@ public class PharmacyBillSearch implements Serializable {
     }
 
     public String navigateToCancelPharmacyRetailSale() {
+        if (com.divudi.core.util.CancellationBillCheck.refuse(bill)) {
+            return null;
+        }
         if (bill == null) {
             JsfUtil.addErrorMessage("No Bill Selected");
             return null;
@@ -931,6 +937,9 @@ public class PharmacyBillSearch implements Serializable {
     }
 
     public String cancelPharmacyTransferRequestBill() {
+        if (com.divudi.core.util.CancellationBillCheck.refuse(bill)) {
+            return "";
+        }
         if (comment == null || comment.trim().isEmpty()) {
             JsfUtil.addErrorMessage("Please Provide a comment to cancel the bill");
             return "";
@@ -1007,6 +1016,9 @@ public class PharmacyBillSearch implements Serializable {
     }
 
     public String navigateToCancelBhtRequest() {
+        if (com.divudi.core.util.CancellationBillCheck.refuse(bill)) {
+            return "";
+        }
         if (bill == null) {
             JsfUtil.addErrorMessage("Nothing to cancel");
             return "";
@@ -1124,6 +1136,9 @@ public class PharmacyBillSearch implements Serializable {
     }
 
     public void cancelBill() {
+        if (com.divudi.core.util.CancellationBillCheck.refuse(getBill())) {
+            return;
+        }
         if (getBill() == null) {
             JsfUtil.addErrorMessage("Please Select a Bill");
             return;
@@ -1647,6 +1662,9 @@ public class PharmacyBillSearch implements Serializable {
             }
             if (getBill().getId() == null) {
                 JsfUtil.addErrorMessage("No Saved bill");
+                continue;
+            }
+            if (com.divudi.core.util.CancellationBillCheck.refuse(getBill())) {
                 continue;
             }
 
@@ -3512,6 +3530,9 @@ public class PharmacyBillSearch implements Serializable {
     }
 
     public void cancelPharmacyDirectIssueToBht() {
+        if (com.divudi.core.util.CancellationBillCheck.refuse(getBill())) {
+            return;
+        }
         cancelIssueToBhtOnce(this::cancelPharmacyDirectIssueToBhtUnderLock);
     }
 
@@ -3720,6 +3741,9 @@ public class PharmacyBillSearch implements Serializable {
     }
 
     public void cancelPharmacyRequestIssueToBht() {
+        if (com.divudi.core.util.CancellationBillCheck.refuse(getBill())) {
+            return;
+        }
         cancelIssueToBhtOnce(this::cancelPharmacyRequestIssueToBhtUnderLock);
     }
 
@@ -7202,6 +7226,10 @@ public class PharmacyBillSearch implements Serializable {
         if (purchaseReturnSearchDtos == null) {
             purchaseReturnSearchDtos = new ArrayList<>();
         }
+    }
+
+    public boolean isBillACancellationBill() {
+        return com.divudi.core.util.CancellationBillCheck.isCancellationBill(getBill());
     }
 
 }

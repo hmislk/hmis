@@ -1935,6 +1935,9 @@ public class BookingControllerViewScopeMonth implements Serializable, Controller
     }
 
     public void cancelAgentPaidBill() {
+        if (getBillSession() != null && com.divudi.core.util.CancellationBillCheck.refuse(getBillSession().getBill())) {
+            return;
+        }
         if (getBillSession() == null) {
             JsfUtil.addErrorMessage("No BillSession");
             return;
@@ -1987,6 +1990,9 @@ public class BookingControllerViewScopeMonth implements Serializable, Controller
     }
 
     public void cancelCashFlowBill() {
+        if (getBillSession() != null && com.divudi.core.util.CancellationBillCheck.refuse(getBillSession().getBill())) {
+            return;
+        }
         if (errorCheckCancelling()) {
             return;
         }
@@ -1998,6 +2004,9 @@ public class BookingControllerViewScopeMonth implements Serializable, Controller
     }
 
     public void cancelBookingBill() {
+        if (getBillSession() != null && com.divudi.core.util.CancellationBillCheck.refuse(getBillSession().getBill())) {
+            return;
+        }
         if (errorCheckCancelling()) {
             return;
         }
@@ -2087,6 +2096,9 @@ public class BookingControllerViewScopeMonth implements Serializable, Controller
     }
 
     public void cancelCreditPaidBill() {
+        if (getBillSession() != null && com.divudi.core.util.CancellationBillCheck.refuse(getBillSession().getBill())) {
+            return;
+        }
         if (getBillSession() == null) {
             JsfUtil.addErrorMessage("No BillSession");
             return;

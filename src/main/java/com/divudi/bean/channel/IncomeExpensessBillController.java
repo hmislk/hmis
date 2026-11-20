@@ -209,6 +209,9 @@ public class IncomeExpensessBillController implements Serializable {
     }
 
     public void cancelBill(BillType billType, BillNumberSuffix suffix) {
+        if (com.divudi.core.util.CancellationBillCheck.refuse(getBill())) {
+            return;
+        }
         if (getBill() != null && getBill().getId() != null && getBill().getId() != 0) {
             if (errorCheckCancel()) {
                 return;
@@ -410,6 +413,10 @@ public class IncomeExpensessBillController implements Serializable {
 
     public void setSearchController(SearchController searchController) {
         this.searchController = searchController;
+    }
+
+    public boolean isBillACancellationBill() {
+        return com.divudi.core.util.CancellationBillCheck.isCancellationBill(getBill());
     }
 
 }

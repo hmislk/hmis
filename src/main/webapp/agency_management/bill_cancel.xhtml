@@ -41,7 +41,8 @@
                                         icon="fa fa-cancel"
                                         style="float: right"
                                         class="ui-button-danger" 
-                                        action="#{billSearch.cancelCollectingCentreBill()}">
+                                        action="#{billSearch.cancelCollectingCentreBill()}"
+                                disabled="#{billSearch.billACancellationBill}">
                                     </p:commandButton>
                                     <p:commandButton  
                                         class="ui-button-secondary d-flex justify-content-end mx-2"

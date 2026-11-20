@@ -63,7 +63,8 @@
                                              value="#{pharmacyBillSearch.comment}"
                                              placeholder="Cancellation comment (required)"/>
                                 <div class="d-flex mt-2">
-                                    <p:commandButton class="mx-2 ui-button-warning" ajax="false" value="Yes" action="#{pharmacyBillSearch.cancelPharmacyTransferRequestBill()}" onclick="PF('confirmationDialog').hide();" />
+                                    <p:commandButton class="mx-2 ui-button-warning" ajax="false" value="Yes" action="#{pharmacyBillSearch.cancelPharmacyTransferRequestBill()}"
+                                disabled="#{pharmacyBillSearch.billACancellationBill}" onclick="PF('confirmationDialog').hide();" />
                                     <p:commandButton value="No" onclick="PF('confirmationDialog').hide();" />
                                 </div>
                             </p:dialog>

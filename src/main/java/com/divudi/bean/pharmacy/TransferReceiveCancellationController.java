@@ -153,6 +153,9 @@ public class TransferReceiveCancellationController implements Serializable {
 
         // Load the original receive bill
         originalReceiveBill = billFacade.find(originalReceiveBillId);
+        if (com.divudi.core.util.CancellationBillCheck.refuse(originalReceiveBill)) {
+            return "";
+        }
 
         // Validation 2: Check if bill exists
         if (originalReceiveBill == null) {

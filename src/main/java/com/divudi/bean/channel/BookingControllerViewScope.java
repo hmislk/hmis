@@ -3081,6 +3081,9 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     }
 
     public void cancelAgentPaidBill() {
+        if (getBillSession() != null && com.divudi.core.util.CancellationBillCheck.refuse(getBillSession().getBill())) {
+            return;
+        }
         if (getBillSession() == null) {
             JsfUtil.addErrorMessage("No BillSession");
             return;
@@ -3148,6 +3151,9 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     }
 
     public void cancelCashFlowBill() {
+        if (getBillSession() != null && com.divudi.core.util.CancellationBillCheck.refuse(getBillSession().getBill())) {
+            return;
+        }
         if (errorCheckCancelling()) {
             return;
         }
@@ -3159,6 +3165,9 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     }
 
     public void cancelBookingBill() {
+        if (getBillSession() != null && com.divudi.core.util.CancellationBillCheck.refuse(getBillSession().getBill())) {
+            return;
+        }
 //        System.out.println("Error check Start");
         if (errorCheckCancelling()) {
             return;
@@ -3274,6 +3283,9 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     }
 
     public void cancelCreditPaidBill() {
+        if (getBillSession() != null && com.divudi.core.util.CancellationBillCheck.refuse(getBillSession().getBill())) {
+            return;
+        }
         if (getBillSession() == null) {
             JsfUtil.addErrorMessage("No BillSession");
             return;

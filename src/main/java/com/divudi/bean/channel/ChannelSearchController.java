@@ -216,6 +216,9 @@ public class ChannelSearchController implements Serializable {
     }
 
     public void cancelPaymentBill() {
+        if (com.divudi.core.util.CancellationBillCheck.refuse(bill)) {
+            return;
+        }
         if (bill != null && bill.getId() != null && bill.getId() != 0) {
             if (errorCheck()) {
                 return;
@@ -724,6 +727,10 @@ public class ChannelSearchController implements Serializable {
 
     public void setPaymentFacade(PaymentFacade paymentFacade) {
         this.paymentFacade = paymentFacade;
+    }
+
+    public boolean isBillACancellationBill() {
+        return com.divudi.core.util.CancellationBillCheck.isCancellationBill(bill);
     }
 
 }
