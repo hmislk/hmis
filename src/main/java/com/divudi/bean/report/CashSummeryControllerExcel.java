@@ -1038,6 +1038,7 @@ public class CashSummeryControllerExcel implements Serializable {
                 + " bf.bill.billType=:bTp and bf.fee.feeType=:ftp "
                 + " and bf.bill.institution=:ins and bf.bill.createdAt between :fromDate and :toDate "
                 + "  and bf.billItem.item=:itm"
+                + " and (bf.collectedByDoctorAtBilling = false or bf.collectedByDoctorAtBilling is null)"
                 + " and ( bf.bill.paymentMethod = :pm1 or  bf.bill.paymentMethod = :pm2"
                 + " or  bf.bill.paymentMethod = :pm3 or  bf.bill.paymentMethod = :pm4)";
 
@@ -1231,7 +1232,7 @@ public class CashSummeryControllerExcel implements Serializable {
         Map temMap = new HashMap();
 
         sql = "select sum(bi.feeValue) FROM BillFee bi where  bi.bill.institution=:ins and  bi.bill.billType= :bTp  "
-                + " and  bi.bill.createdAt between :fromDate and :toDate and bi.billItem.item=:itm"
+                + " and  bi.bill.createdAt between :fromDate and :toDate and bi.billItem.item=:itm and (bi.collectedByDoctorAtBilling = false or bi.collectedByDoctorAtBilling is null)"
                 + " and ( bi.bill.paymentMethod = :pm1 or  bi.bill.paymentMethod = :pm2 "
                 + " or  bi.bill.paymentMethod = :pm3 or  bi.bill.paymentMethod = :pm4)";
         temMap.put("toDate", getToDate());
@@ -1285,7 +1286,7 @@ public class CashSummeryControllerExcel implements Serializable {
 
     private double getSumByFee(BillType billType, PaymentMethod paymentMethod) {
         String sql = "SELECT sum(bf.feeValue) FROM BillFee bf WHERE bf.billItem.bill.institution=:ins and  bf.billItem.bill.createdAt between :fromDate and :toDate  and "
-                + " bf.billItem.bill.paymentMethod = :pm and bf.bill.billType=:btp";
+                + " bf.billItem.bill.paymentMethod = :pm and bf.bill.billType=:btp and (bf.collectedByDoctorAtBilling = false or bf.collectedByDoctorAtBilling is null)";
 
         HashMap temMap = new HashMap();
         temMap.put("toDate", getToDate());
