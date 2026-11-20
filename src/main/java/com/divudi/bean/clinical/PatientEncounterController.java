@@ -778,7 +778,7 @@ public class PatientEncounterController implements Serializable {
             return;
         }
         // Shown unescaped on the visit and card pages: keep formatting only
-        encounterReferral.setLobValue(com.divudi.core.util.CardHtmlSanitizer.sanitizeForStorage(encounterReferral.getLobValue()));
+        encounterReferral.setLobValue(com.divudi.core.util.CardHtmlSanitizer.sanitizeExistingForStorage(encounterReferral.getLobValue()));
         if (encounterReferral.getId() == null) {
             clinicalFindingValueFacade.create(encounterReferral);
             JsfUtil.addSuccessMessage("Saved");
@@ -793,7 +793,7 @@ public class PatientEncounterController implements Serializable {
             JsfUtil.addErrorMessage("Nothing to save");
             return;
         }
-        encounterReferral.setLobValue(com.divudi.core.util.CardHtmlSanitizer.sanitizeForStorage(encounterReferral.getLobValue()));
+        encounterReferral.setLobValue(com.divudi.core.util.CardHtmlSanitizer.sanitizeExistingForStorage(encounterReferral.getLobValue()));
         encounterReferral.setRetired(true);
         encounterDocuments.remove(encounterReferral);
         if (encounterReferral.getId() == null) {
@@ -3950,18 +3950,9 @@ public class PatientEncounterController implements Serializable {
         if (encounterReferral == null || encounterReferral.getLobValue() == null) {
             return "";
         }
-        String content = encounterReferral.getLobValue();
-        // Older documents were stored wholly escaped (no real tags), so they are decoded once
-        // for display. A document that already holds markup keeps its escaped text as text:
-        // decoding it would turn typed tags into live markup.
-        if (content.indexOf('<') < 0) {
-            content = content.replace("&lt;", "<")
-                    .replace("&gt;", ">")
-                    .replace("&quot;", "\"")
-                    .replace("&#39;", "'")
-                    .replace("&amp;", "&");
-        }
-        return com.divudi.core.util.CardHtmlSanitizer.sanitize(content);
+        // Old wholly-escaped documents are decoded once; markup documents keep escaped text as text
+        return com.divudi.core.util.CardHtmlSanitizer.sanitize(
+                com.divudi.core.util.CardHtmlSanitizer.decodeLegacy(encounterReferral.getLobValue()));
     }
 
     public void setEncounterReferral(ClinicalFindingValue encounterReferral) {

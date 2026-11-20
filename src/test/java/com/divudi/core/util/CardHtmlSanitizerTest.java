@@ -59,6 +59,31 @@ class CardHtmlSanitizerTest {
     }
 
     @Test
+    void legacyEscapedDocumentKeepsFormattingWhenSavedUnedited() {
+        // An old wholly-escaped document opened and saved without editing
+        String stored = CardHtmlSanitizer.sanitizeExistingForStorage(
+                "&lt;p&gt;Review&lt;/p&gt;&lt;table border=&quot;1&quot;&gt;&lt;tr&gt;&lt;td&gt;x&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;");
+        assertTrue(stored.startsWith("<p>Review</p>"));
+        assertTrue(stored.contains("<table border=\"1\">"));
+        // Saving it again changes nothing, and display shows the same
+        assertEquals(stored, CardHtmlSanitizer.sanitizeExistingForStorage(stored));
+        assertEquals(stored, CardHtmlSanitizer.sanitize(CardHtmlSanitizer.decodeLegacy(stored)));
+    }
+
+    @Test
+    void legacyDecodeStillDropsActiveContent() {
+        String stored = CardHtmlSanitizer.sanitizeExistingForStorage("&lt;img src=x onerror=z()&gt;&lt;script&gt;y()&lt;/script&gt;");
+        assertFalse(stored.contains("onerror"));
+        assertFalse(stored.contains("script"));
+    }
+
+    @Test
+    void markupDocumentKeepsEscapedTextOnSave() {
+        String stored = CardHtmlSanitizer.sanitizeExistingForStorage("<p>avoid &lt;b&gt;aspirin&lt;/b&gt;</p>");
+        assertEquals("<p>avoid &lt;b&gt;aspirin&lt;/b&gt;</p>", stored);
+    }
+
+    @Test
     void nullStaysNull() {
         assertNull(CardHtmlSanitizer.sanitize(null));
     }

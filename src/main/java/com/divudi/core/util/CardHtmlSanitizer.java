@@ -52,4 +52,28 @@ public final class CardHtmlSanitizer {
         }
         return "<p>" + clean + "</p>";
     }
+
+    /**
+     * Decodes a document saved before this cleaning existed. Those were stored wholly
+     * escaped, so they hold no real tag. Content that already holds a tag is returned
+     * as it is, so escaped text in it stays text.
+     */
+    public static String decodeLegacy(String html) {
+        if (html == null || html.indexOf('<') >= 0) {
+            return html;
+        }
+        return html.replace("&lt;", "<")
+                .replace("&gt;", ">")
+                .replace("&quot;", "\"")
+                .replace("&#39;", "'")
+                .replace("&amp;", "&");
+    }
+
+    /**
+     * For saving an existing document as it was opened: an old wholly-escaped document
+     * is decoded once, then cleaned and stored with a tag, so it keeps its formatting.
+     */
+    public static String sanitizeExistingForStorage(String html) {
+        return sanitizeForStorage(decodeLegacy(html));
+    }
 }

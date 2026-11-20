@@ -612,7 +612,7 @@ public class PastPatientEncounterController implements Serializable {
             return;
         }
         // Shown unescaped on the visit and card pages: keep formatting only
-        encounterReferral.setLobValue(com.divudi.core.util.CardHtmlSanitizer.sanitizeForStorage(encounterReferral.getLobValue()));
+        encounterReferral.setLobValue(com.divudi.core.util.CardHtmlSanitizer.sanitizeExistingForStorage(encounterReferral.getLobValue()));
         if (encounterReferral.getId() == null) {
             clinicalFindingValueFacade.create(encounterReferral);
             JsfUtil.addSuccessMessage("Saved");
@@ -627,7 +627,7 @@ public class PastPatientEncounterController implements Serializable {
             JsfUtil.addErrorMessage("Nothing to save");
             return;
         }
-        encounterReferral.setLobValue(com.divudi.core.util.CardHtmlSanitizer.sanitizeForStorage(encounterReferral.getLobValue()));
+        encounterReferral.setLobValue(com.divudi.core.util.CardHtmlSanitizer.sanitizeExistingForStorage(encounterReferral.getLobValue()));
         encounterReferral.setRetired(true);
         encounterDocuments.remove(encounterReferral);
         if (encounterReferral.getId() == null) {
