@@ -85,6 +85,15 @@ public class CapabilityStatementResource {
                         + "Includes /entities/diagnoses for searching diagnoses to use as forItemName.",
                         "API Key",
                         "GET", "POST", "PUT", "DELETE"))
+                .add(resource("Maintenance Windows", "/api/maintenance_windows",
+                        "Scheduled maintenance windows shown as a banner to users. "
+                        + "GET lists active and upcoming windows (any valid key). "
+                        + "POST creates one: title, message (required), startAt, endAt (required, yyyy-MM-dd HH:mm:ss), "
+                        + "showFromAt (default start minus 24h), institutionIds, departmentIds, reference. "
+                        + "DELETE /{id} cancels one. POST and DELETE need a key whose owner holds the "
+                        + "Manage Maintenance Windows privilege.",
+                        "API Key (Finance header)",
+                        "GET", "POST", "DELETE"))
                 .add(resource("Categories", "/api/categories",
                         "Search and create generic Category master-data rows (the single-table-inheritance "
                         + "base for DosageForm, PharmaceuticalItemCategory, RoomCategory, InvestigationCategory, ...). "

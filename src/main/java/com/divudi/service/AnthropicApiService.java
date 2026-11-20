@@ -484,6 +484,50 @@ public class AnthropicApiService implements Serializable {
                         .add("required", Json.createArrayBuilder().add("method")))
                 .build();
 
+        JsonObject maintenanceWindowTool = Json.createObjectBuilder()
+                .add("name", "manage_maintenance_windows")
+                .add("description",
+                        "List, schedule, or cancel maintenance windows that show a banner to users. "
+                        + "GET lists active and upcoming windows. POST creates one (the API key owner must hold the "
+                        + "Manage Maintenance Windows privilege). DELETE cancels one by id. "
+                        + "Always confirm title, message, start and end times with the user before POST or DELETE.")
+                .add("input_schema", Json.createObjectBuilder()
+                        .add("type", "object")
+                        .add("properties", Json.createObjectBuilder()
+                                .add("method", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("enum", Json.createArrayBuilder().add("GET").add("POST").add("DELETE"))
+                                        .add("description", "GET=list, POST=create, DELETE=cancel"))
+                                .add("id", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Window id. Required for DELETE."))
+                                .add("title", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Short title (optional)."))
+                                .add("message", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Message shown in the banner. Required for POST."))
+                                .add("startAt", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Maintenance start, yyyy-MM-dd HH:mm:ss. Required for POST."))
+                                .add("endAt", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Maintenance end, yyyy-MM-dd HH:mm:ss. Required for POST."))
+                                .add("showFromAt", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Banner start, yyyy-MM-dd HH:mm:ss. Defaults to 24 hours before startAt."))
+                                .add("institutionIds", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Comma-separated institution ids. Empty means all."))
+                                .add("departmentIds", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Comma-separated department ids. Empty means all."))
+                                .add("reference", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Optional reference such as a PR number or note.")))
+                        .add("required", Json.createArrayBuilder().add("method")))
+                .build();
+
         JsonObject itemRequestTool = Json.createObjectBuilder()
                 .add("name", "manage_item_requests")
                 .add("description",
@@ -2398,6 +2442,7 @@ public class AnthropicApiService implements Serializable {
                 .add(admissionNumberTool)
                 .add(admissionSearchTool)
                 .add(clinicalMetadataTool)
+                .add(maintenanceWindowTool)
                 .add(itemRequestTool)
                 .add(collectingCentreFeesTool)
                 .add(inwardDiscountMatrixTool)
@@ -2501,6 +2546,30 @@ public class AnthropicApiService implements Serializable {
                     String size   = toolInput.containsKey("size")  ? toolInput.getString("size", "20") : "20";
                     return callClinicalMetadataApi(method, type, id, name, code, desc, query, page, size,
                             hmisBaseUrl, hmisApiKey);
+                }
+                case "manage_maintenance_windows": {
+                    String method = toolInput.getString("method", "GET");
+                    String id = toolInput.containsKey("id") ? toolInput.getString("id", "") : "";
+                    javax.json.JsonObjectBuilder body = Json.createObjectBuilder();
+                    for (String key : new String[]{"title", "message", "startAt", "endAt", "showFromAt", "reference"}) {
+                        if (toolInput.containsKey(key) && !toolInput.getString(key, "").isEmpty()) {
+                            body.add(key, toolInput.getString(key, ""));
+                        }
+                    }
+                    for (String key : new String[]{"institutionIds", "departmentIds"}) {
+                        if (toolInput.containsKey(key) && !toolInput.getString(key, "").trim().isEmpty()) {
+                            javax.json.JsonArrayBuilder ids = Json.createArrayBuilder();
+                            for (String part : toolInput.getString(key, "").split(",")) {
+                                try {
+                                    ids.add(Long.parseLong(part.trim()));
+                                } catch (NumberFormatException nfe) {
+                                    return "Error: " + key + " must be comma-separated numeric ids.";
+                                }
+                            }
+                            body.add(key, ids);
+                        }
+                    }
+                    return callMaintenanceWindowApi(method, id, body.build().toString(), hmisBaseUrl, hmisApiKey);
                 }
                 case "manage_item_requests": {
                     String method             = toolInput.getString("method", "GET");
@@ -3463,6 +3532,49 @@ public class AnthropicApiService implements Serializable {
             return "Clinical metadata API call interrupted.";
         } catch (Exception e) {
             return "Clinical metadata API error: " + e.getMessage();
+        }
+    }
+
+    private String callMaintenanceWindowApi(String method, String id, String requestBody,
+            String hmisBaseUrl, String hmisApiKey) {
+        if (hmisBaseUrl == null || hmisBaseUrl.trim().isEmpty()) {
+            return "Error: HMIS base URL is not configured. Cannot call maintenance windows API.";
+        }
+        if (hmisApiKey == null || hmisApiKey.trim().isEmpty()) {
+            return "Error: No active HMIS API key found for the current user.";
+        }
+        try {
+            HttpClient client = HttpClient.newBuilder()
+                    .connectTimeout(Duration.ofSeconds(10))
+                    .build();
+            String base = hmisBaseUrl.trim().replaceAll("/+$", "") + "/api/maintenance_windows";
+            HttpRequest.Builder reqBuilder = HttpRequest.newBuilder()
+                    .timeout(Duration.ofSeconds(15))
+                    .header("Finance", hmisApiKey)
+                    .header("Content-Type", "application/json");
+            switch (method.toUpperCase()) {
+                case "GET":
+                    reqBuilder.uri(URI.create(base)).GET();
+                    break;
+                case "POST":
+                    reqBuilder.uri(URI.create(base)).POST(HttpRequest.BodyPublishers.ofString(requestBody));
+                    break;
+                case "DELETE":
+                    if (id == null || id.trim().isEmpty()) {
+                        return "Error: id is required for DELETE.";
+                    }
+                    reqBuilder.uri(URI.create(base + "/" + URLEncoder.encode(id.trim(), StandardCharsets.UTF_8))).DELETE();
+                    break;
+                default:
+                    return "Error: Unknown method: " + method;
+            }
+            HttpResponse<String> response = client.send(reqBuilder.build(), HttpResponse.BodyHandlers.ofString());
+            return "HTTP " + response.statusCode() + "\n" + response.body();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            return "Maintenance windows API call interrupted.";
+        } catch (Exception e) {
+            return "Maintenance windows API error: " + e.getMessage();
         }
     }
 
@@ -6941,6 +7053,9 @@ public class AnthropicApiService implements Serializable {
           .append("race, religion, blood_group, civil_status, employment, relationship). ")
           .append("Use this when the user wants to add or manage clinical master data without navigating the UI. ")
           .append("Always confirm with the user before creating or deleting entries.\n\n");
+        sb.append("### manage_maintenance_windows\n");
+        sb.append("List, schedule, or cancel maintenance windows that show a banner to users. ")
+          .append("Always confirm title, message and times with the user before creating or cancelling.\n\n");
         sb.append("### manage_collecting_centre_fees\n");
         sb.append("List, create, update, retire, or recalculate item fees for a collecting centre.\n\n");
         sb.append("### manage_inward_discount_matrix\n");
@@ -7601,6 +7716,16 @@ public class AnthropicApiService implements Serializable {
                     {"POST",   "/clinical/metadata?type=X",    "Create a new entry. Body: {name, code, description}. Returns already_exists with id if duplicate name"},
                     {"PUT",    "/clinical/metadata/{id}",      "Update an entry by ID. Body: {name, code, description} (all optional)"},
                     {"DELETE", "/clinical/metadata/{id}",      "Soft-delete an entry by ID"}
+                });
+
+        appendModule(sb, "Maintenance Windows", "/maintenance_windows",
+                "Scheduled maintenance windows shown as a banner. Writing needs an API key whose owner holds the "
+                + "Manage Maintenance Windows privilege. Dates use yyyy-MM-dd HH:mm:ss.",
+                githubUrl(branch, "developer_docs/api/using-apis/API_MAINTENANCE_WINDOWS.md"),
+                new String[][]{
+                    {"GET",    "/maintenance_windows",      "List active and upcoming windows"},
+                    {"POST",   "/maintenance_windows",      "Create a window. Body: {title, message, startAt, endAt, showFromAt (optional, default start minus 24h), institutionIds, departmentIds, reference}"},
+                    {"DELETE", "/maintenance_windows/{id}", "Cancel (soft-retire) a window by ID"}
                 });
 
         appendModule(sb, "Clinical - Favourite Medicines", "/clinical/favourite_medicines",
