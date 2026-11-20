@@ -6176,7 +6176,6 @@ public class InwardReportController implements Serializable {
                 + "where (bf.collectedByDoctorAtBilling = false or bf.collectedByDoctorAtBilling is null) and "
                 + "pe is not null and "
                 + "bf.bill.billType=:billType and "
-                + "(bf.collectedByDoctorAtBilling = false or bf.collectedByDoctorAtBilling is null) and "
                 + "pe.dateOfDischarge between :fd and :td ";
         m.put("fd", fromDate);
         m.put("td", toDate);
@@ -6237,7 +6236,6 @@ public class InwardReportController implements Serializable {
         m.put("td", toDate);
         m.put("billType", BillType.InwardBill);
         sql = sql + " and bf.bill.billType=:billType and"
-                + " (bf.collectedByDoctorAtBilling = false or bf.collectedByDoctorAtBilling is null) and"
                 + " bf.bill.patientEncounter.dateOfDischarge between :fd and :td ";
 
         if (admissionType != null) {

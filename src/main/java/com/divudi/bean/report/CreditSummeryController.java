@@ -262,7 +262,6 @@ public class CreditSummeryController implements Serializable {
                 + " and bf.bill.retired=false "
                 + " and bf.bill.createdAt between :fromDate and :toDate "
                 + " and bf.billItem.item=:itm "
-                + " and (bf.collectedByDoctorAtBilling = false or bf.collectedByDoctorAtBilling is null) "
                 + " and bf.bill.paymentMethod = :pm ";
 
         HashMap temMap = new HashMap();
@@ -295,7 +294,6 @@ public class CreditSummeryController implements Serializable {
                 + " and bf.fee.feeType!=:ftp "
                 + " and bf.bill.createdAt between :fromDate and :toDate "
                 + " and bf.billItem.item=:itm"
-                + " and (bf.collectedByDoctorAtBilling = false or bf.collectedByDoctorAtBilling is null) "
                 + " and bf.bill.paymentMethod = :pm ";
 
         HashMap temMap = new HashMap();
@@ -327,7 +325,6 @@ public class CreditSummeryController implements Serializable {
                 + " and bf.bill.retired=false "
                 + " and bf.fee.feeType is not null "
                 + " and bf.bill.createdAt between :fromDate and :toDate "
-                + " and (bf.collectedByDoctorAtBilling = false or bf.collectedByDoctorAtBilling is null) "
                 + " and bf.bill.paymentMethod = :pm ";
 
         HashMap temMap = new HashMap();
