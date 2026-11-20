@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class CardHtmlSanitizerTest {
@@ -43,6 +44,18 @@ class CardHtmlSanitizerTest {
                 .replace("&quot;", "\"").replace("&#39;", "'");
         String shown = CardHtmlSanitizer.sanitize(unescaped);
         assertFalse(shown.contains("onerror"));
+    }
+
+    @Test
+    void storedTextOnlyDocumentAlwaysHoldsATag() {
+        // Typed tags in a text-only document stay escaped text, and the result has a tag,
+        // so the visit page never treats it as an old wholly-escaped document
+        String stored = CardHtmlSanitizer.sanitizeForStorage("avoid &lt;b&gt;aspirin&lt;/b&gt;");
+        assertTrue(stored.startsWith("<p>"));
+        assertTrue(stored.contains("&lt;b&gt;"));
+        assertEquals("<b>x</b>", CardHtmlSanitizer.sanitizeForStorage("<b>x</b>"));
+        assertEquals("", CardHtmlSanitizer.sanitizeForStorage(""));
+        assertNull(CardHtmlSanitizer.sanitizeForStorage(null));
     }
 
     @Test

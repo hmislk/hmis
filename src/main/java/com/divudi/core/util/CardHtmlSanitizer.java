@@ -38,4 +38,18 @@ public final class CardHtmlSanitizer {
         // No pretty-print: keep the editor's own spacing
         return Jsoup.clean(html, BASE_URI, safelist(), new Document.OutputSettings().prettyPrint(false));
     }
+
+    /**
+     * Cleans a document for storage and makes sure it holds at least one tag. The OPD
+     * visit page decodes a stored document only when it has no tag at all (documents
+     * saved before this cleaning were stored wholly escaped), so a new text-only
+     * document must not look like one of those.
+     */
+    public static String sanitizeForStorage(String html) {
+        String clean = sanitize(html);
+        if (clean == null || clean.isEmpty() || clean.indexOf('<') >= 0) {
+            return clean;
+        }
+        return "<p>" + clean + "</p>";
+    }
 }

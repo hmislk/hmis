@@ -776,7 +776,7 @@ public class PatientEncounterController implements Serializable {
             return;
         }
         // Shown unescaped on the visit and card pages: keep formatting only
-        encounterReferral.setLobValue(com.divudi.core.util.CardHtmlSanitizer.sanitize(encounterReferral.getLobValue()));
+        encounterReferral.setLobValue(com.divudi.core.util.CardHtmlSanitizer.sanitizeForStorage(encounterReferral.getLobValue()));
         if (encounterReferral.getId() == null) {
             clinicalFindingValueFacade.create(encounterReferral);
             JsfUtil.addSuccessMessage("Saved");
@@ -791,7 +791,7 @@ public class PatientEncounterController implements Serializable {
             JsfUtil.addErrorMessage("Nothing to save");
             return;
         }
-        encounterReferral.setLobValue(com.divudi.core.util.CardHtmlSanitizer.sanitize(encounterReferral.getLobValue()));
+        encounterReferral.setLobValue(com.divudi.core.util.CardHtmlSanitizer.sanitizeForStorage(encounterReferral.getLobValue()));
         encounterReferral.setRetired(true);
         encounterDocuments.remove(encounterReferral);
         if (encounterReferral.getId() == null) {
@@ -2112,7 +2112,7 @@ public class PatientEncounterController implements Serializable {
                 .replace("{referral_doctor}", cardText(referralDoctorName))
                 .replace("{referring_doctor}", cardText(referralDoctorName));
         // Shown unescaped: substituted patient values must not become live markup
-        return com.divudi.core.util.CardHtmlSanitizer.sanitize(output);
+        return com.divudi.core.util.CardHtmlSanitizer.sanitizeForStorage(output);
 
     }
 
