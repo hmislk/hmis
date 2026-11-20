@@ -487,37 +487,55 @@
                                         <p:tab title="Allergies" >
                                             <h:form>
                                                 <div class="row m-2">
-                                                    <div class="col-md-3" >
-                                                        <p:autoComplete 
-                                                            id="acAllergy"
-                                                            completeMethod="#{pharmaceuticalItemController.completeItem}"
-                                                            value="#{patientEncounterController.patientAllergy.itemValue}"
-                                                            var="item"
-                                                            itemLabel="#{item}"
-                                                            itemValue="#{item}"
-                                                            class="w-100"
-                                                            inputStyleClass="w-100"
-                                                            placeholder="Select Medicine"
-                                                            />
+                                                    <div class="col-md-2">
+                                                        <p:selectOneMenu id="selAllergyType" class="w-100"
+                                                                         value="#{patientEncounterController.patientAllergy.clinicalFindingValueType}">
+                                                            <f:selectItem itemLabel="Medicine" itemValue="PatientAllergy"/>
+                                                            <f:selectItem itemLabel="Food" itemValue="PatientFoodAllergy"/>
+                                                            <f:selectItem itemLabel="Plaster" itemValue="PatientPlasterAllergy"/>
+                                                            <f:selectItem itemLabel="Other" itemValue="PatientOtherAllergy"/>
+                                                            <p:ajax event="change" process="@this" update="pnlAllergyEntry"/>
+                                                        </p:selectOneMenu>
                                                     </div>
-                                                    <div class="col-md-6" >
-                                                        <p:inputText 
-                                                            id="txtAllergy"
-                                                            class="w-100"
-                                                            value="#{patientEncounterController.patientAllergy.stringValue}"
-                                                            placeholder="Details"
-                                                            />
-                                                    </div>
-                                                    <div class="col-md-3" >
-                                                        <p:commandButton 
+                                                    <h:panelGroup id="pnlAllergyEntry" layout="block" class="col-md-7">
+                                                        <div class="row">
+                                                            <div class="col-md-5">
+                                                                <p:autoComplete
+                                                                    id="acAllergy"
+                                                                    rendered="#{patientEncounterController.patientAllergy.medicineAllergy}"
+                                                                    completeMethod="#{pharmaceuticalItemController.completeItem}"
+                                                                    value="#{patientEncounterController.patientAllergy.itemValue}"
+                                                                    var="item"
+                                                                    itemLabel="#{item}"
+                                                                    itemValue="#{item}"
+                                                                    class="w-100"
+                                                                    inputStyleClass="w-100"
+                                                                    placeholder="Select Medicine"/>
+                                                                <p:inputText
+                                                                    id="txtAllergyText"
+                                                                    rendered="#{not patientEncounterController.patientAllergy.medicineAllergy}"
+                                                                    class="w-100"
+                                                                    value="#{patientEncounterController.patientAllergy.allergyTextInput}"
+                                                                    placeholder="#{patientEncounterController.patientAllergy.allergyTypeLabel} allergy (required)"/>
+                                                            </div>
+                                                            <div class="col-md-7">
+                                                                <p:inputText
+                                                                    id="txtAllergy"
+                                                                    class="w-100"
+                                                                    value="#{patientEncounterController.patientAllergy.allergyRemarkInput}"
+                                                                    placeholder="Details"/>
+                                                            </div>
+                                                        </div>
+                                                    </h:panelGroup>
+                                                    <div class="col-md-3">
+                                                        <p:commandButton
                                                             value="Add Allergy"
                                                             id="btnAddAllergy"
                                                             icon="fa fa-plus"
                                                             class="mx-1 ui-button-success"
-                                                            process="btnAddAllergy acAllergy txtAllergy"
-                                                            update="tblAllergies acAllergy txtAllergy"
-                                                            action="#{patientEncounterController.addPatientAllergy()}"
-                                                            />
+                                                            process="btnAddAllergy selAllergyType pnlAllergyEntry"
+                                                            update="tblAllergies selAllergyType pnlAllergyEntry :growl"
+                                                            action="#{patientEncounterController.addPatientAllergy()}"/>
                                                     </div>
                                                 </div>
 
@@ -528,10 +546,8 @@
                                                             value="#{patientEncounterController.patientAllergies}"
                                                             var="allergy"
                                                             >
-                                                            <p:column headerText="Medicine">
-                                                                <h:outputText value="#{allergy.itemValue.name}"/>
-                                                                <h:outputText value="#{allergy.lobValue}"/>
-                                                                <h:outputText value="#{allergy.stringValue}"/>
+                                                            <p:column headerText="Allergy">
+                                                                <h:outputText value="#{allergy.allergyDisplay}"/>
                                                                 <p:commandLink 
                                                                     value="X" 
                                                                     class="text-danger" 

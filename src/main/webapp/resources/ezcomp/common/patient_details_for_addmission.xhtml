@@ -470,20 +470,36 @@
                     <div class="row">
                         <div class="col-10 d-flex">
 
-                            <p:autoComplete 
-                                id="acAllergy"
-                                placeholder="Search Patient Allergies"
-                                completeMethod="#{vtmController.completeVtm}"
-                                var="pta" 
-                                style="width: 150px"
-                                itemLabel="#{pta}"
-                                itemValue="#{pta}" 
-                                forceSelection="true"
-                                value="#{cc.attrs.controller.currentPatientAllergy.itemValue}"
-                                inputStyleClass="form-control w-100"
-                                class="w-100"/>
-
-                            <p:inputText placeholder="Remark" class="mx-4 w-100" id="txtAllergy" value="#{cc.attrs.controller.currentPatientAllergy.stringValue}" ></p:inputText>
+                            <p:selectOneMenu id="selAllergyType" style="width: 150px" value="#{cc.attrs.controller.currentPatientAllergy.clinicalFindingValueType}">
+                                <f:selectItem itemLabel="Medicine" itemValue="PatientAllergy"/>
+                                <f:selectItem itemLabel="Food" itemValue="PatientFoodAllergy"/>
+                                <f:selectItem itemLabel="Plaster" itemValue="PatientPlasterAllergy"/>
+                                <f:selectItem itemLabel="Other" itemValue="PatientOtherAllergy"/>
+                                <p:ajax event="change" process="@this" update="pnlAllergyEntry"/>
+                            </p:selectOneMenu>
+                            <h:panelGroup id="pnlAllergyEntry" layout="block" class="d-flex w-100 mx-2">
+                                <p:autoComplete
+                                    id="acAllergy"
+                                    rendered="#{cc.attrs.controller.currentPatientAllergy.medicineAllergy}"
+                                    placeholder="Search Patient Allergies"
+                                    completeMethod="#{vtmController.completeVtm}"
+                                    var="pta"
+                                    style="width: 150px"
+                                    maxResults="15"
+                                    itemLabel="#{pta}"
+                                    itemValue="#{pta}"
+                                    forceSelection="true"
+                                    value="#{cc.attrs.controller.currentPatientAllergy.itemValue}"
+                                    inputStyleClass="form-control w-100"
+                                    class="w-100"/>
+                                <p:inputText
+                                    id="txtAllergyText"
+                                    rendered="#{not cc.attrs.controller.currentPatientAllergy.medicineAllergy}"
+                                    placeholder="#{cc.attrs.controller.currentPatientAllergy.allergyTypeLabel} allergy (required)"
+                                    class="w-100"
+                                    value="#{cc.attrs.controller.currentPatientAllergy.allergyTextInput}"/>
+                                <p:inputText placeholder="Remark" class="mx-4 w-100" id="txtAllergy" value="#{cc.attrs.controller.currentPatientAllergy.allergyRemarkInput}"/>
+                            </h:panelGroup>
 
                         </div>
                         <div class="col-2">
@@ -491,8 +507,8 @@
                                 id="btnAddAllergy" 
                                 value="Add" 
                                 class="w-100"
-                                process="btnAddAllergy acAllergy txtAllergy" 
-                                update="ptAl txtAllergy acAllergy msg" 
+                                process="btnAddAllergy selAllergyType pnlAllergyEntry" 
+                                update="ptAl selAllergyType pnlAllergyEntry msg" 
                                 action="#{cc.attrs.controller.addPatientAllergy()}"/>
 
                         </div>
@@ -504,10 +520,7 @@
                                     <div class="card my-1 w-100">
                                         <div class="d-flex justify-content-between align-items-center p-2">
                                             <div>
-                                                <h:outputText  rendered="#{not empty al.itemValue and not empty al.stringValue}" 
-                                                               value="#{al.itemValue.name.concat(' - ').concat(al.stringValue)}"/>
-                                                <h:outputText rendered="#{empty al.itemValue or empty al.stringValue}" 
-                                                              value="#{al.itemValue.name}#{al.stringValue}"/>
+                                                <h:outputText value="#{al.allergyDisplay}"/>
                                             </div>
                                             <div>
                                                 <p:commandButton 
