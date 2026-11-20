@@ -98,7 +98,7 @@
                                         value="To Cancel"
                                         icon="fa fa-ban"
                                         action="#{inwardSearch.navigateToCancelInpatientBill()}"
-                                        disabled="#{inwardSearch.bill.cancelled or inwardSearch.bill.refunded or (inwardSearch.bill.patientEncounter.nursingDischarged and !webUserController.hasPrivilege('InwardProcessCancelAfterNursingDischarge'))}"
+                                        disabled="#{inwardSearch.billACancellationBill or inwardSearch.bill.cancelled or inwardSearch.bill.refunded or (inwardSearch.bill.patientEncounter.nursingDischarged and !webUserController.hasPrivilege('InwardProcessCancelAfterNursingDischarge'))}"
                                         styleClass="ui-button-danger">
                                     </p:commandButton>
                                     <p:commandButton
