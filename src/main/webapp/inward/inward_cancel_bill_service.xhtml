@@ -85,6 +85,7 @@
                                         icon="fas fa-ban"
                                         styleClass="ui-button-danger"
                                         title="Cancel this inward service bill"
+                                        disabled="#{inwardSearch.billACancellationBill}"
                                         action="#{inwardSearch.cancelBillService()}">
                                         <p:confirm header="Confirm Service Bill Cancellation"
                                                    message="Cancel this inward service bill? This action cannot be undone."

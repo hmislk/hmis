@@ -27,7 +27,7 @@
                                         class="ui-button-danger mx-1"
                                         rendered="#{inwardSearch.bill.billClass ne 'class com.divudi.core.entity.CancelledBill'}"
                                         action="#{inwardSearch.navigateToCancelInwardProfessionalBill()}"
-                                        disabled="#{inwardSearch.bill.cancelled}"  >                           
+                                        disabled="#{inwardSearch.bill.cancelled or inwardSearch.billACancellationBill}"  >                           
                                     </p:commandButton>
                                     <p:commandButton 
                                         ajax="false" value="Mark As Checked"
