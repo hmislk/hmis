@@ -53,3 +53,8 @@ decoded, so its `action` is skipped silently."
 
 After: "The red 'Sent to Lab' button does nothing when clicked. It was copied
 from the Revert button and never finished. Should we remove it or make it work?"
+
+
+## From CLAUDE.md (moved detail)
+
+applies to replies, hub messages, issues, PRs and docs. Lead with the point. Use the words on screen (menu, page, button), not code names; put code names in a "For developers" section. Ask one question at a time, with options and a recommendation.

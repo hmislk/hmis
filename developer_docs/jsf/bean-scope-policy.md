@@ -55,3 +55,8 @@ Run it locally before pushing:
 ```bash
 python3 .github/scripts/check_bean_scope.py origin/development
 ```
+
+
+## From CLAUDE.md (moved detail)
+
+never change a bean's scope (`@SessionScoped` to `@ViewScoped` etc.) without discussing it with the lead developer first. Fix the issue within the current scope. CI `bean-scope-guard` fails such PRs unless the lead developer adds the label `scope-change-approved`.

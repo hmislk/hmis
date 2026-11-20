@@ -221,3 +221,10 @@ gh api -X POST "repos/hmislk/hmis/pulls/<PR>/comments/<COMMENT_ID>/replies" \
   replies. Use it on a PR that needs correcting rather than just triaging
   existing comments — e.g. one a `/merge-gate` run left `BLOCKED-REVIEW`. Its
   full workflow and rationale are in `.claude/skills/review-and-fix/SKILL.md`.
+
+
+## From CLAUDE.md (moved detail)
+
+after applying a CodeRabbit/Codex fix, verify the getter names exist on the entity (e.g. `isCompleted()`, not `getCompleted()`).
+
+See also §2a above:  decline bot suggestions that change the design or flow, or bring a pattern most of the codebase does not use; reply, resolve the thread, do not implement; raise any you still think valid with the lead developer later.

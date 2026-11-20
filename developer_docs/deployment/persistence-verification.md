@@ -299,3 +299,8 @@ See [Local Development Setup](../setup/local-environment.md) for details.
 ---
 
 **Remember**: This verification is CRITICAL for successful QA deployments. Make it a habit to check persistence.xml before every push!
+
+
+## From CLAUDE.md (moved detail)
+
+after every `git push`, without being asked, restore local JNDI in `persistence.xml` and leave it unstaged: `${JDBC_DATASOURCE}` to `jdbc/coop`, `${JDBC_AUDIT_DATASOURCE}` to `jdbc/ruhunuAudit`.

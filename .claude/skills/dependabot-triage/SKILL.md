@@ -177,3 +177,8 @@ A table in chat: PR · artifact from→to · scope · used where · checks run �
 - Never edit `pom.xml` on `development` directly to "fix" a Dependabot PR; push the fix to the Dependabot branch or close the PR.
 - No worktrees; snapshots via `git archive` under `tmp/`.
 - Closing comments follow the [Public Content Policy](../../../developer_docs/git/github-public-content-policy.md).
+
+
+## From CLAUDE.md (moved detail)
+
+green CI is not enough. Check bytecode <= Java 11, no `jakarta.*`, sibling artifacts on one version (e.g. `poi`/`poi-ooxml`), no `pom.xml` pin holding back a transitive (e.g. `commons-io`), release notes read, a combined JDK 11 build, and a local Payara smoke test of each runtime jar. Close a rejected bump with the evidence and add a `.github/dependabot.yml` ignore rule. CI compile catches none of these runtime failures.
