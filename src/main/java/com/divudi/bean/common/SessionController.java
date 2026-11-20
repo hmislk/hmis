@@ -1056,6 +1056,14 @@ public class SessionController implements Serializable, HttpSessionListener {
         return uFacade;
     }
 
+    // A specific refusal (service account, IP, etc.) has already told the user why; do not add a second message.
+    private void addGenericLoginFailureIfNoMessage() {
+        FacesContext fc = FacesContext.getCurrentInstance();
+        if (fc == null || fc.getMessageList().isEmpty()) {
+            JsfUtil.addErrorMessage("Invalid User! Login Failure. Please try again");
+        }
+    }
+
     public String loginActionWithoutDepartment() {
         long totalStartTime = System.currentTimeMillis();
         
@@ -1074,7 +1082,7 @@ public class SessionController implements Serializable, HttpSessionListener {
         } else if (twoFactorAuthController.isAccountLockedNotice()) {
             return "";
         } else {
-            JsfUtil.addErrorMessage("Invalid User! Login Failure. Please try again");
+            addGenericLoginFailureIfNoMessage();
             return "";
         }
     }
@@ -1096,7 +1104,7 @@ public class SessionController implements Serializable, HttpSessionListener {
         } else if (twoFactorAuthController.isAccountLockedNotice()) {
             return "";
         } else {
-            JsfUtil.addErrorMessage("Invalid User! Login Failure. Please try again");
+            addGenericLoginFailureIfNoMessage();
             return "";
         }
     }
