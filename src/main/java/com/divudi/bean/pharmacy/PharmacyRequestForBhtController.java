@@ -256,6 +256,8 @@ public class PharmacyRequestForBhtController implements Serializable {
         replaceableStocks = null;
         itemsWithoutStocks = null;
         patientEncounter = null;
+        // The cached allergies belong to the previous patient
+        allergyListOfPatient = null;
         batchBill = null;
     }
 
@@ -2681,6 +2683,8 @@ public class PharmacyRequestForBhtController implements Serializable {
 
     public void setPatientEncounter(PatientEncounter patientEncounter) {
         this.patientEncounter = patientEncounter;
+        // Session-scoped: never check this patient's items against another patient's allergies
+        this.allergyListOfPatient = null;
     }
 
     public BillFeeFacade getBillFeeFacade() {

@@ -113,6 +113,8 @@ public class PastPatientEncounterController implements Serializable {
      */
     @Inject
     SessionController sessionController;
+    @EJB
+    private com.divudi.service.AuditService auditService;
     @Inject
     PharmacySaleController pharmacySaleController;
     @Inject
@@ -930,8 +932,7 @@ public class PastPatientEncounterController implements Serializable {
     }
 
     public List<ClinicalFindingValue> fillPatientAllergies(Patient patient) {
-        List<ClinicalFindingValueType> clinicalFindingValueTypes = new ArrayList<>();
-        clinicalFindingValueTypes.add(ClinicalFindingValueType.PatientAllergy);
+        List<ClinicalFindingValueType> clinicalFindingValueTypes = new ArrayList<>(ClinicalFindingValueType.patientAllergyTypes());
         return fillCurrentPatientClinicalFindingValues(patient, clinicalFindingValueTypes);
     }
 
@@ -1125,6 +1126,9 @@ public class PastPatientEncounterController implements Serializable {
             }
             switch (tcfv.getClinicalFindingValueType()) {
                 case PatientAllergy:
+                case PatientFoodAllergy:
+                case PatientPlasterAllergy:
+                case PatientOtherAllergy:
                     patientAllergies.add(tcfv);
                     break;
                 case PatientDiagnosis:
@@ -1332,9 +1336,9 @@ public class PastPatientEncounterController implements Serializable {
         String allergiesAsString = "";
         for (ClinicalFindingValue cf : getPatientAllergies()) {
             if (cf != null) {
-                String allergyName = cf.getItemValue() != null && cf.getItemValue().getName() != null ? cf.getItemValue().getName() : "";
-                String details = cf.getStringValue() != null ? cf.getStringValue() : "";
-                allergiesAsString += allergyName + (details.isEmpty() ? "" : " - " + details) + CARD_BR;
+                String allergyName = cf.getAllergyTypeAndName();
+                String details = cf.getAllergyRemark();
+                allergiesAsString += allergyName + (details == null || details.isEmpty() ? "" : " - " + details) + CARD_BR;
             }
         }
 
@@ -1437,8 +1441,11 @@ public class PastPatientEncounterController implements Serializable {
             JsfUtil.addErrorMessage("Select Allergy");
             return;
         }
+        Map<String, Object> before = allergyAuditMap(getRemovingClinicalFindingValue());
         getRemovingClinicalFindingValue().setRetired(true);
         clinicalFindingValueFacade.edit(getRemovingClinicalFindingValue());
+        auditService.logAudit(before, allergyAuditMap(getRemovingClinicalFindingValue()), sessionController.getLoggedUser(),
+                "ClinicalFindingValue", "Patient Allergy Removed", getRemovingClinicalFindingValue().getId());
         getPatientAllergies().remove(getRemovingClinicalFindingValue());
         setRemovingClinicalFindingValue(null);
     }
@@ -1465,14 +1472,33 @@ public class PastPatientEncounterController implements Serializable {
         setRemovingClinicalFindingValue(null);
     }
 
+    /** Snapshot of a patient allergy for audit events, as on the inpatient pages. */
+    private Map<String, Object> allergyAuditMap(ClinicalFindingValue pa) {
+        Map<String, Object> m = new HashMap<>();
+        if (pa == null) {
+            return m;
+        }
+        m.put("allergyType", pa.getAllergyTypeLabel());
+        m.put("allergy", pa.getAllergyName());
+        m.put("value", pa.getAllergyRemark());
+        m.put("retired", pa.isRetired());
+        if (pa.getPatient() != null) {
+            m.put("patientId", pa.getPatient().getId());
+        }
+        return m;
+    }
+
     public void addPatientAllergy() {
-        if (getPatientAllergy().getItemValue() == null) {
-            JsfUtil.addErrorMessage("Select Allergy");
+        String allergyError = getPatientAllergy().validateAllergyInputs();
+        if (allergyError != null) {
+            JsfUtil.addErrorMessage(allergyError);
             return;
         }
+        getPatientAllergy().applyAllergyInputs();
         getPatientAllergy().setPatient(patient);
-        getPatientAllergy().setClinicalFindingValueType(ClinicalFindingValueType.PatientAllergy);
-        clinicalFindingValueFacade.create(getPatientAllergy());
+        clinicalFindingValueFacade.createAndFlush(getPatientAllergy());
+        auditService.logAudit(null, allergyAuditMap(getPatientAllergy()), sessionController.getLoggedUser(),
+                "ClinicalFindingValue", "Patient Allergy Added", getPatientAllergy().getId());
         getPatientAllergies().add(getPatientAllergy());
         setPatientAllergy(null);
         JsfUtil.addSuccessMessage("Added");

@@ -168,13 +168,19 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
     
     // <editor-fold defaultstate="collapsed" desc="Functons">
     public void addPatientAllergy() {
-        if (currentPatientAllergy == null || currentPatientAllergy.getItemValue() == null) {
+        if (currentPatientAllergy == null) {
             JsfUtil.addErrorMessage("Please select the allergy drug.");
             return;
         }
-        if (currentPatientAllergy.getPatient() == null) {
-            currentPatientAllergy.setPatient(getCurrent().getPatient());
+        String allergyError = currentPatientAllergy.validateAllergyInputs();
+        if (allergyError != null) {
+            JsfUtil.addErrorMessage(allergyError);
+            return;
         }
+        currentPatientAllergy.applyAllergyInputs();
+        // Always the admission on this page: a form object created for an earlier
+        // admission may still carry that patient.
+        currentPatientAllergy.setPatient(getCurrent().getPatient());
         if (currentPatientAllergy.getClinicalFindingValueType() == null) {
             currentPatientAllergy.setClinicalFindingValueType(ClinicalFindingValueType.PatientAllergy);
         }
@@ -194,8 +200,9 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
         if (pa == null) {
             return m;
         }
-        m.put("allergy", pa.getItemValue() != null ? pa.getItemValue().getName() : null);
-        m.put("value", pa.getStringValue());
+        m.put("allergyType", pa.getAllergyTypeLabel());
+        m.put("allergy", pa.getAllergyName());
+        m.put("value", pa.getAllergyRemark());
         m.put("retired", pa.isRetired());
         return m;
     }
@@ -235,9 +242,9 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
         }
         patientAllergies = new ArrayList<>();
         Map params = new HashMap<>();
-        String s = "SELECT c FROM ClinicalFindingValue c WHERE c.retired = false AND c.patient = :pt AND c.clinicalFindingValueType = :type";
+        String s = "SELECT c FROM ClinicalFindingValue c WHERE c.retired = false AND c.patient = :pt AND c.clinicalFindingValueType in :types";
         params.put("pt", pt);
-        params.put("type", ClinicalFindingValueType.PatientAllergy);
+        params.put("types", ClinicalFindingValueType.patientAllergyTypes());
         patientAllergies = clinicalFindingValueFacade.findByJpql(s, params);
         patientAllergiesLoadedForPatientId = pt.getId();
     }
@@ -910,6 +917,8 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
             JsfUtil.addErrorMessage("No Admission Selected");
             return "";
         }
+        // Drop an entry started for another admission, so it can't be saved to that patient.
+        currentPatientAllergy = null;
         fillCurrentPatientAllergies(current.getPatient());
         return "/inward/inward_manage_allergies?faces-redirect=true";
     }
@@ -1144,6 +1153,43 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
             fillCurrentPatientAllergies(pt);
         }
         return patientAllergies;
+    }
+
+    /**
+     * Allergies of the given patient. Used by the Inpatient Dashboard, which shows
+     * admissionController's admission: {@link #getPatientAllergies()} prefers this
+     * bean's own admission, which still holds the last one opened in Edit BHT or
+     * Manage Allergies, so it could show another patient's allergies.
+     */
+    public List<ClinicalFindingValue> patientAllergiesOf(Patient pt) {
+        if (pt == null || pt.getId() == null) {
+            return new ArrayList<>();
+        }
+        // Own list, not patientAllergies: Manage Allergies (maybe in another tab, for
+        // another patient) edits that one. Cached for this request only, so a save on
+        // any page shows on the next load and two requests never share the list.
+        FacesContext fc = FacesContext.getCurrentInstance();
+        String cacheKey = "bhtEditController.dashboardAllergies." + pt.getId();
+        if (fc != null) {
+            @SuppressWarnings("unchecked")
+            List<ClinicalFindingValue> cached = (List<ClinicalFindingValue>) fc.getAttributes().get(cacheKey);
+            if (cached != null) {
+                return cached;
+            }
+        }
+        Map<String, Object> params = new HashMap<>();
+        params.put("pt", pt);
+        params.put("types", ClinicalFindingValueType.patientAllergyTypes());
+        List<ClinicalFindingValue> loaded = clinicalFindingValueFacade.findByJpql(
+                "SELECT c FROM ClinicalFindingValue c WHERE c.retired = false AND c.patient = :pt AND c.clinicalFindingValueType in :types",
+                params);
+        if (loaded == null) {
+            loaded = new ArrayList<>();
+        }
+        if (fc != null) {
+            fc.getAttributes().put(cacheKey, loaded);
+        }
+        return loaded;
     }
 
     public void setPatientAllergies(List<ClinicalFindingValue> patientAllergies) {
