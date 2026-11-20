@@ -1969,8 +1969,42 @@ public class InwardSearch implements Serializable {
 
     }
 
+    /**
+     * The bill held by this session-scoped page can be older than the database:
+     * a double click, a second tab or another user may have cancelled it already.
+     * Re-reads the bill (and its admission) fresh and makes it the page's bill, so
+     * the checks that follow decide on current data.
+     *
+     * @return false, after an error message, when the bill is already cancelled or
+     * retired, or can no longer be found; true when it is safe to carry on.
+     */
+    private boolean refreshBillFromDatabaseOrRefuse() {
+        Bill freshBill = getBillFacade().findWithoutCache(getBill().getId());
+        if (freshBill == null) {
+            JsfUtil.addErrorMessage("This bill could not be found. Please search it again.");
+            return false;
+        }
+        if (freshBill.getPatientEncounter() != null && freshBill.getPatientEncounter().getId() != null) {
+            PatientEncounter freshEncounter = getPatientEncounterFacade().findWithoutCache(freshBill.getPatientEncounter().getId());
+            if (freshEncounter != null) {
+                freshBill.setPatientEncounter(freshEncounter);
+            }
+        }
+        // Show the current state from here on, whatever the outcome.
+        this.bill = freshBill;
+        if (freshBill.isCancelled() || freshBill.isRetired()) {
+            JsfUtil.addErrorMessage("This bill was already cancelled, possibly by another user. It was not cancelled again.");
+            return false;
+        }
+        return true;
+    }
+
     public void cancelBillService() {
         if (getBill() != null && getBill().getId() != null && getBill().getId() != 0) {
+
+            if (!refreshBillFromDatabaseOrRefuse()) {
+                return;
+            }
 
             if (getBill().getCheckedBy() != null) {
                 JsfUtil.addErrorMessage("Checked Bill. Can not cancel");
@@ -2765,6 +2799,10 @@ public class InwardSearch implements Serializable {
     public void cancelProvisionalBillPayment() {
         if (getBill() != null && getBill().getId() != null && getBill().getId() != 0) {
 
+            if (!refreshBillFromDatabaseOrRefuse()) {
+                return;
+            }
+
             long dayCount = CommonFunctions.getDayCount(getBill().getCreatedAt(), new Date());
             boolean disableTimeLimit = configOptionApplicationController.getBooleanValueByKey("Disable Time Limit on Provisional Bill Cancellation", false);
             boolean hasPrivilege = true;
@@ -3192,6 +3230,10 @@ public class InwardSearch implements Serializable {
 
     public void cancelProfessional() {
         if (getBill() != null && getBill().getId() != null && getBill().getId() != 0) {
+
+            if (!refreshBillFromDatabaseOrRefuse()) {
+                return;
+            }
 
             if (getComment() == null || getComment().trim().isEmpty()) {
                 JsfUtil.addErrorMessage("Please enter a comment");
