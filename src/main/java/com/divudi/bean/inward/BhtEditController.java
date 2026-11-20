@@ -40,6 +40,7 @@ import com.divudi.core.facade.RoomFacade;
 import com.divudi.core.util.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -538,8 +539,14 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
         if (returnBhtNumber) {
             boolean institutionBasedBht = configOptionApplicationController
                     .getBooleanValueByKey("Generate Separate BHT Number Series for Each Institution");
+            Integer admissionYear = null;
+            if (current.getCreatedAt() != null) {
+                Calendar createdAt = Calendar.getInstance();
+                createdAt.setTime(current.getCreatedAt());
+                admissionYear = createdAt.get(Calendar.YEAR);
+            }
             bhtNumberReturned = billNumberGenerator.returnAdmissionNumber(current.getAdmissionType(),
-                    current.getInstitution(), institutionBasedBht, current.getBhtLong());
+                    current.getInstitution(), institutionBasedBht, current.getBhtLong(), admissionYear);
         }
 
         Map<String, Object> afterCancel = new HashMap<>();

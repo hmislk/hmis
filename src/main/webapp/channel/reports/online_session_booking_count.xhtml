@@ -122,6 +122,25 @@
                                     itemValue="#{type}" />
                             </p:selectOneMenu>
 
+                            <h:panelGroup layout="block" styleClass="form-group fp-label">
+                                <h:outputText value="&#xf0b0;" styleClass="fa" />
+                                <div class="fp-label-text">
+                                    <h:outputLabel for="reportType" value="Report Type"/>
+                                </div>
+                            </h:panelGroup>
+
+                            <p:selectOneMenu id="reportType"
+                                             value="#{channelReportTemplateController.selectedReportTypeInOBReport}"
+                                             class="w-100">
+                                <f:selectItems
+                                    value="#{channelReportTemplateController.reportTypesInOBReport}"
+                                    var="rt"
+                                    itemLabel="#{rt eq 'Appointment Date' ? 'Appointment Date (Session Date)' : rt}"
+                                    itemValue="#{rt}" />
+                            </p:selectOneMenu>
+                            <p:spacer width="50"/>
+                            <h:panelGroup/>
+                            <h:panelGroup/>
 
                         </h:panelGrid>
 
@@ -186,6 +205,8 @@
                                 <p:outputLabel class="ml-2" value="#{channelReportTemplateController.toDate}" >
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"  />
                                 </p:outputLabel>
+                                <p:outputLabel class="ml-5" value="Report Type :" />
+                                <p:outputLabel class="ml-2" value="#{channelReportTemplateController.generatedReportTypeInOBReport}" />
                             </f:facet>
                             <p:column width="2em">
                                 <f:facet name="header">
@@ -207,6 +228,14 @@
                                 </f:facet>
                                 <p:outputLabel value="#{a.sessionDate}" >
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"  />
+                                </p:outputLabel>
+                            </p:column>
+                            <p:column width="8em">
+                                <f:facet name="header">
+                                    <p:outputLabel value="Booked Date" />
+                                </f:facet>
+                                <p:outputLabel value="#{a.bookedDate}" >
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
                                 </p:outputLabel>
                             </p:column>
                             <p:column width="10em">

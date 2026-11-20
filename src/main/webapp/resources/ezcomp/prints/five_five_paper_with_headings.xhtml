@@ -307,7 +307,7 @@
                                 </tr>
                                 <ui:repeat value="#{billItem.billFees}" var="bf">
                                     <!-- Hospital / non-staff fee sub-row -->
-                                    <h:panelGroup rendered="#{not bf.retired and bf.fee ne null and bf.fee.feeType ne null and bf.fee.feeType ne 'Staff'}">
+                                    <h:panelGroup rendered="#{not bf.retired and not bf.collectedByDoctorAtBilling and bf.fee ne null and bf.fee.feeType ne null and bf.fee.feeType ne 'Staff'}">
                                         <tr>
                                             <td style="padding-left: 12px;">
                                                 <h:outputLabel class="itemsBlockRightFiveFive" value="  #{bf.fee.name}" style="font-style: italic;"/>
@@ -320,7 +320,7 @@
                                         </tr>
                                     </h:panelGroup>
                                     <!-- Professional (staff) fee sub-row with doctor/technician name -->
-                                    <h:panelGroup rendered="#{not bf.retired and bf.fee ne null and bf.fee.feeType ne null and bf.fee.feeType eq 'Staff'}">
+                                    <h:panelGroup rendered="#{not bf.retired and not bf.collectedByDoctorAtBilling and bf.fee ne null and bf.fee.feeType ne null and bf.fee.feeType eq 'Staff'}">
                                         <tr>
                                             <td style="padding-left: 12px;">
                                                 <h:outputLabel class="itemsBlockRightFiveFive"
@@ -483,6 +483,12 @@
                 </table>
 
             </div>
+
+            <h:panelGroup layout="block" rendered="#{opdBillController.hasFeesCollectedByDoctor(cc.attrs.bill)}">
+                <div style="font-size: 9pt; margin-top: 4px; text-align: left;">
+                    <h:outputText value="Fees Collected by the Doctor" />
+                </div>
+            </h:panelGroup>
 
             <div style=" margin-top: 10px;" class="d-flex justify-content-between">
                 <h:outputLabel value="Cashier : #{cc.attrs.bill.creater.webUserPerson.name}"/>

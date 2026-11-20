@@ -672,7 +672,7 @@ public class InpatientClinicalDataController implements Serializable {
                 String duration = cf.getPrescription().getDuration() != null ? String.format("%.0f", cf.getPrescription().getDuration()) : "";
                 String durationUnit = cf.getPrescription().getDurationUnit() != null ? cf.getPrescription().getDurationUnit().getName() : "";
 
-                medicinesAsString += rxName + " " + dose + " " + doseUnit + " " + frequencyUnit + " " + duration + " " + durationUnit + "<br/>";
+                medicinesAsString += escapeHtmlText(rxName + " " + dose + " " + doseUnit + " " + frequencyUnit + " " + duration + " " + durationUnit) + "<br/>";
             }
         }
 
@@ -686,7 +686,7 @@ public class InpatientClinicalDataController implements Serializable {
                     String frequencyUnit = cf.getPrescription().getFrequencyUnit() != null ? cf.getPrescription().getFrequencyUnit().getName() : "";
                     String duration = cf.getPrescription().getDuration() != null ? String.format("%.0f", cf.getPrescription().getDuration()) : "";
                     String durationUnit = cf.getPrescription().getDurationUnit() != null ? cf.getPrescription().getDurationUnit().getName() : "";
-                    inpatientRx += rxName + " " + dose + " " + doseUnit + " " + frequencyUnit + " " + duration + " " + durationUnit + "<br/>";
+                    inpatientRx += escapeHtmlText(rxName + " " + dose + " " + doseUnit + " " + frequencyUnit + " " + duration + " " + durationUnit) + "<br/>";
                 }
             }
         }
@@ -701,7 +701,7 @@ public class InpatientClinicalDataController implements Serializable {
                     String frequencyUnit = cf.getPrescription().getFrequencyUnit() != null ? cf.getPrescription().getFrequencyUnit().getName() : "";
                     String duration = cf.getPrescription().getDuration() != null ? String.format("%.0f", cf.getPrescription().getDuration()) : "";
                     String durationUnit = cf.getPrescription().getDurationUnit() != null ? cf.getPrescription().getDurationUnit().getName() : "";
-                    drxString += rxName + " " + dose + " " + doseUnit + " " + frequencyUnit + " " + duration + " " + durationUnit + "<br/>";
+                    drxString += escapeHtmlText(rxName + " " + dose + " " + doseUnit + " " + frequencyUnit + " " + duration + " " + durationUnit) + "<br/>";
                 }
             }
         }
@@ -709,7 +709,7 @@ public class InpatientClinicalDataController implements Serializable {
         String ixStart = "Ix" + "<br/>";
         String ixAsString = ixStart;
         for (ClinicalFindingValue ix : getEncounterInvestigations()) {
-            ixAsString += ix.getItemValue().getName();
+            ixAsString += escapeHtmlText(ix.getItemValue().getName());
         }
         if (ixAsString.equals(ixStart)) {
             ixAsString = "No investigations peformed";
@@ -719,7 +719,7 @@ public class InpatientClinicalDataController implements Serializable {
         String prStart = " " + "<br/>";
         String prAsString = prStart;
         for (ClinicalFindingValue pr : getEncounterProcedures()) {
-            prAsString += pr.getItemValue().getName();
+            prAsString += escapeHtmlText(pr.getItemValue().getName());
         }
         if (prAsString.equals(prStart)) {
             prAsString = "No Procedures performed";
@@ -732,7 +732,7 @@ public class InpatientClinicalDataController implements Serializable {
             if (cf != null) {
                 String allergyName = cf.getAllergyTypeAndName();
                 String details = cf.getAllergyRemark();
-                allergiesAsString += allergyName + (details.isEmpty() ? "" : " - " + details) + "<br/>";
+                allergiesAsString += escapeHtmlText(allergyName + (details == null || details.isEmpty() ? "" : " - " + details)) + "<br/>";
             }
         }
         if (allergiesAsString.equals(allergyStart)) {
@@ -750,7 +750,7 @@ public class InpatientClinicalDataController implements Serializable {
                 String duration = rx.getPrescription().getDuration() != null ? String.valueOf(rx.getPrescription().getDuration()) : "";
                 String durationUnit = rx.getPrescription().getDurationUnit() != null ? rx.getPrescription().getDurationUnit().getName() : "";
 
-                routineMedicinesAsString += medicineName + " " + dose + " " + doseUnit + " - " + frequency + " - " + duration + " " + durationUnit + "<br/>";
+                routineMedicinesAsString += escapeHtmlText(medicineName + " " + dose + " " + doseUnit + " - " + frequency + " - " + duration + " " + durationUnit) + "<br/>";
             }
         }
         if (routineMedicinesAsString.equals(routeineMedicineStart)) {
@@ -763,7 +763,7 @@ public class InpatientClinicalDataController implements Serializable {
             if (dx != null) {
                 String diagnosisName = dx.getItemValue() != null && dx.getItemValue().getName() != null ? dx.getItemValue().getName() : "";
                 String details = dx.getStringValue() != null ? dx.getStringValue() : "";
-                pastDxAsString += diagnosisName + (details.isEmpty() ? "" : " - " + details) + "<br/>";
+                pastDxAsString += escapeHtmlText(diagnosisName + (details.isEmpty() ? "" : " - " + details)) + "<br/>";
             }
         }
         if (pastDxAsString.equals(pastDxStart)) {
@@ -776,7 +776,7 @@ public class InpatientClinicalDataController implements Serializable {
                 String diagnosisName = dx.getItemValue() != null && dx.getItemValue().getName() != null ? dx.getItemValue().getName() : "";
                 String details = dx.getStringValue() != null ? dx.getStringValue() : "";
 
-                currentDxAsString += diagnosisName + (details.isEmpty() ? "" : " - " + details) + "<br/>";
+                currentDxAsString += escapeHtmlText(diagnosisName + (details.isEmpty() ? "" : " - " + details)) + "<br/>";
             }
         }
 
@@ -851,54 +851,54 @@ public class InpatientClinicalDataController implements Serializable {
         }
         String letterDate = CommonFunctions.formatDate(new Date(), sessionController.getApplicationPreference().getLongDateFormat());
 
-        output = input.replace("{name}", name)
-                .replace("{age}", age)
-                .replace("{comments}", comments)
-                .replace("{sex}", sex)
-                .replace("{address}", address)
-                .replace("{phone}", phone)
-                .replace("{bht}", bht)
-                .replace("{doa}", doa)
-                .replace("{dod}", dod)
+        output = input.replace("{name}", escapeHtmlText(name))
+                .replace("{age}", escapeHtmlText(age))
+                .replace("{comments}", escapeHtmlText(comments))
+                .replace("{sex}", escapeHtmlText(sex))
+                .replace("{address}", escapeHtmlText(address))
+                .replace("{phone}", escapeHtmlText(phone))
+                .replace("{bht}", escapeHtmlText(bht))
+                .replace("{doa}", escapeHtmlText(doa))
+                .replace("{dod}", escapeHtmlText(dod))
                 .replace("{medicines}", medicinesAsString)
                 .replace("{rx}", inpatientRx)
                 .replace("{drx}", drxString)
-                .replace("{rr}", rr)
+                .replace("{rr}", escapeHtmlText(rr))
                 .replace("{ix}", ixAsString)
                 .replace("{procedures}", prAsString)
                 .replace("{past-dx}", pastDxAsString)
                 .replace("{routine-medicines}", routineMedicinesAsString)
                 .replace("{allergies}", allergiesAsString)
-                .replace("{visit-date}", visitDate)
-                .replace("{height}", height)
-                .replace("{weight}", weight)
-                .replace("{bmi}", bmi)
+                .replace("{visit-date}", escapeHtmlText(visitDate))
+                .replace("{height}", escapeHtmlText(height))
+                .replace("{weight}", escapeHtmlText(weight))
+                .replace("{bmi}", escapeHtmlText(bmi))
                 .replace("{dx}", currentDxAsString)
-                .replace("{bp}", bp)
-                .replace("{pr}", pulseRate)
-                .replace("{pfr}", pfr)
-                .replace("{sat}", saturation)
-                .replace("{temp-series}", tempSeries)
-                .replace("{bp-series}", bpSeries)
-                .replace("{pr-series}", prSeries)
-                .replace("{rr-series}", rrSeries)
-                .replace("{sat-series}", satSeries)
-                .replace("{credit_company}", creditCompanyName)
-                .replace("{credit_company_address}", creditCompanyAddress)
-                .replace("{policy_no}", policyNo)
-                .replace("{reference_no}", referenceNo)
-                .replace("{credit_limit}", creditLimit)
-                .replace("{credit_company_contact}", creditCompanyContact)
-                .replace("{company_amount}", companyAmount)
-                .replace("{final_bill_no}", finalBillNo)
-                .replace("{institution}", institutionName)
-                .replace("{department}", departmentName)
-                .replace("{doctor}", doctorName)
-                .replace("{letter_date}", letterDate)
-                .replace("{final_bill}", finalBill)
-                .replace("{patient_name}", name)
-                .replace("{patient_age}", age)
-                .replace("{patient_sex}", sex);
+                .replace("{bp}", escapeHtmlText(bp))
+                .replace("{pr}", escapeHtmlText(pulseRate))
+                .replace("{pfr}", escapeHtmlText(pfr))
+                .replace("{sat}", escapeHtmlText(saturation))
+                .replace("{temp-series}", escapeHtmlText(tempSeries))
+                .replace("{bp-series}", escapeHtmlText(bpSeries))
+                .replace("{pr-series}", escapeHtmlText(prSeries))
+                .replace("{rr-series}", escapeHtmlText(rrSeries))
+                .replace("{sat-series}", escapeHtmlText(satSeries))
+                .replace("{credit_company}", escapeHtmlText(creditCompanyName))
+                .replace("{credit_company_address}", escapeHtmlText(creditCompanyAddress))
+                .replace("{policy_no}", escapeHtmlText(policyNo))
+                .replace("{reference_no}", escapeHtmlText(referenceNo))
+                .replace("{credit_limit}", escapeHtmlText(creditLimit))
+                .replace("{credit_company_contact}", escapeHtmlText(creditCompanyContact))
+                .replace("{company_amount}", escapeHtmlText(companyAmount))
+                .replace("{final_bill_no}", escapeHtmlText(finalBillNo))
+                .replace("{institution}", escapeHtmlText(institutionName))
+                .replace("{department}", escapeHtmlText(departmentName))
+                .replace("{doctor}", escapeHtmlText(doctorName))
+                .replace("{letter_date}", escapeHtmlText(letterDate))
+                .replace("{final_bill}", escapeHtmlText(finalBill))
+                .replace("{patient_name}", escapeHtmlText(name))
+                .replace("{patient_age}", escapeHtmlText(age))
+                .replace("{patient_sex}", escapeHtmlText(sex));
         return output;
 
     }
@@ -1211,6 +1211,86 @@ public class InpatientClinicalDataController implements Serializable {
         getEncounterDocuments().add(ref);
     }
 
+    private static String escapeHtmlText(String s) {
+        return s == null ? "" : org.apache.commons.text.StringEscapeUtils.escapeHtml4(s).replace("'", "&#39;");
+    }
+
+    /**
+     * Card and letter HTML (AI output, or what the editor posts) is shown with
+     * escape="false", so keep only formatting markup and drop scripts, event
+     * handlers and javascript: links. Relative and data: image sources are kept
+     * so logos in templates survive a save.
+     */
+    private static String sanitizeCardHtml(String html) {
+        if (html == null) {
+            return "";
+        }
+        org.jsoup.safety.Safelist safelist = org.jsoup.safety.Safelist.relaxed()
+                .addTags("s", "hr", "font", "center")
+                .addAttributes(":all", "style", "class", "align")
+                .addAttributes("font", "color", "size", "face")
+                .addAttributes("table", "border", "cellpadding", "cellspacing")
+                .addProtocols("img", "src", "data")
+                .preserveRelativeLinks(true);
+        // No pretty-print: keep the editor's own spacing
+        return org.jsoup.Jsoup.clean(html, "http://localhost/", safelist, new org.jsoup.nodes.Document.OutputSettings().prettyPrint(false));
+    }
+
+    /**
+     * True when an AI key is configured. AI generation is an optional extra;
+     * diagnosis cards must never depend on it.
+     */
+    public boolean isAiConfigured() {
+        String apiKey = configOptionApplicationController.getShortTextValueByKey("AI Chat - Claude API Key", "");
+        return apiKey != null && !apiKey.trim().isEmpty();
+    }
+
+    /**
+     * Creates a diagnosis card without AI: from the selected template (with
+     * placeholders filled), or a blank editable card when no template is chosen.
+     */
+    public void createDiagnosisCardManually() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("No encounter selected");
+            return;
+        }
+        // No credit-company check here: the Diagnosis Cards page has no picker, and the
+        // card is edited before printing. Template placeholders fall back to the first
+        // linked credit company, as the AI card does.
+        String html = "";
+        String cardTitle = "Diagnosis Card";
+        if (selectedDocumentTemplate != null) {
+            html = generateDocumentFromTemplate(selectedDocumentTemplate, current);
+            if (selectedDocumentTemplate.getName() != null && !selectedDocumentTemplate.getName().trim().isEmpty()) {
+                cardTitle = selectedDocumentTemplate.getName();
+            }
+        }
+        if (html == null || html.trim().isEmpty()) {
+            html = "<p><br/></p>";
+        }
+        ClinicalFindingValue ref = new ClinicalFindingValue();
+        ref.setClinicalFindingValueType(ClinicalFindingValueType.VisitDocument);
+        if (selectedDocumentTemplate != null) {
+            ref.setItemValue(selectedDocumentTemplate.getItem());
+            ref.setDocumentTemplate(selectedDocumentTemplate);
+        }
+        ref.setLobValue(html);
+        ref.setStringValue(cardTitle);
+        ref.setEncounter(current);
+        double maxOrderNo = 0;
+        for (ClinicalFindingValue d : getEncounterDocuments()) {
+            if (d.getOrderNo() > maxOrderNo) {
+                maxOrderNo = d.getOrderNo();
+            }
+        }
+        ref.setOrderNo(maxOrderNo + 1);
+        clinicalFindingValueFacade.create(ref);
+        encounterReferral = ref;
+        getEncounterDocuments().add(ref);
+        editingDiagnosisCard = true;
+        JsfUtil.addSuccessMessage("Diagnosis card created. Edit it, then Save, then View, then Print.");
+    }
+
     public void generateDiagnosisCardWithAi() {
         if (current == null) {
             JsfUtil.addErrorMessage("No encounter selected");
@@ -1265,7 +1345,7 @@ public class InpatientClinicalDataController implements Serializable {
             if (html.endsWith("```")) {
                 html = html.substring(0, html.length() - 3);
             }
-            html = html.trim();
+            html = sanitizeCardHtml(html.trim());
 
             ClinicalFindingValue ref = new ClinicalFindingValue();
             ref.setClinicalFindingValueType(ClinicalFindingValueType.VisitDocument);
@@ -1335,7 +1415,7 @@ public class InpatientClinicalDataController implements Serializable {
             if (html.startsWith("```html")) html = html.substring(7);
             else if (html.startsWith("```")) html = html.substring(3);
             if (html.endsWith("```")) html = html.substring(0, html.length() - 3);
-            html = html.trim();
+            html = sanitizeCardHtml(html.trim());
 
             ClinicalFindingValue ref = new ClinicalFindingValue();
             ref.setClinicalFindingValueType(ClinicalFindingValueType.VisitDocument);
@@ -1797,6 +1877,8 @@ public class InpatientClinicalDataController implements Serializable {
             JsfUtil.addErrorMessage("Nothing to save");
             return;
         }
+        // The editor posts the HTML through a hidden field; clean it before it is stored and shown unescaped
+        encounterReferral.setLobValue(sanitizeCardHtml(encounterReferral.getLobValue()));
         if (encounterReferral.getId() == null) {
             clinicalFindingValueFacade.create(encounterReferral);
             JsfUtil.addSuccessMessage("Saved");

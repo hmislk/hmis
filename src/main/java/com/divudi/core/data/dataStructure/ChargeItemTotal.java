@@ -25,6 +25,11 @@ public class ChargeItemTotal {
     private double gross = 0;
     private double margin = 0;
     private double vat = 0;
+    /**
+     * Net amount of the items in this row that already carry their own VAT
+     * (VAT above 0). Left out of the computed inward VAT base (issue #17491).
+     */
+    private double ownVatItemsAmount = 0;
     private String comments;
     private List<PatientRoom> patientRooms;
     List<BillFee> billFees;
@@ -71,6 +76,14 @@ public class ChargeItemTotal {
         public double getAmount() {
             return amount;
         }
+    }
+
+    public double getOwnVatItemsAmount() {
+        return ownVatItemsAmount;
+    }
+
+    public void setOwnVatItemsAmount(double ownVatItemsAmount) {
+        this.ownVatItemsAmount = ownVatItemsAmount;
     }
 
     public List<BillFee> getBillFees() {

@@ -203,39 +203,11 @@
                 <!-- Authenticator app mode -->
                 <h:panelGroup rendered="#{not twoFactorSmsController.smsMode}" layout="block">
                 <div class="tfa-icon">
-                    <i class="fa #{twoFactorAuthController.enrollmentNeeded ? 'fa-qrcode' : 'fa-shield-alt'}"></i>
+                    <i class="fa fa-shield-alt"></i>
                 </div>
 
-                <!-- First login with 2FA: link the authenticator app -->
-                <h:panelGroup rendered="#{twoFactorAuthController.enrollmentNeeded}" layout="block">
-                    <h:outputText value="Set up your authenticator app" class="tfa-title" />
-                    <h:outputText value="Your account needs two-step verification. Link an authenticator app to continue." class="tfa-sub" />
-
-                    <div class="tfa-steps">
-                        <span class="tfa-step"><b>1</b>Install an app</span>
-                        <span class="tfa-step"><b>2</b>Scan the QR code</span>
-                        <span class="tfa-step"><b>3</b>Enter the code</span>
-                    </div>
-
-                    <div class="tfa-qr">
-                        <h:outputText value="#{twoFactorAuthController.setupQrSvg}" escape="false" />
-                    </div>
-                    <div>
-                        <span class="tfa-secret-box">
-                            <span id="tfaSecretText" class="tfa-secret">
-                                <h:outputText value="#{twoFactorAuthController.setupSecretForDisplay}" />
-                            </span>
-                            <p:commandButton type="button"
-                                             icon="fa fa-copy"
-                                             class="ui-button-secondary ui-button-flat rounded-button"
-                                             title="Copy key (for manual entry)"
-                                             onclick="navigator.clipboard &amp;&amp; navigator.clipboard.writeText(document.getElementById('tfaSecretText').innerText.replace(/\s/g, ''));" />
-                        </span>
-                    </div>
-                </h:panelGroup>
-
-                <!-- Already linked: just ask for the code -->
-                <h:panelGroup rendered="#{not twoFactorAuthController.enrollmentNeeded}" layout="block">
+                <!-- Linked app: ask for the code (an app is never linked on this screen; see TwoFactorAuthController.startChallenge) -->
+                <h:panelGroup layout="block">
                     <h:outputText value="Two-step verification" class="tfa-title" />
                     <h:outputText value="Open your authenticator app and enter the 6-digit code." class="tfa-sub" />
                     <span class="tfa-user">
@@ -266,7 +238,7 @@
 
                 <!-- Other option: code by SMS (verified mobile, or first SMS login that sets the mobile up) -->
                 <h:panelGroup rendered="#{twoFactorSmsController.smsOptionAvailable}" layout="block" class="tfa-alt">
-                    <h:outputText value="#{twoFactorAuthController.enrollmentNeeded ? 'No authenticator app?' : 'Cannot use your authenticator app?'}" class="tfa-alt-text" />
+                    <h:outputText value="Cannot use your authenticator app?" class="tfa-alt-text" />
                     <p:commandButton
                         id="btnUseSms"
                         class="ui-button-secondary ui-button-outlined tfa-alt-btn"

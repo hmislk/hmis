@@ -251,11 +251,11 @@
                                     <h:panelGroup   id="gpBillPreview" class="mt-2">
 
                                         <h:panelGroup   id="gpBillPreviewSingle" rendered="#{sessionController.departmentPreference.pharmacyBillPaperType eq 'PosPaper' and !configOptionApplicationController.getBooleanValueByKey('Pharmacy Inward Direct Issue Bill is A4', false) and !configOptionApplicationController.getBooleanValueByKey('Pharmacy Inward Direct Issue Bill is FiveFive', true) and !configOptionApplicationController.getBooleanValueByKey('Pharmacy Inward Direct Issue Bill is POS', false)}">
-                                            <ph:issueBill bill="#{pharmacyBillSearch.bill}" duplicate="true" />
+                                            <ph:issueBill bill="#{pharmacyBillSearch.bill}" duplicate="true" showPositiveDiscount="true" />
                                         </h:panelGroup>
 
                                         <h:panelGroup id="gpBillPreviewFiveFive" rendered="#{sessionController.departmentPreference.pharmacyBillPaperType eq 'FiveFivePaper' and !configOptionApplicationController.getBooleanValueByKey('Pharmacy Inward Direct Issue Bill is A4', false) and !configOptionApplicationController.getBooleanValueByKey('Pharmacy Inward Direct Issue Bill is FiveFive', true) and !configOptionApplicationController.getBooleanValueByKey('Pharmacy Inward Direct Issue Bill is POS', false)}">
-                                            <phi:saleBill_five_five bill="#{pharmacyBillSearch.bill}"></phi:saleBill_five_five>
+                                            <phi:saleBill_five_five bill="#{pharmacyBillSearch.bill}" showPositiveDiscount="true"></phi:saleBill_five_five>
                                         </h:panelGroup>
 
                                         <h:panelGroup id="gpBillPreviewA4Sc" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Inward Direct Issue Bill is A4', false)}">
