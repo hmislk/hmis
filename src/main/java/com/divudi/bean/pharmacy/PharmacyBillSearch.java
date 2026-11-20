@@ -3195,6 +3195,9 @@ public class PharmacyBillSearch implements Serializable {
     }
 
     public void pharmacyRetailCancelBill() {
+        if (com.divudi.core.util.CancellationBillCheck.refuse(getBill())) {
+            return;
+        }
         if (getBill() != null && getBill().getId() != null && getBill().getId() != 0) {
             if (pharmacyErrorCheck()) {
                 return;
@@ -3261,6 +3264,9 @@ public class PharmacyBillSearch implements Serializable {
     private boolean cancellationStarted;
 
     public void pharmacyRetailCancelBillWithStock() throws ParseException {
+        if (com.divudi.core.util.CancellationBillCheck.refuse(getBill())) {
+            return;
+        }
         if (cancellationStarted) {
             JsfUtil.addErrorMessage("Cancellation already started");
             return;
@@ -4176,6 +4182,9 @@ public class PharmacyBillSearch implements Serializable {
     }
 
     public void pharmacyPoCancel() {
+        if (com.divudi.core.util.CancellationBillCheck.refuse(getBill())) {
+            return;
+        }
         if (!isAuthorized("CANCEL", "PharmacyOrderCancellation")) {
             return;
         }
@@ -4200,6 +4209,9 @@ public class PharmacyBillSearch implements Serializable {
                         break;
                     case NOT_APPROVAL_TYPE:
                         JsfUtil.addErrorMessage("This bill is not a Pharmacy Purchase Order Approval bill");
+                        break;
+                    case CANCELLATION_BILL:
+                        JsfUtil.addErrorMessage(com.divudi.core.util.CancellationBillCheck.MESSAGE);
                         break;
                     case NOT_FOUND:
                     default:

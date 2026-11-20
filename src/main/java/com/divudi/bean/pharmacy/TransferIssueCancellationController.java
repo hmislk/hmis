@@ -569,6 +569,9 @@ public class TransferIssueCancellationController implements Serializable {
      */
     @Transactional
     public void confirmCancellation() {
+        if (com.divudi.core.util.CancellationBillCheck.refuse(originalBill)) {
+            return;
+        }
         if (!isAuthorized("CANCEL", "PharmacyTransferIssueCancel")) {
             return;
         }
