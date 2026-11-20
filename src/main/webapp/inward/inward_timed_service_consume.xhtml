@@ -129,11 +129,10 @@
                                         ajax="false"
                                         icon="fa fa-id-card"
                                         class="ui-button-secondary" 
-                                        action="#{bhtSummeryController.navigateToInpatientProfile()}">
+                                        action="#{admissionController.navigateToAdmissionProfilePage}">
                                         <f:setPropertyActionListener 
-                                            target="#{admissionController.current.patient}" 
-                                            value="#{inwardTimedItemController.current.patientEncounter.patient}" >
-                                        </f:setPropertyActionListener>
+                                            target="#{admissionController.current}" 
+                                            value="#{inwardTimedItemController.current.patientEncounter}" />
                                     </p:commandButton>
                                 </div>
                             </h:panelGroup>

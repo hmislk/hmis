@@ -526,6 +526,10 @@ public class BhtSummeryController implements Serializable {
             JsfUtil.addErrorMessage("No Admission Selected");
             return "";
         }
+        if (patientEncounter.getId() == null) {
+            JsfUtil.addErrorMessage("This admission is not saved. Open the patient's admission from the admission list.");
+            return "";
+        }
         fillSurgeryBills();
         return "/inward/admission_profile.xhtml?faces-redirect=true";
     }
@@ -5331,6 +5335,10 @@ public class BhtSummeryController implements Serializable {
     }
 
     public String navigateToIntrimBillFromPatientProfile() {
+        if (patientEncounter == null || patientEncounter.getId() == null) {
+            JsfUtil.addErrorMessage("No saved admission selected. Open the patient's admission from the admission list.");
+            return "";
+        }
         if (patientEncounter != null && patientEncounter.getParentEncounter() != null) {
             JsfUtil.addErrorMessage("Interim bills can only be generated for the parent (mother) encounter. "
                     + "Generate it from the mother's admission — it will automatically include this baby's charges.");
@@ -6484,6 +6492,10 @@ public class BhtSummeryController implements Serializable {
     }
 
     private void persistLastProcessingSnapshot() {
+        // Never save an unsaved admission here: edit() would insert a new blank row on every call (#25820).
+        if (patientEncounter == null || patientEncounter.getId() == null) {
+            return;
+        }
         patientEncounter.setLastProcessBy(sessionController.getLoggedUser());
         patientEncounter.setLastProcessAt(new Date());
         patientEncounter.setTotalAtFinalProcessing(grantTotal);
