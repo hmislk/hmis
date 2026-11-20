@@ -184,6 +184,8 @@ public class ConfigOptionApplicationController implements Serializable {
     private void loadOpdBillingConfigurationDefaults() {
         // Feature toggle: whether all departments share the same OPD payment methods
         getBooleanValueByKey("All Departments Use Same Payment Methods for OPD Billing", true);
+        // Seeded so an admin can find it; the OPD billing page reads it with the read-only getter (#25731).
+        getBooleanValueByKey(OPD_BILLING_ALLOW_FEE_COLLECTED_BY_DOCTOR, false);
     }
 
     private void loadInwardConfigurationDefaults() {
@@ -1842,6 +1844,20 @@ public class ConfigOptionApplicationController implements Serializable {
 
     public boolean isInwardProfessionalFeeCollectedByDoctorAllowed() {
         return getBooleanValueByKeyReadOnly(INWARD_PROFESSIONAL_FEE_ALLOW_FEE_COLLECTED_BY_DOCTOR, false);
+    }
+
+    /**
+     * Key that lets a doctor (staff) fee be marked "Collected by Doctor" on the OPD billing page.
+     * It controls only the marking of NEW fees. A marked fee is left out of the bill net total
+     * and the amount paid at the cashier, is not payable by the hospital (left out of the doctor
+     * payment due lists) and the printed bill shows only the note "Fees Collected by the Doctor".
+     * Turning the key off later does not change fees already marked. Default false.
+     */
+    public static final String OPD_BILLING_ALLOW_FEE_COLLECTED_BY_DOCTOR
+            = "OPD Billing - Allow Fee Collected By Doctor";
+
+    public boolean isOpdFeeCollectedByDoctorAllowed() {
+        return getBooleanValueByKeyReadOnly(OPD_BILLING_ALLOW_FEE_COLLECTED_BY_DOCTOR, false);
     }
 
     /**

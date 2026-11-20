@@ -12,6 +12,7 @@
         <cc:attribute name="duplicate" />
         <cc:attribute name="showRate" default="true" />
         <cc:attribute name="showDiscount" default="true" />
+        <cc:attribute name="showPositiveDiscount" default="false" shortDescription="Print the discount as a positive number (BHT issue prints)" />
     </cc:interface>
 
     <!-- IMPLEMENTATION -->
@@ -332,7 +333,7 @@
                             <h:outputLabel  rendered="#{cc.attrs.bill.discount ne 0.0}" value="Discount " style="font-weight: bolder!important;"/>
                         </td>
                         <td  class="totalsBlock" style="text-align: right!important; ; padding-right: 30px;">
-                            <h:outputLabel rendered="#{cc.attrs.bill.discount ne 0.0}"   value="#{-cc.attrs.bill.discount}" style="font-weight: bolder!important;" >
+                            <h:outputLabel rendered="#{cc.attrs.bill.discount ne 0.0}"   value="#{cc.attrs.showPositiveDiscount ? (cc.attrs.bill.discount lt 0 ? -cc.attrs.bill.discount : cc.attrs.bill.discount) : -cc.attrs.bill.discount}" style="font-weight: bolder!important;" >
                                 <f:convertNumber pattern="#,##0.00" />
                             </h:outputLabel>
                         </td>
@@ -675,7 +676,7 @@
                             <h:outputLabel  rendered="#{cc.attrs.bill.discount ne 0.0}" value="Discount " style="font-weight: bolder!important;"/>
                         </td>
                         <td  class="totalsBlock" style="text-align: right!important; ; padding-right: 30px;">
-                            <h:outputLabel rendered="#{cc.attrs.bill.discount ne 0.0}"   value="#{-cc.attrs.bill.discount}" style="font-weight: bolder!important;" >
+                            <h:outputLabel rendered="#{cc.attrs.bill.discount ne 0.0}"   value="#{cc.attrs.showPositiveDiscount ? (cc.attrs.bill.discount lt 0 ? -cc.attrs.bill.discount : cc.attrs.bill.discount) : -cc.attrs.bill.discount}" style="font-weight: bolder!important;" >
                                 <f:convertNumber pattern="#,##0.00" />
                             </h:outputLabel>
                         </td>

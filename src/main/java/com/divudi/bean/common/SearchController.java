@@ -8272,7 +8272,7 @@ public class SearchController implements Serializable {
         sql = "select b from BillFee b where b.retired=false and "
                 + " (b.bill.billType=:btp or b.bill.billType=:btpc) "
                 + " and b.bill.cancelled=false "
-                + " and (b.feeValue - b.paidValue) > 0 and"
+                + " and (b.feeValue - b.paidValue) > 0 and (b.collectedByDoctorAtBilling = false or b.collectedByDoctorAtBilling is null) and"
                 + "  b.bill.createdAt between :fromDate"
                 + " and :toDate ";
 
@@ -8347,7 +8347,7 @@ public class SearchController implements Serializable {
         sql = "select b from BillFee b where b.retired=false and "
                 + " (b.bill.billType=:btp or b.bill.billType=:btpc) "
                 + " and b.bill.cancelled=false "
-                + " and (b.feeValue - b.paidValue) > 0 and"
+                + " and (b.feeValue - b.paidValue) > 0 and (b.collectedByDoctorAtBilling = false or b.collectedByDoctorAtBilling is null) and"
                 + "  b.bill.createdAt between :fromDate"
                 + " and :toDate ";
 
@@ -8423,7 +8423,7 @@ public class SearchController implements Serializable {
         sql = "select b from BillFee b where b.retired=false and "
                 + " b.bill.billType=:btp "
                 + " and b.bill.cancelled=false "
-                + " and (b.feeValue - b.paidValue) > 0 and"
+                + " and (b.feeValue - b.paidValue) > 0 and (b.collectedByDoctorAtBilling = false or b.collectedByDoctorAtBilling is null) and"
                 + " b.bill.createdAt between :fromDate"
                 + " and :toDate ";
 
