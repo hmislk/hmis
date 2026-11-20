@@ -2696,7 +2696,7 @@ public class BillBeanController implements Serializable {
     }
 
     @EJB
-    private com.divudi.ejb.BillNumberGenerator finalBillLockBean;
+    private com.divudi.ejb.FinalBillLockBean finalBillLockBean;
     @EJB
     private com.divudi.core.facade.PatientEncounterFacade finalBillPatientEncounterFacade;
 

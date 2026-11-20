@@ -25,6 +25,7 @@ import com.divudi.core.data.MessageType;
 import com.divudi.core.data.hr.ReportKeyWord;
 import com.divudi.core.data.inward.SurgeryBillType;
 import com.divudi.ejb.BillNumberGenerator;
+import com.divudi.ejb.FinalBillLockBean;
 import com.divudi.ejb.CashTransactionBean;
 
 import com.divudi.ejb.EjbApplication;
@@ -138,6 +139,8 @@ public class InwardSearch implements Serializable {
     private BillBeanController billBean;
     @EJB
     private BillNumberGenerator billNumberBean;
+    @EJB
+    private FinalBillLockBean finalBillLockBean;
     @Inject
     BhtSummeryFinalizedController bhtSummeryFinalizedController;
     @Inject
@@ -645,7 +648,7 @@ public class InwardSearch implements Serializable {
         // session predates any final bill settle or cancel since the page
         // opened, so saving it whole would undo that (#25521): save only the
         // credit limit onto the admission as it is in the database now.
-        getBillNumberBean().withFinalBillVersionLock(pageCopy, () -> {
+        getFinalBillLockBean().withFinalBillVersionLock(pageCopy, () -> {
             PatientEncounter fresh = patientEncounterFacade.findWithoutCache(pageCopy.getId());
             if (fresh == null) {
                 fresh = pageCopy;
@@ -1208,7 +1211,7 @@ public class InwardSearch implements Serializable {
         Long previousFinalBillId = pe.getFinalBill() != null ? pe.getFinalBill().getId() : null;
 
         // Same lock as a final bill save, so one confirmed version can't race another.
-        getBillNumberBean().withFinalBillVersionLock(pe, () -> {
+        getFinalBillLockBean().withFinalBillVersionLock(pe, () -> {
             getInwardBean().unconfirmOtherFinalBills(pe, newConfirmed);
 
             newConfirmed.setConfirmedFinalBill(true);
@@ -2644,7 +2647,7 @@ public class InwardSearch implements Serializable {
             // both under the final bill lock and decide on those copies, so a stale
             // page never cancels twice or writes old admission totals back (#25544).
             PatientEncounter pageEncounter = getBill().getPatientEncounter();
-            boolean cancelled = getBillNumberBean().withFinalBillVersionLock(pageEncounter, this::cancelFinalBillPaymentUnderLock);
+            boolean cancelled = getFinalBillLockBean().withFinalBillVersionLock(pageEncounter, this::cancelFinalBillPaymentUnderLock);
             if (!cancelled) {
                 return;
             }
@@ -2951,8 +2954,8 @@ public class InwardSearch implements Serializable {
         cb.setDepartment(getSessionController().getDepartment());
         cb.setInstitution(getSessionController().getInstitution());
 
-        cb.setDeptId(getBillNumberBean().departmentBillNumberGenerator(getSessionController().getDepartment(), source.getBillType(), BillClassType.CancelledBill, BillNumberSuffix.INWCAN));
-        cb.setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), source.getBillType(), BillClassType.CancelledBill, BillNumberSuffix.INWCAN));
+        cb.setDeptId(getBillNumberBean().departmentBillNumberGeneratorInNewTransaction(getSessionController().getDepartment(), source.getBillType(), BillClassType.CancelledBill, BillNumberSuffix.INWCAN));
+        cb.setInsId(getBillNumberBean().institutionBillNumberGeneratorInNewTransaction(getSessionController().getInstitution(), source.getBillType(), BillClassType.CancelledBill, BillNumberSuffix.INWCAN));
 //        cb.setBillType(BillType.InwardProfessional);
         cb.setBillTypeAtomic(cancellationAtomic);
         return cb;
@@ -3746,6 +3749,14 @@ public class InwardSearch implements Serializable {
 
     public void setBillNumberBean(BillNumberGenerator billNumberBean) {
         this.billNumberBean = billNumberBean;
+    }
+
+    public FinalBillLockBean getFinalBillLockBean() {
+        return finalBillLockBean;
+    }
+
+    public void setFinalBillLockBean(FinalBillLockBean finalBillLockBean) {
+        this.finalBillLockBean = finalBillLockBean;
     }
 
     public BillItemFacade getBillItemFacede() {
