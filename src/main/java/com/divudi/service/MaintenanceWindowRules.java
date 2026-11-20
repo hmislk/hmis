@@ -15,6 +15,13 @@ public final class MaintenanceWindowRules {
     /** Default lead time: the banner starts this long before the window. */
     public static final long DEFAULT_SHOW_BEFORE_MILLIS = 24L * 60 * 60 * 1000;
 
+    /** Longest title the database column holds. */
+    public static final int MAX_TITLE_LENGTH = 255;
+    /** Longest message; it renders on every page. */
+    public static final int MAX_MESSAGE_LENGTH = 1000;
+    /** Longest reference note (default varchar column). */
+    public static final int MAX_REFERENCE_LENGTH = 255;
+
     private MaintenanceWindowRules() {
     }
 
@@ -34,6 +41,15 @@ public final class MaintenanceWindowRules {
         }
         if (w.getMessage() == null || w.getMessage().trim().isEmpty()) {
             throw new MaintenanceWindowException("Message is required");
+        }
+        if (w.getMessage().length() > MAX_MESSAGE_LENGTH) {
+            throw new MaintenanceWindowException("Message must be at most " + MAX_MESSAGE_LENGTH + " characters");
+        }
+        if (w.getTitle() != null && w.getTitle().length() > MAX_TITLE_LENGTH) {
+            throw new MaintenanceWindowException("Title must be at most " + MAX_TITLE_LENGTH + " characters");
+        }
+        if (w.getExternalReference() != null && w.getExternalReference().length() > MAX_REFERENCE_LENGTH) {
+            throw new MaintenanceWindowException("Reference must be at most " + MAX_REFERENCE_LENGTH + " characters");
         }
         if (w.getStartAt() == null) {
             throw new MaintenanceWindowException("Start time is required");

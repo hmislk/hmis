@@ -50,6 +50,23 @@ public class MaintenanceWindowRulesTest {
     }
 
     @Test
+    public void validateRejectsOverLongTitleMessageAndReference() {
+        MaintenanceWindow w = window(1, 2);
+        w.setTitle("x".repeat(256));
+        assertThrows(MaintenanceWindowException.class, () -> MaintenanceWindowRules.validate(w));
+        MaintenanceWindow m = window(1, 2);
+        m.setMessage("x".repeat(1001));
+        assertThrows(MaintenanceWindowException.class, () -> MaintenanceWindowRules.validate(m));
+        MaintenanceWindow r = window(1, 2);
+        r.setExternalReference("x".repeat(256));
+        assertThrows(MaintenanceWindowException.class, () -> MaintenanceWindowRules.validate(r));
+        MaintenanceWindow ok = window(1, 2);
+        ok.setTitle("x".repeat(255));
+        ok.setMessage("x".repeat(1000));
+        MaintenanceWindowRules.validate(ok);
+    }
+
+    @Test
     public void validateRejectsBlankMessage() {
         MaintenanceWindow w = window(1, 2);
         w.setMessage("   ");

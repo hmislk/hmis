@@ -72,12 +72,14 @@ public class MaintenanceWindowApi {
     @Produces(MediaType.APPLICATION_JSON)
     public Response list() {
         try {
-            if (validateApiKey(requestContext.getHeader("Finance")) == null) {
+            WebUser user = validateApiKey(requestContext.getHeader("Finance"));
+            if (user == null) {
                 return errorResponse("Not a valid key", 401);
             }
+            boolean full = maintenanceWindowService.userMayManage(user);
             List<Map<String, Object>> out = new ArrayList<>();
             for (MaintenanceWindow w : maintenanceWindowService.listUpcomingAndActive(new Date())) {
-                out.add(toMap(w));
+                out.add(toMap(w, full));
             }
             return successResponse(out);
         } catch (Exception e) {
@@ -115,7 +117,7 @@ public class MaintenanceWindowApi {
             w.setExternalReference(r.reference);
             MaintenanceWindow saved = maintenanceWindowService.create(w, r.institutionIds, r.departmentIds, user, "api");
             maintenanceBannerCache.invalidate();
-            return successResponse(toMap(saved));
+            return successResponse(toMap(saved, true));
         } catch (MaintenanceWindowException e) {
             return errorResponse(e.getMessage(), e.getStatus());
         } catch (Exception e) {
@@ -137,7 +139,7 @@ public class MaintenanceWindowApi {
             }
             MaintenanceWindow w = maintenanceWindowService.cancel(id, user);
             maintenanceBannerCache.invalidate();
-            return successResponse(toMap(w));
+            return successResponse(toMap(w, true));
         } catch (MaintenanceWindowException e) {
             return errorResponse(e.getMessage(), e.getStatus());
         } catch (Exception e) {
@@ -145,7 +147,8 @@ public class MaintenanceWindowApi {
         }
     }
 
-    private Map<String, Object> toMap(MaintenanceWindow w) {
+    /** Non-managers get only id, title, message and times. */
+    private Map<String, Object> toMap(MaintenanceWindow w, boolean full) {
         Map<String, Object> m = new LinkedHashMap<>();
         m.put("id", w.getId());
         m.put("title", w.getTitle());
@@ -153,6 +156,9 @@ public class MaintenanceWindowApi {
         m.put("startAt", w.getStartAt());
         m.put("endAt", w.getEndAt());
         m.put("showFromAt", w.getShowFromAt());
+        if (!full) {
+            return m;
+        }
         List<Long> institutionIds = new ArrayList<>();
         for (Institution i : w.getInstitutions()) {
             institutionIds.add(i.getId());
