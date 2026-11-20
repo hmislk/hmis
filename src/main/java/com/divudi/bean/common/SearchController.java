@@ -20396,7 +20396,7 @@ public class SearchController implements Serializable {
         String jpql = "select bf "
                 + " from BillFee bf "
                 + " join bf.billItem bi "
-                + " where bf.retired=:bfr "
+                + " where (bf.collectedByDoctorAtBilling = false or bf.collectedByDoctorAtBilling is null) and bf.retired=:bfr "
                 + " and bi.bill.retired=:br "
                 + " and bf.fee.feeType=:ft "
                 + " and bi.bill.createdAt between :fd and :td ";

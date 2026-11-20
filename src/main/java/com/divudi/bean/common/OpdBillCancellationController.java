@@ -1040,6 +1040,8 @@ public class OpdBillCancellationController implements Serializable, ControllerWi
             newCancellingBillFee.setSettleValue(0 - originalProfessionalPaymentFeeForBillItem.getSettleValue());
             newCancellingBillFee.setFeeVat(0 - originalProfessionalPaymentFeeForBillItem.getFeeVat());
             newCancellingBillFee.setFeeVatPlusValue(0 - originalProfessionalPaymentFeeForBillItem.getFeeVatPlusValue());
+            // A reversal mirrors its original, so a doctor-collected fee stays out of the sums (#25731).
+            newCancellingBillFee.setCollectedByDoctorAtBilling(originalProfessionalPaymentFeeForBillItem.isCollectedByDoctorAtBilling());
 
             newCancellingBillFee.setCreatedAt(new Date());
             newCancellingBillFee.setCreater(getSessionController().getLoggedUser());
