@@ -812,7 +812,7 @@ public class BookKeepingSummery implements Serializable {
 
         String jpql = "select c.name, i.name, count(bi.bill), sum(bf.feeValue), bf.fee.feeType, bi.bill.billClassType "
                 + " from BillFee bf join bf.billItem bi join bi.item i join i.category c  "
-                + " where bi.item.department.institution=:ins "
+                + " where (bf.collectedByDoctorAtBilling = false or bf.collectedByDoctorAtBilling is null) and bi.item.department.institution=:ins "
                 + " and  bi.bill.billType= :bTp  "
                 + " and  bi.bill.createdAt between :fromDate and :toDate "
                 + " and (bi.bill.paymentMethod = :pm1 "
@@ -1061,7 +1061,7 @@ public class BookKeepingSummery implements Serializable {
 
         String jpql = "select c.name, i.name, count(bi.bill), sum(bf.feeValue), bf.fee.feeType, bi.bill.billClassType "
                 + " from BillFee bf join bf.billItem bi join bi.item i join i.category c  "
-                + " where bi.item.department.institution=:ins "
+                + " where (bf.collectedByDoctorAtBilling = false or bf.collectedByDoctorAtBilling is null) and bi.item.department.institution=:ins "
                 + " and  bi.bill.billType in :bTp  "
                 + " and  bi.bill.createdAt between :fromDate and :toDate "
                 + " and (bi.bill.paymentMethod = :pm1 "
@@ -1433,7 +1433,7 @@ public class BookKeepingSummery implements Serializable {
         for (Item item : getItems()) {
 
             sql = " select sum(bf.feeGrossValue),count(bf.billItem.bill) from BillFee bf "
-                    + " where bf.retired=false "
+                    + " where (bf.collectedByDoctorAtBilling = false or bf.collectedByDoctorAtBilling is null) and bf.retired=false "
                     + " and bf.bill.createdAt between :fd and :td "
                     + " and bf.billItem.item=:itm "
                     + " and bf.bill.billClassType=:class "
@@ -1717,7 +1717,7 @@ public class BookKeepingSummery implements Serializable {
 
             //// // System.out.println("item name" + item.getName());
             sql = " select sum(bf.feeGrossValue),count(distinct(bf.billItem.bill)) from BillFee bf "
-                    + " where bf.retired=false "
+                    + " where (bf.collectedByDoctorAtBilling = false or bf.collectedByDoctorAtBilling is null) and bf.retired=false "
                     + " and bf.billItem.item=:itm ";
 
             hm.put("itm", item);
@@ -1799,7 +1799,7 @@ public class BookKeepingSummery implements Serializable {
 
         String jpql = "select c.name, i.name, count(bi.bill), sum(bf.feeValue), bf.fee.feeType, bi.bill.billClassType "
                 + " from BillFee bf join bf.billItem bi join bi.item i join i.category c  "
-                + " where bi.item.department.institution=:ins "
+                + " where (bf.collectedByDoctorAtBilling = false or bf.collectedByDoctorAtBilling is null) and bi.item.department.institution=:ins "
                 + " and  bi.bill.billType= :bTp  "
                 + " and  bi.bill.createdAt between :fromDate and :toDate "
                 + " and  bi.bill.paymentMethod = :pm "
@@ -2040,7 +2040,7 @@ public class BookKeepingSummery implements Serializable {
 
         String jpql = "select c.name, i.name, count(bi.bill), sum(bf.feeValue), bf.fee.feeType, bi.bill.billClassType "
                 + " from BillFee bf join bf.billItem bi join bi.item i join i.category c  "
-                + " where bi.item.department.institution=:ins "
+                + " where (bf.collectedByDoctorAtBilling = false or bf.collectedByDoctorAtBilling is null) and bi.item.department.institution=:ins "
                 + " and bi.item.department=:dep"
                 + " and  bi.bill.billType= :bTp  "
                 + " and  bi.bill.createdAt between :fromDate and :toDate "
@@ -2286,7 +2286,7 @@ public class BookKeepingSummery implements Serializable {
                 + " bf.fee.feeType, "
                 + " bi.bill.billClassType "
                 + " from BillFee bf join bf.billItem bi join bi.item i join i.category c "
-                + " where bi.bill.institution=:ins "
+                + " where (bf.collectedByDoctorAtBilling = false or bf.collectedByDoctorAtBilling is null) and bi.bill.institution=:ins "
                 //                + " and bf.department.institution=:ins "
                 + " and bi.bill.billType= :bTp  "
                 + " and bi.bill.createdAt between :fromDate and :toDate "
@@ -2510,7 +2510,7 @@ public class BookKeepingSummery implements Serializable {
                 + " bf.fee.feeType, "
                 + " bi.bill.billClassType "
                 + " from BillFee bf join bf.billItem bi join bi.item i join i.category c "
-                + " where bi.bill.institution=:ins "
+                + " where (bf.collectedByDoctorAtBilling = false or bf.collectedByDoctorAtBilling is null) and bi.bill.institution=:ins "
                 + " and bf.department.institution=:ins "
                 + " and bi.bill.billType= :bTp  "
                 + " and bi.bill.createdAt between :fromDate and :toDate "
@@ -2761,7 +2761,7 @@ public class BookKeepingSummery implements Serializable {
                 + " bf.fee.feeType, "
                 + " bi.bill.billClassType "
                 + " from BillFee bf join bf.billItem bi join bi.item i join i.category c "
-                + " where bi.bill.institution=:ins "
+                + " where (bf.collectedByDoctorAtBilling = false or bf.collectedByDoctorAtBilling is null) and bi.bill.institution=:ins "
                 //                + " and bf.department.institution=:ins "
                 + " and bi.bill.billType= :bTp  "
                 + " and bi.bill.createdAt between :fromDate and :toDate "
@@ -2975,7 +2975,7 @@ public class BookKeepingSummery implements Serializable {
 
         sql = "select sum(f.feeGrossValue) "
                 + " from BillFee f "
-                + " where f.bill.retired=false "
+                + " where (f.collectedByDoctorAtBilling = false or f.collectedByDoctorAtBilling is null) and f.bill.retired=false "
                 + " and f.bill.billType = :billType "
                 + " and f.bill.createdAt between :fd and :td "
                 + " and f.bill.toInstitution=:ins "
@@ -3067,7 +3067,7 @@ public class BookKeepingSummery implements Serializable {
                 + " bf.fee.feeType, "
                 + " bi.bill.billClassType "
                 + " from BillFee bf join bf.billItem bi join bi.item i join i.category c "
-                + " where bi.bill.billType= :bTp  "
+                + " where (bf.collectedByDoctorAtBilling = false or bf.collectedByDoctorAtBilling is null) and bi.bill.billType= :bTp  "
                 + " and bi.bill.id in "
                 + " (select paidBillItem.referenceBill.id "
                 + " from BillItem paidBillItem"
@@ -5513,7 +5513,7 @@ public class BookKeepingSummery implements Serializable {
 
         sql = "select sum(bf.feeValue) "
                 + " from BillFee bf join bf.billItem bi join bi.item i join i.category c "
-                + " where bi.bill.institution=:ins "
+                + " where (bf.collectedByDoctorAtBilling = false or bf.collectedByDoctorAtBilling is null) and bi.bill.institution=:ins "
                 //                + " and bf.department.institution=:ins "
                 + " and bi.bill.billType= :bTp  "
                 + " and bi.bill.createdAt between :fromDate and :toDate "
@@ -5543,7 +5543,7 @@ public class BookKeepingSummery implements Serializable {
 
         sql = "select sum(bf.feeValue) "
                 + " from BillFee bf join bf.billItem bi join bi.item i join i.category c "
-                + " where bi.bill.billType= :bTp  "
+                + " where (bf.collectedByDoctorAtBilling = false or bf.collectedByDoctorAtBilling is null) and bi.bill.billType= :bTp  "
                 + " and bi.bill.createdAt between :fromDate and :toDate "
                 + " and bi.bill.paymentMethod in :pms "
                 + " and c=:cat ";
