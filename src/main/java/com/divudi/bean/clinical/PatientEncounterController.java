@@ -162,6 +162,8 @@ public class PatientEncounterController implements Serializable {
      */
     @Inject
     SessionController sessionController;
+    @EJB
+    private com.divudi.service.AuditService auditService;
     @Inject
     PharmacySaleController pharmacySaleController;
     @Inject
@@ -2141,8 +2143,11 @@ public class PatientEncounterController implements Serializable {
             JsfUtil.addErrorMessage("Select Allergy");
             return;
         }
+        Map<String, Object> before = allergyAuditMap(getRemovingClinicalFindingValue());
         getRemovingClinicalFindingValue().setRetired(true);
         clinicalFindingValueFacade.edit(getRemovingClinicalFindingValue());
+        auditService.logAudit(before, allergyAuditMap(getRemovingClinicalFindingValue()), sessionController.getLoggedUser(),
+                "ClinicalFindingValue", "Patient Allergy Removed", getRemovingClinicalFindingValue().getId());
         getPatientAllergies().remove(getRemovingClinicalFindingValue());
         setRemovingClinicalFindingValue(null);
     }
@@ -2180,6 +2185,22 @@ public class PatientEncounterController implements Serializable {
         setRemovingClinicalFindingValue(null);
     }
 
+    /** Snapshot of a patient allergy for audit events, as on the inpatient pages. */
+    private Map<String, Object> allergyAuditMap(ClinicalFindingValue pa) {
+        Map<String, Object> m = new HashMap<>();
+        if (pa == null) {
+            return m;
+        }
+        m.put("allergyType", pa.getAllergyTypeLabel());
+        m.put("allergy", pa.getAllergyName());
+        m.put("value", pa.getAllergyRemark());
+        m.put("retired", pa.isRetired());
+        if (pa.getPatient() != null) {
+            m.put("patientId", pa.getPatient().getId());
+        }
+        return m;
+    }
+
     public void addPatientAllergy() {
         String allergyError = getPatientAllergy().validateAllergyInputs();
         if (allergyError != null) {
@@ -2188,7 +2209,9 @@ public class PatientEncounterController implements Serializable {
         }
         getPatientAllergy().applyAllergyInputs();
         getPatientAllergy().setPatient(patient);
-        clinicalFindingValueFacade.create(getPatientAllergy());
+        clinicalFindingValueFacade.createAndFlush(getPatientAllergy());
+        auditService.logAudit(null, allergyAuditMap(getPatientAllergy()), sessionController.getLoggedUser(),
+                "ClinicalFindingValue", "Patient Allergy Added", getPatientAllergy().getId());
         getPatientAllergies().add(getPatientAllergy());
         setPatientAllergy(null);
         JsfUtil.addSuccessMessage("Added");
