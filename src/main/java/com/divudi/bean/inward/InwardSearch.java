@@ -394,6 +394,14 @@ public class InwardSearch implements Serializable {
                 || (b.getBillTypeAtomic() != null && b.getBillTypeAtomic().getBillCategory() == BillCategory.REFUND);
     }
 
+    private boolean refuseIfCancellationBill(Bill b) {
+        if (isCancellationBill(b)) {
+            JsfUtil.addErrorMessage("This is a cancellation bill and cannot be cancelled. To reverse it, create the charge again.");
+            return true;
+        }
+        return false;
+    }
+
     public boolean isBillACancellationBill() {
         return isCancellationBill(bill);
     }
@@ -475,6 +483,9 @@ public class InwardSearch implements Serializable {
     }
 
     public String navigateToCancelInwardServiceBillFromReprint() {
+        if (refuseIfCancellationBill(getBill())) {
+            return "";
+        }
         if (bill == null) {
             JsfUtil.addErrorMessage("No bill is selected");
             return "";
@@ -492,6 +503,9 @@ public class InwardSearch implements Serializable {
     }
 
     public String navigateToCancelInwardProfessionalBill() {
+        if (refuseIfCancellationBill(getBill())) {
+            return "";
+        }
         if (bill == null) {
             JsfUtil.addErrorMessage("No bill is selected");
             return "";
@@ -580,6 +594,9 @@ public class InwardSearch implements Serializable {
     private Request currentRequest;
 
     public String navigateToCancelInpatientBill() {
+        if (refuseIfCancellationBill(getBill())) {
+            return "";
+        }
         if (bill == null) {
             JsfUtil.addErrorMessage("No bill is selected");
             return "";
@@ -2005,6 +2022,9 @@ public class InwardSearch implements Serializable {
             this.bill = freshBill;
             this.billItems = null;
         }
+        if (refuseIfCancellationBill(freshBill)) {
+            return null;
+        }
         if (freshBill.isCancelled() || freshBill.isRetired()) {
             JsfUtil.addErrorMessage("This bill was already cancelled, possibly by another user. It was not cancelled again.");
             return null;
@@ -2013,6 +2033,9 @@ public class InwardSearch implements Serializable {
     }
 
     public void cancelBillService() {
+        if (refuseIfCancellationBill(getBill())) {
+            return;
+        }
         if (getBill() == null || getBill().getId() == null || getBill().getId() == 0) {
             JsfUtil.addErrorMessage("No Bill to cancel");
             return;
@@ -2131,6 +2154,9 @@ public class InwardSearch implements Serializable {
     }
 
     public void cancelInwardProfessionalFeeBill() {
+        if (refuseIfCancellationBill(getBill())) {
+            return;
+        }
         if (getBill() != null && getBill().getId() != null && getBill().getId() != 0) {
 
             if (getBill().getCheckedBy() != null) {
@@ -2192,6 +2218,9 @@ public class InwardSearch implements Serializable {
     }
 
     public void cancelTheatreProfessionalFeeBill() {
+        if (refuseIfCancellationBill(getBill())) {
+            return;
+        }
         if (getBill() != null && getBill().getId() != null && getBill().getId() != 0) {
 
             if (getBill().getCheckedBy() != null) {
@@ -2674,6 +2703,9 @@ public class InwardSearch implements Serializable {
     }
 
     public void cancelFinalBillPayment() {
+        if (refuseIfCancellationBill(getBill())) {
+            return;
+        }
         if (getBill() != null && getBill().getId() != null && getBill().getId() != 0) {
 
             long dayCount = CommonFunctions.getDayCount(getBill().getCreatedAt(), new Date());
@@ -2832,6 +2864,9 @@ public class InwardSearch implements Serializable {
     }
 
     public void cancelProvisionalBillPayment() {
+        if (refuseIfCancellationBill(getBill())) {
+            return;
+        }
         if (getBill() == null || getBill().getId() == null || getBill().getId() == 0) {
             JsfUtil.addErrorMessage("No Bill to cancel");
             return;
@@ -2974,6 +3009,9 @@ public class InwardSearch implements Serializable {
     }
 
     public void cancelSurgeryBill() {
+        if (refuseIfCancellationBill(getBill())) {
+            return;
+        }
         if (getBill() != null && getBill().getId() != null && getBill().getId() != 0) {
 
 //            if (check()) {
@@ -3286,6 +3324,9 @@ public class InwardSearch implements Serializable {
     }
 
     public void cancelProfessional() {
+        if (refuseIfCancellationBill(getBill())) {
+            return;
+        }
         if (getBill() == null || getBill().getId() == null || getBill().getId() == 0) {
             JsfUtil.addErrorMessage("No Bill to cancel");
             return;
@@ -3536,6 +3577,9 @@ public class InwardSearch implements Serializable {
     }
 
     public void cancelPaymentBill() {
+        if (refuseIfCancellationBill(getBill())) {
+            return;
+        }
         if (getBill() != null && getBill().getId() != null && getBill().getId() != 0) {
             if (errorCheck()) {
                 return;

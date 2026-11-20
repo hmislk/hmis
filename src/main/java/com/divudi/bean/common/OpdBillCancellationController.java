@@ -697,6 +697,9 @@ public class OpdBillCancellationController implements Serializable, ControllerWi
     }
 
     public void cancelOpdBill() {
+        if (com.divudi.core.util.CancellationBillCheck.refuse(getBill())) {
+            return;
+        }
         if (getBill() == null) {
             JsfUtil.addErrorMessage("No Original Bill Selected To Cancel");
             return;
@@ -1079,6 +1082,9 @@ public class OpdBillCancellationController implements Serializable, ControllerWi
     }
 
     public String navigateToCancelOpdBill() {
+        if (com.divudi.core.util.CancellationBillCheck.refuse(getBill())) {
+            return "";
+        }
         if (bill == null) {
             JsfUtil.addErrorMessage("Nothing to cancel");
             return "";

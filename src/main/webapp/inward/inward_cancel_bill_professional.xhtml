@@ -41,7 +41,7 @@
                                     <div class="d-flex align-items-center" style="width: 50%">
                                         <p:inputText class="w-100" placeholder="Enter a Reason to Cancel" style="width: 100%" value="#{inwardSearch.comment}"/>
                                         <p:spacer width="20%"></p:spacer>
-                                        <p:commandButton class="ui-button-danger mx-1" ajax="false" icon="fas fa-cancel" value="Cancel" action="#{inwardSearch.cancelProfessional()}" >
+                                        <p:commandButton class="ui-button-danger mx-1" ajax="false" icon="fas fa-cancel" value="Cancel" disabled="#{inwardSearch.billACancellationBill}" action="#{inwardSearch.cancelProfessional()}" >
                                             <p:confirm header="Confirm Professional Fee Cancellation"
                                                        message="Cancel this professional fee bill? This action cannot be undone."
                                                        icon="fa fa-exclamation-triangle"/>
