@@ -2018,6 +2018,11 @@ public class InwardSearch implements Serializable {
             JsfUtil.addErrorMessage("This bill's admission has changed. Please search it again.");
             return null;
         }
+        if (lockEncounterId == null && freshBill.getPatientEncounter() != null) {
+            // The bill had no admission when selected, so no lock was taken; it has one now.
+            JsfUtil.addErrorMessage("This bill's admission has changed. Please search it again.");
+            return null;
+        }
         if (this.bill != null && billId.equals(this.bill.getId())) {
             this.bill = freshBill;
             this.billItems = null;
@@ -2033,18 +2038,19 @@ public class InwardSearch implements Serializable {
     }
 
     public void cancelBillService() {
-        if (refuseIfCancellationBill(getBill())) {
+        final Bill selected = getBill();
+        if (refuseIfCancellationBill(selected)) {
             return;
         }
-        if (getBill() == null || getBill().getId() == null || getBill().getId() == 0) {
+        if (selected == null || selected.getId() == null || selected.getId() == 0) {
             JsfUtil.addErrorMessage("No Bill to cancel");
             return;
         }
         // Bind the target now. This bean is session scoped, so another tab can replace the
         // selected bill while this request waits for the lock; the locked part must only
         // use these captured values, never the page state.
-        final Long targetBillId = getBill().getId();
-        final PatientEncounter lockEncounter = getBill().getPatientEncounter();
+        final Long targetBillId = selected.getId();
+        final PatientEncounter lockEncounter = selected.getPatientEncounter();
         final Long lockEncounterId = lockEncounter == null ? null : lockEncounter.getId();
         final String targetComment = getComment();
         final PaymentMethod targetPaymentMethod = paymentMethod;
@@ -2864,18 +2870,19 @@ public class InwardSearch implements Serializable {
     }
 
     public void cancelProvisionalBillPayment() {
-        if (refuseIfCancellationBill(getBill())) {
+        final Bill selected = getBill();
+        if (refuseIfCancellationBill(selected)) {
             return;
         }
-        if (getBill() == null || getBill().getId() == null || getBill().getId() == 0) {
+        if (selected == null || selected.getId() == null || selected.getId() == 0) {
             JsfUtil.addErrorMessage("No Bill to cancel");
             return;
         }
         // Bind the target now. This bean is session scoped, so another tab can replace the
         // selected bill while this request waits for the lock; the locked part must only
         // use these captured values, never the page state.
-        final Long targetBillId = getBill().getId();
-        final PatientEncounter lockEncounter = getBill().getPatientEncounter();
+        final Long targetBillId = selected.getId();
+        final PatientEncounter lockEncounter = selected.getPatientEncounter();
         final Long lockEncounterId = lockEncounter == null ? null : lockEncounter.getId();
         final String targetComment = getComment();
         final PaymentMethod targetPaymentMethod = paymentMethod;
@@ -3324,18 +3331,19 @@ public class InwardSearch implements Serializable {
     }
 
     public void cancelProfessional() {
-        if (refuseIfCancellationBill(getBill())) {
+        final Bill selected = getBill();
+        if (refuseIfCancellationBill(selected)) {
             return;
         }
-        if (getBill() == null || getBill().getId() == null || getBill().getId() == 0) {
+        if (selected == null || selected.getId() == null || selected.getId() == 0) {
             JsfUtil.addErrorMessage("No Bill to cancel");
             return;
         }
         // Bind the target now. This bean is session scoped, so another tab can replace the
         // selected bill while this request waits for the lock; the locked part must only
         // use these captured values, never the page state.
-        final Long targetBillId = getBill().getId();
-        final PatientEncounter lockEncounter = getBill().getPatientEncounter();
+        final Long targetBillId = selected.getId();
+        final PatientEncounter lockEncounter = selected.getPatientEncounter();
         final Long lockEncounterId = lockEncounter == null ? null : lockEncounter.getId();
         final String targetComment = getComment();
         final PaymentMethod targetPaymentMethod = paymentMethod;
