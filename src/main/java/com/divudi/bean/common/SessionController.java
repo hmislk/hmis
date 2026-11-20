@@ -1366,6 +1366,11 @@ public class SessionController implements Serializable, HttpSessionListener {
                     if (freshRow != null) {
                         u = freshRow;
                     }
+                    if (TwoFactorAuthController.isWebLoginRefusedForServiceAccount(u)) {
+                        // API-only account: refused before any session or logged user is set
+                        twoFactorAuthController.refuseWebLoginForServiceAccount(u);
+                        return false;
+                    }
                     if (!u.isIpAllowed(populateRequestInfo().getIpAddress())) {
                         JsfUtil.addErrorMessage("Login not allowed from this IP address for this user.");
                         return false;
@@ -1405,6 +1410,10 @@ public class SessionController implements Serializable, HttpSessionListener {
     public String completeTwoFactorLogin(WebUser u, boolean channelingTabView) {
         department = null;
         institution = null;
+        if (TwoFactorAuthController.isWebLoginRefusedForServiceAccount(u)) {
+            twoFactorAuthController.refuseWebLoginForServiceAccount(u);
+            return "";
+        }
         // Second step accepted: issue a fresh session id again for the now fully logged-in session
         if (!renewHttpSessionId()) {
             JsfUtil.addErrorMessage("Login Failure. Please try again");

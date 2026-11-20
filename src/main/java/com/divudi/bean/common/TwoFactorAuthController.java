@@ -82,6 +82,8 @@ public class TwoFactorAuthController implements Serializable {
     public static final String EVENT_SETUP_PROOF_FAILED = "2FA Setup SMS Check Failed";
     public static final String EVENT_LOGIN_REFUSED_NO_KEY = "2FA Login Refused (server key)";
     public static final String EVENT_LOGIN_TIMED_OUT = "2FA Login Timed Out";
+    public static final String EVENT_LOGIN_REFUSED_SERVICE_ACCOUNT = "Login Refused (service account)";
+    public static final String SERVICE_ACCOUNT_WEB_LOGIN_MESSAGE = "This is a service account for system connections only. It cannot sign in here.";
     public static final String EVENT_SETUP_WINDOW_OPENED = "2FA Setup Window Opened";
     public static final String EVENT_SERVICE_ACCOUNT_ON = "2FA Service Account Flag Turned On";
     public static final String EVENT_SERVICE_ACCOUNT_OFF = "2FA Service Account Flag Turned Off";
@@ -326,6 +328,22 @@ public class TwoFactorAuthController implements Serializable {
         return setupWindowEndOf(loggedUserFromDb());
     }
     // </editor-fold>
+
+    /**
+     * A service account is for API connections only and never signs in to the
+     * web application.
+     */
+    public static boolean isWebLoginRefusedForServiceAccount(WebUser u) {
+        return u != null && u.isServiceAccount();
+    }
+
+    /**
+     * Records the refusal in the audit log and shows the message.
+     */
+    public void refuseWebLoginForServiceAccount(WebUser u) {
+        logTwoFactorEvent(u, u, EVENT_LOGIN_REFUSED_SERVICE_ACCOUNT, null, null, "Refused");
+        JsfUtil.addErrorMessage(SERVICE_ACCOUNT_WEB_LOGIN_MESSAGE);
+    }
 
     /**
      * True when a password-accepted login must be refused because the
