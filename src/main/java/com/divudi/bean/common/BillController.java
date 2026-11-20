@@ -1883,7 +1883,7 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
                 + " and bf.staff=:staff "
                 + " and bf.bill.cancelled=:can"
                 + " and bf.billItem.refunded=:ret"
-                + " and (bf.feeValue - bf.paidValue) > 0 "
+                + " and (bf.feeValue - bf.paidValue) > 0 and (bf.collectedByDoctorAtBilling = false or bf.collectedByDoctorAtBilling is null) "
                 + " and bf.bill.billTypeAtomic in :btcs "
                 + " and bf.fee.feeType=:ft";
 
@@ -3298,6 +3298,8 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
             newBillFee.setSettleValue(0 - originalBillFee.getSettleValue());
             newBillFee.setFeeVat(0 - originalBillFee.getFeeVat());
             newBillFee.setFeeVatPlusValue(0 - originalBillFee.getFeeVatPlusValue());
+            // A reversal mirrors its original, so a doctor-collected fee stays out of the sums (#25731).
+            newBillFee.setCollectedByDoctorAtBilling(originalBillFee.isCollectedByDoctorAtBilling());
             newBillFee.setCreatedAt(new Date());
             newBillFee.setCreater(getSessionController().getLoggedUser());
             getBillFeeFacade().create(newBillFee);

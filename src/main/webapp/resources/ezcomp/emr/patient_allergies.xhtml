@@ -24,11 +24,11 @@
             id="tblAllergies"
             value="#{cc.attrs.allergies}"
             var="allergy"
-            rowStyleClass="#{not empty allergy.stringValue ? 'table-danger' : ''}">
+            rowStyleClass="#{not empty allergy.allergyRemark ? 'table-danger' : ''}">
 
             <p:column headerText="Allergy Information">
-                <h:outputText value="#{allergy.itemValue.name}" styleClass="text-danger"/>
-                <h:outputText value="#{not empty allergy.stringValue ? ' - '.concat(allergy.stringValue) : ''}" />
+                <h:outputText value="#{allergy.allergyTypeAndName}" styleClass="text-danger"/>
+                <h:outputText value="#{not empty allergy.allergyRemark ? ' - '.concat(allergy.allergyRemark) : ''}" />
                 <p:spacer height="1" width="20" ></p:spacer>
                 <p:commandButton 
                     icon="pi pi-times" 

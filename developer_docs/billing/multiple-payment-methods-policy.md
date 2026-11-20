@@ -14,3 +14,8 @@ The split follows `PaymentMethod.getPaymentType()`: `PaymentType.CREDIT` methods
 - A request to combine them ("allow Staff in multi-payment") is a policy change for the lead developer, not a bug fix.
 
 Background: #25350 (#25339) proposed Staff Credit inside Multiple Payment Methods for package bills; the lead developer declined it. The part of that PR that shipped is the Staff Credit reversal on cancellation in `PaymentService`.
+
+
+## From CLAUDE.md (moved detail)
+
+Multiple Payment Methods never includes a credit method (Staff Credit, Credit); non-credit methods such as Staff Welfare are fine.

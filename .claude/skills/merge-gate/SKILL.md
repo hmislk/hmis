@@ -1,15 +1,6 @@
 ---
 name: merge-gate
-description: >
-  Gate one or more open PRs before merge: CI check, then a code-level
-  regression/business-rule review, then (only if that's clean) end-to-end
-  Playwright verification of the PR's own workflow(s) plus two fixed
-  baseline checks. Posts one top-level status comment per PR per run
-  (PASSED or BLOCKED-*) so the outcome is visible on GitHub, not just in
-  chat. Use when asked to "gate PR(s) for merge", "run merge-gate on #N",
-  "check these PRs are safe to merge", or before merging any PR that
-  touches shared/core code (API, billing, pharmacy) where a regression
-  could silently break unrelated functions.
+description: 'Gate open PR(s) before merge: CI, code review against rules, then Playwright e2e. Posts a PASSED/BLOCKED status comment. Use for "gate PR #N", "run merge-gate on #N", "is this safe to merge".'
 argument-hint: "<pr-number> [pr-number...]"
 ---
 

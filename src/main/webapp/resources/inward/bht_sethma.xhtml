@@ -169,10 +169,7 @@
                                     <div>
                                         <div class="d-flex justify-content-between align-items-center">
                                             <div>
-                                                <h:outputText  rendered="#{not empty al.itemValue and not empty al.lobValue}"
-                                                               value="#{al.itemValue.name.concat(' - ').concat(al.lobValue)}"/>
-                                                <h:outputText rendered="#{empty al.itemValue or empty al.lobValue}"
-                                                              value="#{al.itemValue.name}#{al.lobValue}"/>
+                                                <h:outputText value="#{al.allergyDisplay}"/>
                                             </div>
                                         </div>
                                     </div>

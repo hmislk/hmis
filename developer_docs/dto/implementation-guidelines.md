@@ -643,3 +643,8 @@ private String name;
 
 ## Related Documentation
 - [Entity/DTO Dual Navigation Pattern](../ui/entity-dto-dual-navigation-pattern.md) - How to expose Entity and DTO versions of the same report side-by-side in navigation menus
+
+
+## From CLAUDE.md (moved detail)
+
+never modify or remove existing constructors; only add new ones, delegating via `this(...)`.

@@ -25,7 +25,7 @@
                                         class="ui-button-danger" 
                                         icon="fas fa-ban" 
                                         value="To Cancel" 
-                                        disabled="#{inwardSearch.bill.cancelled}"
+                                        disabled="#{inwardSearch.bill.cancelled or inwardSearch.billACancellationBill}"
                                         action="inward_bill_staff_payment_cancel" >                           
                                     </p:commandButton>
                                 </div>

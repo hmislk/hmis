@@ -26,6 +26,7 @@
                             value="Yes"
                             type="button"
                             styleClass="ui-confirmdialog-yes ui-button-danger"
+                            onclick="PF('cancelServiceBillLoadingDlg').show();"
                             icon="fa fa-check"/>
                         <p:commandButton
                             style="width: 150px;"
@@ -85,6 +86,7 @@
                                         icon="fas fa-ban"
                                         styleClass="ui-button-danger"
                                         title="Cancel this inward service bill"
+                                        disabled="#{inwardSearch.billACancellationBill}"
                                         action="#{inwardSearch.cancelBillService()}">
                                         <p:confirm header="Confirm Service Bill Cancellation"
                                                    message="Cancel this inward service bill? This action cannot be undone."
@@ -273,6 +275,18 @@
                         </p:panel>
                     </h:panelGroup>
 
+                    <p:dialog widgetVar="cancelServiceBillLoadingDlg"
+                              modal="true"
+                              closable="false"
+                              showHeader="true"
+                              header="Processing - Please Wait"
+                              style="min-width: 320px; text-align: center;">
+                        <div style="padding: 20px;">
+                            <i class="pi pi-spin pi-spinner" style="font-size: 3rem; color: #4CAF50;"></i>
+                            <p style="margin-top: 15px; font-size: 1rem;">Cancelling the service bill, please wait...</p>
+                            <p style="color: #888; font-size: 0.85rem;">Do not refresh or close this page.</p>
+                        </div>
+                    </p:dialog>
                 </h:form>
             </ui:define>
         </ui:composition>

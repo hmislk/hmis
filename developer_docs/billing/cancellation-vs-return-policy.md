@@ -87,3 +87,8 @@ uncertainties" rule — rather than inventing a fifth pattern.
   Return implementation and its "do not regress" design rules.
 - Wiki: `Inpatient-Bill-Cancellations-and-Refunds-Overview`,
   `Finance-Inpatient-Service-Bills` ("Returning (partial refund)" section).
+
+
+## From CLAUDE.md (moved detail)
+
+cancellation is whole-bill only; never build item-level cancellation; reversing some items is a Return/Refund, which most bill types already have.

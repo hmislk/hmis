@@ -697,6 +697,9 @@ public class OpdBillCancellationController implements Serializable, ControllerWi
     }
 
     public void cancelOpdBill() {
+        if (com.divudi.core.util.CancellationBillCheck.refuse(getBill())) {
+            return;
+        }
         if (getBill() == null) {
             JsfUtil.addErrorMessage("No Original Bill Selected To Cancel");
             return;
@@ -1040,6 +1043,8 @@ public class OpdBillCancellationController implements Serializable, ControllerWi
             newCancellingBillFee.setSettleValue(0 - originalProfessionalPaymentFeeForBillItem.getSettleValue());
             newCancellingBillFee.setFeeVat(0 - originalProfessionalPaymentFeeForBillItem.getFeeVat());
             newCancellingBillFee.setFeeVatPlusValue(0 - originalProfessionalPaymentFeeForBillItem.getFeeVatPlusValue());
+            // A reversal mirrors its original, so a doctor-collected fee stays out of the sums (#25731).
+            newCancellingBillFee.setCollectedByDoctorAtBilling(originalProfessionalPaymentFeeForBillItem.isCollectedByDoctorAtBilling());
 
             newCancellingBillFee.setCreatedAt(new Date());
             newCancellingBillFee.setCreater(getSessionController().getLoggedUser());
@@ -1077,6 +1082,9 @@ public class OpdBillCancellationController implements Serializable, ControllerWi
     }
 
     public String navigateToCancelOpdBill() {
+        if (com.divudi.core.util.CancellationBillCheck.refuse(getBill())) {
+            return "";
+        }
         if (bill == null) {
             JsfUtil.addErrorMessage("Nothing to cancel");
             return "";

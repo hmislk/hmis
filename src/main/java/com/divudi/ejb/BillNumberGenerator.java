@@ -1377,49 +1377,8 @@ public class BillNumberGenerator {
     }
 
     /**
-     * Runs {@code action} (computing the next final-bill version serial and
-     * persisting the bill that uses it) under a per-encounter lock, so two
-     * concurrent final-bill saves for the same admission cannot interleave
-     * between reading the count and committing their insert — a bare
-     * count-then-insert without this would let both reads see the same count.
-     * Mirrors this class's existing lockMap/ReentrantLock pattern; the lock
-     * lives here (a @Singleton EJB) rather than on the @SessionScoped
-     * BhtSummeryController because only a singleton's lockMap is guaranteed
-     * shared across different users' sessions.
-     */
-    public <T> T withFinalBillVersionLock(com.divudi.core.entity.PatientEncounter pe, java.util.function.Supplier<T> action) {
-        String lockKey = "finalBillVersionSerial-" + pe.getId();
-        ReentrantLock lock = lockMap.computeIfAbsent(lockKey, k -> new ReentrantLock());
-        lock.lock();
-        try {
-            return action.get();
-        } finally {
-            lock.unlock();
-        }
-    }
-
-    /**
-     * Same lock as {@link #withFinalBillVersionLock}, but runs the action outside
-     * a container transaction, so each facade call inside it commits on its own,
-     * as it does when called without the lock. Use it from callers that are not
-     * transactional themselves (REST resources) and create new bills inside the
-     * action: in one shared transaction an IDENTITY id stays null until flush.
-     */
-    @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
-    public <T> T withFinalBillVersionLockOutsideTransaction(com.divudi.core.entity.PatientEncounter pe, java.util.function.Supplier<T> action) {
-        String lockKey = "finalBillVersionSerial-" + pe.getId();
-        ReentrantLock lock = lockMap.computeIfAbsent(lockKey, k -> new ReentrantLock());
-        lock.lock();
-        try {
-            return action.get();
-        } finally {
-            lock.unlock();
-        }
-    }
-
-    /**
      * Counts existing final-bill versions for the admission. Must only be
-     * called while holding the lock from {@link #withFinalBillVersionLock}
+     * called while holding the lock from {@link FinalBillLockBean#withFinalBillVersionLock}
      * — on its own this count-then-caller-increments pattern is racy.
      */
     public int computeNextFinalBillVersionSerial(com.divudi.core.entity.PatientEncounter pe) {
@@ -2907,6 +2866,21 @@ public class BillNumberGenerator {
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     public String departmentBillNumberGeneratorYearlyInNewTransaction(Department dep, BillTypeAtomic billType) {
         return departmentBillNumberGeneratorYearly(dep, billType);
+    }
+
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+    public String departmentBillNumberGeneratorInNewTransaction(Department dep, BillType billType, BillClassType billClassType, BillNumberSuffix billNumberSuffix) {
+        return departmentBillNumberGenerator(dep, billType, billClassType, billNumberSuffix);
+    }
+
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+    public String institutionBillNumberGeneratorInNewTransaction(Institution ins, BillType billType, BillClassType billClassType, BillNumberSuffix billNumberSuffix) {
+        return institutionBillNumberGenerator(ins, billType, billClassType, billNumberSuffix);
+    }
+
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+    public String institutionBillNumberGeneratorInNewTransaction(Department dep, BillType billType, BillClassType billClassType, BillNumberSuffix billNumberSuffix) {
+        return institutionBillNumberGenerator(dep, billType, billClassType, billNumberSuffix);
     }
 
     public String departmentBillNumberGeneratorYearly(Department dep, BillTypeAtomic billType) {

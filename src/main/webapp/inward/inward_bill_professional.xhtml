@@ -366,6 +366,19 @@
                                                                        styleClass="ms-2 fw-bold #{inwardProfessionalBillController.freeOfChargeProfessionalPayment ? 'text-danger': ''}" 
                                                                        value="FOC" for="freeOfCharge"></p:outputLabel>
                                                     </div>
+                                                    <h:panelGroup layout="block" id="collectedByDoctorGroup"
+                                                                  styleClass="d-flex align-items-center ms-3"
+                                                                  rendered="#{inwardProfessionalBillController.feeCollectedByDoctorAllowed}">
+                                                        <p:toggleSwitch
+                                                            id="collectedByDoctor"
+                                                            title="The doctor collects this fee from the patient directly. The hospital does not charge it on the patient bill and does not pay it to the doctor."
+                                                            value="#{inwardProfessionalBillController.feeCollectedByDoctorProfessionalPayment}">
+                                                            <p:ajax update="collectedByDoctorLabel" process="@this" />
+                                                        </p:toggleSwitch>
+                                                        <p:outputLabel id="collectedByDoctorLabel"
+                                                                       styleClass="ms-2 fw-bold #{inwardProfessionalBillController.feeCollectedByDoctorProfessionalPayment ? 'text-danger': ''}"
+                                                                       value="Collected by Doctor" for="collectedByDoctor"></p:outputLabel>
+                                                    </h:panelGroup>
                                                 </div>
                                             </div>
                                         </div>

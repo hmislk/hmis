@@ -185,6 +185,28 @@ public class InwardProfessionalFeeClassificationService implements Serializable 
      *         charge type, or is one this hospital does not use
      */
     public String staffCondition(String feeAlias, InwardChargeType target, Map<String, Object> params) {
+        return categoryCondition(feeAlias, target) + excludeCollectedByDoctor(feeAlias);
+    }
+
+    /**
+     * A JPQL fragment that leaves out the fees marked "Collected by Doctor"
+     * (the patient pays the doctor directly, so the fee is not part of the
+     * hospital bill, the patient's due or the claimable amount). It honours the
+     * flag saved on the fee whatever the current value of
+     * {@link ConfigOptionApplicationController#INWARD_PROFESSIONAL_FEE_ALLOW_FEE_COLLECTED_BY_DOCTOR}:
+     * that option only shows or hides the switch on the add page, so turning it
+     * off later never changes bills already saved. Until a fee is flagged the
+     * column is false or NULL and every query returns what it did before.
+     *
+     * <p>{@link #staffCondition} already appends it, so every bill total, fee
+     * list and report column built from it agrees. A fee saved before the flag
+     * existed may hold NULL, hence the explicit null test.
+     */
+    public String excludeCollectedByDoctor(String feeAlias) {
+        return " and (" + feeAlias + ".collectedByDoctorAtBilling = false or " + feeAlias + ".collectedByDoctorAtBilling is null) ";
+    }
+
+    private String categoryCondition(String feeAlias, InwardChargeType target) {
         if (target != InwardChargeType.ProfessionalCharge
                 && target != InwardChargeType.DoctorAndNurses
                 && target != InwardChargeType.TechnicianAndParamedicalCharge) {

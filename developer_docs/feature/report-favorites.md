@@ -150,3 +150,8 @@ The 10 sub-issues under the master rollout issue target 10 completely separate X
 
 - `reports/index.xhtml` — original feature (PR #22728), spacing fix (issue #22736 / PR #22737)
 - Wiki: [Report Favorites](https://github.com/hmislk/hmis/wiki/Report-Favorites)
+
+
+## From CLAUDE.md (moved detail)
+
+new report buttons on a Favorites-enabled index page (e.g. `reports/index.xhtml`) go in both the category tab and the Favorites tab; read this doc first.
