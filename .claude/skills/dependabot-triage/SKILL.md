@@ -1,15 +1,6 @@
 ---
 name: dependabot-triage
-description: >
-  Use when Dependabot (or Renovate/any bot) has open dependency-bump PRs on
-  hmislk/hmis and the developer wants them checked and merged or closed, e.g.
-  "handle the dependabot PRs", "merge or close the pending dependency
-  updates", "/dependabot-triage". Verifies each bump against our JDK 11 /
-  Payara 5 / javax stack beyond CI compile (bytecode level, javax vs jakarta,
-  sibling-artifact versions, pom pins, release-note breaking changes, a
-  combined build and a local runtime smoke test), then merges the safe ones,
-  closes the rest with a reason, and adds a dependabot.yml ignore rule so a
-  rejected bump does not come back.
+description: 'Check open Dependabot/Renovate bump PRs on hmislk/hmis against JDK 11/Payara 5/javax, then merge or close with a reason. Use for "handle the dependabot PRs", /dependabot-triage.'
 ---
 
 # Dependabot Triage
