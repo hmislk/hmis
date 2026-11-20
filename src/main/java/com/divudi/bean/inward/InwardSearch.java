@@ -69,6 +69,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
+import javax.persistence.TemporalType;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
@@ -2148,7 +2149,9 @@ public class InwardSearch implements Serializable {
                 Request billRequest = requestService.findRequest(b);
                 if (billRequest != null) {
 
-                    requestController.getBills().add(b);
+                    List<Bill> requestBills = new ArrayList<>();
+                    requestBills.add(b);
+                    requestController.setBills(requestBills);
                     requestController.complteRequest(billRequest);
                 }
             }
@@ -2934,13 +2937,14 @@ public class InwardSearch implements Serializable {
                 return;
             }
 
+            SourceRows rows = loadSourceRowsForCancel(b);
             CancelledBill cb = createCancelBill(b, c, pm, BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION);
             cb.setBillTypeAtomic(BillTypeAtomic.INWARD_PROVISIONAL_BILL_CANCELLATION);
             //Copy & paste
             if (cb.getId() == null) {
                 getBillFacade().create(cb);
             }
-            cancelBillItems(cb, b);
+            cancelBillItems(cb, rows);
             b.setCancelled(true);
             b.setCancelledBill(cb);
             getBillFacade().edit((BilledBill) b);
@@ -3116,12 +3120,13 @@ public class InwardSearch implements Serializable {
      * assumes the bill may be reversed.</p>
      */
     public CancelledBill reverseInwardServiceBill(Bill source, String comments, BillTypeAtomic cancellationAtomic) {
+        SourceRows rows = loadSourceRowsForCancel(source);
         CancelledBill cb = createCancelBill(source, comments, null, cancellationAtomic);
         if (cb.getId() == null) {
             getBillFacade().create(cb);
         }
 
-        cancelBillItems(cb, source);
+        cancelBillItems(cb, rows);
         retireTimedServicesOfCancelledBill(source);
 
         source.setCancelled(true);
@@ -3405,13 +3410,14 @@ public class InwardSearch implements Serializable {
                 return;
             }
 
+            SourceRows rows = loadSourceRowsForCancel(b);
             CancelledBill cb = createCancelBill(b, c, pm, BillTypeAtomic.INWARD_PROFESSIONAL_FEE_BILL_CANCELLATION);
 
             //Copy & paste
             if (cb.getId() == null) {
                 getBillFacade().create(cb);
             }
-            cancelBillItems(cb, b);
+            cancelBillItems(cb, rows);
             b.setCancelled(true);
             b.setCancelledBill(cb);
             getBillFacade().edit((BilledBill) b);
@@ -3483,24 +3489,39 @@ public class InwardSearch implements Serializable {
         }
     }
 
+    /** Items and components of a source bill, read before anything is saved. */
+    private static class SourceRows {
+
+        final List<BillItem> items;
+        final List<BillComponent> components;
+
+        SourceRows(List<BillItem> items, List<BillComponent> components) {
+            this.items = items;
+            this.components = components;
+        }
+    }
+
     /**
-     * Same as {@link #cancelBillItems(Bill)} but reading the rows to reverse
-     * from an explicit source bill instead of this bean's page state, so
-     * {@link #reverseInwardServiceBill(Bill, String, BillTypeAtomic)} can run
-     * without a bill being selected on screen.
+     * Reads the rows to reverse from an explicit source bill (not this bean's
+     * page state). Call it BEFORE the cancellation bill is saved: a read failure
+     * then propagates with nothing persisted, instead of leaving a saved
+     * cancellation bill while the original stays uncancelled.
      */
-    private void cancelBillItems(Bill can, Bill source) {
+    private SourceRows loadSourceRowsForCancel(Bill source) {
         Map<String, Object> hm = new HashMap<>();
         hm.put("b", source);
         List<BillItem> sourceItems = getBillItemFacede().findByJpql(
-                "SELECT b FROM BillItem b WHERE b.retired=false and b.bill=:b ", hm);
+                "SELECT b FROM BillItem b WHERE b.retired=false and b.bill=:b ", hm, TemporalType.TIMESTAMP);
         List<BillComponent> sourceComponents = getBillCommponentFacade().findByJpql(
-                "SELECT b FROM BillComponent b WHERE b.retired=false and b.bill=:b ", hm);
-        if (sourceItems == null) {
-            return;
-        }
-        for (BillItem nB : sourceItems) {
-            copyCancelledBillItem(can, nB, sourceComponents == null ? new ArrayList<>() : sourceComponents);
+                "SELECT b FROM BillComponent b WHERE b.retired=false and b.bill=:b ", hm, TemporalType.TIMESTAMP);
+        return new SourceRows(sourceItems == null ? new ArrayList<>() : sourceItems,
+                sourceComponents == null ? new ArrayList<>() : sourceComponents);
+    }
+
+    /** Writes the reversal rows, read earlier by {@link #loadSourceRowsForCancel(Bill)}, onto the contra-bill. */
+    private void cancelBillItems(Bill can, SourceRows rows) {
+        for (BillItem nB : rows.items) {
+            copyCancelledBillItem(can, nB, rows.components);
         }
     }
 
