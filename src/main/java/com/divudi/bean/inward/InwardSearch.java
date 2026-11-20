@@ -69,6 +69,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
+import javax.persistence.TemporalType;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
@@ -2148,7 +2149,9 @@ public class InwardSearch implements Serializable {
                 Request billRequest = requestService.findRequest(b);
                 if (billRequest != null) {
 
-                    requestController.getBills().add(b);
+                    List<Bill> requestBills = new ArrayList<>();
+                    requestBills.add(b);
+                    requestController.setBills(requestBills);
                     requestController.complteRequest(billRequest);
                 }
             }
@@ -3493,9 +3496,9 @@ public class InwardSearch implements Serializable {
         Map<String, Object> hm = new HashMap<>();
         hm.put("b", source);
         List<BillItem> sourceItems = getBillItemFacede().findByJpql(
-                "SELECT b FROM BillItem b WHERE b.retired=false and b.bill=:b ", hm);
+                "SELECT b FROM BillItem b WHERE b.retired=false and b.bill=:b ", hm, TemporalType.TIMESTAMP);
         List<BillComponent> sourceComponents = getBillCommponentFacade().findByJpql(
-                "SELECT b FROM BillComponent b WHERE b.retired=false and b.bill=:b ", hm);
+                "SELECT b FROM BillComponent b WHERE b.retired=false and b.bill=:b ", hm, TemporalType.TIMESTAMP);
         if (sourceItems == null) {
             return;
         }
