@@ -252,6 +252,10 @@ public class BhtSummeryController implements Serializable {
             JsfUtil.addErrorMessage("No Admission Selected");
             return "";
         }
+        if (patientEncounter.getId() == null) {
+            JsfUtil.addErrorMessage("This admission is not saved. Open the patient's admission from the admission list.");
+            return "";
+        }
         fillSurgeryBills();
         return "/inward/admission_profile.xhtml?faces-redirect=true";
     }
@@ -2571,6 +2575,10 @@ public class BhtSummeryController implements Serializable {
     }
 
     public String navigateToIntrimBillFromPatientProfile() {
+        if (patientEncounter == null || patientEncounter.getId() == null) {
+            JsfUtil.addErrorMessage("No saved admission selected. Open the patient's admission from the admission list.");
+            return "";
+        }
         childPatientEncouters = null;
         createTables();
         return "/inward/inward_bill_intrim?faces-redirect=true";
