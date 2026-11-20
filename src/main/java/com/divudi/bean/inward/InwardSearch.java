@@ -1806,11 +1806,43 @@ public class InwardSearch implements Serializable {
         sentEmailsForBill = null;
     }
 
-    private void cancelBillComponents(Bill can, BillItem bt) {
-        cancelBillComponents(can, bt, getBillComponents());
+    /** Components of the source bill that belong to the given original item (matched by id, #25843). */
+    static List<BillComponent> componentsForItem(List<BillComponent> all, BillItem original) {
+        List<BillComponent> out = new ArrayList<>();
+        if (all == null || original == null) {
+            return out;
+        }
+        for (BillComponent c : all) {
+            BillItem owner = c.getBillItem();
+            if (owner == null) {
+                continue;
+            }
+            if (owner == original || (owner.getId() != null && owner.getId().equals(original.getId()))) {
+                out.add(c);
+            }
+        }
+        return out;
     }
 
-    private void cancelBillComponents(Bill can, BillItem bt, List<BillComponent> sourceComponents) {
+    /** Components of the source bill that have no bill item; they are reversed once, not once per item. */
+    static List<BillComponent> componentsWithoutItem(List<BillComponent> all) {
+        List<BillComponent> out = new ArrayList<>();
+        if (all == null) {
+            return out;
+        }
+        for (BillComponent c : all) {
+            if (c.getBillItem() == null) {
+                out.add(c);
+            }
+        }
+        return out;
+    }
+
+    private void cancelBillComponents(Bill can, BillItem bt, BillItem original, List<BillComponent> sourceComponents) {
+        copyReversedComponents(can, bt, componentsForItem(sourceComponents, original));
+    }
+
+    private void copyReversedComponents(Bill can, BillItem bt, List<BillComponent> sourceComponents) {
         for (BillComponent nB : sourceComponents) {
             BillComponent bC = new BillComponent();
             bC.setCatId(nB.getCatId());
@@ -3487,6 +3519,7 @@ public class InwardSearch implements Serializable {
         for (BillItem nB : getBillItems()) {
             copyCancelledBillItem(can, nB, getBillComponents());
         }
+        copyReversedComponents(can, null, componentsWithoutItem(getBillComponents()));
     }
 
     /** Items and components of a source bill, read before anything is saved. */
@@ -3523,6 +3556,7 @@ public class InwardSearch implements Serializable {
         for (BillItem nB : rows.items) {
             copyCancelledBillItem(can, nB, rows.components);
         }
+        copyReversedComponents(can, null, componentsWithoutItem(rows.components));
     }
 
     /**
@@ -3543,7 +3577,7 @@ public class InwardSearch implements Serializable {
             getBillItemFacede().create(b);
         }
 
-        cancelBillComponents(can, b, sourceComponents);
+        cancelBillComponents(can, b, nB, sourceComponents);
 
         String sql = "Select bf From BillFee bf where bf.retired=false and bf.billItem.id=" + nB.getId();
         List<BillFee> tmp = getBillFeeFacade().findByJpql(sql);
@@ -3700,7 +3734,7 @@ public class InwardSearch implements Serializable {
             ////// // System.out.println("nB.getPaidForBillFee() = " + nB.getPaidForBillFee());
             getBillItemFacede().create(b);
 
-            cancelBillComponents(can, b);
+            cancelBillComponents(can, b, nB, getBillComponents());
 
             String sql = "Select bf From BillFee bf where bf.retired=false and bf.billItem.id=" + nB.getId();
             List<BillFee> tmp = getBillFeeFacade().findByJpql(sql);
@@ -3708,6 +3742,7 @@ public class InwardSearch implements Serializable {
             cancelBillFee(can, b, tmp);
 
         }
+        copyReversedComponents(can, null, componentsWithoutItem(getBillComponents()));
     }
 
     private void cancelBillFee(Bill can, BillItem bt) {
