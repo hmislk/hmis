@@ -4301,6 +4301,10 @@ public class InwardReportController implements Serializable {
 
     public void processSpecialtyDoctorWiseIncomeReport() {
         spcDocIncomeBillList = new ArrayList<>();
+        totalValuesSpcDocIncome = new InwardIncomeDoctorSpecialtyDTO();
+        totalValuesSpcDocIncome.setDocFee(0.0);
+        totalValuesSpcDocIncome.setHosFee(0.0);
+        totalValuesSpcDocIncome.setTotalCharge(0.0);
         Map<String, Object> params = new HashMap<>();
         StringBuilder jpql = new StringBuilder();
 
