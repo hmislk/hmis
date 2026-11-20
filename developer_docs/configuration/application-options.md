@@ -82,6 +82,12 @@ A print or settings dialog must use the **same** controller as the page or templ
 | --- | --- | --- | --- |
 | `Inward Professional Fee - Allow Fee Collected By Doctor` | Boolean | `false` | Controls whether the inward professional fee add page offers a "Collected by Doctor" switch beside FOC, that is, whether NEW fees can be marked. A fee added with it on is saved with `BillFee.collectedByDoctorAtBilling` and is not payable by the hospital: it is left out of the patient bill total, due and claimable amount (final and interim) and out of the payment due lists, makes no Payment/drawer/cashbook entry, and patient bills print only the note "Fees Collected by the Doctor" outside the net total. `paidValue` and `settleValue` stay 0 (the fee is not recorded as paid), so the bill can still be cancelled. Turning the option off only stops new fees being marked; fees already marked keep the saved flag, stay excluded and still print the note. Fees flagged on the surgery payment page (`feeCollectedByDoctor`) behave as before, with the key on or off. See issue #17490. |
 
+## OPD Billing Fees
+
+| Key | Type | Default | Description |
+| --- | --- | --- | --- |
+| `OPD Billing - Allow Fee Collected By Doctor` | Boolean | `false` | When true, the OPD billing page (Fees tab) shows a "Collected by Doctor" tick on each doctor fee, so NEW fees can be marked. A marked fee (`BillFee.collectedByDoctorAtBilling`) is left out of the bill net total and the amount paid at the cashier, is left out of the OPD doctor payment due lists, and the printed bill shows the note "Fees Collected by the Doctor". Turning it off later does not change fees already marked (the flag is read from the saved fee). Same flag as the inward key above (#25731). |
+
 ## Inward Appointment
 
 | Key | Type | Default | Description |

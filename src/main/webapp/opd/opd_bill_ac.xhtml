@@ -1062,6 +1062,19 @@
                                                                     style="font-weight:bold;">
                                                                     <f:convertNumber pattern="#,##0.00" />
                                                                 </p:outputLabel>
+                                                                <h:panelGroup layout="block" class="m-2"
+                                                                              rendered="#{opdBillController.feeCollectedByDoctorAllowed and opdBillController.canFeeBeCollectedByDoctor(billFeeBundleEntry.selectedBillFee)}">
+                                                                    <p:selectBooleanCheckbox
+                                                                        id="chkFeeCollectedByDoctor"
+                                                                        itemLabel="Collected by Doctor"
+                                                                        title="The doctor collects this fee from the patient directly. It is not added to the bill and is not paid to the doctor by the hospital."
+                                                                        value="#{billFeeBundleEntry.selectedBillFee.collectedByDoctorAtBilling}">
+                                                                        <p:ajax
+                                                                            process="@this"
+                                                                            update=":#{p:resolveFirstComponentWithId('panelBillItems',view).clientId} :#{p:resolveFirstComponentWithId('msg',view).clientId} :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}"
+                                                                            listener="#{opdBillController.feeCollectedByDoctorChanged(billFeeBundleEntry.selectedBillFee)}" />
+                                                                    </p:selectBooleanCheckbox>
+                                                                </h:panelGroup>
                                                             </td>
 
                                                         </tr>

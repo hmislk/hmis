@@ -368,7 +368,7 @@ public class StaffPaymentBillController implements Serializable {
                 + " and bf.bill.cancelled=:bc "
                 + " and bf.bill.refunded=:brfnd "
                 + " and bf.bill.createdAt between :fd and :td "
-                + " and (bf.feeValue - bf.paidValue) > 0 ";
+                + " and (bf.feeValue - bf.paidValue) > 0 and (bf.collectedByDoctorAtBilling = false or bf.collectedByDoctorAtBilling is null) ";
 
         if (currentStaff != null) {
             jpql += " and bf.staff=:staff ";
@@ -442,7 +442,7 @@ public class StaffPaymentBillController implements Serializable {
                     + " b.retired=false"
                     + " and b.bill.billTypeAtomic in :btcs"
                     + " and b.bill.cancelled=false "
-                    + " and (b.feeValue - b.paidValue) > 0 "
+                    + " and (b.feeValue - b.paidValue) > 0 and (b.collectedByDoctorAtBilling = false or b.collectedByDoctorAtBilling is null) "
                     + " and b.staff=:staff ";
             h.put("btcs", btcs);
             h.put("staff", currentStaff);
@@ -490,7 +490,7 @@ public class StaffPaymentBillController implements Serializable {
                     + " and bf.bill.createdAt between :fd and :td "
                     + " and bf.bill.billTypeAtomic in :btcs"
                     + " and bf.bill.cancelled=false "
-                    + " and (bf.feeValue - bf.paidValue) > 0 "
+                    + " and (bf.feeValue - bf.paidValue) > 0 and (bf.collectedByDoctorAtBilling = false or bf.collectedByDoctorAtBilling is null) "
                     + " and bf.staff=:staff ";
             params.put("btcs", btcs);
             params.put("fd", fromDate);
