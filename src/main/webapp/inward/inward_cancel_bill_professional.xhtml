@@ -11,6 +11,7 @@
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
                 <h:form>
+                    <h:inputHidden id="expectedBillId" value="#{inwardSearch.expectedBillId}"/>
                     <p:confirmDialog
                         global="true"
                         responsive="true"

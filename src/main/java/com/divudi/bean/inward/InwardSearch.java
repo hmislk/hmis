@@ -168,6 +168,7 @@ public class InwardSearch implements Serializable {
      * Properties
      */
     private Bill bill;
+    private String postedBillId;
     private boolean printPreview = false;
 
     /**
@@ -2013,6 +2014,9 @@ public class InwardSearch implements Serializable {
     }
 
     public void cancelBillService() {
+        if (isCancelPageOutOfDate()) {
+            return;
+        }
         if (getBill() == null || getBill().getId() == null || getBill().getId() == 0) {
             JsfUtil.addErrorMessage("No Bill to cancel");
             return;
@@ -2674,6 +2678,9 @@ public class InwardSearch implements Serializable {
     }
 
     public void cancelFinalBillPayment() {
+        if (isCancelPageOutOfDate()) {
+            return;
+        }
         if (getBill() != null && getBill().getId() != null && getBill().getId() != 0) {
 
             long dayCount = CommonFunctions.getDayCount(getBill().getCreatedAt(), new Date());
@@ -2832,6 +2839,9 @@ public class InwardSearch implements Serializable {
     }
 
     public void cancelProvisionalBillPayment() {
+        if (isCancelPageOutOfDate()) {
+            return;
+        }
         if (getBill() == null || getBill().getId() == null || getBill().getId() == 0) {
             JsfUtil.addErrorMessage("No Bill to cancel");
             return;
@@ -3286,6 +3296,9 @@ public class InwardSearch implements Serializable {
     }
 
     public void cancelProfessional() {
+        if (isCancelPageOutOfDate()) {
+            return;
+        }
         if (getBill() == null || getBill().getId() == null || getBill().getId() == 0) {
             JsfUtil.addErrorMessage("No Bill to cancel");
             return;
@@ -3658,6 +3671,30 @@ public class InwardSearch implements Serializable {
 
     public void setBills(List<Bill> bills) {
         this.bills = bills;
+    }
+
+    /**
+     * Id of the bill this cancel page displayed when it was rendered. The page posts it back
+     * with the Cancel action so a stale tab cannot cancel a bill opened in another tab.
+     */
+    public String getExpectedBillId() {
+        Bill b = getBill();
+        return b.getId() == null ? null : b.getId().toString();
+    }
+
+    public void setExpectedBillId(String expectedBillId) {
+        this.postedBillId = expectedBillId;
+    }
+
+    private boolean isCancelPageOutOfDate() {
+        String posted = postedBillId;
+        postedBillId = null;
+        Bill b = getBill();
+        if (posted == null || b.getId() == null || !posted.trim().equals(b.getId().toString())) {
+            JsfUtil.addErrorMessage("This page is out of date. Open the bill again.");
+            return true;
+        }
+        return false;
     }
 
     public Bill getBill() {
