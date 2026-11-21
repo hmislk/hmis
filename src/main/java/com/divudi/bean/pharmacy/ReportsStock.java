@@ -1771,26 +1771,41 @@ public class ReportsStock implements Serializable, ControllerWithReportFilters {
         }
 
         Map<String, Object> m = new HashMap<>();
-        // Supplier = the supplier on the batch's GRN, not the manual
-        // supplier-item allocation list (ItemsDistributors), which is often
-        // not maintained and made this report return nothing (#24461).
+        // With a supplier selected, a batch is listed when its last GRN supplier
+        // is that supplier (#24461) OR its item is in the supplier's item
+        // allocation list (ItemsDistributors) (#25866). The batch may have come
+        // from opening stock or a stock adjustment, with no matching GRN supplier.
         StringBuilder jpql = new StringBuilder("select s "
                 + "from Stock s "
+                + "join s.itemBatch ib "
+                + "left join ib.lastPurchaseBillItem lpbi "
+                + "left join lpbi.bill lpb "
                 + "where s.stock > :st "
                 + "and s.department = :dep "
-                + "and s.itemBatch.dateOfExpire between :fd and :td ");
+                + "and ib.dateOfExpire between :fd and :td ");
         if (institution != null) {
-            jpql.append("and s.itemBatch.lastPurchaseBillItem.bill.fromInstitution = :ins ");
-            m.put("ins", institution);
+            jpql.append("and (lpb.fromInstitution.id = :insId "
+                    + "or ib.item.id in (select d.item.id from ItemsDistributors d "
+                    + "where d.institution.id = :insId and d.retired = false)) ");
+            m.put("insId", institution.getId());
         }
-        jpql.append("order by s.itemBatch.dateOfExpire");
+        jpql.append("order by ib.dateOfExpire");
 
         m.put("dep", department);
         m.put("fd", getFromDate());
         m.put("td", getToDate());
         m.put("st", 0.0);
 
-        stocks = getStockFacade().findByJpql(jpql.toString(), m);
+        try {
+            // TIMESTAMP so a batch expiring on the To date after 00:00 is not dropped.
+            stocks = getStockFacade().findByJpql(jpql.toString(), m, TemporalType.TIMESTAMP);
+        } catch (Exception e) {
+            stocks = new ArrayList<>();
+            stockPurchaseValue = 0.0;
+            stockSaleValue = 0.0;
+            JsfUtil.addErrorMessage("Could not load the expiring stock: " + e.getMessage());
+            return;
+        }
 
         stockPurchaseValue = 0.0;
         stockSaleValue = 0.0;
