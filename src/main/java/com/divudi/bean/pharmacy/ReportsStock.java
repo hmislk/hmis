@@ -2383,11 +2383,11 @@ public class ReportsStock implements Serializable, ControllerWithReportFilters {
 
         m.put("dep", department);
         m.put("fd", getFromDate());
-        m.put("td", getToDate());
+        m.put("td", CommonFunctions.getEndOfDay(getToDate()));
         m.put("st", 0.0);
 
         try {
-            // TIMESTAMP so a batch expiring on the To date after 00:00 is not dropped.
+            // TIMESTAMP and end-of-day To date so a batch expiring on the To date is not dropped.
             stocks = getStockFacade().findByJpql(jpql.toString(), m, TemporalType.TIMESTAMP);
         } catch (Exception e) {
             stocks = new ArrayList<>();
