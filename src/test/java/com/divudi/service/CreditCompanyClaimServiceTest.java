@@ -1,6 +1,8 @@
 package com.divudi.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.divudi.core.data.BillTypeAtomic;
@@ -74,6 +76,22 @@ class CreditCompanyClaimServiceTest {
         other.setBillTypeAtomic(BillTypeAtomic.INWARD_FINAL_BILL);
         assertThrows(CreditCompanyClaimException.class,
                 () -> CreditCompanyClaimService.checkBillEligible(other, company(1), ALLOWED));
+    }
+
+    @Test
+    void grnWholesaleIsNotClaimableButSalesAre() {
+        List<BillTypeAtomic> all = Arrays.asList(BillTypeAtomic.OPD_BATCH_BILL_WITH_PAYMENT,
+                BillTypeAtomic.PHARMACY_RETAIL_SALE, BillTypeAtomic.PHARMACY_WHOLESALE,
+                BillTypeAtomic.PHARMACY_GRN_WHOLESALE);
+        List<BillTypeAtomic> claimable = CreditCompanyClaimService.claimable(all);
+        assertEquals(3, claimable.size());
+        assertFalse(claimable.contains(BillTypeAtomic.PHARMACY_GRN_WHOLESALE));
+
+        Bill grn = creditBill(company(1), 100, 0, 0);
+        grn.setBillTypeAtomic(BillTypeAtomic.PHARMACY_GRN_WHOLESALE);
+        CreditCompanyClaimException e = assertThrows(CreditCompanyClaimException.class,
+                () -> CreditCompanyClaimService.checkBillEligible(grn, company(1), all));
+        assertTrue(e.getMessage().contains("GRN"));
     }
 
     @Test

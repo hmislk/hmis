@@ -14,6 +14,8 @@ import com.divudi.core.facade.CreditCompanyClaimFacade;
 import com.divudi.core.facade.InstitutionFacade;
 import com.divudi.core.facade.CreditCompanyClaimItemFacade;
 import com.divudi.ejb.BillNumberGenerator;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
@@ -55,6 +57,21 @@ public class CreditCompanyClaimService {
     /**
      * Checks one bill can go into a claim for the company. Does not check other claims.
      */
+    /** Bill types left out of claims: pharmacy GRN wholesale is a purchase, not a sale to a company. */
+    public static final List<BillTypeAtomic> NOT_CLAIMABLE = java.util.Collections.unmodifiableList(
+            Arrays.asList(BillTypeAtomic.PHARMACY_GRN_WHOLESALE));
+
+    /** The OPD Due Search bill types (OPD, package, pharmacy sales) minus {@link #NOT_CLAIMABLE}. */
+    public List<BillTypeAtomic> claimableBillTypeAtomics() {
+        return claimable(billService.fetchBillTypeAtomicsForOpdFinance());
+    }
+
+    public static List<BillTypeAtomic> claimable(List<BillTypeAtomic> opdFinanceTypes) {
+        List<BillTypeAtomic> out = new ArrayList<>(opdFinanceTypes);
+        out.removeAll(NOT_CLAIMABLE);
+        return out;
+    }
+
     public static void checkBillEligible(Bill bill, Institution company, Collection<BillTypeAtomic> allowedTypes) {
         if (bill == null) {
             throw new CreditCompanyClaimException("A selected bill was not found.");
@@ -62,6 +79,9 @@ public class CreditCompanyClaimService {
         String no = bill.getDeptId() != null ? bill.getDeptId() : String.valueOf(bill.getId());
         if (bill.isRetired() || bill.isCancelled()) {
             throw new CreditCompanyClaimException("Bill " + no + " is cancelled, so it cannot be claimed.");
+        }
+        if (NOT_CLAIMABLE.contains(bill.getBillTypeAtomic())) {
+            throw new CreditCompanyClaimException("Bill " + no + " is a pharmacy GRN (purchase) bill and cannot be claimed.");
         }
         if (bill.getPaymentMethod() != PaymentMethod.Credit || bill.getCreditCompany() == null
                 || allowedTypes == null || !allowedTypes.contains(bill.getBillTypeAtomic())) {
@@ -109,7 +129,7 @@ public class CreditCompanyClaimService {
         if (bills == null || bills.size() != ids.size()) {
             throw new CreditCompanyClaimException("A selected bill was not found.");
         }
-        List<BillTypeAtomic> allowed = billService.fetchBillTypeAtomicsForOpdFinance();
+        List<BillTypeAtomic> allowed = claimableBillTypeAtomics();
         double total = 0;
         for (Bill b : bills) {
             checkBillEligible(b, company, allowed);
