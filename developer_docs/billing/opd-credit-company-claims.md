@@ -7,7 +7,7 @@ Screens: Financial Transaction Manager → Payment Management → Credit Company
 
 - OPD bills, package bills, and pharmacy retail and wholesale sales billed to the credit company.
 - Pharmacy GRN wholesale bills cannot be claimed.
-- A claim holds bills of one credit company only, with a due amount above zero.
+- A claim holds bills of one credit company only, with a due amount above 0.10 (the same cut-off as OPD Due Search; due = net total less refunds less settlements, to 2 decimal places).
 - A bill can be in only one open claim at a time. A claim is open unless it is Cancelled, Settled or Closed.
 
 ## Claim number
@@ -32,7 +32,7 @@ Screens: Financial Transaction Manager → Payment Management → Credit Company
 
 ## Locks on the bills
 
-- A bill in an open claim cannot be refunded, returned or cancelled. Cancel the claim (or settle it) first.
+- A bill in an open claim cannot be refunded, returned or cancelled. A Draft or Rejected claim can be cancelled, which frees its bills. A Submitted or Resubmitted claim keeps its bills locked until the claim is rejected (then cancelled) or settled (the settlement link comes in a later part).
 - A bill with a write-off cannot be refunded or cancelled until the write-off is cancelled.
 
 ## Settlement and write-off (rules agreed; the claim link and write-off screens are not built yet)

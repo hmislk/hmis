@@ -14,6 +14,8 @@ import com.divudi.core.facade.CreditCompanyClaimFacade;
 import com.divudi.core.facade.InstitutionFacade;
 import com.divudi.core.facade.CreditCompanyClaimItemFacade;
 import com.divudi.ejb.BillNumberGenerator;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -51,7 +53,14 @@ public class CreditCompanyClaimService {
 
     /** Due = net total less refunds less settlements (as OPD Due Search). */
     public static double dueOf(Bill bill) {
-        return bill.getNetTotal() - (bill.getRefundAmount() + bill.getPaidAmount());
+        return dueDecimalOf(bill).doubleValue();
+    }
+
+    /** Due in decimal arithmetic, 2 places half-up, so 1.10 less 1.00 is exactly 0.10. */
+    public static BigDecimal dueDecimalOf(Bill bill) {
+        return BigDecimal.valueOf(bill.getNetTotal())
+                .subtract(BigDecimal.valueOf(bill.getRefundAmount()).add(BigDecimal.valueOf(bill.getPaidAmount())))
+                .setScale(2, RoundingMode.HALF_UP);
     }
 
     /**
@@ -90,7 +99,7 @@ public class CreditCompanyClaimService {
         if (company == null || company.getId() == null || !company.getId().equals(bill.getCreditCompany().getId())) {
             throw new CreditCompanyClaimException("All bills in a claim must be for the same credit company (bill " + no + ").");
         }
-        if (dueOf(bill) <= MIN_DUE) {
+        if (dueDecimalOf(bill).compareTo(BigDecimal.valueOf(MIN_DUE)) <= 0) {
             throw new CreditCompanyClaimException("Bill " + no + " has nothing due.");
         }
     }
@@ -130,18 +139,23 @@ public class CreditCompanyClaimService {
             throw new CreditCompanyClaimException("A selected bill was not found.");
         }
         List<BillTypeAtomic> allowed = claimableBillTypeAtomics();
-        double total = 0;
+        BigDecimal total = BigDecimal.ZERO;
         for (Bill b : bills) {
             checkBillEligible(b, company, allowed);
-            total += dueOf(b);
+            total = total.add(dueDecimalOf(b));
         }
 
         Map<String, Object> p = new HashMap<>();
         p.put("ids", ids);
         p.put("open", java.util.Arrays.asList(CreditCompanyClaimStatus.openStatuses()));
-        long inOtherClaim = claimItemFacade.findLongByJpql(
-                "select count(ci) from CreditCompanyClaimItem ci where ci.retired=false"
-                + " and ci.claim.retired=false and ci.claim.status in :open and ci.bill.id in :ids", p);
+        long inOtherClaim;
+        try {
+            inOtherClaim = claimItemFacade.findLongByJpqlStrict(
+                    "select count(ci) from CreditCompanyClaimItem ci where ci.retired=false"
+                    + " and ci.claim.retired=false and ci.claim.status in :open and ci.bill.id in :ids", p);
+        } catch (RuntimeException e) {
+            throw new CreditCompanyClaimException("Could not check the selected bills against open claims. Try again.");
+        }
         if (inOtherClaim > 0) {
             throw new CreditCompanyClaimException("A selected bill is already in another open claim.");
         }
@@ -152,7 +166,7 @@ public class CreditCompanyClaimService {
         claim.setDepartment(department);
         claim.setInstitution(department.getInstitution());
         claim.setStatus(CreditCompanyClaimStatus.DRAFT);
-        claim.setClaimedTotal(total);
+        claim.setClaimedTotal(total.doubleValue());
         claim.setCreater(user);
         claim.setCreatedAt(now);
         claim.setClaimNo(billNumberGenerator.departmentClaimNumberGeneratorYearlyInNewTransaction(
@@ -179,13 +193,20 @@ public class CreditCompanyClaimService {
         Map<String, Object> p = new HashMap<>();
         p.put("id", billId);
         p.put("open", Arrays.asList(CreditCompanyClaimStatus.openStatuses()));
-        long n = claimItemFacade.findLongByJpql(
-                "select count(ci) from CreditCompanyClaimItem ci where ci.retired=false"
-                + " and ci.claim.retired=false and ci.claim.status in :open and ci.bill.id=:id", p);
+        long n;
+        try {
+            n = claimItemFacade.findLongByJpqlStrict(
+                    "select count(ci) from CreditCompanyClaimItem ci where ci.retired=false"
+                    + " and ci.claim.retired=false and ci.claim.status in :open and ci.bill.id=:id", p);
+        } catch (RuntimeException e) {
+            throw new CreditCompanyClaimException(LOOKUP_FAILED);
+        }
         return n > 0;
     }
 
-    /** Claim number of the open claim holding the bill, or null. */
+    public static final String LOOKUP_FAILED = "Could not check claims for this bill. Try again.";
+
+    /** Claim number of the open claim holding the bill, or null. Throws when the lookup fails. */
     public String openClaimNoFor(Long billId) {
         if (billId == null) {
             return null;
@@ -193,9 +214,14 @@ public class CreditCompanyClaimService {
         Map<String, Object> p = new HashMap<>();
         p.put("id", billId);
         p.put("open", Arrays.asList(CreditCompanyClaimStatus.openStatuses()));
-        List<?> found = claimItemFacade.findLightsByJpql(
-                "select ci.claim.claimNo from CreditCompanyClaimItem ci where ci.retired=false"
-                + " and ci.claim.retired=false and ci.claim.status in :open and ci.bill.id=:id", p);
+        List<?> found;
+        try {
+            found = claimItemFacade.findLightsByJpqlStrict(
+                    "select ci.claim.claimNo from CreditCompanyClaimItem ci where ci.retired=false"
+                    + " and ci.claim.retired=false and ci.claim.status in :open and ci.bill.id=:id", p);
+        } catch (RuntimeException e) {
+            throw new CreditCompanyClaimException(LOOKUP_FAILED);
+        }
         return found == null || found.isEmpty() ? null : String.valueOf(found.get(0));
     }
 
@@ -219,7 +245,12 @@ public class CreditCompanyClaimService {
             }
             for (Bill x : new Bill[]{b, b.getBackwardReferenceBill(), b.getBilledBill(), b.getReferenceBill()}) {
                 if (x != null && x.getId() != null) {
-                    String no = openClaimNoFor(x.getId());
+                    String no;
+                    try {
+                        no = openClaimNoFor(x.getId());
+                    } catch (CreditCompanyClaimException e) {
+                        return LOOKUP_FAILED;
+                    }
                     if (no != null) {
                         return openClaimMessage(no);
                     }

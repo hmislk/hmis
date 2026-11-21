@@ -10,6 +10,9 @@
         <ui:composition template="/payments/credit_company_pay_index.xhtml">
             <ui:define name="admin">
                 <h:form id="claimForm">
+                    <h:outputText value="You do not have privilege to view claims." rendered="#{not creditCompanyClaimController.hasAnyClaimPrivilege()}"/>
+                    <h:panelGroup rendered="#{creditCompanyClaimController.hasAnyClaimPrivilege()}">
+                    <h:inputHidden id="claimIdOnPage" value="#{creditCompanyClaimController.claimIdOnPage}"/>
                     <p:panel header="Credit Company Claim">
                         <p:panelGrid columns="4" layout="tabular" styleClass="my-2 w-100">
                             <h:outputText value="Claim No"/>
@@ -120,6 +123,7 @@
                                              action="#{creditCompanyClaimController.backToClaims}"/>
                         </h:panelGroup>
                     </p:panel>
+                    </h:panelGroup>
                 </h:form>
             </ui:define>
         </ui:composition>

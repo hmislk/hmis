@@ -44,6 +44,20 @@ class CreditCompanyClaimServiceTest {
     }
 
     @Test
+    void dueUsesDecimalArithmetic() {
+        Bill b = creditBill(company(1), 1.10, 0, 1.00);
+        assertEquals(0.10, CreditCompanyClaimService.dueOf(b), 0.0);
+        assertEquals(new java.math.BigDecimal("0.10"), CreditCompanyClaimService.dueDecimalOf(b));
+    }
+
+    @Test
+    void refusesDueExactlyAtTheCutoff() {
+        assertThrows(CreditCompanyClaimException.class, () -> CreditCompanyClaimService
+                .checkBillEligible(creditBill(company(1), 1.10, 0, 1.00), company(1), ALLOWED));
+        CreditCompanyClaimService.checkBillEligible(creditBill(company(1), 1.11, 0, 1.00), company(1), ALLOWED);
+    }
+
+    @Test
     void acceptsDueBillOfTheSameCompany() {
         CreditCompanyClaimService.checkBillEligible(creditBill(company(1), 100, 0, 0), company(1), ALLOWED);
     }

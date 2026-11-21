@@ -2345,7 +2345,9 @@ public class PharmacyRefundForItemReturnsController implements Serializable, Con
     public void settleRefundForReturnItems() {
         editingQty = null;
 
-        String openClaimMessage = creditCompanyClaimService.openClaimRefusal(getItemReturnBill());
+        // Also the original bill: its sale and pre-bill are the bills updateOriginalBillForRefund() changes.
+        String openClaimMessage = creditCompanyClaimService.openClaimRefusal(getItemReturnBill(),
+                getItemReturnBill() == null ? null : getItemReturnBill().getReferenceBill());
         if (openClaimMessage != null) {
             JsfUtil.addErrorMessage(openClaimMessage);
             return;

@@ -56,6 +56,8 @@ public class CreditCompanyClaimController implements Serializable {
 
     // View page
     private CreditCompanyClaim claim;
+    /** Id of the claim the page was rendered for; posted back with every action (the bean is shared by browser tabs). */
+    private Long claimIdOnPage;
     private List<CreditCompanyClaimItem> claimItems = new ArrayList<>();
     private Date submittedOn;
     private String companyReference;
@@ -74,6 +76,16 @@ public class CreditCompanyClaimController implements Serializable {
         }
         JsfUtil.addErrorMessage("You do not have the privilege for this action.");
         return true;
+    }
+
+    /** True (with a message) when the posted page is not for the claim now held in the session. */
+    private boolean pageOutOfDate() {
+        if (claim == null || claim.getId() == null || claimIdOnPage == null
+                || !claim.getId().equals(claimIdOnPage)) {
+            JsfUtil.addErrorMessage("This page is out of date. Open the claim again.");
+            return true;
+        }
+        return false;
     }
 
     /** Claim numbers of open claims that hold the given bills, keyed by bill id. */
@@ -123,6 +135,9 @@ public class CreditCompanyClaimController implements Serializable {
         filterCompany = null;
         filterStatus = null;
         rows = new ArrayList<>();
+        claim = null;
+        claimIdOnPage = null;
+        claimItems = new ArrayList<>();
         return "/credit/credit_company_claims?faces-redirect=true";
     }
 
@@ -170,12 +185,19 @@ public class CreditCompanyClaimController implements Serializable {
             JsfUtil.addErrorMessage("You do not have the privilege for this page.");
             return null;
         }
+        if (fromDate == null) {
+            fromDate = CommonFunctions.getStartOfMonth();
+        }
+        if (toDate == null) {
+            toDate = CommonFunctions.getEndOfDay();
+        }
         searchClaims();
         return "/credit/credit_company_claims?faces-redirect=true";
     }
 
     private String openClaim(CreditCompanyClaim c) {
         claim = c;
+        claimIdOnPage = c.getId();
         submittedOn = new Date();
         companyReference = c.getCompanyReference();
         rejectReason = null;
@@ -199,6 +221,9 @@ public class CreditCompanyClaimController implements Serializable {
         if (deny("OpdCreditClaimSubmit")) {
             return;
         }
+        if (pageOutOfDate()) {
+            return;
+        }
         try {
             claimService.submit(claim, submittedOn, companyReference, sessionController.getLoggedUser());
             JsfUtil.addSuccessMessage("Claim submitted.");
@@ -216,6 +241,9 @@ public class CreditCompanyClaimController implements Serializable {
         if (deny("OpdCreditClaimCreate")) {
             return;
         }
+        if (pageOutOfDate()) {
+            return;
+        }
         try {
             claimService.cancel(claim, sessionController.getLoggedUser());
             JsfUtil.addSuccessMessage("Claim cancelled. Its bills are free again.");
@@ -227,6 +255,9 @@ public class CreditCompanyClaimController implements Serializable {
 
     public void reject() {
         if (deny("OpdCreditClaimReject")) {
+            return;
+        }
+        if (pageOutOfDate()) {
             return;
         }
         try {
@@ -241,6 +272,9 @@ public class CreditCompanyClaimController implements Serializable {
 
     public void resubmit() {
         if (deny("OpdCreditClaimResubmit")) {
+            return;
+        }
+        if (pageOutOfDate()) {
             return;
         }
         try {
@@ -307,6 +341,14 @@ public class CreditCompanyClaimController implements Serializable {
 
     public List<CreditCompanyClaimRowDto> getRows() {
         return rows;
+    }
+
+    public Long getClaimIdOnPage() {
+        return claimIdOnPage;
+    }
+
+    public void setClaimIdOnPage(Long claimIdOnPage) {
+        this.claimIdOnPage = claimIdOnPage;
     }
 
     public CreditCompanyClaim getClaim() {

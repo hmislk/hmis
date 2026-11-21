@@ -879,6 +879,29 @@ public abstract class AbstractFacade<T> {
         return qry.getResultList();
     }
 
+    /**
+     * Runs the query and lets any failure propagate, unlike the findLightsByJpql
+     * family, which logs the failure and returns an empty list. Use where an empty
+     * result would be read as "nothing found" and let an unsafe action go ahead.
+     */
+    public List<?> findLightsByJpqlStrict(String jpql, Map<String, Object> parameters) {
+        Query qry = getEntityManager().createQuery(jpql);
+        for (Map.Entry<String, Object> entry : parameters.entrySet()) {
+            qry.setParameter(entry.getKey(), entry.getValue());
+        }
+        return qry.getResultList();
+    }
+
+    /** Single count result; any query failure propagates (findLongByJpql returns 0 instead). */
+    public long findLongByJpqlStrict(String jpql, Map<String, Object> parameters) {
+        TypedQuery<Long> qry = getEntityManager().createQuery(jpql, Long.class);
+        for (Map.Entry<String, Object> entry : parameters.entrySet()) {
+            qry.setParameter(entry.getKey(), entry.getValue());
+        }
+        Long n = qry.getSingleResult();
+        return n == null ? 0L : n;
+    }
+
     public List<?> findLightsByJpql(String jpql) {
         Query qry = getEntityManager().createQuery(jpql);
         return qry.getResultList();

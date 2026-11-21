@@ -2901,7 +2901,7 @@ public class BillNumberGenerator {
         result.append(dep.getDepartmentCode());
         result.append(getBillNumberDelimiter());
         result.append(billSuffix);
-        int year = Calendar.getInstance().get(Calendar.YEAR) % 100;
+        int year = (billNumber.getBillYear() != null ? billNumber.getBillYear() : Calendar.getInstance().get(Calendar.YEAR)) % 100;
         result.append(getBillNumberDelimiter());
         result.append(String.format("%02d", year));
         result.append(getBillNumberDelimiter());
