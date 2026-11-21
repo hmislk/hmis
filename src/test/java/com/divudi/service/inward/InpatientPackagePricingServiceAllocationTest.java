@@ -21,7 +21,12 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 class InpatientPackagePricingServiceAllocationTest {
 
     private final InpatientPackagePricingService service = new InpatientPackagePricingService();
-    private final InwardProfessionalFeeClassificationService classification = new InwardProfessionalFeeClassificationService();
+    private final InwardProfessionalFeeClassificationService classification = new InwardProfessionalFeeClassificationService() {
+        @Override
+        public boolean isMerged() {
+            return false;
+        }
+    };
 
     @BeforeEach
     void setUp() {
@@ -83,5 +88,42 @@ class InpatientPackagePricingServiceAllocationTest {
         Map<InwardChargeType, Double> r = service.allocate(Collections.singletonList(c), fees);
         assertEquals(1000.0, r.get(InwardChargeType.TechnicianAndParamedicalCharge));
         assertEquals(1, r.size());
+    }
+
+    private InpatientPackagePricingService mergedService() {
+        InpatientPackagePricingService merged = new InpatientPackagePricingService();
+        merged.setProfessionalFeeClassificationService(new InwardProfessionalFeeClassificationService() {
+            @Override
+            public boolean isMerged() {
+                return true;
+            }
+        });
+        return merged;
+    }
+
+    @Test
+    void merged_assistantAssigned_coversProfessionalRow() {
+        InpatientPackageItem c = component(null);
+        List<BillFee> fees = Collections.singletonList(fee(c, new Staff(), InwardChargeType.DoctorAndNurses));
+        Map<InwardChargeType, Double> r = mergedService().allocate(Collections.singletonList(c), fees);
+        assertEquals(1000.0, r.get(InwardChargeType.ProfessionalCharge));
+        assertEquals(1, r.size());
+    }
+
+    @Test
+    void merged_unassignedWithAssistantSpecialityDefault_coversProfessionalRow() {
+        Speciality s = new Speciality();
+        s.setDefaultProfessionalFeeCategory(InwardChargeType.DoctorAndNurses);
+        InpatientPackageItem c = component(s);
+        Map<InwardChargeType, Double> r = mergedService().allocate(Collections.singletonList(c), new ArrayList<>());
+        assertEquals(1000.0, r.get(InwardChargeType.ProfessionalCharge));
+        assertEquals(1, r.size());
+    }
+
+    @Test
+    void notMerged_assistantAssigned_coversAssistantRow() {
+        InpatientPackageItem c = component(null);
+        List<BillFee> fees = Collections.singletonList(fee(c, new Staff(), InwardChargeType.DoctorAndNurses));
+        assertEquals(1000.0, service.allocate(Collections.singletonList(c), fees).get(InwardChargeType.DoctorAndNurses));
     }
 }

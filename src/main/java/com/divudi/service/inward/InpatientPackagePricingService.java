@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 
@@ -112,17 +113,20 @@ public class InpatientPackagePricingService {
         Map<InwardChargeType, Double> result = new HashMap<>();
         for (InpatientPackageItem component : components) {
             if (component.getComponentType() == InpatientPackageComponentType.PROFESSIONAL_FEE_ROLE) {
-                InwardChargeType unassigned = professionalFeeClassificationService
-                        .defaultCategoryFor(null, component.getSpeciality());
+                InwardChargeType unassigned = professionalFeeClassificationService.rowTypeFor(
+                        professionalFeeClassificationService.defaultCategoryFor(null, component.getSpeciality()));
                 boolean hasFee = false;
                 for (BillFee fee : fees) {
-                    if (fee.getSourcePackageItem() == null || fee.getSourcePackageItem() != component
-                            && !java.util.Objects.equals(fee.getSourcePackageItem().getId(), component.getId())) {
+                    InpatientPackageItem source = fee.getSourcePackageItem();
+                    if (source == null
+                            || (source != component && (component.getId() == null
+                            || !Objects.equals(source.getId(), component.getId())))) {
                         continue;
                     }
                     hasFee = true;
                     InwardChargeType type = fee.getStaff() != null
-                            ? professionalFeeClassificationService.chargeTypeOf(fee) : unassigned;
+                            ? professionalFeeClassificationService.rowTypeFor(professionalFeeClassificationService.chargeTypeOf(fee))
+                            : unassigned;
                     result.merge(type, fee.getFeeValue(), Double::sum);
                 }
                 if (!hasFee && component.getFixedPrice() != null) {
