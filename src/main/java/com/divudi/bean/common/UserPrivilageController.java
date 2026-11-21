@@ -151,6 +151,15 @@ public class UserPrivilageController implements Serializable {
         TreeNode acceptPaymentForCashierBills = new DefaultTreeNode(new PrivilegeHolder(Privileges.AcceptPaymentForPharmacyBills, "Accept payment for sale for cashier bills"), cashierNode);
         TreeNode scanBills = new DefaultTreeNode(new PrivilegeHolder(Privileges.ScanBillsFromCashier, "Scan Bills From Cashier Menu"), cashierNode);
         TreeNode acceptPaymentForOpdBatchBills = new DefaultTreeNode(new PrivilegeHolder(Privileges.AcceptPaymentForOpdBatchBills, "Accept payment for OPD Bactch Bills From Cashier Menu"), cashierNode);
+        TreeNode opdCreditClaimNode = new DefaultTreeNode(new PrivilegeHolder(null, "OPD Credit Company Claims"), cashierNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.OpdCreditClaimCreate, "Create Claim"), opdCreditClaimNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.OpdCreditClaimSubmit, "Submit Claim"), opdCreditClaimNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.OpdCreditClaimReject, "Record Claim Rejection"), opdCreditClaimNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.OpdCreditClaimResubmit, "Resubmit Claim"), opdCreditClaimNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.OpdCreditClaimSettle, "Settle Claim"), opdCreditClaimNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.OpdCreditWriteOffRequest, "Request Write-off"), opdCreditClaimNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.OpdCreditWriteOffApprove, "Approve Write-off"), opdCreditClaimNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.OpdCreditClaimReports, "Claim Reports"), opdCreditClaimNode);
         TreeNode refundBillsAtCashier = new DefaultTreeNode(new PrivilegeHolder(Privileges.RefundFromCashier, "Refunds From Cashier"), cashierNode);
         TreeNode refundOpdBills = new DefaultTreeNode(new PrivilegeHolder(Privileges.RefundOpdBillsFromCashier, "Refund Opd Bills From Cashier Menu"), cashierNode);
         TreeNode refundPharmacyBills = new DefaultTreeNode(new PrivilegeHolder(Privileges.RefundPharmacyBillsFromCashier, "Refund Pharmacy Bills From Cashier"), cashierNode);

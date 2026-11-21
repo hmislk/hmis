@@ -69,6 +69,8 @@ public class CreditCompanyDueController implements Serializable {
     private ConfigOptionApplicationController configOptionApplicationController;
     @Inject
     private CashRecieveBillController cashRecieveBillController;
+    @Inject
+    private com.divudi.bean.credit.CreditCompanyClaimController creditCompanyClaimController;
     @EJB
     private CreditBean creditBean;
     @EJB
@@ -1447,6 +1449,7 @@ public class CreditCompanyDueController implements Serializable {
 
                 items.add(newIns);
             }
+            loadClaimNumbers();
         }, CreditReport.OPD_CREDIT_DUE, sessionController.getLoggedUser());
     }
 
@@ -4258,6 +4261,62 @@ public class CreditCompanyDueController implements Serializable {
                 }
             }
         }
+    }
+
+    private Map<Long, String> claimNoByBillId = new HashMap<>();
+
+    /** Claim numbers of the open claims holding the listed bills (#25847). */
+    private void loadClaimNumbers() {
+        List<Long> billIds = new ArrayList<>();
+        for (InstitutionBills ib : items) {
+            if (ib.getBills() != null) {
+                for (Bill b : ib.getBills()) {
+                    if (b.getId() != null) {
+                        billIds.add(b.getId());
+                    }
+                }
+            }
+        }
+        claimNoByBillId = creditCompanyClaimController.fetchOpenClaimNumbersByBillId(billIds);
+    }
+
+    public String getClaimNoForBill(Bill bill) {
+        if (bill == null || bill.getId() == null || claimNoByBillId == null) {
+            return "";
+        }
+        String no = claimNoByBillId.get(bill.getId());
+        return no == null ? "" : no;
+    }
+
+    public String createClaimForSelectedOpdDueBills() {
+        if (items == null) {
+            JsfUtil.addErrorMessage("No data loaded. Please run the due report first.");
+            return null;
+        }
+        List<Long> billIds = new ArrayList<>();
+        Institution company = null;
+        for (InstitutionBills ib : items) {
+            if (ib.getPayments() == null) {
+                continue;
+            }
+            for (Payment p : ib.getPayments()) {
+                if (!Boolean.TRUE.equals(getPaymentSelectionMap().get(p.getId()))) {
+                    continue;
+                }
+                Bill bill = p.getBill();
+                if (bill == null || bill.getId() == null || billIds.contains(bill.getId())) {
+                    continue;
+                }
+                if (company == null) {
+                    company = ib.getInstitution();
+                } else if (!company.getId().equals(ib.getInstitution().getId())) {
+                    JsfUtil.addErrorMessage("Please select bills from one company only.");
+                    return null;
+                }
+                billIds.add(bill.getId());
+            }
+        }
+        return creditCompanyClaimController.createClaimFromBills(billIds, company);
     }
 
     public String settleSelectedOpdDueBills() {

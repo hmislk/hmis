@@ -63,6 +63,15 @@
                                                     action="/credit/credit_company_opd_due?faces-redirect=true">
                                                 </p:commandButton>
                                                 
+                                                <p:commandButton
+                                                    styleClass="w-100 ui-button-info ui-button-outlined"
+                                                    ajax="false"
+                                                    icon="fas fa-file-invoice"
+                                                    value="Credit Company Claims"
+                                                    title="Claims sent to credit companies for OPD credit bills"
+                                                    rendered="#{creditCompanyClaimController.hasAnyClaimPrivilege()}"
+                                                    action="#{creditCompanyClaimController.navigateToClaims}"/>
+
                                                 <p:commandButton 
                                                     styleClass="w-100 ui-button-info ui-button-outlined" 
                                                     ajax="false" icon="pi pi-calendar-times" 

@@ -1,0 +1,87 @@
+package com.divudi.service;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
+import com.divudi.core.data.BillTypeAtomic;
+import com.divudi.core.data.CreditCompanyClaimStatus;
+import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.CreditCompanyClaim;
+import com.divudi.core.entity.Institution;
+import java.util.Arrays;
+import java.util.List;
+import org.junit.jupiter.api.Test;
+
+class CreditCompanyClaimServiceTest {
+
+    private static final List<BillTypeAtomic> ALLOWED = Arrays.asList(BillTypeAtomic.OPD_BATCH_BILL_WITH_PAYMENT);
+
+    private static Institution company(long id) {
+        Institution i = new Institution();
+        i.setId(id);
+        return i;
+    }
+
+    private static Bill creditBill(Institution company, double net, double refund, double paid) {
+        Bill b = new Bill();
+        b.setId(10L);
+        b.setDeptId("D/26/1");
+        b.setBillTypeAtomic(BillTypeAtomic.OPD_BATCH_BILL_WITH_PAYMENT);
+        b.setPaymentMethod(PaymentMethod.Credit);
+        b.setCreditCompany(company);
+        b.setNetTotal(net);
+        b.setRefundAmount(refund);
+        b.setPaidAmount(paid);
+        return b;
+    }
+
+    @Test
+    void dueIsNetLessRefundLessPaid() {
+        assertEquals(70.0, CreditCompanyClaimService.dueOf(creditBill(company(1), 100, 10, 20)), 0.0001);
+    }
+
+    @Test
+    void acceptsDueBillOfTheSameCompany() {
+        CreditCompanyClaimService.checkBillEligible(creditBill(company(1), 100, 0, 0), company(1), ALLOWED);
+    }
+
+    @Test
+    void refusesOtherCompany() {
+        assertThrows(CreditCompanyClaimException.class, () -> CreditCompanyClaimService
+                .checkBillEligible(creditBill(company(2), 100, 0, 0), company(1), ALLOWED));
+    }
+
+    @Test
+    void refusesNothingDue() {
+        assertThrows(CreditCompanyClaimException.class, () -> CreditCompanyClaimService
+                .checkBillEligible(creditBill(company(1), 100, 40, 60), company(1), ALLOWED));
+    }
+
+    @Test
+    void refusesCancelledNonCreditAndOtherTypes() {
+        Bill cancelled = creditBill(company(1), 100, 0, 0);
+        cancelled.setCancelled(true);
+        assertThrows(CreditCompanyClaimException.class,
+                () -> CreditCompanyClaimService.checkBillEligible(cancelled, company(1), ALLOWED));
+
+        Bill cash = creditBill(company(1), 100, 0, 0);
+        cash.setPaymentMethod(PaymentMethod.Cash);
+        assertThrows(CreditCompanyClaimException.class,
+                () -> CreditCompanyClaimService.checkBillEligible(cash, company(1), ALLOWED));
+
+        Bill other = creditBill(company(1), 100, 0, 0);
+        other.setBillTypeAtomic(BillTypeAtomic.INWARD_FINAL_BILL);
+        assertThrows(CreditCompanyClaimException.class,
+                () -> CreditCompanyClaimService.checkBillEligible(other, company(1), ALLOWED));
+    }
+
+    @Test
+    void transitionFollowsTheEnum() {
+        CreditCompanyClaim c = new CreditCompanyClaim();
+        c.setStatus(CreditCompanyClaimStatus.DRAFT);
+        CreditCompanyClaimService.checkTransition(c, CreditCompanyClaimStatus.SUBMITTED);
+        assertThrows(CreditCompanyClaimException.class,
+                () -> CreditCompanyClaimService.checkTransition(c, CreditCompanyClaimStatus.RESUBMITTED));
+    }
+}

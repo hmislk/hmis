@@ -1290,6 +1290,15 @@ public enum Privileges {
     ReportsPatientJourney("Reports Page - 1. Patient Journey"),
     ReportsPatientLedger("Reports Page - 2. Patient Ledger"),
     ReportsSpecialityWiseDemograhicData("Reports Page - 3. Speciality Wise Demographic Data"),
+    //<editor-fold defaultstate="collapsed" desc="OPD Credit Company Claims (#25847)">
+    OpdCreditClaimCreate("OPD Credit Claim - Create"),
+    OpdCreditClaimSubmit("OPD Credit Claim - Submit"),
+    OpdCreditClaimReject("OPD Credit Claim - Record Rejection"),
+    OpdCreditClaimResubmit("OPD Credit Claim - Resubmit"),
+    OpdCreditClaimSettle("OPD Credit Claim - Settle"),
+    OpdCreditWriteOffRequest("OPD Credit Write-off - Request"),
+    OpdCreditWriteOffApprove("OPD Credit Write-off - Approve"),
+    OpdCreditClaimReports("OPD Credit Claim - Reports"),
     //</editor-fold>
     ;
 

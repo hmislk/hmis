@@ -106,6 +106,16 @@
                                 action="#{creditCompanyDueController.settleSelectedOpdDueBills}" >
                             </p:commandButton>
 
+                            <p:commandButton
+                                class="ui-button-warning mx-2"
+                                icon="fas fa-file-invoice"
+                                ajax="false"
+                                value="Create Claim"
+                                title="Select bills of one company below, then create a claim to send to the company"
+                                rendered="#{webUserController.hasPrivilege('OpdCreditClaimCreate')}"
+                                action="#{creditCompanyDueController.createClaimForSelectedOpdDueBills}" >
+                            </p:commandButton>
+
                         </h:panelGrid>
 
                         <p:panel id="panIx" styleClass="noBorder summeryBorder" >
@@ -127,6 +137,7 @@
                                         <p:column headerText="Bill No"/>
                                         <p:column headerText="Policy No"/>
                                         <p:column headerText="Ref No"/>
+                                        <p:column headerText="Claim No"/>
                                         <p:column headerText="Client Name"/>
                                         <p:column headerText="Bill Date"/>
                                         <p:column headerText="Billed Amount"/>
@@ -177,6 +188,9 @@
                                         <h:outputLabel value="#{not empty p.referenceNo ? p.referenceNo : 'N/A'}" />
                                     </p:column>
                                     <p:column>
+                                        <h:outputLabel value="#{creditCompanyDueController.getClaimNoForBill(p.bill)}" />
+                                    </p:column>
+                                    <p:column>
                                         <h:outputLabel value="#{p.bill.patient.person.nameWithTitle}" />
                                     </p:column>
                                     <p:column>
@@ -211,7 +225,7 @@
                                     </p:column>
                                     <p:columnGroup type="footer">
                                         <p:row>
-                                            <p:column footerText="Total" colspan="6" />
+                                            <p:column footerText="Total" colspan="7" />
                                             <p:column style="text-align: right;">
                                                 <f:facet name="footer">
                                                     <h:outputLabel value="#{i.total}">
