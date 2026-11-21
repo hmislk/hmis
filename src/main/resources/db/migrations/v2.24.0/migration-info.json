@@ -1,0 +1,14 @@
+{
+  "version": "v2.24.0",
+  "description": "Add WebUser.SERVICEACCOUNT (service account flag for lab and channelling API logins)",
+  "issue": "#25755 - two-factor login follow-ups",
+  "author": "Dr M H B Ariyaratne",
+  "date": "2026-11-20",
+  "type": "schema",
+  "tables_affected": ["webuser"],
+  "data_changes": false,
+  "requires_downtime": false,
+  "estimated_duration_minutes": 1,
+  "note": "The WebUser entity now maps serviceAccount; every query that loads a WebUser fails without the column, so run this before deploying a build that includes this change. Idempotent; existing users get false.",
+  "rollback": "rollback.sql"
+}

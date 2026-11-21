@@ -82,7 +82,11 @@ public class TwoFactorAuthController implements Serializable {
     public static final String EVENT_SETUP_PROOF_FAILED = "2FA Setup SMS Check Failed";
     public static final String EVENT_LOGIN_REFUSED_NO_KEY = "2FA Login Refused (server key)";
     public static final String EVENT_LOGIN_TIMED_OUT = "2FA Login Timed Out";
+    public static final String EVENT_LOGIN_REFUSED_SERVICE_ACCOUNT = "Login Refused (service account)";
+    public static final String SERVICE_ACCOUNT_WEB_LOGIN_MESSAGE = "This is a service account for system connections only. It cannot sign in here.";
     public static final String EVENT_SETUP_WINDOW_OPENED = "2FA Setup Window Opened";
+    public static final String EVENT_SERVICE_ACCOUNT_ON = "2FA Service Account Flag Turned On";
+    public static final String EVENT_SERVICE_ACCOUNT_OFF = "2FA Service Account Flag Turned Off";
     private static final int AUTH_LOG_LIMIT = 15;
 
     @EJB
@@ -267,6 +271,35 @@ public class TwoFactorAuthController implements Serializable {
     }
 
     /**
+     * Writes the service-account flag (insert-only on the entity) with one
+     * UPDATE and records the change in the audit log. Only a user with the
+     * user-management privilege may change it.
+     */
+    public void saveServiceAccountFlag(WebUser subject, boolean wasServiceAccount) {
+        if (subject == null || subject.getId() == null || subject.isServiceAccount() == wasServiceAccount) {
+            return;
+        }
+        Map<String, Object> p = new HashMap<>();
+        p.put("id", subject.getId());
+        p.put("f", subject.isServiceAccount());
+        webUserFacade.updateByJpql("update WebUser u set u.serviceAccount=:f where u.id=:id", p);
+        Map<String, Object> before = new HashMap<>();
+        before.put("serviceAccount", wasServiceAccount);
+        Map<String, Object> after = new HashMap<>();
+        after.put("serviceAccount", subject.isServiceAccount());
+        logTwoFactorEvent(sessionController.getLoggedUser(), subject,
+                subject.isServiceAccount() ? EVENT_SERVICE_ACCOUNT_ON : EVENT_SERVICE_ACCOUNT_OFF, before, after);
+    }
+
+    /**
+     * Records that a set-up window was opened for a user inserted with
+     * "required" ticked (the start time is written with the insert).
+     */
+    public void logSetupWindowOpened(WebUser subject) {
+        logTwoFactorEvent(sessionController.getLoggedUser(), subject, EVENT_SETUP_WINDOW_OPENED);
+    }
+
+    /**
      * Why the logged user cannot set up an authenticator right now, or null
      * when set-up can go ahead. Read from the database so an admin reset
      * made after login is seen.
@@ -295,6 +328,22 @@ public class TwoFactorAuthController implements Serializable {
         return setupWindowEndOf(loggedUserFromDb());
     }
     // </editor-fold>
+
+    /**
+     * A service account is for API connections only and never signs in to the
+     * web application.
+     */
+    public static boolean isWebLoginRefusedForServiceAccount(WebUser u) {
+        return u != null && u.isServiceAccount();
+    }
+
+    /**
+     * Records the refusal in the audit log and shows the message.
+     */
+    public void refuseWebLoginForServiceAccount(WebUser u) {
+        logTwoFactorEvent(u, u, EVENT_LOGIN_REFUSED_SERVICE_ACCOUNT, null, null, "Refused");
+        JsfUtil.addErrorMessage(SERVICE_ACCOUNT_WEB_LOGIN_MESSAGE);
+    }
 
     /**
      * True when a password-accepted login must be refused because the
@@ -544,39 +593,56 @@ public class TwoFactorAuthController implements Serializable {
     }
 
     /**
-     * Adds one wrong code to the user's counter with one UPDATE, locks the
-     * account at the limit with another, and records both in the audit log.
-     * Used for every wrong code (login, SMS set-up proof, mobile check), so
-     * all of them share one counter. Parallel requests cannot each read the
-     * old count and slip extra guesses past the limit.
+     * Adds one wrong code to the user's counter, locks the account when the
+     * counter reaches the limit, and records it in the audit log. Used for
+     * every wrong code (login, SMS set-up proof, mobile check), so all of
+     * them share one counter. Every change is one conditional UPDATE, so the
+     * increment and the lock are never split by a parallel request, and only
+     * the UPDATE that flips the lock writes the "Account Locked" audit row.
      *
      * @return true when the account is locked now
      */
     public boolean countFailedCode(WebUser u, String auditTrigger) {
-        // One UPDATE adds the failure and locks at the limit (the lock is decided from the old count, listed
-        // first so it is evaluated before the count changes), so nothing can come between the two
-        Map<String, Object> p = new HashMap<>();
-        p.put("id", u.getId());
-        p.put("max", MAX_FAILED_ATTEMPTS);
-        p.put("now", new Date());
-        webUserFacade.updateByJpql("update WebUser u set"
-                + " u.twoFactorLockedAt = case when u.twoFactorFailedAttempts + 1 >= :max and u.twoFactorLocked = false then :now else u.twoFactorLockedAt end,"
-                + " u.twoFactorLocked = case when u.twoFactorFailedAttempts + 1 >= :max then true else u.twoFactorLocked end,"
-                + " u.twoFactorFailedAttempts = u.twoFactorFailedAttempts + 1"
-                + " where u.id=:id", p);
+        boolean flippedLock = false;
+        // The three UPDATEs cover every state of the row: not locked and this failure reaches the limit (lock and
+        // count together); not locked and below the limit (count only); already locked (count only). Each is atomic
+        // on the row, so exactly one matches; a pass that matches none lost a race to a parallel failure, so repeat.
+        for (int pass = 0; pass < 5; pass++) {
+            Map<String, Object> flip = new HashMap<>();
+            flip.put("id", u.getId());
+            flip.put("max", MAX_FAILED_ATTEMPTS);
+            flip.put("now", new Date());
+            if (webUserFacade.updateByJpql("update WebUser u set u.twoFactorLocked = true, u.twoFactorLockedAt = :now,"
+                    + " u.twoFactorFailedAttempts = u.twoFactorFailedAttempts + 1"
+                    + " where u.id=:id and u.twoFactorLocked = false and u.twoFactorFailedAttempts + 1 >= :max", flip) > 0) {
+                flippedLock = true;
+                break;
+            }
+            Map<String, Object> below = new HashMap<>();
+            below.put("id", u.getId());
+            below.put("max", MAX_FAILED_ATTEMPTS);
+            if (webUserFacade.updateByJpql("update WebUser u set u.twoFactorFailedAttempts = u.twoFactorFailedAttempts + 1"
+                    + " where u.id=:id and u.twoFactorLocked = false and u.twoFactorFailedAttempts + 1 < :max", below) > 0) {
+                break;
+            }
+            Map<String, Object> locked = new HashMap<>();
+            locked.put("id", u.getId());
+            if (webUserFacade.updateByJpql("update WebUser u set u.twoFactorFailedAttempts = u.twoFactorFailedAttempts + 1"
+                    + " where u.id=:id and u.twoFactorLocked = true", locked) > 0) {
+                break;
+            }
+        }
         WebUser fresh = freshUser(u.getId());
         int failedAttempts = fresh == null ? MAX_FAILED_ATTEMPTS : fresh.getTwoFactorFailedAttempts();
         u.setTwoFactorFailedAttempts(failedAttempts);
-        boolean wasLocked = u.isTwoFactorLocked();
         Map<String, Object> attempt = new HashMap<>();
         attempt.put("failedAttempts", failedAttempts);
         // The user trying is recorded as the actor
         logTwoFactorEvent(u, u, auditTrigger, null, attempt, "Failed");
-        boolean nowLocked = fresh != null && fresh.isTwoFactorLocked();
-        if (nowLocked && !wasLocked) {
+        if (flippedLock) {
             logTwoFactorEvent(u, u, EVENT_ACCOUNT_LOCKED);
         }
-        return nowLocked;
+        return fresh != null && fresh.isTwoFactorLocked();
     }
 
     /**
