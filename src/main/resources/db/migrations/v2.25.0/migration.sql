@@ -6,7 +6,8 @@
 --   maintenancewindow_institution     (join table, name is lower case in the entity mapping)
 --   maintenancewindow_department      (join table, name is lower case in the entity mapping)
 -- Add Missing Fields does not create new tables, so a database without them fails on the
--- first banner lookup. Run this before deploying a build that includes this change.
+-- first banner lookup. Run this SQL on the database first, then deploy the build (the migration
+-- page only exists in the new build, so it cannot run this step before the deploy).
 --
 -- Safe to re-run: each table is created only when missing. No data is changed.
 --
@@ -26,9 +27,9 @@ SET @sql = IF(@mw_table IS NOT NULL,
         ID BIGINT NOT NULL AUTO_INCREMENT,
         TITLE VARCHAR(255) DEFAULT NULL,
         MESSAGE LONGTEXT,
-        STARTAT DATETIME DEFAULT NULL,
-        ENDAT DATETIME DEFAULT NULL,
-        SHOWFROMAT DATETIME DEFAULT NULL,
+        STARTAT DATETIME(3) DEFAULT NULL,
+        ENDAT DATETIME(3) DEFAULT NULL,
+        SHOWFROMAT DATETIME(3) DEFAULT NULL,
         CREATEDAT DATETIME DEFAULT NULL,
         SOURCE VARCHAR(255) DEFAULT NULL,
         EXTERNALREFERENCE VARCHAR(255) DEFAULT NULL,

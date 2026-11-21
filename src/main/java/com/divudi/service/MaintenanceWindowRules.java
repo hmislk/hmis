@@ -25,6 +25,14 @@ public final class MaintenanceWindowRules {
     private MaintenanceWindowRules() {
     }
 
+    /** True for null or text made only of whitespace, including Unicode spaces such as U+2003. */
+    private static boolean isBlank(String text) {
+        if (text == null) {
+            return true;
+        }
+        return text.replaceAll("[\\s\\p{Z}\\p{Cf}]+", "").isEmpty();
+    }
+
     /** The default "show from" time: 24 hours before the start. */
     public static Date defaultShowFrom(Date startAt) {
         return startAt == null ? null : new Date(startAt.getTime() - DEFAULT_SHOW_BEFORE_MILLIS);
@@ -39,7 +47,7 @@ public final class MaintenanceWindowRules {
         if (w == null) {
             throw new MaintenanceWindowException("Maintenance window is required");
         }
-        if (w.getMessage() == null || w.getMessage().trim().isEmpty()) {
+        if (w.getMessage() == null || isBlank(w.getMessage())) {
             throw new MaintenanceWindowException("Message is required");
         }
         if (w.getMessage().length() > MAX_MESSAGE_LENGTH) {

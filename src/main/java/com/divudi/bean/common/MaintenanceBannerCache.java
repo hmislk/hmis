@@ -31,11 +31,17 @@ public class MaintenanceBannerCache implements Serializable {
     @EJB
     private MaintenanceWindowService maintenanceWindowService;
 
+    private final Object lock = new Object();
     private List<MaintenanceWindow> windows = new ArrayList<>();
     private long loadedAt = 0L;
+    private boolean loading = false;
+    private long generation = 0L;
 
-    public synchronized void invalidate() {
-        loadedAt = 0L;
+    public void invalidate() {
+        synchronized (lock) {
+            loadedAt = 0L;
+            generation++;
+        }
     }
 
     /** Windows whose banner is showing now for the given institution and department. */
@@ -44,16 +50,33 @@ public class MaintenanceBannerCache implements Serializable {
         return MaintenanceWindowRules.filterVisible(snapshot(now), institution, department, now);
     }
 
-    private synchronized List<MaintenanceWindow> snapshot(Date now) {
-        if (now.getTime() - loadedAt > TTL_MILLIS) {
-            try {
-                windows = maintenanceWindowService.listUpcomingAndActive(now);
-            } catch (Exception e) {
-                // The banner must never break a page. Keep the old list and retry after the TTL.
-                LOGGER.log(Level.WARNING, "Could not load maintenance windows: {0}", e.getClass().getSimpleName());
+    private List<MaintenanceWindow> snapshot(Date now) {
+        long gen;
+        synchronized (lock) {
+            if (now.getTime() - loadedAt <= TTL_MILLIS || loading) {
+                return windows;
             }
-            loadedAt = now.getTime();
+            loading = true;
+            gen = generation;
         }
-        return windows;
+        // The database query runs outside the lock; other threads keep using the cached list.
+        List<MaintenanceWindow> loaded = null;
+        try {
+            loaded = maintenanceWindowService.listUpcomingAndActive(now);
+        } catch (Exception e) {
+            // The banner must never break a page. Keep the old list and retry after the TTL.
+            LOGGER.log(Level.WARNING, "Could not load maintenance windows: {0}", e.getClass().getSimpleName());
+        }
+        synchronized (lock) {
+            loading = false;
+            if (loaded != null) {
+                windows = loaded;
+            }
+            // If invalidate() ran while loading, leave the cache stale so the next call reloads.
+            if (gen == generation) {
+                loadedAt = now.getTime();
+            }
+            return windows;
+        }
     }
 }
