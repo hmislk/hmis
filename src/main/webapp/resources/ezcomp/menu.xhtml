@@ -2239,6 +2239,13 @@
                         icon="fa fa-database"
                         rendered="#{webUserController.hasPrivilege('AdminItems')}" >
                     </p:menuitem>
+                    <p:menuitem
+                        ajax="false"
+                        action="#{maintenanceWindowController.navigateToMaintenanceWindows()}"
+                        value="Maintenance Windows"
+                        icon="fa fa-screwdriver-wrench"
+                        rendered="#{webUserController.hasPrivilege('ManageMaintenanceWindows')}" >
+                    </p:menuitem>
 
                 </p:submenu>
 

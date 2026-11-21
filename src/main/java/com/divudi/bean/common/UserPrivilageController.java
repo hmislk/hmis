@@ -622,6 +622,7 @@ public class UserPrivilageController implements Serializable {
         new DefaultTreeNode(new PrivilegeHolder(Privileges.SearchAll, "Search All"), adminNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.ChangeProfessionalFee, "Change Professional Fee"), adminNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.SendBulkSMS, "Send Bulk SMS"), adminNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.ManageMaintenanceWindows, "Manage Maintenance Windows"), adminNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.Developers, "Only For Developers"), adminNode);
 
         // Membership Privileges
