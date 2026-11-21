@@ -3,7 +3,7 @@
 Issue #25846 (part of #25857).
 
 ## Rules
-1. There is no per-patient sequential visit number. Do not add one. Merge or demerge of patients would make it wrong.
+1. There is no per-patient sequential visit number. Do not add one.
 2. Document numbers stay as they are: OPD bill number, inpatient BHT number, lab = its bill number.
 3. A patient's visits are shown as a **Visit History**, computed at query time by patient id. Never store it. Merge and demerge are then correct with no extra work.
 4. Scope is every encounter that has a bill or an admission: OPD, inpatient, lab, channel, emergency, pharmacy retail, and others.
@@ -15,7 +15,6 @@ Issue #25846 (part of #25857).
 10. Staff report: needs its own privilege; staff select a patient and see all rows.
 11. The report is added to both the category tab and the Favorites tab of its index page.
 12. Links go to the existing preview pages (see bill-preview-navigation-guide.md). Do not build new previews.
-13. Visit History replaces the single visit number. Communicate this to customers as a settled change.
 
 ## For developers
 - JPQL constructor query into a DTO; do not modify existing constructors (DTO Implementation Guidelines).
