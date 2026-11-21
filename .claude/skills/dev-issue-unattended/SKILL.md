@@ -309,7 +309,9 @@ ORDER BY <recency> LIMIT 5;
 ## 5. Develop
 
 Same as `dev-issue` step 5 — delegate by file type (`java-backend-developer`,
-`jsf-frontend-dev`), review each agent's actual diff before moving on.
+`jsf-frontend-dev`), review each agent's actual diff before moving on. Any
+edited `.xhtml` (not on a hotfix branch) is also upgraded to the UI guidelines
+in its own commit (`ui-guidelines` skill, "Touched page = upgraded page").
 
 ## 5a. Regenerate the DDL if the schema changed
 

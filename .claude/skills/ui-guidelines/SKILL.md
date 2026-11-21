@@ -81,6 +81,22 @@ When working on any UI/XHTML task, follow these rules and patterns.
 - **Standard filters**: From / To, Institution / Site / Department on one row, then report-specific filters; not Department alone
 - Reference page: `pharmacy/reports/summary_reports/pharmacy_income_report.xhtml`. Rules: [comprehensive-ui-guidelines.md § Report Page Layout](../../../developer_docs/ui/comprehensive-ui-guidelines.md#report-page-layout-all-report-pages-look-the-same)
 
+## Touched page = upgraded page
+
+When a change edits an `.xhtml` page, bring that page up to these guidelines in the same PR.
+
+Pre-PR checklist (link, don't copy; read the section):
+- [ ] Action bar is the three-zone header: [Panel Header — Three-Zone Layout](../../../developer_docs/ui/comprehensive-ui-guidelines.md#panel-header--three-zone-layout-required-for-action-rich-panels); sticky if the page scrolls: [Data-Dense § 2](../../../developer_docs/ui/data-dense-page-patterns.md#2-action-reachability--sticky-action-areas)
+- [ ] Tables are compact (`p-datatable-sm`, `stickyHeader` on long ones): [DataTable Compact Size](../../../developer_docs/ui/comprehensive-ui-guidelines.md#datatable-compact-size-required-for-data-entry-and-multi-column-tables)
+- [ ] Buttons use the standard styles and Font Awesome icons: [Buttons and Workflow Actions](../../../developer_docs/ui/comprehensive-ui-guidelines.md#buttons-and-workflow-actions); fewer buttons: [Data-Dense § 5](../../../developer_docs/ui/data-dense-page-patterns.md#5-reducing-button-clutter)
+- [ ] Labels, filter grid and panel layout match sibling pages: [Panel Structure](../../../developer_docs/ui/comprehensive-ui-guidelines.md#panel-structure-best-practices); reports: [Report Page Layout](../../../developer_docs/ui/comprehensive-ui-guidelines.md#report-page-layout-all-report-pages-look-the-same)
+
+Bounds:
+- No change to behaviour, bean calls, ids used by `update=`/`process=` or by tests, or composite component names.
+- Very large page: upgrade the panels and forms the change touches; list the rest in the PR body.
+- Keep the tidy-up in its own commit (`style(ui): ...`) so reviewers can separate it.
+- Hotfix branches: do not apply it unless asked; keep hotfixes minimal.
+
 ## For complete reference
 
 Read [developer_docs/ui/comprehensive-ui-guidelines.md](../../../developer_docs/ui/comprehensive-ui-guidelines.md) for the full UI handbook including responsive design, accessibility, datatables, dialogs, and more.
