@@ -141,6 +141,9 @@ public class TransferIssueCancellationController implements Serializable {
 
         // Load the original bill
         originalBill = billFacade.find(originalBillId);
+        if (com.divudi.core.util.CancellationBillCheck.refuse(originalBill)) {
+            return "";
+        }
 
         // Validation 2: Check if bill exists
         if (originalBill == null) {
@@ -566,6 +569,9 @@ public class TransferIssueCancellationController implements Serializable {
      */
     @Transactional
     public void confirmCancellation() {
+        if (com.divudi.core.util.CancellationBillCheck.refuse(originalBill)) {
+            return;
+        }
         if (!isAuthorized("CANCEL", "PharmacyTransferIssueCancel")) {
             return;
         }

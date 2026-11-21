@@ -69,6 +69,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
+import javax.persistence.TemporalType;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
@@ -168,6 +169,7 @@ public class InwardSearch implements Serializable {
      * Properties
      */
     private Bill bill;
+    private String postedBillId;
     private boolean printPreview = false;
 
     /**
@@ -1805,11 +1807,43 @@ public class InwardSearch implements Serializable {
         sentEmailsForBill = null;
     }
 
-    private void cancelBillComponents(Bill can, BillItem bt) {
-        cancelBillComponents(can, bt, getBillComponents());
+    /** Components of the source bill that belong to the given original item (matched by id, #25843). */
+    static List<BillComponent> componentsForItem(List<BillComponent> all, BillItem original) {
+        List<BillComponent> out = new ArrayList<>();
+        if (all == null || original == null) {
+            return out;
+        }
+        for (BillComponent c : all) {
+            BillItem owner = c.getBillItem();
+            if (owner == null) {
+                continue;
+            }
+            if (owner == original || (owner.getId() != null && owner.getId().equals(original.getId()))) {
+                out.add(c);
+            }
+        }
+        return out;
     }
 
-    private void cancelBillComponents(Bill can, BillItem bt, List<BillComponent> sourceComponents) {
+    /** Components of the source bill that have no bill item; they are reversed once, not once per item. */
+    static List<BillComponent> componentsWithoutItem(List<BillComponent> all) {
+        List<BillComponent> out = new ArrayList<>();
+        if (all == null) {
+            return out;
+        }
+        for (BillComponent c : all) {
+            if (c.getBillItem() == null) {
+                out.add(c);
+            }
+        }
+        return out;
+    }
+
+    private void cancelBillComponents(Bill can, BillItem bt, BillItem original, List<BillComponent> sourceComponents) {
+        copyReversedComponents(can, bt, componentsForItem(sourceComponents, original));
+    }
+
+    private void copyReversedComponents(Bill can, BillItem bt, List<BillComponent> sourceComponents) {
         for (BillComponent nB : sourceComponents) {
             BillComponent bC = new BillComponent();
             bC.setCatId(nB.getCatId());
@@ -2038,7 +2072,10 @@ public class InwardSearch implements Serializable {
     }
 
     public void cancelBillService() {
-        final Bill selected = getBill();
+        final Bill selected = billMatchingPostedIdOrRefuse(CancelPageKind.SERVICE);
+        if (selected == null) {
+            return;
+        }
         if (refuseIfCancellationBill(selected)) {
             return;
         }
@@ -2148,7 +2185,9 @@ public class InwardSearch implements Serializable {
                 Request billRequest = requestService.findRequest(b);
                 if (billRequest != null) {
 
-                    requestController.getBills().add(b);
+                    List<Bill> requestBills = new ArrayList<>();
+                    requestBills.add(b);
+                    requestController.setBills(requestBills);
                     requestController.complteRequest(billRequest);
                 }
             }
@@ -2709,12 +2748,16 @@ public class InwardSearch implements Serializable {
     }
 
     public void cancelFinalBillPayment() {
-        if (refuseIfCancellationBill(getBill())) {
+        final Bill selected = billMatchingPostedIdOrRefuse(CancelPageKind.FINAL);
+        if (selected == null) {
             return;
         }
-        if (getBill() != null && getBill().getId() != null && getBill().getId() != 0) {
+        if (refuseIfCancellationBill(selected)) {
+            return;
+        }
+        if (selected.getId() != null && selected.getId() != 0) {
 
-            long dayCount = CommonFunctions.getDayCount(getBill().getCreatedAt(), new Date());
+            long dayCount = CommonFunctions.getDayCount(selected.getCreatedAt(), new Date());
             boolean disableTimeLimit = configOptionApplicationController.getBooleanValueByKey("Disable Time Limit on Final Bill Cancellation", false);
             boolean hasPrivilege = getWebUserController().hasPrivilege("InwardFinalBillCancel");
 
@@ -2724,16 +2767,16 @@ public class InwardSearch implements Serializable {
                 return;
             }
 
-            if (getBill().isCancelled()) {
+            if (selected.isCancelled()) {
                 JsfUtil.addErrorMessage("Already Cancelled. Can not cancel again");
                 return;
             }
-            if (getBill().isRefunded()) {
+            if (selected.isRefunded()) {
                 JsfUtil.addErrorMessage("Already Returned. Can not cancel.");
                 return;
             }
 
-            if (getBill().getPatientEncounter() == null) {
+            if (selected.getPatientEncounter() == null) {
                 JsfUtil.addErrorMessage("You can't cancel Because this Bill has no BHT");
                 return;
             }
@@ -2743,7 +2786,7 @@ public class InwardSearch implements Serializable {
                 return;
             }
 
-            if (hasPaidCreditCompanyBill(getBill())) {
+            if (hasPaidCreditCompanyBill(selected)) {
                 JsfUtil.addErrorMessage("Cannot cancel: a credit company has paid against this final bill");
                 return;
             }
@@ -2753,8 +2796,11 @@ public class InwardSearch implements Serializable {
             // against it or settled a newer version since the page opened. Re-read
             // both under the final bill lock and decide on those copies, so a stale
             // page never cancels twice or writes old admission totals back (#25544).
-            PatientEncounter pageEncounter = getBill().getPatientEncounter();
-            boolean cancelled = getFinalBillLockBean().withFinalBillVersionLock(pageEncounter, this::cancelFinalBillPaymentUnderLock);
+            PatientEncounter pageEncounter = selected.getPatientEncounter();
+            final Long targetBillId = selected.getId();
+            final Long targetEncounterId = pageEncounter.getId();
+            boolean cancelled = getFinalBillLockBean().withFinalBillVersionLock(pageEncounter,
+                    () -> cancelFinalBillPaymentUnderLock(targetBillId, targetEncounterId));
             if (!cancelled) {
                 return;
             }
@@ -2776,13 +2822,13 @@ public class InwardSearch implements Serializable {
      *
      * @return true when the bill was cancelled; false after an error message.
      */
-    private boolean cancelFinalBillPaymentUnderLock() {
-        Bill freshBill = getBillFacade().findWithoutCache(getBill().getId());
+    private boolean cancelFinalBillPaymentUnderLock(Long billId, Long encounterId) {
+        Bill freshBill = getBillFacade().findWithoutCache(billId);
         if (freshBill == null) {
             JsfUtil.addErrorMessage("This final bill could not be found. Please search it again.");
             return false;
         }
-        PatientEncounter freshEncounter = getPatientEncounterFacade().findWithoutCache(getBill().getPatientEncounter().getId());
+        PatientEncounter freshEncounter = encounterId == null ? null : getPatientEncounterFacade().findWithoutCache(encounterId);
         if (freshEncounter != null) {
             freshBill.setPatientEncounter(freshEncounter);
         }
@@ -2870,7 +2916,10 @@ public class InwardSearch implements Serializable {
     }
 
     public void cancelProvisionalBillPayment() {
-        final Bill selected = getBill();
+        final Bill selected = billMatchingPostedIdOrRefuse(CancelPageKind.PROVISIONAL);
+        if (selected == null) {
+            return;
+        }
         if (refuseIfCancellationBill(selected)) {
             return;
         }
@@ -2934,13 +2983,14 @@ public class InwardSearch implements Serializable {
                 return;
             }
 
+            SourceRows rows = loadSourceRowsForCancel(b);
             CancelledBill cb = createCancelBill(b, c, pm, BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION);
             cb.setBillTypeAtomic(BillTypeAtomic.INWARD_PROVISIONAL_BILL_CANCELLATION);
             //Copy & paste
             if (cb.getId() == null) {
                 getBillFacade().create(cb);
             }
-            cancelBillItems(cb, b);
+            cancelBillItems(cb, rows);
             b.setCancelled(true);
             b.setCancelledBill(cb);
             getBillFacade().edit((BilledBill) b);
@@ -3116,12 +3166,13 @@ public class InwardSearch implements Serializable {
      * assumes the bill may be reversed.</p>
      */
     public CancelledBill reverseInwardServiceBill(Bill source, String comments, BillTypeAtomic cancellationAtomic) {
+        SourceRows rows = loadSourceRowsForCancel(source);
         CancelledBill cb = createCancelBill(source, comments, null, cancellationAtomic);
         if (cb.getId() == null) {
             getBillFacade().create(cb);
         }
 
-        cancelBillItems(cb, source);
+        cancelBillItems(cb, rows);
         retireTimedServicesOfCancelledBill(source);
 
         source.setCancelled(true);
@@ -3331,7 +3382,10 @@ public class InwardSearch implements Serializable {
     }
 
     public void cancelProfessional() {
-        final Bill selected = getBill();
+        final Bill selected = billMatchingPostedIdOrRefuse(CancelPageKind.PROFESSIONAL);
+        if (selected == null) {
+            return;
+        }
         if (refuseIfCancellationBill(selected)) {
             return;
         }
@@ -3405,13 +3459,14 @@ public class InwardSearch implements Serializable {
                 return;
             }
 
+            SourceRows rows = loadSourceRowsForCancel(b);
             CancelledBill cb = createCancelBill(b, c, pm, BillTypeAtomic.INWARD_PROFESSIONAL_FEE_BILL_CANCELLATION);
 
             //Copy & paste
             if (cb.getId() == null) {
                 getBillFacade().create(cb);
             }
-            cancelBillItems(cb, b);
+            cancelBillItems(cb, rows);
             b.setCancelled(true);
             b.setCancelledBill(cb);
             getBillFacade().edit((BilledBill) b);
@@ -3481,27 +3536,44 @@ public class InwardSearch implements Serializable {
         for (BillItem nB : getBillItems()) {
             copyCancelledBillItem(can, nB, getBillComponents());
         }
+        copyReversedComponents(can, null, componentsWithoutItem(getBillComponents()));
+    }
+
+    /** Items and components of a source bill, read before anything is saved. */
+    private static class SourceRows {
+
+        final List<BillItem> items;
+        final List<BillComponent> components;
+
+        SourceRows(List<BillItem> items, List<BillComponent> components) {
+            this.items = items;
+            this.components = components;
+        }
     }
 
     /**
-     * Same as {@link #cancelBillItems(Bill)} but reading the rows to reverse
-     * from an explicit source bill instead of this bean's page state, so
-     * {@link #reverseInwardServiceBill(Bill, String, BillTypeAtomic)} can run
-     * without a bill being selected on screen.
+     * Reads the rows to reverse from an explicit source bill (not this bean's
+     * page state). Call it BEFORE the cancellation bill is saved: a read failure
+     * then propagates with nothing persisted, instead of leaving a saved
+     * cancellation bill while the original stays uncancelled.
      */
-    private void cancelBillItems(Bill can, Bill source) {
+    private SourceRows loadSourceRowsForCancel(Bill source) {
         Map<String, Object> hm = new HashMap<>();
         hm.put("b", source);
         List<BillItem> sourceItems = getBillItemFacede().findByJpql(
-                "SELECT b FROM BillItem b WHERE b.retired=false and b.bill=:b ", hm);
+                "SELECT b FROM BillItem b WHERE b.retired=false and b.bill=:b ", hm, TemporalType.TIMESTAMP);
         List<BillComponent> sourceComponents = getBillCommponentFacade().findByJpql(
-                "SELECT b FROM BillComponent b WHERE b.retired=false and b.bill=:b ", hm);
-        if (sourceItems == null) {
-            return;
+                "SELECT b FROM BillComponent b WHERE b.retired=false and b.bill=:b ", hm, TemporalType.TIMESTAMP);
+        return new SourceRows(sourceItems == null ? new ArrayList<>() : sourceItems,
+                sourceComponents == null ? new ArrayList<>() : sourceComponents);
+    }
+
+    /** Writes the reversal rows, read earlier by {@link #loadSourceRowsForCancel(Bill)}, onto the contra-bill. */
+    private void cancelBillItems(Bill can, SourceRows rows) {
+        for (BillItem nB : rows.items) {
+            copyCancelledBillItem(can, nB, rows.components);
         }
-        for (BillItem nB : sourceItems) {
-            copyCancelledBillItem(can, nB, sourceComponents == null ? new ArrayList<>() : sourceComponents);
-        }
+        copyReversedComponents(can, null, componentsWithoutItem(rows.components));
     }
 
     /**
@@ -3522,7 +3594,7 @@ public class InwardSearch implements Serializable {
             getBillItemFacede().create(b);
         }
 
-        cancelBillComponents(can, b, sourceComponents);
+        cancelBillComponents(can, b, nB, sourceComponents);
 
         String sql = "Select bf From BillFee bf where bf.retired=false and bf.billItem.id=" + nB.getId();
         List<BillFee> tmp = getBillFeeFacade().findByJpql(sql);
@@ -3679,7 +3751,7 @@ public class InwardSearch implements Serializable {
             ////// // System.out.println("nB.getPaidForBillFee() = " + nB.getPaidForBillFee());
             getBillItemFacede().create(b);
 
-            cancelBillComponents(can, b);
+            cancelBillComponents(can, b, nB, getBillComponents());
 
             String sql = "Select bf From BillFee bf where bf.retired=false and bf.billItem.id=" + nB.getId();
             List<BillFee> tmp = getBillFeeFacade().findByJpql(sql);
@@ -3687,6 +3759,7 @@ public class InwardSearch implements Serializable {
             cancelBillFee(can, b, tmp);
 
         }
+        copyReversedComponents(can, null, componentsWithoutItem(getBillComponents()));
     }
 
     private void cancelBillFee(Bill can, BillItem bt) {
@@ -3710,6 +3783,70 @@ public class InwardSearch implements Serializable {
 
     public void setBills(List<Bill> bills) {
         this.bills = bills;
+    }
+
+    /**
+     * Id of the bill this cancel page displayed when it was rendered. The page posts it back
+     * with the Cancel action so a stale tab cannot cancel a bill opened in another tab.
+     */
+    public String getExpectedBillId() {
+        Bill b = getBill();
+        return b.getId() == null ? null : b.getId().toString();
+    }
+
+    public void setExpectedBillId(String expectedBillId) {
+        this.postedBillId = expectedBillId;
+    }
+
+    /**
+     * The kind of bill each inward cancel page cancels.
+     */
+    private enum CancelPageKind {
+        SERVICE, PROFESSIONAL, PROVISIONAL, FINAL
+    }
+
+    /**
+     * Returns the bill this cancel page showed, or null after an error message when the page is
+     * stale: the posted id is not the session's bill (another tab opened a different bill), or
+     * the session's bill is not the kind this page cancels. The cancel action must use the
+     * returned bill and not read {@link #getBill()} again.
+     */
+    private Bill billMatchingPostedIdOrRefuse(CancelPageKind kind) {
+        String posted = postedBillId;
+        postedBillId = null;
+        Bill b = getBill();
+        if (posted == null || b == null || b.getId() == null
+                || !posted.trim().equals(b.getId().toString())
+                || !isBillOfCancelPageKind(b, kind)) {
+            JsfUtil.addErrorMessage("This page is out of date. Open the bill again.");
+            return null;
+        }
+        return b;
+    }
+
+    /**
+     * Whether the bill is one the given cancel page is opened for. Final, provisional and
+     * professional pages are opened only from lists filtered on their bill type. The service
+     * page is opened from many lists (service, theatre, lab, refunds), so it accepts any bill
+     * except the kinds that have their own cancel page.
+     */
+    private boolean isBillOfCancelPageKind(Bill b, CancelPageKind kind) {
+        BillType bt = b.getBillType();
+        boolean professional = bt == BillType.InwardProfessional || bt == BillType.InwardProfessionalEstimates;
+        switch (kind) {
+            case FINAL:
+                return bt == BillType.InwardFinalBill;
+            case PROVISIONAL:
+                return bt == BillType.InwardProvisionalBill;
+            case PROFESSIONAL:
+                return professional;
+            case SERVICE:
+                return bt != BillType.InwardFinalBill
+                        && bt != BillType.InwardProvisionalBill
+                        && !professional;
+            default:
+                return false;
+        }
     }
 
     public Bill getBill() {

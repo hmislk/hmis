@@ -15,7 +15,8 @@
                             <p:selectOneMenu   id="cmbPs" value="#{incomeExpensessBillController.paymentMethod}" required="true"  >
                                 <f:selectItems value="#{enumController.paymentMethodsWithoutCredit}"  />
                             </p:selectOneMenu>
-                            <h:commandButton value="Cancel" action="#{incomeExpensessBillController.cancelIncomeBill}" >
+                            <h:commandButton value="Cancel" action="#{incomeExpensessBillController.cancelIncomeBill}"
+                                disabled="#{incomeExpensessBillController.billACancellationBill}" >
                             </h:commandButton>                            
                         </p:panel>
                         <p:panelGrid columns="2" style="width: 100%;">

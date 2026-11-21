@@ -7292,6 +7292,9 @@ public class FinancialTransactionController implements Serializable {
      * validation fails
      */
     public String cancelFundTransferBill() {
+        if (com.divudi.core.util.CancellationBillCheck.refuse(fundTransferBillToCancel)) {
+            return "";
+        }
         // Re-validate before executing
         if (fundTransferBillToCancel == null) {
             JsfUtil.addErrorMessage("No bill selected for cancellation");
@@ -9188,6 +9191,9 @@ public class FinancialTransactionController implements Serializable {
     }
 
     public String cancelShiftShortageBill() {
+        if (com.divudi.core.util.CancellationBillCheck.refuse(selectedBill)) {
+            return "";
+        }
         if (shortageCancellationSubmitting) {
             return "";
         }
@@ -11508,5 +11514,13 @@ public class FinancialTransactionController implements Serializable {
         pageMetadataRegistry.registerPage(shiftEndPrintMetadata);
     }
     // </editor-fold>
+
+    public boolean isSelectedBillACancellationBill() {
+        return com.divudi.core.util.CancellationBillCheck.isCancellationBill(selectedBill);
+    }
+
+    public boolean isFundTransferBillToCancelACancellationBill() {
+        return com.divudi.core.util.CancellationBillCheck.isCancellationBill(fundTransferBillToCancel);
+    }
 
 }

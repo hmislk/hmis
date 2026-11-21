@@ -12,6 +12,7 @@
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
                 <h:form id="inwardCancelBillServiceForm">
+                    <h:inputHidden id="expectedBillId" value="#{inwardSearch.expectedBillId}"/>
 
                     <p:growl id="growl" life="4000"/>
 

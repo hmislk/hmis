@@ -461,6 +461,9 @@ public class PharmacySaleBhtController implements Serializable {
     }
 
     public String navigateToCancelBhtRequest() {
+        if (com.divudi.core.util.CancellationBillCheck.refuse(bill)) {
+            return "";
+        }
         if (bill == null) {
             JsfUtil.addErrorMessage("Nothing to cancel");
             return "";
