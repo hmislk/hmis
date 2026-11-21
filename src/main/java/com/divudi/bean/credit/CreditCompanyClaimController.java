@@ -1,14 +1,18 @@
 package com.divudi.bean.credit;
 
+import com.divudi.bean.common.CashRecieveBillController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.WebUserController;
 import com.divudi.core.data.CreditCompanyClaimStatus;
 import com.divudi.core.data.dto.CreditCompanyClaimRowDto;
+import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.CreditCompanyClaim;
 import com.divudi.core.entity.CreditCompanyClaimItem;
+import com.divudi.core.entity.CreditCompanyClaimSettlement;
 import com.divudi.core.entity.Institution;
 import com.divudi.core.facade.CreditCompanyClaimFacade;
 import com.divudi.core.facade.CreditCompanyClaimItemFacade;
+import com.divudi.core.facade.CreditCompanyClaimSettlementFacade;
 import com.divudi.core.util.CommonFunctions;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.service.CreditCompanyClaimException;
@@ -42,6 +46,10 @@ public class CreditCompanyClaimController implements Serializable {
     private CreditCompanyClaimFacade claimFacade;
     @EJB
     private CreditCompanyClaimItemFacade claimItemFacade;
+    @EJB
+    private CreditCompanyClaimSettlementFacade settlementFacade;
+    @Inject
+    private CashRecieveBillController cashRecieveBillController;
     @Inject
     private SessionController sessionController;
     @Inject
@@ -59,6 +67,9 @@ public class CreditCompanyClaimController implements Serializable {
     /** Id of the claim the page was rendered for; posted back with every action (the bean is shared by browser tabs). */
     private Long claimIdOnPage;
     private List<CreditCompanyClaimItem> claimItems = new ArrayList<>();
+    private List<CreditCompanyClaimSettlement> settlements = new ArrayList<>();
+    private double settledAmount;
+    private double outstandingAmount;
     private Date submittedOn;
     private String companyReference;
     private String rejectReason;
@@ -67,7 +78,8 @@ public class CreditCompanyClaimController implements Serializable {
         return webUserController.hasPrivilege("OpdCreditClaimCreate")
                 || webUserController.hasPrivilege("OpdCreditClaimSubmit")
                 || webUserController.hasPrivilege("OpdCreditClaimReject")
-                || webUserController.hasPrivilege("OpdCreditClaimResubmit");
+                || webUserController.hasPrivilege("OpdCreditClaimResubmit")
+                || webUserController.hasPrivilege("OpdCreditClaimSettle");
     }
 
     private boolean deny(String privilege) {
@@ -138,6 +150,7 @@ public class CreditCompanyClaimController implements Serializable {
         claim = null;
         claimIdOnPage = null;
         claimItems = new ArrayList<>();
+        settlements = new ArrayList<>();
         return "/credit/credit_company_claims?faces-redirect=true";
     }
 
@@ -210,6 +223,56 @@ public class CreditCompanyClaimController implements Serializable {
         m.put("claim", claim);
         claimItems = claimItemFacade.findByJpql(
                 "select ci from CreditCompanyClaimItem ci where ci.retired=false and ci.claim=:claim order by ci.id", m);
+        settlements = settlementFacade.findByJpql(
+                "select s from CreditCompanyClaimSettlement s where s.retired=false and s.claim=:claim"
+                + " order by s.createdAt, s.id", m);
+        settledAmount = claimService.settledAmountOf(claim);
+        outstandingAmount = claimService.outstandingOf(claimItems);
+    }
+
+    /** Opens Outpatient Credit Collection with the claim's bills that still have a due pre-added. */
+    public String settleClaim() {
+        if (deny("OpdCreditClaimSettle")) {
+            return null;
+        }
+        if (pageOutOfDate()) {
+            return null;
+        }
+        reloadClaim();
+        if (!isSettleable()) {
+            JsfUtil.addErrorMessage("Only a submitted, resubmitted or partially settled claim can be settled.");
+            return null;
+        }
+        List<Bill> bills = new ArrayList<>();
+        for (CreditCompanyClaimItem i : claimItems) {
+            if (i.getBill() != null && CreditCompanyClaimService.dueDecimalOf(i.getBill())
+                    .compareTo(java.math.BigDecimal.valueOf(CreditCompanyClaimService.MIN_DUE)) > 0) {
+                bills.add(i.getBill());
+            }
+        }
+        if (bills.isEmpty()) {
+            JsfUtil.addErrorMessage("No bill in this claim has a due amount.");
+            return null;
+        }
+        return cashRecieveBillController.navigateWithPreloadedBills(bills);
+    }
+
+    public boolean isSettleable() {
+        return claim != null && (claim.getStatus() == CreditCompanyClaimStatus.SUBMITTED
+                || claim.getStatus() == CreditCompanyClaimStatus.RESUBMITTED
+                || claim.getStatus() == CreditCompanyClaimStatus.PARTIALLY_SETTLED);
+    }
+
+    public List<CreditCompanyClaimSettlement> getSettlements() {
+        return settlements;
+    }
+
+    public double getSettledAmount() {
+        return settledAmount;
+    }
+
+    public double getOutstandingAmount() {
+        return outstandingAmount;
     }
 
     private void reloadClaim() {

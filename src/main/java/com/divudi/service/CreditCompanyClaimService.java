@@ -4,8 +4,10 @@ import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.CreditCompanyClaimStatus;
 import com.divudi.core.data.PaymentMethod;
 import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.BillItem;
 import com.divudi.core.entity.CreditCompanyClaim;
 import com.divudi.core.entity.CreditCompanyClaimItem;
+import com.divudi.core.entity.CreditCompanyClaimSettlement;
 import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.WebUser;
@@ -13,6 +15,7 @@ import com.divudi.core.facade.BillFacade;
 import com.divudi.core.facade.CreditCompanyClaimFacade;
 import com.divudi.core.facade.InstitutionFacade;
 import com.divudi.core.facade.CreditCompanyClaimItemFacade;
+import com.divudi.core.facade.CreditCompanyClaimSettlementFacade;
 import com.divudi.ejb.BillNumberGenerator;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -25,6 +28,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 
@@ -43,6 +49,8 @@ public class CreditCompanyClaimService {
     @EJB
     private CreditCompanyClaimItemFacade claimItemFacade;
     @EJB
+    private CreditCompanyClaimSettlementFacade settlementFacade;
+    @EJB
     private BillFacade billFacade;
     @EJB
     private InstitutionFacade institutionFacade;
@@ -56,10 +64,16 @@ public class CreditCompanyClaimService {
         return dueDecimalOf(bill).doubleValue();
     }
 
+    private static final Logger LOGGER = Logger.getLogger(CreditCompanyClaimService.class.getName());
+
     /** Due in decimal arithmetic, 2 places half-up, so 1.10 less 1.00 is exactly 0.10. */
     public static BigDecimal dueDecimalOf(Bill bill) {
-        return BigDecimal.valueOf(bill.getNetTotal())
-                .subtract(BigDecimal.valueOf(bill.getRefundAmount()).add(BigDecimal.valueOf(bill.getPaidAmount())))
+        return dueDecimalOf(bill.getNetTotal(), bill.getRefundAmount(), bill.getPaidAmount());
+    }
+
+    public static BigDecimal dueDecimalOf(double netTotal, double refundAmount, double paidAmount) {
+        return BigDecimal.valueOf(netTotal)
+                .subtract(BigDecimal.valueOf(refundAmount).add(BigDecimal.valueOf(paidAmount)))
                 .setScale(2, RoundingMode.HALF_UP);
     }
 
@@ -318,6 +332,214 @@ public class CreditCompanyClaimService {
         }
         claimFacade.edit(c);
         return c;
+    }
+
+    // ---- Settlement link (#25847 part 2) ----
+
+    /**
+     * Status of a claim after settlements change, or the current status when settlement
+     * does not apply to it (draft, rejected, closed, cancelled). The one recompute rule:
+     * every bill's due at or below {@link #MIN_DUE}: Settled. Otherwise some amount linked:
+     * Partially Settled. Otherwise nothing linked: back to Submitted, or Resubmitted when
+     * the claim was resubmitted. A Settled claim does not reopen while one of its bills
+     * is in another open claim.
+     *
+     * @param dues due of each bill in the claim
+     * @param linkedTotal sum of the active settlement links of the claim
+     */
+    public static CreditCompanyClaimStatus statusAfterSettlement(CreditCompanyClaimStatus current, int resubmitCount,
+            Collection<BigDecimal> dues, BigDecimal linkedTotal, boolean aBillIsInAnotherOpenClaim) {
+        if (current == null || !current.followsSettlement() || dues == null || dues.isEmpty()) {
+            return current;
+        }
+        BigDecimal cutoff = BigDecimal.valueOf(MIN_DUE);
+        boolean allSettled = true;
+        for (BigDecimal d : dues) {
+            if (d.compareTo(cutoff) > 0) {
+                allSettled = false;
+                break;
+            }
+        }
+        CreditCompanyClaimStatus next;
+        if (allSettled) {
+            next = CreditCompanyClaimStatus.SETTLED;
+        } else if (linkedTotal != null && linkedTotal.signum() > 0) {
+            next = CreditCompanyClaimStatus.PARTIALLY_SETTLED;
+        } else {
+            next = resubmitCount > 0 ? CreditCompanyClaimStatus.RESUBMITTED : CreditCompanyClaimStatus.SUBMITTED;
+        }
+        if (next == current) {
+            return current;
+        }
+        if (current == CreditCompanyClaimStatus.SETTLED && aBillIsInAnotherOpenClaim) {
+            return current;
+        }
+        return current.canSystemMoveTo(next) ? next : current;
+    }
+
+    /**
+     * Called when a credit collection bill has been saved. For each paid bill that is in an
+     * open claim, links the settlement to the claim and recomputes the claim status.
+     * Does not change how payment is recorded.
+     */
+    public void recordSettlement(Bill settlementBill, List<BillItem> items, WebUser user) {
+        if (settlementBill == null || settlementBill.getId() == null || items == null || items.isEmpty()) {
+            return;
+        }
+        Date now = new Date();
+        // claim id -> link rows to create (claimed bill, amount)
+        Map<Long, List<Object[]>> byClaim = new java.util.TreeMap<>();
+        for (BillItem item : items) {
+            if (item == null || item.getReferenceBill() == null || item.getReferenceBill().getId() == null) {
+                continue;
+            }
+            Long billId = item.getReferenceBill().getId();
+            Map<String, Object> p = new HashMap<>();
+            p.put("id", billId);
+            p.put("open", Arrays.asList(CreditCompanyClaimStatus.openStatuses()));
+            List<?> claimIds = claimItemFacade.findLightsByJpqlStrict(
+                    "select ci.claim.id from CreditCompanyClaimItem ci where ci.retired=false"
+                    + " and ci.claim.retired=false and ci.claim.status in :open and ci.bill.id=:id", p);
+            for (Object cid : claimIds) {
+                byClaim.computeIfAbsent((Long) cid, k -> new ArrayList<>())
+                        .add(new Object[]{item.getReferenceBill(), Math.abs(item.getNetValue())});
+            }
+        }
+        // Claims are locked in id order so overlapping requests cannot deadlock.
+        for (Map.Entry<Long, List<Object[]>> e : byClaim.entrySet()) {
+            CreditCompanyClaim claim = claimFacade.findWithLock(e.getKey());
+            if (claim == null || claim.isRetired()) {
+                continue;
+            }
+            for (Object[] row : e.getValue()) {
+                CreditCompanyClaimSettlement link = new CreditCompanyClaimSettlement();
+                link.setClaim(claim);
+                link.setSettlementBill(settlementBill);
+                link.setClaimedBill((Bill) row[0]);
+                link.setAmount((Double) row[1]);
+                link.setCreater(user);
+                link.setCreatedAt(now);
+                settlementFacade.create(link);
+            }
+            recomputeStatus(claim);
+        }
+    }
+
+    /**
+     * Called when a credit collection bill has been cancelled: retires its link rows and
+     * recomputes each affected claim.
+     */
+    public void reverseSettlement(Bill settlementBill, WebUser user) {
+        if (settlementBill == null || settlementBill.getId() == null) {
+            return;
+        }
+        Map<String, Object> p = new HashMap<>();
+        p.put("sb", settlementBill.getId());
+        List<?> found = settlementFacade.findLightsByJpqlStrict(
+                "select s.id, s.claim.id from CreditCompanyClaimSettlement s where s.retired=false"
+                + " and s.settlementBill.id=:sb", p);
+        Set<Long> claimIds = new TreeSet<>();
+        List<Long> linkIds = new ArrayList<>();
+        for (Object o : found) {
+            Object[] r = (Object[]) o;
+            linkIds.add((Long) r[0]);
+            claimIds.add((Long) r[1]);
+        }
+        Date now = new Date();
+        for (Long claimId : claimIds) {
+            CreditCompanyClaim claim = claimFacade.findWithLock(claimId);
+            if (claim == null) {
+                continue;
+            }
+            for (Long linkId : linkIds) {
+                CreditCompanyClaimSettlement link = settlementFacade.find(linkId);
+                if (link != null && !link.isRetired() && link.getClaim() != null
+                        && claimId.equals(link.getClaim().getId())) {
+                    link.setRetired(true);
+                    link.setRetiredAt(now);
+                    link.setRetirer(user);
+                    settlementFacade.edit(link);
+                }
+            }
+            recomputeStatus(claim);
+        }
+    }
+
+    /** Recomputes the status of a claim (already locked by the caller) from the bills' current due and the active links. */
+    public CreditCompanyClaimStatus recomputeStatus(CreditCompanyClaim claim) {
+        if (claim == null || claim.getStatus() == null || !claim.getStatus().followsSettlement()) {
+            return claim == null ? null : claim.getStatus();
+        }
+        Map<String, Object> p = new HashMap<>();
+        p.put("claim", claim.getId());
+        // Scalar queries read the database, so the due is current.
+        List<?> rows = claimItemFacade.findLightsByJpqlStrict(
+                "select b.id, b.netTotal, coalesce(b.refundAmount,0), coalesce(b.paidAmount,0)"
+                + " from CreditCompanyClaimItem ci join ci.bill b where ci.retired=false and ci.claim.id=:claim", p);
+        List<BigDecimal> dues = new ArrayList<>();
+        Set<Long> billIds = new HashSet<>();
+        for (Object o : rows) {
+            Object[] r = (Object[]) o;
+            billIds.add((Long) r[0]);
+            dues.add(dueDecimalOf(((Number) r[1]).doubleValue(), ((Number) r[2]).doubleValue(), ((Number) r[3]).doubleValue()));
+        }
+        List<?> sum = settlementFacade.findLightsByJpqlStrict(
+                "select coalesce(sum(s.amount),0) from CreditCompanyClaimSettlement s"
+                + " where s.retired=false and s.claim.id=:claim", p);
+        BigDecimal linked = sum.isEmpty() || sum.get(0) == null ? BigDecimal.ZERO
+                : BigDecimal.valueOf(((Number) sum.get(0)).doubleValue());
+        boolean inAnother = false;
+        if (claim.getStatus() == CreditCompanyClaimStatus.SETTLED && !billIds.isEmpty()) {
+            Map<String, Object> q = new HashMap<>();
+            q.put("claim", claim.getId());
+            q.put("ids", billIds);
+            q.put("open", Arrays.asList(CreditCompanyClaimStatus.openStatuses()));
+            inAnother = claimItemFacade.findLongByJpqlStrict(
+                    "select count(ci) from CreditCompanyClaimItem ci where ci.retired=false and ci.claim.retired=false"
+                    + " and ci.claim.id<>:claim and ci.claim.status in :open and ci.bill.id in :ids", q) > 0;
+        }
+        CreditCompanyClaimStatus next = statusAfterSettlement(claim.getStatus(), claim.getResubmitCount(),
+                dues, linked, inAnother);
+        if (next != claim.getStatus()) {
+            claim.setStatus(next);
+            claimFacade.edit(claim);
+        } else if (inAnother) {
+            // Reached only when the settled claim would reopen but is left Settled.
+            BigDecimal cutoff = BigDecimal.valueOf(MIN_DUE);
+            boolean wouldReopen = dues.stream().anyMatch(d -> d.compareTo(cutoff) > 0);
+            if (wouldReopen) {
+                LOGGER.log(Level.WARNING, "Claim {0} left Settled: a settlement was cancelled but one of its bills is in another open claim.",
+                        claim.getClaimNo());
+            }
+        }
+        return claim.getStatus();
+    }
+
+    /** Sum of the active settlement links of the claim. */
+    public double settledAmountOf(CreditCompanyClaim claim) {
+        if (claim == null || claim.getId() == null) {
+            return 0;
+        }
+        Map<String, Object> p = new HashMap<>();
+        p.put("claim", claim.getId());
+        List<?> sum = settlementFacade.findLightsByJpqlStrict(
+                "select coalesce(sum(s.amount),0) from CreditCompanyClaimSettlement s"
+                + " where s.retired=false and s.claim.id=:claim", p);
+        return sum.isEmpty() || sum.get(0) == null ? 0 : ((Number) sum.get(0)).doubleValue();
+    }
+
+    /** Sum of what is still due on the claim's bills (never below zero for a bill). */
+    public double outstandingOf(List<CreditCompanyClaimItem> items) {
+        BigDecimal total = BigDecimal.ZERO;
+        if (items != null) {
+            for (CreditCompanyClaimItem i : items) {
+                BigDecimal d = dueDecimalOf(i.getBill());
+                if (d.signum() > 0) {
+                    total = total.add(d);
+                }
+            }
+        }
+        return total.doubleValue();
     }
 
     private CreditCompanyClaim reload(CreditCompanyClaim claim) {

@@ -1296,6 +1296,7 @@ public enum Privileges {
     OpdCreditClaimSubmit("OPD Credit Claim - Submit"),
     OpdCreditClaimReject("OPD Credit Claim - Record Rejection"),
     OpdCreditClaimResubmit("OPD Credit Claim - Resubmit"),
+    OpdCreditClaimSettle("OPD Credit Claim - Settle"),
     //</editor-fold>
     ;
 

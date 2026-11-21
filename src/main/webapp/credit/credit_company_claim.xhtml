@@ -41,6 +41,14 @@
                             <h:outputText value="#{creditCompanyClaimController.claim.claimedTotal}">
                                 <f:convertNumber pattern="#,##0.00"/>
                             </h:outputText>
+                            <h:outputText value="Settled"/>
+                            <h:outputText value="#{creditCompanyClaimController.settledAmount}">
+                                <f:convertNumber pattern="#,##0.00"/>
+                            </h:outputText>
+                            <h:outputText value="Outstanding"/>
+                            <h:outputText value="#{creditCompanyClaimController.outstandingAmount}">
+                                <f:convertNumber pattern="#,##0.00"/>
+                            </h:outputText>
                         </p:panelGrid>
 
                         <h:panelGroup layout="block" rendered="#{not empty creditCompanyClaimController.claim.rejectReason}" styleClass="my-2">
@@ -72,6 +80,11 @@
                                              title="Record that the corrected claim was sent again" ajax="false"
                                              rendered="#{creditCompanyClaimController.rejected and webUserController.hasPrivilege('OpdCreditClaimResubmit')}"
                                              action="#{creditCompanyClaimController.resubmit}"/>
+
+                            <p:commandButton value="Settle" icon="fas fa-money-bill" styleClass="ui-button-success"
+                                             title="Open Outpatient Credit Collection with this claim's bills that are still due" ajax="false"
+                                             rendered="#{creditCompanyClaimController.settleable and webUserController.hasPrivilege('OpdCreditClaimSettle')}"
+                                             action="#{creditCompanyClaimController.settleClaim}"/>
 
                             <h:panelGroup layout="block"
                                           rendered="#{creditCompanyClaimController.awaitingCompany and webUserController.hasPrivilege('OpdCreditClaimReject')}">
@@ -112,6 +125,29 @@
                             </p:column>
                             <p:column headerText="Due Now" styleClass="text-end">
                                 <h:outputText value="#{creditCompanyClaimController.dueOf(i)}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputText>
+                            </p:column>
+                        </p:dataTable>
+
+                        <p:dataTable id="settlements" value="#{creditCompanyClaimController.settlements}" var="st"
+                                     styleClass="p-datatable-sm my-2" emptyMessage="No settlements yet">
+                            <f:facet name="header">
+                                <h:outputText value="Settlement bills"/>
+                            </f:facet>
+                            <p:column headerText="Settlement Bill No">
+                                <h:outputText value="#{st.settlementBill.deptId}" style="user-select:all;"/>
+                            </p:column>
+                            <p:column headerText="Date">
+                                <h:outputText value="#{st.settlementBill.createdAt}">
+                                    <f:convertDateTime pattern="yyyy MM dd HH:mm"/>
+                                </h:outputText>
+                            </p:column>
+                            <p:column headerText="Claimed Bill No">
+                                <h:outputText value="#{st.claimedBill.deptId}"/>
+                            </p:column>
+                            <p:column headerText="Amount" styleClass="text-end">
+                                <h:outputText value="#{st.amount}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
                             </p:column>
