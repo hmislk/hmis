@@ -1,0 +1,59 @@
+# OPD Credit Company Claims — Business Rules
+
+**Applies to:** claims raised to a credit company for credit bills billed outside the inpatient flow (issue #25847).
+Screens: Financial Transaction Manager → Payment Management → Credit Company Payments → **Credit Company Claims**, and **Create Claim** on the OPD credit company due page.
+
+## Which bills can be claimed
+
+- OPD bills, package bills, and pharmacy retail and wholesale sales billed to the credit company.
+- Pharmacy GRN wholesale bills cannot be claimed.
+- A claim holds bills of one credit company only, with a due amount above zero.
+- A bill can be in only one open claim at a time. A claim is open unless it is Cancelled, Settled or Closed.
+
+## Claim number
+
+- Every claim gets its own number from a counter per department and year (bill type `OPD_CREDIT_COMPANY_CLAIM`).
+  This holds whatever the hospital's bill numbering setting is.
+- The credit company's own reference is stored separately on the claim (entered at Submit or Resubmit).
+
+## Status flow
+
+| From | Can move to |
+|---|---|
+| Draft | Submitted, Cancelled |
+| Submitted / Resubmitted | Rejected, Partially Settled, Settled, Closed |
+| Rejected | Resubmitted, Closed, Cancelled |
+| Partially Settled | Settled, Closed |
+| Settled, Closed, Cancelled | nothing (final) |
+
+- Rejecting records the reason, user and time.
+- A rejected claim keeps its bills and is resubmitted with the same claim number. It is never re-created.
+- Cancelling is allowed only for a Draft or Rejected claim, by a user with the Create Claim privilege. Cancelling frees its bills for a new claim.
+
+## Locks on the bills
+
+- A bill in an open claim cannot be refunded, returned or cancelled. Cancel the claim (or settle it) first.
+- A bill with a write-off cannot be refunded or cancelled until the write-off is cancelled.
+
+## Settlement and write-off (rules agreed; the claim link and write-off screens are not built yet)
+
+- Payment is recorded per bill through Outpatient Credit Collection, as for any credit bill. The claim shows the total.
+- Payment Vouchers are not part of claims.
+- A write-off needs two users: one requests it, a different user with the approve privilege approves it. Only an approved write-off reduces the due.
+
+## Privileges
+
+| Privilege | Allows |
+|---|---|
+| `OpdCreditClaimCreate` | Create Claim, Cancel Claim |
+| `OpdCreditClaimSubmit` | Submit |
+| `OpdCreditClaimReject` | Record Rejection |
+| `OpdCreditClaimResubmit` | Resubmit |
+
+## Code
+
+- Entities: `CreditCompanyClaim`, `CreditCompanyClaimItem`; status enum `CreditCompanyClaimStatus` (holds the flow above).
+- Rules and locks: `CreditCompanyClaimService` (`checkBillEligible`, `checkTransition`, `openClaimRefusal`). Business errors throw `CreditCompanyClaimException` (rolls back).
+- Every refund, return and cancel path for a claimable bill calls `openClaimRefusal` before it saves.
+
+Related: [cancellation-vs-return-policy.md](cancellation-vs-return-policy.md), [credit-company-balance-management.md](credit-company-balance-management.md).
