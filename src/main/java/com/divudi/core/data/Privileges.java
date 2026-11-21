@@ -58,6 +58,7 @@ public enum Privileges {
     ChangeProfessionalFee("Change Professional Fee"),
     OpdPackageBillCancel("OPD Package Bill Cancel"),
     OpdEditPatientDetails("OPD Edit Patient Details"),
+    RestrictPatientSearchToOwnRegistrations("Restrict Patient Search To Own Registrations"),
     //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="Inpatient">

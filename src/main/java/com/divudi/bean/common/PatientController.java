@@ -1768,6 +1768,33 @@ public class PatientController implements Serializable, ControllerWithPatient {
         getPatientEncounterController().fillCurrentPatientLists(current);
     }
 
+    /**
+     * True when the logged user holds the privilege that limits patient search to patients
+     * registered by that user or by that user's institution (#25851).
+     */
+    public boolean isPatientSearchRestrictedToOwnRegistrations() {
+        return webUserController.hasPrivilege("RestrictPatientSearchToOwnRegistrations");
+    }
+
+    /**
+     * JPQL fragment (starts with " and ") that limits a patient search to patients registered by the
+     * logged user or by the logged user's institution. Returns an empty string, and adds no
+     * parameters, for users without the restricting privilege. The alias is the patient path, e.g. "p".
+     */
+    private String restrictPatientSearchClause(String patientAlias, Map m) {
+        if (!isPatientSearchRestrictedToOwnRegistrations()) {
+            return "";
+        }
+        WebUser user = getSessionController().getLoggedUser();
+        Institution ins = getSessionController().getInstitution();
+        m.put("rsUser", user);
+        if (ins == null) {
+            return " and " + patientAlias + ".creater=:rsUser ";
+        }
+        m.put("rsInstitution", ins);
+        return " and (" + patientAlias + ".creater=:rsUser or " + patientAlias + ".createdInstitution=:rsInstitution) ";
+    }
+
     public String searchPatient() {
         if (searchBillId != null && !searchBillId.trim().equals("")) {
             searchByBill();
@@ -1969,6 +1996,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
             m.put("insid", searchBillId);
             temId = 0l;
         }
+        j += restrictPatientSearchClause("b.patient", m);
         j += " order by b.patient.person.name";
         searchedPatients = getFacade().findByJpql(j, m);
     }
@@ -1996,6 +2024,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
                 searchedPatients = new ArrayList<>();
             }
         }
+        j += restrictPatientSearchClause("ps.patientInvestigation.billItem.bill.patient", m);
         j += " order by ps.patientInvestigation.billItem.bill.patient.person.name";
         searchedPatients = getFacade().findByJpql(j, m);
     }
@@ -2050,6 +2079,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
             atLeastOneCriteriaIsGiven = true;
         }
 
+        j += restrictPatientSearchClause("p", m);
         j += " order by p.person.name";
 
         if (!atLeastOneCriteriaIsGiven) {
@@ -2079,6 +2109,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
             m.put("name", "%" + searchName.toLowerCase() + "%");
             atLeastOneCriteriaIsGiven = true;
         }
+        j += restrictPatientSearchClause("p", m);
         j += " order by p.person.name";
 
         if (!atLeastOneCriteriaIsGiven) {
@@ -2108,6 +2139,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
             m.put("nic", searchNic);
             atLeastOneCriteriaIsGiven = true;
         }
+        j += restrictPatientSearchClause("p", m);
         j += " order by p.person.name";
 
         if (!atLeastOneCriteriaIsGiven) {
@@ -2138,6 +2170,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
             atLeastOneCriteriaIsGiven = true;
         }
 
+        j += restrictPatientSearchClause("p", m);
         j += " order by p.person.name";
 
         if (!atLeastOneCriteriaIsGiven) {
@@ -2152,6 +2185,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
         String j;
         Map m = new HashMap();
         j = "select p from Patient p where p.retired=false and p.id=:id";
+        j += restrictPatientSearchClause("p", m);
         Long ptId = 0l;
         try {
             ptId = Long.parseLong(searchPatientId);
@@ -2168,6 +2202,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
         Map m = new HashMap();
         j = "select p from Patient p where p.retired=false and p.blacklisted = :status";
         m.put("status", blackListStatus);
+        j += restrictPatientSearchClause("p", m);
         searchedPatients = getFacade().findByJpql(j, m, TemporalType.DATE, 20);
     }
 
@@ -2176,6 +2211,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
         Map m = new HashMap();
         j = "select p from Patient p where p.retired=false and p.specificStatus = :status";
         m.put("status", specificPatientStatus);
+        j += restrictPatientSearchClause("p", m);
         searchedPatients = getFacade().findByJpql(j, m, TemporalType.DATE, 20);
     }
 
@@ -2189,6 +2225,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
         Map m = new HashMap();
         j = "select p from Patient p where p.retired=false and (p.patientPhoneNumber=:pp or p.patientMobileNumber=:pp)";
         m.put("pp", patientPhoneNumber);
+        j += restrictPatientSearchClause("p", m);
         searchedPatients = getFacade().findByJpql(j, m);
     }
 
@@ -2223,6 +2260,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
             j = "select p from Patient p where p.retired=false and (p.patientPhoneNumber=:pp or p.patientMobileNumber=:pp)";
             Long searchedPhoneNumber = CommonFunctions.removeSpecialCharsInPhonenumber(quickSearchPhoneNumber);
             m.put("pp", searchedPhoneNumber);
+            j += restrictPatientSearchClause("p", m);
             quickSearchPatientList = getFacade().findByJpql(j, m);
         } else {
             if (!quickSearchPhoneNumber.trim().isEmpty()) {
@@ -3497,11 +3535,12 @@ public class PatientController implements Serializable, ControllerWithPatient {
             suggestions = new ArrayList<>();
         } else {
             sql = "select p from Patient p where p.retired=false "
-                    + " and (p.person.name) like :q "
+                    + " and ((p.person.name) like :q "
                     + " or (p.code) like :q "
                     + " or (p.person.nic) like :q"
-                    + " or (p.person.mobile) like :q "
-                    + "  order by p.person.name";
+                    + " or (p.person.mobile) like :q) ";
+            sql += restrictPatientSearchClause("p", hm);
+            sql += "  order by p.person.name";
             hm.put("q", "%" + query.toUpperCase() + "%");
             suggestions = getFacade().findByJpql(sql, hm, 20);
         }
@@ -3525,6 +3564,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
                 + " or (p.person.mobile) like :q "
                 + " or (p.person.phone) like :q "
                 + " or (p.phn) like :q) ";
+        sql += restrictPatientSearchClause("p", hm);
         sql += " order by p.person.name";
         hm.put("q", "%" + query.toUpperCase() + "%");
         patientList = getFacade().findByJpql(sql, hm, 20);
@@ -3867,6 +3907,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
         Map m = new HashMap();
         String j = "select p from Patient p where p.retired=false and p.phn=:phn ";
         m.put("phn", phn.trim());
+        j += restrictPatientSearchClause("p", m);
         List<Patient> searchedPatients = getFacade().findByJpql(j, m);
         //System.out.println("searched Patients From PHN = " + searchedPatients.size());
         return searchedPatients;
@@ -3885,6 +3926,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
             Map m = new HashMap();
             j = "select p from Patient p where p.retired=false and (p.patientPhoneNumber=:pp or p.patientMobileNumber=:pp ) ";
             m.put("pp", patientPhoneNumber);
+            j += restrictPatientSearchClause("p", m);
             searchedPatients = getFacade().findByJpql(j, m);
             //System.out.println("searched Patients From Phone Number = " + searchedPatients.size());
             usePHN = false;
