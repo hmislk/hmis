@@ -1,5 +1,5 @@
 {
-  "version": "v2.24.0",
+  "version": "v2.25.0",
   "description": "Create the MAINTENANCEWINDOW table and its two join tables if missing",
   "issue": "#25838 - maintenance banner",
   "author": "Dr M H B Ariyaratne",

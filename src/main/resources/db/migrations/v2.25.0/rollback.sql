@@ -1,8 +1,8 @@
--- Rollback v2.24.0: drop the maintenance window tables
+-- Rollback v2.25.0: drop the maintenance window tables
 -- WARNING: deletes all maintenance windows. Roll back only together with a build that no
 -- longer has the MaintenanceWindow entity, or the banner lookup will fail.
 
-SELECT 'Rollback v2.24.0 - Drop maintenance window tables' AS status;
+SELECT 'Rollback v2.25.0 - Drop maintenance window tables' AS status;
 
 SET @t = (SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES
     WHERE TABLE_SCHEMA = DATABASE() AND UPPER(TABLE_NAME) = 'MAINTENANCEWINDOW_INSTITUTION' LIMIT 1);

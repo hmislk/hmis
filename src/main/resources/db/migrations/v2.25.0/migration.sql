@@ -1,4 +1,4 @@
--- Migration v2.24.0: Maintenance window tables
+-- Migration v2.25.0: Maintenance window tables
 -- Issue: #25838 (maintenance banner)
 --
 -- Creates the tables behind the MaintenanceWindow entity when they do not exist:
@@ -13,7 +13,7 @@
 -- UNIVERSAL: detects the actual table-name case via INFORMATION_SCHEMA so this works on both
 -- case-sensitive (Linux, lower_case_table_names=0) and case-insensitive MySQL.
 
-SELECT 'Migration v2.24.0 - Maintenance window tables' AS status;
+SELECT 'Migration v2.25.0 - Maintenance window tables' AS status;
 
 SET @mw_table = (
     SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES
@@ -77,4 +77,4 @@ PREPARE stmt FROM @sql;
 EXECUTE stmt;
 DEALLOCATE PREPARE stmt;
 
-SELECT 'Migration v2.24.0 complete' AS status;
+SELECT 'Migration v2.25.0 complete' AS status;
