@@ -19,6 +19,7 @@ issues, PR bodies, comments and docs.
 6. **No story.** Say what is true now and what happens next, not how you
    found it.
 7. **Numbers and facts over adjectives.** "3 of 4 buttons" beats "several".
+8. **Business-rule docs are not narrative.** A business rule states the current practice only. Decisions, history, reasons for change and customer communication go in the issue, the PR or `tmp/`, never in the rule doc.
 
 ## Length guide
 
