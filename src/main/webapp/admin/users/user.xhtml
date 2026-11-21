@@ -317,6 +317,15 @@
                                             </div>
                                         </h:panelGroup>
                                     </h:panelGroup>
+                                        <div class="user-form-row">
+                                            <p:outputLabel value="Service account (API only)" for="serviceAccount" class="user-form-label" />
+                                            <div class="user-form-field">
+                                                <p:selectBooleanCheckbox id="serviceAccount"
+                                                                         value="#{webUserController.current.serviceAccount}" />
+                                                <h:outputText class="small text-muted mx-2"
+                                                              value="Cannot sign in to the web application; used by lab and channelling system connections. When 2FA is required for all users, lab and channelling API logins accept only service accounts. Do not tick this for a person." />
+                                            </div>
+                                        </div>
 
                                     <h:panelGroup rendered="#{twoFactorAuthController.twoFactorEnabled}">
                                         <hr class="my-2" />

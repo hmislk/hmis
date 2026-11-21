@@ -255,6 +255,23 @@ public class WebUserController implements Serializable {
         return user.getWebUserPerson().getNameWithTitle();
     }
 
+    /**
+     * Service account, 2FA Required and Allow SMS may be changed (or set on a
+     * new user) only by a user with the user-management privilege. Without it
+     * the flags go back to their stored values (false for a new user) and a
+     * message is shown.
+     */
+    private void refuseProtectedFlagsWithoutPrivilege(boolean wasTwoFactorRequired, boolean wasTwoFactorSmsAllowed, boolean wasServiceAccount) {
+        if ((wasTwoFactorRequired != current.isTwoFactorRequired() || wasTwoFactorSmsAllowed != current.isTwoFactorSmsAllowed()
+                || wasServiceAccount != current.isServiceAccount())
+                && !hasPrivilege(Privileges.AdminManagingUsers.name())) {
+            current.setTwoFactorRequired(wasTwoFactorRequired);
+            current.setTwoFactorSmsAllowed(wasTwoFactorSmsAllowed);
+            current.setServiceAccount(wasServiceAccount);
+            JsfUtil.addErrorMessage("Two-factor settings were not changed. You do not have the privilege to manage users.");
+        }
+    }
+
     public void saveUser() {
         if (current == null) {
             return;
@@ -264,16 +281,12 @@ public class WebUserController implements Serializable {
         boolean activationChanged = saved != null && saved.isActivated() != current.isActivated();
         boolean wasTwoFactorRequired = saved != null && saved.isTwoFactorRequired();
         boolean wasTwoFactorSmsAllowed = saved != null && saved.isTwoFactorSmsAllowed();
+        boolean wasServiceAccount = saved != null && saved.isServiceAccount();
         boolean openSetupWindowAfterSave = false;
         // Manage User is reached only with this privilege, but a form can be posted without the menu; check it here,
-        // before the Person merge below (Person.webUser cascades) can write the submitted flags
-        if (saved != null
-                && (wasTwoFactorRequired != current.isTwoFactorRequired() || wasTwoFactorSmsAllowed != current.isTwoFactorSmsAllowed())
-                && !hasPrivilege(Privileges.AdminManagingUsers.name())) {
-            current.setTwoFactorRequired(wasTwoFactorRequired);
-            current.setTwoFactorSmsAllowed(wasTwoFactorSmsAllowed);
-            JsfUtil.addErrorMessage("Two-factor settings were not changed. You do not have the privilege to manage users.");
-        }
+        // before the Person merge below (Person.webUser cascades) can write the submitted flags. A new user counts
+        // as "was off" for every flag, so creating a user with a flag ticked needs the privilege too.
+        refuseProtectedFlagsWithoutPrivilege(wasTwoFactorRequired, wasTwoFactorSmsAllowed, wasServiceAccount);
         // webUserPerson has no cascade, so Contact fields (email, mobile) must be saved on the Person itself
         Person person = current.getWebUserPerson();
         if (person != null) {
@@ -284,7 +297,24 @@ public class WebUserController implements Serializable {
             }
         }
         if (current.getId() == null || current.getId() == 0) {
+            if (current.isTwoFactorRequired()) {
+                if (!twoFactorAuthController.hasUsableStaffMobile(current)) {
+                    current.setTwoFactorRequired(false);
+                    JsfUtil.addErrorMessage("2FA was not set to Required: the staff record has no valid mobile number. Add it, then tick Required on Manage User.");
+                } else {
+                    // Inserted together with the user
+                    current.setTwoFactorSetupWindowStartedAt(new Date());
+                }
+            }
             getFacade().create(current);
+            if (current.isTwoFactorRequired()) {
+                twoFactorAuthController.logRequiredChange(current, false);
+                twoFactorAuthController.logSetupWindowOpened(current);
+            }
+            if (current.isServiceAccount()) {
+                // New user: was=false, so this writes the audit row for the flag
+                twoFactorAuthController.saveServiceAccountFlag(current, false);
+            }
             JsfUtil.addSuccessMessage("Saved");
         } else {
             // Authenticator enrollment is written only by TwoFactorAuthController; don't let a stale copy overwrite it
@@ -315,6 +345,8 @@ public class WebUserController implements Serializable {
             if (wasTwoFactorSmsAllowed != current.isTwoFactorSmsAllowed()) {
                 twoFactorAuthController.logSmsAllowedChange(current, wasTwoFactorSmsAllowed);
             }
+            // Insert-only on the entity, so edit() does not write it
+            twoFactorAuthController.saveServiceAccountFlag(current, wasServiceAccount);
             JsfUtil.addSuccessMessage("Updated");
         }
     }
@@ -645,6 +677,7 @@ public class WebUserController implements Serializable {
         getCurrent().getWebUserPerson().setCreater(getSessionController().getLoggedUser());
 
         getCurrent().setLoginPage(loginPage);
+        refuseProtectedFlagsWithoutPrivilege(false, false, false);
 
         if (site != null) {
             getCurrent().setSite(site);
@@ -702,8 +735,13 @@ public class WebUserController implements Serializable {
             getCurrent().setTwoFactorSetupWindowStartedAt(new Date());
         }
         getFacade().create(getCurrent());
+        if (getCurrent().isServiceAccount()) {
+            // New user: was=false, so this writes the audit row for the flag
+            twoFactorAuthController.saveServiceAccountFlag(getCurrent(), false);
+        }
         if (getCurrent().isTwoFactorRequired()) {
             twoFactorAuthController.logRequiredChange(getCurrent(), false);
+            twoFactorAuthController.logSetupWindowOpened(getCurrent());
         }
         if (getCurrent().isTwoFactorSmsAllowed()) {
             twoFactorAuthController.logSmsAllowedChange(getCurrent(), false);
