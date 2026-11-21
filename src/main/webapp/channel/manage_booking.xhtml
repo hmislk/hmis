@@ -616,7 +616,8 @@
 
                             <p:commandButton value="Cancel Booking"  class="my-2 ui-button-danger" icon="fas fa-cancel"
                                              disabled="#{channelBillController.billSession.bill.refunded==true
-                                                         or channelBillController.billSession.bill.cancelled==true}"
+                                                         or channelBillController.billSession.bill.cancelled==true
+                                                         or channelBillController.billACancellationBill}"
                                              onclick="PF('confirmationDialog').show();"/>
 
                         </h:panelGroup>

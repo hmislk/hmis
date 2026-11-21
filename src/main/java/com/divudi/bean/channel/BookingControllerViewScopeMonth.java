@@ -1912,6 +1912,9 @@ public class BookingControllerViewScopeMonth implements Serializable, Controller
     }
 
     public void channelBookingCancel() {
+        if (selectedBillSession != null && com.divudi.core.util.CancellationBillCheck.refuse(selectedBillSession.getBill())) {
+            return;
+        }
         if (selectedBillSession.getBill().getBillType() == BillType.ChannelAgent) {
             cancelAgentPaidBill();
             return;
@@ -8267,4 +8270,8 @@ public class BookingControllerViewScopeMonth implements Serializable, Controller
             billItem.setHospitalFee(hosFee);
         }
     }
+    public boolean isSelectedBillACancellationBill() {
+        return selectedBillSession != null && com.divudi.core.util.CancellationBillCheck.isCancellationBill(selectedBillSession.getBill());
+    }
+
 }
