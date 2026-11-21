@@ -1765,40 +1765,54 @@ public class ReportsStock implements Serializable, ControllerWithReportFilters {
 
     public void fillDistributorExpiryStocks() {
 
-        if (department == null || institution == null) {
-            JsfUtil.addErrorMessage("Please select a department and distributor");
+        if (department == null) {
+            JsfUtil.addErrorMessage("Please select a department");
             return;
         }
 
         Map<String, Object> m = new HashMap<>();
-        String sql;
-
-        sql = "select s "
+        // With a supplier selected, a batch is listed when its last GRN supplier
+        // is that supplier (#24461) OR its item is in the supplier's item
+        // allocation list (ItemsDistributors) (#25866). The batch may have come
+        // from opening stock or a stock adjustment, with no matching GRN supplier.
+        StringBuilder jpql = new StringBuilder("select s "
                 + "from Stock s "
+                + "join s.itemBatch ib "
+                + "left join ib.lastPurchaseBillItem lpbi "
+                + "left join lpbi.bill lpb "
                 + "where s.stock > :st "
                 + "and s.department = :dep "
-                + "and s.itemBatch.dateOfExpire between :fd and :td "
-                + "and s.itemBatch.item.id in ("
-                + "    select item.id "
-                + "    from ItemsDistributors id join id.item as item "
-                + "    where id.retired = false "
-                + "    and id.institution = :ins"
-                + ") "
-                + "order by s.itemBatch.dateOfExpire";
+                + "and ib.dateOfExpire between :fd and :td ");
+        if (institution != null) {
+            jpql.append("and (lpb.fromInstitution.id = :insId "
+                    + "or ib.item.id in (select d.item.id from ItemsDistributors d "
+                    + "where d.institution.id = :insId and d.retired = false)) ");
+            m.put("insId", institution.getId());
+        }
+        jpql.append("order by ib.dateOfExpire");
 
         m.put("dep", department);
-        m.put("ins", institution);
-        m.put("fd", getFromDate());
-        m.put("td", getToDate());
+        m.put("fd", CommonFunctions.getStartOfDay(getFromDate()));
+        m.put("td", CommonFunctions.getEndOfDay(getToDate()));
         m.put("st", 0.0);
 
-        stocks = getStockFacade().findByJpql(sql, m);
+        try {
+            // TIMESTAMP with whole-day From/To bounds so a batch expiring on the To date is not dropped.
+            stocks = getStockFacade().findByJpql(jpql.toString(), m, TemporalType.TIMESTAMP);
+        } catch (Exception e) {
+            stocks = new ArrayList<>();
+            stockPurchaseValue = 0.0;
+            stockSaleValue = 0.0;
+            JsfUtil.addErrorMessage("Could not load the expiring stock: " + e.getMessage());
+            return;
+        }
 
         stockPurchaseValue = 0.0;
         stockSaleValue = 0.0;
         for (Stock ts : stocks) {
-            stockPurchaseValue += ts.getItemBatch().getPurcahseRate() * ts.getStock();
-            stockSaleValue += ts.getItemBatch().getPurcahseRate() * ts.getStock();
+            double qty = ts.getStock() == null ? 0.0 : ts.getStock();
+            stockPurchaseValue += ts.getItemBatch().getPurcahseRate() * qty;
+            stockSaleValue += ts.getItemBatch().getRetailsaleRate() * qty;
         }
 
     }
