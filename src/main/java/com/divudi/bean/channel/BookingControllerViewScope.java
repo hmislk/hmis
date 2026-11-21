@@ -3025,8 +3025,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     }
 
     public void channelBookingCancel() {
-        if (selectedBillSession.getBill() instanceof CancelledBill) {
-            JsfUtil.addErrorMessage("This is a cancel Bill. Cant cancel it.");
+        if (selectedBillSession != null && com.divudi.core.util.CancellationBillCheck.refuse(selectedBillSession.getBill())) {
             return;
         }
 
@@ -10346,6 +10345,10 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 
     public void setLstBillFees(List<BillFee> lstBillFees) {
         this.lstBillFees = lstBillFees;
+    }
+
+    public boolean isSelectedBillACancellationBill() {
+        return selectedBillSession != null && com.divudi.core.util.CancellationBillCheck.isCancellationBill(selectedBillSession.getBill());
     }
 
 }

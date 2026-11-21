@@ -2104,6 +2104,9 @@ public class ClinicController implements Serializable, ControllerWithPatientView
     }
 
     public void channelBookingCancel() {
+        if (selectedBillSession != null && com.divudi.core.util.CancellationBillCheck.refuse(selectedBillSession.getBill())) {
+            return;
+        }
         switch (getCancelPaymentMethod()) {
             case Cash:
                 if (configOptionApplicationController.getBooleanValueByKey("Enable Drawer Manegment", true)) {
