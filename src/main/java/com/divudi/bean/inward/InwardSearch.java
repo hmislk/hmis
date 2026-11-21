@@ -169,6 +169,7 @@ public class InwardSearch implements Serializable {
      * Properties
      */
     private Bill bill;
+    private String postedBillId;
     private boolean printPreview = false;
 
     /**
@@ -2071,7 +2072,10 @@ public class InwardSearch implements Serializable {
     }
 
     public void cancelBillService() {
-        final Bill selected = getBill();
+        final Bill selected = billMatchingPostedIdOrRefuse(CancelPageKind.SERVICE);
+        if (selected == null) {
+            return;
+        }
         if (refuseIfCancellationBill(selected)) {
             return;
         }
@@ -2744,12 +2748,16 @@ public class InwardSearch implements Serializable {
     }
 
     public void cancelFinalBillPayment() {
-        if (refuseIfCancellationBill(getBill())) {
+        final Bill selected = billMatchingPostedIdOrRefuse(CancelPageKind.FINAL);
+        if (selected == null) {
             return;
         }
-        if (getBill() != null && getBill().getId() != null && getBill().getId() != 0) {
+        if (refuseIfCancellationBill(selected)) {
+            return;
+        }
+        if (selected.getId() != null && selected.getId() != 0) {
 
-            long dayCount = CommonFunctions.getDayCount(getBill().getCreatedAt(), new Date());
+            long dayCount = CommonFunctions.getDayCount(selected.getCreatedAt(), new Date());
             boolean disableTimeLimit = configOptionApplicationController.getBooleanValueByKey("Disable Time Limit on Final Bill Cancellation", false);
             boolean hasPrivilege = getWebUserController().hasPrivilege("InwardFinalBillCancel");
 
@@ -2759,16 +2767,16 @@ public class InwardSearch implements Serializable {
                 return;
             }
 
-            if (getBill().isCancelled()) {
+            if (selected.isCancelled()) {
                 JsfUtil.addErrorMessage("Already Cancelled. Can not cancel again");
                 return;
             }
-            if (getBill().isRefunded()) {
+            if (selected.isRefunded()) {
                 JsfUtil.addErrorMessage("Already Returned. Can not cancel.");
                 return;
             }
 
-            if (getBill().getPatientEncounter() == null) {
+            if (selected.getPatientEncounter() == null) {
                 JsfUtil.addErrorMessage("You can't cancel Because this Bill has no BHT");
                 return;
             }
@@ -2778,7 +2786,7 @@ public class InwardSearch implements Serializable {
                 return;
             }
 
-            if (hasPaidCreditCompanyBill(getBill())) {
+            if (hasPaidCreditCompanyBill(selected)) {
                 JsfUtil.addErrorMessage("Cannot cancel: a credit company has paid against this final bill");
                 return;
             }
@@ -2788,8 +2796,11 @@ public class InwardSearch implements Serializable {
             // against it or settled a newer version since the page opened. Re-read
             // both under the final bill lock and decide on those copies, so a stale
             // page never cancels twice or writes old admission totals back (#25544).
-            PatientEncounter pageEncounter = getBill().getPatientEncounter();
-            boolean cancelled = getFinalBillLockBean().withFinalBillVersionLock(pageEncounter, this::cancelFinalBillPaymentUnderLock);
+            PatientEncounter pageEncounter = selected.getPatientEncounter();
+            final Long targetBillId = selected.getId();
+            final Long targetEncounterId = pageEncounter.getId();
+            boolean cancelled = getFinalBillLockBean().withFinalBillVersionLock(pageEncounter,
+                    () -> cancelFinalBillPaymentUnderLock(targetBillId, targetEncounterId));
             if (!cancelled) {
                 return;
             }
@@ -2811,13 +2822,13 @@ public class InwardSearch implements Serializable {
      *
      * @return true when the bill was cancelled; false after an error message.
      */
-    private boolean cancelFinalBillPaymentUnderLock() {
-        Bill freshBill = getBillFacade().findWithoutCache(getBill().getId());
+    private boolean cancelFinalBillPaymentUnderLock(Long billId, Long encounterId) {
+        Bill freshBill = getBillFacade().findWithoutCache(billId);
         if (freshBill == null) {
             JsfUtil.addErrorMessage("This final bill could not be found. Please search it again.");
             return false;
         }
-        PatientEncounter freshEncounter = getPatientEncounterFacade().findWithoutCache(getBill().getPatientEncounter().getId());
+        PatientEncounter freshEncounter = encounterId == null ? null : getPatientEncounterFacade().findWithoutCache(encounterId);
         if (freshEncounter != null) {
             freshBill.setPatientEncounter(freshEncounter);
         }
@@ -2905,7 +2916,10 @@ public class InwardSearch implements Serializable {
     }
 
     public void cancelProvisionalBillPayment() {
-        final Bill selected = getBill();
+        final Bill selected = billMatchingPostedIdOrRefuse(CancelPageKind.PROVISIONAL);
+        if (selected == null) {
+            return;
+        }
         if (refuseIfCancellationBill(selected)) {
             return;
         }
@@ -3368,7 +3382,10 @@ public class InwardSearch implements Serializable {
     }
 
     public void cancelProfessional() {
-        final Bill selected = getBill();
+        final Bill selected = billMatchingPostedIdOrRefuse(CancelPageKind.PROFESSIONAL);
+        if (selected == null) {
+            return;
+        }
         if (refuseIfCancellationBill(selected)) {
             return;
         }
@@ -3766,6 +3783,70 @@ public class InwardSearch implements Serializable {
 
     public void setBills(List<Bill> bills) {
         this.bills = bills;
+    }
+
+    /**
+     * Id of the bill this cancel page displayed when it was rendered. The page posts it back
+     * with the Cancel action so a stale tab cannot cancel a bill opened in another tab.
+     */
+    public String getExpectedBillId() {
+        Bill b = getBill();
+        return b.getId() == null ? null : b.getId().toString();
+    }
+
+    public void setExpectedBillId(String expectedBillId) {
+        this.postedBillId = expectedBillId;
+    }
+
+    /**
+     * The kind of bill each inward cancel page cancels.
+     */
+    private enum CancelPageKind {
+        SERVICE, PROFESSIONAL, PROVISIONAL, FINAL
+    }
+
+    /**
+     * Returns the bill this cancel page showed, or null after an error message when the page is
+     * stale: the posted id is not the session's bill (another tab opened a different bill), or
+     * the session's bill is not the kind this page cancels. The cancel action must use the
+     * returned bill and not read {@link #getBill()} again.
+     */
+    private Bill billMatchingPostedIdOrRefuse(CancelPageKind kind) {
+        String posted = postedBillId;
+        postedBillId = null;
+        Bill b = getBill();
+        if (posted == null || b == null || b.getId() == null
+                || !posted.trim().equals(b.getId().toString())
+                || !isBillOfCancelPageKind(b, kind)) {
+            JsfUtil.addErrorMessage("This page is out of date. Open the bill again.");
+            return null;
+        }
+        return b;
+    }
+
+    /**
+     * Whether the bill is one the given cancel page is opened for. Final, provisional and
+     * professional pages are opened only from lists filtered on their bill type. The service
+     * page is opened from many lists (service, theatre, lab, refunds), so it accepts any bill
+     * except the kinds that have their own cancel page.
+     */
+    private boolean isBillOfCancelPageKind(Bill b, CancelPageKind kind) {
+        BillType bt = b.getBillType();
+        boolean professional = bt == BillType.InwardProfessional || bt == BillType.InwardProfessionalEstimates;
+        switch (kind) {
+            case FINAL:
+                return bt == BillType.InwardFinalBill;
+            case PROVISIONAL:
+                return bt == BillType.InwardProvisionalBill;
+            case PROFESSIONAL:
+                return professional;
+            case SERVICE:
+                return bt != BillType.InwardFinalBill
+                        && bt != BillType.InwardProvisionalBill
+                        && !professional;
+            default:
+                return false;
+        }
     }
 
     public Bill getBill() {
