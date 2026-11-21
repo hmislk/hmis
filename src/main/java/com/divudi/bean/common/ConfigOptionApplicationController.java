@@ -2059,21 +2059,37 @@ public class ConfigOptionApplicationController implements Serializable {
      * Whether two-factor login protects this account one by one: the
      * service-login rule used by machine-to-machine logins (lab analysers,
      * middleware, channelling API), which cannot ask for a code. A user who
-     * is linked, flagged as required, or allowed SMS codes is refused. When
-     * the "for all users" switch is on, only accounts flagged as service
-     * accounts are accepted; every other account is refused.
+     * is linked, flagged as required, or allowed SMS codes is refused. The
+     * "for all users" switch is not applied, so unflagged service accounts
+     * keep working, unless the separate key
+     * "Refuse API logins of accounts not ticked as Service account while two-factor login is required for all users"
+     * is on: then, while the "for all users" switch is on, only accounts
+     * ticked as service accounts are accepted.
      */
     public boolean doesTwoFactorApplyToServiceLogin(WebUser u) {
         if (u == null || !isAuthenticatorAppTwoFactorLoginEnabled()) {
             return false;
         }
-        if (isAuthenticatorAppTwoFactorLoginRequiredForAllUsers() && !u.isServiceAccount()) {
+        if (isServiceLoginRestrictedToServiceAccounts() && !u.isServiceAccount()) {
             return true;
         }
         return u.isTwoFactorRequired()
                 || u.isTwoFactorEnrolled()
                 || (isTwoFactorSmsLoginEnabled() && u.isTwoFactorSmsAllowed());
     }
+
+    /**
+     * True when machine logins must come from accounts ticked as Service
+     * account: the "for all users" switch is on and the new refusal key
+     * (default false) is on.
+     */
+    public boolean isServiceLoginRestrictedToServiceAccounts() {
+        return isAuthenticatorAppTwoFactorLoginRequiredForAllUsers()
+                && getBooleanValueByKey(SERVICE_LOGIN_ONLY_SERVICE_ACCOUNTS_KEY, false);
+    }
+
+    public static final String SERVICE_LOGIN_ONLY_SERVICE_ACCOUNTS_KEY
+            = "Refuse API logins of accounts not ticked as Service account while two-factor login is required for all users";
 
     // Set-up window (see TwoFactorAuthController): the system records when each 2FA switch was turned on
     public static final String TWO_FACTOR_MASTER_KEY = "Enable authenticator app two-factor login";

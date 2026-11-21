@@ -593,41 +593,56 @@ public class TwoFactorAuthController implements Serializable {
     }
 
     /**
-     * Adds one wrong code to the user's counter with one UPDATE, locks the
-     * account at the limit with another, and records both in the audit log.
-     * Used for every wrong code (login, SMS set-up proof, mobile check), so
-     * all of them share one counter. Parallel requests cannot each read the
-     * old count and slip extra guesses past the limit.
+     * Adds one wrong code to the user's counter, locks the account when the
+     * counter reaches the limit, and records it in the audit log. Used for
+     * every wrong code (login, SMS set-up proof, mobile check), so all of
+     * them share one counter. Every change is one conditional UPDATE, so the
+     * increment and the lock are never split by a parallel request, and only
+     * the UPDATE that flips the lock writes the "Account Locked" audit row.
      *
      * @return true when the account is locked now
      */
     public boolean countFailedCode(WebUser u, String auditTrigger) {
-        // Two UPDATEs, each independent of the order its SET parts are written in: the first adds the failure
-        // (one atomic increment); the second locks when the stored count has reached the limit. The lock uses
-        // only the WHERE clause, so parallel wrong codes all count and the account locks once.
-        Map<String, Object> p = new HashMap<>();
-        p.put("id", u.getId());
-        webUserFacade.updateByJpql("update WebUser u set u.twoFactorFailedAttempts = u.twoFactorFailedAttempts + 1"
-                + " where u.id=:id", p);
-        Map<String, Object> lock = new HashMap<>();
-        lock.put("id", u.getId());
-        lock.put("max", MAX_FAILED_ATTEMPTS);
-        lock.put("now", new Date());
-        webUserFacade.updateByJpql("update WebUser u set u.twoFactorLocked = true, u.twoFactorLockedAt = :now"
-                + " where u.id=:id and u.twoFactorLocked = false and u.twoFactorFailedAttempts >= :max", lock);
+        boolean flippedLock = false;
+        // The three UPDATEs cover every state of the row: not locked and this failure reaches the limit (lock and
+        // count together); not locked and below the limit (count only); already locked (count only). Each is atomic
+        // on the row, so exactly one matches; a pass that matches none lost a race to a parallel failure, so repeat.
+        for (int pass = 0; pass < 5; pass++) {
+            Map<String, Object> flip = new HashMap<>();
+            flip.put("id", u.getId());
+            flip.put("max", MAX_FAILED_ATTEMPTS);
+            flip.put("now", new Date());
+            if (webUserFacade.updateByJpql("update WebUser u set u.twoFactorLocked = true, u.twoFactorLockedAt = :now,"
+                    + " u.twoFactorFailedAttempts = u.twoFactorFailedAttempts + 1"
+                    + " where u.id=:id and u.twoFactorLocked = false and u.twoFactorFailedAttempts + 1 >= :max", flip) > 0) {
+                flippedLock = true;
+                break;
+            }
+            Map<String, Object> below = new HashMap<>();
+            below.put("id", u.getId());
+            below.put("max", MAX_FAILED_ATTEMPTS);
+            if (webUserFacade.updateByJpql("update WebUser u set u.twoFactorFailedAttempts = u.twoFactorFailedAttempts + 1"
+                    + " where u.id=:id and u.twoFactorLocked = false and u.twoFactorFailedAttempts + 1 < :max", below) > 0) {
+                break;
+            }
+            Map<String, Object> locked = new HashMap<>();
+            locked.put("id", u.getId());
+            if (webUserFacade.updateByJpql("update WebUser u set u.twoFactorFailedAttempts = u.twoFactorFailedAttempts + 1"
+                    + " where u.id=:id and u.twoFactorLocked = true", locked) > 0) {
+                break;
+            }
+        }
         WebUser fresh = freshUser(u.getId());
         int failedAttempts = fresh == null ? MAX_FAILED_ATTEMPTS : fresh.getTwoFactorFailedAttempts();
         u.setTwoFactorFailedAttempts(failedAttempts);
-        boolean wasLocked = u.isTwoFactorLocked();
         Map<String, Object> attempt = new HashMap<>();
         attempt.put("failedAttempts", failedAttempts);
         // The user trying is recorded as the actor
         logTwoFactorEvent(u, u, auditTrigger, null, attempt, "Failed");
-        boolean nowLocked = fresh != null && fresh.isTwoFactorLocked();
-        if (nowLocked && !wasLocked) {
+        if (flippedLock) {
             logTwoFactorEvent(u, u, EVENT_ACCOUNT_LOCKED);
         }
-        return nowLocked;
+        return fresh != null && fresh.isTwoFactorLocked();
     }
 
     /**
