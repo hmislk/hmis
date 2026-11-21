@@ -964,7 +964,7 @@ public class InwardBhtChargeAggregationService implements Serializable {
 
         for (PatientEncounter mother : packageMothers) {
             InpatientPackage pkg = mother.getInpatientPackage();
-            Map<InwardChargeType, Double> allocations = packagePricingService.allocationsFor(pkg);
+            Map<InwardChargeType, Double> allocations = packagePricingService.allocationsFor(pkg, mother);
             double packageTotal = pkg.getTotalPrice() != null ? pkg.getTotalPrice() : 0.0;
             double[] feePart = professionalFeePart.getOrDefault(mother.getId(), new double[2]);
             result.put(mother.getId(), new PackagePricing(InpatientPackagePricing.applyPackage(

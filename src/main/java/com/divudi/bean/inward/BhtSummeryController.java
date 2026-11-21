@@ -1584,7 +1584,7 @@ public class BhtSummeryController implements Serializable {
 
     public void calculateDiscount() {
         Map<InwardChargeType, Double> packageAllocations = getPatientEncounter() != null
-                ? resolvePackageChargeTypeAllocationsIfApplicable(getPatientEncounter().getInpatientPackage()) : new HashMap<>();
+                ? resolvePackageChargeTypeAllocationsIfApplicable(getPatientEncounter().getInpatientPackage(), getPatientEncounter()) : new HashMap<>();
         for (ChargeItemTotal cit : chargeItemTotals) {
             double discountValue = 0;
             switch (cit.getInwardChargeType()) {
@@ -1694,9 +1694,9 @@ public class BhtSummeryController implements Serializable {
      * {@link #applyPackagePricingIfApplicable()} and {@link #calculateDiscount()}
      * so both agree on exactly which charge types the package covers.
      */
-    private Map<InwardChargeType, Double> resolvePackageChargeTypeAllocationsIfApplicable(InpatientPackage inpatientPackage) {
+    private Map<InwardChargeType, Double> resolvePackageChargeTypeAllocationsIfApplicable(InpatientPackage inpatientPackage, PatientEncounter admission) {
         // Shared with the inward charge aggregation service (issue #24744).
-        return inpatientPackagePricingService.allocationsFor(inpatientPackage);
+        return inpatientPackagePricingService.allocationsFor(inpatientPackage, admission);
     }
 
     public double discountSet(ChargeItemTotal cit, double discountPercent) {
@@ -5763,7 +5763,7 @@ public class BhtSummeryController implements Serializable {
             }
             if (getPatientEncounter() != null && getPatientEncounter().getInpatientPackage() != null) {
                 if (packageAllocations == null) {
-                    packageAllocations = resolvePackageChargeTypeAllocationsIfApplicable(getPatientEncounter().getInpatientPackage());
+                    packageAllocations = resolvePackageChargeTypeAllocationsIfApplicable(getPatientEncounter().getInpatientPackage(), getPatientEncounter());
                 }
                 if (packageAllocations.containsKey(type)) {
                     continue;
@@ -6024,7 +6024,7 @@ public class BhtSummeryController implements Serializable {
             return;
         }
 
-        Map<InwardChargeType, Double> perCategoryAllocations = resolvePackageChargeTypeAllocationsIfApplicable(inpatientPackage);
+        Map<InwardChargeType, Double> perCategoryAllocations = resolvePackageChargeTypeAllocationsIfApplicable(inpatientPackage, getPatientEncounter());
 
         Map<InwardChargeType, Double> actualTotalsByType = new HashMap<>();
         for (ChargeItemTotal cit : chargeItemTotals) {
