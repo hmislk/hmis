@@ -65,9 +65,11 @@ import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.TimeZone;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -771,6 +773,9 @@ public class PatientReportController implements Serializable {
         this.staffController = staffController;
     }
 
+    /** Set while a formula is built when it reads a calculated item that has no valid value. */
+    private boolean calculationDependencyBlank;
+
     private double findPtReportItemVal(InvestigationItem ii) {
         if (currentPatientReport == null) {
             JsfUtil.addErrorMessage("No Report to calculate");
@@ -789,6 +794,9 @@ public class PatientReportController implements Serializable {
             if (priv != null) {
                 if (Objects.equals(priv.getInvestigationItem().getId(), ii.getId())) {
                     if (priv.getDoubleValue() == null) {
+                        if (priv.getInvestigationItem().getIxItemType() == InvestigationItemType.Calculation) {
+                            calculationDependencyBlank = true;
+                        }
                         return 0.0;
                     }
                     return priv.getDoubleValue();
@@ -815,6 +823,9 @@ public class PatientReportController implements Serializable {
             if (priv != null) {
                 if (Objects.equals(priv.getInvestigationItem().getName(), nameOfIxItem)) {
                     if (priv.getDoubleValue() == null) {
+                        if (priv.getInvestigationItem().getIxItemType() == InvestigationItemType.Calculation) {
+                            calculationDependencyBlank = true;
+                        }
                         return 0.0;
                     }
                     return priv.getDoubleValue();
@@ -851,19 +862,33 @@ public class PatientReportController implements Serializable {
         }
 
         // Pass 2: evaluate calculated items until no calculated value changes (calculations may use later calculations).
-        int maxPasses = Math.max(1, calculatedCount);
+        // A chain of N calculations needs N passes to settle plus one to confirm nothing changed.
+        Set<PatientReportItemValue> failedCalculations = new LinkedHashSet<>();
+        Set<PatientReportItemValue> changedInLastPass = new LinkedHashSet<>();
+        int maxPasses = Math.max(1, calculatedCount) + 1;
         for (int pass = 0; pass < maxPasses; pass++) {
-            boolean changed = false;
+            changedInLastPass.clear();
             for (PatientReportItemValue priv : values) {
                 if (priv.getInvestigationItem().getIxItemType() == InvestigationItemType.Calculation) {
-                    if (evaluateCalculation(priv)) {
-                        changed = true;
+                    if (evaluateCalculation(priv, failedCalculations)) {
+                        changedInLastPass.add(priv);
                     }
                 }
             }
-            if (!changed) {
+            if (changedInLastPass.isEmpty()) {
                 break;
             }
+        }
+        // Values that still change after the last pass (circular formulas) are not stored as results.
+        for (PatientReportItemValue priv : changedInLastPass) {
+            priv.setDoubleValue(null);
+            priv.setStrValue("");
+            failedCalculations.remove(priv);
+            JsfUtil.addErrorMessage("Calculation did not settle for " + priv.getInvestigationItem().getName());
+        }
+        // Report each failed calculation once, after the final pass.
+        for (PatientReportItemValue priv : failedCalculations) {
+            JsfUtil.addErrorMessage("Calculation failed for " + priv.getInvestigationItem().getName());
         }
 
         // Pass 3: flags, then save each value once.
@@ -920,8 +945,9 @@ public class PatientReportController implements Serializable {
                     // Non-numeric result (e.g. "<0.001", ">100", empty): keep the text as typed, number is 0
                     priv.setDoubleValue(0.0);
                 }
-            } else if (typedNumber != null) {
-                // No format string: keep the text unchanged, but let formulas read the number
+            } else {
+                // No format string: keep the text unchanged; formulas and flags read the number
+                // of the current text, or none when the text is not a plain number (e.g. "<0.001", empty)
                 priv.setDoubleValue(typedNumber);
             }
         } else if (hasFormat && item.getIxItemValueType() == InvestigationItemValueType.Double) {
@@ -935,7 +961,9 @@ public class PatientReportController implements Serializable {
     /**
      * Evaluates one calculated item; returns true when its stored value changed.
      */
-    private boolean evaluateCalculation(PatientReportItemValue priv) {
+    private boolean evaluateCalculation(PatientReportItemValue priv, Set<PatientReportItemValue> failedCalculations) {
+        calculationDependencyBlank = false;
+        failedCalculations.remove(priv);
         Double oldDouble = priv.getDoubleValue();
         String oldStr = priv.getStrValue();
         String sql = "select i "
@@ -1016,6 +1044,13 @@ public class PatientReportController implements Serializable {
             calString = generateModifiedJavascriptFromBaseJavaScript(currentPatientReport, baseJs);
         }
 
+        if (calculationDependencyBlank) {
+            // An input is a calculated item that has no valid value (failed or not yet calculated): leave this blank, not 0
+            priv.setDoubleValue(null);
+            priv.setStrValue("");
+            return oldDouble != null || !Objects.equals(oldStr, "");
+        }
+
         ScriptEngineManager mgr = new ScriptEngineManager();
         ScriptEngine engine = mgr.getEngineByName("JavaScript");
         Object resultObj;
@@ -1041,7 +1076,7 @@ public class PatientReportController implements Serializable {
         }
         if (Double.isNaN(result) || Double.isInfinite(result)) {
             // Never store NaN or Infinity (e.g. division by an input that is still empty)
-            JsfUtil.addErrorMessage("Calculation failed for " + priv.getInvestigationItem().getName());
+            failedCalculations.add(priv);
             priv.setDoubleValue(null);
             priv.setStrValue("");
             return !Objects.equals(oldDouble, null) || !Objects.equals(oldStr, "");
