@@ -1,0 +1,106 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:body>
+        <ui:composition template="/payments/credit_company_pay_index.xhtml">
+            <ui:define name="admin">
+                <h:form id="claimAgeingForm">
+                    <h:outputText value="You do not have privilege to view this report." rendered="#{not creditCompanyClaimReportController.reportsAllowed}"/>
+                    <h:panelGroup rendered="#{creditCompanyClaimReportController.reportsAllowed}">
+                        <p:panel header="Claim Ageing (days since submitted)">
+                            <p:panelGrid columns="2" layout="tabular" styleClass="my-2 w-100">
+                                <p:outputLabel for="company" value="Credit Company"/>
+                                <p:autoComplete id="company" styleClass="w-100" inputStyleClass="form-control"
+                                                value="#{creditCompanyClaimReportController.filterCompany}"
+                                                forceSelection="true"
+                                                completeMethod="#{creditCompanyController.completeCredit}"
+                                                var="ix" itemLabel="#{ix.name}" itemValue="#{ix}"
+                                                placeholder="All companies"/>
+                            </p:panelGrid>
+                            <h:panelGroup layout="block" styleClass="my-2">
+                                <p:commandButton id="btnProcess" value="Process" icon="fas fa-cogs" styleClass="ui-button-warning m-1"
+                                                 title="Run the report as of now" ajax="false"
+                                                 action="#{creditCompanyClaimReportController.searchClaimAgeing}"/>
+                                <p:commandButton value="Excel" icon="fas fa-file-excel" ajax="false" styleClass="ui-button-info m-1"
+                                                 title="Download as Excel">
+                                    <p:dataExporter type="xlsx" target="ageingList" fileName="Claim_Ageing"/>
+                                </p:commandButton>
+                                <h:outputText value="As of " styleClass="ms-2" rendered="#{creditCompanyClaimReportController.ageingAsOf ne null}"/>
+                                <h:outputText value="#{creditCompanyClaimReportController.ageingAsOf}" rendered="#{creditCompanyClaimReportController.ageingAsOf ne null}">
+                                    <f:convertDateTime pattern="yyyy MM dd HH:mm"/>
+                                </h:outputText>
+                            </h:panelGroup>
+                            <p:defaultCommand target="btnProcess"/>
+
+                            <p:dataTable id="ageingList" rowKey="#{r.companyId}" value="#{creditCompanyClaimReportController.ageingRows}" var="r"
+                                         styleClass="p-datatable-sm" emptyMessage="No open submitted claims with an outstanding amount">
+                                <p:column headerText="Credit Company">
+                                    <h:outputText value="#{r.companyName}"/>
+                                    <f:facet name="footer"><h:outputText value="Total"/></f:facet>
+                                </p:column>
+                                <p:column headerText="Claims" styleClass="text-end">
+                                    <h:outputText value="#{r.claimCount}"/>
+                                </p:column>
+                                <p:column headerText="0-30 days" styleClass="text-end">
+                                    <h:outputText value="#{r.days0To30}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                    <f:facet name="footer">
+                                        <h:outputText value="#{creditCompanyClaimReportController.ageTotal0To30}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
+                                    </f:facet>
+                                </p:column>
+                                <p:column headerText="31-60 days" styleClass="text-end">
+                                    <h:outputText value="#{r.days31To60}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                    <f:facet name="footer">
+                                        <h:outputText value="#{creditCompanyClaimReportController.ageTotal31To60}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
+                                    </f:facet>
+                                </p:column>
+                                <p:column headerText="61-90 days" styleClass="text-end">
+                                    <h:outputText value="#{r.days61To90}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                    <f:facet name="footer">
+                                        <h:outputText value="#{creditCompanyClaimReportController.ageTotal61To90}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
+                                    </f:facet>
+                                </p:column>
+                                <p:column headerText="Over 90 days" styleClass="text-end">
+                                    <h:outputText value="#{r.over90}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                    <f:facet name="footer">
+                                        <h:outputText value="#{creditCompanyClaimReportController.ageTotalOver90}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
+                                    </f:facet>
+                                </p:column>
+                                <p:column headerText="Total" styleClass="text-end">
+                                    <h:outputText value="#{r.total}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                    <f:facet name="footer">
+                                        <h:outputText value="#{creditCompanyClaimReportController.ageTotal}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
+                                    </f:facet>
+                                </p:column>
+                            </p:dataTable>
+                        </p:panel>
+                    </h:panelGroup>
+                </h:form>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>
