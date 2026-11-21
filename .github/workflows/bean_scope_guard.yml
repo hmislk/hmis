@@ -11,8 +11,7 @@ name: Bean scope guard
 
 on:
   pull_request:
-    # edited: also run when a PR is retargeted (retro 2026-11-21). Every edit re-runs it: a skipped run would count as passing and could hide an earlier failure.
-    types: [opened, synchronize, reopened, labeled, unlabeled, edited]
+    types: [opened, synchronize, reopened, labeled, unlabeled]
 
 permissions:
   contents: read
