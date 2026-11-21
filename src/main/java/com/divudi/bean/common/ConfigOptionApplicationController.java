@@ -1075,6 +1075,8 @@ public class ConfigOptionApplicationController implements Serializable {
         // must enter a 6-digit authenticator code after their password.
         getBooleanValueByKey("Enable authenticator app two-factor login", false);
         getBooleanValueByKey("Require authenticator app two-factor login for all users", false);
+        // Seeded so an admin can find it; the login check reads it with the read-only getter
+        getBooleanValueByKey(SERVICE_LOGIN_ONLY_SERVICE_ACCOUNTS_KEY, false);
         getShortTextValueByKey("Authenticator app issuer name", "HMIS");
     }
 
@@ -2085,7 +2087,7 @@ public class ConfigOptionApplicationController implements Serializable {
      */
     public boolean isServiceLoginRestrictedToServiceAccounts() {
         return isAuthenticatorAppTwoFactorLoginRequiredForAllUsers()
-                && getBooleanValueByKey(SERVICE_LOGIN_ONLY_SERVICE_ACCOUNTS_KEY, false);
+                && getBooleanValueByKeyReadOnly(SERVICE_LOGIN_ONLY_SERVICE_ACCOUNTS_KEY, false);
     }
 
     public static final String SERVICE_LOGIN_ONLY_SERVICE_ACCOUNTS_KEY

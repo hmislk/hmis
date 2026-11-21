@@ -735,6 +735,10 @@ public class WebUserController implements Serializable {
             getCurrent().setTwoFactorSetupWindowStartedAt(new Date());
         }
         getFacade().create(getCurrent());
+        if (getCurrent().isServiceAccount()) {
+            // New user: was=false, so this writes the audit row for the flag
+            twoFactorAuthController.saveServiceAccountFlag(getCurrent(), false);
+        }
         if (getCurrent().isTwoFactorRequired()) {
             twoFactorAuthController.logRequiredChange(getCurrent(), false);
             twoFactorAuthController.logSetupWindowOpened(getCurrent());
