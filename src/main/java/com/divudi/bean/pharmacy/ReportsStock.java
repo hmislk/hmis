@@ -1792,12 +1792,12 @@ public class ReportsStock implements Serializable, ControllerWithReportFilters {
         jpql.append("order by ib.dateOfExpire");
 
         m.put("dep", department);
-        m.put("fd", getFromDate());
+        m.put("fd", CommonFunctions.getStartOfDay(getFromDate()));
         m.put("td", CommonFunctions.getEndOfDay(getToDate()));
         m.put("st", 0.0);
 
         try {
-            // TIMESTAMP and end-of-day To date so a batch expiring on the To date is not dropped.
+            // TIMESTAMP with whole-day From/To bounds so a batch expiring on the To date is not dropped.
             stocks = getStockFacade().findByJpql(jpql.toString(), m, TemporalType.TIMESTAMP);
         } catch (Exception e) {
             stocks = new ArrayList<>();
