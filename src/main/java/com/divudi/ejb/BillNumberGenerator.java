@@ -2868,6 +2868,12 @@ public class BillNumberGenerator {
         return departmentBillNumberGeneratorYearly(dep, billType);
     }
 
+    /** As above, with a suffix used when the bill type has no stored suffix (#25847). */
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+    public String departmentBillNumberGeneratorYearlyInNewTransaction(Department dep, BillTypeAtomic billType, String suffixWhenBlank) {
+        return departmentBillNumberGeneratorYearly(dep, billType, suffixWhenBlank);
+    }
+
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     public String departmentBillNumberGeneratorInNewTransaction(Department dep, BillType billType, BillClassType billClassType, BillNumberSuffix billNumberSuffix) {
         return departmentBillNumberGenerator(dep, billType, billClassType, billNumberSuffix);

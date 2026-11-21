@@ -4316,7 +4316,9 @@ public class CreditCompanyDueController implements Serializable {
                 billIds.add(bill.getId());
             }
         }
-        return creditCompanyClaimController.createClaimFromBills(billIds, company);
+        String outcome = creditCompanyClaimController.createClaimFromBills(billIds, company);
+        loadClaimNumbers();
+        return outcome;
     }
 
     public String settleSelectedOpdDueBills() {

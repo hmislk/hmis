@@ -41,7 +41,7 @@
                                              action="#{creditCompanyClaimController.searchClaims}"/>
                         </h:panelGroup>
 
-                        <p:dataTable id="claimList" value="#{creditCompanyClaimController.rows}" var="r"
+                        <p:dataTable id="claimList" widgetVar="claimListWidget" rowKey="#{r.id}" value="#{creditCompanyClaimController.rows}" var="r"
                                      styleClass="p-datatable-sm" rowIndexVar="n"
                                      emptyMessage="No claims found">
                             <p:column headerText="Claim No">

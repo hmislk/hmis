@@ -11,6 +11,7 @@ import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.WebUser;
 import com.divudi.core.facade.BillFacade;
 import com.divudi.core.facade.CreditCompanyClaimFacade;
+import com.divudi.core.facade.InstitutionFacade;
 import com.divudi.core.facade.CreditCompanyClaimItemFacade;
 import com.divudi.ejb.BillNumberGenerator;
 import java.util.Collection;
@@ -39,6 +40,8 @@ public class CreditCompanyClaimService {
     private CreditCompanyClaimItemFacade claimItemFacade;
     @EJB
     private BillFacade billFacade;
+    @EJB
+    private InstitutionFacade institutionFacade;
     @EJB
     private BillNumberGenerator billNumberGenerator;
     @EJB
@@ -87,7 +90,13 @@ public class CreditCompanyClaimService {
         if (billIds == null || billIds.isEmpty()) {
             throw new CreditCompanyClaimException("Select at least one bill.");
         }
-        if (company == null) {
+        if (company == null || company.getId() == null) {
+            throw new CreditCompanyClaimException("Select the credit company.");
+        }
+        // Must be the first database call: serialises claim creation per company,
+        // so two overlapping requests cannot put one bill in two open claims.
+        // A read before the lock would fix the snapshot and miss the other request's rows.
+        if (institutionFacade.findWithLock(company.getId()) == null) {
             throw new CreditCompanyClaimException("Select the credit company.");
         }
         if (department == null || department.getInstitution() == null) {
@@ -126,7 +135,7 @@ public class CreditCompanyClaimService {
         claim.setClaimedTotal(total);
         claim.setCreater(user);
         claim.setCreatedAt(now);
-        claim.setClaimNo(billNumberGenerator.departmentBillNumberGeneratorYearly(
+        claim.setClaimNo(billNumberGenerator.departmentBillNumberGeneratorYearlyInNewTransaction(
                 department, BillTypeAtomic.OPD_CREDIT_COMPANY_CLAIM, "CLM"));
         claimFacade.create(claim);
 
@@ -191,7 +200,7 @@ public class CreditCompanyClaimService {
         if (claim == null || claim.getId() == null) {
             throw new CreditCompanyClaimException("Claim not found.");
         }
-        CreditCompanyClaim c = claimFacade.find(claim.getId());
+        CreditCompanyClaim c = claimFacade.findWithLock(claim.getId());
         if (c == null || c.isRetired()) {
             throw new CreditCompanyClaimException("Claim not found.");
         }

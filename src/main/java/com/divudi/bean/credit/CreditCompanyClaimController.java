@@ -65,9 +65,7 @@ public class CreditCompanyClaimController implements Serializable {
         return webUserController.hasPrivilege("OpdCreditClaimCreate")
                 || webUserController.hasPrivilege("OpdCreditClaimSubmit")
                 || webUserController.hasPrivilege("OpdCreditClaimReject")
-                || webUserController.hasPrivilege("OpdCreditClaimResubmit")
-                || webUserController.hasPrivilege("OpdCreditClaimSettle")
-                || webUserController.hasPrivilege("OpdCreditClaimReports");
+                || webUserController.hasPrivilege("OpdCreditClaimResubmit");
     }
 
     private boolean deny(String privilege) {
@@ -87,12 +85,13 @@ public class CreditCompanyClaimController implements Serializable {
         Map<String, Object> m = new HashMap<>();
         m.put("ids", billIds);
         m.put("open", java.util.Arrays.asList(CreditCompanyClaimStatus.openStatuses()));
-        List<CreditCompanyClaimItem> found = claimItemFacade.findByJpql(
-                "select ci from CreditCompanyClaimItem ci where ci.retired=false and ci.claim.retired=false"
-                + " and ci.claim.status in :open and ci.bill.id in :ids", m);
+        List<?> found = claimItemFacade.findLightsByJpql(
+                "select ci.bill.id, ci.claim.claimNo from CreditCompanyClaimItem ci where ci.retired=false"
+                + " and ci.claim.retired=false and ci.claim.status in :open and ci.bill.id in :ids", m);
         if (found != null) {
-            for (CreditCompanyClaimItem ci : found) {
-                out.put(ci.getBill().getId(), ci.getClaim().getClaimNo());
+            for (Object row : found) {
+                Object[] r = (Object[]) row;
+                out.put((Long) r[0], (String) r[1]);
             }
         }
         return out;
@@ -128,6 +127,11 @@ public class CreditCompanyClaimController implements Serializable {
     }
 
     public void searchClaims() {
+        if (!hasAnyClaimPrivilege()) {
+            rows = new ArrayList<>();
+            JsfUtil.addErrorMessage("You do not have the privilege for this page.");
+            return;
+        }
         StringBuilder jpql = new StringBuilder("select new com.divudi.core.data.dto.CreditCompanyClaimRowDto("
                 + "c.id, c.claimNo, c.creditCompany.name, c.status, c.claimedTotal, c.createdAt, c.submittedAt,"
                 + " c.companyReference, c.resubmitCount) from CreditCompanyClaim c"
@@ -158,6 +162,16 @@ public class CreditCompanyClaimController implements Serializable {
             return null;
         }
         return openClaim(c);
+    }
+
+    /** Back to the list from the claim page, refreshed so it shows the new status. */
+    public String backToClaims() {
+        if (!hasAnyClaimPrivilege()) {
+            JsfUtil.addErrorMessage("You do not have the privilege for this page.");
+            return null;
+        }
+        searchClaims();
+        return "/credit/credit_company_claims?faces-redirect=true";
     }
 
     private String openClaim(CreditCompanyClaim c) {

@@ -76,7 +76,7 @@
                             </h:panelGroup>
                         </h:panelGroup>
 
-                        <p:dataTable id="items" value="#{creditCompanyClaimController.claimItems}" var="i"
+                        <p:dataTable id="items" widgetVar="claimItemsWidget" rowKey="#{i.id}" value="#{creditCompanyClaimController.claimItems}" var="i"
                                      styleClass="p-datatable-sm" emptyMessage="No bills">
                             <f:facet name="header">
                                 <h:outputText value="Bills in this claim"/>
@@ -112,7 +112,7 @@
                         <h:panelGroup layout="block" styleClass="my-2">
                             <p:commandButton value="Back to Claims" icon="fas fa-arrow-left"
                                              styleClass="ui-button-info ui-button-outlined" ajax="false" immediate="true"
-                                             action="/credit/credit_company_claims?faces-redirect=true"/>
+                                             action="#{creditCompanyClaimController.backToClaims}"/>
                         </h:panelGroup>
                     </p:panel>
                 </h:form>
