@@ -448,6 +448,9 @@ public class DealorPaymentBillSearch implements Serializable {
     SupplierPaymentController pharmacyDealorBill;
 
     public void cancelBill() {
+        if (com.divudi.core.util.CancellationBillCheck.refuse(bill)) {
+            return;
+        }
         if (bill != null && bill.getId() != null && bill.getId() != 0) {
             if (errorCheck()) {
                 return;
@@ -895,4 +898,9 @@ public class DealorPaymentBillSearch implements Serializable {
     public void setNetTotal(double netTotal) {
         this.netTotal = netTotal;
     }
+
+    public boolean isBillACancellationBill() {
+        return com.divudi.core.util.CancellationBillCheck.isCancellationBill(bill);
+    }
+
 }

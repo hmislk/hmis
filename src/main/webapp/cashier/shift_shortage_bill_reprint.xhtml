@@ -89,7 +89,8 @@
                                     styleClass="ui-button-danger"
                                     ajax="false"
                                     onclick="return confirm('Are you sure you want to cancel this shortage bill? This will reverse the drawer deduction.');"
-                                    action="#{financialTransactionController.cancelShiftShortageBill()}"/>
+                                    action="#{financialTransactionController.cancelShiftShortageBill()}"
+                                disabled="#{financialTransactionController.selectedBillACancellationBill}"/>
                             </div>
                         </h:panelGroup>
 

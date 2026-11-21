@@ -302,14 +302,14 @@
                             <p:commandButton ajax="false" value="Cancel" 
                                              rendered="#{channelBillController.billSession.bill.billType.parent eq 'ChannelCashFlow'}"
                                             action="#{channelBillController.cancelCashFlowBill}"
-                                             disabled="#{channelBillController.billSession.bill.refunded==true
-                                                         or channelBillController.billSession.bill.cancelled==true}" 
+                                             disabled="#{(channelBillController.billSession.bill.refunded==true
+                                                         or channelBillController.billSession.bill.cancelled==true) or channelBillController.billACancellationBill}" 
                                              />
                             <p:commandButton ajax="false" value="Cancel" 
                                              rendered="#{channelBillController.billSession.bill.billType.parent eq 'ChannelCreditFlow'}"
                                             action="#{channelBillController.cancelCreditPaidBill}"
-                                             disabled="#{channelBillController.billSession.bill.refunded==true
-                                                         or channelBillController.billSession.bill.cancelled==true}" 
+                                             disabled="#{(channelBillController.billSession.bill.refunded==true
+                                                         or channelBillController.billSession.bill.cancelled==true) or channelBillController.billACancellationBill}" 
                                              />
                         </p:tab>
 
