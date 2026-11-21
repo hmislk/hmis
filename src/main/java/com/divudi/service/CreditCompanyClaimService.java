@@ -155,7 +155,7 @@ public class CreditCompanyClaimService {
         claim.setClaimedTotal(total);
         claim.setCreater(user);
         claim.setCreatedAt(now);
-        claim.setClaimNo(billNumberGenerator.departmentBillNumberGeneratorYearlyInNewTransaction(
+        claim.setClaimNo(billNumberGenerator.departmentClaimNumberGeneratorYearlyInNewTransaction(
                 department, BillTypeAtomic.OPD_CREDIT_COMPANY_CLAIM, "CLM"));
         claimFacade.create(claim);
 
