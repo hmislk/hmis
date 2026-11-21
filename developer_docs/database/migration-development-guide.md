@@ -153,6 +153,20 @@ private int compareVersions(String version1, String version2) {
 - **preRequisites**: Prerequisites before execution
 - **migrationSteps**: Detailed breakdown of migration actions
 
+## New tables and columns
+
+A new `@Entity` class, a new table, or a new column that the code reads at startup ships with its migration in the same PR. Without it, the deployed code fails as soon as it touches the missing table.
+
+Check the version is free before you pick it:
+```bash
+git fetch origin
+git ls-tree --name-only origin/development src/main/resources/db/migrations/ | sort -V | tail -3
+gh pr list --state open --search "migration v2."
+```
+Also open any PR the search returns and look at its migration folder; if it uses your version, take the next one.
+
+"Fix Missing Fields" is not a substitute for a new table on production. It only adds missing columns, so the table needs its own migration.
+
 ## Development Workflow
 
 ### 1. Feature Branch Creation

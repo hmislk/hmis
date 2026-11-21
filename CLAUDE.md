@@ -31,6 +31,7 @@
 - **🚨 Business errors from a `@Stateless` service use an `@ApplicationException(rollback = true)` exception.** [+](developer_docs/rules/code.md)
 - **🚨 Touched page = upgraded page.** If a change edits an `.xhtml`, bring that page to the UI guidelines (three-zone action bar, compact tables, standard buttons) in its own commit, with no behaviour or id changes; not on hotfix branches unless asked. [+](.claude/skills/ui-guidelines/SKILL.md#touched-page--upgraded-page)
 - **🚨 New report buttons on a Favorites-enabled index page go in both the category tab and the Favorites tab.** [+](developer_docs/feature/report-favorites.md)
+- **🚨 A new `@Entity` or table, or a new column the code reads at startup, ships with its migration in the same PR,** under a version no other open PR uses. [+](developer_docs/database/migration-development-guide.md)
 - **🚨 Never change the meaning of an existing config key;** create a new key. [+](developer_docs/configuration/application-options.md)
 - **🚨 Never change a bean's scope** without the lead developer's OK. [+](developer_docs/jsf/bean-scope-policy.md)
 - **🚨 Never gate behavior on a hospital's name;** use a `ConfigOption`. [+](developer_docs/configuration/institution-specific-behavior.md)
