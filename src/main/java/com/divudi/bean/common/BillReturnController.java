@@ -58,6 +58,9 @@ import javax.inject.Inject;
 @SessionScoped
 public class BillReturnController implements Serializable, ControllerWithMultiplePayments {
 
+    @javax.ejb.EJB
+    private com.divudi.service.CreditCompanyClaimService creditCompanyClaimService;
+
     private static final Logger logger = Logger.getLogger(BillReturnController.class.getName());
 
     // <editor-fold defaultstate="collapsed" desc="EJBs">
@@ -618,6 +621,12 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
 
         if (refundComment == null || refundComment.trim().isEmpty()) {
             JsfUtil.addErrorMessage("Enter Refund Comment");
+            returningStarted.set(false);
+            return null;
+        }
+        String openClaimMessage = creditCompanyClaimService.openClaimRefusal(originalBillToReturn);
+        if (openClaimMessage != null) {
+            JsfUtil.addErrorMessage(openClaimMessage);
             returningStarted.set(false);
             return null;
         }

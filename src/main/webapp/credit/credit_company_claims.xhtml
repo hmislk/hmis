@@ -1,0 +1,91 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:body>
+        <ui:composition template="/payments/credit_company_pay_index.xhtml">
+            <ui:define name="admin">
+                <h:form id="claimsForm">
+                    <h:outputText value="You do not have privilege to view claims." rendered="#{not creditCompanyClaimController.hasAnyClaimPrivilege()}"/>
+                    <h:panelGroup rendered="#{creditCompanyClaimController.hasAnyClaimPrivilege()}">
+                    <p:panel header="Credit Company Claims">
+                        <p:panelGrid columns="4" layout="tabular" styleClass="my-2 w-100">
+                            <p:outputLabel for="fromDate" value="From Date"/>
+                            <p:calendar id="fromDate" styleClass="w-100" inputStyleClass="w-100"
+                                        value="#{creditCompanyClaimController.fromDate}"
+                                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                            <p:outputLabel for="toDate" value="To Date"/>
+                            <p:calendar id="toDate" styleClass="w-100" inputStyleClass="w-100"
+                                        value="#{creditCompanyClaimController.toDate}"
+                                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                            <p:outputLabel for="company" value="Credit Company"/>
+                            <p:autoComplete id="company" styleClass="w-100" inputStyleClass="form-control"
+                                            value="#{creditCompanyClaimController.filterCompany}"
+                                            forceSelection="true"
+                                            completeMethod="#{creditCompanyController.completeCredit}"
+                                            var="ix" itemLabel="#{ix.name}" itemValue="#{ix}"
+                                            placeholder="All companies"/>
+                            <p:outputLabel for="status" value="Status"/>
+                            <p:selectOneMenu id="status" styleClass="w-100"
+                                             value="#{creditCompanyClaimController.filterStatus}">
+                                <f:selectItem itemLabel="All statuses" itemValue="#{null}" noSelectionOption="true"/>
+                                <f:selectItems value="#{creditCompanyClaimController.statuses}" var="s"
+                                               itemLabel="#{s.label}" itemValue="#{s}"/>
+                            </p:selectOneMenu>
+                        </p:panelGrid>
+                        <h:panelGroup layout="block" styleClass="my-2">
+                            <p:commandButton value="Process" icon="fas fa-cogs" styleClass="ui-button-warning"
+                                             title="Search claims" ajax="false"
+                                             action="#{creditCompanyClaimController.searchClaims}"/>
+                        </h:panelGroup>
+
+                        <p:dataTable id="claimList" widgetVar="claimListWidget" rowKey="#{r.id}" value="#{creditCompanyClaimController.rows}" var="r"
+                                     styleClass="p-datatable-sm" rowIndexVar="n"
+                                     emptyMessage="No claims found">
+                            <p:column headerText="Claim No">
+                                <h:outputText value="#{r.claimNo}" style="user-select:all;"/>
+                            </p:column>
+                            <p:column headerText="Credit Company">
+                                <h:outputText value="#{r.companyName}"/>
+                            </p:column>
+                            <p:column headerText="Company Reference">
+                                <h:outputText value="#{r.companyReference}"/>
+                            </p:column>
+                            <p:column headerText="Status">
+                                <h:outputText value="#{r.status.label}"/>
+                            </p:column>
+                            <p:column headerText="Created">
+                                <h:outputText value="#{r.createdAt}">
+                                    <f:convertDateTime pattern="yyyy MM dd"/>
+                                </h:outputText>
+                            </p:column>
+                            <p:column headerText="Submitted">
+                                <h:outputText value="#{r.submittedAt}">
+                                    <f:convertDateTime pattern="yyyy MM dd"/>
+                                </h:outputText>
+                            </p:column>
+                            <p:column headerText="Resubmits" styleClass="text-end">
+                                <h:outputText value="#{r.resubmitCount}"/>
+                            </p:column>
+                            <p:column headerText="Claimed" styleClass="text-end">
+                                <h:outputText value="#{r.claimedTotal}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputText>
+                            </p:column>
+                            <p:column headerText="Open" style="width:4rem">
+                                <p:commandButton icon="fas fa-eye" styleClass="ui-button-info ui-button-outlined ui-button-sm"
+                                                 title="Open claim #{r.claimNo}" ajax="false"
+                                                 action="#{creditCompanyClaimController.viewClaim(r.id)}"/>
+                            </p:column>
+                        </p:dataTable>
+                    </p:panel>
+                    </h:panelGroup>
+                </h:form>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

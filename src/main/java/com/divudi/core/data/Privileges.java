@@ -1291,6 +1291,12 @@ public enum Privileges {
     ReportsPatientLedger("Reports Page - 2. Patient Ledger"),
     ReportsSpecialityWiseDemograhicData("Reports Page - 3. Speciality Wise Demographic Data"),
     //</editor-fold>
+    //<editor-fold defaultstate="collapsed" desc="OPD Credit Company Claims (#25847)">
+    OpdCreditClaimCreate("OPD Credit Claim - Create"),
+    OpdCreditClaimSubmit("OPD Credit Claim - Submit"),
+    OpdCreditClaimReject("OPD Credit Claim - Record Rejection"),
+    OpdCreditClaimResubmit("OPD Credit Claim - Resubmit"),
+    //</editor-fold>
     ;
 
     private final String label;

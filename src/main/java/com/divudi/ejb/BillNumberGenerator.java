@@ -2868,6 +2868,47 @@ public class BillNumberGenerator {
         return departmentBillNumberGeneratorYearly(dep, billType);
     }
 
+    /** As above, with a suffix used when the bill type has no stored suffix (#25847). */
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+    public String departmentBillNumberGeneratorYearlyInNewTransaction(Department dep, BillTypeAtomic billType, String suffixWhenBlank) {
+        return departmentBillNumberGeneratorYearly(dep, billType, suffixWhenBlank);
+    }
+
+    /**
+     * Number for a credit company claim (#25847). Always its own counter per
+     * institution, department, year and bill type, whatever the "Bill Number
+     * Generation Strategy" options say, so claims never use up bill serials.
+     * Format and suffix rule are as in departmentBillNumberGeneratorYearly.
+     */
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+    public String departmentClaimNumberGeneratorYearlyInNewTransaction(Department dep, BillTypeAtomic billType, String suffixWhenBlank) {
+        if (dep == null || dep.getInstitution() == null) {
+            return "";
+        }
+        String billSuffix = configOptionApplicationController.getLongTextValueByKey("Bill Number Suffix for " + billType, "");
+        if (billSuffix == null || billSuffix.trim().isEmpty()) {
+            billSuffix = suffixWhenBlank;
+        }
+        BillNumber billNumber = fetchLastBillNumberForYear(dep.getInstitution(), dep, billType);
+        Long dd = billNumber.getLastBillNumber() + 1;
+        billNumber.setLastBillNumber(dd);
+        billNumberFacade.edit(billNumber);
+
+        StringBuilder result = new StringBuilder();
+        if (configOptionApplicationController.getBooleanValueByKey("Add the Institution Code to the Bill Number Generator", true)) {
+            result.append(dep.getInstitution().getInstitutionCode());
+        }
+        result.append(dep.getDepartmentCode());
+        result.append(getBillNumberDelimiter());
+        result.append(billSuffix);
+        int year = (billNumber.getBillYear() != null ? billNumber.getBillYear() : Calendar.getInstance().get(Calendar.YEAR)) % 100;
+        result.append(getBillNumberDelimiter());
+        result.append(String.format("%02d", year));
+        result.append(getBillNumberDelimiter());
+        result.append(formatSerialNumber(dd));
+        return result.toString();
+    }
+
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     public String departmentBillNumberGeneratorInNewTransaction(Department dep, BillType billType, BillClassType billClassType, BillNumberSuffix billNumberSuffix) {
         return departmentBillNumberGenerator(dep, billType, billClassType, billNumberSuffix);
