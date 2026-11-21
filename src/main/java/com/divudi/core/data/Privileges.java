@@ -1290,6 +1290,7 @@ public enum Privileges {
     ReportsPatientJourney("Reports Page - 1. Patient Journey"),
     ReportsPatientLedger("Reports Page - 2. Patient Ledger"),
     ReportsSpecialityWiseDemograhicData("Reports Page - 3. Speciality Wise Demographic Data"),
+    ReportsVisitHistory("Reports Page - 4. Visit History"),
     //</editor-fold>
     //<editor-fold defaultstate="collapsed" desc="OPD Credit Company Claims (#25847)">
     OpdCreditClaimCreate("OPD Credit Claim - Create"),
@@ -2204,6 +2205,7 @@ public enum Privileges {
             case ReportsPatientJourney:
             case ReportsPatientLedger:
             case ReportsSpecialityWiseDemograhicData:
+            case ReportsVisitHistory:
                 return "Reports";
 
             default:

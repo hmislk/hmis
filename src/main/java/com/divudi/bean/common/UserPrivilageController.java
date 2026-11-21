@@ -1524,6 +1524,7 @@ public class UserPrivilageController implements Serializable {
         new DefaultTreeNode(new PrivilegeHolder(Privileges.ReportsPatientJourney, "1. Patient Journey"), reportsPageStatisticsReportsNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.ReportsPatientLedger, "2. Patient Ledger"), reportsPageStatisticsReportsNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.ReportsSpecialityWiseDemograhicData, "3. Speciality Wise Demographic Data"), reportsPageStatisticsReportsNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.ReportsVisitHistory, "4. Visit History"), reportsPageStatisticsReportsNode);
         TreeNode reportsPageSummaryNode = new DefaultTreeNode(new PrivilegeHolder(null, "Summary"), reportsPageReportsNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.ReportsHeadCountReport, "1. Head Count"), reportsPageSummaryNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.ReportsEmployeeWorkedDayReport, "2. Employee Worked Day Report"), reportsPageSummaryNode);

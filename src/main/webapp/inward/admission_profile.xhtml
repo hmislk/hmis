@@ -43,6 +43,16 @@
                                         icon="fa fa-arrow-left">
                                     </p:commandButton>
                                 </h:panelGroup>
+                                <h:panelGroup rendered="#{webUserController.hasPrivilege('ReportsVisitHistory')}">
+                                    <p:commandButton
+                                        value="Visit History"
+                                        action="#{visitHistoryController.navigateToVisitHistoryForPatient(admissionController.current.patient)}"
+                                        ajax="false"
+                                        class="ui-button-info"
+                                        icon="fa fa-history"
+                                        title="All bills and admissions of this patient">
+                                    </p:commandButton>
+                                </h:panelGroup>
                             </div>
                         </div>
                     </div>

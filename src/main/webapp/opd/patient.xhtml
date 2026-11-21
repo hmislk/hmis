@@ -72,6 +72,15 @@
                                             styleClass="ui-button-info"
                                             title="Inpatient Dashboard">
                                         </p:commandButton>
+                                        <p:commandButton
+                                            icon="pi pi-history"
+                                            ajax="false"
+                                            value="Visit History"
+                                            rendered="#{webUserController.hasPrivilege('ReportsVisitHistory')}"
+                                            action="#{visitHistoryController.navigateToVisitHistoryForPatient(patientController.current)}"
+                                            styleClass="ui-button-info ui-button-outlined"
+                                            title="All bills and admissions of this patient">
+                                        </p:commandButton>
                                     </div>
                                 </div>
                             </f:facet>
