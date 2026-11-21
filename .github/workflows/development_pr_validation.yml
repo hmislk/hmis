@@ -2,7 +2,10 @@ name: PR Validator
 
 on:
   pull_request:
-    types: [ opened, synchronize, reopened ]
+    # edited: a PR retargeted onto development must run these checks too
+    # (retro 2026-11-21: two retargeted PRs never ran them). Every edit re-runs them:
+    # a skipped run would count as passing and could hide an earlier failure.
+    types: [ opened, synchronize, reopened, edited ]
     branches:
       - development
       - '*-prod'
