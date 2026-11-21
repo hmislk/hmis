@@ -232,6 +232,8 @@ public class BhtSummeryController implements Serializable {
     private Bill surgeryBill;
     List<PatientItem> patientItems;
     private List<ChargeItemTotal> chargeItemTotals;
+    /** The package allocation that produced chargeItemTotals; VAT and discount read this, not a fresh lookup. */
+    private Map<InwardChargeType, Double> packageAllocationsOfRows;
     List<PatientRoom> patientRooms;
     private PatientRoom pendingOverlapRoom;
     /** Fallback when no shortDateTimeFormat preference is resolvable. */
@@ -1583,7 +1585,8 @@ public class BhtSummeryController implements Serializable {
     }
 
     public void calculateDiscount() {
-        Map<InwardChargeType, Double> packageAllocations = getPatientEncounter() != null
+        Map<InwardChargeType, Double> packageAllocations = packageAllocationsOfRows != null ? packageAllocationsOfRows
+                : getPatientEncounter() != null
                 ? resolvePackageChargeTypeAllocationsIfApplicable(getPatientEncounter().getInpatientPackage(), getPatientEncounter()) : new HashMap<>();
         for (ChargeItemTotal cit : chargeItemTotals) {
             double discountValue = 0;
@@ -5055,6 +5058,7 @@ public class BhtSummeryController implements Serializable {
     public void makeNull() {
         changed = false;
         chargeItemTotals = null;
+        packageAllocationsOfRows = null;
         billLevelDiscount = 0;
         discountComment = null;
         itemDiscountTotal = 0;
@@ -5763,7 +5767,8 @@ public class BhtSummeryController implements Serializable {
             }
             if (getPatientEncounter() != null && getPatientEncounter().getInpatientPackage() != null) {
                 if (packageAllocations == null) {
-                    packageAllocations = resolvePackageChargeTypeAllocationsIfApplicable(getPatientEncounter().getInpatientPackage(), getPatientEncounter());
+                    packageAllocations = packageAllocationsOfRows != null ? packageAllocationsOfRows
+                            : resolvePackageChargeTypeAllocationsIfApplicable(getPatientEncounter().getInpatientPackage(), getPatientEncounter());
                 }
                 if (packageAllocations.containsKey(type)) {
                     continue;
@@ -5973,6 +5978,7 @@ public class BhtSummeryController implements Serializable {
             }
         }
         chargeItemTotals = new ArrayList<>();
+        packageAllocationsOfRows = null;
 
         for (InwardChargeType i : enumController.getInwardChargeTypesForSetting()) {
             ChargeItemTotal cit = new ChargeItemTotal();
@@ -6025,6 +6031,7 @@ public class BhtSummeryController implements Serializable {
         }
 
         Map<InwardChargeType, Double> perCategoryAllocations = resolvePackageChargeTypeAllocationsIfApplicable(inpatientPackage, getPatientEncounter());
+        packageAllocationsOfRows = perCategoryAllocations;
 
         Map<InwardChargeType, Double> actualTotalsByType = new HashMap<>();
         for (ChargeItemTotal cit : chargeItemTotals) {
