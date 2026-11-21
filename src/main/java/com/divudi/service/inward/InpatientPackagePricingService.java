@@ -62,9 +62,9 @@ public class InpatientPackagePricingService {
      * Each active component's fixed price, keyed by the InwardChargeType it
      * resolves to: the component's Item's own inwardChargeType for
      * SERVICE/TIMED_ITEM/OUTSIDE_CHARGE/PHARMACY_ITEM. For PROFESSIONAL_FEE_ROLE
-     * it is the category of the admission's own package fee (BillFee with that
-     * sourcePackageItem) once a staff member is assigned; until then, the
-     * default category with no staff (the speciality's configured default, else
+     * it is the row the admission's own package fee (BillFee with that
+     * sourcePackageItem) is billed under; with no such fee yet, the default
+     * category with no staff (the speciality's configured default, else
      * Professional Fee).
      */
     private Map<InwardChargeType, Double> componentAllocations(InpatientPackage inpatientPackage, PatientEncounter admission) {
@@ -105,9 +105,11 @@ public class InpatientPackagePricingService {
 
     /**
      * Pure allocation step. A professional fee role with package fees on the
-     * admission is split per fee: an assigned fee counts its fee value under its
-     * own category, an unassigned one under the default category. A role with
-     * no fee yet counts its fixed price under the default category.
+     * admission is split per fee: each fee counts its fee value under the row
+     * it is billed under (its stored category, Professional Fee when none,
+     * folded by rowTypeFor), assigned or not, so fees saved before the default
+     * changed still match their bill row. A role with no fee yet counts its
+     * fixed price under the default category.
      */
     Map<InwardChargeType, Double> allocate(List<InpatientPackageItem> components, List<BillFee> fees) {
         Map<InwardChargeType, Double> result = new HashMap<>();
@@ -124,9 +126,8 @@ public class InpatientPackagePricingService {
                         continue;
                     }
                     hasFee = true;
-                    InwardChargeType type = fee.getStaff() != null
-                            ? professionalFeeClassificationService.rowTypeFor(professionalFeeClassificationService.chargeTypeOf(fee))
-                            : unassigned;
+                    InwardChargeType type = professionalFeeClassificationService
+                            .rowTypeFor(professionalFeeClassificationService.chargeTypeOf(fee));
                     result.merge(type, fee.getFeeValue(), Double::sum);
                 }
                 if (!hasFee && component.getFixedPrice() != null) {

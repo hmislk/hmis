@@ -126,4 +126,23 @@ class InpatientPackagePricingServiceAllocationTest {
         List<BillFee> fees = Collections.singletonList(fee(c, new Staff(), InwardChargeType.DoctorAndNurses));
         assertEquals(1000.0, service.allocate(Collections.singletonList(c), fees).get(InwardChargeType.DoctorAndNurses));
     }
+
+    @Test
+    void unassignedFeeSavedAsTechnician_coversTechnicianRow() {
+        InpatientPackageItem c = component(null);
+        List<BillFee> fees = Collections.singletonList(
+                fee(c, null, InwardChargeType.TechnicianAndParamedicalCharge));
+        Map<InwardChargeType, Double> r = service.allocate(Collections.singletonList(c), fees);
+        assertEquals(1000.0, r.get(InwardChargeType.TechnicianAndParamedicalCharge));
+        assertEquals(1, r.size());
+    }
+
+    @Test
+    void unassignedFeeWithNoCategory_coversProfessionalRow() {
+        InpatientPackageItem c = component(null);
+        List<BillFee> fees = Collections.singletonList(fee(c, null, null));
+        Map<InwardChargeType, Double> r = service.allocate(Collections.singletonList(c), fees);
+        assertEquals(1000.0, r.get(InwardChargeType.ProfessionalCharge));
+        assertEquals(1, r.size());
+    }
 }
