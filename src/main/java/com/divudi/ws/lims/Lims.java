@@ -35,6 +35,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import com.divudi.service.ApiUserAuthenticationService;
 import javax.ejb.EJB;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Path;
@@ -51,13 +52,17 @@ import com.divudi.core.entity.Person;
 import com.divudi.core.entity.pharmacy.Stock;
 import com.divudi.core.facade.BillItemFacade;
 import java.text.DecimalFormat;
+import java.io.IOException;
 import javax.inject.Inject;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import org.hl7.fhir.r5.formats.IParser;
+import org.hl7.fhir.r5.formats.JsonParser;
 import org.hl7.fhir.r5.model.CodeableConcept;
 import org.hl7.fhir.r5.model.OperationOutcome;
+import org.hl7.fhir.r5.model.Resource;
 
 /**
  * REST Web Service
@@ -83,6 +88,8 @@ public class Lims {
     @EJB
     WebUserFacade webUserFacade;
     @EJB
+    private ApiUserAuthenticationService apiUserAuthenticationService;
+    @EJB
     ItemFacade itemFacade;
     @Inject
     ItemController itemController;
@@ -97,6 +104,16 @@ public class Lims {
     public Lims() {
     }
 
+    public String fhirToJson(Resource resource) {
+        try {
+            JsonParser parser = new JsonParser();
+            parser.setOutputStyle(IParser.OutputStyle.PRETTY);
+            return parser.composeString(resource);
+        } catch (IOException e) {
+            throw new IllegalStateException("Could not encode FHIR resource", e);
+        }
+    }
+
     public OperationOutcome createOperationOutcomeForSuccess(String details) {
         OperationOutcome outcome = new OperationOutcome();
         outcome.addIssue().setSeverity(OperationOutcome.IssueSeverity.INFORMATION).setCode(OperationOutcome.IssueType.INFORMATIONAL).setDetails(new CodeableConcept().setText(details));
@@ -105,7 +122,7 @@ public class Lims {
 
     public OperationOutcome createOperationOutcomeForFailure(String details) {
         OperationOutcome outcome = new OperationOutcome();
-        outcome.addIssue().setSeverity(OperationOutcome.IssueSeverity.ERROR).setCode(OperationOutcome.IssueType.SECURITY);
+        outcome.addIssue().setSeverity(OperationOutcome.IssueSeverity.ERROR).setCode(OperationOutcome.IssueType.SECURITY).setDetails(new CodeableConcept().setText(details));
         return outcome;
     }
 
@@ -121,13 +138,18 @@ public class Lims {
         WebUser requestSendingUser = findRequestSendingUser(username, password);
 
         if (requestSendingUser != null) {
-// Return a 200 OK response indicating success
-            return Response.ok().entity(createOperationOutcomeForSuccess("Logged Successfully")).build();
+            // Return a 200 OK response indicating success
+            return Response.ok()
+                    .entity(fhirToJson(createOperationOutcomeForSuccess("Logged Successfully")))
+                    .type(MediaType.APPLICATION_JSON)
+                    .build();
         } else {
-// Return an OperationOutcome resource indicating failure
             // Return an OperationOutcome resource indicating failure
             OperationOutcome outcome = createOperationOutcomeForFailure("Invalid username or password");
-            return Response.status(Response.Status.UNAUTHORIZED).entity(outcome).build();
+            return Response.status(Response.Status.UNAUTHORIZED)
+                    .entity(fhirToJson(outcome))
+                    .type(MediaType.APPLICATION_JSON)
+                    .build();
         }
     }
 
@@ -1220,29 +1242,7 @@ public class Lims {
     }
 
     public WebUser findRequestSendingUser(String temUserName, String temPassword) {
-        if (temUserName == null) {
-            return null;
-        }
-        if (temPassword == null) {
-            return null;
-        }
-        String temSQL;
-
-        temSQL = "SELECT u FROM WebUser u WHERE u.retired = false and (u.name)=:n order by u.id desc";
-        Map m = new HashMap();
-
-        m.put("n", temUserName.trim().toLowerCase());
-        WebUser u = webUserFacade.findFirstByJpql(temSQL, m);
-
-        //// // System.out.println("temSQL = " + temSQL);
-        if (u == null) {
-            return null;
-        }
-
-        if (SecurityController.matchPassword(temPassword, u.getWebUserPassword())) {
-            return u;
-        }
-        return null;
+        return apiUserAuthenticationService.authenticateMachine(temUserName, temPassword);
     }
 
     public Long stringToLong(String input) {

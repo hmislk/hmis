@@ -43,3 +43,8 @@ Privileges: Direct Issue `PharmacySale` or `PharmacyDirectIssueToBht`; BHT Issue
 - Request workflow: returns go only ward -> porter -> pharmacy accept. Administered quantities are never returnable (this does not apply to direct issues). The all-patients return entry and removal of the old shortcut are tracked in #25507.
 - A request issue can be cancelled only before the ward accepts it; after that, return it (#25508).
 - The BHT is credited for a ward return only when pharmacy accepts it, not when the ward sends it (#25509).
+
+
+## From CLAUDE.md (moved detail)
+
+exactly two workflows (Direct Issue; Request, porter, ward receive), both always on; never add a config option to switch either or any step off.

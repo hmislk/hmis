@@ -6258,7 +6258,7 @@ public class CommonReport implements Serializable {
                 + " bf.fee.feeType, "
                 + " sum(bf.feeValue) "
                 + " from BillFee bf join bf.billItem bi join bi.item i "
-                + " where bi.bill.retired=false "
+                + " where (bf.collectedByDoctorAtBilling = false or bf.collectedByDoctorAtBilling is null) and bi.bill.retired=false "
                 + " and bi.bill.createdAt between :fd and :td ";
 
         if (ins != null) {

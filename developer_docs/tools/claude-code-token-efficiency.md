@@ -11,7 +11,7 @@ Most of our token use is **context loaded on every turn** (memory index, plugin 
 | Tool | Claimed | Independently measured | Our decision |
 |---|---|---|---|
 | Ponytail (write-less-code rules) | ~22% fewer tokens | ~10% per task | **Do not install for now** |
-| Caveman (terse replies) | ~65% | ~8.5% | Optional, on request only |
+| Caveman (terse replies) | ~65% | ~8.5% | Not installed; the project skill was removed 2026-11-20 |
 | RTK | — | no saving, sometimes higher cost | Do not install |
 
 Reasons for not installing Ponytail:

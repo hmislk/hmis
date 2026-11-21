@@ -40,7 +40,11 @@ public class PharmacyPoCancellationException extends Exception {
          * A GRN already exists against this approval - mirrors the guard in
          * {@code PharmacyBillSearch.checkGrn()}.
          */
-        GRN_EXISTS
+        GRN_EXISTS,
+        /**
+         * The bill is a cancellation bill, which can never be cancelled itself.
+         */
+        CANCELLATION_BILL
     }
 
     private final Reason reason;

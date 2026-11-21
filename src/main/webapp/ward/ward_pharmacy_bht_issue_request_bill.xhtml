@@ -577,9 +577,9 @@
                                                     icon="fa fa-plus"
                                                     class="ui-button-info"
                                                     title="Add the item and quantity shown below directly to the dispense request, without prescription details"
-                                                    action="#{pharmacyRequestForBhtController.addBillItem}"
+                                                    action="#{pharmacyRequestForBhtController.addBillItemDispenseOnly}"
                                                     process="@this acItem txtQty txtDrugOrderComments"
-                                                    update="growl :#{p:resolveFirstComponentWithId('tblBillItem',view).clientId} acItem focusItem txtQty txtDrugOrderComments" >
+                                                    update="growl :#{p:resolveFirstComponentWithId('tblBillItem',view).clientId} acMedicine acItem focusItem txtQty txtDose doseUnitPanel cmbFrequency txtDuration cmbDuration prescribedFrom prescribedTo txtComments txtDrugOrderComments" >
                                                 </p:commandButton>
                                             </div>
                                         </f:facet>

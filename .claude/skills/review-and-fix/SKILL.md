@@ -1,15 +1,6 @@
 ---
 name: review-and-fix
-description: >
-  Deep-review one or more open PRs, apply the resulting fixes, verify each one
-  live (build → local redeploy → Playwright + DB), commit, push, drive CI to
-  green, then reply to the review threads. Use when asked to "fix the review
-  findings on #N", "review and fix PR #N", "clean up #N before merge", on PRs
-  a prior merge-gate run left BLOCKED-REVIEW, or to take over a contributor's
-  or intern's PR and make it mergeable ourselves because it is urgent
-  ("take over #N", "fix Rashmika's PR and make it mergeable", `--urgent`).
-  It never merges, approves, or requests changes — it hands back green, fixed
-  PRs ready for the user's final review and merge.
+description: 'Deep-review open PR(s), apply fixes, verify live, push, drive CI green, reply to threads. Use for "fix the review findings on #N", "review and fix PR #N", "take over #N", --urgent. Never merges.'
 argument-hint: "<pr-number> [pr-number...] | author=<login>[,<login>...] [count=N] [--urgent]"
 ---
 

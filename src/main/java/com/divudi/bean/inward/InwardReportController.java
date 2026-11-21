@@ -4301,6 +4301,10 @@ public class InwardReportController implements Serializable {
 
     public void processSpecialtyDoctorWiseIncomeReport() {
         spcDocIncomeBillList = new ArrayList<>();
+        totalValuesSpcDocIncome = new InwardIncomeDoctorSpecialtyDTO();
+        totalValuesSpcDocIncome.setDocFee(0.0);
+        totalValuesSpcDocIncome.setHosFee(0.0);
+        totalValuesSpcDocIncome.setTotalCharge(0.0);
         Map<String, Object> params = new HashMap<>();
         StringBuilder jpql = new StringBuilder();
 
@@ -4329,7 +4333,7 @@ public class InwardReportController implements Serializable {
         }
 
         jpql.append(" from BillFee bf")
-                .append(" Where bf.retired = false ")
+                .append(" Where (bf.collectedByDoctorAtBilling = false or bf.collectedByDoctorAtBilling is null) and bf.retired = false ")
                 .append(" And bf.bill.retired=false ")
                 .append(" And bf.billItem.retired=false ")
                 .append(" And bf.bill.billTypeAtomic in :btas ")
@@ -5692,7 +5696,13 @@ public class InwardReportController implements Serializable {
                 if (bi.getInwardChargeType() == InwardChargeType.VAT) {
                     p.getFinalBill().setVat(bi.getNetValue() + p.getFinalBill().getVat());
                 }
-                if (bi.getInwardChargeType() != InwardChargeType.VAT && bi.getInwardChargeType() != InwardChargeType.Medicine) {
+                // Computed VAT line (#25766): its amount is on the item (Bill.vat stays 0), so it adds to the VAT without touching the header VAT twice.
+                if (bi.getInwardChargeType() == InwardChargeType.ComputedVAT) {
+                    p.getFinalBill().setVat(bi.getVat() + p.getFinalBill().getVat());
+                }
+                if (bi.getInwardChargeType() != InwardChargeType.VAT
+                        && bi.getInwardChargeType() != InwardChargeType.ComputedVAT
+                        && bi.getInwardChargeType() != InwardChargeType.Medicine) {
                     p.getFinalBill().setVatCalulatedAmount(bi.getNetValue() + p.getFinalBill().getVatCalulatedAmount());
                 }
             }
@@ -6163,7 +6173,7 @@ public class InwardReportController implements Serializable {
                 + "from BillFee bf "
                 + "join bf.billItem.item.category as category "
                 + "join bf.bill.patientEncounter as pe "
-                + "where "
+                + "where (bf.collectedByDoctorAtBilling = false or bf.collectedByDoctorAtBilling is null) and "
                 + "pe is not null and "
                 + "bf.bill.billType=:billType and "
                 + "pe.dateOfDischarge between :fd and :td ";
@@ -6218,7 +6228,7 @@ public class InwardReportController implements Serializable {
                 + " sum(bf.feeMargin),"
                 + " sum(bf.feeGrossValue),"
                 + " sum(bf.feeValue)"
-                + " from BillFee bf where"
+                + " from BillFee bf where (bf.collectedByDoctorAtBilling = false or bf.collectedByDoctorAtBilling is null) and"
                 + " bf.bill.patientEncounter is not null"
                 + " and bf.bill.patientEncounter.discharged=true ";
 

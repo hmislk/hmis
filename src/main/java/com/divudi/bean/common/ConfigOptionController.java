@@ -91,6 +91,8 @@ public class ConfigOptionController implements Serializable {
 
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
+    @Inject
+    TwoFactorAuthController twoFactorAuthController;
 
     @Inject
     EnumController enumController;
@@ -723,6 +725,15 @@ public class ConfigOptionController implements Serializable {
             optionFacade.edit(option);
         }
         configOptionApplicationController.loadApplicationOptions();
+        if (before != null) {
+            configOptionApplicationController.recordTwoFactorSwitchChange(option.getOptionKey(),
+                    "true".equalsIgnoreCase(String.valueOf(before.get("optionValue"))),
+                    "true".equalsIgnoreCase(option.getOptionValue()));
+            if (ConfigOptionApplicationController.TWO_FACTOR_ALL_USERS_KEY.equals(option.getOptionKey())
+                    && "true".equalsIgnoreCase(option.getOptionValue())) {
+                twoFactorAuthController.warnUsersWithoutStaffMobile();
+            }
+        }
 
         Map<String, Object> after = new HashMap<>();
         after.put("optionKey", option.getOptionKey());

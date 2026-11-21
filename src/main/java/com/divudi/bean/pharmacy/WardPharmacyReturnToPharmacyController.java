@@ -556,6 +556,9 @@ public class WardPharmacyReturnToPharmacyController implements Serializable {
      * porter's staff stock and credits back to ward department stock).
      */
     public void cancelReturnBill() {
+        if (com.divudi.core.util.CancellationBillCheck.refuse(returnBill)) {
+            return;
+        }
         if (!webUserController.hasPrivilege(Privileges.InwardPharmacyReturnCancel.name())) {
             JsfUtil.addErrorMessage("You do not have the privilege to cancel this return.");
             return;
@@ -1021,6 +1024,10 @@ public class WardPharmacyReturnToPharmacyController implements Serializable {
 
     public void setComment(String comment) {
         this.comment = comment;
+    }
+
+    public boolean isReturnBillACancellationBill() {
+        return com.divudi.core.util.CancellationBillCheck.isCancellationBill(returnBill);
     }
 
 }

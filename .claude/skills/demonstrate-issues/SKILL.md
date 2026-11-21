@@ -1,16 +1,6 @@
 ---
 name: demonstrate-issues
-description: >
-  Run a live bug-demonstration capture session before filing GitHub issues.
-  The user drives the browser and narrates bugs one after another ("see
-  this — clicking X should do Y but does Z"); this skill captures each demo
-  (snapshot + screenshot + description + environment context) without
-  investigating, only after the user signals the session is over does it
-  investigate root causes, then only after the user reviews the write-ups
-  does it file issues. Use when asked to "demonstrate some bugs", "show you
-  issues before filing them", or via `/demonstrate-issues`. Never fixes
-  anything — it ends at filing GitHub issue(s); any actual fix is separate,
-  later `dev-issue` work.
+description: 'Capture bug demos the user drives and narrates, before filing issues. Use for "demonstrate some bugs", "show you issues before filing them", /demonstrate-issues. Never fixes; ends at filing issues.'
 allowed-tools: Read, Glob, Grep, Bash, PowerShell, mcp__playwright__browser_navigate,
   mcp__playwright__browser_navigate_back, mcp__playwright__browser_click,
   mcp__playwright__browser_type, mcp__playwright__browser_fill_form,

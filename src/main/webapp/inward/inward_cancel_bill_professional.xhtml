@@ -11,6 +11,7 @@
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
                 <h:form>
+                    <h:inputHidden id="expectedBillId" value="#{inwardSearch.expectedBillId}"/>
                     <p:confirmDialog
                         global="true"
                         responsive="true"
@@ -22,6 +23,7 @@
                             value="Yes"
                             type="button"
                             styleClass="ui-confirmdialog-yes ui-button-danger"
+                            onclick="PF('cancelProfessionalBillLoadingDlg').show();"
                             icon="fa fa-check"/>
                         <p:commandButton
                             style="width: 150px;"
@@ -40,7 +42,7 @@
                                     <div class="d-flex align-items-center" style="width: 50%">
                                         <p:inputText class="w-100" placeholder="Enter a Reason to Cancel" style="width: 100%" value="#{inwardSearch.comment}"/>
                                         <p:spacer width="20%"></p:spacer>
-                                        <p:commandButton class="ui-button-danger mx-1" ajax="false" icon="fas fa-cancel" value="Cancel" action="#{inwardSearch.cancelProfessional()}" >
+                                        <p:commandButton class="ui-button-danger mx-1" ajax="false" icon="fas fa-cancel" value="Cancel" disabled="#{inwardSearch.billACancellationBill}" action="#{inwardSearch.cancelProfessional()}" >
                                             <p:confirm header="Confirm Professional Fee Cancellation"
                                                        message="Cancel this professional fee bill? This action cannot be undone."
                                                        icon="fa fa-exclamation-triangle"/>
@@ -178,6 +180,18 @@
                     </p:panel>
 
 
+                    <p:dialog widgetVar="cancelProfessionalBillLoadingDlg"
+                              modal="true"
+                              closable="false"
+                              showHeader="true"
+                              header="Processing - Please Wait"
+                              style="min-width: 320px; text-align: center;">
+                        <div style="padding: 20px;">
+                            <i class="pi pi-spin pi-spinner" style="font-size: 3rem; color: #4CAF50;"></i>
+                            <p style="margin-top: 15px; font-size: 1rem;">Cancelling the professional fee bill, please wait...</p>
+                            <p style="color: #888; font-size: 0.85rem;">Do not refresh or close this page.</p>
+                        </div>
+                    </p:dialog>
                 </h:form>                
             </ui:define>
         </ui:composition>

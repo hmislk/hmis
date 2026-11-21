@@ -55,7 +55,7 @@
                                             class="ui-button-danger"
                                             value="To Cancel Bill"
                                             action="inward_cancel_bill_final?faces-redirect=true"
-                                            disabled="#{inwardSearch.bill.cancelled}"  />
+                                            disabled="#{inwardSearch.bill.cancelled or inwardSearch.billACancellationBill}"  />
                                         <p:commandButton
                                             ajax="false"
                                             icon="fa fa-plus"
@@ -765,7 +765,7 @@
                                                 
                                                 <bi:unapprovedHeading bill="#{inwardSearch.bill}" />
 
-                                                <h:panelGroup id="originalCustom4BillPriview">
+                                                <h:panelGroup id="originalCustom4BillPriview" styleClass="custom4BillWrapper">
                                                     <bi:finalBillCustom4 bill="#{inwardSearch.showOrginalBill ? inwardSearch.bill.referenceBill : inwardSearch.bill}" duplicate="false" showProfessional="#{inwardSearch.withProfessionalFee}"/>
                                                 </h:panelGroup>
 
@@ -789,7 +789,7 @@
                                                 
                                                 <bi:unapprovedHeading bill="#{inwardSearch.bill}" />
 
-                                                <h:panelGroup id="duplicateCustom4BillPriview">
+                                                <h:panelGroup id="duplicateCustom4BillPriview" styleClass="custom4BillWrapper">
                                                     <bi:finalBillCustom4 bill="#{inwardSearch.showOrginalBill ? inwardSearch.bill.referenceBill : inwardSearch.bill}" duplicate="true" showProfessional="#{inwardSearch.withProfessionalFee}"/>
                                                 </h:panelGroup>
 

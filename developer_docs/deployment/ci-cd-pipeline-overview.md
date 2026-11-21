@@ -180,3 +180,8 @@ deploy. Ask server management to redeploy it, then fix forward with a hotfix PR.
 | VM access, Payara domains, datasources/pools, DNS, new VMs, IP changes | Server management |
 | Which QA instance has which data, QA refreshes | Development (QA instance owner) |
 | What is deployed where | This document, then GitHub Actions run history |
+
+
+## From CLAUDE.md (moved detail)
+
+deploy branches are `<hospital>-production` / `<hospital>-staging` (India estate). Never target `*-prod`, `*-stg` or `*-migrated`; they were retired 2026-10-11.

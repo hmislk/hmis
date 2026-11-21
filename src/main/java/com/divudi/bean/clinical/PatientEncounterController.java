@@ -162,6 +162,8 @@ public class PatientEncounterController implements Serializable {
      */
     @Inject
     SessionController sessionController;
+    @EJB
+    private com.divudi.service.AuditService auditService;
     @Inject
     PharmacySaleController pharmacySaleController;
     @Inject
@@ -775,6 +777,8 @@ public class PatientEncounterController implements Serializable {
             JsfUtil.addErrorMessage("Nothing to save");
             return;
         }
+        // Shown unescaped on the visit and card pages: keep formatting only
+        encounterReferral.setLobValue(com.divudi.core.util.CardHtmlSanitizer.sanitizeExistingForStorage(encounterReferral.getLobValue()));
         if (encounterReferral.getId() == null) {
             clinicalFindingValueFacade.create(encounterReferral);
             JsfUtil.addSuccessMessage("Saved");
@@ -789,6 +793,7 @@ public class PatientEncounterController implements Serializable {
             JsfUtil.addErrorMessage("Nothing to save");
             return;
         }
+        encounterReferral.setLobValue(com.divudi.core.util.CardHtmlSanitizer.sanitizeExistingForStorage(encounterReferral.getLobValue()));
         encounterReferral.setRetired(true);
         encounterDocuments.remove(encounterReferral);
         if (encounterReferral.getId() == null) {
@@ -1248,8 +1253,7 @@ public class PatientEncounterController implements Serializable {
     }
 
     public List<ClinicalFindingValue> fillPatientAllergies(Patient patient) {
-        List<ClinicalFindingValueType> clinicalFindingValueTypes = new ArrayList<>();
-        clinicalFindingValueTypes.add(ClinicalFindingValueType.PatientAllergy);
+        List<ClinicalFindingValueType> clinicalFindingValueTypes = new ArrayList<>(ClinicalFindingValueType.patientAllergyTypes());
         return fillCurrentPatientClinicalFindingValues(patient, clinicalFindingValueTypes);
     }
 
@@ -1790,6 +1794,9 @@ public class PatientEncounterController implements Serializable {
             }
             switch (tcfv.getClinicalFindingValueType()) {
                 case PatientAllergy:
+                case PatientFoodAllergy:
+                case PatientPlasterAllergy:
+                case PatientOtherAllergy:
                     patientAllergies.add(tcfv);
                     break;
                 case PatientDiagnosis:
@@ -1827,6 +1834,20 @@ public class PatientEncounterController implements Serializable {
         defaultIndoorPharmacy = null;
         pharmacyDepartments = null;
         refreshIssuableSuggestions();
+    }
+
+    /** Line-break marker used while a template value is built; see {@link #cardText}. */
+    private static final String CARD_BR = "\u0001";
+
+    /**
+     * A placeholder value as safe HTML: its text is escaped (typed tags stay text),
+     * then the line-break markers become {@code <br/>}.
+     */
+    private static String cardText(String s) {
+        if (s == null) {
+            return "";
+        }
+        return org.apache.commons.text.StringEscapeUtils.escapeHtml4(s).replace("'", "&#39;").replace(CARD_BR, "<br/>");
     }
 
     public String generateDocumentFromTemplate(DocumentTemplate t, PatientEncounter e) {
@@ -1902,7 +1923,7 @@ public class PatientEncounterController implements Serializable {
             cf.getItemValue().getComments();
         }
 
-        String medicinesAsString = "Rx" + "<br/>";
+        String medicinesAsString = "Rx" + CARD_BR;
 
         for (ClinicalFindingValue cf : getEncounterMedicines()) {
             if (cf != null && cf.getPrescription() != null) {
@@ -1913,7 +1934,7 @@ public class PatientEncounterController implements Serializable {
                 String duration = cf.getPrescription().getDuration() != null ? String.format("%.0f", cf.getPrescription().getDuration()) : "";
                 String durationUnit = cf.getPrescription().getDurationUnit() != null ? cf.getPrescription().getDurationUnit().getName() : "";
 
-                medicinesAsString += rxName + " " + dose + " " + doseUnit + " " + frequencyUnit + " " + duration + " " + durationUnit + "<br/>";
+                medicinesAsString += rxName + " " + dose + " " + doseUnit + " " + frequencyUnit + " " + duration + " " + durationUnit + CARD_BR;
             }
         }
 
@@ -1943,7 +1964,7 @@ public class PatientEncounterController implements Serializable {
                     if (!durationUnit.trim().equals("")) {
                         medicinesOutdoorAsString += " " + durationUnit;
                     }
-                    medicinesOutdoorAsString += "<br/>";
+                    medicinesOutdoorAsString += CARD_BR;
                 }
             }
         }
@@ -1974,7 +1995,7 @@ public class PatientEncounterController implements Serializable {
                     if (!durationUnit.trim().equals("")) {
                         medicinesIndoorAsString += " " + durationUnit;
                     }
-                    medicinesIndoorAsString += "<br/>";
+                    medicinesIndoorAsString += CARD_BR;
                 }
             }
         }
@@ -1985,7 +2006,7 @@ public class PatientEncounterController implements Serializable {
             if (!ix.getLobValue().trim().equals("")) {
                 ixAsString += " - " + ix.getLobValue();
             }
-            ixAsString += "<br/>";
+            ixAsString += CARD_BR;
         }
         String ixSameLine = "";
 
@@ -2000,7 +2021,7 @@ public class PatientEncounterController implements Serializable {
         }
 
         String bpPrSameLine = "";
-        bpPrSameLine += (e.getBp() != null ? "BP - " + e.getBp() + "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" : "BP - &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;");
+        bpPrSameLine += (e.getBp() != null ? "BP - " + e.getBp() + "\u00A0\u00A0\u00A0\u00A0\u00A0" : "BP - \u00A0\u00A0\u00A0\u00A0\u00A0");
         bpPrSameLine += (e.getPr() != null ? "PR - " + e.getPr() : "PR - ");
 
         String visitDx = "";
@@ -2009,20 +2030,20 @@ public class PatientEncounterController implements Serializable {
             if (!ix.getLobValue().trim().equals("")) {
                 visitDx += " - " + ix.getLobValue();
             }
-            visitDx += "<br/>";
+            visitDx += CARD_BR;
         }
 
         String paAsString = "";
         for (ClinicalFindingValue pa : getEncounterPlanOfActions()) {
-            paAsString += pa.getItemValue().getName() + "<br/>";
+            paAsString += pa.getItemValue().getName() + CARD_BR;
         }
 
         String allergiesAsString = "";
         for (ClinicalFindingValue cf : getPatientAllergies()) {
             if (cf != null) {
-                String allergyName = cf.getItemValue() != null && cf.getItemValue().getName() != null ? cf.getItemValue().getName() : "";
-                String details = cf.getStringValue() != null ? cf.getStringValue() : "";
-                allergiesAsString += allergyName + (details.isEmpty() ? "" : " - " + details) + "<br/>";
+                String allergyName = cf.getAllergyTypeAndName();
+                String details = cf.getAllergyRemark();
+                allergiesAsString += allergyName + (details == null || details.isEmpty() ? "" : " - " + details) + CARD_BR;
             }
         }
 
@@ -2046,7 +2067,7 @@ public class PatientEncounterController implements Serializable {
                 if (!durationUnit.trim().equals("")) {
                     routineMedicinesAsString += " - " + durationUnit;
                 }
-                routineMedicinesAsString += "<br/>";
+                routineMedicinesAsString += CARD_BR;
             }
         }
 
@@ -2056,45 +2077,46 @@ public class PatientEncounterController implements Serializable {
                 String diagnosisName = dx.getItemValue() != null && dx.getItemValue().getName() != null ? dx.getItemValue().getName() : "";
                 String details = dx.getStringValue() != null ? dx.getStringValue() : "";
 
-                diagnosesAsString += diagnosisName + (details.isEmpty() ? "" : " - " + details) + "<br/>";
+                diagnosesAsString += diagnosisName + (details.isEmpty() ? "" : " - " + details) + CARD_BR;
             }
         }
 
-        output = input.replace("{patient_name}", name)
-                .replace("{patient_age}", age)
-                .replace("{comments}", comments)
-                .replace("{sex}", sex)
-                .replace("{address}", address)
-                .replace("{phone}", phone)
-                .replace("{medicines}", medicinesAsString)
-                .replace("{outdoor}", medicinesOutdoorAsString)
-                .replace("{indoor}", medicinesIndoorAsString)
-                .replace("{ix}", ixAsString)
-                .replace("{visit-dx}", visitDx)
-                .replace("{ix-same-line}", ixSameLine)
-                .replace("{bp-pr-sameLine}", bpPrSameLine)
-                .replace("{rr}", rr)
-                .replace("{pa}", paAsString)
-                .replace("{past-dx}", diagnosesAsString)
-                .replace("{routine-medicines}", routineMedicinesAsString)
-                .replace("{allergies}", allergiesAsString)
-                .replace("{visit-date}", visitDate)
-                .replace("{height}", height)
-                .replace("{weight}", weight)
-                .replace("{bmi}", bmi)
-                .replace("{bp}", bp)
-                .replace("{pr}", pulseRate)
-                .replace("{pfr}", pfr)
-                .replace("{sat}", saturation)
-                .replace("{patient_phn_number}", phn)
-                .replace("{patient_nic}", nic)
-                .replace("{medical_start_date}", medicalStartDate)
-                .replace("{medical_end_days}", medicalEndDays)
-                .replace("{medical_certificate_duration}", medicalCertificateDuration)
-                .replace("{referral_institution}", referralInstitutionName)
-                .replace("{referral_doctor}", referralDoctorName)
-                .replace("{referring_doctor}", referralDoctorName);
-        return output;
+        output = input.replace("{patient_name}", cardText(name))
+                .replace("{patient_age}", cardText(age))
+                .replace("{comments}", cardText(comments))
+                .replace("{sex}", cardText(sex))
+                .replace("{address}", cardText(address))
+                .replace("{phone}", cardText(phone))
+                .replace("{medicines}", cardText(medicinesAsString))
+                .replace("{outdoor}", cardText(medicinesOutdoorAsString))
+                .replace("{indoor}", cardText(medicinesIndoorAsString))
+                .replace("{ix}", cardText(ixAsString))
+                .replace("{visit-dx}", cardText(visitDx))
+                .replace("{ix-same-line}", cardText(ixSameLine))
+                .replace("{bp-pr-sameLine}", cardText(bpPrSameLine))
+                .replace("{rr}", cardText(rr))
+                .replace("{pa}", cardText(paAsString))
+                .replace("{past-dx}", cardText(diagnosesAsString))
+                .replace("{routine-medicines}", cardText(routineMedicinesAsString))
+                .replace("{allergies}", cardText(allergiesAsString))
+                .replace("{visit-date}", cardText(visitDate))
+                .replace("{height}", cardText(height))
+                .replace("{weight}", cardText(weight))
+                .replace("{bmi}", cardText(bmi))
+                .replace("{bp}", cardText(bp))
+                .replace("{pr}", cardText(pulseRate))
+                .replace("{pfr}", cardText(pfr))
+                .replace("{sat}", cardText(saturation))
+                .replace("{patient_phn_number}", cardText(phn))
+                .replace("{patient_nic}", cardText(nic))
+                .replace("{medical_start_date}", cardText(medicalStartDate))
+                .replace("{medical_end_days}", cardText(medicalEndDays))
+                .replace("{medical_certificate_duration}", cardText(medicalCertificateDuration))
+                .replace("{referral_institution}", cardText(referralInstitutionName))
+                .replace("{referral_doctor}", cardText(referralDoctorName))
+                .replace("{referring_doctor}", cardText(referralDoctorName));
+        // Shown unescaped: substituted patient values must not become live markup
+        return com.divudi.core.util.CardHtmlSanitizer.sanitizeForStorage(output);
 
     }
 
@@ -2139,8 +2161,11 @@ public class PatientEncounterController implements Serializable {
             JsfUtil.addErrorMessage("Select Allergy");
             return;
         }
+        Map<String, Object> before = allergyAuditMap(getRemovingClinicalFindingValue());
         getRemovingClinicalFindingValue().setRetired(true);
         clinicalFindingValueFacade.edit(getRemovingClinicalFindingValue());
+        auditService.logAudit(before, allergyAuditMap(getRemovingClinicalFindingValue()), sessionController.getLoggedUser(),
+                "ClinicalFindingValue", "Patient Allergy Removed", getRemovingClinicalFindingValue().getId());
         getPatientAllergies().remove(getRemovingClinicalFindingValue());
         setRemovingClinicalFindingValue(null);
     }
@@ -2178,14 +2203,33 @@ public class PatientEncounterController implements Serializable {
         setRemovingClinicalFindingValue(null);
     }
 
+    /** Snapshot of a patient allergy for audit events, as on the inpatient pages. */
+    private Map<String, Object> allergyAuditMap(ClinicalFindingValue pa) {
+        Map<String, Object> m = new HashMap<>();
+        if (pa == null) {
+            return m;
+        }
+        m.put("allergyType", pa.getAllergyTypeLabel());
+        m.put("allergy", pa.getAllergyName());
+        m.put("value", pa.getAllergyRemark());
+        m.put("retired", pa.isRetired());
+        if (pa.getPatient() != null) {
+            m.put("patientId", pa.getPatient().getId());
+        }
+        return m;
+    }
+
     public void addPatientAllergy() {
-        if (getPatientAllergy().getItemValue() == null) {
-            JsfUtil.addErrorMessage("Select Allergy");
+        String allergyError = getPatientAllergy().validateAllergyInputs();
+        if (allergyError != null) {
+            JsfUtil.addErrorMessage(allergyError);
             return;
         }
+        getPatientAllergy().applyAllergyInputs();
         getPatientAllergy().setPatient(patient);
-        getPatientAllergy().setClinicalFindingValueType(ClinicalFindingValueType.PatientAllergy);
-        clinicalFindingValueFacade.create(getPatientAllergy());
+        clinicalFindingValueFacade.createAndFlush(getPatientAllergy());
+        auditService.logAudit(null, allergyAuditMap(getPatientAllergy()), sessionController.getLoggedUser(),
+                "ClinicalFindingValue", "Patient Allergy Added", getPatientAllergy().getId());
         getPatientAllergies().add(getPatientAllergy());
         setPatientAllergy(null);
         JsfUtil.addSuccessMessage("Added");
@@ -3906,13 +3950,9 @@ public class PatientEncounterController implements Serializable {
         if (encounterReferral == null || encounterReferral.getLobValue() == null) {
             return "";
         }
-        String content = encounterReferral.getLobValue();
-        content = content.replace("&lt;", "<")
-                .replace("&gt;", ">")
-                .replace("&amp;", "&")
-                .replace("&quot;", "\"")
-                .replace("&#39;", "'");
-        return content;
+        // Old wholly-escaped documents are decoded once; markup documents keep escaped text as text
+        return com.divudi.core.util.CardHtmlSanitizer.sanitize(
+                com.divudi.core.util.CardHtmlSanitizer.decodeLegacy(encounterReferral.getLobValue()));
     }
 
     public void setEncounterReferral(ClinicalFindingValue encounterReferral) {

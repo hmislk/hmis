@@ -222,7 +222,7 @@
 
                                             autocomplete="off" 
                                             placeholder="Mobile Number"
-                                            value="#{cc.attrs.controller.patient.person.mobile}"
+                                            value="#{cc.attrs.controller.patient.mobileNumberStringTransient}"
                                             class="form-control" 
                                             validatorMessage="Please enter valid Number">
                                             <c:if test="#{not empty sessionController.applicationPreference.mobileRegex}">
@@ -236,7 +236,7 @@
 
                                             autocomplete="off" 
                                             placeholder="Phone Number"
-                                            value="#{cc.attrs.controller.patient.person.phone}"
+                                            value="#{cc.attrs.controller.patient.phoneNumberStringTransient}"
                                             class="form-control" validatorMessage="Please enter valid Number">
                                             <c:if test="#{not empty sessionController.applicationPreference.mobileRegex}">
                                                 <f:validateRegex pattern="#{sessionController.applicationPreference.mobileRegex}"/>
@@ -412,11 +412,11 @@
 
                             <h:outputLabel value="Mobile No. " class="mx-3"/>
                             <h:outputLabel value=" : " class="mx-3"/>
-                            <h:outputText value="#{cc.attrs.controller.patient.person.mobile}" />
+                            <h:outputText value="#{cc.attrs.controller.patient.mobileNumberStringTransient}" />
 
                             <h:outputLabel value="Phone No. " class="mx-3"/>
                             <h:outputLabel value=" : " class="mx-3"/>
-                            <h:outputText value="#{cc.attrs.controller.patient.person.phone}" />
+                            <h:outputText value="#{cc.attrs.controller.patient.phoneNumberStringTransient}" />
 
                             <h:outputLabel value="Email " class="mx-3"/>
                             <h:outputLabel value=" : " class="mx-3"/>

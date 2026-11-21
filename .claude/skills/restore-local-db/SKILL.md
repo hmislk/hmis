@@ -1,15 +1,6 @@
 ---
 name: restore-local-db
-description: >
-  Refresh a LOCAL MySQL database from a PRODUCTION dump, safely. Use when asked to
-  "restore <db> locally from prod", "get a fresh copy of coop/ruhunu for testing",
-  "load this dump into my local database", or "back up prod and restore it locally".
-  Two entry points: (1) name one or more databases and the skill dumps them from the
-  Azure VM, downloads, and restores; (2) point at an existing dump file and the skill
-  only restores. Works for ANY database, not just coop/ruhunu. Hard guardrails prevent
-  ever writing to the Azure production databases: it refuses to run while any SSH
-  tunnel is open and asserts the MySQL target is the local instance before every
-  destructive step.
+description: 'Refresh a LOCAL MySQL database from a PRODUCTION dump, safely. Use for "restore <db> locally from prod", "fresh copy of coop/ruhunu for testing", "load this dump locally". Never writes to production.'
 allowed-tools: Bash
 user-invocable: true
 ---
@@ -375,6 +366,15 @@ WHERE table_schema='<db>' AND table_name <> UPPER(table_name);
 ```
 
 Pipe its output back into `mysql <db>`.
+
+### 2.7 — Two-factor clone step (MUST, every restore)
+
+A restored production copy carries the two-factor switches, encrypted authenticator
+secrets and verified mobile numbers, none of which work (or belong) on this machine:
+the secrets need the production server's key. Run the SQL step in
+[Two-factor login: server key, restore and clone safety](../../../developer_docs/deployment/two-factor-login-server-setup.md#clone-safety-one-sql-step-after-restoring-or-copying-a-database)
+against the restored DB (run migration `v2.23.0` on it first if the dump is older, check the table-name case, and run the verification query in that note so you know nothing was left), then **restart Payara** (raw SQL on `CONFIGOPTION` is not
+seen by the cached options until restart; this is already part of the Phase 3 restart).
 
 ---
 

@@ -390,7 +390,7 @@ public class InwardReportController1 implements Serializable {
         String sql = "Select b.staff.speciality,"
                 + " sum(b.feeValue) "
                 + " FROM BillFee b "
-                + " where b.retired=false "
+                + " where (b.collectedByDoctorAtBilling = false or b.collectedByDoctorAtBilling is null) and b.retired=false "
                 + " and(b.bill.billType=:refType1 "
                 + " or b.bill.billType=:refType2 )";
 
@@ -1906,7 +1906,9 @@ public class InwardReportController1 implements Serializable {
                 + " where bf.bill.patientEncounter.discharged=true "
                 + " and bf.retired=false "
                 + " and bf.billItem.retired=false "
-                + " and bf.fee.feeType=:ftp ";
+                + " and bf.fee.feeType=:ftp "
+                // Collected by the doctor at billing: not a hospital payable (#17490).
+                + " and (bf.collectedByDoctorAtBilling = false or bf.collectedByDoctorAtBilling is null) ";
         m.put("fd", fromDate);
         m.put("td", toDate);
         m.put("ftp", FeeType.Staff);
@@ -1981,7 +1983,9 @@ public class InwardReportController1 implements Serializable {
                 + " where bf.bill.patientEncounter.discharged=true "
                 + " and bf.retired=false "
                 + " and bf.billItem.retired=false "
-                + " and bf.fee.feeType=:ftp ";
+                + " and bf.fee.feeType=:ftp "
+                // Collected by the doctor at billing: not a hospital payable (#17490).
+                + " and (bf.collectedByDoctorAtBilling = false or bf.collectedByDoctorAtBilling is null) ";
         m.put("fd", fromDate);
         m.put("td", toDate);
         m.put("ftp", FeeType.Staff);

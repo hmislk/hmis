@@ -105,6 +105,7 @@
                                             value="Confirm Cancellation"
                                             icon="pi pi-times-circle"
                                             action="#{financialTransactionController.cancelFundTransferBill()}"
+                                disabled="#{financialTransactionController.fundTransferBillToCancelACancellationBill}"
                                             ajax="false"
                                             styleClass="ui-button-danger"
                                             rendered="#{webUserController.hasPrivilege('CancelOwnFundTransfer') or webUserController.hasPrivilege('CancelOthersFundTransfer')}"

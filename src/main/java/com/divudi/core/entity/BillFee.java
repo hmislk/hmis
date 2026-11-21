@@ -131,6 +131,10 @@ public class BillFee implements Serializable, RetirableEntity {
     // Indicates if the fee has been collected directly by the surgeon/doctor
     private boolean feeCollectedByDoctor;
 
+    // Set only by the "Collected by Doctor" switch on the inward professional fee add page and the OPD billing page
+    // (#17490, #25731 for OPD). Kept apart from feeCollectedByDoctor, which the surgery payment page sets.
+    private boolean collectedByDoctorAtBilling;
+
     // Per-item professional payment hold — blocks payment of this specific fee only
     // (mirrors PatientEncounter.professionalPaymentsOnHold, which holds the whole BHT). (Issue #22383)
     private Boolean feePaymentOnHold = false;
@@ -249,6 +253,8 @@ public class BillFee implements Serializable, RetirableEntity {
         overriddenRate = billFee.getOverriddenRate();
         sourcePackageItem = billFee.getSourcePackageItem();
         professionalFeeCategory = billFee.getProfessionalFeeCategory();
+        // A reversal mirrors its original, so a doctor-collected fee stays out of the sums (#25731).
+        collectedByDoctorAtBilling = billFee.isCollectedByDoctorAtBilling();
     }
 
     public void copyWithoutFinancialData(BillFee billFee) {
@@ -945,6 +951,14 @@ public class BillFee implements Serializable, RetirableEntity {
 
     public void setFeeCollectedByDoctor(boolean feeCollectedByDoctor) {
         this.feeCollectedByDoctor = feeCollectedByDoctor;
+    }
+
+    public boolean isCollectedByDoctorAtBilling() {
+        return collectedByDoctorAtBilling;
+    }
+
+    public void setCollectedByDoctorAtBilling(boolean collectedByDoctorAtBilling) {
+        this.collectedByDoctorAtBilling = collectedByDoctorAtBilling;
     }
 
     public Boolean getFeePaymentOnHold() {
