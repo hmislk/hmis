@@ -15,7 +15,7 @@
 - **🚨 Removing or hiding a feature? Query production usage on every production DB first,** before coding. [+](developer_docs/rules/working.md)
 - **🚨 Live config: apply agreed values exactly,** check the deployed branch has the code, verify a new record. [+](.claude/skills/app-configuration/SKILL.md)
 - **🚨 Retrospect after nontrivial work.** Propose the CLAUDE.md/doc/skill fix as a short rule and open the PR. [+](developer_docs/process/continuous-improvement-retrospective.md)
-- **🚨 Write short and plain,** lead with the point, use screen words, ask one question at a time. [+](developer_docs/process/writing-style.md)
+- **🚨 Write short and plain,** lead with the point, use screen words, ask one question at a time. Business-rule docs state current practice only; history and decisions go in issues/PRs. [+](developer_docs/process/writing-style.md)
 
 ### Code
 - Line endings differ by machine (CRLF on Windows): edit with the Edit tool and check the diff for whole-file changes. [+](developer_docs/rules/code.md)
