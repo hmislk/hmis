@@ -39,7 +39,7 @@ public enum CreditCompanyClaimStatus {
             case RESUBMITTED:
                 return EnumSet.of(REJECTED, PARTIALLY_SETTLED, SETTLED, CLOSED);
             case REJECTED:
-                return EnumSet.of(RESUBMITTED, CLOSED);
+                return EnumSet.of(RESUBMITTED, CLOSED, CANCELLED);
             case PARTIALLY_SETTLED:
                 return EnumSet.of(SETTLED, CLOSED);
             case SETTLED:
@@ -48,6 +48,14 @@ public enum CreditCompanyClaimStatus {
             default:
                 return EnumSet.noneOf(CreditCompanyClaimStatus.class);
         }
+    }
+
+    /**
+     * The one place that says which claims can be cancelled. A draft, or a
+     * rejected claim; one waiting for the company is not cancelled here.
+     */
+    public static boolean canCancel(CreditCompanyClaimStatus status) {
+        return status == DRAFT || status == REJECTED;
     }
 
     public boolean canMoveTo(CreditCompanyClaimStatus next) {

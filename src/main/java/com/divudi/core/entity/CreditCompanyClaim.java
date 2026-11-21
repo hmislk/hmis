@@ -59,6 +59,11 @@ public class CreditCompanyClaim implements Serializable {
     @ManyToOne
     private WebUser rejecter;
 
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date cancelledAt;
+    @ManyToOne
+    private WebUser cancelledBy;
+
     private boolean retired;
     @ManyToOne
     private WebUser retirer;
@@ -191,6 +196,22 @@ public class CreditCompanyClaim implements Serializable {
 
     public void setRejecter(WebUser rejecter) {
         this.rejecter = rejecter;
+    }
+
+    public Date getCancelledAt() {
+        return cancelledAt;
+    }
+
+    public void setCancelledAt(Date cancelledAt) {
+        this.cancelledAt = cancelledAt;
+    }
+
+    public WebUser getCancelledBy() {
+        return cancelledBy;
+    }
+
+    public void setCancelledBy(WebUser cancelledBy) {
+        this.cancelledBy = cancelledBy;
     }
 
     public boolean isRetired() {

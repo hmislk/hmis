@@ -102,4 +102,24 @@ class CreditCompanyClaimServiceTest {
         assertThrows(CreditCompanyClaimException.class,
                 () -> CreditCompanyClaimService.checkTransition(c, CreditCompanyClaimStatus.RESUBMITTED));
     }
+
+    @Test
+    void cancelTransitionIsAllowedForDraftAndRejectedOnly() {
+        for (CreditCompanyClaimStatus s : CreditCompanyClaimStatus.values()) {
+            CreditCompanyClaim c = new CreditCompanyClaim();
+            c.setStatus(s);
+            if (CreditCompanyClaimStatus.canCancel(s)) {
+                CreditCompanyClaimService.checkTransition(c, CreditCompanyClaimStatus.CANCELLED);
+            } else {
+                assertThrows(CreditCompanyClaimException.class,
+                        () -> CreditCompanyClaimService.checkTransition(c, CreditCompanyClaimStatus.CANCELLED));
+            }
+        }
+    }
+
+    @Test
+    void openClaimMessageNamesTheClaim() {
+        assertEquals("This bill is in open claim D/CLM/26/000001. Cancel or settle the claim first.",
+                CreditCompanyClaimService.openClaimMessage("D/CLM/26/000001"));
+    }
 }

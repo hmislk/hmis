@@ -112,6 +112,9 @@ import org.primefaces.event.TabChangeEvent;
 @SessionScoped
 public class BillController implements Serializable, ControllerWithMultiplePayments {
 
+    @javax.ejb.EJB
+    private com.divudi.service.CreditCompanyClaimService creditCompanyClaimService;
+
     private static final long serialVersionUID = 1L;
 
     /**
@@ -2634,6 +2637,12 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
             batchBillCancellationStarted = false;
             return "";
         }
+        String openClaimMessage = creditCompanyClaimService.openClaimRefusal(getBatchBill());
+        if (openClaimMessage != null) {
+            JsfUtil.addErrorMessage(openClaimMessage);
+            batchBillCancellationStarted = false;
+            return "";
+        }
         String labLockMessage = labSampleLockService.checkCancelBlocked(getBatchBill());
         if (labLockMessage != null) {
             JsfUtil.addErrorMessage(labLockMessage);
@@ -2796,6 +2805,12 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
         }
         if (getBatchBill().getId() == null) {
             JsfUtil.addErrorMessage("No Saved bill");
+            batchBillCancellationStarted = false;
+            return "";
+        }
+        String openClaimMessage = creditCompanyClaimService.openClaimRefusal(getBatchBill());
+        if (openClaimMessage != null) {
+            JsfUtil.addErrorMessage(openClaimMessage);
             batchBillCancellationStarted = false;
             return "";
         }

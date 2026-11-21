@@ -208,6 +208,23 @@ public class CreditCompanyClaimController implements Serializable {
         reloadClaim();
     }
 
+    public boolean isCancellable() {
+        return claim != null && CreditCompanyClaimStatus.canCancel(claim.getStatus());
+    }
+
+    public void cancelClaim() {
+        if (deny("OpdCreditClaimCreate")) {
+            return;
+        }
+        try {
+            claimService.cancel(claim, sessionController.getLoggedUser());
+            JsfUtil.addSuccessMessage("Claim cancelled. Its bills are free again.");
+        } catch (CreditCompanyClaimException e) {
+            JsfUtil.addErrorMessage(e.getMessage());
+        }
+        reloadClaim();
+    }
+
     public void reject() {
         if (deny("OpdCreditClaimReject")) {
             return;

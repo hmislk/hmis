@@ -48,4 +48,16 @@ class CreditCompanyClaimStatusTest {
         assertTrue(CreditCompanyClaimStatus.PARTIALLY_SETTLED.isOpen());
         assertFalse(CreditCompanyClaimStatus.CANCELLED.isOpen());
     }
+
+    @Test
+    void onlyDraftAndRejectedCanBeCancelled() {
+        for (CreditCompanyClaimStatus s : CreditCompanyClaimStatus.values()) {
+            boolean expected = s == CreditCompanyClaimStatus.DRAFT || s == CreditCompanyClaimStatus.REJECTED;
+            assertEquals(expected, CreditCompanyClaimStatus.canCancel(s), s.name());
+            if (CreditCompanyClaimStatus.canCancel(s)) {
+                assertTrue(s.canMoveTo(CreditCompanyClaimStatus.CANCELLED), s.name());
+            }
+        }
+        assertFalse(CreditCompanyClaimStatus.canCancel(null));
+    }
 }

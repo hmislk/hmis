@@ -171,6 +171,79 @@ public class CreditCompanyClaimService {
         return claim;
     }
 
+    /** True when the bill is in a claim that is still open (draft, submitted, rejected or resubmitted). */
+    public boolean isInOpenClaim(Long billId) {
+        if (billId == null) {
+            return false;
+        }
+        Map<String, Object> p = new HashMap<>();
+        p.put("id", billId);
+        p.put("open", Arrays.asList(CreditCompanyClaimStatus.openStatuses()));
+        long n = claimItemFacade.findLongByJpql(
+                "select count(ci) from CreditCompanyClaimItem ci where ci.retired=false"
+                + " and ci.claim.retired=false and ci.claim.status in :open and ci.bill.id=:id", p);
+        return n > 0;
+    }
+
+    /** Claim number of the open claim holding the bill, or null. */
+    public String openClaimNoFor(Long billId) {
+        if (billId == null) {
+            return null;
+        }
+        Map<String, Object> p = new HashMap<>();
+        p.put("id", billId);
+        p.put("open", Arrays.asList(CreditCompanyClaimStatus.openStatuses()));
+        List<?> found = claimItemFacade.findLightsByJpql(
+                "select ci.claim.claimNo from CreditCompanyClaimItem ci where ci.retired=false"
+                + " and ci.claim.retired=false and ci.claim.status in :open and ci.bill.id=:id", p);
+        return found == null || found.isEmpty() ? null : String.valueOf(found.get(0));
+    }
+
+    public static String openClaimMessage(String claimNo) {
+        return "This bill is in open claim " + claimNo + ". Cancel or settle the claim first.";
+    }
+
+    /**
+     * Refusal text for a refund, return or cancel of these bills, or null when none is in
+     * an open claim. Checks each bill and the bills it points to (the batch bill of an
+     * individual bill, the original of a refund or cancellation), since the claim holds
+     * the credit bill, which for OPD is the batch bill.
+     */
+    public String openClaimRefusal(Bill... bills) {
+        if (bills == null) {
+            return null;
+        }
+        for (Bill b : bills) {
+            if (b == null) {
+                continue;
+            }
+            for (Bill x : new Bill[]{b, b.getBackwardReferenceBill(), b.getBilledBill(), b.getReferenceBill()}) {
+                if (x != null && x.getId() != null) {
+                    String no = openClaimNoFor(x.getId());
+                    if (no != null) {
+                        return openClaimMessage(no);
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+    /** Cancels a draft or rejected claim, which frees its bills. */
+    public CreditCompanyClaim cancel(CreditCompanyClaim claim, WebUser user) {
+        CreditCompanyClaim c = reload(claim);
+        if (!CreditCompanyClaimStatus.canCancel(c.getStatus())) {
+            throw new CreditCompanyClaimException("Only a draft or rejected claim can be cancelled. This claim is "
+                    + c.getStatus().getLabel() + ".");
+        }
+        checkTransition(c, CreditCompanyClaimStatus.CANCELLED);
+        c.setStatus(CreditCompanyClaimStatus.CANCELLED);
+        c.setCancelledAt(new Date());
+        c.setCancelledBy(user);
+        claimFacade.edit(c);
+        return c;
+    }
+
     public CreditCompanyClaim submit(CreditCompanyClaim claim, Date submittedOn, String companyReference, WebUser user) {
         CreditCompanyClaim c = reload(claim);
         checkTransition(c, CreditCompanyClaimStatus.SUBMITTED);

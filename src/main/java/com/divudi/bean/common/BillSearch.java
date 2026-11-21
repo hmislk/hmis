@@ -172,6 +172,9 @@ import com.google.gson.Gson;
 @SessionScoped
 public class BillSearch implements Serializable, ControllerWithMultiplePayments {
 
+    @javax.ejb.EJB
+    private com.divudi.service.CreditCompanyClaimService creditCompanyClaimService;
+
     private static final Logger LOGGER = Logger.getLogger(BillSearch.class.getName());
 
     /**
@@ -2112,6 +2115,11 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
             JsfUtil.addErrorMessage("There is no Bill to Refund");
             return "";
         }
+        String openClaimMessage = creditCompanyClaimService.openClaimRefusal(bill);
+        if (openClaimMessage != null) {
+            JsfUtil.addErrorMessage(openClaimMessage);
+            return "";
+        }
         if (getRefundingBill() == null) {
             JsfUtil.addErrorMessage("There is no refund bill");
             return "";
@@ -2880,6 +2888,11 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
             JsfUtil.addErrorMessage("No Saved Original Bill");
             return;
         }
+        String openClaimMessage = creditCompanyClaimService.openClaimRefusal(getBill());
+        if (openClaimMessage != null) {
+            JsfUtil.addErrorMessage(openClaimMessage);
+            return;
+        }
         String labLockMessage = labSampleLockService.checkCancelBlocked(getBill());
         if (labLockMessage != null) {
             JsfUtil.addErrorMessage(labLockMessage);
@@ -3384,6 +3397,12 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
             return;
         }
         for (Bill b : billsApproving) {
+
+            String openClaimMessage = creditCompanyClaimService.openClaimRefusal(b.getBilledBill());
+            if (openClaimMessage != null) {
+                JsfUtil.addErrorMessage(openClaimMessage);
+                continue;
+            }
 
             String labLockMessage = labSampleLockService.checkCancelBlocked(b.getBilledBill());
             if (labLockMessage != null) {
