@@ -2557,17 +2557,45 @@ public class AnthropicApiService implements Serializable {
                         }
                     }
                     for (String key : new String[]{"institutionIds", "departmentIds"}) {
-                        if (toolInput.containsKey(key) && !toolInput.getString(key, "").trim().isEmpty()) {
-                            javax.json.JsonArrayBuilder ids = Json.createArrayBuilder();
-                            for (String part : toolInput.getString(key, "").split(",")) {
-                                try {
-                                    ids.add(Long.parseLong(part.trim()));
-                                } catch (NumberFormatException nfe) {
-                                    return "Error: " + key + " must be comma-separated numeric ids.";
+                        if (!toolInput.containsKey(key) || toolInput.isNull(key)) {
+                            continue;
+                        }
+                        // Strict parse: a value that is not understood must never be dropped,
+                        // because an empty audience means every user.
+                        javax.json.JsonValue raw = toolInput.get(key);
+                        java.util.List<String> parts = new java.util.ArrayList<>();
+                        if (raw.getValueType() == javax.json.JsonValue.ValueType.STRING) {
+                            String s = ((javax.json.JsonString) raw).getString().trim();
+                            if (!s.isEmpty()) {
+                                parts.addAll(java.util.Arrays.asList(s.split(",", -1)));
+                            }
+                        } else if (raw.getValueType() == javax.json.JsonValue.ValueType.NUMBER) {
+                            parts.add(raw.toString());
+                        } else if (raw.getValueType() == javax.json.JsonValue.ValueType.ARRAY) {
+                            for (javax.json.JsonValue v : (javax.json.JsonArray) raw) {
+                                if (v.getValueType() == javax.json.JsonValue.ValueType.STRING) {
+                                    parts.add(((javax.json.JsonString) v).getString());
+                                } else if (v.getValueType() == javax.json.JsonValue.ValueType.NUMBER) {
+                                    parts.add(v.toString());
+                                } else {
+                                    return "Error: " + key + " must be numeric ids.";
                                 }
                             }
-                            body.add(key, ids);
+                        } else {
+                            return "Error: " + key + " must be comma-separated numeric ids.";
                         }
+                        if (parts.isEmpty()) {
+                            continue;
+                        }
+                        javax.json.JsonArrayBuilder ids = Json.createArrayBuilder();
+                        for (String part : parts) {
+                            try {
+                                ids.add(Long.parseLong(part.trim()));
+                            } catch (NumberFormatException nfe) {
+                                return "Error: " + key + " must be comma-separated numeric ids.";
+                            }
+                        }
+                        body.add(key, ids);
                     }
                     return callMaintenanceWindowApi(method, id, body.build().toString(), hmisBaseUrl, hmisApiKey);
                 }

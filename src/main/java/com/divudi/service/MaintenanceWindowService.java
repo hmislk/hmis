@@ -42,7 +42,7 @@ public class MaintenanceWindowService {
         MaintenanceWindowRules.validate(window);
         window.getInstitutions().clear();
         if (institutionIds != null) {
-            for (Long id : institutionIds) {
+            for (Long id : new java.util.LinkedHashSet<>(institutionIds)) {
                 Institution i = id == null ? null : institutionFacade.find(id);
                 if (i == null || i.isRetired()) {
                     throw new MaintenanceWindowException("Institution not found: " + id);
@@ -52,7 +52,7 @@ public class MaintenanceWindowService {
         }
         window.getDepartments().clear();
         if (departmentIds != null) {
-            for (Long id : departmentIds) {
+            for (Long id : new java.util.LinkedHashSet<>(departmentIds)) {
                 Department d = id == null ? null : departmentFacade.find(id);
                 if (d == null || d.isRetired()) {
                     throw new MaintenanceWindowException("Department not found: " + id);

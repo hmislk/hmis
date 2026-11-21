@@ -1,14 +1,15 @@
 {
   "version": "v2.25.0",
   "description": "Create the MAINTENANCEWINDOW table and its two join tables if missing",
-  "issue": "#25838 - maintenance banner",
+  "githubIssue": "25838",
   "author": "Dr M H B Ariyaratne",
   "date": "2026-11-21",
-  "type": "schema",
-  "tables_affected": ["maintenancewindow", "maintenancewindow_institution", "maintenancewindow_department"],
-  "data_changes": false,
-  "requires_downtime": false,
-  "estimated_duration_minutes": 1,
-  "note": "Add Missing Fields does not create new tables, so the maintenance banner fails on a database without them. Run before deploying a build that includes the MaintenanceWindow entity. Idempotent; changes no data. Join tables are lower case, as mapped in the entity.",
-  "rollback": "rollback.sql"
+  "requiresDowntime": false,
+  "estimatedDurationMinutes": 1,
+  "affectedTables": ["maintenancewindow", "maintenancewindow_institution", "maintenancewindow_department"],
+  "preRequisites": [
+    "Run migration.sql by hand on the database BEFORE deploying the build that contains the MaintenanceWindow entity. The migration page only exists in that build, so it cannot run this step first.",
+    "Idempotent; changes no data. Join tables are lower case, as mapped in the entity."
+  ],
+  "rollbackNotes": ["rollback.sql drops the three tables"]
 }
