@@ -251,6 +251,20 @@ public class WebUserController implements Serializable {
         return user.getWebUserPerson().getNameWithTitle();
     }
 
+    /**
+     * The 2FA Required and Allow SMS flags may be changed (or set on a new
+     * user) only by a user with the user-management privilege. Without it the
+     * flags go back to their stored values (false for a new user).
+     */
+    private void refuseProtectedFlagsWithoutPrivilege(boolean wasTwoFactorRequired, boolean wasTwoFactorSmsAllowed) {
+        if ((wasTwoFactorRequired != current.isTwoFactorRequired() || wasTwoFactorSmsAllowed != current.isTwoFactorSmsAllowed())
+                && !hasPrivilege(Privileges.AdminManagingUsers.name())) {
+            current.setTwoFactorRequired(wasTwoFactorRequired);
+            current.setTwoFactorSmsAllowed(wasTwoFactorSmsAllowed);
+            JsfUtil.addErrorMessage("Two-factor settings were not changed. You do not have the privilege to manage users.");
+        }
+    }
+
     public void saveUser() {
         if (current == null) {
             return;
@@ -262,14 +276,8 @@ public class WebUserController implements Serializable {
         boolean wasTwoFactorSmsAllowed = saved != null && saved.isTwoFactorSmsAllowed();
         boolean openSetupWindowAfterSave = false;
         // Manage User is reached only with this privilege, but a form can be posted without the menu; check it here,
-        // before the save below can write the submitted flags
-        if (saved != null
-                && (wasTwoFactorRequired != current.isTwoFactorRequired() || wasTwoFactorSmsAllowed != current.isTwoFactorSmsAllowed())
-                && !hasPrivilege(Privileges.AdminManagingUsers.name())) {
-            current.setTwoFactorRequired(wasTwoFactorRequired);
-            current.setTwoFactorSmsAllowed(wasTwoFactorSmsAllowed);
-            JsfUtil.addErrorMessage("Two-factor settings were not changed. You do not have the privilege to manage users.");
-        }
+        // before the save below can write the submitted flags. A new user counts as "was off" for every flag.
+        refuseProtectedFlagsWithoutPrivilege(wasTwoFactorRequired, wasTwoFactorSmsAllowed);
         if (current.getId() == null || current.getId() == 0) {
             getFacade().create(current);
             JsfUtil.addSuccessMessage("Saved");
@@ -625,6 +633,7 @@ public class WebUserController implements Serializable {
         getCurrent().getWebUserPerson().setCreater(getSessionController().getLoggedUser());
 
         getCurrent().setLoginPage(loginPage);
+        refuseProtectedFlagsWithoutPrivilege(false, false);
 
         getCurrent().setSite(site);
 
