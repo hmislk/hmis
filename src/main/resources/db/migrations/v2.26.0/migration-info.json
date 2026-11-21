@@ -1,0 +1,14 @@
+{
+  "version": "v2.26.0",
+  "description": "Create CREDITCOMPANYCLAIM and CREDITCOMPANYCLAIMITEM (OPD credit company claims)",
+  "issue": "#25847 - OPD credit company claims, part 1",
+  "author": "Dr M H B Ariyaratne",
+  "date": "2026-11-21",
+  "type": "schema",
+  "tables_affected": ["creditcompanyclaim", "creditcompanyclaimitem"],
+  "data_changes": false,
+  "requires_downtime": false,
+  "estimated_duration_minutes": 1,
+  "note": "Production has no DDL generation: run this before deploying any build that includes the CreditCompanyClaim entities. Idempotent; tables are created in the same case as the existing WEBUSER table.",
+  "rollback": "rollback.sql"
+}
