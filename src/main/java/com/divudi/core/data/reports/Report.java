@@ -757,6 +757,15 @@ public class Report<T> {
                     "%s",
                     3f));
 
+            rpCols.put("Booked Date", new ReportColumn<>("Booked Date",
+                     row -> {
+                            OnlineBookingDetialRow r = (OnlineBookingDetialRow) row;
+                            return r.getBookedDate() != null ? new SimpleDateFormat("dd MMM yyyy hh:mm a").format(r.getBookedDate()) : "";
+                    },
+                    TextAlignment.LEFT,
+                    "%s",
+                    4f));
+
             rpCols.put("Consultant", new ReportColumn<>("Consultant", OnlineBookingDetialRow::getConsultantName, TextAlignment.LEFT, "%s", 5f));
             rpCols.put("Speciality", new ReportColumn<>("Speciality", OnlineBookingDetialRow::getConsultantSpeciality, TextAlignment.LEFT, "%s", 4f));
             rpCols.put("Session Name", new ReportColumn<>("Session Name", OnlineBookingDetialRow::getSessionName, TextAlignment.LEFT, "%s", 4f));
@@ -794,9 +803,9 @@ public class Report<T> {
         @Override
         public void addFooterRow(Table table) throws IOException {
             if (this.isSerialNoColumnAtStart()) {
-                table.addCell(new Cell(1, 6).add(new Paragraph("")).setBackgroundColor(new DeviceRgb(192, 192, 192)));
+                table.addCell(new Cell(1, 7).add(new Paragraph("")).setBackgroundColor(new DeviceRgb(192, 192, 192)));
             } else {
-                table.addCell(new Cell(1, 5).add(new Paragraph("")).setBackgroundColor(new DeviceRgb(192, 192, 192)));
+                table.addCell(new Cell(1, 6).add(new Paragraph("")).setBackgroundColor(new DeviceRgb(192, 192, 192)));
             }
             Object footerValue;
  

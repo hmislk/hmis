@@ -189,6 +189,9 @@ public class PettyCashBillController implements Serializable {
     ConfigOptionApplicationController configOptionApplicationController;
 
     public void cancelPettyCashBill() {
+        if (com.divudi.core.util.CancellationBillCheck.refuse(current)) {
+            return;
+        }
         if (comment == null || comment.trim().isEmpty()) {
             JsfUtil.addErrorMessage("Comment is Missing");
             return;
@@ -1152,6 +1155,10 @@ public class PettyCashBillController implements Serializable {
 
     public void setPreBill(boolean preBill) {
         this.preBill = preBill;
+    }
+
+    public boolean isBillACancellationBill() {
+        return com.divudi.core.util.CancellationBillCheck.isCancellationBill(current);
     }
 
 }

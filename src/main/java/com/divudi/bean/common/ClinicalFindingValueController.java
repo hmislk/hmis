@@ -133,6 +133,19 @@ public class ClinicalFindingValueController implements Serializable {
         return items;
     }
 
+    public List<ClinicalFindingValue> findPatientAllergies(Patient pt) {
+        String j = "select a "
+                + " from ClinicalFindingValue a "
+                + " where a.retired=:ret "
+                + " and a.patient=:pt "
+                + " and a.clinicalFindingValueType in :types";
+        Map params = new HashMap();
+        params.put("ret", false);
+        params.put("pt", pt);
+        params.put("types", ClinicalFindingValueType.patientAllergyTypes());
+        return getFacade().findByJpql(j, params);
+    }
+
     /**
      *
      */

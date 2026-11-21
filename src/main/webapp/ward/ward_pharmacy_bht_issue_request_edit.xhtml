@@ -426,7 +426,7 @@
                             <h:panelGroup rendered="#{sessionController.departmentPreference.pharmacyBillPaperType eq 'PosPaper'}">
                                 <div >
                                     <h:panelGroup rendered="#{sessionController.departmentPreference.pharmacyBillPrabodha eq false}" >
-                                        <phe:issueBill bill="#{pharmacyRequestForBhtController.printBill}"/>
+                                        <phe:issueBill bill="#{pharmacyRequestForBhtController.printBill}" showPositiveDiscount="true"/>
                                     </h:panelGroup>
                                 </div>
                             </h:panelGroup>
@@ -434,7 +434,7 @@
                             <h:panelGroup rendered="#{sessionController.departmentPreference.pharmacyBillPaperType eq 'FiveFivePaper'}">
                                 <div >
                                     <h:panelGroup rendered="#{sessionController.departmentPreference.pharmacyBillPrabodha eq false}" >
-                                        <phi:saleBill_five_five bill="#{pharmacyRequestForBhtController.printBill}"></phi:saleBill_five_five>
+                                        <phi:saleBill_five_five bill="#{pharmacyRequestForBhtController.printBill}" showPositiveDiscount="true"></phi:saleBill_five_five>
                                     </h:panelGroup>
                                 </div>
                             </h:panelGroup>

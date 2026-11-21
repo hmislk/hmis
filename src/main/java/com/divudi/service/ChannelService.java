@@ -104,6 +104,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import javax.annotation.security.PermitAll;
+import com.divudi.service.ApiUserAuthenticationService;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.inject.Inject;
@@ -148,6 +149,8 @@ public class ChannelService {
     BillService billService;
     @EJB
     private WebUserFacade webUserFacade;
+    @EJB
+    private ApiUserAuthenticationService apiUserAuthenticationService;
 
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
@@ -3170,24 +3173,7 @@ public class ChannelService {
     }
 
     public WebUser checkUserCredentialForApi(String temUserName, String temPassword) {
-
-        String temSQL;
-        temSQL = "SELECT u FROM WebUser u WHERE u.retired = false and (u.name)=:n order by u.id desc";
-        Map m = new HashMap();
-
-        m.put("n", temUserName.trim().toLowerCase());
-        WebUser u = webUserFacade.findFirstByJpql(temSQL, m);
-
-        if (u == null) {
-            return null;
-        }
-
-        if (SecurityController.matchPassword(temPassword, u.getWebUserPassword())) {
-
-            return u;
-        }
-
-        return null;
+        return apiUserAuthenticationService.authenticate(temUserName, temPassword);
     }
 
     @EJB

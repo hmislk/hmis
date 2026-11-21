@@ -33,3 +33,8 @@ Act in this order. Speed matters: the content is public from the moment of the p
 8. **Prevent a repeat:** check that `.gitignore` covers the artifact type, and that the worker was told the rules (see `developer_docs/process/worker-dispatch-template.md`).
 
 Public-surface rule: do not describe the leaked content, counts, or any patient detail in issues, PR comments or commit messages. Say only that an accidental commit was removed, tracked under the relevant issue number.
+
+
+## From CLAUDE.md (moved detail)
+
+a force-push does not purge pushed junk or data.

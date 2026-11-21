@@ -350,6 +350,14 @@ public class BookingControllerViewScopeMonth implements Serializable, Controller
             return;
         }
 
+        String totalMismatch = configOptionApplicationController.getBooleanValueByKey(BookingController.RESCHEDULE_TOTAL_CHECK_KEY, true)
+                ? BookingController.rescheduleTotalMismatchMessage(selectedBillSession, getSelectedSessionInstanceForRechedule())
+                : null;
+        if (totalMismatch != null) {
+            JsfUtil.addErrorMessage(totalMismatch);
+            return;
+        }
+
         if (getSelectedSessionInstanceForRechedule().getMaxNo() != 0 && configOptionApplicationController.getBooleanValueByKey("Limited appoinments session can't get appoinement more than max amount.")) {
             if (getSelectedSessionInstanceForRechedule().getBookedPatientCount() != null) {
                 int maxNo = getSelectedSessionInstanceForRechedule().getMaxNo();
@@ -1927,6 +1935,9 @@ public class BookingControllerViewScopeMonth implements Serializable, Controller
     }
 
     public void cancelAgentPaidBill() {
+        if (getBillSession() != null && com.divudi.core.util.CancellationBillCheck.refuse(getBillSession().getBill())) {
+            return;
+        }
         if (getBillSession() == null) {
             JsfUtil.addErrorMessage("No BillSession");
             return;
@@ -1979,6 +1990,9 @@ public class BookingControllerViewScopeMonth implements Serializable, Controller
     }
 
     public void cancelCashFlowBill() {
+        if (getBillSession() != null && com.divudi.core.util.CancellationBillCheck.refuse(getBillSession().getBill())) {
+            return;
+        }
         if (errorCheckCancelling()) {
             return;
         }
@@ -1990,6 +2004,9 @@ public class BookingControllerViewScopeMonth implements Serializable, Controller
     }
 
     public void cancelBookingBill() {
+        if (getBillSession() != null && com.divudi.core.util.CancellationBillCheck.refuse(getBillSession().getBill())) {
+            return;
+        }
         if (errorCheckCancelling()) {
             return;
         }
@@ -2079,6 +2096,9 @@ public class BookingControllerViewScopeMonth implements Serializable, Controller
     }
 
     public void cancelCreditPaidBill() {
+        if (getBillSession() != null && com.divudi.core.util.CancellationBillCheck.refuse(getBillSession().getBill())) {
+            return;
+        }
         if (getBillSession() == null) {
             JsfUtil.addErrorMessage("No BillSession");
             return;

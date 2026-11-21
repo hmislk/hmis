@@ -783,6 +783,77 @@ public class InwardBeanController implements Serializable {
         return totalsMap;
     }
 
+    /**
+     * True when the admission (or one of its child encounters) has a live
+     * professional fee marked "Collected by Doctor". Patient bills use it to
+     * print the single note "Fees Collected by the Doctor" outside the net
+     * total; the fee amount and doctor are never printed. Reads the saved flag
+     * only, so it does not depend on
+     * "Inward Professional Fee - Allow Fee Collected By Doctor" being on.
+     */
+    public boolean hasFeesCollectedByDoctor(PatientEncounter patientEncounter) {
+        if (patientEncounter == null || patientEncounter.getId() == null) {
+            return false;
+        }
+        HashMap hm = new HashMap();
+        String sql = "SELECT count(bf) FROM BillFee bf"
+                + " WHERE bf.retired=false"
+                + " and bf.collectedByDoctorAtBilling=true"
+                + " and bf.bill.retired=false"
+                + " and bf.bill.cancelled=false"
+                + " and bf.bill.billType=:btp"
+                + " and bf.bill.billTypeAtomic=:bta"
+                + " and bf.bill.patientEncounter.id IN :peIds";
+        hm.put("btp", BillType.InwardProfessional);
+        hm.put("bta", BillTypeAtomic.INWARD_PROFESSIONAL_FEE_BILL);
+        List<Long> peIds = new ArrayList<>();
+        for (PatientEncounter e : encounterWithChildren(patientEncounter, fetchChildPatientEncounter(patientEncounter))) {
+            peIds.add(e.getId());
+        }
+        hm.put("peIds", peIds);
+        return getBillFeeFacade().findLongByJpql(sql, hm, TemporalType.TIMESTAMP) > 0;
+    }
+
+    /**
+     * Bulk query for the amount, per InwardChargeType, of the service /
+     * investigation items that carry their own VAT (BillItem.vat other than 0; cancel and refund lines are negated copies and carry a negative VAT, so they net the same way the row total does), for
+     * the computed inward VAT (issue #17491). The amount is what the item adds
+     * to the charge-type row net: gross + margin - discount. That mirrors the
+     * row total (sum of gross + margin, VAT is kept separately and is not in
+     * it) less the row discount (sum of discount), so subtracting this from the
+     * row net leaves exactly the items without their own VAT.
+     */
+    public Map<InwardChargeType, Double> calServiceBillItemsOwnVatNetByInwardChargeTypeBulk(PatientEncounter patientEncounter, List<PatientEncounter> cpts) {
+        String sql = "SELECT s.item.inwardChargeType, sum(s.grossValue + s.marginValue - s.discount) "
+                + " FROM BillItem s"
+                + " WHERE s.retired=false "
+                + " AND s.vat <> 0 "
+                + " AND s.bill.billType=:btp "
+                + " AND s.bill.patientEncounter IN :pe"
+                + " GROUP BY s.item.inwardChargeType";
+
+        HashMap hm = new HashMap();
+        hm.put("btp", BillType.InwardBill);
+        List<PatientEncounter> pts = new ArrayList<>();
+        pts.add(patientEncounter);
+        if (cpts != null && !cpts.isEmpty()) {
+            pts.addAll(cpts);
+        }
+        hm.put("pe", pts);
+
+        List<Object[]> results = getBillItemFacade().findObjectsArrayByJpql(sql, hm, TemporalType.TIMESTAMP);
+
+        Map<InwardChargeType, Double> map = new HashMap<>();
+        if (results != null) {
+            for (Object[] row : results) {
+                if (row[0] != null && row[1] != null) {
+                    map.merge(professionalFeeClassificationService.rowTypeFor((InwardChargeType) row[0]), ((Number) row[1]).doubleValue(), Double::sum);
+                }
+            }
+        }
+        return map;
+    }
+
     public double calculateProfessionalCharges(PatientEncounter patientEncounter, List<PatientEncounter> cpts, boolean isEstimatedBill) {
         HashMap hm = new HashMap();
         String sql = "SELECT sum(bt.feeValue)"

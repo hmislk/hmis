@@ -270,6 +270,7 @@ public class PharmacyPurchaseOrdersApi {
             case ALREADY_CANCELLED:
             case CONFIG_DISABLED:
             case GRN_EXISTS:
+            case CANCELLATION_BILL:
                 return 409;
             default:
                 return 400;

@@ -91,10 +91,15 @@
                                                 <f:convertNumber integerOnly="true"/>
                                                 <f:validateLongRange minimum="0" />
                                                 <p:ajax
+                                                    event="keyup"
+                                                    process="txtDenoQtyReceive"
+                                                    listener="#{financialTransactionController.calculateFundTransferDenominationTotal()}"
+                                                    update="txtDenoValReceive :#{p:resolveFirstComponentWithId('txtDenoTotalReceive',view).clientId}"/>
+                                                <p:ajax
                                                     event="blur"
                                                     process="txtDenoQtyReceive"
                                                     listener="#{financialTransactionController.calculateFundTransferDenominationTotal()}"
-                                                    update="txtDenoValReceive txtDenoTotalReceive"/>
+                                                    update="txtDenoValReceive :#{p:resolveFirstComponentWithId('txtDenoTotalReceive',view).clientId}"/>
                                             </p:inputText>
                                         </p:column>
                                         <p:column headerText="Value" styleClass="text-end">

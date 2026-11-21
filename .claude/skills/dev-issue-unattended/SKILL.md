@@ -1,16 +1,6 @@
 ---
 name: dev-issue-unattended
-description: >
-  Run one or more GitHub issues through their full lifecycle end-to-end with
-  NO pauses for user input — investigate, decide the approach, gather test
-  context, and run the CI/review loop entirely autonomously, documenting
-  every judgment call for after-the-fact review instead of asking. Accepts
-  a single issue, a batch of issue numbers/URLs, or an unfiled bug/request
-  described in plain text. Use ONLY when the user has explicitly said they
-  will be unreachable (away from the computer, asleep, offline) and wants
-  the issue(s) shipped as mergeable PR(s) without them. Do not use this for
-  normal work — use dev-issue instead, which asks for input at the same
-  points this skill auto-resolves.
+description: 'Run GitHub issue(s) end-to-end with NO user input: decide, implement, drive CI/review, log judgment calls. Use ONLY when the user said they are unreachable (away, asleep). Otherwise use dev-issue.'
 argument-hint: "[issue-number|issue-url][, issue-number|issue-url ...] | problem description"
 ---
 

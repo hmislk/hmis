@@ -1,78 +1,76 @@
 # HMIS — Claude Code Rules
+🚨 = hard rule. [+] = why and steps; read it when the rule applies.
 
 ## Repository
 - Repo: https://github.com/hmislk/hmis (not buddhika75/hmis). It is **public**.
-- **Two-tier temp policy.** In-repo `<project-root>/tmp/` holds only small TEXT working files (md reports, short scripts); it is gitignored and swept regularly. Bulk/binary/one-off artifacts (screenshots, Playwright output, PDFs, DB dumps) go to an OUT-OF-REPO per-machine directory, never inside the repo root and never system `/tmp/`. Resolve the repo root with `git rev-parse --show-toplevel`. Confirm no machine's repo root sits inside a cloud-synced folder (OneDrive, Dropbox).
+- **Temp files.** `tmp/` (gitignored) holds small text files only; screenshots, PDFs, dumps go to an out-of-repo directory, never ad-hoc system `/tmp/` (the session scratchpad the harness provides is fine for throwaway files). [+](developer_docs/process/temp-files-policy.md)
 
 ## Essential Rules
 
 ### Working
-- **🚨 No worktrees.** Never use `isolation: "worktree"`; edit in the main checkout. If you are under `.claude/worktrees/*`, stop and move there. (Worktrees desync the developer's branch.)
-- **🚨 No Artifact tool for deliverables.** Recipients can't open them without a Claude account. Write `.md` in `tmp/` (working), `developer_docs/` (tracked) or `../hmis.wiki/` (wiki; never inside this repo).
-- **🚨 Discuss uncertainties** about the implementation approach with the user before coding.
-- **🚨 Finish everything the request covers before stopping.** If the user asked for several items ("all videos", "fix all of these"), never end a turn asking whether to do the next in-scope item; an unanswered question idles the work for hours. Ask only about things outside the request or decisions only the user can make, and keep working meanwhile.
-- **🚨 Removing or hiding a feature? Check production usage first.** Run a read-only query of its bill types/tables on every production DB before coding, not at merge. Keep the results in `tmp/`.
-- **🚨 Live config: apply agreed values exactly**, check the deployed branch has the code, then verify a newly created record, not the config row. See [app-configuration skill](.claude/skills/app-configuration/SKILL.md).
-- **🚨 Retrospect after nontrivial work.** If a documented fact would have prevented a mistake, propose the CLAUDE.md/doc/skill fix, open the PR and report it (the dev-hub merge gate below still applies). Write it as a short rule, not a story. See [Retrospective](developer_docs/process/continuous-improvement-retrospective.md).
-- **🚨 Write short, plain, to the point.** Applies to replies, hub messages, issues, PRs and docs. Lead with the point. Use the words on screen (menu, page, button), not code names; put code names in a "For developers" section. Ask one question at a time, with options and a recommendation. See [Writing Style](developer_docs/process/writing-style.md).
+- **🚨 No worktrees.** Never use `isolation: "worktree"`; edit in the main checkout; if under `.claude/worktrees/*`, stop and move out. [+](developer_docs/rules/working.md)
+- **🚨 No Artifact tool for deliverables.** Write `.md` in `tmp/`, `developer_docs/` or `../hmis.wiki/`. [+](developer_docs/rules/working.md)
+- **🚨 Discuss with the user only** decisions about PRODUCTION (merges, live data, live config), MONEY, CLINICAL meaning, and FLOW, DESIGN or BUSINESS-PROCESS changes. Decide every other (non-production, implementation-level) choice yourself, say so, and keep working. [+](developer_docs/rules/working.md)
+- **🚨 Finish everything the request covers before stopping.** Never end a turn asking whether to do the next in-scope item. [+](developer_docs/rules/working.md)
+- **🚨 Removing or hiding a feature? Query production usage on every production DB first,** before coding. [+](developer_docs/rules/working.md)
+- **🚨 Live config: apply agreed values exactly,** check the deployed branch has the code, verify a new record. [+](.claude/skills/app-configuration/SKILL.md)
+- **🚨 Retrospect after nontrivial work.** Propose the CLAUDE.md/doc/skill fix as a short rule and open the PR. [+](developer_docs/process/continuous-improvement-retrospective.md)
+- **🚨 Write short and plain,** lead with the point, use screen words, ask one question at a time. [+](developer_docs/process/writing-style.md)
 
 ### Code
-- Line endings differ by machine (many files are CRLF on Windows). Edit with the Edit tool; if you script a replacement, match the file's line endings and check the diff for whole-file changes.
+- Line endings differ by machine (CRLF on Windows): edit with the Edit tool and check the diff for whole-file changes. [+](developer_docs/rules/code.md)
 - **🚨 No mock data** or temporary workarounds in business logic.
 - **🚨 Never "fix" intentional typos** (e.g. `purcahseRate`); they are DB column names.
 - **🚨 Never rename composite components** without checking every usage.
-- **🚨 Never modify or remove existing constructors.** Only add new ones, delegating via `this(...)`. See [DTO Guidelines](developer_docs/dto/implementation-guidelines.md).
+- **🚨 Never modify or remove existing constructors;** add new ones delegating via `this(...)`. [+](developer_docs/dto/implementation-guidelines.md)
 - **🚨 JPQL first.** Native SQL only for a demonstrated performance need JPQL can't meet.
-- **🚨 `COUNT(...)` queries use `findLongByJpql`**, never `findDoubleByJpql` (silently returns 0.0).
-- **🚨 Date-time ranges: pass `TemporalType.TIMESTAMP`.** `findByJpql(jpql, params)` binds every `Date` as `TemporalType.DATE`, so an end-of-day `toDate` becomes 00:00 and today's rows vanish (#25526).
-- **🚨 Save a new entity with the facade's `create()`, never `edit()`.** `edit()` merges a copy and leaves the object without an id, so every later save of it, or of anything pointing to it, inserts another row (#25200: one cancel wrote 7 bills).
-- **🚨 Bind id lists, not entity lists, for a root entity in JPQL.** EclipseLink serialises the entities for `b in :bills`, so the query silently matches nothing. Use `b.id in :billIds`.
-- **🚨 Business errors thrown from a `@Stateless` service use an `@ApplicationException(rollback = true)` exception.** A plain `IllegalStateException`/`IllegalArgumentException` reaches the JSF controller or REST class as `EJBException`, so its `catch` never fires and the user sees no message.
-- **🚨 New report buttons on a Favorites-enabled index page** (e.g. `reports/index.xhtml`) go in both the category tab and the ⭐ Favorites tab. Read [Report Favorites](developer_docs/feature/report-favorites.md) first.
-- **🚨 Never change the meaning of an existing config key** (no added/removed `!`, no new default). Hospitals store a value per key; create a new key whose name says what `true` does. CI `config-semantics-guard` fails PRs that do this. See [Changing existing options](developer_docs/configuration/application-options.md#changing-existing-options).
-- **🚨 Never change a bean's scope** (`@SessionScoped` → `@ViewScoped` etc.) without discussing it with the lead developer first. Fix the issue within the current scope. CI `bean-scope-guard` fails such PRs unless the lead developer adds the label `scope-change-approved`. See [Bean Scope Policy](developer_docs/jsf/bean-scope-policy.md).
-- **🚨 Never gate behavior on a hospital's name** (`applicationInstitution eq 'Ruhuna'` etc.). Use a `ConfigOption`. See [Institution-Specific Behavior](developer_docs/configuration/institution-specific-behavior.md). Fix existing violations only when already touching that code.
-- **🚨 Multiple Payment Methods never includes a credit method** (Staff Credit, Credit); non-credit methods such as Staff Welfare are fine. See [Multiple Payment Methods policy](developer_docs/billing/multiple-payment-methods-policy.md).
-- **🚨 Cancellation is whole-bill only.** Never build item-level cancellation; reversing some items is a Return/Refund, which most bill types already have. See [Cancellation vs. Return](developer_docs/billing/cancellation-vs-return-policy.md).
-- **🚨 Inpatient medicines have exactly two workflows (Direct Issue; Request → porter → ward receive), both always on.** Never add a config option to switch either or any step off. See [Inpatient Medicine Issue Policy](developer_docs/pharmacy/inpatient-medicine-issue-policy.md).
+- **🚨 `COUNT(...)` queries use `findLongByJpql`,** never `findDoubleByJpql`. [+](developer_docs/rules/code.md)
+- **🚨 Date-time ranges: pass `TemporalType.TIMESTAMP`;** the default binds `DATE` and drops today's rows. That overload throws on a query error; check what the caller does with an exception. [+](developer_docs/rules/code.md)
+- **🚨 Save a new entity with the facade's `create()`, never `edit()`.** [+](developer_docs/rules/code.md)
+- **🚨 Bind id lists, not entity lists, for a root entity in JPQL** (`b.id in :billIds`). [+](developer_docs/rules/code.md)
+- **🚨 Business errors from a `@Stateless` service use an `@ApplicationException(rollback = true)` exception.** [+](developer_docs/rules/code.md)
+- **🚨 New report buttons on a Favorites-enabled index page go in both the category tab and the Favorites tab.** [+](developer_docs/feature/report-favorites.md)
+- **🚨 Never change the meaning of an existing config key;** create a new key. [+](developer_docs/configuration/application-options.md)
+- **🚨 Never change a bean's scope** without the lead developer's OK. [+](developer_docs/jsf/bean-scope-policy.md)
+- **🚨 Never gate behavior on a hospital's name;** use a `ConfigOption`. [+](developer_docs/configuration/institution-specific-behavior.md)
+- **🚨 Multiple Payment Methods never includes a credit method.** [+](developer_docs/billing/multiple-payment-methods-policy.md)
+- **🚨 Cancellation is whole-bill only;** reversing some items is a Return/Refund. [+](developer_docs/billing/cancellation-vs-return-policy.md)
+- **🚨 Inpatient medicines have exactly two workflows, both always on;** never add a config option to switch one off. [+](developer_docs/pharmacy/inpatient-medicine-issue-policy.md)
 
 ### Security
-- **🚨 No hospital data in GitHub** (issues, PRs, comments, commits, screenshots): no record counts, production bill/BHT/PHN numbers or IDs, schema names, cutover dates, staff stats, patient/doctor details, or data-fix logs. Describe the defect instead; naming the reporting hospital is fine. See [Public Content Policy](developer_docs/git/github-public-content-policy.md).
-- **🚨 Never write credentials** (passwords, API keys, DB users, IPs, hostnames, SSH strings) into any file in the project folder, tracked or not. Point to the external credentials file instead. Never print a credentials file to output, even "masked" (a failed mask prints it): pass the one value straight into the command.
-- **🚨 No live-vulnerability detail on ANY public GitHub surface until the fix is deployed everywhere**: comments, PR bodies and titles, commit messages, close reasons. Write only "hardening, tracked under #N". GitHub keeps body edit-history and force-pushed commits by SHA, so draft security-PR text privately first.
-- **🚨 Security PRs need a threat-model note before review.** Green CI and e2e are not enough. State whether the change closes the whole class: forgery AND replay AND cross-purpose use.
-- **🚨 DB dumps and backups NEVER go inside the repo tree**, even in a gitignored subdirectory. Resolve the root with `git rev-parse --show-toplevel` and refuse any dump path under it. Each machine picks its own out-of-repo directory.
+- **🚨 No hospital data in GitHub** (issues, PRs, comments, commits, screenshots): no record counts, production bill/BHT/PHN numbers or IDs, schema names, cutover dates, staff stats, patient/doctor details, or data-fix logs. Describe the defect instead; naming the reporting hospital is fine. [+](developer_docs/git/github-public-content-policy.md)
+- **🚨 Never write credentials (passwords, API keys, DB users, IPs, hostnames, SSH strings) into any file in the project folder,** and never print a credentials file, even masked; pass the one value straight into the command. [+](developer_docs/rules/security.md)
+- **🚨 No live-vulnerability detail on ANY public GitHub surface until the fix is deployed everywhere;** write only "hardening, tracked under #N". [+](developer_docs/rules/security.md)
+- **🚨 Security PRs need a threat-model note before review:** forgery AND replay AND cross-purpose use. [+](developer_docs/rules/security.md)
+- **🚨 DB dumps and backups NEVER go inside the repo tree,** even gitignored. [+](developer_docs/rules/security.md)
 
 ### Testing
 - XHTML-only changes need no compile or test.
-- **🚨 Never navigate to an inner page by URL.** Open only the app root, then click through the menus. A URL-loaded page shows artifacts, not defects; a page with no menu path is itself the finding. Record the menu path in the issue/PR. See [Playwright E2E §2](developer_docs/testing/playwright-e2e-workflow.md#-never-navigate-by-typing-a-page-url).
-- **🚨 Never clean up test data unasked.** Leave records in place and list what you created. Never write test data to production without confirming the environment. See [§15a](developer_docs/testing/playwright-e2e-workflow.md#15a-leave-test-data-where-it-is--never-clean-up-unasked).
+- **🚨 Never navigate to an inner page by URL;** open the app root and click through the menus. [+](developer_docs/testing/playwright-e2e-workflow.md)
+- **🚨 Never clean up test data unasked;** list what you created; never write test data to production. [+](developer_docs/testing/playwright-e2e-workflow.md)
 
 ### Git and deployment
-- **🚨 After every `git push`**, without being asked, restore local JNDI in `persistence.xml` and leave it unstaged: `${JDBC_DATASOURCE}` → `jdbc/coop`, `${JDBC_AUDIT_DATASOURCE}` → `jdbc/ruhunuAudit`.
-- **🚨 Never deploy manually as root.** Deploy only through GitHub Actions CI/CD; if a manual fix is unavoidable, use `appuser`. See [Deployment Recovery](developer_docs/deployment/deployment-recovery-guide.md).
-- **🚨 Never `git add -A` or `git add .`.** Stage explicit paths only. This repo can carry many untracked local artifacts, so a sweep is a data-leak risk, not just noise. A scripted commit must print `git status --porcelain` and the exact file list, and refuse any path outside the intended set.
-- **🚨 Hotfix branches sync `.gitignore` from `origin/development` first** (`git checkout origin/development -- .gitignore`). See the hotfix-deploy skill.
-- **🚨 Any task that WRITES to git** (commit, push, branch creation, or a scripted/bulk edit of more than ~10 files) runs in a dedicated worker session, not the communication session. A hand-made commit of a few explicit paths may stay inline; read-only lookups are always inline. Worker prompts follow the [worker dispatch template](developer_docs/process/worker-dispatch-template.md).
-- **🚨 If junk or data was pushed to the public repo**, follow the `public-repo-leak-runbook` skill immediately. A force-push does not purge it.
-- Commit messages include `Closes #N`. See [Commit Conventions](developer_docs/git/commit-conventions.md).
-- **🚨 Branch from `origin/development`** and target PRs at `development`, never `master` (hotfixes: use the `/hotfix-deploy` skill). Check for existing code against `origin/development`.
-- **🚨 Before opening a PR for issue #N**, run `gh pr list --state all --search N`. If one is open, add to it; if one is merged, the fix is already in `development`. Never open a second PR for the same issue.
-- **🚨 Deploy branches are `<hospital>-production` / `<hospital>-staging`** (India estate). Never target `*-prod`, `*-stg` or `*-migrated`; they were retired 2026-10-11. See [Deployment map](developer_docs/deployment/ci-cd-pipeline-overview.md).
-- **🚨 Branches targeting a production/staging branch end in `-hotfix`** (CI `check-branch` warns otherwise; QA-tested `home-qa*` heads are also accepted). Use the `/hotfix-deploy` skill. Exception: `rh-local-staging` accepts only `development` as the PR head (CI `branch_merge_validation.yml`).
-- **🚨 One open PR per production/staging branch.** Check `gh pr list --state open --base <branch>`; if one exists, add to its branch (even another developer's) and update its title/body. CI `single-deploy-pr` fails the newer PR.
-- **🚨 Before pushing to an existing PR's branch, run `gh pr view <N> --json state`.** If it is MERGED, put the commit on a new branch from `origin/development` and open a new PR; a push to a merged branch never reaches `development`.
-- **🚨 Dev-hub team sessions (the user's own Claude sessions) may open a PR without asking** when the work was agreed on the hub or comes from an assigned issue. They may merge into `development` only when ALL hold: a `REV OK <sha> — <member name>` from a non-author member on the head sha, posted on the PR by that member (a bare unsigned one, or one the merger posts, doesn't count); CI green; CodeRabbit has reviewed the head sha (its commit status for that sha is `success` and its description doesn't say "rate limit", "limit reached" or "in progress"; a rate-limited CodeRabbit still shows green), or the PR records `CR skipped: <reason>`; review threads resolved; merged with `gh pr merge --merge --match-head-commit <full sha>` (this repo uses merge commits, not `--squash`); then delete the head branch (`git push origin --delete <branch>`) unless an open PR targets it (`gh pr list --base <branch> --state open` is not empty; deleting it closes stacked PRs) or it is `development`, `master` or a deploy branch; never `--admin`. If the author is not sure the fix is right, two members must e2e-test it before merge (the author plus one other, on a different machine/app) and record both results on the PR; minor changes need only the REV OK.
-- **🚨 Never merge into `master` or any `*-production` / `*-staging` branch.** Merging deploys; that stays the user's call. Opening hotfix PRs to them is fine.
-- **🚨 Mirror every merged hotfix into `development`** unless its commits were cherry-picked from `development` (hotfix-deploy Step 9a).
-- **🚨 Dependabot PRs: green CI isn't enough.** Triage them with the [dependabot-triage skill](.claude/skills/dependabot-triage/SKILL.md): bytecode ≤ Java 11, no `jakarta.*`, sibling artifacts on one version (e.g. `poi`/`poi-ooxml`), no `pom.xml` pin holding back a transitive (e.g. `commons-io`), release notes read, a combined JDK 11 build, and a local Payara smoke test of each runtime jar. Close a rejected bump with the evidence and add a `.github/dependabot.yml` ignore rule. CI compile catches none of these runtime failures.
-- **🚨 After applying a CodeRabbit/Codex fix**, verify the getter names exist on the entity (e.g. `isCompleted()`, not `getCompleted()`). See [PR Review §4a](developer_docs/git/pr-review-workflow.md).
-- **🚨 Decline bot suggestions that change the design or flow, or bring a pattern most of the codebase does not use.** Reply, resolve the thread, don't implement; raise any you still think valid with the lead developer later. See [PR Review §2a](developer_docs/git/pr-review-workflow.md#2a-decline-design-flow-and-off-pattern-suggestions-lead-developer-rule-2026-11-13).
+- **🚨 After every `git push`,** without being asked, restore local JNDI in `persistence.xml` and leave it unstaged: `${JDBC_DATASOURCE}` → `jdbc/coop`, `${JDBC_AUDIT_DATASOURCE}` → `jdbc/ruhunuAudit`. [+](developer_docs/deployment/persistence-verification.md)
+- **🚨 Never deploy manually as root;** deploy only through GitHub Actions CI/CD. [+](developer_docs/deployment/deployment-recovery-guide.md)
+- **🚨 Never `git add -A` or `git add .`;** stage explicit paths only. A scripted commit prints `git status --porcelain` and the file list, and refuses paths outside the set. [+](developer_docs/rules/git.md)
+- **🚨 Hotfix branches sync `.gitignore` from `origin/development` first.** [+](.claude/skills/hotfix-deploy/SKILL.md)
+- **🚨 Any task that WRITES to git runs in a dedicated worker session,** not the communication session. [+](developer_docs/process/worker-dispatch-template.md)
+- **🚨 If junk or data was pushed to the public repo,** follow the `public-repo-leak-runbook` skill at once.
+- Commit messages include `Closes #N`. [+](developer_docs/git/commit-conventions.md)
+- **🚨 Branch from `origin/development`** and target PRs at `development`, never `master` (hotfixes: `/hotfix-deploy`). [+](developer_docs/rules/git.md)
+- **🚨 Before opening a PR for issue #N, run `gh pr list --state all --search N`;** never open a second PR for it. [+](developer_docs/rules/git.md)
+- **🚨 Deploy branches are `<hospital>-production` / `<hospital>-staging`;** never target `*-prod`, `*-stg` or `*-migrated`. [+](developer_docs/deployment/ci-cd-pipeline-overview.md)
+- **🚨 Branches targeting a production/staging branch end in `-hotfix`.** [+](developer_docs/rules/git.md)
+- **🚨 One open PR per production/staging branch;** add to its branch instead of opening another. [+](developer_docs/rules/git.md)
+- **🚨 Before pushing to an existing PR's branch, run `gh pr view <N> --json state`;** if MERGED, use a new branch. [+](developer_docs/rules/git.md)
+- **🚨 Dev-hub team sessions may open a PR unasked; merge into `development` only under the merge gate** (non-author `REV OK <sha> — <member>`, CI green, CodeRabbit on the head sha or `CR skipped`, threads resolved, `--match-head-commit`, never `--admin`). [+](developer_docs/git/merge-rules.md)
+- **🚨 Never merge into `master` or any `*-production` / `*-staging` branch;** merging deploys, the user decides. Opening hotfix PRs is fine.
+- **🚨 Mirror every merged hotfix into `development`** unless cherry-picked from it. [+](.claude/skills/hotfix-deploy/SKILL.md)
+- **🚨 Dependabot PRs: green CI isn't enough;** triage with the dependabot-triage skill. [+](.claude/skills/dependabot-triage/SKILL.md)
+- **🚨 After applying a CodeRabbit/Codex fix,** verify the getter names exist on the entity. [+](developer_docs/git/pr-review-workflow.md)
+- **🚨 Decline bot suggestions that change design or flow, or use an off-pattern;** reply and resolve. [+](developer_docs/git/pr-review-workflow.md)
 
 ## Reference (read when relevant)
-- Persistence/deployment: [JNDI dev vs prod](developer_docs/deployment/persistence-verification.md) · [Windows remote access](developer_docs/deployment/windows-remote-access-tips.md) · [Migrating a stale hospital DB](developer_docs/deployment/migrating-a-stale-hospital-to-development.md) (always E2E-test a real OPD bill settle)
-- Migrations must detect table-name case: [Migration Guide § case sensitivity](developer_docs/database/migration-development-guide.md#cross-deployment-case-sensitivity-must) · Excel export of HTML tables: [guide](developer_docs/feature/excel-export-html-table.md)
-- Inward: [navigation](developer_docs/navigation/inward_navigation.md) · [CC settlement](developer_docs/billing/inward-cc-settlement-tracking.md)
-- User docs go to `../hmis.wiki`, written for end users (pharmacy staff, nurses, doctors, admins). The top menu is icons only: start menu paths with the module name from the wiki's How-to-Navigate page and name the tab when a step is a tab, e.g. `Administration → Manage Institutions → Preferences → Application Options`. Copy labels from the XHTML, never guess.
-- Subagents (`.claude/agents/`): [Agent authoring](developer_docs/process/agent-authoring.md); CI `agent-lint` checks frontmatter.
-- "TIA" = Thanks In Advance.
+- Index of deploy, database, inward and wiki docs: [developer_docs/rules/reference-index.md](developer_docs/rules/reference-index.md)
+- Migrations must detect table-name case: [guide](developer_docs/database/migration-development-guide.md)
+- Wiki (`../hmis.wiki`) is for end users: [wiki rules](developer_docs/rules/wiki.md). "TIA" = Thanks In Advance.

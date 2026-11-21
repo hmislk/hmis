@@ -474,7 +474,8 @@ public class BillBeanController implements Serializable {
                 //                + " and bf.bill.institution=:ins"
                 + " and bf.billItem.item.department.institution=:ins"
                 + " and bf.bill.createdAt between :fromDate and :toDate "
-                + " and bf.bill.paymentMethod in :pms";
+                + " and bf.bill.paymentMethod in :pms"
+                + " and (bf.collectedByDoctorAtBilling = false or bf.collectedByDoctorAtBilling is null)";
 
         HashMap temMap = new HashMap();
 
@@ -547,7 +548,8 @@ public class BillBeanController implements Serializable {
                 + " and bf.bill.department=:dep"
                 + " and bf.bill.institution=:ins"
                 //+ " and bf.billItem.item.department.institution=:ins"
-                + " and bf.bill.createdAt between :fromDate and :toDate ";
+                + " and bf.bill.createdAt between :fromDate and :toDate "
+                + " and (bf.collectedByDoctorAtBilling = false or bf.collectedByDoctorAtBilling is null)";
         //+ " and bf.bill.paymentMethod in :pms";
 
         HashMap temMap = new HashMap();
@@ -2694,7 +2696,7 @@ public class BillBeanController implements Serializable {
     }
 
     @EJB
-    private com.divudi.ejb.BillNumberGenerator finalBillLockBean;
+    private com.divudi.ejb.FinalBillLockBean finalBillLockBean;
     @EJB
     private com.divudi.core.facade.PatientEncounterFacade finalBillPatientEncounterFacade;
 
@@ -3176,6 +3178,7 @@ public class BillBeanController implements Serializable {
         String sql = "Select sum(bf.feeGrossValue),sum(bf.feeDiscount),sum(bf.feeValue),sum(bf.feeVat) "
                 + " from BillFee bf where "
                 + " bf.retired=false "
+                + " and (bf.collectedByDoctorAtBilling = false or bf.collectedByDoctorAtBilling is null) "
                 + " and bf.bill=:bill ";
         HashMap hm = new HashMap();
         hm.put("bill", b);
@@ -4368,6 +4371,15 @@ public class BillBeanController implements Serializable {
             for (BillFee bf : e.getLstBillFees()) {
                 boolean needToAdd = billFeeIsThereAsSelectedInBillFeeBundle(bf, bundleFeeEntries);
                 if (needToAdd) {
+                    if (bf.getId() == null || bf.getId() == 0) {
+                        getBillFeeFacade().create(bf);
+                    } else {
+                        getBillFeeFacade().edit(bf);
+                    }
+                    // A fee the doctor collected from the patient is not part of the bill (#25731).
+                    if (bf.isCollectedByDoctorAtBilling()) {
+                        continue;
+                    }
                     billItemGross += bf.getFeeGrossValue();
                     billItemNet += bf.getFeeValue();
                     billItemDiscount += bf.getFeeDiscount();
@@ -4378,12 +4390,6 @@ public class BillBeanController implements Serializable {
                         ins += bf.getFeeValue();
                     } else {
                         staff += bf.getFeeValue();
-                    }
-
-                    if (bf.getId() == null || bf.getId() == 0) {
-                        getBillFeeFacade().create(bf);
-                    } else {
-                        getBillFeeFacade().edit(bf);
                     }
                 }
             }
@@ -4595,6 +4601,10 @@ public class BillBeanController implements Serializable {
             if (bf.getId() == null) {
                 getBillFeeFacade().create(bf);
             }
+            if (bf.isCollectedByDoctorAtBilling()) {
+                list.add(bf);
+                continue;
+            }
             if (bf.getStaff() != null) {
                 staffFee += bf.getFeeValue();
             } else if (bf.getSpeciality() != null) {
@@ -4634,6 +4644,11 @@ public class BillBeanController implements Serializable {
 
             if (bf.getId() == null) {
                 getBillFeeFacade().create(bf);
+            }
+            if (bf.isCollectedByDoctorAtBilling()) {
+                // Collected by the doctor: saved on the bill but not part of any fee total (#25731).
+                list.add(bf);
+                continue;
             }
             if (bf.getFee().getFeeType() == FeeType.CollectingCentre) {
                 ccfee += bf.getFeeValue();

@@ -3674,37 +3674,6 @@ public class SearchController implements Serializable {
         }
     }
 
-    public String searchMyPharmacyBills() {
-        BillType billtype = BillType.PharmacyPre;
-        String sql;
-        if (false) {
-            Bill b = new Bill();
-            b.getPatient().getPerson();
-            sessionController.getLoggedUser().getWebUserPerson();
-        }
-        sql = "Select b from PreBill b where "
-                + " b.billType=:bt"
-                + " and b.billedBill is null "
-                + " and b.patient.person=:person";
-        sql += " order by b.createdAt desc  ";
-        Map m = new HashMap();
-        m.put("bt", billtype);
-        m.put("person", sessionController.getLoggedUser().getWebUserPerson());
-
-        boolean maxNum = true;
-        if (maxNum == true) {
-            bills = getBillFacade().findByJpql(sql, m, TemporalType.TIMESTAMP, 25);
-        } else {
-            bills = getBillFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
-        }
-        netTotal = 0.0;
-        for (Bill b : bills) {
-            netTotal += b.getNetTotal();
-        }
-
-        return "/mobile/my_pharmacy_bills";
-    }
-
     double netTotalValue;
 
     public void createPharmacyStaffBill() {
@@ -8303,7 +8272,7 @@ public class SearchController implements Serializable {
         sql = "select b from BillFee b where b.retired=false and "
                 + " (b.bill.billType=:btp or b.bill.billType=:btpc) "
                 + " and b.bill.cancelled=false "
-                + " and (b.feeValue - b.paidValue) > 0 and"
+                + " and (b.feeValue - b.paidValue) > 0 and (b.collectedByDoctorAtBilling = false or b.collectedByDoctorAtBilling is null) and"
                 + "  b.bill.createdAt between :fromDate"
                 + " and :toDate ";
 
@@ -8378,7 +8347,7 @@ public class SearchController implements Serializable {
         sql = "select b from BillFee b where b.retired=false and "
                 + " (b.bill.billType=:btp or b.bill.billType=:btpc) "
                 + " and b.bill.cancelled=false "
-                + " and (b.feeValue - b.paidValue) > 0 and"
+                + " and (b.feeValue - b.paidValue) > 0 and (b.collectedByDoctorAtBilling = false or b.collectedByDoctorAtBilling is null) and"
                 + "  b.bill.createdAt between :fromDate"
                 + " and :toDate ";
 
@@ -8454,7 +8423,7 @@ public class SearchController implements Serializable {
         sql = "select b from BillFee b where b.retired=false and "
                 + " b.bill.billType=:btp "
                 + " and b.bill.cancelled=false "
-                + " and (b.feeValue - b.paidValue) > 0 and"
+                + " and (b.feeValue - b.paidValue) > 0 and (b.collectedByDoctorAtBilling = false or b.collectedByDoctorAtBilling is null) and"
                 + " b.bill.createdAt between :fromDate"
                 + " and :toDate ";
 
@@ -8623,6 +8592,7 @@ public class SearchController implements Serializable {
                 //Ending of newly added code
                 + " and b.fee.feeType=:feeType"
                 + " and (b.feeValue - b.paidValue) > 0"
+                + " and (b.collectedByDoctorAtBilling = false or b.collectedByDoctorAtBilling is null) "
                 //                + " and  b.bill.billTime between :fromDate and :toDate ";
                 + " and  b.bill.createdAt between :fromDate and :toDate ";
 
@@ -8717,6 +8687,7 @@ public class SearchController implements Serializable {
                 //Ending of newly added code
                 + " and b.fee.feeType=:feeType"
                 + " and (b.feeValue - b.paidValue) > 0"
+                + " and (b.collectedByDoctorAtBilling = false or b.collectedByDoctorAtBilling is null) "
                 //                + " and  b.bill.billTime between :fromDate and :toDate ";
                 + " and  b.bill.createdAt between :fromDate and :toDate ";
 
@@ -8793,6 +8764,7 @@ public class SearchController implements Serializable {
                 + " and (b.bill.billType=:btp or b.bill.billType=:btp2 )"
                 + " and b.fee.feeType=:feeType"
                 + " and (b.feeValue - b.paidValue) > 0"
+                + " and (b.collectedByDoctorAtBilling = false or b.collectedByDoctorAtBilling is null) "
                 + " and  b.bill.billDate between :fromDate and :toDate ";
 
         if (getSearchKeyword().getPatientName() != null && !getSearchKeyword().getPatientName().trim().equals("")) {
@@ -8917,6 +8889,7 @@ public class SearchController implements Serializable {
                 + " and (b.bill.billType=:btp or b.bill.billType=:btp2 )"
                 + " and b.bill.cancelled=false "
                 + " and (b.feeValue - b.paidValue) > 0"
+                + " and (b.collectedByDoctorAtBilling = false or b.collectedByDoctorAtBilling is null) "
                 + " and  b.bill.billDate between :fromDate and :toDate ";
 
         if (getSearchKeyword().getPatientName() != null && !getSearchKeyword().getPatientName().trim().equals("")) {
@@ -17813,6 +17786,7 @@ public class SearchController implements Serializable {
                 + " and b.bill.billType in :bts "
                 + " and b.bill.cancelled=false "
                 + " and (b.feeValue - b.paidValue) > 0 "
+                + " and (b.collectedByDoctorAtBilling = false or b.collectedByDoctorAtBilling is null) "
                 + " and b.bill.createdAt between :fromDate and :toDate ";
 
         sql += " order by b.staff.person.name ";
@@ -20422,7 +20396,7 @@ public class SearchController implements Serializable {
         String jpql = "select bf "
                 + " from BillFee bf "
                 + " join bf.billItem bi "
-                + " where bf.retired=:bfr "
+                + " where (bf.collectedByDoctorAtBilling = false or bf.collectedByDoctorAtBilling is null) and bf.retired=:bfr "
                 + " and bi.bill.retired=:br "
                 + " and bf.fee.feeType=:ft "
                 + " and bi.bill.createdAt between :fd and :td ";

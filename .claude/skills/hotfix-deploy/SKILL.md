@@ -1,14 +1,6 @@
 ---
 name: hotfix-deploy
-description: >
-  Full hotfix workflow for deploying urgent fixes to a production branch
-  (coop-production, rh-production, southernlanka-production, etc.). Covers branch creation,
-  fix, commit, push, and PR targeting the production branch. Use when you need
-  to apply an urgent fix directly to a production environment without going
-  through the normal development → QA → prod pipeline. The agent may invoke
-  this on its own judgment to prepare a hotfix (branch, fix, commit, push,
-  PR) — merging the PR, which is what actually triggers CI/CD deployment,
-  remains a manual human action.
+description: 'Hotfix workflow to a production branch (coop-production, rh-production, ...): branch, fix, commit, push, PR to the production branch. Never merges; merging deploys. Use for urgent fixes, /hotfix-deploy.'
 allowed-tools: Bash, Read, Grep, Edit, Write
 argument-hint: "<prod-branch> <description>"
 ---
@@ -320,3 +312,8 @@ before (it had to be closed and redone against the correct branch).
 
 - [Commit Conventions — Hotfix Branches](../../developer_docs/git/commit-conventions.md#hotfix-branches)
 - [Production Deployment Guide](../../wiki-docs/Deployment/Production-Deployment-Guide.md)
+
+
+## From CLAUDE.md (moved detail)
+
+sync `.gitignore` first (`git checkout origin/development -- .gitignore`); mirror every merged hotfix into `development` unless its commits were cherry-picked from `development` (Step 9a).

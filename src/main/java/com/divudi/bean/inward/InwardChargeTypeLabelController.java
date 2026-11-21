@@ -2,6 +2,7 @@ package com.divudi.bean.inward;
 
 import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.core.data.inward.InwardChargeType;
+import com.divudi.core.util.JsfUtil;
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -32,6 +33,7 @@ public class InwardChargeTypeLabelController implements Serializable {
     private Map<String, String> reportOrderMap;
     private Map<String, String> finalBillOrderMap;
     private Map<String, String> finalBillGroupMap;
+    private Map<String, String> vatPercentageMap;
 
     @PostConstruct
     public void init() {
@@ -40,6 +42,7 @@ public class InwardChargeTypeLabelController implements Serializable {
         reportOrderMap = new HashMap<>();
         finalBillOrderMap = new HashMap<>();
         finalBillGroupMap = new HashMap<>();
+        vatPercentageMap = new HashMap<>();
         // Batched: on a hospital's first visit to this page, most/all of these
         // ~187 x 4 rows are missing and would otherwise be lazily created one at
         // a time, each triggering its own synchronized full ConfigOption cache
@@ -59,26 +62,99 @@ public class InwardChargeTypeLabelController implements Serializable {
                 reportOrderMap.put(type.name(), String.valueOf(configOptionApplicationController.getInwardChargeTypeReportOrder(type)));
                 finalBillOrderMap.put(type.name(), String.valueOf(configOptionApplicationController.getInwardChargeTypeFinalBillOrder(type)));
                 finalBillGroupMap.put(type.name(), configOptionApplicationController.getInwardChargeTypeFinalBillGroup(type));
+                // Read-only getter: shows 0 for a type that has no VAT key yet.
+                vatPercentageMap.put(type.name(), formatPercentage(configOptionApplicationController.getInwardVatPercentage(type)));
             }
         });
     }
 
     public void saveAll() {
+        if (!validateVatInputs(chargeTypes)) {
+            return;
+        }
         for (InwardChargeType type : chargeTypes) {
             String custom = labelMap.get(type.name());
             configOptionApplicationController.saveInwardChargeTypeLabel(type, custom);
             configOptionApplicationController.saveInwardChargeTypeReportOrder(type, orderOrDefault(reportOrderMap, type));
             configOptionApplicationController.saveInwardChargeTypeFinalBillOrder(type, orderOrDefault(finalBillOrderMap, type));
             configOptionApplicationController.saveInwardChargeTypeFinalBillGroup(type, finalBillGroupMap.get(type.name()));
+            saveVatPercentage(type);
         }
     }
 
     public void saveOne(InwardChargeType type) {
+        if (!validateVatInputs(Arrays.asList(type))) {
+            return;
+        }
         String custom = labelMap.get(type.name());
         configOptionApplicationController.saveInwardChargeTypeLabel(type, custom);
         configOptionApplicationController.saveInwardChargeTypeReportOrder(type, orderOrDefault(reportOrderMap, type));
         configOptionApplicationController.saveInwardChargeTypeFinalBillOrder(type, orderOrDefault(finalBillOrderMap, type));
         configOptionApplicationController.saveInwardChargeTypeFinalBillGroup(type, finalBillGroupMap.get(type.name()));
+        saveVatPercentage(type);
+    }
+
+    /**
+     * Saves the VAT rate (percent) of one charge type (issue #17491). Kept as
+     * String like the other maps. Blank or unparsable counts as 0 (VAT off);
+     * the stored key is written only when the value changed, so saving the
+     * whole page does not rewrite ~190 unchanged keys. The computed VAT type
+     * itself never has a rate.
+     */
+    private void saveVatPercentage(InwardChargeType type) {
+        if (type == InwardChargeType.ComputedVAT) {
+            return;
+        }
+        double entered = parsePercentage(vatPercentageMap.get(type.name()));
+        if (entered != configOptionApplicationController.getInwardVatPercentage(type)) {
+            configOptionApplicationController.saveInwardVatPercentage(type, entered);
+        }
+    }
+
+    /**
+     * Rejects a VAT rate outside 0-100 (blank counts as 0). On a bad value
+     * nothing is saved, an error message names the charge type, and the box is
+     * reset to the stored rate so the page never shows a rate that is not stored.
+     */
+    private boolean validateVatInputs(List<InwardChargeType> types) {
+        boolean ok = true;
+        for (InwardChargeType type : types) {
+            if (type == InwardChargeType.ComputedVAT) {
+                continue;
+            }
+            String text = vatPercentageMap.get(type.name());
+            if (text == null || text.trim().isEmpty()) {
+                continue;
+            }
+            boolean valid;
+            try {
+                valid = ConfigOptionApplicationController.isValidInwardVatPercentage(Double.parseDouble(text.trim()));
+            } catch (NumberFormatException e) {
+                valid = false;
+            }
+            if (!valid) {
+                ok = false;
+                JsfUtil.addErrorMessage("VAT % for " + type.name() + " must be a number from 0 to 100. Nothing was saved.");
+                vatPercentageMap.put(type.name(), formatPercentage(configOptionApplicationController.getInwardVatPercentage(type)));
+            }
+        }
+        return ok;
+    }
+
+    private double parsePercentage(String text) {
+        if (text == null || text.trim().isEmpty()) {
+            return 0.0;
+        }
+        try {
+            double v = Double.parseDouble(text.trim());
+            return v > 0 && v <= 100 ? v : 0.0;
+        } catch (NumberFormatException e) {
+            return 0.0;
+        }
+    }
+
+    private String formatPercentage(double value) {
+        return value == Math.rint(value) ? String.valueOf((long) value) : String.valueOf(value);
     }
 
     /**
@@ -125,6 +201,14 @@ public class InwardChargeTypeLabelController implements Serializable {
 
     public void setFinalBillOrderMap(Map<String, String> finalBillOrderMap) {
         this.finalBillOrderMap = finalBillOrderMap;
+    }
+
+    public Map<String, String> getVatPercentageMap() {
+        return vatPercentageMap;
+    }
+
+    public void setVatPercentageMap(Map<String, String> vatPercentageMap) {
+        this.vatPercentageMap = vatPercentageMap;
     }
 
     public Map<String, String> getFinalBillGroupMap() {

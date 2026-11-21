@@ -1,0 +1,14 @@
+{
+  "version": "v2.21.0",
+  "description": "Add the AdmissionNumber.COUNTERYEAR column",
+  "issue": "#22142 — BHT number series shared across admission types and reset every year (code in #25654)",
+  "author": "Dr M H B Ariyaratne",
+  "date": "2026-11-19",
+  "type": "schema",
+  "tables_affected": ["admissionnumber"],
+  "data_changes": false,
+  "requires_downtime": false,
+  "estimated_duration_minutes": 1,
+  "note": "The AdmissionNumber entity maps counterYear (nullable Integer) since #25654, but no migration added the column and Fix Missing Fields could not add it. Without it every BHT number read fails on admission. This migration adds the column only when missing; existing rows get NULL, which means the single never-resetting series. Idempotent and changes no data. Run it before deploying a build that includes #25654, or run migration.sql directly if that build is already deployed.",
+  "rollback": "rollback.sql"
+}

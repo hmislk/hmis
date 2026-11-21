@@ -329,6 +329,9 @@ public class PettyCashBillSearch implements Serializable {
     }
 
     public void cancelBill() {
+        if (com.divudi.core.util.CancellationBillCheck.refuse(getBill())) {
+            return;
+        }
         Date current = new Date();
         Date midNight = getMidnight();
         if (configOptionApplicationController.getBooleanValueByKey("Enable PettyCash bill cancellation restriction after midnight")) {

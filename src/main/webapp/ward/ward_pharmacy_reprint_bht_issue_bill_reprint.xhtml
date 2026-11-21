@@ -180,19 +180,19 @@
 
                                         <h:panelGroup   id="gpBillPreviewSingle" rendered="#{sessionController.loggedPreference.pharmacyBillPaperType eq 'PosPaper'}">
                                             <h:panelGroup rendered="#{sessionController.loggedPreference.pharmacyBillPrabodha eq false}" >
-                                                <ph:issueBill bill="#{pharmacyBillSearch.bill}" duplicate="true" showRate="#{webUserController.hasPrivilege('NursingIPBillingViewRates') and pharmacyBillSearch.printBhtIssueBillWithRate}" showDiscount="#{webUserController.hasPrivilege('IPBillingViewDiscount')}" />
+                                                <ph:issueBill bill="#{pharmacyBillSearch.bill}" duplicate="true" showPositiveDiscount="true" showRate="#{webUserController.hasPrivilege('NursingIPBillingViewRates') and pharmacyBillSearch.printBhtIssueBillWithRate}" showDiscount="#{webUserController.hasPrivilege('IPBillingViewDiscount')}" />
                                             </h:panelGroup>
                                         </h:panelGroup>
 
                                         <h:panelGroup id="gpBillPreviewDouble" rendered="#{sessionController.loggedPreference.pharmacyBillPaperType eq 'PosPaper'}">
                                             <h:panelGroup     rendered="#{sessionController.loggedPreference.pharmacyBillPrabodha eq true}">
-                                                <phi:saleBill_prabodha bill="#{pharmacyBillSearch.bill}" showRate="#{webUserController.hasPrivilege('NursingIPBillingViewRates') and pharmacyBillSearch.printBhtIssueBillWithRate}" showDiscount="#{webUserController.hasPrivilege('IPBillingViewDiscount')}"></phi:saleBill_prabodha>
+                                                <phi:saleBill_prabodha bill="#{pharmacyBillSearch.bill}" showPositiveDiscount="true" showRate="#{webUserController.hasPrivilege('NursingIPBillingViewRates') and pharmacyBillSearch.printBhtIssueBillWithRate}" showDiscount="#{webUserController.hasPrivilege('IPBillingViewDiscount')}"></phi:saleBill_prabodha>
                                             </h:panelGroup>
                                         </h:panelGroup>
 
                                         <h:panelGroup id="gpBillPreviewFiveFive" rendered="#{sessionController.loggedPreference.pharmacyBillPaperType eq 'FiveFivePaper'}">
                                             <h:panelGroup rendered="true" >
-                                                <phi:saleBill_five_five bill="#{pharmacyBillSearch.bill}" showRate="#{webUserController.hasPrivilege('NursingIPBillingViewRates') and pharmacyBillSearch.printBhtIssueBillWithRate}" showDiscount="#{webUserController.hasPrivilege('IPBillingViewDiscount')}"></phi:saleBill_five_five>
+                                                <phi:saleBill_five_five bill="#{pharmacyBillSearch.bill}" showPositiveDiscount="true" showRate="#{webUserController.hasPrivilege('NursingIPBillingViewRates') and pharmacyBillSearch.printBhtIssueBillWithRate}" showDiscount="#{webUserController.hasPrivilege('IPBillingViewDiscount')}"></phi:saleBill_five_five>
                                             </h:panelGroup>
                                         </h:panelGroup>
 

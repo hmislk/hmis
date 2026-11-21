@@ -578,6 +578,9 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
 
     @Deprecated // Use #{opdBillCancellationController.navigateToCancelBillView()}
     public String navigateToCancelBillView() {
+        if (com.divudi.core.util.CancellationBillCheck.refuse(bill)) {
+            return "";
+        }
         if (bill == null) {
             JsfUtil.addErrorMessage("Bill is Missing..");
             return "";
@@ -1281,12 +1284,12 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
         if (billClassType == null) {
             j = "select new com.divudi.core.data.BillSummery(b.paymentMethod, sum(bf.feeGrossValue), sum(bf.feeDiscount), sum(bf.feeValue), sum(bf.feeVat), count(b), b.billType) "
                     + " from BillFee bf inner join bf.bill b "
-                    + " where b.retired=false "
+                    + " where (bf.collectedByDoctorAtBilling = false or bf.collectedByDoctorAtBilling is null) and b.retired=false "
                     + " and b.billTime between :fd and :td ";
         } else {
             j = "select new com.divudi.core.data.BillSummery(b.paymentMethod, b.billClassType, sum(bf.feeGrossValue), sum(bf.feeDiscount), sum(bf.feeValue), sum(bf.feeVat), count(b), b.billType) "
                     + " from BillFee bf inner join bf.bill b "
-                    + " where b.retired=false "
+                    + " where (bf.collectedByDoctorAtBilling = false or bf.collectedByDoctorAtBilling is null) and b.retired=false "
                     + " and b.billTime between :fd and :td ";
         }
 
@@ -2866,6 +2869,9 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
     }
 
     public void cancelOpdBill() {
+        if (com.divudi.core.util.CancellationBillCheck.refuse(getBill())) {
+            return;
+        }
         if (getBill() == null) {
             JsfUtil.addErrorMessage("No Original Bill Selected To Cancel");
             return;
@@ -3045,6 +3051,9 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
     PatientReportController patientReportController;
 
     public void cancelCollectingCentreBill() {
+        if (com.divudi.core.util.CancellationBillCheck.refuse(bill)) {
+            return;
+        }
         if (!ccBillCancellingStarted.compareAndSet(false, true)) {
             JsfUtil.addErrorMessage("Cancellation already Started");
             return;
@@ -3208,6 +3217,9 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
     }
 
     public void cancelCashInBill() {
+        if (com.divudi.core.util.CancellationBillCheck.refuse(bill)) {
+            return;
+        }
         if (getBill() != null && getBill().getId() != null && getBill().getId() != 0) {
 
             CancelledBill cb = createCahsInOutCancelBill(bill, BillNumberSuffix.CSINCAN);
@@ -3249,6 +3261,9 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
     }
 
     public void cancelCashOutBill() {
+        if (com.divudi.core.util.CancellationBillCheck.refuse(bill)) {
+            return;
+        }
         if (getBill() != null && getBill().getId() != null && getBill().getId() != 0) {
 
             CancelledBill cb = createCahsInOutCancelBill(bill, BillNumberSuffix.CSOUTCAN);
@@ -3321,6 +3336,9 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
     }
 
     public void cancelProfessionalPaymentBill() {
+        if (com.divudi.core.util.CancellationBillCheck.refuse(bill)) {
+            return;
+        }
         if (bill == null || bill.getId() == null && bill.getId() == 0) {
             JsfUtil.addErrorMessage("No Professional Payment Bill to cancel");
             return;
@@ -3637,6 +3655,8 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
             newCancellingBillFee.setSettleValue(0 - originalProfessionalPaymentFeeForBillItem.getSettleValue());
             newCancellingBillFee.setFeeVat(0 - originalProfessionalPaymentFeeForBillItem.getFeeVat());
             newCancellingBillFee.setFeeVatPlusValue(0 - originalProfessionalPaymentFeeForBillItem.getFeeVatPlusValue());
+            // A reversal mirrors its original, so a doctor-collected fee stays out of the sums (#25731).
+            newCancellingBillFee.setCollectedByDoctorAtBilling(originalProfessionalPaymentFeeForBillItem.isCollectedByDoctorAtBilling());
 
             newCancellingBillFee.setCreatedAt(new Date());
             newCancellingBillFee.setCreater(getSessionController().getLoggedUser());
@@ -3840,7 +3860,14 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
         this.selectedBillId = selectedBillId;
     }
 
+    public boolean isBillACancellationBill() {
+        return com.divudi.core.util.CancellationBillCheck.isCancellationBill(getBill());
+    }
+
     public String navigateToCancelOpdBill() {
+        if (com.divudi.core.util.CancellationBillCheck.refuse(getBill())) {
+            return "";
+        }
         if (bill == null) {
             JsfUtil.addErrorMessage("Nothing to cancel");
             return "";
@@ -4223,6 +4250,9 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
     }
 
     public String navigateToCancelIncomeBill() {
+        if (com.divudi.core.util.CancellationBillCheck.refuse(bill)) {
+            return "";
+        }
         if (bill == null) {
             JsfUtil.addErrorMessage("Nothing to cancel");
             return "";
@@ -4255,6 +4285,9 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
     }
 
     public void cancelIncomeBill() {
+        if (com.divudi.core.util.CancellationBillCheck.refuse(bill)) {
+            return;
+        }
         if (bill == null) {
             JsfUtil.addErrorMessage("No Bill Selected to Canel");
             return;
@@ -4343,6 +4376,9 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
     }
 
     public String navigateToCancelExpenseBill() {
+        if (com.divudi.core.util.CancellationBillCheck.refuse(bill)) {
+            return "";
+        }
         if (bill == null) {
             JsfUtil.addErrorMessage("Nothing to cancel");
             return "";
@@ -4375,6 +4411,9 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
     }
 
     public void cancelExpenseBill() {
+        if (com.divudi.core.util.CancellationBillCheck.refuse(bill)) {
+            return;
+        }
         if (bill == null) {
             JsfUtil.addErrorMessage("No Bill Selected to Canel");
             return;
@@ -4517,6 +4556,9 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
     }
 
     public String navigateToCancelOpdProfessionalPaymentBill() {
+        if (com.divudi.core.util.CancellationBillCheck.refuse(bill)) {
+            return "";
+        }
         if (bill == null) {
             JsfUtil.addErrorMessage("Nothing to cancel");
             return "";
@@ -6338,6 +6380,9 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
     RequestService requestService;
 
     public String navigateToCancelCollectingCentreBill() {
+        if (com.divudi.core.util.CancellationBillCheck.refuse(bill)) {
+            return "";
+        }
         if (bill == null) {
             JsfUtil.addErrorMessage("Nothing to cancel");
             return "";
