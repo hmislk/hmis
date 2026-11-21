@@ -63,9 +63,11 @@ import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.TimeZone;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -745,6 +747,9 @@ public class PatientReportController implements Serializable {
         this.staffController = staffController;
     }
 
+    /** Set while a formula is built when it reads a calculated item that has no valid value. */
+    private boolean calculationDependencyBlank;
+
     private double findPtReportItemVal(InvestigationItem ii) {
         if (currentPatientReport == null) {
             JsfUtil.addErrorMessage("No Report to calculate");
@@ -763,6 +768,9 @@ public class PatientReportController implements Serializable {
             if (priv != null) {
                 if (Objects.equals(priv.getInvestigationItem().getId(), ii.getId())) {
                     if (priv.getDoubleValue() == null) {
+                        if (priv.getInvestigationItem().getIxItemType() == InvestigationItemType.Calculation) {
+                            calculationDependencyBlank = true;
+                        }
                         return 0.0;
                     }
                     return priv.getDoubleValue();
@@ -789,6 +797,9 @@ public class PatientReportController implements Serializable {
             if (priv != null) {
                 if (Objects.equals(priv.getInvestigationItem().getName(), nameOfIxItem)) {
                     if (priv.getDoubleValue() == null) {
+                        if (priv.getInvestigationItem().getIxItemType() == InvestigationItemType.Calculation) {
+                            calculationDependencyBlank = true;
+                        }
                         return 0.0;
                     }
                     return priv.getDoubleValue();
@@ -812,140 +823,176 @@ public class PatientReportController implements Serializable {
             JsfUtil.addErrorMessage("Report Items values is empty");
             return;
         }
+
+
+    }
+
+    /**
+     * Parses typed result text to a number; returns null when it is not a
+     * plain number (empty, "&lt;0.001", "&gt;100", text). Commas are removed.
+     */
+    static Double parseTypedNumber(String text) {
+        String typed = text == null ? "" : text.replace(",", "").trim();
+        try {
+            double parsed = Double.parseDouble(typed);
+            if (!Double.isNaN(parsed) && !Double.isInfinite(parsed)) {
+                return parsed;
+            }
+        } catch (NumberFormatException e) {
+            // not a number
+        }
+        return null;
+    }
+
+    private void applyTypedValue(PatientReportItemValue priv) {
+        InvestigationItem item = priv.getInvestigationItem();
+        boolean hasFormat = item.getFormatString() != null && !item.getFormatString().trim().isEmpty();
+        if (item.getIxItemValueType() == InvestigationItemValueType.Varchar) {
+            if (hasFormat) {
+                // Unchanged coop behaviour for formatted text results
+                double tmpDbl = CommonFunctions.extractDoubleValue(priv.getStrValue());
+                priv.setStrValue(CommonFunctions.formatNumber(tmpDbl, item.getFormatString()));
+                priv.setDoubleValue(tmpDbl);
+            } else {
+                // No format string: keep the text unchanged; formulas and flags read the number
+                // of the current text, or none when the text is not a plain number (e.g. "<0.001", empty)
+                priv.setDoubleValue(parseTypedNumber(priv.getStrValue()));
+            }
+        } else if (hasFormat && item.getIxItemValueType() == InvestigationItemValueType.Double) {
+            Double numberWithLargeNumberOfDecimals = priv.getDoubleValue();
+            Double numberWithFormatter = CommonFunctions.formatDouble(numberWithLargeNumberOfDecimals, item.getFormatString());
+            priv.setDoubleValue(numberWithFormatter);
+            priv.setStrValue(numberWithFormatter + "");
+        }
+    }
+
+    /**
+     * Evaluates one calculated item; returns true when its stored value changed.
+     */
+    private boolean evaluateCalculation(PatientReportItemValue priv, Set<PatientReportItemValue> failedCalculations) {
+        calculationDependencyBlank = false;
+        failedCalculations.remove(priv);
+        Double oldDouble = priv.getDoubleValue();
+        String oldStr = priv.getStrValue();
+        String sql = "select i "
+                + " from IxCal i "
+                + " where (i.retired=false or i.retired is null) "
+                + " and i.calIxItem = :iii "
+                + " order by i.id";
+        Map m = new HashMap();
+        m.put("iii", priv.getInvestigationItem());
+        List<IxCal> ixCals = getIxCalFacade().findByJpql(sql, m);
+        double result = 0;
+        String resultStr = "";
         String calString = "";
-        for (PatientReportItemValue priv : currentPatientReport.getPatientReportItemValues()) {
 
-            if (priv.getInvestigationItem().getFormatString() != null && !priv.getInvestigationItem().getFormatString().trim().isEmpty()) {
-                if (priv.getInvestigationItem().getIxItemValueType() == InvestigationItemValueType.Varchar) {
-                    double tmpDbl = CommonFunctions.extractDoubleValue(priv.getStrValue());
-                    priv.setStrValue(CommonFunctions.formatNumber(tmpDbl, priv.getInvestigationItem().getFormatString()));
-                    priv.setDoubleValue(tmpDbl);
-                } else if (priv.getInvestigationItem().getIxItemValueType() == InvestigationItemValueType.Double) {
-                    Double numberWithLargeNumberOfDecimals = priv.getDoubleValue();
-                    Double numberWithFormatter = CommonFunctions.formatDouble(numberWithLargeNumberOfDecimals, priv.getInvestigationItem().getFormatString());
-                    priv.setDoubleValue(numberWithFormatter);
-                    priv.setStrValue(numberWithFormatter + "");
+        String baseJs = null;
+        for (IxCal c : ixCals) {
+            if (c.getCalculationType() == CalculationType.JavaScript) {
+                baseJs = c.getJavascript();
+                break;
+            }
+            if (c.getCalculationType() == CalculationType.Constant) {
+                calString = calString + c.getConstantValue();
+            }
+            if (c.getCalculationType() == CalculationType.GenderDependentConstant) {
+                if (currentPatientReport.getPatientInvestigation().getPatient().getPerson().getSex() == Sex.Male) {
+                    calString = calString + c.getMaleConstantValue();
+                } else {
+                    calString = calString + c.getFemaleConstantValue();
                 }
             }
-
-            if (priv.getInvestigationItem().getIxItemType() == InvestigationItemType.Calculation) {
-                String sql = "select i "
-                        + " from IxCal i "
-                        + " where (i.retired=false or i.retired is null) "
-                        + " and i.calIxItem = :iii "
-                        + " order by i.id";
-                Map m = new HashMap();
-                m.put("iii", priv.getInvestigationItem());
-                List<IxCal> ixCals = getIxCalFacade().findByJpql(sql, m);
-                double result = 0;
-                String resultStr = "";
-                calString = "";
-
-                String baseJs = null;
-                for (IxCal c : ixCals) {
-                    if (c.getCalculationType() == CalculationType.JavaScript) {
-                        baseJs = c.getJavascript();
-                        break;
-                    }
-                    if (c.getCalculationType() == CalculationType.Constant) {
-                        calString = calString + c.getConstantValue();
-                    }
-                    if (c.getCalculationType() == CalculationType.GenderDependentConstant) {
-                        if (currentPatientReport.getPatientInvestigation().getPatient().getPerson().getSex() == Sex.Male) {
-                            calString = calString + c.getMaleConstantValue();
-                        } else {
-                            calString = calString + c.getFemaleConstantValue();
-                        }
-                    }
-                    if (c.getCalculationType() == CalculationType.Value) {
-                        calString = calString + " " + findPtReportItemVal(c.getValIxItem()) + " ";
-                    }
-
-                    if (c.getCalculationType() == CalculationType.Addition) {
-                        calString = calString + " + ";
-                    }
-
-                    if (c.getCalculationType() == CalculationType.Substraction) {
-                        calString = calString + " - ";
-                    }
-
-                    if (c.getCalculationType() == CalculationType.Multiplication) {
-                        calString = calString + " * ";
-                    }
-
-                    if (c.getCalculationType() == CalculationType.Devision) {
-                        calString = calString + " / ";
-                    }
-
-                    if (c.getCalculationType() == CalculationType.OpeningBracket) {
-                        calString = calString + " ( ";
-                    }
-
-                    if (c.getCalculationType() == CalculationType.ClosingBracket) {
-                        calString = calString + " ) ";
-                    }
-
-                    if (c.getCalculationType() == CalculationType.Power) {
-                        calString = calString + "Math.pow";
-                    }
-
-                    if (c.getCalculationType() == CalculationType.Comma) {
-                        calString = calString + ",";
-                    }
-
-                    if (c.getCalculationType() == CalculationType.AgeInDays) {
-                        calString = calString + currentPatientReport.getPatientInvestigation().getPatient().getAgeDays();
-                    }
-                    if (c.getCalculationType() == CalculationType.AgeInMonths) {
-                        calString = calString + currentPatientReport.getPatientInvestigation().getPatient().getAgeMonths();
-                    }
-                    if (c.getCalculationType() == CalculationType.AgeInYears) {
-                        calString = calString + currentPatientReport.getPatientInvestigation().getPatient().getAgeYears();
-                    }
-                }
-                if (baseJs != null) {
-                    calString = generateModifiedJavascriptFromBaseJavaScript(currentPatientReport, baseJs);
-                }
-
-                ScriptEngineManager mgr = new ScriptEngineManager();
-                ScriptEngine engine = mgr.getEngineByName("JavaScript");
-                Object resultObj;
-                try {
-                    resultObj = engine.eval(calString);
-                    if (resultObj == null) {
-                        result = 0.0;
-                        resultStr = "";
-                    } else if (resultObj instanceof String) {
-                        resultStr = (String) resultObj;
-                    } else if (resultObj instanceof Double) {
-                        result = (double) resultObj;
-                        resultStr = result + "";
-                    } else {
-                        result = 0.0;
-                        resultStr = "";
-                    }
-
-                } catch (Exception ex) {
-                    Logger.getLogger(PatientReportController.class
-                            .getName()).log(Level.SEVERE, null, ex);
-                    result = 0.0;
-                }
-                priv.setDoubleValue(result);
-                priv.setStrValue(resultStr);
-
-            } else if (priv.getInvestigationItem().getIxItemType() == InvestigationItemType.Flag) {
-                priv.setStrValue(findFlagValue(priv));
+            if (c.getCalculationType() == CalculationType.Value) {
+                calString = calString + " " + findPtReportItemVal(c.getValIxItem()) + " ";
             }
-            try {
-                getPirivFacade().edit(priv);
-            } catch (Exception e) {
-                System.err.println("e = " + e.getMessage());
+
+            if (c.getCalculationType() == CalculationType.Addition) {
+                calString = calString + " + ";
+            }
+
+            if (c.getCalculationType() == CalculationType.Substraction) {
+                calString = calString + " - ";
+            }
+
+            if (c.getCalculationType() == CalculationType.Multiplication) {
+                calString = calString + " * ";
+            }
+
+            if (c.getCalculationType() == CalculationType.Devision) {
+                calString = calString + " / ";
+            }
+
+            if (c.getCalculationType() == CalculationType.OpeningBracket) {
+                calString = calString + " ( ";
+            }
+
+            if (c.getCalculationType() == CalculationType.ClosingBracket) {
+                calString = calString + " ) ";
+            }
+
+            if (c.getCalculationType() == CalculationType.Power) {
+                calString = calString + "Math.pow";
+            }
+
+            if (c.getCalculationType() == CalculationType.Comma) {
+                calString = calString + ",";
+            }
+
+            if (c.getCalculationType() == CalculationType.AgeInDays) {
+                calString = calString + currentPatientReport.getPatientInvestigation().getPatient().getAgeDays();
+            }
+            if (c.getCalculationType() == CalculationType.AgeInMonths) {
+                calString = calString + currentPatientReport.getPatientInvestigation().getPatient().getAgeMonths();
+            }
+            if (c.getCalculationType() == CalculationType.AgeInYears) {
+                calString = calString + currentPatientReport.getPatientInvestigation().getPatient().getAgeYears();
             }
         }
-        if (configOptionApplicationController.getBooleanValueByKey("Lab Test History Enabled", false)) {
-            labTestHistoryController.addCalculateHistory(currentPtIx, currentPatientReport);
+        if (baseJs != null) {
+            calString = generateModifiedJavascriptFromBaseJavaScript(currentPatientReport, baseJs);
         }
 
+        if (calculationDependencyBlank) {
+            // An input is a calculated item that has no valid value (failed or not yet calculated): leave this blank, not 0
+            priv.setDoubleValue(null);
+            priv.setStrValue("");
+            return oldDouble != null || !Objects.equals(oldStr, "");
+        }
+
+        ScriptEngineManager mgr = new ScriptEngineManager();
+        ScriptEngine engine = mgr.getEngineByName("JavaScript");
+        Object resultObj;
+        try {
+            resultObj = engine.eval(calString);
+            if (resultObj == null) {
+                result = 0.0;
+                resultStr = "";
+            } else if (resultObj instanceof String) {
+                resultStr = (String) resultObj;
+            } else if (resultObj instanceof Number) {
+                result = ((Number) resultObj).doubleValue();
+                resultStr = result + "";
+            } else {
+                result = 0.0;
+                resultStr = "";
+            }
+
+        } catch (Exception ex) {
+            Logger.getLogger(PatientReportController.class
+                    .getName()).log(Level.SEVERE, null, ex);
+            result = 0.0;
+        }
+        if (Double.isNaN(result) || Double.isInfinite(result)) {
+            // Never store NaN or Infinity (e.g. division by an input that is still empty)
+            failedCalculations.add(priv);
+            priv.setDoubleValue(null);
+            priv.setStrValue("");
+            return !Objects.equals(oldDouble, null) || !Objects.equals(oldStr, "");
+        }
+
+        priv.setDoubleValue(result);
+        priv.setStrValue(resultStr);
+        return !Objects.equals(oldDouble, priv.getDoubleValue()) || !Objects.equals(oldStr, priv.getStrValue());
     }
 
     private String generateModifiedJavascriptFromBaseJavaScript(PatientReport pr, String baseJs) {
