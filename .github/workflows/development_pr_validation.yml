@@ -3,7 +3,8 @@ name: PR Validator
 on:
   pull_request:
     # edited: a PR retargeted onto development must run these checks too
-    # (retro 2026-11-21: two retargeted PRs never ran them). Other edits are skipped below.
+    # (retro 2026-11-21: two retargeted PRs never ran them). Every edit re-runs them:
+    # a skipped run would count as passing and could hide an earlier failure.
     types: [ opened, synchronize, reopened, edited ]
     branches:
       - development
@@ -11,7 +12,6 @@ on:
 
 jobs:
   validate-jdbc-data-sources:
-    if: github.event.action != 'edited' || github.event.changes.base.ref.from
     runs-on: ubuntu-latest
 
     steps:
