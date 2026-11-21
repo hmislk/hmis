@@ -95,7 +95,7 @@ public class InwardProfessionalFeeClassificationService implements Serializable 
         if (fromSpeciality != null) {
             return fromSpeciality;
         }
-        if (staff instanceof Consultant) {
+        if (staff == null || staff instanceof Consultant) {
             return InwardChargeType.ProfessionalCharge;
         }
         if (staff instanceof Doctor) {
