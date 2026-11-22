@@ -220,6 +220,24 @@ public class AppointmentController implements Serializable, ControllerWithPatien
             return "";
         }
 
+        // The pages disable "To Admit" for these statuses; check the stored status here too,
+        // so a stale page or a direct request cannot admit from a used or cancelled appointment.
+        Appointment storedAppointment = reservation.getAppointment().getId() == null
+                ? reservation.getAppointment()
+                : appointmentFacade.find(reservation.getAppointment().getId());
+        if (storedAppointment == null) {
+            JsfUtil.addErrorMessage("No Appointment Found");
+            return "";
+        }
+        if (storedAppointment.getStatus() == AppointmentStatus.COMPLETE || storedAppointment.isAppointmentComplete()) {
+            JsfUtil.addErrorMessage("This appointment is already completed");
+            return "";
+        }
+        if (storedAppointment.getStatus() == AppointmentStatus.CANCEL || storedAppointment.isAppointmentCancel()) {
+            JsfUtil.addErrorMessage("This appointment is cancelled");
+            return "";
+        }
+
         Date resFrom = reservation.getReservedFrom();
         if (resFrom == null) {
             JsfUtil.addErrorMessage("Reservation Expired");
