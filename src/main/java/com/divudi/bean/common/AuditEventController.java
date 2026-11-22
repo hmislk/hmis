@@ -203,7 +203,7 @@ public class AuditEventController implements Serializable {
         params.put("id", billId);
         items = getFacade().findByJpql(jpql, params);
         if (items != null) {
-            items.forEach(AuditEvent::calculateDifference);
+            items.forEach(this::calculateDifferenceHidingSecrets);
         }
         return "/audit/all_audit_events?faces-redirect=true";
     }
@@ -218,7 +218,7 @@ public class AuditEventController implements Serializable {
         hm.put("td", toDate);
         items = getFacade().findByJpql(jpql, hm, TemporalType.TIMESTAMP);
         for (AuditEvent ae : items) {
-            ae.calculateDifference();
+            calculateDifferenceHidingSecrets(ae);
         }
     }
     
@@ -257,7 +257,7 @@ public class AuditEventController implements Serializable {
         hm.put("td", getToDate());
         items = getFacade().findByJpql(jpql, hm, TemporalType.TIMESTAMP);
         if (items != null) {
-            items.forEach(AuditEvent::calculateDifference);
+            items.forEach(this::calculateDifferenceHidingSecrets);
         }
     }
 
@@ -285,9 +285,23 @@ public class AuditEventController implements Serializable {
         return jsonValue(source, "optionKey");
     }
 
+    private boolean isSecretConfigEvent(AuditEvent ae) {
+        return ae != null && ConfigOptionController.isSecretKey(getOptionKey(ae));
+    }
+
+    private void calculateDifferenceHidingSecrets(AuditEvent ae) {
+        ae.calculateDifference();
+        if (isSecretConfigEvent(ae)) {
+            ae.setDifference("optionKey: " + getOptionKey(ae) + "\nvalue: (hidden)");
+        }
+    }
+
     public String getBeforeValue(AuditEvent ae) {
         if (ae == null) {
             return "";
+        }
+        if (isSecretConfigEvent(ae)) {
+            return "(hidden)";
         }
         return jsonValue(ae.getBeforeJson(), "optionValue");
     }
@@ -295,6 +309,9 @@ public class AuditEventController implements Serializable {
     public String getAfterValue(AuditEvent ae) {
         if (ae == null) {
             return "";
+        }
+        if (isSecretConfigEvent(ae)) {
+            return "(hidden)";
         }
         return jsonValue(ae.getAfterJson(), "optionValue");
     }

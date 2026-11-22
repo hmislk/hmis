@@ -206,6 +206,7 @@
                                     <p:outputLabel value="Key Value"/>
                                 </div>
                                 <div class="col-9">
+                                    <h:outputText value="Leave blank to keep the current value" styleClass="text-muted d-block" rendered="#{configOptionController.editingSecretOption}"/>
                                     <!-- For SHORT_TEXT -->
                                     <p:inputText
                                         class="w-100"

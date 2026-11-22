@@ -135,10 +135,6 @@ public class ConfigOptionController implements Serializable {
      */
     private String newOptionKeySuffix;
 
-    /**
-     * Creates a new instance of OptionController
-     */
-
     // ---- Hardening (#25915) ----
     public static final String SECRET_MASK_SET = "\u2022\u2022\u2022\u2022\u2022\u2022 (set)";
     public static final String SECRET_MASK_NOT_SET = "(not set)";
@@ -146,27 +142,40 @@ public class ConfigOptionController implements Serializable {
 
     /**
      * True when the key names a secret: contains (case-insensitive, ignoring
-     * spaces, dashes and underscores) api key, password, secret, token or
-     * private key.
+     * spaces, dashes and underscores) api key, password, passphrase, secret,
+     * token, credential, access key or private key. Keys that only name a
+     * location or a setting (ending in url, regex or parameter, or naming
+     * max tokens) are not secrets. One rule for pages, audit display and REST.
      */
     public static boolean isSecretKey(String key) {
         if (key == null) {
             return false;
         }
         String k = key.toLowerCase().replaceAll("[^a-z0-9]", "");
-        return k.contains("apikey") || k.contains("password") || k.contains("secret")
-                || k.contains("token") || k.contains("privatekey");
+        if (k.endsWith("url") || k.endsWith("regex") || k.endsWith("parameter")
+                || k.contains("maxtokens")) {
+            return false;
+        }
+        return k.contains("apikey") || k.contains("password") || k.contains("passphrase")
+                || k.contains("secret") || k.contains("token") || k.contains("credential")
+                || k.contains("accesskey") || k.contains("privatekey");
     }
 
     /**
-     * Secret options are text values; a boolean/number flag is never a secret
-     * even if its key contains a word such as "token".
+     * Secret options are text values; a real true/false flag is never a
+     * secret even if its key contains a word such as "token". A BOOLEAN row
+     * holding anything other than true/false is treated as secret.
      */
     public static boolean isSecretOption(ConfigOption o) {
         if (o == null || !isSecretKey(o.getOptionKey())) {
             return false;
         }
-        return o.getValueType() != OptionValueType.BOOLEAN;
+        if (o.getValueType() == OptionValueType.BOOLEAN) {
+            String v = o.getOptionValue();
+            return v != null && !v.isEmpty()
+                    && !"true".equalsIgnoreCase(v) && !"false".equalsIgnoreCase(v);
+        }
+        return true;
     }
 
     /** Value that is safe to render, filter, sort, export or audit-display. */
@@ -193,6 +202,10 @@ public class ConfigOptionController implements Serializable {
      * Edit-dialog binding. For a secret option the input always starts empty;
      * an empty submit keeps the stored value, a typed value replaces it.
      */
+    public boolean isEditingSecretOption() {
+        return isSecretOption(option);
+    }
+
     public String getEditOptionValue() {
         if (option == null) {
             return null;
@@ -213,6 +226,9 @@ public class ConfigOptionController implements Serializable {
         option.setOptionValue(v);
     }
 
+    /**
+     * Creates a new instance of OptionController
+     */
     public ConfigOptionController() {
     }
 
@@ -589,6 +605,7 @@ public class ConfigOptionController implements Serializable {
             int updatedCount = 0;
             int skippedCount = 0;
             int skippedInwardLabelCount = 0;
+            int skippedSecretTypeCount = 0;
 
             for (int i = 1; i < lines.length; i++) {
                 String line = lines[i].trim();
@@ -630,7 +647,12 @@ public class ConfigOptionController implements Serializable {
                                 if (!(isSecretOption(existingOption) && (optionValue == null || optionValue.isEmpty()))) {
                                     existingOption.setOptionValue(optionValue);
                                 }
-                                existingOption.setValueType(valueType);
+                                if (isSecretKey(existingOption.getOptionKey())
+                                        && existingOption.getValueType() != valueType) {
+                                    skippedSecretTypeCount++;
+                                } else {
+                                    existingOption.setValueType(valueType);
+                                }
                                 if (enumType != null && !enumType.trim().isEmpty()) {
                                     existingOption.setEnumType(enumType);
                                 }
@@ -689,6 +711,10 @@ public class ConfigOptionController implements Serializable {
                         + " Inward Charge Type Label option(s) skipped; manage them from the Inward Charge Type Labels page.";
             }
             JsfUtil.addSuccessMessage(message);
+            if (skippedSecretTypeCount > 0) {
+                JsfUtil.addErrorMessage(skippedSecretTypeCount
+                        + " row(s) kept their current value type; the type of this kind of option cannot be changed by import.");
+            }
 
         } catch (IOException e) {
             JsfUtil.addErrorMessage("Error processing file: " + e.getMessage());
