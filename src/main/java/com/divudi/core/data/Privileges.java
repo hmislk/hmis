@@ -430,6 +430,7 @@ public enum Privileges {
     StoreSummery("Store Summary"),
     StoreAdministration("Store Administration"),
     PharmacyItemNameEdit("Pharmacy Item Name Edit"),
+    PharmacyItemUnretire("Pharmacy Item Un-retire"),
     //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="Channel">
@@ -1605,6 +1606,7 @@ public enum Privileges {
             case PrintOriginalPoBillFromReprint:
             case PrintOriginalGrnBillFromReprint:
             case PharmacyItemNameEdit:
+            case PharmacyItemUnretire:
 
                 return "Pharmacy";
 

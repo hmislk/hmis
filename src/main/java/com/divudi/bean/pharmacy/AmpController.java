@@ -12,6 +12,8 @@ import com.divudi.bean.common.CategoryController;
 import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.ItemController;
 import com.divudi.bean.common.SessionController;
+import com.divudi.bean.common.WebUserController;
+import com.divudi.core.facade.BillItemFacade;
 
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.data.DepartmentType;
@@ -111,6 +113,15 @@ public class AmpController implements Serializable {
     private ConfigOptionApplicationController configOptionApplicationController;
     @Inject
     private ItemController itemController;
+    @Inject
+    private WebUserController webUserController;
+    @EJB
+    private BillItemFacade billItemFacade;
+
+    // Retire / un-retire (issue 25459): reason and the warning figures shown before retiring
+    private String retireReason;
+    private double retireStockQty;
+    private long retireBillItemCount;
 
     // Audit-related injections
     @Inject
@@ -130,7 +141,7 @@ public class AmpController implements Serializable {
     private List<AuditEvent> ampAuditEvents;
 
     // Filter state for active/inactive AMPs - using string like VMP
-    private String filterStatus = "active"; // "active", "inactive", "all"
+    private String filterStatus = "active"; // "active", "inactive", "retired", "all"
 
     private UploadedFile file;
 
@@ -354,10 +365,15 @@ public class AmpController implements Serializable {
                 continue;
             }
 
+            Map<String, Object> beforeData = createAuditMap(s);
             s.setRetired(true);
+            s.setRetiredAt(new Date());
             s.setRetireComments("Bulk Remove");
             s.setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(s);
+            auditService.logAudit(beforeData, createAuditMap(s),
+                    getSessionController().getLoggedUser(),
+                    "Amp", "Retire AMP (bulk remove, no stock)", s.getId());
         }
 
         listToRemove = null;
@@ -1130,8 +1146,55 @@ public class AmpController implements Serializable {
         addingVtmInVmp = new VirtualProductIngredient();
     }
 
+    /**
+     * Opens the retire confirmation: loads the stock quantity and the number
+     * of transactions of the selected AMP so the user can decide knowingly.
+     */
+    public void prepareRetire() {
+        retireReason = null;
+        retireStockQty = 0;
+        retireBillItemCount = 0;
+        if (current == null || current.getId() == null) {
+            JsfUtil.addErrorMessage("No AMP Selected to Retire");
+            return;
+        }
+        retireStockQty = fetchStockQty(current);
+        Map<String, Object> m = new HashMap<>();
+        m.put("i", current);
+        m.put("ret", false);
+        Long cnt = billItemFacade.findLongByJpql(
+                "select count(bi) from BillItem bi where bi.item=:i and bi.retired=:ret", m);
+        retireBillItemCount = cnt == null ? 0 : cnt;
+        org.primefaces.PrimeFaces.current().ajax().addCallbackParam("canRetire", true);
+    }
+
+    public void prepareUnretire() {
+        retireReason = null;
+        if (current == null || current.getId() == null || !current.isRetired()) {
+            JsfUtil.addErrorMessage("No retired AMP selected");
+            return;
+        }
+        if (!webUserController.hasPrivilege("PharmacyItemUnretire")) {
+            JsfUtil.addErrorMessage("You do not have the privilege to un-retire items");
+            return;
+        }
+        org.primefaces.PrimeFaces.current().ajax().addCallbackParam("canUnretire", true);
+    }
+
+    /**
+     * Retires (soft deletes) the selected AMP. A reason is mandatory and the
+     * change is audited.
+     */
     public void delete() {
-        if (current != null) {
+        if (current == null) {
+            JsfUtil.addErrorMessage("No AMP Selected to Delete");
+            return;
+        }
+        if (retireReason == null || retireReason.trim().isEmpty()) {
+            JsfUtil.addErrorMessage("Please enter the reason for retiring this item");
+            return;
+        }
+        {
             // Capture before state for audit
             Map<String, Object> beforeData = createAuditMap(current);
 
@@ -1139,17 +1202,17 @@ public class AmpController implements Serializable {
             current.setRetired(true);
             current.setRetiredAt(new Date());
             current.setRetirer(getSessionController().getLoggedUser());
+            current.setRetireComments(retireReason.trim());
             getFacade().edit(current);
 
             // Capture after state for audit
             Map<String, Object> afterData = createAuditMap(current);
             auditService.logAudit(beforeData, afterData,
                     getSessionController().getLoggedUser(),
-                    "Amp", "Delete AMP", current.getId());
+                    "Amp", "Retire AMP", current.getId());
 
-            JsfUtil.addSuccessMessage("AMP Deleted Successfully");
-        } else {
-            JsfUtil.addErrorMessage("No AMP Selected to Delete");
+            JsfUtil.addSuccessMessage("AMP Retired Successfully");
+            org.primefaces.PrimeFaces.current().ajax().addCallbackParam("done", true);
         }
 
         // Clear all selections and state
@@ -1158,8 +1221,72 @@ public class AmpController implements Serializable {
         current = null;
         selectedAmpDto = null; // Clear DTO selection
         ampAuditEvents = null; // Clear audit events
+        retireReason = null;
         getCurrent();
         editable = false;
+    }
+
+    /**
+     * Reverses a retirement. Needs the PharmacyItemUnretire privilege and a
+     * reason; the change is audited.
+     */
+    public void unretire() {
+        if (current == null || !current.isRetired()) {
+            JsfUtil.addErrorMessage("No retired AMP selected");
+            return;
+        }
+        if (!webUserController.hasPrivilege("PharmacyItemUnretire")) {
+            JsfUtil.addErrorMessage("You do not have the privilege to un-retire items");
+            return;
+        }
+        if (retireReason == null || retireReason.trim().isEmpty()) {
+            JsfUtil.addErrorMessage("Please enter the reason for un-retiring this item");
+            return;
+        }
+        Map<String, Object> beforeData = createAuditMap(current);
+        String reason = retireReason.trim();
+        current.setRetired(false);
+        current.setRetiredAt(null);
+        current.setRetirer(null);
+        current.setRetireComments(null);
+        getFacade().edit(current);
+        Map<String, Object> afterData = createAuditMap(current);
+        afterData.put("unretireReason", reason);
+        auditService.logAudit(beforeData, afterData,
+                getSessionController().getLoggedUser(),
+                "Amp", "Unretire AMP", current.getId());
+        JsfUtil.addSuccessMessage("AMP Un-retired Successfully");
+        org.primefaces.PrimeFaces.current().ajax().addCallbackParam("done", true);
+        retireReason = null;
+        recreateModel();
+        ampDtos = null;
+        current = null;
+        selectedAmpDto = null;
+        ampAuditEvents = null;
+    }
+
+    public String getRetireReason() {
+        return retireReason;
+    }
+
+    public void setRetireReason(String retireReason) {
+        this.retireReason = retireReason;
+    }
+
+    public double getRetireStockQty() {
+        return retireStockQty;
+    }
+
+    public long getRetireBillItemCount() {
+        return retireBillItemCount;
+    }
+
+    public boolean isRetireWarningNeeded() {
+        return retireStockQty > 0 || retireBillItemCount > 0;
+    }
+
+    public boolean isUnretireAllowed() {
+        return webUserController.hasPrivilege("PharmacyItemUnretire");
     }
 
     private AmpFacade getFacade() {
@@ -1558,11 +1685,12 @@ public class AmpController implements Serializable {
                 + "FROM Amp a LEFT JOIN a.vmp v "
                 + "WHERE (LOWER(a.name) LIKE :query OR LOWER(a.code) LIKE :query OR LOWER(a.barcode) LIKE :query) "
                 + "AND a.departmentType=:dep "
-                + "AND a.retired=false ";
+                + "AND a.retired=:retiredFlag ";
 
         Map<String, Object> params = new HashMap<>();
         params.put("query", "%" + query.toLowerCase() + "%");
         params.put("dep", DepartmentType.Pharmacy);
+        params.put("retiredFlag", "retired".equals(filterStatus));
 
         // Apply status filter based on inactive attribute
         if ("active".equals(filterStatus)) {
@@ -1628,6 +1756,11 @@ public class AmpController implements Serializable {
         refreshData();
     }
 
+    public void setFilterToRetired() {
+        filterStatus = "retired";
+        refreshData();
+    }
+
     public void setFilterToAll() {
         filterStatus = "all";
         refreshData();
@@ -1648,11 +1781,17 @@ public class AmpController implements Serializable {
                 case "inactive":
                     shouldKeepSelection = current.isInactive();
                     break;
+                case "retired":
+                    shouldKeepSelection = current.isRetired();
+                    break;
                 case "all":
-                    shouldKeepSelection = true;
+                    shouldKeepSelection = !current.isRetired();
                     break;
             }
 
+            if (current.isRetired() && !"retired".equals(filterStatus)) {
+                shouldKeepSelection = false;
+            }
             if (!shouldKeepSelection) {
                 current = null;
                 selectedAmpDto = null;
@@ -1669,6 +1808,10 @@ public class AmpController implements Serializable {
         return "inactive".equals(filterStatus);
     }
 
+    public boolean isShowingRetired() {
+        return "retired".equals(filterStatus);
+    }
+
     public boolean isShowingAll() {
         return "all".equals(filterStatus);
     }
@@ -1679,6 +1822,8 @@ public class AmpController implements Serializable {
                 return "Active AMPs";
             case "inactive":
                 return "Inactive AMPs";
+            case "retired":
+                return "Retired AMPs";
             case "all":
                 return "All AMPs";
             default:
@@ -1700,6 +1845,7 @@ public class AmpController implements Serializable {
             auditData.put("code", amp.getCode());
             auditData.put("barcode", amp.getBarcode());
             auditData.put("retired", amp.isRetired());
+            auditData.put("retireComments", amp.getRetireComments());
             auditData.put("departmentType", amp.getDepartmentType() != null ?
                     amp.getDepartmentType().toString() : null);
 
