@@ -176,6 +176,33 @@
 
                             </h:panelGroup>
 
+                            <h:panelGroup rendered="#{(cc.attrs.reservation eq null or cc.attrs.reservation.id eq null) and (cc.attrs.appointment ne null ? cc.attrs.appointment : cc.attrs.reservation.appointment).item ne null}">
+                                <div class="my-3 text-center" style="font-weight: bold;">
+                                    <p:outputLabel value="PROCEDURE DETAILS" />
+                                </div>
+
+                                <div class="d-flex justify-content-center align-items-center">
+                                    <table>
+                                        <tbody>
+                                            <tr>
+                                                <th class="text-left">Procedure</th>
+                                                <td class="text-center">&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;&nbsp;&nbsp;&nbsp;</td>
+                                                <td class="text-left">
+                                                    <h:outputLabel value="#{(cc.attrs.appointment ne null ? cc.attrs.appointment : cc.attrs.reservation.appointment).item.name}"></h:outputLabel>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <th class="text-left">Category</th>
+                                                <td class="text-center">&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;&nbsp;&nbsp;&nbsp;</td>
+                                                <td class="text-left">
+                                                    <h:outputLabel value="#{(cc.attrs.appointment ne null ? cc.attrs.appointment : cc.attrs.reservation.appointment).item.category.name}"></h:outputLabel>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </h:panelGroup>
+
                             <div class="my-3 text-center" style="font-weight: bold;">
                                 <p:outputLabel   value="BILL DETAILS" />
                             </div>
