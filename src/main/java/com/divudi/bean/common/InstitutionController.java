@@ -230,6 +230,21 @@ public class InstitutionController implements Serializable {
         return completeInstitution(qry, InstitutionType.values());
     }
 
+    /**
+     * Institutions that own at least one active department; used by pickers
+     * that filter admission data. Does not filter on institution type, so
+     * institutions with no type set are listed too.
+     */
+    public List<Institution> completeAdmissionInstitution(String qry) {
+        String jpql = "select distinct d.institution from Department d "
+                + " where d.retired=false and d.institution.retired=false "
+                + " and upper(d.institution.name) like :q "
+                + " order by d.institution.name";
+        HashMap hm = new HashMap();
+        hm.put("q", "%" + (qry == null ? "" : qry.trim().toUpperCase()) + "%");
+        return getFacade().findByJpql(jpql, hm);
+    }
+
     public List<Institution> completeActiveIns(String qry) {
         return completeActiveInstitution(qry, null);
     }
