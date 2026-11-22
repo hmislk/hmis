@@ -81,8 +81,16 @@ public class CreditCompanyClaimStatusReportRowDto implements Serializable {
         this.outstanding = outstanding;
     }
 
-    /** Claimed less outstanding. */
+    /** Claimed less outstanding; 0 for a cancelled claim, whose bills were freed. */
     public double getReceivedOrClosed() {
+        if (isCancelled()) {
+            return 0.0;
+        }
         return CreditCompanyClaimReportMath.receivedOrClosed(claimedTotal, outstanding);
+    }
+
+    /** A cancelled claim no longer holds its bills, so it has no outstanding and is left out of totals. */
+    public boolean isCancelled() {
+        return status == CreditCompanyClaimStatus.CANCELLED;
     }
 }

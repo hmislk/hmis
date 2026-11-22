@@ -154,6 +154,10 @@ public class CreditCompanyClaimReportController implements Serializable {
         double claimed = 0;
         double outstanding = 0;
         for (CreditCompanyClaimStatusReportRowDto r : found) {
+            if (r.isCancelled()) {
+                r.setOutstanding(0.0);
+                continue;
+            }
             Double d = due.get(r.getId());
             r.setOutstanding(d == null ? 0.0 : CreditCompanyClaimReportMath.money(d));
             claimed += r.getClaimedTotal();
@@ -258,7 +262,8 @@ public class CreditCompanyClaimReportController implements Serializable {
             m.put("ids", new ArrayList<>(batch));
             List<?> found = claimFacade.findLightsByJpqlStrict(
                     "select new com.divudi.core.data.dto.CreditCompanyClaimDueDto("
-                    + "ci.claim.id, sum(b.netTotal - b.refundAmount - b.paidAmount))"
+                    // Grouped on purpose: EclipseLink reads "a - b - c" as "a - (b - c)".
+                    + "ci.claim.id, sum(b.netTotal - (b.refundAmount + b.paidAmount)))"
                     + " from CreditCompanyClaimItem ci join ci.bill b"
                     + " where ci.retired=false and ci.claim.id in :ids group by ci.claim.id", m);
             for (Object o : found) {
