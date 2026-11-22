@@ -16,16 +16,31 @@
             <p:panel rendered="#{!pharmacySaleBhtController.billPreview}">
 
                 <f:facet name="header" >
-                    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
-                        <p:outputLabel value="BHT Issue" class="m-2"/>
-                        <div class="d-flex gap-2 flex-wrap">
+                    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 w-100">
 
+                        <!-- LEFT: title + admin config -->
+                        <div class="d-flex align-items-center gap-2">
+                            <p:outputLabel value="BHT Issue" class="m-2"/>
+                            <p:commandButton
+                                id="btnConfig"
+                                rendered="#{webUserController.hasPrivilege('Admin')}"
+                                value="Config"
+                                icon="fa fa-cog"
+                                title="Page Configuration Management"
+                                action="#{pageAdminController.navigateToPageAdmin('inward/pharmacy_bill_issue_bht')}"
+                                ajax="false"
+                                class="ui-button-secondary ui-button-outlined">
+                            </p:commandButton>
+                        </div>
+
+                        <!-- CENTER: navigation -->
+                        <div class="d-flex gap-2 flex-wrap">
                             <p:commandButton
                                 id="btnInpatientDashboard"
                                 value="Inpatient Dashboard"
                                 icon="fa fa-id-card"
                                 ajax="false"
-                                class="ui-button-secondary"
+                                class="ui-button-info ui-button-outlined"
                                 rendered="#{pharmacySaleBhtController.bhtRequestBill ne null}"
                                 action="#{admissionController.navigateToAdmissionProfilePage}">
                                 <f:setPropertyActionListener
@@ -38,17 +53,20 @@
                                 value="Ward Medications"
                                 icon="fa fa-pills"
                                 ajax="false"
-                                class="ui-button-info"
+                                class="ui-button-info ui-button-outlined"
                                 rendered="#{pharmacySaleBhtController.bhtRequestBill ne null}"
                                 action="#{inpatientClinicalDataController.navigateToInwardMedicinesFromAdmission(pharmacySaleBhtController.bhtRequestBill.patientEncounter)}">
                             </p:commandButton>
+                        </div>
 
+                        <!-- RIGHT: actions, least to most important -->
+                        <div class="d-flex gap-2 flex-wrap align-items-center">
                             <p:commandButton
                                 id="btnViewRequest"
                                 value="View Request"
                                 icon="fa fa-file-alt"
                                 type="button"
-                                class="ui-button-help"
+                                class="ui-button-secondary"
                                 title="View the original request with comments"
                                 rendered="#{pharmacySaleBhtController.bhtRequestBill ne null}"
                                 onclick="PF('viewRequestDialog').show();">
@@ -56,7 +74,7 @@
 
                             <p:commandButton
                                 id="btnIssue"
-                                style="float: right;"
+                                style="min-width:120px;"
                                 class="ui-button-success"
                                 icon="fa fa-check"
                                 value="Issue to BHT"
@@ -64,17 +82,6 @@
                                             return false;"
                                 action="#{pharmacySaleBhtController.settlePharmacyBhtIssueAccept}"
                                 ajax="false" >
-                            </p:commandButton>
-
-                            <p:commandButton
-                                id="btnConfig"
-                                rendered="#{webUserController.hasPrivilege('Admin')}"
-                                value="Config"
-                                icon="fa fa-cog"
-                                title="Page Configuration Management"
-                                action="#{pageAdminController.navigateToPageAdmin('inward/pharmacy_bill_issue_bht')}"
-                                ajax="false"
-                                class="ui-button-secondary">
                             </p:commandButton>
                         </div>
                     </div>
