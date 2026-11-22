@@ -76,7 +76,7 @@
                                 <p:autoComplete id="assignee" styleClass="w-100" inputStyleClass="form-control"
                                                 value="#{patientComplaintController.filterAssignee}"
                                                 forceSelection="true"
-                                                completeMethod="#{patientComplaintController.completeHandlers}"
+                                                completeMethod="#{patientComplaintController.completeFilterAssignees}"
                                                 var="u" itemLabel="#{u.webUserPerson.name}" itemValue="#{u}"
                                                 placeholder="Anyone"/>
                             </div>

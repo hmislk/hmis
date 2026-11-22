@@ -24,8 +24,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.persistence.TemporalType;
@@ -181,6 +183,36 @@ public class PatientComplaintService {
                 + " and exists (select w from WebUserPrivilege w where w.retired=false and w.webUser=u and w.privilege=:pr)"
                 + " order by u.webUserPerson.name", m, 20);
         return l == null ? new ArrayList<>() : l;
+    }
+
+    /**
+     * Users for the register's "Assigned to" filter: current handlers plus anyone already assigned a complaint,
+     * so complaints of a user who lost the handle privilege can still be found. New assignments keep using
+     * {@link #completeHandlers(String)}.
+     */
+    public List<WebUser> completeFilterAssignees(String query) {
+        List<WebUser> result = new ArrayList<>(completeHandlers(query));
+        if (query == null) {
+            return result;
+        }
+        Set<Long> seen = new HashSet<>();
+        for (WebUser u : result) {
+            seen.add(u.getId());
+        }
+        Map<String, Object> m = new HashMap<>();
+        m.put("q", "%" + query.trim().toUpperCase() + "%");
+        List<WebUser> former = webUserFacade.findByJpql(
+                "select distinct c.assignee from PatientComplaint c where c.retired=false"
+                + " and c.assignee is not null and c.assignee.retired=false"
+                + " and (upper(c.assignee.webUserPerson.name) like :q or upper(c.assignee.name) like :q)", m, 20);
+        if (former != null) {
+            for (WebUser u : former) {
+                if (seen.add(u.getId())) {
+                    result.add(u);
+                }
+            }
+        }
+        return result;
     }
 
     private PatientComplaintCategory requireCategory(PatientComplaintCategory category) {
