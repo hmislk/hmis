@@ -63,7 +63,10 @@
                                     value="Open"
                                     icon="fa fa-folder-open"
                                     styleClass="ui-button-primary"
-                                    action="#{billSearch.openInwardServiceChild(cb.id)}" />
+                                    action="#{billSearch.openInwardServiceChild()}">
+                                    <f:param name="childBillId" value="#{cb.id}" />
+                                    <f:param name="batchBillId" value="#{billSearch.inwardBatchServiceBill.id}" />
+                                </p:commandButton>
                             </p:column>
                         </p:dataTable>
                     </p:panel>

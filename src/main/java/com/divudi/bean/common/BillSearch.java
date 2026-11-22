@@ -634,20 +634,34 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
     }
 
     /**
-     * Opens a child by id. The list is held in this session-scoped bean, so another
-     * tab may have replaced it; the child is reloaded and must belong to the batch
-     * currently shown.
+     * Opens a child. The list is held in this session-scoped bean, so another tab may
+     * have replaced it. The child id and batch id are request parameters rendered with
+     * the page the user saw; the child is reloaded and must belong to that batch, and
+     * that batch must still be the one held here.
      */
-    public String openInwardServiceChild(Long childId) {
+    public String openInwardServiceChild() {
+        Map<String, String> params = FacesContext.getCurrentInstance().getExternalContext().getRequestParameterMap();
+        Long childId = parseLongOrNull(params.get("childBillId"));
+        Long batchId = parseLongOrNull(params.get("batchBillId"));
         Bill child = childId == null ? null : getBillFacade().find(childId);
-        if (child == null || inwardBatchServiceBill == null
+        if (child == null || batchId == null || inwardBatchServiceBill == null
+                || inwardBatchServiceBill.getId() == null
+                || !batchId.equals(inwardBatchServiceBill.getId())
                 || child.getBackwardReferenceBill() == null
-                || !inwardBatchServiceBill.getId().equals(child.getBackwardReferenceBill().getId())) {
+                || !batchId.equals(child.getBackwardReferenceBill().getId())) {
             JsfUtil.addErrorMessage("This list is out of date; open the batch again");
             return "";
         }
         inwardSearch.setBill(child);
         return navigateToInwardSearchService();
+    }
+
+    private static Long parseLongOrNull(String s) {
+        try {
+            return s == null || s.trim().isEmpty() ? null : Long.valueOf(s.trim());
+        } catch (NumberFormatException e) {
+            return null;
+        }
     }
 
     private Bill firstInwardBatchChild() {
