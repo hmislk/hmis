@@ -139,7 +139,7 @@ public class ConfigOptionController implements Serializable {
      * Creates a new instance of OptionController
      */
 
-    // ---- Hardening (#25915): never send secret option values to the browser ----
+    // ---- Hardening (#25915) ----
     public static final String SECRET_MASK_SET = "\u2022\u2022\u2022\u2022\u2022\u2022 (set)";
     public static final String SECRET_MASK_NOT_SET = "(not set)";
     private static final String SECRET_AUDIT_MASK = "(hidden)";
