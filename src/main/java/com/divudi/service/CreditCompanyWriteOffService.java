@@ -6,11 +6,13 @@ import com.divudi.core.data.CreditCompanyWriteOffStatus;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.CreditCompanyClaim;
 import com.divudi.core.entity.CreditCompanyWriteOff;
+import com.divudi.core.data.Privileges;
 import com.divudi.core.entity.WebUser;
 import com.divudi.core.facade.BillFacade;
 import com.divudi.core.facade.CreditCompanyClaimFacade;
 import com.divudi.core.facade.CreditCompanyClaimItemFacade;
 import com.divudi.core.facade.CreditCompanyWriteOffFacade;
+import com.divudi.core.facade.WebUserPrivilegeFacade;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.Arrays;
@@ -42,6 +44,30 @@ public class CreditCompanyWriteOffService {
     private BillFacade billFacade;
     @EJB
     private CreditCompanyClaimService claimService;
+    @EJB
+    private WebUserPrivilegeFacade webUserPrivilegeFacade;
+
+    /**
+     * Checks the user holds the privilege in some department, so a future caller
+     * cannot skip the controller's check. Called after the first row lock so the
+     * lock stays the first database call of the transaction.
+     */
+    private void requirePrivilege(WebUser user, Privileges privilege, String action) {
+        long n;
+        try {
+            Map<String, Object> p = new HashMap<>();
+            p.put("u", user);
+            p.put("pri", privilege);
+            n = webUserPrivilegeFacade.findLongByJpqlStrict("select count(wup) from WebUserPrivilege wup"
+                    + " where wup.retired=false and wup.webUser=:u and wup.webUser.retired=false"
+                    + " and wup.privilege=:pri", p);
+        } catch (RuntimeException e) {
+            throw new CreditCompanyClaimException("Could not check your privileges. Try again.");
+        }
+        if (n < 1) {
+            throw new CreditCompanyClaimException("You do not have the privilege to " + action + ".");
+        }
+    }
 
     // ---- Pure rules (unit tested) ----
 
@@ -129,6 +155,7 @@ public class CreditCompanyWriteOffService {
         }
         // First database call: serialises requests and decisions on this bill.
         Bill bill = billFacade.findWithLock(billId);
+        requirePrivilege(user, Privileges.OpdCreditWriteOffRequest, "request write-offs");
         CreditCompanyClaimService.checkBillEligible(bill, bill == null ? null : bill.getCreditCompany(),
                 claimService.claimableBillTypeAtomics());
         BigDecimal due = CreditCompanyClaimService.dueDecimalOf(bill);
@@ -169,6 +196,7 @@ public class CreditCompanyWriteOffService {
 
     public CreditCompanyWriteOff approve(Long writeOffId, String comment, WebUser approver, boolean hasApprovePrivilege) {
         CreditCompanyWriteOff w = reload(writeOffId);
+        requirePrivilege(approver, Privileges.OpdCreditWriteOffApprove, "approve or reject write-offs");
         checkDecision(w, approver, hasApprovePrivilege, CreditCompanyWriteOffStatus.APPROVED);
         Bill bill = billFacade.findWithLock(w.getBill().getId());
         if (bill == null || bill.isRetired() || bill.isCancelled()) {
@@ -189,6 +217,7 @@ public class CreditCompanyWriteOffService {
 
     public CreditCompanyWriteOff reject(Long writeOffId, String comment, WebUser approver, boolean hasApprovePrivilege) {
         CreditCompanyWriteOff w = reload(writeOffId);
+        requirePrivilege(approver, Privileges.OpdCreditWriteOffApprove, "approve or reject write-offs");
         checkDecision(w, approver, hasApprovePrivilege, CreditCompanyWriteOffStatus.REJECTED);
         checkReason(comment, "the reason for rejecting the write-off");
         w.setStatus(CreditCompanyWriteOffStatus.REJECTED);
@@ -208,6 +237,7 @@ public class CreditCompanyWriteOffService {
             throw new CreditCompanyClaimException("You must be logged in to cancel a write-off.");
         }
         CreditCompanyWriteOff w = reload(writeOffId);
+        requirePrivilege(user, Privileges.OpdCreditWriteOffApprove, "cancel write-offs");
         checkTransition(w, CreditCompanyWriteOffStatus.CANCELLED);
         checkReason(reason, "the reason for cancelling the write-off");
         Bill bill = billFacade.findWithLock(w.getBill().getId());

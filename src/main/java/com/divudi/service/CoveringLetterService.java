@@ -127,7 +127,7 @@ public class CoveringLetterService {
             m.put("pt", patient);
         }
         if (onlyUnsettled) {
-            jpql.append("and abs(b.netTotal)-abs(coalesce(b.paidAmount, 0))>:val ");
+            jpql.append("and abs(b.netTotal)-(abs(coalesce(b.paidAmount, 0))+coalesce(b.writtenOffAmount, 0))>:val ");
             m.put("val", 0.1);
         }
         jpql.append("order by b.id");

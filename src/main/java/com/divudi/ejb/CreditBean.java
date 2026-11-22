@@ -1025,7 +1025,7 @@ public class CreditBean {
                 + " and b.cancelled=false "
                 + " and b.paymentMethod=:pm "
                 + " and b.createdAt  between :frm and :to"
-                + " and ((abs(b.netTotal)-abs(b.paidAmount))> :val) "
+                + " and ((abs(b.netTotal)-(abs(b.paidAmount)+coalesce(b.writtenOffAmount,0)))> :val) "
                 + " and (b.fromInstitution=:ins ) "
                 + " and b.billType in :bts";
         hm.put("frm", frmDate);
@@ -1076,7 +1076,7 @@ public class CreditBean {
                 + " where b.retired=false "
                 + " and b.cancelled=false "
                 + " and b.paymentMethod=:pm "
-                + " and ((abs(b.netTotal)-abs(b.paidAmount))> :val) "
+                + " and ((abs(b.netTotal)-(abs(b.paidAmount)+coalesce(b.writtenOffAmount,0)))> :val) "
                 + " and b.billType in :bts ";
         hm = new HashMap();
         hm.put("val", 0.1);
@@ -1201,7 +1201,7 @@ public class CreditBean {
                 + " and b.cancelled=false  "
                 + " and b.paymentMethod=:pm "
                 + " and b.createdAt is not null "
-                + " and ((abs(b.netTotal)-abs(b.paidAmount))> :val) "
+                + " and ((abs(b.netTotal)-(abs(b.paidAmount)+coalesce(b.writtenOffAmount,0)))> :val) "
                 + " and (b.fromInstitution=:ins ) "
                 + " and b.billType in :bts";
 
@@ -1408,7 +1408,7 @@ public class CreditBean {
                 + " where b.retired=false "
                 + " and b.cancelled=false "
                 + " and b.paymentMethod=:pm "
-                + " and ((abs(b.netTotal)-abs(b.paidAmount))> :val) "
+                + " and ((abs(b.netTotal)-(abs(b.paidAmount)+coalesce(b.writtenOffAmount,0)))> :val) "
                 + " and b.createdAt between :frm and :to "
                 + " and b.billType in :bts";
         hm = new HashMap();
