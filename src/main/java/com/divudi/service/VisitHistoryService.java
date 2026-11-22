@@ -60,7 +60,7 @@ public class VisitHistoryService {
         pa.put("pid", patientId);
         String admissionDate = "coalesce(a.dateOfAdmission, a.createdAt)";
         String ja = "select new com.divudi.core.data.dto.VisitHistoryRowDTO("
-                + " a.id, a.bhtNo, " + admissionDate + ", a.dateOfDischarge, d.name, sp.name) "
+                + " a.id, a.bhtNo, a.dateOfAdmission, a.createdAt, a.dateOfDischarge, d.name, sp.name) "
                 + " from Admission a "
                 + " left join a.department d "
                 + " left join a.referringConsultant s "
@@ -78,7 +78,7 @@ public class VisitHistoryService {
         // 2. Bills of the patient.
         String billDate = "coalesce(b.createdAt, b.billTime)";
         String selectBill = "select new com.divudi.core.data.dto.VisitHistoryRowDTO("
-                + " b.id, b.deptId, b.insId, " + billDate + ", b.billTypeAtomic, d.departmentType, d.name, sp.name,"
+                + " b.id, b.deptId, b.insId, b.createdAt, b.billTime, b.billTypeAtomic, d.departmentType, d.name, sp.name,"
                 + " b.cancelled, b.refunded) "
                 + " from Bill b "
                 + " left join b.department d "

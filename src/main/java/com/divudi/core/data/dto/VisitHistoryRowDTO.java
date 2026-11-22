@@ -38,12 +38,12 @@ public class VisitHistoryRowDTO implements Serializable {
     /**
      * Bill row.
      */
-    public VisitHistoryRowDTO(Long billId, String deptId, String insId, Date eventDate,
+    public VisitHistoryRowDTO(Long billId, String deptId, String insId, Date createdAt, Date billTime,
             BillTypeAtomic billTypeAtomic, DepartmentType departmentType, String departmentName,
             String doctorName, Boolean cancelled, Boolean refunded) {
         this.id = billId;
         this.admission = false;
-        this.eventDate = eventDate;
+        this.eventDate = createdAt != null ? createdAt : billTime;
         this.referenceNumber = deptId != null && !deptId.trim().isEmpty() ? deptId : insId;
         this.visitType = VisitHistoryType.resolve(billTypeAtomic, departmentType);
         this.documentType = billTypeAtomic != null ? billTypeAtomic.getLabel() : "Bill";
@@ -70,11 +70,11 @@ public class VisitHistoryRowDTO implements Serializable {
     /**
      * Admission row.
      */
-    public VisitHistoryRowDTO(Long admissionId, String bhtNo, Date admissionDate, Date dischargeDate,
+    public VisitHistoryRowDTO(Long admissionId, String bhtNo, Date admissionDate, Date createdAt, Date dischargeDate,
             String departmentName, String doctorName) {
         this.id = admissionId;
         this.admission = true;
-        this.eventDate = admissionDate;
+        this.eventDate = admissionDate != null ? admissionDate : createdAt;
         this.referenceNumber = bhtNo;
         this.visitType = VisitHistoryType.INPATIENT;
         this.documentType = "Admission";
