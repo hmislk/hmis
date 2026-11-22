@@ -45,7 +45,7 @@ Screens: Financial Transaction Manager → Payment Management → Credit Company
   - otherwise some amount is linked: **Partially Settled**;
   - otherwise nothing is linked: back to **Submitted** (or **Resubmitted** if it was resubmitted).
 - Cancelling a settlement bill (Reports and Audits, Payment Done Search) retires its link rows and recomputes each claim. A Settled claim reopens to Partially Settled, Submitted or Resubmitted. If one of its bills is by then in another open claim, the claim is left Settled and a warning is logged.
-- Links are made for Submitted, Resubmitted, Partially Settled, Draft and Rejected claims, but only Submitted, Resubmitted, Partially Settled and Settled claims change status. A Draft or Rejected claim keeps its status.
+- Links are made for Submitted, Resubmitted, Partially Settled, Draft and Rejected claims, but only Submitted, Resubmitted, Partially Settled and Settled claims change status. A Draft or Rejected claim keeps its status until it is submitted or resubmitted; then its status is recomputed at once, so a claim whose bills were already paid goes straight to Partially Settled or Settled.
 - If linking fails after a payment or cancellation was saved, the payment stands and the user is told to inform the administrator.
 - Payment Vouchers are not part of claims.
 

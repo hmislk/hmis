@@ -300,6 +300,8 @@ public class CreditCompanyClaimService {
         c.setSubmitter(user);
         c.setCompanyReference(blankToNull(companyReference));
         claimFacade.edit(c);
+        // Bills may have been paid while the claim was a draft: start from the real state.
+        recomputeStatus(c);
         return c;
     }
 
@@ -331,6 +333,8 @@ public class CreditCompanyClaimService {
             c.setCompanyReference(companyReference.trim());
         }
         claimFacade.edit(c);
+        // Bills may have been paid while the claim was rejected: start from the real state.
+        recomputeStatus(c);
         return c;
     }
 
