@@ -16,7 +16,7 @@
             <p:panel>
                 <f:facet name="header">
                     <div class="d-flex justify-content-center">
-                        <h4 style="font-weight: 600;">Reservation Calendar</h4>
+                        <h:outputText value="Reservation Calendar" style="font-weight: 600; font-size: 1.25rem;" />
                     </div>
                 </f:facet>
 
@@ -43,6 +43,7 @@
                     </p:calendar>
 
                     <p:selectOneMenu
+                        title="Appointment status"
                         value="#{inwardReservationController.calanderStatus}"
                         filter="true"
                         style="width: 250px;"
@@ -57,13 +58,14 @@
                         </f:selectItems>
                     </p:selectOneMenu>
 
-                    <h:selectBooleanCheckbox id="includeCompleted" value="#{inwardReservationController.includeCompleted}" class="align-self-center" />
+                    <h:selectBooleanCheckbox id="includeCompleted" value="#{inwardReservationController.includeCompleted}" title="Also show completed appointments" class="align-self-center" />
                     <h:outputLabel for="includeCompleted" value="Include completed appointments" class="align-self-center" />
 
                     <p:commandButton
                         value="Find Reservations"
                         action="#{inwardReservationController.findReservations()}"
                         class="ui-button-warning mx-4"
+                        title="Load reservations for the selected dates and status"
                         ajax="false"
                         icon="fa fa-search">
                     </p:commandButton>
@@ -177,6 +179,7 @@
 
                         <div class="d-flex justify-content-end mt-3">
                             <p:commandButton
+                                title="Admit the patient from this appointment"
                                 icon="fa fa-check-circle"
                                 ajax="false"
                                 value="To Admit"
