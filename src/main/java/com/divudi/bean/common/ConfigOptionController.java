@@ -154,7 +154,7 @@ public class ConfigOptionController implements Serializable {
         if (key == null) {
             return false;
         }
-        String k = key.toLowerCase().replaceAll("[^a-z0-9]", "");
+        String k = key.toLowerCase(Locale.ROOT).replaceAll("[^a-z0-9]", "");
         if (k.endsWith("url") || k.endsWith("regex") || k.endsWith("parameter")
                 || k.endsWith("maxtokens")) {
             return false;
@@ -218,12 +218,16 @@ public class ConfigOptionController implements Serializable {
     /**
      * Value to show or store for an audit record, from the key, the recorded
      * value type (null for old rows) and the value. Non-secret keys and empty
-     * or true/false values pass through. A plain number passes only when the
+     * values pass through; true/false passes when the type is BOOLEAN or not recorded. A plain number passes only when the
      * recorded type is INTEGER, LONG or DOUBLE; everything else is hidden.
      */
     public static String auditDisplay(String key, String valueType, String value) {
-        if (!isSecretKey(key) || value == null || value.isEmpty()
-                || "true".equalsIgnoreCase(value) || "false".equalsIgnoreCase(value)) {
+        if (!isSecretKey(key) || value == null || value.isEmpty()) {
+            return value;
+        }
+        boolean typeRecorded = valueType != null && !valueType.isEmpty() && !"null".equalsIgnoreCase(valueType);
+        if (("true".equalsIgnoreCase(value) || "false".equalsIgnoreCase(value))
+                && (!typeRecorded || "BOOLEAN".equalsIgnoreCase(valueType))) {
             return value;
         }
         if (isNumericTypeName(valueType) && value.matches("-?[0-9]+(\\.[0-9]+)?")) {
