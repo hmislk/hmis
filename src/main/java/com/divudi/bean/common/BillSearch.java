@@ -41,6 +41,8 @@ import com.divudi.core.entity.BillItem;
 import com.divudi.core.entity.CancelledBill;
 import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.Patient;
+import com.divudi.core.entity.PatientEncounter;
 import com.divudi.core.entity.Payment;
 import com.divudi.core.entity.RefundBill;
 import com.divudi.core.entity.WebUser;
@@ -599,6 +601,105 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
 
     public String navigateToInwardSearchService() {
         return "/inward/inward_reprint_bill_service?faces-redirect=true";
+    }
+
+    /**
+     * An inward batch service bill carries no items or fees; they are on its child
+     * service bills (each child's backwardReferenceBill is the batch). One child opens
+     * its service reprint page; several open a list of the children, each with Open.
+     */
+    public String navigateToViewInwardServiceBatchBill(Bill batch) {
+        if (batch == null || batch.getId() == null) {
+            JsfUtil.addErrorMessage("No Bill is Selected");
+            return "";
+        }
+        String jpql = "select b from Bill b"
+                + " where b.backwardReferenceBill.id = :batchId"
+                + " and b.retired = false"
+                + " order by b.id";
+        Map<String, Object> m = new HashMap<>();
+        m.put("batchId", batch.getId());
+        List<Bill> children = getBillFacade().findByJpql(jpql, m);
+        if (children == null || children.isEmpty()) {
+            JsfUtil.addErrorMessage("This batch bill has no service bills to show");
+            return "";
+        }
+        if (children.size() == 1) {
+            inwardSearch.setBill(children.get(0));
+            return navigateToInwardSearchService();
+        }
+        inwardBatchServiceBill = batch;
+        inwardBatchServiceChildBills = children;
+        return "/inward/inward_service_batch_bill_children?faces-redirect=true";
+    }
+
+    /**
+     * Opens a child. The list is held in this session-scoped bean, so another tab may
+     * have replaced it. The child id and batch id are request parameters rendered with
+     * the page the user saw; the child is reloaded and must belong to that batch, and
+     * that batch must still be the one held here.
+     */
+    public String openInwardServiceChild() {
+        Map<String, String> params = FacesContext.getCurrentInstance().getExternalContext().getRequestParameterMap();
+        Long childId = parseLongOrNull(params.get("childBillId"));
+        Long batchId = parseLongOrNull(params.get("batchBillId"));
+        Bill child = childId == null ? null : getBillFacade().find(childId);
+        if (child == null || batchId == null || inwardBatchServiceBill == null
+                || inwardBatchServiceBill.getId() == null
+                || !batchId.equals(inwardBatchServiceBill.getId())
+                || child.getBackwardReferenceBill() == null
+                || !batchId.equals(child.getBackwardReferenceBill().getId())) {
+            JsfUtil.addErrorMessage("This list is out of date; open the batch again");
+            return "";
+        }
+        inwardSearch.setBill(child);
+        return navigateToInwardSearchService();
+    }
+
+    private static Long parseLongOrNull(String s) {
+        try {
+            return s == null || s.trim().isEmpty() ? null : Long.valueOf(s.trim());
+        } catch (NumberFormatException e) {
+            return null;
+        }
+    }
+
+    private Bill firstInwardBatchChild() {
+        if (inwardBatchServiceChildBills == null || inwardBatchServiceChildBills.isEmpty()) {
+            return null;
+        }
+        return inwardBatchServiceChildBills.get(0);
+    }
+
+    public PatientEncounter getInwardBatchServiceAdmission() {
+        Bill first = firstInwardBatchChild();
+        if (first != null && first.getPatientEncounter() != null) {
+            return first.getPatientEncounter();
+        }
+        return inwardBatchServiceBill == null ? null : inwardBatchServiceBill.getPatientEncounter();
+    }
+
+    public Patient getInwardBatchServicePatient() {
+        if (inwardBatchServiceBill != null && inwardBatchServiceBill.getPatient() != null) {
+            return inwardBatchServiceBill.getPatient();
+        }
+        Bill first = firstInwardBatchChild();
+        if (first != null && first.getPatient() != null) {
+            return first.getPatient();
+        }
+        PatientEncounter pe = getInwardBatchServiceAdmission();
+        return pe == null ? null : pe.getPatient();
+    }
+
+    private Bill inwardBatchServiceBill;
+    private List<Bill> inwardBatchServiceChildBills;
+
+    public Bill getInwardBatchServiceBill() {
+        return inwardBatchServiceBill;
+    }
+
+    public List<Bill> getInwardBatchServiceChildBills() {
+        return inwardBatchServiceChildBills;
     }
 
     public List<Payment> fetchBillPayments(Bill bill) {
@@ -5442,10 +5543,12 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
                 return "/inward/inward_reprint_bill_professional?faces-redirect=true";
 
             case INWARD_SERVICE_BILL:
-            case INWARD_SERVICE_BATCH_BILL:
                 // Same page the inward service search opens; it reads inwardSearch.bill.
                 inwardSearch.setBill(bill);
                 return navigateToInwardSearchService();
+
+            case INWARD_SERVICE_BATCH_BILL:
+                return navigateToViewInwardServiceBatchBill(bill);
 
             case INWARD_FINAL_BILL:
                 // Same preparation as inward_search_final.xhtml: set the bill, the admission
