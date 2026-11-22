@@ -105,7 +105,7 @@
                                 <p:dataExporter type="xlsx" target="tblOpVisits" fileName="op_visits"/>
                             </p:commandButton>
                             <h:outputText styleClass="text-muted small ms-2"
-                                          value="One visit = one OPD bill. Cancelled and refunded bills are left out, also when they were cancelled or refunded after the selected period."/>
+                                          value="One visit = one OPD bill. Cancelled and fully refunded bills are left out (a partly refunded bill still counts), also when this happened after the selected period."/>
                         </div>
 
                         <p:dataTable id="tblOpVisits"

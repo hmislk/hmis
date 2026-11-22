@@ -659,7 +659,8 @@ public class OpdReportController implements Serializable {
     /**
      * Bills that count as OP visits (#25854): one visit = one individual OPD bill, settled at
      * billing or at the cashier (package bills included). Pre-bills not yet paid, batch bills
-     * (which only group the individual ones) and cancelled or refunded bills are not visits.
+     * (which only group the individual ones), cancelled bills and fully refunded bills are not
+     * visits; a partly refunded bill still is.
      */
     private static final List<BillTypeAtomic> OP_VISIT_BILL_TYPES = Arrays.asList(
             BillTypeAtomic.OPD_BILL_WITH_PAYMENT,
@@ -672,7 +673,11 @@ public class OpdReportController implements Serializable {
      * billing side, as in the other OPD summary reports.
      */
     private String opVisitBillConditions(Map<String, Object> m) {
-        String where = " b.retired=false and b.cancelled=false and b.refunded=false"
+        // A partly refunded bill is still a visit (user, #332); only a bill whose every item was
+        // refunded drops out. A return refunds whole items, and marks each one and the bill refunded.
+        String where = " b.retired=false and b.cancelled=false"
+                + " and (b.refunded=false or exists (select rbi from BillItem rbi"
+                + " where rbi.bill=b and rbi.retired=false and rbi.refunded=false))"
                 + " and b.billTypeAtomic in :btas"
                 + " and b.createdAt between :fd and :td";
         m.put("btas", OP_VISIT_BILL_TYPES);
