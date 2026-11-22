@@ -20,6 +20,6 @@ Applies to patient registration through the online portal, the mobile app and th
 - Privilege: approve portal registrations (name set following the security-privileges conventions).
 
 ## For developers
-- `ClientAccount` holds the account, channel and approval fields; PHN comes from `applicationController.createNewPersonalHealthNumber`.
-- Every portal page and API checks approval status before returning booking or record data.
+- `ClientAccount` holds the account and channel fields today; #25849 adds the approval status and approved-by/approved-at fields. PHN comes from `applicationController.createNewPersonalHealthNumber`.
+- Not built yet (part of #25849): every portal page and API must check approval status before returning booking or record data.
 - See [Changing existing options](../configuration/application-options.md#changing-existing-options) and the security-privileges skill.
