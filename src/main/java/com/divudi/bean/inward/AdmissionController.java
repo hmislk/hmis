@@ -40,8 +40,8 @@ import com.divudi.core.entity.EncounterCreditCompany;
 import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.Patient;
 import com.divudi.core.entity.PatientEncounter;
-import com.divudi.core.entity.WebUser;
 import com.divudi.core.entity.Person;
+import com.divudi.core.entity.WebUser;
 import com.divudi.core.entity.inward.Admission;
 import com.divudi.core.entity.inward.PatientRoom;
 import com.divudi.core.facade.AdmissionFacade;
@@ -2319,6 +2319,20 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     private PatientEncounter reservationEncounterBeforeSave;
 
     /**
+     * True (with a message) when the admission on the form was cancelled by a rolled-back
+     * save (automatic admission charges failed). Saving again would write to that retired
+     * admission and re-link the appointment to it, so staff must start a new admission.
+     * (#25725)
+     */
+    private boolean admissionWasRolledBack() {
+        if (getCurrent() != null && getCurrent().getId() != null && getCurrent().isRetired()) {
+            JsfUtil.addErrorMessage("This admission was cancelled. Open Admit Patient again to retry.");
+            return true;
+        }
+        return false;
+    }
+
+    /**
      * Records the appointment (and its room reservation) as they are before the save
      * writes anything. Called right after the checks, in both save paths.
      */
@@ -2344,8 +2358,11 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         if (currentReservation != null && currentReservation.getId() != null
                 && currentReservation.getAppointment() != null
                 && apt.getId().equals(currentReservation.getAppointment().getId())) {
-            reservationBeforeSaveId = currentReservation.getId();
-            reservationEncounterBeforeSave = currentReservation.getReservationEncounter();
+            Reservation stored = reservationFacade.find(currentReservation.getId());
+            if (stored != null) {
+                reservationBeforeSaveId = stored.getId();
+                reservationEncounterBeforeSave = stored.getReservationEncounter();
+            }
         }
     }
 
@@ -3606,6 +3623,9 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             JsfUtil.addErrorMessage("Admittin process already started.");
             return;
         }
+        if (admissionWasRolledBack()) {
+            return;
+        }
 
         if (getPatient() != null && getPatient().getId() != null && getPatient().isBlacklisted()) {
             JsfUtil.addErrorMessage("This patient is blacklisted from the system.");
@@ -3851,6 +3871,9 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     }
 
     public void saveConvertSelected() {
+        if (admissionWasRolledBack()) {
+            return;
+        }
         if (errorCheck()) {
             return;
         }
@@ -3985,10 +4008,15 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             getCurrent().setRetirer(getSessionController().getLoggedUser());
             getCurrent().setRetiredAt(now);
             getFacade().edit(getCurrent());
-            restoreAppointmentAfterRolledBackSave(getCurrent());
 
             JsfUtil.addErrorMessage("Automatic admission charges could not be applied and this admission has been cancelled. Please retry. (" + ex.getMessage() + ")");
             admittingProcessStarted = false;
+            try {
+                restoreAppointmentAfterRolledBackSave(getCurrent());
+            } catch (RuntimeException restoreEx) {
+                logger.log(Level.SEVERE, "Could not free the appointment of rolled-back admission " + getCurrent().getId(), restoreEx);
+                JsfUtil.addErrorMessage("The appointment of this admission could not be made pending again. Please inform the system administrator.");
+            }
             return false;
         }
     }
