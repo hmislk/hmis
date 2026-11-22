@@ -29,16 +29,34 @@ function hmisTenderedEnter(e, input) {
     var tries = 0;
     var clickWhenIdle = function () {
         var q = window.PrimeFaces && PrimeFaces.ajax && PrimeFaces.ajax.Queue;
-        if (q && !q.isEmpty() && tries++ < 40) {
-            setTimeout(clickWhenIdle, 50);
+        if (q && !q.isEmpty()) {
+            if (tries++ < 40) {
+                setTimeout(clickWhenIdle, 50);
+                return;
+            }
+            // Still busy after the wait: do not settle on a stale balance. Abort and re-arm.
+            if (window.console && console.warn) {
+                console.warn('Settle skipped: the previous request is still running. Press Enter again.');
+            }
+            hmisSettleEnterBusy = false;
             return;
         }
-        if (!btn.disabled && !btn.classList.contains('ui-state-disabled')) {
-            btn.click();
+        if (btn.disabled || btn.classList.contains('ui-state-disabled')) {
+            hmisSettleEnterBusy = false;
+            return;
         }
-        // The confirm dialog blocks inside click(); if it was cancelled the page stays, so re-arm.
-        // A confirmed settle submits the form and reloads the page, which resets this flag too.
-        setTimeout(function () { hmisSettleEnterBusy = false; }, 1500);
+        var leaving = false;
+        var onLeave = function () { leaving = true; };
+        window.addEventListener('beforeunload', onLeave);
+        btn.click();
+        // The confirm dialog blocks inside click(). A confirmed settle submits the form and the page
+        // unloads, so the flag stays set. If nothing was submitted (confirm cancelled), re-arm.
+        setTimeout(function () {
+            window.removeEventListener('beforeunload', onLeave);
+            if (!leaving) {
+                hmisSettleEnterBusy = false;
+            }
+        }, 1500);
     };
     clickWhenIdle();
     return false;
