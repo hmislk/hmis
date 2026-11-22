@@ -87,6 +87,11 @@ public class PatientComplaintController implements Serializable {
         return isCanHandle() ? complaintService.completeHandlers(query) : new ArrayList<>();
     }
 
+    /** Users for the register's "Assigned to" filter: current handlers and anyone already assigned a complaint. */
+    public List<WebUser> completeFilterAssignees(String query) {
+        return isCanHandle() ? complaintService.completeFilterAssignees(query) : new ArrayList<>();
+    }
+
     private boolean denyHandle() {
         if (isCanHandle()) {
             return false;

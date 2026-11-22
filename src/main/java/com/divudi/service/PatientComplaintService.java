@@ -24,8 +24,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.persistence.TemporalType;
@@ -181,6 +183,48 @@ public class PatientComplaintService {
                 + " and exists (select w from WebUserPrivilege w where w.retired=false and w.webUser=u and w.privilege=:pr)"
                 + " order by u.webUserPerson.name", m, 20);
         return l == null ? new ArrayList<>() : l;
+    }
+
+    /**
+     * Users for the register's "Assigned to" filter: current handlers plus anyone already assigned a complaint
+     * (including users who have since lost the privilege or been retired), so complaints of former handlers can
+     * still be found. The combined list is de-duplicated, sorted by display name and capped at 20.
+     * New assignments keep using {@link #completeHandlers(String)}.
+     */
+    public List<WebUser> completeFilterAssignees(String query) {
+        List<WebUser> result = new ArrayList<>();
+        if (query == null) {
+            return result;
+        }
+        Set<Long> seen = new HashSet<>();
+        for (WebUser u : completeHandlers(query)) {
+            if (seen.add(u.getId())) {
+                result.add(u);
+            }
+        }
+        Map<String, Object> m = new HashMap<>();
+        m.put("q", "%" + query.trim().toUpperCase() + "%");
+        List<WebUser> former = webUserFacade.findByJpql(
+                "select distinct a from PatientComplaint c join c.assignee a left join a.webUserPerson p"
+                + " where c.retired=false"
+                + " and (upper(p.name) like :q or upper(a.name) like :q)"
+                + " order by a.name, a.id", m, 20);
+        if (former != null) {
+            for (WebUser u : former) {
+                if (seen.add(u.getId())) {
+                    result.add(u);
+                }
+            }
+        }
+        result.sort((x, y) -> filterDisplayName(x).compareToIgnoreCase(filterDisplayName(y)));
+        return result.size() > 20 ? new ArrayList<>(result.subList(0, 20)) : result;
+    }
+
+    private static String filterDisplayName(WebUser u) {
+        if (u.getWebUserPerson() != null && u.getWebUserPerson().getName() != null) {
+            return u.getWebUserPerson().getName();
+        }
+        return u.getName() == null ? "" : u.getName();
     }
 
     private PatientComplaintCategory requireCategory(PatientComplaintCategory category) {
