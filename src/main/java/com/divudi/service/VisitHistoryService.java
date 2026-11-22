@@ -45,6 +45,8 @@ public class VisitHistoryService {
      * @param portalView true for the patient portal: internal bill types are
      * excluded. Staff views pass false.
      * @return the rows, never null
+     * @throws RuntimeException when any source query fails, so a partial
+     * history is never shown as a complete one
      */
     @SuppressWarnings("unchecked")
     public List<VisitHistoryRowDTO> findVisitHistory(Long patientId, Date fromDate, Date toDate,
@@ -53,7 +55,6 @@ public class VisitHistoryService {
         if (patientId == null) {
             return rows;
         }
-        boolean ranged = fromDate != null && toDate != null;
 
         // 1. Admissions of the patient.
         Map<String, Object> pa = new HashMap<>();
@@ -66,13 +67,9 @@ public class VisitHistoryService {
                 + " left join a.referringConsultant s "
                 + " left join s.person sp "
                 + " where a.retired=false and a.patient.id=:pid ";
-        if (ranged) {
-            ja += " and " + admissionDate + " between :fromDate and :toDate ";
-            pa.put("fromDate", fromDate);
-            pa.put("toDate", toDate);
-        }
+        ja += dateBounds(admissionDate, fromDate, toDate, pa);
         ja += " order by " + admissionDate + " desc, a.id desc";
-        List<VisitHistoryRowDTO> admissionRows = (List<VisitHistoryRowDTO>) billFacade.findLightsByJpql(
+        List<VisitHistoryRowDTO> admissionRows = (List<VisitHistoryRowDTO>) billFacade.findLightsByJpqlStrict(
                 ja, pa, TemporalType.TIMESTAMP, MAX_ROWS_PER_SOURCE);
 
         // 2. Bills of the patient.
@@ -88,13 +85,9 @@ public class VisitHistoryService {
         Map<String, Object> pb = new HashMap<>();
         pb.put("pid", patientId);
         String jb = selectBill + " and b.patient.id=:pid ";
-        if (ranged) {
-            jb += " and " + billDate + " between :fromDate and :toDate ";
-            pb.put("fromDate", fromDate);
-            pb.put("toDate", toDate);
-        }
+        jb += dateBounds(billDate, fromDate, toDate, pb);
         jb += " order by " + billDate + " desc, b.id desc";
-        List<VisitHistoryRowDTO> billRows = (List<VisitHistoryRowDTO>) billFacade.findLightsByJpql(
+        List<VisitHistoryRowDTO> billRows = (List<VisitHistoryRowDTO>) billFacade.findLightsByJpqlStrict(
                 jb, pb, TemporalType.TIMESTAMP, MAX_ROWS_PER_SOURCE);
 
         // 3. Inpatient bills raised against the patient's admissions but not
@@ -104,7 +97,7 @@ public class VisitHistoryService {
         pi.put("pid", patientId);
         String ji = "select a.id from Admission a where a.retired=false and a.patient.id=:pid"
                 + " order by " + admissionDate + " desc, a.id desc";
-        List<?> ids = billFacade.findLightsByJpql(ji, pi, TemporalType.TIMESTAMP, MAX_ROWS_PER_SOURCE);
+        List<?> ids = billFacade.findLightsByJpqlStrict(ji, pi, TemporalType.TIMESTAMP, MAX_ROWS_PER_SOURCE);
         if (ids != null) {
             for (Object o : ids) {
                 if (o instanceof Long) {
@@ -116,14 +109,12 @@ public class VisitHistoryService {
         if (!admissionIds.isEmpty()) {
             Map<String, Object> pe = new HashMap<>();
             pe.put("encIds", admissionIds);
-            String je = selectBill + " and b.patientEncounter.id in :encIds ";
-            if (ranged) {
-                je += " and " + billDate + " between :fromDate and :toDate ";
-                pe.put("fromDate", fromDate);
-                pe.put("toDate", toDate);
-            }
+            pe.put("pid", patientId);
+            String je = selectBill + " and b.patientEncounter.id in :encIds "
+                    + " and (b.patient is null or b.patient.id=:pid) ";
+            je += dateBounds(billDate, fromDate, toDate, pe);
             je += " order by " + billDate + " desc, b.id desc";
-            List<VisitHistoryRowDTO> r = (List<VisitHistoryRowDTO>) billFacade.findLightsByJpql(
+            List<VisitHistoryRowDTO> r = (List<VisitHistoryRowDTO>) billFacade.findLightsByJpqlStrict(
                     je, pe, TemporalType.TIMESTAMP, MAX_ROWS_PER_SOURCE);
             if (r != null) {
                 encounterBillRows = r;
@@ -159,6 +150,19 @@ public class VisitHistoryService {
         result.sort(Comparator.comparing(VisitHistoryRowDTO::getEventDate,
                 Comparator.nullsLast(Comparator.reverseOrder())));
         return result;
+    }
+
+    private String dateBounds(String dateExpr, Date fromDate, Date toDate, Map<String, Object> params) {
+        String clause = "";
+        if (fromDate != null) {
+            clause += " and " + dateExpr + " >= :fromDate ";
+            params.put("fromDate", fromDate);
+        }
+        if (toDate != null) {
+            clause += " and " + dateExpr + " <= :toDate ";
+            params.put("toDate", toDate);
+        }
+        return clause;
     }
 
     /**

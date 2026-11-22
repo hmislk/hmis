@@ -35,6 +35,8 @@ public class VisitHistoryController implements Serializable {
     private VisitHistoryService visitHistoryService;
     @Inject
     private WebUserController webUserController;
+    @Inject
+    private PatientController patientController;
 
     private Patient patient;
     private VisitHistoryType visitType;
@@ -93,7 +95,13 @@ public class VisitHistoryController implements Serializable {
             }
         }
         // Count truncation on the unfiltered list so a type filter cannot hide it.
-        List<VisitHistoryRowDTO> all = visitHistoryService.findVisitHistory(patient.getId(), from, to, null, false);
+        List<VisitHistoryRowDTO> all;
+        try {
+            all = visitHistoryService.findVisitHistory(patient.getId(), from, to, null, false);
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage("The visit history could not be loaded completely. Please try again or contact support.");
+            return;
+        }
         truncated = visitHistoryService.mayBeTruncated(all);
         for (VisitHistoryRowDTO r : all) {
             if (visitType == null || r.getVisitType() == visitType) {
@@ -112,6 +120,16 @@ public class VisitHistoryController implements Serializable {
         toDate = null;
         rows = new ArrayList<>();
         truncated = false;
+    }
+
+    /**
+     * Patient search for the report, only for users with the report privilege.
+     */
+    public List<Patient> completePatient(String query) {
+        if (webUserController == null || !webUserController.hasPrivilege(PRIVILEGE)) {
+            return new ArrayList<>();
+        }
+        return patientController.completePatientByNameOrCode(query);
     }
 
     private boolean hasAccess() {

@@ -10,7 +10,7 @@
         <ui:composition template="/reports/index.xhtml">
             <ui:define name="subcontent">
 
-                <h:form id="visitHistoryForm">
+                <h:form id="visitHistoryForm" rendered="#{webUserController.hasPrivilege('ReportsVisitHistory')}">
                     <p:growl id="visitHistoryGrowl" showDetail="false"/>
 
                     <p:panel>
@@ -29,7 +29,7 @@
                                                 class="w-100"
                                                 inputStyleClass="form-control"
                                                 value="#{visitHistoryController.patient}"
-                                                completeMethod="#{patientController.completePatientByNameOrCode}"
+                                                completeMethod="#{visitHistoryController.completePatient}"
                                                 var="apt"
                                                 itemLabel="#{apt.person.nameWithTitle}"
                                                 itemValue="#{apt}"
@@ -97,7 +97,9 @@
                                              title="Clear the patient and filters"
                                              action="#{visitHistoryController.clear()}"
                                              process="@this"
-                                             update="@form"/>
+                                             update="@form">
+                                <p:resetInput target="@form"/>
+                            </p:commandButton>
                         </div>
 
                         <p:dataTable id="visitHistoryTable"
