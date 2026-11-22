@@ -12,7 +12,7 @@
 - Staff type an on-site complaint on **Record Patient Complaint**. Pick the registered patient, or, for someone who is not registered, type the name and phone.
 - A patient logged in to the client portal sends a complaint from **My Complaints**. It is always filed under the patient of the portal login.
 - Both land in the same register with a source (On site or Online).
-- A repeat of the same text, category and patient within 10 minutes is treated as a double click: the first complaint is kept and no second one is made.
+- For online submissions only: a repeat of the same text, category and patient within 10 minutes is treated as a double click: the first complaint is kept and no second one is made. Staff entries are not checked for duplicates.
 
 ## Status flow
 

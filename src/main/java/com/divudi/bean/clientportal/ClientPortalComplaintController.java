@@ -34,6 +34,8 @@ public class ClientPortalComplaintController implements Serializable {
     private String description;
     private List<PatientComplaintPortalRowDto> complaints;
     private PatientComplaintPortalRowDto selected;
+    /** Person of the portal session the cached complaints were read for. */
+    private Long cachedForPersonId;
 
     /** Person of the portal account in the session, or null when not logged in. */
     private Long sessionPersonId() {
@@ -44,6 +46,25 @@ public class ClientPortalComplaintController implements Serializable {
         return clientPortalSessionController.getLoggedInAccount().getPerson().getId();
     }
 
+    /**
+     * Drops the cached list and the open detail when the session person is not
+     * the one they were read for (another login on the same view, or logged out).
+     * Returns the current session person id.
+     */
+    private Long syncCache() {
+        Long personId = sessionPersonId();
+        if (personId == null || !personId.equals(cachedForPersonId)) {
+            complaints = null;
+            selected = null;
+            if (personId == null) {
+                categoryId = null;
+                description = null;
+            }
+            cachedForPersonId = personId;
+        }
+        return personId;
+    }
+
     public List<PatientComplaintCategory> getCategories() {
         if (sessionPersonId() == null) {
             return new ArrayList<>();
@@ -52,6 +73,9 @@ public class ClientPortalComplaintController implements Serializable {
     }
 
     public List<PatientComplaintPortalRowDto> getComplaints() {
+        if (syncCache() == null) {
+            return new ArrayList<>();
+        }
         if (complaints == null) {
             Long personId = sessionPersonId();
             complaints = personId == null ? new ArrayList<>() : complaintService.fetchPortalComplaints(personId);
@@ -60,7 +84,7 @@ public class ClientPortalComplaintController implements Serializable {
     }
 
     public void submit() {
-        Long personId = sessionPersonId();
+        Long personId = syncCache();
         if (personId == null) {
             JsfUtil.addErrorMessage("Please log in again.");
             return;
@@ -79,8 +103,8 @@ public class ClientPortalComplaintController implements Serializable {
 
     /** Shows one complaint; the id comes from the page, so ownership is re-checked here. */
     public void select(Long complaintId) {
+        Long personId = syncCache();
         selected = null;
-        Long personId = sessionPersonId();
         if (personId == null) {
             JsfUtil.addErrorMessage("Please log in again.");
             return;
@@ -113,6 +137,7 @@ public class ClientPortalComplaintController implements Serializable {
     }
 
     public PatientComplaintPortalRowDto getSelected() {
+        syncCache();
         return selected;
     }
 }

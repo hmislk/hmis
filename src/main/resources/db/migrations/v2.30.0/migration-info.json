@@ -12,5 +12,5 @@
     "Without these tables the Patient Complaints pages and the client portal complaint page fail. Other pages are not affected.",
     "Idempotent; changes no data. Tables are created in the same case as the existing WEBUSER table. The complaint category list reuses the existing CATEGORY table and needs no change."
   ],
-  "rollbackNotes": ["rollback.sql drops PATIENTCOMPLAINTLOG, then PATIENTCOMPLAINT. Complaint data is lost."]
+  "rollbackNotes": ["rollback.sql drops PATIENTCOMPLAINTLOG, then PATIENTCOMPLAINT, then deletes the complaint category rows (CATEGORY rows with DTYPE = PatientComplaintCategory). Complaint data and categories are lost."]
 }

@@ -17,6 +17,7 @@ import com.divudi.core.facade.PatientComplaintFacade;
 import com.divudi.core.facade.PatientComplaintLogFacade;
 import com.divudi.core.facade.InstitutionFacade;
 import com.divudi.core.facade.PatientFacade;
+import com.divudi.core.facade.PersonFacade;
 import com.divudi.core.facade.WebUserFacade;
 import com.divudi.core.facade.WebUserPrivilegeFacade;
 import java.util.ArrayList;
@@ -58,6 +59,8 @@ public class PatientComplaintService {
     private WebUserPrivilegeFacade webUserPrivilegeFacade;
     @EJB
     private InstitutionFacade institutionFacade;
+    @EJB
+    private PersonFacade personFacade;
 
     /** Privilege a user needs to be given complaints; same name the staff pages check. */
     public static final String HANDLE_PRIVILEGE = "PatientComplaintHandle";
@@ -342,6 +345,14 @@ public class PatientComplaintService {
      * inside the duplicate window returns the complaint already saved.
      */
     public PatientComplaint submitFromPortal(Long sessionPersonId, Long categoryId, String description) {
+        if (sessionPersonId == null) {
+            throw new PatientComplaintException("Your account is not linked to a patient record.");
+        }
+        // First database call: lock the account's person row, so two overlapping submits run one after the
+        // other and the duplicate check below sees the first one. Nothing is read before the lock.
+        if (personFacade.findWithLock(sessionPersonId) == null) {
+            throw new PatientComplaintException("Your account is not linked to a patient record.");
+        }
         List<Long> patientIds = fetchPatientIdsForPerson(sessionPersonId);
         if (patientIds.isEmpty()) {
             throw new PatientComplaintException("Your account is not linked to a patient record.");
@@ -354,7 +365,6 @@ public class PatientComplaintService {
         PatientComplaintCategory category = new PatientComplaintCategory();
         category.setId(categoryId);
         PatientComplaintCategory cat = requireCategory(category);
-        // The lock is the first write-path read: two overlapping submits of one patient run one after the other.
         Patient patient = patientFacade.findWithLock(patientIds.get(0));
         if (patient == null) {
             throw new PatientComplaintException("Your account is not linked to a patient record.");

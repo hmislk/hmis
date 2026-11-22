@@ -212,7 +212,7 @@ public class PatientComplaintController implements Serializable {
             return;
         }
         try {
-            complaintService.assign(complaint.getId(), assigneeToSet == null ? null : assigneeToSet.getId(),
+            complaintService.assign(complaintIdOnPage, assigneeToSet == null ? null : assigneeToSet.getId(),
                     sessionController.getLoggedUser(), insId());
             JsfUtil.addSuccessMessage("Assignment saved.");
         } catch (PatientComplaintException e) {
@@ -226,7 +226,7 @@ public class PatientComplaintController implements Serializable {
             return;
         }
         try {
-            complaintService.saveResponse(complaint.getId(), response, sessionController.getLoggedUser(), insId());
+            complaintService.saveResponse(complaintIdOnPage, response, sessionController.getLoggedUser(), insId());
             JsfUtil.addSuccessMessage("Response saved.");
         } catch (PatientComplaintException e) {
             JsfUtil.addErrorMessage(e.getMessage());
@@ -239,7 +239,7 @@ public class PatientComplaintController implements Serializable {
             return;
         }
         try {
-            complaintService.changeStatus(complaint.getId(), next, response, statusNote,
+            complaintService.changeStatus(complaintIdOnPage, next, response, statusNote,
                     sessionController.getLoggedUser(), insId());
             JsfUtil.addSuccessMessage(done);
         } catch (PatientComplaintException e) {
