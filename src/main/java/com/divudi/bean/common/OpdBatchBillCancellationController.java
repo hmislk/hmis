@@ -670,8 +670,13 @@ public class OpdBatchBillCancellationController implements Serializable, Control
 //        this.recurseCount = recurseCount;
 //    }
     public boolean findByFilter(String property, String value) {
-        String sql = "Select b From Bill b where b.retired=false and (b." + property + ") like '%" + value.toUpperCase() + " %'";
-        Bill b = getBillFacade().findFirstByJpql(sql);
+        if (property == null || value == null || !property.matches("^[A-Za-z][A-Za-z0-9_.]*$")) {
+            return false;
+        }
+        String sql = "Select b From Bill b where b.retired=false and (b." + property + ") like :val";
+        java.util.Map<String, Object> m = new java.util.HashMap<>();
+        m.put("val", "%" + value.toUpperCase() + " %");
+        Bill b = getBillFacade().findFirstByJpql(sql, m);
         if (b != null) {
             return true;
         } else {
