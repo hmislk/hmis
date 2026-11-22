@@ -11,7 +11,7 @@ EL does not nest #{...}; the inner "#{" is a parse error, so the page fails to
 render for every user. The build does not render pages, so this is caught here.
 Write one expression instead: disabled="#{not a.b or c.d}".
 
-Usage:  check_xhtml_el.py <base-ref>        (checks files changed since base)
+Usage:  check_xhtml_el.py <base-ref>        (checks .xhtml files added, changed or renamed since base)
         check_xhtml_el.py --files a.xhtml ...
 """
 import subprocess
@@ -19,10 +19,12 @@ import sys
 
 
 def changed_xhtml(base):
+    # -z: NUL-separated, so non-ASCII paths are not quoted; --diff-filter=d: every
+    # change except deletions, so renamed or copied pages are checked too.
     out = subprocess.run(
-        ["git", "diff", "--name-only", "--diff-filter=AM", base, "HEAD", "--", "*.xhtml"],
+        ["git", "diff", "-z", "--name-only", "--diff-filter=d", base, "HEAD", "--", "*.xhtml"],
         capture_output=True, encoding="utf-8", errors="replace", check=True).stdout
-    return [p for p in out.splitlines() if p.strip()]
+    return [p for p in out.split("\0") if p.strip()]
 
 
 def nested_el(text):
