@@ -346,6 +346,27 @@
                         value="OPD Analytics" 
                         icon="pi pi-chart-bar" >
                     </p:menuitem>
+                    <p:menuitem
+                        ajax="false"
+                        action="#{patientComplaintController.navigateToRegister()}"
+                        value="Patient Complaints"
+                        icon="fa fa-comment-dots"
+                        rendered="#{webUserController.hasPrivilege('PatientComplaintHandle')}">
+                    </p:menuitem>
+                    <p:menuitem
+                        ajax="false"
+                        action="#{patientComplaintController.navigateToEntry()}"
+                        value="Record Patient Complaint"
+                        icon="fa fa-pen-to-square"
+                        rendered="#{webUserController.hasPrivilege('PatientComplaintCreate')}">
+                    </p:menuitem>
+                    <p:menuitem
+                        ajax="false"
+                        action="#{patientComplaintCategoryController.navigateToCategories()}"
+                        value="Complaint Categories"
+                        icon="fa fa-tags"
+                        rendered="#{webUserController.hasPrivilege('Admin')}">
+                    </p:menuitem>
                     <p:menuitem 
                         ajax="false"
                         rendered="false"
