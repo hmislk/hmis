@@ -3653,11 +3653,20 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             admittingProcessStarted = false;
             return;
         }
-        if (appointmentNoLongerPending(false)) {
+        try {
+            if (appointmentNoLongerPending(false)) {
+                admittingProcessStarted = false;
+                return;
+            }
+            snapshotAppointmentBeforeSave();
+        } catch (RuntimeException ex) {
+            // A failed appointment lookup must not leave the busy flag set, or every
+            // later save is refused as "already started". Nothing is written yet.
+            logger.log(Level.SEVERE, "Appointment check before admission save failed", ex);
+            JsfUtil.addErrorMessage("Could not check the appointment. Please try again.");
             admittingProcessStarted = false;
             return;
         }
-        snapshotAppointmentBeforeSave();
         // Rapid / Temp A&E: now that all non-demographic validations have
         // passed and we are committed to saving, backfill the placeholder
         // demographics. Doing it here (rather than at button-click time) keeps
