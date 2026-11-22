@@ -3779,7 +3779,7 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
                 } else {
                     sql = "select b from BilledBill b where b.retired=false and"
                             + " b.id in(Select bt.bill.id From BillItem bt Where bt.referenceBill.billType!=:btp and bt.referenceBill.billType!=:btp2) "
-                            + "and b.billType=:type and b.createdAt between :fromDate and :toDate and ((b.staff.person.name) like '%" + txtSearch.toUpperCase() + "%'  or (b.staff.person.phone) like '%" + txtSearch.toUpperCase() + "%'  or (b.insId) like '%" + txtSearch.toUpperCase() + "%') order by b.id desc  ";
+                            + "and b.billType=:type and b.createdAt between :fromDate and :toDate and ((b.staff.person.name) like :txt  or (b.staff.person.phone) like :txt  or (b.insId) like :txt) order by b.id desc  ";
                 }
 
                 temMap.put("toDate", getToDate());
@@ -3787,6 +3787,9 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
                 temMap.put("type", BillType.PaymentBill);
                 temMap.put("btp", BillType.ChannelPaid);
                 temMap.put("btp2", BillType.ChannelCredit);
+                if (!(txtSearch == null || txtSearch.trim().equals(""))) {
+                    temMap.put("txt", "%" + txtSearch.toUpperCase() + "%");
+                }
                 bills = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP, 100);
 
                 if (bills == null) {
