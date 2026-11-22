@@ -40,6 +40,7 @@ import com.divudi.core.entity.Item;
 import com.divudi.core.entity.Patient;
 import com.divudi.core.entity.PatientEncounter;
 import com.divudi.core.entity.inward.RoomCategory;
+import com.divudi.core.entity.inward.RoomFacilityCharge;
 import com.divudi.core.entity.PreBill;
 import com.divudi.core.entity.PriceMatrix;
 import com.divudi.core.entity.pharmacy.Amp;
@@ -1028,6 +1029,21 @@ public class PharmacyRequestForBhtController implements Serializable {
         billPreview = true;
     }
 
+    private String roomLabelForMessage() {
+        try {
+            RoomFacilityCharge rfc = getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge();
+            if (rfc.getRoom() != null && rfc.getRoom().getName() != null) {
+                return rfc.getRoom().getName();
+            }
+            if (rfc.getName() != null) {
+                return rfc.getName();
+            }
+        } catch (NullPointerException e) {
+            // fall through to generic label
+        }
+        return "current room";
+    }
+
     /**
      * Persists the BHT medicine request bill header and its bill items,
      * shared by both the "Settle Request" flow (atomic
@@ -1075,8 +1091,14 @@ public class PharmacyRequestForBhtController implements Serializable {
         // From: ward (patient's current room department)
         Department fromDept = getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge().getDepartment();
 
-        if (fromDept == null || fromDept.getInstitution() == null) {
-            JsfUtil.addErrorMessage("Please set the department and institution for the patient's current room.");
+        if (fromDept == null) {
+            JsfUtil.addErrorMessage("Room '" + roomLabelForMessage()
+                    + "' has no department. Please set it in Inward, Administration, Room Fees.");
+            return false;
+        }
+        if (fromDept.getInstitution() == null) {
+            JsfUtil.addErrorMessage("Department '" + fromDept.getName()
+                    + "' of the patient's current room has no institution. Please set it in Administration, Department.");
             return false;
         }
 

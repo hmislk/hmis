@@ -10,7 +10,7 @@
     <ui:define name="subcontent">
         <h:panelGroup>
             <h:form >
-                <p:growl/>
+                <p:growl autoUpdate="true"/>
                 <p:focus id="selectFocus" for="lstSelect" />
                 <p:focus id="detailFocus" for="txtName" />
 
@@ -122,6 +122,10 @@
                                     <h:outputLabel value="Department"/>
                                     <p:outputLabel value=": " style="width: 30px; text-align: center; " ></p:outputLabel>
                                     <p:autoComplete value="#{roomFacilityChargeController.current.department}" 
+                                                    required="true"
+                                                    requiredMessage="Department is required. Please select the department of this room."
+                                                    style="width:100%" inputStyle="width:100%"
+                                                    panelStyle="min-width:30em;width:auto"
                                                     forceSelection="true"
                                                     completeMethod="#{departmentController.completeDept}" 
                                                     var="c" itemLabel="#{c.name}" itemValue="#{c}" class="w-100 ml-2" >

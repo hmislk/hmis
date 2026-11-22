@@ -226,6 +226,15 @@ public class RoomFacilityChargeController implements Serializable {
     }
 
     public void saveSelected() {
+        if (getCurrent().getDepartment() == null) {
+            JsfUtil.addErrorMessage("Department is required. Please select the department of this room.");
+            return;
+        }
+        if (getCurrent().getDepartment().getInstitution() == null) {
+            JsfUtil.addErrorMessage("Department '" + getCurrent().getDepartment().getName()
+                    + "' has no institution. Please set its institution (Administration, Department), then save the room fee again.");
+            return;
+        }
         saveTimedItemFee();
 
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
