@@ -56,7 +56,7 @@ Screens: Financial Transaction Manager → Payment Management → Credit Company
 Under Credit Company Payments → Outpatient Credit Management, next to Credit Company Claims. Both need the `OpdCreditClaimReports` privilege.
 
 - **Claims by Status**: filters are claim created date range (required), credit company and status (both optional, any status). One row per claim: claim no, company, department, created, submitted, status, resubmit count, claimed total, outstanding, and "Received / closed". Footer totals; Excel export.
-- **Outstanding** of a claim = the sum of the current due of its bills (net total less refunds less settlements), read now, not as at the claim date. **Received / closed** = claimed total less outstanding.
+- **Outstanding** of a claim = the sum of the current due of its bills (net total less refunds less settlements), read now, not as at the claim date. **Received / closed** = claimed total less outstanding. A cancelled claim shows 0 outstanding and 0 received / closed (its bills were freed), and is left out of the footer totals.
 - **Claim Ageing**: claims in Submitted, Resubmitted or Partially Settled with an outstanding above 0.10, as of now. Age = whole days since the claim's `submittedAt`. A resubmit overwrites `submittedAt` with the resubmit date, so for a Resubmitted claim the age runs from the latest resubmission. Bands per credit company: 0-30, 31-60, 61-90, over 90 days, then total; footer totals; Excel export. There is no claim-level drill-down yet.
 
 ## Code

@@ -52,7 +52,7 @@
                                          styleClass="p-datatable-sm" emptyMessage="No claims found">
                                 <p:column headerText="Claim No">
                                     <h:outputText value="#{r.claimNo}"/>
-                                    <f:facet name="footer"><h:outputText value="Total"/></f:facet>
+                                    <f:facet name="footer"><h:outputText value="Total (excluding cancelled claims)"/></f:facet>
                                 </p:column>
                                 <p:column headerText="Credit Company">
                                     <h:outputText value="#{r.companyName}"/>
