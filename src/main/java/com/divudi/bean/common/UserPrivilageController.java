@@ -610,6 +610,7 @@ public class UserPrivilageController implements Serializable {
         new DefaultTreeNode(new PrivilegeHolder(Privileges.ClinicalMembershipAdd, "Add Membership"), clinicalsNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.ClinicalMembershipEdit, "Edit Membership"), clinicalsNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.ClinicalPatientDelete, "Clinical Patient Delete"), clinicalsNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.EmrVisitsByDiagnosisReport, "EMR Visits by Diagnosis Report"), clinicalsNode);
 
         // Administration Privileges
         TreeNode adminNode = new DefaultTreeNode(new PrivilegeHolder(null, "Administration"), allNode);
