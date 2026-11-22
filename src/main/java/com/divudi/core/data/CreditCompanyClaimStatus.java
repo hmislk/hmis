@@ -29,7 +29,8 @@ public enum CreditCompanyClaimStatus {
     }
 
     /**
-     * Statuses a claim may move to from this one.
+     * Statuses a claim may move to from this one. Close is allowed only from
+     * Partially Settled (closePartiallySettled in the claim service).
      */
     public Set<CreditCompanyClaimStatus> getAllowedNext() {
         switch (this) {
@@ -37,9 +38,9 @@ public enum CreditCompanyClaimStatus {
                 return EnumSet.of(SUBMITTED, CANCELLED);
             case SUBMITTED:
             case RESUBMITTED:
-                return EnumSet.of(REJECTED, PARTIALLY_SETTLED, SETTLED, CLOSED);
+                return EnumSet.of(REJECTED, PARTIALLY_SETTLED, SETTLED);
             case REJECTED:
-                return EnumSet.of(RESUBMITTED, CLOSED, CANCELLED);
+                return EnumSet.of(RESUBMITTED, CANCELLED);
             case PARTIALLY_SETTLED:
                 return EnumSet.of(SETTLED, CLOSED);
             case SETTLED:

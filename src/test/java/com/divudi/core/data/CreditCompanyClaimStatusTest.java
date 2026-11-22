@@ -60,4 +60,14 @@ class CreditCompanyClaimStatusTest {
         }
         assertFalse(CreditCompanyClaimStatus.canCancel(null));
     }
+
+    @Test
+    void closeIsAllowedOnlyFromPartiallySettled() {
+        assertTrue(CreditCompanyClaimStatus.PARTIALLY_SETTLED.canMoveTo(CreditCompanyClaimStatus.CLOSED));
+        for (CreditCompanyClaimStatus s : CreditCompanyClaimStatus.values()) {
+            if (s != CreditCompanyClaimStatus.PARTIALLY_SETTLED) {
+                assertFalse(s.canMoveTo(CreditCompanyClaimStatus.CLOSED), s.name());
+            }
+        }
+    }
 }
