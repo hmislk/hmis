@@ -210,14 +210,14 @@
                                     <p:inputText
                                         class="w-100"
                                         id="valueInputShortText"
-                                        value="#{configOptionController.option.optionValue}"
+                                        value="#{configOptionController.editOptionValue}"
                                         rendered="#{configOptionController.option.valueType eq 'SHORT_TEXT'}"/>
 
                                     <!-- For LONG -->
                                     <p:inputText
                                         class="w-100"
                                         id="valueInputLong"
-                                        value="#{configOptionController.option.optionValue}"
+                                        value="#{configOptionController.editOptionValue}"
                                         rendered="#{configOptionController.option.valueType eq 'LONG'}"/>
 
                                     <!-- For LONG_TEXT -->
@@ -225,7 +225,7 @@
                                         class="w-100"
                                         rows="5"
                                         id="valueInputLongText"
-                                        value="#{configOptionController.option.optionValue}"
+                                        value="#{configOptionController.editOptionValue}"
                                         rendered="#{configOptionController.option.valueType eq 'LONG_TEXT'}"
                                         autoResize="false"/>
 
@@ -233,7 +233,7 @@
                                     <p:inputText
                                         class="w-100"
                                         id="valueInputDouble"
-                                        value="#{configOptionController.option.optionValue}"
+                                        value="#{configOptionController.editOptionValue}"
                                         rendered="#{configOptionController.option.valueType eq 'DOUBLE'}"/>
 
                                     <!-- For COLOR -->
@@ -241,7 +241,7 @@
                                         id="color"
                                         mode="inline"
                                         rendered="#{configOptionController.option.valueType eq 'COLOR'}"
-                                        value="#{configOptionController.option.optionValue}"
+                                        value="#{configOptionController.editOptionValue}"
                                         formatToggle="true"
                                         theme="large"/>
 
@@ -250,7 +250,7 @@
                                         id="enumValueSelector"
                                         filter="true"
                                         filterMatchMode="contains"
-                                        value="#{configOptionController.option.optionValue}"
+                                        value="#{configOptionController.editOptionValue}"
                                         rendered="#{configOptionController.option.valueType eq 'ENUM'}">
                                         <f:selectItem itemLabel="Select"/>
                                         <f:selectItems
@@ -262,7 +262,7 @@
 
                                     <!-- For BOOLEAN -->
                                     <p:toggleSwitch
-                                        value="#{configOptionController.option.optionValue}"
+                                        value="#{configOptionController.editOptionValue}"
                                         onIcon="fa fa-check"
                                         offIcon="fa fa-times"
                                         rendered="#{configOptionController.option.valueType eq 'BOOLEAN'}"/>

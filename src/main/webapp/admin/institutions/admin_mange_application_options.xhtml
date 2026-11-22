@@ -109,26 +109,26 @@
                             <p:column
                                 headerText="Value" 
                                 class="text-center"
-                                sortBy="#{option.optionValue}" 
-                                filterBy="#{option.optionValue}"
+                                sortBy="#{configOptionController.displayValue(option)}" 
+                                filterBy="#{configOptionController.displayValue(option)}"
                                 style="padding: 7px;"
                                 >
 
                                 <h:panelGroup>
-                                    <h:panelGroup rendered="#{option.optionValue eq 'true'}" >
+                                    <h:panelGroup rendered="#{configOptionController.displayValue(option) eq 'true'}" >
                                         <i class="fa fa-check text-success m-1" ></i>
                                         <h:outputText value="Yes" class="text-success"/>
                                     </h:panelGroup>
-                                    <h:panelGroup rendered="#{option.optionValue eq 'false'}">
+                                    <h:panelGroup rendered="#{configOptionController.displayValue(option) eq 'false'}">
                                         <i class="fa fa-times text-danger m-1" ></i>
                                         <h:outputText value="No" class="text-danger"/>
                                     </h:panelGroup>
-                                    <h:panelGroup rendered="#{option.optionValue ne 'true' and option.optionValue ne 'false'}">
-                                        <h:outputText value="#{option.optionValue}" />
+                                    <h:panelGroup rendered="#{configOptionController.displayValue(option) ne 'true' and configOptionController.displayValue(option) ne 'false'}">
+                                        <h:outputText value="#{configOptionController.displayValue(option)}" />
                                     </h:panelGroup>
                                 </h:panelGroup>
                                 <f:facet name="exportable">
-                                    <h:outputText value="#{option.optionValue eq 'true' ? 'Yes' : (option.optionValue eq 'false' ? 'No' : option.optionValue)}" />
+                                    <h:outputText value="#{configOptionController.displayValue(option) eq 'true' ? 'Yes' : (configOptionController.displayValue(option) eq 'false' ? 'No' : configOptionController.displayValue(option))}" />
                                 </f:facet>
 
                             </p:column>
@@ -201,28 +201,28 @@
                                     <!-- For SHORT_TEXT -->
                                     <p:inputText 
                                         class="w-100" 
-                                        id="valueInputShortText" value="#{configOptionController.option.optionValue}"
+                                        id="valueInputShortText" value="#{configOptionController.editOptionValue}"
                                         rendered="#{configOptionController.option.valueType eq 'SHORT_TEXT'}" />
 
                                     <!-- For Long -->
                                     <p:inputText 
                                         class="w-100" 
                                         id="valueInputLong" 
-                                        value="#{configOptionController.option.optionValue}"
+                                        value="#{configOptionController.editOptionValue}"
                                         rendered="#{configOptionController.option.valueType eq 'LONG'}" />
 
                                     <!-- For LONG_TEXT -->
                                     <p:inputTextarea 
                                         class="w-100" 
                                         rows="5"
-                                        id="valueInputLongText" value="#{configOptionController.option.optionValue}"
+                                        id="valueInputLongText" value="#{configOptionController.editOptionValue}"
                                         rendered="#{configOptionController.option.valueType eq 'LONG_TEXT'}" 
                                         autoResize="false"/>
 
                                     <!-- For DOUBLE -->
                                     <p:inputText 
                                         class="w-100" 
-                                        id="valueInputDouble" value="#{configOptionController.option.optionValue}"
+                                        id="valueInputDouble" value="#{configOptionController.editOptionValue}"
                                         rendered="#{configOptionController.option.valueType eq 'DOUBLE'}" />
 
                                     <!-- For COLOR -->
@@ -230,7 +230,7 @@
                                         id="color" 
                                         mode="inline" 
                                         rendered="#{configOptionController.option.valueType eq 'COLOR'}"
-                                        value="#{configOptionController.option.optionValue}"
+                                        value="#{configOptionController.editOptionValue}"
                                         formatToggle="true" 
                                         theme="large">
                                     </p:colorPicker>
@@ -239,7 +239,7 @@
                                     <p:inputText 
                                         class="w-100" 
                                         id="valueInputInteger" 
-                                        value="#{configOptionController.option.optionValue}"
+                                        value="#{configOptionController.editOptionValue}"
                                         rendered="#{configOptionController.option.valueType eq 'INTEGER'}" >
                                     </p:inputText>
 
@@ -247,7 +247,7 @@
                                         id="enumValueSelector"
                                         filter="true"
                                         filterMatchMode="contains"
-                                        value="#{configOptionController.option.optionValue}" 
+                                        value="#{configOptionController.editOptionValue}" 
                                         rendered="#{configOptionController.option.valueType eq 'ENUM'}">
                                         <f:selectItem itemLabel="Select" ></f:selectItem>
                                         <f:selectItems 
@@ -258,7 +258,7 @@
                                     </p:selectOneMenu>
 
                                     <p:toggleSwitch 
-                                        value="#{configOptionController.option.optionValue}" 
+                                        value="#{configOptionController.editOptionValue}" 
                                         onIcon="pi pi-check" 
                                         offIcon="pi pi-times" 
                                         rendered="#{configOptionController.option.valueType eq 'BOOLEAN'}">

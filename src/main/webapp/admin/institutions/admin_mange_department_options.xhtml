@@ -122,9 +122,9 @@
                                 </h:panelGroup>
                             </p:column>
 
-                            <p:column headerText="Current Value" filterBy="#{option.optionValue}" style="width: 35%">
-                                <h:outputText value="#{option.optionValue}"
-                                              title="#{option.optionValue}"/>
+                            <p:column headerText="Current Value" filterBy="#{configOptionController.displayValue(option)}" style="width: 35%">
+                                <h:outputText value="#{configOptionController.displayValue(option)}"
+                                              title="#{configOptionController.displayValue(option)}"/>
                             </p:column>
 
                             <p:column headerText="Actions" style="width: 10%">
@@ -170,32 +170,32 @@
                                     <!-- For SHORT_TEXT -->
                                     <p:inputText
                                         class="w-100"
-                                        id="valueInputShortText" value="#{configOptionController.option.optionValue}"
+                                        id="valueInputShortText" value="#{configOptionController.editOptionValue}"
                                         rendered="#{configOptionController.option.valueType eq 'SHORT_TEXT'}" />
 
                                     <!-- For Long -->
                                     <p:inputText
                                         class="w-100"
                                         id="valueInputLong"
-                                        value="#{configOptionController.option.optionValue}"
+                                        value="#{configOptionController.editOptionValue}"
                                         rendered="#{configOptionController.option.valueType eq 'LONG'}" />
 
                                     <!-- For LONG_TEXT -->
                                     <p:inputTextarea
                                         class="w-100"
                                         rows="5"
-                                        id="valueInputLongText" value="#{configOptionController.option.optionValue}"
+                                        id="valueInputLongText" value="#{configOptionController.editOptionValue}"
                                         rendered="#{configOptionController.option.valueType eq 'LONG_TEXT'}"
                                         autoResize="false"/>
 
                                     <!-- For DOUBLE -->
                                     <p:inputText
                                         class="w-100"
-                                        id="valueInputDouble" value="#{configOptionController.option.optionValue}"
+                                        id="valueInputDouble" value="#{configOptionController.editOptionValue}"
                                         rendered="#{configOptionController.option.valueType eq 'DOUBLE'}" />
 
                                     <p:toggleSwitch
-                                        value="#{configOptionController.option.optionValue}"
+                                        value="#{configOptionController.editOptionValue}"
                                         onIcon="pi pi-check"
                                         offIcon="pi pi-times"
                                         rendered="#{configOptionController.option.valueType eq 'BOOLEAN'}">

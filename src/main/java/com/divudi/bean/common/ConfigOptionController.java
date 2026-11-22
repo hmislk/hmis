@@ -138,6 +138,81 @@ public class ConfigOptionController implements Serializable {
     /**
      * Creates a new instance of OptionController
      */
+
+    // ---- Hardening (#25915): never send secret option values to the browser ----
+    public static final String SECRET_MASK_SET = "\u2022\u2022\u2022\u2022\u2022\u2022 (set)";
+    public static final String SECRET_MASK_NOT_SET = "(not set)";
+    private static final String SECRET_AUDIT_MASK = "(hidden)";
+
+    /**
+     * True when the key names a secret: contains (case-insensitive, ignoring
+     * spaces, dashes and underscores) api key, password, secret, token or
+     * private key.
+     */
+    public static boolean isSecretKey(String key) {
+        if (key == null) {
+            return false;
+        }
+        String k = key.toLowerCase().replaceAll("[^a-z0-9]", "");
+        return k.contains("apikey") || k.contains("password") || k.contains("secret")
+                || k.contains("token") || k.contains("privatekey");
+    }
+
+    /**
+     * Secret options are text values; a boolean/number flag is never a secret
+     * even if its key contains a word such as "token".
+     */
+    public static boolean isSecretOption(ConfigOption o) {
+        if (o == null || !isSecretKey(o.getOptionKey())) {
+            return false;
+        }
+        return o.getValueType() != OptionValueType.BOOLEAN;
+    }
+
+    /** Value that is safe to render, filter, sort, export or audit-display. */
+    public String displayValue(ConfigOption o) {
+        if (o == null) {
+            return null;
+        }
+        if (isSecretOption(o)) {
+            String v = o.getOptionValue();
+            return (v == null || v.isEmpty()) ? SECRET_MASK_NOT_SET : SECRET_MASK_SET;
+        }
+        return o.getOptionValue();
+    }
+
+    /** Value to write into audit records. */
+    public static String auditValue(String key, String value) {
+        if (isSecretKey(key) && value != null && !value.isEmpty()) {
+            return SECRET_AUDIT_MASK;
+        }
+        return value;
+    }
+
+    /**
+     * Edit-dialog binding. For a secret option the input always starts empty;
+     * an empty submit keeps the stored value, a typed value replaces it.
+     */
+    public String getEditOptionValue() {
+        if (option == null) {
+            return null;
+        }
+        if (isSecretOption(option)) {
+            return "";
+        }
+        return option.getOptionValue();
+    }
+
+    public void setEditOptionValue(String v) {
+        if (option == null) {
+            return;
+        }
+        if (isSecretOption(option) && (v == null || v.isEmpty())) {
+            return;
+        }
+        option.setOptionValue(v);
+    }
+
     public ConfigOptionController() {
     }
 
@@ -367,7 +442,7 @@ public class ConfigOptionController implements Serializable {
         }
         Map<String, Object> before = new HashMap<>();
         before.put("optionKey", delo.getOptionKey());
-        before.put("optionValue", delo.getOptionValue());
+        before.put("optionValue", auditValue(delo.getOptionKey(), delo.getOptionValue()));
 
         delo.setRetireComments("del");
         delo.setRetired(true);
@@ -403,7 +478,7 @@ public class ConfigOptionController implements Serializable {
 
                 Map<String, Object> before = new HashMap<>();
                 before.put("optionKey", option.getOptionKey());
-                before.put("optionValue", option.getOptionValue());
+                before.put("optionValue", auditValue(option.getOptionKey(), option.getOptionValue()));
 
                 option.setRetireComments("bulk del");
                 option.setRetired(true);
@@ -444,7 +519,7 @@ public class ConfigOptionController implements Serializable {
         for (ConfigOption option : selectedOptions) {
             if (option != null) {
                 csvContent.append("\"").append(escapeQuotes(option.getOptionKey())).append("\",");
-                csvContent.append("\"").append(escapeQuotes(option.getOptionValue())).append("\",");
+                csvContent.append("\"").append(escapeQuotes(isSecretOption(option) ? "" : option.getOptionValue())).append("\",");
                 csvContent.append("\"").append(option.getValueType().toString()).append("\",");
                 csvContent.append("\"").append(option.getEnumType() != null ? escapeQuotes(option.getEnumType()) : "").append("\"\n");
             }
@@ -550,9 +625,11 @@ public class ConfigOptionController implements Serializable {
                                 // Replace mode: Update existing option
                                 Map<String, Object> before = new HashMap<>();
                                 before.put("optionKey", existingOption.getOptionKey());
-                                before.put("optionValue", existingOption.getOptionValue());
+                                before.put("optionValue", auditValue(existingOption.getOptionKey(), existingOption.getOptionValue()));
 
-                                existingOption.setOptionValue(optionValue);
+                                if (!(isSecretOption(existingOption) && (optionValue == null || optionValue.isEmpty()))) {
+                                    existingOption.setOptionValue(optionValue);
+                                }
                                 existingOption.setValueType(valueType);
                                 if (enumType != null && !enumType.trim().isEmpty()) {
                                     existingOption.setEnumType(enumType);
@@ -561,7 +638,7 @@ public class ConfigOptionController implements Serializable {
 
                                 Map<String, Object> after = new HashMap<>();
                                 after.put("optionKey", existingOption.getOptionKey());
-                                after.put("optionValue", existingOption.getOptionValue());
+                                after.put("optionValue", auditValue(existingOption.getOptionKey(), existingOption.getOptionValue()));
 
                                 auditService.logAudit(before, after, sessionController.getLoggedUser(), ConfigOption.class.getSimpleName(), "Import Update Config Option");
                                 updatedCount++;
@@ -584,7 +661,7 @@ public class ConfigOptionController implements Serializable {
 
                             Map<String, Object> after = new HashMap<>();
                             after.put("optionKey", newOption.getOptionKey());
-                            after.put("optionValue", newOption.getOptionValue());
+                            after.put("optionValue", auditValue(newOption.getOptionKey(), newOption.getOptionValue()));
 
                             auditService.logAudit(null, after, sessionController.getLoggedUser(), ConfigOption.class.getSimpleName(), "Import Create Config Option");
                             importedCount++;
@@ -713,7 +790,7 @@ public class ConfigOptionController implements Serializable {
             if (existing != null) {
                 before = new HashMap<>();
                 before.put("optionKey", existing.getOptionKey());
-                before.put("optionValue", existing.getOptionValue());
+                before.put("optionValue", auditValue(existing.getOptionKey(), existing.getOptionValue()));
             }
         }
 
@@ -737,7 +814,7 @@ public class ConfigOptionController implements Serializable {
 
         Map<String, Object> after = new HashMap<>();
         after.put("optionKey", option.getOptionKey());
-        after.put("optionValue", option.getOptionValue());
+        after.put("optionValue", auditValue(option.getOptionKey(), option.getOptionValue()));
 
         String trigger = creating ? "Create Config Option" : "Update Config Option";
         auditService.logAudit(before, after, sessionController.getLoggedUser(), ConfigOption.class.getSimpleName(), trigger);
