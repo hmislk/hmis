@@ -660,6 +660,8 @@ public class GoogleChartController implements Serializable {
             sql = " select sum(bf.feeValue) ";
         }
         sql += " from BillFee bf where bf.bill.retired=false ";
+        // A fee the doctor collected at billing is not hospital money (#25731).
+        sql += " and (bf.collectedByDoctorAtBilling = false or bf.collectedByDoctorAtBilling is null) ";
         if (staff) {
             sql += " and bf.fee.feeType=:ft ";
             m.put("ft", FeeType.Staff);

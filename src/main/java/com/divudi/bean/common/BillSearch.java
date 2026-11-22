@@ -1432,7 +1432,8 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
             String jpql = "select sum(b.feeGrossValue) "
                     + " from BillFee b "
                     + " where b.retired = :ret "
-                    + " and b.billItem.id = :bid";
+                    + " and b.billItem.id = :bid"
+                    + " and (b.collectedByDoctorAtBilling = false or b.collectedByDoctorAtBilling is null)";
             Map<String, Object> params = new HashMap<>();
             params.put("ret", false);
             params.put("bid", bt.getId());
@@ -1442,7 +1443,8 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
             jpql = "select sum(b.feeDiscount) "
                     + " from BillFee b "
                     + " where b.retired = :ret "
-                    + " and b.billItem.id = :bid";
+                    + " and b.billItem.id = :bid"
+                    + " and (b.collectedByDoctorAtBilling = false or b.collectedByDoctorAtBilling is null)";
             params = new HashMap<>();
             params.put("ret", false);
             params.put("bid", bt.getId());
@@ -1452,7 +1454,8 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
             jpql = "select sum(b.feeValue) "
                     + " from BillFee b "
                     + " where b.retired = :ret "
-                    + " and b.billItem.id = :bid";
+                    + " and b.billItem.id = :bid"
+                    + " and (b.collectedByDoctorAtBilling = false or b.collectedByDoctorAtBilling is null)";
             params = new HashMap<>();
             params.put("ret", false);
             params.put("bid", bt.getId());
