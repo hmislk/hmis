@@ -53,7 +53,7 @@ public class ClinicalFindingItemController implements Serializable {
 //    }
 
     public List<ClinicalEntity> getSelectedItems() {
-        selectedItems = getFacade().findByJpql("select c from ClinicalEntity c where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
+        selectedItems = getFacade().findByJpql("select c from ClinicalEntity c where c.retired=false and (c.name) like :q order by c.name", java.util.Map.of("q", "%" + getSelectText().toUpperCase() + "%"));
         return selectedItems;
     }
 
