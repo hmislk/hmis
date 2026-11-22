@@ -1121,7 +1121,7 @@
                                         <p:commandButton
                                             id="btnIssueMedicinesInpatient"
                                             value="Issue Medicines"
-                                            title="Open the BHT Issue Requests list to issue medicines against ward requests"
+                                            title="Issue medicines requested for BHT #{admissionController.current.bhtNo}"
                                             action="/ward/ward_pharmacy_bht_issue_request_list_for_issue?faces-redirect=true"
                                             actionListener="#{pharmacySaleBhtController.resetAll()}"
                                             rendered="#{webUserController.hasPrivilege('PharmacyBHTIssueAccept') or webUserController.hasPrivilege('PharmacyBhtIssueRequest')}"
