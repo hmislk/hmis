@@ -9,7 +9,9 @@
     <ui:define name="content">
         <h:form id="formWardReturnToPharmacy" onkeypress="if(event.keyCode == 13 &amp;&amp; event.target.type != 'textarea') { return false; }">
 
-            <p:messages id="growlWardReturnToPharmacy" showDetail="true" autoUpdate="true"/>
+            <p:messages id="growlWardReturnToPharmacy" showDetail="true">
+                <p:autoUpdate/>
+            </p:messages>
 
             <p:panel styleClass="sticky-panel-header" rendered="#{!wardPharmacyReturnToPharmacyController.printPreview}">
                 <f:facet name="header">

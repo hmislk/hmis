@@ -216,7 +216,9 @@
                 
                 <h:panelGroup rendered="#{not (webUserController.hasPrivilege('PharmacyReports') or webUserController.hasPrivilege('PharmacyAdministration'))}">
                     <p:panel header="Access Denied">
-                        <p:messages autoUpdate="true" closable="true" />
+                        <p:messages closable="true">
+                            <p:autoUpdate/>
+                        </p:messages>
                         <div class="alert alert-warning" role="alert">
                             <h4 class="alert-heading">Access Denied</h4>
                             <p>You do not have sufficient privileges to access this report. Please contact your system administrator to request access.</p>

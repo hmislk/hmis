@@ -73,7 +73,9 @@
                             </h:form>
                         </div>
                         <div class="card-body">
-                            <p:messages id="msgs" showDetail="true" closable="true" autoUpdate="true"/>
+                            <p:messages id="msgs" showDetail="true" closable="true">
+                                <p:autoUpdate/>
+                            </p:messages>
                             <h:panelGroup rendered="#{empty pharmacyStockTakeController.snapshotBillDisplay}">
                                 <div class="alert alert-warning d-flex align-items-center">
                                     <i class="fa fa-exclamation-triangle fa-lg" style="margin-right: 12px;"></i>

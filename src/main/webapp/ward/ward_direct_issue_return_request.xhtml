@@ -9,7 +9,9 @@
     <ui:define name="content">
         <h:form id="formDirectIssueReturnRequest">
 
-            <p:messages id="msgDirectIssueReturnRequest" showDetail="true" autoUpdate="true"/>
+            <p:messages id="msgDirectIssueReturnRequest" showDetail="true">
+                <p:autoUpdate/>
+            </p:messages>
 
             <p:panel rendered="#{!directIssueReturnRequestController.printPreview}">
                 <f:facet name="header">

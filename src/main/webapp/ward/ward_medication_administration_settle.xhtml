@@ -9,7 +9,9 @@
     <ui:define name="content">
         <h:form id="formMedicationAdministrationSettle" onkeypress="if(event.keyCode == 13 &amp;&amp; event.target.type != 'textarea') { return false; }">
 
-            <p:messages id="growlMedicationAdministrationSettle" showDetail="true" autoUpdate="true"/>
+            <p:messages id="growlMedicationAdministrationSettle" showDetail="true">
+                <p:autoUpdate/>
+            </p:messages>
 
             <p:panel rendered="#{!medicationAdministrationStockSettlementController.printPreview}">
                 <f:facet name="header">

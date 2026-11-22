@@ -10,7 +10,9 @@
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
                 <h:form>
-                    <p:messages id="messages" autoUpdate="true" />
+                    <p:messages id="messages">
+                        <p:autoUpdate/>
+                    </p:messages>
                     <h:panelGroup rendered="#{!dealorPaymentBillSearch.printPreview}" styleClass="alignTop">
                         <p:panel header="Cancellation">
                             <p:selectOneMenu id="cmbPs" value="#{dealorPaymentBillSearch.bill.paymentMethod}">

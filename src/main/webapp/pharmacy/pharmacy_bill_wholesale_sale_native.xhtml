@@ -20,7 +20,9 @@
                         };
                     </script>
                     <p:growl id="panelError" sticky="true" severity="error,fatal" />
-                    <p:growl id="panelInfo" severity="info,warn" autoUpdate="true" />
+                    <p:growl id="panelInfo" severity="info,warn">
+                        <p:autoUpdate/>
+                    </p:growl>
                     <p:defaultCommand target="btnAdd" />
 
                     <!-- ============================================================
