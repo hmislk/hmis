@@ -239,13 +239,15 @@ public class InstitutionController implements Serializable {
      * institutions with no type set are listed too.
      */
     public List<Institution> completeAdmissionInstitution(String qry) {
-        String jpql = "select distinct d.institution from Department d "
-                + " where d.retired=false and d.institution.retired=false "
-                + " and upper(d.institution.name) like :q "
-                + " order by d.institution.name";
-        HashMap hm = new HashMap();
-        hm.put("q", "%" + (qry == null ? "" : qry.trim().toUpperCase()) + "%");
-        return getFacade().findByJpql(jpql, hm);
+        String jpql = "select i from Institution i "
+                + " where i.retired=false "
+                + " and upper(i.name) like :q "
+                + " and exists (select d from Department d where d.institution=i and d.retired=false) "
+                + " order by i.name";
+        Map<String, Object> hm = new HashMap<>();
+        String q = (qry == null || qry.trim().isEmpty()) ? "%" : "%" + qry.trim().toUpperCase() + "%";
+        hm.put("q", q);
+        return getFacade().findByJpql(jpql, hm, 50);
     }
 
     public List<Institution> completeActiveIns(String qry) {
