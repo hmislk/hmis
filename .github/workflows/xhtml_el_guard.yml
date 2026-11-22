@@ -1,0 +1,36 @@
+name: XHTML EL guard
+
+# Fails a PR whose changed .xhtml files open an EL expression inside another one,
+# e.g. disabled="#{a or #{b}}". EL does not nest, so the page fails to render for
+# every user, and the build never renders pages. Found in review of #25948
+# (retro 2026-11-23).
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, edited]
+
+permissions:
+  contents: read
+
+jobs:
+  xhtml-el:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Check changed XHTML for nested EL
+        env:
+          EVENT_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          set -euo pipefail
+          # Compare against the merge commit's first parent (current base tip), as the
+          # config semantics guard does, so changes already on the base are not counted.
+          if git rev-parse -q --verify HEAD^2 >/dev/null; then
+            BASE_SHA=$(git rev-parse HEAD^1)
+          else
+            BASE_SHA="$EVENT_BASE_SHA"
+          fi
+          python3 .github/scripts/check_xhtml_el.py "$BASE_SHA"
