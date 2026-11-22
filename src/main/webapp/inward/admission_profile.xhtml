@@ -1107,6 +1107,7 @@
                                     <div class="col-6">
                                         <p:commandButton
                                             value="Request from Pharmacy"
+                                            title="Request from Pharmacy"
                                             ajax="false"
                                             rendered="#{webUserController.hasPrivilege('InwardPharmacyIssueRequest')}"
                                             action="#{admissionController.navigateToPharmacyBhtRequest}"
@@ -1119,7 +1120,20 @@
                                     </div>
                                     <div class="col-6">
                                         <p:commandButton
+                                            id="btnIssueMedicinesInpatient"
+                                            value="Issue Medicines"
+                                            title="Issue medicines requested for BHT #{admissionController.current.bhtNo}"
+                                            action="/ward/ward_pharmacy_bht_issue_request_list_for_issue?faces-redirect=true"
+                                            actionListener="#{pharmacySaleBhtController.resetAll()}"
+                                            rendered="#{webUserController.hasPrivilege('PharmacyBHTIssueAccept') or webUserController.hasPrivilege('PharmacyBhtIssueRequest')}"
+                                            icon="fas fa-clipboard-list"
+                                            class="w-100"
+                                            ajax="false"/>
+                                    </div>
+                                    <div class="col-6">
+                                        <p:commandButton
                                             value="Direct Issue to BHTs"
+                                            title="Direct Issue to BHTs"
                                             action="/inward/pharmacy_bill_issue_bht?faces-redirect=true"
                                             actionListener="#{inpatientDirectIssueNativeSqlController.resetAll()}"
                                             rendered="#{webUserController.hasPrivilege('PharmacySale') or webUserController.hasPrivilege('PharmacyDirectIssueToBht')}"
@@ -1135,6 +1149,7 @@
                                         <p:commandButton
                                             id="issueDischargeMedicinesBtn"
                                             value="Issue Discharge Medicines"
+                                            title="Issue Discharge Medicines"
                                             action="/inward/pharmacy_discharge_medicine_issue?faces-redirect=true"
                                             actionListener="#{pharmacySaleBhtController.resetAllForDischargeIssue()}"
                                             rendered="#{webUserController.hasPrivilege('PharmacyDischargeMedicineIssue')}"
@@ -1149,6 +1164,7 @@
                                     <div class="col-6">
                                         <p:commandButton
                                             value="Direct Issue to Theatre Cases"
+                                            title="Direct Issue to Theatre Cases"
                                             action="/theater/inward_bill_surgery_issue?faces-redirect=true"
                                             actionListener="#{pharmacySaleBhtController.resetAll()}"
                                             rendered="#{webUserController.hasPrivilege('PharmacySale')}"
@@ -1164,6 +1180,7 @@
                                         <p:commandButton
                                             id="btnReceiveMedicinesFromPharmacyInpatient"
                                             value="Receive Medicines from Pharmacy"
+                                            title="Receive Medicines from Pharmacy"
                                             ajax="false"
                                             action="#{wardPharmacyBhtIssueReceiveController.navigateToPendingListForAdmission(admissionController.current)}"
                                             icon="fa fa-truck-medical"
@@ -1174,6 +1191,7 @@
                                         <p:commandButton
                                             id="btnReturnMedicinesToPharmacyInpatient"
                                             value="Return Medicines to Pharmacy"
+                                            title="Return Medicines to Pharmacy"
                                             ajax="false"
                                             action="#{wardPharmacyReturnToPharmacyController.navigateToReturn(admissionController.current)}"
                                             icon="fa fa-truck-ramp-box"
@@ -1203,6 +1221,7 @@
                                         <p:commandButton
                                             id="btnPharmacyRequestsHistory"
                                             value="Pharmacy Requests"
+                                            title="Pharmacy Requests"
                                             action="#{inwardPharmacyEncounterReportController.navigateToInpatientPharmacyRequestsList()}"
                                             rendered="#{webUserController.hasPrivilege('PharmacyBHTIssueAccept') or webUserController.hasPrivilege('InwardPharmacyIssueRequestSearch')}"
                                             icon="fa fa-clipboard-list"
@@ -1217,6 +1236,7 @@
                                         <p:commandButton
                                             id="btnPharmacyRequestDrafts"
                                             value="Draft Pharmacy Requests"
+                                            title="Draft Pharmacy Requests"
                                             action="#{inwardPharmacyEncounterReportController.navigateToInpatientPharmacyRequestDraftsList()}"
                                             rendered="#{webUserController.hasPrivilege('InwardPharmacyIssueRequest') or webUserController.hasPrivilege('InwardPharmacyIssueRequestSearch')}"
                                             icon="fa fa-file-pen"
@@ -1231,6 +1251,7 @@
                                         <p:commandButton
                                             id="btnDirectIssuesHistory"
                                             value="Direct Issues"
+                                            title="Direct Issues"
                                             action="#{inwardPharmacyEncounterReportController.navigateToInpatientPharmacyDirectIssuesList()}"
                                             rendered="#{webUserController.hasPrivilege('PharmacySale')}"
                                             icon="fa fa-file-invoice"
@@ -1245,6 +1266,7 @@
                                         <p:commandButton
                                             id="btnIssueReturnsHistory"
                                             value="Issue Returns"
+                                            title="Issue Returns"
                                             action="#{inwardPharmacyEncounterReportController.navigateToInpatientPharmacyReturnsList()}"
                                             rendered="#{webUserController.hasPrivilege('PharmacySale')}"
                                             icon="fa fa-rotate-left"
@@ -1259,6 +1281,7 @@
                                         <p:commandButton
                                             id="btnUnacceptedIssuesHistory"
                                             value="Unaccepted Issues"
+                                            title="Unaccepted Issues"
                                             action="#{inwardPharmacyEncounterReportController.navigateToInpatientPharmacyUnacceptedIssuesList()}"
                                             rendered="#{webUserController.hasPrivilege('PharmacyBHTIssueAccept') or webUserController.hasPrivilege('InwardPharmacyIssueRequestSearch')}"
                                             icon="fa fa-triangle-exclamation"

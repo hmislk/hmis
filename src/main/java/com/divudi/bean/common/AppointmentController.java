@@ -237,6 +237,10 @@ public class AppointmentController implements Serializable, ControllerWithPatien
             JsfUtil.addErrorMessage("This appointment is cancelled");
             return "";
         }
+        if (storedAppointment.isRetired()) {
+            JsfUtil.addErrorMessage("This appointment has been removed");
+            return "";
+        }
 
         Date resFrom = reservation.getReservedFrom();
         if (resFrom == null) {
@@ -268,6 +272,16 @@ public class AppointmentController implements Serializable, ControllerWithPatien
             return "";
         }
 
+        return openAdmissionPage(reservation.getAppointment(), reservation);
+    }
+
+    /**
+     * Prepares the Admission page for the appointment: same state the page's Appointment
+     * tab sets when staff pick it there. {@code res} is the room reservation for a room
+     * appointment, or null for a procedure appointment (no room to pre-fill, no
+     * reservation to link). (#25716)
+     */
+    private String openAdmissionPage(Appointment apt, Reservation res) {
         Admission ad = new Admission();
         if (ad.getDateOfAdmission() == null) {
             ad.setDateOfAdmission(CommonFunctions.getCurrentDateTime());
@@ -277,14 +291,14 @@ public class AppointmentController implements Serializable, ControllerWithPatien
         admissionController.setPrintPreview(false);
         admissionController.setAdmittingProcessStarted(false);
         admissionController.setPatientRoom(new PatientRoom());
-        admissionController.setAppointmentBill(reservation.getAppointment().getBill());
+        admissionController.setAppointmentBill(apt.getBill());
         admissionController.setPatientAllergies(null);
-        admissionController.setCurrentReservation(reservation);
+        admissionController.setCurrentReservation(res);
         admissionController.setBhtText("");
         // Clear a stale "Patient Already Admitted" warning left on the session-scoped
         // AdmissionController by an earlier abandoned attempt. (Issue #24000)
         admissionController.cancelActiveAdmissionWarning();
-        admissionController.listnerForAppoimentSelect(reservation.getAppointment().getBill());
+        admissionController.listnerForAppoimentSelect(apt.getBill());
 
         return "/inward/inward_admission?faces-redirect=true";
     }
@@ -303,8 +317,29 @@ public class AppointmentController implements Serializable, ControllerWithPatien
 
         reservation = findReservationForAppointment(currentAppointment);
         if (reservation == null) {
-            JsfUtil.addErrorMessage("Admission is only applicable for Room Reservations.");
-            return "";
+            // Procedure (non-room) appointment: no reservation, so no room window to check.
+            // currentAppointment was just reloaded, so its status is current.
+            if (currentAppointment.getBill() == null) {
+                JsfUtil.addErrorMessage("No Appointment Found");
+                return "";
+            }
+            if (currentAppointment.getStatus() == AppointmentStatus.COMPLETE || currentAppointment.isAppointmentComplete()) {
+                JsfUtil.addErrorMessage("This appointment is already completed");
+                return "";
+            }
+            if (currentAppointment.getStatus() == AppointmentStatus.CANCEL || currentAppointment.isAppointmentCancel()) {
+                JsfUtil.addErrorMessage("This appointment is cancelled");
+                return "";
+            }
+            if (currentAppointment.isRetired()) {
+                JsfUtil.addErrorMessage("This appointment has been removed");
+                return "";
+            }
+            if (currentAppointment.getPatientEncounter() != null) {
+                JsfUtil.addErrorMessage("This appointment is already linked to an admission");
+                return "";
+            }
+            return openAdmissionPage(currentAppointment, null);
         }
 
         return navigatePatientAdmit();

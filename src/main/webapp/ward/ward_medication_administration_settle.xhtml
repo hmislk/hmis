@@ -9,7 +9,9 @@
     <ui:define name="content">
         <h:form id="formMedicationAdministrationSettle" onkeypress="if(event.keyCode == 13 &amp;&amp; event.target.type != 'textarea') { return false; }">
 
-            <p:messages id="growlMedicationAdministrationSettle" showDetail="true" autoUpdate="true"/>
+            <p:messages id="growlMedicationAdministrationSettle" showDetail="true">
+                <p:autoUpdate/>
+            </p:messages>
 
             <p:panel rendered="#{!medicationAdministrationStockSettlementController.printPreview}">
                 <f:facet name="header">
@@ -40,7 +42,7 @@
                 </f:facet>
 
                 <h:panelGroup id="panelPendingRecords" layout="block">
-                    <p:dataTable
+                    <p:dataTable styleClass="p-datatable-sm"
                         id="tblPendingRecords"
                         widgetVar="tblPendingRecords"
                         rowKey="#{m.id}"
@@ -99,7 +101,7 @@
                     <p:outputLabel value="Ward Stock Deducted - Bill #{medicationAdministrationStockSettlementController.lastSettlementBill.deptId}"/>
                 </f:facet>
 
-                <p:dataTable
+                <p:dataTable styleClass="p-datatable-sm"
                     id="tblSettledItems"
                     rowKey="#{i.id}"
                     value="#{medicationAdministrationStockSettlementController.lastSettledItems}"

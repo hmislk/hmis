@@ -2,7 +2,7 @@
 // Shows the print-button pattern: the native print dialog can't be recorded, so the exact printed
 // output is captured (printcap.js), rendered by Chrome to PDF, and shown on screen.
 // Needs a test patient with a PHN; this take used "Nimal Demo Perera", phone 0711234599.
-// Run from tmp/demo-videos/<slug>/ :  HMIS_BASE=http://localhost:9090/rh/ DEPT=OPD PHONE=0711234599 node flow.js
+// Run from <OUT>/demo-videos/<slug>/ :  HMIS_BASE=http://localhost:9090/rh/ DEPT=OPD PHONE=0711234599 node flow.js
 const { chromium } = require('playwright');
 const { run } = require('../../../.claude/skills/demo-video/scripts/recorder');
 const pc = require('../../../.claude/skills/demo-video/scripts/printcap');

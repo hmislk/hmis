@@ -163,7 +163,7 @@
                             paginatorPosition="top"
                             rows="10"
                             rowsPerPageTemplate="5,10,15,50"
-                            styleClass="my-3">
+                            styleClass="my-3 p-datatable-sm">
                             <p:column headerText="No" exportable="false">
                                 <h:outputText value="#{i+1}" />
                             </p:column>
@@ -216,7 +216,9 @@
                 
                 <h:panelGroup rendered="#{not (webUserController.hasPrivilege('PharmacyReports') or webUserController.hasPrivilege('PharmacyAdministration'))}">
                     <p:panel header="Access Denied">
-                        <p:messages autoUpdate="true" closable="true" />
+                        <p:messages closable="true">
+                            <p:autoUpdate/>
+                        </p:messages>
                         <div class="alert alert-warning" role="alert">
                             <h4 class="alert-heading">Access Denied</h4>
                             <p>You do not have sufficient privileges to access this report. Please contact your system administrator to request access.</p>

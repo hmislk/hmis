@@ -153,6 +153,58 @@
 
                 </p:dataTable>
             </div>
+
+            <!-- Totals of the listed bills (issue #25787) -->
+            <h:panelGroup id="purchaseTotals" layout="block" styleClass="mt-2"
+                          rendered="#{not empty pharmacyBillSearch.purchaseSearchDtos}">
+                <h:panelGroup layout="block" styleClass="mb-1 text-warning"
+                              rendered="#{pharmacyBillSearch.purchaseListCapped}">
+                    <h:outputText styleClass="fa fa-exclamation-triangle me-1"/>
+                    <h:outputText value="Totals cover only the #{pharmacyBillSearch.purchaseSearchDtos.size()} bills listed. Increase List Count to include every bill in the date range."/>
+                </h:panelGroup>
+                <table class="table table-sm table-bordered w-auto mb-0">
+                    <thead>
+                        <tr>
+                            <th></th>
+                            <th class="text-end">Bills</th>
+                            <th class="text-end">Net Value</th>
+                            <th class="text-end">Sale Value</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>All listed bills</td>
+                            <td class="text-end"><h:outputText value="#{pharmacyBillSearch.purchaseSearchDtos.size()}"/></td>
+                            <td class="text-end">
+                                <h:outputText value="#{pharmacyBillSearch.purchaseTotalNet}"><f:convertNumber pattern="#,##0.00"/></h:outputText>
+                            </td>
+                            <td class="text-end">
+                                <h:outputText value="#{pharmacyBillSearch.purchaseTotalSale}"><f:convertNumber pattern="#,##0.00"/></h:outputText>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Cancelled</td>
+                            <td class="text-end"><h:outputText value="#{pharmacyBillSearch.purchaseCancelledCount}"/></td>
+                            <td class="text-end">
+                                <h:outputText value="#{pharmacyBillSearch.purchaseCancelledNet}"><f:convertNumber pattern="#,##0.00"/></h:outputText>
+                            </td>
+                            <td class="text-end">
+                                <h:outputText value="#{pharmacyBillSearch.purchaseCancelledSale}"><f:convertNumber pattern="#,##0.00"/></h:outputText>
+                            </td>
+                        </tr>
+                        <tr class="fw-bold">
+                            <td>Total excluding cancelled</td>
+                            <td class="text-end"><h:outputText value="#{pharmacyBillSearch.purchaseSearchDtos.size() - pharmacyBillSearch.purchaseCancelledCount}"/></td>
+                            <td class="text-end">
+                                <h:outputText value="#{pharmacyBillSearch.purchaseActiveNet}"><f:convertNumber pattern="#,##0.00"/></h:outputText>
+                            </td>
+                            <td class="text-end">
+                                <h:outputText value="#{pharmacyBillSearch.purchaseActiveSale}"><f:convertNumber pattern="#,##0.00"/></h:outputText>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </h:panelGroup>
         </p:panel>
     </cc:implementation>
 </html>
