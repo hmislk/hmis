@@ -2811,6 +2811,14 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         hm.put("b", getAppointmentBill());
         Appointment apt = getAppointmentFacade().findFirstByJpql(sql, hm);
         apt.setPatientEncounter(getCurrent());
+        // A procedure appointment has no reservation, so the reservation block of save did
+        // not complete it; complete it here the same way, or it stays Pending. (#25716)
+        if (!apt.isAppointmentComplete() && apt.getStatus() != AppointmentStatus.COMPLETE) {
+            apt.setAppointmentComplete(true);
+            apt.setAppointmentCompleteAt(new Date());
+            apt.setAppointmentCompleteBy(sessionController.getLoggedUser());
+            apt.setStatus(AppointmentStatus.COMPLETE);
+        }
         getAppointmentFacade().edit(apt);
         // The admitted appointment must drop off the Admit page list. (#25707)
         loadPendingAppointments();
