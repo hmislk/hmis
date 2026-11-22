@@ -4017,7 +4017,9 @@ public class PharmacySaleReportController implements Serializable {
     double totalDisposalQty;
     double totalTransferReceive;
     double totalDirectPurchase;
+    double totalDirectPurchaseQty;
     double totalStockAdjustment;
+    double totalStockAdjustmentQty;
     double totalInwardIssue;
     double totalDepartmentIssue;
     double totalTatalValue;
@@ -4256,11 +4258,13 @@ public class PharmacySaleReportController implements Serializable {
             BillTypeAtomic.PHARMACY_WHOLESALE_DIRECT_PURCHASE_BILL_CANCELLED,
             BillTypeAtomic.PHARMACY_WHOLESALE_DIRECT_PURCHASE_BILL_REFUND
     ));
-    // Department stock adjustment (#25680). Its line quantity is the signed change
-    // (new stock - stock before), so it is summed with its sign, not as abs().
-    // Rate and expiry adjustments do not change the quantity and are not listed.
+    // Department stock adjustment and the stock-take (verification) adjustment
+    // (#25680). Their line quantity is the signed change (new stock - stock
+    // before, or the counted variance), so it is summed with its sign, not as
+    // abs(). Rate and expiry adjustments do not change the quantity and are not listed.
     private static final List<BillTypeAtomic> CATEGORY_MOVEMENT_STOCK_ADJUSTMENT = Collections.unmodifiableList(Arrays.asList(
-            BillTypeAtomic.PHARMACY_STOCK_ADJUSTMENT
+            BillTypeAtomic.PHARMACY_STOCK_ADJUSTMENT,
+            BillTypeAtomic.PHARMACY_STOCK_ADJUSTMENT_BILL
     ));
 
     private static final String CATEGORY_MOVEMENT_ROW_MOVEMENT = "Movement";
@@ -4509,7 +4513,9 @@ public class PharmacySaleReportController implements Serializable {
         totalDisposalQty = 0.0;
         totalTransferReceive = 0.0;
         totalDirectPurchase = 0.0;
+        totalDirectPurchaseQty = 0.0;
         totalStockAdjustment = 0.0;
+        totalStockAdjustmentQty = 0.0;
         totalPurchaseValue = 0.0;
         totalTatalValue = 0.0;
         totalMargineValue = 0.0;
@@ -4527,7 +4533,9 @@ public class PharmacySaleReportController implements Serializable {
             totalDisposalQty += row.getDisposalQty();
             totalTransferReceive += row.getTransferReceive();
             totalDirectPurchase += row.getDirectPurchase();
+            totalDirectPurchaseQty += row.getDirectPurchaseQty();
             totalStockAdjustment += row.getStockAdjustment();
+            totalStockAdjustmentQty += row.getStockAdjustmentQty();
             totalPurchaseValue += row.getPurchaseValue();
             totalTatalValue += row.getTotal();
             totalMargineValue += row.getMarginValue();
@@ -8639,6 +8647,14 @@ public class PharmacySaleReportController implements Serializable {
 
     public double getTotalStockAdjustment() {
         return totalStockAdjustment;
+    }
+
+    public double getTotalDirectPurchaseQty() {
+        return totalDirectPurchaseQty;
+    }
+
+    public double getTotalStockAdjustmentQty() {
+        return totalStockAdjustmentQty;
     }
 
     public double getTotalOpdSale() {

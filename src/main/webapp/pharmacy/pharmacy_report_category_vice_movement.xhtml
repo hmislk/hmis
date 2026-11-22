@@ -227,6 +227,11 @@
                             <h:outputLabel value="#{i.directPurchaseQty}">
                                 <f:convertNumber pattern="#,##0.##" />
                             </h:outputLabel>
+                            <f:facet name="footer">
+                                <h:outputLabel value="#{pharmacySaleReportController.totalDirectPurchaseQty}" style="float: right;">
+                                    <f:convertNumber pattern="#,##0.##" />
+                                </h:outputLabel>
+                            </f:facet>
                         </p:column>
 
                         <p:column headerText="Direct Purchase (Purchase Value)" style="text-align: right;">
@@ -244,6 +249,11 @@
                             <h:outputLabel value="#{i.stockAdjustmentQty}">
                                 <f:convertNumber pattern="#,##0.##" />
                             </h:outputLabel>
+                            <f:facet name="footer">
+                                <h:outputLabel value="#{pharmacySaleReportController.totalStockAdjustmentQty}" style="float: right;">
+                                    <f:convertNumber pattern="#,##0.##" />
+                                </h:outputLabel>
+                            </f:facet>
                         </p:column>
 
                         <p:column headerText="Stock Adjustment (Purchase Value)" style="text-align: right;">
