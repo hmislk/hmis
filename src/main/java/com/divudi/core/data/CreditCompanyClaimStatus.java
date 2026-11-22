@@ -51,6 +51,34 @@ public enum CreditCompanyClaimStatus {
     }
 
     /**
+     * Statuses the system may move a claim to when settlement bills are saved or
+     * cancelled (#25847). Separate from {@link #getAllowedNext()}, which is what a
+     * user may do. Settled can reopen when a settlement is cancelled.
+     */
+    public Set<CreditCompanyClaimStatus> getSystemNext() {
+        switch (this) {
+            case SUBMITTED:
+            case RESUBMITTED:
+                return EnumSet.of(PARTIALLY_SETTLED, SETTLED);
+            case PARTIALLY_SETTLED:
+                return EnumSet.of(SETTLED, SUBMITTED, RESUBMITTED);
+            case SETTLED:
+                return EnumSet.of(PARTIALLY_SETTLED, SUBMITTED, RESUBMITTED);
+            default:
+                return EnumSet.noneOf(CreditCompanyClaimStatus.class);
+        }
+    }
+
+    public boolean canSystemMoveTo(CreditCompanyClaimStatus next) {
+        return next != null && getSystemNext().contains(next);
+    }
+
+    /** True when settlement changes can change this status (a claim already sent to the company). */
+    public boolean followsSettlement() {
+        return this == SUBMITTED || this == RESUBMITTED || this == PARTIALLY_SETTLED || this == SETTLED;
+    }
+
+    /**
      * The one place that says which claims can be cancelled. A draft, or a
      * rejected claim; one waiting for the company is not cancelled here.
      */

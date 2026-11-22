@@ -76,6 +76,8 @@ public class CashRecieveBillController implements Serializable {
     @EJB
     private CreditBean creditBean;
     @EJB
+    private com.divudi.service.CreditCompanyClaimService creditCompanyClaimService;
+    @EJB
     private PatientEncounterFacade patientEncounterFacade;
     @EJB
     private EncounterCreditCompanyFacade encounterCreditCompanyFacade;
@@ -1856,6 +1858,7 @@ public class CashRecieveBillController implements Serializable {
             // Update reference bill's financial fields as well
             updateBillFinancialFieldsForPayment(referenceBillOfOriginal, paymentValue);
         }
+        linkSettlementToClaims(tmp);
     }
 
     /**
@@ -1916,6 +1919,26 @@ public class CashRecieveBillController implements Serializable {
         }
 
         getBillFacade().edit(referenceBill);
+        linkSettlementToClaims(billItemWithReferanceToCreditBill);
+    }
+
+    /**
+     * Links a saved credit collection item to the open claim holding the paid bill and
+     * updates that claim's status (#25847). Payment is already saved, so a failure here is
+     * logged and shown as a warning, never rolled back into the payment.
+     */
+    private void linkSettlementToClaims(BillItem savedItem) {
+        if (savedItem == null || savedItem.getBill() == null || savedItem.getReferenceBill() == null
+                || savedItem.getBill().getBillTypeAtomic() != BillTypeAtomic.OPD_CREDIT_COMPANY_PAYMENT_RECEIVED) {
+            return;
+        }
+        try {
+            creditCompanyClaimService.recordSettlement(savedItem.getBill(),
+                    java.util.Collections.singletonList(savedItem), getSessionController().getLoggedUser());
+        } catch (RuntimeException e) {
+            LOGGER.log(Level.SEVERE, "Could not link settlement to its claim", e);
+            JsfUtil.addErrorMessage("The payment was saved, but it could not be linked to its credit company claim. Tell the administrator.");
+        }
     }
 
     // Links the payment to each admission's final bill once, using a fresh read, so a

@@ -1298,6 +1298,7 @@ public enum Privileges {
     OpdCreditClaimSubmit("OPD Credit Claim - Submit"),
     OpdCreditClaimReject("OPD Credit Claim - Record Rejection"),
     OpdCreditClaimResubmit("OPD Credit Claim - Resubmit"),
+    OpdCreditClaimSettle("OPD Credit Claim - Settle"),
     OpdCreditClaimReports("OPD Credit Claim - Reports"),
     //</editor-fold>
     //<editor-fold defaultstate="collapsed" desc="OPD Quotation (#25885)">
