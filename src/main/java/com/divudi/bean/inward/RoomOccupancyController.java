@@ -8,6 +8,7 @@ import com.divudi.bean.common.NotificationController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.WebUserController;
 import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.Person;
 import com.divudi.core.entity.inward.PatientRoom;
 import com.divudi.core.entity.inward.RoomFacilityCharge;
 import com.divudi.core.facade.PatientRoomFacade;
@@ -17,6 +18,7 @@ import com.divudi.core.util.JsfUtil;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import javax.ejb.EJB;
@@ -207,6 +209,11 @@ public class RoomOccupancyController implements Serializable {
         if (ins != null) {
             sql.append(" and pe.institution=:ins ");
             m.put("ins", ins);
+        } else if (!isAnyInstitutionAllowed()) {
+            // No privilege and no login institution: show nothing, never everything.
+            patientRooms = new ArrayList<>();
+            JsfUtil.addErrorMessage("Your login has no institution; ask an administrator");
+            return;
         }
         sql.append(" order by pr.roomFacilityCharge.name");
         patientRooms = getPatientRoomFacade().findByJpql(sql.toString(), m);
@@ -221,8 +228,14 @@ public class RoomOccupancyController implements Serializable {
             return false;
         }
         for (PatientRoom pr : patientRooms) {
-            if (pr.getPatientEncounter() != null && pr.getPatientEncounter().getGuardian() != null) {
-                return true;
+            // getGuardian() never returns null (it creates an empty Person), so test the content.
+            if (pr.getPatientEncounter() != null) {
+                Person g = pr.getPatientEncounter().getGuardian();
+                if (g.getId() != null
+                        || (g.getName() != null && !g.getName().trim().isEmpty())
+                        || (g.getPhone() != null && !g.getPhone().trim().isEmpty())) {
+                    return true;
+                }
             }
         }
         return false;

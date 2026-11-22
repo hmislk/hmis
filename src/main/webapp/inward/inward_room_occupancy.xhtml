@@ -66,6 +66,9 @@
                                 <p:ajax event="itemSelect"
                                         listener="#{roomOccupancyController.refresh}"
                                         update="pnlResults"/>
+                                <p:ajax event="clear"
+                                        listener="#{roomOccupancyController.showAllInstitutions}"
+                                        update="pnlResults"/>
                             </p:autoComplete>
                             <p:commandButton id="btnAllIns"
                                              value="All Institutions"
