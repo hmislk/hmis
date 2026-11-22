@@ -300,6 +300,7 @@ public class Fhir {
             bijo.put("item", itemName + " - " + feeName);
             bijo.put("qty", 1);
             bijo.put("amount", bi.getAbsoluteFeeValue());
+            flagDoctorCollected(bijo, bi);
             bijo.put("itemType", itemType);
             bijo.put("invClass", invClass);
 
@@ -352,6 +353,7 @@ public class Fhir {
             bijo.put("item", itemName + " - " + feeName);
             bijo.put("qty", 1);
             bijo.put("amount", bi.getAbsoluteFeeValue());
+            flagDoctorCollected(bijo, bi);
             bijo.put("invType", invType);
             bijo.put("invClass", invClass);
 
@@ -395,6 +397,7 @@ public class Fhir {
             }
             bijo.put("qty", 1);
             bijo.put("amount", bi.getAbsoluteFeeValue());
+            flagDoctorCollected(bijo, bi);
             bijo.put("invClass", invClass);
             bijo.put("invType", invType);
             bija.put(bijo);
@@ -997,6 +1000,10 @@ public class Fhir {
 
         String json = jSONObjectOut.toString();
         return json;
+    }
+
+    private static void flagDoctorCollected(JSONObject line, BillFee fee) {
+        line.put("collectedByDoctor", fee != null && fee.isCollectedByDoctorAtBilling());
     }
 
     public List<BillFee> billFeeList(Integer recordCount, List<BillType> bts, Long lastId) {
