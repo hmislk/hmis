@@ -55,6 +55,7 @@
 - **🚨 Never deploy manually as root;** deploy only through GitHub Actions CI/CD. [+](developer_docs/deployment/deployment-recovery-guide.md)
 - **🚨 Never `git add -A` or `git add .`;** stage explicit paths only. A scripted commit prints `git status --porcelain` and the file list, and refuses paths outside the set. [+](developer_docs/rules/git.md)
 - **🚨 Hotfix branches sync `.gitignore` from `origin/development` first.** [+](.claude/skills/hotfix-deploy/SKILL.md)
+- **🚨 A port is proven by diffing each changed method against `development` and one in-app click on the changed action showing its expected result,** not by a green compile. [+](.claude/skills/hotfix-deploy/SKILL.md)
 - **🚨 Any task that WRITES to git runs in a dedicated worker session,** not the communication session. [+](developer_docs/process/worker-dispatch-template.md)
 - **🚨 If junk or data was pushed to the public repo,** follow the `public-repo-leak-runbook` skill at once.
 - Commit messages include `Closes #N`. [+](developer_docs/git/commit-conventions.md)
