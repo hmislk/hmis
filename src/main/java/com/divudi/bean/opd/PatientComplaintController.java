@@ -96,9 +96,10 @@ public class PatientComplaintController implements Serializable {
     }
 
     /** True (with a message) when the posted page is not for the complaint now held in the session. */
-    private boolean pageOutOfDate() {
-        if (complaint == null || complaint.getId() == null || complaintIdOnPage == null
-                || !complaint.getId().equals(complaintIdOnPage)) {
+    private boolean pageOutOfDate(Long idOnPage) {
+        PatientComplaint held = complaint;
+        if (held == null || held.getId() == null || idOnPage == null
+                || !held.getId().equals(idOnPage)) {
             JsfUtil.addErrorMessage("This page is out of date. Open the complaint again.");
             return true;
         }
@@ -208,11 +209,14 @@ public class PatientComplaintController implements Serializable {
     }
 
     public void assign() {
-        if (denyHandle() || pageOutOfDate()) {
+        // Capture the shared session fields once; check and service call use the same values.
+        final Long id = complaintIdOnPage;
+        final WebUser assignee = assigneeToSet;
+        if (denyHandle() || pageOutOfDate(id)) {
             return;
         }
         try {
-            complaintService.assign(complaintIdOnPage, assigneeToSet == null ? null : assigneeToSet.getId(),
+            complaintService.assign(id, assignee == null ? null : assignee.getId(),
                     sessionController.getLoggedUser(), insId());
             JsfUtil.addSuccessMessage("Assignment saved.");
         } catch (PatientComplaintException e) {
@@ -222,11 +226,13 @@ public class PatientComplaintController implements Serializable {
     }
 
     public void saveResponse() {
-        if (denyHandle() || pageOutOfDate()) {
+        final Long id = complaintIdOnPage;
+        final String text = response;
+        if (denyHandle() || pageOutOfDate(id)) {
             return;
         }
         try {
-            complaintService.saveResponse(complaintIdOnPage, response, sessionController.getLoggedUser(), insId());
+            complaintService.saveResponse(id, text, sessionController.getLoggedUser(), insId());
             JsfUtil.addSuccessMessage("Response saved.");
         } catch (PatientComplaintException e) {
             JsfUtil.addErrorMessage(e.getMessage());
@@ -235,11 +241,14 @@ public class PatientComplaintController implements Serializable {
     }
 
     private void changeStatus(PatientComplaintStatus next, String done) {
-        if (denyHandle() || pageOutOfDate()) {
+        final Long id = complaintIdOnPage;
+        final String text = response;
+        final String note = statusNote;
+        if (denyHandle() || pageOutOfDate(id)) {
             return;
         }
         try {
-            complaintService.changeStatus(complaintIdOnPage, next, response, statusNote,
+            complaintService.changeStatus(id, next, text, note,
                     sessionController.getLoggedUser(), insId());
             JsfUtil.addSuccessMessage(done);
         } catch (PatientComplaintException e) {

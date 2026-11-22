@@ -5,10 +5,13 @@ import com.divudi.core.entity.PatientComplaintCategory;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.service.PatientComplaintException;
 import com.divudi.service.PatientComplaintService;
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import javax.ejb.EJB;
+import javax.faces.context.ExternalContext;
+import javax.faces.context.FacesContext;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -63,6 +66,23 @@ public class ClientPortalComplaintController implements Serializable {
             cachedForPersonId = personId;
         }
         return personId;
+    }
+
+    /** Page guard (preRenderView): a visitor who is not logged in to the portal is sent to the portal login. */
+    public void requireLogin() {
+        if (sessionPersonId() != null) {
+            return;
+        }
+        FacesContext fc = FacesContext.getCurrentInstance();
+        if (fc == null || fc.getResponseComplete()) {
+            return;
+        }
+        ExternalContext ec = fc.getExternalContext();
+        try {
+            ec.redirect(ec.getRequestContextPath() + "/faces/client_portal/login.xhtml");
+        } catch (IOException e) {
+            JsfUtil.addErrorMessage("Please log in again.");
+        }
     }
 
     public List<PatientComplaintCategory> getCategories() {
