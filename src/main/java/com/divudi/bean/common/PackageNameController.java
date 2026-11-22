@@ -5,6 +5,8 @@ import com.divudi.core.facade.ItemFacade;
 import com.divudi.core.facade.PackegeFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Date;
 import java.util.List;
 import javax.ejb.EJB;
@@ -44,9 +46,10 @@ public  class PackageNameController implements Serializable {
         } else {
             sql = "select p from Packege p where p.retired=false "
                     + "and (p.inactive=false or p.inactive is null)"
-                    + "and ((p.name) like '%" + query.toUpperCase() + "%'or  (p.code) like '%" + query.toUpperCase() + "%' ) order by p.name";
-            //////// // System.out.println(sql);
-            suggestions = getFacade().findByJpql(sql);
+                    + "and ((p.name) like :qry or  (p.code) like :qry ) order by p.name";
+            Map<String, Object> m = new HashMap<>();
+            m.put("qry", "%" + query.toUpperCase() + "%");
+            suggestions = getFacade().findByJpql(sql, m);
         }
         return suggestions;
     }
