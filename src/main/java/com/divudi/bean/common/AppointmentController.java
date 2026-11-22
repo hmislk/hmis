@@ -237,6 +237,10 @@ public class AppointmentController implements Serializable, ControllerWithPatien
             JsfUtil.addErrorMessage("This appointment is cancelled");
             return "";
         }
+        if (storedAppointment.isRetired()) {
+            JsfUtil.addErrorMessage("This appointment has been removed");
+            return "";
+        }
 
         Date resFrom = reservation.getReservedFrom();
         if (resFrom == null) {
@@ -325,6 +329,10 @@ public class AppointmentController implements Serializable, ControllerWithPatien
             }
             if (currentAppointment.getStatus() == AppointmentStatus.CANCEL || currentAppointment.isAppointmentCancel()) {
                 JsfUtil.addErrorMessage("This appointment is cancelled");
+                return "";
+            }
+            if (currentAppointment.isRetired()) {
+                JsfUtil.addErrorMessage("This appointment has been removed");
                 return "";
             }
             if (currentAppointment.getPatientEncounter() != null) {
