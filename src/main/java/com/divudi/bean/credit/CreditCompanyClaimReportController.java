@@ -350,6 +350,16 @@ public class CreditCompanyClaimReportController implements Serializable {
         return ageTotalOver90;
     }
 
+    public int getAgeTotalClaims() {
+        int total = 0;
+        if (ageingRows != null) {
+            for (CreditCompanyClaimAgeingRowDto row : ageingRows) {
+                total += row.getClaimCount();
+            }
+        }
+        return total;
+    }
+
     public double getAgeTotal() {
         return ageTotal;
     }
