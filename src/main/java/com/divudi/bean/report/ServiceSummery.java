@@ -340,6 +340,7 @@ public class ServiceSummery implements Serializable {
 
         sql = "select sum(bi.feeMargin) FROM BillFee bi "
                 + " where bi.bill.billType= :bTp "
+                + " and (bi.collectedByDoctorAtBilling = false or bi.collectedByDoctorAtBilling is null) "
                 + " and bi.fee.feeType=:ftp "
                 + " and bi.bill.createdAt between :fromDate and :toDate ";
 
@@ -1553,7 +1554,7 @@ public class ServiceSummery implements Serializable {
     private double calFeeMargin(BillItem bi, FeeType feeType) {
         HashMap hm = new HashMap();
         String sql = "Select sum(f.feeMargin) from "
-                + " BillFee f where "
+                + " BillFee f where (f.collectedByDoctorAtBilling = false or f.collectedByDoctorAtBilling is null) and "
                 + " f.retired=false "
                 + " and f.billItem=:b and "
                 + " f.fee.feeType=:ftp";
@@ -1609,7 +1610,7 @@ public class ServiceSummery implements Serializable {
     private double calFeeFeeGrossValueFeeMargin(BillItem bi, FeeType feeType) {
         HashMap hm = new HashMap();
         String sql = "Select sum(f.feeMargin) from "
-                + " BillFee f where "
+                + " BillFee f where (f.collectedByDoctorAtBilling = false or f.collectedByDoctorAtBilling is null) and "
                 + " f.retired=false "
                 + " and f.billItem=:b and "
                 + " f.fee.feeType=:ftp ";
@@ -1623,7 +1624,7 @@ public class ServiceSummery implements Serializable {
     private double calFeeOutSideFeeGrossValueFeeMargin(BillItem bi, FeeType feeType, FeeType feeType2) {
         HashMap hm = new HashMap();
         String sql = "Select sum(f.feeMargin) from "
-                + " BillFee f where "
+                + " BillFee f where (f.collectedByDoctorAtBilling = false or f.collectedByDoctorAtBilling is null) and "
                 + " f.retired=false "
                 + " and f.billItem=:b and "
                 + " (f.fee.feeType=:ftp "
