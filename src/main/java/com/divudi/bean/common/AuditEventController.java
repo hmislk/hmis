@@ -289,11 +289,11 @@ public class AuditEventController implements Serializable {
         return ae != null && ConfigOptionController.isSecretKey(getOptionKey(ae));
     }
 
-    private String hideIfSecret(AuditEvent ae, String value) {
+    private String hideIfSecret(AuditEvent ae, String json, String value) {
         if (!isSecretConfigEvent(ae)) {
             return value;
         }
-        return ConfigOptionController.auditValue(getOptionKey(ae), value);
+        return ConfigOptionController.auditDisplay(getOptionKey(ae), jsonValue(json, "valueType"), value);
     }
 
     private void calculateDifferenceHidingSecrets(AuditEvent ae) {
@@ -310,14 +310,14 @@ public class AuditEventController implements Serializable {
         if (ae == null) {
             return "";
         }
-        return hideIfSecret(ae, jsonValue(ae.getBeforeJson(), "optionValue"));
+        return hideIfSecret(ae, ae.getBeforeJson(), jsonValue(ae.getBeforeJson(), "optionValue"));
     }
 
     public String getAfterValue(AuditEvent ae) {
         if (ae == null) {
             return "";
         }
-        return hideIfSecret(ae, jsonValue(ae.getAfterJson(), "optionValue"));
+        return hideIfSecret(ae, ae.getAfterJson(), jsonValue(ae.getAfterJson(), "optionValue"));
     }
 
     public void prepareAdd() {
