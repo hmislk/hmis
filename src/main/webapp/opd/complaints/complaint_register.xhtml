@@ -77,7 +77,7 @@
                                                 value="#{patientComplaintController.filterAssignee}"
                                                 forceSelection="true"
                                                 completeMethod="#{patientComplaintController.completeFilterAssignees}"
-                                                var="u" itemLabel="#{u.webUserPerson.name}" itemValue="#{u}"
+                                                var="u" itemLabel="#{u.webUserPerson ne null and not empty u.webUserPerson.name ? u.webUserPerson.name : u.name}" itemValue="#{u}"
                                                 placeholder="Anyone"/>
                             </div>
                         </div>
