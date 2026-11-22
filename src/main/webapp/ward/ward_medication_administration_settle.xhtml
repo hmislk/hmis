@@ -42,7 +42,7 @@
                 </f:facet>
 
                 <h:panelGroup id="panelPendingRecords" layout="block">
-                    <p:dataTable
+                    <p:dataTable styleClass="p-datatable-sm"
                         id="tblPendingRecords"
                         widgetVar="tblPendingRecords"
                         rowKey="#{m.id}"
@@ -101,7 +101,7 @@
                     <p:outputLabel value="Ward Stock Deducted - Bill #{medicationAdministrationStockSettlementController.lastSettlementBill.deptId}"/>
                 </f:facet>
 
-                <p:dataTable
+                <p:dataTable styleClass="p-datatable-sm"
                     id="tblSettledItems"
                     rowKey="#{i.id}"
                     value="#{medicationAdministrationStockSettlementController.lastSettledItems}"

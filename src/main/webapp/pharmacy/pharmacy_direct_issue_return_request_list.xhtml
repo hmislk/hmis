@@ -22,7 +22,7 @@
                 <p:outputLabel styleClass="d-block mb-2"
                                value="Return requests raised by wards for medicines this department issued directly to inpatients. Approving opens the normal return with the requested quantities filled in; nothing changes until you settle it."/>
 
-                <p:dataTable
+                <p:dataTable styleClass="p-datatable-sm"
                     id="tblPendingRequests"
                     rowKey="#{r.id}"
                     value="#{directIssueReturnRequestController.pendingRequests}"
@@ -86,7 +86,7 @@
                 <p:dialog id="dlgRequestItems" widgetVar="dlgRequestItems"
                           header="Return Request #{directIssueReturnRequestController.selectedRequest.deptId}"
                           modal="true" width="800" resizable="false">
-                    <p:dataTable
+                    <p:dataTable styleClass="p-datatable-sm"
                         value="#{directIssueReturnRequestController.selectedRequestItems}"
                         var="i"
                         class="w-100"
@@ -115,7 +115,7 @@
                             update=":formDirectIssueReturnRequests"
                             actionListener="#{directIssueReturnRequestController.reject}"
                             oncomplete="if (!args.validationFailed) PF('dlgRequestItems').hide();"/>
-                        <p:commandButton value="Close" type="button" onclick="PF('dlgRequestItems').hide();"/>
+                        <p:commandButton icon="fa fa-times" styleClass="ui-button-secondary" value="Close" type="button" onclick="PF('dlgRequestItems').hide();"/>
                     </f:facet>
                 </p:dialog>
             </p:panel>

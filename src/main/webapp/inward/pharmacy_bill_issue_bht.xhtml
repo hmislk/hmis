@@ -369,7 +369,7 @@
 
                             <!-- Bill items table -->
                             <p:panel header="Bill Items" id="pBillItems" class="my-1">
-                                <p:dataTable
+                                <p:dataTable styleClass="p-datatable-sm"
                                     id="tblBillItems"
                                     value="#{inpatientDirectIssueNativeSqlController.billItemDataList}"
                                     var="bid"
@@ -491,7 +491,7 @@
                                         rows="10"
                                         paginatorPosition="bottom"
                                         emptyMessage="No other brand of this medicine is in stock"
-                                        styleClass="table-striped">
+                                        styleClass="table-striped p-datatable-sm">
                                         <p:column headerText="Item">
                                             <h:outputText value="#{sStock.itemName}"/>
                                         </p:column>
@@ -514,7 +514,7 @@
                                             </h:outputText>
                                         </p:column>
                                         <p:column headerText="Action" style="width: 8em;">
-                                            <p:commandButton
+                                            <p:commandButton icon="fa fa-exchange-alt" styleClass="ui-button-warning"
                                                 id="btnReplace"
                                                 value="Replace"
                                                 action="#{inpatientDirectIssueNativeSqlController.replaceSelectedSubstitute}"

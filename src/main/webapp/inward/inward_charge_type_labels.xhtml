@@ -28,7 +28,7 @@
                             <p:autoUpdate/>
                         </p:messages>
 
-                        <p:dataTable
+                        <p:dataTable styleClass="p-datatable-sm"
                             id="labelsTable"
                             value="#{inwardChargeTypeLabelController.chargeTypes}"
                             var="chargeType"
@@ -124,8 +124,8 @@
 
                     </p:panel>
                     <p:confirmDialog global="true" showEffect="fade" hideEffect="fade">
-                        <p:commandButton value="Yes" type="button" styleClass="ui-confirmdialog-yes ui-button-danger"/>
-                        <p:commandButton value="No" type="button" styleClass="ui-confirmdialog-no ui-button-secondary"/>
+                        <p:commandButton icon="fa fa-check" value="Yes" type="button" styleClass="ui-confirmdialog-yes ui-button-danger"/>
+                        <p:commandButton icon="fa fa-times" value="No" type="button" styleClass="ui-confirmdialog-no ui-button-secondary"/>
                     </p:confirmDialog>
                 </h:form>
             </ui:define>

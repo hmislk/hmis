@@ -25,7 +25,7 @@
                 <p:outputLabel styleClass="d-block mb-2"
                                value="A direct issue is returned only by the pharmacy that issued it. Send a request here; no stock or bill changes until that pharmacy approves it."/>
 
-                <p:dataTable
+                <p:dataTable styleClass="p-datatable-sm"
                     id="tblIssueBills"
                     rowKey="#{p.id}"
                     value="#{directIssueReturnRequestController.issueBills}"
@@ -77,7 +77,7 @@
                                   styleClass="text-muted"/>
 
                     <h:panelGroup rendered="#{directIssueReturnRequestController.selectedIssueBill ne null}">
-                        <p:dataTable
+                        <p:dataTable styleClass="p-datatable-sm"
                             id="tblRequestLines"
                             value="#{directIssueReturnRequestController.lines}"
                             var="line"
@@ -141,7 +141,7 @@
 
                 <p:separator/>
 
-                <p:dataTable
+                <p:dataTable styleClass="p-datatable-sm"
                     id="tblRecentRequests"
                     value="#{directIssueReturnRequestController.recentRequests}"
                     var="r"
@@ -205,7 +205,7 @@
                 <p:outputLabel styleClass="d-block mb-2"
                                value="Sent to #{directIssueReturnRequestController.submittedRequest.toDepartment.name} for approval. No stock or bill has changed."/>
 
-                <p:dataTable
+                <p:dataTable styleClass="p-datatable-sm"
                     id="tblSubmittedItems"
                     value="#{directIssueReturnRequestController.submittedRequest.billItems}"
                     var="i"

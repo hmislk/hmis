@@ -79,7 +79,7 @@
                     </div>
                 </f:facet>
 
-                <p:dataTable
+                <p:dataTable styleClass="p-datatable-sm"
                     id="tblReceiveBills"
                     widgetVar="tblReceiveBills"
                     rowKey="#{p.id}"
@@ -145,7 +145,7 @@
                 <p:dialog id="dlgPreviewReceiveBill" widgetVar="dlgPreviewReceiveBill"
                           header="Received Bill #{wardPharmacyReturnToPharmacyController.previewBill.deptId}"
                           modal="true" width="900" resizable="false">
-                    <p:dataTable
+                    <p:dataTable styleClass="p-datatable-sm"
                         id="tblPreviewLines"
                         rowKey="#{line.returnItem.referanceBillItem.id}"
                         value="#{wardPharmacyReturnToPharmacyController.previewLines}"
@@ -334,7 +334,7 @@
                                  placeholder="Please provide a comment for the cancellation"/>
 
                     <f:facet name="footer">
-                        <p:commandButton
+                        <p:commandButton icon="fa fa-check"
                             id="btnConfirmCancelReturn"
                             class="mx-2 ui-button-warning"
                             value="Yes"
@@ -342,14 +342,14 @@
                             update=":formWardReturnToPharmacy"
                             actionListener="#{wardPharmacyReturnToPharmacyController.cancelReturnBill}"
                             oncomplete="PF('confirmCancelReturnDialog').hide();"/>
-                        <p:commandButton
+                        <p:commandButton icon="fa fa-times" styleClass="ui-button-secondary"
                             id="btnCancelCancelReturn"
                             value="No"
                             onclick="PF('confirmCancelReturnDialog').hide();"/>
                     </f:facet>
                 </p:dialog>
 
-                <p:dataTable
+                <p:dataTable styleClass="p-datatable-sm"
                     id="tblReturnedItems"
                     rowKey="#{i.id}"
                     value="#{wardPharmacyReturnToPharmacyController.returnBill.billItems}"
