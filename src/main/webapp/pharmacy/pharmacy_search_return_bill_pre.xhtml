@@ -88,6 +88,7 @@
                                     rows="10"
                                     paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                     rowsPerPageTemplate="5,10,15"
+                                    styleClass="p-datatable-sm"
                                     >
 
                                     <p:column headerText="Sale Bill No" width="100px">                              
@@ -126,6 +127,8 @@
                                         <p:commandButton 
                                             ajax="false" 
                                             disabled="#{bill.checkActiveReturnCashBill()}" 
+                                            icon="fa fa-eye"
+                                            class="ui-button-info ui-button-outlined"
                                             value="View Bill" 
                                             action="pharmacy_reprint_bill_return_pre">
                                             <f:setPropertyActionListener value="#{bill}" target="#{pharmacyBillSearch.bill}"/>
@@ -133,7 +136,7 @@
                                     </p:column>
 
                                     <p:column width="500px" exportable="false">
-                                        <p:dataTable value="#{bill.returnCashBills}" var="rb" >
+                                        <p:dataTable value="#{bill.returnCashBills}" var="rb" styleClass="p-datatable-sm">
                                             <p:column  >                                                               
                                                 <h:outputLabel  value="#{rb.deptId}"/>                                   
                                             </p:column>
@@ -171,7 +174,7 @@
                                                     ajax="false"  
                                                     icon="fa fa-file-invoice"
                                                     id="cancelRefundCashBill" 
-                                                    class="ui-button-primary"
+                                                    class="ui-button-info ui-button-outlined"
                                                     action="pharmacy_reprint_bill_return_cash" 
                                                     disabled="#{rb.cancelled}">
                                                     <f:setPropertyActionListener value="#{rb}" target="#{pharmacyBillSearch.bill}"/>
