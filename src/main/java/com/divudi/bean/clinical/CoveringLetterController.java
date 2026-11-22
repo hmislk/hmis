@@ -23,8 +23,11 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
+import javax.faces.context.FacesContext;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
@@ -38,6 +41,7 @@ import javax.persistence.TemporalType;
 public class CoveringLetterController implements Serializable {
 
     private static final long serialVersionUID = 1L;
+    private static final Logger LOGGER = Logger.getLogger(CoveringLetterController.class.getName());
 
     private static final String BATCH_PAGE = "/covering_letters/covering_letter_batch?faces-redirect=true";
     private static final String LIST_PAGE = "/covering_letters/covering_letter_list?faces-redirect=true";
@@ -69,6 +73,8 @@ public class CoveringLetterController implements Serializable {
     private CoveringLetter current;
     /** Letters created together by "one letter per record"; empty for a single letter (#25747). */
     private List<CoveringLetter> currentLetters = new ArrayList<>();
+    /** Set while generateLetterPerRecord() runs, so a double click does not create a second set. */
+    private boolean generatingLetters;
 
     // list
     private Date searchFromDate;
@@ -206,31 +212,51 @@ public class CoveringLetterController implements Serializable {
      * kept and listed, and the message names the record that failed.
      */
     public String generateLetterPerRecord() {
-        List<CoveringLetterRowDTO> orderedRows = validatedSelection();
-        if (orderedRows == null) {
+        if (generatingLetters) {
+            JsfUtil.addErrorMessage("Letters are already being created. Wait for the print page.");
             return "";
         }
-        String fmt = dateFormat();
-        List<CoveringLetter> created = new ArrayList<>();
-        for (CoveringLetterRowDTO r : orderedRows) {
-            CoveringLetter l = coveringLetterService.createLetter(selectedTemplate, Arrays.asList(r), recordType,
-                    issuingInstitution, creditCompany, sessionController.getLoggedUser(), fmt);
-            if (l == null) {
-                JsfUtil.addErrorMessage("Letter could not be generated for " + r.getRefNo()
-                        + ". " + created.size() + " of " + orderedRows.size() + " letters were created.");
-                break;
+        generatingLetters = true;
+        try {
+            List<CoveringLetterRowDTO> orderedRows = validatedSelection();
+            if (orderedRows == null) {
+                return "";
             }
-            created.add(l);
+            String fmt = dateFormat();
+            List<CoveringLetter> created = new ArrayList<>();
+            String failure = null;
+            for (CoveringLetterRowDTO r : orderedRows) {
+                CoveringLetter l = null;
+                try {
+                    l = coveringLetterService.createLetter(selectedTemplate, Arrays.asList(r), recordType,
+                            issuingInstitution, creditCompany, sessionController.getLoggedUser(), fmt);
+                } catch (RuntimeException e) {
+                    LOGGER.log(Level.SEVERE, "Covering letter could not be created for " + r.getRefNo(), e);
+                }
+                if (l == null) {
+                    failure = "Letter could not be generated for " + r.getRefNo()
+                            + ". " + created.size() + " of " + orderedRows.size() + " letters were created.";
+                    break;
+                }
+                created.add(l);
+            }
+            if (created.isEmpty()) {
+                JsfUtil.addErrorMessage(failure != null ? failure : "Letter could not be generated");
+                return "";
+            }
+            current = created.get(0);
+            currentLetters = created;
+            // The print page is a redirect, so keep the message for it.
+            if (failure != null) {
+                JsfUtil.addErrorMessageForRedirect(failure);
+            } else {
+                FacesContext.getCurrentInstance().getExternalContext().getFlash().setKeepMessages(true);
+                JsfUtil.addSuccessMessage(created.size() + " letters created");
+            }
+            return PRINT_PAGE;
+        } finally {
+            generatingLetters = false;
         }
-        if (created.isEmpty()) {
-            return "";
-        }
-        current = created.get(0);
-        currentLetters = created;
-        if (created.size() == orderedRows.size()) {
-            JsfUtil.addSuccessMessage(created.size() + " letters created");
-        }
-        return PRINT_PAGE;
     }
 
     private String dateFormat() {
