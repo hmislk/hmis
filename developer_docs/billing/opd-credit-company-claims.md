@@ -28,6 +28,7 @@ Screens: Financial Transaction Manager → Payment Management → Credit Company
 
 - Rejecting records the reason, user and time.
 - A rejected claim keeps its bills and is resubmitted with the same claim number. It is never re-created.
+- A Partially Settled claim can be closed with a reason (needed), by a user with the Create Claim privilege. Closing records the reason, user and time, and frees the claim's bills. It changes no bill balance: what the company has not paid stays due on the bills. Close is refused while a write-off request on any bill of the claim is still pending (Requested); approve, reject or cancel it first. A pending write-off left on a closed claim is harmless; it is decided from the write-off list. The close columns come with migration v2.31.0, run by hand before deploy.
 - Cancelling is allowed only for a Draft or Rejected claim, by a user with the Create Claim privilege. Cancelling frees its bills for a new claim.
 
 ## Locks on the bills

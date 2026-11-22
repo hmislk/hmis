@@ -2,6 +2,7 @@ package com.divudi.service;
 
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.CreditCompanyClaimStatus;
+import com.divudi.core.data.CreditCompanyWriteOffStatus;
 import com.divudi.core.data.PaymentMethod;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.BillItem;
@@ -326,6 +327,62 @@ public class CreditCompanyClaimService {
         c.setRejecter(user);
         claimFacade.edit(c);
         return c;
+    }
+
+    /**
+     * Closes a partially settled claim with a reason. The bills are freed from the
+     * claim; what the company has not paid stays due on the bills.
+     */
+    public CreditCompanyClaim closePartiallySettled(CreditCompanyClaim claim, String reason, WebUser user) {
+        CreditCompanyClaim c = reload(claim);
+        checkCanClosePartiallySettled(c, reason);
+        checkNoPendingWriteOff(pendingWriteOffCount(c));
+        c.setStatus(CreditCompanyClaimStatus.CLOSED);
+        c.setCloseReason(reason.trim());
+        c.setClosedAt(new Date());
+        c.setClosedBy(user);
+        claimFacade.edit(c);
+        return c;
+    }
+
+    public static final String PENDING_WRITE_OFF_MESSAGE
+            = "A write-off request on one of this claim's bills is waiting for a decision. Approve, reject or cancel it first.";
+
+    /** Close is refused while any write-off request on the claim's bills is still pending. */
+    public static void checkNoPendingWriteOff(long pendingCount) {
+        if (pendingCount > 0) {
+            throw new CreditCompanyClaimException(PENDING_WRITE_OFF_MESSAGE);
+        }
+    }
+
+    /** Number of REQUESTED write-offs on the bills of the claim. Throws when the lookup fails. */
+    private long pendingWriteOffCount(CreditCompanyClaim claim) {
+        Map<String, Object> p = new HashMap<>();
+        p.put("claim", claim.getId());
+        p.put("st", CreditCompanyWriteOffStatus.REQUESTED);
+        try {
+            return claimItemFacade.findLongByJpqlStrict(
+                    "select count(w) from CreditCompanyWriteOff w where w.retired=false and w.status=:st"
+                    + " and w.bill.id in (select ci.bill.id from CreditCompanyClaimItem ci"
+                    + " where ci.retired=false and ci.claim.id=:claim)", p);
+        } catch (RuntimeException e) {
+            throw new CreditCompanyClaimException(LOOKUP_FAILED);
+        }
+    }
+
+    /** The rule for closing: only a partially settled claim, and a reason is needed. */
+    public static void checkCanClosePartiallySettled(CreditCompanyClaim claim, String reason) {
+        if (claim == null || claim.getStatus() == null) {
+            throw new CreditCompanyClaimException("Claim not found.");
+        }
+        if (claim.getStatus() != CreditCompanyClaimStatus.PARTIALLY_SETTLED) {
+            throw new CreditCompanyClaimException("Only a partially settled claim can be closed here. This claim is "
+                    + claim.getStatus().getLabel() + ".");
+        }
+        checkTransition(claim, CreditCompanyClaimStatus.CLOSED);
+        if (blankToNull(reason) == null) {
+            throw new CreditCompanyClaimException("Enter the reason for closing the claim.");
+        }
     }
 
     public CreditCompanyClaim resubmit(CreditCompanyClaim claim, Date submittedOn, String companyReference, WebUser user) {

@@ -1,0 +1,49 @@
+-- Rollback v2.31.0: drop the close columns from CREDITCOMPANYCLAIM
+-- WARNING: close reasons, times and users are lost. Only roll back together with a build that no
+-- longer maps CreditCompanyClaim.closeReason / closedAt / closedBy. Claims already Closed stay Closed.
+
+SELECT 'Rollback v2.31.0 - drop close columns from CREDITCOMPANYCLAIM' AS status;
+
+SET @claim_table = (
+    SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES
+    WHERE TABLE_SCHEMA = DATABASE() AND UPPER(TABLE_NAME) = 'CREDITCOMPANYCLAIM' LIMIT 1
+);
+
+-- Foreign key first
+SET @fk_exists = (
+    SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS
+    WHERE TABLE_SCHEMA = DATABASE() AND UPPER(TABLE_NAME) = 'CREDITCOMPANYCLAIM'
+      AND UPPER(CONSTRAINT_NAME) = 'FK_CREDITCOMPANYCLAIM_CLOSEDBY_ID'
+);
+SET @sql = IF(@claim_table IS NULL OR @fk_exists = 0,
+    'SELECT "SKIPPED: foreign key not found" AS status',
+    CONCAT('ALTER TABLE ', @claim_table, ' DROP FOREIGN KEY FK_CREDITCOMPANYCLAIM_CLOSEDBY_ID')
+);
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+
+-- Then each column, only if present
+SET @exists = (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS
+    WHERE TABLE_SCHEMA = DATABASE() AND UPPER(TABLE_NAME) = 'CREDITCOMPANYCLAIM' AND UPPER(COLUMN_NAME) = 'CLOSEDBY_ID');
+SET @sql = IF(@claim_table IS NULL OR @exists = 0, 'SELECT "SKIPPED: CLOSEDBY_ID not found" AS status',
+    CONCAT('ALTER TABLE ', @claim_table, ' DROP COLUMN CLOSEDBY_ID'));
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+
+SET @exists = (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS
+    WHERE TABLE_SCHEMA = DATABASE() AND UPPER(TABLE_NAME) = 'CREDITCOMPANYCLAIM' AND UPPER(COLUMN_NAME) = 'CLOSEDAT');
+SET @sql = IF(@claim_table IS NULL OR @exists = 0, 'SELECT "SKIPPED: CLOSEDAT not found" AS status',
+    CONCAT('ALTER TABLE ', @claim_table, ' DROP COLUMN CLOSEDAT'));
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+
+SET @exists = (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS
+    WHERE TABLE_SCHEMA = DATABASE() AND UPPER(TABLE_NAME) = 'CREDITCOMPANYCLAIM' AND UPPER(COLUMN_NAME) = 'CLOSEREASON');
+SET @sql = IF(@claim_table IS NULL OR @exists = 0, 'SELECT "SKIPPED: CLOSEREASON not found" AS status',
+    CONCAT('ALTER TABLE ', @claim_table, ' DROP COLUMN CLOSEREASON'));
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
