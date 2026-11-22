@@ -128,6 +128,64 @@
                                 </table>
                             </div>
 
+                            <!-- An appointment without a room (procedure, consultant or department) has no reservation:
+                                 show what it is for instead. -->
+                            <h:panelGroup rendered="#{not (cc.attrs.reservation ne null and cc.attrs.reservation.id ne null)}">
+                                <div class="my-3 text-center" style="font-weight: bold;">
+                                    <p:outputLabel value="APPOINTMENT DETAILS" />
+                                </div>
+
+                                <div class="d-flex justify-content-center align-items-center">
+                                    <table>
+                                        <tbody>
+                                            <tr>
+                                                <th class="text-left">Appointment No</th>
+                                                <td class="text-center">&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;&nbsp;&nbsp;&nbsp;</td>
+                                                <td class="text-left">
+                                                    <h:outputLabel value="#{(cc.attrs.appointment ne null ? cc.attrs.appointment : cc.attrs.reservation.appointment).appointmentNumber}"></h:outputLabel>
+                                                </td>
+                                            </tr>
+                                            <h:panelGroup rendered="#{(cc.attrs.appointment ne null ? cc.attrs.appointment : cc.attrs.reservation.appointment).item ne null}">
+                                                <tr>
+                                                    <th class="text-left">Procedure</th>
+                                                    <td class="text-center">&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;&nbsp;&nbsp;&nbsp;</td>
+                                                    <td class="text-left">
+                                                        <h:outputLabel value="#{(cc.attrs.appointment ne null ? cc.attrs.appointment : cc.attrs.reservation.appointment).item.name}"></h:outputLabel>
+                                                    </td>
+                                                </tr>
+                                            </h:panelGroup>
+                                            <h:panelGroup rendered="#{(cc.attrs.appointment ne null ? cc.attrs.appointment : cc.attrs.reservation.appointment).item.category ne null}">
+                                                <tr>
+                                                    <th class="text-left">Procedure Category</th>
+                                                    <td class="text-center">&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;&nbsp;&nbsp;&nbsp;</td>
+                                                    <td class="text-left">
+                                                        <h:outputLabel value="#{(cc.attrs.appointment ne null ? cc.attrs.appointment : cc.attrs.reservation.appointment).item.category.name}"></h:outputLabel>
+                                                    </td>
+                                                </tr>
+                                            </h:panelGroup>
+                                            <h:panelGroup rendered="#{(cc.attrs.appointment ne null ? cc.attrs.appointment : cc.attrs.reservation.appointment).opdDoctor ne null}">
+                                                <tr>
+                                                    <th class="text-left">Consultant</th>
+                                                    <td class="text-center">&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;&nbsp;&nbsp;&nbsp;</td>
+                                                    <td class="text-left">
+                                                        <h:outputLabel value="#{(cc.attrs.appointment ne null ? cc.attrs.appointment : cc.attrs.reservation.appointment).opdDoctor.person.nameWithTitle}"></h:outputLabel>
+                                                    </td>
+                                                </tr>
+                                            </h:panelGroup>
+                                            <h:panelGroup rendered="#{(cc.attrs.appointment ne null ? cc.attrs.appointment : cc.attrs.reservation.appointment).department ne null}">
+                                                <tr>
+                                                    <th class="text-left">Department</th>
+                                                    <td class="text-center">&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;&nbsp;&nbsp;&nbsp;</td>
+                                                    <td class="text-left">
+                                                        <h:outputLabel value="#{(cc.attrs.appointment ne null ? cc.attrs.appointment : cc.attrs.reservation.appointment).department.name}"></h:outputLabel>
+                                                    </td>
+                                                </tr>
+                                            </h:panelGroup>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </h:panelGroup>
+
                             <h:panelGroup rendered="#{cc.attrs.reservation ne null and cc.attrs.reservation.id ne null}">
                                 <div class="my-3 text-center" style="font-weight: bold;">
                                     <p:outputLabel   value="RESERVATION DETAILS" />
