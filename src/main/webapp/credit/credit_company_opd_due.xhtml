@@ -219,7 +219,7 @@
                                         </h:outputLabel>
                                     </p:column>
                                     <p:column style="text-align: right;">
-                                        <h:outputLabel value="#{p.bill.netTotal - p.bill.refundAmount - p.bill.paidAmount}" >
+                                        <h:outputLabel value="#{p.bill.netTotal - (p.bill.refundAmount + p.bill.paidAmount + p.bill.writtenOffAmount)}" >
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>
                                     </p:column>
@@ -252,7 +252,7 @@
                                             </p:column>
                                             <p:column style="text-align: right;" >
                                                 <f:facet name="footer">
-                                                    <h:outputLabel value="#{i.total - i.refundTotal - i.paidTotal}">
+                                                    <h:outputLabel value="#{i.dueTotal}">
                                                         <f:convertNumber pattern="#,##0.00" />
                                                     </h:outputLabel>
                                                 </f:facet>

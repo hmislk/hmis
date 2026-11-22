@@ -454,9 +454,9 @@ public class CashRecieveBillController implements Serializable {
     private double creditBillDue(Bill bill) {
         double due;
         if (bill.getId() == null) {
-            due = bill.getNetTotal() - (bill.getRefundAmount() + bill.getPaidAmount());
+            due = bill.getNetTotal() - (bill.getRefundAmount() + bill.getPaidAmount() + bill.getWrittenOffAmount());
         } else {
-            String jpql = "select b.netTotal - (coalesce(b.refundAmount,0) + coalesce(b.paidAmount,0)) "
+            String jpql = "select b.netTotal - (coalesce(b.refundAmount,0) + coalesce(b.paidAmount,0) + coalesce(b.writtenOffAmount,0)) "
                     + "from Bill b where b.id = :id";
             Map<String, Object> params = new HashMap<>();
             params.put("id", bill.getId());
@@ -1906,7 +1906,7 @@ public class CashRecieveBillController implements Serializable {
         // Calculate the accurate current balance using the same formula as calculateCurrentBalance
         double netTotal = Math.abs(referenceBill.getNetTotal() + referenceBill.getVat());
         double refundAmount = Math.abs(getCreditBean().getRefundAmount(referenceBill));
-        double currentBalance = netTotal - (settleCreditValueTotal + refundAmount);
+        double currentBalance = netTotal - (settleCreditValueTotal + refundAmount + referenceBill.getWrittenOffAmount());
         referenceBill.setBalance(Math.max(0, currentBalance)); // Ensure balance doesn't go negative
 
         // Check if bill is fully paid and set paidAt timestamp

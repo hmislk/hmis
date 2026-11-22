@@ -138,10 +138,69 @@
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
                             </p:column>
+                            <p:column headerText="Written Off" styleClass="text-end">
+                                <h:outputText value="#{i.bill.writtenOffAmount}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputText>
+                            </p:column>
                             <p:column headerText="Due Now" styleClass="text-end">
                                 <h:outputText value="#{creditCompanyClaimController.dueOf(i)}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
+                            </p:column>
+                            <p:column headerText="Write-off" style="width:9rem" rendered="#{creditCompanyClaimController.writeOffAllowed}">
+                                <p:commandButton value="Request" icon="fas fa-eraser" styleClass="ui-button-warning ui-button-sm"
+                                                 title="Request a write-off of the due on bill #{i.bill.deptId}" ajax="false"
+                                                 rendered="#{creditCompanyClaimController.dueOf(i) gt 0.1}"
+                                                 action="#{creditCompanyClaimController.startWriteOff(i.id)}"/>
+                            </p:column>
+                        </p:dataTable>
+
+                        <h:panelGroup id="writeOffRequest" layout="block" styleClass="my-2"
+                                      rendered="#{creditCompanyClaimController.writeOffFormOpen}">
+                            <p:panelGrid columns="2" layout="tabular" styleClass="w-100 my-2">
+                                <f:facet name="header">
+                                    <h:outputText value="Request write-off for bill #{creditCompanyClaimController.writeOffItem.bill.deptId}"/>
+                                </f:facet>
+                                <p:outputLabel for="woAmount" value="Amount to write off"/>
+                                <p:inputNumber id="woAmount" styleClass="w-100" inputStyleClass="w-100" decimalPlaces="2"
+                                               minValue="0" value="#{creditCompanyClaimController.writeOffAmount}"/>
+                                <p:outputLabel for="woReason" value="Reason"/>
+                                <p:inputTextarea id="woReason" styleClass="w-100" rows="2" maxlength="500"
+                                                 value="#{creditCompanyClaimController.writeOffReason}"/>
+                            </p:panelGrid>
+                            <p:commandButton value="Submit Request" icon="fas fa-paper-plane" styleClass="ui-button-success"
+                                             title="Send for approval by another user" ajax="false"
+                                             action="#{creditCompanyClaimController.requestWriteOff}"/>
+                            <p:commandButton value="Close" icon="fas fa-times" styleClass="ui-button-secondary mx-2"
+                                             title="Close without requesting" ajax="false" immediate="true"
+                                             action="#{creditCompanyClaimController.cancelWriteOffForm}"/>
+                        </h:panelGroup>
+
+                        <p:dataTable id="writeOffs" value="#{creditCompanyClaimController.claimWriteOffs}" var="wo"
+                                     styleClass="p-datatable-sm my-2" emptyMessage="No write-offs for these bills">
+                            <f:facet name="header">
+                                <h:outputText value="Write-offs"/>
+                            </f:facet>
+                            <p:column headerText="Bill No">
+                                <h:outputText value="#{wo.bill.deptId}"/>
+                            </p:column>
+                            <p:column headerText="Amount" styleClass="text-end">
+                                <h:outputText value="#{wo.amount}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputText>
+                            </p:column>
+                            <p:column headerText="Reason">
+                                <h:outputText value="#{wo.reason}"/>
+                            </p:column>
+                            <p:column headerText="Status">
+                                <h:outputText value="#{wo.status.label}"/>
+                            </p:column>
+                            <p:column headerText="Requested By">
+                                <h:outputText value="#{wo.requestedBy.webUserPerson.name}"/>
+                            </p:column>
+                            <p:column headerText="Decided By">
+                                <h:outputText value="#{wo.decidedBy.webUserPerson.name}"/>
                             </p:column>
                         </p:dataTable>
 

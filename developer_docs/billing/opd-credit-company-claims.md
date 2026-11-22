@@ -33,7 +33,7 @@ Screens: Financial Transaction Manager → Payment Management → Credit Company
 ## Locks on the bills
 
 - A bill in an open claim cannot be refunded, returned or cancelled. A Draft or Rejected claim can be cancelled, which frees its bills. A Submitted or Resubmitted claim keeps its bills locked until the claim is rejected (then cancelled) or settled.
-- A bill with a write-off cannot be refunded or cancelled until the write-off is cancelled.
+- A bill with an approved write-off cannot be refunded, returned or cancelled until the write-off is cancelled.
 
 ## Settlement
 
@@ -49,9 +49,14 @@ Screens: Financial Transaction Manager → Payment Management → Credit Company
 - If linking fails after a payment or cancellation was saved, the payment stands and the user is told to inform the administrator.
 - Payment Vouchers are not part of claims.
 
-## Write-off (rule agreed; screens not built yet)
+## Write-off
 
-- A write-off needs two users: one requests it, a different user with the approve privilege approves it. Only an approved write-off reduces the due.
+- A write-off clears the due on a credit bill that will not be paid, for example the part of a bill the company did not accept. The accepted part is settled in the normal way; the difference is written off.
+- It is requested for a whole amount with a reason, from the claim page, for a bill in a Submitted, Resubmitted or Partially Settled claim. The amount starts at the bill's due and cannot be more than it. There is no item-level write-off. A bill has one request waiting at a time.
+- One user requests it (`OpdCreditWriteOffRequest`). A **different** user with `OpdCreditWriteOffApprove` approves or rejects it on **Credit Write-offs** (Credit Company Payments, Outpatient Credit Management). The requester cannot decide their own request. Rejecting needs a comment.
+- Only an approved write-off reduces the due. Due = net total less (refunds + settlements + approved write-offs), to 2 decimal places. The bill keeps the sum of its approved write-offs in `Bill.writtenOffAmount`, recomputed on every approval and cancellation.
+- A claim whose bills are all at or below the 0.10 cut-off after write-offs and payments becomes Settled. A write-off counts as progress, so a claim with part written off and nothing paid is Partially Settled.
+- A bill with an approved write-off cannot be refunded, returned or cancelled. Cancel the write-off first (needs the approve privilege and a reason); the amount becomes due again and the claim status is recomputed.
 
 ## Privileges
 
@@ -63,6 +68,8 @@ Screens: Financial Transaction Manager → Payment Management → Credit Company
 | `OpdCreditClaimResubmit` | Resubmit |
 | `OpdCreditClaimSettle` | Settle (opens Outpatient Credit Collection for the claim) |
 | `OpdCreditClaimReports` | Claims by Status and Claim Ageing reports |
+| `OpdCreditWriteOffRequest` | Request a write-off |
+| `OpdCreditWriteOffApprove` | Approve, reject or cancel a write-off |
 
 ## Reports
 
@@ -74,9 +81,11 @@ Under Credit Company Payments → Outpatient Credit Management, next to Credit C
 
 ## Code
 
-- Entities: `CreditCompanyClaim`, `CreditCompanyClaimItem`, `CreditCompanyClaimSettlement` (link, migration v2.27.0); status enum `CreditCompanyClaimStatus` (holds the flow above).
+- Entities: `CreditCompanyClaim`, `CreditCompanyClaimItem`, `CreditCompanyClaimSettlement` (link, migration v2.27.0), `CreditCompanyWriteOff` (status `CreditCompanyWriteOffStatus`; `Bill.writtenOffAmount`, migration v2.29.0); status enum `CreditCompanyClaimStatus` (holds the flow above).
 - Rules and locks: `CreditCompanyClaimService` (`checkBillEligible`, `checkTransition`, `openClaimRefusal`). Business errors throw `CreditCompanyClaimException` (rolls back).
 - Settlement: `recordSettlement` (called from `CashRecieveBillController` after each paid bill), `reverseSettlement` (from `CreditCompanyBillSearch.cancelBill`), `recomputeStatus` and the pure rule `statusAfterSettlement`. System status changes use `CreditCompanyClaimStatus.getSystemNext()`, separate from the user flow in `getAllowedNext()`.
+- Write-off rules: `CreditCompanyWriteOffService` (request, approve, reject, cancel, `approvedWriteOffRefusal`, which `openClaimRefusal` calls).
+- The OPD credit due is `netTotal - (refundAmount + paidAmount + writtenOffAmount)`. In JPQL write the sum grouped, with `coalesce(b.writtenOffAmount, 0)`: EclipseLink reads `a - b - c` as `a - (b - c)`.
 - Every refund, return and cancel path for a claimable bill calls `openClaimRefusal` before it saves.
 
 Related: [cancellation-vs-return-policy.md](cancellation-vs-return-policy.md), [credit-company-balance-management.md](credit-company-balance-management.md).
