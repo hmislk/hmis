@@ -954,7 +954,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
 //
 //    }
     public List<Admission> getSelectedItems() {
-        selectedItems = getFacade().findByJpql("select c from Admission c where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
+        selectedItems = getFacade().findByJpql("select c from Admission c where c.retired=false and (c.name) like :q order by c.name", java.util.Map.of("q", "%" + getSelectText().toUpperCase() + "%"));
         return selectedItems;
     }
 
@@ -2009,9 +2009,9 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         if (query == null || query.trim().equals("")) {
             suggestions = new ArrayList<>();
         } else {
-            sql = "select p from Admission p where c.patient.retired=false and (c.patient.bhtNo) like '%" + query.toUpperCase() + "%'";
+            sql = "select p from Admission p where c.patient.retired=false and (c.patient.bhtNo) like :q";
             ////// // System.out.println(sql);
-            suggestions = getFacade().findByJpql(sql, 20);
+            suggestions = getFacade().findByJpql(sql, java.util.Map.of("q", "%" + query.toUpperCase() + "%"), 20);
         }
         if (suggestions == null) {
             suggestions = new ArrayList<>();
@@ -2025,9 +2025,9 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         if (query == null || query.trim().equals("")) {
             suggestions = new ArrayList<>();
         } else {
-            sql = "select p from PatientEncounter p where c.patient.retired=false and (c.patient.bhtNo) like '%" + query.toUpperCase() + "%'";
+            sql = "select p from PatientEncounter p where c.patient.retired=false and (c.patient.bhtNo) like :q";
             ////// // System.out.println(sql);
-            suggestions = patientEncounterFacade.findByJpql(sql, 20);
+            suggestions = patientEncounterFacade.findByJpql(sql, java.util.Map.of("q", "%" + query.toUpperCase() + "%"), 20);
         }
         if (suggestions == null) {
             suggestions = new ArrayList<>();

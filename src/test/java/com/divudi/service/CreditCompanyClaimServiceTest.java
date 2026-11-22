@@ -136,4 +136,36 @@ class CreditCompanyClaimServiceTest {
         assertEquals("This bill is in open claim D/CLM/26/000001. Cancel or settle the claim first.",
                 CreditCompanyClaimService.openClaimMessage("D/CLM/26/000001"));
     }
+
+    @Test
+    void partiallySettledClaimClosesOnlyWithAReason() {
+        CreditCompanyClaim c = new CreditCompanyClaim();
+        c.setStatus(CreditCompanyClaimStatus.PARTIALLY_SETTLED);
+        CreditCompanyClaimService.checkCanClosePartiallySettled(c, "Company will not pay the rest");
+        assertThrows(CreditCompanyClaimException.class,
+                () -> CreditCompanyClaimService.checkCanClosePartiallySettled(c, null));
+        assertThrows(CreditCompanyClaimException.class,
+                () -> CreditCompanyClaimService.checkCanClosePartiallySettled(c, "   "));
+    }
+
+    @Test
+    void closeHereIsRefusedFromEveryOtherStatus() {
+        for (CreditCompanyClaimStatus s : CreditCompanyClaimStatus.values()) {
+            if (s == CreditCompanyClaimStatus.PARTIALLY_SETTLED) {
+                continue;
+            }
+            CreditCompanyClaim c = new CreditCompanyClaim();
+            c.setStatus(s);
+            assertThrows(CreditCompanyClaimException.class,
+                    () -> CreditCompanyClaimService.checkCanClosePartiallySettled(c, "reason"));
+        }
+    }
+
+    @Test
+    void closeIsRefusedWhileAWriteOffRequestIsPending() {
+        CreditCompanyClaimService.checkNoPendingWriteOff(0);
+        CreditCompanyClaimException e = assertThrows(CreditCompanyClaimException.class,
+                () -> CreditCompanyClaimService.checkNoPendingWriteOff(1));
+        assertEquals(CreditCompanyClaimService.PENDING_WRITE_OFF_MESSAGE, e.getMessage());
+    }
 }

@@ -1,0 +1,17 @@
+{
+  "version": "v2.27.0",
+  "description": "Create CREDITCOMPANYCLAIMSETTLEMENT (links credit collection bills to OPD credit company claims) if missing",
+  "githubIssue": "25847",
+  "author": "Dr M H B Ariyaratne",
+  "date": "2026-11-22",
+  "requiresDowntime": false,
+  "estimatedDurationMinutes": 1,
+  "affectedTables": ["creditcompanyclaimsettlement"],
+  "preRequisites": [
+    "Requires v2.26.0 (the claim tables) to be applied first.",
+    "Run migration.sql by hand on the database BEFORE deploying any build that contains the CreditCompanyClaimSettlement entity. The migration page only gets this file in that same build, so it cannot run this step first.",
+    "Without this table every credit collection and every cancellation of one fails to link to its claim.",
+    "Idempotent; changes no data. The table is created in the same case as the existing WEBUSER table."
+  ],
+  "rollbackNotes": ["rollback.sql drops CREDITCOMPANYCLAIMSETTLEMENT"]
+}

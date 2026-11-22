@@ -189,7 +189,7 @@ public class RoomFacilityChargeController implements Serializable {
     public List<RoomFacilityCharge> getSelectedItems() {
         selectedItems = getFacade().findByJpql("select c from RoomFacilityCharge c "
                 + "where c.retired=false  and (c.name)"
-                + " like '%" + getSelectText().toUpperCase() + "%' order by c.name");
+                + " like :q order by c.name", java.util.Map.of("q", "%" + getSelectText().toUpperCase() + "%"));
         return selectedItems;
     }
 

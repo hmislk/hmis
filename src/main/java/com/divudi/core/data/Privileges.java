@@ -589,6 +589,7 @@ public enum Privileges {
     ClinicalPatientPhoneNumberEdit("Clinical Patient Phone Number Edit"),
     ClinicalPatientBlacklist("Clinical Patient Blacklist"),
     ClinicalPatientPseudonymise("Clinical Patient Pseudonymise"),
+    EmrVisitsByDiagnosisReport("EMR Visits by Diagnosis Report"),
     //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="Pharmacy">
@@ -1291,12 +1292,24 @@ public enum Privileges {
     ReportsPatientLedger("Reports Page - 2. Patient Ledger"),
     ReportsSpecialityWiseDemograhicData("Reports Page - 3. Speciality Wise Demographic Data"),
     ReportsVisitHistory("Reports Page - 4. Visit History"),
+    ManageMaintenanceWindows("Manage Maintenance Windows"),
     //</editor-fold>
     //<editor-fold defaultstate="collapsed" desc="OPD Credit Company Claims (#25847)">
     OpdCreditClaimCreate("OPD Credit Claim - Create"),
     OpdCreditClaimSubmit("OPD Credit Claim - Submit"),
     OpdCreditClaimReject("OPD Credit Claim - Record Rejection"),
     OpdCreditClaimResubmit("OPD Credit Claim - Resubmit"),
+    OpdCreditClaimSettle("OPD Credit Claim - Settle"),
+    OpdCreditClaimReports("OPD Credit Claim - Reports"),
+    OpdCreditWriteOffRequest("OPD Credit - Request Write-off"),
+    OpdCreditWriteOffApprove("OPD Credit - Approve Write-off"),
+    //</editor-fold>
+    //<editor-fold defaultstate="collapsed" desc="OPD Quotation (#25885)">
+    OpdQuotationCreate("OPD Quotation - Create, Search and Print"),
+    //</editor-fold>
+    //<editor-fold defaultstate="collapsed" desc="Patient Complaints (#25886)">
+    PatientComplaintHandle("Patient Complaints - Handle (view register, assign, respond, change status, close)"),
+    PatientComplaintCreate("Patient Complaints - Record On-site Complaint"),
     //</editor-fold>
     ;
 
@@ -1344,6 +1357,7 @@ public enum Privileges {
             case OpdReprint:
             case OpdBillSearch:
             case OpdPreBilling:
+            case OpdQuotationCreate:
             case OpdReactivate:
             case OpdBillItemSearch:
             case OpdBillSearchEdit:

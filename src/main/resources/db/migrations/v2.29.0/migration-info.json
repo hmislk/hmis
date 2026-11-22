@@ -1,0 +1,18 @@
+{
+  "version": "v2.29.0",
+  "description": "Add BILL.WRITTENOFFAMOUNT and create CREDITCOMPANYWRITEOFF (write-off of OPD credit bill dues) if missing",
+  "githubIssue": "25847",
+  "author": "Dr M H B Ariyaratne",
+  "date": "2026-11-22",
+  "requiresDowntime": false,
+  "estimatedDurationMinutes": 5,
+  "affectedTables": ["bill", "creditcompanywriteoff"],
+  "preRequisites": [
+    "Requires v2.26.0 (the claim tables) to be applied first.",
+    "Run migration.sql by hand on the database BEFORE deploying any build that contains the CreditCompanyWriteOff entity or Bill.writtenOffAmount. The migration page only gets this file in that same build, so it cannot run this step first.",
+    "A missing BILL.WRITTENOFFAMOUNT column breaks every read of bills, so this must not be skipped.",
+    "ALTER on BILL: instant on MySQL 8.0.12+; on older MySQL it rebuilds the table. Check the MySQL version and run in a quiet window; the rebuild time grows with the size of BILL.",
+    "Idempotent; changes no data. The new table is created in the same case as the existing WEBUSER table."
+  ],
+  "rollbackNotes": ["rollback.sql drops CREDITCOMPANYWRITEOFF and BILL.WRITTENOFFAMOUNT; all write-offs are lost and written-off bills become due again"]
+}

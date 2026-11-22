@@ -1,18 +1,25 @@
 package com.divudi.bean.credit;
 
+import com.divudi.bean.common.CashRecieveBillController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.WebUserController;
 import com.divudi.core.data.CreditCompanyClaimStatus;
 import com.divudi.core.data.dto.CreditCompanyClaimRowDto;
+import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.CreditCompanyClaim;
 import com.divudi.core.entity.CreditCompanyClaimItem;
+import com.divudi.core.entity.CreditCompanyClaimSettlement;
+import com.divudi.core.entity.CreditCompanyWriteOff;
 import com.divudi.core.entity.Institution;
 import com.divudi.core.facade.CreditCompanyClaimFacade;
 import com.divudi.core.facade.CreditCompanyClaimItemFacade;
+import com.divudi.core.facade.CreditCompanyClaimSettlementFacade;
+import com.divudi.core.facade.CreditCompanyWriteOffFacade;
 import com.divudi.core.util.CommonFunctions;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.service.CreditCompanyClaimException;
 import com.divudi.service.CreditCompanyClaimService;
+import com.divudi.service.CreditCompanyWriteOffService;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -42,6 +49,14 @@ public class CreditCompanyClaimController implements Serializable {
     private CreditCompanyClaimFacade claimFacade;
     @EJB
     private CreditCompanyClaimItemFacade claimItemFacade;
+    @EJB
+    private CreditCompanyClaimSettlementFacade settlementFacade;
+    @EJB
+    private CreditCompanyWriteOffService writeOffService;
+    @EJB
+    private CreditCompanyWriteOffFacade writeOffFacade;
+    @Inject
+    private CashRecieveBillController cashRecieveBillController;
     @Inject
     private SessionController sessionController;
     @Inject
@@ -59,15 +74,29 @@ public class CreditCompanyClaimController implements Serializable {
     /** Id of the claim the page was rendered for; posted back with every action (the bean is shared by browser tabs). */
     private Long claimIdOnPage;
     private List<CreditCompanyClaimItem> claimItems = new ArrayList<>();
+    private List<CreditCompanyClaimSettlement> settlements = new ArrayList<>();
+    private double settledAmount;
+    private double outstandingAmount;
     private Date submittedOn;
     private String companyReference;
     private String rejectReason;
+    private String closeReason;
+    // Write-off request (#25847 part 3)
+    private List<CreditCompanyWriteOff> claimWriteOffs = new ArrayList<>();
+    private CreditCompanyClaimItem writeOffItem;
+    /** Claim item id posted from the open write-off form, to match the form to writeOffItem. */
+    private Long writeOffItemIdOnPage;
+    private Double writeOffAmount;
+    private String writeOffReason;
 
     public boolean hasAnyClaimPrivilege() {
         return webUserController.hasPrivilege("OpdCreditClaimCreate")
                 || webUserController.hasPrivilege("OpdCreditClaimSubmit")
                 || webUserController.hasPrivilege("OpdCreditClaimReject")
-                || webUserController.hasPrivilege("OpdCreditClaimResubmit");
+                || webUserController.hasPrivilege("OpdCreditClaimResubmit")
+                || webUserController.hasPrivilege("OpdCreditClaimSettle")
+                || webUserController.hasPrivilege("OpdCreditWriteOffRequest")
+                || webUserController.hasPrivilege("OpdCreditWriteOffApprove");
     }
 
     private boolean deny(String privilege) {
@@ -138,6 +167,7 @@ public class CreditCompanyClaimController implements Serializable {
         claim = null;
         claimIdOnPage = null;
         claimItems = new ArrayList<>();
+        settlements = new ArrayList<>();
         return "/credit/credit_company_claims?faces-redirect=true";
     }
 
@@ -201,6 +231,8 @@ public class CreditCompanyClaimController implements Serializable {
         submittedOn = new Date();
         companyReference = c.getCompanyReference();
         rejectReason = null;
+        closeReason = null;
+        clearWriteOffForm();
         loadItems();
         return "/credit/credit_company_claim?faces-redirect=true";
     }
@@ -210,6 +242,173 @@ public class CreditCompanyClaimController implements Serializable {
         m.put("claim", claim);
         claimItems = claimItemFacade.findByJpql(
                 "select ci from CreditCompanyClaimItem ci where ci.retired=false and ci.claim=:claim order by ci.id", m);
+        settlements = settlementFacade.findByJpql(
+                "select s from CreditCompanyClaimSettlement s where s.retired=false and s.claim=:claim"
+                + " order by s.createdAt, s.id", m);
+        settledAmount = claimService.settledAmountOf(claim);
+        outstandingAmount = claimService.outstandingOf(claimItems);
+        claimWriteOffs = new ArrayList<>();
+        List<Long> billIds = new ArrayList<>();
+        for (CreditCompanyClaimItem i : claimItems) {
+            if (i.getBill() != null && i.getBill().getId() != null) {
+                billIds.add(i.getBill().getId());
+            }
+        }
+        if (!billIds.isEmpty()) {
+            Map<String, Object> w = new HashMap<>();
+            w.put("ids", billIds);
+            claimWriteOffs = writeOffFacade.findByJpql("select w from CreditCompanyWriteOff w where w.retired=false"
+                    + " and w.bill.id in :ids order by w.requestedAt desc, w.id desc", w);
+        }
+    }
+
+    // ---- Write-off request (#25847 part 3) ----
+
+    /** True when write-offs can be requested from this claim page. */
+    public boolean isWriteOffAllowed() {
+        return claim != null && CreditCompanyWriteOffService.claimAllowsRequest(claim.getStatus())
+                && webUserController.hasPrivilege("OpdCreditWriteOffRequest");
+    }
+
+    public boolean isWriteOffFormOpen() {
+        return writeOffItem != null;
+    }
+
+    /** Opens the request form for one bill of the claim; amount defaults to the bill's due. */
+    public void startWriteOff(Long itemId) {
+        if (deny("OpdCreditWriteOffRequest")) {
+            return;
+        }
+        if (pageOutOfDate()) {
+            return;
+        }
+        reloadClaim();
+        clearWriteOffForm();
+        if (!CreditCompanyWriteOffService.claimAllowsRequest(claim.getStatus())) {
+            JsfUtil.addErrorMessage("A write-off can be requested only for a claim that is submitted, resubmitted or partially settled.");
+            return;
+        }
+        for (CreditCompanyClaimItem i : claimItems) {
+            if (i.getId() != null && i.getId().equals(itemId)) {
+                writeOffItem = i;
+                writeOffAmount = CreditCompanyClaimService.dueDecimalOf(i.getBill()).doubleValue();
+                return;
+            }
+        }
+        JsfUtil.addErrorMessage("Bill not found in this claim.");
+    }
+
+    public void cancelWriteOffForm() {
+        clearWriteOffForm();
+    }
+
+    private void clearWriteOffForm() {
+        writeOffItem = null;
+        writeOffAmount = null;
+        writeOffReason = null;
+    }
+
+    public void requestWriteOff() {
+        if (deny("OpdCreditWriteOffRequest")) {
+            return;
+        }
+        if (pageOutOfDate()) {
+            return;
+        }
+        if (writeOffItem == null || writeOffItem.getBill() == null) {
+            JsfUtil.addErrorMessage("Choose the bill to write off.");
+            return;
+        }
+        if (writeOffItemIdOnPage == null || !writeOffItemIdOnPage.equals(writeOffItem.getId())) {
+            JsfUtil.addErrorMessage("This form is out of date. Open the write-off request again.");
+            return;
+        }
+        try {
+            writeOffService.request(writeOffItem.getBill().getId(), writeOffAmount == null ? 0 : writeOffAmount,
+                    writeOffReason, sessionController.getLoggedUser(), true);
+            JsfUtil.addSuccessMessage("Write-off requested. A different user with the approve privilege must approve it.");
+            clearWriteOffForm();
+        } catch (CreditCompanyClaimException e) {
+            JsfUtil.addErrorMessage(e.getMessage());
+        }
+        reloadClaim();
+    }
+
+    public List<CreditCompanyWriteOff> getClaimWriteOffs() {
+        return claimWriteOffs;
+    }
+
+    public Long getWriteOffItemIdOnPage() {
+        return writeOffItem == null ? null : writeOffItem.getId();
+    }
+
+    public void setWriteOffItemIdOnPage(Long writeOffItemIdOnPage) {
+        this.writeOffItemIdOnPage = writeOffItemIdOnPage;
+    }
+
+    public CreditCompanyClaimItem getWriteOffItem() {
+        return writeOffItem;
+    }
+
+    public Double getWriteOffAmount() {
+        return writeOffAmount;
+    }
+
+    public void setWriteOffAmount(Double writeOffAmount) {
+        this.writeOffAmount = writeOffAmount;
+    }
+
+    public String getWriteOffReason() {
+        return writeOffReason;
+    }
+
+    public void setWriteOffReason(String writeOffReason) {
+        this.writeOffReason = writeOffReason;
+    }
+
+    /** Opens Outpatient Credit Collection with the claim's bills that still have a due pre-added. */
+    public String settleClaim() {
+        if (deny("OpdCreditClaimSettle")) {
+            return null;
+        }
+        if (pageOutOfDate()) {
+            return null;
+        }
+        reloadClaim();
+        if (!isSettleable()) {
+            JsfUtil.addErrorMessage("Only a submitted, resubmitted or partially settled claim can be settled.");
+            return null;
+        }
+        List<Bill> bills = new ArrayList<>();
+        for (CreditCompanyClaimItem i : claimItems) {
+            if (i.getBill() != null && CreditCompanyClaimService.dueDecimalOf(i.getBill())
+                    .compareTo(java.math.BigDecimal.valueOf(CreditCompanyClaimService.MIN_DUE)) > 0) {
+                bills.add(i.getBill());
+            }
+        }
+        if (bills.isEmpty()) {
+            JsfUtil.addErrorMessage("No bill in this claim has a due amount.");
+            return null;
+        }
+        return cashRecieveBillController.navigateWithPreloadedBills(bills);
+    }
+
+    public boolean isSettleable() {
+        return claim != null && (claim.getStatus() == CreditCompanyClaimStatus.SUBMITTED
+                || claim.getStatus() == CreditCompanyClaimStatus.RESUBMITTED
+                || claim.getStatus() == CreditCompanyClaimStatus.PARTIALLY_SETTLED);
+    }
+
+    public List<CreditCompanyClaimSettlement> getSettlements() {
+        return settlements;
+    }
+
+    public double getSettledAmount() {
+        return settledAmount;
+    }
+
+    public double getOutstandingAmount() {
+        return outstandingAmount;
     }
 
     private void reloadClaim() {
@@ -268,6 +467,35 @@ public class CreditCompanyClaimController implements Serializable {
             JsfUtil.addErrorMessage(e.getMessage());
         }
         reloadClaim();
+    }
+
+    public void closePartial() {
+        if (deny("OpdCreditClaimCreate")) {
+            return;
+        }
+        if (pageOutOfDate()) {
+            return;
+        }
+        try {
+            claimService.closePartiallySettled(claim, closeReason, sessionController.getLoggedUser());
+            closeReason = null;
+            JsfUtil.addSuccessMessage("Claim closed. Its bills are free; what is unpaid stays due.");
+        } catch (CreditCompanyClaimException e) {
+            JsfUtil.addErrorMessage(e.getMessage());
+        }
+        reloadClaim();
+    }
+
+    public boolean isPartiallySettled() {
+        return claim != null && claim.getStatus() == CreditCompanyClaimStatus.PARTIALLY_SETTLED;
+    }
+
+    public String getCloseReason() {
+        return closeReason;
+    }
+
+    public void setCloseReason(String closeReason) {
+        this.closeReason = closeReason;
     }
 
     public void resubmit() {

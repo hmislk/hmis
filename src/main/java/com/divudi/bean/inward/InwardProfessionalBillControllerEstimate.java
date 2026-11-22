@@ -532,7 +532,7 @@ public class InwardProfessionalBillControllerEstimate implements Serializable {
     }
 
     public List<Item> completeItem(String qry) {
-        List<Item> completeItems = getItemFacade().findByJpql("select c from Item c where c.retired=false and (type(c) = Service or type(c) = Packege ) and (c.name) like '%" + qry.toUpperCase() + "%' order by c.name");
+        List<Item> completeItems = getItemFacade().findByJpql("select c from Item c where c.retired=false and (type(c) = Service or type(c) = Packege ) and (c.name) like :q order by c.name", java.util.Map.of("q", "%" + qry.toUpperCase() + "%"));
         return completeItems;
     }
 

@@ -59,6 +59,12 @@ public class CreditCompanyClaim implements Serializable {
     @ManyToOne
     private WebUser rejecter;
 
+    private String closeReason;
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date closedAt;
+    @ManyToOne
+    private WebUser closedBy;
+
     @Temporal(TemporalType.TIMESTAMP)
     private Date cancelledAt;
     @ManyToOne
@@ -180,6 +186,30 @@ public class CreditCompanyClaim implements Serializable {
 
     public void setRejectReason(String rejectReason) {
         this.rejectReason = rejectReason;
+    }
+
+    public String getCloseReason() {
+        return closeReason;
+    }
+
+    public void setCloseReason(String closeReason) {
+        this.closeReason = closeReason;
+    }
+
+    public Date getClosedAt() {
+        return closedAt;
+    }
+
+    public void setClosedAt(Date closedAt) {
+        this.closedAt = closedAt;
+    }
+
+    public WebUser getClosedBy() {
+        return closedBy;
+    }
+
+    public void setClosedBy(WebUser closedBy) {
+        this.closedBy = closedBy;
     }
 
     public Date getRejectedAt() {
