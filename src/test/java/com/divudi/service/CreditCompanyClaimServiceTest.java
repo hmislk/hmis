@@ -160,4 +160,12 @@ class CreditCompanyClaimServiceTest {
                     () -> CreditCompanyClaimService.checkCanClosePartiallySettled(c, "reason"));
         }
     }
+
+    @Test
+    void closeIsRefusedWhileAWriteOffRequestIsPending() {
+        CreditCompanyClaimService.checkNoPendingWriteOff(0);
+        CreditCompanyClaimException e = assertThrows(CreditCompanyClaimException.class,
+                () -> CreditCompanyClaimService.checkNoPendingWriteOff(1));
+        assertEquals(CreditCompanyClaimService.PENDING_WRITE_OFF_MESSAGE, e.getMessage());
+    }
 }

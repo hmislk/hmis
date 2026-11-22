@@ -2,6 +2,7 @@ package com.divudi.service;
 
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.CreditCompanyClaimStatus;
+import com.divudi.core.data.CreditCompanyWriteOffStatus;
 import com.divudi.core.data.PaymentMethod;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.BillItem;
@@ -58,6 +59,8 @@ public class CreditCompanyClaimService {
     private BillNumberGenerator billNumberGenerator;
     @EJB
     private BillService billService;
+    @EJB
+    private CreditCompanyWriteOffService writeOffService;
 
     /** Due = net total less refunds less settlements (as OPD Due Search). */
     public static double dueOf(Bill bill) {
@@ -68,12 +71,18 @@ public class CreditCompanyClaimService {
 
     /** Due in decimal arithmetic, 2 places half-up, so 1.10 less 1.00 is exactly 0.10. */
     public static BigDecimal dueDecimalOf(Bill bill) {
-        return dueDecimalOf(bill.getNetTotal(), bill.getRefundAmount(), bill.getPaidAmount());
+        return dueDecimalOf(bill.getNetTotal(), bill.getRefundAmount(), bill.getPaidAmount(), bill.getWrittenOffAmount());
     }
 
     public static BigDecimal dueDecimalOf(double netTotal, double refundAmount, double paidAmount) {
+        return dueDecimalOf(netTotal, refundAmount, paidAmount, 0.0);
+    }
+
+    /** Net total less (refunds + settlements + approved write-offs), grouped, so no a-b-c parsing issue. */
+    public static BigDecimal dueDecimalOf(double netTotal, double refundAmount, double paidAmount, double writtenOffAmount) {
         return BigDecimal.valueOf(netTotal)
-                .subtract(BigDecimal.valueOf(refundAmount).add(BigDecimal.valueOf(paidAmount)))
+                .subtract(BigDecimal.valueOf(refundAmount).add(BigDecimal.valueOf(paidAmount))
+                        .add(BigDecimal.valueOf(writtenOffAmount)))
                 .setScale(2, RoundingMode.HALF_UP);
     }
 
@@ -271,7 +280,8 @@ public class CreditCompanyClaimService {
                 }
             }
         }
-        return null;
+        // A bill with an approved write-off is locked too, until the write-off is cancelled (#25847 part 3).
+        return writeOffService.approvedWriteOffRefusal(bills);
     }
 
     /** Cancels a draft or rejected claim, which frees its bills. */
@@ -326,12 +336,38 @@ public class CreditCompanyClaimService {
     public CreditCompanyClaim closePartiallySettled(CreditCompanyClaim claim, String reason, WebUser user) {
         CreditCompanyClaim c = reload(claim);
         checkCanClosePartiallySettled(c, reason);
+        checkNoPendingWriteOff(pendingWriteOffCount(c));
         c.setStatus(CreditCompanyClaimStatus.CLOSED);
         c.setCloseReason(reason.trim());
         c.setClosedAt(new Date());
         c.setClosedBy(user);
         claimFacade.edit(c);
         return c;
+    }
+
+    public static final String PENDING_WRITE_OFF_MESSAGE
+            = "A write-off request on one of this claim's bills is waiting for a decision. Approve, reject or cancel it first.";
+
+    /** Close is refused while any write-off request on the claim's bills is still pending. */
+    public static void checkNoPendingWriteOff(long pendingCount) {
+        if (pendingCount > 0) {
+            throw new CreditCompanyClaimException(PENDING_WRITE_OFF_MESSAGE);
+        }
+    }
+
+    /** Number of REQUESTED write-offs on the bills of the claim. Throws when the lookup fails. */
+    private long pendingWriteOffCount(CreditCompanyClaim claim) {
+        Map<String, Object> p = new HashMap<>();
+        p.put("claim", claim.getId());
+        p.put("st", CreditCompanyWriteOffStatus.REQUESTED);
+        try {
+            return claimItemFacade.findLongByJpqlStrict(
+                    "select count(w) from CreditCompanyWriteOff w where w.retired=false and w.status=:st"
+                    + " and w.bill.id in (select ci.bill.id from CreditCompanyClaimItem ci"
+                    + " where ci.retired=false and ci.claim.id=:claim)", p);
+        } catch (RuntimeException e) {
+            throw new CreditCompanyClaimException(LOOKUP_FAILED);
+        }
     }
 
     /** The rule for closing: only a partially settled claim, and a reason is needed. */
@@ -508,20 +544,26 @@ public class CreditCompanyClaimService {
         p.put("claim", claim.getId());
         // Scalar queries read the database, so the due is current.
         List<?> rows = claimItemFacade.findLightsByJpqlStrict(
-                "select b.id, b.netTotal, coalesce(b.refundAmount,0), coalesce(b.paidAmount,0)"
+                "select b.id, b.netTotal, coalesce(b.refundAmount,0), coalesce(b.paidAmount,0), coalesce(b.writtenOffAmount,0)"
                 + " from CreditCompanyClaimItem ci join ci.bill b where ci.retired=false and ci.claim.id=:claim", p);
         List<BigDecimal> dues = new ArrayList<>();
         Set<Long> billIds = new HashSet<>();
+        BigDecimal writtenOff = BigDecimal.ZERO;
         for (Object o : rows) {
             Object[] r = (Object[]) o;
             billIds.add((Long) r[0]);
-            dues.add(dueDecimalOf(((Number) r[1]).doubleValue(), ((Number) r[2]).doubleValue(), ((Number) r[3]).doubleValue()));
+            dues.add(dueDecimalOf(((Number) r[1]).doubleValue(), ((Number) r[2]).doubleValue(), ((Number) r[3]).doubleValue(),
+                    ((Number) r[4]).doubleValue()));
+            writtenOff = writtenOff.add(BigDecimal.valueOf(((Number) r[4]).doubleValue()));
         }
         List<?> sum = settlementFacade.findLightsByJpqlStrict(
                 "select coalesce(sum(s.amount),0) from CreditCompanyClaimSettlement s"
                 + " where s.retired=false and s.claim.id=:claim", p);
         BigDecimal linked = sum.isEmpty() || sum.get(0) == null ? BigDecimal.ZERO
                 : BigDecimal.valueOf(((Number) sum.get(0)).doubleValue());
+        // An approved write-off counts as progress, like a payment: a claim with a part written off
+        // and nothing paid is Partially Settled, not back to Submitted.
+        linked = linked.add(writtenOff);
         boolean inAnother = false;
         if (claim.getStatus() == CreditCompanyClaimStatus.SETTLED && !billIds.isEmpty()) {
             Map<String, Object> q = new HashMap<>();

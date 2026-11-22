@@ -1,0 +1,16 @@
+{
+  "version": "v2.31.0",
+  "description": "Add CLOSEREASON, CLOSEDAT and CLOSEDBY_ID (FK to WEBUSER) to CREDITCOMPANYCLAIM if missing",
+  "githubIssue": "25847",
+  "author": "Dr M H B Ariyaratne",
+  "date": "2026-11-22",
+  "requiresDowntime": false,
+  "estimatedDurationMinutes": 1,
+  "affectedTables": ["creditcompanyclaim"],
+  "preRequisites": [
+    "Run migration.sql by hand on the database BEFORE deploying a build that maps CreditCompanyClaim.closeReason, closedAt and closedBy. The migration page only gets this file in that same build, so it cannot run this step first.",
+    "Without these columns every claim load fails (claim page, claim list, settlement and cancel updates).",
+    "Idempotent; changes no data. Requires the v2.26.0 tables."
+  ],
+  "rollbackNotes": ["rollback.sql drops the foreign key, then CLOSEDBY_ID, CLOSEDAT and CLOSEREASON. Close reasons, times and users are lost."]
+}
