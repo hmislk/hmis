@@ -118,92 +118,141 @@
                                         <div class="row p-2">
                                             <div class="col-md-6">
                                                 <p:panel class="m-1">
+
                                                     <div class="row my-1">
+
+                                                        <!-- Weight -->
                                                         <div class="col-md-6">
-                                                            <p:outputLabel value="Weight:" />
-                                                            <p:inputText
-                                                                id="txtWt"
-                                                                style="width:5em;"
-                                                                value="#{inpatientClinicalDataController.current.weight}"
-                                                                disabled="#{inpatientClinicalDataController.viewOnly}">
-                                                                <p:ajax event="keyup" process="txtWt" update="txtBmi" />
-                                                            </p:inputText>
-                                                            <p:outputLabel value=" kg" />
+                                                            <div class="d-flex flex-wrap align-items-center gap-2">
+                                                                <p:outputLabel value="Weight:" styleClass="fw-bold" style="min-width: 7.5em;" />
+                                                                <p:inputText
+                                                                    id="txtWt"
+                                                                    style="width:5em;"
+                                                                    value="#{inpatientClinicalDataController.current.weight}"
+                                                                    disabled="#{inpatientClinicalDataController.viewOnly}">
+                                                                    <p:ajax event="keyup" process="txtWt" update="txtBmi" />
+                                                                </p:inputText>
+                                                                <p:outputLabel value=" kg" />
+                                                            </div>
                                                         </div>
+
+                                                        <!-- Height -->
                                                         <div class="col-md-6">
-                                                            <p:outputLabel value="Height:" />
-                                                            <p:inputText
-                                                                id="txtHt"
-                                                                style="width:5em;"
-                                                                value="#{inpatientClinicalDataController.current.height}"
-                                                                disabled="#{inpatientClinicalDataController.viewOnly}">
-                                                                <p:ajax event="keyup" process="txtHt" update="txtBmi" />
-                                                            </p:inputText>
-                                                            <p:outputLabel value=" cm" />
+                                                            <div class="d-flex flex-wrap align-items-center gap-2">
+                                                                <p:outputLabel value="Height:" styleClass="fw-bold" style="min-width: 7.5em;" />
+                                                                <p:inputText
+                                                                    id="txtHt"
+                                                                    style="width:5em;"
+                                                                    value="#{inpatientClinicalDataController.current.height}"
+                                                                    disabled="#{inpatientClinicalDataController.viewOnly}">
+                                                                    <p:ajax event="keyup" process="txtHt" update="txtBmi" />
+                                                                </p:inputText>
+                                                                <p:outputLabel value=" cm" />
+                                                            </div>
                                                         </div>
+
                                                     </div>
+
                                                     <div class="row my-1">
+
+                                                        <!-- BMI -->
                                                         <div class="col-md-6">
-                                                            <p:outputLabel value="BMI:" />
-                                                            <p:inputText
-                                                                id="txtBmi"
-                                                                style="width:5em;"
-                                                                value="#{inpatientClinicalDataController.current.bmi}"
-                                                                disabled="#{inpatientClinicalDataController.viewOnly}">
-                                                                <f:convertNumber pattern="#0.0" />
-                                                            </p:inputText>
-                                                            <p:outputLabel value=" kg/m²" />
+                                                            <div class="d-flex flex-wrap align-items-center gap-2">
+                                                                <p:outputLabel value="BMI:" styleClass="fw-bold" style="min-width: 7.5em;" />
+                                                                <p:inputText
+                                                                    id="txtBmi"
+                                                                    style="width:5em;"
+                                                                    value="#{inpatientClinicalDataController.current.bmi}"
+                                                                    disabled="#{inpatientClinicalDataController.viewOnly}">
+                                                                    <f:convertNumber pattern="#0.0" />
+                                                                </p:inputText>
+                                                                <p:outputLabel value=" kg/m²" />
+                                                            </div>
                                                         </div>
+
+                                                        <!-- Temperature -->
                                                         <div class="col-md-6">
-                                                            <p:outputLabel value="Temperature:" />
-                                                            <p:inputText
-                                                                style="width:5em;"
-                                                                value="#{inpatientClinicalDataController.current.temperature}"
-                                                                disabled="#{inpatientClinicalDataController.viewOnly}" />
-                                                            <p:outputLabel value=" °C" />
+                                                            <div class="d-flex flex-wrap align-items-center gap-2">
+                                                                <p:outputLabel value="Temperature:" styleClass="fw-bold" style="min-width: 7.5em;" />
+                                                                <p:inputText
+                                                                    style="width:5em;"
+                                                                    value="#{inpatientClinicalDataController.current.temperature}"
+                                                                    disabled="#{inpatientClinicalDataController.viewOnly}" />
+                                                                <p:outputLabel value=" °C" />
+                                                            </div>
                                                         </div>
+
                                                     </div>
+
                                                     <div class="row my-1">
+
+                                                        <!-- BP -->
                                                         <div class="col-md-6">
-                                                            <p:outputLabel value="BP:" />
-                                                            <p:inputText
-                                                                style="width:4em;" maxlength="3"
-                                                                value="#{inpatientClinicalDataController.current.sbp}"
-                                                                disabled="#{inpatientClinicalDataController.viewOnly}" />
-                                                            <p:outputLabel value=" / " />
-                                                            <p:inputText
-                                                                style="width:4em;" maxlength="3"
-                                                                value="#{inpatientClinicalDataController.current.dbp}"
-                                                                disabled="#{inpatientClinicalDataController.viewOnly}" />
-                                                            <p:outputLabel value=" mmHg" />
+                                                            <div class="d-flex flex-wrap align-items-center gap-2">
+                                                                <p:outputLabel value="BP:" styleClass="fw-bold" style="min-width: 7.5em;" />
+
+                                                                <div class="d-flex align-items-center gap-2">
+                                                                    <p:inputText
+                                                                        style="width:4em;"
+                                                                        maxlength="3"
+                                                                        value="#{inpatientClinicalDataController.current.sbp}"
+                                                                        disabled="#{inpatientClinicalDataController.viewOnly}" />
+
+                                                                    <p:outputLabel value=" / " />
+
+                                                                    <p:inputText
+                                                                        style="width:4em;"
+                                                                        maxlength="3"
+                                                                        value="#{inpatientClinicalDataController.current.dbp}"
+                                                                        disabled="#{inpatientClinicalDataController.viewOnly}" />
+                                                                </div>
+
+                                                                <p:outputLabel value=" mmHg" />
+                                                            </div>
                                                         </div>
+
+                                                        <!-- PR -->
                                                         <div class="col-md-6">
-                                                            <p:outputLabel value="PR:" />
-                                                            <p:inputText
-                                                                style="width:5em;"
-                                                                value="#{inpatientClinicalDataController.current.pr}"
-                                                                disabled="#{inpatientClinicalDataController.viewOnly}" />
-                                                            <p:outputLabel value=" /min" />
+                                                            <div class="d-flex flex-wrap align-items-center gap-2">
+                                                                <p:outputLabel value="PR:" styleClass="fw-bold" style="min-width: 7.5em;" />
+                                                                <p:inputText
+                                                                    style="width:5em;"
+                                                                    value="#{inpatientClinicalDataController.current.pr}"
+                                                                    disabled="#{inpatientClinicalDataController.viewOnly}" />
+                                                                <p:outputLabel value=" /min" />
+                                                            </div>
                                                         </div>
+
                                                     </div>
+
                                                     <div class="row my-1">
+
+                                                        <!-- SpO2 -->
                                                         <div class="col-md-6">
-                                                            <p:outputLabel value="SpO2:" />
-                                                            <p:inputText
-                                                                style="width:5em;"
-                                                                value="#{inpatientClinicalDataController.current.saturation}"
-                                                                disabled="#{inpatientClinicalDataController.viewOnly}" />
-                                                            <p:outputLabel value=" %" />
+                                                            <div class="d-flex flex-wrap align-items-center gap-2">
+                                                                <p:outputLabel value="SpO2:" styleClass="fw-bold" style="min-width: 7.5em;" />
+                                                                <p:inputText
+                                                                    style="width:5em;"
+                                                                    value="#{inpatientClinicalDataController.current.saturation}"
+                                                                    disabled="#{inpatientClinicalDataController.viewOnly}" />
+                                                                <p:outputLabel value=" %" />
+                                                            </div>
                                                         </div>
+
+                                                        <!-- RR -->
                                                         <div class="col-md-6">
-                                                            <p:outputLabel value="RR:" />
-                                                            <p:inputText
-                                                                style="width:5em;"
-                                                                value="#{inpatientClinicalDataController.current.respiratoryRate}"
-                                                                disabled="#{inpatientClinicalDataController.viewOnly}" />
-                                                            <p:outputLabel value=" /min" />
+                                                            <div class="d-flex flex-wrap align-items-center gap-2">
+                                                                <p:outputLabel value="RR:" styleClass="fw-bold" style="min-width: 7.5em;" />
+                                                                <p:inputText
+                                                                    style="width:5em;"
+                                                                    value="#{inpatientClinicalDataController.current.respiratoryRate}"
+                                                                    disabled="#{inpatientClinicalDataController.viewOnly}" />
+                                                                <p:outputLabel value=" /min" />
+                                                            </div>
                                                         </div>
+
                                                     </div>
+
                                                 </p:panel>
                                             </div>
                                         </div>
