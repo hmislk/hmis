@@ -328,6 +328,7 @@ Invoice and sales-return records share the same two-part structure.
 | `amount` | Double | Absolute net value |
 | `invClass` | String | Department name (QB class) |
 | `invType` | String | Bill type label |
+| `collectedByDoctor` | Boolean | True when the fee was collected by the doctor at billing. The line is still sent with its amount; `item` (or `account`) gets " (collected by doctor)" appended. False for other fees. |
 
 ---
 

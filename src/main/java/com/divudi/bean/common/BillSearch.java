@@ -1432,7 +1432,8 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
             String jpql = "select sum(b.feeGrossValue) "
                     + " from BillFee b "
                     + " where b.retired = :ret "
-                    + " and b.billItem.id = :bid";
+                    + " and b.billItem.id = :bid"
+                    + " and (b.collectedByDoctorAtBilling = false or b.collectedByDoctorAtBilling is null)";
             Map<String, Object> params = new HashMap<>();
             params.put("ret", false);
             params.put("bid", bt.getId());
@@ -1442,7 +1443,8 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
             jpql = "select sum(b.feeDiscount) "
                     + " from BillFee b "
                     + " where b.retired = :ret "
-                    + " and b.billItem.id = :bid";
+                    + " and b.billItem.id = :bid"
+                    + " and (b.collectedByDoctorAtBilling = false or b.collectedByDoctorAtBilling is null)";
             params = new HashMap<>();
             params.put("ret", false);
             params.put("bid", bt.getId());
@@ -1452,7 +1454,8 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
             jpql = "select sum(b.feeValue) "
                     + " from BillFee b "
                     + " where b.retired = :ret "
-                    + " and b.billItem.id = :bid";
+                    + " and b.billItem.id = :bid"
+                    + " and (b.collectedByDoctorAtBilling = false or b.collectedByDoctorAtBilling is null)";
             params = new HashMap<>();
             params.put("ret", false);
             params.put("bid", bt.getId());
@@ -5149,7 +5152,7 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
             case PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_OPD_SERVICES_RETURN:
                 return navigateToViewOpdProfessionalPaymentCancelledBill();
             case CHANNEL_BOOKING_WITH_PAYMENT:
-                return "";
+                break;
             case CC_BILL:
                 return navigateToViewCcBill(bill);
 
@@ -5184,7 +5187,7 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
                 return navigateToViewCcPaymentReceivedBill(bill);
 
             case CHANNEL_REFUND:
-                return "";
+                break;
 
             case PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_SESSION:
                 return navigateToViewChannelingProfessionalPaymentBill();
@@ -5415,6 +5418,7 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
             case IOU_SETTLE:
                 // A Return on an IOU writes a RefundBill of this type: it is not a settlement
                 if (bill instanceof RefundBill) {
+                    JsfUtil.addErrorMessage("This is an IOU return, which has no view page");
                     return "";
                 }
                 return "/cashier/iou_settle_bill_reprint?faces-redirect=true";
@@ -5436,6 +5440,12 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
                 // Same page the inward professional fee search opens; it reads inwardSearch.bill.
                 inwardSearch.setBill(bill);
                 return "/inward/inward_reprint_bill_professional?faces-redirect=true";
+
+            case INWARD_SERVICE_BILL:
+            case INWARD_SERVICE_BATCH_BILL:
+                // Same page the inward service search opens; it reads inwardSearch.bill.
+                inwardSearch.setBill(bill);
+                return navigateToInwardSearchService();
 
             case INWARD_FINAL_BILL:
                 // Same preparation as inward_search_final.xhtml: set the bill, the admission
