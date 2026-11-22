@@ -680,7 +680,7 @@ public class InwardProfessionalBillController implements Serializable {
     }
 
     public List<Item> completeItem(String qry) {
-        return getItemFacade().findByJpql("select c from Item c where c.retired=false and (type(c) = Service or type(c) = Packege ) and (c.name) like '%" + qry.toUpperCase() + "%' order by c.name");
+        return getItemFacade().findByJpql("select c from Item c where c.retired=false and (type(c) = Service or type(c) = Packege ) and (c.name) like :q order by c.name", java.util.Map.of("q", "%" + qry.toUpperCase() + "%"));
     }
 
     public void setAdmissionController(AdmissionController admissionController) {
