@@ -113,6 +113,7 @@
                                 class="text-center"
                                 sortBy="#{configOptionController.displayValue(option)}" 
                                 filterBy="#{configOptionController.displayValue(option)}"
+                                exportValue="#{configOptionController.displayValue(option) eq 'true' ? 'Yes' : (configOptionController.displayValue(option) eq 'false' ? 'No' : configOptionController.displayValue(option))}"
                                 style="padding: 7px;"
                                 >
 
@@ -129,13 +130,10 @@
                                         <h:outputText value="#{configOptionController.displayValue(option)}" />
                                     </h:panelGroup>
                                 </h:panelGroup>
-                                <f:facet name="exportable">
-                                    <h:outputText value="#{configOptionController.displayValue(option) eq 'true' ? 'Yes' : (configOptionController.displayValue(option) eq 'false' ? 'No' : configOptionController.displayValue(option))}" />
-                                </f:facet>
 
                             </p:column>
 
-                            <p:column width="14em" style="padding: 7px;" >
+                            <p:column width="14em" style="padding: 7px;" exportable="false">
                                 <h:panelGroup layout="block" styleClass="text-center w-100" rendered="#{!configOptionController.isInwardChargeTypeLabelKey(option.optionKey)}">
                                     <p:commandButton
                                         icon="pi pi-pencil"
@@ -160,10 +158,6 @@
                                     <i class="pi pi-lock" style="font-size: 0.9em;"></i>
                                     <h:outputText value=" Managed on Inward Charge Type Labels page" style="font-size: 0.8em;"/>
                                 </h:panelGroup>
-                                <f:facet name="exportable">
-                                    <h:outputText value="" />
-                                </f:facet>
-
                             </p:column>
 
                         </p:dataTable>
