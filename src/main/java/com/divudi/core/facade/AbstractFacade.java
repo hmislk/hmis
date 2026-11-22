@@ -916,6 +916,23 @@ public abstract class AbstractFacade<T> {
         return qry.getResultList();
     }
 
+    /**
+     * Same as {@link #findLightsByJpql(String, Map, TemporalType, int)} but a query
+     * failure propagates instead of being turned into an empty list.
+     */
+    public List<?> findLightsByJpqlStrict(String jpql, Map<String, Object> parameters, TemporalType tt, int maxRecords) {
+        Query qry = getEntityManager().createQuery(jpql);
+        for (Map.Entry<String, Object> entry : parameters.entrySet()) {
+            if (entry.getValue() instanceof Date) {
+                qry.setParameter(entry.getKey(), (Date) entry.getValue(), tt);
+            } else {
+                qry.setParameter(entry.getKey(), entry.getValue());
+            }
+        }
+        qry.setMaxResults(maxRecords);
+        return qry.getResultList();
+    }
+
     /** Single count result; any query failure propagates (findLongByJpql returns 0 instead). */
     public long findLongByJpqlStrict(String jpql, Map<String, Object> parameters) {
         TypedQuery<Long> qry = getEntityManager().createQuery(jpql, Long.class);

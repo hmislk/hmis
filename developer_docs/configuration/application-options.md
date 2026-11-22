@@ -63,6 +63,12 @@ A print or settings dialog must use the **same** controller as the page or templ
 | ---------------------------------------------------------------- | --------- | ------- | ------------------------------------------------------------------------------------------------------- |
 | `Show alternative medicines available during retail sale`        | Boolean   | `true`  | Gates the on-demand "Alternatives" (substitute medicines) UI on the Retail Sale, Fast Sale and Sale for Cashier pages. When `true`, each bill-item row shows a Substitute button that opens a dialog listing in-stock, non-expired substitute stocks in the current department (FEFO order) and lets the cashier swap one in. When `false`, no Substitute control appears and no alternatives query runs. See issue #21697. |
 
+## Top Menu
+
+| Key                                                              | Type      | Default | Description                                                                                             |
+| ---------------------------------------------------------------- | --------- | ------- | ------------------------------------------------------------------------------------------------------- |
+| `Show Tooltips on Top Menu Icons`                                | Boolean   | `false` | When `true`, hovering a top-level icon in the menu bar (OPD, Pharmacy, Reports, ...) shows its name as a tooltip. Default off because tooltip popups delay mouse movement. The accessible name (`aria-label`) is always set. Read in `resources/ezcomp/menu.xhtml`. See issue #25846. |
+
 ## OPD Billing
 
 | Key                                                              | Type      | Default | Description                                                                                             |
