@@ -977,7 +977,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     }
 
     public String navigateToRoomOccupancy() {
-        roomOccupancyController.setPatientRooms(null);
+        roomOccupancyController.openRoomOccupancy();
         return "/inward/inward_room_occupancy?faces-redirect=true";
     }
 
