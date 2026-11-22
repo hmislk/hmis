@@ -57,6 +57,9 @@
                         </f:selectItems>
                     </p:selectOneMenu>
 
+                    <h:selectBooleanCheckbox id="includeCompleted" value="#{inwardReservationController.includeCompleted}" class="align-self-center" />
+                    <h:outputLabel for="includeCompleted" value="Include completed appointments" class="align-self-center" />
+
                     <p:commandButton
                         value="Find Reservations"
                         action="#{inwardReservationController.findReservations()}"
@@ -64,6 +67,17 @@
                         ajax="false"
                         icon="fa fa-search">
                     </p:commandButton>
+                </div>
+
+                <style>
+                    .res-legend-swatch { display:inline-block; width:14px; height:14px; border-radius:3px; vertical-align:middle; margin-right:4px; }
+                    .fc-event.res-event-complete { opacity: 0.85; background-color:#adb5bd !important; border-color:#6c757d !important; }
+                </style>
+                <div class="d-flex gap-3 justify-content-center mb-2" style="font-size: 0.85rem;">
+                    <span><span class="res-legend-swatch" style="background:#0d6efd;"></span>Pending (colour varies by patient)</span>
+                    <h:panelGroup rendered="#{inwardReservationController.includeCompleted}">
+                        <span><span class="res-legend-swatch" style="background:#adb5bd;"></span>Completed (grey)</span>
+                    </h:panelGroup>
                 </div>
 
                 <div style="margin-left: 4%; margin-right: 4%;" class="mb-3">
