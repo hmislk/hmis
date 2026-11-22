@@ -11,13 +11,20 @@
 
             <p:messages id="growlWardReturnToPharmacy" showDetail="true" autoUpdate="true"/>
 
-            <p:panel rendered="#{!wardPharmacyReturnToPharmacyController.printPreview}">
+            <p:panel styleClass="sticky-panel-header" rendered="#{!wardPharmacyReturnToPharmacyController.printPreview}">
                 <f:facet name="header">
-                    <h:outputText styleClass="fa-solid fa-truck-ramp-box"/>
-                    <p:outputLabel value="Return Medicines to Pharmacy - BHT #{wardPharmacyReturnToPharmacyController.patientEncounter.bhtNo} - #{wardPharmacyReturnToPharmacyController.patientEncounter.patient.person.nameWithTitle}" class="mx-4"
-                                   rendered="#{!wardPharmacyReturnToPharmacyController.allPatients}"/>
-                    <p:outputLabel value="Return Medicines to Pharmacy - All Patients" class="mx-4"
-                                   rendered="#{wardPharmacyReturnToPharmacyController.allPatients}"/>
+                    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 w-100">
+
+                        <!-- LEFT: title -->
+                        <div class="d-flex align-items-center gap-2">
+                            <h:outputText styleClass="fa-solid fa-truck-ramp-box"/>
+                            <p:outputLabel value="Return Medicines to Pharmacy - BHT #{wardPharmacyReturnToPharmacyController.patientEncounter.bhtNo} - #{wardPharmacyReturnToPharmacyController.patientEncounter.patient.person.nameWithTitle}"
+                                           rendered="#{!wardPharmacyReturnToPharmacyController.allPatients}"/>
+                            <p:outputLabel value="Return Medicines to Pharmacy - All Patients"
+                                           rendered="#{wardPharmacyReturnToPharmacyController.allPatients}"/>
+                        </div>
+
+                    </div>
                 </f:facet>
 
                 <p:dataTable
@@ -187,7 +194,8 @@
                         value="#{wardPharmacyReturnToPharmacyController.returnLines}"
                         var="line"
                         editable="true"
-                        class="w-100"
+                        class="w-100 p-datatable-sm"
+                        stickyHeader="true"
                         emptyMessage="Nothing left to return on this received bill.">
 
                         <f:facet name="header">
@@ -270,17 +278,24 @@
                 </div>
             </p:panel>
 
-            <p:panel rendered="#{wardPharmacyReturnToPharmacyController.printPreview}">
+            <p:panel styleClass="sticky-panel-header" rendered="#{wardPharmacyReturnToPharmacyController.printPreview}">
                 <f:facet name="header">
-                    <p:outputLabel value="Returned to Pharmacy - Bill #{wardPharmacyReturnToPharmacyController.returnBill.deptId}"/>
-                    <p:commandButton
-                        id="btnCancelReturn"
-                        class="ui-button-danger mx-1"
-                        style="float: right;"
-                        icon="fas fa-cancel"
-                        value="Cancel Return"
-                        disabled="#{not webUserController.hasPrivilege('InwardPharmacyReturnCancel') or wardPharmacyReturnToPharmacyController.returnBill.cancelled or wardPharmacyReturnToPharmacyController.acceptanceStarted or wardPharmacyReturnToPharmacyController.returnBillACancellationBill}"
-                        onclick="PF('confirmCancelReturnDialog').show();"/>
+                    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 w-100">
+                        <!-- LEFT: title -->
+                        <div class="d-flex align-items-center gap-2">
+                            <p:outputLabel value="Returned to Pharmacy - Bill #{wardPharmacyReturnToPharmacyController.returnBill.deptId}"/>
+                        </div>
+                        <!-- RIGHT: actions -->
+                        <div class="d-flex gap-2 flex-wrap align-items-center">
+                            <p:commandButton
+                                id="btnCancelReturn"
+                                class="ui-button-danger"
+                                icon="fas fa-cancel"
+                                value="Cancel Return"
+                                disabled="#{not webUserController.hasPrivilege('InwardPharmacyReturnCancel') or wardPharmacyReturnToPharmacyController.returnBill.cancelled or wardPharmacyReturnToPharmacyController.acceptanceStarted or wardPharmacyReturnToPharmacyController.returnBillACancellationBill}"
+                                onclick="PF('confirmCancelReturnDialog').show();"/>
+                        </div>
+                    </div>
                 </f:facet>
 
                 <p:dialog minHeight="100" width="800" header="Confirmation" widgetVar="confirmCancelReturnDialog" modal="true" resizable="false">
