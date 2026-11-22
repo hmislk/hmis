@@ -24,6 +24,8 @@ import com.divudi.core.facade.PackegeFacade;
 import com.divudi.core.facade.StaffFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Date;
 import java.util.List;
 import javax.ejb.EJB;
@@ -79,12 +81,13 @@ public class PackageItemFeeController implements Serializable {
             suggestions = new ArrayList<Staff>();
         } else {
             if (getCurrentFee().getSpeciality() == null) {
-                sql = "select p from Staff p where p.retired=false and ((p.person.name) like '%" + query.toUpperCase() + "%'or  (p.code) like '%" + query.toUpperCase() + "%' ) order by p.person.name";
+                sql = "select p from Staff p where p.retired=false and ((p.person.name) like :qry or  (p.code) like :qry ) order by p.person.name";
             } else {
-                sql = "select p from Staff p where p.speciality.id=" + getCurrentFee().getSpeciality().getId() + " and p.retired=false and ((p.person.name) like '%" + query.toUpperCase() + "%'or  (p.code) like '%" + query.toUpperCase() + "%' ) order by p.person.name";
+                sql = "select p from Staff p where p.speciality.id=" + getCurrentFee().getSpeciality().getId() + " and p.retired=false and ((p.person.name) like :qry or  (p.code) like :qry ) order by p.person.name";
             }
-            //////// // System.out.println(sql);
-            suggestions = getStaffFacade().findByJpql(sql);
+            Map<String, Object> m = new HashMap<>();
+            m.put("qry", "%" + query.toUpperCase() + "%");
+            suggestions = getStaffFacade().findByJpql(sql, m);
         }
         return suggestions;
     }
