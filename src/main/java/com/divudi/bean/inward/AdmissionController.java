@@ -2266,6 +2266,42 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     }
 
     /**
+     * True (with a message) when the appointment this admission is for is no longer free in
+     * the database: Completed or Cancelled (status or flags), or already linked to another
+     * admission. Covers every way the appointment was picked (To Admit, table Select,
+     * autocomplete), because it loads the appointment by the same bill that
+     * {@link #updateAppointment()} links. Checked before anything is saved, so a refused save
+     * writes nothing (#25930). No appointment bill (a walk-in) = nothing to check.
+     */
+    private boolean appointmentNoLongerPending() {
+        if (getAppointmentBill() == null) {
+            return false;
+        }
+        Map<String, Object> m = new HashMap<>();
+        m.put("b", getAppointmentBill());
+        Appointment stored = getAppointmentFacade().findFirstByJpql(
+                "select s from Appointment s where s.retired=false and s.bill=:b", m);
+        if (stored == null) {
+            return false;   // same as today: updateAppointment() needs one; not this check's concern
+        }
+        // Older rows may have no status; they count as used only through the flags
+        boolean used = stored.getStatus() == AppointmentStatus.COMPLETE
+                || stored.getStatus() == AppointmentStatus.CANCEL
+                || stored.isAppointmentComplete()
+                || stored.isAppointmentCancel();
+        PatientEncounter linked = stored.getPatientEncounter();
+        // Linked to this admission, or (conversion) to the non-BHT encounter being converted into it, is fine
+        boolean linkedElsewhere = linked != null && linked.getId() != null
+                && !linked.getId().equals(getCurrent() == null ? null : getCurrent().getId())
+                && !linked.getId().equals(currentNonBht == null ? null : currentNonBht.getId());
+        if (used || linkedElsewhere) {
+            JsfUtil.addErrorMessage("This appointment was already used or cancelled. Select it again.");
+            return true;
+        }
+        return false;
+    }
+
+    /**
      * Validates the current admission for required fields and
      * configuration-based constraints.
      *
@@ -2278,33 +2314,6 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
      * @return {@code true} if validation errors are found; {@code false}
      * otherwise
      */
-    /**
-     * True (with a message) when the admission is for a room appointment that is no longer
-     * Pending in the database: another admission used it, or it was cancelled, after this
-     * page selected it. Checked before anything is saved, so a refused save writes nothing
-     * (#25930). Uses the same reservation-to-appointment match as the save below.
-     */
-    private boolean appointmentNoLongerPending() {
-        boolean reservationMatchesAppointment = currentReservation != null
-                && currentReservation.getAppointment() != null
-                && currentReservation.getAppointment().getBill() != null
-                && currentReservation.getAppointment().getBill().equals(getAppointmentBill());
-        if (!reservationMatchesAppointment || currentReservation.getAppointment().getId() == null) {
-            return false;
-        }
-        Appointment stored = appointmentFacade.find(currentReservation.getAppointment().getId());
-        // Older rows may have no status; they count as used only through the flags
-        if (stored == null
-                || stored.getStatus() == AppointmentStatus.COMPLETE
-                || stored.getStatus() == AppointmentStatus.CANCEL
-                || stored.isAppointmentComplete()
-                || stored.isAppointmentCancel()) {
-            JsfUtil.addErrorMessage("This appointment was already used or cancelled. Select it again.");
-            return true;
-        }
-        return false;
-    }
-
     private boolean errorCheck() {
         if (getCurrent().getAdmissionType() == null) {
             JsfUtil.addErrorMessage("Please select Admission Type");
@@ -3758,6 +3767,9 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
 
     public void saveConvertSelected() {
         if (errorCheck()) {
+            return;
+        }
+        if (appointmentNoLongerPending()) {
             return;
         }
         Map<String, Object> conversionBefore = admissionSnapshotMap(getCurrentNonBht());
