@@ -193,7 +193,7 @@
                                     <p:column headerText="Returned By" visible="false">
                                         <h:outputText value="#{bill.creater.webUserPerson.name}"/>
                                     </p:column>
-                                    <p:column headerText="Return Value" visible="false">
+                                    <p:column headerText="Return Value" visible="false" exportValue="#{bill.netTotal}">
                                         <h:outputText value="#{bill.netTotal}">
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputText>
