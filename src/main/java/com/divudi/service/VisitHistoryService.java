@@ -71,7 +71,7 @@ public class VisitHistoryService {
             pa.put("fromDate", fromDate);
             pa.put("toDate", toDate);
         }
-        ja += " order by a.id desc";
+        ja += " order by " + admissionDate + " desc, a.id desc";
         List<VisitHistoryRowDTO> admissionRows = (List<VisitHistoryRowDTO>) billFacade.findLightsByJpql(
                 ja, pa, TemporalType.TIMESTAMP, MAX_ROWS_PER_SOURCE);
 
@@ -93,7 +93,7 @@ public class VisitHistoryService {
             pb.put("fromDate", fromDate);
             pb.put("toDate", toDate);
         }
-        jb += " order by b.id desc";
+        jb += " order by " + billDate + " desc, b.id desc";
         List<VisitHistoryRowDTO> billRows = (List<VisitHistoryRowDTO>) billFacade.findLightsByJpql(
                 jb, pb, TemporalType.TIMESTAMP, MAX_ROWS_PER_SOURCE);
 
@@ -102,7 +102,8 @@ public class VisitHistoryService {
         List<Long> admissionIds = new ArrayList<>();
         Map<String, Object> pi = new HashMap<>();
         pi.put("pid", patientId);
-        String ji = "select a.id from Admission a where a.retired=false and a.patient.id=:pid";
+        String ji = "select a.id from Admission a where a.retired=false and a.patient.id=:pid"
+                + " order by " + admissionDate + " desc, a.id desc";
         List<?> ids = billFacade.findLightsByJpql(ji, pi, TemporalType.TIMESTAMP, MAX_ROWS_PER_SOURCE);
         if (ids != null) {
             for (Object o : ids) {
@@ -121,7 +122,7 @@ public class VisitHistoryService {
                 pe.put("fromDate", fromDate);
                 pe.put("toDate", toDate);
             }
-            je += " order by b.id desc";
+            je += " order by " + billDate + " desc, b.id desc";
             List<VisitHistoryRowDTO> r = (List<VisitHistoryRowDTO>) billFacade.findLightsByJpql(
                     je, pe, TemporalType.TIMESTAMP, MAX_ROWS_PER_SOURCE);
             if (r != null) {
