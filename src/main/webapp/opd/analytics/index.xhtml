@@ -27,6 +27,7 @@
                                                 <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('opdAnalytics_opdIncomeDailySummary')}"><p:commandButton class="w-100" ajax="false" style="text-align: left" value="OPD Income Daily Summary" action="#{opdReportController.navigateToOpdIncomeDailySummary()}"/><fav:favoriteStar reportKey="opdAnalytics_opdIncomeDailySummary" label="OPD Income Daily Summary" category="Summary Reports" /></h:panelGroup>
                                                 <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('opdAnalytics_hospitalDoctorFeeReport')}"><p:commandButton class="w-100" ajax="false" style="text-align: left" value="Hospital Fee &amp; Doctor Fee Report" action="#{opdReportController.navigateToHospitalDoctorFeeReport()}"/><fav:favoriteStar reportKey="opdAnalytics_hospitalDoctorFeeReport" label="Hospital Fee &amp; Doctor Fee Report" category="Summary Reports" /></h:panelGroup>
                                                 <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('opdAnalytics_billItemReport')}"><p:commandButton class="w-100" ajax="false" style="text-align: left" value="Hospital Fee &amp; Doctor Fee Report (By Items)" action="#{opdReportController.navigateToBillItemReport()}"/><fav:favoriteStar reportKey="opdAnalytics_billItemReport" label="Hospital Fee &amp; Doctor Fee Report (By Items)" category="Summary Reports" /></h:panelGroup>
+                                                <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('opdAnalytics_opVisitsReport')}"><p:commandButton class="w-100" ajax="false" style="text-align: left" icon="fa fa-users" value="OP Visits" action="#{opdReportController.navigateToOpVisitsReport()}" title="Number of OP visits (one visit = one OPD bill) by department or specialty"/><fav:favoriteStar reportKey="opdAnalytics_opVisitsReport" label="OP Visits" category="Summary Reports" /></h:panelGroup>
 
                                                 <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('opdAnalytics_cashierShiftEndSummary')}"><p:commandButton class="w-100" ajax="false" value="Cashier Shift End Summary" action="#{cashierReportController.navigateToShiftEndSummary}" /><fav:favoriteStar reportKey="opdAnalytics_cashierShiftEndSummary" label="Cashier Shift End Summary" category="Common Cashier Reports" /></h:panelGroup>
                                                 <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('opdAnalytics_dayEndSummary')}"><p:commandButton class="w-100" ajax="false" value="Day End Summary" action="#{cashierReportController.navigateToDayEndSummary()}" /><fav:favoriteStar reportKey="opdAnalytics_dayEndSummary" label="Day End Summary" category="Common Cashier Reports" /></h:panelGroup>
@@ -120,6 +121,18 @@
                                                 value="Hospital Fee &amp; Doctor Fee Report (By Items)"
                                                 action="#{opdReportController.navigateToBillItemReport()}"/>
                                             <fav:favoriteStar reportKey="opdAnalytics_billItemReport" label="Hospital Fee &amp; Doctor Fee Report (By Items)" category="Summary Reports" />
+                                            </div>
+                                            <div class="d-flex align-items-center gap-1 w-100">
+                                            <p:commandButton
+                                                id="btnNavigateToOpVisitsReport"
+                                                class="w-100"
+                                                ajax="false"
+                                                style="text-align: left"
+                                                icon="fa fa-users"
+                                                value="OP Visits"
+                                                title="Number of OP visits (one visit = one OPD bill) by department or specialty"
+                                                action="#{opdReportController.navigateToOpVisitsReport()}"/>
+                                            <fav:favoriteStar reportKey="opdAnalytics_opVisitsReport" label="OP Visits" category="Summary Reports" />
                                             </div>
                                         </div>
                                     </p:tab>
