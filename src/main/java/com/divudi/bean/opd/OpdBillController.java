@@ -844,47 +844,6 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         calTotals();
     }
 
-    /**
-     * True when a bill just settled has a live fee marked "Collected by Doctor". The print page
-     * uses it to show the note "Fees Collected by the Doctor". It reads the saved flag only, so it
-     * does not depend on the option being on.
-     */
-    public boolean isBillsHaveFeesCollectedByDoctor() {
-        return hasFeesCollectedByDoctor(bills);
-    }
-
-    /** Same note for one bill, used by the bill reprint page. */
-    public boolean hasFeesCollectedByDoctor(Bill bill) {
-        if (bill == null) {
-            return false;
-        }
-        List<Bill> one = new ArrayList<>();
-        one.add(bill);
-        return hasFeesCollectedByDoctor(one);
-    }
-
-    private boolean hasFeesCollectedByDoctor(List<Bill> billList) {
-        if (billList == null || billList.isEmpty()) {
-            return false;
-        }
-        List<Long> billIds = new ArrayList<>();
-        for (Bill b : billList) {
-            if (b != null && b.getId() != null) {
-                billIds.add(b.getId());
-            }
-        }
-        if (billIds.isEmpty()) {
-            return false;
-        }
-        String jpql = "select count(bf) from BillFee bf"
-                + " where bf.retired=false"
-                + " and bf.collectedByDoctorAtBilling=true"
-                + " and bf.bill.id in :billIds";
-        Map<String, Object> m = new HashMap<>();
-        m.put("billIds", billIds);
-        return getBillFeeFacade().findLongByJpql(jpql, m, TemporalType.TIMESTAMP) > 0;
-    }
-
     public void changeTheSelectedFeeFromFeeBundle(BillFee ibf) {
         if (billFeeBundleEntrys == null) {
             return;

@@ -1852,8 +1852,8 @@ public class ConfigOptionApplicationController implements Serializable {
      * Key that lets a doctor (staff) fee be marked "Collected by Doctor" on the OPD billing page.
      * It controls only the marking of NEW fees. A marked fee is left out of the bill net total
      * and the amount paid at the cashier, is not payable by the hospital (left out of the doctor
-     * payment due lists) and the printed bill shows only the note "Fees Collected by the Doctor".
-     * Turning the key off later does not change fees already marked. Default false.
+     * payment due lists) and the printed bill labels the fee under its item with the doctor's name
+     * and "Collected by the Doctor", with no amount. Turning the key off later does not change fees already marked. Default false.
      */
     public static final String OPD_BILLING_ALLOW_FEE_COLLECTED_BY_DOCTOR
             = "OPD Billing - Allow Fee Collected By Doctor";
