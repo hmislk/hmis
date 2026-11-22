@@ -222,6 +222,41 @@
                             </f:facet>
                         </p:column>
 
+                        <!-- Stock coming in from direct purchases, and signed stock adjustments (#25682, #25680) -->
+                        <p:column headerText="Direct Purchase Qty" style="text-align: right;">
+                            <h:outputLabel value="#{i.directPurchaseQty}">
+                                <f:convertNumber pattern="#,##0.##" />
+                            </h:outputLabel>
+                        </p:column>
+
+                        <p:column headerText="Direct Purchase (Purchase Value)" style="text-align: right;">
+                            <h:outputLabel value="#{i.directPurchase}">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputLabel>
+                            <f:facet name="footer">
+                                <h:outputLabel value="#{pharmacySaleReportController.totalDirectPurchase}" style="float: right;">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputLabel>
+                            </f:facet>
+                        </p:column>
+
+                        <p:column headerText="Stock Adjustment Qty" style="text-align: right;">
+                            <h:outputLabel value="#{i.stockAdjustmentQty}">
+                                <f:convertNumber pattern="#,##0.##" />
+                            </h:outputLabel>
+                        </p:column>
+
+                        <p:column headerText="Stock Adjustment (Purchase Value)" style="text-align: right;">
+                            <h:outputLabel value="#{i.stockAdjustment}">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputLabel>
+                            <f:facet name="footer">
+                                <h:outputLabel value="#{pharmacySaleReportController.totalStockAdjustment}" style="float: right;">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputLabel>
+                            </f:facet>
+                        </p:column>
+
                     </p:dataTable>
                 </p:panel>
 

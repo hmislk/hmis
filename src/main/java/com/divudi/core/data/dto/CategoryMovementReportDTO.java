@@ -29,6 +29,10 @@ public class CategoryMovementReportDTO implements Serializable {
     private Double disposalQty;
     private Double transferReceive;
     private Double transferReceiveQty;
+    private Double directPurchase;
+    private Double directPurchaseQty;
+    private Double stockAdjustment;
+    private Double stockAdjustmentQty;
 
     public CategoryMovementReportDTO() {
     }
@@ -223,5 +227,37 @@ public class CategoryMovementReportDTO implements Serializable {
 
     public void setTransferReceiveQty(Double transferReceiveQty) {
         this.transferReceiveQty = transferReceiveQty;
+    }
+
+    public Double getDirectPurchase() {
+        return directPurchase != null ? directPurchase : 0.0;
+    }
+
+    public void setDirectPurchase(Double directPurchase) {
+        this.directPurchase = directPurchase;
+    }
+
+    public Double getDirectPurchaseQty() {
+        return directPurchaseQty != null ? directPurchaseQty : 0.0;
+    }
+
+    public void setDirectPurchaseQty(Double directPurchaseQty) {
+        this.directPurchaseQty = directPurchaseQty;
+    }
+
+    public Double getStockAdjustment() {
+        return stockAdjustment != null ? stockAdjustment : 0.0;
+    }
+
+    public void setStockAdjustment(Double stockAdjustment) {
+        this.stockAdjustment = stockAdjustment;
+    }
+
+    public Double getStockAdjustmentQty() {
+        return stockAdjustmentQty != null ? stockAdjustmentQty : 0.0;
+    }
+
+    public void setStockAdjustmentQty(Double stockAdjustmentQty) {
+        this.stockAdjustmentQty = stockAdjustmentQty;
     }
 }
