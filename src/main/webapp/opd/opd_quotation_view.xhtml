@@ -1,0 +1,144 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:body>
+        <ui:composition template="/resources/template/template.xhtml">
+            <ui:define name="content">
+                <h:form id="viewForm">
+                    <h:outputText value="You do not have privilege to view quotations." rendered="#{not opdQuotationController.allowed}"/>
+                    <h:panelGroup rendered="#{opdQuotationController.allowed and opdQuotationController.quotation ne null}">
+                        <h:inputHidden id="quotationIdOnPage" value="#{opdQuotationController.quotationIdOnPage}"/>
+                        <p:panel>
+                            <f:facet name="header">
+                                <div class="d-flex justify-content-between align-items-center w-100">
+                                    <!-- LEFT: title -->
+                                    <div class="d-flex align-items-center gap-2">
+                                        <h:outputText styleClass="fa fa-file-invoice"/>
+                                        <h:outputText value="OPD Quotation #{opdQuotationController.quotation.quotationNo}"/>
+                                    </div>
+                                    <!-- CENTER: navigation -->
+                                    <div class="d-flex gap-2">
+                                        <p:commandButton value="New Quotation" icon="fa fa-plus" ajax="false" immediate="true"
+                                                         title="Start a new quotation"
+                                                         action="#{opdQuotationController.navigateToNewQuotation()}"
+                                                         styleClass="ui-button-info ui-button-outlined"/>
+                                        <p:commandButton value="Search Quotations" icon="fa fa-search" ajax="false" immediate="true"
+                                                         title="Find and reprint saved quotations"
+                                                         action="#{opdQuotationController.navigateToSearchQuotations()}"
+                                                         styleClass="ui-button-info ui-button-outlined"/>
+                                    </div>
+                                    <!-- RIGHT: actions, least to most important -->
+                                    <div class="d-flex gap-2 align-items-center">
+                                        <p:commandButton id="btnPrint" value="Print" icon="fa fa-print" type="button"
+                                                         title="Print this quotation"
+                                                         styleClass="ui-button-warning">
+                                            <p:printer target="quotationPrint"/>
+                                        </p:commandButton>
+                                        <p:commandButton id="btnConvert" value="Make OPD Bill" icon="fa fa-file-invoice-dollar"
+                                                         ajax="false" style="min-width:120px"
+                                                         title="Open OPD billing with these services filled in, at today's tariff"
+                                                         rendered="#{webUserController.hasPrivilege('OpdBilling')}"
+                                                         action="#{opdQuotationController.convertToOpdBill()}"
+                                                         styleClass="ui-button-success"/>
+                                    </div>
+                                </div>
+                            </f:facet>
+
+                            <p:messages id="msgs" showDetail="false" closable="true"/>
+
+                            <h:panelGroup id="quotationPrint" layout="block" style="max-width:800px; margin:auto; font-size:12px;">
+                                <div style="text-align:center;">
+                                    <h:outputText value="#{opdQuotationController.quotation.institution.name}" style="font-size:16px; font-weight:bold;"/>
+                                    <br/>
+                                    <h:outputText value="#{opdQuotationController.quotation.department.name}"/>
+                                    <br/>
+                                    <h:outputText value="#{opdQuotationController.quotation.institution.address}"/>
+                                    <br/>
+                                    <h:outputText value="#{opdQuotationController.quotation.institution.phone}"/>
+                                    <br/>
+                                    <h:outputText value="QUOTATION OF SERVICES" style="font-size:14px; font-weight:bold;"/>
+                                </div>
+                                <p:panelGrid columns="4" layout="tabular" styleClass="w-100 my-2">
+                                    <h:outputText value="Quotation No"/>
+                                    <h:outputText value="#{opdQuotationController.quotation.quotationNo}" style="font-weight:bold;"/>
+                                    <h:outputText value="Date"/>
+                                    <h:outputText value="#{opdQuotationController.quotation.createdAt}">
+                                        <f:convertDateTime pattern="dd MMM yyyy hh:mm a"/>
+                                    </h:outputText>
+                                    <h:outputText value="Name"/>
+                                    <h:outputText value="#{opdQuotationController.quotation.customerName}"/>
+                                    <h:outputText value="Valid Until"/>
+                                    <h:panelGroup>
+                                        <h:outputText value="#{opdQuotationController.quotation.validUntil}">
+                                            <f:convertDateTime pattern="dd MMM yyyy"/>
+                                        </h:outputText>
+                                        <h:outputText value=" (expired)" rendered="#{opdQuotationController.quotation.expired}"
+                                                      styleClass="text-danger"/>
+                                    </h:panelGroup>
+                                    <h:outputText value="Phone"/>
+                                    <h:outputText value="#{opdQuotationController.quotation.customerPhone}"/>
+                                    <h:outputText value="Prepared By"/>
+                                    <h:outputText value="#{opdQuotationController.quotation.creater.webUserPerson.name}"/>
+                                    <h:outputText value="Payment Method"/>
+                                    <h:outputText value="#{opdQuotationController.quotation.paymentMethod.label}"/>
+                                    <h:outputText value="Discount Scheme"/>
+                                    <h:outputText value="#{opdQuotationController.quotation.paymentScheme.name}"/>
+                                </p:panelGrid>
+
+                                <p:dataTable id="items" value="#{opdQuotationController.quotationItems}" var="i" rowIndexVar="n"
+                                             styleClass="p-datatable-sm" emptyMessage="No services">
+                                    <p:column headerText="#" style="width:2.5rem">
+                                        <h:outputText value="#{n + 1}"/>
+                                    </p:column>
+                                    <p:column headerText="Service">
+                                        <h:outputText value="#{i.itemName}"/>
+                                    </p:column>
+                                    <p:column headerText="Qty" styleClass="text-end" style="width:4rem">
+                                        <h:outputText value="#{i.quantity}">
+                                            <f:convertNumber pattern="#,##0"/>
+                                        </h:outputText>
+                                    </p:column>
+                                    <p:column headerText="Gross" styleClass="text-end" style="width:7rem"
+                                              rendered="#{opdQuotationController.quotation.discount gt 0}">
+                                        <h:outputText value="#{i.grossValue}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
+                                    </p:column>
+                                    <p:column headerText="Discount" styleClass="text-end" style="width:7rem"
+                                              rendered="#{opdQuotationController.quotation.discount gt 0}">
+                                        <h:outputText value="#{i.discount}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
+                                    </p:column>
+                                    <p:column headerText="Amount" styleClass="text-end" style="width:7rem">
+                                        <h:outputText value="#{i.netValue}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
+                                    </p:column>
+                                </p:dataTable>
+
+                                <div style="text-align:right; margin-top:8px;">
+                                    <h:outputText value="Total: " style="font-weight:bold;"/>
+                                    <h:outputText value="#{opdQuotationController.quotation.netTotal}" style="font-weight:bold;">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                </div>
+                                <div style="margin-top:8px;">
+                                    <h:outputText value="#{opdQuotationController.quotation.comments}"/>
+                                </div>
+                                <div style="margin-top:8px; font-style:italic;">
+                                    <h:outputText value="This is a quotation, not a bill. Prices may change; the bill is charged at the tariff in force at the time of billing."/>
+                                </div>
+                            </h:panelGroup>
+                        </p:panel>
+                    </h:panelGroup>
+                </h:form>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>
