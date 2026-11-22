@@ -3190,7 +3190,7 @@ public class AnthropicApiService implements Serializable {
             sb.append(":\n\n");
 
             for (ConfigOption opt : options.subList(0, displayed)) {
-                String value = maskSensitiveValue(opt.getOptionKey(), opt.getOptionValue());
+                String value = com.divudi.bean.common.ConfigOptionController.maskForApi(opt);
                 if (value != null && value.length() > maxValueChars) {
                     value = value.substring(0, maxValueChars) + "... (truncated)";
                 }
@@ -3257,7 +3257,7 @@ public class AnthropicApiService implements Serializable {
             if (option == null) {
                 return "Config option not found: " + key;
             }
-            String value = maskSensitiveValue(option.getOptionKey(), option.getOptionValue());
+            String value = com.divudi.bean.common.ConfigOptionController.maskForApi(option);
             if (value != null && value.length() > 500) {
                 value = value.substring(0, 500) + "... (truncated)";
             }

@@ -219,7 +219,7 @@ public class ConfigResource {
 
         JsonArrayBuilder arrayBuilder = Json.createArrayBuilder();
         for (ConfigOption opt : options) {
-            String value = maskSensitiveValue(opt.getOptionKey(), opt.getOptionValue());
+            String value = com.divudi.bean.common.ConfigOptionController.maskForApi(opt);
             JsonObjectBuilder obj = Json.createObjectBuilder()
                     .add("key", opt.getOptionKey() != null ? opt.getOptionKey() : "")
                     .add("type", opt.getValueType() != null ? opt.getValueType().toString() : "")
@@ -443,7 +443,7 @@ public class ConfigResource {
      * Build a JSON representation of a config option with sensitive values masked.
      */
     private JsonObjectBuilder toJson(ConfigOption opt) {
-        String value = maskSensitiveValue(opt.getOptionKey(), opt.getOptionValue());
+        String value = com.divudi.bean.common.ConfigOptionController.maskForApi(opt);
         return Json.createObjectBuilder()
                 .add("key", opt.getOptionKey() != null ? opt.getOptionKey() : "")
                 .add("type", opt.getValueType() != null ? opt.getValueType().toString() : "")

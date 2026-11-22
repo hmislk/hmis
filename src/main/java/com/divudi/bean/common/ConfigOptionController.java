@@ -164,21 +164,46 @@ public class ConfigOptionController implements Serializable {
                 || k.contains("accesskey") || k.contains("privatekey");
     }
 
+    /** True for an empty value, true/false, or a plain number. */
+    private static boolean isPlainFlagOrNumber(String v) {
+        return v == null || v.isEmpty()
+                || "true".equalsIgnoreCase(v) || "false".equalsIgnoreCase(v)
+                || v.matches("-?[0-9]+(\\.[0-9]+)?");
+    }
+
     /**
-     * Secret options are text values; a real true/false flag is never a
-     * secret even if its key contains a word such as "token". A BOOLEAN row
-     * holding anything other than true/false is treated as secret.
+     * Secret options are text values. A BOOLEAN or numeric (INTEGER, LONG,
+     * DOUBLE) row is not secret while its value is empty or parses as that
+     * kind of value, even if its key contains a word such as "token". A
+     * non-conforming value in such a row stays masked, so changing the type
+     * of a row cannot reveal it.
      */
     public static boolean isSecretOption(ConfigOption o) {
         if (o == null || !isSecretKey(o.getOptionKey())) {
             return false;
         }
-        if (o.getValueType() == OptionValueType.BOOLEAN) {
-            String v = o.getOptionValue();
+        OptionValueType t = o.getValueType();
+        String v = o.getOptionValue();
+        if (t == OptionValueType.BOOLEAN) {
             return v != null && !v.isEmpty()
                     && !"true".equalsIgnoreCase(v) && !"false".equalsIgnoreCase(v);
         }
+        if (t == OptionValueType.INTEGER || t == OptionValueType.LONG || t == OptionValueType.DOUBLE) {
+            return !(v == null || v.isEmpty() || v.matches("-?[0-9]+(\\.[0-9]+)?"));
+        }
         return true;
+    }
+
+    /** Value for REST and AI-assistant output: masked when the row is secret. */
+    public static String maskForApi(ConfigOption o) {
+        if (o == null) {
+            return null;
+        }
+        String v = o.getOptionValue();
+        if (v == null || v.isEmpty()) {
+            return v;
+        }
+        return isSecretOption(o) ? "***masked***" : v;
     }
 
     /** Value that is safe to render, filter, sort, export or audit-display. */
@@ -193,10 +218,9 @@ public class ConfigOptionController implements Serializable {
         return o.getOptionValue();
     }
 
-    /** Value to write into audit records. */
+    /** Value to write into audit records (true/false and plain numbers are kept). */
     public static String auditValue(String key, String value) {
-        if (isSecretKey(key) && value != null && !value.isEmpty()
-                && !"true".equalsIgnoreCase(value) && !"false".equalsIgnoreCase(value)) {
+        if (isSecretKey(key) && !isPlainFlagOrNumber(value)) {
             return SECRET_AUDIT_MASK;
         }
         return value;
