@@ -244,6 +244,9 @@ public class PageAdminController implements Serializable {
                 String optionValue = configOptionApplicationController.getApplicationOption(optionKey) != null
                     ? configOptionApplicationController.getApplicationOption(optionKey).getOptionValue()
                     : "";
+                if (ConfigOptionController.isSecretOption(configOptionApplicationController.getApplicationOption(optionKey))) {
+                    optionValue = "";
+                }
 
                 // Determine value type (default to SHORT_TEXT if not determinable)
                 String valueType = "SHORT_TEXT";
