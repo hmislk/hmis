@@ -67,6 +67,8 @@ public class CoveringLetterController implements Serializable {
     private List<DocumentTemplate> templates;
     private DocumentTemplate selectedTemplate;
     private CoveringLetter current;
+    /** Letters created together by "one letter per record"; empty for a single letter (#25747). */
+    private List<CoveringLetter> currentLetters = new ArrayList<>();
 
     // list
     private Date searchFromDate;
@@ -181,20 +183,79 @@ public class CoveringLetterController implements Serializable {
     }
 
     public String generateLetter() {
+        List<CoveringLetterRowDTO> orderedRows = validatedSelection();
+        if (orderedRows == null) {
+            return "";
+        }
+        String fmt = dateFormat();
+        CoveringLetter l = coveringLetterService.createLetter(selectedTemplate, orderedRows, recordType,
+                issuingInstitution, creditCompany, sessionController.getLoggedUser(), fmt);
+        if (l == null) {
+            JsfUtil.addErrorMessage("Letter could not be generated");
+            return "";
+        }
+        current = l;
+        currentLetters = new ArrayList<>();
+        return PRINT_PAGE;
+    }
+
+    /**
+     * One covering letter per selected record, each with its own reference number,
+     * in table order (#25747). The print page then shows every letter, one per page.
+     * Each letter is saved on its own; if one fails, the letters already created are
+     * kept and listed, and the message names the record that failed.
+     */
+    public String generateLetterPerRecord() {
+        List<CoveringLetterRowDTO> orderedRows = validatedSelection();
+        if (orderedRows == null) {
+            return "";
+        }
+        String fmt = dateFormat();
+        List<CoveringLetter> created = new ArrayList<>();
+        for (CoveringLetterRowDTO r : orderedRows) {
+            CoveringLetter l = coveringLetterService.createLetter(selectedTemplate, Arrays.asList(r), recordType,
+                    issuingInstitution, creditCompany, sessionController.getLoggedUser(), fmt);
+            if (l == null) {
+                JsfUtil.addErrorMessage("Letter could not be generated for " + r.getRefNo()
+                        + ". " + created.size() + " of " + orderedRows.size() + " letters were created.");
+                break;
+            }
+            created.add(l);
+        }
+        if (created.isEmpty()) {
+            return "";
+        }
+        current = created.get(0);
+        currentLetters = created;
+        if (created.size() == orderedRows.size()) {
+            JsfUtil.addSuccessMessage(created.size() + " letters created");
+        }
+        return PRINT_PAGE;
+    }
+
+    private String dateFormat() {
+        return sessionController.getApplicationPreference() != null
+                ? sessionController.getApplicationPreference().getLongDateFormat() : null;
+    }
+
+    /**
+     * Checks the template, the selection and the issuing institution, and refreshes
+     * the selected rows. Returns the selected rows in table order, or null after
+     * adding an error message.
+     */
+    private List<CoveringLetterRowDTO> validatedSelection() {
         if (selectedTemplate == null) {
             JsfUtil.addErrorMessage("Select a letter template");
-            return "";
+            return null;
         }
         if (selectedRows == null || selectedRows.isEmpty()) {
             JsfUtil.addErrorMessage("Select at least one record");
-            return "";
+            return null;
         }
         if (issuingInstitution == null) {
             JsfUtil.addErrorMessage("Select the issuing institution");
-            return "";
+            return null;
         }
-        String fmt = sessionController.getApplicationPreference() != null
-                ? sessionController.getApplicationPreference().getLongDateFormat() : null;
         // List the rows in table order, not in the order the user ticked them.
         List<CoveringLetterRowDTO> orderedRows = new ArrayList<>();
         for (CoveringLetterRowDTO r : rows) {
@@ -208,16 +269,9 @@ public class CoveringLetterController implements Serializable {
         String invalid = refreshSelectedRows(orderedRows);
         if (invalid != null) {
             JsfUtil.addErrorMessage(invalid);
-            return "";
+            return null;
         }
-        CoveringLetter l = coveringLetterService.createLetter(selectedTemplate, orderedRows, recordType,
-                issuingInstitution, creditCompany, sessionController.getLoggedUser(), fmt);
-        if (l == null) {
-            JsfUtil.addErrorMessage("Letter could not be generated");
-            return "";
-        }
-        current = l;
-        return PRINT_PAGE;
+        return orderedRows;
     }
 
     public double getSelectedTotal() {
@@ -269,6 +323,7 @@ public class CoveringLetterController implements Serializable {
             return "";
         }
         current = l;
+        currentLetters = new ArrayList<>();
         return PRINT_PAGE;
     }
 
@@ -413,6 +468,22 @@ public class CoveringLetterController implements Serializable {
 
     public void setSelectedTemplate(DocumentTemplate selectedTemplate) {
         this.selectedTemplate = selectedTemplate;
+    }
+
+    public List<CoveringLetter> getCurrentLetters() {
+        return currentLetters;
+    }
+
+    /** The letters the print page shows: every letter of a per-record batch, or the current one. */
+    public List<CoveringLetter> getLettersToPrint() {
+        if (currentLetters != null && !currentLetters.isEmpty()) {
+            return currentLetters;
+        }
+        List<CoveringLetter> one = new ArrayList<>();
+        if (current != null) {
+            one.add(current);
+        }
+        return one;
     }
 
     public CoveringLetter getCurrent() {

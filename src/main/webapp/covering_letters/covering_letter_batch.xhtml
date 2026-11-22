@@ -198,6 +198,11 @@
                                                      styleClass="ui-button-success"
                                                      title="Create the covering letter for the selected records"
                                                      action="#{coveringLetterController.generateLetter()}"/>
+                                    <p:commandButton id="btnGeneratePerRecord" value="Create one letter per bill" icon="fa fa-copy"
+                                                     ajax="false"
+                                                     styleClass="ui-button-success ui-button-outlined ms-2"
+                                                     title="Create a separate letter, with its own reference number, for each selected record"
+                                                     action="#{coveringLetterController.generateLetterPerRecord()}"/>
                                 </div>
                             </div>
                         </p:panel>
