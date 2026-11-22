@@ -775,7 +775,7 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
             if (qry != null) {
                 sql = "select c from BilledBill c "
                         + " where ((c.balance IS NOT NULL AND abs(c.balance) > :val) "
-                        + " OR ((abs(c.netTotal) + abs(c.vat)) - (abs(c.paidAmount) + COALESCE(abs(c.refundAmount), 0) + coalesce(c.writtenOffAmount,0))) > :val) "
+                        + " OR (abs(c.netTotal) - (abs(c.paidAmount) + COALESCE(abs(c.refundAmount), 0) + coalesce(c.writtenOffAmount,0))) > :val) "
                         + " and c.billTypeAtomic in :btas "
                         + " and c.paymentMethod= :pm "
                         + " and c.cancelledBill is null "
@@ -807,7 +807,7 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
                     // Try even simpler query but with balance condition
                     String simpleSql = "select c from BilledBill c "
                             + " where ((c.balance IS NOT NULL AND abs(c.balance) > :val) "
-                            + " OR ((abs(c.netTotal) + abs(c.vat)) - (abs(c.paidAmount) + COALESCE(abs(c.refundAmount), 0) + coalesce(c.writtenOffAmount,0))) > :val) "
+                            + " OR (abs(c.netTotal) - (abs(c.paidAmount) + COALESCE(abs(c.refundAmount), 0) + coalesce(c.writtenOffAmount,0))) > :val) "
                             + " and c.billTypeAtomic in :btas "
                             + " and c.paymentMethod= :pm "
                             + " and c.retired=false "
@@ -843,7 +843,7 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
         if (qry != null) {
             jpql = "select c from BilledBill c "
                     + " where ((c.balance IS NOT NULL AND abs(c.balance) > :val) "
-                    + " OR ((abs(c.netTotal) + abs(c.vat)) - (abs(c.paidAmount) + COALESCE(abs(c.refundAmount), 0) + coalesce(c.writtenOffAmount,0))) > :val) "
+                    + " OR (abs(c.netTotal) - (abs(c.paidAmount) + COALESCE(abs(c.refundAmount), 0) + coalesce(c.writtenOffAmount,0))) > :val) "
                     + " and c.billTypeAtomic in :btas "
                     + " and c.paymentMethod= :pm "
                     + " and c.cancelledBill is null "
@@ -911,7 +911,7 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
             if (qry != null) {
                 sql = "select b from BilledBill b "
                         + " where ((b.balance IS NOT NULL AND abs(b.balance) > :val) "
-                        + " OR ((abs(b.netTotal) + abs(b.vat)) - (abs(b.paidAmount) + COALESCE(abs(b.refundAmount), 0) + coalesce(b.writtenOffAmount,0))) > :val) "
+                        + " OR (abs(b.netTotal) - (abs(b.paidAmount) + COALESCE(abs(b.refundAmount), 0) + coalesce(b.writtenOffAmount,0))) > :val) "
                         + " and b.billType in :btps "
                         + " and b.paymentMethod= :pm "
                         + " and b.retired=false "
@@ -940,7 +940,7 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
                     // Try even simpler query but with balance condition
                     String simpleSql = "select b from BilledBill b "
                             + " where ((b.balance IS NOT NULL AND abs(b.balance) > :val) "
-                            + " OR ((abs(b.netTotal) + abs(b.vat)) - (abs(b.paidAmount) + COALESCE(abs(b.refundAmount), 0) + coalesce(b.writtenOffAmount,0))) > :val) "
+                            + " OR (abs(b.netTotal) - (abs(b.paidAmount) + COALESCE(abs(b.refundAmount), 0) + coalesce(b.writtenOffAmount,0))) > :val) "
                             + " and b.billType in :btps "
                             + " and b.paymentMethod= :pm "
                             + " and b.retired=false "

@@ -1017,7 +1017,7 @@ public class OpticianRepairBillController implements Serializable, ControllerWit
         HashMap hash = new HashMap();
 
         sql = "select b from BilledBill b  where"
-                + " (abs(b.netTotal)-(abs(b.paidAmount)+coalesce(b.writtenOffAmount,0)))>:val "
+                + " (abs(b.netTotal)-(coalesce(b.refundAmount,0)+abs(b.paidAmount)+coalesce(b.writtenOffAmount,0)))>:val "
                 + " and b.billType in :btps"
                 + " and b.createdAt is not null "
                 + " and b.deptId is not null "

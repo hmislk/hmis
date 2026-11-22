@@ -49,8 +49,8 @@ public class CreditCompanyWriteOffService {
 
     /**
      * Checks the user holds the privilege in some department, so a future caller
-     * cannot skip the controller's check. Called after the first row lock so the
-     * lock stays the first database call of the transaction.
+     * cannot skip the controller's check. Called after the row locks, so the lock
+     * stays the first database read of the transaction.
      */
     private void requirePrivilege(WebUser user, Privileges privilege, String action) {
         long n;
@@ -195,10 +195,12 @@ public class CreditCompanyWriteOffService {
     }
 
     public CreditCompanyWriteOff approve(Long writeOffId, String comment, WebUser approver, boolean hasApprovePrivilege) {
+        // Row locks come first (write-off, then its bill); the privilege read and the approved-total
+        // aggregate follow, so their snapshot is taken after the lock and sees every committed write-off.
         CreditCompanyWriteOff w = reload(writeOffId);
+        Bill bill = billFacade.findWithLock(w.getBill().getId());
         requirePrivilege(approver, Privileges.OpdCreditWriteOffApprove, "approve or reject write-offs");
         checkDecision(w, approver, hasApprovePrivilege, CreditCompanyWriteOffStatus.APPROVED);
-        Bill bill = billFacade.findWithLock(w.getBill().getId());
         if (bill == null || bill.isRetired() || bill.isCancelled()) {
             throw new CreditCompanyClaimException("The bill is cancelled, so its due cannot be written off.");
         }
@@ -236,11 +238,12 @@ public class CreditCompanyWriteOffService {
         if (user == null || user.getId() == null) {
             throw new CreditCompanyClaimException("You must be logged in to cancel a write-off.");
         }
+        // Row locks first (write-off, then its bill), before the privilege read and the aggregate.
         CreditCompanyWriteOff w = reload(writeOffId);
+        Bill bill = billFacade.findWithLock(w.getBill().getId());
         requirePrivilege(user, Privileges.OpdCreditWriteOffApprove, "cancel write-offs");
         checkTransition(w, CreditCompanyWriteOffStatus.CANCELLED);
         checkReason(reason, "the reason for cancelling the write-off");
-        Bill bill = billFacade.findWithLock(w.getBill().getId());
         w.setStatus(CreditCompanyWriteOffStatus.CANCELLED);
         w.setCancelledBy(user);
         w.setCancelledAt(new Date());
