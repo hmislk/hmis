@@ -2278,6 +2278,33 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
      * @return {@code true} if validation errors are found; {@code false}
      * otherwise
      */
+    /**
+     * True (with a message) when the admission is for a room appointment that is no longer
+     * Pending in the database: another admission used it, or it was cancelled, after this
+     * page selected it. Checked before anything is saved, so a refused save writes nothing
+     * (#25930). Uses the same reservation-to-appointment match as the save below.
+     */
+    private boolean appointmentNoLongerPending() {
+        boolean reservationMatchesAppointment = currentReservation != null
+                && currentReservation.getAppointment() != null
+                && currentReservation.getAppointment().getBill() != null
+                && currentReservation.getAppointment().getBill().equals(getAppointmentBill());
+        if (!reservationMatchesAppointment || currentReservation.getAppointment().getId() == null) {
+            return false;
+        }
+        Appointment stored = appointmentFacade.find(currentReservation.getAppointment().getId());
+        // Older rows may have no status; they count as used only through the flags
+        if (stored == null
+                || stored.getStatus() == AppointmentStatus.COMPLETE
+                || stored.getStatus() == AppointmentStatus.CANCEL
+                || stored.isAppointmentComplete()
+                || stored.isAppointmentCancel()) {
+            JsfUtil.addErrorMessage("This appointment was already used or cancelled. Select it again.");
+            return true;
+        }
+        return false;
+    }
+
     private boolean errorCheck() {
         if (getCurrent().getAdmissionType() == null) {
             JsfUtil.addErrorMessage("Please select Admission Type");
@@ -3502,6 +3529,10 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         }
 
         if (errorCheck()) {
+            admittingProcessStarted = false;
+            return;
+        }
+        if (appointmentNoLongerPending()) {
             admittingProcessStarted = false;
             return;
         }
