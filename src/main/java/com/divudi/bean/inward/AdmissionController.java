@@ -4017,7 +4017,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             getCurrent().setRetiredAt(now);
             getFacade().edit(getCurrent());
 
-            JsfUtil.addErrorMessage("Automatic admission charges could not be applied and this admission has been cancelled. Please retry. (" + ex.getMessage() + ")");
+            JsfUtil.addErrorMessage("Automatic admission charges could not be applied and this admission has been cancelled. Open Admit Patient again to retry. (" + ex.getMessage() + ")");
             admittingProcessStarted = false;
             try {
                 restoreAppointmentAfterRolledBackSave(getCurrent());
