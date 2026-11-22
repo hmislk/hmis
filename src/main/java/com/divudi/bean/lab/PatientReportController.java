@@ -823,8 +823,62 @@ public class PatientReportController implements Serializable {
             JsfUtil.addErrorMessage("Report Items values is empty");
             return;
         }
+        List<PatientReportItemValue> values = currentPatientReport.getPatientReportItemValues();
 
+        // Pass 1: convert every typed (non-calculated) value to its number, so formulas can read them in any order.
+        int calculatedCount = 0;
+        for (PatientReportItemValue priv : values) {
+            if (priv.getInvestigationItem().getIxItemType() == InvestigationItemType.Calculation) {
+                calculatedCount++;
+                continue;
+            }
+            applyTypedValue(priv);
+        }
 
+        // Pass 2: evaluate calculated items until no calculated value changes (calculations may use later calculations).
+        // A chain of N calculations needs N passes to settle plus one to confirm nothing changed.
+        Set<PatientReportItemValue> failedCalculations = new LinkedHashSet<>();
+        Set<PatientReportItemValue> changedInLastPass = new LinkedHashSet<>();
+        int maxPasses = Math.max(1, calculatedCount) + 1;
+        for (int pass = 0; pass < maxPasses; pass++) {
+            changedInLastPass.clear();
+            for (PatientReportItemValue priv : values) {
+                if (priv.getInvestigationItem().getIxItemType() == InvestigationItemType.Calculation) {
+                    if (evaluateCalculation(priv, failedCalculations)) {
+                        changedInLastPass.add(priv);
+                    }
+                }
+            }
+            if (changedInLastPass.isEmpty()) {
+                break;
+            }
+        }
+        // Values that still change after the last pass (circular formulas) are not stored as results.
+        for (PatientReportItemValue priv : changedInLastPass) {
+            priv.setDoubleValue(null);
+            priv.setStrValue("");
+            failedCalculations.remove(priv);
+            JsfUtil.addErrorMessage("Calculation did not settle for " + priv.getInvestigationItem().getName());
+        }
+        // Report each failed calculation once, after the final pass.
+        for (PatientReportItemValue priv : failedCalculations) {
+            JsfUtil.addErrorMessage("Calculation failed for " + priv.getInvestigationItem().getName());
+        }
+
+        // Pass 3: flags, then save each value once.
+        for (PatientReportItemValue priv : values) {
+            if (priv.getInvestigationItem().getIxItemType() == InvestigationItemType.Flag) {
+                priv.setStrValue(findFlagValue(priv));
+            }
+            try {
+                getPirivFacade().edit(priv);
+            } catch (Exception e) {
+                System.err.println("e = " + e.getMessage());
+            }
+        }
+        if (configOptionApplicationController.getBooleanValueByKey("Lab Test History Enabled", false)) {
+            labTestHistoryController.addCalculateHistory(currentPtIx, currentPatientReport);
+        }
     }
 
     /**
