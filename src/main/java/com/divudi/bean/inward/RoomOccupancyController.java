@@ -6,6 +6,8 @@ package com.divudi.bean.inward;
 
 import com.divudi.bean.common.NotificationController;
 import com.divudi.bean.common.SessionController;
+import com.divudi.bean.common.WebUserController;
+import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.inward.PatientRoom;
 import com.divudi.core.entity.inward.RoomFacilityCharge;
 import com.divudi.core.facade.PatientRoomFacade;
@@ -14,7 +16,9 @@ import com.divudi.core.facade.RoomFacilityChargeFacade;
 import com.divudi.core.util.JsfUtil;
 import java.io.Serializable;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
@@ -37,7 +41,12 @@ public class RoomOccupancyController implements Serializable {
     RoomFacade roomFacade;
     @EJB
     RoomFacilityChargeFacade roomFacilityChargeFacade;
+    @Inject
+    WebUserController webUserController;
+
     private List<PatientRoom> patientRooms;
+    private Institution institution;
+    private boolean roomChargeTypesOnly;
     List<RoomFacilityCharge> roomFacilityCharges;
 
     public RoomFacade getRoomFacade() {
@@ -76,7 +85,7 @@ public class RoomOccupancyController implements Serializable {
     public void update(PatientRoom patientRoom) {
         patientRoom.setDischargedBy(getSessionController().getLoggedUser());
         getPatientRoomFacade().edit(patientRoom);
-        createPatientRoom();
+        refresh();
     }
 
     public void dischargeFromRoom(PatientRoom patientRoom) {
@@ -93,7 +102,7 @@ public class RoomOccupancyController implements Serializable {
         patientRoom.setDischargedAt(new Date());
         patientRoom.setDischargedBy(getSessionController().getLoggedUser());
         getPatientRoomFacade().edit(patientRoom);
-        createPatientRoom();
+        refresh();
         notificationController.createNotification(patientRoom,"Discharge");
     }
 
@@ -110,23 +119,51 @@ public class RoomOccupancyController implements Serializable {
         patientRoom.setDischargedAt(null);
         patientRoom.setDischargedBy(null);
         getPatientRoomFacade().edit(patientRoom);
-        createPatientRoom();
+        refresh();
+    }
+
+    /**
+     * Called from the menu: resets the filter to the user's own institution and
+     * loads every occupied room, so the page opens with data.
+     */
+    public void openRoomOccupancy() {
+        institution = sessionController.getInstitution();
+        roomChargeTypesOnly = false;
+        loadPatientRooms();
+    }
+
+    /**
+     * Reloads the list in the mode last chosen (used on filter change and after
+     * a room discharge).
+     */
+    public void refresh() {
+        loadPatientRooms();
+    }
+
+    public boolean isAnyInstitutionAllowed() {
+        return webUserController.hasPrivilege("InwardRoomOccupancyAnyInstitute");
+    }
+
+    /**
+     * The institution actually applied. A user without the Any Institute
+     * privilege is always limited to their own institution, whatever the page
+     * sends.
+     */
+    private Institution effectiveInstitution() {
+        if (!isAnyInstitutionAllowed()) {
+            return sessionController.getInstitution();
+        }
+        return institution;
+    }
+
+    public void showAllInstitutions() {
+        institution = null;
+        loadPatientRooms();
     }
 
     public void createPatientRoom() {
-        Date startTime = new Date();
-        Date fromDate = null;
-        Date toDate = null;
-        String sql = "SELECT pr FROM PatientRoom pr "
-                + " where pr.retired=false "
-                + " and pr.patientEncounter.admissionType.roomChargesAllowed=true "
-                + " and pr.discharged=false "
-                + " order by pr.roomFacilityCharge.name";
-
-        patientRooms = getPatientRoomFacade().findByJpql(sql);
-
-
-
+        roomChargeTypesOnly = true;
+        loadPatientRooms();
     }
 
     public void createPatientRoomVacant() {
@@ -149,18 +186,70 @@ public class RoomOccupancyController implements Serializable {
     }
 
     public void createPatientRoomAll() {
-        Date startTime = new Date();
-        Date fromDate = null;
-        Date toDate = null;
+        roomChargeTypesOnly = false;
+        loadPatientRooms();
+    }
 
-        String sql = "SELECT pr FROM PatientRoom pr "
+    /**
+     * One row per patient in a room (a second patient placed in the same room
+     * is listed as its own row; nothing here collapses rows by room).
+     */
+    private void loadPatientRooms() {
+        Map<String, Object> m = new HashMap<>();
+        StringBuilder sql = new StringBuilder("SELECT pr FROM PatientRoom pr "
+                + " join pr.patientEncounter pe "
                 + " where pr.retired=false "
-                + " and pr.discharged=false "
-                + " order by pr.roomFacilityCharge.name";
+                + " and pr.discharged=false ");
+        if (roomChargeTypesOnly) {
+            sql.append(" and pe.admissionType.roomChargesAllowed=true ");
+        }
+        Institution ins = effectiveInstitution();
+        if (ins != null) {
+            sql.append(" and pe.institution=:ins ");
+            m.put("ins", ins);
+        }
+        sql.append(" order by pr.roomFacilityCharge.name");
+        patientRooms = getPatientRoomFacade().findByJpql(sql.toString(), m);
+    }
 
-        patientRooms = getPatientRoomFacade().findByJpql(sql);
+    public int getRowCount() {
+        return patientRooms == null ? 0 : patientRooms.size();
+    }
 
+    public boolean isAnyGuardian() {
+        if (patientRooms == null) {
+            return false;
+        }
+        for (PatientRoom pr : patientRooms) {
+            if (pr.getPatientEncounter() != null && pr.getPatientEncounter().getGuardian() != null) {
+                return true;
+            }
+        }
+        return false;
+    }
 
+    public boolean isAnyCreditCompany() {
+        if (patientRooms == null) {
+            return false;
+        }
+        for (PatientRoom pr : patientRooms) {
+            if (pr.getPatientEncounter() != null && pr.getPatientEncounter().getCreditCompany() != null) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public Institution getInstitution() {
+        return institution;
+    }
+
+    public void setInstitution(Institution institution) {
+        this.institution = institution;
+    }
+
+    public boolean isRoomChargeTypesOnly() {
+        return roomChargeTypesOnly;
     }
 
     public List<PatientRoom> getPatientRooms() {
