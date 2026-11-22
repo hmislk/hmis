@@ -813,6 +813,30 @@ public abstract class AbstractFacade<T> {
         return qry.getResultList();
     }
 
+    public List<T> findByJpql(String jpql, Map<String, Object> parameters, boolean withoutCache) {
+        TypedQuery<T> qry = getEntityManager().createQuery(jpql, entityClass);
+        if (withoutCache) {
+            qry.setHint("javax.persistence.cache.storeMode", "REFRESH");
+            qry.setHint("javax.persistence.cache.retrieveMode", "BYPASS");
+        }
+        for (Map.Entry<String, Object> m : parameters.entrySet()) {
+            String pPara = m.getKey();
+            if (m.getValue() instanceof Date) {
+                qry.setParameter(pPara, (Date) m.getValue(), TemporalType.DATE);
+            } else {
+                qry.setParameter(pPara, m.getValue());
+            }
+        }
+        List<T> ts;
+        try {
+            ts = qry.getResultList();
+        } catch (Exception e) {
+            logSwallowedQueryFailure("findByJpql", jpql, e);
+            ts = new ArrayList<>();
+        }
+        return ts;
+    }
+
     // ChatGPT contributed - 2025-05
     public List<T> findByJpqlWithRange(String jpql, int startPosition, int maxResults) {
         return getEntityManager()
