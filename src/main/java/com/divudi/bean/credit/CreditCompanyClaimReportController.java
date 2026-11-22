@@ -263,7 +263,7 @@ public class CreditCompanyClaimReportController implements Serializable {
             List<?> found = claimFacade.findLightsByJpqlStrict(
                     "select new com.divudi.core.data.dto.CreditCompanyClaimDueDto("
                     // Grouped on purpose: EclipseLink reads "a - b - c" as "a - (b - c)".
-                    + "ci.claim.id, sum(b.netTotal - (b.refundAmount + b.paidAmount)))"
+                    + "ci.claim.id, sum(b.netTotal - (b.refundAmount + b.paidAmount + coalesce(b.writtenOffAmount, 0))))"
                     + " from CreditCompanyClaimItem ci join ci.bill b"
                     + " where ci.retired=false and ci.claim.id in :ids group by ci.claim.id", m);
             for (Object o : found) {

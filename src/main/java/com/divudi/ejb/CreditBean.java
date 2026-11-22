@@ -57,9 +57,9 @@ public class CreditBean {
                 + " and b.createdAt  between :frm and :to ";
 
         if (lessThan) {
-            sql += " and (abs(b.netTotal)-abs(b.paidAmount))>:val ";
+            sql += " and (abs(b.netTotal)-(abs(b.paidAmount)+coalesce(b.writtenOffAmount,0)))>:val ";
         } else {
-            sql += " and (abs(b.netTotal)-abs(b.paidAmount))<:val ";
+            sql += " and (abs(b.netTotal)-(abs(b.paidAmount)+coalesce(b.writtenOffAmount,0)))<:val ";
         }
 
         sql += " and b.cancelledBill is null  "
@@ -85,9 +85,9 @@ public class CreditBean {
                 + " and b.createdAt  between :frm and :to ";
 
         if (lessThan) {
-            jpql += " and (abs(b.netTotal)-abs(b.paidAmount))>:val ";
+            jpql += " and (abs(b.netTotal)-(abs(b.paidAmount)+coalesce(b.writtenOffAmount,0)))>:val ";
         } else {
-            jpql += " and (abs(b.netTotal)-abs(b.paidAmount))<:val ";
+            jpql += " and (abs(b.netTotal)-(abs(b.paidAmount)+coalesce(b.writtenOffAmount,0)))<:val ";
         }
 
         jpql += " and b.creditCompany=:cc "
@@ -117,9 +117,9 @@ public class CreditBean {
             // Due = net total less refunds less settlements. Negative bills (refund and
             // cancellation bills) are not receivables, so they are never listed (#16982).
             jpql += " and p.bill.netTotal>0 and p.bill.cancelled=false "
-                    + " and (p.bill.netTotal-(coalesce(p.bill.refundAmount,0)+coalesce(p.bill.paidAmount,0)))>:val ";
+                    + " and (p.bill.netTotal-(coalesce(p.bill.refundAmount,0)+coalesce(p.bill.paidAmount,0)+coalesce(p.bill.writtenOffAmount,0)))>:val ";
         } else {
-            jpql += " and (abs(p.bill.netTotal)-abs(p.bill.paidAmount))<:val ";
+            jpql += " and (abs(p.bill.netTotal)-(abs(p.bill.paidAmount)+coalesce(p.bill.writtenOffAmount,0)))<:val ";
         }
 
         jpql += " and p.bill.creditCompany=:cc "
@@ -159,9 +159,9 @@ public class CreditBean {
                 + " and b.createdAt  between :frm and :to ");
 
         if (lessThan) {
-            sql.append(" and (b.netTotal-(coalesce(b.refundAmount,0)+coalesce(b.paidAmount,0)))>:val ");
+            sql.append(" and (b.netTotal-(coalesce(b.refundAmount,0)+coalesce(b.paidAmount,0)+coalesce(b.writtenOffAmount,0)))>:val ");
         } else {
-            sql.append(" and (b.netTotal-(coalesce(b.refundAmount,0)+coalesce(b.paidAmount,0)))<:val ");
+            sql.append(" and (b.netTotal-(coalesce(b.refundAmount,0)+coalesce(b.paidAmount,0)+coalesce(b.writtenOffAmount,0)))<:val ");
         }
 
         sql.append(" and b.cancelledBill is null  "
@@ -209,9 +209,9 @@ public class CreditBean {
                 + " and b.createdAt  between :frm and :to ";
 
         if (lessThan) {
-            sql += " and (abs(b.netTotal)-abs(b.paidAmount))>:val ";
+            sql += " and (abs(b.netTotal)-(abs(b.paidAmount)+coalesce(b.writtenOffAmount,0)))>:val ";
         } else {
-            sql += " and (abs(b.netTotal)-abs(b.paidAmount))<:val ";
+            sql += " and (abs(b.netTotal)-(abs(b.paidAmount)+coalesce(b.writtenOffAmount,0)))<:val ";
         }
 
         sql += " and b.cancelledBill is null  "
@@ -240,9 +240,9 @@ public class CreditBean {
                 + " where b.retired=false ";
 
         if (lessThan) {
-            sql += " and (abs(b.netTotal)-abs(b.paidAmount))>:val ";
+            sql += " and (abs(b.netTotal)-(abs(b.paidAmount)+coalesce(b.writtenOffAmount,0)))>:val ";
         } else {
-            sql += " and (abs(b.netTotal)-abs(b.paidAmount))<:val ";
+            sql += " and (abs(b.netTotal)-(abs(b.paidAmount)+coalesce(b.writtenOffAmount,0)))<:val ";
         }
 
         sql += " and b.cancelled=false "
@@ -284,9 +284,9 @@ public class CreditBean {
             // Due = net total less refunds less settlements; refund and cancellation
             // bills (negative net total) are not receivables (#16982).
             jpqlBuilder.append("AND b.netTotal > 0 AND b.cancelled = FALSE ")
-                    .append("AND (b.netTotal - (COALESCE(b.refundAmount, 0) + COALESCE(b.paidAmount, 0))) > :val ");
+                    .append("AND (b.netTotal - (coalesce(b.refundAmount,0)+coalesce(b.paidAmount,0)+coalesce(b.writtenOffAmount,0))) > :val ");
         } else {
-            jpqlBuilder.append("AND (ABS(b.netTotal) - ABS(b.paidAmount)) < :val ");
+            jpqlBuilder.append("AND (ABS(b.netTotal) - (ABS(b.paidAmount) + COALESCE(b.writtenOffAmount, 0))) < :val ");
         }
 
         jpqlBuilder.append("AND b.createdAt BETWEEN :frm AND :to ")
@@ -328,9 +328,9 @@ public class CreditBean {
                 + " where b.retired=false ");
 
         if (lessThan) {
-            sql.append(" and (b.netTotal-(coalesce(b.refundAmount,0)+coalesce(b.paidAmount,0)))>:val ");
+            sql.append(" and (b.netTotal-(coalesce(b.refundAmount,0)+coalesce(b.paidAmount,0)+coalesce(b.writtenOffAmount,0)))>:val ");
         } else {
-            sql.append(" and (b.netTotal-(coalesce(b.refundAmount,0)+coalesce(b.paidAmount,0)))<:val ");
+            sql.append(" and (b.netTotal-(coalesce(b.refundAmount,0)+coalesce(b.paidAmount,0)+coalesce(b.writtenOffAmount,0)))<:val ");
         }
 
         sql.append(" and b.cancelled=false "
@@ -1025,7 +1025,7 @@ public class CreditBean {
                 + " and b.cancelled=false "
                 + " and b.paymentMethod=:pm "
                 + " and b.createdAt  between :frm and :to"
-                + " and ((abs(b.netTotal)-abs(b.paidAmount))> :val) "
+                + " and ((abs(b.netTotal)-(abs(b.paidAmount)+coalesce(b.writtenOffAmount,0)))> :val) "
                 + " and (b.fromInstitution=:ins ) "
                 + " and b.billType in :bts";
         hm.put("frm", frmDate);
@@ -1076,7 +1076,7 @@ public class CreditBean {
                 + " where b.retired=false "
                 + " and b.cancelled=false "
                 + " and b.paymentMethod=:pm "
-                + " and ((abs(b.netTotal)-abs(b.paidAmount))> :val) "
+                + " and ((abs(b.netTotal)-(abs(b.paidAmount)+coalesce(b.writtenOffAmount,0)))> :val) "
                 + " and b.billType in :bts ";
         hm = new HashMap();
         hm.put("val", 0.1);
@@ -1097,9 +1097,9 @@ public class CreditBean {
                 + " and b.billType=:tp1 ";
 
         if (lessThan) {
-            sql += " and ((abs(b.netTotal)-abs(b.paidAmount))> :val) ";
+            sql += " and ((abs(b.netTotal)-(abs(b.paidAmount)+coalesce(b.writtenOffAmount,0)))> :val) ";
         } else {
-            sql += " and ((abs(b.netTotal)-abs(b.paidAmount))< :val) ";
+            sql += " and ((abs(b.netTotal)-(abs(b.paidAmount)+coalesce(b.writtenOffAmount,0)))< :val) ";
         }
 
         hm = new HashMap();
@@ -1120,9 +1120,9 @@ public class CreditBean {
                 + " and b.billTypeAtomic in :billTypeAtomics ";
 
         if (lessThan) {
-            sql += " and ((abs(b.netTotal)-abs(b.paidAmount))> :val) ";
+            sql += " and ((abs(b.netTotal)-(abs(b.paidAmount)+coalesce(b.writtenOffAmount,0)))> :val) ";
         } else {
-            sql += " and ((abs(b.netTotal)-abs(b.paidAmount))< :val) ";
+            sql += " and ((abs(b.netTotal)-(abs(b.paidAmount)+coalesce(b.writtenOffAmount,0)))< :val) ";
         }
 
         List<BillTypeAtomic> btas = billService.fetchBillTypeAtomicsForOpdFinance();
@@ -1146,9 +1146,9 @@ public class CreditBean {
                 + " and b.toStaff is null ";
 
         if (lessThan) {
-            sql += " and ((b.netTotal-(coalesce(b.refundAmount,0)+coalesce(b.paidAmount,0)))> :val) ";
+            sql += " and ((b.netTotal-(coalesce(b.refundAmount,0)+coalesce(b.paidAmount,0)+coalesce(b.writtenOffAmount,0)))> :val) ";
         } else {
-            sql += " and ((b.netTotal-(coalesce(b.refundAmount,0)+coalesce(b.paidAmount,0)))< :val) ";
+            sql += " and ((b.netTotal-(coalesce(b.refundAmount,0)+coalesce(b.paidAmount,0)+coalesce(b.writtenOffAmount,0)))< :val) ";
         }
 
         hm = new HashMap();
@@ -1201,7 +1201,7 @@ public class CreditBean {
                 + " and b.cancelled=false  "
                 + " and b.paymentMethod=:pm "
                 + " and b.createdAt is not null "
-                + " and ((abs(b.netTotal)-abs(b.paidAmount))> :val) "
+                + " and ((abs(b.netTotal)-(abs(b.paidAmount)+coalesce(b.writtenOffAmount,0)))> :val) "
                 + " and (b.fromInstitution=:ins ) "
                 + " and b.billType in :bts";
 
@@ -1225,9 +1225,9 @@ public class CreditBean {
                 + " and b.billType=:tp1";
 
         if (lessThan) {
-            sql += " and ((abs(b.netTotal)-abs(b.paidAmount))> :val) ";
+            sql += " and ((abs(b.netTotal)-(abs(b.paidAmount)+coalesce(b.writtenOffAmount,0)))> :val) ";
         } else {
-            sql += " and ((abs(b.netTotal)-abs(b.paidAmount))< :val) ";
+            sql += " and ((abs(b.netTotal)-(abs(b.paidAmount)+coalesce(b.writtenOffAmount,0)))< :val) ";
         }
 
         hm.put("val", 0.1);
@@ -1250,7 +1250,7 @@ public class CreditBean {
                 + " where b.retired=false "
                 + " and b.cancelled=false "
                 + " and b.netTotal>0 "
-                + " and (b.netTotal-(coalesce(b.refundAmount,0)+coalesce(b.paidAmount,0)))>:val "
+                + " and (b.netTotal-(coalesce(b.refundAmount,0)+coalesce(b.paidAmount,0)+coalesce(b.writtenOffAmount,0)))>:val "
                 + " and b.createdAt is not null "
                 + " and b.creditCompany=:cc "
                 + " and b.paymentMethod=:pm "
@@ -1269,7 +1269,7 @@ public class CreditBean {
     private static final String SETTLED_OPD_FINANCE_CREDIT_WHERE = " where b.retired=false "
             + " and b.cancelled=false "
             + " and b.netTotal>0 "
-            + " and (b.netTotal-(coalesce(b.refundAmount,0)+coalesce(b.paidAmount,0)))<=:val "
+            + " and (b.netTotal-(coalesce(b.refundAmount,0)+coalesce(b.paidAmount,0)+coalesce(b.writtenOffAmount,0)))<=:val "
             + " and b.createdAt between :frm and :to "
             + " and b.paymentMethod=:pm "
             + " and b.billTypeAtomic in :billTypeAtomics ";
@@ -1318,9 +1318,9 @@ public class CreditBean {
                 + " and b.toStaff is null ";
 
         if (lessThan) {
-            sql += " and ((b.netTotal-(coalesce(b.refundAmount,0)+coalesce(b.paidAmount,0)))> :val) ";
+            sql += " and ((b.netTotal-(coalesce(b.refundAmount,0)+coalesce(b.paidAmount,0)+coalesce(b.writtenOffAmount,0)))> :val) ";
         } else {
-            sql += " and ((b.netTotal-(coalesce(b.refundAmount,0)+coalesce(b.paidAmount,0)))< :val) ";
+            sql += " and ((b.netTotal-(coalesce(b.refundAmount,0)+coalesce(b.paidAmount,0)+coalesce(b.writtenOffAmount,0)))< :val) ";
         }
 
         hm.put("val", 0.1);
@@ -1408,7 +1408,7 @@ public class CreditBean {
                 + " where b.retired=false "
                 + " and b.cancelled=false "
                 + " and b.paymentMethod=:pm "
-                + " and ((abs(b.netTotal)-abs(b.paidAmount))> :val) "
+                + " and ((abs(b.netTotal)-(abs(b.paidAmount)+coalesce(b.writtenOffAmount,0)))> :val) "
                 + " and b.createdAt between :frm and :to "
                 + " and b.billType in :bts";
         hm = new HashMap();
