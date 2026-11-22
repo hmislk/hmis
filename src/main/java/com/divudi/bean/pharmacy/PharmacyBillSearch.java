@@ -108,6 +108,9 @@ import java.util.stream.Collectors;
 @SessionScoped
 public class PharmacyBillSearch implements Serializable {
 
+    @javax.ejb.EJB
+    private com.divudi.service.CreditCompanyClaimService creditCompanyClaimService;
+
     private static final Logger LOGGER = Logger.getLogger(PharmacyBillSearch.class.getName());
 
     private static final String DEFAULT_INWARD_PHARMACY_REQUEST_REPRINT_RETURN_PAGE =
@@ -3198,6 +3201,11 @@ public class PharmacyBillSearch implements Serializable {
         if (com.divudi.core.util.CancellationBillCheck.refuse(getBill())) {
             return;
         }
+        String openClaimMessage = creditCompanyClaimService.openClaimRefusal(getBill());
+        if (openClaimMessage != null) {
+            JsfUtil.addErrorMessage(openClaimMessage);
+            return;
+        }
         if (getBill() != null && getBill().getId() != null && getBill().getId() != 0) {
             if (pharmacyErrorCheck()) {
                 return;
@@ -3265,6 +3273,11 @@ public class PharmacyBillSearch implements Serializable {
 
     public void pharmacyRetailCancelBillWithStock() throws ParseException {
         if (com.divudi.core.util.CancellationBillCheck.refuse(getBill())) {
+            return;
+        }
+        String openClaimMessage = creditCompanyClaimService.openClaimRefusal(getBill());
+        if (openClaimMessage != null) {
+            JsfUtil.addErrorMessage(openClaimMessage);
             return;
         }
         if (cancellationStarted) {

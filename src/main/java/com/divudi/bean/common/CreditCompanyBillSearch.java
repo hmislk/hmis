@@ -431,6 +431,7 @@ public class CreditCompanyBillSearch implements Serializable {
                 getSessionController().setLoggedUser(wb);
                 paymentService.createPaymentsForCancelling(cb);
 //                createPayment(cb, paymentMethod);
+                reverseClaimLinks(getBill());
                 printPreview = true;
             } else {
                 getEjbApplication().getBillsToCancel().add(cb);
@@ -441,6 +442,20 @@ public class CreditCompanyBillSearch implements Serializable {
             JsfUtil.addErrorMessage("No Bill to cancel");
         }
 
+    }
+
+    /**
+     * The cancelled settlement bill no longer counts toward its claims (#25847). The
+     * cancellation is already saved, so a failure is logged and shown, not rolled back.
+     */
+    private void reverseClaimLinks(Bill settlementBill) {
+        try {
+            creditCompanyClaimService.reverseSettlement(settlementBill, getSessionController().getLoggedUser());
+        } catch (RuntimeException e) {
+            java.util.logging.Logger.getLogger(CreditCompanyBillSearch.class.getName())
+                    .log(java.util.logging.Level.SEVERE, "Could not reverse claim links of a cancelled settlement", e);
+            JsfUtil.addErrorMessage("The cancellation was saved, but the credit company claim could not be updated. Tell the administrator.");
+        }
     }
 
     public void cancelCreditCompanyPaymentBill() {
@@ -739,6 +754,8 @@ public class CreditCompanyBillSearch implements Serializable {
 
     @EJB
     private CreditBean creditBean;
+    @EJB
+    private com.divudi.service.CreditCompanyClaimService creditCompanyClaimService;
 
     private void updateReferenceBill(BillItem cancellationBillItem) {
         Bill referenceBill = cancellationBillItem.getReferenceBill();

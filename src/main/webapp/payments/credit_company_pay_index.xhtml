@@ -63,6 +63,33 @@
                                                     action="/credit/credit_company_opd_due?faces-redirect=true">
                                                 </p:commandButton>
                                                 
+                                                <p:commandButton
+                                                    styleClass="w-100 ui-button-info ui-button-outlined"
+                                                    ajax="false"
+                                                    icon="fas fa-file-invoice"
+                                                    value="Credit Company Claims"
+                                                    title="Claims sent to credit companies for OPD credit bills"
+                                                    rendered="#{creditCompanyClaimController.hasAnyClaimPrivilege()}"
+                                                    action="#{creditCompanyClaimController.navigateToClaims}"/>
+
+                                                <p:commandButton
+                                                    styleClass="w-100 ui-button-info ui-button-outlined"
+                                                    ajax="false"
+                                                    icon="fas fa-list-check"
+                                                    value="Claims by Status"
+                                                    title="Claims by status with claimed, outstanding and received amounts"
+                                                    rendered="#{creditCompanyClaimReportController.reportsAllowed}"
+                                                    action="#{creditCompanyClaimReportController.navigateToClaimsByStatus}"/>
+
+                                                <p:commandButton
+                                                    styleClass="w-100 ui-button-info ui-button-outlined"
+                                                    ajax="false"
+                                                    icon="fas fa-hourglass-half"
+                                                    value="Claim Ageing"
+                                                    title="Outstanding on submitted claims by days since submitted"
+                                                    rendered="#{creditCompanyClaimReportController.reportsAllowed}"
+                                                    action="#{creditCompanyClaimReportController.navigateToClaimAgeing}"/>
+
                                                 <p:commandButton 
                                                     styleClass="w-100 ui-button-info ui-button-outlined" 
                                                     ajax="false" icon="pi pi-calendar-times" 

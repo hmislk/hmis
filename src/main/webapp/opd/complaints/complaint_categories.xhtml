@@ -1,0 +1,73 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+    <h:head>
+        <title>Complaint Categories</title>
+    </h:head>
+    <h:body>
+        <ui:composition template="/resources/template/template.xhtml">
+            <ui:define name="content">
+                <h:panelGroup rendered="#{not patientComplaintCategoryController.canManage}">
+                    You are NOT authorized
+                </h:panelGroup>
+                <h:form id="categoryForm" rendered="#{patientComplaintCategoryController.canManage}">
+                    <p:growl id="msg" showDetail="true"/>
+                    <p:panel>
+                        <f:facet name="header">
+                            <div class="d-flex justify-content-between align-items-center w-100">
+                                <div class="d-flex align-items-center gap-2">
+                                    <h:outputText styleClass="fa fa-tags"/>
+                                    <h:outputText value="Complaint Categories"/>
+                                </div>
+                                <div class="d-flex align-items-center gap-2">
+                                    <p:commandButton value="Register" icon="fa fa-list" ajax="false" immediate="true"
+                                                     title="Open the complaints register"
+                                                     action="#{patientComplaintController.navigateToRegister}"
+                                                     rendered="#{patientComplaintController.canHandle}"
+                                                     styleClass="ui-button-info ui-button-outlined"/>
+                                    <p:commandButton id="btnRemove" value="Remove" icon="fa fa-trash"
+                                                     title="Remove the selected category"
+                                                     onclick="if (!confirm('Remove this category? Existing complaints keep it.')) return false;"
+                                                     action="#{patientComplaintCategoryController.retire}"
+                                                     process="@this lstSelect" update="@form"
+                                                     styleClass="ui-button-danger"/>
+                                    <p:commandButton id="btnAdd" value="New" icon="fa fa-plus"
+                                                     title="Start a new category"
+                                                     action="#{patientComplaintCategoryController.prepareAdd}"
+                                                     process="@this" update="@form"
+                                                     styleClass="ui-button-warning"/>
+                                    <p:commandButton id="btnSave" value="Save" icon="fa fa-save"
+                                                     title="Save the category"
+                                                     action="#{patientComplaintCategoryController.save}"
+                                                     process="@form" update="@form"
+                                                     styleClass="ui-button-success" style="min-width:120px"/>
+                                </div>
+                            </div>
+                        </f:facet>
+                        <div class="row g-3">
+                            <div class="col-md-5">
+                                <p:selectOneListbox id="lstSelect" value="#{patientComplaintCategoryController.current}"
+                                                    filter="true" styleClass="w-100">
+                                    <f:selectItems value="#{patientComplaintCategoryController.items}" var="i"
+                                                   itemValue="#{i}" itemLabel="#{i.name}"/>
+                                    <p:ajax process="@this" update="gpDetail"/>
+                                </p:selectOneListbox>
+                            </div>
+                            <div class="col-md-7">
+                                <p:panelGrid id="gpDetail" columns="2" layout="tabular" styleClass="w-100">
+                                    <p:outputLabel for="txtName" value="Name"/>
+                                    <p:inputText id="txtName" styleClass="w-100" maxlength="255" autocomplete="off"
+                                                 value="#{patientComplaintCategoryController.current.name}"/>
+                                </p:panelGrid>
+                            </div>
+                        </div>
+                    </p:panel>
+                </h:form>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

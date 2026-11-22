@@ -29,7 +29,9 @@
 - **🚨 Save a new entity with the facade's `create()`, never `edit()`.** [+](developer_docs/rules/code.md)
 - **🚨 Bind id lists, not entity lists, for a root entity in JPQL** (`b.id in :billIds`). [+](developer_docs/rules/code.md)
 - **🚨 Business errors from a `@Stateless` service use an `@ApplicationException(rollback = true)` exception.** [+](developer_docs/rules/code.md)
+- **🚨 Touched page = upgraded page.** If a change edits an `.xhtml`, bring that page to the UI guidelines (three-zone action bar, compact tables, standard buttons) in its own commit, with no behaviour or id changes; not on hotfix branches unless asked. [+](.claude/skills/ui-guidelines/SKILL.md#touched-page--upgraded-page)
 - **🚨 New report buttons on a Favorites-enabled index page go in both the category tab and the Favorites tab.** [+](developer_docs/feature/report-favorites.md)
+- **🚨 A new `@Entity` or table, or a new column the code reads at startup, ships with its migration in the same PR,** under a version no other open PR uses. [+](developer_docs/database/migration-development-guide.md)
 - **🚨 Never change the meaning of an existing config key;** create a new key. [+](developer_docs/configuration/application-options.md)
 - **🚨 Never change a bean's scope** without the lead developer's OK. [+](developer_docs/jsf/bean-scope-policy.md)
 - **🚨 Never gate behavior on a hospital's name;** use a `ConfigOption`. [+](developer_docs/configuration/institution-specific-behavior.md)
@@ -54,6 +56,7 @@
 - **🚨 Never deploy manually as root;** deploy only through GitHub Actions CI/CD. [+](developer_docs/deployment/deployment-recovery-guide.md)
 - **🚨 Never `git add -A` or `git add .`;** stage explicit paths only. A scripted commit prints `git status --porcelain` and the file list, and refuses paths outside the set. [+](developer_docs/rules/git.md)
 - **🚨 Hotfix branches sync `.gitignore` from `origin/development` first.** [+](.claude/skills/hotfix-deploy/SKILL.md)
+- **🚨 A port is proven by diffing each changed method against `development` and one in-app click on the changed action showing its expected result,** not by a green compile. [+](.claude/skills/hotfix-deploy/SKILL.md)
 - **🚨 Any task that WRITES to git runs in a dedicated worker session,** not the communication session. [+](developer_docs/process/worker-dispatch-template.md)
 - **🚨 If junk or data was pushed to the public repo,** follow the `public-repo-leak-runbook` skill at once.
 - Commit messages include `Closes #N`. [+](developer_docs/git/commit-conventions.md)

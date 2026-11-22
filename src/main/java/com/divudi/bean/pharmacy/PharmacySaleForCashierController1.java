@@ -4840,9 +4840,9 @@ public class PharmacySaleForCashierController1 implements Serializable, Controll
             bifd.setTotalCost(itemCostValue);
 
             // UPDATE VALUE FIELDS in BillItemFinanceDetails (for retail sales, use totalQty including free)
-            bifd.setValueAtCostRate(costRate.multiply(totalQty));
-            bifd.setValueAtPurchaseRate(purchaseRate.multiply(totalQty));
-            bifd.setValueAtRetailRate(retailRate.multiply(totalQty));
+            bifd.setValueAtCostRate(costRate.multiply(totalQty).negate());
+            bifd.setValueAtPurchaseRate(purchaseRate.multiply(totalQty).negate());
+            bifd.setValueAtRetailRate(retailRate.multiply(totalQty).negate());
 
             // UPDATE QUANTITIES in BillItemFinanceDetails
             bifd.setQuantity(qty);

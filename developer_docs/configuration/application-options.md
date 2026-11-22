@@ -243,3 +243,9 @@ Set the rate at: Administration → Manage Inpatient Services → tab Charge Typ
 ## From CLAUDE.md (moved detail)
 
 never change the meaning of an existing config key (no added/removed `!`, no new default). Hospitals store a value per key; create a new key whose name says what `true` does. CI `config-semantics-guard` fails PRs that do this.
+
+## Two-factor login
+
+| Key | Type | Default | Description |
+| --- | --- | --- | --- |
+| `Refuse API logins of accounts not ticked as Service account while two-factor login is required for all users` | Boolean | `false` | When `true`, and both `Enable authenticator app two-factor login` and `Require authenticator app two-factor login for all users` are on, name-and-password logins (lab analysers, middleware, channelling API) are accepted only for accounts ticked as Service account on Manage User. When `false`, the "all users" switch does not affect those logins. See `developer_docs/deployment/two-factor-login-server-setup.md`. |

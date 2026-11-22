@@ -45,6 +45,7 @@ Use this index to jump to the most relevant guidance while working on HMIS. Cont
 - [Pharmacy Fixes](pharmacy/grn-fully-issued-fix.md)
 - [Billing Strategy](billing/bill-number-generation-strategy-guide.md)
 - [Visit History Business Rule](billing/visit-history-business-rule.md)
+- [Client Portal Registration Business Rule](feature/client-portal-registration-business-rule.md)
 - [Database Operations](database/)
 
 ---

@@ -30,6 +30,8 @@ Rules:
 
 A user who must set up (Required ticked, or "all users" on) has 24 hours from the moment an admin ticked Required, reset the authenticator, or a 2FA switch was turned on. After that the user sees a message and an admin must Reset (Manage User shows the end of the period and a "Reopen set-up" button). A user with no valid mobile number on the staff record cannot be set to Required, and the "all users" switch skips such a user and lists them when saved. Set-up always starts with an SMS code to the staff-record mobile, except in a session that has already passed a second step. The "all users" switch still covers a user with a linked app even when the staff record has no valid mobile. A switch that is on but has no recorded time gets one the first time it is checked, so covered users get the 24 hours from then.
 
+Before switching on "Require authenticator app two-factor login for all users", the administrator doing it should link their own authenticator app first. Otherwise their open session is sent to the set-up screen and the next save is refused. Also tick **Service account** (Manage User page) on every lab analyser, middleware and channelling API account first; only a user with the user-management privilege can tick it, and only that user can tick Required or Allow SMS when creating a user.
+
 ## Clone safety: one SQL step after restoring or copying a database
 
 After restoring a production dump anywhere that is not that production server (local, QA, a copy), run this once, then **restart the application** (raw SQL on `CONFIGOPTION` is not seen by the cached options until restart):
@@ -50,14 +52,14 @@ Check the table names in the restored schema (`SHOW TABLES LIKE 'webuser'` is ca
 
 ## Migration
 
-`v2.23.0` creates the `OTPCODE` table when it is missing and adds `WEBUSER.TWOFACTORSETUPWINDOWSTARTEDAT`. Run it before deploying a build that contains this change.
+`v2.23.0` creates the `OTPCODE` table when it is missing and adds `WEBUSER.TWOFACTORSETUPWINDOWSTARTEDAT`. `v2.24.0` adds `WEBUSER.SERVICEACCOUNT`. Run each before deploying a build that contains it.
 
 ## Other rules in this change
-- Lab analysers, middleware and the channelling API log in with a name and password only. A locked account is refused whatever the switches say. While the master switch is on they are also refused for a user who is linked or flagged Required, and for a user allowed SMS codes when the SMS login switch is on too; the "all users" switch does not apply to them. Use a dedicated, never-flagged account for each.
+- Lab analysers, middleware and the channelling API log in with a name and password only. A locked account is refused whatever the switches say. While the master switch is on they are also refused for a user who is linked or flagged Required, and for a user allowed SMS codes when the SMS login switch is on too. The "all users" switch does not change these logins on its own. To accept only accounts ticked as **Service account** (Manage User, 2FA section; migration `v2.24.0` adds the column), also switch on `Refuse API logins of accounts not ticked as Service account while two-factor login is required for all users` (Application Options, default off; it has an effect only while the master and "all users" switches are on). Flag each analyser, middleware and agency account before switching it on, and keep it free of Required, SMS and a linked app (those still refuse it). Use a dedicated account for each machine. A service account is API-only: it can never sign in to the web application (the login page refuses it with a message and the refusal is written to the audit log), so do not use one for a person.
 - The testing grant (`grantAllPrivilegesToAllUsersForTesting`) never works while the master switch is on.
 - A login that has passed the password step and waits for a code is dropped after 10 minutes.
 
 ## Deploying and rolling back
-1. Run migration `v2.23.0` **before** deploying the new build.
+1. Run migrations `v2.23.0` **and** `v2.24.0` **before** the build starts (`v2.24.0` adds `WEBUSER.SERVICEACCOUNT`, which the new build reads on every WebUser query).
 2. Deploy the new build with the master switch **off**, set the key, restart, check the start-up log line about re-encrypted secrets, then switch on.
 3. **Rollback:** the previous build cannot read `gcm` secrets. First switch **Enable authenticator app two-factor login** off in the admin UI (Administration → Manage Institutions → Application Options), then deploy the old build. Do not set the key on an older build, only on the final one. Users linked before the rollback need an admin Reset when the final build returns.

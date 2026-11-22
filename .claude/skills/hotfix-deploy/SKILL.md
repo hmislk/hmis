@@ -127,6 +127,8 @@ git ls-tree -r HEAD | awk '$2=="commit"{print $4}'   # re-check: must print noth
 
 Make only the minimal changes required. Do NOT port unrelated features or refactors. Always compile the hotfix branch before opening the PR: PRs to deploy branches get no compile CI, and older branches often lack newer enum values or facade methods that a cherry-pick uses (2026-11-05: coop-staging lacked an `InwardChargeType` value; mp-production lacked `AbstractFacade.updateByJpql`).
 
+A green compile does not prove a port. Also diff each changed method against `development`, and click the changed action once in the app and check its expected result.
+
 Before editing `persistence.xml`, compare against the target production branch to understand the current state:
 ```bash
 MSYS_NO_PATHCONV=1 git show origin/$0:src/main/resources/META-INF/persistence.xml   # MSYS_NO_PATHCONV: Git Bash on Windows
