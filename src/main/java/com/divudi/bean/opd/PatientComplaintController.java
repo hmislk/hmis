@@ -78,6 +78,15 @@ public class PatientComplaintController implements Serializable {
         return webUserController.hasPrivilege("PatientComplaintCreate");
     }
 
+    private Long insId() {
+        return sessionController.getInstitution() == null ? null : sessionController.getInstitution().getId();
+    }
+
+    /** Users who can be assigned complaints, for the assignee box. */
+    public List<WebUser> completeHandlers(String query) {
+        return isCanHandle() ? complaintService.completeHandlers(query) : new ArrayList<>();
+    }
+
     private boolean denyHandle() {
         if (isCanHandle()) {
             return false;
@@ -120,13 +129,19 @@ public class PatientComplaintController implements Serializable {
             JsfUtil.addErrorMessage("You do not have the privilege for this page.");
             return;
         }
+        if (insId() == null) {
+            rows = new ArrayList<>();
+            JsfUtil.addErrorMessage("Your login has no institution.");
+            return;
+        }
         StringBuilder jpql = new StringBuilder("select new com.divudi.core.data.dto.PatientComplaintRowDto("
                 + "c.id, c.createdAt, c.source, cat.name, coalesce(pp.name, c.complainantName), c.status,"
                 + " ap.name, c.closedAt)"
                 + " from PatientComplaint c left join c.category cat left join c.patient p left join p.person pp"
                 + " left join c.assignee a left join a.webUserPerson ap"
-                + " where c.retired=false and c.createdAt between :fd and :td");
+                + " where c.retired=false and c.institution.id=:ins and c.createdAt between :fd and :td");
         Map<String, Object> m = new HashMap<>();
+        m.put("ins", insId());
         m.put("fd", fromDate);
         m.put("td", toDate);
         if (filterStatus != null) {
@@ -155,7 +170,8 @@ public class PatientComplaintController implements Serializable {
             return null;
         }
         PatientComplaint c = complaintId == null ? null : complaintFacade.find(complaintId);
-        if (c == null || c.isRetired()) {
+        if (c == null || c.isRetired()
+                || !PatientComplaintService.isSameInstitution(c.getInstitution() == null ? null : c.getInstitution().getId(), insId())) {
             JsfUtil.addErrorMessage("Complaint not found.");
             return null;
         }
@@ -183,7 +199,7 @@ public class PatientComplaintController implements Serializable {
         assigneeToSet = c.getAssignee();
         response = c.getResponse();
         statusNote = null;
-        logRows = complaintService.fetchLog(c.getId());
+        logRows = complaintService.fetchLog(c.getId(), insId());
     }
 
     private void reload() {
@@ -197,7 +213,7 @@ public class PatientComplaintController implements Serializable {
         }
         try {
             complaintService.assign(complaint.getId(), assigneeToSet == null ? null : assigneeToSet.getId(),
-                    sessionController.getLoggedUser());
+                    sessionController.getLoggedUser(), insId());
             JsfUtil.addSuccessMessage("Assignment saved.");
         } catch (PatientComplaintException e) {
             JsfUtil.addErrorMessage(e.getMessage());
@@ -210,7 +226,7 @@ public class PatientComplaintController implements Serializable {
             return;
         }
         try {
-            complaintService.saveResponse(complaint.getId(), response, sessionController.getLoggedUser());
+            complaintService.saveResponse(complaint.getId(), response, sessionController.getLoggedUser(), insId());
             JsfUtil.addSuccessMessage("Response saved.");
         } catch (PatientComplaintException e) {
             JsfUtil.addErrorMessage(e.getMessage());
@@ -224,7 +240,7 @@ public class PatientComplaintController implements Serializable {
         }
         try {
             complaintService.changeStatus(complaint.getId(), next, response, statusNote,
-                    sessionController.getLoggedUser());
+                    sessionController.getLoggedUser(), insId());
             JsfUtil.addSuccessMessage(done);
         } catch (PatientComplaintException e) {
             JsfUtil.addErrorMessage(e.getMessage());

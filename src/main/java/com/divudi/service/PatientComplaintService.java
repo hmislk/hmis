@@ -15,8 +15,10 @@ import com.divudi.core.entity.WebUser;
 import com.divudi.core.facade.PatientComplaintCategoryFacade;
 import com.divudi.core.facade.PatientComplaintFacade;
 import com.divudi.core.facade.PatientComplaintLogFacade;
+import com.divudi.core.facade.InstitutionFacade;
 import com.divudi.core.facade.PatientFacade;
 import com.divudi.core.facade.WebUserFacade;
+import com.divudi.core.facade.WebUserPrivilegeFacade;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -52,6 +54,13 @@ public class PatientComplaintService {
     private PatientFacade patientFacade;
     @EJB
     private WebUserFacade webUserFacade;
+    @EJB
+    private WebUserPrivilegeFacade webUserPrivilegeFacade;
+    @EJB
+    private InstitutionFacade institutionFacade;
+
+    /** Privilege a user needs to be given complaints; same name the staff pages check. */
+    public static final String HANDLE_PRIVILEGE = "PatientComplaintHandle";
 
     // ---- pure rules -------------------------------------------------------
 
@@ -93,6 +102,25 @@ public class PatientComplaintService {
         return complaintPatientId != null && sessionPatientIds != null && sessionPatientIds.contains(complaintPatientId);
     }
 
+    /** A staff user reaches only the complaints of their own institution. */
+    public static boolean isSameInstitution(Long complaintInstitutionId, Long userInstitutionId) {
+        return complaintInstitutionId != null && complaintInstitutionId.equals(userInstitutionId);
+    }
+
+    /** Refuses a complaint of another institution with the same message as a missing one. */
+    public static void checkInstitution(Long complaintInstitutionId, Long userInstitutionId) {
+        if (!isSameInstitution(complaintInstitutionId, userInstitutionId)) {
+            throw new PatientComplaintException("Complaint not found.");
+        }
+    }
+
+    /** A response cannot be changed on a Closed complaint; the patient may already have read it. */
+    public static void checkResponseEditable(PatientComplaintStatus status) {
+        if (status == PatientComplaintStatus.CLOSED) {
+            throw new PatientComplaintException("Reopen the complaint to change the response.");
+        }
+    }
+
     private static void checkLength(String s, int max, String what) {
         if (s != null && s.length() > max) {
             throw new PatientComplaintException("The " + what + " is too long (" + max + " characters at most).");
@@ -115,12 +143,41 @@ public class PatientComplaintService {
         logFacade.create(l);
     }
 
-    private PatientComplaint lockOpen(Long complaintId) {
+    private PatientComplaint lockOpen(Long complaintId, Long userInstitutionId) {
         PatientComplaint c = complaintId == null ? null : complaintFacade.findWithLock(complaintId);
         if (c == null || c.isRetired()) {
             throw new PatientComplaintException("Complaint not found.");
         }
+        checkInstitution(c.getInstitution() == null ? null : c.getInstitution().getId(), userInstitutionId);
         return c;
+    }
+
+    /** True when the user holds the handle privilege (any department, not retired). */
+    public boolean canHandle(Long webUserId) {
+        if (webUserId == null) {
+            return false;
+        }
+        Map<String, Object> m = new HashMap<>();
+        m.put("uid", webUserId);
+        m.put("pr", com.divudi.core.data.Privileges.valueOf(HANDLE_PRIVILEGE));
+        return webUserPrivilegeFacade.findLongByJpql(
+                "select count(w) from WebUserPrivilege w where w.retired=false and w.webUser.id=:uid and w.privilege=:pr", m) > 0;
+    }
+
+    /** Users who can be given complaints, matching the typed text on name or login name. */
+    public List<WebUser> completeHandlers(String query) {
+        if (query == null) {
+            return new ArrayList<>();
+        }
+        Map<String, Object> m = new HashMap<>();
+        m.put("q", "%" + query.trim().toUpperCase() + "%");
+        m.put("pr", com.divudi.core.data.Privileges.valueOf(HANDLE_PRIVILEGE));
+        List<WebUser> l = webUserFacade.findByJpql(
+                "select distinct u from WebUser u where u.retired=false"
+                + " and (upper(u.webUserPerson.name) like :q or upper(u.name) like :q)"
+                + " and exists (select w from WebUserPrivilege w where w.retired=false and w.webUser=u and w.privilege=:pr)"
+                + " order by u.webUserPerson.name", m, 20);
+        return l == null ? new ArrayList<>() : l;
     }
 
     private PatientComplaintCategory requireCategory(PatientComplaintCategory category) {
@@ -143,6 +200,9 @@ public class PatientComplaintService {
             WebUser user) {
         if (user == null) {
             throw new PatientComplaintException("You must be logged in to record a complaint.");
+        }
+        if (institution == null) {
+            throw new PatientComplaintException("Your login has no institution, so the complaint cannot be filed.");
         }
         String desc = clean(description);
         if (desc == null) {
@@ -176,8 +236,8 @@ public class PatientComplaintService {
         return c;
     }
 
-    public PatientComplaint assign(Long complaintId, Long assigneeId, WebUser user) {
-        PatientComplaint c = lockOpen(complaintId);
+    public PatientComplaint assign(Long complaintId, Long assigneeId, WebUser user, Long userInstitutionId) {
+        PatientComplaint c = lockOpen(complaintId, userInstitutionId);
         if (c.getStatus() == PatientComplaintStatus.CLOSED) {
             throw new PatientComplaintException("A closed complaint cannot be assigned. Reopen it first.");
         }
@@ -186,6 +246,9 @@ public class PatientComplaintService {
             assignee = webUserFacade.find(assigneeId);
             if (assignee == null || assignee.isRetired()) {
                 throw new PatientComplaintException("Select a valid user to assign the complaint to.");
+            }
+            if (!canHandle(assignee.getId())) {
+                throw new PatientComplaintException("That user cannot handle complaints.");
             }
         }
         c.setAssignee(assignee);
@@ -198,8 +261,9 @@ public class PatientComplaintService {
         return c;
     }
 
-    public PatientComplaint saveResponse(Long complaintId, String response, WebUser user) {
-        PatientComplaint c = lockOpen(complaintId);
+    public PatientComplaint saveResponse(Long complaintId, String response, WebUser user, Long userInstitutionId) {
+        PatientComplaint c = lockOpen(complaintId, userInstitutionId);
+        checkResponseEditable(c.getStatus());
         String r = clean(response);
         if (r == null) {
             throw new PatientComplaintException("Enter the response.");
@@ -218,8 +282,8 @@ public class PatientComplaintService {
      * overlapping requests cannot both pass the check.
      */
     public PatientComplaint changeStatus(Long complaintId, PatientComplaintStatus next, String response,
-            String note, WebUser user) {
-        PatientComplaint c = lockOpen(complaintId);
+            String note, WebUser user, Long userInstitutionId) {
+        PatientComplaint c = lockOpen(complaintId, userInstitutionId);
         PatientComplaintStatus from = c.getStatus();
         String r = clean(response);
         String n = clean(note);
@@ -243,14 +307,15 @@ public class PatientComplaintService {
     }
 
     @SuppressWarnings("unchecked")
-    public List<PatientComplaintLogRowDto> fetchLog(Long complaintId) {
+    public List<PatientComplaintLogRowDto> fetchLog(Long complaintId, Long userInstitutionId) {
         Map<String, Object> m = new HashMap<>();
         m.put("cid", complaintId);
+        m.put("ins", userInstitutionId);
         return (List<PatientComplaintLogRowDto>) logFacade.findLightsByJpql(
                 "select new com.divudi.core.data.dto.PatientComplaintLogRowDto("
                 + "l.createdAt, l.action, l.fromStatus, l.toStatus, l.note, p.name)"
                 + " from PatientComplaintLog l left join l.creater u left join u.webUserPerson p"
-                + " where l.complaint.id=:cid order by l.id", m);
+                + " where l.complaint.id=:cid and l.complaint.institution.id=:ins order by l.id", m);
     }
 
     // ---- client portal ----------------------------------------------------
@@ -312,6 +377,8 @@ public class PatientComplaintService {
         }
         PatientComplaint c = new PatientComplaint();
         c.setPatient(patient);
+        // The portal has no department context; file under the default institution so staff of it see it.
+        c.setInstitution(institutionFacade.findDefaultInstitution());
         c.setSource(PatientComplaintSource.PORTAL);
         c.setCategory(cat);
         c.setDescription(desc);

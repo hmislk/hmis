@@ -93,4 +93,26 @@ class PatientComplaintServiceTest {
         assertNull(PatientComplaintService.clean(null));
         assertEquals("a b", PatientComplaintService.clean("  a b "));
     }
+
+    @Test
+    void staffReachOnlyComplaintsOfTheirInstitution() {
+        assertTrue(PatientComplaintService.isSameInstitution(3L, 3L));
+        assertFalse(PatientComplaintService.isSameInstitution(3L, 4L));
+        assertFalse(PatientComplaintService.isSameInstitution(null, 3L));
+        assertFalse(PatientComplaintService.isSameInstitution(3L, null));
+        assertFalse(PatientComplaintService.isSameInstitution(null, null));
+        PatientComplaintService.checkInstitution(3L, 3L);
+        PatientComplaintException e = assertThrows(PatientComplaintException.class,
+                () -> PatientComplaintService.checkInstitution(3L, 4L));
+        assertEquals("Complaint not found.", e.getMessage());
+    }
+
+    @Test
+    void responseCannotBeChangedOnAClosedComplaint() {
+        PatientComplaintService.checkResponseEditable(NEW);
+        PatientComplaintService.checkResponseEditable(IN_PROGRESS);
+        PatientComplaintException e = assertThrows(PatientComplaintException.class,
+                () -> PatientComplaintService.checkResponseEditable(CLOSED));
+        assertEquals("Reopen the complaint to change the response.", e.getMessage());
+    }
 }

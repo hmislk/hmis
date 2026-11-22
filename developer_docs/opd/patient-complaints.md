@@ -26,10 +26,15 @@
 - Closing records who closed it and when. Reopening clears the closed date; the earlier response stays on the complaint for staff but the patient does not see it until it is Closed again.
 - Assigning does not change the status. A closed complaint cannot be assigned; reopen it first.
 
+## Per institution
+
+The register is per institution. Staff see and open only the complaints of the institution they are logged in to; a complaint of another institution shows "Complaint not found." Complaints sent from the portal are filed under the default institution. A staff login with no institution cannot record complaints.
+
 ## Assignee, category, response
 
 - Each complaint has one assignee (a user) and one category. The category list is kept under **Complaint Categories** (needs the Admin privilege); removing a category keeps it on old complaints.
-- The response is free text. It can be saved before closing without changing the status.
+- The response is free text. It can be saved before closing without changing the status. On a Closed complaint it cannot be changed; reopen the complaint first.
+- Only a user who holds `PatientComplaintHandle` can be assigned a complaint; the assignee box lists only such users.
 
 ## Log
 
