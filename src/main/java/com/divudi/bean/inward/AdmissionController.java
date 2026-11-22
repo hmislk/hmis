@@ -40,6 +40,7 @@ import com.divudi.core.entity.EncounterCreditCompany;
 import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.Patient;
 import com.divudi.core.entity.PatientEncounter;
+import com.divudi.core.entity.WebUser;
 import com.divudi.core.entity.Person;
 import com.divudi.core.entity.inward.Admission;
 import com.divudi.core.entity.inward.PatientRoom;
@@ -2306,6 +2307,84 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         return false;
     }
 
+    // State of the admitted appointment before this save changed it, so a save that is
+    // rolled back after the appointment was linked can put it back (#25725).
+    private Long appointmentBeforeSaveId;
+    private PatientEncounter appointmentEncounterBeforeSave;
+    private boolean appointmentCompleteBeforeSave;
+    private Date appointmentCompleteAtBeforeSave;
+    private WebUser appointmentCompleteByBeforeSave;
+    private AppointmentStatus appointmentStatusBeforeSave;
+    private Long reservationBeforeSaveId;
+    private PatientEncounter reservationEncounterBeforeSave;
+
+    /**
+     * Records the appointment (and its room reservation) as they are before the save
+     * writes anything. Called right after the checks, in both save paths.
+     */
+    private void snapshotAppointmentBeforeSave() {
+        appointmentBeforeSaveId = null;
+        reservationBeforeSaveId = null;
+        if (getAppointmentBill() == null) {
+            return;
+        }
+        Map<String, Object> m = new HashMap<>();
+        m.put("b", getAppointmentBill());
+        Appointment apt = getAppointmentFacade().findFirstByJpql(
+                "select s from Appointment s where s.retired=false and s.bill=:b", m);
+        if (apt == null) {
+            return;
+        }
+        appointmentBeforeSaveId = apt.getId();
+        appointmentEncounterBeforeSave = apt.getPatientEncounter();
+        appointmentCompleteBeforeSave = apt.isAppointmentComplete();
+        appointmentCompleteAtBeforeSave = apt.getAppointmentCompleteAt();
+        appointmentCompleteByBeforeSave = apt.getAppointmentCompleteBy();
+        appointmentStatusBeforeSave = apt.getStatus();
+        if (currentReservation != null && currentReservation.getId() != null
+                && currentReservation.getAppointment() != null
+                && apt.getId().equals(currentReservation.getAppointment().getId())) {
+            reservationBeforeSaveId = currentReservation.getId();
+            reservationEncounterBeforeSave = currentReservation.getReservationEncounter();
+        }
+    }
+
+    /**
+     * After a save is rolled back (the admission retired because automatic admission
+     * charges failed), puts the appointment and its reservation back as they were
+     * before the save, so the appointment can be selected and admitted again (#25725).
+     * Only rows this save linked to the retired admission are touched.
+     */
+    private void restoreAppointmentAfterRolledBackSave(PatientEncounter retiredAdmission) {
+        if (retiredAdmission == null || retiredAdmission.getId() == null) {
+            return;
+        }
+        if (appointmentBeforeSaveId != null) {
+            Appointment apt = getAppointmentFacade().find(appointmentBeforeSaveId);
+            if (apt != null && apt.getPatientEncounter() != null
+                    && retiredAdmission.getId().equals(apt.getPatientEncounter().getId())) {
+                apt.setPatientEncounter(appointmentEncounterBeforeSave);
+                apt.setAppointmentComplete(appointmentCompleteBeforeSave);
+                apt.setAppointmentCompleteAt(appointmentCompleteAtBeforeSave);
+                apt.setAppointmentCompleteBy(appointmentCompleteByBeforeSave);
+                apt.setStatus(appointmentStatusBeforeSave);
+                getAppointmentFacade().edit(apt);
+            }
+        }
+        if (reservationBeforeSaveId != null) {
+            Reservation res = reservationFacade.find(reservationBeforeSaveId);
+            if (res != null && res.getReservationEncounter() != null
+                    && retiredAdmission.getId().equals(res.getReservationEncounter().getId())) {
+                res.setReservationEncounter(reservationEncounterBeforeSave);
+                reservationFacade.edit(res);
+            }
+        }
+        appointmentBeforeSaveId = null;
+        reservationBeforeSaveId = null;
+        // The appointment is pending again: show it on the Admit page list
+        loadPendingAppointments();
+    }
+
     /**
      * Validates the current admission for required fields and
      * configuration-based constraints.
@@ -3550,6 +3629,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             admittingProcessStarted = false;
             return;
         }
+        snapshotAppointmentBeforeSave();
         // Rapid / Temp A&E: now that all non-demographic validations have
         // passed and we are committed to saving, backfill the placeholder
         // demographics. Doing it here (rather than at button-click time) keeps
@@ -3777,6 +3857,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         if (appointmentNoLongerPending(true)) {
             return;
         }
+        snapshotAppointmentBeforeSave();
         Map<String, Object> conversionBefore = admissionSnapshotMap(getCurrentNonBht());
         savePatient();
         savePatientAllergies();
@@ -3904,6 +3985,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             getCurrent().setRetirer(getSessionController().getLoggedUser());
             getCurrent().setRetiredAt(now);
             getFacade().edit(getCurrent());
+            restoreAppointmentAfterRolledBackSave(getCurrent());
 
             JsfUtil.addErrorMessage("Automatic admission charges could not be applied and this admission has been cancelled. Please retry. (" + ex.getMessage() + ")");
             admittingProcessStarted = false;
