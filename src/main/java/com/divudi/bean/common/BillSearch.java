@@ -601,6 +601,52 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
         return "/inward/inward_reprint_bill_service?faces-redirect=true";
     }
 
+    /**
+     * An inward batch service bill carries no items or fees; they are on its child
+     * service bills (each child's backwardReferenceBill is the batch). One child opens
+     * its service reprint page; several open a list of the children, each with Open.
+     */
+    public String navigateToViewInwardServiceBatchBill(Bill batch) {
+        if (batch == null || batch.getId() == null) {
+            JsfUtil.addErrorMessage("No Bill is Selected");
+            return "";
+        }
+        String jpql = "select b from Bill b"
+                + " where b.backwardReferenceBill.id = :batchId"
+                + " and b.retired = false"
+                + " order by b.id";
+        Map<String, Object> m = new HashMap<>();
+        m.put("batchId", batch.getId());
+        List<Bill> children = getBillFacade().findByJpql(jpql, m);
+        if (children == null || children.isEmpty()) {
+            JsfUtil.addErrorMessage("This batch bill has no service bills to show");
+            return "";
+        }
+        if (children.size() == 1) {
+            inwardSearch.setBill(children.get(0));
+            return navigateToInwardSearchService();
+        }
+        inwardBatchServiceBill = batch;
+        inwardBatchServiceChildBills = children;
+        return "/inward/inward_service_batch_bill_children?faces-redirect=true";
+    }
+
+    public String navigateToInwardBatchChildServiceBill(Bill child) {
+        inwardSearch.setBill(child);
+        return navigateToInwardSearchService();
+    }
+
+    private Bill inwardBatchServiceBill;
+    private List<Bill> inwardBatchServiceChildBills;
+
+    public Bill getInwardBatchServiceBill() {
+        return inwardBatchServiceBill;
+    }
+
+    public List<Bill> getInwardBatchServiceChildBills() {
+        return inwardBatchServiceChildBills;
+    }
+
     public List<Payment> fetchBillPayments(Bill bill) {
         return billService.fetchBillPayments(bill);
     }
@@ -5442,10 +5488,12 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
                 return "/inward/inward_reprint_bill_professional?faces-redirect=true";
 
             case INWARD_SERVICE_BILL:
-            case INWARD_SERVICE_BATCH_BILL:
                 // Same page the inward service search opens; it reads inwardSearch.bill.
                 inwardSearch.setBill(bill);
                 return navigateToInwardSearchService();
+
+            case INWARD_SERVICE_BATCH_BILL:
+                return navigateToViewInwardServiceBatchBill(bill);
 
             case INWARD_FINAL_BILL:
                 // Same preparation as inward_search_final.xhtml: set the bill, the admission
