@@ -52,7 +52,7 @@ Grant them on the User Privileges admin page (OPD, Patient Complaints). A user w
 
 ## What the portal patient sees
 
-Only their own complaints: category, text, dates, status, and the response once Closed. Never staff names, the assignee, notes or the log. Every portal read is filtered on the server by the patient of the portal login; ids sent from the page are only ever checked against that patient.
+Only the complaints they sent from the portal themselves (decided 22 Nov: on-site complaints recorded by staff, even when linked to the patient, stay internal): category, text, dates, status, and the response once Closed. Never staff names, the assignee, notes or the log. Every portal read is filtered on the server by the patient of the portal login; ids sent from the page are only ever checked against that patient.
 
 ## Not included
 

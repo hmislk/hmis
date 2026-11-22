@@ -402,7 +402,9 @@ public class PatientComplaintService {
 
     private static final String PORTAL_SELECT = "select new com.divudi.core.data.dto.PatientComplaintPortalRowDto("
             + "c.id, cat.name, c.description, c.status, c.createdAt, c.closedAt, c.response)"
-            + " from PatientComplaint c left join c.category cat where c.retired=false and c.patient.id in :pids";
+            + " from PatientComplaint c left join c.category cat where c.retired=false and c.patient.id in :pids"
+            // The portal shows only what the patient sent online; on-site complaints recorded by staff stay internal.
+            + " and c.source=:portalSource";
 
     /** The portal patient's own complaints, newest first. Filters on the session's patients on the server. */
     @SuppressWarnings("unchecked")
@@ -413,6 +415,7 @@ public class PatientComplaintService {
         }
         Map<String, Object> m = new HashMap<>();
         m.put("pids", patientIds);
+        m.put("portalSource", PatientComplaintSource.PORTAL);
         return (List<PatientComplaintPortalRowDto>) complaintFacade.findLightsByJpqlStrict(
                 PORTAL_SELECT + " order by c.id desc", m);
     }
@@ -430,6 +433,7 @@ public class PatientComplaintService {
         }
         Map<String, Object> m = new HashMap<>();
         m.put("pids", patientIds);
+        m.put("portalSource", PatientComplaintSource.PORTAL);
         m.put("id", complaintId);
         List<PatientComplaintPortalRowDto> rows = (List<PatientComplaintPortalRowDto>) complaintFacade.findLightsByJpqlStrict(
                 PORTAL_SELECT + " and c.id=:id", m);
