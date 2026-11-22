@@ -5432,8 +5432,22 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
                 inwardSearch.setAppointmentReceiptBillId(bill.getId());
                 return "/inward/inward_view_appointment_bill_receipt?faces-redirect=true";
 
+            case INWARD_PROFESSIONAL_FEE_BILL:
+                // Same page the inward professional fee search opens; it reads inwardSearch.bill.
+                inwardSearch.setBill(bill);
+                return "/inward/inward_reprint_bill_professional?faces-redirect=true";
+
+            case INWARD_FINAL_BILL:
+                // Same preparation as inward_search_final.xhtml: set the bill, the admission
+                // context and the frozen PDF snapshot, then open the final bill reprint page.
+                inwardSearch.prepareFinalBillReprintFromSearch(bill);
+                return inwardSearch.navigateToReprintFinalBill(bill);
+
+            default:
+                break;
         }
 
+        JsfUtil.addErrorMessage("There is no view page for bill type " + billTypeAtomic.getLabel());
         return "";
     }
 
