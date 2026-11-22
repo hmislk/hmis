@@ -44,6 +44,7 @@ public class VisitHistoryController implements Serializable {
     private Date toDate;
     private List<VisitHistoryRowDTO> rows;
     private boolean truncated;
+    private long version;
 
     /**
      * From the Reports page: start with an empty form.
@@ -75,12 +76,17 @@ public class VisitHistoryController implements Serializable {
     }
 
     public void process() {
-        rows = new ArrayList<>();
+        // Work on local copies and publish only if nothing changed meanwhile,
+        // so an overlapping request or a Clear cannot mix another patient's rows in.
+        final long startedVersion = ++version;
+        final Patient startedPatient = patient;
+        List<VisitHistoryRowDTO> result = new ArrayList<>();
+        rows = result;
         truncated = false;
         if (!hasAccess()) {
             return;
         }
-        if (patient == null || patient.getId() == null) {
+        if (startedPatient == null || startedPatient.getId() == null) {
             JsfUtil.addErrorMessage("Select a patient");
             return;
         }
@@ -97,23 +103,28 @@ public class VisitHistoryController implements Serializable {
         // Count truncation on the unfiltered list so a type filter cannot hide it.
         List<VisitHistoryRowDTO> all;
         try {
-            all = visitHistoryService.findVisitHistory(patient.getId(), from, to, null, false);
+            all = visitHistoryService.findVisitHistory(startedPatient.getId(), from, to, null, false);
         } catch (Exception e) {
             JsfUtil.addErrorMessage("The visit history could not be loaded completely. Please try again or contact support.");
             return;
         }
-        truncated = visitHistoryService.mayBeTruncated(all);
+        if (startedVersion != version || startedPatient != patient) {
+            return;
+        }
+        boolean isTruncated = visitHistoryService.mayBeTruncated(all);
         for (VisitHistoryRowDTO r : all) {
             if (visitType == null || r.getVisitType() == visitType) {
-                rows.add(r);
+                result.add(r);
             }
         }
+        truncated = isTruncated;
         if (truncated) {
             JsfUtil.addErrorMessage("This patient has a very large number of records. Older rows may be missing; narrow the date range.");
         }
     }
 
     public void clear() {
+        version++;
         patient = null;
         visitType = null;
         fromDate = null;

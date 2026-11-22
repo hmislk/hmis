@@ -91,26 +91,14 @@ public class VisitHistoryService {
                 jb, pb, TemporalType.TIMESTAMP, MAX_ROWS_PER_SOURCE);
 
         // 3. Inpatient bills raised against the patient's admissions but not
-        // carrying the patient id themselves. Bound as an id list.
-        List<Long> admissionIds = new ArrayList<>();
-        Map<String, Object> pi = new HashMap<>();
-        pi.put("pid", patientId);
-        String ji = "select a.id from Admission a where a.retired=false and a.patient.id=:pid"
-                + " order by " + admissionDate + " desc, a.id desc";
-        List<?> ids = billFacade.findLightsByJpqlStrict(ji, pi, TemporalType.TIMESTAMP, MAX_ROWS_PER_SOURCE);
-        if (ids != null) {
-            for (Object o : ids) {
-                if (o instanceof Long) {
-                    admissionIds.add((Long) o);
-                }
-            }
-        }
+        // carrying the patient id themselves. Membership is a subquery on the
+        // patient's admissions, so no admission is dropped by a row cap.
         List<VisitHistoryRowDTO> encounterBillRows = new ArrayList<>();
-        if (!admissionIds.isEmpty()) {
+        {
             Map<String, Object> pe = new HashMap<>();
-            pe.put("encIds", admissionIds);
             pe.put("pid", patientId);
-            String je = selectBill + " and b.patientEncounter.id in :encIds "
+            String je = selectBill + " and b.patientEncounter.id in "
+                    + "(select ea.id from Admission ea where ea.retired=false and ea.patient.id=:pid) "
                     + " and (b.patient is null or b.patient.id=:pid) ";
             je += dateBounds(billDate, fromDate, toDate, pe);
             je += " order by " + billDate + " desc, b.id desc";

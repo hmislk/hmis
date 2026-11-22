@@ -149,13 +149,13 @@
                                                  icon="fa fa-eye"
                                                  title="Open the inpatient dashboard of this admission"
                                                  styleClass="ui-button-info ui-button-outlined"
-                                                 ajax="false"
+                                                 ajax="false" immediate="true"
                                                  action="#{admissionController.navigateToAdmissionProfileById(row.id)}"/>
                                 <p:commandButton rendered="#{not row.admission}"
                                                  icon="fa fa-eye"
                                                  title="Open the bill preview"
                                                  styleClass="ui-button-info ui-button-outlined"
-                                                 ajax="false"
+                                                 ajax="false" immediate="true"
                                                  action="#{billSearch.navigateToViewBillByAtomicBillTypeByBillId(row.id)}"/>
                             </p:column>
                         </p:dataTable>
