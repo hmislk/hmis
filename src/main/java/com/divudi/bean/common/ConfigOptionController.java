@@ -143,9 +143,12 @@ public class ConfigOptionController implements Serializable {
     /**
      * True when the key names a secret: contains (case-insensitive, ignoring
      * spaces, dashes and underscores) api key, password, passphrase, secret,
-     * token, credential, access key or private key. Keys that only name a
-     * location or a setting (ending in url, regex or parameter, or naming
-     * max tokens) are not secrets. One rule for pages, audit display and REST.
+     * token, credential, access key or private key.
+     * <p>
+     * Exclusions (the normalised key is not secret when it ends with): url,
+     * regex, parameter, maxtokens. These name a location or a setting, not a
+     * secret. Only the end is tested, so "Max Tokens - API Key" stays secret.
+     * One rule for pages, audit display, REST and the AI assistant.
      */
     public static boolean isSecretKey(String key) {
         if (key == null) {
@@ -153,7 +156,7 @@ public class ConfigOptionController implements Serializable {
         }
         String k = key.toLowerCase().replaceAll("[^a-z0-9]", "");
         if (k.endsWith("url") || k.endsWith("regex") || k.endsWith("parameter")
-                || k.contains("maxtokens")) {
+                || k.endsWith("maxtokens")) {
             return false;
         }
         return k.contains("apikey") || k.contains("password") || k.contains("passphrase")
@@ -192,7 +195,8 @@ public class ConfigOptionController implements Serializable {
 
     /** Value to write into audit records. */
     public static String auditValue(String key, String value) {
-        if (isSecretKey(key) && value != null && !value.isEmpty()) {
+        if (isSecretKey(key) && value != null && !value.isEmpty()
+                && !"true".equalsIgnoreCase(value) && !"false".equalsIgnoreCase(value)) {
             return SECRET_AUDIT_MASK;
         }
         return value;

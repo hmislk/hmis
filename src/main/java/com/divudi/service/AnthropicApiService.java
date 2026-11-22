@@ -3342,10 +3342,7 @@ public class AnthropicApiService implements Serializable {
         if (key == null || value == null || value.isEmpty()) {
             return value;
         }
-        String lk = key.toLowerCase();
-        if (lk.contains("password") || lk.contains("secret")
-                || lk.contains("api key") || lk.contains("token")
-                || lk.contains("apikey") || lk.contains("private")) {
+        if (com.divudi.bean.common.ConfigOptionController.isSecretKey(key)) {
             return "***masked***";
         }
         return value;

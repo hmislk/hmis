@@ -289,10 +289,20 @@ public class AuditEventController implements Serializable {
         return ae != null && ConfigOptionController.isSecretKey(getOptionKey(ae));
     }
 
+    private String hideIfSecret(AuditEvent ae, String value) {
+        if (!isSecretConfigEvent(ae)) {
+            return value;
+        }
+        return ConfigOptionController.auditValue(getOptionKey(ae), value);
+    }
+
     private void calculateDifferenceHidingSecrets(AuditEvent ae) {
         ae.calculateDifference();
         if (isSecretConfigEvent(ae)) {
-            ae.setDifference("optionKey: " + getOptionKey(ae) + "\nvalue: (hidden)");
+            String key = getOptionKey(ae);
+            String before = ae.getBeforeJson() == null ? "" : getBeforeValue(ae);
+            String after = ae.getAfterJson() == null ? "" : getAfterValue(ae);
+            ae.setDifference("optionKey: " + key + "\noptionValue: Before: " + before + ", After: " + after);
         }
     }
 
@@ -300,20 +310,14 @@ public class AuditEventController implements Serializable {
         if (ae == null) {
             return "";
         }
-        if (isSecretConfigEvent(ae)) {
-            return "(hidden)";
-        }
-        return jsonValue(ae.getBeforeJson(), "optionValue");
+        return hideIfSecret(ae, jsonValue(ae.getBeforeJson(), "optionValue"));
     }
 
     public String getAfterValue(AuditEvent ae) {
         if (ae == null) {
             return "";
         }
-        if (isSecretConfigEvent(ae)) {
-            return "(hidden)";
-        }
-        return jsonValue(ae.getAfterJson(), "optionValue");
+        return hideIfSecret(ae, jsonValue(ae.getAfterJson(), "optionValue"));
     }
 
     public void prepareAdd() {
