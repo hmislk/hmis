@@ -2272,8 +2272,11 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
      * autocomplete), because it loads the appointment by the same bill that
      * {@link #updateAppointment()} links. Checked before anything is saved, so a refused save
      * writes nothing (#25930). No appointment bill (a walk-in) = nothing to check.
+     *
+     * @param conversion true only from saveConvertSelected: an appointment linked to the
+     * non-BHT encounter being converted is then allowed
      */
-    private boolean appointmentNoLongerPending() {
+    private boolean appointmentNoLongerPending(boolean conversion) {
         if (getAppointmentBill() == null) {
             return false;
         }
@@ -2282,7 +2285,9 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         Appointment stored = getAppointmentFacade().findFirstByJpql(
                 "select s from Appointment s where s.retired=false and s.bill=:b", m);
         if (stored == null) {
-            return false;   // same as today: updateAppointment() needs one; not this check's concern
+            // The appointment was removed after it was selected; updateAppointment() would fail after the save
+            JsfUtil.addErrorMessage("This appointment no longer exists. Select it again.");
+            return true;
         }
         // Older rows may have no status; they count as used only through the flags
         boolean used = stored.getStatus() == AppointmentStatus.COMPLETE
@@ -2290,10 +2295,10 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
                 || stored.isAppointmentComplete()
                 || stored.isAppointmentCancel();
         PatientEncounter linked = stored.getPatientEncounter();
-        // Linked to this admission, or (conversion) to the non-BHT encounter being converted into it, is fine
+        // Linked to this admission is fine; so is, in a conversion only, the non-BHT encounter being converted
         boolean linkedElsewhere = linked != null && linked.getId() != null
                 && !linked.getId().equals(getCurrent() == null ? null : getCurrent().getId())
-                && !linked.getId().equals(currentNonBht == null ? null : currentNonBht.getId());
+                && !(conversion && linked.getId().equals(currentNonBht == null ? null : currentNonBht.getId()));
         if (used || linkedElsewhere) {
             JsfUtil.addErrorMessage("This appointment was already used or cancelled. Select it again.");
             return true;
@@ -3541,7 +3546,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             admittingProcessStarted = false;
             return;
         }
-        if (appointmentNoLongerPending()) {
+        if (appointmentNoLongerPending(false)) {
             admittingProcessStarted = false;
             return;
         }
@@ -3769,7 +3774,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         if (errorCheck()) {
             return;
         }
-        if (appointmentNoLongerPending()) {
+        if (appointmentNoLongerPending(true)) {
             return;
         }
         Map<String, Object> conversionBefore = admissionSnapshotMap(getCurrentNonBht());
