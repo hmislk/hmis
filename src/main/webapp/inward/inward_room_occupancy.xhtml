@@ -53,11 +53,12 @@
                             </div>
                             <p:autoComplete id="acIns"
                                             value="#{roomOccupancyController.institution}"
-                                            completeMethod="#{institutionController.completeIns}"
+                                            completeMethod="#{institutionController.completeAdmissionInstitution}"
                                             var="ins"
                                             itemLabel="#{ins.name}"
                                             itemValue="#{ins}"
                                             forceSelection="true"
+                                            maxResults="15"
                                             disabled="#{not roomOccupancyController.anyInstitutionAllowed}"
                                             inputStyleClass="w-100"
                                             styleClass="w-100"
