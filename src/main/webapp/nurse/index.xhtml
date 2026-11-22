@@ -604,6 +604,18 @@
                                                             </div>
                                                             <div class="col-6">
                                                                 <p:commandButton
+                                                                    id="btnIssueMedicinesNurse"
+                                                                    value="Issue Medicines"
+                                                                    title="Open the BHT Issue Requests list to issue medicines against ward requests"
+                                                                    action="/ward/ward_pharmacy_bht_issue_request_list_for_issue?faces-redirect=true"
+                                                                    actionListener="#{pharmacySaleBhtController.resetAll()}"
+                                                                    rendered="#{webUserController.hasPrivilege('PharmacyBHTIssueAccept') or webUserController.hasPrivilege('PharmacyBhtIssueRequest')}"
+                                                                    icon="fas fa-clipboard-list"
+                                                                    class="w-100"
+                                                                    ajax="false"/>
+                                                            </div>
+                                                            <div class="col-6">
+                                                                <p:commandButton
                                                                     value="Direct Issue to BHTs"
                                                                     action="/inward/pharmacy_bill_issue_bht?faces-redirect=true"
                                                                     actionListener="#{inpatientDirectIssueNativeSqlController.resetAll()}"
