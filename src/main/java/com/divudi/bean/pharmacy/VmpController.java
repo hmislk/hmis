@@ -558,8 +558,8 @@ public class VmpController implements Serializable {
         if (selectText.trim().isEmpty()) {
             selectedItems = getFacade().findByJpql("select c from Vmp c where c.inactive=false order by c.name");
         } else {
-            String sql = "select c from Vmp c where c.inactive=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name";
-            selectedItems = getFacade().findByJpql(sql);
+            String sql = "select c from Vmp c where c.inactive=false and (c.name) like :q order by c.name";
+            selectedItems = getFacade().findByJpql(sql, java.util.Map.of("q", "%" + getSelectText().toUpperCase() + "%"));
         }
         return selectedItems;
     }
