@@ -1297,6 +1297,9 @@ public enum Privileges {
     OpdCreditClaimReject("OPD Credit Claim - Record Rejection"),
     OpdCreditClaimResubmit("OPD Credit Claim - Resubmit"),
     //</editor-fold>
+    //<editor-fold defaultstate="collapsed" desc="OPD Quotation (#25885)">
+    OpdQuotationCreate("OPD Quotation - Create, Search and Print"),
+    //</editor-fold>
     ;
 
     private final String label;
@@ -1343,6 +1346,7 @@ public enum Privileges {
             case OpdReprint:
             case OpdBillSearch:
             case OpdPreBilling:
+            case OpdQuotationCreate:
             case OpdReactivate:
             case OpdBillItemSearch:
             case OpdBillSearchEdit:
