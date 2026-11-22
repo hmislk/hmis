@@ -81,25 +81,32 @@
                             </div>
                         </div>
 
-                        <div class="d-flex gap-2 mb-2">
-                            <p:commandButton id="btnProcess"
-                                             value="Process"
-                                             icon="fa fa-cogs"
-                                             styleClass="ui-button-success"
-                                             title="Show the visit history of the selected patient"
-                                             action="#{visitHistoryController.process()}"
-                                             process="@form"
-                                             update="@form"/>
-                            <p:commandButton id="btnClear"
-                                             value="Clear"
-                                             icon="fa fa-eraser"
-                                             styleClass="ui-button-warning"
-                                             title="Clear the patient and filters"
-                                             action="#{visitHistoryController.clear()}"
-                                             process="@this"
-                                             update="@form">
-                                <p:resetInput target="@form"/>
-                            </p:commandButton>
+                        <div class="d-flex justify-content-between align-items-center w-100 mb-2">
+                            <div class="d-flex align-items-center gap-2">
+                                <h:outputText styleClass="fa fa-history"/>
+                                <h:outputText value="Patient visits" styleClass="text-muted small"/>
+                            </div>
+                            <div class="d-flex gap-2 align-items-center">
+                                <p:commandButton id="btnClear"
+                                                 value="Clear"
+                                                 icon="fa fa-eraser"
+                                                 styleClass="ui-button-warning"
+                                                 title="Clear the patient and filters"
+                                                 action="#{visitHistoryController.clear()}"
+                                                 process="@this"
+                                                 update="@form">
+                                    <p:resetInput target="@form"/>
+                                </p:commandButton>
+                                <p:commandButton id="btnProcess"
+                                                 value="Process"
+                                                 icon="fa fa-cogs"
+                                                 styleClass="ui-button-success"
+                                                 style="min-width:120px"
+                                                 title="Show the visit history of the selected patient"
+                                                 action="#{visitHistoryController.process()}"
+                                                 process="@form"
+                                                 update="@form"/>
+                            </div>
                         </div>
 
                         <p:dataTable id="visitHistoryTable"
