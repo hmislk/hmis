@@ -56,7 +56,7 @@ Screens: Financial Transaction Manager → Payment Management → Credit Company
 - One user requests it (`OpdCreditWriteOffRequest`). A **different** user with `OpdCreditWriteOffApprove` approves or rejects it on **Credit Write-offs** (Credit Company Payments, Outpatient Credit Management). The requester cannot decide their own request. Rejecting needs a comment.
 - Only an approved write-off reduces the due. Due = net total less (refunds + settlements + approved write-offs), to 2 decimal places. The bill keeps the sum of its approved write-offs in `Bill.writtenOffAmount`, recomputed on every approval and cancellation.
 - A claim whose bills are all at or below the 0.10 cut-off after write-offs and payments becomes Settled. A write-off counts as progress, so a claim with part written off and nothing paid is Partially Settled.
-- A bill with an approved write-off cannot be refunded, returned or cancelled. Cancel the write-off first (needs the approve privilege and a reason); the amount becomes due again and the claim status is recomputed.
+- A bill with an approved write-off cannot be refunded, returned or cancelled. Cancel the write-off first (needs the approve privilege and a reason, and must be done by a different user than the one who requested it, as for approval); the amount becomes due again and the claim status is recomputed.
 
 ## Privileges
 

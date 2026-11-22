@@ -127,6 +127,14 @@ public class CreditCompanyWriteOffService {
         }
     }
 
+    /** An approved write-off must be cancelled by a different user than the one who requested it. */
+    public static void checkCancel(CreditCompanyWriteOff w, WebUser user) {
+        checkTransition(w, CreditCompanyWriteOffStatus.CANCELLED);
+        if (w.getStatus() == CreditCompanyWriteOffStatus.APPROVED && sameUser(w.getRequestedBy(), user)) {
+            throw new CreditCompanyClaimException("Another user must cancel an approved write-off you requested.");
+        }
+    }
+
     /** Due left on a bill after its approved write-offs. */
     public static BigDecimal dueAfterWriteOff(double netTotal, double refundAmount, double paidAmount, double writtenOff) {
         return CreditCompanyClaimService.dueDecimalOf(netTotal, refundAmount, paidAmount, writtenOff);
@@ -242,7 +250,7 @@ public class CreditCompanyWriteOffService {
         CreditCompanyWriteOff w = reload(writeOffId);
         Bill bill = billFacade.findWithLock(w.getBill().getId());
         requirePrivilege(user, Privileges.OpdCreditWriteOffApprove, "cancel write-offs");
-        checkTransition(w, CreditCompanyWriteOffStatus.CANCELLED);
+        checkCancel(w, user);
         checkReason(reason, "the reason for cancelling the write-off");
         w.setStatus(CreditCompanyWriteOffStatus.CANCELLED);
         w.setCancelledBy(user);

@@ -158,4 +158,21 @@ class CreditCompanyWriteOffRuleTest {
         assertFalse(CreditCompanyWriteOffService.claimAllowsRequest(CreditCompanyClaimStatus.REJECTED));
         assertFalse(CreditCompanyWriteOffService.claimAllowsRequest(CreditCompanyClaimStatus.SETTLED));
     }
+
+    @Test
+    void approvedWriteOffCannotBeCancelledByItsRequester() {
+        assertThrows(CreditCompanyClaimException.class,
+                () -> CreditCompanyWriteOffService.checkCancel(writeOff(APPROVED, 7), user(7)));
+    }
+
+    @Test
+    void approvedWriteOffCanBeCancelledByAnotherUser() {
+        CreditCompanyWriteOffService.checkCancel(writeOff(APPROVED, 7), user(8));
+    }
+
+    @Test
+    void pendingRequestCannotBeCancelled() {
+        assertThrows(CreditCompanyClaimException.class,
+                () -> CreditCompanyWriteOffService.checkCancel(writeOff(REQUESTED, 7), user(7)));
+    }
 }
