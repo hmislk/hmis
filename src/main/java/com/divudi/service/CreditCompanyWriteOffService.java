@@ -295,11 +295,11 @@ public class CreditCompanyWriteOffService {
                 + " where w.retired=false and w.status=:st and w.bill.id=:id", p);
         BigDecimal total = sum.isEmpty() || sum.get(0) == null ? BigDecimal.ZERO
                 : normalize(((Number) sum.get(0)).doubleValue());
-        // Keep the stored balance (printed as outstanding balance) in step: an approval lowers it,
-        // a cancellation restores it, a rejection changes nothing (the sum is unchanged).
-        double change = total.doubleValue() - lockedBill.getWrittenOffAmount();
-        lockedBill.setBalance(Math.max(0, lockedBill.getBalance() - change));
+        // Keep the stored balance (printed as outstanding balance) in step. It is recomputed from
+        // its source of truth (net total less refunds, settlements and approved write-offs), never
+        // moved by a delta, so approve and cancel are symmetric and idempotent.
         lockedBill.setWrittenOffAmount(total.doubleValue());
+        lockedBill.setBalance(Math.max(0.0, CreditCompanyClaimService.dueDecimalOf(lockedBill).doubleValue()));
         billFacade.edit(lockedBill);
 
         Set<Long> claimIds = new TreeSet<>();
