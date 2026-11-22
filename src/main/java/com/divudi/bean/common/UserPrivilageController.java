@@ -157,6 +157,7 @@ public class UserPrivilageController implements Serializable {
         new DefaultTreeNode(new PrivilegeHolder(Privileges.OpdCreditClaimSubmit, "Submit Claim"), opdCreditClaimNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.OpdCreditClaimReject, "Record Claim Rejection"), opdCreditClaimNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.OpdCreditClaimResubmit, "Resubmit Claim"), opdCreditClaimNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.OpdCreditClaimReports, "Claim Reports (Claims by Status, Claim Ageing)"), opdCreditClaimNode);
         TreeNode refundBillsAtCashier = new DefaultTreeNode(new PrivilegeHolder(Privileges.RefundFromCashier, "Refunds From Cashier"), cashierNode);
         TreeNode refundOpdBills = new DefaultTreeNode(new PrivilegeHolder(Privileges.RefundOpdBillsFromCashier, "Refund Opd Bills From Cashier Menu"), cashierNode);
         TreeNode refundPharmacyBills = new DefaultTreeNode(new PrivilegeHolder(Privileges.RefundPharmacyBillsFromCashier, "Refund Pharmacy Bills From Cashier"), cashierNode);
