@@ -946,3 +946,13 @@ a.ui-menuitem-link.menu-item-optimised:hover .ui-menuitem-icon {
     background-image: none !important;
     color: #1a5c2a !important;
 }
+
+/* Arrow-key / hover highlight in item autocomplete tables (#25815).
+   Expiry classes (ui-messages-*) paint the cells with !important backgrounds that hid
+   the row highlight PrimeFaces puts on the keyboard-focused row. */
+body .ui-autocomplete-panel tr.ui-autocomplete-item.ui-state-highlight > td,
+body .ui-autocomplete-panel tr.ui-autocomplete-item:hover > td {
+    background-color: #b8daff !important;
+    color: #000 !important;
+    border-color: #7ab8f5 !important;
+}

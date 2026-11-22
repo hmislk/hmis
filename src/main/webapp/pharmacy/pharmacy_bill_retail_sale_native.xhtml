@@ -11,6 +11,7 @@
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
                 <h:form id="bill">
+                    <h:outputScript library="js" name="pharmacy_sale_keyboard.js" />
                     <script>
                         window.onload = function () {
                             var ac = document.getElementById("bill:acStock");
@@ -200,6 +201,7 @@
                                     </div>
                                     <div class="col-md-2 text-end">
                                         <p:commandButton
+                                            id="btnSettle"
                                             ajax="false"
                                             accesskey="s"
                                             value="Settle"
@@ -781,6 +783,7 @@
                                                                     class="form-control text-end"
                                                                     autocomplete="off"
                                                                     accesskey="t"
+                                                                    onkeydown="return hmisTenderedEnter(event, this);"
                                                                     onfocus="this.select()">
                                                                     <p:ajax process="total dis netTotal paid" update="balance netTotal" event="keyup" />
                                                                 </p:inputText>
