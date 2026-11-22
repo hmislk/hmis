@@ -24,6 +24,56 @@
                                            rendered="#{wardPharmacyReturnToPharmacyController.allPatients}"/>
                         </div>
 
+                        <!-- CENTER: navigation -->
+                        <div class="d-flex gap-2 flex-wrap">
+                            <p:commandButton
+                                id="btnInpatientDashboard"
+                                value="Inpatient Dashboard"
+                                icon="fa fa-id-card"
+                                ajax="false"
+                                immediate="true"
+                                class="ui-button-info ui-button-outlined"
+                                rendered="#{!wardPharmacyReturnToPharmacyController.allPatients and wardPharmacyReturnToPharmacyController.patientEncounter ne null}"
+                                action="#{admissionController.navigateToAdmissionProfilePage}">
+                                <f:setPropertyActionListener
+                                    value="#{wardPharmacyReturnToPharmacyController.patientEncounter}"
+                                    target="#{admissionController.current}"/>
+                            </p:commandButton>
+                            <p:commandButton
+                                id="btnReceiveMedicinesFromPharmacyForAdmission"
+                                value="Receive Medicines from Pharmacy"
+                                icon="fa fa-truck-medical"
+                                ajax="false"
+                                immediate="true"
+                                class="ui-button-info ui-button-outlined"
+                                rendered="#{!wardPharmacyReturnToPharmacyController.allPatients and wardPharmacyReturnToPharmacyController.patientEncounter ne null and webUserController.hasPrivilege('InwardPharmacyBhtReceive')}"
+                                action="#{wardPharmacyBhtIssueReceiveController.navigateToPendingListForAdmission(wardPharmacyReturnToPharmacyController.patientEncounter)}"/>
+                            <p:commandButton
+                                id="btnReceiveMedicinesFromPharmacy"
+                                value="Receive Medicines from Pharmacy"
+                                icon="fa fa-truck-medical"
+                                ajax="false"
+                                immediate="true"
+                                class="ui-button-info ui-button-outlined"
+                                rendered="#{wardPharmacyReturnToPharmacyController.allPatients and webUserController.hasPrivilege('InwardPharmacyBhtReceive')}"
+                                action="#{wardPharmacyBhtIssueReceiveController.openPendingList}"/>
+                        </div>
+
+                        <!-- RIGHT: actions -->
+                        <div class="d-flex gap-2 flex-wrap align-items-center">
+                            <p:commandButton
+                                id="btnConfirmReturn"
+                                value="Confirm Return to Pharmacy"
+                                icon="fas fa-check"
+                                class="ui-button-success"
+                                style="min-width:120px"
+                                update=":formWardReturnToPharmacy"
+                                actionListener="#{wardPharmacyReturnToPharmacyController.settle}"
+                                disabled="#{not webUserController.hasPrivilege('InwardPharmacyReturnSubmit') or wardPharmacyReturnToPharmacyController.selectedReceiveBill eq null}"
+                                onclick="if (!confirm('Return the entered quantities to the pharmacy via the selected porter? This cannot be undone.')) {
+                                            return false;
+                                        }"/>
+                        </div>
                     </div>
                 </f:facet>
 
@@ -193,7 +243,6 @@
                         rowKey="#{line.returnItem.referanceBillItem.id}"
                         value="#{wardPharmacyReturnToPharmacyController.returnLines}"
                         var="line"
-                        editable="true"
                         class="w-100 p-datatable-sm"
                         stickyHeader="true"
                         emptyMessage="Nothing left to return on this received bill.">
@@ -201,9 +250,6 @@
                         <f:facet name="header">
                             <h:outputText value="Returning Against Bill #{wardPharmacyReturnToPharmacyController.selectedReceiveBill.deptId}"/>
                         </f:facet>
-
-                        <p:ajax event="rowEdit" listener="#{wardPharmacyReturnToPharmacyController.onEditing}" update="tblReturnItems"/>
-                        <p:ajax event="rowEditCancel" listener="#{wardPharmacyReturnToPharmacyController.onEditing}" update="tblReturnItems"/>
 
                         <p:column headerText="Item">
                             <h:outputText value="#{line.returnItem.item.name}"/>
@@ -244,38 +290,19 @@
                         </p:column>
 
                         <p:column headerText="Return Quantity">
-                            <p:cellEditor>
-                                <f:facet name="output">
-                                    <h:outputText value="#{line.returnItem.pharmaceuticalBillItem.qty}">
-                                        <f:convertNumber pattern="#,##0.00"/>
-                                    </h:outputText>
-                                </f:facet>
-                                <f:facet name="input">
-                                    <p:inputText autocomplete="off" value="#{line.returnItem.pharmaceuticalBillItem.qty}" style="width:96%"/>
-                                </f:facet>
-                            </p:cellEditor>
-                        </p:column>
-
-                        <p:column style="width:10px!important; text-align: right; padding: 6px;">
-                            <p:rowEditor/>
+                            <p:inputText id="txtReturnQty"
+                                         autocomplete="off"
+                                         value="#{line.returnItem.pharmaceuticalBillItem.qty}"
+                                         title="Quantity to return for #{line.returnItem.item.name} (maximum #{line.returnableQty})"
+                                         style="width:8rem; text-align:right;">
+                                <p:ajax event="change"
+                                        listener="#{wardPharmacyReturnToPharmacyController.onReturnQuantityChanged(line)}"
+                                        update="@this"/>
+                            </p:inputText>
                         </p:column>
 
                     </p:dataTable>
                 </h:panelGroup>
-
-                <div class="d-flex justify-content-end mt-3">
-                    <p:commandButton
-                        id="btnConfirmReturn"
-                        value="Confirm Return to Pharmacy"
-                        icon="fas fa-check"
-                        class="ui-button-success"
-                        update=":formWardReturnToPharmacy"
-                        actionListener="#{wardPharmacyReturnToPharmacyController.settle}"
-                        disabled="#{not webUserController.hasPrivilege('InwardPharmacyReturnSubmit') or wardPharmacyReturnToPharmacyController.selectedReceiveBill eq null}"
-                        onclick="if (!confirm('Return the entered quantities to the pharmacy via the selected porter? This cannot be undone.')) {
-                                    return false;
-                                }"/>
-                </div>
             </p:panel>
 
             <p:panel styleClass="sticky-panel-header" rendered="#{wardPharmacyReturnToPharmacyController.printPreview}">
