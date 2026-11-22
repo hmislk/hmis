@@ -50,7 +50,7 @@ EXECUTE stmt;
 DEALLOCATE PREPARE stmt;
 
 -- Step 2: CREDITCOMPANYWRITEOFF
-SET @writeoff_table = IF(@webuser_table = UPPER(@webuser_table), 'CREDITCOMPANYWRITEOFF', 'creditcompanywriteoff');
+SET @writeoff_table = IF(BINARY @webuser_table = BINARY UPPER(@webuser_table), 'CREDITCOMPANYWRITEOFF', 'creditcompanywriteoff');
 
 SET @exists = (
     SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES

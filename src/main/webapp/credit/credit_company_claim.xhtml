@@ -158,6 +158,7 @@
 
                         <h:panelGroup id="writeOffRequest" layout="block" styleClass="my-2"
                                       rendered="#{creditCompanyClaimController.writeOffFormOpen}">
+                            <h:inputHidden id="writeOffItemIdOnPage" value="#{creditCompanyClaimController.writeOffItemIdOnPage}"/>
                             <p:panelGrid columns="2" layout="tabular" styleClass="w-100 my-2">
                                 <f:facet name="header">
                                     <h:outputText value="Request write-off for bill #{creditCompanyClaimController.writeOffItem.bill.deptId}"/>

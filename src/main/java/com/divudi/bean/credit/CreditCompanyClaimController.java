@@ -83,6 +83,8 @@ public class CreditCompanyClaimController implements Serializable {
     // Write-off request (#25847 part 3)
     private List<CreditCompanyWriteOff> claimWriteOffs = new ArrayList<>();
     private CreditCompanyClaimItem writeOffItem;
+    /** Claim item id posted from the open write-off form, to match the form to writeOffItem. */
+    private Long writeOffItemIdOnPage;
     private Double writeOffAmount;
     private String writeOffReason;
 
@@ -315,6 +317,10 @@ public class CreditCompanyClaimController implements Serializable {
             JsfUtil.addErrorMessage("Choose the bill to write off.");
             return;
         }
+        if (writeOffItemIdOnPage == null || !writeOffItemIdOnPage.equals(writeOffItem.getId())) {
+            JsfUtil.addErrorMessage("This form is out of date. Open the write-off request again.");
+            return;
+        }
         try {
             writeOffService.request(writeOffItem.getBill().getId(), writeOffAmount == null ? 0 : writeOffAmount,
                     writeOffReason, sessionController.getLoggedUser(), true);
@@ -328,6 +334,14 @@ public class CreditCompanyClaimController implements Serializable {
 
     public List<CreditCompanyWriteOff> getClaimWriteOffs() {
         return claimWriteOffs;
+    }
+
+    public Long getWriteOffItemIdOnPage() {
+        return writeOffItem == null ? null : writeOffItem.getId();
+    }
+
+    public void setWriteOffItemIdOnPage(Long writeOffItemIdOnPage) {
+        this.writeOffItemIdOnPage = writeOffItemIdOnPage;
     }
 
     public CreditCompanyClaimItem getWriteOffItem() {

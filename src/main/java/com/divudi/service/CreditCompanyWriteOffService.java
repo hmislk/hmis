@@ -295,6 +295,10 @@ public class CreditCompanyWriteOffService {
                 + " where w.retired=false and w.status=:st and w.bill.id=:id", p);
         BigDecimal total = sum.isEmpty() || sum.get(0) == null ? BigDecimal.ZERO
                 : normalize(((Number) sum.get(0)).doubleValue());
+        // Keep the stored balance (printed as outstanding balance) in step: an approval lowers it,
+        // a cancellation restores it, a rejection changes nothing (the sum is unchanged).
+        double change = total.doubleValue() - lockedBill.getWrittenOffAmount();
+        lockedBill.setBalance(Math.max(0, lockedBill.getBalance() - change));
         lockedBill.setWrittenOffAmount(total.doubleValue());
         billFacade.edit(lockedBill);
 

@@ -1125,7 +1125,7 @@ public class CreditCompanyDueController implements Serializable {
 
             Long dayCount = CommonFunctions.getDayCountTillNow(b.getCreatedAt());
 
-            double finalValue = (b.getNetTotal() + b.getPaidAmount());
+            double finalValue = b.getNetTotal() + b.getPaidAmount() - b.getWrittenOffAmount();
 
             if (dayCount < 30) {
                 dataTable5Value.setValue1(dataTable5Value.getValue1() + finalValue);
