@@ -319,6 +319,36 @@ public class CreditCompanyClaimService {
         return c;
     }
 
+    /**
+     * Closes a partially settled claim with a reason. The bills are freed from the
+     * claim; what the company has not paid stays due on the bills.
+     */
+    public CreditCompanyClaim closePartiallySettled(CreditCompanyClaim claim, String reason, WebUser user) {
+        CreditCompanyClaim c = reload(claim);
+        checkCanClosePartiallySettled(c, reason);
+        c.setStatus(CreditCompanyClaimStatus.CLOSED);
+        c.setCloseReason(reason.trim());
+        c.setClosedAt(new Date());
+        c.setClosedBy(user);
+        claimFacade.edit(c);
+        return c;
+    }
+
+    /** The rule for closing: only a partially settled claim, and a reason is needed. */
+    public static void checkCanClosePartiallySettled(CreditCompanyClaim claim, String reason) {
+        if (claim == null || claim.getStatus() == null) {
+            throw new CreditCompanyClaimException("Claim not found.");
+        }
+        if (claim.getStatus() != CreditCompanyClaimStatus.PARTIALLY_SETTLED) {
+            throw new CreditCompanyClaimException("Only a partially settled claim can be closed here. This claim is "
+                    + claim.getStatus().getLabel() + ".");
+        }
+        checkTransition(claim, CreditCompanyClaimStatus.CLOSED);
+        if (blankToNull(reason) == null) {
+            throw new CreditCompanyClaimException("Enter the reason for closing the claim.");
+        }
+    }
+
     public CreditCompanyClaim resubmit(CreditCompanyClaim claim, Date submittedOn, String companyReference, WebUser user) {
         CreditCompanyClaim c = reload(claim);
         checkTransition(c, CreditCompanyClaimStatus.RESUBMITTED);

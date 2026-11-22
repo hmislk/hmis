@@ -88,6 +88,11 @@
                             <h:outputText value="#{creditCompanyClaimController.claim.rejectReason}"/>
                         </h:panelGroup>
 
+                        <h:panelGroup layout="block" rendered="#{not empty creditCompanyClaimController.claim.closeReason}" styleClass="my-2">
+                            <h:outputText value="Closed because: " styleClass="fw-bold"/>
+                            <h:outputText value="#{creditCompanyClaimController.claim.closeReason}"/>
+                        </h:panelGroup>
+
                         <h:panelGroup id="actions" layout="block" styleClass="my-2">
                             <p:panelGrid columns="2" layout="tabular" styleClass="w-100 my-2"
                                          rendered="#{creditCompanyClaimController.draft or creditCompanyClaimController.rejected}">
@@ -109,6 +114,17 @@
                                 <p:commandButton value="Record Rejection" icon="fas fa-ban" styleClass="ui-button-danger mt-2"
                                                  title="Record that the company rejected this claim" ajax="false"
                                                  action="#{creditCompanyClaimController.reject}"/>
+                            </h:panelGroup>
+
+                            <h:panelGroup layout="block"
+                                          rendered="#{creditCompanyClaimController.partiallySettled and webUserController.hasPrivilege('OpdCreditClaimCreate')}">
+                                <p:outputLabel for="closeReason" value="Reason for closing the claim"/>
+                                <p:inputTextarea id="closeReason" styleClass="w-100" rows="2"
+                                                 value="#{creditCompanyClaimController.closeReason}"/>
+                                <p:commandButton value="Close Claim" icon="fas fa-lock" styleClass="ui-button-danger mt-2"
+                                                 title="Close this claim; the unpaid balance stays due on the bills" ajax="false"
+                                                 onclick="return confirm('Close this claim? The unpaid balance stays due.');"
+                                                 action="#{creditCompanyClaimController.closePartial}"/>
                             </h:panelGroup>
                         </h:panelGroup>
 

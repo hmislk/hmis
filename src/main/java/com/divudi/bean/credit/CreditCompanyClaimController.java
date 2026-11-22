@@ -73,6 +73,7 @@ public class CreditCompanyClaimController implements Serializable {
     private Date submittedOn;
     private String companyReference;
     private String rejectReason;
+    private String closeReason;
 
     public boolean hasAnyClaimPrivilege() {
         return webUserController.hasPrivilege("OpdCreditClaimCreate")
@@ -214,6 +215,7 @@ public class CreditCompanyClaimController implements Serializable {
         submittedOn = new Date();
         companyReference = c.getCompanyReference();
         rejectReason = null;
+        closeReason = null;
         loadItems();
         return "/credit/credit_company_claim?faces-redirect=true";
     }
@@ -331,6 +333,35 @@ public class CreditCompanyClaimController implements Serializable {
             JsfUtil.addErrorMessage(e.getMessage());
         }
         reloadClaim();
+    }
+
+    public void closePartial() {
+        if (deny("OpdCreditClaimCreate")) {
+            return;
+        }
+        if (pageOutOfDate()) {
+            return;
+        }
+        try {
+            claimService.closePartiallySettled(claim, closeReason, sessionController.getLoggedUser());
+            closeReason = null;
+            JsfUtil.addSuccessMessage("Claim closed. Its bills are free; what is unpaid stays due.");
+        } catch (CreditCompanyClaimException e) {
+            JsfUtil.addErrorMessage(e.getMessage());
+        }
+        reloadClaim();
+    }
+
+    public boolean isPartiallySettled() {
+        return claim != null && claim.getStatus() == CreditCompanyClaimStatus.PARTIALLY_SETTLED;
+    }
+
+    public String getCloseReason() {
+        return closeReason;
+    }
+
+    public void setCloseReason(String closeReason) {
+        this.closeReason = closeReason;
     }
 
     public void resubmit() {
