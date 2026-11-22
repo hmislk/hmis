@@ -25,7 +25,7 @@ Checklist (greps that catch most violations; still read the context):
 - Data hygiene: mock data or temporary workarounds in business logic; an intentional typo "fixed" (e.g. `purcahseRate`); a composite component renamed.
 - Billing: item-level cancellation; report buttons on a Favorites page added to only one tab.
 - Files: `persistence.xml` JNDI changed in the diff; credentials, IPs, hostnames or hospital data in any added line; screenshots or dumps committed.
-- Migrations: a new `@Entity` class or new table in the diff with no `src/main/resources/db/migrations/v*` folder in the same diff = **Blocking**; a migration version already used by another open PR (`gh pr list --state open --search "migration v2."`) = **Blocking**.
+- Migrations: a new `@Entity` class or new table in the diff with no `src/main/resources/db/migrations/v*` folder in the same diff = **Blocking**; a migration version already used by another open PR (list their migration paths: `gh pr list --state open --json number --jq '.[].number' | xargs -I{} sh -c 'gh pr diff {} --name-only | grep "^src/main/resources/db/migrations/" | sed "s/^/#{}: /"'`) = **Blocking**.
 - JSF: `ui:fragment` or `p:repeat` in added XHTML (project rule in the ui-guidelines skill).
 
 Classification (same as merge-gate Phase 1):
