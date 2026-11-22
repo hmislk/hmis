@@ -21,8 +21,8 @@ Screens: Financial Transaction Manager → Payment Management → Credit Company
 | From | Can move to |
 |---|---|
 | Draft | Submitted, Cancelled |
-| Submitted / Resubmitted | Rejected, Partially Settled, Settled, Closed |
-| Rejected | Resubmitted, Closed, Cancelled |
+| Submitted / Resubmitted | Rejected, Partially Settled, Settled |
+| Rejected | Resubmitted, Cancelled |
 | Partially Settled | Settled, Closed |
 | Settled, Closed, Cancelled | nothing (final) |
 
