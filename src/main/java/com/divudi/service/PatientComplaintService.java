@@ -186,25 +186,29 @@ public class PatientComplaintService {
     }
 
     /**
-     * Users for the register's "Assigned to" filter: current handlers plus anyone already assigned a complaint,
-     * so complaints of a user who lost the handle privilege can still be found. New assignments keep using
-     * {@link #completeHandlers(String)}.
+     * Users for the register's "Assigned to" filter: current handlers plus anyone already assigned a complaint
+     * (including users who have since lost the privilege or been retired), so complaints of former handlers can
+     * still be found. The combined list is de-duplicated, sorted by display name and capped at 20.
+     * New assignments keep using {@link #completeHandlers(String)}.
      */
     public List<WebUser> completeFilterAssignees(String query) {
-        List<WebUser> result = new ArrayList<>(completeHandlers(query));
+        List<WebUser> result = new ArrayList<>();
         if (query == null) {
             return result;
         }
         Set<Long> seen = new HashSet<>();
-        for (WebUser u : result) {
-            seen.add(u.getId());
+        for (WebUser u : completeHandlers(query)) {
+            if (seen.add(u.getId())) {
+                result.add(u);
+            }
         }
         Map<String, Object> m = new HashMap<>();
         m.put("q", "%" + query.trim().toUpperCase() + "%");
         List<WebUser> former = webUserFacade.findByJpql(
-                "select distinct c.assignee from PatientComplaint c where c.retired=false"
-                + " and c.assignee is not null and c.assignee.retired=false"
-                + " and (upper(c.assignee.webUserPerson.name) like :q or upper(c.assignee.name) like :q)", m, 20);
+                "select distinct a from PatientComplaint c join c.assignee a left join a.webUserPerson p"
+                + " where c.retired=false"
+                + " and (upper(p.name) like :q or upper(a.name) like :q)"
+                + " order by a.name, a.id", m, 20);
         if (former != null) {
             for (WebUser u : former) {
                 if (seen.add(u.getId())) {
@@ -212,7 +216,15 @@ public class PatientComplaintService {
                 }
             }
         }
-        return result;
+        result.sort((x, y) -> filterDisplayName(x).compareToIgnoreCase(filterDisplayName(y)));
+        return result.size() > 20 ? new ArrayList<>(result.subList(0, 20)) : result;
+    }
+
+    private static String filterDisplayName(WebUser u) {
+        if (u.getWebUserPerson() != null && u.getWebUserPerson().getName() != null) {
+            return u.getWebUserPerson().getName();
+        }
+        return u.getName() == null ? "" : u.getName();
     }
 
     private PatientComplaintCategory requireCategory(PatientComplaintCategory category) {
