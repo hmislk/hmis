@@ -146,6 +146,9 @@ public class UserPrivilageController implements Serializable {
         TreeNode addNewRefferalDoctor = new DefaultTreeNode(new PrivilegeHolder(Privileges.OpdAddNewRefferalDoctor, "Add New Referral Doctor"), opdNode);
         TreeNode addNewCollectingCentre = new DefaultTreeNode(new PrivilegeHolder(Privileges.OpdAddNewCollectingCentre, "Add New Referral Center"), opdNode);
         TreeNode opdEditPatientDetailsNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.OpdEditPatientDetails, "Edit Patient Details in OPD Billing"), opdNode);
+        TreeNode patientComplaintNode = new DefaultTreeNode(new PrivilegeHolder(null, "Patient Complaints"), opdNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.PatientComplaintHandle, "Handle Complaints (register, assign, respond, close)"), patientComplaintNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.PatientComplaintCreate, "Record On-site Complaint"), patientComplaintNode);
 
         TreeNode cashierNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.Cashier, "Cashier Menu"), opdNode);
         TreeNode acceptPaymentForCashierBills = new DefaultTreeNode(new PrivilegeHolder(Privileges.AcceptPaymentForPharmacyBills, "Accept payment for sale for cashier bills"), cashierNode);

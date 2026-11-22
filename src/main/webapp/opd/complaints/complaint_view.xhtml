@@ -1,0 +1,146 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+    <h:head>
+        <title>Patient Complaint</title>
+    </h:head>
+    <h:body>
+        <ui:composition template="/resources/template/template.xhtml">
+            <ui:define name="content">
+                <h:panelGroup rendered="#{not patientComplaintController.canHandle}">
+                    You are NOT authorized
+                </h:panelGroup>
+                <h:form id="complaintForm" rendered="#{patientComplaintController.canHandle and patientComplaintController.complaint != null}">
+                    <p:growl id="msg" showDetail="true"/>
+                    <h:inputHidden id="complaintIdOnPage" value="#{patientComplaintController.complaintIdOnPage}"/>
+                    <p:panel>
+                        <f:facet name="header">
+                            <div class="d-flex justify-content-between align-items-center w-100">
+                                <div class="d-flex align-items-center gap-2">
+                                    <h:outputText styleClass="fa fa-comment-dots"/>
+                                    <h:outputText value="Patient Complaint #{patientComplaintController.complaint.id}"/>
+                                </div>
+                                <div class="d-flex align-items-center gap-2">
+                                    <p:commandButton value="Register" icon="fa fa-list" ajax="false" immediate="true"
+                                                     title="Back to the complaints register"
+                                                     action="#{patientComplaintController.backToRegister}"
+                                                     styleClass="ui-button-info ui-button-outlined"/>
+                                    <p:commandButton id="btnReopen" value="Reopen" icon="fa fa-undo"
+                                                     title="Reopen this closed complaint (a note is required)"
+                                                     rendered="#{patientComplaintController.canReopen}"
+                                                     action="#{patientComplaintController.reopenComplaint}"
+                                                     process="@form" update="@form"
+                                                     styleClass="ui-button-warning"/>
+                                    <p:commandButton id="btnStart" value="Start Work" icon="fa fa-play"
+                                                     title="Move the complaint to In Progress"
+                                                     rendered="#{patientComplaintController.canStart}"
+                                                     action="#{patientComplaintController.startWork}"
+                                                     process="@form" update="@form"
+                                                     styleClass="ui-button-warning"/>
+                                    <p:commandButton id="btnClose" value="Close" icon="fa fa-check-circle"
+                                                     title="Close the complaint (the response is required)"
+                                                     rendered="#{patientComplaintController.canClose}"
+                                                     action="#{patientComplaintController.closeComplaint}"
+                                                     process="@form" update="@form"
+                                                     styleClass="ui-button-success" style="min-width:120px"/>
+                                </div>
+                            </div>
+                        </f:facet>
+
+                        <p:panelGrid columns="4" layout="tabular" styleClass="w-100 mb-2">
+                            <h:outputText value="Status"/>
+                            <h:outputText value="#{patientComplaintController.complaint.status.label}"/>
+                            <h:outputText value="Source"/>
+                            <h:outputText value="#{patientComplaintController.complaint.source.label}"/>
+                            <h:outputText value="Complainant"/>
+                            <h:outputText value="#{patientComplaintController.complaint.patient != null ? patientComplaintController.complaint.patient.person.nameWithTitle : patientComplaintController.complaint.complainantName}"/>
+                            <h:outputText value="Phone"/>
+                            <h:outputText value="#{patientComplaintController.complaint.patient != null ? patientComplaintController.complaint.patient.person.mobile : patientComplaintController.complaint.complainantPhone}"/>
+                            <h:outputText value="Category"/>
+                            <h:outputText value="#{patientComplaintController.complaint.category.name}"/>
+                            <h:outputText value="Received"/>
+                            <h:outputText value="#{patientComplaintController.complaint.createdAt}">
+                                <f:convertDateTime pattern="yyyy MM dd HH:mm"/>
+                            </h:outputText>
+                            <h:outputText value="Closed"/>
+                            <h:outputText value="#{patientComplaintController.complaint.closedAt}">
+                                <f:convertDateTime pattern="yyyy MM dd HH:mm"/>
+                            </h:outputText>
+                            <h:outputText value="Closed by"/>
+                            <h:outputText value="#{patientComplaintController.complaint.closedBy.webUserPerson.name}"/>
+                        </p:panelGrid>
+
+                        <p:outputLabel value="Complaint" styleClass="fw-bold"/>
+                        <h:outputText value="#{patientComplaintController.complaint.description}" escape="true"
+                                      style="display:block; white-space:pre-wrap;" styleClass="mb-2"/>
+
+                        <div class="row g-2 mt-2">
+                            <div class="col-md-5">
+                                <p:outputLabel for="assignee" value="Assigned to"/>
+                                <div class="d-flex gap-2">
+                                    <p:autoComplete id="assignee" styleClass="w-100" inputStyleClass="form-control"
+                                                    value="#{patientComplaintController.assigneeToSet}"
+                                                    forceSelection="true"
+                                                    completeMethod="#{webUserController.completeUser}"
+                                                    var="u" itemLabel="#{u.webUserPerson.name}" itemValue="#{u}"
+                                                    placeholder="Unassigned"/>
+                                    <p:commandButton id="btnAssign" value="Assign" icon="fa fa-user-check"
+                                                     title="Save the assignment"
+                                                     action="#{patientComplaintController.assign}"
+                                                     process="@form" update="@form"
+                                                     styleClass="ui-button-secondary"/>
+                                </div>
+                            </div>
+                            <div class="col-md-7">
+                                <p:outputLabel for="note" value="Note for the log (required to reopen)"/>
+                                <p:inputText id="note" styleClass="w-100" maxlength="2000" autocomplete="off"
+                                             value="#{patientComplaintController.statusNote}"/>
+                            </div>
+                        </div>
+
+                        <div class="mt-2">
+                            <p:outputLabel for="response" value="Response to the patient (required to close; the patient sees it once the complaint is Closed)"/>
+                            <p:inputTextarea id="response" rows="4" styleClass="w-100" maxlength="4000"
+                                             value="#{patientComplaintController.response}"/>
+                            <p:commandButton id="btnSaveResponse" value="Save Response" icon="fa fa-save"
+                                             title="Save the response without changing the status"
+                                             action="#{patientComplaintController.saveResponse}"
+                                             process="@form" update="@form"
+                                             styleClass="ui-button-secondary mt-1"/>
+                        </div>
+                    </p:panel>
+
+                    <p:panel header="History" styleClass="mt-2">
+                        <p:dataTable id="logList" value="#{patientComplaintController.logRows}" var="l"
+                                     styleClass="p-datatable-sm" emptyMessage="No history">
+                            <p:column headerText="When">
+                                <h:outputText value="#{l.createdAt}">
+                                    <f:convertDateTime pattern="yyyy MM dd HH:mm"/>
+                                </h:outputText>
+                            </p:column>
+                            <p:column headerText="By">
+                                <h:outputText value="#{l.userName}"/>
+                            </p:column>
+                            <p:column headerText="Action">
+                                <h:outputText value="#{l.action.label}"/>
+                            </p:column>
+                            <p:column headerText="From">
+                                <h:outputText value="#{l.fromStatus.label}"/>
+                            </p:column>
+                            <p:column headerText="To">
+                                <h:outputText value="#{l.toStatus.label}"/>
+                            </p:column>
+                            <p:column headerText="Note">
+                                <h:outputText value="#{l.note}"/>
+                            </p:column>
+                        </p:dataTable>
+                    </p:panel>
+                </h:form>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

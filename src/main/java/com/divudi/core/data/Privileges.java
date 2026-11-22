@@ -1297,6 +1297,10 @@ public enum Privileges {
     OpdCreditClaimReject("OPD Credit Claim - Record Rejection"),
     OpdCreditClaimResubmit("OPD Credit Claim - Resubmit"),
     //</editor-fold>
+    //<editor-fold defaultstate="collapsed" desc="Patient Complaints (#25886)">
+    PatientComplaintHandle("Patient Complaints - Handle (view register, assign, respond, change status, close)"),
+    PatientComplaintCreate("Patient Complaints - Record On-site Complaint"),
+    //</editor-fold>
     ;
 
     private final String label;
