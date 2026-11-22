@@ -50,6 +50,26 @@
                                     action="#{searchController.createReturnSaleAllBills()}">
                                 </p:commandButton>
 
+                                <!-- Export every listed bill, not just the current page (issue #25786) -->
+                                <p:commandButton
+                                    id="btnExcel"
+                                    ajax="false"
+                                    icon="fa fa-file-excel"
+                                    class="w-100 mb-1 ui-button-success"
+                                    value="Excel"
+                                    title="Download all listed bills as Excel. Use Search All first to include every bill in the date range.">
+                                    <p:dataExporter type="xlsx" target="tblBills" fileName="pharmacy_return_bills"/>
+                                </p:commandButton>
+                                <p:commandButton
+                                    id="btnPdf"
+                                    ajax="false"
+                                    icon="fa fa-file-pdf"
+                                    class="w-100 mb-3 ui-button-danger"
+                                    value="PDF"
+                                    title="Download all listed bills as PDF. Use Search All first to include every bill in the date range.">
+                                    <p:dataExporter type="pdf" target="tblBills" fileName="pharmacy_return_bills"/>
+                                </p:commandButton>
+
                                 <h:outputLabel value="Sale Bill No"/>   
                                 <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.refBillNo}" class="w-100"/>   
                                 <h:outputLabel value="Return Bill No"/> 
@@ -78,7 +98,7 @@
                                         <h:outputLabel value="#{bill.deptId}" ></h:outputLabel>
                                     </p:column>  
 
-                                    <p:column headerText="Item Return At"  >                               
+                                    <p:column headerText="Item Return At" exportable="false">                               
                                         <h:outputLabel value="#{bill.createdAt}" >
                                             <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                         </h:outputLabel>                                   
@@ -91,7 +111,7 @@
                                         </h:panelGroup>                             
                                     </p:column>   
 
-                                    <p:column headerText="Item Return By"  >                               
+                                    <p:column headerText="Item Return By" exportable="false">                               
                                         <h:outputLabel value="#{bill.creater.webUserPerson.name}" >                                      
                                         </h:outputLabel>                                
                                         <br/>
@@ -102,7 +122,7 @@
                                         </h:panelGroup>                             
                                     </p:column> 
 
-                                    <p:column headerText="Action" >
+                                    <p:column headerText="Action" exportable="false">
                                         <p:commandButton 
                                             ajax="false" 
                                             disabled="#{bill.checkActiveReturnCashBill()}" 
@@ -112,7 +132,7 @@
                                         </p:commandButton>                                
                                     </p:column>
 
-                                    <p:column width="500px">
+                                    <p:column width="500px" exportable="false">
                                         <p:dataTable value="#{bill.returnCashBills}" var="rb" >
                                             <p:column  >                                                               
                                                 <h:outputLabel  value="#{rb.deptId}"/>                                   
@@ -159,6 +179,32 @@
                                                 <p:tooltip for="cancelRefundCashBill" value="View Bill"   showDelay="0" hideDelay="0"></p:tooltip>
                                             </p:column>
                                         </p:dataTable>
+                                    </p:column>
+
+                                    <!-- Export-only columns: one plain value per cell (issue #25786) -->
+                                    <p:column headerText="Returned At" visible="false">
+                                        <h:outputText value="#{bill.createdAt}">
+                                            <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                        </h:outputText>
+                                    </p:column>
+                                    <p:column headerText="Returned By" visible="false">
+                                        <h:outputText value="#{bill.creater.webUserPerson.name}"/>
+                                    </p:column>
+                                    <p:column headerText="Return Value" visible="false">
+                                        <h:outputText value="#{bill.netTotal}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
+                                    </p:column>
+                                    <p:column headerText="Cancelled" visible="false">
+                                        <h:outputText value="#{bill.cancelled ? 'Yes' : 'No'}"/>
+                                    </p:column>
+                                    <p:column headerText="Cancelled At" visible="false">
+                                        <h:outputText value="#{bill.cancelledBill.createdAt}" rendered="#{bill.cancelled}">
+                                            <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                        </h:outputText>
+                                    </p:column>
+                                    <p:column headerText="Cancelled By" visible="false">
+                                        <h:outputText value="#{bill.cancelledBill.creater.webUserPerson.name}" rendered="#{bill.cancelled}"/>
                                     </p:column>
 
                                 </p:dataTable>
