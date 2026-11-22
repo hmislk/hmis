@@ -49,6 +49,7 @@
                         style="width: 250px;"
                         
                         autoWidth="false">
+                        <p:ajax event="change" process="@this" update="resLegend" />
                         <f:selectItem itemLabel="Any Status" ></f:selectItem>
                         <f:selectItems
                             value="#{enumController.getAppointmentStatus()}"
@@ -58,7 +59,9 @@
                         </f:selectItems>
                     </p:selectOneMenu>
 
-                    <h:selectBooleanCheckbox id="includeCompleted" value="#{inwardReservationController.includeCompleted}" title="Also show completed appointments" class="align-self-center" />
+                    <h:selectBooleanCheckbox id="includeCompleted" value="#{inwardReservationController.includeCompleted}" title="Also show completed appointments" class="align-self-center">
+                        <p:ajax event="change" process="@this" update="resLegend" />
+                    </h:selectBooleanCheckbox>
                     <h:outputLabel for="includeCompleted" value="Include completed appointments" class="align-self-center" />
 
                     <p:commandButton
@@ -75,12 +78,14 @@
                     .res-legend-swatch { display:inline-block; width:14px; height:14px; border-radius:3px; vertical-align:middle; margin-right:4px; }
                     .fc-event.res-event-complete { opacity: 0.85; background-color:#adb5bd !important; border-color:#6c757d !important; }
                 </style>
-                <div class="d-flex gap-3 justify-content-center mb-2" style="font-size: 0.85rem;">
-                    <span><span class="res-legend-swatch" style="background:#0d6efd;"></span>Pending (colour varies by patient)</span>
-                    <h:panelGroup rendered="#{inwardReservationController.includeCompleted}">
+                <h:panelGroup id="resLegend" layout="block" styleClass="d-flex gap-3 justify-content-center mb-2" style="font-size: 0.85rem;">
+                    <h:panelGroup rendered="#{inwardReservationController.calanderStatus eq null or inwardReservationController.calanderStatus eq 'PENDING'}">
+                        <span><span class="res-legend-swatch" style="background:#0d6efd;"></span>Pending (colour varies by patient)</span>
+                    </h:panelGroup>
+                    <h:panelGroup rendered="#{inwardReservationController.calanderStatus eq null or inwardReservationController.calanderStatus eq 'COMPLETE' or (inwardReservationController.calanderStatus eq 'PENDING' and inwardReservationController.includeCompleted)}">
                         <span><span class="res-legend-swatch" style="background:#adb5bd;"></span>Completed (grey)</span>
                     </h:panelGroup>
-                </div>
+                </h:panelGroup>
 
                 <div style="margin-left: 4%; margin-right: 4%;" class="mb-3">
                     <p:schedule
