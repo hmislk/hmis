@@ -761,6 +761,9 @@ public class OpticianRepairBillController implements Serializable, ControllerWit
 //        this.recurseCount = recurseCount;
 //    }
     public boolean findByFilter(String property, String value) {
+        if (property == null || value == null || !property.matches("^[A-Za-z][A-Za-z0-9_.]*$")) {
+            return false;
+        }
         String sql = "Select b From Bill b where b.retired=false and (b." + property + ") like :q";
         Map<String, Object> qm = new HashMap<>();
         qm.put("q", "%" + value.toUpperCase() + " %");
