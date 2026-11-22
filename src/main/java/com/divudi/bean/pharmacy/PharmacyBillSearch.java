@@ -3997,6 +3997,9 @@ public class PharmacyBillSearch implements Serializable {
     }
 
     public void pharmacyReturnPreCancel() {
+        if (com.divudi.core.util.CancellationBillCheck.refuse(getBill())) {
+            return;
+        }
         if (getBill() != null && getBill().getId() != null && getBill().getId() != 0) {
             if (pharmacyErrorCheck()) {
                 return;
@@ -4146,6 +4149,9 @@ public class PharmacyBillSearch implements Serializable {
     }
 
     public void pharmacyReturnCashCancel() {
+        if (com.divudi.core.util.CancellationBillCheck.refuse(getBill())) {
+            return;
+        }
         if (getBill() != null && getBill().getId() != null && getBill().getId() != 0) {
             if (pharmacyErrorCheck()) {
                 return;
@@ -4336,6 +4342,9 @@ public class PharmacyBillSearch implements Serializable {
     }
 
     public void pharmacyGrnCancel() {
+        if (com.divudi.core.util.CancellationBillCheck.refuse(getBill())) {
+            return;
+        }
         if (!isAuthorized("PHARMACY_GRN_CANCEL", "PharmacyGrnCancel")) {
             return;
         }
@@ -4560,6 +4569,9 @@ public class PharmacyBillSearch implements Serializable {
     }
 
     public void pharmacyPurchaseCancel() {
+        if (com.divudi.core.util.CancellationBillCheck.refuse(getBill())) {
+            return;
+        }
         if (getBill() != null && getBill().getId() != null && getBill().getId() != 0) {
             if (pharmacyErrorCheck()) {
                 return;
@@ -4656,6 +4668,9 @@ public class PharmacyBillSearch implements Serializable {
     }
 
     public void pharmacyGrnReturnCancel() {
+        if (com.divudi.core.util.CancellationBillCheck.refuse(getBill())) {
+            return;
+        }
         if (!isAuthorized("PHARMACY_GRN_RETURN_CANCEL", "PharmacyGrnReturnCancel")) {
             return;
         }

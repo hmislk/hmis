@@ -36,7 +36,7 @@
                                                 ajax="false"
                                                 icon="fa fa-cancel"
                                                 class="ui-button-danger"
-                                                disabled="#{not webUserController.hasPrivilege('PharmacyGrnCancel')}"
+                                                disabled="#{not webUserController.hasPrivilege('PharmacyGrnCancel') or #{pharmacyBillSearch.billACancellationBill}}"
                                                 action="#{pharmacyBillSearch.pharmacyGrnCancel()}" >
                                             </p:commandButton>
                                         </div>

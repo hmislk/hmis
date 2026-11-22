@@ -24,7 +24,7 @@
                                 <f:selectItems value="#{enumController.paymentMethods}"/>
                             </p:selectOneMenu>
                             <h:commandButton value="Cancel" action="#{pharmacyBillSearch.pharmacyGrnReturnCancel()}"
-                                             disabled="#{not webUserController.hasPrivilege('PharmacyGrnReturnCancel')}" >
+                                             disabled="#{not webUserController.hasPrivilege('PharmacyGrnReturnCancel') or #{pharmacyBillSearch.billACancellationBill}}" >
                             </h:commandButton>
                         </p:panel>
                         <p:panelGrid columns="2" style="width: 100%;">

@@ -42,6 +42,7 @@
                                     <p:commandButton
                                         styleClass="w-100 ui-button-warning"
                                         ajax="false" value="Cancel" action="#{agentPaymentReceiveSearchController.cancelAgencyDepositBill}"
+                                        disabled="#{agentPaymentReceiveSearchController.billACancellationBill}"
                                         onclick="if (!confirm('Are you sure you want to Cancel This Bill ?'))
                                                     return false;"/>
                                 </p:panelGrid>
