@@ -41,6 +41,8 @@ import com.divudi.core.entity.BillItem;
 import com.divudi.core.entity.CancelledBill;
 import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.Patient;
+import com.divudi.core.entity.PatientEncounter;
 import com.divudi.core.entity.Payment;
 import com.divudi.core.entity.RefundBill;
 import com.divudi.core.entity.WebUser;
@@ -631,9 +633,48 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
         return "/inward/inward_service_batch_bill_children?faces-redirect=true";
     }
 
-    public String navigateToInwardBatchChildServiceBill(Bill child) {
+    /**
+     * Opens a child by id. The list is held in this session-scoped bean, so another
+     * tab may have replaced it; the child is reloaded and must belong to the batch
+     * currently shown.
+     */
+    public String openInwardServiceChild(Long childId) {
+        Bill child = childId == null ? null : getBillFacade().find(childId);
+        if (child == null || inwardBatchServiceBill == null
+                || child.getBackwardReferenceBill() == null
+                || !inwardBatchServiceBill.getId().equals(child.getBackwardReferenceBill().getId())) {
+            JsfUtil.addErrorMessage("This list is out of date; open the batch again");
+            return "";
+        }
         inwardSearch.setBill(child);
         return navigateToInwardSearchService();
+    }
+
+    private Bill firstInwardBatchChild() {
+        if (inwardBatchServiceChildBills == null || inwardBatchServiceChildBills.isEmpty()) {
+            return null;
+        }
+        return inwardBatchServiceChildBills.get(0);
+    }
+
+    public PatientEncounter getInwardBatchServiceAdmission() {
+        Bill first = firstInwardBatchChild();
+        if (first != null && first.getPatientEncounter() != null) {
+            return first.getPatientEncounter();
+        }
+        return inwardBatchServiceBill == null ? null : inwardBatchServiceBill.getPatientEncounter();
+    }
+
+    public Patient getInwardBatchServicePatient() {
+        if (inwardBatchServiceBill != null && inwardBatchServiceBill.getPatient() != null) {
+            return inwardBatchServiceBill.getPatient();
+        }
+        Bill first = firstInwardBatchChild();
+        if (first != null && first.getPatient() != null) {
+            return first.getPatient();
+        }
+        PatientEncounter pe = getInwardBatchServiceAdmission();
+        return pe == null ? null : pe.getPatient();
     }
 
     private Bill inwardBatchServiceBill;

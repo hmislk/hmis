@@ -26,9 +26,9 @@
                             <h:outputText value="Batch Bill No: " styleClass="fw-bold" />
                             <h:outputText value="#{billSearch.inwardBatchServiceBill.deptId}" />
                             <h:outputText value="  BHT: " styleClass="fw-bold ms-3" />
-                            <h:outputText value="#{billSearch.inwardBatchServiceBill.patientEncounter.bhtNo}" />
+                            <h:outputText value="#{billSearch.inwardBatchServiceAdmission.bhtNo}" />
                             <h:outputText value="  Patient: " styleClass="fw-bold ms-3" />
-                            <h:outputText value="#{billSearch.inwardBatchServiceBill.patientEncounter.patient.person.nameWithTitle}" />
+                            <h:outputText value="#{billSearch.inwardBatchServicePatient.person.nameWithTitle}" />
                         </div>
 
                         <p:dataTable
@@ -63,7 +63,7 @@
                                     value="Open"
                                     icon="fa fa-folder-open"
                                     styleClass="ui-button-primary"
-                                    action="#{billSearch.navigateToInwardBatchChildServiceBill(cb)}" />
+                                    action="#{billSearch.openInwardServiceChild(cb.id)}" />
                             </p:column>
                         </p:dataTable>
                     </p:panel>
