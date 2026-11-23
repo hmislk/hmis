@@ -1795,6 +1795,18 @@ public class PatientController implements Serializable, ControllerWithPatient {
         return " and (" + patientAlias + ".creater=:rsUser or " + patientAlias + ".createdInstitution=:rsInstitution) ";
     }
 
+    /**
+     * Same restriction for a query that selects Person rows: keeps only persons that have a patient
+     * registered by the logged user or the logged user's institution. Empty for unrestricted users.
+     */
+    private String restrictPersonSearchClause(String personAlias, Map m) {
+        if (!isPatientSearchRestrictedToOwnRegistrations()) {
+            return "";
+        }
+        return " and " + personAlias + ".id in (select rsPt.person.id from Patient rsPt where rsPt.retired=false"
+                + restrictPatientSearchClause("rsPt", m) + ") ";
+    }
+
     public String searchPatient() {
         if (searchBillId != null && !searchBillId.trim().equals("")) {
             searchByBill();
@@ -4076,6 +4088,9 @@ public class PatientController implements Serializable, ControllerWithPatient {
         if (getCurrent().getId() == null) {
             getCurrent().setCreatedAt(new Date());
             getCurrent().setCreater(getSessionController().getLoggedUser());
+            if (getCurrent().getCreatedInstitution() == null) {
+                getCurrent().setCreatedInstitution(getSessionController().getInstitution());
+            }
             getFacade().create(current);
             JsfUtil.addSuccessMessage("Saved as a new patient successfully.");
         } else {
@@ -4548,6 +4563,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
         Map m1 = new HashMap();
         m1.put("ret", false);
         m1.put("name", "%" + name + "%");
+        j1 += restrictPersonSearchClause("p", m1);
         searchedPersons = personFacade.findLongList(j1, m1);
     }
 
@@ -4560,6 +4576,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
         Map m1 = new HashMap();
         m1.put("ret", false);
         m1.put("name", "%" + searchName + "%");
+        j1 += restrictPersonSearchClause("p", m1);
         List<Long> pids = personFacade.findLongList(j1, m1);
 
         String j2 = "Select pt "
@@ -4568,6 +4585,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
                 + " and pt.person.id in :ids";
         Map m2 = new HashMap();
         m2.put("ret", false);
+        j2 += restrictPatientSearchClause("pt", m2);
         m2.put("ids", pids);
         searchedPatients = getFacade().findByJpql(j2, m2);
         Long end = new Date().getTime();
@@ -4583,6 +4601,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
         Map m1 = new HashMap();
         m1.put("ret", false);
         m1.put("name", "%" + searchName + "%");
+        j1 += restrictPersonSearchClause("p", m1);
         List<Person> pids = personFacade.findByJpql(j1, m1);
 
         String j2 = "Select pt "
@@ -4591,6 +4610,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
                 + " and pt.person in :ps";
         Map m2 = new HashMap();
         m2.put("ret", false);
+        j2 += restrictPatientSearchClause("pt", m2);
         m2.put("ps", pids);
         searchedPatients = getFacade().findByJpql(j2, m2);
         Long end = new Date().getTime();
@@ -4606,6 +4626,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
         Map m1 = new HashMap();
         m1.put("ret", false);
         m1.put("name", "%" + searchName + "%");
+        j1 += restrictPatientSearchClause("p", m1);
         searchedPatients = getFacade().findByJpql(j1, m1);
         Long end = new Date().getTime();
         Long duration = end - start;
@@ -4620,6 +4641,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
         Map m1 = new HashMap();
         m1.put("ret", false);
         m1.put("name", "%" + searchName + "%");
+        j1 += restrictPersonSearchClause("p", m1);
         List<Person> pids = personFacade.findByJpql(j1, m1);
         Long end = new Date().getTime();
         Long duration = end - start;
@@ -4636,6 +4658,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
         Map<String, Object> parameters = new HashMap<>();
         parameters.put("ret", false);
         parameters.put("name", "%" + searchName + "%");
+        jpql += restrictPatientSearchClause("pt", parameters);
 
         // Execute the query and measure duration
         searchedPatients = getFacade().findByJpql(jpql, parameters);
@@ -4652,6 +4675,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
         Map m1 = new HashMap();
         m1.put("ret", false);
         m1.put("phone", phone);
+        j1 += restrictPersonSearchClause("p", m1);
         searchedPersons = personFacade.findLongList(j1, m1);
     }
 
@@ -4663,6 +4687,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
         Map m1 = new HashMap();
         m1.put("ret", false);
         m1.put("nic", nic);
+        j1 += restrictPersonSearchClause("p", m1);
         searchedPersons = personFacade.findLongList(j1, m1);
     }
 
@@ -4674,6 +4699,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
         Map m1 = new HashMap();
         m1.put("ret", false);
         m1.put("phn", phn);
+        j1 += restrictPatientSearchClause("p", m1);
         searchedPersons = personFacade.findLongList(j1, m1);
     }
 
@@ -4685,6 +4711,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
         Map m1 = new HashMap();
         m1.put("ret", false);
         m1.put("mrn", mrn);
+        j1 += restrictPatientSearchClause("p", m1);
         searchedPersons = personFacade.findLongList(j1, m1);
     }
 
