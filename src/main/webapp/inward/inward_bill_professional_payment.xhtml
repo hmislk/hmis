@@ -86,21 +86,22 @@
                                 icon="fa-solid fa-arrows-rotate"
                                 class="ui-button-warning" />
 
-                            <p:commandButton 
-                                ajax="false" 
-                                value="Download as Excel" 
-                                styleClass="noPrintButton" 
+                            <p:commandButton
+                                ajax="false"
+                                value="Download as Excel"
                                 icon="fa-solid fa-file-excel"
-                                class="ui-button-success mx-2 my-2" >
+                                title="Download the due payments as an Excel file"
+                                styleClass="noPrintButton ui-button-success mx-2 my-2" >
                                 <p:dataExporter type="xlsx" target=":#{p:resolveFirstComponentWithId('tblFee',view).clientId}" fileName="Staff_Payment_Due_Inward"  />
                             </p:commandButton>
 
 
 
-                            <p:dataTable   
+                            <p:dataTable
                                 id="tblFee"
                                 value="#{inwardStaffPaymentBillController.dueBillFees}"
                                 selection="#{inwardStaffPaymentBillController.payingBillFees}"
+                                styleClass="p-datatable-sm"
                                 class="w-100 m-1"
                                 rows="10"
                                 paginator="true"
@@ -222,19 +223,19 @@
 
                             <p:panel   >
                                 <f:facet name="header">
-                                    <h:outputLabel value="Payment Details" class="mt-2" />
-
-
-
-                                    <p:commandButton 
-                                        id="btnPay"
-                                        ajax="false"
-                                        value="&nbsp;&nbsp;&nbsp;&nbsp; Settle Professional Payment" 
-                                        style="float: right;"
-                                        class="ui-button-success"
-                                        action="#{inwardStaffPaymentBillController.settle()}" 
-                                        actionListener="#{inwardStaffPaymentBillController.performCalculations()}">
-                                    </p:commandButton>
+                                    <div class="d-flex justify-content-between align-items-center w-100">
+                                        <h:outputLabel value="Payment Details" />
+                                        <p:commandButton
+                                            id="btnPay"
+                                            ajax="false"
+                                            value="Settle Professional Payment"
+                                            icon="fas fa-check-circle"
+                                            style="min-width:120px"
+                                            class="ui-button-success"
+                                            action="#{inwardStaffPaymentBillController.settle()}"
+                                            actionListener="#{inwardStaffPaymentBillController.performCalculations()}">
+                                        </p:commandButton>
+                                    </div>
                                     <p:defaultCommand target="btnPay"/>
                                 </f:facet>
 
@@ -323,16 +324,18 @@
 
                     <p:panel rendered="#{inwardStaffPaymentBillController.printPreview}">
                         <f:facet name="header" >
-                            <div class="d-flex justify-content-between">
-                                <h:outputLabel value="Payment Bill View" class="mt-2"></h:outputLabel>
-                                <div class="d-flex gap-2">
-                                    <p:commandButton 
-                                        ajax="false"  
-                                        value="New Bill"
-                                        icon="fa fa-plus"
-                                        class="ui-button-success"
-                                        action="#{inwardStaffPaymentBillController.navigateToInwardPayStaff()}"  >
-                                    </p:commandButton>
+                            <div class="d-flex justify-content-between align-items-center w-100">
+                                <h:outputLabel value="Payment Bill View" />
+                                <div class="d-flex gap-2 align-items-center">
+                                    <p:commandButton
+                                        id="btnPaperSettings"
+                                        value="Settings"
+                                        icon="fas fa-cog"
+                                        class="ui-button-secondary"
+                                        title="Choose the paper type of the payment vouchers"
+                                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Inward Doctor Payment - Show Bill Format Tabs and Paper Settings', false) and webUserController.hasPrivilege('ChangeReceiptPrintingPaperTypes')}"
+                                        type="button"
+                                        onclick="PF('inwardDoctorPaymentConfigDialog').show();" />
                                     <p:commandButton
                                         id="btnPrint"
                                         value="Print"
@@ -353,14 +356,13 @@
                                         <p:printer target="gpIndividualPreview" ></p:printer>
                                     </p:commandButton>
                                     <p:commandButton
-                                        id="btnPaperSettings"
-                                        value="Settings"
-                                        icon="fas fa-cog"
-                                        class="ui-button-secondary"
-                                        title="Choose the paper type of the payment vouchers"
-                                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Inward Doctor Payment - Show Bill Format Tabs and Paper Settings', false) and webUserController.hasPrivilege('ChangeReceiptPrintingPaperTypes')}"
-                                        type="button"
-                                        onclick="PF('inwardDoctorPaymentConfigDialog').show();" />
+                                        ajax="false"
+                                        value="New Bill"
+                                        icon="fa fa-plus"
+                                        style="min-width:120px"
+                                        class="ui-button-success"
+                                        action="#{inwardStaffPaymentBillController.navigateToInwardPayStaff()}"  >
+                                    </p:commandButton>
                                     <!-- Clicked by Print Individual once the print dialog closes: clears the page for the next payment (#25695). -->
                                     <p:commandButton
                                         id="btnClearAfterIndividualPrint"
@@ -477,30 +479,30 @@
                         </p:tabView>
 
                         <h:panelGroup rendered="#{!configOptionApplicationController.getBooleanValueByKey('Inward Doctor Payment - Show Bill Format Tabs and Paper Settings', false)}">
-                        <h:panelGroup id="gpBillPreview">
-                            <h:panelGroup  rendered="#{configOptionApplicationController.getBooleanValueByKey('Inward Doctor payment bill is a A4 paper.', true)}">
-                                <bi:staffBill bill="#{inwardStaffPaymentBillController.current}" dup="false" />
-                            </h:panelGroup>
-                            
-                            <h:panelGroup  rendered="#{configOptionApplicationController.getBooleanValueByKey('Inward Doctor payment bill is a A4 Custom 1 paper.', false)}">
-                                <bi:staffBillCustom1 bill="#{inwardStaffPaymentBillController.current}" dup="false" />
+                            <h:panelGroup id="gpBillPreview">
+                                <h:panelGroup  rendered="#{configOptionApplicationController.getBooleanValueByKey('Inward Doctor payment bill is a A4 paper.', true)}">
+                                    <bi:staffBill bill="#{inwardStaffPaymentBillController.current}" dup="false" />
+                                </h:panelGroup>
+                                
+                                <h:panelGroup  rendered="#{configOptionApplicationController.getBooleanValueByKey('Inward Doctor payment bill is a A4 Custom 1 paper.', false)}">
+                                    <bi:staffBillCustom1 bill="#{inwardStaffPaymentBillController.current}" dup="false" />
+                                </h:panelGroup>
+
+                                <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Inward Doctor payment bill is a five five paper.',false)}">
+                                    <bi:staff_payment_five_five_paper_with_headings controller="#{inwardStaffPaymentBillController}" bill="#{inwardStaffPaymentBillController.current}" />
+                                </h:panelGroup>
                             </h:panelGroup>
 
-                            <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Inward Doctor payment bill is a five five paper.',false)}">
-                                <bi:staff_payment_five_five_paper_with_headings controller="#{inwardStaffPaymentBillController}" bill="#{inwardStaffPaymentBillController.current}" />
-                            </h:panelGroup>
-                        </h:panelGroup>
+                            <!-- Individual per-BHT vouchers -->
+                            <h:panelGroup id="gpIndividualPreview">
+                                <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Inward Doctor payment bill is a A4 paper.', true)}">
+                                    <bic:staff_payment_individual_a4 controller="#{inwardStaffPaymentBillController}" bill="#{inwardStaffPaymentBillController.current}" />
+                                </h:panelGroup>
 
-                        <!-- Individual per-BHT vouchers -->
-                        <h:panelGroup id="gpIndividualPreview">
-                            <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Inward Doctor payment bill is a A4 paper.', true)}">
-                                <bic:staff_payment_individual_a4 controller="#{inwardStaffPaymentBillController}" bill="#{inwardStaffPaymentBillController.current}" />
+                                <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Inward Doctor payment bill is a five five paper.',false)}">
+                                    <bic:staff_payment_individual_five_five controller="#{inwardStaffPaymentBillController}" bill="#{inwardStaffPaymentBillController.current}" />
+                                </h:panelGroup>
                             </h:panelGroup>
-
-                            <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Inward Doctor payment bill is a five five paper.',false)}">
-                                <bic:staff_payment_individual_five_five controller="#{inwardStaffPaymentBillController}" bill="#{inwardStaffPaymentBillController.current}" />
-                            </h:panelGroup>
-                        </h:panelGroup>
                         </h:panelGroup>
 
                     </p:panel>
