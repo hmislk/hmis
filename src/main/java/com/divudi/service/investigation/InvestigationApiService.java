@@ -120,31 +120,39 @@ public class InvestigationApiService implements Serializable {
         Investigation i = load(id);
         Map<String, Object> beforeNames = ItemAuditHelper.snapshot(i);
         if (req == null || !req.isValid()) throw new Exception("Valid update request is required");
-        if (req.getName() != null && !req.getName().trim().isEmpty()) i.setName(req.getName().trim());
-        if (req.getCode() != null) i.setCode(req.getCode().trim());
-        if (req.getPrintName() != null) i.setPrintName(req.getPrintName());
-        if (req.getInactive() != null) i.setInactive(req.getInactive());
-        if (req.getBypassSampleWorkflow() != null) i.setBypassSampleWorkflow(req.getBypassSampleWorkflow());
-        if (req.getVatable() != null) i.setVatable(req.getVatable());
-        if (req.getDiscountAllowed() != null) i.setDiscountAllowed(req.getDiscountAllowed());
-        validateVatPercentage(req.getVatPercentage());
-        if (req.getVatPercentage() != null) i.setVatPercentage(req.getVatPercentage());
-        if (req.getReportType() != null && !req.getReportType().trim().isEmpty()) i.setReportType(InvestigationReportType.valueOf(req.getReportType().trim()));
-        if (req.getCategoryId() != null || (req.getCategoryName() != null && !req.getCategoryName().trim().isEmpty())) {
-            Category category = resolveCategory(req.getCategoryId(), req.getCategoryName(), user);
-            if (category != null) i.setCategory(category);
-        }
-        if (req.getSampleId() != null || (req.getSampleName() != null && !req.getSampleName().trim().isEmpty())) {
-            Sample sample = resolveSample(req.getSampleId(), req.getSampleName(), user);
-            if (sample != null) i.setSample(sample);
-        }
-        if (req.getContainerId() != null || (req.getContainerName() != null && !req.getContainerName().trim().isEmpty())) {
-            InvestigationTube container = resolveContainer(req.getContainerId(), req.getContainerName(), user);
-            if (container != null) i.setInvestigationTube(container);
-        }
-        if (req.getAnalyzerId() != null || (req.getAnalyzerName() != null && !req.getAnalyzerName().trim().isEmpty())) {
-            Machine analyzer = resolveAnalyzer(req.getAnalyzerId(), req.getAnalyzerName(), user);
-            if (analyzer != null) i.setMachine(analyzer);
+        try {
+            if (req.getName() != null && !req.getName().trim().isEmpty()) i.setName(req.getName().trim());
+            if (req.getCode() != null) i.setCode(req.getCode().trim());
+            if (req.getPrintName() != null) i.setPrintName(req.getPrintName());
+            if (req.getInactive() != null) i.setInactive(req.getInactive());
+            if (req.getBypassSampleWorkflow() != null) i.setBypassSampleWorkflow(req.getBypassSampleWorkflow());
+            if (req.getVatable() != null) i.setVatable(req.getVatable());
+            if (req.getDiscountAllowed() != null) i.setDiscountAllowed(req.getDiscountAllowed());
+            validateVatPercentage(req.getVatPercentage());
+            if (req.getVatPercentage() != null) i.setVatPercentage(req.getVatPercentage());
+            if (req.getReportType() != null && !req.getReportType().trim().isEmpty()) i.setReportType(InvestigationReportType.valueOf(req.getReportType().trim()));
+            if (req.getCategoryId() != null || (req.getCategoryName() != null && !req.getCategoryName().trim().isEmpty())) {
+                Category category = resolveCategory(req.getCategoryId(), req.getCategoryName(), user);
+                if (category != null) i.setCategory(category);
+            }
+            if (req.getSampleId() != null || (req.getSampleName() != null && !req.getSampleName().trim().isEmpty())) {
+                Sample sample = resolveSample(req.getSampleId(), req.getSampleName(), user);
+                if (sample != null) i.setSample(sample);
+            }
+            if (req.getContainerId() != null || (req.getContainerName() != null && !req.getContainerName().trim().isEmpty())) {
+                InvestigationTube container = resolveContainer(req.getContainerId(), req.getContainerName(), user);
+                if (container != null) i.setInvestigationTube(container);
+            }
+            if (req.getAnalyzerId() != null || (req.getAnalyzerName() != null && !req.getAnalyzerName().trim().isEmpty())) {
+                Machine analyzer = resolveAnalyzer(req.getAnalyzerId(), req.getAnalyzerName(), user);
+                if (analyzer != null) i.setMachine(analyzer);
+            }
+        } catch (RuntimeException e) {
+            throw e;
+        } catch (Exception e) {
+            // Earlier setters are already on the managed entity and will commit; audit them before rejecting.
+            itemAuditHelper.logUpdate(beforeNames, i, user, "API");
+            throw e;
         }
         i.setEditer(user); i.setEditedAt(new Date()); investigationFacade.edit(i);
         itemAuditHelper.logUpdate(beforeNames, i, user, "API");

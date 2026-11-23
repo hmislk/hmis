@@ -43,8 +43,9 @@ public class ItemAuditHelper {
     private ItemFacade itemFacade;
 
     /**
-     * Adds the three name fields that the older per-controller audit maps did
-     * not carry.
+     * Adds the three name fields, and the event source ("UI"), that the older
+     * per-controller audit maps did not carry. Only the UI controllers call
+     * this.
      */
     public static void putNameFields(Map<String, Object> target, Item item) {
         if (target == null || item == null) {
@@ -53,6 +54,7 @@ public class ItemAuditHelper {
         target.put("printName", item.getPrintName());
         target.put("fullName", item.getFullName());
         target.put("shortName", item.getShortName());
+        target.put("source", "UI");
     }
 
     /**

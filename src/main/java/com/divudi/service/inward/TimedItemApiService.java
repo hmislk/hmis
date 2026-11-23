@@ -269,54 +269,62 @@ public class TimedItemApiService implements Serializable {
 
         TimedItem item = loadAndValidate(id);
         Map<String, Object> beforeNames = ItemAuditHelper.snapshot(item);
+        try {
 
-        if (request.getName() != null && !request.getName().trim().isEmpty()) {
-            item.setName(request.getName().trim());
-        }
-        if (request.getCode() != null && !request.getCode().trim().isEmpty()) {
-            item.setCode(request.getCode().trim());
-        }
-        if (request.getPrintName() != null) {
-            item.setPrintName(request.getPrintName());
-        }
-        if (request.getFullName() != null) {
-            item.setFullName(request.getFullName());
-        }
-        if (request.getDepartmentType() != null && !request.getDepartmentType().trim().isEmpty()) {
-            try {
-                item.setDepartmentType(DepartmentType.valueOf(request.getDepartmentType().trim()));
-            } catch (IllegalArgumentException e) {
-                throw new Exception("Invalid departmentType: " + request.getDepartmentType());
+            if (request.getName() != null && !request.getName().trim().isEmpty()) {
+                item.setName(request.getName().trim());
             }
-        }
-        if (request.getInwardChargeType() != null && !request.getInwardChargeType().trim().isEmpty()) {
-            try {
-                item.setInwardChargeType(InwardChargeType.valueOf(request.getInwardChargeType().trim()));
-            } catch (IllegalArgumentException e) {
-                throw new Exception("Invalid inwardChargeType: " + request.getInwardChargeType());
+            if (request.getCode() != null && !request.getCode().trim().isEmpty()) {
+                item.setCode(request.getCode().trim());
             }
-        }
-        if (request.getInactive() != null) {
-            item.setInactive(request.getInactive());
-        }
-        if (request.getDepartmentId() != null) {
-            Department dept = departmentFacade.find(request.getDepartmentId());
-            if (dept == null) {
-                throw new Exception("Department not found with ID: " + request.getDepartmentId());
+            if (request.getPrintName() != null) {
+                item.setPrintName(request.getPrintName());
             }
-            item.setDepartment(dept);
-        }
-        if (request.getInstitutionId() != null) {
-            Institution inst = institutionFacade.find(request.getInstitutionId());
-            if (inst == null) {
-                throw new Exception("Institution not found with ID: " + request.getInstitutionId());
+            if (request.getFullName() != null) {
+                item.setFullName(request.getFullName());
             }
-            item.setInstitution(inst);
-        }
-        if (request.getCategoryId() != null) {
-            item.setCategory(resolveCategory(request.getCategoryId()));
-        }
+            if (request.getDepartmentType() != null && !request.getDepartmentType().trim().isEmpty()) {
+                try {
+                    item.setDepartmentType(DepartmentType.valueOf(request.getDepartmentType().trim()));
+                } catch (IllegalArgumentException e) {
+                    throw new Exception("Invalid departmentType: " + request.getDepartmentType());
+                }
+            }
+            if (request.getInwardChargeType() != null && !request.getInwardChargeType().trim().isEmpty()) {
+                try {
+                    item.setInwardChargeType(InwardChargeType.valueOf(request.getInwardChargeType().trim()));
+                } catch (IllegalArgumentException e) {
+                    throw new Exception("Invalid inwardChargeType: " + request.getInwardChargeType());
+                }
+            }
+            if (request.getInactive() != null) {
+                item.setInactive(request.getInactive());
+            }
+            if (request.getDepartmentId() != null) {
+                Department dept = departmentFacade.find(request.getDepartmentId());
+                if (dept == null) {
+                    throw new Exception("Department not found with ID: " + request.getDepartmentId());
+                }
+                item.setDepartment(dept);
+            }
+            if (request.getInstitutionId() != null) {
+                Institution inst = institutionFacade.find(request.getInstitutionId());
+                if (inst == null) {
+                    throw new Exception("Institution not found with ID: " + request.getInstitutionId());
+                }
+                item.setInstitution(inst);
+            }
+            if (request.getCategoryId() != null) {
+                item.setCategory(resolveCategory(request.getCategoryId()));
+            }
 
+        } catch (RuntimeException e) {
+            throw e;
+        } catch (Exception e) {
+            // Earlier setters are already on the managed entity and will commit; audit them before rejecting.
+            itemAuditHelper.logUpdate(beforeNames, item, user, "API");
+            throw e;
+        }
         item.setEditer(user);
         item.setEditedAt(Calendar.getInstance().getTime());
         timedItemFacade.edit(item);
