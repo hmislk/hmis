@@ -221,12 +221,18 @@ public class AtmController implements Serializable {
         try {
             if (getCurrent().getId() != null && getCurrent().getId() > 0) {
                 // UPDATE - capture before state for audit
-                Map<String, Object> beforeNames = itemAuditHelper.snapshotFromDb(getCurrent().getId());
+                Atm beforeUpdate = getFacade().find(getCurrent().getId());
+                Map<String, Object> beforeData = createAuditMap(beforeUpdate);
 
                 getFacade().edit(getCurrent());
 
                 // Capture after state for audit
-                itemAuditHelper.logUpdate(beforeNames, getCurrent(), getSessionController().getLoggedUser(), "UI");
+                Map<String, Object> afterData = createAuditMap(getCurrent());
+                if (ItemAuditHelper.differs(beforeData, afterData)) {
+                    auditService.logAudit(beforeData, afterData,
+                            getSessionController().getLoggedUser(),
+                            "Atm", "Update ATM", getCurrent().getId());
+                }
 
                 JsfUtil.addSuccessMessage("Updated Successfully.");
             } else {
@@ -240,7 +246,10 @@ public class AtmController implements Serializable {
                 getFacade().edit(getCurrent());
 
                 // Capture after state for audit (create operation)
-                itemAuditHelper.logCreate(getCurrent(), getSessionController().getLoggedUser(), "UI");
+                Map<String, Object> afterData = createAuditMap(getCurrent());
+                auditService.logAudit(null, afterData,
+                        getSessionController().getLoggedUser(),
+                        "Atm", "Create ATM", getCurrent().getId());
 
                 // Set DTO for newly created ATM
                 selectedAtmDto = createAtmDto(getCurrent());

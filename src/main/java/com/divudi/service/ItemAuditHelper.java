@@ -56,6 +56,15 @@ public class ItemAuditHelper {
     }
 
     /**
+     * True when the two audit maps differ in any entry. Used by save paths
+     * that keep their full per-controller audit map and skip the row on a
+     * no-op save.
+     */
+    public static boolean differs(Map<String, Object> before, Map<String, Object> after) {
+        return !Objects.equals(before, after);
+    }
+
+    /**
      * Name fields of an item as they are right now in memory.
      */
     public static Map<String, Object> snapshot(Item item) {

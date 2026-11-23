@@ -48,8 +48,6 @@ public class VmppController implements Serializable {
     SessionController sessionController;
     @EJB
     private VmppFacade ejbFacade;
-    @EJB
-    private ItemAuditHelper itemAuditHelper;
     @Inject
     private AuditService auditService;
     @EJB
@@ -137,13 +135,19 @@ public class VmppController implements Serializable {
     public void saveSelected() {
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             // UPDATE - capture before state for audit
-            Map<String, Object> beforeNames = itemAuditHelper.snapshotFromDb(getCurrent().getId());
+            Vmpp beforeUpdate = getFacade().find(getCurrent().getId());
+            Map<String, Object> beforeData = createAuditMap(beforeUpdate);
 
             getCurrent().setDepartmentType(DepartmentType.Pharmacy);
             getFacade().edit(getCurrent());
 
-            // Log audit for update (only when name/code fields changed)
-            itemAuditHelper.logUpdate(beforeNames, getCurrent(), getSessionController().getLoggedUser(), "UI");
+            // Log audit for update
+            Map<String, Object> afterData = createAuditMap(getCurrent());
+            if (ItemAuditHelper.differs(beforeData, afterData)) {
+                auditService.logAudit(beforeData, afterData,
+                        getSessionController().getLoggedUser(),
+                        "Vmpp", "Update VMPP", getCurrent().getId());
+            }
 
             selectedVmppDto = createVmppDto(getCurrent());
             JsfUtil.addSuccessMessage("Updated Successfully.");
@@ -155,7 +159,10 @@ public class VmppController implements Serializable {
             getFacade().create(getCurrent());
 
             // Log audit for create
-            itemAuditHelper.logCreate(getCurrent(), getSessionController().getLoggedUser(), "UI");
+            Map<String, Object> afterData = createAuditMap(getCurrent());
+            auditService.logAudit(null, afterData,
+                    getSessionController().getLoggedUser(),
+                    "Vmpp", "Create VMPP", getCurrent().getId());
 
             selectedVmppDto = createVmppDto(getCurrent());
             JsfUtil.addSuccessMessage("Saved Successfully.");
@@ -167,13 +174,19 @@ public class VmppController implements Serializable {
     public void save() {
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             // UPDATE - capture before state
-            Map<String, Object> beforeNames = itemAuditHelper.snapshotFromDb(getCurrent().getId());
+            Vmpp beforeUpdate = getFacade().find(getCurrent().getId());
+            Map<String, Object> beforeData = createAuditMap(beforeUpdate);
 
             getCurrent().setDepartmentType(DepartmentType.Pharmacy);
             getFacade().edit(getCurrent());
 
-            // Log audit for update (only when name/code fields changed)
-            itemAuditHelper.logUpdate(beforeNames, getCurrent(), getSessionController().getLoggedUser(), "UI");
+            // Log audit for update
+            Map<String, Object> afterData = createAuditMap(getCurrent());
+            if (ItemAuditHelper.differs(beforeData, afterData)) {
+                auditService.logAudit(beforeData, afterData,
+                        getSessionController().getLoggedUser(),
+                        "Vmpp", "Update VMPP", getCurrent().getId());
+            }
 
             JsfUtil.addSuccessMessage("Updated Successfully.");
         } else {
@@ -184,7 +197,10 @@ public class VmppController implements Serializable {
             getFacade().create(getCurrent());
 
             // Log audit for create
-            itemAuditHelper.logCreate(getCurrent(), getSessionController().getLoggedUser(), "UI");
+            Map<String, Object> afterData = createAuditMap(getCurrent());
+            auditService.logAudit(null, afterData,
+                    getSessionController().getLoggedUser(),
+                    "Vmpp", "Create VMPP", getCurrent().getId());
 
             JsfUtil.addSuccessMessage("Saved Successfully.");
         }

@@ -73,8 +73,6 @@ public class AmppController implements Serializable {
     private List<AuditEvent> amppAuditEvents;
 
     // Audit-related injections
-    @EJB
-    private ItemAuditHelper itemAuditHelper;
     @Inject
     private AuditService auditService;
     @EJB
@@ -447,13 +445,19 @@ public class AmppController implements Serializable {
 
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             // UPDATE - capture before state
-            Map<String, Object> beforeNames = itemAuditHelper.snapshotFromDb(getCurrent().getId());
+            Ampp beforeUpdate = getFacade().find(getCurrent().getId());
+            Map<String, Object> beforeData = createAuditMap(beforeUpdate);
 
             getCurrent().setDepartmentType(DepartmentType.Pharmacy); // Ensure Pharmacy type
             getFacade().edit(getCurrent());
 
-            // Log audit for update (only when name/code fields changed)
-            itemAuditHelper.logUpdate(beforeNames, getCurrent(), getSessionController().getLoggedUser(), "UI");
+            // Log audit for update
+            Map<String, Object> afterData = createAuditMap(getCurrent());
+            if (ItemAuditHelper.differs(beforeData, afterData)) {
+                auditService.logAudit(beforeData, afterData,
+                        getSessionController().getLoggedUser(),
+                        "Ampp", "Update AMPP", getCurrent().getId());
+            }
 
             JsfUtil.addSuccessMessage("Updated Successfully.");
         } else {
@@ -464,7 +468,10 @@ public class AmppController implements Serializable {
             getFacade().create(getCurrent());
 
             // Log audit for create
-            itemAuditHelper.logCreate(getCurrent(), getSessionController().getLoggedUser(), "UI");
+            Map<String, Object> afterData = createAuditMap(getCurrent());
+            auditService.logAudit(null, afterData,
+                    getSessionController().getLoggedUser(),
+                    "Ampp", "Create AMPP", getCurrent().getId());
 
             JsfUtil.addSuccessMessage("Saved Successfully");
         }
