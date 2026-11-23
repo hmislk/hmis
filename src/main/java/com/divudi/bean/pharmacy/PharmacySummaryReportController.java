@@ -59,6 +59,7 @@ import static com.divudi.core.data.ReportViewType.BY_DISCOUNT_TYPE_AND_ADMISSION
 import com.divudi.core.data.dto.PharmacyIncomeCostBillDTO;
 import com.divudi.core.data.pharmacy.DailyStockBalanceReport;
 import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.Payment;
 import com.divudi.core.entity.BillFinanceDetails;
 import com.divudi.core.entity.BillItem;
 import com.divudi.core.entity.Category;
@@ -900,6 +901,47 @@ public class PharmacySummaryReportController implements Serializable {
         historicalRecords = historicalRecordFacade.findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
     }
 
+    /**
+     * A return/refund is counted under the method the money was actually paid
+     * out, as in the All Cashier Summary (which sums Payment rows). The refund
+     * bill itself can carry the method copied from the original sale, so for
+     * refund bills the Payment rows decide. Rows without Payment rows keep the
+     * bill's own method. Only the transient report rows are changed.
+     */
+    private void applyPaidOutMethodToRefundRows(IncomeBundle incomeBundle) {
+        if (incomeBundle == null || incomeBundle.getRows() == null) {
+            return;
+        }
+        List<BillTypeAtomic> refundTypes = Arrays.asList(
+                BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEM_PAYMENTS,
+                BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS,
+                BillTypeAtomic.PHARMACY_RETAIL_SALE_REFUND);
+        for (IncomeRow r : incomeBundle.getRows()) {
+            Bill b = r.getBill();
+            if (b == null || b.getBillTypeAtomic() == null || !refundTypes.contains(b.getBillTypeAtomic())) {
+                continue;
+            }
+            List<Payment> paidOut = billService.fetchBillPayments(b);
+            if (paidOut == null || paidOut.isEmpty()) {
+                continue;
+            }
+            PaymentMethod common = paidOut.get(0).getPaymentMethod();
+            for (Payment p : paidOut) {
+                if (p.getPaymentMethod() != common) {
+                    common = PaymentMethod.MultiplePaymentMethods;
+                    break;
+                }
+            }
+            if (common == null) {
+                continue;
+            }
+            b.setPaymentMethod(common);
+            if (common == PaymentMethod.MultiplePaymentMethods) {
+                r.setPayments(paidOut);
+            }
+        }
+    }
+
     public void processPharmacyIncomeReportByBillType() {
         List<BillTypeAtomic> billTypeAtomics = getPharmacyIncomeBillTypes();
 
@@ -918,6 +960,7 @@ public class PharmacySummaryReportController implements Serializable {
                 r.setPayments(billService.fetchBillPayments(r.getBill()));
             }
         }
+        applyPaidOutMethodToRefundRows(bundle);
         bundle.generatePaymentDetailsGroupedByBillType();
     }
 
@@ -1049,6 +1092,7 @@ public class PharmacySummaryReportController implements Serializable {
                 r.setPayments(billService.fetchBillPayments(r.getBill()));
             }
         }
+        applyPaidOutMethodToRefundRows(bundle);
         bundle.generatePaymentDetailsGroupedDiscountSchemeAndAdmissionType();
     }
 
@@ -1077,6 +1121,7 @@ public class PharmacySummaryReportController implements Serializable {
                 r.setPayments(billService.fetchBillPayments(r.getBill()));
             }
         }
+        applyPaidOutMethodToRefundRows(bundle);
         bundle.generatePaymentDetailsGroupedDiscountSchemeAndAdmissionType();
     }
 
@@ -1196,6 +1241,7 @@ public class PharmacySummaryReportController implements Serializable {
             }
         }
 
+        applyPaidOutMethodToRefundRows(bundle);
         bundle.generatePaymentDetailsGroupedByBillTypeAndDiscountSchemeAndAdmissionType();
     }
 
@@ -1217,6 +1263,7 @@ public class PharmacySummaryReportController implements Serializable {
                 r.setPayments(billService.fetchBillPayments(r.getBill()));
             }
         }
+        applyPaidOutMethodToRefundRows(bundle);
         bundle.generatePaymentDetailsForBills();
     }
     
