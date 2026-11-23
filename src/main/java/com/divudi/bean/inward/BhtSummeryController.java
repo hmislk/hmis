@@ -838,6 +838,12 @@ public class BhtSummeryController implements Serializable {
         List<BillFee> all = new ArrayList<>(getProfesionallFee());
         all.addAll(getDoctorAndNurseFee());
         all.addAll(getTechnicianFee());
+        // Issue #25993: some hospitals do not want the cancellation (negative)
+        // fee listed as its own row; the original fee stays, labelled cancelled.
+        if (configOptionApplicationController.getBooleanValueByKey(
+                "Inward Interim Bill - Hide Cancellation Rows In Professional Fees", false)) {
+            all.removeIf(bf -> bf.getBill() != null && !(bf.getBill() instanceof BilledBill));
+        }
         return all;
     }
 
