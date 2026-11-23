@@ -680,7 +680,7 @@ public class GrnReturnWithCostingController implements Serializable {
         } else if (configOptionApplicationController.getBooleanValueByKey("Purchase Return Based On Total Cost Rate", false)
                 && fd.getTotalCostRate() != null) {
             rate = fd.getTotalCostRate();
-        } else if (configOptionApplicationController.getBooleanValueByKey("Purchase Return Based On Purchase Rate", false)
+        } else if (configOptionApplicationController.getBooleanValueByKey("Purchase Return Based On Purchase Rate", true)
                 && fd.getLineGrossRate() != null) {
             if (originalBillItem.getItem() instanceof Ampp) {
                 if (fd.getUnitsPerPack() != null && fd.getUnitsPerPack().compareTo(BigDecimal.ZERO) != 0) {
@@ -731,7 +731,7 @@ public class GrnReturnWithCostingController implements Serializable {
             } else if (originalBillItem.getItem() instanceof Vmp) {
                 rate = fd.getTotalCostRate();
             }
-        } else if (configOptionApplicationController.getBooleanValueByKey("Purchase Return Based On Purchase Rate", false)
+        } else if (configOptionApplicationController.getBooleanValueByKey("Purchase Return Based On Purchase Rate", true)
                 && fd.getLineGrossRate() != null) {
             rate = fd.getLineGrossRate();
         }

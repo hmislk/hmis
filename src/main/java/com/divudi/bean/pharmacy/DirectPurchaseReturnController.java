@@ -1087,7 +1087,7 @@ public class DirectPurchaseReturnController implements Serializable {
         }
         
         boolean totalQuantityMode = configOptionApplicationController.getBooleanValueByKey("Purchase Return by Total Quantity", false);
-        boolean quantityAndFreeQuantityMode = configOptionApplicationController.getBooleanValueByKey("Purchase Return by Quantity and Free Quantity", false);
+        boolean quantityAndFreeQuantityMode = configOptionApplicationController.getBooleanValueByKey("Purchase Return by Quantity and Free Quantity", true);
         
         if (totalQuantityMode) {
             // In total quantity mode, check if the total quantity is zero or negative

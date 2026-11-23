@@ -1889,7 +1889,7 @@ public class DirectPurchaseReturnWorkflowController implements Serializable {
 
         // Check configuration options
         boolean returnByTotalQty = configOptionApplicationController.getBooleanValueByKey("Purchase Return by Total Quantity", false);
-        boolean returnByQtyAndFree = configOptionApplicationController.getBooleanValueByKey("Purchase Return by Quantity and Free Quantity", false);
+        boolean returnByQtyAndFree = configOptionApplicationController.getBooleanValueByKey("Purchase Return by Quantity and Free Quantity", true);
 
         // Check if this is an AMPP item (pack item) that needs unit conversion
         boolean isAmppItem = (billItem.getItem() instanceof Ampp);
