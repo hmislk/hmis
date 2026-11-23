@@ -1,0 +1,138 @@
+-- Migration v2.30.0: patient complaints register tables
+-- Issue: #25886 (patient complaints register, on site and online)
+--
+-- Creates PATIENTCOMPLAINT and PATIENTCOMPLAINTLOG, mapped by the PatientComplaint and
+-- PatientComplaintLog entities. Production has no DDL generation, so run this before
+-- deploying a build that includes those entities.
+-- The category list is a Category subclass (shared CATEGORY table), so it needs nothing here.
+--
+-- Safe to re-run: each table is created only when missing.
+--
+-- UNIVERSAL: detects actual table-name case via INFORMATION_SCHEMA so this works on both
+-- case-sensitive (Linux, lower_case_table_names=0) and case-insensitive (Windows/Azure) MySQL.
+-- New tables are created in the same case as the existing WEBUSER table.
+
+SELECT 'Migration v2.30.0 - patient complaints register tables' AS status;
+
+SET @webuser_table = (
+    SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES
+    WHERE TABLE_SCHEMA = DATABASE() AND UPPER(TABLE_NAME) = 'WEBUSER' LIMIT 1
+);
+SET @institution_table = (
+    SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES
+    WHERE TABLE_SCHEMA = DATABASE() AND UPPER(TABLE_NAME) = 'INSTITUTION' LIMIT 1
+);
+SET @department_table = (
+    SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES
+    WHERE TABLE_SCHEMA = DATABASE() AND UPPER(TABLE_NAME) = 'DEPARTMENT' LIMIT 1
+);
+SET @patient_table = (
+    SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES
+    WHERE TABLE_SCHEMA = DATABASE() AND UPPER(TABLE_NAME) = 'PATIENT' LIMIT 1
+);
+SET @category_table = (
+    SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES
+    WHERE TABLE_SCHEMA = DATABASE() AND UPPER(TABLE_NAME) = 'CATEGORY' LIMIT 1
+);
+
+SELECT CONCAT('WEBUSER: ', COALESCE(@webuser_table, 'NOT FOUND'),
+              ', INSTITUTION: ', COALESCE(@institution_table, 'NOT FOUND'),
+              ', DEPARTMENT: ', COALESCE(@department_table, 'NOT FOUND'),
+              ', PATIENT: ', COALESCE(@patient_table, 'NOT FOUND'),
+              ', CATEGORY: ', COALESCE(@category_table, 'NOT FOUND')) AS info;
+
+-- Case for the new tables follows the existing WEBUSER table
+SET @complaint_table = IF(@webuser_table = UPPER(@webuser_table), 'PATIENTCOMPLAINT', 'patientcomplaint');
+SET @log_table = IF(@webuser_table = UPPER(@webuser_table), 'PATIENTCOMPLAINTLOG', 'patientcomplaintlog');
+
+-- STEP 1: PATIENTCOMPLAINT
+SET @exists = (
+    SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES
+    WHERE TABLE_SCHEMA = DATABASE() AND UPPER(TABLE_NAME) = 'PATIENTCOMPLAINT'
+);
+SET @sql = IF(@webuser_table IS NULL OR @institution_table IS NULL OR @department_table IS NULL
+              OR @patient_table IS NULL OR @category_table IS NULL,
+    'SELECT "SKIPPED: WEBUSER, INSTITUTION, DEPARTMENT, PATIENT or CATEGORY table not found" AS status',
+    IF(@exists > 0,
+        'SELECT "SKIPPED: PATIENTCOMPLAINT already exists" AS status',
+        CONCAT('CREATE TABLE ', @complaint_table, ' (
+            ID BIGINT NOT NULL AUTO_INCREMENT,
+            CLOSEDAT DATETIME DEFAULT NULL,
+            COMPLAINANTNAME VARCHAR(255) DEFAULT NULL,
+            COMPLAINANTPHONE VARCHAR(255) DEFAULT NULL,
+            CREATEDAT DATETIME DEFAULT NULL,
+            DESCRIPTION LONGTEXT DEFAULT NULL,
+            RESPONSE LONGTEXT DEFAULT NULL,
+            RETIRED TINYINT(1) DEFAULT 0,
+            RETIREDAT DATETIME DEFAULT NULL,
+            SOURCE VARCHAR(255) DEFAULT NULL,
+            STATUS VARCHAR(255) DEFAULT NULL,
+            UPDATEDAT DATETIME DEFAULT NULL,
+            ASSIGNEE_ID BIGINT DEFAULT NULL,
+            CATEGORY_ID BIGINT DEFAULT NULL,
+            CLOSEDBY_ID BIGINT DEFAULT NULL,
+            CREATER_ID BIGINT DEFAULT NULL,
+            DEPARTMENT_ID BIGINT DEFAULT NULL,
+            INSTITUTION_ID BIGINT DEFAULT NULL,
+            PATIENT_ID BIGINT DEFAULT NULL,
+            RETIRER_ID BIGINT DEFAULT NULL,
+            PRIMARY KEY (ID),
+            KEY FK_PATIENTCOMPLAINT_ASSIGNEE_ID (ASSIGNEE_ID),
+            KEY FK_PATIENTCOMPLAINT_CATEGORY_ID (CATEGORY_ID),
+            KEY FK_PATIENTCOMPLAINT_CLOSEDBY_ID (CLOSEDBY_ID),
+            KEY FK_PATIENTCOMPLAINT_CREATER_ID (CREATER_ID),
+            KEY FK_PATIENTCOMPLAINT_DEPARTMENT_ID (DEPARTMENT_ID),
+            KEY FK_PATIENTCOMPLAINT_INSTITUTION_ID (INSTITUTION_ID),
+            KEY FK_PATIENTCOMPLAINT_PATIENT_ID (PATIENT_ID),
+            KEY FK_PATIENTCOMPLAINT_RETIRER_ID (RETIRER_ID),
+            CONSTRAINT FK_PATIENTCOMPLAINT_ASSIGNEE_ID FOREIGN KEY (ASSIGNEE_ID) REFERENCES ', @webuser_table, ' (ID),
+            CONSTRAINT FK_PATIENTCOMPLAINT_CATEGORY_ID FOREIGN KEY (CATEGORY_ID) REFERENCES ', @category_table, ' (ID),
+            CONSTRAINT FK_PATIENTCOMPLAINT_CLOSEDBY_ID FOREIGN KEY (CLOSEDBY_ID) REFERENCES ', @webuser_table, ' (ID),
+            CONSTRAINT FK_PATIENTCOMPLAINT_CREATER_ID FOREIGN KEY (CREATER_ID) REFERENCES ', @webuser_table, ' (ID),
+            CONSTRAINT FK_PATIENTCOMPLAINT_DEPARTMENT_ID FOREIGN KEY (DEPARTMENT_ID) REFERENCES ', @department_table, ' (ID),
+            CONSTRAINT FK_PATIENTCOMPLAINT_INSTITUTION_ID FOREIGN KEY (INSTITUTION_ID) REFERENCES ', @institution_table, ' (ID),
+            CONSTRAINT FK_PATIENTCOMPLAINT_PATIENT_ID FOREIGN KEY (PATIENT_ID) REFERENCES ', @patient_table, ' (ID),
+            CONSTRAINT FK_PATIENTCOMPLAINT_RETIRER_ID FOREIGN KEY (RETIRER_ID) REFERENCES ', @webuser_table, ' (ID)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4')
+    )
+);
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+
+-- STEP 2: PATIENTCOMPLAINTLOG (references the complaint table created above)
+SET @complaint_actual = (
+    SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES
+    WHERE TABLE_SCHEMA = DATABASE() AND UPPER(TABLE_NAME) = 'PATIENTCOMPLAINT' LIMIT 1
+);
+SET @exists = (
+    SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES
+    WHERE TABLE_SCHEMA = DATABASE() AND UPPER(TABLE_NAME) = 'PATIENTCOMPLAINTLOG'
+);
+SET @sql = IF(@webuser_table IS NULL OR @patient_table IS NULL OR @complaint_actual IS NULL,
+    'SELECT "SKIPPED: WEBUSER, PATIENT or PATIENTCOMPLAINT table not found" AS status',
+    IF(@exists > 0,
+        'SELECT "SKIPPED: PATIENTCOMPLAINTLOG already exists" AS status',
+        CONCAT('CREATE TABLE ', @log_table, ' (
+            ID BIGINT NOT NULL AUTO_INCREMENT,
+            ACTION VARCHAR(255) DEFAULT NULL,
+            CREATEDAT DATETIME DEFAULT NULL,
+            FROMSTATUS VARCHAR(255) DEFAULT NULL,
+            NOTE VARCHAR(2000) DEFAULT NULL,
+            TOSTATUS VARCHAR(255) DEFAULT NULL,
+            COMPLAINT_ID BIGINT DEFAULT NULL,
+            CREATER_ID BIGINT DEFAULT NULL,
+            PATIENT_ID BIGINT DEFAULT NULL,
+            PRIMARY KEY (ID),
+            KEY FK_PATIENTCOMPLAINTLOG_COMPLAINT_ID (COMPLAINT_ID),
+            KEY FK_PATIENTCOMPLAINTLOG_CREATER_ID (CREATER_ID),
+            KEY FK_PATIENTCOMPLAINTLOG_PATIENT_ID (PATIENT_ID),
+            CONSTRAINT FK_PATIENTCOMPLAINTLOG_COMPLAINT_ID FOREIGN KEY (COMPLAINT_ID) REFERENCES ', @complaint_actual, ' (ID),
+            CONSTRAINT FK_PATIENTCOMPLAINTLOG_CREATER_ID FOREIGN KEY (CREATER_ID) REFERENCES ', @webuser_table, ' (ID),
+            CONSTRAINT FK_PATIENTCOMPLAINTLOG_PATIENT_ID FOREIGN KEY (PATIENT_ID) REFERENCES ', @patient_table, ' (ID)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4')
+    )
+);
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;

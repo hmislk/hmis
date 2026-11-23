@@ -24,44 +24,53 @@
                         <p:outputLabel value="Patient Details" class="m-2"/>
                     </f:facet>
 
-                    <div class="d-flex gap-4">
-                        <h:outputLabel value="Type Patient Name or BHT : " class="mt-2"/>
-
-                        <admcc:admission_search
-                            widgetVar="aPt"
-                            inputId="acPt"
-                            value="#{inwardPaymentController.current.patientEncounter}"
-                            completeMethod="#{admissionController.completePatientAll}"
-                            continueClientId="frmInwardPayment:btnSelect" />
-
-                        <p:commandButton
-                            id="btnSelect"
-                            value="select"
-                            ajax="false"
-                            action="#{inwardPaymentController.bhtListener}" >
-                        </p:commandButton>
-
-                        <style>
-                            .discharged-badge {
-                                background-color: #f44336;
-                                color: white;
-                                padding: 2px 8px;
-                                border-radius: 12px;
-                                font-size: 1em;
-                                font-weight: bold;
-                            }
-
-                            .not-discharged-badge {
-                                background-color: #2196F3;
-                                color: white;
-                                padding: 2px 8px;
-                                border-radius: 12px;
-                                font-size: 1em;
-                                font-weight: bold;
-                            }
-                        </style>
-
+                    <div class="row justify-content-center my-3">
+                        <div class="col-12 col-lg-8">
+                            <p:outputLabel
+                                for="admSearch:acPt"
+                                value="Type Patient Name or BHT"
+                                class="form-label fw-bold"/>
+                            <div class="d-flex gap-2 align-items-stretch">
+                                <div class="flex-grow-1">
+                                    <admcc:admission_search
+                                        id="admSearch"
+                                        widgetVar="aPt"
+                                        inputId="acPt"
+                                        value="#{inwardPaymentController.current.patientEncounter}"
+                                        completeMethod="#{admissionController.completePatientAll}"
+                                        continueClientId="frmInwardPayment:btnSelect" />
+                                </div>
+                                <p:commandButton
+                                    id="btnSelect"
+                                    value="Select"
+                                    icon="fa fa-check"
+                                    class="ui-button-success px-4"
+                                    title="Load the selected admission for payment"
+                                    ajax="false"
+                                    action="#{inwardPaymentController.bhtListener}" />
+                            </div>
+                        </div>
                     </div>
+
+                    <style>
+                        .discharged-badge {
+                            background-color: #f44336;
+                            color: white;
+                            padding: 2px 8px;
+                            border-radius: 12px;
+                            font-size: 1em;
+                            font-weight: bold;
+                        }
+
+                        .not-discharged-badge {
+                            background-color: #2196F3;
+                            color: white;
+                            padding: 2px 8px;
+                            border-radius: 12px;
+                            font-size: 1em;
+                            font-weight: bold;
+                        }
+                    </style>
 
                 </p:panel>
             </h:form>
@@ -129,7 +138,7 @@
                                     <div class="col-md-2">
                                         <h:outputLabel value="Payment Mode" class="mt-2"/>
                                     </div>
-                                    
+
                                     <div class="col-md-3">
                                         <p:selectOneMenu 
                                             class="w-100" 
@@ -399,7 +408,8 @@
                                         value="Pay"
                                         style="width:250px;"
                                         ajax="false"
-                                        onclick="if (!confirm('Are you sure?')) return false"
+                                        onclick="if (!confirm('Are you sure?'))
+                                                    return false"
                                         action="#{inwardPaymentController.pay()}" >
                                     </p:commandButton>
 
@@ -585,7 +595,8 @@
                                      icon="fas fa-times"
                                      class="ui-button-secondary"
                                      type="button"
-                                     onclick="PF('inwardPaymentConfigDialog').hide(); return false;"/>
+                                     onclick="PF('inwardPaymentConfigDialog').hide();
+                                             return false;"/>
                 </div>
             </h:form>
         </p:dialog>

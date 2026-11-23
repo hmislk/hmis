@@ -196,6 +196,10 @@ public class AuditEvent implements Serializable {
         }
     }
 
+    public void setDifference(String difference) {
+        this.difference = difference;
+    }
+
     public String getDifference() {
         if (difference == null) {
             calculateDifference();

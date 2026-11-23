@@ -906,8 +906,13 @@ public class OpdOrderController implements Serializable, ControllerWithPatient, 
 //        this.recurseCount = recurseCount;
 //    }
     public boolean findByFilter(String property, String value) {
-        String sql = "Select b From Bill b where b.retired=false and (b." + property + ") like '%" + value.toUpperCase() + " %'";
-        Bill b = getBillFacade().findFirstByJpql(sql);
+        if (property == null || value == null || !property.matches("^[A-Za-z][A-Za-z0-9_.]*$")) {
+            return false;
+        }
+        String sql = "Select b From Bill b where b.retired=false and (b." + property + ") like :q";
+        Map<String, Object> qm = new HashMap<>();
+        qm.put("q", "%" + value.toUpperCase() + " %");
+        Bill b = getBillFacade().findFirstByJpql(sql, qm);
         //System.err.println("SQL " + sql);
         //System.err.println("Bill " + b);
         if (b != null) {
@@ -1193,7 +1198,7 @@ public class OpdOrderController implements Serializable, ControllerWithPatient, 
         HashMap hash = new HashMap();
 
         sql = "select b from BilledBill b  where"
-                + " (abs(b.netTotal)-abs(b.paidAmount))>:val "
+                + " (abs(b.netTotal)-(coalesce(b.refundAmount,0)+abs(b.paidAmount)+coalesce(b.writtenOffAmount,0)))>:val "
                 + " and b.billType in :btps"
                 + " and b.createdAt is not null "
                 + " and b.deptId is not null "

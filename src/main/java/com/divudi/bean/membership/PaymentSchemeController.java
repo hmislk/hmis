@@ -214,8 +214,8 @@ public class PaymentSchemeController implements Serializable {
         selectedItems = getFacade().findByJpql("select c from PaymentScheme c"
                 + " where c.retired=false "
                 + " and c.membershipScheme is null "
-                + " and (c.name) like '%" + getSelectText().toUpperCase() + "%' "
-                + " order by c.name");
+                + " and (c.name) like :q "
+                + " order by c.name", java.util.Map.of("q", "%" + getSelectText().toUpperCase() + "%"));
         return selectedItems;
     }
 

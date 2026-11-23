@@ -20,6 +20,7 @@ SQL rule (always):
 - Only `SELECT`, `SHOW`, `DESCRIBE` and `EXPLAIN`. No `INSERT`, `UPDATE`, `DELETE`, DDL, `SET GLOBAL`, `LOAD DATA`, or config edits through `mysql` (they also bypass the config cache).
 - Local databases only. Query a production database only when the brief explicitly asks for a read-only production query, and only through the route that brief names. Never write to Azure or any production database, ever, and never open an SSH tunnel to one on your own.
 - Never paste credentials into commands you report; point to the credentials file named in the skill.
+- Credentials: never create a script or file that holds a password. Never `cat`, `head`, `grep`, `sed`, `awk` or `type` a file that may hold one (masks leak; a mask once missed `-p` arguments and printed them). Connect only with an existing option file via `mysql --defaults-extra-file=<file>` without opening it, or a read-only helper script run without reading it. If connecting would need you to read a secret, stop and ask. If a secret gets printed, stop and say so in the report.
 
 Checklist:
 - JPQL first. Native SQL is acceptable only with proof that JPQL cannot meet the need (EXPLAIN plan or timings, before and after). Say which you have.

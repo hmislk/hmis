@@ -12,6 +12,8 @@ import com.divudi.core.entity.Person;
 import com.divudi.core.facade.PersonFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Date;
 import java.util.List;
 import javax.ejb.EJB;
@@ -43,7 +45,9 @@ public class PersonController implements Serializable {
     String selectText = "";
 
     public List<Person> getSelectedItems() {
-        selectedItems = getFacade().findByJpql("select c from Person c where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
+        Map<String, Object> likeParams = new HashMap<>();
+        likeParams.put("txt", "%" + getSelectText().toUpperCase() + "%");
+        selectedItems = getFacade().findByJpql("select c from Person c where c.retired=false and (c.name) like :txt order by c.name", likeParams);
         return selectedItems;
     }
 
@@ -54,8 +58,10 @@ public class PersonController implements Serializable {
     public List<Person> completePerson(String qry) {
         List<Person> a = null;
         if (qry != null) {
+            Map<String, Object> likeParams = new HashMap<>();
+            likeParams.put("txt", "%" + qry.toUpperCase() + "%");
             a = getFacade().findByJpql("select c from Person c where c.retired=false and "
-                    + "  (c.name) like '%" + qry.toUpperCase() + "%' order by c.name", 20);
+                    + "  (c.name) like :txt order by c.name", likeParams, 20);
         }
         if (a == null) {
             a = new ArrayList<Person>();

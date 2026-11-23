@@ -11,6 +11,8 @@ import com.divudi.core.entity.ServiceSession;
 import com.divudi.core.facade.ServiceSessionFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Date;
 import java.util.List;
 import javax.ejb.EJB;
@@ -42,14 +44,18 @@ public class ServiceSessionController implements Serializable {
     String selectText = "";
 
     public List<ServiceSession> getSelectedItems() {
-        selectedItems = getFacade().findByJpql("select c from ServiceSession c where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
+        Map<String, Object> likeParams = new HashMap<>();
+        likeParams.put("txt", "%" + getSelectText().toUpperCase() + "%");
+        selectedItems = getFacade().findByJpql("select c from ServiceSession c where c.retired=false and (c.name) like :txt order by c.name", likeParams);
         return selectedItems;
     }
 
     public List<ServiceSession> completeServiceSession(String qry) {
         List<ServiceSession> a = null;
         if (qry != null) {
-            a = getFacade().findByJpql("select c from ServiceSession c where c.retired=false and (c.name) like '%" + qry.toUpperCase() + "%' order by c.name");
+            Map<String, Object> likeParams = new HashMap<>();
+            likeParams.put("txt", "%" + qry.toUpperCase() + "%");
+            a = getFacade().findByJpql("select c from ServiceSession c where c.retired=false and (c.name) like :txt order by c.name", likeParams);
         }
         if (a == null) {
             a = new ArrayList<ServiceSession>();
@@ -64,9 +70,10 @@ public class ServiceSessionController implements Serializable {
             suggestions = new ArrayList<ServiceSession>();
         } else {
 
-            sql = "select p from ServiceSession p where p.retired=false and (((p.staff.person.name) like '%" + query.toUpperCase() + "%') or ((p.name) like '%" + query.toUpperCase() + "%') or ((p.staff.speciality.name) like '%" + query.toUpperCase() + "%') ) order by p.name";
-            //////// // System.out.println(sql);
-            suggestions = getFacade().findByJpql(sql);
+            sql = "select p from ServiceSession p where p.retired=false and (((p.staff.person.name) like :qry) or ((p.name) like :qry) or ((p.staff.speciality.name) like :qry) ) order by p.name";
+            Map<String, Object> m = new HashMap<>();
+            m.put("qry", "%" + query.toUpperCase() + "%");
+            suggestions = getFacade().findByJpql(sql, m);
         }
         return suggestions;
     }

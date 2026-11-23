@@ -63,11 +63,12 @@ public class SessionNumberGenerateController implements Serializable {
         String sql;
         Map m = new HashMap();
         sql = " SELECT sg FROM SessionNumberGenerator sg WHERE sg.retired=false"
-                + " and (sg.name) like '%" + qry.toUpperCase() + "%' "
+                + " and (sg.name) like :qry "
                 + " and sg.speciality=:sp"
                 + " and sg.staff=:s "
                 + " order by sg.name";
 
+        m.put("qry", "%" + qry.toUpperCase() + "%");
         m.put("sp", sheduleController.getSpeciality());
         m.put("s", sheduleController.getCurrentStaff());
 

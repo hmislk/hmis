@@ -6,15 +6,16 @@ The HMIS Database Migration System provides a comprehensive framework for managi
 
 ## Schema changes vs. data migrations
 
-**Schema changes** (adding new columns, tables, or indexes) are handled automatically — do NOT write a migration script for them:
+**Plain new columns and indexes** are handled automatically — do NOT write a migration script for them. A new `@Entity` / table is not covered; see "New tables and columns" below.
+
 - EclipseLink's DDL auto-update adds missing columns on application startup in development.
 - On production, the admin runs **`/faces/dataAdmin/missing_database_fields.xhtml`** to detect and apply any missing columns before deploying new code.
 
-**Exception:** a column the login path reads (e.g. `WebUser`) needs a migration script plus a pre-deploy step, because a missing column locks everyone out, including admins who would run Add Missing Fields. Example: #25075 / PR #25080.
+**Exception:** a new `@Entity` / table, or a column read at startup or on the login path (e.g. `WebUser`), needs a migration script plus a pre-deploy step, because a missing column locks everyone out, including admins who would run Add Missing Fields. Example: #25075 / PR #25080.
 
 **Data migrations** (backfilling values in existing rows, transforming data, fixing historical records) require a migration script under `src/main/resources/db/migrations/`. The admin executes these via **`/faces/admin/database_migration.xhtml`**.
 
-> Rule of thumb: if your change is `ALTER TABLE … ADD COLUMN`, skip the migration script. If your change is `UPDATE … SET`, write one.
+> Rule of thumb: if your change is a plain `ALTER TABLE … ADD COLUMN`, skip the migration script. If it creates a table or entity, or is `UPDATE … SET`, write one.
 
 ## Admin UI pages
 
@@ -152,6 +153,20 @@ private int compareVersions(String version1, String version2) {
 - **affectedModules**: List of application modules impacted
 - **preRequisites**: Prerequisites before execution
 - **migrationSteps**: Detailed breakdown of migration actions
+
+## New tables and columns
+
+A new `@Entity` class, a new table, or a new column that the code reads at startup ships with its migration in the same PR. Without it, the deployed code fails as soon as it touches the missing table.
+
+Check the version is free before you pick it:
+```bash
+git fetch origin
+git ls-tree --name-only origin/development src/main/resources/db/migrations/ | sort -V | tail -3
+gh pr list --state open --json number --jq '.[].number' | xargs -I{} sh -c 'gh pr diff {} --name-only | grep "^src/main/resources/db/migrations/" | sed "s/^/#{}: /"'
+```
+The last command lists the migration paths changed by each open PR; if one uses your version, take the next one.
+
+"Fix Missing Fields" is not a substitute for a new table on production. It only adds missing columns, so the table needs its own migration.
 
 ## Development Workflow
 

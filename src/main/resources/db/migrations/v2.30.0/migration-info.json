@@ -1,0 +1,16 @@
+{
+  "version": "v2.30.0",
+  "description": "Create PATIENTCOMPLAINT and PATIENTCOMPLAINTLOG (patient complaints register) if missing",
+  "githubIssue": "25886",
+  "author": "Dr M H B Ariyaratne",
+  "date": "2026-11-22",
+  "requiresDowntime": false,
+  "estimatedDurationMinutes": 1,
+  "affectedTables": ["patientcomplaint", "patientcomplaintlog"],
+  "preRequisites": [
+    "Run migration.sql by hand on the database BEFORE deploying any build that contains the PatientComplaint entities. The migration page only gets this file in that same build, so it cannot run this step first.",
+    "Without these tables the Patient Complaints pages and the client portal complaint page fail. Other pages are not affected.",
+    "Idempotent; changes no data. Tables are created in the same case as the existing WEBUSER table. The complaint category list reuses the existing CATEGORY table and needs no change."
+  ],
+  "rollbackNotes": ["rollback.sql drops PATIENTCOMPLAINTLOG, then PATIENTCOMPLAINT, then deletes the complaint category rows (CATEGORY rows with DTYPE = PatientComplaintCategory). Complaint data and categories are lost."]
+}

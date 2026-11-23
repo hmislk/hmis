@@ -76,6 +76,8 @@ public class CashRecieveBillController implements Serializable {
     @EJB
     private CreditBean creditBean;
     @EJB
+    private com.divudi.service.CreditCompanyClaimService creditCompanyClaimService;
+    @EJB
     private PatientEncounterFacade patientEncounterFacade;
     @EJB
     private EncounterCreditCompanyFacade encounterCreditCompanyFacade;
@@ -360,6 +362,25 @@ public class CashRecieveBillController implements Serializable {
         calTotal();
     }
 
+    /**
+     * Re-checks each amount against the bill's current due, which includes approved
+     * write-offs, since a payment or write-off may have been recorded for the same bill
+     * after this page loaded it (#25467, #25847).
+     */
+    private boolean isEachAmountWithinCurrentDue() {
+        for (BillItem item : getBillItems()) {
+            double due = getReferenceBallance(item);
+            if (item.getNetValue() - due > 0.01) {
+                JsfUtil.addErrorMessage(String.format("Bill %s: paying %.2f is more than its current due of %.2f. "
+                        + "It may have been paid or written off since this page was opened. Please start a new bill.",
+                        item.getReferenceBill() != null ? item.getReferenceBill().getDeptId() : "",
+                        item.getNetValue(), due));
+                return false;
+            }
+        }
+        return true;
+    }
+
     private boolean isPaidAmountOk(BillItem tmp) {
 
         double refBallance = getReferenceBallance(tmp);
@@ -452,9 +473,9 @@ public class CashRecieveBillController implements Serializable {
     private double creditBillDue(Bill bill) {
         double due;
         if (bill.getId() == null) {
-            due = bill.getNetTotal() - (bill.getRefundAmount() + bill.getPaidAmount());
+            due = bill.getNetTotal() - (bill.getRefundAmount() + bill.getPaidAmount() + bill.getWrittenOffAmount());
         } else {
-            String jpql = "select b.netTotal - (coalesce(b.refundAmount,0) + coalesce(b.paidAmount,0)) "
+            String jpql = "select b.netTotal - (coalesce(b.refundAmount,0) + coalesce(b.paidAmount,0) + coalesce(b.writtenOffAmount,0)) "
                     + "from Bill b where b.id = :id";
             Map<String, Object> params = new HashMap<>();
             params.put("id", bill.getId());
@@ -1171,6 +1192,10 @@ public class CashRecieveBillController implements Serializable {
             return;
         }
 
+        if (!isEachAmountWithinCurrentDue()) {
+            return;
+        }
+
         String deptId = billNumberBean.departmentBillNumberGeneratorYearly(sessionController.getDepartment(), BillTypeAtomic.OPD_CREDIT_COMPANY_PAYMENT_RECEIVED);
         calulateTotalForSettlingCreditForOpdPackageBills();
         getBillBean().setPaymentMethodData(getCurrent(), getCurrent().getPaymentMethod(), getPaymentMethodData());
@@ -1251,6 +1276,10 @@ public class CashRecieveBillController implements Serializable {
 
         if (totalSettlementAmount <= 0) {
             JsfUtil.addErrorMessage("Cannot settle bills with zero total amount. Total settlement amount must be greater than zero.");
+            return;
+        }
+
+        if (!isEachAmountWithinCurrentDue()) {
             return;
         }
 
@@ -1856,6 +1885,7 @@ public class CashRecieveBillController implements Serializable {
             // Update reference bill's financial fields as well
             updateBillFinancialFieldsForPayment(referenceBillOfOriginal, paymentValue);
         }
+        linkSettlementToClaims(tmp);
     }
 
     /**
@@ -1903,7 +1933,7 @@ public class CashRecieveBillController implements Serializable {
         // Calculate the accurate current balance using the same formula as calculateCurrentBalance
         double netTotal = Math.abs(referenceBill.getNetTotal() + referenceBill.getVat());
         double refundAmount = Math.abs(getCreditBean().getRefundAmount(referenceBill));
-        double currentBalance = netTotal - (settleCreditValueTotal + refundAmount);
+        double currentBalance = netTotal - (settleCreditValueTotal + refundAmount + referenceBill.getWrittenOffAmount());
         referenceBill.setBalance(Math.max(0, currentBalance)); // Ensure balance doesn't go negative
 
         // Check if bill is fully paid and set paidAt timestamp
@@ -1916,6 +1946,26 @@ public class CashRecieveBillController implements Serializable {
         }
 
         getBillFacade().edit(referenceBill);
+        linkSettlementToClaims(billItemWithReferanceToCreditBill);
+    }
+
+    /**
+     * Links a saved credit collection item to the open claim holding the paid bill and
+     * updates that claim's status (#25847). Payment is already saved, so a failure here is
+     * logged and shown as a warning, never rolled back into the payment.
+     */
+    private void linkSettlementToClaims(BillItem savedItem) {
+        if (savedItem == null || savedItem.getBill() == null || savedItem.getReferenceBill() == null
+                || savedItem.getBill().getBillTypeAtomic() != BillTypeAtomic.OPD_CREDIT_COMPANY_PAYMENT_RECEIVED) {
+            return;
+        }
+        try {
+            creditCompanyClaimService.recordSettlement(savedItem.getBill(),
+                    java.util.Collections.singletonList(savedItem), getSessionController().getLoggedUser());
+        } catch (RuntimeException e) {
+            LOGGER.log(Level.SEVERE, "Could not link settlement to its claim", e);
+            JsfUtil.addErrorMessage("The payment was saved, but it could not be linked to its credit company claim. Tell the administrator.");
+        }
     }
 
     // Links the payment to each admission's final bill once, using a fresh read, so a

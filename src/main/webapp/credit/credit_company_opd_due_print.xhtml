@@ -13,27 +13,27 @@
                 <h:form >
                     <p:panel header="Opd Credit DUE Report Print" styleClass="w-100">
                         <f:facet name="header"  >
-                            <div class="d-flex justify-content-between">
-                                <h:outputText value="Opd Credit DUE Report Print" class="mt-2"/>
+                            <div class="d-flex justify-content-between align-items-center w-100">
+                                <h:outputText value="Opd Credit DUE Report Print" styleClass="fw-bold"/>
                                 <div class="d-flex gap-2">
-                                    <p:commandButton 
-                                        icon="fa-solid fa-print"
-                                        class="ui-button-info"
-                                        style="width: 150px"
-                                        ajax="false" 
-                                        value="Print">
-                                        <p:printer target="reportView" />
-                                    </p:commandButton>
-                                    <p:commandButton 
-                                        ajax="false" 
-                                        value="Back to Report" 
-                                        style="width: 200px"
-                                        icon="fa fa-arrow-left"
-                                        class="ui-button-warning"
+                                    <p:commandButton
+                                        ajax="false"
+                                        value="Back to Report"
+                                        icon="fas fa-arrow-left"
+                                        styleClass="ui-button-info ui-button-outlined"
                                         action="credit_company_opd_due?faces-redirect=true" >
                                     </p:commandButton>
                                 </div>
-
+                                <div class="d-flex gap-2">
+                                    <p:commandButton
+                                        icon="fas fa-print"
+                                        styleClass="ui-button-success"
+                                        style="min-width:120px"
+                                        ajax="false"
+                                        value="Print">
+                                        <p:printer target="reportView" />
+                                    </p:commandButton>
+                                </div>
                             </div>
                         </f:facet>
 
@@ -253,7 +253,7 @@
                                                             </h:outputText>
                                                         </td>
                                                         <td style="width: 17mm; text-align: right;">
-                                                            <h:outputText value="#{p.bill.netTotal - p.bill.refundAmount - p.bill.paidAmount}" style="margin-right: 1mm;">
+                                                            <h:outputText value="#{p.bill.netTotal - (p.bill.refundAmount + p.bill.paidAmount + p.bill.writtenOffAmount)}" style="margin-right: 1mm;">
                                                                 <f:convertNumber pattern="#,##0.00" />
                                                             </h:outputText>
                                                         </td>
@@ -288,7 +288,7 @@
                                                     </td>
 
                                                     <td style="text-align:right;">
-                                                        <h:outputText value="#{i.total - i.refundTotal - i.paidTotal}" style="margin-right: 1mm;">
+                                                        <h:outputText value="#{i.dueTotal}" style="margin-right: 1mm;">
                                                             <f:convertNumber pattern="#,##0.00"/>
                                                         </h:outputText>
                                                     </td>

@@ -14,7 +14,10 @@
                         <p:panel styleClass="mb-2">
                             <div class="d-flex flex-wrap align-items-center gap-2">
                                 <h:outputText value="Reference No: " styleClass="fw-bold"/>
-                                <h:outputText value="#{coveringLetterController.current.referenceNo}"/>
+                                <h:outputText value="#{coveringLetterController.current.referenceNo}"
+                                              rendered="#{empty coveringLetterController.currentLetters}"/>
+                                <h:outputText value="#{coveringLetterController.currentLetters.size()} letters, #{coveringLetterController.currentLetters[0].referenceNo} to #{coveringLetterController.currentLetters[coveringLetterController.currentLetters.size() - 1].referenceNo}"
+                                              rendered="#{not empty coveringLetterController.currentLetters}"/>
                                 <p:commandButton value="Print" icon="fa fa-print" ajax="false"
                                                  styleClass="ui-button-info"
                                                  title="Print the covering letter">
@@ -33,7 +36,12 @@
 
                         <h:panelGroup id="pnlLetterPrint" layout="block"
                                       style="width: 100%; min-height: 500px; padding: 15px; background: #fff;">
-                            <h:outputText value="#{coveringLetterController.current.generatedHtml}" escape="false"/>
+                            <!-- One letter per page when several were created together (#25747) -->
+                            <ui:repeat value="#{coveringLetterController.lettersToPrint}" var="cl" varStatus="st">
+                                <h:panelGroup layout="block" style="#{st.last ? '' : 'page-break-after: always; break-after: page;'}">
+                                    <h:outputText value="#{cl.generatedHtml}" escape="false"/>
+                                </h:panelGroup>
+                            </ui:repeat>
                         </h:panelGroup>
                     </h:form>
                 </h:panelGroup>

@@ -29,7 +29,8 @@ public enum CreditCompanyClaimStatus {
     }
 
     /**
-     * Statuses a claim may move to from this one.
+     * Statuses a claim may move to from this one. Close is allowed only from
+     * Partially Settled (closePartiallySettled in the claim service).
      */
     public Set<CreditCompanyClaimStatus> getAllowedNext() {
         switch (this) {
@@ -37,9 +38,9 @@ public enum CreditCompanyClaimStatus {
                 return EnumSet.of(SUBMITTED, CANCELLED);
             case SUBMITTED:
             case RESUBMITTED:
-                return EnumSet.of(REJECTED, PARTIALLY_SETTLED, SETTLED, CLOSED);
+                return EnumSet.of(REJECTED, PARTIALLY_SETTLED, SETTLED);
             case REJECTED:
-                return EnumSet.of(RESUBMITTED, CLOSED, CANCELLED);
+                return EnumSet.of(RESUBMITTED, CANCELLED);
             case PARTIALLY_SETTLED:
                 return EnumSet.of(SETTLED, CLOSED);
             case SETTLED:
@@ -48,6 +49,34 @@ public enum CreditCompanyClaimStatus {
             default:
                 return EnumSet.noneOf(CreditCompanyClaimStatus.class);
         }
+    }
+
+    /**
+     * Statuses the system may move a claim to when settlement bills are saved or
+     * cancelled (#25847). Separate from {@link #getAllowedNext()}, which is what a
+     * user may do. Settled can reopen when a settlement is cancelled.
+     */
+    public Set<CreditCompanyClaimStatus> getSystemNext() {
+        switch (this) {
+            case SUBMITTED:
+            case RESUBMITTED:
+                return EnumSet.of(PARTIALLY_SETTLED, SETTLED);
+            case PARTIALLY_SETTLED:
+                return EnumSet.of(SETTLED, SUBMITTED, RESUBMITTED);
+            case SETTLED:
+                return EnumSet.of(PARTIALLY_SETTLED, SUBMITTED, RESUBMITTED);
+            default:
+                return EnumSet.noneOf(CreditCompanyClaimStatus.class);
+        }
+    }
+
+    public boolean canSystemMoveTo(CreditCompanyClaimStatus next) {
+        return next != null && getSystemNext().contains(next);
+    }
+
+    /** True when settlement changes can change this status (a claim already sent to the company). */
+    public boolean followsSettlement() {
+        return this == SUBMITTED || this == RESUBMITTED || this == PARTIALLY_SETTLED || this == SETTLED;
     }
 
     /**
