@@ -2471,6 +2471,14 @@ public class PharmacySaleBhtController implements Serializable {
 
             bi.setNetValue(bi.getGrossValue() + bi.getMarginValue() - bi.getDiscount());
             bi.setAdjustedValue(bi.getNetValue());
+            // Per-unit rates: BhtIssueReturnController copies discountRate and netRate
+            // from the issued line, so without them a return credits the undiscounted
+            // price, more than the patient was charged (issue #24031).
+            double unitQty = Math.abs(bi.getQty());
+            if (unitQty > 0) {
+                bi.setDiscountRate(bi.getDiscount() / unitQty);
+                bi.setNetRate(bi.getNetValue() / unitQty);
+            }
             getBillItemFacade().edit(bi);
 
             total += bi.getGrossValue();
