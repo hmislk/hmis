@@ -879,8 +879,7 @@ public class AmpController implements Serializable {
 
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             // UPDATE - capture before state
-            Amp beforeUpdate = getFacade().find(getCurrent().getId());
-            Map<String, Object> beforeData = createAuditMap(beforeUpdate);
+            Map<String, Object> beforeNames = itemAuditHelper.snapshotFromDb(getCurrent().getId());
 
             // Update audit fields
             getCurrent().setEditedAt(new Date());
@@ -888,11 +887,8 @@ public class AmpController implements Serializable {
 
             getFacade().edit(getCurrent());
 
-            // Log audit for update
-            Map<String, Object> afterData = createAuditMap(getCurrent());
-            auditService.logAudit(beforeData, afterData,
-                    getSessionController().getLoggedUser(),
-                    "Amp", "Update AMP", getCurrent().getId());
+            // Log audit for update (only when name/code fields changed)
+            itemAuditHelper.logUpdate(beforeNames, getCurrent(), getSessionController().getLoggedUser(), "UI");
 
             JsfUtil.addSuccessMessage("AMP Updated Successfully.");
         } else {
@@ -903,10 +899,7 @@ public class AmpController implements Serializable {
             getFacade().create(getCurrent());
 
             // Log audit for create
-            Map<String, Object> afterData = createAuditMap(getCurrent());
-            auditService.logAudit(null, afterData,
-                    getSessionController().getLoggedUser(),
-                    "Amp", "Create AMP", getCurrent().getId());
+            itemAuditHelper.logCreate(getCurrent(), getSessionController().getLoggedUser(), "UI");
 
             JsfUtil.addSuccessMessage("AMP Created Successfully.");
         }
