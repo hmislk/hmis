@@ -351,6 +351,12 @@ public class PatientController implements Serializable, ControllerWithPatient {
      * patient, so the UI can warn the user before proceeding.
      */
     private List<Patient> possibleDuplicatePatients = new ArrayList<>();
+    /**
+     * True when at least one possible duplicate exists. For users restricted
+     * to their own registrations the list is left empty so no patient data
+     * reaches the page; only this flag is used (#25851).
+     */
+    private boolean possibleDuplicateExists;
 
     /**
      *
@@ -1768,6 +1774,45 @@ public class PatientController implements Serializable, ControllerWithPatient {
         getPatientEncounterController().fillCurrentPatientLists(current);
     }
 
+    /**
+     * True when the logged user holds the privilege that limits patient search to patients
+     * registered by that user or by that user's institution (#25851).
+     */
+    public boolean isPatientSearchRestrictedToOwnRegistrations() {
+        return webUserController.hasPrivilege("RestrictPatientSearchToOwnRegistrations");
+    }
+
+    /**
+     * JPQL fragment (starts with " and ") that limits a patient search to patients registered by the
+     * logged user or by the logged user's institution. Returns an empty string, and adds no
+     * parameters, for users without the restricting privilege. The alias is the patient path, e.g. "p".
+     */
+    private String restrictPatientSearchClause(String patientAlias, Map m) {
+        if (!isPatientSearchRestrictedToOwnRegistrations()) {
+            return "";
+        }
+        WebUser user = getSessionController().getLoggedUser();
+        Institution ins = getSessionController().getInstitution();
+        m.put("rsUser", user);
+        if (ins == null) {
+            return " and " + patientAlias + ".creater=:rsUser ";
+        }
+        m.put("rsInstitution", ins);
+        return " and (" + patientAlias + ".creater=:rsUser or " + patientAlias + ".createdInstitution=:rsInstitution) ";
+    }
+
+    /**
+     * Same restriction for a query that selects Person rows: keeps only persons that have a patient
+     * registered by the logged user or the logged user's institution. Empty for unrestricted users.
+     */
+    private String restrictPersonSearchClause(String personAlias, Map m) {
+        if (!isPatientSearchRestrictedToOwnRegistrations()) {
+            return "";
+        }
+        return " and " + personAlias + ".id in (select rsPt.person.id from Patient rsPt where rsPt.retired=false"
+                + restrictPatientSearchClause("rsPt", m) + ") ";
+    }
+
     public String searchPatient() {
         if (searchBillId != null && !searchBillId.trim().equals("")) {
             searchByBill();
@@ -1969,6 +2014,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
             m.put("insid", searchBillId);
             temId = 0l;
         }
+        j += restrictPatientSearchClause("b.patient", m);
         j += " order by b.patient.person.name";
         searchedPatients = getFacade().findByJpql(j, m);
     }
@@ -1996,6 +2042,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
                 searchedPatients = new ArrayList<>();
             }
         }
+        j += restrictPatientSearchClause("ps.patientInvestigation.billItem.bill.patient", m);
         j += " order by ps.patientInvestigation.billItem.bill.patient.person.name";
         searchedPatients = getFacade().findByJpql(j, m);
     }
@@ -2050,6 +2097,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
             atLeastOneCriteriaIsGiven = true;
         }
 
+        j += restrictPatientSearchClause("p", m);
         j += " order by p.person.name";
 
         if (!atLeastOneCriteriaIsGiven) {
@@ -2079,6 +2127,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
             m.put("name", "%" + searchName.toLowerCase() + "%");
             atLeastOneCriteriaIsGiven = true;
         }
+        j += restrictPatientSearchClause("p", m);
         j += " order by p.person.name";
 
         if (!atLeastOneCriteriaIsGiven) {
@@ -2108,6 +2157,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
             m.put("nic", searchNic);
             atLeastOneCriteriaIsGiven = true;
         }
+        j += restrictPatientSearchClause("p", m);
         j += " order by p.person.name";
 
         if (!atLeastOneCriteriaIsGiven) {
@@ -2138,6 +2188,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
             atLeastOneCriteriaIsGiven = true;
         }
 
+        j += restrictPatientSearchClause("p", m);
         j += " order by p.person.name";
 
         if (!atLeastOneCriteriaIsGiven) {
@@ -2152,6 +2203,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
         String j;
         Map m = new HashMap();
         j = "select p from Patient p where p.retired=false and p.id=:id";
+        j += restrictPatientSearchClause("p", m);
         Long ptId = 0l;
         try {
             ptId = Long.parseLong(searchPatientId);
@@ -2168,6 +2220,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
         Map m = new HashMap();
         j = "select p from Patient p where p.retired=false and p.blacklisted = :status";
         m.put("status", blackListStatus);
+        j += restrictPatientSearchClause("p", m);
         searchedPatients = getFacade().findByJpql(j, m, TemporalType.DATE, 20);
     }
 
@@ -2176,6 +2229,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
         Map m = new HashMap();
         j = "select p from Patient p where p.retired=false and p.specificStatus = :status";
         m.put("status", specificPatientStatus);
+        j += restrictPatientSearchClause("p", m);
         searchedPatients = getFacade().findByJpql(j, m, TemporalType.DATE, 20);
     }
 
@@ -2189,6 +2243,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
         Map m = new HashMap();
         j = "select p from Patient p where p.retired=false and (p.patientPhoneNumber=:pp or p.patientMobileNumber=:pp)";
         m.put("pp", patientPhoneNumber);
+        j += restrictPatientSearchClause("p", m);
         searchedPatients = getFacade().findByJpql(j, m);
     }
 
@@ -2223,6 +2278,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
             j = "select p from Patient p where p.retired=false and (p.patientPhoneNumber=:pp or p.patientMobileNumber=:pp)";
             Long searchedPhoneNumber = CommonFunctions.removeSpecialCharsInPhonenumber(quickSearchPhoneNumber);
             m.put("pp", searchedPhoneNumber);
+            j += restrictPatientSearchClause("p", m);
             quickSearchPatientList = getFacade().findByJpql(j, m);
         } else {
             if (!quickSearchPhoneNumber.trim().isEmpty()) {
@@ -3270,6 +3326,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
         current = null;
         getCurrent();
         possibleDuplicatePatients = new ArrayList<>();
+        possibleDuplicateExists = false;
 
         reGenerateePhn = true;
         return "/opd/patient_edit?faces-redirect=true";
@@ -3279,6 +3336,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
         current = null;
         getCurrent();
         possibleDuplicatePatients = new ArrayList<>();
+        possibleDuplicateExists = false;
         return "/optician/patient_edit?faces-redirect=true";
     }
 
@@ -3286,6 +3344,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
         current = null;
         getCurrent();
         possibleDuplicatePatients = new ArrayList<>();
+        possibleDuplicateExists = false;
         getCurrent().getPerson().setName(name);
         getCurrent().getPerson().setNic(nic);
         getCurrent().getPerson().setPhone(phone);
@@ -3297,6 +3356,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
         current = null;
         getCurrent();
         possibleDuplicatePatients = new ArrayList<>();
+        possibleDuplicateExists = false;
         getCurrent().getPerson().setName(name);
         getCurrent().getPerson().setNic(nic);
         getCurrent().getPerson().setPhone(phone);
@@ -3308,6 +3368,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
         current = null;
         getCurrent();
         possibleDuplicatePatients = new ArrayList<>();
+        possibleDuplicateExists = false;
         getCurrent().getPerson().setPhone(phone);
         getCurrent().getPerson().setMobile(phone);
         return "/opd/patient_edit?faces-redirect=true";
@@ -3497,11 +3558,12 @@ public class PatientController implements Serializable, ControllerWithPatient {
             suggestions = new ArrayList<>();
         } else {
             sql = "select p from Patient p where p.retired=false "
-                    + " and (p.person.name) like :q "
+                    + " and ((p.person.name) like :q "
                     + " or (p.code) like :q "
                     + " or (p.person.nic) like :q"
-                    + " or (p.person.mobile) like :q "
-                    + "  order by p.person.name";
+                    + " or (p.person.mobile) like :q) ";
+            sql += restrictPatientSearchClause("p", hm);
+            sql += "  order by p.person.name";
             hm.put("q", "%" + query.toUpperCase() + "%");
             suggestions = getFacade().findByJpql(sql, hm, 20);
         }
@@ -3525,6 +3587,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
                 + " or (p.person.mobile) like :q "
                 + " or (p.person.phone) like :q "
                 + " or (p.phn) like :q) ";
+        sql += restrictPatientSearchClause("p", hm);
         sql += " order by p.person.name";
         hm.put("q", "%" + query.toUpperCase() + "%");
         patientList = getFacade().findByJpql(sql, hm, 20);
@@ -3597,6 +3660,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
      */
     public void checkForPossibleDuplicatePatients() {
         possibleDuplicatePatients = new ArrayList<>();
+        possibleDuplicateExists = false;
         if (current == null || current.getPerson() == null) {
             return;
         }
@@ -3633,7 +3697,14 @@ public class PatientController implements Serializable, ControllerWithPatient {
 
         jpql.append("and (").append(String.join(" or ", orConditions)).append(")");
 
-        possibleDuplicatePatients = getFacade().findByJpql(jpql.toString(), params, 10);
+        List<Patient> matches = getFacade().findByJpql(jpql.toString(), params, 10);
+        if (matches == null) {
+            matches = new ArrayList<>();
+        }
+        possibleDuplicateExists = !matches.isEmpty();
+        if (!isPatientSearchRestrictedToOwnRegistrations()) {
+            possibleDuplicatePatients = matches;
+        }
     }
 
     /**
@@ -3659,7 +3730,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
         }
         if (current != null && current.getId() == null) {
             checkForPossibleDuplicatePatients();
-            if (possibleDuplicatePatients != null && !possibleDuplicatePatients.isEmpty()) {
+            if (possibleDuplicateExists) {
                 PrimeFaces.current().executeScript("PF('dlgDuplicatePatientSaveWarning').show();");
                 return;
             }
@@ -3684,7 +3755,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
         }
         if (current != null && current.getId() == null) {
             checkForPossibleDuplicatePatients();
-            if (possibleDuplicatePatients != null && !possibleDuplicatePatients.isEmpty()) {
+            if (possibleDuplicateExists) {
                 PrimeFaces.current().executeScript("PF('dlgDuplicatePatientAdmissionWarning').show();");
                 return null;
             }
@@ -3867,6 +3938,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
         Map m = new HashMap();
         String j = "select p from Patient p where p.retired=false and p.phn=:phn ";
         m.put("phn", phn.trim());
+        j += restrictPatientSearchClause("p", m);
         List<Patient> searchedPatients = getFacade().findByJpql(j, m);
         //System.out.println("searched Patients From PHN = " + searchedPatients.size());
         return searchedPatients;
@@ -3885,6 +3957,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
             Map m = new HashMap();
             j = "select p from Patient p where p.retired=false and (p.patientPhoneNumber=:pp or p.patientMobileNumber=:pp ) ";
             m.put("pp", patientPhoneNumber);
+            j += restrictPatientSearchClause("p", m);
             searchedPatients = getFacade().findByJpql(j, m);
             //System.out.println("searched Patients From Phone Number = " + searchedPatients.size());
             usePHN = false;
@@ -4034,6 +4107,9 @@ public class PatientController implements Serializable, ControllerWithPatient {
         if (getCurrent().getId() == null) {
             getCurrent().setCreatedAt(new Date());
             getCurrent().setCreater(getSessionController().getLoggedUser());
+            if (getCurrent().getCreatedInstitution() == null) {
+                getCurrent().setCreatedInstitution(getSessionController().getInstitution());
+            }
             getFacade().create(current);
             JsfUtil.addSuccessMessage("Saved as a new patient successfully.");
         } else {
@@ -4506,6 +4582,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
         Map m1 = new HashMap();
         m1.put("ret", false);
         m1.put("name", "%" + name + "%");
+        j1 += restrictPersonSearchClause("p", m1);
         searchedPersons = personFacade.findLongList(j1, m1);
     }
 
@@ -4518,6 +4595,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
         Map m1 = new HashMap();
         m1.put("ret", false);
         m1.put("name", "%" + searchName + "%");
+        j1 += restrictPersonSearchClause("p", m1);
         List<Long> pids = personFacade.findLongList(j1, m1);
 
         String j2 = "Select pt "
@@ -4526,6 +4604,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
                 + " and pt.person.id in :ids";
         Map m2 = new HashMap();
         m2.put("ret", false);
+        j2 += restrictPatientSearchClause("pt", m2);
         m2.put("ids", pids);
         searchedPatients = getFacade().findByJpql(j2, m2);
         Long end = new Date().getTime();
@@ -4541,6 +4620,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
         Map m1 = new HashMap();
         m1.put("ret", false);
         m1.put("name", "%" + searchName + "%");
+        j1 += restrictPersonSearchClause("p", m1);
         List<Person> pids = personFacade.findByJpql(j1, m1);
 
         String j2 = "Select pt "
@@ -4549,6 +4629,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
                 + " and pt.person in :ps";
         Map m2 = new HashMap();
         m2.put("ret", false);
+        j2 += restrictPatientSearchClause("pt", m2);
         m2.put("ps", pids);
         searchedPatients = getFacade().findByJpql(j2, m2);
         Long end = new Date().getTime();
@@ -4564,6 +4645,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
         Map m1 = new HashMap();
         m1.put("ret", false);
         m1.put("name", "%" + searchName + "%");
+        j1 += restrictPatientSearchClause("p", m1);
         searchedPatients = getFacade().findByJpql(j1, m1);
         Long end = new Date().getTime();
         Long duration = end - start;
@@ -4578,6 +4660,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
         Map m1 = new HashMap();
         m1.put("ret", false);
         m1.put("name", "%" + searchName + "%");
+        j1 += restrictPersonSearchClause("p", m1);
         List<Person> pids = personFacade.findByJpql(j1, m1);
         Long end = new Date().getTime();
         Long duration = end - start;
@@ -4594,6 +4677,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
         Map<String, Object> parameters = new HashMap<>();
         parameters.put("ret", false);
         parameters.put("name", "%" + searchName + "%");
+        jpql += restrictPatientSearchClause("pt", parameters);
 
         // Execute the query and measure duration
         searchedPatients = getFacade().findByJpql(jpql, parameters);
@@ -4610,6 +4694,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
         Map m1 = new HashMap();
         m1.put("ret", false);
         m1.put("phone", phone);
+        j1 += restrictPersonSearchClause("p", m1);
         searchedPersons = personFacade.findLongList(j1, m1);
     }
 
@@ -4621,6 +4706,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
         Map m1 = new HashMap();
         m1.put("ret", false);
         m1.put("nic", nic);
+        j1 += restrictPersonSearchClause("p", m1);
         searchedPersons = personFacade.findLongList(j1, m1);
     }
 
@@ -4632,6 +4718,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
         Map m1 = new HashMap();
         m1.put("ret", false);
         m1.put("phn", phn);
+        j1 += restrictPatientSearchClause("p", m1);
         searchedPersons = personFacade.findLongList(j1, m1);
     }
 
@@ -4643,6 +4730,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
         Map m1 = new HashMap();
         m1.put("ret", false);
         m1.put("mrn", mrn);
+        j1 += restrictPatientSearchClause("p", m1);
         searchedPersons = personFacade.findLongList(j1, m1);
     }
 
@@ -4792,6 +4880,14 @@ public class PatientController implements Serializable, ControllerWithPatient {
 
     public void setNavigatedFromAdmissionProfile(boolean navigatedFromAdmissionProfile) {
         this.navigatedFromAdmissionProfile = navigatedFromAdmissionProfile;
+    }
+
+    public boolean isPossibleDuplicateExists() {
+        return possibleDuplicateExists;
+    }
+
+    public boolean isPossibleDuplicateDetailsHidden() {
+        return possibleDuplicateExists && possibleDuplicatePatients.isEmpty();
     }
 
     public List<Patient> getPossibleDuplicatePatients() {
@@ -5118,8 +5214,10 @@ public class PatientController implements Serializable, ControllerWithPatient {
         jpql = "select p "
                 + " from Patient p "
                 + " where p.person=:person "
-                + " order by p.id";
+                + " and p.retired=false ";
         m.put("person", p);
+        jpql += restrictPatientSearchClause("p", m);
+        jpql += " order by p.id";
         return getFacade().findFirstByJpql(jpql, m);
     }
 
