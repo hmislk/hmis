@@ -223,6 +223,9 @@ public class CoveringLetterController implements Serializable {
                 .getRequestParameterMap().get("perRecordToken");
         if (submitted == null || !submitted.equals(perRecordToken)) {
             if (currentLetters != null && !currentLetters.isEmpty()) {
+                // A double click, or an old copy of the page (browser Back): nothing new is created.
+                JsfUtil.addErrorMessageForRedirect("These letters were already created from this page."
+                        + " To create new letters, use Back to Batch and select the records again.");
                 return PRINT_PAGE;
             }
             JsfUtil.addErrorMessage("This page is out of date. Select the records again.");
