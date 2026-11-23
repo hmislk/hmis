@@ -8,6 +8,7 @@
  */
 package com.divudi.bean.pharmacy;
 
+import com.divudi.service.ItemAuditHelper;
 import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.AuditEventController;
@@ -58,6 +59,8 @@ import javax.inject.Named;
 @Named
 @SessionScoped
 public class VmpController implements Serializable {
+    @EJB
+    private ItemAuditHelper itemAuditHelper;
 
     private static final long serialVersionUID = 1L;
     @Inject
@@ -131,6 +134,7 @@ public class VmpController implements Serializable {
             String vmpCode = CommonFunctions.nameToCode("vmp_" + vmpName);
             vmp.setSymanticType(SymanticType.Pharmacologic_Substance);
             getFacade().create(vmp);
+            itemAuditHelper.logCreate(vmp, getSessionController().getLoggedUser(), "UI find-or-create");
         }
         return vmp;
     }
@@ -146,8 +150,10 @@ public class VmpController implements Serializable {
             strVmp = cleanVTMName(strVmp);
             strVmp = removeSpecificWords(strVmp, convertInputToArray(bulkText));
             strVmp = removeExactWords(strVmp, convertInputToArray(bulkText));
+            Map<String, Object> beforeNames = ItemAuditHelper.snapshot(v);
             v.setName(strVmp);
             getFacade().edit(v);
+            itemAuditHelper.logUpdate(beforeNames, v, getSessionController().getLoggedUser(), "UI bulk name clean");
         }
     }
 
@@ -329,6 +335,7 @@ public class VmpController implements Serializable {
         v.setIssueMultipliesQuantity(issueMultipliesQuantity);
         v.setIssueMultipliesUnit(issueMultipliesQuantityUnit);
         getFacade().create(v);
+        itemAuditHelper.logCreate(v, getSessionController().getLoggedUser(), "UI find-or-create");
         return v;
     }
 
@@ -357,6 +364,7 @@ public class VmpController implements Serializable {
         v.setMinimumIssueQuantity(minimumIssueQuantity);
         v.setIssueMultipliesQuantity(issueMultipliesQuantity);
         getFacade().create(v);
+        itemAuditHelper.logCreate(v, getSessionController().getLoggedUser(), "UI find-or-create");
         return v;
     }
 
@@ -471,8 +479,11 @@ public class VmpController implements Serializable {
 
         if (current.getId() == null || current.getId() == 0) {
             getFacade().create(current);
+            itemAuditHelper.logCreate(current, getSessionController().getLoggedUser(), "UI");
         } else {
+            Map<String, Object> beforeNames = itemAuditHelper.snapshotFromDb(current.getId());
             getFacade().edit(current);
+            itemAuditHelper.logUpdate(beforeNames, current, getSessionController().getLoggedUser(), "UI");
         }
 
     }
@@ -632,6 +643,7 @@ public class VmpController implements Serializable {
             auditData.put("id", vmp.getId());
             auditData.put("name", vmp.getName());
             auditData.put("code", vmp.getCode());
+            ItemAuditHelper.putNameFields(auditData, vmp);
             auditData.put("retired", vmp.isRetired());
             auditData.put("inactive", vmp.isInactive());
             auditData.put("departmentType", vmp.getDepartmentType() != null ?
@@ -647,7 +659,9 @@ public class VmpController implements Serializable {
 
     public void saveSelected() {
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
+            Map<String, Object> beforeNames = itemAuditHelper.snapshotFromDb(getCurrent().getId());
             getFacade().editAndCommit(getCurrent());
+            itemAuditHelper.logUpdate(beforeNames, getCurrent(), getSessionController().getLoggedUser(), "UI");
             JsfUtil.addSuccessMessage("Updated Successfully.");
         }
         recreateModel();

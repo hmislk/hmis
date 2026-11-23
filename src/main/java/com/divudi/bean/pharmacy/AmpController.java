@@ -8,6 +8,7 @@
  */
 package com.divudi.bean.pharmacy;
 
+import com.divudi.service.ItemAuditHelper;
 import com.divudi.bean.common.CategoryController;
 import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.ItemController;
@@ -68,6 +69,8 @@ import java.util.Iterator;
 @Named
 @SessionScoped
 public class AmpController implements Serializable {
+    @EJB
+    private ItemAuditHelper itemAuditHelper;
 
     private static final long serialVersionUID = 1L;
 
@@ -192,6 +195,7 @@ public class AmpController implements Serializable {
                 if (amp == null) {
                     amp = new Amp();
                 }
+                Map<String, Object> beforeNames = amp.getId() == null ? null : ItemAuditHelper.snapshot(amp);
                 amp.setCategory(cat);
                 amp.setVmp(vmp);
                 amp.setName(ampName);
@@ -203,6 +207,7 @@ public class AmpController implements Serializable {
                 } else {
                     getFacade().edit(amp);
                 }
+                itemAuditHelper.logSave(beforeNames, amp, getSessionController().getLoggedUser(), "UI upload");
             }
 
             workbook.close();
@@ -243,6 +248,7 @@ public class AmpController implements Serializable {
             amp.setItemType(ItemType.Amp);
             amp.setSymanticType(SymanticType.Pharmacologic_Substance);
             getFacade().create(amp);
+            itemAuditHelper.logCreate(amp, getSessionController().getLoggedUser(), "UI find-or-create");
         }
         return amp;
     }
@@ -806,8 +812,11 @@ public class AmpController implements Serializable {
 
         if (currentVmp.getId() == null || currentVmp.getId() == 0) {
             getVmpFacade().create(currentVmp);
+            itemAuditHelper.logCreate(currentVmp, getSessionController().getLoggedUser(), "UI");
         } else {
+            Map<String, Object> beforeNames = itemAuditHelper.snapshotFromDb(currentVmp.getId());
             getVmpFacade().edit(currentVmp);
+            itemAuditHelper.logUpdate(beforeNames, currentVmp, getSessionController().getLoggedUser(), "UI");
         }
 
     }
@@ -1070,12 +1079,15 @@ public class AmpController implements Serializable {
         current.setDepartmentType(DepartmentType.Pharmacy);
 
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
+            Map<String, Object> beforeNames = itemAuditHelper.snapshotFromDb(current.getId());
             getFacade().edit(current);
+            itemAuditHelper.logUpdate(beforeNames, current, getSessionController().getLoggedUser(), "UI");
             JsfUtil.addSuccessMessage("Updated Successfully.");
         } else {
             current.setCreatedAt(new Date());
             current.setCreater(getSessionController().getLoggedUser());
             getFacade().create(current);
+            itemAuditHelper.logCreate(current, getSessionController().getLoggedUser(), "UI");
             JsfUtil.addSuccessMessage("Saved Successfully");
         }
         recreateModel();
@@ -1089,8 +1101,11 @@ public class AmpController implements Serializable {
         }
         if (amp.getId() == null) {
             getFacade().create(amp);
+            itemAuditHelper.logCreate(amp, getSessionController().getLoggedUser(), "UI");
         } else {
+            Map<String, Object> beforeNames = itemAuditHelper.snapshotFromDb(amp.getId());
             getFacade().edit(amp);
+            itemAuditHelper.logUpdate(beforeNames, amp, getSessionController().getLoggedUser(), "UI");
         }
     }
 
@@ -1421,10 +1436,12 @@ public class AmpController implements Serializable {
                 if (newCode != null && !newCode.trim().isEmpty()) {
                     // Verify uniqueness
                     if (!checkItemCode(newCode, amp)) {
+                        Map<String, Object> beforeNames = ItemAuditHelper.snapshot(amp);
                         amp.setCode(newCode);
                         amp.setEditedAt(new Date());
                         amp.setEditer(getSessionController().getLoggedUser());
                         getFacade().edit(amp);
+                        itemAuditHelper.logUpdate(beforeNames, amp, getSessionController().getLoggedUser(), "UI bulk code generation");
                         successCount++;
                     } else {
                         errorCount++;
@@ -1698,6 +1715,7 @@ public class AmpController implements Serializable {
             auditData.put("id", amp.getId());
             auditData.put("name", amp.getName());
             auditData.put("code", amp.getCode());
+            ItemAuditHelper.putNameFields(auditData, amp);
             auditData.put("barcode", amp.getBarcode());
             auditData.put("retired", amp.isRetired());
             auditData.put("departmentType", amp.getDepartmentType() != null ?

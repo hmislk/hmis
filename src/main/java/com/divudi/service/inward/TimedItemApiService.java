@@ -5,6 +5,7 @@
  */
 package com.divudi.service.inward;
 
+import com.divudi.service.ItemAuditHelper;
 import com.divudi.core.data.DepartmentType;
 import com.divudi.core.data.dto.timeditem.TimedItemCreateRequestDTO;
 import com.divudi.core.data.dto.timeditem.TimedItemFeeCreateRequestDTO;
@@ -53,6 +54,8 @@ import java.util.Set;
  */
 @Stateless
 public class TimedItemApiService implements Serializable {
+    @EJB
+    private ItemAuditHelper itemAuditHelper;
 
     @EJB
     private TimedItemFacade timedItemFacade;
@@ -245,6 +248,7 @@ public class TimedItemApiService implements Serializable {
         // Flush so the IDENTITY id is assigned now: a plain persist leaves it
         // null until commit, and the create response would omit "id" (#24143).
         timedItemFacade.createAndFlush(item);
+        itemAuditHelper.logCreate(item, user, "API");
 
         // Self-references set after initial persist (ID now available)
         item.setBilledAs(item);
@@ -264,6 +268,7 @@ public class TimedItemApiService implements Serializable {
         }
 
         TimedItem item = loadAndValidate(id);
+        Map<String, Object> beforeNames = ItemAuditHelper.snapshot(item);
 
         if (request.getName() != null && !request.getName().trim().isEmpty()) {
             item.setName(request.getName().trim());
@@ -315,6 +320,7 @@ public class TimedItemApiService implements Serializable {
         item.setEditer(user);
         item.setEditedAt(Calendar.getInstance().getTime());
         timedItemFacade.edit(item);
+        itemAuditHelper.logUpdate(beforeNames, item, user, "API");
 
         List<TimedItemFee> fees = fetchFees(item);
         return buildResponseDTO(item, fees, "TimedItem updated successfully");

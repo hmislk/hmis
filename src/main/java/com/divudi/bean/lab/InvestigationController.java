@@ -38,6 +38,7 @@ import com.divudi.core.entity.lab.WorksheetItem;
 import com.divudi.core.data.dto.InvestigationDTO;
 import com.divudi.core.facade.DepartmentFacade;
 import com.divudi.core.facade.InvestigationFacade;
+import com.divudi.service.ItemAuditHelper;
 import com.divudi.service.lab.InvestigationConversionService;
 import com.divudi.core.facade.InvestigationItemFacade;
 import com.divudi.core.facade.InvestigationItemValueFlagFacade;
@@ -99,6 +100,8 @@ public class InvestigationController implements Serializable {
      */
     @Inject
     SessionController sessionController;
+    @EJB
+    private ItemAuditHelper itemAuditHelper;
     @Inject
     private BillBeanController billBean;
     @Inject
@@ -375,6 +378,7 @@ public class InvestigationController implements Serializable {
             i.setCreatedAt(new Date());
             i.setCreater(getSessionController().getLoggedUser());
             getFacade().create(i);
+            itemAuditHelper.logCreate(i, getSessionController().getLoggedUser(), "UI add many");
 
             i.setReportedAs(i);
             i.setBilledAs(i);
@@ -1512,13 +1516,16 @@ public class InvestigationController implements Serializable {
             if (reportedAs == false) {
                 getCurrent().setReportedAs(getCurrent());
             }
+            Map<String, Object> beforeNames = itemAuditHelper.snapshotFromDb(getCurrent().getId());
             getFacade().edit(getCurrent());
+            itemAuditHelper.logUpdate(beforeNames, getCurrent(), getSessionController().getLoggedUser(), "UI");
             JsfUtil.addSuccessMessage("Updated Successfully.");
         } else {
             getCurrent().setCreatedAt(new Date());
             getCurrent().setCreater(getSessionController().getLoggedUser());
 
             getFacade().create(getCurrent());
+            itemAuditHelper.logCreate(getCurrent(), getSessionController().getLoggedUser(), "UI");
             if (billedAs == false) {
                 getCurrent().setBilledAs(getCurrent());
             }
@@ -1582,12 +1589,15 @@ public class InvestigationController implements Serializable {
             if (reportedAs == false) {
                 getCurrent().setReportedAs(getCurrent());
             }
+            Map<String, Object> beforeNames = itemAuditHelper.snapshotFromDb(getCurrent().getId());
             getFacade().edit(getCurrent());
+            itemAuditHelper.logUpdate(beforeNames, getCurrent(), getSessionController().getLoggedUser(), "UI");
             JsfUtil.addSuccessMessage("Updated Successfully.");
         } else {
             getCurrent().setCreatedAt(new Date());
             getCurrent().setCreater(getSessionController().getLoggedUser());
             getFacade().create(getCurrent());
+            itemAuditHelper.logCreate(getCurrent(), getSessionController().getLoggedUser(), "UI");
             if (billedAs == false) {
                 getCurrent().setBilledAs(getCurrent());
             }
@@ -1620,12 +1630,15 @@ public class InvestigationController implements Serializable {
             if (reportedAs == false) {
                 i.setReportedAs(i);
             }
+            Map<String, Object> beforeNames = itemAuditHelper.snapshotFromDb(i.getId());
             getFacade().edit(i);
+            itemAuditHelper.logUpdate(beforeNames, i, getSessionController().getLoggedUser(), "UI");
             JsfUtil.addSuccessMessage("Updated Successfully.");
         } else {
             i.setCreatedAt(new Date());
             i.setCreater(getSessionController().getLoggedUser());
             getFacade().create(i);
+            itemAuditHelper.logCreate(i, getSessionController().getLoggedUser(), "UI");
             if (billedAs == false) {
                 i.setBilledAs(i);
             }
@@ -1649,8 +1662,11 @@ public class InvestigationController implements Serializable {
     public void saveSelected(Investigation tix) {
         if (tix.getId() == null) {
             getFacade().create(tix);
+            itemAuditHelper.logCreate(tix, getSessionController().getLoggedUser(), "UI");
         } else {
+            Map<String, Object> beforeNames = itemAuditHelper.snapshotFromDb(tix.getId());
             getFacade().edit(tix);
+            itemAuditHelper.logUpdate(beforeNames, tix, getSessionController().getLoggedUser(), "UI");
         }
     }
 

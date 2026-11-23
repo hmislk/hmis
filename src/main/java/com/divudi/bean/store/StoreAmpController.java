@@ -8,6 +8,7 @@
  */
 package com.divudi.bean.store;
 
+import com.divudi.service.ItemAuditHelper;
 import com.divudi.bean.common.CategoryController;
 import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.SessionController;
@@ -758,6 +759,7 @@ public class StoreAmpController implements Serializable {
             auditData.put("id", amp.getId());
             auditData.put("name", amp.getName());
             auditData.put("code", amp.getCode());
+            ItemAuditHelper.putNameFields(auditData, amp);
             auditData.put("barcode", amp.getBarcode());
             auditData.put("retired", amp.isRetired());
             auditData.put("inactive", amp.isInactive());

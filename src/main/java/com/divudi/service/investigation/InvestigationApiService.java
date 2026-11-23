@@ -1,5 +1,6 @@
 package com.divudi.service.investigation;
 
+import com.divudi.service.ItemAuditHelper;
 import com.divudi.core.data.InvestigationReportType;
 import com.divudi.core.data.dto.investigation.*;
 import com.divudi.core.entity.Category;
@@ -25,6 +26,8 @@ import java.util.*;
 
 @Stateless
 public class InvestigationApiService implements Serializable {
+    @EJB
+    private ItemAuditHelper itemAuditHelper;
     @EJB private InvestigationFacade investigationFacade;
     @EJB private InvestigationCategoryFacade investigationCategoryFacade;
     @EJB private CategoryFacade categoryFacade;
@@ -107,12 +110,15 @@ public class InvestigationApiService implements Serializable {
         Machine analyzer = resolveAnalyzer(req.getAnalyzerId(), req.getAnalyzerName(), user);
         if (analyzer != null) i.setMachine(analyzer);
         i.setCreater(user); i.setCreatedAt(new Date()); i.setRetired(false);
-        investigationFacade.createAndFlush(i); i.setBilledAs(i); i.setReportedAs(i); investigationFacade.edit(i);
+        investigationFacade.createAndFlush(i);
+        itemAuditHelper.logCreate(i, user, "API");
+        i.setBilledAs(i); i.setReportedAs(i); investigationFacade.edit(i);
         return toResponse(i, "Investigation created successfully");
     }
 
     public InvestigationResponseDTO update(Long id, InvestigationUpdateRequestDTO req, WebUser user) throws Exception {
         Investigation i = load(id);
+        Map<String, Object> beforeNames = ItemAuditHelper.snapshot(i);
         if (req == null || !req.isValid()) throw new Exception("Valid update request is required");
         if (req.getName() != null && !req.getName().trim().isEmpty()) i.setName(req.getName().trim());
         if (req.getCode() != null) i.setCode(req.getCode().trim());
@@ -141,6 +147,7 @@ public class InvestigationApiService implements Serializable {
             if (analyzer != null) i.setMachine(analyzer);
         }
         i.setEditer(user); i.setEditedAt(new Date()); investigationFacade.edit(i);
+        itemAuditHelper.logUpdate(beforeNames, i, user, "API");
         return toResponse(i, "Investigation updated successfully");
     }
 

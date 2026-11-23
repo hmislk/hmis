@@ -5,6 +5,7 @@
  */
 package com.divudi.service.service;
 
+import com.divudi.service.ItemAuditHelper;
 import com.divudi.core.data.FeeType;
 import com.divudi.core.data.dto.service.ItemFeeCreateRequestDTO;
 import com.divudi.core.data.dto.service.ItemFeeDTO;
@@ -62,6 +63,8 @@ import java.util.Map;
  */
 @Stateless
 public class ServiceApiService implements Serializable {
+    @EJB
+    private ItemAuditHelper itemAuditHelper;
 
     @EJB
     private ServiceFacade serviceFacade;
@@ -346,12 +349,14 @@ public class ServiceApiService implements Serializable {
         // below would come back with no id.
         if ("Inward".equalsIgnoreCase(svcType)) {
             inwardServiceFacade.createAndFlush((InwardService) service);
+            itemAuditHelper.logCreate(service, user, "API");
             // Set self-references after persist
             service.setBilledAs(service);
             service.setReportedAs(service);
             inwardServiceFacade.edit((InwardService) service);
         } else {
             serviceFacade.createAndFlush(service);
+            itemAuditHelper.logCreate(service, user, "API");
             // Set self-references after persist
             service.setBilledAs(service);
             service.setReportedAs(service);
@@ -382,6 +387,7 @@ public class ServiceApiService implements Serializable {
         }
 
         Service service = loadAndValidateService(id);
+        Map<String, Object> beforeNames = ItemAuditHelper.snapshot(service);
 
         if (request.getName() != null && !request.getName().trim().isEmpty()) {
             service.setName(request.getName().trim());
@@ -463,6 +469,7 @@ public class ServiceApiService implements Serializable {
         service.setEditedAt(Calendar.getInstance().getTime());
 
         saveService(service);
+        itemAuditHelper.logUpdate(beforeNames, service, user, "API");
 
         List<ItemFee> fees = fetchFeesForItem(service);
         return buildServiceResponseDTO(service, fees, "Service updated successfully");

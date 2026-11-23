@@ -45,6 +45,7 @@ import com.divudi.core.facade.InvestigationFacade;
 import com.divudi.core.facade.ItemMappingFacade;
 import com.divudi.core.facade.ServiceFacade;
 import com.divudi.core.util.CommonFunctions;
+import com.divudi.service.ItemAuditHelper;
 import com.divudi.service.ItemFeeService;
 import java.io.IOException;
 import java.io.InputStream;
@@ -120,6 +121,8 @@ public class ItemController implements Serializable {
     DepartmentFacade departmentFacade;
     @EJB
     ItemFeeService itemFeeService;
+    @EJB
+    private ItemAuditHelper itemAuditHelper;
     /**
      * Managed Beans
      */
@@ -650,6 +653,7 @@ public class ItemController implements Serializable {
             }
 
             // Update item details
+            Map<String, Object> beforeNames = ItemAuditHelper.snapshot(item);
             item.setName(itemName);
             item.setRetired(retired);
             if (retired) {
@@ -660,6 +664,7 @@ public class ItemController implements Serializable {
             // Save the item
             itemsToSave.add(item);
             itemFacade.edit(item);
+            itemAuditHelper.logUpdate(beforeNames, item, sessionController.getLoggedUser(), "UI upload");
         }
 
         workbook.close(); // Always close the workbook to prevent memory leaks
@@ -1257,6 +1262,7 @@ public class ItemController implements Serializable {
                 item.setCode(code);
                 item.setParentItem(parentItem);
                 getFacade().create(item);
+                itemAuditHelper.logCreate(item, getSessionController().getLoggedUser(), "UI find-or-create");
             }
         }
         return item;
@@ -1293,6 +1299,7 @@ public class ItemController implements Serializable {
                 item.setCode(CommonFunctions.nameToCode(name));
                 item.setParentItem(parentItem);
                 getFacade().create(item);
+                itemAuditHelper.logCreate(item, getSessionController().getLoggedUser(), "UI find-or-create");
             }
         }
         return item;
@@ -1334,6 +1341,7 @@ public class ItemController implements Serializable {
                 item = new Item();
                 item.setName(name);
                 getFacade().create(item);
+                itemAuditHelper.logCreate(item, getSessionController().getLoggedUser(), "UI find-or-create");
             }
             return item;
         } catch (Exception e) {
@@ -1359,6 +1367,7 @@ public class ItemController implements Serializable {
                 item.setName(name);
                 item.setCode(code);
                 getFacade().create(item);
+                itemAuditHelper.logCreate(item, getSessionController().getLoggedUser(), "UI find-or-create");
             }
             return item;
         } catch (Exception e) {
@@ -1384,6 +1393,7 @@ public class ItemController implements Serializable {
                 item.setName(name);
                 item.setCode(code);
                 getFacade().create(item);
+                itemAuditHelper.logCreate(item, getSessionController().getLoggedUser(), "UI find-or-create");
             }
             return item;
         } catch (Exception e) {
@@ -1547,9 +1557,12 @@ public class ItemController implements Serializable {
 
         if (sampleComponent.getId() == null) {
             getFacade().create(sampleComponent);
+            itemAuditHelper.logCreate(sampleComponent, sessionController.getLoggedUser(), "UI");
             JsfUtil.addSuccessMessage("Added");
         } else {
+            Map<String, Object> beforeNames = itemAuditHelper.snapshotFromDb(sampleComponent.getId());
             getFacade().edit(sampleComponent);
+            itemAuditHelper.logUpdate(beforeNames, sampleComponent, sessionController.getLoggedUser(), "UI");
             JsfUtil.addSuccessMessage("Updated");
         }
         fillInvestigationSampleComponents();
@@ -1570,6 +1583,7 @@ public class ItemController implements Serializable {
                     sampleComponent.setCreatedAt(new Date());
                     sampleComponent.setCreater(sessionController.getLoggedUser());
                     getFacade().create(sampleComponent);
+                    itemAuditHelper.logCreate(sampleComponent, sessionController.getLoggedUser(), "UI auto sample component");
                 } else {
                     if (scs.size() > 1) {
                         tix.setHasMoreThanOneComponant(true);
@@ -1595,6 +1609,7 @@ public class ItemController implements Serializable {
             tmpSampleComponent.setCreatedAt(new Date());
             tmpSampleComponent.setCreater(sessionController.getLoggedUser());
             getFacade().create(tmpSampleComponent);
+            itemAuditHelper.logCreate(tmpSampleComponent, sessionController.getLoggedUser(), "UI auto sample component");
         } else {
             if (scs.size() > 1) {
 
@@ -1673,9 +1688,12 @@ public class ItemController implements Serializable {
 
         if (current.getId() == null) {
             getFacade().create(current);
+            itemAuditHelper.logCreate(current, sessionController.getLoggedUser(), "UI");
             JsfUtil.addSuccessMessage("Added");
         } else {
+            Map<String, Object> beforeNames = itemAuditHelper.snapshotFromDb(current.getId());
             getFacade().edit(current);
+            itemAuditHelper.logUpdate(beforeNames, current, sessionController.getLoggedUser(), "UI");
             JsfUtil.addSuccessMessage("Updated");
         }
         fillMachineTests();
@@ -2110,6 +2128,7 @@ public class ItemController implements Serializable {
             ni.setDepartment(department);
             ni.setItemFee(null);
             getFacade().create(ni);
+            itemAuditHelper.logCreate(ni, sessionController.getLoggedUser(), "UI copy from master item");
             i.setItemFees(itemFeeManager.fillFees(i));
 
             for (ItemFee f : i.getItemFees()) {
@@ -4347,11 +4366,14 @@ public class ItemController implements Serializable {
 
     public void saveSelected(Item item) {
         if (item.getId() != null && item.getId() > 0) {
+            Map<String, Object> beforeNames = itemAuditHelper.snapshotFromDb(item.getId());
             getFacade().edit(item);
+            itemAuditHelper.logUpdate(beforeNames, item, getSessionController().getLoggedUser(), "UI");
         } else {
             item.setCreatedAt(new Date());
             item.setCreater(getSessionController().getLoggedUser());
             getFacade().create(item);
+            itemAuditHelper.logCreate(item, getSessionController().getLoggedUser(), "UI");
         }
     }
 

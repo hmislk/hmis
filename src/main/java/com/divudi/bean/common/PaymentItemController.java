@@ -5,6 +5,7 @@
  */
 package com.divudi.bean.common;
 
+import com.divudi.service.ItemAuditHelper;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.entity.PaymentItem;
 import java.io.Serializable;
@@ -29,6 +30,8 @@ import javax.inject.Named;
 @Named
 @SessionScoped
 public class PaymentItemController implements Serializable {
+    @EJB
+    private ItemAuditHelper itemAuditHelper;
 
     /**
      * Creates a new instance of PaymentItemController
@@ -92,12 +95,15 @@ public class PaymentItemController implements Serializable {
         }
 
         if (getCurrent().getId() != null) {
+            Map<String, Object> beforeNames = itemAuditHelper.snapshotFromDb(getCurrent().getId());
             getFacade().edit(getCurrent());
+            itemAuditHelper.logUpdate(beforeNames, getCurrent(), getSessionController().getLoggedUser(), "UI");
             JsfUtil.addSuccessMessage("Updated Successfully.");
         } else {
             getCurrent().setCreatedAt(new Date());
             getCurrent().setCreater(getSessionController().getLoggedUser());
             getFacade().create(getCurrent());
+            itemAuditHelper.logCreate(getCurrent(), getSessionController().getLoggedUser(), "UI");
             getFacade().edit(getCurrent());
             JsfUtil.addSuccessMessage("Saved Successfully");
         }

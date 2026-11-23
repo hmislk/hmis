@@ -8,6 +8,7 @@
  */
 package com.divudi.bean.pharmacy;
 
+import com.divudi.service.ItemAuditHelper;
 import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.AuditEventController;
@@ -48,6 +49,8 @@ import javax.persistence.TemporalType;
 @Named
 @SessionScoped
 public class VtmController implements Serializable {
+    @EJB
+    private ItemAuditHelper itemAuditHelper;
 
     private static final long serialVersionUID = 1L;
     @Inject
@@ -102,8 +105,10 @@ public class VtmController implements Serializable {
             String strVtm = v.getName();
             strVtm = cleanVTMName(strVtm);
             strVtm = removeSpecificWords(strVtm, convertInputToArray(bulkText));
+            Map<String, Object> beforeNames = ItemAuditHelper.snapshot(v);
             v.setName(strVtm);
             getFacade().edit(v);
+            itemAuditHelper.logUpdate(beforeNames, v, getSessionController().getLoggedUser(), "UI bulk name clean");
         }
     }
 
@@ -215,6 +220,7 @@ public class VtmController implements Serializable {
             // the row would be persisted with departmentType still NULL.
             vtm.setDepartmentType(DepartmentType.Pharmacy);
             getFacade().create(vtm);
+            itemAuditHelper.logCreate(vtm, getSessionController().getLoggedUser(), "UI find-or-create");
         }
         return vtm;
     }
@@ -242,6 +248,7 @@ public class VtmController implements Serializable {
             nvtm.setCode(CommonFunctions.nameToCode("vtm_" + name));
             nvtm.setDepartmentType(DepartmentType.Pharmacy);
             getFacade().create(nvtm);
+            itemAuditHelper.logCreate(nvtm, getSessionController().getLoggedUser(), "UI find-or-create");
         }
         return nvtm;
     }
@@ -1008,6 +1015,7 @@ public class VtmController implements Serializable {
             auditData.put("id", vtm.getId());
             auditData.put("name", vtm.getName());
             auditData.put("code", vtm.getCode());
+            ItemAuditHelper.putNameFields(auditData, vtm);
             auditData.put("retired", vtm.isRetired());
             auditData.put("inactive", vtm.isInactive());
             auditData.put("departmentType", vtm.getDepartmentType() != null ? vtm.getDepartmentType().toString() : null);

@@ -5,6 +5,7 @@
  */
 package com.divudi.bean.pharmacy;
 
+import com.divudi.service.ItemAuditHelper;
 import com.divudi.bean.common.InstitutionController;
 import com.divudi.bean.common.ItemController;
 import com.divudi.bean.common.SessionController;
@@ -105,6 +106,8 @@ import org.primefaces.model.file.UploadedFile;
 @Named
 @SessionScoped
 public class PharmacyItemExcelManager implements Serializable {
+    @EJB
+    private ItemAuditHelper itemAuditHelper;
 
     /**
      *
@@ -1346,10 +1349,10 @@ public class PharmacyItemExcelManager implements Serializable {
                         amp.setDblValue(strengthUnitsPerIssueUnit);
                         amp.setCategory(cat);
                         amp.setVmp(vmp);
-                        getAmpFacade().create(amp);
+                        createAmpWithAudit(amp);
                     } else {
                         amp.setRetired(false);
-                        getAmpFacade().edit(amp);
+                        editAmpWithAudit(amp);
                     }
                 } else {
                     amp = null;
@@ -1364,12 +1367,12 @@ public class PharmacyItemExcelManager implements Serializable {
                 cell = sheet.getCell(codeCol, i);
                 strCode = cell.getContents();
                 amp.setCode(strCode);
-                getAmpFacade().edit(amp);
+                editAmpWithAudit(amp);
                 //Code
                 cell = sheet.getCell(barcodeCol, i);
                 strBarcode = cell.getContents();
                 amp.setCode(strBarcode);
-                getAmpFacade().edit(amp);
+                editAmpWithAudit(amp);
                 //Distributor
                 cell = sheet.getCell(distributorCol, i);
                 strDistributor = cell.getContents();
@@ -1772,7 +1775,7 @@ public class PharmacyItemExcelManager implements Serializable {
             if (a.getSname() != null && !a.getSname().trim().isEmpty()) {
                 a.setTname(a.getName());
                 a.setName(a.getSname());
-                getAmpFacade().edit(a);
+                editAmpWithAudit(a);
             }
         }
     }
@@ -1828,7 +1831,7 @@ public class PharmacyItemExcelManager implements Serializable {
                 } else {
                     amp.setTname(amp.getName());
                     amp.setName(strName);
-                    getAmpFacade().edit(amp);
+                    editAmpWithAudit(amp);
 
                 }
             }
@@ -1941,7 +1944,7 @@ public class PharmacyItemExcelManager implements Serializable {
 //    public void updateNamesOfSelectedAmps(){
 //        for(Amp a:updatingAmps){
 //            a.setName(a.getSnapShotName());
-//            getAmpFacade().edit(a);
+//            editAmpWithAudit(a);
 //        }
 //    }
     public String importFindMissingNames() {
@@ -2002,7 +2005,7 @@ public class PharmacyItemExcelManager implements Serializable {
                     if (amp.getBarcode().equals(amp.getCode())) {
                         amp.setTname(amp.getCode());
                         amp.setCode(code);
-                        getAmpFacade().edit(amp);
+                        editAmpWithAudit(amp);
                     }
                 }
 
@@ -2188,12 +2191,12 @@ public class PharmacyItemExcelManager implements Serializable {
                         amp.setDblValue(strengthUnitsPerIssueUnit);
                         amp.setCategory(cat);
                         amp.setVmp(vmp);
-                        getAmpFacade().create(amp);
+                        createAmpWithAudit(amp);
                     } else {
                         amp.setRetired(false);
                         amp.setDepartmentType(DepartmentType.Pharmacy);
                         amp.setCode(strCode);
-                        getAmpFacade().edit(amp);
+                        editAmpWithAudit(amp);
                     }
                 } else {
                     amp = null;
@@ -2210,12 +2213,12 @@ public class PharmacyItemExcelManager implements Serializable {
                 cell = sheet.getCell(codeCol, i);
                 strCode = cell.getContents();
                 amp.setCode(strCode);
-                getAmpFacade().edit(amp);
+                editAmpWithAudit(amp);
                 //Code
                 cell = sheet.getCell(barcodeCol, i);
                 strBarcode = cell.getContents();
                 amp.setBarcode(strBarcode);
-                getAmpFacade().edit(amp);
+                editAmpWithAudit(amp);
                 //Distributor
                 cell = sheet.getCell(distributorCol, i);
                 strDistributor = cell.getContents();
@@ -2406,7 +2409,7 @@ public class PharmacyItemExcelManager implements Serializable {
                         amp.setDblValue(strengthUnitsPerIssueUnit);
                         amp.setCategory(cat);
                         amp.setVmp(vmp);
-                        getAmpFacade().create(amp);
+                        createAmpWithAudit(amp);
                     } else {
                         amp.setRetired(false);
                         amp.setCode(strCode);
@@ -2417,7 +2420,7 @@ public class PharmacyItemExcelManager implements Serializable {
                         amp.setDblValue(strengthUnitsPerIssueUnit);
                         amp.setCategory(cat);
                         amp.setVmp(vmp);
-                        getAmpFacade().edit(amp);
+                        editAmpWithAudit(amp);
                     }
                 } else {
                     amp = null;
@@ -2472,7 +2475,7 @@ public class PharmacyItemExcelManager implements Serializable {
                 }
 
                 // Save the amp with all updates
-                getAmpFacade().edit(amp);
+                editAmpWithAudit(amp);
             }
 
             JsfUtil.addSuccessMessage("Successfully imported pharmaceutical items from Excel file to the database");
@@ -2587,14 +2590,14 @@ public class PharmacyItemExcelManager implements Serializable {
                     amp.setCode(itemCode);
                     amp.setCategory(cat);
                     amp.setDepartmentType(DepartmentType.Store);
-                    getAmpFacade().create(amp);
+                    createAmpWithAudit(amp);
                 } else {
                     amp.setRetired(false);
                     amp.setName(itenName);
                     amp.setCode(itemCode);
                     amp.setCategory(cat);
                     amp.setDepartmentType(DepartmentType.Store);
-                    getAmpFacade().edit(amp);
+                    editAmpWithAudit(amp);
                 }
             }
 
@@ -2768,7 +2771,7 @@ public class PharmacyItemExcelManager implements Serializable {
 
                 } else {
                     amp.setRetired(false);
-                    getAmpFacade().edit(amp);
+                    editAmpWithAudit(amp);
                 }
 
                 if (amp == null) {
@@ -2785,7 +2788,7 @@ public class PharmacyItemExcelManager implements Serializable {
                 strBarcode = cell.getContents();
                 amp.setBarcode(strBarcode);
 
-                getAmpFacade().edit(amp);
+                editAmpWithAudit(amp);
 
             }
 
@@ -2850,11 +2853,11 @@ public class PharmacyItemExcelManager implements Serializable {
                         amp = new Amp();
                         amp.setName(strAmp);
                         amp.setCategory(cat);
-                        getAmpFacade().create(amp);
+                        createAmpWithAudit(amp);
                     } else {
                         amp.setRetired(false);
                         amp.setCategory(cat);
-                        getAmpFacade().edit(amp);
+                        editAmpWithAudit(amp);
                     }
                 }
             }
@@ -3299,4 +3302,19 @@ public class PharmacyItemExcelManager implements Serializable {
         this.allAmps = allAmps;
     }
 
+
+    private void editAmpWithAudit(Amp amp) {
+        Map<String, Object> beforeNames = itemAuditHelper.snapshotFromDb(amp.getId());
+        getAmpFacade().edit(amp);
+        itemAuditHelper.logUpdate(beforeNames, amp, auditUser(), "UI upload");
+    }
+
+    private void createAmpWithAudit(Amp amp) {
+        getAmpFacade().create(amp);
+        itemAuditHelper.logCreate(amp, auditUser(), "UI upload");
+    }
+
+    private com.divudi.core.entity.WebUser auditUser() {
+        return sessionController.getLoggedUser();
+    }
 }
