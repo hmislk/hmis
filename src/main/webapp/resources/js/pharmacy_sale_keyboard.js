@@ -8,8 +8,31 @@
  *  - does nothing if the Settle button is missing, hidden or disabled
  *  - ignores key auto-repeat and a second press while one settle is pending
  *  - stops the event so the form-level p:defaultCommand (Add) does not fire
+ *  - if the queue is still busy after about 2 s, shows "Still loading, press Enter again" and re-arms
  */
 var hmisSettleEnterBusy = false;
+
+/* Tell the cashier that Enter did nothing: template growl (id "growl") if present, else a short note beside the input. */
+function hmisShowStillLoading(input) {
+    var text = 'Still loading, press Enter again';
+    var growl = window.PrimeFaces && PrimeFaces.getWidgetById ? PrimeFaces.getWidgetById('growl') : null;
+    if (growl && growl.renderMessage) {
+        growl.renderMessage({summary: text, detail: '', severity: 'warn'});
+        return;
+    }
+    if (!input || !input.parentNode) {
+        return;
+    }
+    var note = document.getElementById('hmisStillLoadingNote');
+    if (!note) {
+        note = document.createElement('span');
+        note.id = 'hmisStillLoadingNote';
+        note.style.cssText = 'color:#b45309;font-size:0.85em;margin-left:6px;';
+        input.parentNode.insertBefore(note, input.nextSibling);
+    }
+    note.textContent = text;
+    setTimeout(function () { note.textContent = ''; }, 3000);
+}
 
 function hmisTenderedEnter(e, input) {
     if (!e || e.key !== 'Enter') {
@@ -38,6 +61,7 @@ function hmisTenderedEnter(e, input) {
             if (window.console && console.warn) {
                 console.warn('Settle skipped: the previous request is still running. Press Enter again.');
             }
+            hmisShowStillLoading(input);
             hmisSettleEnterBusy = false;
             return;
         }
