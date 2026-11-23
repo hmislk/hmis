@@ -20,7 +20,12 @@ function hmisShowStillLoading(input) {
         growl.renderMessage({summary: text, detail: '', severity: 'warn'});
         return;
     }
-    if (!input || !input.parentNode) {
+    // An AJAX update may have replaced the panel holding the input: use the live element, not the stale one.
+    var live = input && input.id ? document.getElementById(input.id) : input;
+    if (live && live.isConnected) {
+        input = live;
+    }
+    if (!input || !input.parentNode || !input.isConnected) {
         return;
     }
     var note = document.getElementById('hmisStillLoadingNote');
@@ -36,6 +41,11 @@ function hmisShowStillLoading(input) {
 
 function hmisTenderedEnter(e, input) {
     if (!e || e.key !== 'Enter') {
+        return true;
+    }
+    if (e.isComposing || e.keyCode === 229) {
+        // IME confirmation: let the input method finish; keep the form's Add command from seeing it.
+        e.stopPropagation();
         return true;
     }
     e.preventDefault();
