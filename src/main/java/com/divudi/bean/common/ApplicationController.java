@@ -259,7 +259,7 @@ public class ApplicationController {
         }
 
         String poi = resolvePhnPoi(ins, cfg[1], cfg[2]);
-        if (phnPoiProblem(version, poi) != null) {
+        if (phnPoiProblem(version, poi, cfg[1], ins) != null) {
             return null;
         }
 
@@ -332,7 +332,7 @@ public class ApplicationController {
         if ("None".equalsIgnoreCase(cfg[0]) || "External".equalsIgnoreCase(cfg[0])) {
             return null;
         }
-        return phnPoiProblem(cfg[0], resolvePhnPoi(ins, cfg[1], cfg[2]));
+        return phnPoiProblem(cfg[0], resolvePhnPoi(ins, cfg[1], cfg[2]), cfg[1], ins);
     }
 
     /** PHN Standard Version, PHN POI Number Scope and PHN POI Number, with their defaults. */
@@ -365,9 +365,16 @@ public class ApplicationController {
         return (!globalPoi.isEmpty()) ? globalPoi : ins.getPointOfIssueNo();
     }
 
-    /** POI must be exactly 4 characters; V1 additionally requires all digits. */
-    private String phnPoiProblem(String version, String poi) {
-        String where = "Ask an administrator to set the configuration option 'PHN POI Number'";
+    /**
+     * POI must be exactly 4 characters; V1 additionally requires all digits. The fix named
+     * in the message follows the scope: per institution, the institution's Point of Issue
+     * No.; global, the 'PHN POI Number' option.
+     */
+    private String phnPoiProblem(String version, String poi, String scope, Institution ins) {
+        String where = "PerInstitution".equalsIgnoreCase(scope)
+                ? "Ask an administrator to set the Point of Issue No. of the institution '"
+                + (ins != null && ins.getName() != null ? ins.getName() : "") + "'"
+                : "Ask an administrator to set the configuration option 'PHN POI Number'";
         if (poi == null || poi.isEmpty()) {
             return "No PHN was generated: no Point of Issue (POI) is set. " + where + " to a 4-character code.";
         }

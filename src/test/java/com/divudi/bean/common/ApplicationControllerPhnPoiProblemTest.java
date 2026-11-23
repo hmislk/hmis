@@ -49,6 +49,27 @@ class ApplicationControllerPhnPoiProblemTest {
     }
 
     @Test
+    void perInstitutionScopeNamesTheInstitutionField() throws Exception {
+        ConfigOptionApplicationController cfg = new ConfigOptionApplicationController() {
+            @Override
+            public String getShortTextValueByKey(String key, String defaultValue) {
+                return "PHN POI Number Scope".equals(key) ? "PerInstitution" : defaultValue;
+            }
+        };
+        ApplicationController ac = new ApplicationController();
+        java.lang.reflect.Field f = ApplicationController.class.getDeclaredField("configOptionController");
+        f.setAccessible(true);
+        f.set(ac, cfg);
+
+        Institution ins = institutionWithPoi("");
+        ins.setName("Main Hospital");
+        String problem = ac.phnPoiProblem(ins);
+        assertNotNull(problem);
+        assertTrue(problem.contains("Point of Issue No. of the institution 'Main Hospital'"));
+        assertTrue(!problem.contains("'PHN POI Number'"));
+    }
+
+    @Test
     void quietGenerationWithoutPoiReturnsNull() {
         assertNull(new ApplicationController().createNewPersonalHealthNumberQuietly(institutionWithPoi("")));
     }
