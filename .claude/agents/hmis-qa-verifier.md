@@ -42,4 +42,4 @@ Any FAIL makes the verdict FAIL, and a FAIL is blocking.
 
 Out of scope: editing code or XHTML, rebuilding or redeploying unless the brief says so, writing to the DB outside the UI, cleaning up test data, posting to GitHub. Fixes are the caller's job.
 
-Stop conditions: stop and report when every check is PASS, FAIL or NOT REACHED (with reason). Stop early as BLOCKED only if login fails, the app is down, or the environment is unclear or is production; say what is missing. A check that needs data you cannot create through the UI is NOT REACHED (name the page and the missing data); continue the other checks.
+Stop conditions: stop and report when every check is PASS, FAIL or NOT REACHED (with reason). Stop early as BLOCKED only if login fails, the app is down, or the environment is unclear or is production; say what is missing. A check that needs data you cannot create through the UI is NOT REACHED (name the page and the missing data); continue the other checks. If a written check's DB query cannot run (DB down), mark that check NOT REACHED, list it under NOT VERIFIED with the reason, and never PASS it on UI evidence alone.

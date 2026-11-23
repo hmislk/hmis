@@ -331,13 +331,13 @@ this workflow. Don't imply otherwise in the Final report either (see
 ```markdown
 ## 🚦 Merge Gate: BLOCKED — end-to-end verification found a bug
 
-**Failed:** <PR workflow name, or "Baseline A: COGS variance", or
+**Failed or not reached (setup missing, no bug established):** <PR workflow name, or "Baseline A: COGS variance", or
 "Baseline B: Cashier Details">
 
 <redacted description of what went wrong — no patient identifiers,
 credentials, or tokens>
 
-This was not auto-fixed — it needs discussion (per CLAUDE.md "discuss
+For a failure: this was not auto-fixed — it needs discussion (per CLAUDE.md "discuss
 uncertainties") as separate `dev-issue` work.
 ```
 
