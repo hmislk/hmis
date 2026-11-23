@@ -3697,13 +3697,13 @@ public class PatientController implements Serializable, ControllerWithPatient {
 
         jpql.append("and (").append(String.join(" or ", orConditions)).append(")");
 
-        possibleDuplicatePatients = getFacade().findByJpql(jpql.toString(), params, 10);
-        if (possibleDuplicatePatients == null) {
-            possibleDuplicatePatients = new ArrayList<>();
+        List<Patient> matches = getFacade().findByJpql(jpql.toString(), params, 10);
+        if (matches == null) {
+            matches = new ArrayList<>();
         }
-        possibleDuplicateExists = !possibleDuplicatePatients.isEmpty();
-        if (isPatientSearchRestrictedToOwnRegistrations()) {
-            possibleDuplicatePatients = new ArrayList<>();
+        possibleDuplicateExists = !matches.isEmpty();
+        if (!isPatientSearchRestrictedToOwnRegistrations()) {
+            possibleDuplicatePatients = matches;
         }
     }
 
@@ -5214,8 +5214,10 @@ public class PatientController implements Serializable, ControllerWithPatient {
         jpql = "select p "
                 + " from Patient p "
                 + " where p.person=:person "
-                + " order by p.id";
+                + " and p.retired=false ";
         m.put("person", p);
+        jpql += restrictPatientSearchClause("p", m);
+        jpql += " order by p.id";
         return getFacade().findFirstByJpql(jpql, m);
     }
 
