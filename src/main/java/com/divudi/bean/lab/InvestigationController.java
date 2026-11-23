@@ -2007,12 +2007,20 @@ public class InvestigationController implements Serializable {
         String jpql = "SELECT new com.divudi.core.data.dto.InvestigationDTO("
                 + "i.id, "
                 + "i.name, "
-                + "i.investigationCategory.name, "
-                + "i.institution.name, "
-                + "i.machine.name, "
+                + "COALESCE(cat.name, legacyCat.name), "
+                + "ins.name, "
+                + "mac.name, "
                 + "i.retired, "
-                + "i.department.name) "
+                + "dep.name) "
                 + "FROM Investigation i "
+                // Explicit LEFT JOINs: path navigation (i.machine.name) is an inner
+                // join, which dropped every investigation without a machine,
+                // legacy category, institution or department (#23416).
+                + "LEFT JOIN i.category cat "
+                + "LEFT JOIN i.investigationCategory legacyCat "
+                + "LEFT JOIN i.institution ins "
+                + "LEFT JOIN i.machine mac "
+                + "LEFT JOIN i.department dep "
                 + "ORDER BY i.name";
 
         investigationDtos = (List<InvestigationDTO>) getFacade().findLightsByJpql(jpql);
