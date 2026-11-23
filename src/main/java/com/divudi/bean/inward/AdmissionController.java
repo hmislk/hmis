@@ -829,64 +829,6 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
 
     }
 
-    /**
-     * Returns a list of discharged credit admissions with outstanding credit
-     * balances matching the given query.
-     *
-     * The query matches against BHT number, patient name, or credit company
-     * name. Only admissions with a positive credit balance, payment method set
-     * to credit, and not retired are included.
-     *
-     * @param qry the search string to match against BHT number, patient name,
-     * or credit company name
-     * @return a list of matching admissions with outstanding credit balances
-     */
-    public List<Admission> completeBhtCredit(String qry) {
-        List<Admission> a = null;
-        String sql;
-        HashMap hash = new HashMap();
-        if (qry != null) {
-            sql = "select c from Admission c "
-                    + " where abs(c.creditUsedAmount)-abs(c.creditPaidAmount) >:val  "
-                    + " and c.paymentMethod= :pm "
-                    + " and c.discharged=true "
-                    + " and c.retired=false "
-                    + " and ((c.bhtNo) like :q"
-                    + " or (c.patient.person.name) like :q "
-                    + " or (c.creditCompany.name) like :q ) "
-                    + " order by c.creditCompany.name";
-
-            hash.put("pm", PaymentMethod.Credit);
-            hash.put("val", 0.1);
-            hash.put("q", "%" + qry.toUpperCase() + "%");
-            a = getFacade().findByJpql(sql, hash, 20);
-        }
-        if (a == null) {
-            a = new ArrayList<>();
-        }
-        return a;
-    }
-
-    public List<Admission> getCreditBillsBht(Institution institution) {
-        String sql;
-        HashMap hash = new HashMap();
-
-        sql = "select c from PatientEncounter c "
-                + " where c.retired=false "
-                + " and abs(c.creditUsedAmount)-abs(c.creditPaidAmount) >:val "
-                + " and c.discharged=true "
-                + " and c.paymentMethod=:pm  "
-                + " and c.creditCompany=:ins ";
-
-        hash.put("pm", PaymentMethod.Credit);
-        hash.put("val", 0.1);
-        hash.put("ins", institution);
-        //     hash.put("pm", PaymentMethod.Credit);
-        List<Admission> lst = getFacade().findByJpql(sql, hash);
-
-        return lst;
-    }
-
     public List<Bill> getCreditPaymentBillsBht(Institution institution) {
         String sql;
         HashMap hash = new HashMap();
