@@ -6,6 +6,7 @@
 package com.divudi.service.service;
 
 import com.divudi.service.ItemAuditHelper;
+import com.divudi.service.ItemApiValidationException;
 import com.divudi.core.data.FeeType;
 import com.divudi.core.data.dto.service.ItemFeeCreateRequestDTO;
 import com.divudi.core.data.dto.service.ItemFeeDTO;
@@ -238,10 +239,10 @@ public class ServiceApiService implements Serializable {
      */
     public ServiceResponseDTO createService(ServiceCreateRequestDTO request, WebUser user) throws Exception {
         if (request == null || !request.isValid()) {
-            throw new Exception("Valid create request is required (serviceType and name are required)");
+            throw new ItemApiValidationException("Valid create request is required (serviceType and name are required)");
         }
         if (user == null) {
-            throw new Exception("User is required for creating service");
+            throw new ItemApiValidationException("User is required for creating service");
         }
 
         String svcType = request.getServiceType().trim();
@@ -252,18 +253,18 @@ public class ServiceApiService implements Serializable {
         InwardChargeType inwardChargeType = null;
         if ("Inward".equalsIgnoreCase(svcType)) {
             if (request.getInwardChargeType() == null || request.getInwardChargeType().trim().isEmpty()) {
-                throw new Exception("inwardChargeType is required when serviceType is Inward");
+                throw new ItemApiValidationException("inwardChargeType is required when serviceType is Inward");
             }
             try {
                 inwardChargeType = InwardChargeType.valueOf(request.getInwardChargeType().trim());
             } catch (IllegalArgumentException e) {
-                throw new Exception("Invalid inwardChargeType: " + request.getInwardChargeType());
+                throw new ItemApiValidationException("Invalid inwardChargeType: " + request.getInwardChargeType());
             }
         } else if (request.getInwardChargeType() != null && !request.getInwardChargeType().trim().isEmpty()) {
             try {
                 inwardChargeType = InwardChargeType.valueOf(request.getInwardChargeType().trim());
             } catch (IllegalArgumentException e) {
-                throw new Exception("Invalid inwardChargeType: " + request.getInwardChargeType());
+                throw new ItemApiValidationException("Invalid inwardChargeType: " + request.getInwardChargeType());
             }
         }
 
@@ -313,7 +314,7 @@ public class ServiceApiService implements Serializable {
             // ServiceCategory, ...), not only rows created specifically as ServiceCategory.
             Category category = categoryFacade.find(request.getCategoryId());
             if (category == null || category.isRetired()) {
-                throw new Exception("Category not found with ID: " + request.getCategoryId());
+                throw new ItemApiValidationException("Category not found with ID: " + request.getCategoryId());
             }
             service.setCategory(category);
         }
@@ -325,7 +326,7 @@ public class ServiceApiService implements Serializable {
         if (request.getInstitutionId() != null) {
             Institution institution = institutionFacade.find(request.getInstitutionId());
             if (institution == null) {
-                throw new Exception("Institution not found with ID: " + request.getInstitutionId());
+                throw new ItemApiValidationException("Institution not found with ID: " + request.getInstitutionId());
             }
             service.setInstitution(institution);
         }
@@ -333,7 +334,7 @@ public class ServiceApiService implements Serializable {
         if (request.getDepartmentId() != null) {
             Department department = departmentFacade.find(request.getDepartmentId());
             if (department == null) {
-                throw new Exception("Department not found with ID: " + request.getDepartmentId());
+                throw new ItemApiValidationException("Department not found with ID: " + request.getDepartmentId());
             }
             service.setDepartment(department);
         }
@@ -377,102 +378,94 @@ public class ServiceApiService implements Serializable {
      */
     public ServiceResponseDTO updateService(Long id, ServiceUpdateRequestDTO request, WebUser user) throws Exception {
         if (id == null) {
-            throw new Exception("Service ID is required");
+            throw new ItemApiValidationException("Service ID is required");
         }
         if (request == null || !request.isValid()) {
-            throw new Exception("Valid update request is required (at least one field must be provided)");
+            throw new ItemApiValidationException("Valid update request is required (at least one field must be provided)");
         }
         if (user == null) {
-            throw new Exception("User is required for updating service");
+            throw new ItemApiValidationException("User is required for updating service");
         }
 
         Service service = loadAndValidateService(id);
         Map<String, Object> beforeNames = ItemAuditHelper.snapshot(service);
-        try {
 
-            if (request.getName() != null && !request.getName().trim().isEmpty()) {
-                service.setName(request.getName().trim());
-            }
-            if (request.getCode() != null && !request.getCode().trim().isEmpty()) {
-                service.setCode(request.getCode().trim());
-            }
-            if (request.getPrintName() != null) {
-                service.setPrintName(request.getPrintName());
-            }
-            if (request.getFullName() != null) {
-                service.setFullName(request.getFullName());
-            }
-            if (request.getInwardChargeType() != null && !request.getInwardChargeType().trim().isEmpty()) {
-                try {
-                    service.setInwardChargeType(InwardChargeType.valueOf(request.getInwardChargeType().trim()));
-                } catch (IllegalArgumentException e) {
-                    throw new Exception("Invalid inwardChargeType: " + request.getInwardChargeType());
-                }
-            }
-            if (request.getInactive() != null) {
-                service.setInactive(request.getInactive());
-            }
-            if (request.getDiscountAllowed() != null) {
-                service.setDiscountAllowed(request.getDiscountAllowed());
-            }
-            if (request.getUserChangable() != null) {
-                service.setUserChangable(request.getUserChangable());
-            }
-            if (request.getChargesVisibleForInward() != null) {
-                service.setChargesVisibleForInward(request.getChargesVisibleForInward());
-            }
-            if (request.getMarginNotAllowed() != null) {
-                service.setMarginNotAllowed(request.getMarginNotAllowed());
-            }
-            if (request.getRequestForQuentity() != null) {
-                service.setRequestForQuentity(request.getRequestForQuentity());
-            }
-            if (request.getPatientNotRequired() != null) {
-                service.setPatientNotRequired(request.getPatientNotRequired());
-            }
-            if (request.getVatable() != null) {
-                service.setVatable(request.getVatable());
-            }
-            if (request.getVatPercentage() != null) {
-                validateVatPercentage(request.getVatPercentage());
-                service.setVatPercentage(request.getVatPercentage());
-            }
-
-            if (request.getCategoryId() != null) {
-                // Category (not ServiceCategoryFacade) is used here since a service's category
-                // can be any Category subtype already in use in the system (Category,
-                // ServiceCategory, ...), not only rows created specifically as ServiceCategory.
-                Category category = categoryFacade.find(request.getCategoryId());
-                if (category == null || category.isRetired()) {
-                    throw new Exception("Category not found with ID: " + request.getCategoryId());
-                }
-                service.setCategory(category);
-            }
-            if (request.getFinancialCategoryId() != null) {
-                service.setFinancialCategory(loadFinancialCategory(request.getFinancialCategoryId()));
-            }
-            if (request.getInstitutionId() != null) {
-                Institution institution = institutionFacade.find(request.getInstitutionId());
-                if (institution == null) {
-                    throw new Exception("Institution not found with ID: " + request.getInstitutionId());
-                }
-                service.setInstitution(institution);
-            }
-            if (request.getDepartmentId() != null) {
-                Department department = departmentFacade.find(request.getDepartmentId());
-                if (department == null) {
-                    throw new Exception("Department not found with ID: " + request.getDepartmentId());
-                }
-                service.setDepartment(department);
-            }
-
-        } catch (RuntimeException e) {
-            throw e;
-        } catch (Exception e) {
-            // Earlier setters are already on the managed entity and will commit; audit them before rejecting.
-            itemAuditHelper.logUpdate(beforeNames, service, user, "API");
-            throw e;
+        if (request.getName() != null && !request.getName().trim().isEmpty()) {
+            service.setName(request.getName().trim());
         }
+        if (request.getCode() != null && !request.getCode().trim().isEmpty()) {
+            service.setCode(request.getCode().trim());
+        }
+        if (request.getPrintName() != null) {
+            service.setPrintName(request.getPrintName());
+        }
+        if (request.getFullName() != null) {
+            service.setFullName(request.getFullName());
+        }
+        if (request.getInwardChargeType() != null && !request.getInwardChargeType().trim().isEmpty()) {
+            try {
+                service.setInwardChargeType(InwardChargeType.valueOf(request.getInwardChargeType().trim()));
+            } catch (IllegalArgumentException e) {
+                throw new ItemApiValidationException("Invalid inwardChargeType: " + request.getInwardChargeType());
+            }
+        }
+        if (request.getInactive() != null) {
+            service.setInactive(request.getInactive());
+        }
+        if (request.getDiscountAllowed() != null) {
+            service.setDiscountAllowed(request.getDiscountAllowed());
+        }
+        if (request.getUserChangable() != null) {
+            service.setUserChangable(request.getUserChangable());
+        }
+        if (request.getChargesVisibleForInward() != null) {
+            service.setChargesVisibleForInward(request.getChargesVisibleForInward());
+        }
+        if (request.getMarginNotAllowed() != null) {
+            service.setMarginNotAllowed(request.getMarginNotAllowed());
+        }
+        if (request.getRequestForQuentity() != null) {
+            service.setRequestForQuentity(request.getRequestForQuentity());
+        }
+        if (request.getPatientNotRequired() != null) {
+            service.setPatientNotRequired(request.getPatientNotRequired());
+        }
+        if (request.getVatable() != null) {
+            service.setVatable(request.getVatable());
+        }
+        if (request.getVatPercentage() != null) {
+            validateVatPercentage(request.getVatPercentage());
+            service.setVatPercentage(request.getVatPercentage());
+        }
+
+        if (request.getCategoryId() != null) {
+            // Category (not ServiceCategoryFacade) is used here since a service's category
+            // can be any Category subtype already in use in the system (Category,
+            // ServiceCategory, ...), not only rows created specifically as ServiceCategory.
+            Category category = categoryFacade.find(request.getCategoryId());
+            if (category == null || category.isRetired()) {
+                throw new ItemApiValidationException("Category not found with ID: " + request.getCategoryId());
+            }
+            service.setCategory(category);
+        }
+        if (request.getFinancialCategoryId() != null) {
+            service.setFinancialCategory(loadFinancialCategory(request.getFinancialCategoryId()));
+        }
+        if (request.getInstitutionId() != null) {
+            Institution institution = institutionFacade.find(request.getInstitutionId());
+            if (institution == null) {
+                throw new ItemApiValidationException("Institution not found with ID: " + request.getInstitutionId());
+            }
+            service.setInstitution(institution);
+        }
+        if (request.getDepartmentId() != null) {
+            Department department = departmentFacade.find(request.getDepartmentId());
+            if (department == null) {
+                throw new ItemApiValidationException("Department not found with ID: " + request.getDepartmentId());
+            }
+            service.setDepartment(department);
+        }
+
         service.setEditer(user);
         service.setEditedAt(Calendar.getInstance().getTime());
 
@@ -492,10 +485,10 @@ public class ServiceApiService implements Serializable {
      */
     public ServiceResponseDTO retireService(Long id, String retireComments, WebUser user) throws Exception {
         if (id == null) {
-            throw new Exception("Service ID is required");
+            throw new ItemApiValidationException("Service ID is required");
         }
         if (user == null) {
-            throw new Exception("User is required for retiring service");
+            throw new ItemApiValidationException("User is required for retiring service");
         }
 
         Service service = loadAndValidateService(id);
@@ -519,7 +512,7 @@ public class ServiceApiService implements Serializable {
      */
     public ServiceResponseDTO activateService(Long id, WebUser user) throws Exception {
         if (user == null) {
-            throw new Exception("User is required for activating service");
+            throw new ItemApiValidationException("User is required for activating service");
         }
         Service service = loadAndValidateService(id);
         service.setInactive(false);
@@ -534,7 +527,7 @@ public class ServiceApiService implements Serializable {
      */
     public ServiceResponseDTO deactivateService(Long id, WebUser user) throws Exception {
         if (user == null) {
-            throw new Exception("User is required for deactivating service");
+            throw new ItemApiValidationException("User is required for deactivating service");
         }
         Service service = loadAndValidateService(id);
         service.setInactive(true);
@@ -566,10 +559,10 @@ public class ServiceApiService implements Serializable {
      */
     public ServiceResponseDTO addFee(Long serviceId, ItemFeeCreateRequestDTO request, WebUser user) throws Exception {
         if (request == null || !request.isValid()) {
-            throw new Exception("Valid fee request is required (name and feeType are required)");
+            throw new ItemApiValidationException("Valid fee request is required (name and feeType are required)");
         }
         if (user == null) {
-            throw new Exception("User is required for adding fee");
+            throw new ItemApiValidationException("User is required for adding fee");
         }
 
         Item item = loadAndValidateItem(serviceId);
@@ -578,7 +571,7 @@ public class ServiceApiService implements Serializable {
         try {
             feeType = FeeType.valueOf(request.getFeeType().trim());
         } catch (IllegalArgumentException e) {
-            throw new Exception("Invalid feeType: " + request.getFeeType());
+            throw new ItemApiValidationException("Invalid feeType: " + request.getFeeType());
         }
 
         ItemFee itemFee = new ItemFee();
@@ -586,12 +579,12 @@ public class ServiceApiService implements Serializable {
         itemFee.setName(request.getName().trim());
         itemFee.setFeeType(feeType);
         if (request.getFee() == null || request.getFee() < 0) {
-            throw new Exception("Fee amount must be a non-negative value");
+            throw new ItemApiValidationException("Fee amount must be a non-negative value");
         }
         itemFee.setFee(request.getFee());
         if (request.getFfee() != null) {
             if (request.getFfee() < 0) {
-                throw new Exception("Foreigner fee amount must be a non-negative value");
+                throw new ItemApiValidationException("Foreigner fee amount must be a non-negative value");
             }
             itemFee.setFfee(request.getFfee());
         } else {
@@ -605,28 +598,28 @@ public class ServiceApiService implements Serializable {
         if (request.getInstitutionId() != null) {
             Institution institution = institutionFacade.find(request.getInstitutionId());
             if (institution == null) {
-                throw new Exception("Institution not found with ID: " + request.getInstitutionId());
+                throw new ItemApiValidationException("Institution not found with ID: " + request.getInstitutionId());
             }
             itemFee.setInstitution(institution);
         }
         if (request.getDepartmentId() != null) {
             Department department = departmentFacade.find(request.getDepartmentId());
             if (department == null) {
-                throw new Exception("Department not found with ID: " + request.getDepartmentId());
+                throw new ItemApiValidationException("Department not found with ID: " + request.getDepartmentId());
             }
             itemFee.setDepartment(department);
         }
         if (request.getSpecialityId() != null) {
             Speciality speciality = specialityFacade.find(request.getSpecialityId());
             if (speciality == null) {
-                throw new Exception("Speciality not found with ID: " + request.getSpecialityId());
+                throw new ItemApiValidationException("Speciality not found with ID: " + request.getSpecialityId());
             }
             itemFee.setSpeciality(speciality);
         }
         if (request.getStaffId() != null) {
             Staff staff = staffFacade.find(request.getStaffId());
             if (staff == null) {
-                throw new Exception("Staff not found with ID: " + request.getStaffId());
+                throw new ItemApiValidationException("Staff not found with ID: " + request.getStaffId());
             }
             itemFee.setStaff(staff);
         }
@@ -649,10 +642,10 @@ public class ServiceApiService implements Serializable {
      */
     public ServiceResponseDTO updateFee(Long serviceId, Long feeId, ItemFeeUpdateRequestDTO request, WebUser user) throws Exception {
         if (request == null || !request.isValid()) {
-            throw new Exception("Valid update request is required (at least one field must be provided)");
+            throw new ItemApiValidationException("Valid update request is required (at least one field must be provided)");
         }
         if (user == null) {
-            throw new Exception("User is required for updating fee");
+            throw new ItemApiValidationException("User is required for updating fee");
         }
 
         Item item = loadAndValidateItem(serviceId);
@@ -670,18 +663,18 @@ public class ServiceApiService implements Serializable {
             try {
                 itemFee.setFeeType(FeeType.valueOf(request.getFeeType().trim()));
             } catch (IllegalArgumentException e) {
-                throw new Exception("Invalid feeType: " + request.getFeeType());
+                throw new ItemApiValidationException("Invalid feeType: " + request.getFeeType());
             }
         }
         if (request.getFee() != null) {
             if (request.getFee() < 0) {
-                throw new Exception("Fee amount must be a non-negative value");
+                throw new ItemApiValidationException("Fee amount must be a non-negative value");
             }
             itemFee.setFee(request.getFee());
         }
         if (request.getFfee() != null) {
             if (request.getFfee() < 0) {
-                throw new Exception("Foreigner fee amount must be a non-negative value");
+                throw new ItemApiValidationException("Foreigner fee amount must be a non-negative value");
             }
             itemFee.setFfee(request.getFfee());
         }
@@ -694,28 +687,28 @@ public class ServiceApiService implements Serializable {
         if (request.getInstitutionId() != null) {
             Institution institution = institutionFacade.find(request.getInstitutionId());
             if (institution == null) {
-                throw new Exception("Institution not found with ID: " + request.getInstitutionId());
+                throw new ItemApiValidationException("Institution not found with ID: " + request.getInstitutionId());
             }
             itemFee.setInstitution(institution);
         }
         if (request.getDepartmentId() != null) {
             Department department = departmentFacade.find(request.getDepartmentId());
             if (department == null) {
-                throw new Exception("Department not found with ID: " + request.getDepartmentId());
+                throw new ItemApiValidationException("Department not found with ID: " + request.getDepartmentId());
             }
             itemFee.setDepartment(department);
         }
         if (request.getSpecialityId() != null) {
             Speciality speciality = specialityFacade.find(request.getSpecialityId());
             if (speciality == null) {
-                throw new Exception("Speciality not found with ID: " + request.getSpecialityId());
+                throw new ItemApiValidationException("Speciality not found with ID: " + request.getSpecialityId());
             }
             itemFee.setSpeciality(speciality);
         }
         if (request.getStaffId() != null) {
             Staff staff = staffFacade.find(request.getStaffId());
             if (staff == null) {
-                throw new Exception("Staff not found with ID: " + request.getStaffId());
+                throw new ItemApiValidationException("Staff not found with ID: " + request.getStaffId());
             }
             itemFee.setStaff(staff);
         }
@@ -747,7 +740,7 @@ public class ServiceApiService implements Serializable {
      */
     public ServiceResponseDTO removeFee(Long serviceId, Long feeId, WebUser user) throws Exception {
         if (user == null) {
-            throw new Exception("User is required for removing fee");
+            throw new ItemApiValidationException("User is required for removing fee");
         }
 
         Item item = loadAndValidateItem(serviceId);
@@ -789,7 +782,7 @@ public class ServiceApiService implements Serializable {
             case "InwardService":
                 return InwardService.class;
             default:
-                throw new Exception("Invalid itemType: " + itemTypeStr
+                throw new ItemApiValidationException("Invalid itemType: " + itemTypeStr
                         + ". Use one of: Investigation, Service, InwardService");
         }
     }
@@ -809,13 +802,13 @@ public class ServiceApiService implements Serializable {
             Boolean marginAllowed, Boolean discountAllowed, WebUser user) throws Exception {
         Class<? extends Item> itemType = resolveItemType(itemTypeStr);
         if (categoryId == null && itemType == null) {
-            throw new Exception("At least one of categoryId or itemType is required");
+            throw new ItemApiValidationException("At least one of categoryId or itemType is required");
         }
         if (user == null) {
-            throw new Exception("User is required for bulk update");
+            throw new ItemApiValidationException("User is required for bulk update");
         }
         if (marginAllowed == null && discountAllowed == null) {
-            throw new Exception("At least one of marginAllowed or discountAllowed must be provided");
+            throw new ItemApiValidationException("At least one of marginAllowed or discountAllowed must be provided");
         }
 
         FeeType feeType = null;
@@ -823,7 +816,7 @@ public class ServiceApiService implements Serializable {
             try {
                 feeType = FeeType.valueOf(feeTypeStr.trim());
             } catch (IllegalArgumentException e) {
-                throw new Exception("Invalid feeType: " + feeTypeStr);
+                throw new ItemApiValidationException("Invalid feeType: " + feeTypeStr);
             }
         }
 
@@ -897,13 +890,13 @@ public class ServiceApiService implements Serializable {
             Boolean discountAllowed, WebUser user) throws Exception {
         Class<? extends Item> itemType = resolveItemType(itemTypeStr);
         if (categoryId == null && itemType == null) {
-            throw new Exception("At least one of categoryId or itemType is required");
+            throw new ItemApiValidationException("At least one of categoryId or itemType is required");
         }
         if (user == null) {
-            throw new Exception("User is required for bulk update");
+            throw new ItemApiValidationException("User is required for bulk update");
         }
         if (discountAllowed == null) {
-            throw new Exception("discountAllowed is required");
+            throw new ItemApiValidationException("discountAllowed is required");
         }
 
         StringBuilder jpqlBuilder = new StringBuilder("SELECT i FROM Item i WHERE i.retired = false");
@@ -946,7 +939,7 @@ public class ServiceApiService implements Serializable {
      */
     public List<ItemFeeDTO> findFeesWithMarginDisabled(Long categoryId) throws Exception {
         if (categoryId == null) {
-            throw new Exception("categoryId is required");
+            throw new ItemApiValidationException("categoryId is required");
         }
 
         String jpql = "SELECT f FROM ItemFee f "
@@ -1000,11 +993,11 @@ public class ServiceApiService implements Serializable {
      */
     public ServiceCategoryDTO findServiceCategoryById(Long id) throws Exception {
         if (id == null) {
-            throw new Exception("Category ID is required");
+            throw new ItemApiValidationException("Category ID is required");
         }
         ServiceCategory category = serviceCategoryFacade.find(id);
         if (category == null) {
-            throw new Exception("ServiceCategory not found with ID: " + id);
+            throw new ItemApiValidationException("ServiceCategory not found with ID: " + id);
         }
         return buildServiceCategoryDTO(category, "Category found successfully");
     }
@@ -1014,10 +1007,10 @@ public class ServiceApiService implements Serializable {
      */
     public ServiceCategoryDTO createServiceCategory(String name, String code, String description, WebUser user) throws Exception {
         if (name == null || name.trim().isEmpty()) {
-            throw new Exception("Category name is required");
+            throw new ItemApiValidationException("Category name is required");
         }
         if (user == null) {
-            throw new Exception("User is required for creating category");
+            throw new ItemApiValidationException("User is required for creating category");
         }
 
         ServiceCategory category = new ServiceCategory();
@@ -1040,18 +1033,18 @@ public class ServiceApiService implements Serializable {
      */
     public ServiceCategoryDTO updateServiceCategory(Long id, String name, String code, String description, WebUser user) throws Exception {
         if (id == null) {
-            throw new Exception("Category ID is required");
+            throw new ItemApiValidationException("Category ID is required");
         }
         if (user == null) {
-            throw new Exception("User is required for updating category");
+            throw new ItemApiValidationException("User is required for updating category");
         }
 
         ServiceCategory category = serviceCategoryFacade.find(id);
         if (category == null) {
-            throw new Exception("ServiceCategory not found with ID: " + id);
+            throw new ItemApiValidationException("ServiceCategory not found with ID: " + id);
         }
         if (category.isRetired()) {
-            throw new Exception("ServiceCategory is retired");
+            throw new ItemApiValidationException("ServiceCategory is retired");
         }
 
         if (name != null && !name.trim().isEmpty()) {
@@ -1074,18 +1067,18 @@ public class ServiceApiService implements Serializable {
      */
     public ServiceCategoryDTO retireServiceCategory(Long id, String retireComments, WebUser user) throws Exception {
         if (id == null) {
-            throw new Exception("Category ID is required");
+            throw new ItemApiValidationException("Category ID is required");
         }
         if (user == null) {
-            throw new Exception("User is required for retiring category");
+            throw new ItemApiValidationException("User is required for retiring category");
         }
 
         ServiceCategory category = serviceCategoryFacade.find(id);
         if (category == null) {
-            throw new Exception("ServiceCategory not found with ID: " + id);
+            throw new ItemApiValidationException("ServiceCategory not found with ID: " + id);
         }
         if (category.isRetired()) {
-            throw new Exception("ServiceCategory is already retired");
+            throw new ItemApiValidationException("ServiceCategory is already retired");
         }
 
         category.setRetired(true);
@@ -1106,23 +1099,23 @@ public class ServiceApiService implements Serializable {
      */
     private Service loadAndValidateService(Long id) throws Exception {
         if (id == null) {
-            throw new Exception("Service ID is required");
+            throw new ItemApiValidationException("Service ID is required");
         }
         // ServiceFacade manages Service.class; since InwardService extends Service,
         // em.find(Service.class, id) correctly returns InwardService instances too.
         Service service = serviceFacade.find(id);
         if (service == null) {
-            throw new Exception("Service not found with ID: " + id);
+            throw new ItemApiValidationException("Service not found with ID: " + id);
         }
         if (service.isRetired()) {
-            throw new Exception("Service with ID " + id + " is retired");
+            throw new ItemApiValidationException("Service with ID " + id + " is retired");
         }
         // Restrict mutations to OPD (Service) and Inward (InwardService) only.
         // Other subtypes such as TheatreService must not be mutated via this API.
         boolean isAllowedType = service.getClass() == Service.class
                 || service instanceof InwardService;
         if (!isAllowedType) {
-            throw new Exception("Service with ID " + id + " is not an OPD or Inward service");
+            throw new ItemApiValidationException("Service with ID " + id + " is not an OPD or Inward service");
         }
         return service;
     }
@@ -1134,21 +1127,21 @@ public class ServiceApiService implements Serializable {
      */
     private Item loadAndValidateItem(Long id) throws Exception {
         if (id == null) {
-            throw new Exception("Item ID is required");
+            throw new ItemApiValidationException("Item ID is required");
         }
         Item item = itemFacade.find(id);
         if (item == null) {
-            throw new Exception("Item not found with ID: " + id);
+            throw new ItemApiValidationException("Item not found with ID: " + id);
         }
         if (item.isRetired()) {
-            throw new Exception("Item with ID " + id + " is retired");
+            throw new ItemApiValidationException("Item with ID " + id + " is retired");
         }
         return item;
     }
 
     private void validateVatPercentage(Double vatPercentage) throws Exception {
         if (vatPercentage != null && (vatPercentage < 0 || vatPercentage > 100)) {
-            throw new Exception("vatPercentage must be between 0 and 100");
+            throw new ItemApiValidationException("vatPercentage must be between 0 and 100");
         }
     }
 
@@ -1157,17 +1150,17 @@ public class ServiceApiService implements Serializable {
      */
     private ItemFee loadAndValidateFee(Long feeId, Item item) throws Exception {
         if (feeId == null) {
-            throw new Exception("Fee ID is required");
+            throw new ItemApiValidationException("Fee ID is required");
         }
         ItemFee fee = itemFeeFacade.find(feeId);
         if (fee == null) {
-            throw new Exception("Fee not found with ID: " + feeId);
+            throw new ItemApiValidationException("Fee not found with ID: " + feeId);
         }
         if (fee.isRetired()) {
-            throw new Exception("Fee with ID " + feeId + " is already retired");
+            throw new ItemApiValidationException("Fee with ID " + feeId + " is already retired");
         }
         if (fee.getItem() == null || !fee.getItem().getId().equals(item.getId())) {
-            throw new Exception("Fee with ID " + feeId + " does not belong to item with ID " + item.getId());
+            throw new ItemApiValidationException("Fee with ID " + feeId + " does not belong to item with ID " + item.getId());
         }
         return fee;
     }
@@ -1405,7 +1398,7 @@ public class ServiceApiService implements Serializable {
             try {
                 type = CategoryType.valueOf(categoryType.trim());
             } catch (IllegalArgumentException e) {
-                throw new Exception("Invalid categoryType: " + categoryType);
+                throw new ItemApiValidationException("Invalid categoryType: " + categoryType);
             }
             jpql.append("AND c.categoryType = :type ");
             params.put("type", type);
@@ -1432,7 +1425,7 @@ public class ServiceApiService implements Serializable {
     private Category loadFinancialCategory(Long financialCategoryId) throws Exception {
         Category category = categoryFacade.find(financialCategoryId);
         if (category == null || category.isRetired()) {
-            throw new Exception("Financial category not found with ID: " + financialCategoryId);
+            throw new ItemApiValidationException("Financial category not found with ID: " + financialCategoryId);
         }
         return category;
     }
@@ -1454,14 +1447,14 @@ public class ServiceApiService implements Serializable {
      */
     public ServiceResponseDTO recalculateTotals(Long id) throws Exception {
         if (id == null) {
-            throw new Exception("Item ID is required");
+            throw new ItemApiValidationException("Item ID is required");
         }
         Item item = itemFacade.find(id);
         if (item == null) {
-            throw new Exception("Item not found with ID: " + id);
+            throw new ItemApiValidationException("Item not found with ID: " + id);
         }
         if (item.isRetired()) {
-            throw new Exception("Item is retired");
+            throw new ItemApiValidationException("Item is retired");
         }
         recalculateItemTotal(item);
         List<ItemFee> fees = fetchFeesForItem(item);

@@ -1,6 +1,7 @@
 package com.divudi.service.investigation;
 
 import com.divudi.service.ItemAuditHelper;
+import com.divudi.service.ItemApiValidationException;
 import com.divudi.core.data.InvestigationReportType;
 import com.divudi.core.data.dto.investigation.*;
 import com.divudi.core.entity.Category;
@@ -86,7 +87,7 @@ public class InvestigationApiService implements Serializable {
     public InvestigationResponseDTO findById(Long id) throws Exception { return toResponse(load(id), "Investigation found successfully"); }
 
     public InvestigationResponseDTO create(InvestigationCreateRequestDTO req, WebUser user) throws Exception {
-        if (req == null || !req.isValid()) throw new Exception("Valid request is required");
+        if (req == null || !req.isValid()) throw new ItemApiValidationException("Valid request is required");
         Map<String, Object> m = new HashMap<>(); m.put("name", req.getName().trim().toLowerCase());
         List<Investigation> ex = investigationFacade.findByJpql("select i from Investigation i where i.retired=false and lower(i.name)=:name", m, TemporalType.TIMESTAMP, 1);
         if (!ex.isEmpty()) throw new InvestigationAlreadyExistsException(ex.get(0).getId());
@@ -119,40 +120,32 @@ public class InvestigationApiService implements Serializable {
     public InvestigationResponseDTO update(Long id, InvestigationUpdateRequestDTO req, WebUser user) throws Exception {
         Investigation i = load(id);
         Map<String, Object> beforeNames = ItemAuditHelper.snapshot(i);
-        if (req == null || !req.isValid()) throw new Exception("Valid update request is required");
-        try {
-            if (req.getName() != null && !req.getName().trim().isEmpty()) i.setName(req.getName().trim());
-            if (req.getCode() != null) i.setCode(req.getCode().trim());
-            if (req.getPrintName() != null) i.setPrintName(req.getPrintName());
-            if (req.getInactive() != null) i.setInactive(req.getInactive());
-            if (req.getBypassSampleWorkflow() != null) i.setBypassSampleWorkflow(req.getBypassSampleWorkflow());
-            if (req.getVatable() != null) i.setVatable(req.getVatable());
-            if (req.getDiscountAllowed() != null) i.setDiscountAllowed(req.getDiscountAllowed());
-            validateVatPercentage(req.getVatPercentage());
-            if (req.getVatPercentage() != null) i.setVatPercentage(req.getVatPercentage());
-            if (req.getReportType() != null && !req.getReportType().trim().isEmpty()) i.setReportType(InvestigationReportType.valueOf(req.getReportType().trim()));
-            if (req.getCategoryId() != null || (req.getCategoryName() != null && !req.getCategoryName().trim().isEmpty())) {
-                Category category = resolveCategory(req.getCategoryId(), req.getCategoryName(), user);
-                if (category != null) i.setCategory(category);
-            }
-            if (req.getSampleId() != null || (req.getSampleName() != null && !req.getSampleName().trim().isEmpty())) {
-                Sample sample = resolveSample(req.getSampleId(), req.getSampleName(), user);
-                if (sample != null) i.setSample(sample);
-            }
-            if (req.getContainerId() != null || (req.getContainerName() != null && !req.getContainerName().trim().isEmpty())) {
-                InvestigationTube container = resolveContainer(req.getContainerId(), req.getContainerName(), user);
-                if (container != null) i.setInvestigationTube(container);
-            }
-            if (req.getAnalyzerId() != null || (req.getAnalyzerName() != null && !req.getAnalyzerName().trim().isEmpty())) {
-                Machine analyzer = resolveAnalyzer(req.getAnalyzerId(), req.getAnalyzerName(), user);
-                if (analyzer != null) i.setMachine(analyzer);
-            }
-        } catch (RuntimeException e) {
-            throw e;
-        } catch (Exception e) {
-            // Earlier setters are already on the managed entity and will commit; audit them before rejecting.
-            itemAuditHelper.logUpdate(beforeNames, i, user, "API");
-            throw e;
+        if (req == null || !req.isValid()) throw new ItemApiValidationException("Valid update request is required");
+        if (req.getName() != null && !req.getName().trim().isEmpty()) i.setName(req.getName().trim());
+        if (req.getCode() != null) i.setCode(req.getCode().trim());
+        if (req.getPrintName() != null) i.setPrintName(req.getPrintName());
+        if (req.getInactive() != null) i.setInactive(req.getInactive());
+        if (req.getBypassSampleWorkflow() != null) i.setBypassSampleWorkflow(req.getBypassSampleWorkflow());
+        if (req.getVatable() != null) i.setVatable(req.getVatable());
+        if (req.getDiscountAllowed() != null) i.setDiscountAllowed(req.getDiscountAllowed());
+        validateVatPercentage(req.getVatPercentage());
+        if (req.getVatPercentage() != null) i.setVatPercentage(req.getVatPercentage());
+        if (req.getReportType() != null && !req.getReportType().trim().isEmpty()) i.setReportType(InvestigationReportType.valueOf(req.getReportType().trim()));
+        if (req.getCategoryId() != null || (req.getCategoryName() != null && !req.getCategoryName().trim().isEmpty())) {
+            Category category = resolveCategory(req.getCategoryId(), req.getCategoryName(), user);
+            if (category != null) i.setCategory(category);
+        }
+        if (req.getSampleId() != null || (req.getSampleName() != null && !req.getSampleName().trim().isEmpty())) {
+            Sample sample = resolveSample(req.getSampleId(), req.getSampleName(), user);
+            if (sample != null) i.setSample(sample);
+        }
+        if (req.getContainerId() != null || (req.getContainerName() != null && !req.getContainerName().trim().isEmpty())) {
+            InvestigationTube container = resolveContainer(req.getContainerId(), req.getContainerName(), user);
+            if (container != null) i.setInvestigationTube(container);
+        }
+        if (req.getAnalyzerId() != null || (req.getAnalyzerName() != null && !req.getAnalyzerName().trim().isEmpty())) {
+            Machine analyzer = resolveAnalyzer(req.getAnalyzerId(), req.getAnalyzerName(), user);
+            if (analyzer != null) i.setMachine(analyzer);
         }
         i.setEditer(user); i.setEditedAt(new Date()); investigationFacade.edit(i);
         itemAuditHelper.logUpdate(beforeNames, i, user, "API");
@@ -164,7 +157,7 @@ public class InvestigationApiService implements Serializable {
         return toResponse(i, inactive ? "Investigation deactivated successfully" : "Investigation activated successfully");
     }
 
-    private Investigation load(Long id) throws Exception { Investigation i = investigationFacade.find(id); if (i == null || i.isRetired()) throw new Exception("Investigation not found with ID: " + id); return i; }
+    private Investigation load(Long id) throws Exception { Investigation i = investigationFacade.find(id); if (i == null || i.isRetired()) throw new ItemApiValidationException("Investigation not found with ID: " + id); return i; }
 
     /**
      * Looks up a category by ID or name across all category subtypes (Category,
@@ -176,7 +169,7 @@ public class InvestigationApiService implements Serializable {
     private Category resolveCategory(Long id, String name, WebUser user) throws Exception {
         if (id != null) {
             Category c = categoryFacade.find(id);
-            if (c == null || c.isRetired()) throw new Exception("Category not found with ID: " + id);
+            if (c == null || c.isRetired()) throw new ItemApiValidationException("Category not found with ID: " + id);
             return c;
         }
         if (name != null && !name.trim().isEmpty()) {
@@ -201,7 +194,7 @@ public class InvestigationApiService implements Serializable {
     private Sample resolveSample(Long id, String name, WebUser user) throws Exception {
         if (id != null) {
             Sample s = sampleFacade.find(id);
-            if (s == null || s.isRetired()) throw new Exception("Sample not found with ID: " + id);
+            if (s == null || s.isRetired()) throw new ItemApiValidationException("Sample not found with ID: " + id);
             return s;
         }
         if (name != null && !name.trim().isEmpty()) {
@@ -225,7 +218,7 @@ public class InvestigationApiService implements Serializable {
     private InvestigationTube resolveContainer(Long id, String name, WebUser user) throws Exception {
         if (id != null) {
             InvestigationTube t = investigationTubeFacade.find(id);
-            if (t == null || t.isRetired()) throw new Exception("Container not found with ID: " + id);
+            if (t == null || t.isRetired()) throw new ItemApiValidationException("Container not found with ID: " + id);
             return t;
         }
         if (name != null && !name.trim().isEmpty()) {
@@ -249,7 +242,7 @@ public class InvestigationApiService implements Serializable {
     private Machine resolveAnalyzer(Long id, String name, WebUser user) throws Exception {
         if (id != null) {
             Machine ma = machineFacade.find(id);
-            if (ma == null || ma.isRetired()) throw new Exception("Analyzer not found with ID: " + id);
+            if (ma == null || ma.isRetired()) throw new ItemApiValidationException("Analyzer not found with ID: " + id);
             return ma;
         }
         if (name != null && !name.trim().isEmpty()) {
@@ -272,7 +265,7 @@ public class InvestigationApiService implements Serializable {
 
     private void validateVatPercentage(Double vatPercentage) throws Exception {
         if (vatPercentage != null && (vatPercentage < 0 || vatPercentage > 100)) {
-            throw new Exception("vatPercentage must be between 0 and 100");
+            throw new ItemApiValidationException("vatPercentage must be between 0 and 100");
         }
     }
     private InvestigationSearchResultDTO toSearch(Investigation i) {
