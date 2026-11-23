@@ -80,6 +80,8 @@ public class CoveringLetterController implements Serializable {
      * made instead of a second set.
      */
     private String perRecordToken = UUID.randomUUID().toString();
+    /** The token of the request that created currentLetters. */
+    private String currentLettersToken;
 
     // list
     private Date searchFromDate;
@@ -222,7 +224,8 @@ public class CoveringLetterController implements Serializable {
         String submitted = FacesContext.getCurrentInstance().getExternalContext()
                 .getRequestParameterMap().get("perRecordToken");
         if (submitted == null || !submitted.equals(perRecordToken)) {
-            if (currentLetters != null && !currentLetters.isEmpty()) {
+            if (submitted != null && submitted.equals(currentLettersToken)
+                    && currentLetters != null && !currentLetters.isEmpty()) {
                 // A double click, or an old copy of the page (browser Back): nothing new is created.
                 JsfUtil.addErrorMessageForRedirect("These letters were already created from this page."
                         + " To create new letters, use Back to Batch and select the records again.");
@@ -238,13 +241,18 @@ public class CoveringLetterController implements Serializable {
         // Use the token before creating anything, so only one request creates letters.
         perRecordToken = UUID.randomUUID().toString();
         String fmt = dateFormat();
+        // Read the choices once: another tab in this session may change them during the loop.
+        DocumentTemplate template = selectedTemplate;
+        CoveringLetterRecordType type = recordType;
+        Institution issuer = issuingInstitution;
+        Institution company = creditCompany;
         List<CoveringLetter> created = new ArrayList<>();
         String failure = null;
         for (CoveringLetterRowDTO r : orderedRows) {
             CoveringLetter l = null;
             try {
-                l = coveringLetterService.createLetter(selectedTemplate, Arrays.asList(r), recordType,
-                        issuingInstitution, creditCompany, sessionController.getLoggedUser(), fmt);
+                l = coveringLetterService.createLetter(template, Arrays.asList(r), type,
+                        issuer, company, sessionController.getLoggedUser(), fmt);
             } catch (RuntimeException e) {
                 LOGGER.log(Level.SEVERE, "Covering letter could not be created for " + r.getRefNo(), e);
             }
@@ -261,6 +269,7 @@ public class CoveringLetterController implements Serializable {
         }
         current = created.get(0);
         currentLetters = created;
+        currentLettersToken = submitted;
         // The print page is a redirect, so keep the message for it.
         if (failure != null) {
             JsfUtil.addErrorMessageForRedirect(failure);
