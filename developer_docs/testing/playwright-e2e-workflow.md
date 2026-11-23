@@ -65,7 +65,7 @@ $env:JAVA_HOME="<path-to-jdk>"
   leave stale `.class` files in `target/`.
 - A redeploy invalidates the current session (see §1) — log in again
   afterward.
-- Watch `<payara-install>\glassfish\domains\domain1\logs\server.log` for deployment errors
+- Watch `<payara-domain>/logs/server.log` for deployment errors
   before starting the browser flow.
 - **`--name` must match the actual deployed app name.** `asadmin list-applications`
   first — on some machines it is `rh-3.0.0`, not `rh`. A `redeploy` with the
