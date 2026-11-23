@@ -3910,6 +3910,15 @@ public class BhtSummeryController implements Serializable {
             return;
         }
 
+        // A ward return is credited to the BHT only when pharmacy accepts it, so the
+        // patient cannot be discharged while one is still waiting (#23973).
+        List<String> pendingReturns = getInwardBean().findWardReturnsAwaitingPharmacy(getPatientEncounter());
+        if (!pendingReturns.isEmpty()) {
+            JsfUtil.addErrorMessage("Cannot discharge: ward return " + String.join(", ", pendingReturns)
+                    + " is waiting for pharmacy. Pharmacy must accept it in Accept Returns from Ward first.");
+            return;
+        }
+
         finalizeRunningTimedServices(date);
 
         if (!getPatientEncounter().isClinicallyDischarged()) {
