@@ -341,6 +341,9 @@ public class DirectPurchaseReturnWorkflowController implements Serializable {
 //            JsfUtil.addErrorMessage("Cannot save: Stock validation failed. Please correct the quantities and try again.");
 //            return;
 //        }
+        if (hasNegativeReturnQty()) {
+            return;
+        }
         saveBill(false);
         JsfUtil.addSuccessMessage("Direct Purchase Return Request Saved Successfully");
     }
@@ -381,6 +384,11 @@ public class DirectPurchaseReturnWorkflowController implements Serializable {
 
         // Pre-validate payment creation to prevent finalization with payment issues
         if (!validatePaymentCreation()) {
+            return;
+        }
+
+        // Before the sync below, which would overwrite a negative qty with abs() (#26019).
+        if (hasNegativeReturnQty()) {
             return;
         }
 
@@ -2198,6 +2206,10 @@ public class DirectPurchaseReturnWorkflowController implements Serializable {
         boolean isValid = true;
         boolean hasItemsWithQuantities = false;
 
+        if (hasNegativeReturnQty()) {
+            isValid = false;
+        }
+
         // Validate stock availability first - this is critical
         if (!validateAllItemsStockAvailability(true)) {
             JsfUtil.addErrorMessage("Stock validation failed during finalization");
@@ -2251,6 +2263,10 @@ public class DirectPurchaseReturnWorkflowController implements Serializable {
         }
 
         boolean isValid = true;
+
+        if (hasNegativeReturnQty()) {
+            return false;
+        }
 
         // Check if request is already finalized
         if (currentBill.getCheckedBy() == null) {
@@ -2390,24 +2406,33 @@ public class DirectPurchaseReturnWorkflowController implements Serializable {
     /**
      * The quantity inputs' key filter lets a minus sign through, and later steps
      * take abs(), so -5 silently became a return of 5. Refuse it instead (#26019).
+     * Only the paid qty is checked: BillItem.qty is always kept positive here,
+     * while the free quantity is stored with the return sign (negative) by
+     * calculateLineTotal, so a negative free quantity is not an input error.
      */
     private void rejectNegativeReturnQty(BillItem bi) {
-        if (bi == null) {
-            return;
-        }
-        boolean negative = false;
-        if (bi.getQty() < 0) {
+        if (bi != null && bi.getQty() < 0) {
             bi.setQty(0.0);
-            negative = true;
-        }
-        BillItemFinanceDetails fd = bi.getBillItemFinanceDetails();
-        if (fd != null && fd.getFreeQuantity() != null && fd.getFreeQuantity().signum() < 0) {
-            fd.setFreeQuantity(BigDecimal.ZERO);
-            negative = true;
-        }
-        if (negative) {
             JsfUtil.addErrorMessage("Returning Qty cannot be negative");
         }
+    }
+
+    /**
+     * Full-form posts (Save, Finalize, Approve) send the qty inputs again; an
+     * input not refreshed after the listener reset can still hold a minus value.
+     */
+    private boolean hasNegativeReturnQty() {
+        if (billItems == null) {
+            return false;
+        }
+        for (BillItem bi : billItems) {
+            if (bi != null && !bi.isRetired() && bi.getQty() < 0) {
+                JsfUtil.addErrorMessage("Returning Qty cannot be negative for "
+                        + (bi.getItem() != null ? bi.getItem().getName() : "an item"));
+                return true;
+            }
+        }
+        return false;
     }
 
     public void onReturningTotalQtyChange(BillItem bi) {
