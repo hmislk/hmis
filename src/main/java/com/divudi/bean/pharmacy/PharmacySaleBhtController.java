@@ -829,7 +829,26 @@ public class PharmacySaleBhtController implements Serializable {
 
     }
 
-    public void settlePharmacyBhtIssue() {
+    /** True when any line of the current pre-bill already has a stock history row (#25967). */
+    private boolean isStockAlreadyDeductedForPreBill() {
+        Map<String, Object> m = new HashMap<>();
+        m.put("bid", getPreBill().getId());
+        long count = getStockHistoryFacade().findLongByJpql(
+                "select count(sh) from StockHistory sh where sh.pbItem.billItem.bill.id = :bid", m);
+        return count > 0;
+    }
+
+    /**
+     * synchronized and the already-deducted check (#25967): a double click, or a retry
+     * after an error that came after the stock deduction, saved the same bill again and
+     * deducted its stock a second time.
+     */
+    public synchronized void settlePharmacyBhtIssue() {
+        if (getPreBill().getId() != null && isStockAlreadyDeductedForPreBill()) {
+            JsfUtil.addErrorMessage("This bill was already saved and its stock was deducted. Do not settle it again."
+                    + " Check it in bill search, then clear the bill to start a new one.");
+            return;
+        }
         if (getPreBill().getBillItems().isEmpty()) {
             JsfUtil.addErrorMessage("Please add items to the bill.");
             return;
