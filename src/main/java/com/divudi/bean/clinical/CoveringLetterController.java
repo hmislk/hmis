@@ -23,6 +23,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
@@ -73,8 +74,12 @@ public class CoveringLetterController implements Serializable {
     private CoveringLetter current;
     /** Letters created together by "one letter per record"; empty for a single letter (#25747). */
     private List<CoveringLetter> currentLetters = new ArrayList<>();
-    /** Set while generateLetterPerRecord() runs, so a double click does not create a second set. */
-    private boolean generatingLetters;
+    /**
+     * One-time token rendered on the batch page. A second submit of the same page
+     * (a double click) carries the used token and gets the letters the first one
+     * made instead of a second set.
+     */
+    private String perRecordToken = UUID.randomUUID().toString();
 
     // list
     private Date searchFromDate;
@@ -211,52 +216,60 @@ public class CoveringLetterController implements Serializable {
      * Each letter is saved on its own; if one fails, the letters already created are
      * kept and listed, and the message names the record that failed.
      */
-    public String generateLetterPerRecord() {
-        if (generatingLetters) {
-            JsfUtil.addErrorMessage("Letters are already being created. Wait for the print page.");
+    public synchronized String generateLetterPerRecord() {
+        // synchronized: a double click sends two requests at once; the second waits here,
+        // then finds its token used and shows the letters the first request created.
+        String submitted = FacesContext.getCurrentInstance().getExternalContext()
+                .getRequestParameterMap().get("perRecordToken");
+        if (submitted == null || !submitted.equals(perRecordToken)) {
+            if (currentLetters != null && !currentLetters.isEmpty()) {
+                return PRINT_PAGE;
+            }
+            JsfUtil.addErrorMessage("This page is out of date. Select the records again.");
             return "";
         }
-        generatingLetters = true;
-        try {
-            List<CoveringLetterRowDTO> orderedRows = validatedSelection();
-            if (orderedRows == null) {
-                return "";
-            }
-            String fmt = dateFormat();
-            List<CoveringLetter> created = new ArrayList<>();
-            String failure = null;
-            for (CoveringLetterRowDTO r : orderedRows) {
-                CoveringLetter l = null;
-                try {
-                    l = coveringLetterService.createLetter(selectedTemplate, Arrays.asList(r), recordType,
-                            issuingInstitution, creditCompany, sessionController.getLoggedUser(), fmt);
-                } catch (RuntimeException e) {
-                    LOGGER.log(Level.SEVERE, "Covering letter could not be created for " + r.getRefNo(), e);
-                }
-                if (l == null) {
-                    failure = "Letter could not be generated for " + r.getRefNo()
-                            + ". " + created.size() + " of " + orderedRows.size() + " letters were created.";
-                    break;
-                }
-                created.add(l);
-            }
-            if (created.isEmpty()) {
-                JsfUtil.addErrorMessage(failure != null ? failure : "Letter could not be generated");
-                return "";
-            }
-            current = created.get(0);
-            currentLetters = created;
-            // The print page is a redirect, so keep the message for it.
-            if (failure != null) {
-                JsfUtil.addErrorMessageForRedirect(failure);
-            } else {
-                FacesContext.getCurrentInstance().getExternalContext().getFlash().setKeepMessages(true);
-                JsfUtil.addSuccessMessage(created.size() + " letters created");
-            }
-            return PRINT_PAGE;
-        } finally {
-            generatingLetters = false;
+        List<CoveringLetterRowDTO> orderedRows = validatedSelection();
+        if (orderedRows == null) {
+            return "";
         }
+        // Use the token before creating anything, so only one request creates letters.
+        perRecordToken = UUID.randomUUID().toString();
+        String fmt = dateFormat();
+        List<CoveringLetter> created = new ArrayList<>();
+        String failure = null;
+        for (CoveringLetterRowDTO r : orderedRows) {
+            CoveringLetter l = null;
+            try {
+                l = coveringLetterService.createLetter(selectedTemplate, Arrays.asList(r), recordType,
+                        issuingInstitution, creditCompany, sessionController.getLoggedUser(), fmt);
+            } catch (RuntimeException e) {
+                LOGGER.log(Level.SEVERE, "Covering letter could not be created for " + r.getRefNo(), e);
+            }
+            if (l == null) {
+                failure = "Letter could not be generated for " + r.getRefNo()
+                        + ". " + created.size() + " of " + orderedRows.size() + " letters were created.";
+                break;
+            }
+            created.add(l);
+        }
+        if (created.isEmpty()) {
+            JsfUtil.addErrorMessage(failure != null ? failure : "Letter could not be generated");
+            return "";
+        }
+        current = created.get(0);
+        currentLetters = created;
+        // The print page is a redirect, so keep the message for it.
+        if (failure != null) {
+            JsfUtil.addErrorMessageForRedirect(failure);
+        } else {
+            FacesContext.getCurrentInstance().getExternalContext().getFlash().setKeepMessages(true);
+            JsfUtil.addSuccessMessage(created.size() + " letters created");
+        }
+        return PRINT_PAGE;
+    }
+
+    public String getPerRecordToken() {
+        return perRecordToken;
     }
 
     private String dateFormat() {

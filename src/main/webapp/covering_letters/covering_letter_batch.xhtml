@@ -202,7 +202,9 @@
                                                      ajax="false"
                                                      styleClass="ui-button-success ui-button-outlined ms-2"
                                                      title="Create a separate letter, with its own reference number, for each selected record"
+                                                     onclick="var b=this;setTimeout(function(){b.disabled=true;},0);"
                                                      action="#{coveringLetterController.generateLetterPerRecord()}"/>
+                                    <input type="hidden" name="perRecordToken" value="#{coveringLetterController.perRecordToken}"/>
                                 </div>
                             </div>
                         </p:panel>
