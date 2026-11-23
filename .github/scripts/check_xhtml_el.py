@@ -11,11 +11,22 @@ EL does not nest #{...}; the inner "#{" is a parse error, so the page fails to
 render for every user. The build does not render pages, so this is caught here.
 Write one expression instead: disabled="#{not a.b or c.d}".
 
+It also fails on a p:panelGrid whose columns value does not divide 12 (for
+example columns="5") unless it sets layout="tabular". PrimeFaces 14 defaults
+panelGrid to the grid layout, which throws "columns must be a number that
+factors into 12" at render time, an HTTP 500 for the whole page (#23479).
+
 Usage:  check_xhtml_el.py <base-ref>        (checks .xhtml files added, changed or renamed since base)
         check_xhtml_el.py --files a.xhtml ...
 """
+import re
 import subprocess
 import sys
+
+# Quote-aware, so a ">" inside an attribute value (e.g. rendered="#{a > b}") does not end the tag.
+PANEL_GRID_TAG = re.compile(r"""<p:panelGrid\b(?:[^>"']|"[^"]*"|'[^']*')*>""", re.DOTALL)
+GRID_COLUMNS = {1, 2, 3, 4, 6, 12}
+XML_COMMENT = re.compile(r"<!--.*?-->", re.DOTALL)
 
 
 def changed_xhtml(base):
@@ -73,6 +84,22 @@ def nested_el(text):
         i += 1
 
 
+def bad_panel_grids(text):
+    """Yield (line, columns) of each p:panelGrid that the grid layout would reject."""
+    # Blank out XML comments, keeping their newlines so line numbers stay right.
+    text = XML_COMMENT.sub(lambda c: re.sub(r"[^\n]", " ", c.group(0)), text)
+    for m in PANEL_GRID_TAG.finditer(text):
+        tag = m.group(0)
+        cols = re.search(r"""\bcolumns\s*=\s*(["'])\s*(\d+)\s*\1""", tag)
+        if not cols:
+            continue  # no columns, or an EL value: cannot be checked here
+        layout = re.search(r"""\blayout\s*=\s*(["'])(.*?)\1""", tag, re.DOTALL)
+        if layout and layout.group(2).strip() == "tabular":
+            continue
+        if int(cols.group(2)) not in GRID_COLUMNS:
+            yield text.count("\n", 0, m.start()) + 1, cols.group(2)
+
+
 def main(argv):
     if len(argv) >= 2 and argv[1] == "--files":
         files = argv[2:]
@@ -93,7 +120,12 @@ def main(argv):
             print(f"::error file={path},line={line},col={col}::EL expression opened inside another one "
                   f"(#{{...#{{...}}...}}). EL does not nest; the page will not render. "
                   f"Write a single expression.")
-    print(f"Checked {len(files)} changed .xhtml file(s); {errors} nested EL expression(s).")
+        for line, cols in bad_panel_grids(text):
+            errors += 1
+            print(f"::error file={path},line={line}::p:panelGrid columns=\"{cols}\" does not divide 12. "
+                  f"The default grid layout throws at render time (HTTP 500). "
+                  f"Use 1, 2, 3, 4, 6 or 12 columns, or add layout=\"tabular\".")
+    print(f"Checked {len(files)} changed .xhtml file(s); {errors} problem(s).")
     return 1 if errors else 0
 
 
