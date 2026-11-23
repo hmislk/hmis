@@ -1,0 +1,77 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:body>
+        <ui:composition template="/resources/template/template.xhtml">
+            <ui:define name="content">
+                <h:form id="frmBatchChildren">
+                    <p:panel>
+                        <f:facet name="header">
+                            <div class="d-grid align-items-center w-100" style="grid-template-columns: 1fr auto 1fr;">
+                                <div class="d-flex align-items-center gap-2" style="justify-self: start;">
+                                    <h:outputText styleClass="fa fa-file-invoice" />
+                                    <h:outputText value="Inward Service Batch Bill" />
+                                </div>
+                                <div style="justify-self: center;"></div>
+                                <div class="d-flex gap-2 align-items-center" style="justify-self: end;"></div>
+                            </div>
+                        </f:facet>
+
+                        <div class="mb-2">
+                            <h:outputText value="Batch Bill No: " styleClass="fw-bold" />
+                            <h:outputText value="#{billSearch.inwardBatchServiceBill.deptId}" />
+                            <h:outputText value="  BHT: " styleClass="fw-bold ms-3" />
+                            <h:outputText value="#{billSearch.inwardBatchServiceAdmission.bhtNo}" />
+                            <h:outputText value="  Patient: " styleClass="fw-bold ms-3" />
+                            <h:outputText value="#{billSearch.inwardBatchServicePatient.person.nameWithTitle}" />
+                        </div>
+
+                        <p:dataTable
+                            id="tblChildren"
+                            value="#{billSearch.inwardBatchServiceChildBills}"
+                            var="cb"
+                            rowIndexVar="i"
+                            styleClass="p-datatable-sm"
+                            emptyMessage="No service bills found">
+                            <p:column headerText="#" style="width: 3em;">
+                                <h:outputText value="#{i + 1}" />
+                            </p:column>
+                            <p:column headerText="Bill No">
+                                <h:outputText value="#{cb.deptId}" />
+                            </p:column>
+                            <p:column headerText="Billed Dept">
+                                <h:outputText value="#{cb.department.name}" />
+                            </p:column>
+                            <p:column headerText="Date">
+                                <h:outputText value="#{cb.createdAt}">
+                                    <f:convertDateTime pattern="dd MMM yyyy hh:mm a" />
+                                </h:outputText>
+                            </p:column>
+                            <p:column headerText="Net Total" style="text-align: right;">
+                                <h:outputText value="#{cb.netTotal}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                            </p:column>
+                            <p:column headerText="Actions" style="width: 6em;">
+                                <p:commandButton
+                                    ajax="false"
+                                    value="Open"
+                                    icon="fa fa-folder-open"
+                                    styleClass="ui-button-primary"
+                                    action="#{billSearch.openInwardServiceChild()}">
+                                    <f:param name="childBillId" value="#{cb.id}" />
+                                    <f:param name="batchBillId" value="#{billSearch.inwardBatchServiceBill.id}" />
+                                </p:commandButton>
+                            </p:column>
+                        </p:dataTable>
+                    </p:panel>
+                </h:form>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

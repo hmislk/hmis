@@ -499,7 +499,18 @@ public class WardPharmacyReturnToPharmacyController implements Serializable {
         if (!(rowObject instanceof ReturnLine)) {
             return;
         }
-        ReturnLine line = (ReturnLine) rowObject;
+        onReturnQuantityChanged((ReturnLine) rowObject);
+    }
+
+    /**
+     * Change listener for the directly editable "Return Quantity" cell
+     * (#25812). Clamps the entered quantity to {@code [0, returnable]} and
+     * keeps the bill item quantity in step; same rules as the row editor.
+     */
+    public void onReturnQuantityChanged(ReturnLine line) {
+        if (line == null) {
+            return;
+        }
         BillItem bi = line.getReturnItem();
         PharmaceuticalBillItem pbi = bi.getPharmaceuticalBillItem();
 

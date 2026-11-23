@@ -41,6 +41,8 @@ import com.divudi.core.entity.BillItem;
 import com.divudi.core.entity.CancelledBill;
 import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.Patient;
+import com.divudi.core.entity.PatientEncounter;
 import com.divudi.core.entity.Payment;
 import com.divudi.core.entity.RefundBill;
 import com.divudi.core.entity.WebUser;
@@ -171,6 +173,9 @@ import com.google.gson.Gson;
 @Named
 @SessionScoped
 public class BillSearch implements Serializable, ControllerWithMultiplePayments {
+
+    @javax.ejb.EJB
+    private com.divudi.service.CreditCompanyClaimService creditCompanyClaimService;
 
     private static final Logger LOGGER = Logger.getLogger(BillSearch.class.getName());
 
@@ -596,6 +601,105 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
 
     public String navigateToInwardSearchService() {
         return "/inward/inward_reprint_bill_service?faces-redirect=true";
+    }
+
+    /**
+     * An inward batch service bill carries no items or fees; they are on its child
+     * service bills (each child's backwardReferenceBill is the batch). One child opens
+     * its service reprint page; several open a list of the children, each with Open.
+     */
+    public String navigateToViewInwardServiceBatchBill(Bill batch) {
+        if (batch == null || batch.getId() == null) {
+            JsfUtil.addErrorMessage("No Bill is Selected");
+            return "";
+        }
+        String jpql = "select b from Bill b"
+                + " where b.backwardReferenceBill.id = :batchId"
+                + " and b.retired = false"
+                + " order by b.id";
+        Map<String, Object> m = new HashMap<>();
+        m.put("batchId", batch.getId());
+        List<Bill> children = getBillFacade().findByJpql(jpql, m);
+        if (children == null || children.isEmpty()) {
+            JsfUtil.addErrorMessage("This batch bill has no service bills to show");
+            return "";
+        }
+        if (children.size() == 1) {
+            inwardSearch.setBill(children.get(0));
+            return navigateToInwardSearchService();
+        }
+        inwardBatchServiceBill = batch;
+        inwardBatchServiceChildBills = children;
+        return "/inward/inward_service_batch_bill_children?faces-redirect=true";
+    }
+
+    /**
+     * Opens a child. The list is held in this session-scoped bean, so another tab may
+     * have replaced it. The child id and batch id are request parameters rendered with
+     * the page the user saw; the child is reloaded and must belong to that batch, and
+     * that batch must still be the one held here.
+     */
+    public String openInwardServiceChild() {
+        Map<String, String> params = FacesContext.getCurrentInstance().getExternalContext().getRequestParameterMap();
+        Long childId = parseLongOrNull(params.get("childBillId"));
+        Long batchId = parseLongOrNull(params.get("batchBillId"));
+        Bill child = childId == null ? null : getBillFacade().find(childId);
+        if (child == null || batchId == null || inwardBatchServiceBill == null
+                || inwardBatchServiceBill.getId() == null
+                || !batchId.equals(inwardBatchServiceBill.getId())
+                || child.getBackwardReferenceBill() == null
+                || !batchId.equals(child.getBackwardReferenceBill().getId())) {
+            JsfUtil.addErrorMessage("This list is out of date; open the batch again");
+            return "";
+        }
+        inwardSearch.setBill(child);
+        return navigateToInwardSearchService();
+    }
+
+    private static Long parseLongOrNull(String s) {
+        try {
+            return s == null || s.trim().isEmpty() ? null : Long.valueOf(s.trim());
+        } catch (NumberFormatException e) {
+            return null;
+        }
+    }
+
+    private Bill firstInwardBatchChild() {
+        if (inwardBatchServiceChildBills == null || inwardBatchServiceChildBills.isEmpty()) {
+            return null;
+        }
+        return inwardBatchServiceChildBills.get(0);
+    }
+
+    public PatientEncounter getInwardBatchServiceAdmission() {
+        Bill first = firstInwardBatchChild();
+        if (first != null && first.getPatientEncounter() != null) {
+            return first.getPatientEncounter();
+        }
+        return inwardBatchServiceBill == null ? null : inwardBatchServiceBill.getPatientEncounter();
+    }
+
+    public Patient getInwardBatchServicePatient() {
+        if (inwardBatchServiceBill != null && inwardBatchServiceBill.getPatient() != null) {
+            return inwardBatchServiceBill.getPatient();
+        }
+        Bill first = firstInwardBatchChild();
+        if (first != null && first.getPatient() != null) {
+            return first.getPatient();
+        }
+        PatientEncounter pe = getInwardBatchServiceAdmission();
+        return pe == null ? null : pe.getPatient();
+    }
+
+    private Bill inwardBatchServiceBill;
+    private List<Bill> inwardBatchServiceChildBills;
+
+    public Bill getInwardBatchServiceBill() {
+        return inwardBatchServiceBill;
+    }
+
+    public List<Bill> getInwardBatchServiceChildBills() {
+        return inwardBatchServiceChildBills;
     }
 
     public List<Payment> fetchBillPayments(Bill bill) {
@@ -1429,7 +1533,8 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
             String jpql = "select sum(b.feeGrossValue) "
                     + " from BillFee b "
                     + " where b.retired = :ret "
-                    + " and b.billItem.id = :bid";
+                    + " and b.billItem.id = :bid"
+                    + " and (b.collectedByDoctorAtBilling = false or b.collectedByDoctorAtBilling is null)";
             Map<String, Object> params = new HashMap<>();
             params.put("ret", false);
             params.put("bid", bt.getId());
@@ -1439,7 +1544,8 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
             jpql = "select sum(b.feeDiscount) "
                     + " from BillFee b "
                     + " where b.retired = :ret "
-                    + " and b.billItem.id = :bid";
+                    + " and b.billItem.id = :bid"
+                    + " and (b.collectedByDoctorAtBilling = false or b.collectedByDoctorAtBilling is null)";
             params = new HashMap<>();
             params.put("ret", false);
             params.put("bid", bt.getId());
@@ -1449,7 +1555,8 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
             jpql = "select sum(b.feeValue) "
                     + " from BillFee b "
                     + " where b.retired = :ret "
-                    + " and b.billItem.id = :bid";
+                    + " and b.billItem.id = :bid"
+                    + " and (b.collectedByDoctorAtBilling = false or b.collectedByDoctorAtBilling is null)";
             params = new HashMap<>();
             params.put("ret", false);
             params.put("bid", bt.getId());
@@ -2110,6 +2217,11 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
     public String refundOpdBill() {
         if (bill == null) {
             JsfUtil.addErrorMessage("There is no Bill to Refund");
+            return "";
+        }
+        String openClaimMessage = creditCompanyClaimService.openClaimRefusal(bill);
+        if (openClaimMessage != null) {
+            JsfUtil.addErrorMessage(openClaimMessage);
             return "";
         }
         if (getRefundingBill() == null) {
@@ -2880,6 +2992,11 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
             JsfUtil.addErrorMessage("No Saved Original Bill");
             return;
         }
+        String openClaimMessage = creditCompanyClaimService.openClaimRefusal(getBill());
+        if (openClaimMessage != null) {
+            JsfUtil.addErrorMessage(openClaimMessage);
+            return;
+        }
         String labLockMessage = labSampleLockService.checkCancelBlocked(getBill());
         if (labLockMessage != null) {
             JsfUtil.addErrorMessage(labLockMessage);
@@ -3385,6 +3502,12 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
         }
         for (Bill b : billsApproving) {
 
+            String openClaimMessage = creditCompanyClaimService.openClaimRefusal(b.getBilledBill());
+            if (openClaimMessage != null) {
+                JsfUtil.addErrorMessage(openClaimMessage);
+                continue;
+            }
+
             String labLockMessage = labSampleLockService.checkCancelBlocked(b.getBilledBill());
             if (labLockMessage != null) {
                 JsfUtil.addErrorMessage(labLockMessage);
@@ -3760,7 +3883,7 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
                 } else {
                     sql = "select b from BilledBill b where b.retired=false and"
                             + " b.id in(Select bt.bill.id From BillItem bt Where bt.referenceBill.billType!=:btp and bt.referenceBill.billType!=:btp2) "
-                            + "and b.billType=:type and b.createdAt between :fromDate and :toDate and ((b.staff.person.name) like '%" + txtSearch.toUpperCase() + "%'  or (b.staff.person.phone) like '%" + txtSearch.toUpperCase() + "%'  or (b.insId) like '%" + txtSearch.toUpperCase() + "%') order by b.id desc  ";
+                            + "and b.billType=:type and b.createdAt between :fromDate and :toDate and ((b.staff.person.name) like :txt  or (b.staff.person.phone) like :txt  or (b.insId) like :txt) order by b.id desc  ";
                 }
 
                 temMap.put("toDate", getToDate());
@@ -3768,6 +3891,9 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
                 temMap.put("type", BillType.PaymentBill);
                 temMap.put("btp", BillType.ChannelPaid);
                 temMap.put("btp2", BillType.ChannelCredit);
+                if (!(txtSearch == null || txtSearch.trim().equals(""))) {
+                    temMap.put("txt", "%" + txtSearch.toUpperCase() + "%");
+                }
                 bills = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP, 100);
 
                 if (bills == null) {
@@ -5127,7 +5253,7 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
             case PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_OPD_SERVICES_RETURN:
                 return navigateToViewOpdProfessionalPaymentCancelledBill();
             case CHANNEL_BOOKING_WITH_PAYMENT:
-                return "";
+                break;
             case CC_BILL:
                 return navigateToViewCcBill(bill);
 
@@ -5162,7 +5288,7 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
                 return navigateToViewCcPaymentReceivedBill(bill);
 
             case CHANNEL_REFUND:
-                return "";
+                break;
 
             case PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_SESSION:
                 return navigateToViewChannelingProfessionalPaymentBill();
@@ -5393,6 +5519,7 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
             case IOU_SETTLE:
                 // A Return on an IOU writes a RefundBill of this type: it is not a settlement
                 if (bill instanceof RefundBill) {
+                    JsfUtil.addErrorMessage("This is an IOU return, which has no view page");
                     return "";
                 }
                 return "/cashier/iou_settle_bill_reprint?faces-redirect=true";
@@ -5410,8 +5537,30 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
                 inwardSearch.setAppointmentReceiptBillId(bill.getId());
                 return "/inward/inward_view_appointment_bill_receipt?faces-redirect=true";
 
+            case INWARD_PROFESSIONAL_FEE_BILL:
+                // Same page the inward professional fee search opens; it reads inwardSearch.bill.
+                inwardSearch.setBill(bill);
+                return "/inward/inward_reprint_bill_professional?faces-redirect=true";
+
+            case INWARD_SERVICE_BILL:
+                // Same page the inward service search opens; it reads inwardSearch.bill.
+                inwardSearch.setBill(bill);
+                return navigateToInwardSearchService();
+
+            case INWARD_SERVICE_BATCH_BILL:
+                return navigateToViewInwardServiceBatchBill(bill);
+
+            case INWARD_FINAL_BILL:
+                // Same preparation as inward_search_final.xhtml: set the bill, the admission
+                // context and the frozen PDF snapshot, then open the final bill reprint page.
+                inwardSearch.prepareFinalBillReprintFromSearch(bill);
+                return inwardSearch.navigateToReprintFinalBill(bill);
+
+            default:
+                break;
         }
 
+        JsfUtil.addErrorMessage("There is no view page for bill type " + billTypeAtomic.getLabel());
         return "";
     }
 

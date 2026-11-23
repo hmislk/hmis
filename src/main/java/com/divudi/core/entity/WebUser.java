@@ -150,6 +150,10 @@ public class WebUser implements Serializable {
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     @Column(name = "TWOFACTORSETUPWINDOWSTARTEDAT", updatable = false)
     private Date twoFactorSetupWindowStartedAt;
+    // Service account: a machine login (lab analyser, middleware, channelling API) that cannot give a second-step code.
+    // Insert-only like the twoFactor* columns; changed only by the UPDATE in TwoFactorAuthController.saveServiceAccountFlag
+    @Column(name = "SERVICEACCOUNT", updatable = false)
+    private boolean serviceAccount = false;
 
     public Staff getStaff() {
         return staff;
@@ -556,6 +560,14 @@ public class WebUser implements Serializable {
 
     public void setTwoFactorMobileVerifiedAt(Date twoFactorMobileVerifiedAt) {
         this.twoFactorMobileVerifiedAt = twoFactorMobileVerifiedAt;
+    }
+
+    public boolean isServiceAccount() {
+        return serviceAccount;
+    }
+
+    public void setServiceAccount(boolean serviceAccount) {
+        this.serviceAccount = serviceAccount;
     }
 
     public Date getTwoFactorSetupWindowStartedAt() {

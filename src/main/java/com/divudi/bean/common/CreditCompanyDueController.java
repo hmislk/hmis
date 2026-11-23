@@ -69,6 +69,8 @@ public class CreditCompanyDueController implements Serializable {
     private ConfigOptionApplicationController configOptionApplicationController;
     @Inject
     private CashRecieveBillController cashRecieveBillController;
+    @Inject
+    private com.divudi.bean.credit.CreditCompanyClaimController creditCompanyClaimController;
     @EJB
     private CreditBean creditBean;
     @EJB
@@ -1077,7 +1079,7 @@ public class CreditCompanyDueController implements Serializable {
 
             Long dayCount = CommonFunctions.getDayCountTillNow(b.getCreatedAt());
 
-            double finalValue = b.getNetTotal() - (b.getRefundAmount() + b.getPaidAmount());
+            double finalValue = b.getNetTotal() - (b.getRefundAmount() + b.getPaidAmount() + b.getWrittenOffAmount());
 
             if (dayCount < 30) {
                 dataTable5Value.setValue1(dataTable5Value.getValue1() + finalValue);
@@ -1100,7 +1102,7 @@ public class CreditCompanyDueController implements Serializable {
 
             Long dayCount = CommonFunctions.getDayCountTillNow(b.getCreatedAt());
 
-            double finalValue = b.getNetTotal() - b.getRefundAmount() - b.getPaidAmount();
+            double finalValue = b.getNetTotal() - (b.getRefundAmount() + b.getPaidAmount() + b.getWrittenOffAmount());
 
             if (dayCount < 30) {
                 dataTable5Value.setValue1(dataTable5Value.getValue1() + finalValue);
@@ -1123,7 +1125,7 @@ public class CreditCompanyDueController implements Serializable {
 
             Long dayCount = CommonFunctions.getDayCountTillNow(b.getCreatedAt());
 
-            double finalValue = (b.getNetTotal() + b.getPaidAmount());
+            double finalValue = b.getNetTotal() + b.getPaidAmount() - b.getWrittenOffAmount();
 
             if (dayCount < 30) {
                 dataTable5Value.setValue1(dataTable5Value.getValue1() + finalValue);
@@ -1443,10 +1445,12 @@ public class CreditCompanyDueController implements Serializable {
                     newIns.setTotal(newIns.getTotal() + p.getBill().getNetTotal());
                     newIns.setPaidTotal(newIns.getPaidTotal() + p.getBill().getPaidAmount());
                     newIns.setRefundTotal(newIns.getRefundTotal() + p.getBill().getRefundAmount());
+                    newIns.setWrittenOffTotal(newIns.getWrittenOffTotal() + p.getBill().getWrittenOffAmount());
                 }
 
                 items.add(newIns);
             }
+            loadClaimNumbers();
         }, CreditReport.OPD_CREDIT_DUE, sessionController.getLoggedUser());
     }
 
@@ -1493,6 +1497,7 @@ public class CreditCompanyDueController implements Serializable {
             for (Bill b : bills) {
                 newIns.setTotal(newIns.getTotal() + b.getNetTotal());
                 newIns.setRefundTotal(newIns.getRefundTotal() + b.getRefundAmount());
+                newIns.setWrittenOffTotal(newIns.getWrittenOffTotal() + b.getWrittenOffAmount());
                 newIns.setPaidTotal(newIns.getPaidTotal() + b.getPaidAmount());
             }
 
@@ -1541,6 +1546,7 @@ public class CreditCompanyDueController implements Serializable {
                 newIns.setTotal(newIns.getTotal() + b.getNetTotal());
                 newIns.setPaidTotal(newIns.getPaidTotal() + b.getPaidAmount());
                 newIns.setRefundTotal(newIns.getRefundTotal() + b.getRefundAmount());
+                newIns.setWrittenOffTotal(newIns.getWrittenOffTotal() + b.getWrittenOffAmount());
             }
 
             items.add(newIns);
@@ -3922,7 +3928,7 @@ public class CreditCompanyDueController implements Serializable {
 
                     Cell dueAmountCell = dataRow.createCell(dataIndex);
                     if (bill != null) {
-                        dueAmountCell.setCellValue(bill.getNetTotal() - bill.getRefundAmount() - bill.getPaidAmount());
+                        dueAmountCell.setCellValue(bill.getNetTotal() - (bill.getRefundAmount() + bill.getPaidAmount() + bill.getWrittenOffAmount()));
                         dueAmountCell.setCellStyle(numberStyle);
                     } else {
                         dueAmountCell.setCellValue(0d);
@@ -3958,7 +3964,7 @@ public class CreditCompanyDueController implements Serializable {
                 paidTotalCell.setCellStyle(numberStyle);
 
                 Cell dueTotalCell = totalRow.createCell(paidIndex + 1);
-                dueTotalCell.setCellValue(institutionBills.getTotal() - institutionBills.getRefundTotal() - institutionBills.getPaidTotal());
+                dueTotalCell.setCellValue(institutionBills.getDueTotal());
                 dueTotalCell.setCellStyle(numberStyle);
             }
 
@@ -4150,7 +4156,7 @@ public class CreditCompanyDueController implements Serializable {
 
                     // Due
                     double dueVal = bill != null
-                            ? bill.getNetTotal() - bill.getRefundAmount() - bill.getPaidAmount() : 0.0;
+                            ? bill.getNetTotal() - (bill.getRefundAmount() + bill.getPaidAmount() + bill.getWrittenOffAmount()) : 0.0;
 
                     PdfPCell due = new PdfPCell(new Phrase(
                             String.format("%,.2f", dueVal), dataFont));
@@ -4186,7 +4192,7 @@ public class CreditCompanyDueController implements Serializable {
                 table.addCell(totalPaid);
 
                 PdfPCell totalDue = new PdfPCell(new Phrase(
-                        String.format("%,.2f", ib.getTotal() - ib.getRefundTotal() - ib.getPaidTotal()),
+                        String.format("%,.2f", ib.getDueTotal()),
                         headerFont));
                 totalDue.setHorizontalAlignment(Element.ALIGN_RIGHT);
                 table.addCell(totalDue);
@@ -4258,6 +4264,64 @@ public class CreditCompanyDueController implements Serializable {
                 }
             }
         }
+    }
+
+    private Map<Long, String> claimNoByBillId = new HashMap<>();
+
+    /** Claim numbers of the open claims holding the listed bills (#25847). */
+    private void loadClaimNumbers() {
+        List<Long> billIds = new ArrayList<>();
+        for (InstitutionBills ib : items) {
+            if (ib.getBills() != null) {
+                for (Bill b : ib.getBills()) {
+                    if (b.getId() != null) {
+                        billIds.add(b.getId());
+                    }
+                }
+            }
+        }
+        claimNoByBillId = creditCompanyClaimController.fetchOpenClaimNumbersByBillId(billIds);
+    }
+
+    public String getClaimNoForBill(Bill bill) {
+        if (bill == null || bill.getId() == null || claimNoByBillId == null) {
+            return "";
+        }
+        String no = claimNoByBillId.get(bill.getId());
+        return no == null ? "" : no;
+    }
+
+    public String createClaimForSelectedOpdDueBills() {
+        if (items == null) {
+            JsfUtil.addErrorMessage("No data loaded. Please run the due report first.");
+            return null;
+        }
+        List<Long> billIds = new ArrayList<>();
+        Institution company = null;
+        for (InstitutionBills ib : items) {
+            if (ib.getPayments() == null) {
+                continue;
+            }
+            for (Payment p : ib.getPayments()) {
+                if (!Boolean.TRUE.equals(getPaymentSelectionMap().get(p.getId()))) {
+                    continue;
+                }
+                Bill bill = p.getBill();
+                if (bill == null || bill.getId() == null || billIds.contains(bill.getId())) {
+                    continue;
+                }
+                if (company == null) {
+                    company = ib.getInstitution();
+                } else if (!company.getId().equals(ib.getInstitution().getId())) {
+                    JsfUtil.addErrorMessage("Please select bills from one company only.");
+                    return null;
+                }
+                billIds.add(bill.getId());
+            }
+        }
+        String outcome = creditCompanyClaimController.createClaimFromBills(billIds, company);
+        loadClaimNumbers();
+        return outcome;
     }
 
     public String settleSelectedOpdDueBills() {

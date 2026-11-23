@@ -42,6 +42,11 @@
                                                                  action="#{patientEncounterController.listAllEncounters()}" />
                                                 <fav:favoriteStar reportKey="emrAnalytics_dailyVisits" label="Daily Visits" category="Clinical Data" />
                                             </h:panelGroup>
+                                            <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{webUserController.hasPrivilege('EmrVisitsByDiagnosisReport') and userFavoriteReportController.isFavorite('emrAnalytics_visitsByDiagnosis')}">
+                                                <p:commandButton value="Visits by Diagnosis" class="w-100" ajax="false"
+                                                                 action="#{emrDiagnosisReportController.navigateToEmrDiagnosisReport()}" />
+                                                <fav:favoriteStar reportKey="emrAnalytics_visitsByDiagnosis" label="Visits by Diagnosis" category="Clinical Data" />
+                                            </h:panelGroup>
                                             <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{userFavoriteReportController.isFavorite('emrAnalytics_diagnosis')}">
                                                 <p:commandButton value="Diagnosis" class="w-100" ajax="false" action="#{diagnosisController.navigateToListDiagnoses()}" />
                                                 <fav:favoriteStar reportKey="emrAnalytics_diagnosis" label="Diagnosis" category="Clinical Metadata" />
@@ -83,6 +88,11 @@
                                             </p:commandButton><!-- comment -->
                                             <fav:favoriteStar reportKey="emrAnalytics_dailyVisits" label="Daily Visits" category="Clinical Data" />
                                         </div>
+                                        <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1 w-100" rendered="#{webUserController.hasPrivilege('EmrVisitsByDiagnosisReport')}">
+                                            <p:commandButton value="Visits by Diagnosis" class="w-100" ajax="false"
+                                                             action="#{emrDiagnosisReportController.navigateToEmrDiagnosisReport()}" />
+                                            <fav:favoriteStar reportKey="emrAnalytics_visitsByDiagnosis" label="Visits by Diagnosis" category="Clinical Data" />
+                                        </h:panelGroup>
                                     </div>
                                 </p:tab>
                                 <p:tab title="Clinical Metadata">

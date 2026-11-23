@@ -92,6 +92,9 @@ import org.primefaces.model.LazyDataModel;
 @SessionScoped
 public class OpdBillCancellationController implements Serializable, ControllerWithMultiplePayments {
 
+    @javax.ejb.EJB
+    private com.divudi.service.CreditCompanyClaimService creditCompanyClaimService;
+
     /**
      * EJBs
      */
@@ -706,6 +709,11 @@ public class OpdBillCancellationController implements Serializable, ControllerWi
         }
         if (getBill().getId() == null) {
             JsfUtil.addErrorMessage("No Saved Original Bill");
+            return;
+        }
+        String openClaimMessage = creditCompanyClaimService.openClaimRefusal(getBill());
+        if (openClaimMessage != null) {
+            JsfUtil.addErrorMessage(openClaimMessage);
             return;
         }
         String labLockMessage = labSampleLockService.checkCancelBlocked(getBill());

@@ -1,0 +1,151 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:body>
+        <ui:composition template="/opd/analytics/index.xhtml">
+            <ui:define name="subcontent">
+                <p:panel header="OP Visits">
+                    <h:form id="frmOpVisits">
+                        <h:panelGrid columns="8" styleClass="w-100 form-grid" columnClasses="label-icon-column, input-column">
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf073;" styleClass="fa ml-5"/>
+                                <h:outputLabel value="From" for="fromDate" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:calendar id="fromDate" styleClass="w-100" inputStyleClass="w-100 form-control"
+                                        value="#{opdReportController.fromDate}"
+                                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                            <p:spacer width="50"/>
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf073;" styleClass="fa mr-2"/>
+                                <h:outputLabel value="To" for="toDate" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:calendar id="toDate" styleClass="w-100" inputStyleClass="w-100 form-control"
+                                        value="#{opdReportController.toDate}" navigator="false"
+                                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                            <p:spacer width="50"/>
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf0e8;" styleClass="fa mr-2"/>
+                                <h:outputLabel value="Group By" for="cmbGroupBy" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu id="cmbGroupBy" styleClass="w-100 form-control"
+                                             value="#{opdReportController.opVisitGroupBy}"
+                                             title="Department = where the service was given. Specialty = the specialty of each doctor on the bill.">
+                                <f:selectItem itemLabel="Department" itemValue="DEPARTMENT"/>
+                                <f:selectItem itemLabel="Specialty" itemValue="SPECIALTY"/>
+                            </p:selectOneMenu>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf19c;" styleClass="fa mr-2"/>
+                                <h:outputLabel value="Billing Institution" for="cmbIns" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu id="cmbIns" styleClass="w-100 form-control"
+                                             value="#{opdReportController.institution}" filter="true">
+                                <f:selectItem itemLabel="All Institutions"/>
+                                <f:selectItems value="#{institutionController.companies}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}"/>
+                                <p:ajax process="cmbIns" update="cmbDept"/>
+                            </p:selectOneMenu>
+                            <p:spacer/>
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf3c5;" styleClass="fa mr-2"/>
+                                <h:outputLabel value="Billing Site" for="siteMenu" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu id="siteMenu" styleClass="w-100 form-control"
+                                             value="#{opdReportController.site}" filter="true">
+                                <f:selectItem itemLabel="All Sites"/>
+                                <f:selectItems value="#{institutionController.sites}" var="site" itemLabel="#{site.name}" itemValue="#{site}"/>
+                                <p:ajax process="siteMenu" update="cmbDept"/>
+                            </p:selectOneMenu>
+                            <p:spacer/>
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf0e8;" styleClass="fa mr-2"/>
+                                <h:outputLabel value="Billing Department" for="cmbDept" class="mx-3"/>
+                            </h:panelGroup>
+                            <h:panelGroup id="cmbDept">
+                                <p:selectOneMenu rendered="#{opdReportController.institution eq null and opdReportController.site eq null}"
+                                                 styleClass="w-100 form-control" value="#{opdReportController.department}"
+                                                 filterMatchMode="contains" filter="true">
+                                    <f:selectItem itemLabel="All Departments"/>
+                                    <f:selectItems value="#{departmentController.getDepartmentsOfInstitutionAndSite()}" var="d" itemLabel="#{d.name}" itemValue="#{d}"/>
+                                </p:selectOneMenu>
+                                <p:selectOneMenu rendered="#{opdReportController.institution eq null and opdReportController.site ne null}"
+                                                 styleClass="w-100 form-control" value="#{opdReportController.department}"
+                                                 filterMatchMode="contains" filter="true">
+                                    <f:selectItem itemLabel="All Departments"/>
+                                    <f:selectItems value="#{departmentController.getDepartmentsOfInstitutionAndSite(opdReportController.site)}" var="d" itemLabel="#{d.name}" itemValue="#{d}"/>
+                                </p:selectOneMenu>
+                                <p:selectOneMenu rendered="#{opdReportController.institution ne null and opdReportController.site eq null}"
+                                                 styleClass="w-100 form-control" value="#{opdReportController.department}"
+                                                 filterMatchMode="contains" filter="true">
+                                    <f:selectItem itemLabel="All Departments"/>
+                                    <f:selectItems value="#{departmentController.getDepartmentsOfInstitutionAndSiteForInstitution(opdReportController.institution)}" var="d" itemLabel="#{d.name}" itemValue="#{d}"/>
+                                </p:selectOneMenu>
+                                <p:selectOneMenu rendered="#{opdReportController.institution ne null and opdReportController.site ne null}"
+                                                 styleClass="w-100 form-control" value="#{opdReportController.department}"
+                                                 filterMatchMode="contains" filter="true">
+                                    <f:selectItem itemLabel="All Departments"/>
+                                    <f:selectItems value="#{departmentController.getDepartmentsOfInstitutionAndSite(opdReportController.institution, opdReportController.site)}" var="d" itemLabel="#{d.name}" itemValue="#{d}"/>
+                                </p:selectOneMenu>
+                            </h:panelGroup>
+                        </h:panelGrid>
+
+                        <div class="d-flex align-items-center gap-2 my-2">
+                            <p:commandButton id="btnProcess" value="Process" ajax="false" icon="fa fa-cogs"
+                                             styleClass="ui-button-success"
+                                             action="#{opdReportController.processOpVisitsReport()}"
+                                             title="Count OP visits for the selected period"/>
+                            <p:commandButton id="btnExcel" value="Excel" ajax="false" icon="fa fa-file-excel"
+                                             styleClass="ui-button-info"
+                                             rendered="#{opdReportController.opVisitRows ne null}"
+                                             title="Download the table as Excel">
+                                <p:dataExporter type="xlsx" target="tblOpVisits" fileName="op_visits"/>
+                            </p:commandButton>
+                            <h:outputText styleClass="text-muted small ms-2"
+                                          value="One visit = one OPD bill. Cancelled and fully refunded bills are left out (a partly refunded bill still counts), also when this happened after the selected period."/>
+                        </div>
+
+                        <p:dataTable id="tblOpVisits"
+                                     rendered="#{opdReportController.opVisitRows ne null}"
+                                     value="#{opdReportController.opVisitRows}" var="row"
+                                     styleClass="p-datatable-sm" stickyHeader="true"
+                                     emptyMessage="No OP visits in this period.">
+                            <p:column headerText="#{opdReportController.opVisitGroupBy eq 'SPECIALTY' ? 'Specialty' : 'Department'}">
+                                <h:outputText value="#{row.label}"/>
+                                <f:facet name="footer">
+                                    <h:outputText value="Total (each visit counted once)" styleClass="fw-bold"/>
+                                </f:facet>
+                            </p:column>
+                            <p:column headerText="Visits" styleClass="text-end" width="10em">
+                                <h:outputText value="#{row.visits}">
+                                    <f:convertNumber integerOnly="true"/>
+                                </h:outputText>
+                                <f:facet name="footer">
+                                    <h:outputText value="#{opdReportController.opVisitTotalVisits}" styleClass="fw-bold">
+                                        <f:convertNumber integerOnly="true"/>
+                                    </h:outputText>
+                                </f:facet>
+                            </p:column>
+                            <p:column headerText="Patients" styleClass="text-end" width="10em">
+                                <h:outputText value="#{row.patients}">
+                                    <f:convertNumber integerOnly="true"/>
+                                </h:outputText>
+                                <f:facet name="footer">
+                                    <h:outputText value="#{opdReportController.opVisitTotalPatients}" styleClass="fw-bold">
+                                        <f:convertNumber integerOnly="true"/>
+                                    </h:outputText>
+                                </f:facet>
+                            </p:column>
+                        </p:dataTable>
+                        <h:outputText rendered="#{opdReportController.opVisitRows ne null and opdReportController.opVisitGroupBy eq 'SPECIALTY'}"
+                                      styleClass="text-muted small"
+                                      value="A bill with doctors of two specialties counts under each, so the rows can add up to more than the total."/>
+                    </h:form>
+                </p:panel>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

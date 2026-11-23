@@ -1,6 +1,7 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:prints="http://xmlns.jcp.org/jsf/composite/ezcomp/prints"
       xmlns:cc="http://xmlns.jcp.org/jsf/composite"
       xmlns:f="http://xmlns.jcp.org/jsf/core"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
@@ -285,6 +286,7 @@
                                 <tr>
                                     <td style="overflow: visible;">
                                         <h:outputLabel class="itemsBlockRightFiveFive" value="#{billItem.item.printName}" style="text-transform: capitalize!important;"/>
+                                    <prints:opd_fee_collected_by_doctor_note billItem="#{billItem}"/>
                                     </td>
                                     <td style="text-align: right;">
                                         <h:outputLabel class="itemsBlockRightFiveFive" value="#{billItem.grossValue}">
@@ -335,6 +337,7 @@
                                         </tr>
                                     </h:panelGroup>
                                 </ui:repeat>
+                                <prints:opd_fee_collected_by_doctor_note billItem="#{billItem}" asRow="true" breakdown="true"/>
                             </h:panelGroup>
                             <!-- Session number sub-row (unchanged) -->
                             <h:panelGroup rendered="#{billItem.item.printSessionNumber}">
@@ -484,11 +487,6 @@
 
             </div>
 
-            <h:panelGroup layout="block" rendered="#{opdBillController.hasFeesCollectedByDoctor(cc.attrs.bill)}">
-                <div style="font-size: 9pt; margin-top: 4px; text-align: left;">
-                    <h:outputText value="Fees Collected by the Doctor" />
-                </div>
-            </h:panelGroup>
 
             <div style=" margin-top: 10px;" class="d-flex justify-content-between">
                 <h:outputLabel value="Cashier : #{cc.attrs.bill.creater.webUserPerson.name}"/>

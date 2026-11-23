@@ -125,6 +125,8 @@ public class WebUserController implements Serializable {
     List<WebUser> items;
     List<WebUser> searchItems;
     private WebUser current;
+    private Long baselineUserId;
+    private boolean baselineServiceAccount;
     private WebUser selected;
     private WebUserLight selectedLight;
     String selectText = "";
@@ -255,6 +257,23 @@ public class WebUserController implements Serializable {
         return user.getWebUserPerson().getNameWithTitle();
     }
 
+    /**
+     * Service account, 2FA Required and Allow SMS may be changed (or set on a
+     * new user) only by a user with the user-management privilege. Without it
+     * the flags go back to their stored values (false for a new user) and a
+     * message is shown.
+     */
+    void refuseProtectedFlagsWithoutPrivilege(boolean wasTwoFactorRequired, boolean wasTwoFactorSmsAllowed, boolean wasServiceAccount) {
+        if ((wasTwoFactorRequired != current.isTwoFactorRequired() || wasTwoFactorSmsAllowed != current.isTwoFactorSmsAllowed()
+                || wasServiceAccount != current.isServiceAccount())
+                && !hasPrivilege(Privileges.AdminManagingUsers.name())) {
+            current.setTwoFactorRequired(wasTwoFactorRequired);
+            current.setTwoFactorSmsAllowed(wasTwoFactorSmsAllowed);
+            current.setServiceAccount(wasServiceAccount);
+            JsfUtil.addErrorMessage("Two-factor settings were not changed. You do not have the privilege to manage users.");
+        }
+    }
+
     public void saveUser() {
         if (current == null) {
             return;
@@ -264,16 +283,15 @@ public class WebUserController implements Serializable {
         boolean activationChanged = saved != null && saved.isActivated() != current.isActivated();
         boolean wasTwoFactorRequired = saved != null && saved.isTwoFactorRequired();
         boolean wasTwoFactorSmsAllowed = saved != null && saved.isTwoFactorSmsAllowed();
+        boolean wasServiceAccount = saved != null && saved.isServiceAccount();
+        if (saved != null) {
+            keepStoredServiceAccountUnlessChangedHere(wasServiceAccount);
+        }
         boolean openSetupWindowAfterSave = false;
         // Manage User is reached only with this privilege, but a form can be posted without the menu; check it here,
-        // before the Person merge below (Person.webUser cascades) can write the submitted flags
-        if (saved != null
-                && (wasTwoFactorRequired != current.isTwoFactorRequired() || wasTwoFactorSmsAllowed != current.isTwoFactorSmsAllowed())
-                && !hasPrivilege(Privileges.AdminManagingUsers.name())) {
-            current.setTwoFactorRequired(wasTwoFactorRequired);
-            current.setTwoFactorSmsAllowed(wasTwoFactorSmsAllowed);
-            JsfUtil.addErrorMessage("Two-factor settings were not changed. You do not have the privilege to manage users.");
-        }
+        // before the Person merge below (Person.webUser cascades) can write the submitted flags. A new user counts
+        // as "was off" for every flag, so creating a user with a flag ticked needs the privilege too.
+        refuseProtectedFlagsWithoutPrivilege(wasTwoFactorRequired, wasTwoFactorSmsAllowed, wasServiceAccount);
         // webUserPerson has no cascade, so Contact fields (email, mobile) must be saved on the Person itself
         Person person = current.getWebUserPerson();
         if (person != null) {
@@ -284,7 +302,26 @@ public class WebUserController implements Serializable {
             }
         }
         if (current.getId() == null || current.getId() == 0) {
+            if (current.isTwoFactorRequired()) {
+                if (!twoFactorAuthController.hasUsableStaffMobile(current)) {
+                    current.setTwoFactorRequired(false);
+                    JsfUtil.addErrorMessage("2FA was not set to Required: the staff record has no valid mobile number. Add it, then tick Required on Manage User.");
+                } else {
+                    // Inserted together with the user
+                    current.setTwoFactorSetupWindowStartedAt(new Date());
+                }
+            }
             getFacade().create(current);
+            if (current.isTwoFactorRequired()) {
+                twoFactorAuthController.logRequiredChange(current, false);
+                twoFactorAuthController.logSetupWindowOpened(current);
+            }
+            if (current.isServiceAccount()) {
+                // New user: was=false, so this writes the audit row for the flag
+                twoFactorAuthController.saveServiceAccountFlag(current, false);
+            }
+            // The user now exists: later saves of this form compare against what was just stored
+            rememberServiceAccountBaseline();
             JsfUtil.addSuccessMessage("Saved");
         } else {
             // Authenticator enrollment is written only by TwoFactorAuthController; don't let a stale copy overwrite it
@@ -315,6 +352,9 @@ public class WebUserController implements Serializable {
             if (wasTwoFactorSmsAllowed != current.isTwoFactorSmsAllowed()) {
                 twoFactorAuthController.logSmsAllowedChange(current, wasTwoFactorSmsAllowed);
             }
+            // Insert-only on the entity, so edit() does not write it
+            twoFactorAuthController.saveServiceAccountFlag(current, wasServiceAccount);
+            rememberServiceAccountBaseline();
             JsfUtil.addSuccessMessage("Updated");
         }
     }
@@ -360,16 +400,19 @@ public class WebUserController implements Serializable {
     public List<WebUser> completeUser(String qry) {
         List<WebUser> a = null;
         if (qry != null) {
-            a = getFacade().findByJpql("select c from WebUser c"
+            String jpql = "select c from WebUser c"
                     + " where c.retired=false"
                     + " and  ("
-                    + " c.webUserPerson.name like '%" + qry.toUpperCase() + "%'"
+                    + " c.webUserPerson.name like :q"
                     + " or "
-                    + " c.code like '%" + qry.toUpperCase() + "%'"
+                    + " c.code like :q"
                     + " or"
-                    + " c.name like '%" + qry.toUpperCase() + "%'"
+                    + " c.name like :q"
                     + " )"
-                    + " order by c.webUserPerson.name");
+                    + " order by c.webUserPerson.name";
+            java.util.Map<String, Object> m = new java.util.HashMap<>();
+            m.put("q", "%" + qry.toUpperCase() + "%");
+            a = getFacade().findByJpql(jpql, m);
         }
         if (a == null) {
             a = new ArrayList<>();
@@ -548,9 +591,9 @@ public class WebUserController implements Serializable {
 
     public WebUser getCurrent() {
         if (current == null) {
-            current = new WebUser();
-            Person p = new Person();
-            current.setWebUserPerson(p);
+            WebUser fresh = new WebUser();
+            fresh.setWebUserPerson(new Person());
+            setCurrent(fresh);
         }
         return current;
     }
@@ -558,6 +601,32 @@ public class WebUserController implements Serializable {
     public void setCurrent(WebUser current) {
 
         this.current = current;
+        rememberServiceAccountBaseline();
+    }
+
+    /**
+     * Remembers the stored Service account value as it was when this admin
+     * opened the user, so saveUser can tell a change made in this edit session
+     * from a stale copy of a value another admin has since changed (#25868).
+     */
+    private void rememberServiceAccountBaseline() {
+        baselineUserId = current == null ? null : current.getId();
+        baselineServiceAccount = current != null && current.isServiceAccount();
+    }
+
+    /**
+     * Service account value to treat as stored when saving: the value from the
+     * database unless this admin changed the checkbox since opening the user.
+     * Returns the database value to keep, or the submitted value to write.
+     */
+    void keepStoredServiceAccountUnlessChangedHere(boolean storedNow) {
+        // Another admin may have changed the flag since this page was opened; only an edit made here may overwrite it
+        boolean openedWith = (baselineUserId != null && baselineUserId.equals(current.getId())) ? baselineServiceAccount : storedNow;
+        current.setServiceAccount(resolveServiceAccountToSave(current.isServiceAccount(), openedWith, storedNow));
+    }
+
+    static boolean resolveServiceAccountToSave(boolean submitted, boolean openedWith, boolean storedNow) {
+        return submitted != openedWith ? submitted : storedNow;
     }
 
     private WebUserFacade getFacade() {
@@ -569,7 +638,7 @@ public class WebUserController implements Serializable {
     }
 
     public void prepareAdd() {
-        current = new WebUser();
+        setCurrent(new WebUser());
     }
 
     public String navigateToAddNewUser() {
@@ -645,6 +714,7 @@ public class WebUserController implements Serializable {
         getCurrent().getWebUserPerson().setCreater(getSessionController().getLoggedUser());
 
         getCurrent().setLoginPage(loginPage);
+        refuseProtectedFlagsWithoutPrivilege(false, false, false);
 
         if (site != null) {
             getCurrent().setSite(site);
@@ -702,8 +772,13 @@ public class WebUserController implements Serializable {
             getCurrent().setTwoFactorSetupWindowStartedAt(new Date());
         }
         getFacade().create(getCurrent());
+        if (getCurrent().isServiceAccount()) {
+            // New user: was=false, so this writes the audit row for the flag
+            twoFactorAuthController.saveServiceAccountFlag(getCurrent(), false);
+        }
         if (getCurrent().isTwoFactorRequired()) {
             twoFactorAuthController.logRequiredChange(getCurrent(), false);
+            twoFactorAuthController.logSetupWindowOpened(getCurrent());
         }
         if (getCurrent().isTwoFactorSmsAllowed()) {
             twoFactorAuthController.logSmsAllowedChange(getCurrent(), false);
@@ -781,9 +856,9 @@ public class WebUserController implements Serializable {
                 searchItems = getFacade().findAll("name", "%" + selectText + "%",
                         true);
                 if (!searchItems.isEmpty()) {
-                    current = searchItems.get(0);
+                    setCurrent(searchItems.get(0));
                 } else {
-                    current = null;
+                    setCurrent(null);
                 }
             }
         }
@@ -806,7 +881,7 @@ public class WebUserController implements Serializable {
         }
         recreateModel();
         getItems();
-        current = null;
+        setCurrent(null);
     }
 
     public String navigateToListUsers() {
@@ -1010,7 +1085,7 @@ public class WebUserController implements Serializable {
             JsfUtil.addErrorMessage("Please select a user");
             return "";
         }
-        current = selected;
+        setCurrent(selected);
         return "/admin/users/user?faces-redirect=true";
     }
 
@@ -1142,7 +1217,7 @@ public class WebUserController implements Serializable {
             JsfUtil.addErrorMessage("Please select a user");
             return "";
         }
-        current = selected;
+        setCurrent(selected);
         return "/admin/users/change_password?faces-redirect=true";
     }
 
@@ -1296,7 +1371,7 @@ public class WebUserController implements Serializable {
             JsfUtil.addErrorMessage("Please select a user");
             return "";
         }
-        current = selected;
+        setCurrent(selected);
         listWebUserDashboards();
         return "/admin_manage_dashboards?faces-redirect=true";
     }
@@ -1306,7 +1381,7 @@ public class WebUserController implements Serializable {
             JsfUtil.addErrorMessage("Please select a user");
             return "";
         }
-        current = selected;
+        setCurrent(selected);
         Drawer d = drawerController.getUsersDrawer(selected);
         drawerController.setCurrent(d);
         return "/admin/users/drawer?faces-redirect=true";
@@ -1317,7 +1392,7 @@ public class WebUserController implements Serializable {
             JsfUtil.addErrorMessage("Please select a user");
             return "";
         }
-        current = selected;
+        setCurrent(selected);
         return sessionController.navigateToManageWebUserPreferences(current);
     }
 

@@ -112,6 +112,9 @@ import org.primefaces.event.TabChangeEvent;
 @SessionScoped
 public class BillController implements Serializable, ControllerWithMultiplePayments {
 
+    @javax.ejb.EJB
+    private com.divudi.service.CreditCompanyClaimService creditCompanyClaimService;
+
     private static final long serialVersionUID = 1L;
 
     /**
@@ -666,8 +669,13 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
 //        this.recurseCount = recurseCount;
 //    }
     public boolean findByFilter(String property, String value) {
-        String sql = "Select b From Bill b where b.retired=false and (b." + property + ") like '%" + value.toUpperCase() + " %'";
-        Bill b = getBillFacade().findFirstByJpql(sql);
+        if (property == null || value == null || !property.matches("^[A-Za-z][A-Za-z0-9_.]*$")) {
+            return false;
+        }
+        String sql = "Select b From Bill b where b.retired=false and (b." + property + ") like :val";
+        java.util.Map<String, Object> m = new java.util.HashMap<>();
+        m.put("val", "%" + value.toUpperCase() + " %");
+        Bill b = getBillFacade().findFirstByJpql(sql, m);
         if (b != null) {
             return true;
         } else {
@@ -713,7 +721,7 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
         HashMap hash = new HashMap();
         if (qry != null) {
             sql = "select c from BilledBill c "
-                    + " where abs(c.netTotal)-abs(c.paidAmount)>:val "
+                    + " where abs(c.netTotal)-(abs(c.paidAmount)+coalesce(c.writtenOffAmount,0))>:val "
                     + " and c.billType= :btp "
                     + " and c.paymentMethod= :pm "
                     + " and c.cancelledBill is null "
@@ -772,7 +780,7 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
             if (qry != null) {
                 sql = "select c from BilledBill c "
                         + " where ((c.balance IS NOT NULL AND abs(c.balance) > :val) "
-                        + " OR (abs(c.netTotal) + abs(c.vat) - abs(c.paidAmount) - COALESCE(abs(c.refundAmount), 0)) > :val) "
+                        + " OR (abs(c.netTotal) - (abs(c.paidAmount) + COALESCE(abs(c.refundAmount), 0) + coalesce(c.writtenOffAmount,0))) > :val) "
                         + " and c.billTypeAtomic in :btas "
                         + " and c.paymentMethod= :pm "
                         + " and c.cancelledBill is null "
@@ -804,7 +812,7 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
                     // Try even simpler query but with balance condition
                     String simpleSql = "select c from BilledBill c "
                             + " where ((c.balance IS NOT NULL AND abs(c.balance) > :val) "
-                            + " OR (abs(c.netTotal) + abs(c.vat) - abs(c.paidAmount) - COALESCE(abs(c.refundAmount), 0)) > :val) "
+                            + " OR (abs(c.netTotal) - (abs(c.paidAmount) + COALESCE(abs(c.refundAmount), 0) + coalesce(c.writtenOffAmount,0))) > :val) "
                             + " and c.billTypeAtomic in :btas "
                             + " and c.paymentMethod= :pm "
                             + " and c.retired=false "
@@ -840,7 +848,7 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
         if (qry != null) {
             jpql = "select c from BilledBill c "
                     + " where ((c.balance IS NOT NULL AND abs(c.balance) > :val) "
-                    + " OR (abs(c.netTotal) + abs(c.vat) - abs(c.paidAmount) - COALESCE(abs(c.refundAmount), 0)) > :val) "
+                    + " OR (abs(c.netTotal) - (abs(c.paidAmount) + COALESCE(abs(c.refundAmount), 0) + coalesce(c.writtenOffAmount,0))) > :val) "
                     + " and c.billTypeAtomic in :btas "
                     + " and c.paymentMethod= :pm "
                     + " and c.cancelledBill is null "
@@ -908,7 +916,7 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
             if (qry != null) {
                 sql = "select b from BilledBill b "
                         + " where ((b.balance IS NOT NULL AND abs(b.balance) > :val) "
-                        + " OR (abs(b.netTotal) + abs(b.vat) - abs(b.paidAmount) - COALESCE(abs(b.refundAmount), 0)) > :val) "
+                        + " OR (abs(b.netTotal) - (abs(b.paidAmount) + COALESCE(abs(b.refundAmount), 0) + coalesce(b.writtenOffAmount,0))) > :val) "
                         + " and b.billType in :btps "
                         + " and b.paymentMethod= :pm "
                         + " and b.retired=false "
@@ -937,7 +945,7 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
                     // Try even simpler query but with balance condition
                     String simpleSql = "select b from BilledBill b "
                             + " where ((b.balance IS NOT NULL AND abs(b.balance) > :val) "
-                            + " OR (abs(b.netTotal) + abs(b.vat) - abs(b.paidAmount) - COALESCE(abs(b.refundAmount), 0)) > :val) "
+                            + " OR (abs(b.netTotal) - (abs(b.paidAmount) + COALESCE(abs(b.refundAmount), 0) + coalesce(b.writtenOffAmount,0))) > :val) "
                             + " and b.billType in :btps "
                             + " and b.paymentMethod= :pm "
                             + " and b.retired=false "
@@ -1104,7 +1112,7 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
         HashMap hash = new HashMap();
 
         sql = "select c from BilledBill c  where"
-                + " abs(c.netTotal)-abs(c.paidAmount)>:val "
+                + " abs(c.netTotal)-(abs(c.paidAmount)+coalesce(c.writtenOffAmount,0))>:val "
                 + " and c.billType= :btp"
                 + " and c.createdAt is not null "
                 + " and c.deptId is not null "
@@ -1132,7 +1140,7 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
         HashMap hash = new HashMap();
 
         sql = "select b from BilledBill b  where"
-                + " (b.netTotal-(coalesce(b.refundAmount,0)+coalesce(b.paidAmount,0)))>:val "
+                + " (b.netTotal-(coalesce(b.refundAmount,0)+coalesce(b.paidAmount,0)+coalesce(b.writtenOffAmount,0)))>:val "
                 + " and b.billType in :btps"
                 + " and b.createdAt is not null "
                 + " and b.deptId is not null "
@@ -1164,7 +1172,7 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
         HashMap m = new HashMap();
 
         sql = "select c from BilledBill c  where"
-                + " abs(c.netTotal)-abs(c.paidAmount)>:val "
+                + " abs(c.netTotal)-(abs(c.paidAmount)+coalesce(c.writtenOffAmount,0))>:val "
                 + " and c.billType= :btp"
                 + " and c.createdAt between :fd and :td "
                 + " and c.deptId is not null "
@@ -2634,6 +2642,12 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
             batchBillCancellationStarted = false;
             return "";
         }
+        String openClaimMessage = creditCompanyClaimService.openClaimRefusal(getBatchBill());
+        if (openClaimMessage != null) {
+            JsfUtil.addErrorMessage(openClaimMessage);
+            batchBillCancellationStarted = false;
+            return "";
+        }
         String labLockMessage = labSampleLockService.checkCancelBlocked(getBatchBill());
         if (labLockMessage != null) {
             JsfUtil.addErrorMessage(labLockMessage);
@@ -2796,6 +2810,12 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
         }
         if (getBatchBill().getId() == null) {
             JsfUtil.addErrorMessage("No Saved bill");
+            batchBillCancellationStarted = false;
+            return "";
+        }
+        String openClaimMessage = creditCompanyClaimService.openClaimRefusal(getBatchBill());
+        if (openClaimMessage != null) {
+            JsfUtil.addErrorMessage(openClaimMessage);
             batchBillCancellationStarted = false;
             return "";
         }

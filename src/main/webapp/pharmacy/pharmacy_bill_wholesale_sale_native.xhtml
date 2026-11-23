@@ -20,7 +20,9 @@
                         };
                     </script>
                     <p:growl id="panelError" sticky="true" severity="error,fatal" />
-                    <p:growl id="panelInfo" severity="info,warn" autoUpdate="true" />
+                    <p:growl id="panelInfo" severity="info,warn">
+                        <p:autoUpdate/>
+                    </p:growl>
                     <p:defaultCommand target="btnAdd" />
 
                     <!-- ============================================================
@@ -212,7 +214,7 @@
                                             <h:outputText styleClass="fas fa-money-bill" />
                                             <h:outputLabel value="Bill Items" class="mx-4" />
                                         </f:facet>
-                                        <p:dataTable
+                                        <p:dataTable styleClass="p-datatable-sm"
                                             id="tblBillItem"
                                             value="#{wholesaleSaleNativeSqlController.billItemDataList}"
                                             var="bi"
@@ -309,7 +311,7 @@
                                                 rows="10"
                                                 paginatorPosition="bottom"
                                                 emptyMessage="No substitute stocks found"
-                                                styleClass="table-striped">
+                                                styleClass="table-striped p-datatable-sm">
                                                 <p:column headerText="Item">
                                                     <h:outputText value="#{sStock.itemName}"/>
                                                 </p:column>
@@ -332,7 +334,7 @@
                                                     </h:outputText>
                                                 </p:column>
                                                 <p:column headerText="Action" style="width: 8em;">
-                                                    <p:commandButton
+                                                    <p:commandButton icon="fa fa-exchange-alt" styleClass="ui-button-warning"
                                                         id="btnReplace"
                                                         value="Replace"
                                                         action="#{wholesaleSaleNativeSqlController.replaceSelectedSubstitute}"
@@ -409,12 +411,12 @@
 
                                             <h:panelGroup id="selectPatient">
                                                 <h:panelGroup rendered="#{patientController.quickSearchPatientList ne null and not empty patientController.quickSearchPatientList}">
-                                                    <p:dataTable id="tblPatients" value="#{patientController.quickSearchPatientList}" var="ps">
+                                                    <p:dataTable styleClass="p-datatable-sm" id="tblPatients" value="#{patientController.quickSearchPatientList}" var="ps">
                                                         <p:column headerText="Name">#{ps.person.name}</p:column>
                                                         <p:column headerText="Phone Number">#{ps.person.phone}</p:column>
                                                         <p:column headerText="Mobile Number">#{ps.person.mobile}</p:column>
                                                         <p:column>
-                                                            <p:commandButton
+                                                            <p:commandButton icon="fa fa-check" styleClass="ui-button-success"
                                                                 id="btnSelectPt"
                                                                 action="#{patientController.selectQuickOneFromQuickSearchPatient(wholesaleSaleNativeSqlController)}"
                                                                 process="btnSelectPt"

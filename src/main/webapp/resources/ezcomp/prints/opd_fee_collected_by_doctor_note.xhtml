@@ -1,0 +1,47 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:cc="http://xmlns.jcp.org/jsf/composite"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+
+    <!--
+        OPD print label for a doctor fee that the doctor collects (#25900).
+        Shows next to the item, one line per fee marked "Collected by Doctor", with no amount.
+        It reads the saved flag on the bill fee only, so it prints nothing for bills without such a fee.
+        asRow=false: a block line, for use inside the item name cell.
+        asRow=true: a table row (used under the item in fee-breakdown prints).
+        breakdown=true: "[doctor] - Collected by the Doctor"; otherwise "[doctor] fee: collected by the doctor".
+    -->
+
+    <!-- INTERFACE -->
+    <cc:interface>
+        <cc:attribute name="billItem" type="com.divudi.core.entity.BillItem" required="true" />
+        <cc:attribute name="asRow" type="java.lang.Boolean" default="false" />
+        <cc:attribute name="breakdown" type="java.lang.Boolean" default="false" />
+    </cc:interface>
+
+    <!-- IMPLEMENTATION -->
+    <cc:implementation>
+        <ui:repeat value="#{cc.attrs.billItem.billFees}" var="cbf">
+            <h:panelGroup rendered="#{cbf.collectedByDoctorAtBilling and not cbf.retired}">
+                <h:panelGroup rendered="#{cc.attrs.asRow}">
+                    <tr>
+                        <td colspan="2" style="padding-left: 12px;">
+                            <h:outputLabel class="itemsBlockRightFiveFive" style="font-style: italic;"
+                                           value="#{cbf.staff ne null and cbf.staff.person ne null ? cbf.staff.person.nameWithTitle : 'Doctor'} &#8212; Collected by the Doctor"/>
+                        </td>
+                    </tr>
+                </h:panelGroup>
+                <h:panelGroup rendered="#{not cc.attrs.asRow}">
+                    <div style="font-size: 0.9em; font-style: italic;">
+                        <h:outputText rendered="#{cc.attrs.breakdown}"
+                                      value="#{cbf.staff ne null and cbf.staff.person ne null ? cbf.staff.person.nameWithTitle : 'Doctor'} &#8212; Collected by the Doctor"/>
+                        <h:outputText rendered="#{not cc.attrs.breakdown}"
+                                      value="#{cbf.staff ne null and cbf.staff.person ne null ? cbf.staff.person.nameWithTitle : 'Doctor'} fee: collected by the doctor"/>
+                    </div>
+                </h:panelGroup>
+            </h:panelGroup>
+        </ui:repeat>
+    </cc:implementation>
+</html>

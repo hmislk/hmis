@@ -169,6 +169,7 @@
                             <ez:menu />
                         </h:panelGroup>
                         <ez:user_icon_bar rendered="false"/>
+                        <ui:include src="/resources/template/maintenance_banner.xhtml" />
                         <h:panelGroup rendered="#{sessionController.passwordRequirementsFulfilled and not twoFactorAuthController.setupRequiredNow}" >
                             <ui:insert name="content" class="m-0 p-0 borderless" >
                             </ui:insert>

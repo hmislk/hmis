@@ -119,7 +119,9 @@ public class FormFormatController implements Serializable {
     }
 
     public List<FormFormat> getSelectedItems() {
-        selectedItems = getFacade().findByJpql("select c from FormFormat c where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
+        Map<String, Object> m = new HashMap<>();
+        m.put("sel", "%" + getSelectText().toUpperCase() + "%");
+        selectedItems = getFacade().findByJpql("select c from FormFormat c where c.retired=false and (c.name) like :sel order by c.name", m);
         return selectedItems;
     }
 

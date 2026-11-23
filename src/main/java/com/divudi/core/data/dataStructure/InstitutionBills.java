@@ -28,7 +28,22 @@ public class InstitutionBills {
     private double total;
     private double paidTotal;
     private double refundTotal;
+    /** Sum of approved write-offs of the bills (#25847). */
+    private double writtenOffTotal;
     double paidByPatient;
+
+    public double getWrittenOffTotal() {
+        return writtenOffTotal;
+    }
+
+    public void setWrittenOffTotal(double writtenOffTotal) {
+        this.writtenOffTotal = writtenOffTotal;
+    }
+
+    /** Total less (refunds + settlements + write-offs). */
+    public double getDueTotal() {
+        return total - (refundTotal + paidTotal + writtenOffTotal);
+    }
 
     public double getRefundTotal() {
         return refundTotal;

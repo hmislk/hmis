@@ -1,0 +1,112 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:body>
+        <ui:composition template="/payments/credit_company_pay_index.xhtml">
+            <ui:define name="admin">
+                <h:form id="writeOffForm">
+                    <h:outputText value="You do not have privilege to view write-offs." rendered="#{not creditCompanyWriteOffController.hasAnyWriteOffPrivilege()}"/>
+                    <h:panelGroup rendered="#{creditCompanyWriteOffController.hasAnyWriteOffPrivilege()}">
+                    <p:panel header="Credit Write-offs">
+                        <p:panelGrid columns="4" layout="tabular" styleClass="my-2 w-100">
+                            <p:outputLabel for="fromDate" value="From Date"/>
+                            <p:calendar id="fromDate" styleClass="w-100" inputStyleClass="w-100"
+                                        value="#{creditCompanyWriteOffController.fromDate}"
+                                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                            <p:outputLabel for="toDate" value="To Date"/>
+                            <p:calendar id="toDate" styleClass="w-100" inputStyleClass="w-100"
+                                        value="#{creditCompanyWriteOffController.toDate}"
+                                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                            <p:outputLabel for="company" value="Credit Company"/>
+                            <p:autoComplete id="company" styleClass="w-100" inputStyleClass="form-control"
+                                            value="#{creditCompanyWriteOffController.filterCompany}"
+                                            forceSelection="true"
+                                            completeMethod="#{creditCompanyController.completeCredit}"
+                                            var="ix" itemLabel="#{ix.name}" itemValue="#{ix}"
+                                            placeholder="All companies"/>
+                            <p:outputLabel for="status" value="Status"/>
+                            <p:selectOneMenu id="status" styleClass="w-100"
+                                             value="#{creditCompanyWriteOffController.filterStatus}">
+                                <f:selectItem itemLabel="All statuses" itemValue="#{null}" noSelectionOption="true"/>
+                                <f:selectItems value="#{creditCompanyWriteOffController.statuses}" var="s"
+                                               itemLabel="#{s.label}" itemValue="#{s}"/>
+                            </p:selectOneMenu>
+                            <p:outputLabel for="decisionText" value="Comment / reason"
+                                           rendered="#{creditCompanyWriteOffController.canApprove}"/>
+                            <p:inputText id="decisionText" styleClass="w-100"
+                                         title="Needed for Reject and Cancel; optional for Approve"
+                                         rendered="#{creditCompanyWriteOffController.canApprove}"
+                                         value="#{creditCompanyWriteOffController.decisionText}"/>
+                        </p:panelGrid>
+                        <h:panelGroup layout="block" styleClass="my-2">
+                            <p:commandButton value="Process" icon="fas fa-cogs" styleClass="ui-button-warning"
+                                             title="Search write-offs" ajax="false"
+                                             action="#{creditCompanyWriteOffController.search}"/>
+                        </h:panelGroup>
+
+                        <p:dataTable id="writeOffList" widgetVar="writeOffListWidget" rowKey="#{w.id}"
+                                     value="#{creditCompanyWriteOffController.rows}" var="w"
+                                     styleClass="p-datatable-sm" emptyMessage="No write-offs found">
+                            <p:column headerText="Bill No">
+                                <h:outputText value="#{w.bill.deptId}" style="user-select:all;"/>
+                            </p:column>
+                            <p:column headerText="Credit Company">
+                                <h:outputText value="#{w.bill.creditCompany.name}"/>
+                            </p:column>
+                            <p:column headerText="Claim No">
+                                <h:outputText value="#{w.claim.claimNo}"/>
+                            </p:column>
+                            <p:column headerText="Amount" styleClass="text-end">
+                                <h:outputText value="#{w.amount}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputText>
+                            </p:column>
+                            <p:column headerText="Reason">
+                                <h:outputText value="#{w.reason}"/>
+                            </p:column>
+                            <p:column headerText="Status">
+                                <h:outputText value="#{w.status.label}"/>
+                            </p:column>
+                            <p:column headerText="Requested By">
+                                <h:outputText value="#{w.requestedBy.webUserPerson.name}"/>
+                            </p:column>
+                            <p:column headerText="Requested">
+                                <h:outputText value="#{w.requestedAt}">
+                                    <f:convertDateTime pattern="yyyy MM dd HH:mm"/>
+                                </h:outputText>
+                            </p:column>
+                            <p:column headerText="Decided By">
+                                <h:outputText value="#{w.decidedBy.webUserPerson.name}"/>
+                            </p:column>
+                            <p:column headerText="Comment">
+                                <h:outputText value="#{empty w.cancelReason ? w.decisionComment : w.cancelReason}"/>
+                            </p:column>
+                            <p:column headerText="Actions" style="width:14rem" rendered="#{creditCompanyWriteOffController.canApprove}">
+                                <p:commandButton value="Approve" icon="fas fa-check" styleClass="ui-button-success ui-button-sm"
+                                                 title="Approve this write-off (a different user than the requester)" ajax="false"
+                                                 rendered="#{w.status.name() eq 'REQUESTED'}"
+                                                 onclick="return confirm('Approve this write-off? The amount is taken off the bill due.');"
+                                                 action="#{creditCompanyWriteOffController.approve(w.id)}"/>
+                                <p:commandButton value="Reject" icon="fas fa-ban" styleClass="ui-button-danger ui-button-sm mx-1"
+                                                 title="Reject this write-off (enter a comment)" ajax="false"
+                                                 rendered="#{w.status.name() eq 'REQUESTED'}"
+                                                 action="#{creditCompanyWriteOffController.reject(w.id)}"/>
+                                <p:commandButton value="Cancel" icon="fas fa-times" styleClass="ui-button-danger ui-button-sm"
+                                                 title="Cancel this approved write-off and restore the due (enter a reason)" ajax="false"
+                                                 rendered="#{w.status.name() eq 'APPROVED'}"
+                                                 onclick="return confirm('Cancel this write-off? The amount becomes due again.');"
+                                                 action="#{creditCompanyWriteOffController.cancel(w.id)}"/>
+                            </p:column>
+                        </p:dataTable>
+                    </p:panel>
+                    </h:panelGroup>
+                </h:form>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

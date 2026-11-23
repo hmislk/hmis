@@ -1,5 +1,5 @@
 // Demo: two-page lab report (enable option, format designer pages, data entry, report view).
-// Run from tmp/demo-videos/lab-two-page-reports/ :
+// Run from <OUT>/demo-videos/lab-two-page-reports/ :
 //   PT="Demo Alpha" HMIS_BASE=http://localhost:9090/rh/ DEPT="Main Laboratory" node flow.js
 // PT = name of the fictional test patient billed in setup (use a new one for every take).
 // Local or QA only: setup bills a fictional test patient, which is fine on a test environment and never on production.

@@ -1,7 +1,7 @@
 // Demo: Raw Text paper type for inpatient payment/deposit receipts (#24459 / PR #24460). Published: https://youtu.be/Hjr3UIW0_00
 // Films only a test admission (set BHT and PATIENT); each take adds one Rs 1 cash payment to it.
 // setup() turns Raw Text OFF for the login department; afterwards run restore.js (ON, width 36).
-// Run from tmp/demo-videos/<slug>/ :  HMIS_BASE=http://localhost:8080/rh/ DEPT=Inward BHT=<test BHT> PATIENT="<test patient name>" node flow.js
+// Run from <OUT>/demo-videos/<slug>/ :  HMIS_BASE=http://localhost:8080/rh/ DEPT=Inward BHT=<test BHT> PATIENT="<test patient name>" node flow.js
 const fs = require('fs');
 const { chromium } = require('playwright');
 const { run } = require('../../../.claude/skills/demo-video/scripts/recorder');

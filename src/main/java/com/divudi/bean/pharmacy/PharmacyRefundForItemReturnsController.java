@@ -94,6 +94,9 @@ import org.primefaces.event.TabChangeEvent;
 @SessionScoped
 public class PharmacyRefundForItemReturnsController implements Serializable, ControllerWithMultiplePayments {
 
+    @javax.ejb.EJB
+    private com.divudi.service.CreditCompanyClaimService creditCompanyClaimService;
+
     /**
      * Creates a new instance of PharmacySaleController
      */
@@ -2342,6 +2345,13 @@ public class PharmacyRefundForItemReturnsController implements Serializable, Con
     public void settleRefundForReturnItems() {
         editingQty = null;
 
+        // Also the original bill: its sale and pre-bill are the bills updateOriginalBillForRefund() changes.
+        String openClaimMessage = creditCompanyClaimService.openClaimRefusal(getItemReturnBill(),
+                getItemReturnBill() == null ? null : getItemReturnBill().getReferenceBill());
+        if (openClaimMessage != null) {
+            JsfUtil.addErrorMessage(openClaimMessage);
+            return;
+        }
         // Validate that payment total matches refund total
         if (validatePaymentRefundMatch()) {
             return; // Validation failed, error message already displayed

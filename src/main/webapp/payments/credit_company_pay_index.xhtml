@@ -63,6 +63,42 @@
                                                     action="/credit/credit_company_opd_due?faces-redirect=true">
                                                 </p:commandButton>
                                                 
+                                                <p:commandButton
+                                                    styleClass="w-100 ui-button-info ui-button-outlined"
+                                                    ajax="false"
+                                                    icon="fas fa-file-invoice"
+                                                    value="Credit Company Claims"
+                                                    title="Claims sent to credit companies for OPD credit bills"
+                                                    rendered="#{creditCompanyClaimController.hasAnyClaimPrivilege()}"
+                                                    action="#{creditCompanyClaimController.navigateToClaims}"/>
+
+                                                <p:commandButton
+                                                    styleClass="w-100 ui-button-info ui-button-outlined"
+                                                    ajax="false"
+                                                    icon="fas fa-list-check"
+                                                    value="Claims by Status"
+                                                    title="Claims by status with claimed, outstanding and received amounts"
+                                                    rendered="#{creditCompanyClaimReportController.reportsAllowed}"
+                                                    action="#{creditCompanyClaimReportController.navigateToClaimsByStatus}"/>
+
+                                                <p:commandButton
+                                                    styleClass="w-100 ui-button-info ui-button-outlined"
+                                                    ajax="false"
+                                                    icon="fas fa-hourglass-half"
+                                                    value="Claim Ageing"
+                                                    title="Outstanding on submitted claims by days since submitted"
+                                                    rendered="#{creditCompanyClaimReportController.reportsAllowed}"
+                                                    action="#{creditCompanyClaimReportController.navigateToClaimAgeing}"/>
+
+                                                <p:commandButton
+                                                    styleClass="w-100 ui-button-info ui-button-outlined"
+                                                    ajax="false"
+                                                    icon="fas fa-eraser"
+                                                    value="Credit Write-offs"
+                                                    title="Requests to write off the due of OPD credit bills, and their approval"
+                                                    rendered="#{creditCompanyWriteOffController.hasAnyWriteOffPrivilege()}"
+                                                    action="#{creditCompanyWriteOffController.navigateToWriteOffs}"/>
+
                                                 <p:commandButton 
                                                     styleClass="w-100 ui-button-info ui-button-outlined" 
                                                     ajax="false" icon="pi pi-calendar-times" 
@@ -83,7 +119,7 @@
 <!--                                                <p:commandButton styleClass="w-100 ui-button-success" ajax="false" icon="pi pi-check-square" value="Settle Credit for OPD Batch Bills" title="Settle outstanding OPD batch bills" action="/credit/credit_compnay_bill_opd?faces-redirect=true" actionListener="#{cashRecieveBillController.makeNull()}"/>
                                                 <p:commandButton styleClass="w-100 ui-button-success" ajax="false" icon="pi pi-briefcase" value="Settle Credit for OPD Package Bills" title="Settle outstanding OPD package bills" action="/credit/credit_compnay_package_bill_opd?faces-redirect=true" actionListener="#{cashRecieveBillController.makeNull()}"/>-->
                                                 <p:commandButton 
-                                                    styleClass="w-100 ui-button-info" 
+                                                    styleClass="w-100 ui-button-info ui-button-outlined" 
                                                     ajax="false" icon="pi pi-check" 
                                                     value="OPD Done Search" 
                                                     title="Review completed OPD settlements" 
