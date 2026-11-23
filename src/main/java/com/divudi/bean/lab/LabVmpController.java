@@ -8,6 +8,7 @@
  */
 package com.divudi.bean.lab;
 
+import com.divudi.service.ItemAuditHelper;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.AuditEventController;
 import com.divudi.service.AuditService;
@@ -525,6 +526,7 @@ public class LabVmpController implements Serializable {
             auditData.put("id", vmp.getId());
             auditData.put("name", vmp.getName());
             auditData.put("code", vmp.getCode());
+            ItemAuditHelper.putNameFields(auditData, vmp);
             auditData.put("retired", vmp.isRetired());
             auditData.put("inactive", vmp.isInactive());
             auditData.put("departmentType", vmp.getDepartmentType() != null

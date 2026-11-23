@@ -8,6 +8,7 @@
  */
 package com.divudi.bean.pharmacy;
 
+import com.divudi.service.ItemAuditHelper;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.AuditEventController;
 import com.divudi.core.util.JsfUtil;
@@ -425,6 +426,7 @@ public class AmppController implements Serializable {
             auditData.put("id", ampp.getId());
             auditData.put("name", ampp.getName());
             auditData.put("code", ampp.getCode());
+            ItemAuditHelper.putNameFields(auditData, ampp);
             auditData.put("retired", ampp.isRetired());
             auditData.put("inactive", ampp.isInactive());
             auditData.put("departmentType", ampp.getDepartmentType() != null ?
@@ -451,9 +453,11 @@ public class AmppController implements Serializable {
 
             // Log audit for update
             Map<String, Object> afterData = createAuditMap(getCurrent());
-            auditService.logAudit(beforeData, afterData,
-                    getSessionController().getLoggedUser(),
-                    "Ampp", "Update AMPP", getCurrent().getId());
+            if (ItemAuditHelper.differs(beforeData, afterData)) {
+                auditService.logAudit(beforeData, afterData,
+                        getSessionController().getLoggedUser(),
+                        "Ampp", "Update AMPP", getCurrent().getId());
+            }
 
             JsfUtil.addSuccessMessage("Updated Successfully.");
         } else {

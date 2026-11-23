@@ -5,6 +5,7 @@
  */
 package com.divudi.service.service;
 
+import com.divudi.service.ItemAuditHelper;
 import com.divudi.core.data.FeeType;
 import com.divudi.core.data.dto.service.ItemFeeCreateRequestDTO;
 import com.divudi.core.data.dto.service.ItemFeeDTO;
@@ -62,6 +63,8 @@ import java.util.Map;
  */
 @Stateless
 public class ServiceApiService implements Serializable {
+    @EJB
+    private ItemAuditHelper itemAuditHelper;
 
     @EJB
     private ServiceFacade serviceFacade;
@@ -346,12 +349,14 @@ public class ServiceApiService implements Serializable {
         // below would come back with no id.
         if ("Inward".equalsIgnoreCase(svcType)) {
             inwardServiceFacade.createAndFlush((InwardService) service);
+            itemAuditHelper.logCreate(service, user, "API");
             // Set self-references after persist
             service.setBilledAs(service);
             service.setReportedAs(service);
             inwardServiceFacade.edit((InwardService) service);
         } else {
             serviceFacade.createAndFlush(service);
+            itemAuditHelper.logCreate(service, user, "API");
             // Set self-references after persist
             service.setBilledAs(service);
             service.setReportedAs(service);
@@ -382,87 +387,97 @@ public class ServiceApiService implements Serializable {
         }
 
         Service service = loadAndValidateService(id);
+        Map<String, Object> beforeNames = ItemAuditHelper.snapshot(service);
+        try {
 
-        if (request.getName() != null && !request.getName().trim().isEmpty()) {
-            service.setName(request.getName().trim());
-        }
-        if (request.getCode() != null && !request.getCode().trim().isEmpty()) {
-            service.setCode(request.getCode().trim());
-        }
-        if (request.getPrintName() != null) {
-            service.setPrintName(request.getPrintName());
-        }
-        if (request.getFullName() != null) {
-            service.setFullName(request.getFullName());
-        }
-        if (request.getInwardChargeType() != null && !request.getInwardChargeType().trim().isEmpty()) {
-            try {
-                service.setInwardChargeType(InwardChargeType.valueOf(request.getInwardChargeType().trim()));
-            } catch (IllegalArgumentException e) {
-                throw new Exception("Invalid inwardChargeType: " + request.getInwardChargeType());
+            if (request.getName() != null && !request.getName().trim().isEmpty()) {
+                service.setName(request.getName().trim());
             }
-        }
-        if (request.getInactive() != null) {
-            service.setInactive(request.getInactive());
-        }
-        if (request.getDiscountAllowed() != null) {
-            service.setDiscountAllowed(request.getDiscountAllowed());
-        }
-        if (request.getUserChangable() != null) {
-            service.setUserChangable(request.getUserChangable());
-        }
-        if (request.getChargesVisibleForInward() != null) {
-            service.setChargesVisibleForInward(request.getChargesVisibleForInward());
-        }
-        if (request.getMarginNotAllowed() != null) {
-            service.setMarginNotAllowed(request.getMarginNotAllowed());
-        }
-        if (request.getRequestForQuentity() != null) {
-            service.setRequestForQuentity(request.getRequestForQuentity());
-        }
-        if (request.getPatientNotRequired() != null) {
-            service.setPatientNotRequired(request.getPatientNotRequired());
-        }
-        if (request.getVatable() != null) {
-            service.setVatable(request.getVatable());
-        }
-        if (request.getVatPercentage() != null) {
-            validateVatPercentage(request.getVatPercentage());
-            service.setVatPercentage(request.getVatPercentage());
-        }
+            if (request.getCode() != null && !request.getCode().trim().isEmpty()) {
+                service.setCode(request.getCode().trim());
+            }
+            if (request.getPrintName() != null) {
+                service.setPrintName(request.getPrintName());
+            }
+            if (request.getFullName() != null) {
+                service.setFullName(request.getFullName());
+            }
+            if (request.getInwardChargeType() != null && !request.getInwardChargeType().trim().isEmpty()) {
+                try {
+                    service.setInwardChargeType(InwardChargeType.valueOf(request.getInwardChargeType().trim()));
+                } catch (IllegalArgumentException e) {
+                    throw new Exception("Invalid inwardChargeType: " + request.getInwardChargeType());
+                }
+            }
+            if (request.getInactive() != null) {
+                service.setInactive(request.getInactive());
+            }
+            if (request.getDiscountAllowed() != null) {
+                service.setDiscountAllowed(request.getDiscountAllowed());
+            }
+            if (request.getUserChangable() != null) {
+                service.setUserChangable(request.getUserChangable());
+            }
+            if (request.getChargesVisibleForInward() != null) {
+                service.setChargesVisibleForInward(request.getChargesVisibleForInward());
+            }
+            if (request.getMarginNotAllowed() != null) {
+                service.setMarginNotAllowed(request.getMarginNotAllowed());
+            }
+            if (request.getRequestForQuentity() != null) {
+                service.setRequestForQuentity(request.getRequestForQuentity());
+            }
+            if (request.getPatientNotRequired() != null) {
+                service.setPatientNotRequired(request.getPatientNotRequired());
+            }
+            if (request.getVatable() != null) {
+                service.setVatable(request.getVatable());
+            }
+            if (request.getVatPercentage() != null) {
+                validateVatPercentage(request.getVatPercentage());
+                service.setVatPercentage(request.getVatPercentage());
+            }
 
-        if (request.getCategoryId() != null) {
-            // Category (not ServiceCategoryFacade) is used here since a service's category
-            // can be any Category subtype already in use in the system (Category,
-            // ServiceCategory, ...), not only rows created specifically as ServiceCategory.
-            Category category = categoryFacade.find(request.getCategoryId());
-            if (category == null || category.isRetired()) {
-                throw new Exception("Category not found with ID: " + request.getCategoryId());
+            if (request.getCategoryId() != null) {
+                // Category (not ServiceCategoryFacade) is used here since a service's category
+                // can be any Category subtype already in use in the system (Category,
+                // ServiceCategory, ...), not only rows created specifically as ServiceCategory.
+                Category category = categoryFacade.find(request.getCategoryId());
+                if (category == null || category.isRetired()) {
+                    throw new Exception("Category not found with ID: " + request.getCategoryId());
+                }
+                service.setCategory(category);
             }
-            service.setCategory(category);
-        }
-        if (request.getFinancialCategoryId() != null) {
-            service.setFinancialCategory(loadFinancialCategory(request.getFinancialCategoryId()));
-        }
-        if (request.getInstitutionId() != null) {
-            Institution institution = institutionFacade.find(request.getInstitutionId());
-            if (institution == null) {
-                throw new Exception("Institution not found with ID: " + request.getInstitutionId());
+            if (request.getFinancialCategoryId() != null) {
+                service.setFinancialCategory(loadFinancialCategory(request.getFinancialCategoryId()));
             }
-            service.setInstitution(institution);
-        }
-        if (request.getDepartmentId() != null) {
-            Department department = departmentFacade.find(request.getDepartmentId());
-            if (department == null) {
-                throw new Exception("Department not found with ID: " + request.getDepartmentId());
+            if (request.getInstitutionId() != null) {
+                Institution institution = institutionFacade.find(request.getInstitutionId());
+                if (institution == null) {
+                    throw new Exception("Institution not found with ID: " + request.getInstitutionId());
+                }
+                service.setInstitution(institution);
             }
-            service.setDepartment(department);
-        }
+            if (request.getDepartmentId() != null) {
+                Department department = departmentFacade.find(request.getDepartmentId());
+                if (department == null) {
+                    throw new Exception("Department not found with ID: " + request.getDepartmentId());
+                }
+                service.setDepartment(department);
+            }
 
+        } catch (RuntimeException e) {
+            throw e;
+        } catch (Exception e) {
+            // Earlier setters are already on the managed entity and will commit; audit them before rejecting.
+            itemAuditHelper.logUpdate(beforeNames, service, user, "API");
+            throw e;
+        }
         service.setEditer(user);
         service.setEditedAt(Calendar.getInstance().getTime());
 
         saveService(service);
+        itemAuditHelper.logUpdate(beforeNames, service, user, "API");
 
         List<ItemFee> fees = fetchFeesForItem(service);
         return buildServiceResponseDTO(service, fees, "Service updated successfully");

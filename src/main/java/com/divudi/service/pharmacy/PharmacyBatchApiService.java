@@ -5,6 +5,7 @@
  */
 package com.divudi.service.pharmacy;
 
+import com.divudi.service.ItemAuditHelper;
 import com.divudi.core.data.ItemType;
 import com.divudi.core.data.DepartmentType;
 import com.divudi.core.data.dto.adjustment.AdjustmentResponseDTO;
@@ -39,6 +40,8 @@ import javax.persistence.TemporalType;
 @Named
 @RequestScoped
 public class PharmacyBatchApiService implements Serializable {
+    @EJB
+    private ItemAuditHelper itemAuditHelper;
 
     @EJB
     private AmpFacade ampFacade;
@@ -350,6 +353,7 @@ public class PharmacyBatchApiService implements Serializable {
         }
 
         ampFacade.createAndFlush(amp); // flush so getId() in the response is guaranteed populated
+        itemAuditHelper.logCreate(amp, user, "API");
         return amp;
     }
 
