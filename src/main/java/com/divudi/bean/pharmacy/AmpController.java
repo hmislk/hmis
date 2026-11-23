@@ -122,6 +122,7 @@ public class AmpController implements Serializable {
     private String retireReason;
     private double retireStockQty;
     private long retireBillItemCount;
+    private Long retirePreparedAmpId;
 
     // Audit-related injections
     @Inject
@@ -1154,10 +1155,12 @@ public class AmpController implements Serializable {
         retireReason = null;
         retireStockQty = 0;
         retireBillItemCount = 0;
+        retirePreparedAmpId = null;
         if (current == null || current.getId() == null) {
             JsfUtil.addErrorMessage("No AMP Selected to Retire");
             return;
         }
+        retirePreparedAmpId = current.getId();
         retireStockQty = fetchStockQty(current);
         Map<String, Object> m = new HashMap<>();
         m.put("i", current);
@@ -1190,6 +1193,27 @@ public class AmpController implements Serializable {
             JsfUtil.addErrorMessage("No AMP Selected to Delete");
             return;
         }
+        if (current.getId() == null || !current.getId().equals(retirePreparedAmpId)) {
+            JsfUtil.addErrorMessage("The selected AMP changed. Open the retire dialog again.");
+            return;
+        }
+        retireCurrent();
+    }
+
+    /**
+     * Retires the selected AMP without the warning dialog (optician page,
+     * where the item is chosen and retired in the same request). A reason is
+     * still mandatory.
+     */
+    public void deleteWithReason() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("No AMP Selected to Delete");
+            return;
+        }
+        retireCurrent();
+    }
+
+    private void retireCurrent() {
         if (retireReason == null || retireReason.trim().isEmpty()) {
             JsfUtil.addErrorMessage("Please enter the reason for retiring this item");
             return;
@@ -1222,6 +1246,7 @@ public class AmpController implements Serializable {
         selectedAmpDto = null; // Clear DTO selection
         ampAuditEvents = null; // Clear audit events
         retireReason = null;
+        retirePreparedAmpId = null;
         getCurrent();
         editable = false;
     }
@@ -1244,6 +1269,10 @@ public class AmpController implements Serializable {
             return;
         }
         Map<String, Object> beforeData = createAuditMap(current);
+        if (checkItemCode(current.getCode(), current)) {
+            JsfUtil.addErrorMessage("Another active item already uses this code. Change that item's code first.");
+            return;
+        }
         String reason = retireReason.trim();
         current.setRetired(false);
         current.setRetiredAt(null);
@@ -1282,7 +1311,7 @@ public class AmpController implements Serializable {
     }
 
     public boolean isRetireWarningNeeded() {
-        return retireStockQty > 0 || retireBillItemCount > 0;
+        return retireStockQty != 0 || retireBillItemCount > 0;
     }
 
     public boolean isUnretireAllowed() {
@@ -1308,6 +1337,9 @@ public class AmpController implements Serializable {
             if ("active".equals(filterStatus)) {
                 jpql += "and a.retired=:retired ";
                 params.put("retired", false);
+            } else if ("retired".equals(filterStatus)) {
+                jpql += "and a.retired=:retired ";
+                params.put("retired", true);
             } else if ("inactive".equals(filterStatus)) {
                 jpql += "and a.retired=:retired ";
                 params.put("retired", true);
