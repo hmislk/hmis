@@ -34,7 +34,7 @@ or by § number below, and read only that section.
   one.** A named test environment (local, QA, `*-local-staging`) is not a question:
   go there, create fictional test data freely (§15a), and ask only for a missing
   URL or login. Never assume which deployment or database a local URL points at. Credentials live **outside** the
-  repo (`C:\Credentials\`) — never paste them into docs, code, or commit
+  repo (the credentials folder outside the repo) — never paste them into docs, code, or commit
   messages.
 - The app must already be deployed and running. Playwright does **not** build or
   deploy — it only drives a browser against a running instance.
@@ -54,7 +54,7 @@ laptop. It does **not** apply to shared/staging/production Payara, where the
 still governs.
 
 ```powershell
-# Paths vary per machine — check C:\Credentials\Credentials.txt for your local values
+# Paths vary per machine — check the local credentials file outside the repo for your local values
 $env:JAVA_HOME="<path-to-jdk>"
 & "<path-to-mvn.cmd>" clean package -DskipTests
 & "<path-to-asadmin.bat>" [--port <admin-port>] redeploy --name rh "<project-root>\target\rh-3.0.0.war"
@@ -80,8 +80,8 @@ $env:JAVA_HOME="<path-to-jdk>"
   (the name/context root you confirmed above, not a hardcoded guess).
 - **Running `asadmin` from Git Bash: set `MSYS_NO_PATHCONV=1`.** MSYS rewrites any
   argument that looks like a Unix path, so `--contextroot /rh` is handed to Payara
-  as `D:/Program Files/Git/rh`. The deploy then fails deep inside JSF parsing —
-  `Unable to parse document 'jndi:/server/D:/Program%20Files/Git/rh/WEB-INF/faces-config.xml'`
+  as `<install-dir>/rh`. The deploy then fails deep inside JSF parsing —
+  `Unable to parse document 'jndi:/server/<install-dir>/rh/WEB-INF/faces-config.xml'`
   — which reads like a broken WAR and is nothing of the sort. Worse, that failed
   `redeploy` leaves the app *undeployed*, so the retry fails with "not deployed" and
   you have to `deploy` fresh. Prefix the command:
@@ -382,7 +382,7 @@ before concluding the underlying JPQL is wrong.
 ## 6. Verify against the database
 
 After the UI flow, confirm correctness directly in the DB (the local copy, with
-credentials from `C:\Credentials\`). For pharmacy transfers the key checks are:
+credentials from the credentials folder outside the repo). For pharmacy transfers the key checks are:
 
 - **No duplicate bill items:** group `billitem` by `ITEM_ID + ITEMBATCH_ID`;
   every combination should appear exactly once. Confirm the
@@ -561,7 +561,7 @@ and confirm which environment is meant, rather than proceeding carefully.
 Say what you created, so the user can decide:
 
 > Test data created on rhLocal: patient ZZ TEST THEATRE PATIENT, admission
-> Day Case/3, settled service bill RHDDC006INWSER/71 (5.00).
+> Day Case/3, a ZZ TEST settled service bill.
 
 That sentence is the whole obligation. Naming records with an obvious test
 prefix (`ZZ TEST ...`) is what makes them harmless to leave.
