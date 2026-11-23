@@ -13,7 +13,92 @@
 
 
 
-                    <p:panel header="AMP Management" styleClass="mb-3">
+                    <p:panel styleClass="mb-3">
+                    <f:facet name="header">
+                        <div class="d-flex justify-content-between align-items-center w-100">
+                            <div class="d-flex align-items-center gap-2">
+                                <h:outputText styleClass="fa fa-pills"/>
+                                <h:outputText value="AMP Management"/>
+                            </div>
+                            <h:panelGroup id="actionButtons" layout="block" styleClass="d-flex align-items-center gap-2">
+                                <p:commandButton
+                                    id="btnViewList"
+                                    value="All AMPs List"
+                                    action="#{ampController.navigateToAmpList()}"
+                                    ajax="false"
+                                    styleClass="ui-button-info ui-button-outlined"
+                                    icon="fas fa-list"
+                                    title="View and download the full list of AMPs"/>
+                                <p:commandButton
+                                    id="btnAuditEvents"
+                                    value="Audit History"
+                                    action="#{ampController.navigateToAmpAuditEvents()}"
+                                    icon="fas fa-history"
+                                    ajax="false"
+                                    styleClass="ui-button-info ui-button-outlined"
+                                    disabled="#{ampController.current.id eq null}"
+                                    title="View audit history for this AMP record"/>
+                                <p:commandButton
+                                    id="btnDelete"
+                                    value="Retire Selected"
+                                    action="#{ampController.prepareRetire()}"
+                                    icon="fas fa-trash"
+                                    update="form:msg retireDlg"
+                                    process="@this"
+                                    oncomplete="if (args &amp;&amp; args.canRetire) PF('retireDlgWidget').show();"
+                                    styleClass="ui-button-danger"
+                                    rendered="#{not ampController.current.retired}"
+                                    disabled="#{ampController.editable or ampController.current.id eq null}"
+                                    title="Retire selected AMP record (a reason is required)"/>
+                                <p:commandButton
+                                    id="btnUnretire"
+                                    value="Un-retire Selected"
+                                    action="#{ampController.prepareUnretire()}"
+                                    icon="fas fa-undo"
+                                    update="form:msg unretireDlg"
+                                    process="@this"
+                                    oncomplete="if (args &amp;&amp; args.canUnretire) PF('unretireDlgWidget').show();"
+                                    styleClass="ui-button-success"
+                                    rendered="#{ampController.current.retired and ampController.unretireAllowed}"
+                                    title="Reverse the retirement of this AMP (a reason is required)"/>
+                                <p:commandButton
+                                    id="btnToggleStatus"
+                                    value="#{ampController.toggleStatusButtonText}"
+                                    action="#{ampController.toggleAmpStatus()}"
+                                    icon="#{ampController.toggleStatusButtonIcon}"
+                                    update="form:msg acAmp detailPanel actionButtons statusFilterPanel filterStatusLabel"
+                                    process="@this"
+                                    styleClass="#{ampController.toggleStatusButtonClass} amp-toggle-status"
+                                    disabled="#{ampController.editable or ampController.current.id eq null or ampController.current.retired}"
+                                    title="Toggle AMP active/inactive status">
+                                    <p:confirm
+                                        header="Confirm Status Change"
+                                        message="Are you sure you want to #{ampController.current.inactive ? 'ACTIVATE' : 'DEACTIVATE'} this AMP: #{ampController.current.name}?"
+                                        icon="fas fa-question-circle" />
+                        </p:commandButton>
+                                <p:commandButton
+                                    id="btnEdit"
+                                    value="Edit Selected"
+                                    action="#{ampController.edit()}"
+                                    icon="fas fa-edit"
+                                    update="detailPanel acAmp actionButtons statusFilterPanel"
+                                    process="@this"
+                                    styleClass="ui-button-warning"
+                                    disabled="#{ampController.editable or ampController.current.id eq null or ampController.current.retired}"
+                                    title="Edit selected AMP record"/>
+                                <p:commandButton
+                                    id="btnAdd"
+                                    value="Add New"
+                                    action="#{ampController.prepareAdd()}"
+                                    styleClass="ui-button-success" style="min-width:120px"
+                                    update="acAmp detailPanel actionButtons statusFilterPanel"
+                                    icon="fas fa-plus"
+                                    process="@this"
+                                    disabled="#{ampController.editable}"
+                                    title="Add a new AMP record"/>
+                            </h:panelGroup>
+                        </div>
+                    </f:facet>
 
                         <div class="row" >
                             <div class="col-6" >
@@ -106,87 +191,6 @@
                                 </div>
 
 
-                                <h:panelGroup id="actionButtons">
-                                    <p:commandButton
-                                        id="btnAdd"
-                                        value="Add New"
-                                        action="#{ampController.prepareAdd()}"
-                                        styleClass="ui-button-success m-1"
-                                        update="acAmp detailPanel actionButtons statusFilterPanel"
-                                        icon="fas fa-plus"
-                                        process="@this"
-                                        disabled="#{ampController.editable}"
-                                        title="Add a new AMP record"/>
-
-                                    <p:commandButton
-                                        id="btnEdit"
-                                        value="Edit Selected"
-                                        action="#{ampController.edit()}"
-                                        icon="fas fa-edit"
-                                        update="detailPanel acAmp actionButtons statusFilterPanel"
-                                        process="@this"
-                                        styleClass="ui-button-warning m-1"
-                                        disabled="#{ampController.editable or ampController.current.id eq null or ampController.current.retired}"
-                                        title="Edit selected AMP record"/>
-
-                                    <p:commandButton
-                                        id="btnDelete"
-                                        value="Retire Selected"
-                                        action="#{ampController.prepareRetire()}"
-                                        icon="fas fa-trash"
-                                        update="form:msg retireDlg"
-                                        process="@this"
-                                        oncomplete="if (args &amp;&amp; args.canRetire) PF('retireDlgWidget').show();"
-                                        styleClass="ui-button-danger m-1"
-                                        rendered="#{not ampController.current.retired}"
-                                        disabled="#{ampController.editable or ampController.current.id eq null}"
-                                        title="Retire selected AMP record (a reason is required)"/>
-
-                                    <p:commandButton
-                                        id="btnUnretire"
-                                        value="Un-retire Selected"
-                                        action="#{ampController.prepareUnretire()}"
-                                        icon="fas fa-undo"
-                                        update="form:msg unretireDlg"
-                                        process="@this"
-                                        oncomplete="if (args &amp;&amp; args.canUnretire) PF('unretireDlgWidget').show();"
-                                        styleClass="ui-button-success m-1"
-                                        rendered="#{ampController.current.retired and ampController.unretireAllowed}"
-                                        title="Reverse the retirement of this AMP (a reason is required)"/>
-
-                                    <p:commandButton
-                                        id="btnToggleStatus"
-                                        value="#{ampController.toggleStatusButtonText}"
-                                        action="#{ampController.toggleAmpStatus()}"
-                                        icon="#{ampController.toggleStatusButtonIcon}"
-                                        update="form:msg acAmp detailPanel actionButtons statusFilterPanel filterStatusLabel"
-                                        process="@this"
-                                        styleClass="#{ampController.toggleStatusButtonClass} amp-toggle-status m-1"
-                                        disabled="#{ampController.editable or ampController.current.id eq null or ampController.current.retired}"
-                                        title="Toggle AMP active/inactive status">
-                                        <p:confirm
-                                            header="Confirm Status Change"
-                                            message="Are you sure you want to #{ampController.current.inactive ? 'ACTIVATE' : 'DEACTIVATE'} this AMP: #{ampController.current.name}?"
-                                            icon="fas fa-question-circle" />
-                                    </p:commandButton>
-                                    <p:commandButton
-                                        id="btnAuditEvents"
-                                        value="Audit History"
-                                        action="#{ampController.navigateToAmpAuditEvents()}"
-                                        icon="fas fa-history"
-                                        ajax="false"
-                                        styleClass="ui-button-info m-1"
-                                        disabled="#{ampController.current.id eq null}"
-                                        title="View audit history for this AMP record"/>
-                                    <p:commandButton
-                                        id="btnViewList"
-                                        value="All AMPs List"
-                                        action="#{ampController.navigateToAmpList()}"
-                                        ajax="false"
-                                        styleClass="ui-button-secondary m-1"
-                                        icon="fas fa-list"
-                                        title="View and download the full list of AMPs"/>
-                                </h:panelGroup>
 
 
                             </div>
@@ -223,16 +227,6 @@
                                             <!-- Buttons - Right -->
                                             <div class="d-flex align-items-center gap-1">
                                                 <p:commandButton
-                                                    id="btnSave"
-                                                    value="Save"
-                                                    action="#{ampController.save}"
-                                                    update="form:msg acAmp detailPanel actionButtons statusFilterPanel"
-                                                    process="@form"
-                                                    styleClass="ui-button-success"
-                                                    icon="fas fa-save"
-                                                    disabled="#{!ampController.editable}"
-                                                    title="Save AMP record"/>
-                                                <p:commandButton
                                                     id="btnCancel"
                                                     value="Cancel"
                                                     action="#{ampController.cancel()}"
@@ -242,6 +236,16 @@
                                                     icon="fas fa-times"
                                                     disabled="#{!ampController.editable}"
                                                     title="Cancel changes and clear form"/>
+                                                <p:commandButton
+                                                    id="btnSave"
+                                                    value="Save"
+                                                    action="#{ampController.save}"
+                                                    update="form:msg acAmp detailPanel actionButtons statusFilterPanel"
+                                                    process="@form"
+                                                    styleClass="ui-button-success" style="min-width:120px"
+                                                    icon="fas fa-save"
+                                                    disabled="#{!ampController.editable}"
+                                                    title="Save AMP record"/>
                                             </div>
                                         </div>
                                     </f:facet>
