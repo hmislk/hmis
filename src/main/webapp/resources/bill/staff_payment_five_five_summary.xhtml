@@ -12,6 +12,7 @@
         <cc:attribute name="controller" />
         <cc:attribute name="bill" type="com.divudi.core.entity.Bill" />
         <cc:attribute name="dup" type="java.lang.Boolean"/>
+        <cc:attribute name="patientFeesLabel" type="java.lang.String" default="Patient Consultation Fees"/>
     </cc:interface>
 
     <!-- IMPLEMENTATION -->
@@ -74,7 +75,7 @@
                     <table width="100%" style="width: 100%;" >
                         <tr>
                             <td class="totalsBlock" style="text-align: left; width: 80%;">
-                                <h:outputLabel value="Patient Consultation Fees" />
+                                <h:outputLabel value="#{cc.attrs.patientFeesLabel}" />
                             </td>
                             <td class="totalsBlock" style="text-align: right!important; width: 20%;">
                                 <h:outputLabel value="#{billBeanController.calculatePatientRelatedBillItemsTotal(cc.attrs.bill)}" >

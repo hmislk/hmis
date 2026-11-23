@@ -88,6 +88,19 @@ A print or settings dialog must use the **same** controller as the page or templ
 | --- | --- | --- | --- |
 | `Inward Professional Fee - Allow Fee Collected By Doctor` | Boolean | `false` | Controls whether the inward professional fee add page offers a "Collected by Doctor" switch beside FOC, that is, whether NEW fees can be marked. A fee added with it on is saved with `BillFee.collectedByDoctorAtBilling` and is not payable by the hospital: it is left out of the patient bill total, due and claimable amount (final and interim) and out of the payment due lists, makes no Payment/drawer/cashbook entry, and patient bills print only the note "Fees Collected by the Doctor" outside the net total. `paidValue` and `settleValue` stay 0 (the fee is not recorded as paid), so the bill can still be cancelled. Turning the option off only stops new fees being marked; fees already marked keep the saved flag, stay excluded and still print the note. Fees flagged on the surgery payment page (`feeCollectedByDoctor`) behave as before, with the key on or off. See issue #17490. |
 
+## Inward Professional Payment Vouchers
+
+Pages: Professional Payment - Inward (`inward/inward_bill_professional_payment.xhtml`) and its reprint (`inward/inward_reprint_staff_payment.xhtml`). See issue #25999.
+
+| Key | Type | Default | Description |
+| --- | --- | --- | --- |
+| `Inward Doctor Payment - Show Bill Format Tabs and Paper Settings` | Boolean (application scope) | `false` | When `true`, both pages show the voucher in tabs (Detailed, Summarised, Summary, Individual), like Professional Payment - OPD, and a Settings button (privilege `ChangeReceiptPrintingPaperTypes`) to choose the paper. When `false`, the pages print as before, from the `Inward Doctor payment bill is a ...` keys. |
+| `Inward Doctor Payment Tabs - Paper is A4` | Boolean (application scope) | `true` | With the tabs on, prints each tab on A4. The Detailed tab uses the inward A4 voucher (BHT number and surgery). |
+| `Inward Doctor Payment Tabs - Paper is Five Five` | Boolean (application scope) | `false` | With the tabs on, prints each tab on 5x5 paper. |
+| `Inward Doctor Payment Tabs - Paper is POS` | Boolean (application scope) | `false` | With the tabs on, prints each tab on POS paper. |
+
+The Summarised, Summary and POS vouchers are shared with OPD and still read the OPD keys `Hide the details on the OPD Doctor Payment Bill` and `Hide the Header Details on the OPD Doctor Payment 5x5 Bill`.
+
 ## OPD Billing Fees
 
 | Key | Type | Default | Description |
