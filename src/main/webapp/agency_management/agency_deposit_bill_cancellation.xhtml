@@ -25,9 +25,19 @@
                                     <h:outputLabel value="#{agentPaymentReceiveSearchController.bill.netTotal}" ></h:outputLabel>
                                 </p:panelGrid>
                             </p:panel>
-                            <p:panel  >
-                                <f:facet name="header" >
-                                    <p:outputLabel value="Cancellation" ></p:outputLabel>
+                            <p:panel>
+                                <f:facet name="header">
+                                    <div class="d-flex justify-content-between align-items-center w-100">
+                                        <p:outputLabel value="Cancellation"></p:outputLabel>
+                                        <div class="d-flex gap-2 align-items-center">
+                                            <p:commandButton
+                                                styleClass="ui-button-danger" icon="fa fa-ban"
+                                                ajax="false" value="Cancel" action="#{agentPaymentReceiveSearchController.cancelAgencyDepositBill}"
+                                                disabled="#{agentPaymentReceiveSearchController.billACancellationBill}"
+                                                onclick="if (!confirm('Are you sure you want to Cancel This Bill ?'))
+                                                    return false;"/>
+                                        </div>
+                                    </div>
                                 </f:facet>
                                 <p:panelGrid columns="2" >
                                     <p:outputLabel value="Cancel Payment Method" ></p:outputLabel>
@@ -37,14 +47,6 @@
                                     </p:selectOneMenu>
                                     <p:outputLabel value="Comments" ></p:outputLabel>
                                     <p:inputTextarea value="#{agentPaymentReceiveSearchController.comment}"/>  
-                                    <p:spacer ></p:spacer>
-                                    
-                                    <p:commandButton
-                                        styleClass="w-100 ui-button-warning"
-                                        ajax="false" value="Cancel" action="#{agentPaymentReceiveSearchController.cancelAgencyDepositBill}"
-                                        disabled="#{agentPaymentReceiveSearchController.billACancellationBill}"
-                                        onclick="if (!confirm('Are you sure you want to Cancel This Bill ?'))
-                                                    return false;"/>
                                 </p:panelGrid>
                             </p:panel>
                         </p:panelGrid>

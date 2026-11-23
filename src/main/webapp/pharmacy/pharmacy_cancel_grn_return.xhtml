@@ -19,13 +19,20 @@
 
                 <h:form>
                     <h:panelGroup rendered="#{!pharmacyBillSearch.printPreview}" styleClass="alignTop" >
-                        <p:panel  header="Cancellation">
+                        <p:panel>
+                            <f:facet name="header">
+                                <div class="d-flex justify-content-between align-items-center w-100">
+                                    <h:outputText value="Cancellation"/>
+                                    <div class="d-flex gap-2 align-items-center">
+                                        <p:commandButton value="Cancel" ajax="false" icon="fa fa-ban" styleClass="ui-button-danger"
+                                                         action="#{pharmacyBillSearch.pharmacyGrnReturnCancel()}"
+                                                         disabled="#{not webUserController.hasPrivilege('PharmacyGrnReturnCancel') or pharmacyBillSearch.billACancellationBill}"/>
+                                    </div>
+                                </div>
+                            </f:facet>
                             <p:selectOneMenu   id="cmbPs" value="#{pharmacyBillSearch.bill.paymentMethod}" required="true"  >
                                 <f:selectItems value="#{enumController.paymentMethods}"/>
                             </p:selectOneMenu>
-                            <h:commandButton value="Cancel" action="#{pharmacyBillSearch.pharmacyGrnReturnCancel()}"
-                                             disabled="#{not webUserController.hasPrivilege('PharmacyGrnReturnCancel') or pharmacyBillSearch.billACancellationBill}" >
-                            </h:commandButton>
                         </p:panel>
                         <p:panelGrid columns="2" style="width: 100%;">
                             <p:panel header="Supplier Detail">
@@ -48,7 +55,7 @@
                             </p:panel>
                         </p:panelGrid>
                         <p:panel header="Bill Item Detail">
-                            <p:dataTable rowIndexVar="rowIndex" value="#{pharmacyBillSearch.billItems}" var="bip" >
+                            <p:dataTable styleClass="p-datatable-sm" rowIndexVar="rowIndex" value="#{pharmacyBillSearch.billItems}" var="bip" >
                                 <p:column>
                                     <f:facet name="header">No</f:facet>
                                     <h:outputLabel value="#{rowIndex+1}"/>
@@ -70,8 +77,8 @@
 
 
                     <h:panelGroup rendered="#{pharmacyBillSearch.printPreview}" id="panelPrint" styleClass="noBorder summeryBorder" >
-                        <p:commandButton ajax="false" value="Print"  
-                                         styleClass="noPrintButton" >
+                        <p:commandButton ajax="false" value="Print" icon="fas fa-print"
+                                         styleClass="noPrintButton ui-button-info" >
                             <p:printer target="panelPrint" />
                         </p:commandButton>
 <!--                        <pharmacy:grnReturn bill="#{pharmacyBillSearch.bill.cancelledBill}"/>-->
