@@ -2109,7 +2109,29 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
         this.cashTransactionBean = cashTransactionBean;
     }
 
-    public void settleReturnBillWithPay() {
+    /**
+     * Atomically marks the item-return bill as paid, the same claim
+     * PharmacyRefundForItemReturnsController uses, so only one request (in any
+     * session, on either refund screen) can pay a return. If a later step fails
+     * the claim stays set, so the return is not refunded twice (#25083).
+     */
+    private boolean claimItemReturnForPaymentOrReportError() {
+        Map<String, Object> params = new HashMap<>();
+        params.put("id", getPreBill().getId());
+        int updated = getBillFacade().updateByJpql(
+                "UPDATE Bill b SET b.paid = true WHERE b.id = :id AND (b.paid = false OR b.paid IS NULL)",
+                params);
+        if (updated != 1) {
+            JsfUtil.addErrorMessage("This return has already been refunded");
+            return false;
+        }
+        getPreBill().setPaid(true);
+        return true;
+    }
+
+    // synchronized: two concurrent Pay requests from one session shared the same
+    // session-held refund bill, so both added refund payments to it (#25083).
+    public synchronized void settleReturnBillWithPay() {
         editingQty = null;
         if (getPreBill().getBillType() == BillType.PharmacyPre
                 && getPreBill().getBillClassType() != BillClassType.RefundBill) {
@@ -2122,6 +2144,15 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
         String openClaimMessage = creditCompanyClaimService.openClaimRefusal(getPreBill());
         if (openClaimMessage != null) {
             JsfUtil.addErrorMessage(openClaimMessage);
+            return;
+        }
+        // Checked again here, not only when the screen opens: another window or
+        // user may have paid this return since then (#25083).
+        if (getPreBill().getId() == null || alreadyPaid(getPreBill())) {
+            JsfUtil.addErrorMessage("This bill is already paid");
+            return;
+        }
+        if (!claimItemReturnForPaymentOrReportError()) {
             return;
         }
         saveSaleReturnBill();
