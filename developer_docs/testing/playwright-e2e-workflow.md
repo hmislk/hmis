@@ -87,6 +87,17 @@ $env:JAVA_HOME="<path-to-jdk>"
   you have to `deploy` fresh. Prefix the command:
   `MSYS_NO_PATHCONV=1 asadmin deploy --name rh --contextroot /rh <war>`. PowerShell
   is unaffected.
+- **One deploy at a time.** Run it in the background and wait for the context
+  root to answer (302/200) or for `server.log` to show "Loading application". A
+  second `asadmin deploy` started meanwhile can leave the app undeployed. After a
+  failed redeploy: stop the domain, delete only `applications/<app>` and
+  `generated/*/<app>`, start the domain, deploy once. With one local app, e2e
+  runs are serial.
+- **Credentials.** Never write a password into a helper script or file, and
+  never `cat`/`grep`/`sed` a file that may hold one. Query with
+  `mysql --defaults-extra-file=<file>` without reading the file.
+- **A route that never reaches the page under test is INCONCLUSIVE, not PASS.**
+  Say which page could not be reached and why.
 
 ---
 

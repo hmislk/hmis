@@ -23,11 +23,14 @@ Checklist:
 - Test data: create it through the UI when needed, with a `ZZ TEST` prefix. Confirm the environment before the first write (§15a table). Never clean it up.
 - Evidence: no patient details or credentials visible in screenshots you name for publishing (§8).
 - Each check needs both UI evidence and, where data is written, a DB query result.
+- Credentials: never create a script or file that holds a password. Never `cat`, `grep`, `sed` or `type` a file that may hold one (`sed` masks leak). Run DB queries as `mysql --defaults-extra-file=<file>` without reading that file. If a password gets printed, stop and say so in the report.
+- Deploys: one at a time, and only one local app, so e2e runs are serial. Run the deploy in the background and wait until the context root answers (302/200) or `server.log` shows "Loading application"; start no second deploy meanwhile. After a failed redeploy: stop the domain, delete only `applications/<app>` and `generated/*/<app>`, start, deploy once.
+- A route that never reaches the page under test is INCONCLUSIVE, not PASS; name the page you could not reach and why.
 - `browser_evaluate` is an escape hatch (e.g. session-scoped inward pages). Log every use in the report: what you ran and why.
 
 Output contract (≤40 lines, to the caller only):
 ```
-VERDICT: PASS | FAIL | BLOCKED (env/setup)
+VERDICT: PASS | FAIL | INCONCLUSIVE | BLOCKED (env/setup)
 ENV: <app root URL> | DB: <schema name, local only> | dept: <department>
 | # | Check | PASS/FAIL | Menu path | Evidence (out-of-repo path) | DB proof (1 line) |
 RECORDS CREATED: <one line each, or "none">
