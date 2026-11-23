@@ -467,6 +467,12 @@ public class IssueReturnController implements Serializable {
                 continue;
             }
 
+            // The return line's own qty is always entered positive (#23385).
+            if (returnItem.getQty() < 0) {
+                JsfUtil.addErrorMessage("Returning Qty cannot be negative");
+                hasErrors = true;
+                continue;
+            }
             // Use absolute value since disposal issues have negative quantities
             double requestedReturnQty = Math.abs(returnItem.getQty());
             if (requestedReturnQty <= 0) {
@@ -1425,6 +1431,12 @@ public class IssueReturnController implements Serializable {
         }
         if (bi.getItem().getId() == null) {
             return;
+        }
+        // The return qty is entered positive; validateItemReturnQuantity() checks Math.abs(),
+        // so a negative entry would pass and later reduce the original line's returned qty (#23385).
+        if (bi.getQty() < 0) {
+            bi.setQty(0.0);
+            JsfUtil.addErrorMessage("Returning Qty cannot be negative");
         }
         double qty = bi.getQty();
 
