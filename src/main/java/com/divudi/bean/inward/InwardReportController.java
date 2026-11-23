@@ -3239,38 +3239,6 @@ public class InwardReportController implements Serializable {
         return filters;
     }
 
-    /**
-     * Admission id -> money received from credit companies: settledAmountBySponsor
-     * of the live commitment bills (INWARD_FINAL_BILL_PAYMENT_BY_CREDIT_COMPANY) of
-     * the admission's current final bill, the same source the credit company due
-     * reports use (#25601). Admissions with no commitment bills are absent.
-     */
-    private Map<Long, Double> companyPaidByEncounterId(List<Long> encounterIds) {
-        Map<Long, Double> result = new HashMap<>();
-        String jpql = "SELECT pe.id, SUM(c.settledAmountBySponsor) FROM Bill c, PatientEncounter pe"
-                + " WHERE c.referenceBill = pe.finalBill"
-                + " AND pe.id IN :ids"
-                + " AND c.billTypeAtomic = :bta"
-                + " AND c.cancelled = false"
-                + " AND c.retired = false"
-                + " GROUP BY pe.id";
-        for (int from = 0; from < encounterIds.size(); from += 500) {
-            Map<String, Object> params = new HashMap<>();
-            params.put("ids", new ArrayList<>(encounterIds.subList(from, Math.min(from + 500, encounterIds.size()))));
-            params.put("bta", BillTypeAtomic.INWARD_FINAL_BILL_PAYMENT_BY_CREDIT_COMPANY);
-            List<Object[]> rows = getBillFacade().findAggregates(jpql, params);
-            if (rows == null) {
-                continue;
-            }
-            for (Object[] row : rows) {
-                if (row[0] != null) {
-                    result.put((Long) row[0], row[1] == null ? 0.0 : ((Number) row[1]).doubleValue());
-                }
-            }
-        }
-        return result;
-    }
-
     public void processIpUnsettledInvoicesReport() {
         Map<String, Object> params = new HashMap<>();
         StringBuilder jpql = new StringBuilder();
@@ -3286,8 +3254,8 @@ public class InwardReportController implements Serializable {
                 .append("pe.dateOfDischarge, ")
                 .append("pe.paymentFinalized, ")
                 .append("COALESCE(pe.netTotal, 0.0), ")
-                // Collected (company paid) is filled below from the commitment bills;
-                // PatientEncounter.creditPaidAmount is no longer written (#25601).
+                // Placeholder: Collected is set below from the inward payment bills.
+                // PatientEncounter.creditPaidAmount is no longer written and was never shown here (#25601).
                 .append("0.0, ")
                 .append("pe.creater")
                 .append(") FROM PatientEncounter pe ");
@@ -3399,13 +3367,6 @@ public class InwardReportController implements Serializable {
 
         if (encounterIds.isEmpty()) {
             return;
-        }
-
-        Map<Long, Double> companyPaid = companyPaidByEncounterId(encounterIds);
-        for (IpUnsettledInvoiceDTO dto : unsettledInvoicesList) {
-            if (dto != null && dto.getAdmissionId() != null) {
-                dto.setCreditPaidAmount(companyPaid.getOrDefault(dto.getAdmissionId(), 0.0));
-            }
         }
 
         List<PatientEncounter> encounters = peFacade.findByJpql(
