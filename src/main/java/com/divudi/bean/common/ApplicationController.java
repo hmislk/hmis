@@ -7,6 +7,8 @@ package com.divudi.bean.common;
 import com.divudi.ejb.EmailManagerEjb;
 import com.divudi.core.entity.AppEmail;
 import com.divudi.core.entity.Institution;
+import com.divudi.core.util.JsfUtil;
+import javax.faces.context.FacesContext;
 import com.divudi.core.entity.Logins;
 import com.divudi.core.entity.Patient;
 import com.divudi.core.entity.Sms;
@@ -222,52 +224,42 @@ public class ApplicationController {
      * </ul>
      * POI is resolved from config: scope "Global" uses "PHN POI Number" config key;
      * scope "PerInstitution" falls back to Institution.pointOfIssueNo for backward compatibility.
+     *
+     * <p>For staff screens: when the POI setting is missing or invalid, an error message
+     * naming the setting is shown, so a patient is not saved without a PHN unnoticed
+     * (issue #24347). Patient-facing screens use
+     * {@link #createNewPersonalHealthNumberQuietly(Institution)}.
      */
     public String createNewPersonalHealthNumber(Institution ins) {
+        String phn = createNewPersonalHealthNumberQuietly(ins);
+        if (phn == null && ins != null && FacesContext.getCurrentInstance() != null) {
+            String problem = phnPoiProblem(ins);
+            if (problem != null) {
+                JsfUtil.addErrorMessage(problem);
+            }
+        }
+        return phn;
+    }
+
+    /**
+     * Same as {@link #createNewPersonalHealthNumber(Institution)}, without any message:
+     * returns null when no PHN can be generated. For patient-facing screens such as the
+     * kiosk, where a configuration message means nothing to the person registering.
+     */
+    public String createNewPersonalHealthNumberQuietly(Institution ins) {
         if (ins == null) {
             return null;
         }
 
-        String version = "V2";
-        String scope = "Global";
-        String globalPoi = "";
-
-        if (configOptionController != null) {
-            String cfgVersion = configOptionController.getShortTextValueByKey("PHN Standard Version", "V2");
-            if (cfgVersion != null && !cfgVersion.isEmpty()) {
-                version = cfgVersion.trim().toUpperCase();
-            }
-            String cfgScope = configOptionController.getShortTextValueByKey("PHN POI Number Scope", "Global");
-            if (cfgScope != null && !cfgScope.isEmpty()) {
-                scope = cfgScope.trim();
-            }
-            String cfgPoi = configOptionController.getShortTextValueByKey("PHN POI Number", "");
-            if (cfgPoi != null) {
-                globalPoi = cfgPoi.trim();
-            }
-        }
+        String[] cfg = readPhnConfig();
+        String version = cfg[0];
 
         if ("None".equalsIgnoreCase(version) || "External".equalsIgnoreCase(version)) {
             return null;
         }
 
-        // Resolve POI
-        String poi;
-        if ("PerInstitution".equalsIgnoreCase(scope)) {
-            poi = ins.getPointOfIssueNo();
-        } else {
-            // Global scope: use configured POI; fall back to institution POI for backward compatibility
-            poi = (!globalPoi.isEmpty()) ? globalPoi : ins.getPointOfIssueNo();
-        }
-
-        if (poi == null || poi.isEmpty()) {
-            return null;
-        }
-        // POI must be exactly 4 characters; V1 additionally requires all digits
-        if (poi.length() != 4) {
-            return null;
-        }
-        if ("V1".equals(version) && !poi.matches("\\d{4}")) {
+        String poi = resolvePhnPoi(ins, cfg[1], cfg[2]);
+        if (phnPoiProblem(version, poi) != null) {
             return null;
         }
 
@@ -326,6 +318,66 @@ public class ApplicationController {
             }
             return null;
         }
+    }
+
+    /**
+     * Why no PHN can be generated for this institution because of the POI setting, as a
+     * message for staff; null when the POI is fine or automatic PHNs are switched off.
+     */
+    public String phnPoiProblem(Institution ins) {
+        if (ins == null) {
+            return null;
+        }
+        String[] cfg = readPhnConfig();
+        if ("None".equalsIgnoreCase(cfg[0]) || "External".equalsIgnoreCase(cfg[0])) {
+            return null;
+        }
+        return phnPoiProblem(cfg[0], resolvePhnPoi(ins, cfg[1], cfg[2]));
+    }
+
+    /** PHN Standard Version, PHN POI Number Scope and PHN POI Number, with their defaults. */
+    private String[] readPhnConfig() {
+        String version = "V2";
+        String scope = "Global";
+        String globalPoi = "";
+        if (configOptionController != null) {
+            String cfgVersion = configOptionController.getShortTextValueByKey("PHN Standard Version", "V2");
+            if (cfgVersion != null && !cfgVersion.isEmpty()) {
+                version = cfgVersion.trim().toUpperCase();
+            }
+            String cfgScope = configOptionController.getShortTextValueByKey("PHN POI Number Scope", "Global");
+            if (cfgScope != null && !cfgScope.isEmpty()) {
+                scope = cfgScope.trim();
+            }
+            String cfgPoi = configOptionController.getShortTextValueByKey("PHN POI Number", "");
+            if (cfgPoi != null) {
+                globalPoi = cfgPoi.trim();
+            }
+        }
+        return new String[]{version, scope, globalPoi};
+    }
+
+    private String resolvePhnPoi(Institution ins, String scope, String globalPoi) {
+        if ("PerInstitution".equalsIgnoreCase(scope)) {
+            return ins.getPointOfIssueNo();
+        }
+        // Global scope: use configured POI; fall back to institution POI for backward compatibility
+        return (!globalPoi.isEmpty()) ? globalPoi : ins.getPointOfIssueNo();
+    }
+
+    /** POI must be exactly 4 characters; V1 additionally requires all digits. */
+    private String phnPoiProblem(String version, String poi) {
+        String where = "Ask an administrator to set the configuration option 'PHN POI Number'";
+        if (poi == null || poi.isEmpty()) {
+            return "No PHN was generated: no Point of Issue (POI) is set. " + where + " to a 4-character code.";
+        }
+        if (poi.length() != 4) {
+            return "No PHN was generated: the Point of Issue (POI) must be exactly 4 characters. " + where + " to a 4-character code.";
+        }
+        if ("V1".equals(version) && !poi.matches("\\d{4}")) {
+            return "No PHN was generated: PHN Standard Version V1 needs a 4-digit Point of Issue (POI). " + where + " to 4 digits.";
+        }
+        return null;
     }
 
     public boolean thePhnNumberAlreadyExsists(String phn) {
