@@ -1540,6 +1540,7 @@ public class InvestigationController implements Serializable {
             sc.setName(getCurrent().getName());
             sc.setParentItem(getCurrent());
             getItemFacade().create(sc);
+            itemAuditHelper.logCreate(sc, getSessionController().getLoggedUser(), "UI auto sample component");
             JsfUtil.addSuccessMessage("Saved Successfully");
         }
         recreateModel();
@@ -1612,6 +1613,7 @@ public class InvestigationController implements Serializable {
             sc.setName(getCurrent().getName());
             sc.setParentItem(getCurrent());
             getItemFacade().create(sc);
+            itemAuditHelper.logCreate(sc, getSessionController().getLoggedUser(), "UI auto sample component");
             JsfUtil.addSuccessMessage("Saved Successfully");
         }
         recreateModel();
@@ -1653,6 +1655,7 @@ public class InvestigationController implements Serializable {
             sc.setName(i.getName());
             sc.setParentItem(i);
             getItemFacade().create(sc);
+            itemAuditHelper.logCreate(sc, getSessionController().getLoggedUser(), "UI auto sample component");
             JsfUtil.addSuccessMessage("Saved Successfully");
         }
         recreateModel();

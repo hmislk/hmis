@@ -73,6 +73,8 @@ public class AmppController implements Serializable {
     private List<AuditEvent> amppAuditEvents;
 
     // Audit-related injections
+    @EJB
+    private ItemAuditHelper itemAuditHelper;
     @Inject
     private AuditService auditService;
     @EJB
@@ -445,17 +447,13 @@ public class AmppController implements Serializable {
 
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             // UPDATE - capture before state
-            Ampp beforeUpdate = getFacade().find(getCurrent().getId());
-            Map<String, Object> beforeData = createAuditMap(beforeUpdate);
+            Map<String, Object> beforeNames = itemAuditHelper.snapshotFromDb(getCurrent().getId());
 
             getCurrent().setDepartmentType(DepartmentType.Pharmacy); // Ensure Pharmacy type
             getFacade().edit(getCurrent());
 
-            // Log audit for update
-            Map<String, Object> afterData = createAuditMap(getCurrent());
-            auditService.logAudit(beforeData, afterData,
-                    getSessionController().getLoggedUser(),
-                    "Ampp", "Update AMPP", getCurrent().getId());
+            // Log audit for update (only when name/code fields changed)
+            itemAuditHelper.logUpdate(beforeNames, getCurrent(), getSessionController().getLoggedUser(), "UI");
 
             JsfUtil.addSuccessMessage("Updated Successfully.");
         } else {
@@ -466,10 +464,7 @@ public class AmppController implements Serializable {
             getFacade().create(getCurrent());
 
             // Log audit for create
-            Map<String, Object> afterData = createAuditMap(getCurrent());
-            auditService.logAudit(null, afterData,
-                    getSessionController().getLoggedUser(),
-                    "Ampp", "Create AMPP", getCurrent().getId());
+            itemAuditHelper.logCreate(getCurrent(), getSessionController().getLoggedUser(), "UI");
 
             JsfUtil.addSuccessMessage("Saved Successfully");
         }

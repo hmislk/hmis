@@ -1195,8 +1195,11 @@ public class ItemController implements Serializable {
         }
         if (current.getId() == null) {
             getFacade().create(current);
+            itemAuditHelper.logCreate(current, sessionController.getLoggedUser(), "UI");
         } else {
+            Map<String, Object> beforeNames = itemAuditHelper.snapshotFromDb(current.getId());
             getFacade().edit(current);
+            itemAuditHelper.logUpdate(beforeNames, current, sessionController.getLoggedUser(), "UI");
         }
         return toListInvestigations();
     }
@@ -1503,6 +1506,7 @@ public class ItemController implements Serializable {
                 sc.setCreater(sessionController.getLoggedUser());
                 sc.setName(ix.getName());
                 getFacade().create(sc);
+                itemAuditHelper.logCreate(sc, sessionController.getLoggedUser(), "UI auto sample component");
                 return sc;
             }
         }

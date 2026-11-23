@@ -376,8 +376,7 @@ public class VtmController implements Serializable {
         try {
             if (getCurrent().getId() != null && getCurrent().getId() > 0) {
                 // UPDATE - capture before state for audit
-                Vtm beforeUpdate = getFacade().find(getCurrent().getId());
-                Map<String, Object> beforeData = createAuditMap(beforeUpdate);
+                Map<String, Object> beforeNames = itemAuditHelper.snapshotFromDb(getCurrent().getId());
 
                 if (!billedAs) {
                     //////// // System.out.println("2");
@@ -390,10 +389,7 @@ public class VtmController implements Serializable {
                 getFacade().edit(getCurrent());
 
                 // Log audit for update
-                Map<String, Object> afterData = createAuditMap(getCurrent());
-                auditService.logAudit(beforeData, afterData,
-                        getSessionController().getLoggedUser(),
-                        "Vtm", "Update VTM", getCurrent().getId());
+                itemAuditHelper.logUpdate(beforeNames, getCurrent(), getSessionController().getLoggedUser(), "UI");
 
                 JsfUtil.addSuccessMessage("Updated Successfully.");
             } else {
@@ -410,10 +406,7 @@ public class VtmController implements Serializable {
                 getFacade().edit(getCurrent());
 
                 // Log audit for create
-                Map<String, Object> afterData = createAuditMap(getCurrent());
-                auditService.logAudit(null, afterData,
-                        getSessionController().getLoggedUser(),
-                        "Vtm", "Create VTM", getCurrent().getId());
+                itemAuditHelper.logCreate(getCurrent(), getSessionController().getLoggedUser(), "UI");
 
                 JsfUtil.addSuccessMessage("Saved Successfully");
             }
@@ -445,15 +438,11 @@ public class VtmController implements Serializable {
 
             if (getCurrent().getId() != null) {
                 // UPDATE - capture before state
-                Vtm beforeUpdate = getFacade().find(getCurrent().getId());
-                Map<String, Object> beforeData = createAuditMap(beforeUpdate);
+                Map<String, Object> beforeNames = itemAuditHelper.snapshotFromDb(getCurrent().getId());
 
                 getFacade().edit(getCurrent());
 
-                Map<String, Object> afterData = createAuditMap(getCurrent());
-                auditService.logAudit(beforeData, afterData,
-                        getSessionController().getLoggedUser(),
-                        "Vtm", "Update VTM", getCurrent().getId());
+                itemAuditHelper.logUpdate(beforeNames, getCurrent(), getSessionController().getLoggedUser(), "UI");
 
                 JsfUtil.addSuccessMessage("VTM '" + getCurrent().getName() + "' updated successfully");
             } else {
@@ -462,10 +451,7 @@ public class VtmController implements Serializable {
                 getCurrent().setCreater(getSessionController().getLoggedUser());
                 getFacade().create(getCurrent());
 
-                Map<String, Object> afterData = createAuditMap(getCurrent());
-                auditService.logAudit(null, afterData,
-                        getSessionController().getLoggedUser(),
-                        "Vtm", "Create VTM", getCurrent().getId());
+                itemAuditHelper.logCreate(getCurrent(), getSessionController().getLoggedUser(), "UI");
 
                 JsfUtil.addSuccessMessage("VTM '" + getCurrent().getName() + "' created successfully");
 

@@ -672,17 +672,13 @@ public class VmpController implements Serializable {
     public void save() {
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             // UPDATE - capture before state
-            Vmp beforeUpdate = getFacade().find(getCurrent().getId());
-            Map<String, Object> beforeData = createAuditMap(beforeUpdate);
+            Map<String, Object> beforeNames = itemAuditHelper.snapshotFromDb(getCurrent().getId());
 
             getCurrent().setDepartmentType(DepartmentType.Pharmacy); // Ensure Pharmacy type
             getFacade().edit(getCurrent());
 
             // Log audit for update
-            Map<String, Object> afterData = createAuditMap(getCurrent());
-            auditService.logAudit(beforeData, afterData,
-                    getSessionController().getLoggedUser(),
-                    "Vmp", "Update VMP", getCurrent().getId());
+            itemAuditHelper.logUpdate(beforeNames, getCurrent(), getSessionController().getLoggedUser(), "UI");
 
             JsfUtil.addSuccessMessage("Updated Successfully.");
         } else {
@@ -693,10 +689,7 @@ public class VmpController implements Serializable {
             getFacade().create(getCurrent());
 
             // Log audit for create
-            Map<String, Object> afterData = createAuditMap(getCurrent());
-            auditService.logAudit(null, afterData,
-                    getSessionController().getLoggedUser(),
-                    "Vmp", "Create VMP", getCurrent().getId());
+            itemAuditHelper.logCreate(getCurrent(), getSessionController().getLoggedUser(), "UI");
 
             JsfUtil.addSuccessMessage("Saved Successfully.");
         }
