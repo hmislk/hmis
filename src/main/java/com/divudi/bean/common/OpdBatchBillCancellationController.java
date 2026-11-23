@@ -112,6 +112,9 @@ import org.primefaces.event.TabChangeEvent;
 @SessionScoped
 public class OpdBatchBillCancellationController implements Serializable, ControllerWithMultiplePayments {
 
+    @javax.ejb.EJB
+    private com.divudi.service.CreditCompanyClaimService creditCompanyClaimService;
+
     private static final long serialVersionUID = 1L;
 
     /**
@@ -667,8 +670,13 @@ public class OpdBatchBillCancellationController implements Serializable, Control
 //        this.recurseCount = recurseCount;
 //    }
     public boolean findByFilter(String property, String value) {
-        String sql = "Select b From Bill b where b.retired=false and (b." + property + ") like '%" + value.toUpperCase() + " %'";
-        Bill b = getBillFacade().findFirstByJpql(sql);
+        if (property == null || value == null || !property.matches("^[A-Za-z][A-Za-z0-9_.]*$")) {
+            return false;
+        }
+        String sql = "Select b From Bill b where b.retired=false and (b." + property + ") like :val";
+        java.util.Map<String, Object> m = new java.util.HashMap<>();
+        m.put("val", "%" + value.toUpperCase() + " %");
+        Bill b = getBillFacade().findFirstByJpql(sql, m);
         if (b != null) {
             return true;
         } else {
@@ -2762,6 +2770,12 @@ public class OpdBatchBillCancellationController implements Serializable, Control
             batchBillCancellationStarted = false;
             return "";
         }
+        String openClaimMessage = creditCompanyClaimService.openClaimRefusal(getBatchBill());
+        if (openClaimMessage != null) {
+            JsfUtil.addErrorMessage(openClaimMessage);
+            batchBillCancellationStarted = false;
+            return "";
+        }
         String labLockMessage = labSampleLockService.checkCancelBlocked(getBatchBill());
         if (labLockMessage != null) {
             JsfUtil.addErrorMessage(labLockMessage);
@@ -2956,6 +2970,12 @@ public class OpdBatchBillCancellationController implements Serializable, Control
         }
         if (getBatchBill().getId() == null) {
             JsfUtil.addErrorMessage("No Saved bill");
+            batchBillCancellationStarted = false;
+            return "";
+        }
+        String openClaimMessage = creditCompanyClaimService.openClaimRefusal(getBatchBill());
+        if (openClaimMessage != null) {
+            JsfUtil.addErrorMessage(openClaimMessage);
             batchBillCancellationStarted = false;
             return "";
         }

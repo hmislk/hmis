@@ -75,7 +75,9 @@ public class StoreController implements Serializable {
     }
 
     public List<Department> getSelectedItems() {
-        selectedItems = getFacade().findByJpql("select c from Department c where c.retired=false and i.departmentType = com.divudi.core.data.DepartmentType.Store and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
+        Map<String, Object> likeParams = new HashMap<>();
+        likeParams.put("txt", "%" + getSelectText().toUpperCase() + "%");
+        selectedItems = getFacade().findByJpql("select c from Department c where c.retired=false and i.departmentType = com.divudi.core.data.DepartmentType.Store and (c.name) like :txt order by c.name", likeParams);
         return selectedItems;
     }
 

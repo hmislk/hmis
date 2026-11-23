@@ -59,6 +59,8 @@ import com.divudi.core.data.dto.LabDailySummaryDTO;
 import com.divudi.core.data.dto.OpdIncomeReportDTO;
 import com.divudi.core.data.dto.HospitalDoctorFeeReportDTO;
 import com.divudi.core.data.dto.BillItemReportDTO;
+import com.divudi.core.data.dto.OpVisitCountDTO;
+import javax.persistence.TemporalType;
 import com.divudi.core.data.HospitalDoctorFeeBundle;
 import com.divudi.core.data.BillItemReportBundle;
 import com.divudi.core.data.BillCategory;
@@ -69,6 +71,7 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.Calendar;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
@@ -221,6 +224,12 @@ public class OpdReportController implements Serializable {
     private Department fromDepartment;
     private Department toDepartment;
 
+    // OP Visits report (#25854, #25856)
+    private String opVisitGroupBy = "DEPARTMENT";
+    private List<OpVisitCountDTO> opVisitRows;
+    private long opVisitTotalVisits;
+    private long opVisitTotalPatients;
+
     // Healthcare-specific entities
     private Patient patient;
     private PatientEncounter patientEncounter;
@@ -298,6 +307,13 @@ public class OpdReportController implements Serializable {
 
     public String navigateToHospitalDoctorFeeReport() {
         return "/opd/analytics/summary_reports/hospital_doctor_fee_report.xhtml?faces-redirect=true";
+    }
+
+    public String navigateToOpVisitsReport() {
+        opVisitRows = null;
+        opVisitTotalVisits = 0;
+        opVisitTotalPatients = 0;
+        return "/opd/analytics/summary_reports/op_visits_report?faces-redirect=true";
     }
 
     public String navigateToBillItemReport() {
@@ -638,6 +654,150 @@ public class OpdReportController implements Serializable {
 
             hospitalDoctorFeeBundle = new HospitalDoctorFeeBundle(hospitalDoctorFeeReportDtos);
         }, CommonReports.LAB_REPORTS, "OpdReportController.generateHospitalDoctorFeeReport", sessionController.getLoggedUser());
+    }
+
+    /**
+     * Bills that count as OP visits (#25854): one visit = one individual OPD bill, settled at
+     * billing or at the cashier (package bills included). Pre-bills not yet paid, batch bills
+     * (which only group the individual ones), cancelled bills and fully refunded bills are not
+     * visits; a partly refunded bill still is.
+     */
+    private static final List<BillTypeAtomic> OP_VISIT_BILL_TYPES = Arrays.asList(
+            BillTypeAtomic.OPD_BILL_WITH_PAYMENT,
+            BillTypeAtomic.OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER,
+            BillTypeAtomic.PACKAGE_OPD_BILL_WITH_PAYMENT,
+            BillTypeAtomic.PACKAGE_OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
+
+    /**
+     * The where-clause shared by every OP Visits query (bill alias b). Filters are on the
+     * billing side, as in the other OPD summary reports.
+     */
+    private String opVisitBillConditions(Map<String, Object> m) {
+        // A partly refunded bill is still a visit (user, #332); only a bill whose every item was
+        // refunded drops out. A return refunds whole items, and marks each one and the bill refunded.
+        String where = " b.retired=false and b.cancelled=false"
+                + " and (b.refunded=false or exists (select rbi from BillItem rbi"
+                + " where rbi.bill=b and rbi.retired=false and rbi.refunded=false))"
+                + " and b.billTypeAtomic in :btas"
+                + " and b.createdAt between :fd and :td";
+        m.put("btas", OP_VISIT_BILL_TYPES);
+        m.put("fd", getFromDate());
+        m.put("td", getToDate());
+        if (institution != null) {
+            where += " and b.institution=:ins";
+            m.put("ins", institution);
+        }
+        if (site != null) {
+            where += " and b.department.site=:site";
+            m.put("site", site);
+        }
+        if (department != null) {
+            where += " and b.department=:dep";
+            m.put("dep", department);
+        }
+        return where;
+    }
+
+    private static long asLong(Object o) {
+        return o instanceof Number ? ((Number) o).longValue() : 0L;
+    }
+
+    /**
+     * OP Visits report (#25854) with department or specialty grouping (#25856).
+     * Department = the department that gave the service (the bill's "to" department).
+     * Specialty = the specialty of each doctor on the bill (the fee's doctor, or the fee's
+     * specialty when no doctor is named); a bill with doctors of two specialties counts once
+     * under each, and a bill with no doctor fee is shown as its own row.
+     */
+    public void processOpVisitsReport() {
+        reportTimerController.trackReportExecution(() -> {
+            Map<String, Object> m = new HashMap<>();
+            String where = opVisitBillConditions(m);
+            List<Object[]> total = billFacade.findObjectArrayByJpql(
+                    "select count(b), count(distinct p.id) from Bill b left join b.patient p where" + where,
+                    m, TemporalType.TIMESTAMP);
+            Object[] t = total == null || total.isEmpty() ? null : total.get(0);
+            opVisitTotalVisits = t == null ? 0 : asLong(t[0]);
+            opVisitTotalPatients = t == null ? 0 : asLong(t[1]);
+
+            if ("SPECIALTY".equals(opVisitGroupBy)) {
+                opVisitRows = opVisitsBySpecialty();
+            } else {
+                opVisitRows = opVisitsByDepartment();
+            }
+        }, CommonReports.OPD_REPORTS, "OpdReportController.processOpVisitsReport", sessionController.getLoggedUser());
+    }
+
+    private List<OpVisitCountDTO> opVisitsByDepartment() {
+        Map<String, Object> m = new HashMap<>();
+        String jpql = "select d.id, d.name, count(b), count(distinct p.id)"
+                + " from Bill b left join b.toDepartment d left join b.patient p"
+                + " where" + opVisitBillConditions(m)
+                + " group by d.id, d.name"
+                + " order by count(b) desc";
+        List<OpVisitCountDTO> rows = new ArrayList<>();
+        List<Object[]> results = billFacade.findObjectArrayByJpql(jpql, m, TemporalType.TIMESTAMP);
+        if (results != null) {
+            for (Object[] r : results) {
+                String name = r[0] == null ? "No department recorded" : (r[1] == null ? "(unnamed department)" : (String) r[1]);
+                rows.add(new OpVisitCountDTO(name, asLong(r[2]), asLong(r[3])));
+            }
+        }
+        return rows;
+    }
+
+    private List<OpVisitCountDTO> opVisitsBySpecialty() {
+        String doctorFee = "(st.id is not null or fsp.id is not null)";
+        Map<String, Object> m = new HashMap<>();
+        // One row per bill and specialty: the doctor's specialty, else the fee's specialty
+        String jpql = "select distinct b.id, p.id, ssp.id, ssp.name, fsp.id, fsp.name"
+                + " from BillFee bf join bf.bill b left join b.patient p"
+                + " left join bf.staff st left join st.speciality ssp left join bf.speciality fsp"
+                + " where bf.retired=false and " + doctorFee + " and" + opVisitBillConditions(m);
+        Map<Long, String> names = new HashMap<>();
+        Map<Long, Set<Long>> bills = new HashMap<>();
+        Map<Long, Set<Long>> patients = new HashMap<>();
+        List<Object[]> results = billFacade.findObjectArrayByJpql(jpql, m, TemporalType.TIMESTAMP);
+        final Long noSpecialty = -1L;
+        if (results != null) {
+            for (Object[] r : results) {
+                Long key;
+                String name;
+                if (r[2] != null) {
+                    key = (Long) r[2];
+                    name = (String) r[3];
+                } else if (r[4] != null) {
+                    key = (Long) r[4];
+                    name = (String) r[5];
+                } else {
+                    key = noSpecialty;
+                    name = "Doctor with no specialty recorded";
+                }
+                names.putIfAbsent(key, name == null ? "(unnamed specialty)" : name);
+                bills.computeIfAbsent(key, k -> new HashSet<>()).add((Long) r[0]);
+                if (r[1] != null) {
+                    patients.computeIfAbsent(key, k -> new HashSet<>()).add((Long) r[1]);
+                }
+            }
+        }
+        List<OpVisitCountDTO> rows = new ArrayList<>();
+        for (Map.Entry<Long, String> e : names.entrySet()) {
+            Set<Long> ps = patients.get(e.getKey());
+            rows.add(new OpVisitCountDTO(e.getValue(), bills.get(e.getKey()).size(), ps == null ? 0 : ps.size()));
+        }
+        rows.sort(Comparator.comparingLong(OpVisitCountDTO::getVisits).reversed());
+
+        // Bills with no doctor fee at all (for example lab-only bills)
+        Map<String, Object> m2 = new HashMap<>();
+        String noDoctor = "select count(b), count(distinct p.id) from Bill b left join b.patient p"
+                + " where" + opVisitBillConditions(m2)
+                + " and not exists (select bf from BillFee bf left join bf.staff st left join bf.speciality fsp"
+                + " where bf.bill=b and bf.retired=false and " + doctorFee + ")";
+        List<Object[]> nd = billFacade.findObjectArrayByJpql(noDoctor, m2, TemporalType.TIMESTAMP);
+        if (nd != null && !nd.isEmpty() && asLong(nd.get(0)[0]) > 0) {
+            rows.add(new OpVisitCountDTO("No doctor fee on the bill", asLong(nd.get(0)[0]), asLong(nd.get(0)[1])));
+        }
+        return rows;
     }
 
     public void generateBillItemReport() {
@@ -2853,6 +3013,27 @@ public class OpdReportController implements Serializable {
 
     public void setBillItemReportBundle(BillItemReportBundle billItemReportBundle) {
         this.billItemReportBundle = billItemReportBundle;
+    }
+
+
+    public String getOpVisitGroupBy() {
+        return opVisitGroupBy;
+    }
+
+    public void setOpVisitGroupBy(String opVisitGroupBy) {
+        this.opVisitGroupBy = opVisitGroupBy;
+    }
+
+    public List<OpVisitCountDTO> getOpVisitRows() {
+        return opVisitRows;
+    }
+
+    public long getOpVisitTotalVisits() {
+        return opVisitTotalVisits;
+    }
+
+    public long getOpVisitTotalPatients() {
+        return opVisitTotalPatients;
     }
 
 }

@@ -1069,6 +1069,9 @@ public class ChannelBillController implements Serializable {
     }
 
     public void channelBookingCancel() {
+        if (getBillSession() != null && com.divudi.core.util.CancellationBillCheck.refuse(getBillSession().getBill())) {
+            return;
+        }
         if (billSession.getBill().getBillType() == BillType.ChannelAgent) {
             cancelAgentPaidBill();
             return;

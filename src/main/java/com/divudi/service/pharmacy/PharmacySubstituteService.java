@@ -269,6 +269,7 @@ public class PharmacySubstituteService {
         BillItemFinanceDetails financeDetails = billItem.getBillItemFinanceDetails();
         if (financeDetails != null) {
             // Retail sale line value is at the retail (sale) rate.
+            // valueAt*Rate is stock-direction signed (#21032): this line is stock OUT, so negative.
             BigDecimal saleRate = BigDecimal.valueOf(itemBatch.getRetailsaleRate());
             financeDetails.setLineGrossRate(saleRate);
             financeDetails.setLineNetRate(saleRate);
@@ -285,9 +286,9 @@ public class PharmacySubstituteService {
                 financeDetails.setQuantity(qty);
                 financeDetails.setTotalQuantity(qty);
             }
-            financeDetails.setValueAtCostRate(BigDecimal.valueOf(costRate).multiply(qty));
-            financeDetails.setValueAtPurchaseRate(BigDecimal.valueOf(itemBatch.getPurcahseRate()).multiply(qty));
-            financeDetails.setValueAtRetailRate(saleRate.multiply(qty));
+            financeDetails.setValueAtCostRate(BigDecimal.valueOf(costRate).multiply(qty.abs().negate()));
+            financeDetails.setValueAtPurchaseRate(BigDecimal.valueOf(itemBatch.getPurcahseRate()).multiply(qty.abs().negate()));
+            financeDetails.setValueAtRetailRate(saleRate.multiply(qty.abs().negate()));
         }
         return true;
     }

@@ -162,6 +162,7 @@ public class InwardReservationController implements Serializable {
         calendar.add(Calendar.MONTH, noOfMonths.intValue());
         toDate = calendar.getTime();
         calanderStatus = AppointmentStatus.PENDING;
+        includeCompleted = false;
         findReservations();
         return "/inward/inward_reservations_schedule_calendar?faces-redirect=true";
     }
@@ -208,6 +209,15 @@ public class InwardReservationController implements Serializable {
     }
     
     private AppointmentStatus calanderStatus = null ;
+    private boolean includeCompleted = false;
+
+    public boolean isIncludeCompleted() {
+        return includeCompleted;
+    }
+
+    public void setIncludeCompleted(boolean includeCompleted) {
+        this.includeCompleted = includeCompleted;
+    }
 
     public void findReservations() {
             String jpql;
@@ -219,7 +229,10 @@ public class InwardReservationController implements Serializable {
             m.put("ret", false);
             m.put("type", com.divudi.core.data.AppointmentType.IP_APPOINTMENT);
 
-            if (calanderStatus != null) {
+            if (calanderStatus == AppointmentStatus.PENDING && includeCompleted) {
+                jpql += " and apt.status in :statuses";
+                m.put("statuses", java.util.Arrays.asList(AppointmentStatus.PENDING, AppointmentStatus.COMPLETE));
+            } else if (calanderStatus != null) {
                 jpql += " and apt.status = :status";
                 m.put("status", calanderStatus);
             }
@@ -289,9 +302,16 @@ public class InwardReservationController implements Serializable {
             String uniqueBackgroundColor = generateColor(patientName);
 
             // Build the schedule calendar event using the Appointment object as data binding
+            boolean completed = apt.getStatus() == AppointmentStatus.COMPLETE;
+            if (completed) {
+                uniqueBorderColor = "#6c757d";
+                uniqueBackgroundColor = "#adb5bd";
+            }
+
             DefaultScheduleEvent tempEvent = new DefaultScheduleEvent<Appointment>()
                     .builder()
                     .title(title)
+                    .styleClass(completed ? "res-event-complete" : "res-event-pending")
                     .borderColor(uniqueBorderColor)
                     .backgroundColor(uniqueBackgroundColor)
                     .startDate(CommonFunctions.convertDateToLocalDateTime(startDate))

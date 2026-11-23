@@ -1,0 +1,178 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:body>
+
+        <ui:composition template="/emr/reports/index.xhtml">
+
+            <ui:define name="subcontent">
+                <h:form id="frmDx">
+                    <p:panel header="EMR Visits by Diagnosis"
+                             rendered="#{webUserController.hasPrivilege('EmrVisitsByDiagnosisReport')}">
+
+                        <h:outputText styleClass="d-block mb-2 text-muted"
+                                      value="This report covers only OPD visits where the doctor recorded a diagnosis. Visits without a recorded diagnosis are not counted. A visit with more than one diagnosis is counted once under each of them."/>
+
+                        <h:panelGrid columns="8" styleClass="w-100 mb-2" columnClasses="pe-1,pe-3,pe-1,pe-3,pe-1,pe-3,pe-1">
+                            <p:outputLabel for="fromDate" value="From"/>
+                            <p:datePicker id="fromDate" showTime="true" inputStyleClass="w-100"
+                                          value="#{emrDiagnosisReportController.fromDate}"
+                                          pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                            <p:outputLabel for="toDate" value="To"/>
+                            <p:datePicker id="toDate" showTime="true" inputStyleClass="w-100"
+                                          value="#{emrDiagnosisReportController.toDate}"
+                                          pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                            <p:outputLabel for="acIns" value="Institution"/>
+                            <p:autoComplete id="acIns" forceSelection="true" inputStyleClass="w-100"
+                                            value="#{emrDiagnosisReportController.institution}"
+                                            completeMethod="#{institutionController.completeIns}"
+                                            var="ins" itemLabel="#{ins.name}" itemValue="#{ins}"
+                                            placeholder="All institutions"/>
+                            <p:outputLabel for="acDept" value="Department"/>
+                            <p:autoComplete id="acDept" forceSelection="true" inputStyleClass="w-100"
+                                            value="#{emrDiagnosisReportController.department}"
+                                            completeMethod="#{departmentController.completeDept}"
+                                            var="dept" itemLabel="#{dept.name}" itemValue="#{dept}"
+                                            placeholder="All departments"/>
+                            <p:outputLabel for="acDoc" value="Doctor"/>
+                            <p:autoComplete id="acDoc" forceSelection="true" inputStyleClass="w-100"
+                                            value="#{emrDiagnosisReportController.doctor}"
+                                            completeMethod="#{doctorController.completeDoctor}"
+                                            var="doc" itemLabel="#{doc.person.name}" itemValue="#{doc}"
+                                            placeholder="All doctors"/>
+                        </h:panelGrid>
+
+                        <div class="d-flex gap-2 mb-2">
+                            <p:commandButton ajax="false" value="Process" title="Run the report"
+                                             icon="fa-solid fa-arrows-rotate"
+                                             styleClass="ui-button-warning"
+                                             action="#{emrDiagnosisReportController.process}"/>
+                            <p:commandButton ajax="false" value="Excel" title="Download the diagnosis counts as Excel"
+                                             icon="fa-solid fa-file-excel"
+                                             styleClass="ui-button-success"
+                                             disabled="#{emrDiagnosisReportController.diagnosisCounts eq null}">
+                                <p:dataExporter type="xlsx" target="tblDx" fileName="emr_visits_by_diagnosis"/>
+                            </p:commandButton>
+                        </div>
+
+                        <p:tabView id="tabs" dynamic="false">
+                            <p:tab title="By Diagnosis">
+                                <p:dataTable id="tblDx" var="row" styleClass="p-datatable-sm"
+                                             value="#{emrDiagnosisReportController.diagnosisCounts}"
+                                             rowKey="#{row.diagnosisId}"
+                                             paginator="true" rows="25" rowsPerPageTemplate="25,50,100"
+                                             paginatorPosition="bottom"
+                                             emptyMessage="No visits with a recorded diagnosis found. Press Process.">
+                                    <p:column headerText="Diagnosis" sortBy="#{row.diagnosisName}">
+                                        <h:outputText value="#{row.diagnosisName}"/>
+                                        <f:facet name="footer">
+                                            <h:outputText value="Visits with a diagnosis: #{emrDiagnosisReportController.totalVisits}"/>
+                                        </f:facet>
+                                    </p:column>
+                                    <p:column headerText="Visits" sortBy="#{row.visitCount}" styleClass="text-end" style="width:8rem">
+                                        <h:outputText value="#{row.visitCount}"/>
+                                    </p:column>
+                                    <p:column headerText="Drill-down" exportable="false" style="width:9rem">
+                                        <p:commandButton value="Visits" title="List the visits with this diagnosis"
+                                                         icon="fa-solid fa-list"
+                                                         styleClass="ui-button-info ui-button-outlined"
+                                                         process="@this" update=":frmDx:pnlDrill"
+                                                         action="#{emrDiagnosisReportController.showVisitsForDiagnosis(row)}"/>
+                                    </p:column>
+                                </p:dataTable>
+
+                                <h:panelGroup id="pnlDrill" layout="block" styleClass="mt-3">
+                                    <p:panel rendered="#{emrDiagnosisReportController.selectedDiagnosis ne null}"
+                                             header="Visits with diagnosis: #{emrDiagnosisReportController.selectedDiagnosis.diagnosisName}">
+                                        <p:dataTable id="tblDrill" var="v" styleClass="p-datatable-sm"
+                                                     value="#{emrDiagnosisReportController.drillDownVisits}"
+                                                     paginator="true" rows="25" paginatorPosition="bottom"
+                                                     emptyMessage="No visits">
+                                            <p:column headerText="Visit No" style="width:6rem">
+                                                <h:outputText value="#{v.visitId}"/>
+                                            </p:column>
+                                            <p:column headerText="Date / Time">
+                                                <h:outputText value="#{v.visitDate}">
+                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateTimeFormat}"/>
+                                                </h:outputText>
+                                            </p:column>
+                                            <p:column headerText="Patient">
+                                                <h:outputText value="#{v.patientName}"/>
+                                            </p:column>
+                                            <p:column headerText="PHN">
+                                                <h:outputText value="#{v.phn}"/>
+                                            </p:column>
+                                            <p:column headerText="Department">
+                                                <h:outputText value="#{v.departmentName}"/>
+                                            </p:column>
+                                            <p:column headerText="Doctor">
+                                                <h:outputText value="#{v.doctorName}"/>
+                                            </p:column>
+                                            <p:column headerText="Presenting Complaints">
+                                                <h:outputText value="#{v.presentingComplaints}"/>
+                                            </p:column>
+                                        </p:dataTable>
+                                        <p:commandButton ajax="false" value="Excel" title="Download this visit list as Excel"
+                                                         icon="fa-solid fa-file-excel"
+                                                         styleClass="ui-button-success mt-2">
+                                            <p:dataExporter type="xlsx" target="tblDrill" fileName="emr_visits_for_diagnosis"/>
+                                        </p:commandButton>
+                                    </p:panel>
+                                </h:panelGroup>
+                            </p:tab>
+
+                            <p:tab title="Presenting Complaints">
+                                <h:outputText styleClass="d-block mb-2 text-muted"
+                                              value="Presenting complaints are free text typed by the doctor, so they are listed per visit, not grouped. One row per visit and diagnosis."/>
+                                <p:dataTable id="tblComplaints" var="c" styleClass="p-datatable-sm"
+                                             value="#{emrDiagnosisReportController.complaintRows}"
+                                             paginator="true" rows="25" rowsPerPageTemplate="25,50,100"
+                                             paginatorPosition="bottom"
+                                             emptyMessage="No visits with a recorded diagnosis found. Press Process.">
+                                    <p:column headerText="Visit No" style="width:6rem">
+                                        <h:outputText value="#{c.visitId}"/>
+                                    </p:column>
+                                    <p:column headerText="Date / Time">
+                                        <h:outputText value="#{c.visitDate}">
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateTimeFormat}"/>
+                                        </h:outputText>
+                                    </p:column>
+                                    <p:column headerText="Patient" sortBy="#{c.patientName}">
+                                        <h:outputText value="#{c.patientName}"/>
+                                    </p:column>
+                                    <p:column headerText="Department">
+                                        <h:outputText value="#{c.departmentName}"/>
+                                    </p:column>
+                                    <p:column headerText="Doctor">
+                                        <h:outputText value="#{c.doctorName}"/>
+                                    </p:column>
+                                    <p:column headerText="Diagnosis" sortBy="#{c.diagnosisName}">
+                                        <h:outputText value="#{c.diagnosisName}"/>
+                                    </p:column>
+                                    <p:column headerText="Presenting Complaints">
+                                        <h:outputText value="#{c.presentingComplaints}"/>
+                                    </p:column>
+                                </p:dataTable>
+                                <p:commandButton ajax="false" value="Excel" title="Download the complaints list as Excel"
+                                                 icon="fa-solid fa-file-excel"
+                                                 styleClass="ui-button-success mt-2"
+                                                 disabled="#{emrDiagnosisReportController.complaintRows eq null}">
+                                    <p:dataExporter type="xlsx" target="tblComplaints" fileName="emr_presenting_complaints"/>
+                                </p:commandButton>
+                            </p:tab>
+                        </p:tabView>
+                    </p:panel>
+                    <h:outputText value="You do not have the privilege to view this report."
+                                  rendered="#{not webUserController.hasPrivilege('EmrVisitsByDiagnosisReport')}"/>
+                </h:form>
+            </ui:define>
+
+        </ui:composition>
+
+    </h:body>
+</html>

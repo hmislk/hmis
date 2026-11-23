@@ -169,6 +169,7 @@ JPQL-first, privilege system, AJAX update rules, etc.):
 - Java entities/services/DTOs/REST → `java-backend-developer` agent
 - XHTML/PrimeFaces views → `jsf-frontend-dev` agent
 - Mixed changes: split into per-area tasks and delegate each
+- Any `.xhtml` edited (not on a hotfix branch): also upgrade that page to the UI guidelines, in its own commit (`ui-guidelines` skill, "Touched page = upgraded page")
 
 Review the diffs from each agent before moving on — don't trust a summary
 without checking the actual edits.

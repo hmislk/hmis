@@ -62,7 +62,7 @@
                                         value="#{pageAdminController.applicationConfigOptions}"
                                         var="configInfo"
                                         emptyMessage="No application configuration options found for this page"
-                                        styleClass="table table-striped"
+                                        styleClass="table table-striped p-datatable-sm"
                                         paginator="false">
 
                                         <p:column headerText="Configuration Key" style="width: 25%">
@@ -175,18 +175,19 @@
                                     <p:outputLabel value="Key Value"/>
                                 </div>
                                 <div class="col-9">
+                                    <h:outputText value="Leave blank to keep the current value" styleClass="text-muted d-block" rendered="#{configOptionController.editingSecretOption}"/>
                                     <!-- For SHORT_TEXT -->
                                     <p:inputText
                                         class="w-100"
                                         id="valueInputShortText"
-                                        value="#{configOptionController.option.optionValue}"
+                                        value="#{configOptionController.editOptionValue}"
                                         rendered="#{configOptionController.option.valueType eq 'SHORT_TEXT'}"/>
 
                                     <!-- For LONG -->
                                     <p:inputText
                                         class="w-100"
                                         id="valueInputLong"
-                                        value="#{configOptionController.option.optionValue}"
+                                        value="#{configOptionController.editOptionValue}"
                                         rendered="#{configOptionController.option.valueType eq 'LONG'}"/>
 
                                     <!-- For LONG_TEXT -->
@@ -194,7 +195,7 @@
                                         class="w-100"
                                         rows="5"
                                         id="valueInputLongText"
-                                        value="#{configOptionController.option.optionValue}"
+                                        value="#{configOptionController.editOptionValue}"
                                         rendered="#{configOptionController.option.valueType eq 'LONG_TEXT'}"
                                         autoResize="false"/>
 
@@ -202,7 +203,7 @@
                                     <p:inputText
                                         class="w-100"
                                         id="valueInputDouble"
-                                        value="#{configOptionController.option.optionValue}"
+                                        value="#{configOptionController.editOptionValue}"
                                         rendered="#{configOptionController.option.valueType eq 'DOUBLE'}"/>
 
                                     <!-- For COLOR -->
@@ -210,7 +211,7 @@
                                         id="color"
                                         mode="inline"
                                         rendered="#{configOptionController.option.valueType eq 'COLOR'}"
-                                        value="#{configOptionController.option.optionValue}"
+                                        value="#{configOptionController.editOptionValue}"
                                         formatToggle="true"
                                         theme="large"/>
 
@@ -219,7 +220,7 @@
                                         id="enumValueSelector"
                                         filter="true"
                                         filterMatchMode="contains"
-                                        value="#{configOptionController.option.optionValue}"
+                                        value="#{configOptionController.editOptionValue}"
                                         rendered="#{configOptionController.option.valueType eq 'ENUM'}">
                                         <f:selectItem itemLabel="Select"/>
                                         <f:selectItems
@@ -231,7 +232,7 @@
 
                                     <!-- For BOOLEAN -->
                                     <p:toggleSwitch
-                                        value="#{configOptionController.option.optionValue}"
+                                        value="#{configOptionController.editOptionValue}"
                                         onIcon="fa fa-check"
                                         offIcon="fa fa-times"
                                         rendered="#{configOptionController.option.valueType eq 'BOOLEAN'}"/>

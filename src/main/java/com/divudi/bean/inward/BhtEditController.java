@@ -583,7 +583,7 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
     }
 
     public List<Admission> getSelectedItems() {
-        selectedItems = getFacade().findByJpql("select c from Admission c where c.retired=false and c.discharged!=true and (c.bhtNo) like '%" + getSelectText().toUpperCase() + "%' or (c.patient.person.name) like '%" + getSelectText().toUpperCase() + "%' order by c.bhtNo");
+        selectedItems = getFacade().findByJpql("select c from Admission c where c.retired=false and c.discharged!=true and (c.bhtNo) like :q or (c.patient.person.name) like :q order by c.bhtNo", java.util.Map.of("q", "%" + getSelectText().toUpperCase() + "%"));
         return selectedItems;
     }
 
@@ -597,12 +597,13 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
             sql = "select c from Admission c "
                     + " where c.retired=false "
                     + " and c.discharged=false "
-                    + " and ((c.bhtNo) like '%" + query.toUpperCase() + "%' "
-                    + " or (c.patient.person.name) like '%" + query.toUpperCase() + "%' "
+                    + " and ((c.bhtNo) like :qlike "
+                    + " or (c.patient.person.name) like :qlike "
                     + " or (c.patient.phn) =:q )"
                     + " order by c.bhtNo";
 
             h.put("q", query.toUpperCase());
+            h.put("qlike", "%" + query.toUpperCase() + "%");
             suggestions = getFacade().findByJpql(sql, h, 20);
         }
         return suggestions;
@@ -634,9 +635,11 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
             sql = "select c from Admission c where "
                     + " c.retired=false "
                     //                    + " and c.discharged=false "
-                    + " and ((c.bhtNo) like '%" + query.toUpperCase() + "%' or (c.patient.person.name) like '%" + query.toUpperCase() + "%' or (c.patient.code) like '%" + query.toUpperCase() + "%') "
+                    + " and ((c.bhtNo) like :qlike or (c.patient.person.name) like :qlike or (c.patient.code) like :qlike) "
                     + " order by c.bhtNo ";
-            suggestions = getFacade().findByJpql(sql);
+            HashMap<String, Object> hq = new HashMap<>();
+            hq.put("qlike", "%" + query.toUpperCase() + "%");
+            suggestions = getFacade().findByJpql(sql, hq);
         }
         return suggestions;
     }

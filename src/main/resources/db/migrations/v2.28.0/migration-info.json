@@ -1,0 +1,15 @@
+{
+  "version": "v2.28.0",
+  "description": "Create OPDQUOTATION and OPDQUOTATIONITEM (OPD quotation of services) if missing",
+  "githubIssue": "25885",
+  "author": "Dr M H B Ariyaratne",
+  "date": "2026-11-22",
+  "requiresDowntime": false,
+  "estimatedDurationMinutes": 1,
+  "affectedTables": ["opdquotation", "opdquotationitem"],
+  "preRequisites": [
+    "Run migration.sql by hand on the database BEFORE deploying any build that contains the OpdQuotation entities. The migration page only gets this file in that same build, so it cannot run this step first.",
+    "Idempotent; changes no data. Tables are created in the same case as the existing WEBUSER table."
+  ],
+  "rollbackNotes": ["rollback.sql drops OPDQUOTATIONITEM, then OPDQUOTATION"]
+}

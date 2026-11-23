@@ -97,6 +97,9 @@ import com.divudi.core.data.admin.PrivilegeInfo;
 @SessionScoped
 public class PharmacyPreSettleController implements Serializable, ControllerWithMultiplePayments {
 
+    @javax.ejb.EJB
+    private com.divudi.service.CreditCompanyClaimService creditCompanyClaimService;
+
     /**
      * Creates a new instance of PharmacySaleController
      */
@@ -2116,6 +2119,11 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
             return;
         }
 
+        String openClaimMessage = creditCompanyClaimService.openClaimRefusal(getPreBill());
+        if (openClaimMessage != null) {
+            JsfUtil.addErrorMessage(openClaimMessage);
+            return;
+        }
         saveSaleReturnBill();
 
         List<Payment> refundPayments = paymentService.createPayment(getSaleReturnBill(), getPaymentMethodData());

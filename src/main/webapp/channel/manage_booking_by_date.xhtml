@@ -30,21 +30,21 @@
                         <div class="d-flex gap-2">
                             <p:commandButton 
                                 ajax="false" 
-                                class="mx-1 ui-button-secondary"
+                                class="ui-button-info ui-button-outlined"
                                 value="Back to Reports"
                                 immediate="true"
                                 action="/channel/channel_reports?faces-redirect=true"
                                 icon="fa-solid fa-arrow-left" />
                             <p:commandButton 
                                 ajax="false" 
-                                class="mx-1 ui-button-secondary"
+                                class="ui-button-info ui-button-outlined"
                                 value="Back to Bookings"
                                 immediate="true"
                                 action="#{bookingControllerViewScope.navigateBackToBookingsFromBillSession()}"
                                 icon="fa-solid fa-arrow-left" />
                             <p:commandButton 
                                 ajax="false" 
-                                class="mx-1 ui-button-secondary"
+                                class="ui-button-info ui-button-outlined"
                                 value="Back to Session"
                                 immediate="true"
                                 action="#{bookingControllerViewScope.navigateToManageSessionInstance(bookingControllerViewScope.selectedSessionInstance)}"
@@ -810,7 +810,7 @@
                                                 update="paymentDetails lstItems tblBillItemsForAddingNewItem tblBillFeesForAddingNewItem totalsPanel gdManageBookings balance :#{p:resolveFirstComponentWithId('balance',view).clientId} "
                                                 ></p:commandButton>
 
-                                            <p:dataTable id="tblBillItemsForAddingNewItem" 
+                                            <p:dataTable styleClass="p-datatable-sm" id="tblBillItemsForAddingNewItem" 
                                                          value="#{bookingControllerViewScope.selectedBillSession.bill.billItems}" 
                                                          var="bi" >
                                                 <p:column >
@@ -835,7 +835,7 @@
                                             </p:dataTable>
                                             
                                             <p:growl id="msg" life="2000"></p:growl>
-                                            <p:dataTable 
+                                            <p:dataTable styleClass="p-datatable-sm" 
                                                 id="tblBillFeesForAddingNewItem" 
                                                 value="#{bookingControllerViewScope.selectedBillSession.bill.billFeesWIthoutZeroValue}" 
                                                 var="bf" >
@@ -1372,7 +1372,8 @@
                                         class="ui-button-danger" 
                                         icon="fas fa-cancel"
                                         disabled="#{ bookingControllerViewScope.selectedBillSession.bill.refunded==true
-                                                     or bookingControllerViewScope.selectedBillSession.bill.cancelled==true}"
+                                                     or bookingControllerViewScope.selectedBillSession.bill.cancelled==true
+                                                     or bookingControllerViewScope.selectedBillACancellationBill}"
                                         onclick="PF('confirmationDialog').show();">
                                     </p:commandButton>
                                 </div>
@@ -1489,7 +1490,7 @@
                                                                     <h:outputLabel value="Refundable Total : "/>
                                                                     <h:outputLabel id="tot" value="#{bookingControllerViewScope.refundableTotal}"/>
                                                                 </h:panelGrid>-->
-                                <p:dataTable value="#{bookingControllerViewScope.billSession.bill.referenceBill ne null ? 
+                                <p:dataTable styleClass="p-datatable-sm" value="#{bookingControllerViewScope.billSession.bill.referenceBill ne null ? 
                                                       (bookingControllerViewScope.billSession.bill.referenceBill.onlineBooking ne null ? 
                                                       bookingControllerViewScope.billSession.bill.referenceBill.billFeesWIthoutZeroValue : 
                                                       bookingControllerViewScope.billSession.bill.billFeesWIthoutZeroValue):
@@ -1654,7 +1655,7 @@
 
                             </p:commandButton>
 
-                            <p:dataTable id="bSessionSearch" value="#{channelSearchController.searchedBillSessions}" var='bs'
+                            <p:dataTable styleClass="p-datatable-sm" id="bSessionSearch" value="#{channelSearchController.searchedBillSessions}" var='bs'
                                          filteredValue="#{channelSearchController.filteredbillSessions}">
 
 
@@ -1836,7 +1837,7 @@
                                             <p:panel header="Other Sessions">
                                                 <p:commandButton id="btnFill" class="m-1" value="FIll" action="#{bookingControllerViewScope.fillSessionInstanceByDoctor()}" process="btnFill" update="lstSelect" />
                                                 <h:panelGroup id="lstSelect">
-                                                    <p:dataTable value="#{bookingControllerViewScope.sessionInstanceByDoctor}" var="myItem" selection="#{bookingControllerViewScope.selectedSessionInstanceForRechedule}" selectionMode="single"  rowKey="#{myItem.id}">
+                                                    <p:dataTable styleClass="p-datatable-sm" value="#{bookingControllerViewScope.sessionInstanceByDoctor}" var="myItem" selection="#{bookingControllerViewScope.selectedSessionInstanceForRechedule}" selectionMode="single"  rowKey="#{myItem.id}">
                                                         <p:column>
                                                             <f:facet name="header">Name</f:facet>
                                                                 #{myItem.name}

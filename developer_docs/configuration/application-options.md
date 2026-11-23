@@ -63,6 +63,12 @@ A print or settings dialog must use the **same** controller as the page or templ
 | ---------------------------------------------------------------- | --------- | ------- | ------------------------------------------------------------------------------------------------------- |
 | `Show alternative medicines available during retail sale`        | Boolean   | `true`  | Gates the on-demand "Alternatives" (substitute medicines) UI on the Retail Sale, Fast Sale and Sale for Cashier pages. When `true`, each bill-item row shows a Substitute button that opens a dialog listing in-stock, non-expired substitute stocks in the current department (FEFO order) and lets the cashier swap one in. When `false`, no Substitute control appears and no alternatives query runs. See issue #21697. |
 
+## Top Menu
+
+| Key                                                              | Type      | Default | Description                                                                                             |
+| ---------------------------------------------------------------- | --------- | ------- | ------------------------------------------------------------------------------------------------------- |
+| `Show Tooltips on Top Menu Icons`                                | Boolean   | `false` | When `true`, hovering a top-level icon in the menu bar (OPD, Pharmacy, Reports, ...) shows its name as a tooltip. Default off because tooltip popups delay mouse movement. The accessible name (`aria-label`) is always set. Read in `resources/ezcomp/menu.xhtml`. See issue #25846. |
+
 ## OPD Billing
 
 | Key                                                              | Type      | Default | Description                                                                                             |
@@ -243,3 +249,9 @@ Set the rate at: Administration → Manage Inpatient Services → tab Charge Typ
 ## From CLAUDE.md (moved detail)
 
 never change the meaning of an existing config key (no added/removed `!`, no new default). Hospitals store a value per key; create a new key whose name says what `true` does. CI `config-semantics-guard` fails PRs that do this.
+
+## Two-factor login
+
+| Key | Type | Default | Description |
+| --- | --- | --- | --- |
+| `Refuse API logins of accounts not ticked as Service account while two-factor login is required for all users` | Boolean | `false` | When `true`, and both `Enable authenticator app two-factor login` and `Require authenticator app two-factor login for all users` are on, name-and-password logins (lab analysers, middleware, channelling API) are accepted only for accounts ticked as Service account on Manage User. When `false`, the "all users" switch does not affect those logins. See `developer_docs/deployment/two-factor-login-server-setup.md`. |

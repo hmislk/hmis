@@ -1,0 +1,140 @@
+-- Migration v2.28.0: OPD quotation tables
+-- Issue: #25885 (OPD quotation of services)
+--
+-- Creates OPDQUOTATION and OPDQUOTATIONITEM, mapped by the OpdQuotation and
+-- OpdQuotationItem entities. Production has no DDL generation, so run this before
+-- deploying a build that includes those entities.
+--
+-- Safe to re-run: each table is created only when missing.
+--
+-- UNIVERSAL: detects actual table-name case via INFORMATION_SCHEMA so this works on both
+-- case-sensitive (Linux, lower_case_table_names=0) and case-insensitive (Windows/Azure) MySQL.
+-- New tables are created in the same case as the existing WEBUSER table.
+
+SELECT 'Migration v2.28.0 - OPD quotation tables' AS status;
+
+SET @webuser_table = (
+    SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES
+    WHERE TABLE_SCHEMA = DATABASE() AND UPPER(TABLE_NAME) = 'WEBUSER' LIMIT 1
+);
+SET @institution_table = (
+    SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES
+    WHERE TABLE_SCHEMA = DATABASE() AND UPPER(TABLE_NAME) = 'INSTITUTION' LIMIT 1
+);
+SET @department_table = (
+    SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES
+    WHERE TABLE_SCHEMA = DATABASE() AND UPPER(TABLE_NAME) = 'DEPARTMENT' LIMIT 1
+);
+SET @patient_table = (
+    SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES
+    WHERE TABLE_SCHEMA = DATABASE() AND UPPER(TABLE_NAME) = 'PATIENT' LIMIT 1
+);
+SET @scheme_table = (
+    SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES
+    WHERE TABLE_SCHEMA = DATABASE() AND UPPER(TABLE_NAME) = 'PAYMENTSCHEME' LIMIT 1
+);
+SET @item_ref_table = (
+    SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES
+    WHERE TABLE_SCHEMA = DATABASE() AND UPPER(TABLE_NAME) = 'ITEM' LIMIT 1
+);
+
+SELECT CONCAT('WEBUSER: ', COALESCE(@webuser_table, 'NOT FOUND'),
+              ', INSTITUTION: ', COALESCE(@institution_table, 'NOT FOUND'),
+              ', DEPARTMENT: ', COALESCE(@department_table, 'NOT FOUND'),
+              ', PATIENT: ', COALESCE(@patient_table, 'NOT FOUND'),
+              ', PAYMENTSCHEME: ', COALESCE(@scheme_table, 'NOT FOUND'),
+              ', ITEM: ', COALESCE(@item_ref_table, 'NOT FOUND')) AS info;
+
+-- Case for the new tables follows the existing WEBUSER table
+SET @quotation_table = IF(@webuser_table = UPPER(@webuser_table), 'OPDQUOTATION', 'opdquotation');
+SET @quotation_item_table = IF(@webuser_table = UPPER(@webuser_table), 'OPDQUOTATIONITEM', 'opdquotationitem');
+
+-- STEP 1: OPDQUOTATION
+SET @exists = (
+    SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES
+    WHERE TABLE_SCHEMA = DATABASE() AND UPPER(TABLE_NAME) = 'OPDQUOTATION'
+);
+SET @sql = IF(@webuser_table IS NULL OR @institution_table IS NULL OR @department_table IS NULL
+              OR @patient_table IS NULL OR @scheme_table IS NULL,
+    'SELECT "SKIPPED: WEBUSER, INSTITUTION, DEPARTMENT, PATIENT or PAYMENTSCHEME table not found" AS status',
+    IF(@exists > 0,
+        'SELECT "SKIPPED: OPDQUOTATION already exists" AS status',
+        CONCAT('CREATE TABLE ', @quotation_table, ' (
+            ID BIGINT NOT NULL AUTO_INCREMENT,
+            QUOTATIONNO VARCHAR(255) DEFAULT NULL,
+            CUSTOMERNAME VARCHAR(255) DEFAULT NULL,
+            CUSTOMERPHONE VARCHAR(255) DEFAULT NULL,
+            PAYMENTMETHOD VARCHAR(255) DEFAULT NULL,
+            FOREIGNER TINYINT(1) DEFAULT 0,
+            VALIDUNTIL DATE DEFAULT NULL,
+            GROSSTOTAL DOUBLE DEFAULT NULL,
+            DISCOUNT DOUBLE DEFAULT NULL,
+            NETTOTAL DOUBLE DEFAULT NULL,
+            COMMENTS VARCHAR(255) DEFAULT NULL,
+            CREATEDAT DATETIME DEFAULT NULL,
+            RETIRED TINYINT(1) DEFAULT 0,
+            RETIREDAT DATETIME DEFAULT NULL,
+            PATIENT_ID BIGINT DEFAULT NULL,
+            PAYMENTSCHEME_ID BIGINT DEFAULT NULL,
+            CREDITCOMPANY_ID BIGINT DEFAULT NULL,
+            DEPARTMENT_ID BIGINT DEFAULT NULL,
+            INSTITUTION_ID BIGINT DEFAULT NULL,
+            CREATER_ID BIGINT DEFAULT NULL,
+            RETIRER_ID BIGINT DEFAULT NULL,
+            PRIMARY KEY (ID),
+            KEY FK_OPDQUOTATION_PATIENT_ID (PATIENT_ID),
+            KEY FK_OPDQUOTATION_PAYMENTSCHEME_ID (PAYMENTSCHEME_ID),
+            KEY FK_OPDQUOTATION_CREDITCOMPANY_ID (CREDITCOMPANY_ID),
+            KEY FK_OPDQUOTATION_DEPARTMENT_ID (DEPARTMENT_ID),
+            KEY FK_OPDQUOTATION_INSTITUTION_ID (INSTITUTION_ID),
+            KEY FK_OPDQUOTATION_CREATER_ID (CREATER_ID),
+            KEY FK_OPDQUOTATION_RETIRER_ID (RETIRER_ID),
+            KEY IDX_OPDQUOTATION_QUOTATIONNO (QUOTATIONNO),
+            CONSTRAINT FK_OPDQUOTATION_PATIENT_ID FOREIGN KEY (PATIENT_ID) REFERENCES ', @patient_table, ' (ID),
+            CONSTRAINT FK_OPDQUOTATION_PAYMENTSCHEME_ID FOREIGN KEY (PAYMENTSCHEME_ID) REFERENCES ', @scheme_table, ' (ID),
+            CONSTRAINT FK_OPDQUOTATION_CREDITCOMPANY_ID FOREIGN KEY (CREDITCOMPANY_ID) REFERENCES ', @institution_table, ' (ID),
+            CONSTRAINT FK_OPDQUOTATION_DEPARTMENT_ID FOREIGN KEY (DEPARTMENT_ID) REFERENCES ', @department_table, ' (ID),
+            CONSTRAINT FK_OPDQUOTATION_INSTITUTION_ID FOREIGN KEY (INSTITUTION_ID) REFERENCES ', @institution_table, ' (ID),
+            CONSTRAINT FK_OPDQUOTATION_CREATER_ID FOREIGN KEY (CREATER_ID) REFERENCES ', @webuser_table, ' (ID),
+            CONSTRAINT FK_OPDQUOTATION_RETIRER_ID FOREIGN KEY (RETIRER_ID) REFERENCES ', @webuser_table, ' (ID)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4')
+    )
+);
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+
+-- STEP 2: OPDQUOTATIONITEM (references the quotation table created above)
+SET @quotation_actual = (
+    SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES
+    WHERE TABLE_SCHEMA = DATABASE() AND UPPER(TABLE_NAME) = 'OPDQUOTATION' LIMIT 1
+);
+SET @exists = (
+    SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES
+    WHERE TABLE_SCHEMA = DATABASE() AND UPPER(TABLE_NAME) = 'OPDQUOTATIONITEM'
+);
+SET @sql = IF(@item_ref_table IS NULL OR @quotation_actual IS NULL,
+    'SELECT "SKIPPED: ITEM or OPDQUOTATION table not found" AS status',
+    IF(@exists > 0,
+        'SELECT "SKIPPED: OPDQUOTATIONITEM already exists" AS status',
+        CONCAT('CREATE TABLE ', @quotation_item_table, ' (
+            ID BIGINT NOT NULL AUTO_INCREMENT,
+            ITEMNAME VARCHAR(255) DEFAULT NULL,
+            QUANTITY DOUBLE DEFAULT NULL,
+            GROSSVALUE DOUBLE DEFAULT NULL,
+            DISCOUNT DOUBLE DEFAULT NULL,
+            NETVALUE DOUBLE DEFAULT NULL,
+            RETIRED TINYINT(1) DEFAULT 0,
+            QUOTATION_ID BIGINT DEFAULT NULL,
+            ITEM_ID BIGINT DEFAULT NULL,
+            PRIMARY KEY (ID),
+            KEY FK_OPDQUOTATIONITEM_QUOTATION_ID (QUOTATION_ID),
+            KEY FK_OPDQUOTATIONITEM_ITEM_ID (ITEM_ID),
+            CONSTRAINT FK_OPDQUOTATIONITEM_QUOTATION_ID FOREIGN KEY (QUOTATION_ID) REFERENCES ', @quotation_actual, ' (ID),
+            CONSTRAINT FK_OPDQUOTATIONITEM_ITEM_ID FOREIGN KEY (ITEM_ID) REFERENCES ', @item_ref_table, ' (ID)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4')
+    )
+);
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;

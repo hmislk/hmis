@@ -60,6 +60,9 @@ import javax.inject.Named;
 @SessionScoped
 public class SaleReturnController implements Serializable, com.divudi.bean.common.ControllerWithMultiplePayments {
 
+    @javax.ejb.EJB
+    private com.divudi.service.CreditCompanyClaimService creditCompanyClaimService;
+
     private Bill bill;
     private Bill returnBill;
     private Bill finalReturnBill;
@@ -775,6 +778,11 @@ public class SaleReturnController implements Serializable, com.divudi.bean.commo
             }
         }
 
+        String openClaimMessage = creditCompanyClaimService.openClaimRefusal(bill);
+        if (openClaimMessage != null) {
+            JsfUtil.addErrorMessage(openClaimMessage);
+            return;
+        }
         String returnBlockReason = pharmacyRetailSaleReturnPolicyService.checkReturnAllowed(bill);
         if (returnBlockReason != null) {
             JsfUtil.addErrorMessage(returnBlockReason);

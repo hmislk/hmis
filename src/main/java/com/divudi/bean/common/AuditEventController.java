@@ -203,7 +203,7 @@ public class AuditEventController implements Serializable {
         params.put("id", billId);
         items = getFacade().findByJpql(jpql, params);
         if (items != null) {
-            items.forEach(AuditEvent::calculateDifference);
+            items.forEach(this::calculateDifferenceHidingSecrets);
         }
         return "/audit/all_audit_events?faces-redirect=true";
     }
@@ -218,7 +218,7 @@ public class AuditEventController implements Serializable {
         hm.put("td", toDate);
         items = getFacade().findByJpql(jpql, hm, TemporalType.TIMESTAMP);
         for (AuditEvent ae : items) {
-            ae.calculateDifference();
+            calculateDifferenceHidingSecrets(ae);
         }
     }
     
@@ -257,7 +257,7 @@ public class AuditEventController implements Serializable {
         hm.put("td", getToDate());
         items = getFacade().findByJpql(jpql, hm, TemporalType.TIMESTAMP);
         if (items != null) {
-            items.forEach(AuditEvent::calculateDifference);
+            items.forEach(this::calculateDifferenceHidingSecrets);
         }
     }
 
@@ -285,18 +285,39 @@ public class AuditEventController implements Serializable {
         return jsonValue(source, "optionKey");
     }
 
+    private boolean isSecretConfigEvent(AuditEvent ae) {
+        return ae != null && ConfigOptionController.isSecretKey(getOptionKey(ae));
+    }
+
+    private String hideIfSecret(AuditEvent ae, String json, String value) {
+        if (!isSecretConfigEvent(ae)) {
+            return value;
+        }
+        return ConfigOptionController.auditDisplay(getOptionKey(ae), jsonValue(json, "valueType"), value);
+    }
+
+    private void calculateDifferenceHidingSecrets(AuditEvent ae) {
+        ae.calculateDifference();
+        if (isSecretConfigEvent(ae)) {
+            String key = getOptionKey(ae);
+            String before = ae.getBeforeJson() == null ? "" : getBeforeValue(ae);
+            String after = ae.getAfterJson() == null ? "" : getAfterValue(ae);
+            ae.setDifference("optionKey: " + key + "\noptionValue: Before: " + before + ", After: " + after);
+        }
+    }
+
     public String getBeforeValue(AuditEvent ae) {
         if (ae == null) {
             return "";
         }
-        return jsonValue(ae.getBeforeJson(), "optionValue");
+        return hideIfSecret(ae, ae.getBeforeJson(), jsonValue(ae.getBeforeJson(), "optionValue"));
     }
 
     public String getAfterValue(AuditEvent ae) {
         if (ae == null) {
             return "";
         }
-        return jsonValue(ae.getAfterJson(), "optionValue");
+        return hideIfSecret(ae, ae.getAfterJson(), jsonValue(ae.getAfterJson(), "optionValue"));
     }
 
     public void prepareAdd() {

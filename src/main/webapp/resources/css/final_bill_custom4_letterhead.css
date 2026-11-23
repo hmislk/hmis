@@ -49,8 +49,13 @@
     size: 22.5cm 28cm;
     margin-top: 4cm;
     margin-bottom: 1cm;
-    margin-left: 0;
-    margin-right: 0;
+    /* Must carry a unit ("0cm", not "0"): Paged.js copies these into
+       calc(<page width> - <margin-left> - <margin-right>) for its page grid, and a
+       unitless 0 makes that calc invalid on current Chrome. The page area then
+       collapses to ~17cm, the 214mm bill overflows sideways and Paged.js slices it
+       into dozens of pages (#25876). */
+    margin-left: 0cm;
+    margin-right: 0cm;
 }
 
 /* Page 1's header space mostly comes from finalBillCustom4.xhtml's own inline

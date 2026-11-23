@@ -13,7 +13,9 @@ import com.divudi.core.entity.Institution;
 import com.divudi.core.facade.InstitutionFacade;
 import java.io.Serializable;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
@@ -39,7 +41,9 @@ public class BankController implements Serializable {
     String selectText = "";
 
     public List<Institution> getSelectedItems() {
-        selectedItems = getFacade().findByJpql("select c from Institution c where c.retired=false and i.institutionType = com.divudi.core.data.InstitutionType.Bank and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
+        Map<String, Object> m = new HashMap<>();
+        m.put("sel", "%" + getSelectText().toUpperCase() + "%");
+        selectedItems = getFacade().findByJpql("select c from Institution c where c.retired=false and i.institutionType = com.divudi.core.data.InstitutionType.Bank and (c.name) like :sel order by c.name", m);
         return selectedItems;
     }
 

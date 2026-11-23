@@ -4016,6 +4016,10 @@ public class PharmacySaleReportController implements Serializable {
     double totalDisposal;
     double totalDisposalQty;
     double totalTransferReceive;
+    double totalDirectPurchase;
+    double totalDirectPurchaseQty;
+    double totalStockAdjustment;
+    double totalStockAdjustmentQty;
     double totalInwardIssue;
     double totalDepartmentIssue;
     double totalTatalValue;
@@ -4242,6 +4246,27 @@ public class PharmacySaleReportController implements Serializable {
             BillTypeAtomic.PHARMACY_RECEIVE_CANCELLED
     ));
 
+    // Stock coming in from a supplier without a GRN (#25682)
+    private static final List<BillTypeAtomic> CATEGORY_MOVEMENT_DIRECT_PURCHASE = Collections.unmodifiableList(Arrays.asList(
+            BillTypeAtomic.PHARMACY_DIRECT_PURCHASE,
+            BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_PRE,
+            BillTypeAtomic.PHARMACY_WHOLESALE_DIRECT_PURCHASE_BILL
+    ));
+    private static final List<BillTypeAtomic> CATEGORY_MOVEMENT_DIRECT_PURCHASE_REVERSAL = Collections.unmodifiableList(Arrays.asList(
+            BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_CANCELLED,
+            BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND,
+            BillTypeAtomic.PHARMACY_WHOLESALE_DIRECT_PURCHASE_BILL_CANCELLED,
+            BillTypeAtomic.PHARMACY_WHOLESALE_DIRECT_PURCHASE_BILL_REFUND
+    ));
+    // Department stock adjustment and the stock-take (verification) adjustment
+    // (#25680). Their line quantity is the signed change (new stock - stock
+    // before, or the counted variance), so it is summed with its sign, not as
+    // abs(). Rate and expiry adjustments do not change the quantity and are not listed.
+    private static final List<BillTypeAtomic> CATEGORY_MOVEMENT_STOCK_ADJUSTMENT = Collections.unmodifiableList(Arrays.asList(
+            BillTypeAtomic.PHARMACY_STOCK_ADJUSTMENT,
+            BillTypeAtomic.PHARMACY_STOCK_ADJUSTMENT_BILL
+    ));
+
     private static final String CATEGORY_MOVEMENT_ROW_MOVEMENT = "Movement";
     private static final String CATEGORY_MOVEMENT_ROW_REVERSAL = "Cancellation / Return";
 
@@ -4251,7 +4276,8 @@ public class PharmacySaleReportController implements Serializable {
                 || CATEGORY_MOVEMENT_INWARD_ISSUE_REVERSAL.contains(a)
                 || CATEGORY_MOVEMENT_DEPARTMENT_ISSUE_REVERSAL.contains(a)
                 || CATEGORY_MOVEMENT_DISPOSAL_REVERSAL.contains(a)
-                || CATEGORY_MOVEMENT_TRANSFER_RECEIVE_REVERSAL.contains(a);
+                || CATEGORY_MOVEMENT_TRANSFER_RECEIVE_REVERSAL.contains(a)
+                || CATEGORY_MOVEMENT_DIRECT_PURCHASE_REVERSAL.contains(a);
     }
 
     private boolean isCategoryMovementForward(BillTypeAtomic a) {
@@ -4263,7 +4289,23 @@ public class PharmacySaleReportController implements Serializable {
                 || CATEGORY_MOVEMENT_INWARD_ISSUE.contains(a)
                 || CATEGORY_MOVEMENT_DEPARTMENT_ISSUE.contains(a)
                 || CATEGORY_MOVEMENT_DISPOSAL.contains(a)
-                || CATEGORY_MOVEMENT_TRANSFER_RECEIVE.contains(a);
+                || CATEGORY_MOVEMENT_TRANSFER_RECEIVE.contains(a)
+                || CATEGORY_MOVEMENT_DIRECT_PURCHASE.contains(a);
+    }
+
+    private CategoryMovementReportDTO categoryMovementRow(Map<String, CategoryMovementReportDTO> rowsByKey,
+            Long itemId, String itemName, String itemCode, boolean reversal) {
+        String key = itemId + (reversal ? "-R" : "-M");
+        CategoryMovementReportDTO r = rowsByKey.get(key);
+        if (r == null) {
+            r = new CategoryMovementReportDTO();
+            r.setItemId(itemId);
+            r.setItemName(itemName);
+            r.setItemCode(itemCode);
+            r.setRowType(reversal ? CATEGORY_MOVEMENT_ROW_REVERSAL : CATEGORY_MOVEMENT_ROW_MOVEMENT);
+            rowsByKey.put(key, r);
+        }
+        return r;
     }
 
     private List<BillTypeAtomic> categoryMovementAtomics() {
@@ -4280,6 +4322,9 @@ public class PharmacySaleReportController implements Serializable {
         all.addAll(CATEGORY_MOVEMENT_DISPOSAL_REVERSAL);
         all.addAll(CATEGORY_MOVEMENT_TRANSFER_RECEIVE);
         all.addAll(CATEGORY_MOVEMENT_TRANSFER_RECEIVE_REVERSAL);
+        all.addAll(CATEGORY_MOVEMENT_DIRECT_PURCHASE);
+        all.addAll(CATEGORY_MOVEMENT_DIRECT_PURCHASE_REVERSAL);
+        all.addAll(CATEGORY_MOVEMENT_STOCK_ADJUSTMENT);
         return all;
     }
 
@@ -4328,7 +4373,10 @@ public class PharmacySaleReportController implements Serializable {
                 + " sum(abs(bi.netValue)), "
                 + " sum(abs(ib.purcahseRate * pbi.qty)), "
                 + " sum(abs(pbi.qty)), "
-                + " sum(abs(rbi.netRate * pbi.qty)) "
+                + " sum(abs(rbi.netRate * pbi.qty)), "
+                + " sum(pbi.qty), "
+                + " sum(ib.purcahseRate * pbi.qty), "
+                + " sum(abs(pbi.freeQty)) "
                 + " from PharmaceuticalBillItem pbi "
                 + " join pbi.billItem bi "
                 + " join bi.bill b "
@@ -4375,6 +4423,22 @@ public class PharmacySaleReportController implements Serializable {
                 if (atomic == BillTypeAtomic.ACCEPT_RETURN_MEDICINE_INWARD && sv == 0) {
                     sv = o[9] == null ? 0.0 : ((Number) o[9]).doubleValue();
                 }
+                if (CATEGORY_MOVEMENT_STOCK_ADJUSTMENT.contains(atomic)) {
+                    // Signed: an increase is plus, a reduction minus, on the Movement row
+                    double adjQty = o[10] == null ? 0.0 : ((Number) o[10]).doubleValue();
+                    double adjValue = o[11] == null ? 0.0 : ((Number) o[11]).doubleValue();
+                    if (adjQty == 0 && adjValue == 0) {
+                        continue;
+                    }
+                    CategoryMovementReportDTO r = categoryMovementRow(rowsByKey, itemId, (String) o[4], (String) o[5], false);
+                    r.setStockAdjustment(r.getStockAdjustment() + adjValue);
+                    r.setStockAdjustmentQty(r.getStockAdjustmentQty() + adjQty);
+                    continue;
+                }
+                if (CATEGORY_MOVEMENT_DIRECT_PURCHASE.contains(atomic) || CATEGORY_MOVEMENT_DIRECT_PURCHASE_REVERSAL.contains(atomic)) {
+                    // Free items enter stock too, at no cost
+                    qty += o[12] == null ? 0.0 : ((Number) o[12]).doubleValue();
+                }
                 if (sv == 0 && cv == 0 && qty == 0) {
                     continue;
                 }
@@ -4395,16 +4459,7 @@ public class PharmacySaleReportController implements Serializable {
                 cv = sign * cv;
                 qty = sign * qty;
 
-                String key = itemId + (reversal ? "-R" : "-M");
-                CategoryMovementReportDTO r = rowsByKey.get(key);
-                if (r == null) {
-                    r = new CategoryMovementReportDTO();
-                    r.setItemId(itemId);
-                    r.setItemName((String) o[4]);
-                    r.setItemCode((String) o[5]);
-                    r.setRowType(reversal ? CATEGORY_MOVEMENT_ROW_REVERSAL : CATEGORY_MOVEMENT_ROW_MOVEMENT);
-                    rowsByKey.put(key, r);
-                }
+                CategoryMovementReportDTO r = categoryMovementRow(rowsByKey, itemId, (String) o[4], (String) o[5], reversal);
 
                 if (CATEGORY_MOVEMENT_OPD_SALE.contains(columnAtomic) || CATEGORY_MOVEMENT_OPD_SALE_REVERSAL.contains(columnAtomic)) {
                     r.setOpdSale(r.getOpdSale() + sv);
@@ -4434,6 +4489,12 @@ public class PharmacySaleReportController implements Serializable {
                     // stock actually kept from transfers.
                     r.setTransferReceive(r.getTransferReceive() + cv);
                     r.setTransferReceiveQty(r.getTransferReceiveQty() + qty);
+                } else if (CATEGORY_MOVEMENT_DIRECT_PURCHASE.contains(columnAtomic) || CATEGORY_MOVEMENT_DIRECT_PURCHASE_REVERSAL.contains(columnAtomic)) {
+                    // Stock coming in, like Transfer Receive: its own column at purchase
+                    // value, not part of the outgoing total; a cancellation or return to
+                    // the supplier is minus on the Cancellation / Return row (#25682).
+                    r.setDirectPurchase(r.getDirectPurchase() + cv);
+                    r.setDirectPurchaseQty(r.getDirectPurchaseQty() + qty);
                 }
             }
         }
@@ -4451,6 +4512,10 @@ public class PharmacySaleReportController implements Serializable {
         totalDisposal = 0.0;
         totalDisposalQty = 0.0;
         totalTransferReceive = 0.0;
+        totalDirectPurchase = 0.0;
+        totalDirectPurchaseQty = 0.0;
+        totalStockAdjustment = 0.0;
+        totalStockAdjustmentQty = 0.0;
         totalPurchaseValue = 0.0;
         totalTatalValue = 0.0;
         totalMargineValue = 0.0;
@@ -4467,6 +4532,10 @@ public class PharmacySaleReportController implements Serializable {
             totalDisposal += row.getDisposal();
             totalDisposalQty += row.getDisposalQty();
             totalTransferReceive += row.getTransferReceive();
+            totalDirectPurchase += row.getDirectPurchase();
+            totalDirectPurchaseQty += row.getDirectPurchaseQty();
+            totalStockAdjustment += row.getStockAdjustment();
+            totalStockAdjustmentQty += row.getStockAdjustmentQty();
             totalPurchaseValue += row.getPurchaseValue();
             totalTatalValue += row.getTotal();
             totalMargineValue += row.getMarginValue();
@@ -8570,6 +8639,22 @@ public class PharmacySaleReportController implements Serializable {
 
     public double getTotalTransferReceive() {
         return totalTransferReceive;
+    }
+
+    public double getTotalDirectPurchase() {
+        return totalDirectPurchase;
+    }
+
+    public double getTotalStockAdjustment() {
+        return totalStockAdjustment;
+    }
+
+    public double getTotalDirectPurchaseQty() {
+        return totalDirectPurchaseQty;
+    }
+
+    public double getTotalStockAdjustmentQty() {
+        return totalStockAdjustmentQty;
     }
 
     public double getTotalOpdSale() {

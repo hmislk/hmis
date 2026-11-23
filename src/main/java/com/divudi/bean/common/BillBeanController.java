@@ -264,6 +264,7 @@ public class BillBeanController implements Serializable {
         String sql = "SELECT sum(bf.feeValue)"
                 + " FROM BillFee bf "
                 + " WHERE bf.bill.billType=:bTp"
+                + " and (bf.collectedByDoctorAtBilling = false or bf.collectedByDoctorAtBilling is null)"
                 + " and bf.fee.feeType=:ftp "
                 + " and bf.bill.institution=:ins"
                 + " and bf.bill.toInstitution=:ins"
@@ -292,6 +293,7 @@ public class BillBeanController implements Serializable {
         String sql = "SELECT sum(bf.feeValue)"
                 + " FROM BillFee bf "
                 + " WHERE bf.bill.billType=:bTp"
+                + " and (bf.collectedByDoctorAtBilling = false or bf.collectedByDoctorAtBilling is null)"
                 + " and bf.fee.feeType in :fts "
                 + " and bf.bill.institution=:ins "
                 + " and bf.bill.toInstitution=:ins "
@@ -347,6 +349,7 @@ public class BillBeanController implements Serializable {
         String sql = "SELECT sum(bf.feeValue)"
                 + " FROM BillFee bf "
                 + " WHERE bf.bill.billType=:bTp"
+                + " and (bf.collectedByDoctorAtBilling = false or bf.collectedByDoctorAtBilling is null)"
                 + " and bf.fee.feeType=:ftp "
                 + " and bf.bill.institution=:ins"
                 + " and bf.bill.creditCompany is not null "
@@ -368,6 +371,7 @@ public class BillBeanController implements Serializable {
         String sql = "SELECT sum(bf.feeValue)"
                 + " FROM BillFee bf "
                 + " WHERE bf.bill.billType=:bTp"
+                + " and (bf.collectedByDoctorAtBilling = false or bf.collectedByDoctorAtBilling is null)"
                 + " and ( bf.fee.feeType=:ftp1 "
                 + " or bf.fee.feeType=:ftp2 ) "
                 + " and bf.bill.institution=:ins"
@@ -411,6 +415,7 @@ public class BillBeanController implements Serializable {
         String sql = "SELECT sum(bf.feeValue)"
                 + " FROM BillFee bf "
                 + " WHERE bf.bill.billType=:bTp"
+                + " and (bf.collectedByDoctorAtBilling = false or bf.collectedByDoctorAtBilling is null)"
                 + " and bf.fee.feeType=:ftp1 "
                 + " and bf.bill.institution=:ins"
                 + " and bf.bill.toInstitution=:ins"
@@ -439,6 +444,7 @@ public class BillBeanController implements Serializable {
         String sql = "SELECT sum(bf.feeValue)"
                 + " FROM BillFee bf "
                 + " WHERE bf.bill.billType=:bTp"
+                + " and (bf.collectedByDoctorAtBilling = false or bf.collectedByDoctorAtBilling is null)"
                 + " and bf.fee.feeType in :ftps "
                 + " and bf.bill.institution=:ins"
                 + " and bf.bill.toInstitution=:ins"
@@ -570,6 +576,7 @@ public class BillBeanController implements Serializable {
         String sql = "SELECT sum(bf.feeValue)"
                 + " FROM BillFee bf "
                 + " WHERE bf.bill.billType=:bTp"
+                + " and (bf.collectedByDoctorAtBilling = false or bf.collectedByDoctorAtBilling is null)"
                 + " and bf.fee.feeType=:ftp1 "
                 //                + " and bf.bill.institution=:ins"
                 + " and bf.billItem.item.department.institution=:ins"
@@ -594,6 +601,7 @@ public class BillBeanController implements Serializable {
         String sql = "SELECT sum(bf.feeValue)"
                 + " FROM BillFee bf "
                 + " WHERE bf.bill.billType=:bTp"
+                + " and (bf.collectedByDoctorAtBilling = false or bf.collectedByDoctorAtBilling is null)"
                 + " and ( bf.fee.feeType=:ftp1 "
                 + " or bf.fee.feeType=:ftp2 ) "
                 + " and bf.bill.institution=:ins"
@@ -1374,6 +1382,7 @@ public class BillBeanController implements Serializable {
         String sql = "SELECT sum(bf.feeValue)"
                 + " FROM BillFee bf"
                 + " WHERE bf.billItem.bill.institution=:ins "
+                + " and (bf.collectedByDoctorAtBilling = false or bf.collectedByDoctorAtBilling is null)"
                 + " and bf.billItem.item.institution!=:ins "
                 + " and bf.fee.feeType=:ftp "
                 + " and bf.billItem.bill.createdAt between :fromDate and :toDate "
@@ -2255,6 +2264,7 @@ public class BillBeanController implements Serializable {
         sql = "select bf.billItem.item,sum(bf.feeValue) "
                 + " FROM BillFee bf "
                 + " where bf.billItem.bill.institution=:ins "
+                + " and (bf.collectedByDoctorAtBilling = false or bf.collectedByDoctorAtBilling is null)"
                 + " and bf.billItem.item.department.institution=:ins "
                 + " and  bf.billItem.bill.billType= :bTp  "
                 + " and bf.billItem.item.category=:cat"
@@ -2295,6 +2305,7 @@ public class BillBeanController implements Serializable {
     public double calFeeValue(Item i, FeeType feeType, Date fromDate, Date toDate, Institution institution) {
         String sql = "SELECT sum(bf.feeValue) FROM BillFee bf "
                 + " WHERE bf.bill.billType=:bTp "
+                + " and (bf.collectedByDoctorAtBilling = false or bf.collectedByDoctorAtBilling is null)"
                 + " and bf.fee.feeType=:ftp "
                 + " and bf.bill.institution=:ins "
                 + " and bf.bill.createdAt between :fromDate and :toDate "
@@ -2323,6 +2334,7 @@ public class BillBeanController implements Serializable {
         String sql = "SELECT sum(bf.feeValue) "
                 + " FROM BillFee bf "
                 + " WHERE bf.bill.billType=:bTp "
+                + " and (bf.collectedByDoctorAtBilling = false or bf.collectedByDoctorAtBilling is null)"
                 + " and bf.fee.feeType=:ftp "
                 + " and bf.bill.institution=:ins "
                 + " and bf.bill.createdAt between :fromDate and :toDate "
@@ -2351,6 +2363,7 @@ public class BillBeanController implements Serializable {
         String sql = "SELECT sum(bf.feeValue) "
                 + " FROM BillFee bf "
                 + " WHERE bf.bill.billType=:bTp "
+                + " and (bf.collectedByDoctorAtBilling = false or bf.collectedByDoctorAtBilling is null)"
                 + " and bf.bill.institution=:ins "
                 + " and bf.bill.createdAt between :fromDate and :toDate "
                 + " and bf.billItem.item.category=:cat "
@@ -2377,6 +2390,7 @@ public class BillBeanController implements Serializable {
         String sql = "SELECT bf.billItem.item.category,sum(bf.feeValue) "
                 + " FROM BillFee bf "
                 + " WHERE bf.bill.billType=:bTp "
+                + " and (bf.collectedByDoctorAtBilling = false or bf.collectedByDoctorAtBilling is null)"
                 + " and bf.fee.feeType=:ftp "
                 + " and bf.bill.institution=:ins "
                 + " and bf.billItem.item.department.institution=:ins "
@@ -2406,6 +2420,7 @@ public class BillBeanController implements Serializable {
         String sql = "SELECT bf.billItem.item.category,sum(bf.feeValue) "
                 + " FROM BillFee bf "
                 + " WHERE bf.bill.billType=:bTp "
+                + " and (bf.collectedByDoctorAtBilling = false or bf.collectedByDoctorAtBilling is null)"
                 + " and bf.fee.feeType=:ftp "
                 + " and bf.bill.institution=:ins "
                 + " and bf.billItem.item.department.institution=:ins "
@@ -2435,6 +2450,7 @@ public class BillBeanController implements Serializable {
         String sql = "SELECT bf.billItem.item.category,sum(bf.feeValue) "
                 + " FROM BillFee bf "
                 + " WHERE bf.bill.billType=:bTp "
+                + " and (bf.collectedByDoctorAtBilling = false or bf.collectedByDoctorAtBilling is null)"
                 + " and (bf.fee.feeType=:ftp1"
                 + "  or bf.fee.feeType=:ftp2) "
                 + " and bf.bill.institution=:ins "
@@ -3801,10 +3817,11 @@ public class BillBeanController implements Serializable {
         sql = "select b from BilledBill b where"
                 + " b.billType = :billType and b.retired=false"
                 + " and  b.createdAt between :fromDate and :toDate"
-                + " and ((b.patient.person.name) like '%" + searchStr.toUpperCase() + "%' "
-                + " or (b.patient.person.phone) like '%" + searchStr.toUpperCase() + "%' "
-                + " or (b.insId) like '%" + searchStr.toUpperCase() + "%') order by b.insId desc  ";
+                + " and ((b.patient.person.name) like :searchText "
+                + " or (b.patient.person.phone) like :searchText "
+                + " or (b.insId) like :searchText) order by b.insId desc  ";
         temMap.put("billType", type);
+        temMap.put("searchText", "%" + searchStr.toUpperCase() + "%");
         temMap.put("toDate", toDate);
         temMap.put("fromDate", fromDate);
         lstBills = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
@@ -3822,10 +3839,11 @@ public class BillBeanController implements Serializable {
         sql = "select b from PreBill b where"
                 + " b.billType = :billType and b.retired=false"
                 + " and  b.createdAt between :fromDate and :toDate"
-                + " and ((b.patient.person.name) like '%" + searchStr.toUpperCase() + "%' "
-                + " or (b.patient.person.phone) like '%" + searchStr.toUpperCase() + "%' "
-                + " or (b.insId) like '%" + searchStr.toUpperCase() + "%') order by b.insId desc  ";
+                + " and ((b.patient.person.name) like :searchText "
+                + " or (b.patient.person.phone) like :searchText "
+                + " or (b.insId) like :searchText) order by b.insId desc  ";
         temMap.put("billType", type);
+        temMap.put("searchText", "%" + searchStr.toUpperCase() + "%");
         temMap.put("toDate", toDate);
         temMap.put("fromDate", fromDate);
         lstBills = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
@@ -3841,8 +3859,9 @@ public class BillBeanController implements Serializable {
         String sql;
         Map temMap = new HashMap();
         sql = "select b from BilledBill b where b.billType = :billType and b.institution.id=" + ins.getId() + " and b.retired=false and  b.createdAt between :fromDate "
-                + " and :toDate and ((b.patient.person.name) like '%" + searchStr.toUpperCase() + "%'  or (b.patient.person.phone) like '%" + searchStr.toUpperCase() + "%'  or (b.insId) like '%" + searchStr.toUpperCase() + "%') order by b.id desc  ";
+                + " and :toDate and ((b.patient.person.name) like :searchText  or (b.patient.person.phone) like :searchText  or (b.insId) like :searchText) order by b.id desc  ";
         temMap.put("billType", type);
+        temMap.put("searchText", "%" + searchStr.toUpperCase() + "%");
         temMap.put("toDate", toDate);
         temMap.put("fromDate", fromDate);
         lstBills = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
@@ -3860,7 +3879,8 @@ public class BillBeanController implements Serializable {
         if (searchStr == null || searchStr.trim().equals("")) {
             sql = "select b from BilledBill b where b.billType = :billType and b.retired=false and  b.createdAt between :fromDate and :toDate and b.creater.id = " + user.getId() + " order by b.id desc  ";
         } else {
-            sql = "select b from BilledBill b where b.billType = :billType and b.retired=false and  b.createdAt between :fromDate and :toDate and  b.creater.id = " + user.getId() + " and ((b.patient.person.name) like '%" + searchStr.toUpperCase() + "%'  or (b.patient.person.phone) like '%" + searchStr.toUpperCase() + "%'  or (b.insId) like '%" + searchStr.toUpperCase() + "%') order by b.id desc  ";
+            sql = "select b from BilledBill b where b.billType = :billType and b.retired=false and  b.createdAt between :fromDate and :toDate and  b.creater.id = " + user.getId() + " and ((b.patient.person.name) like :searchText  or (b.patient.person.phone) like :searchText  or (b.insId) like :searchText) order by b.id desc  ";
+            temMap.put("searchText", "%" + searchStr.toUpperCase() + "%");
         }
 
         temMap.put("billType", type);
@@ -3882,7 +3902,8 @@ public class BillBeanController implements Serializable {
         if (searchStr == null || searchStr.trim().equals("")) {
             sql = "select b from BilledBill b where b.billType = :billType and b.retired=false and b.institution.id=" + ins.getId() + " and b.createdAt between :fromDate and :toDate and b.creater.id = " + user.getId() + " order by b.id desc  ";
         } else {
-            sql = "select b from BilledBill b where b.billType = :billType and b.retired=false and b.institution.id=" + ins.getId() + " and b.createdAt between :fromDate and :toDate and  b.creater.id = " + user.getId() + " and ((b.patient.person.name) like '%" + searchStr.toUpperCase() + "%'  or (b.patient.person.phone) like '%" + searchStr.toUpperCase() + "%'  or (b.insId) like '%" + searchStr.toUpperCase() + "%') order by b.id desc  ";
+            sql = "select b from BilledBill b where b.billType = :billType and b.retired=false and b.institution.id=" + ins.getId() + " and b.createdAt between :fromDate and :toDate and  b.creater.id = " + user.getId() + " and ((b.patient.person.name) like :searchText  or (b.patient.person.phone) like :searchText  or (b.insId) like :searchText) order by b.id desc  ";
+            temMap.put("searchText", "%" + searchStr.toUpperCase() + "%");
         }
         temMap.put("billType", type);
         temMap.put("toDate", toDate);

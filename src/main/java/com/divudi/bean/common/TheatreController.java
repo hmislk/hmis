@@ -13,6 +13,8 @@ import com.divudi.core.entity.Department;
 import com.divudi.core.facade.DepartmentFacade;
 import java.io.Serializable;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.List;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
@@ -39,7 +41,9 @@ public class TheatreController implements Serializable {
     String selectText = "";
 
     public List<Department> getSelectedItems() {
-        selectedItems = getFacade().findByJpql("select c from Department c where c.retired=false and i.departmentType = com.divudi.core.data.DepartmentType.Theatre and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
+        Map<String, Object> likeParams = new HashMap<>();
+        likeParams.put("txt", "%" + getSelectText().toUpperCase() + "%");
+        selectedItems = getFacade().findByJpql("select c from Department c where c.retired=false and i.departmentType = com.divudi.core.data.DepartmentType.Theatre and (c.name) like :txt order by c.name", likeParams);
         return selectedItems;
     }
 

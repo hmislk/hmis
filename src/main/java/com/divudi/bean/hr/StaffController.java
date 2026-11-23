@@ -775,13 +775,13 @@ public class StaffController implements Serializable {
             sql = "select p from Staff p "
                     + " where p.retired=false "
                     + " and LENGTH(p.person.name) > 0 "
-                    + " and ((p.person.name) like '%" + query.toUpperCase() + "%' "
-                    + " or (p.code) like '%" + query.toUpperCase() + "%' "
-                    + " or (p.staffCode) like '%" + query.toUpperCase() + "%' )"
+                    + " and ((p.person.name) like :q "
+                    + " or (p.code) like :q "
+                    + " or (p.staffCode) like :q )"
                     + " order by p.person.name";
 
             //////System.out.println(sql);
-            suggestions = getEjbFacade().findByJpql(sql, 20);
+            suggestions = getEjbFacade().findByJpql(sql, java.util.Map.of("q", "%" + query.toUpperCase() + "%"), 20);
         }
         return suggestions;
     }
@@ -791,6 +791,9 @@ public class StaffController implements Serializable {
         String sql;
         HashMap hm = new HashMap();
         hm.put("class", Consultant.class);
+        if (query != null) {
+            hm.put("q", "%" + query.toUpperCase() + "%");
+        }
         if (query == null) {
             suggestions = new ArrayList<>();
         } else {
@@ -798,7 +801,7 @@ public class StaffController implements Serializable {
                     + " where s.retired=false "
                     + " and type(s)=:class "
                     + " and LENGTH(s.person.name) > 0 "
-                    + " and (s.person.name) like '%" + query.toUpperCase() + "%' "
+                    + " and (s.person.name) like :q "
                     + " order by s.person.name";
 
             //////System.out.println(sql);
@@ -840,12 +843,14 @@ public class StaffController implements Serializable {
                     + " where p.retired=false "
                     + " and (p.dateLeft is null or p.dateLeft>:cd)"
                     + " and LENGTH(p.person.name) > 0 "
-                    + " and ((p.person.name) like '%" + query.toUpperCase() + "%' "
-                    + " or (p.code)='" + query.toUpperCase() + "' "
-                    + " or (p.staffCode)='" + query.toUpperCase() + "' )"
+                    + " and ((p.person.name) like :q "
+                    + " or (p.code)=:qe "
+                    + " or (p.staffCode)=:qe )"
                     + " order by p.person.name";
 
             m.put("cd", new Date());
+            m.put("q", "%" + query.toUpperCase() + "%");
+            m.put("qe", query.toUpperCase());
 
             //////System.out.println(sql);
             suggestions = getEjbFacade().findByJpql(sql, m, TemporalType.TIMESTAMP, 20);

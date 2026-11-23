@@ -1283,6 +1283,7 @@ public class Qb {
             bijo.put("item", item);
             bijo.put("qty", 1);
             bijo.put("amount", bf.getAbsoluteFeeValue());
+            flagDoctorCollected(bijo, bf);
             bijo.put("invType", invType);
             bijo.put("invClass", invClass);
 
@@ -1292,6 +1293,14 @@ public class Qb {
         jSONObject.put("grid", bija);
 //        System.out.println("jSONObject = " + jSONObject);
         return jSONObject;
+    }
+
+    private static void flagDoctorCollected(JSONObject line, BillFee fee) {
+        boolean collected = fee != null && fee.isCollectedByDoctorAtBilling();
+        line.put("collectedByDoctor", collected);
+        if (collected && line.has("item")) {
+            line.put("item", line.get("item") + " (collected by doctor)");
+        }
     }
 
     private JSONObject opdCancellationstoJSONObject(Bill b) {
@@ -1389,6 +1398,7 @@ public class Qb {
             bijo.put("item", item);
             bijo.put("qty", 1);
             bijo.put("amount", bf.getAbsoluteFeeValue());
+            flagDoctorCollected(bijo, bf);
             bijo.put("invType", invType);
             bijo.put("invClass", invClass);
 
@@ -1498,6 +1508,7 @@ public class Qb {
             bijo.put("item", item);
             bijo.put("qty", 1);
             bijo.put("amount", bf.getAbsoluteFeeValue());
+            flagDoctorCollected(bijo, bf);
             bijo.put("invType", invType);
             bijo.put("invClass", invClass);
 
@@ -2039,6 +2050,7 @@ public class Qb {
             bijo.put("item", item);
             bijo.put("qty", 1);
             bijo.put("amount", bf.getAbsoluteFeeValue());
+            flagDoctorCollected(bijo, bf);
             bijo.put("invClass", invClass);
             bijo.put("invType", invType);
             bija.put(bijo);
@@ -2149,6 +2161,7 @@ public class Qb {
             bijo.put("item", item);
             bijo.put("qty", 1);
             bijo.put("amount", bf.getAbsoluteFeeValue());
+            flagDoctorCollected(bijo, bf);
             bijo.put("invClass", invClass);
             bijo.put("invType", invType);
             bija.put(bijo);
@@ -2259,6 +2272,7 @@ public class Qb {
             bijo.put("item", item);
             bijo.put("qty", 1);
             bijo.put("amount", bf.getAbsoluteFeeValue());
+            flagDoctorCollected(bijo, bf);
             bijo.put("invClass", invClass);
             bijo.put("invType", invType);
             bija.put(bijo);
@@ -2336,6 +2350,10 @@ public class Qb {
 
             debit = billFee.getAbsoluteFeeValue();
 
+            if (billFee.isCollectedByDoctorAtBilling()) {
+                account += " (collected by doctor)";
+            }
+            bijo.put("collectedByDoctor", billFee.isCollectedByDoctorAtBilling());
             bijo.put("account", account);
 
             bijo.put("credit", debit);
@@ -2410,6 +2428,7 @@ public class Qb {
             }
             bijo.put("qty", 1);
             bijo.put("amount", bi.getAbsoluteFeeValue());
+            flagDoctorCollected(bijo, bi);
             bijo.put("invClass", invClass);
             bijo.put("invType", invType);
             bija.put(bijo);

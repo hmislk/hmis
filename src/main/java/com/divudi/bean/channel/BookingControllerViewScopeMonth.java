@@ -1912,6 +1912,9 @@ public class BookingControllerViewScopeMonth implements Serializable, Controller
     }
 
     public void channelBookingCancel() {
+        if (selectedBillSession != null && com.divudi.core.util.CancellationBillCheck.refuse(selectedBillSession.getBill())) {
+            return;
+        }
         if (selectedBillSession.getBill().getBillType() == BillType.ChannelAgent) {
             cancelAgentPaidBill();
             return;
@@ -3477,12 +3480,13 @@ public class BookingControllerViewScopeMonth implements Serializable, Controller
             suggestions = new ArrayList<>();
         } else {
             if (getSpeciality() != null) {
-                sql = "select p from Staff p where p.retired=false and ((p.person.name) like '%" + query.toUpperCase() + "%'or  (p.code) like '%" + query.toUpperCase() + "%' ) and p.speciality.id = " + getSpeciality().getId() + " order by p.person.name";
+                sql = "select p from Staff p where p.retired=false and ((p.person.name) like :q or  (p.code) like :q ) and p.speciality.id = " + getSpeciality().getId() + " order by p.person.name";
             } else {
-                sql = "select p from Staff p where p.retired=false and ((p.person.name) like '%" + query.toUpperCase() + "%'or  (p.code) like '%" + query.toUpperCase() + "%' ) order by p.person.name";
+                sql = "select p from Staff p where p.retired=false and ((p.person.name) like :q or  (p.code) like :q ) order by p.person.name";
             }
-            ////System.out.println(sql);
-            suggestions = getStaffFacade().findByJpql(sql);
+            java.util.Map<String, Object> qm = new java.util.HashMap<>();
+            qm.put("q", "%" + query.toUpperCase() + "%");
+            suggestions = getStaffFacade().findByJpql(sql, qm);
         }
         return suggestions;
     }
@@ -8267,4 +8271,8 @@ public class BookingControllerViewScopeMonth implements Serializable, Controller
             billItem.setHospitalFee(hosFee);
         }
     }
+    public boolean isSelectedBillACancellationBill() {
+        return selectedBillSession != null && com.divudi.core.util.CancellationBillCheck.isCancellationBill(selectedBillSession.getBill());
+    }
+
 }

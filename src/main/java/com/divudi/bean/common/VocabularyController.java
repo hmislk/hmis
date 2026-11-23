@@ -12,6 +12,8 @@ import com.divudi.core.entity.Vocabulary;
 import com.divudi.core.facade.VocabularyFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Date;
 import java.util.List;
 import javax.ejb.EJB;
@@ -93,7 +95,9 @@ public class VocabularyController implements Serializable {
 
     public List<Vocabulary> completeVocabulary(String qry) {
         List<Vocabulary> c;
-        c = getFacade().findByJpql("select c from Vocabulary c where c.retired=false and (c.name) like '%" + qry.toUpperCase() + "%' order by c.name");
+        Map<String, Object> likeParams = new HashMap<>();
+        likeParams.put("txt", "%" + qry.toUpperCase() + "%");
+        c = getFacade().findByJpql("select c from Vocabulary c where c.retired=false and (c.name) like :txt order by c.name", likeParams);
         if (c == null) {
             c = new ArrayList<>();
         }
@@ -101,7 +105,9 @@ public class VocabularyController implements Serializable {
     }
 
     public List<Vocabulary> getSelectedItems() {
-        selectedItems = getFacade().findByJpql("select c from Vocabulary c where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
+        Map<String, Object> likeParams = new HashMap<>();
+        likeParams.put("txt", "%" + getSelectText().toUpperCase() + "%");
+        selectedItems = getFacade().findByJpql("select c from Vocabulary c where c.retired=false and (c.name) like :txt order by c.name", likeParams);
         return selectedItems;
     }
 

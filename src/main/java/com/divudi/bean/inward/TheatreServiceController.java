@@ -129,7 +129,7 @@ public class TheatreServiceController implements Serializable {
         if (selectText.trim().equals("")) {
             selectedItems = getTheatreServiceFacade().findByJpql("select c from TheatreService c where c.retired=false order by c.name");
         } else {
-            selectedItems = getTheatreServiceFacade().findByJpql("select c from TheatreService c where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
+            selectedItems = getTheatreServiceFacade().findByJpql("select c from TheatreService c where c.retired=false and (c.name) like :q order by c.name", java.util.Map.of("q", "%" + getSelectText().toUpperCase() + "%"));
         }
         return selectedItems;
     }
@@ -161,7 +161,7 @@ public class TheatreServiceController implements Serializable {
     }
 
     public List<TheatreService> completeItem(String qry) {
-        List<TheatreService> completeItems = getTheatreServiceFacade().findByJpql("select c from Item c where ( type(c) = TheatreService or type(c) = Packege ) and c.retired=false and (c.name) like '%" + qry.toUpperCase() + "%' order by c.name");
+        List<TheatreService> completeItems = getTheatreServiceFacade().findByJpql("select c from Item c where ( type(c) = TheatreService or type(c) = Packege ) and c.retired=false and (c.name) like :q order by c.name", java.util.Map.of("q", "%" + qry.toUpperCase() + "%"));
         return completeItems;
     }
 
@@ -405,10 +405,10 @@ public class TheatreServiceController implements Serializable {
         if (selectText.isEmpty()) {
             sql = "select c from TheatreService c where c.retired=false order by c.category.name,c.name";
         } else {
-            sql = "select c from TheatreService c where c.retired=false and (c.name) like '%" + selectText.toUpperCase() + "%' order by c.category.name,c.name";
+            sql = "select c from TheatreService c where c.retired=false and (c.name) like :q order by c.category.name,c.name";
         }
         //////// // System.out.println(sql);
-        items = getTheatreServiceFacade().findByJpql(sql);
+        items = selectText.isEmpty() ? getTheatreServiceFacade().findByJpql(sql) : getTheatreServiceFacade().findByJpql(sql, java.util.Map.of("q", "%" + selectText.toUpperCase() + "%"));
 
         if (items == null) {
             items = new ArrayList<TheatreService>();

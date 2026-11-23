@@ -1,0 +1,112 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html">
+    <h:body>
+        <ui:composition template="/resources/template/template.xhtml">
+            <ui:define name="content">
+                <h:panelGroup rendered="#{!maintenanceWindowController.allowed}">
+                    <p:outputLabel value="YOU ARE NOT AUTHORIZED." />
+                </h:panelGroup>
+
+                <h:panelGroup rendered="#{maintenanceWindowController.allowed}">
+                    <h:form id="frmMaintenance">
+                        <p:panel header="Schedule a Maintenance Window" class="m-2">
+                            <p:panelGrid columns="2" columnClasses="w-25,w-75" class="w-100">
+                                <p:outputLabel for="txtTitle" value="Title" />
+                                <p:inputText id="txtTitle" value="#{maintenanceWindowController.title}" class="w-100" maxlength="250" />
+
+                                <p:outputLabel for="txtMessage" value="Message shown to users" />
+                                <p:inputTextarea id="txtMessage" value="#{maintenanceWindowController.message}" rows="3" class="w-100" required="false" />
+
+                                <p:outputLabel for="dpStart" value="Maintenance starts" />
+                                <p:datePicker id="dpStart" value="#{maintenanceWindowController.startAt}"
+                                              showTime="true" inputStyleClass="form-control"
+                                              pattern="#{sessionController.applicationPreference.longDateTimeFormat}">
+                                    <p:ajax event="dateSelect" listener="#{maintenanceWindowController.startChanged}" update="dpShowFrom" />
+                                </p:datePicker>
+
+                                <p:outputLabel for="dpEnd" value="Maintenance ends" />
+                                <p:datePicker id="dpEnd" value="#{maintenanceWindowController.endAt}"
+                                              showTime="true" inputStyleClass="form-control"
+                                              pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+
+                                <p:outputLabel for="dpShowFrom" value="Show banner from (default 24 hours before start)" />
+                                <p:datePicker id="dpShowFrom" value="#{maintenanceWindowController.showFromAt}"
+                                              showTime="true" inputStyleClass="form-control"
+                                              pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+
+                                <p:outputLabel for="selInstitutions" value="Institutions (none selected = all)" />
+                                <p:selectCheckboxMenu id="selInstitutions" value="#{maintenanceWindowController.institutionIds}"
+                                                      converter="javax.faces.Long" label="All institutions"
+                                                      filter="true" filterMatchMode="contains" multiple="true" class="w-100">
+                                    <f:selectItems value="#{maintenanceWindowController.institutions}" var="i"
+                                                   itemLabel="#{i.name}" itemValue="#{i.id}" />
+                                </p:selectCheckboxMenu>
+
+                                <p:outputLabel for="selDepartments" value="Departments (none selected = all)" />
+                                <p:selectCheckboxMenu id="selDepartments" value="#{maintenanceWindowController.departmentIds}"
+                                                      converter="javax.faces.Long" label="All departments"
+                                                      filter="true" filterMatchMode="contains" multiple="true" class="w-100">
+                                    <f:selectItems value="#{maintenanceWindowController.departments}" var="d"
+                                                   itemLabel="#{d.name}" itemValue="#{d.id}" />
+                                </p:selectCheckboxMenu>
+
+                                <p:outputLabel for="txtRef" value="Reference (optional)" />
+                                <p:inputText id="txtRef" value="#{maintenanceWindowController.reference}" class="w-100" maxlength="250" />
+                            </p:panelGrid>
+                            <p:commandButton value="Save" icon="fas fa-save" class="ui-button-success mt-2"
+                                             action="#{maintenanceWindowController.save}"
+                                             process="@form" update="@form :growl" />
+                        </p:panel>
+
+                        <p:panel header="Active and Upcoming Maintenance Windows" class="m-2">
+                            <p:dataTable id="tblWindows" value="#{maintenanceWindowController.windows}" var="w"
+                                         emptyMessage="No active or upcoming maintenance windows." rowKey="#{w.id}">
+                                <p:column headerText="Title">
+                                    <h:outputText value="#{w.title}" />
+                                </p:column>
+                                <p:column headerText="Message">
+                                    <h:outputText value="#{w.message}" />
+                                </p:column>
+                                <p:column headerText="Starts">
+                                    <h:outputText value="#{w.startAt}">
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                    </h:outputText>
+                                </p:column>
+                                <p:column headerText="Ends">
+                                    <h:outputText value="#{w.endAt}">
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                    </h:outputText>
+                                </p:column>
+                                <p:column headerText="Banner from">
+                                    <h:outputText value="#{w.showFromAt}">
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                    </h:outputText>
+                                </p:column>
+                                <p:column headerText="Affects">
+                                    <h:outputText value="#{maintenanceWindowController.audience(w)}" />
+                                </p:column>
+                                <p:column headerText="Source">
+                                    <h:outputText value="#{w.source}" />
+                                </p:column>
+                                <p:column headerText="Reference">
+                                    <h:outputText value="#{w.externalReference}" />
+                                </p:column>
+                                <p:column headerText="Actions">
+                                    <p:commandButton value="Cancel" icon="fas fa-ban" class="ui-button-danger"
+                                                     action="#{maintenanceWindowController.cancel(w)}"
+                                                     onclick="return confirm('Cancel this maintenance window?');"
+                                                     process="@this" update="tblWindows :growl" />
+                                </p:column>
+                            </p:dataTable>
+                        </p:panel>
+                    </h:form>
+                </h:panelGroup>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

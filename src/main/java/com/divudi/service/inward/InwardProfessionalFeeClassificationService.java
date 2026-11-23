@@ -35,8 +35,10 @@ import javax.inject.Inject;
  * ("Consultant Fee"), a {@link Doctor} (non-consultant) defaults to
  * {@link InwardChargeType#DoctorAndNurses} ("Assistant Fee"), and anyone else (nurse,
  * technician, other paramedical staff) defaults to
- * {@link InwardChargeType#TechnicianAndParamedicalCharge} ("Technician Fee"). The user
- * may still change the preselected category before saving.
+ * {@link InwardChargeType#TechnicianAndParamedicalCharge} ("Technician Fee"). With no
+ * staff and no configured speciality default (a package fee not yet assigned to anyone)
+ * it is {@link InwardChargeType#ProfessionalCharge}, as for a fee with no category. The
+ * user may still change the preselected category before saving.
  *
  * <p>Hospitals that bill consultant and assistant fees as one professional charge
  * enable {@link ConfigOptionApplicationController#PROFESSIONAL_AND_ASSISTING_FEES_MERGED},
@@ -95,7 +97,7 @@ public class InwardProfessionalFeeClassificationService implements Serializable 
         if (fromSpeciality != null) {
             return fromSpeciality;
         }
-        if (staff instanceof Consultant) {
+        if (staff == null || staff instanceof Consultant) {
             return InwardChargeType.ProfessionalCharge;
         }
         if (staff instanceof Doctor) {
