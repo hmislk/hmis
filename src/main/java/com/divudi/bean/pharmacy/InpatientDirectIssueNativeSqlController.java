@@ -199,7 +199,8 @@ public class InpatientDirectIssueNativeSqlController implements Serializable {
             if (patientEncounter.getPatient() != null && patientEncounter.getPatient().getPerson() != null) {
                 pbd.setPatientName(patientEncounter.getPatient().getPerson().getNameWithTitle());
                 pbd.setPatientAgeSex(patientEncounter.getPatient().getPerson().getAgeAsShortString()
-                        + " / " + patientEncounter.getPatient().getPerson().getSex().getLabel());
+                        + " / " + (patientEncounter.getPatient().getPerson().getSex() != null
+                        ? patientEncounter.getPatient().getPerson().getSex().getLabel() : ""));
             }
             pbd.setBhtNo(patientEncounter.getBhtNo());
             if (patientEncounter.getCurrentPatientRoom() != null
