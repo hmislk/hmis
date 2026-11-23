@@ -550,7 +550,7 @@ Clean up **only when explicitly asked**, and only what was asked for.
 | Environment | Create test data? | Clean up afterwards? |
 |---|---|---|
 | Local (`localhost`, no tunnel) | Yes, freely | No — and the DB is disposable anyway (§15) |
-| Hospital test/staging box (e.g. `rhLocal`) | Yes | No, unless explicitly asked |
+| Hospital test/staging box (e.g. `<env-name>`) | Yes | No, unless explicitly asked |
 | Production on Azure | You should not be testing here | n/a — if you are about to write, stop and ask |
 
 Production is the real signal: a request to *test* a workflow is essentially
@@ -560,8 +560,8 @@ and confirm which environment is meant, rather than proceeding carefully.
 
 Say what you created, so the user can decide:
 
-> Test data created on rhLocal: patient ZZ TEST THEATRE PATIENT, admission
-> Day Case/3, a ZZ TEST settled service bill.
+> Test data created on <env-name>: patient ZZ TEST THEATRE PATIENT, admission
+> `<type>/<n>`, a ZZ TEST settled service bill.
 
 That sentence is the whole obligation. Naming records with an obvious test
 prefix (`ZZ TEST ...`) is what makes them harmless to leave.
