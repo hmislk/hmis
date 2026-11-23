@@ -15,6 +15,7 @@ import com.divudi.core.entity.inward.AdmissionType;
 import com.divudi.core.facade.EncounterCreditCompanyFacade;
 import com.divudi.core.facade.PatientEncounterFacade;
 import com.divudi.core.facade.PaymentFacade;
+import com.divudi.core.util.CommonFunctions;
 import com.divudi.service.inward.InwardBhtChargeAggregationService;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -72,7 +73,8 @@ public class InwardInvoiceJournalController implements Serializable {
     // Filter fields
     // -------------------------------------------------------------------------
     private Date fromDate = startOfCurrentMonth();
-    private Date toDate   = new Date();
+    // End of today, so bills settled later today are included (issue #25556).
+    private Date toDate   = CommonFunctions.getEndOfDay();
 
     /** "admissionDate" or "dischargeDate" */
     private String dateBasis = "dischargeDate";
@@ -663,7 +665,7 @@ public class InwardInvoiceJournalController implements Serializable {
 
     public void makeNull() {
         fromDate         = startOfCurrentMonth();
-        toDate           = new Date();
+        toDate           = CommonFunctions.getEndOfDay();
         dateBasis        = "dischargeDate";
         admissionStatus  = AdmissionStatus.DISCHARGED_AND_FINAL_BILL_COMPLETED;
         admissionType    = null;
