@@ -3279,11 +3279,12 @@ public class PharmacyItemExcelManager implements Serializable {
     }
 
     public String getMessage() {
-        return message.toString();
+        // message is only created when an upload runs; the pages that show it open before that (#26012).
+        return message == null ? "" : message.toString();
     }
 
     public void setMessage(String message) {
-        this.message = new StringBuilder(message);
+        this.message = new StringBuilder(message == null ? "" : message);
     }
 
     public List<Amp> getUpdatingAmps() {
