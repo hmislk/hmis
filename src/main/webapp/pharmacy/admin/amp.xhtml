@@ -20,7 +20,8 @@
                                 <h:outputText styleClass="fa fa-pills"/>
                                 <h:outputText value="AMP Management"/>
                             </div>
-                            <h:panelGroup id="actionButtons" layout="block" styleClass="d-flex align-items-center gap-2">
+                            <h:panelGroup id="actionButtons" layout="block" styleClass="d-flex align-items-center flex-grow-1 gap-2">
+                                <div class="d-flex align-items-center gap-2 mx-auto">
                                 <p:commandButton
                                     id="btnViewList"
                                     value="All AMPs List"
@@ -38,6 +39,8 @@
                                     styleClass="ui-button-info ui-button-outlined"
                                     disabled="#{ampController.current.id eq null}"
                                     title="View audit history for this AMP record"/>
+                                </div>
+                                <div class="d-flex align-items-center gap-2">
                                 <p:commandButton
                                     id="btnDelete"
                                     value="Retire Selected"
@@ -96,6 +99,7 @@
                                     process="@this"
                                     disabled="#{ampController.editable}"
                                     title="Add a new AMP record"/>
+                                </div>
                             </h:panelGroup>
                         </div>
                     </f:facet>

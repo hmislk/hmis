@@ -123,6 +123,7 @@ public class AmpController implements Serializable {
     private double retireStockQty;
     private long retireBillItemCount;
     private Long retirePreparedAmpId;
+    private Long unretirePreparedAmpId;
 
     // Audit-related injections
     @Inject
@@ -1173,6 +1174,7 @@ public class AmpController implements Serializable {
 
     public void prepareUnretire() {
         retireReason = null;
+        unretirePreparedAmpId = null;
         if (current == null || current.getId() == null || !current.isRetired()) {
             JsfUtil.addErrorMessage("No retired AMP selected");
             return;
@@ -1181,6 +1183,7 @@ public class AmpController implements Serializable {
             JsfUtil.addErrorMessage("You do not have the privilege to un-retire items");
             return;
         }
+        unretirePreparedAmpId = current.getId();
         org.primefaces.PrimeFaces.current().ajax().addCallbackParam("canUnretire", true);
     }
 
@@ -1260,6 +1263,10 @@ public class AmpController implements Serializable {
             JsfUtil.addErrorMessage("No retired AMP selected");
             return;
         }
+        if (current.getId() == null || !current.getId().equals(unretirePreparedAmpId)) {
+            JsfUtil.addErrorMessage("The selected AMP changed. Open the un-retire dialog again.");
+            return;
+        }
         if (!webUserController.hasPrivilege("PharmacyItemUnretire")) {
             JsfUtil.addErrorMessage("You do not have the privilege to un-retire items");
             return;
@@ -1287,6 +1294,7 @@ public class AmpController implements Serializable {
         JsfUtil.addSuccessMessage("AMP Un-retired Successfully");
         org.primefaces.PrimeFaces.current().ajax().addCallbackParam("done", true);
         retireReason = null;
+        unretirePreparedAmpId = null;
         recreateModel();
         ampDtos = null;
         current = null;
