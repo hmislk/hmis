@@ -171,6 +171,14 @@ public class InpatientDirectIssueNativeSqlController implements Serializable {
 
         try {
             nativeSqlService.settle(bill, billItemDataList);
+        } catch (RuntimeException e) {
+            reportSettleFailure(e);
+            return;
+        }
+        // settle() has committed the bill and the stock. Nothing after this point may be
+        // reported as a failed settle: the items would stay on screen, and settling again
+        // would save a second bill and deduct the stock again (#25967).
+        try {
             try {
                 // settle() has committed; drop the copy its commit cached with zero totals (#24671)
                 nativeSqlService.evictSettledBillFromCache(bill.getId());
@@ -191,7 +199,8 @@ public class InpatientDirectIssueNativeSqlController implements Serializable {
             if (patientEncounter.getPatient() != null && patientEncounter.getPatient().getPerson() != null) {
                 pbd.setPatientName(patientEncounter.getPatient().getPerson().getNameWithTitle());
                 pbd.setPatientAgeSex(patientEncounter.getPatient().getPerson().getAgeAsShortString()
-                        + " / " + patientEncounter.getPatient().getPerson().getSex().getLabel());
+                        + " / " + (patientEncounter.getPatient().getPerson().getSex() != null
+                        ? patientEncounter.getPatient().getPerson().getSex().getLabel() : ""));
             }
             pbd.setBhtNo(patientEncounter.getBhtNo());
             if (patientEncounter.getCurrentPatientRoom() != null
@@ -232,23 +241,33 @@ public class InpatientDirectIssueNativeSqlController implements Serializable {
                 printCopy.add(p);
             }
             printBillItems = printCopy;
-            clearBill();
-            clearBillItem();
             billPreview = true;
             JsfUtil.addSuccessMessage("Bill settled successfully.");
         } catch (RuntimeException e) {
-            LOGGER.log(Level.SEVERE, "Native settle failed", e);
-            // EJBException wraps the service RuntimeException — extract root cause for the user message
-            Throwable cause = e;
-            while (cause.getCause() != null && cause.getCause() != cause) {
-                cause = cause.getCause();
-            }
-            String msg = cause.getMessage();
-            if (msg == null || msg.isBlank()) {
-                msg = "Settle failed. Please check stock availability and try again.";
-            }
-            JsfUtil.addErrorMessage(msg);
+            LOGGER.log(Level.SEVERE, "Bill saved, but preparing its print preview failed, bill id=" + bill.getId(), e);
+            printBill = null;
+            printBillItems = null;
+            billPreview = false;
+            JsfUtil.addErrorMessage("Bill " + bill.getDeptId() + " was saved and the stock was issued, but the print"
+                    + " preview could not be shown. Do not settle again; reprint the bill from bill search.");
+        } finally {
+            clearBill();
+            clearBillItem();
         }
+    }
+
+    private void reportSettleFailure(RuntimeException e) {
+        LOGGER.log(Level.SEVERE, "Native settle failed", e);
+        // EJBException wraps the service RuntimeException — extract root cause for the user message
+        Throwable cause = e;
+        while (cause.getCause() != null && cause.getCause() != cause) {
+            cause = cause.getCause();
+        }
+        String msg = cause.getMessage();
+        if (msg == null || msg.isBlank()) {
+            msg = "Settle failed. Please check stock availability and try again.";
+        }
+        JsfUtil.addErrorMessage(msg);
     }
 
     private boolean validateRoomForSettle() {
