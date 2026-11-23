@@ -2387,7 +2387,31 @@ public class DirectPurchaseReturnWorkflowController implements Serializable {
         fd.setLineGrossRate(userEnteredRate);
     }
 
+    /**
+     * The quantity inputs' key filter lets a minus sign through, and later steps
+     * take abs(), so -5 silently became a return of 5. Refuse it instead (#26019).
+     */
+    private void rejectNegativeReturnQty(BillItem bi) {
+        if (bi == null) {
+            return;
+        }
+        boolean negative = false;
+        if (bi.getQty() < 0) {
+            bi.setQty(0.0);
+            negative = true;
+        }
+        BillItemFinanceDetails fd = bi.getBillItemFinanceDetails();
+        if (fd != null && fd.getFreeQuantity() != null && fd.getFreeQuantity().signum() < 0) {
+            fd.setFreeQuantity(BigDecimal.ZERO);
+            negative = true;
+        }
+        if (negative) {
+            JsfUtil.addErrorMessage("Returning Qty cannot be negative");
+        }
+    }
+
     public void onReturningTotalQtyChange(BillItem bi) {
+        rejectNegativeReturnQty(bi);
         // Use dedicated sync method to preserve rates
         syncQuantitiesAfterQuantityChange(bi, "TotalQty");
         validateReturnQuantities(bi);
@@ -2396,6 +2420,7 @@ public class DirectPurchaseReturnWorkflowController implements Serializable {
     }
 
     public void onReturningQtyChange(BillItem bi) {
+        rejectNegativeReturnQty(bi);
         // Use dedicated sync method to preserve rates
         syncQuantitiesAfterQuantityChange(bi, "Qty");
         validateReturnQuantities(bi);
@@ -2404,6 +2429,7 @@ public class DirectPurchaseReturnWorkflowController implements Serializable {
     }
 
     public void onReturningFreeQtyChange(BillItem bi) {
+        rejectNegativeReturnQty(bi);
         // Use dedicated sync method to preserve rates
         syncQuantitiesAfterQuantityChange(bi, "FreeQty");
         validateReturnQuantities(bi);

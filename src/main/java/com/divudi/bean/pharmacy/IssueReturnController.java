@@ -304,7 +304,13 @@ public class IssueReturnController implements Serializable {
         if (disposalReturnAlreadyProcessed()) {
             return false;
         }
-        // No validation required for saving drafts - users can save incomplete data
+        // Drafts may be incomplete, but a negative qty is never valid (#26019).
+        for (BillItem bi : getReturnBillItems()) {
+            if (bi != null && bi.getQty() < 0) {
+                JsfUtil.addErrorMessage("Returning Qty cannot be negative");
+                return false;
+            }
+        }
         if (!saveBill()) {
             return false;
         }
