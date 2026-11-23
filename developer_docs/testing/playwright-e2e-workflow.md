@@ -54,7 +54,7 @@ laptop. It does **not** apply to shared/staging/production Payara, where the
 still governs.
 
 ```powershell
-# Paths vary per machine — check the local credentials file outside the repo for your local values
+# Paths vary per machine — see the build-tools and Payara reference notes, or ask the developer
 $env:JAVA_HOME="<path-to-jdk>"
 & "<path-to-mvn.cmd>" clean package -DskipTests
 & "<path-to-asadmin.bat>" [--port <admin-port>] redeploy --name rh "<project-root>\target\rh-3.0.0.war"
@@ -87,8 +87,9 @@ $env:JAVA_HOME="<path-to-jdk>"
   you have to `deploy` fresh. Prefix the command:
   `MSYS_NO_PATHCONV=1 asadmin deploy --name rh --contextroot /rh <war>`. PowerShell
   is unaffected.
-- **One deploy at a time.** Run it in the background and wait for the context
-  root to answer (302/200) or for `server.log` to show "Loading application". A
+- **One deploy at a time.** Run it in the background and wait for the deploy
+  command itself to exit successfully, then check the context root answers
+  (302/200). A
   second `asadmin deploy` started meanwhile can leave the app undeployed. After a
   failed redeploy: stop the domain, delete only `applications/<app>` and
   `generated/*/<app>`, start the domain, deploy once. With one local app, e2e
@@ -96,8 +97,9 @@ $env:JAVA_HOME="<path-to-jdk>"
 - **Credentials.** Never write a password into a helper script or file, and
   never `cat`/`grep`/`sed` a file that may hold one. Query with
   `mysql --defaults-extra-file=<file>` without reading the file.
-- **A route that never reaches the page under test is INCONCLUSIVE, not PASS.**
-  Say which page could not be reached and why.
+- **A route that never reaches the page under test is NOT REACHED, never PASS.**
+  Say which page and why. A page with no menu path is a FAIL; NOT REACHED is for a
+  route that exists but test data or setup is missing.
 
 ---
 
