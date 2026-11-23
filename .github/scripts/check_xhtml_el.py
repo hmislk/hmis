@@ -23,7 +23,8 @@ import re
 import subprocess
 import sys
 
-PANEL_GRID_TAG = re.compile(r"<p:panelGrid\b[^>]*>", re.DOTALL)
+# Quote-aware, so a ">" inside an attribute value (e.g. rendered="#{a > b}") does not end the tag.
+PANEL_GRID_TAG = re.compile(r"""<p:panelGrid\b(?:[^>"']|"[^"]*"|'[^']*')*>""", re.DOTALL)
 GRID_COLUMNS = {1, 2, 3, 4, 6, 12}
 
 
