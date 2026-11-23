@@ -208,6 +208,11 @@
                                     <div class="row form-group mb-1">
                                         <div class="col-md-12">
                                             <p:outputPanel id="panDuplicateWarningInline" layout="block">
+                                                <h:panelGroup rendered="#{patientController.possibleDuplicateDetailsHidden}">
+                                                    <p style="color:#b71c1c; font-weight:bold;">
+                                                        &#9888; A patient with these details may already exist - contact the hospital.
+                                                    </p>
+                                                </h:panelGroup>
                                                 <h:panelGroup rendered="#{not empty patientController.possibleDuplicatePatients}">
                                                     <p style="color:#b71c1c; font-weight:bold;">
                                                         &#9888; Possible duplicate patient(s) found:

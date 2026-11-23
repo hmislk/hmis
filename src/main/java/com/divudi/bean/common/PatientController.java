@@ -351,6 +351,12 @@ public class PatientController implements Serializable, ControllerWithPatient {
      * patient, so the UI can warn the user before proceeding.
      */
     private List<Patient> possibleDuplicatePatients = new ArrayList<>();
+    /**
+     * True when at least one possible duplicate exists. For users restricted
+     * to their own registrations the list is left empty so no patient data
+     * reaches the page; only this flag is used (#25851).
+     */
+    private boolean possibleDuplicateExists;
 
     /**
      *
@@ -3320,6 +3326,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
         current = null;
         getCurrent();
         possibleDuplicatePatients = new ArrayList<>();
+        possibleDuplicateExists = false;
 
         reGenerateePhn = true;
         return "/opd/patient_edit?faces-redirect=true";
@@ -3329,6 +3336,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
         current = null;
         getCurrent();
         possibleDuplicatePatients = new ArrayList<>();
+        possibleDuplicateExists = false;
         return "/optician/patient_edit?faces-redirect=true";
     }
 
@@ -3336,6 +3344,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
         current = null;
         getCurrent();
         possibleDuplicatePatients = new ArrayList<>();
+        possibleDuplicateExists = false;
         getCurrent().getPerson().setName(name);
         getCurrent().getPerson().setNic(nic);
         getCurrent().getPerson().setPhone(phone);
@@ -3347,6 +3356,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
         current = null;
         getCurrent();
         possibleDuplicatePatients = new ArrayList<>();
+        possibleDuplicateExists = false;
         getCurrent().getPerson().setName(name);
         getCurrent().getPerson().setNic(nic);
         getCurrent().getPerson().setPhone(phone);
@@ -3358,6 +3368,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
         current = null;
         getCurrent();
         possibleDuplicatePatients = new ArrayList<>();
+        possibleDuplicateExists = false;
         getCurrent().getPerson().setPhone(phone);
         getCurrent().getPerson().setMobile(phone);
         return "/opd/patient_edit?faces-redirect=true";
@@ -3649,6 +3660,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
      */
     public void checkForPossibleDuplicatePatients() {
         possibleDuplicatePatients = new ArrayList<>();
+        possibleDuplicateExists = false;
         if (current == null || current.getPerson() == null) {
             return;
         }
@@ -3686,6 +3698,13 @@ public class PatientController implements Serializable, ControllerWithPatient {
         jpql.append("and (").append(String.join(" or ", orConditions)).append(")");
 
         possibleDuplicatePatients = getFacade().findByJpql(jpql.toString(), params, 10);
+        if (possibleDuplicatePatients == null) {
+            possibleDuplicatePatients = new ArrayList<>();
+        }
+        possibleDuplicateExists = !possibleDuplicatePatients.isEmpty();
+        if (isPatientSearchRestrictedToOwnRegistrations()) {
+            possibleDuplicatePatients = new ArrayList<>();
+        }
     }
 
     /**
@@ -3711,7 +3730,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
         }
         if (current != null && current.getId() == null) {
             checkForPossibleDuplicatePatients();
-            if (possibleDuplicatePatients != null && !possibleDuplicatePatients.isEmpty()) {
+            if (possibleDuplicateExists) {
                 PrimeFaces.current().executeScript("PF('dlgDuplicatePatientSaveWarning').show();");
                 return;
             }
@@ -3736,7 +3755,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
         }
         if (current != null && current.getId() == null) {
             checkForPossibleDuplicatePatients();
-            if (possibleDuplicatePatients != null && !possibleDuplicatePatients.isEmpty()) {
+            if (possibleDuplicateExists) {
                 PrimeFaces.current().executeScript("PF('dlgDuplicatePatientAdmissionWarning').show();");
                 return null;
             }
@@ -4861,6 +4880,14 @@ public class PatientController implements Serializable, ControllerWithPatient {
 
     public void setNavigatedFromAdmissionProfile(boolean navigatedFromAdmissionProfile) {
         this.navigatedFromAdmissionProfile = navigatedFromAdmissionProfile;
+    }
+
+    public boolean isPossibleDuplicateExists() {
+        return possibleDuplicateExists;
+    }
+
+    public boolean isPossibleDuplicateDetailsHidden() {
+        return possibleDuplicateExists && possibleDuplicatePatients.isEmpty();
     }
 
     public List<Patient> getPossibleDuplicatePatients() {
