@@ -1241,36 +1241,6 @@ public class CreditCompanyDueController implements Serializable {
 
     
 
-    private void setInwardValues(Institution inst, String1Value5 dataTable5Value, PaymentMethod paymentMethod,
-            Institution institutionOfDepartment, Department department, Institution site) {
-        List<PatientEncounter> lst = getCreditBean().getCreditPatientEncounters(
-                inst, true, paymentMethod, institutionOfDepartment, department, site);
-        for (PatientEncounter b : lst) {
-            Long dayCount = CommonFunctions.getDayCountTillNow(b.getCreatedAt());
-            b.setTransDayCount(dayCount);
-//            double finalValue = b.getFinalBill().getNetTotal() - (Math.abs(b.getFinalBill().getPaidAmount()) + Math.abs(b.getCreditPaidAmount()));
-            double finalValue = b.getCreditUsedAmount() + b.getCreditPaidAmount();
-
-            if (finalValue == 0) {
-                continue;
-            }
-
-            if (dayCount < 30) {
-                dataTable5Value.setValue1(dataTable5Value.getValue1() + finalValue);
-                dataTable5Value.getValue1PatientEncounters().add(b);
-            } else if (dayCount < 60) {
-                dataTable5Value.setValue2(dataTable5Value.getValue2() + finalValue);
-                dataTable5Value.getValue2PatientEncounters().add(b);
-            } else if (dayCount < 90) {
-                dataTable5Value.setValue3(dataTable5Value.getValue3() + finalValue);
-                dataTable5Value.getValue3PatientEncounters().add(b);
-            } else {
-                dataTable5Value.setValue4(dataTable5Value.getValue4() + finalValue);
-                dataTable5Value.getValue4PatientEncounters().add(b);
-            }
-        }
-    }
-
     private void setInwardValues(String1Value5 dataTable5Value, List<Bill> bills) {
         for (Bill b : bills) {
             // Use billDate (financial obligation date) not createdAt (DB insert timestamp)
@@ -1300,26 +1270,6 @@ public class CreditCompanyDueController implements Serializable {
     }
 
     
-
-    private void setInwardValuesAccessForExcess(Institution inst, String1Value5 dataTable5Value, PaymentMethod paymentMethod) {
-        List<PatientEncounter> lst = getCreditBean().getCreditPatientEncounters(inst, false, paymentMethod);
-        for (PatientEncounter b : lst) {
-
-            Long dayCount = CommonFunctions.getDayCountTillNow(b.getCreatedAt());
-
-            double finalValue = (Math.abs(b.getFinalBill().getNetTotal()) - Math.abs(b.getFinalBill().getPaidAmount()));
-
-            if (dayCount < 30) {
-                dataTable5Value.setValue1(dataTable5Value.getValue1() + finalValue);
-            } else if (dayCount < 60) {
-                dataTable5Value.setValue2(dataTable5Value.getValue2() + finalValue);
-            } else if (dayCount < 90) {
-                dataTable5Value.setValue3(dataTable5Value.getValue3() + finalValue);
-            } else {
-                dataTable5Value.setValue4(dataTable5Value.getValue4() + finalValue);
-            }
-        }
-    }
 
     private void setInwardValuesAccessForExcess(List<InstitutionBillEncounter> institutionBillEncounters, String1Value5 dataTable5Value) {
         for (InstitutionBillEncounter b : institutionBillEncounters) {
