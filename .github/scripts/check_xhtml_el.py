@@ -26,6 +26,7 @@ import sys
 # Quote-aware, so a ">" inside an attribute value (e.g. rendered="#{a > b}") does not end the tag.
 PANEL_GRID_TAG = re.compile(r"""<p:panelGrid\b(?:[^>"']|"[^"]*"|'[^']*')*>""", re.DOTALL)
 GRID_COLUMNS = {1, 2, 3, 4, 6, 12}
+XML_COMMENT = re.compile(r"<!--.*?-->", re.DOTALL)
 
 
 def changed_xhtml(base):
@@ -85,16 +86,18 @@ def nested_el(text):
 
 def bad_panel_grids(text):
     """Yield (line, columns) of each p:panelGrid that the grid layout would reject."""
+    # Blank out XML comments, keeping their newlines so line numbers stay right.
+    text = XML_COMMENT.sub(lambda c: re.sub(r"[^\n]", " ", c.group(0)), text)
     for m in PANEL_GRID_TAG.finditer(text):
         tag = m.group(0)
-        cols = re.search(r'\bcolumns\s*=\s*"\s*(\d+)\s*"', tag)
+        cols = re.search(r"""\bcolumns\s*=\s*(["'])\s*(\d+)\s*\1""", tag)
         if not cols:
             continue  # no columns, or an EL value: cannot be checked here
-        layout = re.search(r'\blayout\s*=\s*"([^"]*)"', tag)
-        if layout and layout.group(1).strip() == "tabular":
+        layout = re.search(r"""\blayout\s*=\s*(["'])(.*?)\1""", tag, re.DOTALL)
+        if layout and layout.group(2).strip() == "tabular":
             continue
-        if int(cols.group(1)) not in GRID_COLUMNS:
-            yield text.count("\n", 0, m.start()) + 1, cols.group(1)
+        if int(cols.group(2)) not in GRID_COLUMNS:
+            yield text.count("\n", 0, m.start()) + 1, cols.group(2)
 
 
 def main(argv):
