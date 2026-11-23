@@ -212,13 +212,13 @@
                                         </div>
                                     </h:panelGroup>
 
-                                    <div class="col-1">
+                                    <div class="col-auto d-flex flex-column">
                                         <p:outputLabel value="&nbsp;"/>
                                         <p:commandButton
                                             id="btnAddItem"
                                             value="Add Item"
                                             icon="fas fa-plus"
-                                            class="ui-button-success w-100"
+                                            class="ui-button-success text-nowrap"
                                             action="#{transferRequestController.addItem}"
                                             process="@form"
                                             update="itemAutoComplete txtQty panelRateInput panelValueInput itemList requestTotals focusItem"/>
