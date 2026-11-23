@@ -104,7 +104,7 @@
                             </h:column>
                             <h:column>
                                 <f:facet name="header"><h:outputText value="Investigation/Service" /></f:facet>
-                                <h:outputText value="#{bip.referanceBillItem.item.name}" style="font-size: 10pt!important;" />
+                                <h:outputText value="#{empty bip.referanceBillItem.item ? bip.paidForBillFee.bill.procedure.item.name : bip.referanceBillItem.item.name}" style="font-size: 10pt!important;" />
                             </h:column>
                             <h:column>
                                 <f:facet name="header"><h:outputText value="Fee Type" /></f:facet>
