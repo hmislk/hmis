@@ -9,7 +9,7 @@
     </h:head>
     <h:body>
         <h:form  >
-            <p:panelGrid columns="5" >
+            <p:panelGrid columns="5" layout="tabular" >
                 <p:outputLabel value="Search Users" ></p:outputLabel>
                 <p:inputText autocomplete="off" id="txtSearch" value="#{webUserController.selectText}" >
                     <f:ajax execute="txtSearch" render="lstSelect" event="keyup" listener="#{webUserController.createTable()}" />

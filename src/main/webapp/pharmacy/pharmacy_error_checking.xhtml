@@ -15,7 +15,7 @@
                 <f:facet name="header" >
                     <h:outputLabel value="Pharmacy Bin Card" ></h:outputLabel>
                 </f:facet>
-                <p:panelGrid columns="7" class="w-100">
+                <p:panelGrid columns="7" layout="tabular" class="w-100">
                     <p:outputLabel value="Department" ></p:outputLabel>
                     <p:autoComplete value="#{pharmacyErrorChecking.department}"
                                     style="text-align: left; margin: 5px; padding: 5px; max-width: 300px!important;"  completeMethod="#{departmentController.completeDept}" var="dept" itemValue="#{dept}" itemLabel="#{dept.name}"
