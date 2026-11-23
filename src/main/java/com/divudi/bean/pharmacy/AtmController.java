@@ -88,8 +88,8 @@ public class AtmController implements Serializable {
         if (query == null) {
             atmList = new ArrayList<>();
         } else {
-            sql = "select c from Atm c where c.retired=false and (c.name) like '%" + query.toUpperCase() + "%' order by c.name";
-            atmList = getFacade().findByJpql(sql);
+            sql = "select c from Atm c where c.retired=false and (c.name) like :q order by c.name";
+            atmList = getFacade().findByJpql(sql, java.util.Map.of("q", "%" + query.toUpperCase() + "%"));
         }
         return atmList;
     }
@@ -172,8 +172,8 @@ public class AtmController implements Serializable {
         if (selectText == null || selectText.trim().isEmpty()) {
             selectedItems = getFacade().findByJpql("select c from Atm c where c.retired=false order by c.name");
         } else {
-            String sql = "select c from Atm c where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name";
-            selectedItems = getFacade().findByJpql(sql);
+            String sql = "select c from Atm c where c.retired=false and (c.name) like :q order by c.name";
+            selectedItems = getFacade().findByJpql(sql, java.util.Map.of("q", "%" + getSelectText().toUpperCase() + "%"));
 
         }
         return selectedItems;

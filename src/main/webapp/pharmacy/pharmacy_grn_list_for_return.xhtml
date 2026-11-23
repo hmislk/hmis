@@ -196,9 +196,10 @@
                                     action="#{pharmacyBillSearch.navigateToViewPharmacyGrn}"
                                     styleClass="ui-button-sm ui-button-info mx-1">
                                     <f:setPropertyActionListener target="#{goodsReturnController.bill}" value="#{p}" />
+                                    <f:setPropertyActionListener target="#{pharmacyBillSearch.bill}" value="#{p}" />
                                 </p:commandButton>
 
-                                <p:commandButton 
+                                <p:commandButton
                                     ajax="false"
                                     icon="pi pi-undo"
                                     title="Return"

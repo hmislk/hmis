@@ -1,5 +1,5 @@
 // Demo: how to log in to HMIS and select a department.
-// Run from tmp/demo-videos/login-department-select/ :  DEPT="Main Pharmacy" node flow.js
+// Run from <OUT>/demo-videos/login-department-select/ :  DEPT="Main Pharmacy" node flow.js
 const { chromium } = require('playwright');
 const { run, creds } = require('../../../.claude/skills/demo-video/scripts/recorder');
 

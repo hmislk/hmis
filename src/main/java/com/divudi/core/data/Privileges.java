@@ -68,6 +68,7 @@ public enum Privileges {
     InwardAdmissionsInwardAppoinment("Inward Admissions Inward Appointment"),
     InwardRoom("Inward Room"),
     InwardRoomRoomOccupency("Inward Room Occupancy"),
+    InwardRoomOccupancyAnyInstitute("Inward Room Occupancy - Any Institute"),
     InwardRoomRoomChange("Inward Room Change"),
     
     // IP Appointment
@@ -1291,6 +1292,7 @@ public enum Privileges {
     ReportsPatientJourney("Reports Page - 1. Patient Journey"),
     ReportsPatientLedger("Reports Page - 2. Patient Ledger"),
     ReportsSpecialityWiseDemograhicData("Reports Page - 3. Speciality Wise Demographic Data"),
+    ReportsVisitHistory("Reports Page - 4. Visit History"),
     ManageMaintenanceWindows("Manage Maintenance Windows"),
     //</editor-fold>
     //<editor-fold defaultstate="collapsed" desc="OPD Credit Company Claims (#25847)">
@@ -1298,10 +1300,17 @@ public enum Privileges {
     OpdCreditClaimSubmit("OPD Credit Claim - Submit"),
     OpdCreditClaimReject("OPD Credit Claim - Record Rejection"),
     OpdCreditClaimResubmit("OPD Credit Claim - Resubmit"),
+    OpdCreditClaimSettle("OPD Credit Claim - Settle"),
     OpdCreditClaimReports("OPD Credit Claim - Reports"),
+    OpdCreditWriteOffRequest("OPD Credit - Request Write-off"),
+    OpdCreditWriteOffApprove("OPD Credit - Approve Write-off"),
     //</editor-fold>
     //<editor-fold defaultstate="collapsed" desc="OPD Quotation (#25885)">
     OpdQuotationCreate("OPD Quotation - Create, Search and Print"),
+    //</editor-fold>
+    //<editor-fold defaultstate="collapsed" desc="Patient Complaints (#25886)">
+    PatientComplaintHandle("Patient Complaints - Handle (view register, assign, respond, change status, close)"),
+    PatientComplaintCreate("Patient Complaints - Record On-site Complaint"),
     //</editor-fold>
     ;
 
@@ -2211,6 +2220,7 @@ public enum Privileges {
             case ReportsPatientJourney:
             case ReportsPatientLedger:
             case ReportsSpecialityWiseDemograhicData:
+            case ReportsVisitHistory:
                 return "Reports";
 
             default:

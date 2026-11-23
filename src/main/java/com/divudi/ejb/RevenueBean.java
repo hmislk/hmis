@@ -60,6 +60,8 @@ public class RevenueBean {
         sql = "Select sum(bf.feeValue) ";
         sql += " from BillFee bf ";
         sql += " where bf.bill.createdAt between :fd and :td ";
+        // A fee the doctor collected at billing is not hospital revenue (#25731).
+        sql += " and (bf.collectedByDoctorAtBilling = false or bf.collectedByDoctorAtBilling is null) ";
         m.put("fd", fromDate);
         m.put("td", toDate);
         if (paymentMethods != null) {

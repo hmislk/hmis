@@ -147,6 +147,9 @@ public class UserPrivilageController implements Serializable {
         TreeNode addNewCollectingCentre = new DefaultTreeNode(new PrivilegeHolder(Privileges.OpdAddNewCollectingCentre, "Add New Referral Center"), opdNode);
         TreeNode opdQuotationNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.OpdQuotationCreate, "OPD Quotation (Create, Search and Print)"), opdNode);
         TreeNode opdEditPatientDetailsNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.OpdEditPatientDetails, "Edit Patient Details in OPD Billing"), opdNode);
+        TreeNode patientComplaintNode = new DefaultTreeNode(new PrivilegeHolder(null, "Patient Complaints"), opdNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.PatientComplaintHandle, "Handle Complaints (register, assign, respond, close)"), patientComplaintNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.PatientComplaintCreate, "Record On-site Complaint"), patientComplaintNode);
 
         TreeNode cashierNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.Cashier, "Cashier Menu"), opdNode);
         TreeNode acceptPaymentForCashierBills = new DefaultTreeNode(new PrivilegeHolder(Privileges.AcceptPaymentForPharmacyBills, "Accept payment for sale for cashier bills"), cashierNode);
@@ -157,7 +160,11 @@ public class UserPrivilageController implements Serializable {
         new DefaultTreeNode(new PrivilegeHolder(Privileges.OpdCreditClaimSubmit, "Submit Claim"), opdCreditClaimNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.OpdCreditClaimReject, "Record Claim Rejection"), opdCreditClaimNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.OpdCreditClaimResubmit, "Resubmit Claim"), opdCreditClaimNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.OpdCreditClaimSettle, "Settle Claim"), opdCreditClaimNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.OpdCreditClaimReports, "Claim Reports (Claims by Status, Claim Ageing)"), opdCreditClaimNode);
+
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.OpdCreditWriteOffRequest, "Request Write-off of Credit Bill Due"), opdCreditClaimNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.OpdCreditWriteOffApprove, "Approve Write-off of Credit Bill Due"), opdCreditClaimNode);
         TreeNode refundBillsAtCashier = new DefaultTreeNode(new PrivilegeHolder(Privileges.RefundFromCashier, "Refunds From Cashier"), cashierNode);
         TreeNode refundOpdBills = new DefaultTreeNode(new PrivilegeHolder(Privileges.RefundOpdBillsFromCashier, "Refund Opd Bills From Cashier Menu"), cashierNode);
         TreeNode refundPharmacyBills = new DefaultTreeNode(new PrivilegeHolder(Privileges.RefundPharmacyBillsFromCashier, "Refund Pharmacy Bills From Cashier"), cashierNode);
@@ -188,6 +195,7 @@ public class UserPrivilageController implements Serializable {
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardRoom, "Room Menu"), roomNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.WatingRoomAdmitPatient, "Waiting Room Admit Patient"), roomNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardRoomRoomOccupency, "Room Occupancy"), roomNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardRoomOccupancyAnyInstitute, "Room Occupancy - Any Institute"), roomNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardRoomRoomChange, "Room Change"), roomNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardRoomGurdianRoomChange, "Guardian Room Change"), roomNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardRoomDischarge, "Discharge Room"), roomNode);
@@ -1528,6 +1536,7 @@ public class UserPrivilageController implements Serializable {
         new DefaultTreeNode(new PrivilegeHolder(Privileges.ReportsPatientJourney, "1. Patient Journey"), reportsPageStatisticsReportsNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.ReportsPatientLedger, "2. Patient Ledger"), reportsPageStatisticsReportsNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.ReportsSpecialityWiseDemograhicData, "3. Speciality Wise Demographic Data"), reportsPageStatisticsReportsNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.ReportsVisitHistory, "4. Visit History"), reportsPageStatisticsReportsNode);
         TreeNode reportsPageSummaryNode = new DefaultTreeNode(new PrivilegeHolder(null, "Summary"), reportsPageReportsNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.ReportsHeadCountReport, "1. Head Count"), reportsPageSummaryNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.ReportsEmployeeWorkedDayReport, "2. Employee Worked Day Report"), reportsPageSummaryNode);

@@ -212,6 +212,8 @@ public class Bill implements Serializable, RetirableEntity {
     private double settledAmountByPatient;
     private double settledAmountBySponsor;
     private double refundAmount;
+    /** Sum of the approved write-offs of this credit bill (#25847). Null until the first one. Recomputed, never incremented. */
+    private Double writtenOffAmount;
     private double balance;
     /**
      * WARNING: This field is DEPRECATED for pharmacy billing - use 'margin' instead.
@@ -2699,6 +2701,14 @@ public class Bill implements Serializable, RetirableEntity {
 
     public double getRefundAmount() {
         return refundAmount;
+    }
+
+    public Double getWrittenOffAmount() {
+        return writtenOffAmount == null ? 0.0 : writtenOffAmount;
+    }
+
+    public void setWrittenOffAmount(Double writtenOffAmount) {
+        this.writtenOffAmount = writtenOffAmount;
     }
 
     public void setRefundAmount(double refundAmount) {

@@ -49,7 +49,7 @@ public class GradeController implements Serializable {
     public List<Grade> completeGrade(String qry) {
         List<Grade> a = null;
         if (qry != null) {
-            a = getFacade().findByJpql("select c from Grade c where c.retired=false and (c.name) like '%" + qry.toUpperCase() + "%' order by c.name");
+            a = getFacade().findByJpql("select c from Grade c where c.retired=false and (c.name) like :q order by c.name", java.util.Map.of("q", "%" + qry.toUpperCase() + "%"));
         }
         if (a == null) {
             a = new ArrayList<>();

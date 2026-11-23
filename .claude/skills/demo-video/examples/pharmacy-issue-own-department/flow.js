@@ -1,5 +1,5 @@
 // Demo: department preference "Allow Disposal Issue to Same Department".
-// Run from tmp/demo-videos/<slug>/ :  DEPT="Main Pharmacy" node flow.js
+// Run from <OUT>/demo-videos/<slug>/ :  DEPT="Main Pharmacy" node flow.js
 const { chromium } = require('playwright');
 const { run } = require('../../../.claude/skills/demo-video/scripts/recorder');
 
