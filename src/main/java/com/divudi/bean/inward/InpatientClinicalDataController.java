@@ -5415,7 +5415,11 @@ public class InpatientClinicalDataController implements Serializable {
         if (contextPath != null && !contextPath.isEmpty() && path.startsWith(contextPath + "/")) {
             path = path.substring(contextPath.length());
         }
-        if (!path.startsWith("/") || path.contains("..")) {
+        // Card HTML is user-editable: only image files outside WEB-INF/META-INF.
+        String lower = path.toLowerCase(java.util.Locale.ROOT);
+        if (!path.startsWith("/") || path.contains("..") || path.contains("\\")
+                || lower.startsWith("/web-inf") || lower.startsWith("/meta-inf")
+                || !lower.matches(".*\\.(png|jpe?g|gif|bmp)$")) {
             return null;
         }
         try (java.io.InputStream in = ec.getResourceAsStream(path)) {
