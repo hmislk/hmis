@@ -203,6 +203,8 @@ public class UserPrivilageController implements Serializable {
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardPharmacyIssueRequestSearch, "Pharmacy Issue Request Search"), inwardPharmacyNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardPharmacyBhtReceive, "Pharmacy BHT Receive"), inwardPharmacyNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardPharmacyIssueRequestCancel, "Pharmacy Issue Request Cancel"), inwardPharmacyNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardPharmacyReturnCancel, "Pharmacy Return Cancel"), inwardPharmacyNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardPharmacyReturnSubmit, "Pharmacy Return Submit"), inwardPharmacyNode);
 
         TreeNode searchNode = new DefaultTreeNode(new PrivilegeHolder(null, "Search"), inwardNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardSearch, "Search Menu"), searchNode);
@@ -869,6 +871,7 @@ public class UserPrivilageController implements Serializable {
         new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyReAddToStock, "Pharmacy Re-Add to Stock"), PharmacyAdjustment);
         // Inpatient medication extras
         new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyBHTIssueAccept, "Pharmacy BHT Issue Accept"), InpatientMedicationManagementNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyReturnFromWardForceComplete, "Pharmacy Return From Ward Force Complete"), InpatientMedicationManagementNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyInwardBilling, "Pharmacy Inward Billing"), InpatientMedicationManagementNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyInwardBillingCancel, "Pharmacy Inward Billing Cancel"), InpatientMedicationManagementNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyInwardBillingReturn, "Pharmacy Inward Billing Return"), InpatientMedicationManagementNode);

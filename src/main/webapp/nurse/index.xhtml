@@ -289,6 +289,27 @@
                                                             class="w-100">
                                                         </p:commandButton>
 
+                                                        <p:commandButton
+                                                            id="btnReturnMedicinesToPharmacy"
+                                                            value="Return Medicines to Pharmacy"
+                                                            ajax="false"
+                                                            action="#{wardPharmacyReturnToPharmacyController.navigateToReturnAllPatients}"
+                                                            icon="fa fa-truck-ramp-box"
+                                                            rendered="#{webUserController.hasPrivilege('InwardPharmacyReturnSubmit')}"
+                                                            class="w-100">
+                                                        </p:commandButton>
+
+                                                        <p:commandButton
+                                                            id="btnRequestDirectIssueReturn"
+                                                            value="Request Return of Direct Issue"
+                                                            title="Ask the issuing pharmacy to take back medicines it issued directly to a patient"
+                                                            ajax="false"
+                                                            action="#{directIssueReturnRequestController.navigateToRequestAllPatients}"
+                                                            icon="fa fa-rotate-left"
+                                                            rendered="#{webUserController.hasPrivilege('InwardPharmacyReturnSubmit')}"
+                                                            class="w-100">
+                                                        </p:commandButton>
+
                                                         <p:commandButton 
                                                             value="View Pharmacy Requests"
                                                             action="#{admissionController.navigateToSearchInwardBills}" 

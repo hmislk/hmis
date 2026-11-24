@@ -3145,6 +3145,8 @@ public class BhtSummeryController implements Serializable {
                     btas.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD);
                     btas.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN);
                     btas.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_CANCELLATION);
+                    // Ward return to pharmacy: credited when the pharmacy accepts it (#25509).
+                    btas.add(BillTypeAtomic.ACCEPT_RETURN_MEDICINE_INWARD);
                     i.setTotal(getInwardBean().calCostOfIssueByBill(getPatientEncounter(), btas, childPatientEncouters));
                     break;
                 case GeneralIssuing:

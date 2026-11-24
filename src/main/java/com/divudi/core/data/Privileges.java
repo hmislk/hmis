@@ -122,6 +122,8 @@ public enum Privileges {
     InwardPharmacyMenu("Inward Pharmacy Menu"),
     InwardPharmacyIssueRequest("Inward Pharmacy Issue Request"),
     InwardPharmacyIssueRequestCancel("Inward Pharmacy Issue Request Cancel"),
+    InwardPharmacyReturnCancel("Inward Pharmacy Return Cancel"),
+    InwardPharmacyReturnSubmit("Inward Pharmacy Return Submit"),
     InwardPharmacyIssueRequestSearch("Inward Pharmacy Issue Request Search"),
     InwardPharmacyBhtReceive("Inward Pharmacy BHT Receive"),
     InwardBillSettleWithoutCheck("Inward Bill Settle Without Check"),
@@ -601,6 +603,7 @@ public enum Privileges {
     PharmacySetReorderLevel("Pharmacy Set Reorder Level"),
     PharmacyReturnWithoutTraising("Pharmacy Return without Traising"),
     PharmacyBHTIssueAccept("Pharmacy BHT Issue Accept"),
+    PharmacyReturnFromWardForceComplete("Pharmacy Return From Ward Force Complete"),
     // Pharmacy Procurement
     PharmacyProcurementMenu("Pharmacy Procurement Menu"),
     CreatePurchaseOrder("Create Purchase Order"),
@@ -882,6 +885,7 @@ public enum Privileges {
             case PharmacySaleReprintWh:
             case PharmacyAdministration:
             case PharmacyBHTIssueAccept:
+            case PharmacyReturnFromWardForceComplete:
             case PharmacyPurchaseReturn:
             case PharmacyGoodReceiveEdit:
             case PharmacyPurchaseReprint:
@@ -1065,6 +1069,8 @@ public enum Privileges {
             case InwardAppointmentCancel:
             case InpatientClinicalAssessment:
             case InpatientClinicalDischarge:
+            case InwardPharmacyReturnCancel:
+            case InwardPharmacyReturnSubmit:
             case InwardPharmacyBhtReceive:
                 return "Inward";
 
