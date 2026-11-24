@@ -7,6 +7,8 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.zip.CRC32;
+import java.util.zip.Deflater;
+import java.util.zip.DeflaterOutputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import javax.imageio.ImageIO;
@@ -73,6 +75,28 @@ class HtmlDocumentConverterTest {
         ihdr[8] = 8; // bit depth
         ihdr[9] = 2; // colour type RGB
         chunk(out, "IHDR", ihdr);
+        chunk(out, "IEND", new byte[0]);
+        return out.toByteArray();
+    }
+
+    /** A real, decodable 1-bit grey PNG of the given size (all black). */
+    private static byte[] pngBlackBits(int w, int h) throws IOException {
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        out.write(new byte[]{(byte) 0x89, 'P', 'N', 'G', '\r', '\n', 0x1a, '\n'});
+        byte[] ihdr = new byte[13];
+        putInt(ihdr, 0, w);
+        putInt(ihdr, 4, h);
+        ihdr[8] = 1; // bit depth
+        ihdr[9] = 0; // grey
+        chunk(out, "IHDR", ihdr);
+        ByteArrayOutputStream raw = new ByteArrayOutputStream();
+        byte[] row = new byte[1 + (w + 7) / 8]; // filter byte 0 + zero bits
+        try (DeflaterOutputStream z = new DeflaterOutputStream(raw, new Deflater(9))) {
+            for (int y = 0; y < h; y++) {
+                z.write(row);
+            }
+        }
+        chunk(out, "IDAT", raw.toByteArray());
         chunk(out, "IEND", new byte[0]);
         return out.toByteArray();
     }
@@ -174,6 +198,29 @@ class HtmlDocumentConverterTest {
         assertTrue(out.contains("before") && out.contains("after"));
         assertNotNull(HtmlDocumentConverter.toDocx(html, null));
         assertFalse(docxHasMedia(HtmlDocumentConverter.toDocx(html, null)));
+    }
+
+    @Test
+    void decodableImageOverThePixelLimitIsSkipped() throws IOException {
+        // 6000 x 5000 = 30 MP: decodes fine, but is over the limit.
+        String big = "data:image/png;base64," + Base64.getEncoder().encodeToString(pngBlackBits(6000, 5000));
+        assertFalse(rtf("<p><img src=\"" + big + "\"></p>", null).contains("\\pict"));
+        // The same kind of image under the limit is embedded.
+        String small = "data:image/png;base64," + Base64.getEncoder().encodeToString(pngBlackBits(60, 50));
+        assertTrue(rtf("<p><img src=\"" + small + "\"></p>", null).contains("\\pict"));
+    }
+
+    @Test
+    void imageCountIsCappedPerDocument() throws IOException {
+        String src = "data:image/png;base64," + Base64.getEncoder().encodeToString(image("png", 2, 2));
+        StringBuilder html = new StringBuilder("<p>");
+        for (int i = 0; i < HtmlDocumentConverter.MAX_IMAGES_PER_DOCUMENT + 5; i++) {
+            html.append("<img src=\"").append(src).append("\">");
+        }
+        html.append("</p>");
+        String out = rtf(html.toString(), null);
+        int pictures = out.split("\\\\pict", -1).length - 1;
+        assertTrue(pictures == HtmlDocumentConverter.MAX_IMAGES_PER_DOCUMENT, "pictures: " + pictures);
     }
 
     @Test

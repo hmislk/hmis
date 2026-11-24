@@ -55,6 +55,8 @@ public final class HtmlDocumentConverter {
     private static final int MAX_IMAGE_BYTES = 5_000_000;
     /** Largest image accepted, in pixels (width x height), checked before decoding. */
     private static final long MAX_IMAGE_PIXELS = 25_000_000L;
+    /** Most images one card may carry into a file; later ones show their alt text. */
+    static final int MAX_IMAGES_PER_DOCUMENT = 20;
     private static final int BASE_FONT_PT = 11;
 
     private HtmlDocumentConverter() {
@@ -206,7 +208,10 @@ public final class HtmlDocumentConverter {
         return text.replace('\u00a0', ' ').replaceAll("[\\s]+", " ");
     }
 
-    private static Img loadImage(Element img, ImageResolver resolver) {
+    private static Img loadImage(Element img, ImageResolver resolver, int imageNumber) {
+        if (imageNumber > MAX_IMAGES_PER_DOCUMENT) {
+            return null;
+        }
         String src = img.attr("src");
         if (src == null || src.trim().isEmpty()) {
             return null;
@@ -411,6 +416,7 @@ public final class HtmlDocumentConverter {
     private static final class DocxWriter {
 
         final ImageResolver resolver;
+        int imageCount;
 
         DocxWriter(ImageResolver resolver) {
             this.resolver = resolver;
@@ -507,7 +513,7 @@ public final class HtmlDocumentConverter {
         }
 
         void writeImage(Element e, DocxTarget t) {
-            Img img = loadImage(e, resolver);
+            Img img = loadImage(e, resolver, ++imageCount);
             if (img == null) {
                 String alt = e.attr("alt");
                 if (!alt.isEmpty()) {
@@ -617,6 +623,7 @@ public final class HtmlDocumentConverter {
         boolean inCell;
         boolean paragraphOpen;
         boolean paragraphHasContent;
+        int imageCount;
 
         RtfWriter(ImageResolver resolver) {
             this.resolver = resolver;
@@ -781,7 +788,7 @@ public final class HtmlDocumentConverter {
         }
 
         void image(Element e) {
-            Img img = loadImage(e, resolver);
+            Img img = loadImage(e, resolver, ++imageCount);
             if (img == null) {
                 String alt = e.attr("alt");
                 if (!alt.isEmpty()) {
