@@ -278,15 +278,36 @@ public class UserNotificationController implements Serializable {
         getItems();
     }
 
-    public void userNotificationRequestComplete() {
-        if (current == null) {
-            JsfUtil.addErrorMessage("User Notification Error !");
+    /**
+     * Marks the notifications raised for this request bill as completed, and
+     * the logged user's copies as seen. Works whether the request was opened
+     * from a notification or from the request list.
+     */
+    public void completeRequestNotifications(Bill requestBill) {
+        if (requestBill == null || requestBill.getId() == null) {
             return;
         }
-        current.getNotification().setCompleted(true);
-        notificationFacade.edit(current.getNotification());
-        current.setSeen(true);
-        getFacade().edit(current);
+        Map<String, Object> m = new HashMap<>();
+        m.put("bid", requestBill.getId());
+        java.util.List<UserNotification> uns = getFacade().findByJpql(
+                "select un from UserNotification un"
+                + " where un.retired=false and un.notification.bill.id=:bid", m);
+        if (uns == null || uns.isEmpty()) {
+            return;
+        }
+        WebUser me = getSessionController().getLoggedUser();
+        java.util.Set<Long> done = new java.util.HashSet<>();
+        for (UserNotification un : uns) {
+            Notification n = un.getNotification();
+            if (n != null && !n.isCompleted() && done.add(n.getId())) {
+                n.setCompleted(true);
+                notificationFacade.edit(n);
+            }
+            if (me != null && me.equals(un.getWebUser()) && !un.isSeen()) {
+                un.setSeen(true);
+                getFacade().edit(un);
+            }
+        }
         fillLoggedUserNotifications();
     }
 

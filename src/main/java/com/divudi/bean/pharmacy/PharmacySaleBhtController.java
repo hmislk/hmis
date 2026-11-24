@@ -1829,7 +1829,9 @@ public class PharmacySaleBhtController implements Serializable {
             bhtIssueRequestPrintDtoBillId = null;
         }
 
-        userNotificationController.userNotificationRequestComplete();
+        // By the request bill: a notification may not be open when the request
+        // was picked from the list (#26049).
+        userNotificationController.completeRequestNotifications(bhtRequestBill);
 
     }
 
