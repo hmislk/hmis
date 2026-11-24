@@ -2046,6 +2046,8 @@ public class PharmacySaleBhtController implements Serializable {
                 }
                 PharmaceuticalBillItem pbi = new PharmaceuticalBillItem();
                 pbi.copy(old.getPharmaceuticalBillItem());
+                // Not a column, so copy() skips it; the line shows this name.
+                pbi.setTransDisplayItemName(old.getPharmaceuticalBillItem().getTransDisplayItemName());
                 pbi.setStaffStock(null);
                 pbi.setBillItem(line);
                 line.setPharmaceuticalBillItem(pbi);
