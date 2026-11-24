@@ -5,7 +5,8 @@
       xmlns:p="http://primefaces.org/ui"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:f="http://xmlns.jcp.org/jsf/core"
-      xmlns:bi="http://xmlns.jcp.org/jsf/composite/inward/bill">
+      xmlns:bi="http://xmlns.jcp.org/jsf/composite/inward/bill"
+      xmlns:bic="http://xmlns.jcp.org/jsf/composite/bill">
 
     <h:body>
 
@@ -15,12 +16,22 @@
                 <h:form>
                     <p:panel header="Reprint" >
                         <f:facet name="header" >
-                            <div class="d-flex align-items-center justify-content-between">
-                                <div>
+                            <div class="d-flex align-items-center justify-content-between w-100">
+                                <div class="d-flex align-items-center gap-2">
+                                    <h:outputText styleClass="fas fa-file-invoice" />
                                     <h:outputLabel value="Reprint" ></h:outputLabel>
                                 </div>
-                                <div>
-                                    <p:commandButton 
+                                <div class="d-flex gap-2 align-items-center">
+                                    <p:commandButton
+                                        id="btnPaperSettings"
+                                        value="Settings"
+                                        icon="fas fa-cog"
+                                        class="ui-button-secondary"
+                                        title="Choose the paper type of the payment vouchers"
+                                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Inward Doctor Payment - Show Bill Format Tabs and Paper Settings', false) and webUserController.hasPrivilege('ChangeReceiptPrintingPaperTypes')}"
+                                        type="button"
+                                        onclick="PF('inwardDoctorPaymentReprintConfigDialog').show();" />
+                                    <p:commandButton
                                         ajax="false" 
                                         class="ui-button-danger" 
                                         icon="fas fa-ban" 
@@ -81,21 +92,12 @@
                                         <h:outputLabel value="Paid Amount" ></h:outputLabel>
                                         <h:outputLabel value=":" ></h:outputLabel>
                                         <h:outputLabel value="#{-inwardSearch.bill.absoluteNetTotal}" ></h:outputLabel>
-                                        <h:outputLabel value="" ></h:outputLabel>
-                                        <h:outputLabel value="" ></h:outputLabel>
-                                        <h:outputLabel value="" ></h:outputLabel>
-                                        <h:outputLabel value="" ></h:outputLabel>
-                                        <h:outputLabel value="" ></h:outputLabel>
-                                        <h:outputLabel value="" ></h:outputLabel>
-                                        <h:outputLabel value="" ></h:outputLabel>
-                                        <h:outputLabel value="" ></h:outputLabel>
-                                        <h:outputLabel value="" ></h:outputLabel>
                                     </h:panelGrid>
                                 </p:panel>
                             </div>
                         </div>
                         <p:panel header="Bill Fee Details" class="my-2">
-                            <p:dataTable value="#{inwardSearch.billItems}" var="bip21" emptyMessage="No Items" >
+                            <p:dataTable value="#{inwardSearch.billItems}" var="bip21" emptyMessage="No Items" styleClass="p-datatable-sm" >
                                 <p:column headerText="Bill No">
                                     <h:outputLabel value="#{bip21.bill.deptId}" />
                                 </p:column>
@@ -114,7 +116,7 @@
                                     </f:facet>                                    
                                     <h:outputLabel value="#{bip21.referanceBillItem.bill.patientEncounter.patient.person.nameWithTitle}"/>                                                                                
                                 </p:column>
-                                <p:column headerText="Fee" >
+                                <p:column headerText="Fee" styleClass="text-end" >
                                     <h:outputLabel value="#{bip21.netValue}" />
                                 </p:column>
                             </p:dataTable>
@@ -122,9 +124,10 @@
                     </p:panel>
                 </h:form>
 
-                <h:form >
+                <h:form rendered="#{!configOptionApplicationController.getBooleanValueByKey('Inward Doctor Payment - Show Bill Format Tabs and Paper Settings', false)}">
                     <p:commandButton icon="fas fa-print"
-                                     class="ui-badge-info"
+                                     class="ui-button-info my-2"
+                                     title="Print the payment voucher"
                                      value="Print">
                         <p:printer target="gpBillPreview" />
                     </p:commandButton>
@@ -146,6 +149,160 @@
                     </h:panelGroup>
                     
                 </h:form>
+
+                <!-- Bill format tabs and paper settings, like OPD Professional Payment reprint (#25999) -->
+                <h:form id="frmReprintFormats" rendered="#{configOptionApplicationController.getBooleanValueByKey('Inward Doctor Payment - Show Bill Format Tabs and Paper Settings', false)}">
+                    <p:tabView id="tvBillFormats" dynamic="false">
+
+                        <p:tab title="Detailed">
+                            <p:commandButton
+                                id="btnPrintDetailed"
+                                value="Print Detailed"
+                                class="ui-button-info mb-3"
+                                icon="fas fa-print"
+                                ajax="false"
+                                action="#" >
+                                <p:printer target="gpDetailedPreview" />
+                            </p:commandButton>
+
+                            <h:panelGroup id="gpDetailedPreview" >
+                                <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Inward Doctor Payment Tabs - Paper is A4', true)}">
+                                    <bi:staffBill hideDetailsConfigKey="Hide the details on the Inward Doctor Payment Bill" bill="#{inwardSearch.bill}" dup="true" />
+                                </h:panelGroup>
+                                <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Inward Doctor Payment Tabs - Paper is Five Five', false)}">
+                                    <bi:staff_payment_five_five_paper_with_headings hideHeaderConfigKey="Hide the Header Details on the Inward Doctor Payment 5x5 Bill" duplicate="true" controller="#{inwardSearch}" bill="#{inwardSearch.bill}" />
+                                </h:panelGroup>
+                                <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Inward Doctor Payment Tabs - Paper is POS', false)}">
+                                    <bic:staff_payment_pos_detailed controller="#{inwardSearch}" bill="#{inwardSearch.bill}" dup="true" />
+                                </h:panelGroup>
+                            </h:panelGroup>
+                        </p:tab>
+
+                        <p:tab title="Summarised">
+                            <p:commandButton
+                                id="btnPrintSummarised"
+                                value="Print Summarised"
+                                class="ui-button-warning mb-3"
+                                icon="fas fa-print"
+                                ajax="false"
+                                action="#" >
+                                <p:printer target="gpSummarisedPreview" />
+                            </p:commandButton>
+
+                            <h:panelGroup id="gpSummarisedPreview" >
+                                <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Inward Doctor Payment Tabs - Paper is A4', true)}">
+                                    <bic:A4PaperPaymentOPDDoctorSummarised controller="#{inwardSearch}" bill="#{inwardSearch.bill}" dup="true" patientFeesLabel="Inpatient Professional Fees" />
+                                </h:panelGroup>
+                                <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Inward Doctor Payment Tabs - Paper is Five Five', false)}">
+                                    <bic:staff_payment_five_five_summarised hideHeaderConfigKey="Hide the Header Details on the Inward Doctor Payment 5x5 Bill" controller="#{inwardSearch}" bill="#{inwardSearch.bill}" dup="true" patientFeesLabel="Inpatient Professional Fees" />
+                                </h:panelGroup>
+                                <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Inward Doctor Payment Tabs - Paper is POS', false)}">
+                                    <bic:staff_payment_pos_summarised controller="#{inwardSearch}" bill="#{inwardSearch.bill}" dup="true" patientFeesLabel="Inpatient Professional Fees" />
+                                </h:panelGroup>
+                            </h:panelGroup>
+                        </p:tab>
+
+                        <p:tab title="Summary">
+                            <p:commandButton
+                                id="btnPrintSummary"
+                                value="Print Summary"
+                                class="ui-button-help mb-3"
+                                icon="fas fa-print"
+                                ajax="false"
+                                action="#" >
+                                <p:printer target="gpSummaryPreview" />
+                            </p:commandButton>
+
+                            <h:panelGroup id="gpSummaryPreview" >
+                                <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Inward Doctor Payment Tabs - Paper is A4', true)}">
+                                    <bic:A4PaperPaymentOPDDoctorSummary controller="#{inwardSearch}" bill="#{inwardSearch.bill}" dup="true" patientFeesLabel="Inpatient Professional Fees" />
+                                </h:panelGroup>
+                                <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Inward Doctor Payment Tabs - Paper is Five Five', false)}">
+                                    <bic:staff_payment_five_five_summary hideHeaderConfigKey="Hide the Header Details on the Inward Doctor Payment 5x5 Bill" controller="#{inwardSearch}" bill="#{inwardSearch.bill}" dup="true" patientFeesLabel="Inpatient Professional Fees" />
+                                </h:panelGroup>
+                                <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Inward Doctor Payment Tabs - Paper is POS', false)}">
+                                    <bic:staff_payment_pos_summary controller="#{inwardSearch}" bill="#{inwardSearch.bill}" dup="true" patientFeesLabel="Inpatient Professional Fees" />
+                                </h:panelGroup>
+                            </h:panelGroup>
+                        </p:tab>
+
+                        <p:tab title="Individual">
+                            <p:commandButton
+                                id="btnPrintIndividual"
+                                value="Print Individual"
+                                class="ui-button-danger mb-3"
+                                icon="fas fa-print"
+                                ajax="false"
+                                action="#" >
+                                <p:printer target="gpIndividualPreview" />
+                            </p:commandButton>
+
+                            <h:panelGroup id="gpIndividualPreview" >
+                                <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Inward Doctor Payment Tabs - Paper is A4', true)}">
+                                    <bic:staff_payment_individual_a4 controller="#{inwardSearch}" bill="#{inwardSearch.bill}" dup="true" />
+                                </h:panelGroup>
+                                <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Inward Doctor Payment Tabs - Paper is Five Five', false)}">
+                                    <bic:staff_payment_individual_five_five controller="#{inwardSearch}" bill="#{inwardSearch.bill}" dup="true" />
+                                </h:panelGroup>
+                                <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Inward Doctor Payment Tabs - Paper is POS', false)}">
+                                    <bic:staff_payment_individual_pos controller="#{inwardSearch}" bill="#{inwardSearch.bill}" dup="true" />
+                                </h:panelGroup>
+                            </h:panelGroup>
+                        </p:tab>
+
+                    </p:tabView>
+                </h:form>
+
+                <!-- Inward Doctor Payment paper settings (#25999) -->
+                <p:dialog id="inwardDoctorPaymentReprintConfigDialog"
+                          header="Inward Doctor Payment Printer Configuration"
+                          widgetVar="inwardDoctorPaymentReprintConfigDialog"
+                          rendered="#{configOptionApplicationController.getBooleanValueByKey('Inward Doctor Payment - Show Bill Format Tabs and Paper Settings', false) and webUserController.hasPrivilege('ChangeReceiptPrintingPaperTypes')}"
+                          modal="true"
+                          width="600"
+                          resizable="true"
+                          closeOnEscape="true">
+
+                    <p:ajax event="open" listener="#{pharmacyConfigController.loadCurrentConfig}" update=":#{p:resolveFirstComponentWithId('inwardDoctorPaymentReprintCheckboxes',view).clientId}" process="@this" />
+
+                    <h:form id="inwardDoctorPaymentReprintConfigForm">
+                        <h:panelGroup id="inwardDoctorPaymentReprintCheckboxes" layout="block">
+                            <div class="mb-3">
+                                <p:selectBooleanCheckbox
+                                    id="inwardDocPayA4"
+                                    value="#{pharmacyConfigController.inwardDoctorPaymentTabsA4Paper}" />
+                                <p:outputLabel for="inwardDocPayA4" value="A4 Paper Format" class="ms-2" />
+                            </div>
+                            <div class="mb-3">
+                                <p:selectBooleanCheckbox
+                                    id="inwardDocPayFiveFive"
+                                    value="#{pharmacyConfigController.inwardDoctorPaymentTabsFiveFivePaper}" />
+                                <p:outputLabel for="inwardDocPayFiveFive" value="5x5 Paper Format" class="ms-2" />
+                            </div>
+                            <div class="mb-3">
+                                <p:selectBooleanCheckbox
+                                    id="inwardDocPayPos"
+                                    value="#{pharmacyConfigController.inwardDoctorPaymentTabsPosPaper}" />
+                                <p:outputLabel for="inwardDocPayPos" value="POS Paper Format" class="ms-2" />
+                            </div>
+                        </h:panelGroup>
+                        <p:messages id="inwardDoctorPaymentReprintConfigMessages" showDetail="true" closable="true" />
+                        <div class="d-flex gap-2">
+                            <p:commandButton
+                                value="Apply &amp; Close"
+                                icon="fas fa-save"
+                                class="ui-button-success"
+                                ajax="false"
+                                action="#{pharmacyConfigController.saveInwardDoctorPaymentTabsConfig}" />
+                            <p:commandButton
+                                value="Cancel"
+                                icon="fas fa-times"
+                                class="ui-button-secondary"
+                                type="button"
+                                onclick="PF('inwardDoctorPaymentReprintConfigDialog').hide(); return false;" />
+                        </div>
+                    </h:form>
+                </p:dialog>
 
             </ui:define>
 
