@@ -42,7 +42,6 @@ import com.divudi.core.entity.Payment;
 import com.divudi.core.entity.Person;
 import com.divudi.core.entity.PreBill;
 import com.divudi.core.entity.PriceMatrix;
-import com.divudi.core.entity.RefundBill;
 import com.divudi.core.entity.Staff;
 import com.divudi.core.entity.Token;
 import com.divudi.core.entity.WebUser;
@@ -97,9 +96,6 @@ import com.divudi.core.data.admin.PrivilegeInfo;
 @SessionScoped
 public class PharmacyPreSettleController implements Serializable, ControllerWithMultiplePayments {
 
-    @javax.ejb.EJB
-    private com.divudi.service.CreditCompanyClaimService creditCompanyClaimService;
-
     /**
      * Creates a new instance of PharmacySaleController
      */
@@ -153,7 +149,6 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
     BillService billService;
 /////////////////////////
     Item selectedAlternative;
-    Bill saleReturnBill;
 
     private Bill preBill;
     private Bill saleBill;
@@ -513,7 +508,6 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
         selectedAlternative = null;
         preBill = null;
         saleBill = null;
-        saleReturnBill = null;
         bill = null;
         billItem = null;
         removingBillItem = null;
@@ -2191,15 +2185,6 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
             saleBill = new BilledBill();
         }
         return saleBill;
-    }
-
-    public Bill getSaleReturnBill() {
-        if (saleReturnBill == null) {
-            saleReturnBill = new RefundBill();
-            saleReturnBill.setBillType(BillType.PharmacySale);
-            saleReturnBill.setBillTypeAtomic(BillTypeAtomic.PHARMACY_RETAIL_SALE_REFUND);
-        }
-        return saleReturnBill;
     }
 
     public void setSaleBill(Bill saleBill) {
