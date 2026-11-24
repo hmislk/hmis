@@ -34,7 +34,7 @@ Hub messages, asks to the user and Telegram replies follow ASD-STE100
 6. Use one word for one thing. Use the words on the screen.
 7. No method names, class names, commit codes or code in text for the user.
 8. A paragraph has 6 sentences or fewer. Use a numbered list for steps.
-9. Write full words, not short forms ("review", not "REV"; "test in the app", not "e2e").
+9. Do not use jargon. Use only the agreed short words below; write every other short form in full.
 10. Write full sentences with "the" and "a". Do not write in note form.
 11. When you give a PR or issue number, say what it is: "PR 26067 (inpatient due reports)".
 12. Put gate words, commit codes and code names on the last line, after the label "For sessions:".
@@ -44,6 +44,30 @@ Fixed gate words such as "REV OK <sha>" on a PR stay exactly as written.
 Measure: once a week one session scores 10 random hub messages (sentences
 that obey all rules / all sentences) and reports the score to the user. If
 the user replies "unclear", the sender rewrites the message.
+
+### Agreed short words
+
+The user agreed this list on 24 Nov 2026. The team adds a word when it needs one: first add the word and its meaning to this list and to the team playbook list, then use it.
+
+| Short word | Meaning |
+|---|---|
+| e2e | a test in the app, from start to end |
+| REV | a code review by another member |
+| REV OK | the review passed |
+| REV CHG | the review asks for changes |
+| PR | a pull request (a proposed code change) |
+| CI | the automatic build and tests on GitHub |
+| CR | CodeRabbit, the review robot |
+| merge | add a change to the main code |
+| deploy | put new code on a server |
+| arm | set a merge for a fixed time |
+| hotfix | an urgent fix for a live hospital |
+| prod | production, the live hospital system |
+| QA1 to QA4 | our test servers |
+| DB | database |
+| BHT | the inpatient admission number |
+| SL time | Sri Lanka time |
+| Needs-you | a hub question for the user |
 
 ## Length guide
 
@@ -65,7 +89,6 @@ the user replies "unclear", the sender rewrites the message.
 | rendered=false | hidden |
 | regression | it used to work and now doesn't |
 | slice, delta, head sha | part, the new change, the latest commit |
-| REV OK, e2e (in messages to the user) | review passed, tested end to end |
 
 Keep fixed gate words exactly as written where a rule or tool reads them,
 for example the "REV OK <sha>" comment on a PR.
