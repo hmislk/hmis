@@ -125,55 +125,55 @@
                                     rowsPerPageTemplate="15,25,50"
                                     >
 
-                                    <p:column headerText="#" width="2em;" style="padding: 8px;">
+                                    <p:column headerText="#" width="2em" style="padding: 8px;">
                                         <h:outputLabel value="#{i+1}" />
                                     </p:column>
 
-                                    <p:column headerText="Appointment No" width="12em;" style="padding: 8px;">
+                                    <p:column headerText="Appointment No" width="9em" style="padding: 8px;">
                                         <h:outputLabel value="#{r.appointmentNumber}" />
                                     </p:column>
 
-                                    <p:column headerText="Reserve From" width="13em;" style="padding: 8px;">
+                                    <p:column headerText="Patient" width="14em" style="padding: 6px; min-width: 14em; white-space: normal; word-break: break-word;">
+                                        <h:outputLabel value="#{r.patientNameWithTitle}" title="#{r.patientNameWithTitle}" />
+                                    </p:column>
+
+                                    <p:column headerText="Reserve From" width="9em" style="padding: 8px;">
                                         <h:outputLabel value="#{r.reservedFrom}" >
                                             <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></f:convertDateTime>
                                         </h:outputLabel>
                                     </p:column>
 
-                                    <p:column headerText="Reserve To" width="13em;" style="padding: 8px;">
+                                    <p:column headerText="Reserve To" width="9em" style="padding: 8px;">
                                         <h:outputLabel value="#{r.reservedTo}" >
                                             <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></f:convertDateTime>
                                         </h:outputLabel>
                                     </p:column>
 
-                                    <p:column headerText="Procedure" width="14em;" style="padding: 8px;">
+                                    <p:column headerText="Procedure" width="9em" style="padding: 8px;">
                                         <h:outputLabel id="procedure" value="#{r.procedureName}" />
                                     </p:column>
 
-                                    <p:column headerText="Category" width="12em;" style="padding: 8px;">
+                                    <p:column headerText="Category" width="8em" style="padding: 8px;">
                                         <h:outputLabel id="category" value="#{r.categoryName}" />
                                     </p:column>
 
-                                    <p:column headerText="Appointment Date" width="11em;" style="padding: 8px;">
+                                    <p:column headerText="Appointment Date" width="9em" style="padding: 8px;">
                                         <h:outputLabel id="appointmentDate" value="#{r.appointmentDate}" >
                                             <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></f:convertDateTime>
                                         </h:outputLabel>
                                     </p:column>
 
-                                    <p:column headerText="Payment" width="7em;" style="padding: 8px;">
+                                    <p:column headerText="Payment" width="6em" style="padding: 8px;">
                                         <h:outputText id="paymentState" value="#{r.paid ? 'Paid' : 'Not paid'}"
                                                       title="Payment state of appointment #{r.appointmentNumber}"
                                                       style="#{r.paid ? '' : 'font-weight: bold; color: #b45309;'}" />
                                     </p:column>
 
-                                    <p:column headerText="Room" width="12em;" style="padding: 8px;">
+                                    <p:column headerText="Room" width="6em" style="padding: 8px;">
                                         <h:outputLabel value="#{r.roomNo}" />
                                     </p:column>
 
-                                    <p:column headerText="Patient" style="padding: 8px;">
-                                        <h:outputLabel value="#{r.patientNameWithTitle}" />
-                                    </p:column>
-
-                                    <p:column headerText="Age / Gender" width="9em;" style="padding: 8px;">
+                                    <p:column headerText="Age / Gender" width="7em" style="padding: 8px;">
                                         <h:outputLabel value="#{r.patientAgeShort}" />
                                         <h:outputText value=" / " />
                                         <h:outputText styleClass="fas fa-mars text-primary" title="Male"
@@ -184,19 +184,19 @@
                                                       rendered="#{r.patientGender ne 'Male' and r.patientGender ne 'Female'}" />
                                     </p:column>
 
-                                    <p:column headerText="Mobile"  width="10em;" style="padding: 8px;">
+                                    <p:column headerText="Mobile" width="8em" style="padding: 8px;">
                                         <h:outputLabel value="#{r.patientMobile}" rendered="#{not empty r.patientMobile}" />
                                         <h:outputLabel value="N/A" rendered="#{empty r.patientMobile}" />
                                     </p:column>
 
-                                    <p:column headerText="Status" width="8em;" style="padding: 8px;">
+                                    <p:column headerText="Status" width="6em" style="padding: 8px;">
                                         <p:badge rendered="#{r.status eq'PENDING'}" severity="warning" value="#{r.status.name}"></p:badge>
                                         <p:badge rendered="#{r.status eq'COMPLETE'}" severity="success" value="#{r.status.name}"></p:badge>
                                         <p:badge rendered="#{r.status eq'CANCEL'}" severity="danger" value="#{r.status.name}"></p:badge>
                                     </p:column>
 
-                                    <p:column headerText="Actions" width="260px;" style="padding: 8px;" >
-                                        <div class="d-flex gap-2">
+                                    <p:column headerText="Actions" width="9em" style="padding: 8px;" >
+                                        <div class="d-flex flex-wrap gap-1">
                                             <p:commandButton
                                                 icon="fa fa-check-circle"
                                                 ajax="false"
