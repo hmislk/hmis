@@ -142,10 +142,10 @@ public class AdmissionTypeTimeline {
     /**
      * Splits the billed days of a stay by admission type. The number of days is
      * the same as {@link CommonFunctions#getDayCount} (a stay that counts as 0
-     * days is billed as 1). Each calendar day takes the type in force when that
-     * day starts, so the day a change is made is still billed at the old type
-     * and the type counts from the next day. The days always add up to the
-     * single-type day count.
+     * days is billed as 1). Each calendar day takes the type in force at the end
+     * of that day, so the day a change is made is billed at the new type (the
+     * last change of that day wins). The days always add up to the single-type
+     * day count.
      */
     public List<TypeDays> splitDays(Date from, Date to) {
         long dayCount = CommonFunctions.getDayCount(from, to);
@@ -160,7 +160,10 @@ public class AdmissionTypeTimeline {
         AdmissionType runType = null;
         long runDays = 0;
         for (long i = 0; i < billed; i++) {
-            AdmissionType t = typeAt(cal.getTime());
+            Calendar endOfDay = (Calendar) cal.clone();
+            endOfDay.add(Calendar.DAY_OF_MONTH, 1);
+            endOfDay.add(Calendar.MILLISECOND, -1);
+            AdmissionType t = typeAt(endOfDay.getTime());
             if (runDays > 0 && sameType(runType, t)) {
                 runDays++;
             } else {
