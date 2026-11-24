@@ -47,6 +47,9 @@ import javax.persistence.TemporalType;
 @SessionScoped
 public class InwardChargeTypeBreakdownController implements Serializable {
 
+    @javax.ejb.EJB
+    private com.divudi.service.inward.AdmissionTypeHistoryService admissionTypeHistoryService;
+
     // -------------------------------------------------------------------------
     // EJBs / CDI
     // -------------------------------------------------------------------------
@@ -774,7 +777,9 @@ public class InwardChargeTypeBreakdownController implements Serializable {
         if (billed != null) {
             return billed.getAdjustedValue();
         }
-        return (enc.getAdmissionType() != null) ? enc.getAdmissionType().getAdmissionFee() : 0.0;
+        // The admission fee follows the type the admission started with (#25814).
+        com.divudi.core.entity.inward.AdmissionType feeType = admissionTypeHistoryService.firstType(enc);
+        return (feeType != null) ? feeType.getAdmissionFee() : 0.0;
     }
 
     // -------------------------------------------------------------------------

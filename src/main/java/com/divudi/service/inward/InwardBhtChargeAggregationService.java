@@ -77,6 +77,9 @@ public class InwardBhtChargeAggregationService implements Serializable {
     private InwardProfessionalFeeClassificationService professionalFeeClassificationService;
     @EJB
     private InwardRoomChargeCalculationService roomChargeCalculationService;
+    /** The admission fee follows the type the admission started with (#25814). */
+    @EJB
+    private AdmissionTypeHistoryService admissionTypeHistoryService;
     @EJB
     private InpatientPackagePricingService packagePricingService;
 
@@ -576,11 +579,14 @@ public class InwardBhtChargeAggregationService implements Serializable {
      */
     private Map<Long, Map<InwardChargeType, Double>> fetchAdmissionFeeCharges(List<PatientEncounter> encounters) {
         Map<Long, Map<InwardChargeType, Double>> result = new HashMap<>();
+        Map<Long, com.divudi.core.data.inward.AdmissionTypeTimeline> timelines = admissionTypeHistoryService.timelinesFor(encounters);
         for (PatientEncounter enc : encounters) {
             if (enc.getAdmissionType() == null || enc.getId() == null) {
                 continue;
             }
-            double fee = enc.getAdmissionType().getAdmissionFee();
+            com.divudi.core.entity.inward.AdmissionType feeType = timelines.containsKey(enc.getId())
+                    ? timelines.get(enc.getId()).firstType() : enc.getAdmissionType();
+            double fee = feeType != null ? feeType.getAdmissionFee() : 0.0;
             if (fee == 0.0) {
                 continue;
             }

@@ -143,6 +143,9 @@ public class InwardBeanController implements Serializable {
     com.divudi.bean.common.PriceMatrixController priceMatrixController;
     @Inject
     com.divudi.service.inward.InwardProfessionalFeeClassificationService professionalFeeClassificationService;
+    /** Which admission type was in force at a date (#25814). */
+    @javax.ejb.EJB
+    com.divudi.service.inward.AdmissionTypeHistoryService admissionTypeHistoryService;
 
     private Long lastGeneratedBhtLong;
 
@@ -1791,8 +1794,11 @@ public class InwardBeanController implements Serializable {
         }
 
         for (PatientEncounter pt : pts) {
-            if (pt.getAdmissionType() != null) {
-                total = total + pt.getAdmissionType().getAdmissionFee();
+            // The admission fee is charged once, at admission, so it follows the type
+            // the admission started with, not a type it was changed to later (#25814).
+            com.divudi.core.entity.inward.AdmissionType feeType = admissionTypeHistoryService.firstType(pt);
+            if (feeType != null) {
+                total = total + feeType.getAdmissionFee();
             }
         }
         return total;
@@ -3953,10 +3959,33 @@ public class InwardBeanController implements Serializable {
         billFee.setFeeValue(net);
     }
 
+    /**
+     * The admission type in force on the date the fee's bill was created, so a
+     * fee on a bill made before an admission type change is still priced with
+     * the old type (#25814). A fee on a bill not yet dated is priced now, with
+     * the current type; with no history that is always the current type.
+     */
+    private com.divudi.core.entity.inward.AdmissionType admissionTypeForFee(PatientEncounter patientEncounter, BillFee billFee) {
+        Date billDate = (billFee != null && billFee.getBillItem() != null && billFee.getBillItem().getBill() != null)
+                ? billFee.getBillItem().getBill().getCreatedAt() : null;
+        return admissionTypeAtDate(patientEncounter, billDate);
+    }
+
+    public com.divudi.core.entity.inward.AdmissionType admissionTypeAtDate(PatientEncounter patientEncounter, Date date) {
+        if (patientEncounter == null) {
+            return null;
+        }
+        if (date == null) {
+            return patientEncounter.getAdmissionType();
+        }
+        return admissionTypeHistoryService.typeAt(patientEncounter, date);
+    }
+
     public void setBillFeeMargin(BillFee billFee, Item item, PriceMatrix priceMatrix, PatientEncounter patientEncounter) {
         if (billFee == null || item == null || billFee.getFee() == null) {
             return;
         }
+        com.divudi.core.entity.inward.AdmissionType typeAtBill = admissionTypeForFee(patientEncounter, billFee);
 
         double qty = (billFee.getBillItem() != null && billFee.getBillItem().getQty() != null && billFee.getBillItem().getQty() > 0)
                 ? billFee.getBillItem().getQty() : 1.0;
@@ -3969,8 +3998,8 @@ public class InwardBeanController implements Serializable {
                 && !Boolean.FALSE.equals(billFee.getFee().getMarginAllowed())
                 && billFee.getFee().getFeeType() != FeeType.Staff
                 && patientEncounter != null
-                && patientEncounter.getAdmissionType() != null
-                && patientEncounter.getAdmissionType().isAllowToCalculateMargin();
+                && typeAtBill != null
+                && typeAtBill.isAllowToCalculateMargin();
 
         double unitMargin = 0;
         if (marginEligible) {
@@ -3982,7 +4011,7 @@ public class InwardBeanController implements Serializable {
                 double svcValue = bi.getRate() != 0.0 ? Math.abs(bi.getRate()) : unitGross;
                 Department dept = resolveFeeDepartment(patientEncounter);
                 PriceMatrix ccMatrix = priceMatrixController.fetchInwardMargin(bi, svcValue, dept,
-                        patientEncounter.getPaymentMethod(), cc, patientEncounter.getAdmissionType(), resolveCurrentRoomCategory(patientEncounter));
+                        patientEncounter.getPaymentMethod(), cc, typeAtBill, resolveCurrentRoomCategory(patientEncounter));
                 if (ccMatrix != null) {
                     effectivePriceMatrix = ccMatrix;
                 }
@@ -4000,8 +4029,8 @@ public class InwardBeanController implements Serializable {
         billFee.setFeeDiscount(0.0);
 
         // Apply discount (has its own eligibility guards inside).
-        if (patientEncounter != null && patientEncounter.getAdmissionType() != null) {
-            applyInwardDiscountToBillFee(billFee, item, patientEncounter);
+        if (patientEncounter != null && typeAtBill != null) {
+            applyInwardDiscountToBillFee(billFee, item, patientEncounter, typeAtBill);
         } else {
             billFee.setFeeUnitValue(unitGross);
             billFee.setFeeValue(unitGross * qty);
@@ -4079,6 +4108,18 @@ public class InwardBeanController implements Serializable {
         if (billFee == null || item == null || patientEncounter == null) {
             return;
         }
+        applyInwardDiscountToBillFee(billFee, item, patientEncounter, admissionTypeForFee(patientEncounter, billFee));
+    }
+
+    /**
+     * Same as the three-argument form, with the admission type to look up the
+     * discount under (the type in force on the fee's bill date, #25814).
+     */
+    public void applyInwardDiscountToBillFee(BillFee billFee, Item item, PatientEncounter patientEncounter,
+            com.divudi.core.entity.inward.AdmissionType admissionTypeAtBill) {
+        if (billFee == null || item == null || patientEncounter == null) {
+            return;
+        }
         if (billFee.getFee() == null
                 || billFee.getFee().getFeeType() == FeeType.Staff
                 || !Boolean.TRUE.equals(item.isDiscountAllowed())
@@ -4095,7 +4136,7 @@ public class InwardBeanController implements Serializable {
         double pct = priceMatrixController.getInwardDiscountPercent(
                 patientEncounter.getPaymentMethod(),
                 patientEncounter.getPaymentScheme(),
-                patientEncounter.getAdmissionType(),
+                admissionTypeAtBill,
                 matrixDept,
                 item,
                 creditCompany);
@@ -4111,11 +4152,13 @@ public class InwardBeanController implements Serializable {
 
     public void updateBillItemMargin(BillItem billItem, double serviceValue, PatientEncounter patientEncounter, Department matrixDepartment, PriceMatrix priceMatrix) {
         PriceMatrix effectivePriceMatrix = priceMatrix;
+        com.divudi.core.entity.inward.AdmissionType typeAtBill = admissionTypeAtDate(patientEncounter,
+                billItem != null && billItem.getBill() != null ? billItem.getBill().getCreatedAt() : null);
         if (patientEncounter != null) {
             com.divudi.core.entity.Institution creditCompany = resolveSingleCreditCompany(patientEncounter);
             if (creditCompany != null) {
                 PriceMatrix ccMatrix = priceMatrixController.fetchInwardMargin(billItem, serviceValue, matrixDepartment,
-                        patientEncounter.getPaymentMethod(), creditCompany, patientEncounter.getAdmissionType(), resolveCurrentRoomCategory(patientEncounter));
+                        patientEncounter.getPaymentMethod(), creditCompany, typeAtBill, resolveCurrentRoomCategory(patientEncounter));
                 if (ccMatrix != null) {
                     effectivePriceMatrix = ccMatrix;
                 }
@@ -4125,7 +4168,7 @@ public class InwardBeanController implements Serializable {
         List<BillFee> billFees = getBillBean().getBillFee(billItem);
 
         for (BillFee billFee : billFees) {
-            if (patientEncounter != null && patientEncounter.getAdmissionType() != null) {
+            if (patientEncounter != null && typeAtBill != null) {
                 setBillFeeMargin(billFee, billItem.getItem(), effectivePriceMatrix, patientEncounter);
             } else {
                 setBillFeeMargin(billFee, billItem.getItem(), effectivePriceMatrix);
@@ -4140,18 +4183,19 @@ public class InwardBeanController implements Serializable {
 
     public void updateBillItemMargin(BillFee billFee, double serviceValue, PatientEncounter patientEncounter, Department matrixDepartment, PriceMatrix priceMatrix) {
         PriceMatrix effectivePriceMatrix = priceMatrix;
+        com.divudi.core.entity.inward.AdmissionType typeAtBill = admissionTypeForFee(patientEncounter, billFee);
         if (patientEncounter != null && billFee.getBillItem() != null) {
             com.divudi.core.entity.Institution creditCompany = resolveSingleCreditCompany(patientEncounter);
             if (creditCompany != null) {
                 PriceMatrix ccMatrix = priceMatrixController.fetchInwardMargin(billFee.getBillItem(), serviceValue,
-                        matrixDepartment, patientEncounter.getPaymentMethod(), creditCompany, patientEncounter.getAdmissionType(), resolveCurrentRoomCategory(patientEncounter));
+                        matrixDepartment, patientEncounter.getPaymentMethod(), creditCompany, typeAtBill, resolveCurrentRoomCategory(patientEncounter));
                 if (ccMatrix != null) {
                     effectivePriceMatrix = ccMatrix;
                 }
             }
         }
 
-        if (patientEncounter != null && patientEncounter.getAdmissionType() != null) {
+        if (patientEncounter != null && typeAtBill != null) {
             setBillFeeMargin(billFee, billFee.getBillItem().getItem(), effectivePriceMatrix, patientEncounter);
         } else {
             setBillFeeMargin(billFee, billFee.getBillItem().getItem(), effectivePriceMatrix);
@@ -4274,6 +4318,20 @@ public class InwardBeanController implements Serializable {
         this.timedItemFeeFacade = timedItemFeeFacade;
     }
 
+    /**
+     * Linen charge per day of the stay (the admission type's per-day value),
+     * split by the admission type in force on each day.
+     */
+    public static double linenForDays(com.divudi.core.data.inward.AdmissionTypeTimeline timeline, Date admittedAt, Date dischargedAt) {
+        double linen = 0.0;
+        for (com.divudi.core.data.inward.AdmissionTypeTimeline.TypeDays td : timeline.splitDays(admittedAt, dischargedAt)) {
+            if (td.getAdmissionType() != null && td.getAdmissionType().getDblValue() != null) {
+                linen += td.getAdmissionType().getDblValue() * td.getDays();
+            }
+        }
+        return linen;
+    }
+
     public double calTotalLinen(PatientEncounter patientEncounter) {
 
         if (patientEncounter == null || patientEncounter.getAdmissionType() == null) {
@@ -4282,19 +4340,15 @@ public class InwardBeanController implements Serializable {
 
         double linen = 0.0;
 
-        Long dayCount = CommonFunctions.getDayCount(patientEncounter.getDateOfAdmission(), patientEncounter.getDateOfDischarge());
-
         for (PatientRoom pr : getPatientRooms(patientEncounter)) {
             linen += pr.getAddedLinenCharge();
         }
 
-        if (patientEncounter.getAdmissionType().getDblValue() != null) {
-            if (dayCount != 0) {
-                linen += (patientEncounter.getAdmissionType().getDblValue() * dayCount);
-            } else {
-                linen += (patientEncounter.getAdmissionType().getDblValue() * 1);
-            }
-        }
+        // Days before an admission type change are charged at the old type and the days
+        // after it at the new type (#25814). With no history this is the single current
+        // type for every day, exactly as before.
+        linen += linenForDays(admissionTypeHistoryService.timelineFor(patientEncounter),
+                patientEncounter.getDateOfAdmission(), patientEncounter.getDateOfDischarge());
 
         return linen;
     }
