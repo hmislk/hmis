@@ -1,0 +1,16 @@
+{
+  "version": "v2.33.0",
+  "description": "Add CANCELLATIONREASON_ID and CANCELLATIONDECIDEDBY_ID to PATIENTENCOUNTER if missing",
+  "githubIssue": "25745",
+  "author": "Dr M H B Ariyaratne",
+  "date": "2026-11-24",
+  "requiresDowntime": false,
+  "estimatedDurationMinutes": 1,
+  "affectedTables": ["patientencounter"],
+  "preRequisites": [
+    "Run migration.sql by hand on the database BEFORE deploying a build that maps PatientEncounter.cancellationReason and cancellationDecidedBy. The migration page only gets this file in that same build, so it cannot run this step first.",
+    "Without these columns every admission load fails.",
+    "Idempotent; changes no data. The reason list reuses the existing CATEGORY table and needs no change."
+  ],
+  "rollbackNotes": ["rollback.sql drops CANCELLATIONDECIDEDBY_ID and CANCELLATIONREASON_ID, then deletes the reason rows (CATEGORY rows with DTYPE = AdmissionCancellationReason). Recorded reasons and decision makers are lost."]
+}
