@@ -579,7 +579,7 @@
                                             </td>
                                             <td style="vertical-align: middle;">
                                                 <h:outputText
-                                                    value="#{reportsController.billed - reportsController.paidByPatient - reportsController.paidByCompany}"
+                                                    value="#{reportsController.debtorTotalDue}"
                                                     style="font-weight: bold;">
                                                     <f:convertNumber pattern="#,##0.00"/>
                                                 </h:outputText>

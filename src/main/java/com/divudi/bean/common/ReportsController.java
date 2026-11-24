@@ -202,6 +202,8 @@ public class ReportsController implements Serializable {
     double billed;
     double paidByPatient;
     double paidByCompany;
+    // Debtor Balance footer: sum of each row's Total Due, so it stays equal to the rows when a company is selected (#26071).
+    double debtorTotalDue;
 
     private ItemLight investigationCode;
 
@@ -1642,6 +1644,10 @@ public class ReportsController implements Serializable {
 
     public double getPaidByCompany() {
         return paidByCompany;
+    }
+
+    public double getDebtorTotalDue() {
+        return debtorTotalDue;
     }
 
     public void setPaidByCompany(double paidByCompany) {
@@ -3693,7 +3699,7 @@ public class ReportsController implements Serializable {
                     getPaidByPatient(),
                     getPayableByPatient() - getPaidByPatient(),
                     getPaidByCompany(),
-                    getBilled() - (getPaidByCompany() + getPaidByPatient())
+                    getDebtorTotalDue()
             };
 
             for (int i = 0; i < footerCols.length; i++) {
@@ -3836,7 +3842,7 @@ public class ReportsController implements Serializable {
             mainTable.addCell(new Phrase(String.valueOf(getPaidByPatient()), boldFont));
             mainTable.addCell(new Phrase(String.valueOf(getPayableByPatient() - getPaidByPatient()), boldFont));
             mainTable.addCell(new Phrase(String.valueOf(getPaidByCompany()), boldFont));
-            mainTable.addCell(new Phrase(String.valueOf(getBilled() - (getPaidByCompany() + getPaidByPatient())), boldFont));
+            mainTable.addCell(new Phrase(String.valueOf(getDebtorTotalDue()), boldFont));
             mainTable.addCell(new PdfPCell(new Phrase("")));
 
             document.add(mainTable);
@@ -6987,6 +6993,7 @@ public class ReportsController implements Serializable {
         paidByPatient = 0;
         paidByCompany = 0;
         payableByPatient = 0;
+        debtorTotalDue = 0;
         double peGop;
         double pePaidByCompany;
 
@@ -7009,6 +7016,8 @@ public class ReportsController implements Serializable {
             paidByPatient += getInstitutionBillPatientEncounterMap().get(p).get(0).getPaidByPatient();
             paidByCompany += getInstitutionBillPatientEncounterMap().get(p).get(0).getTotalPaidByCompanies();
             payableByPatient += getInstitutionBillPatientEncounterMap().get(p).get(0).getPatientGopAmount();
+            Double rowDue = encounters.get(0).getTotalDue();
+            debtorTotalDue += rowDue == null ? 0 : rowDue;
 
             billGopMap.put(p, peGop);
             billPaidByCompanyMap.put(p, pePaidByCompany);
