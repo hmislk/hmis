@@ -17,6 +17,8 @@ import java.util.Map;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Named;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.persistence.TemporalType;
 
 /**
@@ -29,6 +31,8 @@ import javax.persistence.TemporalType;
 public class CancelledAdmissionReportController implements Serializable {
 
     private static final long serialVersionUID = 1L;
+
+    private static final Logger LOGGER = Logger.getLogger(CancelledAdmissionReportController.class.getName());
 
     /** The retire comment the Cancel Admission action writes. */
     static final String CANCEL_MARK = "BHT Cancel";
@@ -53,8 +57,18 @@ public class CancelledAdmissionReportController implements Serializable {
         }
         Map<String, Object> params = new HashMap<>();
         String jpql = buildJpql(params, fromDate, toDate, admissionType, reason, institution, site, department);
-        @SuppressWarnings("unchecked")
-        List<CancelledAdmissionDTO> list = (List<CancelledAdmissionDTO>) admissionFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
+        List<CancelledAdmissionDTO> list;
+        try {
+            @SuppressWarnings("unchecked")
+            List<CancelledAdmissionDTO> found = (List<CancelledAdmissionDTO>) admissionFacade.findLightsByJpqlStrict(
+                    jpql, params, TemporalType.TIMESTAMP, Integer.MAX_VALUE);
+            list = found;
+        } catch (RuntimeException e) {
+            LOGGER.log(Level.SEVERE, "Cancelled admissions report query failed", e);
+            rows = null;
+            JsfUtil.addErrorMessage("The report could not be loaded. Try again or contact the administrator.");
+            return;
+        }
         rows = list == null ? new ArrayList<>() : list;
     }
 

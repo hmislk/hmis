@@ -12,6 +12,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
@@ -29,6 +31,8 @@ import javax.inject.Named;
 public class AdmissionCancellationReasonController implements Serializable {
 
     private static final long serialVersionUID = 1L;
+
+    private static final Logger LOGGER = Logger.getLogger(AdmissionCancellationReasonController.class.getName());
 
     @EJB
     private AdmissionCancellationReasonFacade facade;
@@ -77,22 +81,28 @@ public class AdmissionCancellationReasonController implements Serializable {
             return;
         }
         Long ownId = current.getId();
-        Long sameName = facade.findLongByJpql(
-                "select count(c) from AdmissionCancellationReason c where c.retired=false"
-                + " and lower(trim(c.name)) = :n" + (ownId == null ? "" : " and c.id <> :id"),
-                duplicateParams(name, ownId));
-        if (sameName != null && sameName > 0) {
-            JsfUtil.addErrorMessage("A reason with this name already exists.");
-            return;
-        }
-        if (ownId != null) {
-            AdmissionCancellationReason stored = facade.find(ownId);
-            if (stored != null && !name.equals(stored.getName() == null ? null : stored.getName().trim())
-                    && isUsed(stored)) {
-                JsfUtil.addErrorMessage("This reason is used by past cancellations. Remove it and add a new reason instead.");
-                current = stored;
+        try {
+            long sameName = facade.findLongByJpqlStrict(
+                    "select count(c) from AdmissionCancellationReason c where c.retired=false"
+                    + " and lower(trim(c.name)) = :n" + (ownId == null ? "" : " and c.id <> :id"),
+                    duplicateParams(name, ownId));
+            if (sameName > 0) {
+                JsfUtil.addErrorMessage("A reason with this name already exists.");
                 return;
             }
+            if (ownId != null) {
+                AdmissionCancellationReason stored = facade.find(ownId);
+                if (stored != null && !name.equals(stored.getName() == null ? null : stored.getName().trim())
+                        && isUsed(stored)) {
+                    JsfUtil.addErrorMessage("This reason is used by past cancellations. Remove it and add a new reason instead.");
+                    current = stored;
+                    return;
+                }
+            }
+        } catch (RuntimeException e) {
+            LOGGER.log(Level.SEVERE, "Cancellation reason check failed", e);
+            JsfUtil.addErrorMessage("The reason could not be checked. Nothing was saved. Try again.");
+            return;
         }
         current.setName(name);
         if (current.getId() != null) {
@@ -120,9 +130,9 @@ public class AdmissionCancellationReasonController implements Serializable {
     private boolean isUsed(AdmissionCancellationReason reason) {
         Map<String, Object> m = new HashMap<>();
         m.put("r", reason);
-        Long used = admissionFacade.findLongByJpql(
+        long used = admissionFacade.findLongByJpqlStrict(
                 "select count(a) from Admission a where a.cancellationReason = :r", m);
-        return used != null && used > 0;
+        return used > 0;
     }
 
     public void retire() {
