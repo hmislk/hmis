@@ -143,6 +143,7 @@
                                             id="btnSave"
                                             value="Refund"
                                             ajax="false"
+                                            onclick="if (this.getAttribute('data-busy')) { return false; } this.setAttribute('data-busy', '1');"
                                             icon="fa fa-money-bill-wave"
                                             style="float:right; width: 8em;"
                                             class="ui-button-warning"
