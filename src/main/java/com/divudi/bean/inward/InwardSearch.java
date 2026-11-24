@@ -54,6 +54,8 @@ import com.divudi.core.facade.PaymentFacade;
 import com.divudi.core.util.CommonFunctions;
 import com.divudi.service.PaymentService;
 import com.divudi.service.RequestService;
+import com.divudi.service.ProfessionalPaymentService;
+import com.divudi.core.data.ProfessionalPaymentVoucherGroup;
 import org.primefaces.model.DefaultStreamedContent;
 import org.primefaces.model.StreamedContent;
 import java.io.ByteArrayInputStream;
@@ -112,6 +114,8 @@ public class InwardSearch implements Serializable {
     PersonFacade personFacade;
     @EJB
     private PaymentFacade paymentFacade;
+    @EJB
+    private ProfessionalPaymentService professionalPaymentService;
     @EJB
     PaymentService paymentService;
     @EJB
@@ -193,6 +197,9 @@ public class InwardSearch implements Serializable {
     ////////////////////
     List<BillEntry> billEntrys;
     List<BillItem> billItems;
+    // Individual per-BHT vouchers for the professional payment reprint (issue #25999)
+    private List<ProfessionalPaymentVoucherGroup> individualVoucherGroups;
+    private Bill individualVoucherGroupsBill;
     List<BillComponent> billComponents;
     List<BillFee> billFees;
     List<BillItem> refundingItems;
@@ -3855,6 +3862,15 @@ public class InwardSearch implements Serializable {
             bill = new BilledBill();
         }
         return bill;
+    }
+
+    public List<ProfessionalPaymentVoucherGroup> getIndividualVoucherGroups() {
+        if (individualVoucherGroups == null || individualVoucherGroupsBill != getBill()) {
+            individualVoucherGroups = professionalPaymentService
+                    .groupPaymentBillItemsByPatientOrBht(getBill());
+            individualVoucherGroupsBill = getBill();
+        }
+        return individualVoucherGroups;
     }
 
     public Long getAppointmentReceiptBillId() {
