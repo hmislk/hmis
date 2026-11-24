@@ -60,6 +60,10 @@ public final class NonCashSettlementRules {
         if (p.getCurrentHolder() == null || !p.getCurrentHolder().equals(requester)) {
             return "Payment " + p.getId() + " is no longer held by the requester.";
         }
+        // A payment in a handover not yet accepted or declined cannot be settled (#24503).
+        if (p.isHandingOverStarted()) {
+            return "Payment " + p.getId() + " is in a handover that has not been accepted yet. Approve after the handover is accepted or declined.";
+        }
         return null;
     }
 
