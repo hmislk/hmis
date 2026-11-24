@@ -5410,12 +5410,26 @@ public class InpatientClinicalDataController implements Serializable {
             return null;
         }
         javax.faces.context.ExternalContext ec = fc.getExternalContext();
-        String path = src.split("[?#]")[0];
+        String[] parts = src.split("[?#]");
+        if (parts.length == 0 || parts[0].isEmpty()) {
+            return null;
+        }
+        String path;
+        try {
+            // Hardening, tracked under #25614.
+            path = new java.net.URI(null, null, parts[0], null).normalize().getPath();
+        } catch (java.net.URISyntaxException e) {
+            return null;
+        }
+        if (path == null) {
+            return null;
+        }
+        path = path.replaceAll("/{2,}", "/");
         String contextPath = ec.getRequestContextPath();
         if (contextPath != null && !contextPath.isEmpty() && path.startsWith(contextPath + "/")) {
             path = path.substring(contextPath.length());
         }
-        // Card HTML is user-editable: only image files outside WEB-INF/META-INF.
+        // Hardening, tracked under #25614: only image files outside WEB-INF/META-INF.
         String lower = path.toLowerCase(java.util.Locale.ROOT);
         if (!path.startsWith("/") || path.contains("..") || path.contains("\\")
                 || lower.startsWith("/web-inf") || lower.startsWith("/meta-inf")

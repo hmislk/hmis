@@ -6,12 +6,15 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Base64;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.imageio.ImageIO;
+import javax.imageio.ImageReader;
+import javax.imageio.stream.ImageInputStream;
 import org.apache.poi.util.Units;
 import org.apache.poi.xwpf.usermodel.Document;
 import org.apache.poi.xwpf.usermodel.ParagraphAlignment;
@@ -48,6 +51,10 @@ public final class HtmlDocumentConverter {
     private static final Pattern UNDERLINE = Pattern.compile("text-decoration[a-z-]*\\s*:[^;]*underline", Pattern.CASE_INSENSITIVE);
     private static final Pattern ITALIC = Pattern.compile("font-style\\s*:\\s*italic", Pattern.CASE_INSENSITIVE);
     private static final double MAX_IMAGE_WIDTH_PT = 450;
+    /** Largest image file accepted, before decoding. */
+    private static final int MAX_IMAGE_BYTES = 5_000_000;
+    /** Largest image accepted, in pixels (width x height), checked before decoding. */
+    private static final long MAX_IMAGE_PIXELS = 25_000_000L;
     private static final int BASE_FONT_PT = 11;
 
     private HtmlDocumentConverter() {
@@ -205,10 +212,11 @@ public final class HtmlDocumentConverter {
             return null;
         }
         byte[] bytes = null;
-        String format = null;
         Matcher m = DATA_URI.matcher(src.trim());
         if (m.matches()) {
-            format = m.group(1).toLowerCase(Locale.ROOT);
+            if (m.group(2).length() > MAX_IMAGE_BYTES / 3 * 4 + 4) {
+                return null;
+            }
             try {
                 bytes = Base64.getMimeDecoder().decode(m.group(2));
             } catch (IllegalArgumentException e) {
@@ -216,19 +224,37 @@ public final class HtmlDocumentConverter {
             }
         } else if (resolver != null) {
             bytes = resolver.apply(src.trim());
-            String lower = src.toLowerCase(Locale.ROOT);
-            format = lower.endsWith(".png") ? "png" : (lower.endsWith(".gif") ? "gif" : "jpeg");
         }
-        if (bytes == null || bytes.length == 0) {
+        if (bytes == null || bytes.length == 0 || bytes.length > MAX_IMAGE_BYTES) {
             return null;
         }
-        if ("jpg".equals(format)) {
-            format = "jpeg";
-        }
+        // Hardening, tracked under #25614: format and size come from the image itself.
+        String format;
         BufferedImage bi;
-        try {
-            bi = ImageIO.read(new ByteArrayInputStream(bytes));
-        } catch (IOException e) {
+        try (ImageInputStream iis = ImageIO.createImageInputStream(new ByteArrayInputStream(bytes))) {
+            if (iis == null) {
+                return null;
+            }
+            Iterator<ImageReader> readers = ImageIO.getImageReaders(iis);
+            if (!readers.hasNext()) {
+                return null;
+            }
+            ImageReader reader = readers.next();
+            try {
+                reader.setInput(iis, true, true);
+                long w = reader.getWidth(0);
+                long h = reader.getHeight(0);
+                if (w <= 0 || h <= 0 || w * h > MAX_IMAGE_PIXELS) {
+                    return null;
+                }
+                String name = reader.getFormatName().toLowerCase(Locale.ROOT);
+                format = name.contains("png") ? "png"
+                        : (name.contains("jpeg") || name.contains("jpg")) ? "jpeg" : name;
+                bi = reader.read(0);
+            } finally {
+                reader.dispose();
+            }
+        } catch (IOException | RuntimeException e) {
             return null;
         }
         if (bi == null) {
@@ -669,6 +695,12 @@ public final class HtmlDocumentConverter {
                     paragraphHasContent = true;
                     return;
                 case "hr":
+                    if (inCell) {
+                        // A paragraph mark inside a cell would end the table row and break the table.
+                        out.append("\\line ");
+                        paragraphHasContent = true;
+                        return;
+                    }
                     endParagraph();
                     out.append("\\pard\\brdrb\\brdrs\\brdrw10\\par\n");
                     startParagraph(null);
