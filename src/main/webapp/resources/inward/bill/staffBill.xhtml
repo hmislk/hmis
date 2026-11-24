@@ -13,6 +13,8 @@
         <cc:attribute name="controller" />
         <cc:attribute name="bill" type="com.divudi.core.entity.Bill" />
         <cc:attribute name="dup" />
+        <!-- Config key that hides the fee details; empty (never hidden) unless the inward format tabs pass one (#25999) -->
+        <cc:attribute name="hideDetailsConfigKey" type="java.lang.String" default=""/>
     </cc:interface>
 
     <!-- IMPLEMENTATION -->
@@ -131,6 +133,7 @@
                     <hr/>
                     <br/>
                 </div>
+                <h:panelGroup rendered="#{empty cc.attrs.hideDetailsConfigKey or !configOptionApplicationController.getBooleanValueByKey(cc.attrs.hideDetailsConfigKey,false)}">
                 <div class="billDetailsFiveFive" >
                     <h:dataTable value="#{billBeanController.fetchBillItems(cc.attrs.bill)}"
                                  var="bip" style="margin: auto; padding: 1%; width: 100%; margin-right: 10%; " >
@@ -167,6 +170,13 @@
                         </h:column>
                         <h:column>
                             <f:facet name="header" >
+                                <h:outputLabel value="Surgery" ></h:outputLabel>
+                            </f:facet>
+                            <h:outputLabel value="#{bip.referanceBillItem.bill.procedure.item.name}"
+                                           style="margin: 4px; font-size:  10pt!important;" />
+                        </h:column>
+                        <h:column>
+                            <f:facet name="header" >
                                 <h:outputLabel value="Value" ></h:outputLabel>
                             </f:facet>
                             <h:outputLabel value="#{bip.netValue}"
@@ -181,6 +191,7 @@
                     <hr/>
                     <br/>
                 </div>
+                </h:panelGroup>
 
                 <div  >
 

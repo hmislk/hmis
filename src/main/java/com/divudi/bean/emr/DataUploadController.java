@@ -1,5 +1,6 @@
 package com.divudi.bean.emr;
 
+import com.divudi.service.ItemAuditHelper;
 import com.divudi.bean.clinical.ClinicalEntityController;
 import com.divudi.bean.clinical.PhotoCamBean;
 import com.divudi.core.entity.*;
@@ -122,6 +123,8 @@ import org.primefaces.model.file.UploadedFile;
 @Named
 @ViewScoped
 public class DataUploadController implements Serializable {
+    @EJB
+    private ItemAuditHelper itemAuditHelper;
 
     @Inject
     MembershipSchemeController membershipSchemeController;
@@ -522,6 +525,7 @@ public class DataUploadController implements Serializable {
                 m.put("v", vmp);
                 m.put("n", strAmp.toUpperCase());
                 amp = ampFacade.findFirstByJpql("SELECT c FROM Amp c Where c.retired=false and (c.name)=:n AND c.vmp=:v", m);
+                Map<String, Object> ampBeforeNames = amp == null ? null : ItemAuditHelper.snapshot(amp);
                 if (amp == null) {
                     amp = new Amp();
                     amp.setName(strAmp);
@@ -534,6 +538,7 @@ public class DataUploadController implements Serializable {
                     amp.setCategory(cat);
                     amp.setVmp(vmp);
                     getAmpFacade().create(amp);
+                    itemAuditHelper.logCreate(amp, sessionController.getLoggedUser(), "Upload");
                 } else {
                     amp.setRetired(false);
                     getAmpFacade().edit(amp);
@@ -552,6 +557,7 @@ public class DataUploadController implements Serializable {
                 getAmpFacade().edit(amp);
                 amp.setBarcode(strBarcode);
                 getAmpFacade().edit(amp);
+                itemAuditHelper.logUpdate(ampBeforeNames, amp, sessionController.getLoggedUser(), "Upload");
 
                 // Manufacturer
                 strManufacturer = getCellValueAsString(row.getCell(manufacturerCol));
@@ -777,6 +783,7 @@ public class DataUploadController implements Serializable {
                 m.put("v", vmp);
                 m.put("n", strAmp.toUpperCase());
                 amp = ampFacade.findFirstByJpql("SELECT c FROM Amp c Where c.retired=false and (c.name)=:n AND c.vmp=:v", m);
+                Map<String, Object> ampBeforeNames = amp == null ? null : ItemAuditHelper.snapshot(amp);
                 if (amp == null) {
                     amp = new Amp();
                     amp.setName(strAmp);
@@ -789,6 +796,7 @@ public class DataUploadController implements Serializable {
                     amp.setCategory(cat);
                     amp.setVmp(vmp);
                     getAmpFacade().create(amp);
+                    itemAuditHelper.logCreate(amp, sessionController.getLoggedUser(), "Upload");
                 } else {
                     amp.setRetired(false);
                     getAmpFacade().edit(amp);
@@ -807,6 +815,7 @@ public class DataUploadController implements Serializable {
                 getAmpFacade().edit(amp);
                 amp.setBarcode(strBarcode);
                 getAmpFacade().edit(amp);
+                itemAuditHelper.logUpdate(ampBeforeNames, amp, sessionController.getLoggedUser(), "Upload");
 
                 // Manufacturer
                 strManufacturer = getCellValueAsString(row.getCell(manufacturerCol));
@@ -1605,6 +1614,7 @@ public class DataUploadController implements Serializable {
                 m.put("v", vmp);
                 m.put("n", strAmp.toUpperCase());
                 amp = ampFacade.findFirstByJpql("SELECT c FROM Amp c Where c.retired=false and (c.name)=:n AND c.vmp=:v", m);
+                Map<String, Object> ampBeforeNames = amp == null ? null : ItemAuditHelper.snapshot(amp);
                 if (amp == null) {
                     amp = new Amp();
                     amp.setName(strAmp);
@@ -1618,6 +1628,7 @@ public class DataUploadController implements Serializable {
                     amp.setVmp(vmp);
                     amp.setDepartmentType(deptType);
                     getAmpFacade().create(amp);
+                    itemAuditHelper.logCreate(amp, sessionController.getLoggedUser(), "Upload");
                 } else {
                     amp.setRetired(false);
                     getAmpFacade().edit(amp);
@@ -1634,6 +1645,7 @@ public class DataUploadController implements Serializable {
                 getAmpFacade().edit(amp);
                 amp.setBarcode(strBarcode);
                 getAmpFacade().edit(amp);
+                itemAuditHelper.logUpdate(ampBeforeNames, amp, sessionController.getLoggedUser(), "Upload");
 
                 strManufacturer = getCellValueAsString(row.getCell(manufacturerCol));
                 manufacturer = getInstitutionController().getInstitutionByName(strManufacturer, InstitutionType.Manufacturer);
@@ -2538,6 +2550,9 @@ public class DataUploadController implements Serializable {
 
 //        itemFacade.batchCreate(masterItemsToSave, 5000);
         itemFacade.batchCreate(itemsToSave, 5000);
+        for (Item auditedItem : itemsToSave) {
+            itemAuditHelper.logCreate(auditedItem, sessionController.getLoggedUser(), "Upload");
+        }
         itemFeeFacade.batchCreate(itemFeesToSave, 10000);
 
         return itemsToSave;
@@ -2964,7 +2979,13 @@ public class DataUploadController implements Serializable {
         System.out.println("---------------------------------------------");
 
         itemFacade.batchCreate(masterItemsToSave, 5000);
+        for (Item auditedItem : masterItemsToSave) {
+            itemAuditHelper.logCreate(auditedItem, sessionController.getLoggedUser(), "Upload");
+        }
         itemFacade.batchCreate(itemsToSave, 5000);
+        for (Item auditedItem : itemsToSave) {
+            itemAuditHelper.logCreate(auditedItem, sessionController.getLoggedUser(), "Upload");
+        }
         itemFeeFacade.batchCreate(itemFeesToSave, 10000);
 
         return itemsToSave;
@@ -4117,10 +4138,12 @@ public class DataUploadController implements Serializable {
             if (item != null) {
                 System.out.println("Updating item: " + item.getName() + " in " + institutionName + " with new code: " + correctCode);
                 System.out.println("item.getCode() Before= " + item.getCode());
+                Map<String, Object> beforeNames = ItemAuditHelper.snapshot(item);
                 item.setCode(correctCode);
                 System.out.println("item = " + item);
                 System.out.println("item.getId() = " + item.getId());
                 itemFacade.edit(item);
+                itemAuditHelper.logUpdate(beforeNames, item, sessionController.getLoggedUser(), "Upload");
                 System.out.println("item.getCode() After= " + item.getCode());
                 itemsUpdated.add(item);
             } else {
@@ -4283,6 +4306,7 @@ public class DataUploadController implements Serializable {
             // Save or update the item
             if (item.getId() == null) {
                 itemFacade.create(item);
+                itemAuditHelper.logCreate(item, sessionController.getLoggedUser(), "Upload");
                 System.out.println("Item created: " + item);
             } else {
                 itemFacade.edit(item);
@@ -5273,7 +5297,13 @@ public class DataUploadController implements Serializable {
         }
 
         itemFacade.batchCreate(masterItemsToSave, 5000);
+        for (Item auditedItem : masterItemsToSave) {
+            itemAuditHelper.logCreate(auditedItem, sessionController.getLoggedUser(), "Upload");
+        }
         itemFacade.batchCreate(itemsToSave, 5000);
+        for (Item auditedItem : itemsToSave) {
+            itemAuditHelper.logCreate(auditedItem, sessionController.getLoggedUser(), "Upload");
+        }
         itemFeeFacade.batchCreate(itemFeesToSave, 10000);
 
         return itemsToSave;
@@ -5820,7 +5850,13 @@ public class DataUploadController implements Serializable {
         }
 
         itemFacade.batchCreate(masterItemsToSave, 5000);
+        for (Item auditedItem : masterItemsToSave) {
+            itemAuditHelper.logCreate(auditedItem, sessionController.getLoggedUser(), "Upload");
+        }
         itemFacade.batchCreate(itemsToSave, 5000);
+        for (Item auditedItem : itemsToSave) {
+            itemAuditHelper.logCreate(auditedItem, sessionController.getLoggedUser(), "Upload");
+        }
         itemFeeFacade.batchCreate(itemFeesToSave, 10000);
 
         return itemsToSave;

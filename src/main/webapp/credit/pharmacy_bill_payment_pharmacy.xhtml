@@ -65,7 +65,7 @@
                         <p:panelGrid columns="2" >
 
                             <p:outputLabel value="Payment Methord" />
-                            <p:panelGrid columns="5" >
+                            <p:panelGrid columns="5" layout="tabular" >
                                 <h:panelGrid columns="1">                                
                                     <p:selectOneMenu   id="pay" value="#{billController.paymentMethod}">     
                                         <f:selectItems value="#{enumController.paymentMethods}"  />

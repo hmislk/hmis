@@ -136,7 +136,16 @@ public class GoodsReturnController implements Serializable {
 
     public void onEdit(BillItem tmp) {
         //    PharmaceuticalBillItem tmp = (PharmaceuticalBillItem) event.getObject();
-        if (tmp.getPharmaceuticalBillItem().getQtyInUnit() > getPharmacyRecieveBean().calculateRemainigQtyFromOrder(tmp.getReferanceBillItem().getReferanceBillItem().getPharmaceuticalBillItem())) {
+        // A negative return qty would flip the sign of the stock and value postings (#23385).
+        if (tmp.getTmpQty() < 0) {
+            tmp.setTmpQty(0.0);
+            JsfUtil.addErrorMessage("Returning Qty cannot be negative");
+        }
+        if (tmp.getTmpFreeQty() < 0) {
+            tmp.setTmpFreeQty(0.0);
+            JsfUtil.addErrorMessage("Returning Free Qty cannot be negative");
+        }
+        if (tmp.getPharmaceuticalBillItem().getQtyInUnit() >getPharmacyRecieveBean().calculateRemainigQtyFromOrder(tmp.getReferanceBillItem().getReferanceBillItem().getPharmaceuticalBillItem())) {
             tmp.setTmpQty(0.0);
             JsfUtil.addErrorMessage("You cant return over than ballanced Qty ");
         }
@@ -361,6 +370,15 @@ public class GoodsReturnController implements Serializable {
         if (billItems == null || billItems.isEmpty()) {
             JsfUtil.addErrorMessage("No items selected for return");
             return;
+        }
+        // onEdit() fires per row on blur; a fast submit can still reach here with a
+        // negative qty, so check again before anything is saved (#23385).
+        for (BillItem bi : billItems) {
+            if (bi.getPharmaceuticalBillItem() != null
+                    && (bi.getPharmaceuticalBillItem().getQty() < 0 || bi.getPharmaceuticalBillItem().getFreeQty() < 0)) {
+                JsfUtil.addErrorMessage("Returning Qty cannot be negative");
+                return;
+            }
         }
 
         if (!hasPositiveItemQuantity(billItems)) {

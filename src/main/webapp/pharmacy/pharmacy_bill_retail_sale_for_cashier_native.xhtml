@@ -12,6 +12,7 @@
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
                 <h:form id="bill">
+                    <h:outputScript library="js" name="pharmacy_sale_keyboard.js" />
                     <script>
                         window.onload = function () {
                             var ac = document.getElementById("bill:acStock");
@@ -73,10 +74,10 @@
 
                         <p:panel class="w-100">
                             <f:facet name="header">
-                                <div class="row w-100 align-items-center">
-                                    <div class="col-4">
+                                <div class="d-flex justify-content-between align-items-center w-100">
+                                    <div class="d-flex align-items-center gap-2">
                                         <h:outputText styleClass="fas fa-mortar-pestle" />
-                                        <h:outputLabel value="Pharmacy Sale for Cashier (Native)" class="mx-2" />
+                                        <h:outputLabel value="Pharmacy Sale for Cashier (Native)" />
                                         <h:panelGroup rendered="#{webUserController.hasPrivilege('Admin')}">
                                             <p:commandButton
                                                 value="Config"
@@ -84,35 +85,27 @@
                                                 title="Page Configuration"
                                                 action="#{pageAdminController.navigateToPageAdmin('pharmacy/pharmacy_bill_retail_sale_for_cashier_native')}"
                                                 ajax="false"
-                                                class="ui-button-secondary mx-1" />
+                                                class="ui-button-secondary ui-button-outlined" />
                                         </h:panelGroup>
                                     </div>
-                                    <div class="col-4 text-center">
+                                    <div class="d-flex align-items-center gap-2">
                                         <p:commandButton
                                             icon="fa fa-search"
                                             value="Search Sale for Cashier Bills"
                                             ajax="false"
                                             action="/pharmacy/pharmacy_search_sale_pre_bill?faces-redirect=true"
                                             actionListener="#{searchController.makeListNull}"
-                                            class="ui-button-info" />
+                                            class="ui-button-info ui-button-outlined" />
                                         <p:commandButton
                                             icon="fas fa-clipboard-list"
                                             value="Tokens"
                                             title="Back to token management"
                                             ajax="false"
-                                            class="ui-button-help mx-1"
+                                            class="ui-button-info ui-button-outlined"
                                             action="#{tokenController.navigateToManagePharmacyTokens()}"
                                             rendered="#{configOptionController.getBooleanValueByKey('Enable token system in sale for cashier', false)}" />
                                     </div>
-                                    <div class="col-4 text-end">
-                                        <p:commandButton
-                                            ajax="false"
-                                            accesskey="s"
-                                            value="Settle"
-                                            icon="fa fa-check"
-                                            class="ui-button-success mx-1"
-                                            onclick="if (!confirm('Are you sure?')) return false"
-                                            action="#{retailSaleForCashierNativeSqlController.settleBillWithPay}" />
+                                    <div class="d-flex align-items-center gap-2">
                                         <p:commandButton
                                             icon="fa fa-plus"
                                             value="New Bill"
@@ -120,6 +113,16 @@
                                             action="pharmacy_bill_retail_sale_for_cashier_native"
                                             class="ui-button-warning"
                                             actionListener="#{retailSaleForCashierNativeSqlController.resetAll()}" />
+                                        <p:commandButton
+                                            id="btnSettle"
+                                            ajax="false"
+                                            accesskey="s"
+                                            value="Settle"
+                                            icon="fa fa-check"
+                                            style="min-width:120px"
+                                            class="ui-button-success"
+                                            onclick="if (!confirm('Are you sure?')) return false"
+                                            action="#{retailSaleForCashierNativeSqlController.settleBillWithPay}" />
                                     </div>
                                 </div>
                                 <!-- No Sale 1..4 window-switch row: those windows belong to the plain native
@@ -157,6 +160,7 @@
                                                         minQueryLength="3"
                                                         maxResults="10"
                                                         styleClass="w-100"
+                                                        panelStyleClass="hmis-sale-item-ac"
                                                         forceSelection="true"
                                                         value="#{retailSaleForCashierNativeSqlController.stockDto}"
                                                         queryDelay="300" completeMethod="#{retailSaleForCashierNativeSqlController.completeAvailableStockOptimizedDtoFilteredByDepartmentType}"
@@ -282,6 +286,7 @@
                                             <h:outputLabel value="Bill Items" class="mx-4" />
                                         </f:facet>
                                         <p:dataTable
+                                            styleClass="p-datatable-sm"
                                             id="tblBillItem"
                                             widgetVar="tblBillItem"
                                             value="#{retailSaleForCashierNativeSqlController.billItemDataList}"
@@ -419,7 +424,7 @@
                                                 rows="10"
                                                 paginatorPosition="bottom"
                                                 emptyMessage="No substitute stocks found"
-                                                styleClass="table-striped">
+                                                styleClass="table-striped p-datatable-sm">
                                                 <p:column headerText="Item">
                                                     <h:outputText value="#{sStock.itemName}"/>
                                                 </p:column>
@@ -519,7 +524,7 @@
 
                                             <h:panelGroup id="selectPatient">
                                                 <h:panelGroup rendered="#{patientController.quickSearchPatientList ne null and not empty patientController.quickSearchPatientList}">
-                                                    <p:dataTable id="tblPatients" value="#{patientController.quickSearchPatientList}" var="ps">
+                                                    <p:dataTable styleClass="p-datatable-sm" id="tblPatients" value="#{patientController.quickSearchPatientList}" var="ps">
                                                         <p:column headerText="Name">#{ps.person.name}</p:column>
                                                         <p:column headerText="Phone Number">#{ps.person.phone}</p:column>
                                                         <p:column headerText="Mobile Number">#{ps.person.mobile}</p:column>
@@ -869,6 +874,7 @@
                                                                 class="form-control text-end"
                                                                 autocomplete="off"
                                                                 accesskey="t"
+                                                                onkeydown="return hmisTenderedEnter(event, this);"
                                                                 onfocus="this.select()">
                                                                 <p:ajax process="total dis netTotal paid" update="balance netTotal" event="keyup" />
                                                             </p:inputText>

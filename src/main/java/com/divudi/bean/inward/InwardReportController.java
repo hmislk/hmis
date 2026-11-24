@@ -3254,7 +3254,9 @@ public class InwardReportController implements Serializable {
                 .append("pe.dateOfDischarge, ")
                 .append("pe.paymentFinalized, ")
                 .append("COALESCE(pe.netTotal, 0.0), ")
-                .append("COALESCE(pe.creditPaidAmount, 0.0), ")
+                // Placeholder: Collected is set below from the inward payment bills.
+                // PatientEncounter.creditPaidAmount is no longer written and was never shown here (#25601).
+                .append("0.0, ")
                 .append("pe.creater")
                 .append(") FROM PatientEncounter pe ");
 

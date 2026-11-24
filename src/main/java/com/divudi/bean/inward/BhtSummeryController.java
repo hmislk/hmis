@@ -838,6 +838,12 @@ public class BhtSummeryController implements Serializable {
         List<BillFee> all = new ArrayList<>(getProfesionallFee());
         all.addAll(getDoctorAndNurseFee());
         all.addAll(getTechnicianFee());
+        // Issue #25993: some hospitals do not want the cancellation (negative)
+        // fee listed as its own row; the original fee stays, labelled cancelled.
+        if (configOptionApplicationController.getBooleanValueByKey(
+                "Inward Interim Bill - Hide Cancellation Rows In Professional Fees", false)) {
+            all.removeIf(bf -> bf.getBill() != null && !(bf.getBill() instanceof BilledBill));
+        }
         return all;
     }
 
@@ -3901,6 +3907,15 @@ public class BhtSummeryController implements Serializable {
             }
             JsfUtil.addErrorMessage("Cannot discharge the mother: baby admission " + String.join(", ", bhtNos)
                     + " has not been nursing discharged. Complete the baby's nursing discharge first.");
+            return;
+        }
+
+        // A ward return is credited to the BHT only when pharmacy accepts it, so the
+        // patient cannot be discharged while one is still waiting (#23973).
+        List<String> pendingReturns = getInwardBean().findWardReturnsAwaitingPharmacy(getPatientEncounter());
+        if (!pendingReturns.isEmpty()) {
+            JsfUtil.addErrorMessage("Cannot discharge: ward return " + String.join(", ", pendingReturns)
+                    + " is waiting for pharmacy. Pharmacy must accept it in Accept Returns from Ward first.");
             return;
         }
 

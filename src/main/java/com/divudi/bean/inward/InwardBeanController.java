@@ -75,6 +75,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.EnumMap;
 import java.util.Map;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.stream.Collectors;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
@@ -2639,6 +2641,80 @@ public class InwardBeanController implements Serializable {
         params.put("accBta", BillTypeAtomic.ACCEPT_RETURN_MEDICINE_INWARD);
         List<BillItem> list = getBillItemFacade().findByJpql(jpql, params);
         return list == null ? new ArrayList<>() : list;
+    }
+
+    /**
+     * Bill numbers of the admission's ward return requests ({@code RETURN_MEDICINE_INWARD})
+     * that pharmacy has not fully accepted yet. The BHT is credited only on acceptance
+     * (#25509), so discharging with one pending would leave the return off the bill
+     * (issue #23973). Same rules as the Accept Returns from Ward list: not cancelled or
+     * retired, not marked completed or fully issued (NULL counts as not), and at least
+     * one line with quantity still to accept.
+     */
+    public List<String> findWardReturnsAwaitingPharmacy(PatientEncounter patientEncounter) {
+        List<String> pending = new ArrayList<>();
+        if (patientEncounter == null || patientEncounter.getId() == null) {
+            return pending;
+        }
+        String itemJpql = "select bi.id, bi.qty, bi.bill.deptId, bi.bill.id from BillItem bi "
+                + " where bi.bill.patientEncounter.id = :peId "
+                + " and bi.bill.billTypeAtomic = :retBta "
+                + " and (bi.bill.retired = false or bi.bill.retired is null) "
+                + " and bi.bill.cancelled = false "
+                + " and (bi.bill.completed = false or bi.bill.completed is null) "
+                + " and (bi.bill.fullyIssued = false or bi.bill.fullyIssued is null) "
+                + " and (bi.retired = false or bi.retired is null) "
+                + " order by bi.bill.createdAt, bi.id";
+        Map<String, Object> params = new HashMap<>();
+        params.put("peId", patientEncounter.getId());
+        params.put("retBta", BillTypeAtomic.RETURN_MEDICINE_INWARD);
+        List<Object[]> rows = getBillItemFacade().findObjectsArrayByJpql(itemJpql, params, TemporalType.TIMESTAMP);
+        if (rows == null || rows.isEmpty()) {
+            return pending;
+        }
+
+        List<Long> itemIds = new ArrayList<>();
+        for (Object[] row : rows) {
+            if (row[0] != null) {
+                itemIds.add((Long) row[0]);
+            }
+        }
+        Map<Long, Double> acceptedQty = new HashMap<>();
+        if (!itemIds.isEmpty()) {
+            String acceptedJpql = "select bi.referanceBillItem.id, sum(abs(bi.qty)) from BillItem bi "
+                    + " where bi.referanceBillItem.id in :refIds "
+                    + " and bi.bill.billTypeAtomic = :accBta "
+                    + " and (bi.bill.retired = false or bi.bill.retired is null) "
+                    + " and bi.bill.cancelled = false "
+                    + " group by bi.referanceBillItem.id";
+            Map<String, Object> accParams = new HashMap<>();
+            accParams.put("refIds", itemIds);
+            accParams.put("accBta", BillTypeAtomic.ACCEPT_RETURN_MEDICINE_INWARD);
+            List<Object[]> accRows = getBillItemFacade().findObjectsArrayByJpql(acceptedJpql, accParams, TemporalType.TIMESTAMP);
+            if (accRows != null) {
+                for (Object[] r : accRows) {
+                    if (r[0] != null) {
+                        acceptedQty.put((Long) r[0], r[1] != null ? ((Number) r[1]).doubleValue() : 0.0);
+                    }
+                }
+            }
+        }
+
+        Set<Long> seenBills = new HashSet<>();
+        for (Object[] row : rows) {
+            Long itemId = (Long) row[0];
+            Long billId = (Long) row[3];
+            if (itemId == null || billId == null || seenBills.contains(billId)) {
+                continue;
+            }
+            double returned = row[1] != null ? Math.abs(((Number) row[1]).doubleValue()) : 0.0;
+            Double accepted = acceptedQty.get(itemId);
+            if (returned - (accepted != null ? accepted : 0.0) > 0.001) {
+                seenBills.add(billId);
+                pending.add(row[2] != null ? (String) row[2] : "(no bill number)");
+            }
+        }
+        return pending;
     }
 
     /** The Medicine charge lines (all issuing departments) stored on the admission's final bill, summed, or null. */

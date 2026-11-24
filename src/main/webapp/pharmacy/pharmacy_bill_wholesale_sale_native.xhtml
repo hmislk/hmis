@@ -13,6 +13,7 @@
             <ui:param name="hideTemplateGrowl" value="true" />
             <ui:define name="content">
                 <h:form id="bill">
+                    <h:outputScript library="js" name="pharmacy_sale_keyboard.js" />
                     <script>
                         window.onload = function () {
                             var ac = document.getElementById("bill:acStock");
@@ -32,10 +33,10 @@
 
                         <p:panel class="w-100">
                             <f:facet name="header">
-                                <div class="row w-100 align-items-center">
-                                    <div class="col-4">
+                                <div class="d-flex justify-content-between align-items-center w-100">
+                                    <div class="d-flex align-items-center gap-2">
                                         <h:outputText styleClass="fas fa-mortar-pestle" />
-                                        <h:outputLabel value="Pharmacy Wholesale Sale" class="mx-2" />
+                                        <h:outputLabel value="Pharmacy Wholesale Sale" />
                                         <h:panelGroup rendered="#{webUserController.hasPrivilege('Admin')}">
                                             <p:commandButton
                                                 id="btnConfig"
@@ -44,10 +45,10 @@
                                                 title="Page Configuration"
                                                 action="#{pageAdminController.navigateToPageAdmin('pharmacy/pharmacy_bill_wholesale_sale_native')}"
                                                 ajax="false"
-                                                class="ui-button-secondary mx-1" />
+                                                class="ui-button-secondary ui-button-outlined" />
                                         </h:panelGroup>
                                     </div>
-                                    <div class="col-4 text-center">
+                                    <div class="d-flex align-items-center gap-2">
                                         <p:commandButton
                                             id="btnSearchSaleBills"
                                             icon="fa fa-search"
@@ -55,18 +56,9 @@
                                             ajax="false"
                                             action="/pharmacy_wholesale/pharmacy_search_sale_bill?faces-redirect=true"
                                             actionListener="#{searchController.makeListNull}"
-                                            class="ui-button-info" />
+                                            class="ui-button-info ui-button-outlined" />
                                     </div>
-                                    <div class="col-4 text-end">
-                                        <p:commandButton
-                                            id="btnSettle"
-                                            ajax="false"
-                                            accesskey="s"
-                                            value="Settle"
-                                            icon="fa fa-check"
-                                            class="ui-button-success mx-1"
-                                            onclick="if (!confirm('Are you sure?')) return false"
-                                            action="#{wholesaleSaleNativeSqlController.settleBillWithPay}" />
+                                    <div class="d-flex align-items-center gap-2">
                                         <p:commandButton
                                             id="btnNewBill"
                                             icon="fa fa-plus"
@@ -75,6 +67,16 @@
                                             action="pharmacy_bill_wholesale_sale_native"
                                             class="ui-button-warning"
                                             actionListener="#{wholesaleSaleNativeSqlController.resetAll()}" />
+                                        <p:commandButton
+                                            id="btnSettle"
+                                            ajax="false"
+                                            accesskey="s"
+                                            value="Settle"
+                                            icon="fa fa-check"
+                                            style="min-width:120px"
+                                            class="ui-button-success"
+                                            onclick="if (!confirm('Are you sure?')) return false"
+                                            action="#{wholesaleSaleNativeSqlController.settleBillWithPay}" />
                                     </div>
                                 </div>
                             </f:facet>
@@ -99,6 +101,7 @@
                                                         minQueryLength="3"
                                                         maxResults="10"
                                                         styleClass="w-100"
+                                                        panelStyleClass="hmis-sale-item-ac"
                                                         forceSelection="true"
                                                         value="#{wholesaleSaleNativeSqlController.stockDto}"
                                                         queryDelay="300" completeMethod="#{wholesaleSaleNativeSqlController.completeAvailableStockOptimizedDto}"
@@ -766,6 +769,7 @@
                                                                 class="form-control text-end"
                                                                 autocomplete="off"
                                                                 accesskey="t"
+                                                                onkeydown="return hmisTenderedEnter(event, this);"
                                                                 onfocus="this.select()">
                                                                 <p:ajax process="total dis netTotal paid" update="balance netTotal" event="keyup" />
                                                             </p:inputText>

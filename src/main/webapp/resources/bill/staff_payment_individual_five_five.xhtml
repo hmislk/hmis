@@ -77,7 +77,7 @@
                                                             </h:column>
                                                             <h:column>
                                                                 <f:facet name="header"><h:outputText value="Service" /></f:facet>
-                                                                <h:outputText value="#{bip.referanceBillItem.item.name}" />
+                                                                <h:outputText value="#{empty bip.referanceBillItem.item ? bip.paidForBillFee.bill.procedure.item.name : bip.referanceBillItem.item.name}" />
                                                             </h:column>
                                                             <h:column>
                                                                 <f:facet name="header"><h:outputText value="Patient" /></f:facet>
@@ -107,7 +107,7 @@
                                         <f:facet name="header">
                                             <h:outputText value="Service"/>
                                         </f:facet>
-                                        <h:outputText value="#{bip.referanceBillItem.item.name}" />
+                                        <h:outputText value="#{empty bip.referanceBillItem.item ? bip.paidForBillFee.bill.procedure.item.name : bip.referanceBillItem.item.name}" />
                                     </h:column>
 
                                     <h:column>

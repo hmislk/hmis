@@ -3,7 +3,8 @@ name: XHTML EL guard
 # Fails a PR whose changed .xhtml files open an EL expression inside another one,
 # e.g. disabled="#{a or #{b}}". EL does not nest, so the page fails to render for
 # every user, and the build never renders pages. Found in review of #25948
-# (retro 2026-11-23).
+# (retro 2026-11-23). Also fails on a p:panelGrid whose columns do not divide 12
+# without layout="tabular" (HTTP 500 under PrimeFaces 14, #23479).
 
 on:
   pull_request:
@@ -21,7 +22,7 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
 
-      - name: Check changed XHTML for nested EL
+      - name: Check changed XHTML for nested EL and invalid panelGrid columns
         env:
           EVENT_BASE_SHA: ${{ github.event.pull_request.base.sha }}
         run: |

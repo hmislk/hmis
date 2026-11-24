@@ -8,10 +8,13 @@
  */
 package com.divudi.bean.pharmacy;
 
+import com.divudi.service.ItemAuditHelper;
 import com.divudi.bean.common.CategoryController;
 import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.ItemController;
 import com.divudi.bean.common.SessionController;
+import com.divudi.bean.common.WebUserController;
+import com.divudi.core.facade.BillItemFacade;
 
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.data.DepartmentType;
@@ -68,6 +71,8 @@ import java.util.Iterator;
 @Named
 @SessionScoped
 public class AmpController implements Serializable {
+    @EJB
+    private ItemAuditHelper itemAuditHelper;
 
     private static final long serialVersionUID = 1L;
 
@@ -111,6 +116,17 @@ public class AmpController implements Serializable {
     private ConfigOptionApplicationController configOptionApplicationController;
     @Inject
     private ItemController itemController;
+    @Inject
+    private WebUserController webUserController;
+    @EJB
+    private BillItemFacade billItemFacade;
+
+    // Retire / un-retire (issue 25459): reason and the warning figures shown before retiring
+    private String retireReason;
+    private double retireStockQty;
+    private long retireBillItemCount;
+    private Long retirePreparedAmpId;
+    private Long unretirePreparedAmpId;
 
     // Audit-related injections
     @Inject
@@ -130,7 +146,7 @@ public class AmpController implements Serializable {
     private List<AuditEvent> ampAuditEvents;
 
     // Filter state for active/inactive AMPs - using string like VMP
-    private String filterStatus = "active"; // "active", "inactive", "all"
+    private String filterStatus = "active"; // "active", "inactive", "retired", "all"
 
     private UploadedFile file;
 
@@ -192,6 +208,7 @@ public class AmpController implements Serializable {
                 if (amp == null) {
                     amp = new Amp();
                 }
+                Map<String, Object> beforeNames = amp.getId() == null ? null : ItemAuditHelper.snapshot(amp);
                 amp.setCategory(cat);
                 amp.setVmp(vmp);
                 amp.setName(ampName);
@@ -203,6 +220,7 @@ public class AmpController implements Serializable {
                 } else {
                     getFacade().edit(amp);
                 }
+                itemAuditHelper.logSave(beforeNames, amp, getSessionController().getLoggedUser(), "UI upload");
             }
 
             workbook.close();
@@ -243,6 +261,7 @@ public class AmpController implements Serializable {
             amp.setItemType(ItemType.Amp);
             amp.setSymanticType(SymanticType.Pharmacologic_Substance);
             getFacade().create(amp);
+            itemAuditHelper.logCreate(amp, getSessionController().getLoggedUser(), "UI find-or-create");
         }
         return amp;
     }
@@ -354,10 +373,15 @@ public class AmpController implements Serializable {
                 continue;
             }
 
+            Map<String, Object> beforeData = createAuditMap(s);
             s.setRetired(true);
+            s.setRetiredAt(new Date());
             s.setRetireComments("Bulk Remove");
             s.setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(s);
+            auditService.logAudit(beforeData, createAuditMap(s),
+                    getSessionController().getLoggedUser(),
+                    "Amp", "Retire AMP (bulk remove, no stock)", s.getId());
         }
 
         listToRemove = null;
@@ -806,8 +830,11 @@ public class AmpController implements Serializable {
 
         if (currentVmp.getId() == null || currentVmp.getId() == 0) {
             getVmpFacade().create(currentVmp);
+            itemAuditHelper.logCreate(currentVmp, getSessionController().getLoggedUser(), "UI");
         } else {
+            Map<String, Object> beforeNames = itemAuditHelper.snapshotFromDb(currentVmp.getId());
             getVmpFacade().edit(currentVmp);
+            itemAuditHelper.logUpdate(beforeNames, currentVmp, getSessionController().getLoggedUser(), "UI");
         }
 
     }
@@ -881,9 +908,11 @@ public class AmpController implements Serializable {
 
             // Log audit for update
             Map<String, Object> afterData = createAuditMap(getCurrent());
-            auditService.logAudit(beforeData, afterData,
-                    getSessionController().getLoggedUser(),
-                    "Amp", "Update AMP", getCurrent().getId());
+            if (ItemAuditHelper.differs(beforeData, afterData)) {
+                auditService.logAudit(beforeData, afterData,
+                        getSessionController().getLoggedUser(),
+                        "Amp", "Update AMP", getCurrent().getId());
+            }
 
             JsfUtil.addSuccessMessage("AMP Updated Successfully.");
         } else {
@@ -1070,12 +1099,15 @@ public class AmpController implements Serializable {
         current.setDepartmentType(DepartmentType.Pharmacy);
 
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
+            Map<String, Object> beforeNames = itemAuditHelper.snapshotFromDb(current.getId());
             getFacade().edit(current);
+            itemAuditHelper.logUpdate(beforeNames, current, getSessionController().getLoggedUser(), "UI");
             JsfUtil.addSuccessMessage("Updated Successfully.");
         } else {
             current.setCreatedAt(new Date());
             current.setCreater(getSessionController().getLoggedUser());
             getFacade().create(current);
+            itemAuditHelper.logCreate(current, getSessionController().getLoggedUser(), "UI");
             JsfUtil.addSuccessMessage("Saved Successfully");
         }
         recreateModel();
@@ -1089,8 +1121,11 @@ public class AmpController implements Serializable {
         }
         if (amp.getId() == null) {
             getFacade().create(amp);
+            itemAuditHelper.logCreate(amp, getSessionController().getLoggedUser(), "UI");
         } else {
+            Map<String, Object> beforeNames = itemAuditHelper.snapshotFromDb(amp.getId());
             getFacade().edit(amp);
+            itemAuditHelper.logUpdate(beforeNames, amp, getSessionController().getLoggedUser(), "UI");
         }
     }
 
@@ -1130,8 +1165,80 @@ public class AmpController implements Serializable {
         addingVtmInVmp = new VirtualProductIngredient();
     }
 
+    /**
+     * Opens the retire confirmation: loads the stock quantity and the number
+     * of transactions of the selected AMP so the user can decide knowingly.
+     */
+    public void prepareRetire() {
+        retireReason = null;
+        retireStockQty = 0;
+        retireBillItemCount = 0;
+        retirePreparedAmpId = null;
+        if (current == null || current.getId() == null) {
+            JsfUtil.addErrorMessage("No AMP Selected to Retire");
+            return;
+        }
+        retirePreparedAmpId = current.getId();
+        retireStockQty = fetchStockQty(current);
+        Map<String, Object> m = new HashMap<>();
+        m.put("i", current);
+        m.put("ret", false);
+        Long cnt = billItemFacade.findLongByJpql(
+                "select count(bi) from BillItem bi where bi.item=:i and bi.retired=:ret", m);
+        retireBillItemCount = cnt == null ? 0 : cnt;
+        org.primefaces.PrimeFaces.current().ajax().addCallbackParam("canRetire", true);
+    }
+
+    public void prepareUnretire() {
+        retireReason = null;
+        unretirePreparedAmpId = null;
+        if (current == null || current.getId() == null || !current.isRetired()) {
+            JsfUtil.addErrorMessage("No retired AMP selected");
+            return;
+        }
+        if (!webUserController.hasPrivilege("PharmacyItemUnretire")) {
+            JsfUtil.addErrorMessage("You do not have the privilege to un-retire items");
+            return;
+        }
+        unretirePreparedAmpId = current.getId();
+        org.primefaces.PrimeFaces.current().ajax().addCallbackParam("canUnretire", true);
+    }
+
+    /**
+     * Retires (soft deletes) the selected AMP. A reason is mandatory and the
+     * change is audited.
+     */
     public void delete() {
-        if (current != null) {
+        if (current == null) {
+            JsfUtil.addErrorMessage("No AMP Selected to Delete");
+            return;
+        }
+        if (current.getId() == null || !current.getId().equals(retirePreparedAmpId)) {
+            JsfUtil.addErrorMessage("The selected AMP changed. Open the retire dialog again.");
+            return;
+        }
+        retireCurrent();
+    }
+
+    /**
+     * Retires the selected AMP without the warning dialog (optician page,
+     * where the item is chosen and retired in the same request). A reason is
+     * still mandatory.
+     */
+    public void deleteWithReason() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("No AMP Selected to Delete");
+            return;
+        }
+        retireCurrent();
+    }
+
+    private void retireCurrent() {
+        if (retireReason == null || retireReason.trim().isEmpty()) {
+            JsfUtil.addErrorMessage("Please enter the reason for retiring this item");
+            return;
+        }
+        {
             // Capture before state for audit
             Map<String, Object> beforeData = createAuditMap(current);
 
@@ -1139,17 +1246,17 @@ public class AmpController implements Serializable {
             current.setRetired(true);
             current.setRetiredAt(new Date());
             current.setRetirer(getSessionController().getLoggedUser());
+            current.setRetireComments(retireReason.trim());
             getFacade().edit(current);
 
             // Capture after state for audit
             Map<String, Object> afterData = createAuditMap(current);
             auditService.logAudit(beforeData, afterData,
                     getSessionController().getLoggedUser(),
-                    "Amp", "Delete AMP", current.getId());
+                    "Amp", "Retire AMP", current.getId());
 
-            JsfUtil.addSuccessMessage("AMP Deleted Successfully");
-        } else {
-            JsfUtil.addErrorMessage("No AMP Selected to Delete");
+            JsfUtil.addSuccessMessage("AMP Retired Successfully");
+            org.primefaces.PrimeFaces.current().ajax().addCallbackParam("done", true);
         }
 
         // Clear all selections and state
@@ -1158,8 +1265,82 @@ public class AmpController implements Serializable {
         current = null;
         selectedAmpDto = null; // Clear DTO selection
         ampAuditEvents = null; // Clear audit events
+        retireReason = null;
+        retirePreparedAmpId = null;
         getCurrent();
         editable = false;
+    }
+
+    /**
+     * Reverses a retirement. Needs the PharmacyItemUnretire privilege and a
+     * reason; the change is audited.
+     */
+    public void unretire() {
+        if (current == null || !current.isRetired()) {
+            JsfUtil.addErrorMessage("No retired AMP selected");
+            return;
+        }
+        if (current.getId() == null || !current.getId().equals(unretirePreparedAmpId)) {
+            JsfUtil.addErrorMessage("The selected AMP changed. Open the un-retire dialog again.");
+            return;
+        }
+        if (!webUserController.hasPrivilege("PharmacyItemUnretire")) {
+            JsfUtil.addErrorMessage("You do not have the privilege to un-retire items");
+            return;
+        }
+        if (retireReason == null || retireReason.trim().isEmpty()) {
+            JsfUtil.addErrorMessage("Please enter the reason for un-retiring this item");
+            return;
+        }
+        Map<String, Object> beforeData = createAuditMap(current);
+        if (checkItemCode(current.getCode(), current)) {
+            JsfUtil.addErrorMessage("Another active item already uses this code. Change that item's code first.");
+            return;
+        }
+        String reason = retireReason.trim();
+        current.setRetired(false);
+        current.setRetiredAt(null);
+        current.setRetirer(null);
+        current.setRetireComments(null);
+        getFacade().edit(current);
+        Map<String, Object> afterData = createAuditMap(current);
+        afterData.put("unretireReason", reason);
+        auditService.logAudit(beforeData, afterData,
+                getSessionController().getLoggedUser(),
+                "Amp", "Unretire AMP", current.getId());
+        JsfUtil.addSuccessMessage("AMP Un-retired Successfully");
+        org.primefaces.PrimeFaces.current().ajax().addCallbackParam("done", true);
+        retireReason = null;
+        unretirePreparedAmpId = null;
+        recreateModel();
+        ampDtos = null;
+        current = null;
+        selectedAmpDto = null;
+        ampAuditEvents = null;
+    }
+
+    public String getRetireReason() {
+        return retireReason;
+    }
+
+    public void setRetireReason(String retireReason) {
+        this.retireReason = retireReason;
+    }
+
+    public double getRetireStockQty() {
+        return retireStockQty;
+    }
+
+    public long getRetireBillItemCount() {
+        return retireBillItemCount;
+    }
+
+    public boolean isRetireWarningNeeded() {
+        return retireStockQty != 0 || retireBillItemCount > 0;
+    }
+
+    public boolean isUnretireAllowed() {
+        return webUserController.hasPrivilege("PharmacyItemUnretire");
     }
 
     private AmpFacade getFacade() {
@@ -1181,6 +1362,9 @@ public class AmpController implements Serializable {
             if ("active".equals(filterStatus)) {
                 jpql += "and a.retired=:retired ";
                 params.put("retired", false);
+            } else if ("retired".equals(filterStatus)) {
+                jpql += "and a.retired=:retired ";
+                params.put("retired", true);
             } else if ("inactive".equals(filterStatus)) {
                 jpql += "and a.retired=:retired ";
                 params.put("retired", true);
@@ -1421,10 +1605,12 @@ public class AmpController implements Serializable {
                 if (newCode != null && !newCode.trim().isEmpty()) {
                     // Verify uniqueness
                     if (!checkItemCode(newCode, amp)) {
+                        Map<String, Object> beforeNames = ItemAuditHelper.snapshot(amp);
                         amp.setCode(newCode);
                         amp.setEditedAt(new Date());
                         amp.setEditer(getSessionController().getLoggedUser());
                         getFacade().edit(amp);
+                        itemAuditHelper.logUpdate(beforeNames, amp, getSessionController().getLoggedUser(), "UI bulk code generation");
                         successCount++;
                     } else {
                         errorCount++;
@@ -1558,11 +1744,12 @@ public class AmpController implements Serializable {
                 + "FROM Amp a LEFT JOIN a.vmp v "
                 + "WHERE (LOWER(a.name) LIKE :query OR LOWER(a.code) LIKE :query OR LOWER(a.barcode) LIKE :query) "
                 + "AND a.departmentType=:dep "
-                + "AND a.retired=false ";
+                + "AND a.retired=:retiredFlag ";
 
         Map<String, Object> params = new HashMap<>();
         params.put("query", "%" + query.toLowerCase() + "%");
         params.put("dep", DepartmentType.Pharmacy);
+        params.put("retiredFlag", "retired".equals(filterStatus));
 
         // Apply status filter based on inactive attribute
         if ("active".equals(filterStatus)) {
@@ -1628,6 +1815,11 @@ public class AmpController implements Serializable {
         refreshData();
     }
 
+    public void setFilterToRetired() {
+        filterStatus = "retired";
+        refreshData();
+    }
+
     public void setFilterToAll() {
         filterStatus = "all";
         refreshData();
@@ -1648,11 +1840,17 @@ public class AmpController implements Serializable {
                 case "inactive":
                     shouldKeepSelection = current.isInactive();
                     break;
+                case "retired":
+                    shouldKeepSelection = current.isRetired();
+                    break;
                 case "all":
-                    shouldKeepSelection = true;
+                    shouldKeepSelection = !current.isRetired();
                     break;
             }
 
+            if (current.isRetired() && !"retired".equals(filterStatus)) {
+                shouldKeepSelection = false;
+            }
             if (!shouldKeepSelection) {
                 current = null;
                 selectedAmpDto = null;
@@ -1669,6 +1867,10 @@ public class AmpController implements Serializable {
         return "inactive".equals(filterStatus);
     }
 
+    public boolean isShowingRetired() {
+        return "retired".equals(filterStatus);
+    }
+
     public boolean isShowingAll() {
         return "all".equals(filterStatus);
     }
@@ -1679,6 +1881,8 @@ public class AmpController implements Serializable {
                 return "Active AMPs";
             case "inactive":
                 return "Inactive AMPs";
+            case "retired":
+                return "Retired AMPs";
             case "all":
                 return "All AMPs";
             default:
@@ -1698,8 +1902,10 @@ public class AmpController implements Serializable {
             auditData.put("id", amp.getId());
             auditData.put("name", amp.getName());
             auditData.put("code", amp.getCode());
+            ItemAuditHelper.putNameFields(auditData, amp);
             auditData.put("barcode", amp.getBarcode());
             auditData.put("retired", amp.isRetired());
+            auditData.put("retireComments", amp.getRetireComments());
             auditData.put("departmentType", amp.getDepartmentType() != null ?
                     amp.getDepartmentType().toString() : null);
 
@@ -1724,8 +1930,11 @@ public class AmpController implements Serializable {
 
             // Strength and units
             auditData.put("strengthOfAnIssueUnit", amp.getStrengthOfAnIssueUnit());
-            auditData.put("strengthUnit", amp.getStrengthUnit());
-            auditData.put("issueUnit", amp.getIssueUnit());
+            // Scalars only: a raw entity here makes Gson walk the graph back into the Amp and the audit row is lost
+            auditData.put("strengthUnit", amp.getStrengthUnit() != null ? amp.getStrengthUnit().getName() : null);
+            auditData.put("strengthUnitId", amp.getStrengthUnit() != null ? amp.getStrengthUnit().getId() : null);
+            auditData.put("issueUnit", amp.getIssueUnit() != null ? amp.getIssueUnit().getName() : null);
+            auditData.put("issueUnitId", amp.getIssueUnit() != null ? amp.getIssueUnit().getId() : null);
         }
         return auditData;
     }

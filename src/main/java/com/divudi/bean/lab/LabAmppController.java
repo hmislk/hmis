@@ -8,6 +8,7 @@
  */
 package com.divudi.bean.lab;
 
+import com.divudi.service.ItemAuditHelper;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.AuditEventController;
 import com.divudi.service.AuditService;
@@ -547,6 +548,7 @@ public class LabAmppController implements Serializable {
             auditData.put("id", ampp.getId());
             auditData.put("name", ampp.getName());
             auditData.put("code", ampp.getCode());
+            ItemAuditHelper.putNameFields(auditData, ampp);
             auditData.put("retired", ampp.isRetired());
             auditData.put("inactive", ampp.isInactive());
             auditData.put("departmentType", ampp.getDepartmentType() != null
