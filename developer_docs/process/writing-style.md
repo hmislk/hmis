@@ -28,7 +28,7 @@ Hub messages, asks to the user and Telegram replies follow ASD-STE100
 
 1. An instruction has 20 words or fewer. A description has 25 words or fewer.
 2. Write one instruction or one fact in one sentence.
-3. Use the active voice ("Tharu merged PR 26064").
+3. Use the active voice ("The cashier saved the bill", not "The bill was saved").
 4. Use simple tenses only: present, simple past, future. No -ing verb forms.
 5. Write the subject first and the result before the details.
 6. Use one word for one thing. Use the words on the screen.
