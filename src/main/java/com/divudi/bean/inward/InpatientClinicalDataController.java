@@ -5411,7 +5411,7 @@ public class InpatientClinicalDataController implements Serializable {
         }
         javax.faces.context.ExternalContext ec = fc.getExternalContext();
         String[] parts = src.split("[?#]");
-        if (parts.length == 0 || parts[0].isEmpty()) {
+        if (parts.length == 0 || parts[0].isEmpty() || parts[0].contains("%")) {
             return null;
         }
         String path;
