@@ -291,7 +291,8 @@ public class UserNotificationController implements Serializable {
         m.put("bid", requestBill.getId());
         java.util.List<UserNotification> uns = getFacade().findByJpql(
                 "select un from UserNotification un"
-                + " where un.retired=false and un.notification.bill.id=:bid", m);
+                // Retired copies included: opening a notification retires that copy.
+                + " where un.notification.bill.id=:bid", m);
         if (uns == null || uns.isEmpty()) {
             return;
         }
