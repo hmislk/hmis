@@ -2460,6 +2460,8 @@ public class PharmacySaleBhtController implements Serializable {
 
         // Committed from here on. A failure while loading the print preview must not
         // read as a failed issue, or the user would issue the same medicines again.
+        // Cleared first so a failed find never leaves the previous bill as the print bill.
+        setPrintBill(null);
         try {
             setPrintBill(getBillFacade().find(getPreBill().getId()));
         } catch (Exception e) {
