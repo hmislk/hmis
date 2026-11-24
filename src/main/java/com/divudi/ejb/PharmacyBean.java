@@ -120,6 +120,15 @@ public class PharmacyBean {
         work.run();
     }
 
+    /**
+     * Same as {@link #runStockSave(Runnable)}, for a save that returns a
+     * result (#26057).
+     */
+    @TransactionAttribute(TransactionAttributeType.REQUIRED)
+    public <T> T runStockSave(java.util.function.Supplier<T> work) {
+        return work.get();
+    }
+
     @EJB
     PharmaceuticalItemCategoryFacade PharmaceuticalItemCategoryFacade;
     @EJB
