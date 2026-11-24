@@ -2,6 +2,8 @@ package com.divudi.service.patient;
 
 import com.divudi.core.data.PatientMergeStatus;
 import com.divudi.core.data.PatientMergeType;
+import com.divudi.core.data.Sex;
+import com.divudi.core.data.Title;
 import com.divudi.core.entity.Patient;
 import com.divudi.core.entity.PatientEncounter;
 import com.divudi.core.entity.PatientMergeAffectedRecord;
@@ -305,29 +307,38 @@ public class PatientMergeService {
         }
     }
 
+    private String snapString(com.google.gson.JsonObject obj, String key) {
+        return obj.has(key) && !obj.get(key).isJsonNull() ? obj.get(key).getAsString() : null;
+    }
+
     private void restorePatientFromSnapshot(Patient patient, String json) {
         if (json == null || json.isEmpty()) {
             return;
         }
         try {
             com.google.gson.JsonObject root = com.google.gson.JsonParser.parseString(json).getAsJsonObject();
-            if (root.has("phn") && !root.get("phn").isJsonNull()) {
-                patient.setPhn(root.get("phn").getAsString());
+            if (!root.has("id")) {
+                return; // not a real snapshot (e.g. "{}" written after a snapshot failure)
             }
-            if (root.has("code") && !root.get("code").isJsonNull()) {
-                patient.setCode(root.get("code").getAsString());
-            }
+            patient.setPhn(snapString(root, "phn"));
+            patient.setCode(snapString(root, "code"));
             if (root.has("person") && !root.get("person").isJsonNull()) {
                 com.google.gson.JsonObject ps = root.getAsJsonObject("person");
                 Person p = patient.getPerson();
                 if (p != null) {
-                    if (ps.has("name") && !ps.get("name").isJsonNull()) p.setName(ps.get("name").getAsString());
-                    if (ps.has("nic") && !ps.get("nic").isJsonNull()) p.setNic(ps.get("nic").getAsString());
-                    if (ps.has("phone") && !ps.get("phone").isJsonNull()) p.setPhone(ps.get("phone").getAsString());
-                    if (ps.has("mobile") && !ps.get("mobile").isJsonNull()) p.setMobile(ps.get("mobile").getAsString());
-                    if (ps.has("email") && !ps.get("email").isJsonNull()) p.setEmail(ps.get("email").getAsString());
-                    if (ps.has("address") && !ps.get("address").isJsonNull()) p.setAddress(ps.get("address").getAsString());
-                    if (ps.has("dob") && !ps.get("dob").isJsonNull()) p.setDob(new Date(ps.get("dob").getAsLong()));
+                    // The snapshot omits null values, so a missing key means the field was blank
+                    // before the merge; set it back to blank so a merge-time fill is undone.
+                    p.setName(snapString(ps, "name"));
+                    p.setNic(snapString(ps, "nic"));
+                    p.setPhone(snapString(ps, "phone"));
+                    p.setMobile(snapString(ps, "mobile"));
+                    p.setEmail(snapString(ps, "email"));
+                    p.setAddress(snapString(ps, "address"));
+                    p.setDob(ps.has("dob") && !ps.get("dob").isJsonNull() ? new Date(ps.get("dob").getAsLong()) : null);
+                    String sex = snapString(ps, "sex");
+                    p.setSex(sex == null ? null : Sex.valueOf(sex));
+                    String title = snapString(ps, "title");
+                    p.setTitle(title == null ? null : Title.valueOf(title));
                 }
             }
         } catch (Exception e) {
