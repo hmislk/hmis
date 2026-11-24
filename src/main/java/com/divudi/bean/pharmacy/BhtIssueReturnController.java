@@ -534,6 +534,7 @@ public class BhtIssueReturnController implements Serializable {
 
             tmp.setQtyInUnit(tmpQty);
             bi.setQty(tmpQty);
+            bi.setRemainingQty(tmpQty);
 
             bi.setPharmaceuticalBillItem(tmp);
 
