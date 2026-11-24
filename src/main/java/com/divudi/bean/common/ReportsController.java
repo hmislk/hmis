@@ -6972,9 +6972,14 @@ public class ReportsController implements Serializable {
 
         // Company and patient figures come from the commitment and payment bills (#25601),
         // the same figures as the Credit Company Due pages.
-        setInstitutionBillPatientEncounterMap(InstitutionBillEncounter.createPatientEncounterBillEncounterMap(
-                new InwardCreditFigures(billFacade, institutionFacade).buildReportRows(patientEncounters,
-                        onlyDue ? "due" : "any", "any", creditCompany, null)));
+        List<InstitutionBillEncounter> debtorRows = new InwardCreditFigures(billFacade, institutionFacade)
+                .buildReportRows(patientEncounters, onlyDue ? "due" : "any", "any", creditCompany, null);
+        if (creditCompany != null) {
+            // With a company selected, Paid by Companies is that company's own paid figure (#26071),
+            // not the admission's total paid by all companies. The page, exports and totals read this value.
+            InwardCreditFigures.showSelectedCompanyPaid(debtorRows);
+        }
+        setInstitutionBillPatientEncounterMap(InstitutionBillEncounter.createPatientEncounterBillEncounterMap(debtorRows));
 
         setEncounterCreditCompanyMap(getEncounterCreditCompanies(getInstitutionBillPatientEncounterMap().keySet()));
 
