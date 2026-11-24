@@ -13,6 +13,8 @@
         <cc:attribute name="bill" type="com.divudi.core.entity.Bill" />
         <cc:attribute name="dup" type="java.lang.Boolean"/>
         <cc:attribute name="patientFeesLabel" type="java.lang.String" default="Patient Consultation Fees"/>
+        <!-- Config key that hides the header; OPD key by default, inward tabs pass the inward key (#25999) -->
+        <cc:attribute name="hideHeaderConfigKey" type="java.lang.String" default="Hide the Header Details on the OPD Doctor Payment 5x5 Bill"/>
     </cc:interface>
 
     <!-- IMPLEMENTATION -->
@@ -22,11 +24,11 @@
             <div style="margin-left: 5%; margin-right: 5%">
                 <div style="height: 1cm;" />
 
-                <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Hide the Header Details on the OPD Doctor Payment 5x5 Bill',false)}">
+                <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey(cc.attrs.hideHeaderConfigKey,false)}">
                     <div style="height: 2.5cm;" />
                 </h:panelGroup>
 
-                <h:panelGroup rendered="#{!configOptionApplicationController.getBooleanValueByKey('Hide the Header Details on the OPD Doctor Payment 5x5 Bill',false)}">
+                <h:panelGroup rendered="#{!configOptionApplicationController.getBooleanValueByKey(cc.attrs.hideHeaderConfigKey,false)}">
                     <div class="institutionName">
                         <h:outputLabel value="#{cc.attrs.bill.department.printingName}" />
                     </div>

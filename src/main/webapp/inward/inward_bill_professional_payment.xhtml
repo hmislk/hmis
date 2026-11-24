@@ -391,10 +391,10 @@
 
                                 <h:panelGroup id="gpDetailedPreview" >
                                     <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Inward Doctor Payment Tabs - Paper is A4', true)}">
-                                        <bi:staffBill bill="#{inwardStaffPaymentBillController.current}" dup="false" />
+                                        <bi:staffBill hideDetailsConfigKey="Hide the details on the Inward Doctor Payment Bill" bill="#{inwardStaffPaymentBillController.current}" dup="false" />
                                     </h:panelGroup>
                                     <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Inward Doctor Payment Tabs - Paper is Five Five', false)}">
-                                        <bi:staff_payment_five_five_paper_with_headings controller="#{inwardStaffPaymentBillController}" bill="#{inwardStaffPaymentBillController.current}" />
+                                        <bi:staff_payment_five_five_paper_with_headings hideHeaderConfigKey="Hide the Header Details on the Inward Doctor Payment 5x5 Bill" controller="#{inwardStaffPaymentBillController}" bill="#{inwardStaffPaymentBillController.current}" />
                                     </h:panelGroup>
                                     <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Inward Doctor Payment Tabs - Paper is POS', false)}">
                                         <bic:staff_payment_pos_detailed controller="#{inwardStaffPaymentBillController}" bill="#{inwardStaffPaymentBillController.current}" dup="false" />
@@ -418,7 +418,7 @@
                                         <bic:A4PaperPaymentOPDDoctorSummarised controller="#{inwardStaffPaymentBillController}" bill="#{inwardStaffPaymentBillController.current}" dup="false" patientFeesLabel="Inpatient Professional Fees" />
                                     </h:panelGroup>
                                     <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Inward Doctor Payment Tabs - Paper is Five Five', false)}">
-                                        <bic:staff_payment_five_five_summarised controller="#{inwardStaffPaymentBillController}" bill="#{inwardStaffPaymentBillController.current}" dup="false" patientFeesLabel="Inpatient Professional Fees" />
+                                        <bic:staff_payment_five_five_summarised hideHeaderConfigKey="Hide the Header Details on the Inward Doctor Payment 5x5 Bill" controller="#{inwardStaffPaymentBillController}" bill="#{inwardStaffPaymentBillController.current}" dup="false" patientFeesLabel="Inpatient Professional Fees" />
                                     </h:panelGroup>
                                     <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Inward Doctor Payment Tabs - Paper is POS', false)}">
                                         <bic:staff_payment_pos_summarised controller="#{inwardStaffPaymentBillController}" bill="#{inwardStaffPaymentBillController.current}" dup="false" patientFeesLabel="Inpatient Professional Fees" />
@@ -442,7 +442,7 @@
                                         <bic:A4PaperPaymentOPDDoctorSummary controller="#{inwardStaffPaymentBillController}" bill="#{inwardStaffPaymentBillController.current}" dup="false" patientFeesLabel="Inpatient Professional Fees" />
                                     </h:panelGroup>
                                     <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Inward Doctor Payment Tabs - Paper is Five Five', false)}">
-                                        <bic:staff_payment_five_five_summary controller="#{inwardStaffPaymentBillController}" bill="#{inwardStaffPaymentBillController.current}" dup="false" patientFeesLabel="Inpatient Professional Fees" />
+                                        <bic:staff_payment_five_five_summary hideHeaderConfigKey="Hide the Header Details on the Inward Doctor Payment 5x5 Bill" controller="#{inwardStaffPaymentBillController}" bill="#{inwardStaffPaymentBillController.current}" dup="false" patientFeesLabel="Inpatient Professional Fees" />
                                     </h:panelGroup>
                                     <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Inward Doctor Payment Tabs - Paper is POS', false)}">
                                         <bic:staff_payment_pos_summary controller="#{inwardStaffPaymentBillController}" bill="#{inwardStaffPaymentBillController.current}" dup="false" patientFeesLabel="Inpatient Professional Fees" />
@@ -539,6 +539,20 @@
                                     id="inwardDocPayPos"
                                     value="#{pharmacyConfigController.inwardDoctorPaymentTabsPosPaper}" />
                                 <p:outputLabel for="inwardDocPayPos" value="POS Paper Format" class="ms-2" />
+                            </div>
+                            <div class="mb-3">
+                                <p:selectBooleanCheckbox
+                                    id="inwardDocPayHideDetails"
+                                    value="#{pharmacyConfigController.inwardDoctorPaymentHideDetails}" />
+                                <p:outputLabel for="inwardDocPayHideDetails" value="Hide Details" class="ms-2" />
+                                <small class="form-text text-muted d-block">Hide the details on the Inward Doctor Payment Bill</small>
+                            </div>
+                            <div class="mb-3">
+                                <p:selectBooleanCheckbox
+                                    id="inwardDocPayHideFiveFiveHeader"
+                                    value="#{pharmacyConfigController.inwardDoctorPaymentHideFiveFiveHeader}" />
+                                <p:outputLabel for="inwardDocPayHideFiveFiveHeader" value="Hide 5x5 Header" class="ms-2" />
+                                <small class="form-text text-muted d-block">Hide the Header Details on the Inward Doctor Payment 5x5 Bill</small>
                             </div>
                         </h:panelGroup>
                         <p:messages id="inwardDoctorPaymentConfigMessages" showDetail="true" closable="true" />

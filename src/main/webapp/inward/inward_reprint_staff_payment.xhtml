@@ -167,10 +167,10 @@
 
                             <h:panelGroup id="gpDetailedPreview" >
                                 <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Inward Doctor Payment Tabs - Paper is A4', true)}">
-                                    <bi:staffBill bill="#{inwardSearch.bill}" dup="true" />
+                                    <bi:staffBill hideDetailsConfigKey="Hide the details on the Inward Doctor Payment Bill" bill="#{inwardSearch.bill}" dup="true" />
                                 </h:panelGroup>
                                 <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Inward Doctor Payment Tabs - Paper is Five Five', false)}">
-                                    <bi:staff_payment_five_five_paper_with_headings duplicate="true" controller="#{inwardSearch}" bill="#{inwardSearch.bill}" />
+                                    <bi:staff_payment_five_five_paper_with_headings hideHeaderConfigKey="Hide the Header Details on the Inward Doctor Payment 5x5 Bill" duplicate="true" controller="#{inwardSearch}" bill="#{inwardSearch.bill}" />
                                 </h:panelGroup>
                                 <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Inward Doctor Payment Tabs - Paper is POS', false)}">
                                     <bic:staff_payment_pos_detailed controller="#{inwardSearch}" bill="#{inwardSearch.bill}" dup="true" />
@@ -194,7 +194,7 @@
                                     <bic:A4PaperPaymentOPDDoctorSummarised controller="#{inwardSearch}" bill="#{inwardSearch.bill}" dup="true" patientFeesLabel="Inpatient Professional Fees" />
                                 </h:panelGroup>
                                 <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Inward Doctor Payment Tabs - Paper is Five Five', false)}">
-                                    <bic:staff_payment_five_five_summarised controller="#{inwardSearch}" bill="#{inwardSearch.bill}" dup="true" patientFeesLabel="Inpatient Professional Fees" />
+                                    <bic:staff_payment_five_five_summarised hideHeaderConfigKey="Hide the Header Details on the Inward Doctor Payment 5x5 Bill" controller="#{inwardSearch}" bill="#{inwardSearch.bill}" dup="true" patientFeesLabel="Inpatient Professional Fees" />
                                 </h:panelGroup>
                                 <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Inward Doctor Payment Tabs - Paper is POS', false)}">
                                     <bic:staff_payment_pos_summarised controller="#{inwardSearch}" bill="#{inwardSearch.bill}" dup="true" patientFeesLabel="Inpatient Professional Fees" />
@@ -218,7 +218,7 @@
                                     <bic:A4PaperPaymentOPDDoctorSummary controller="#{inwardSearch}" bill="#{inwardSearch.bill}" dup="true" patientFeesLabel="Inpatient Professional Fees" />
                                 </h:panelGroup>
                                 <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Inward Doctor Payment Tabs - Paper is Five Five', false)}">
-                                    <bic:staff_payment_five_five_summary controller="#{inwardSearch}" bill="#{inwardSearch.bill}" dup="true" patientFeesLabel="Inpatient Professional Fees" />
+                                    <bic:staff_payment_five_five_summary hideHeaderConfigKey="Hide the Header Details on the Inward Doctor Payment 5x5 Bill" controller="#{inwardSearch}" bill="#{inwardSearch.bill}" dup="true" patientFeesLabel="Inpatient Professional Fees" />
                                 </h:panelGroup>
                                 <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Inward Doctor Payment Tabs - Paper is POS', false)}">
                                     <bic:staff_payment_pos_summary controller="#{inwardSearch}" bill="#{inwardSearch.bill}" dup="true" patientFeesLabel="Inpatient Professional Fees" />

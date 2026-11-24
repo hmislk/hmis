@@ -98,8 +98,10 @@ Pages: Professional Payment - Inward (`inward/inward_bill_professional_payment.x
 | `Inward Doctor Payment Tabs - Paper is A4` | Boolean (application scope) | `true` | With the tabs on, prints each tab on A4. The Detailed tab uses the inward A4 voucher (BHT number and surgery). |
 | `Inward Doctor Payment Tabs - Paper is Five Five` | Boolean (application scope) | `false` | With the tabs on, prints each tab on 5x5 paper. |
 | `Inward Doctor Payment Tabs - Paper is POS` | Boolean (application scope) | `false` | With the tabs on, prints each tab on POS paper. |
+| `Hide the details on the Inward Doctor Payment Bill` | Boolean (application scope) | `false` | With the tabs on, hides the fee list on the A4 Detailed voucher. Inward copy of the OPD key `Hide the details on the OPD Doctor Payment Bill`. |
+| `Hide the Header Details on the Inward Doctor Payment 5x5 Bill` | Boolean (application scope) | `false` | With the tabs on, replaces the hospital header with a blank space on the 5x5 Detailed, Summarised and Summary vouchers. Inward copy of the OPD key `Hide the Header Details on the OPD Doctor Payment 5x5 Bill`. |
 
-The Summarised, Summary and POS vouchers are shared with OPD and still read the OPD keys `Hide the details on the OPD Doctor Payment Bill` and `Hide the Header Details on the OPD Doctor Payment 5x5 Bill`.
+The two inward Hide keys are in the Settings dialog of the settle page. The OPD keys no longer affect the inward tabs; OPD pages and the inward view with the tabs off print as before. The shared 5x5 Summarised and Summary vouchers take the key to read as the attribute `hideHeaderConfigKey` (default: the OPD key); the inward A4 and 5x5 vouchers take `hideDetailsConfigKey` / `hideHeaderConfigKey` (default: none, never hidden).
 
 ## OPD Billing Fees
 

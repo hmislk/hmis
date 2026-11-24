@@ -215,6 +215,8 @@ public class PharmacyConfigController implements Serializable {
     private boolean inwardDoctorPaymentTabsA4Paper;
     private boolean inwardDoctorPaymentTabsFiveFivePaper;
     private boolean inwardDoctorPaymentTabsPosPaper;
+    private boolean inwardDoctorPaymentHideDetails;
+    private boolean inwardDoctorPaymentHideFiveFiveHeader;
 
     // Inward BHT Direct Issue Bill Settings
     private boolean bhtIssuePosPaper;
@@ -443,6 +445,8 @@ public class PharmacyConfigController implements Serializable {
         inwardDoctorPaymentTabsA4Paper = configOptionApplicationController.getBooleanValueByKey("Inward Doctor Payment Tabs - Paper is A4", true);
         inwardDoctorPaymentTabsFiveFivePaper = configOptionApplicationController.getBooleanValueByKey("Inward Doctor Payment Tabs - Paper is Five Five", false);
         inwardDoctorPaymentTabsPosPaper = configOptionApplicationController.getBooleanValueByKey("Inward Doctor Payment Tabs - Paper is POS", false);
+        inwardDoctorPaymentHideDetails = configOptionApplicationController.getBooleanValueByKey("Hide the details on the Inward Doctor Payment Bill", false);
+        inwardDoctorPaymentHideFiveFiveHeader = configOptionApplicationController.getBooleanValueByKey("Hide the Header Details on the Inward Doctor Payment 5x5 Bill", false);
 
         // Inward BHT Direct Issue Bill Settings
         bhtIssuePosPaper = configOptionController.getBooleanValueByKey("Pharmacy Inward Direct Issue Bill is POS Paper", false);
@@ -1015,6 +1019,8 @@ public class PharmacyConfigController implements Serializable {
             configOptionApplicationController.setBooleanValueByKey("Inward Doctor Payment Tabs - Paper is A4", inwardDoctorPaymentTabsA4Paper);
             configOptionApplicationController.setBooleanValueByKey("Inward Doctor Payment Tabs - Paper is Five Five", inwardDoctorPaymentTabsFiveFivePaper);
             configOptionApplicationController.setBooleanValueByKey("Inward Doctor Payment Tabs - Paper is POS", inwardDoctorPaymentTabsPosPaper);
+            configOptionApplicationController.setBooleanValueByKey("Hide the details on the Inward Doctor Payment Bill", inwardDoctorPaymentHideDetails);
+            configOptionApplicationController.setBooleanValueByKey("Hide the Header Details on the Inward Doctor Payment 5x5 Bill", inwardDoctorPaymentHideFiveFiveHeader);
             JsfUtil.addSuccessMessage("Inward Doctor Payment paper settings saved");
             loadCurrentConfig();
         } catch (Exception e) {
@@ -2129,6 +2135,22 @@ public class PharmacyConfigController implements Serializable {
 
     public void setInwardDoctorPaymentTabsPosPaper(boolean inwardDoctorPaymentTabsPosPaper) {
         this.inwardDoctorPaymentTabsPosPaper = inwardDoctorPaymentTabsPosPaper;
+    }
+
+    public boolean isInwardDoctorPaymentHideDetails() {
+        return inwardDoctorPaymentHideDetails;
+    }
+
+    public void setInwardDoctorPaymentHideDetails(boolean inwardDoctorPaymentHideDetails) {
+        this.inwardDoctorPaymentHideDetails = inwardDoctorPaymentHideDetails;
+    }
+
+    public boolean isInwardDoctorPaymentHideFiveFiveHeader() {
+        return inwardDoctorPaymentHideFiveFiveHeader;
+    }
+
+    public void setInwardDoctorPaymentHideFiveFiveHeader(boolean inwardDoctorPaymentHideFiveFiveHeader) {
+        this.inwardDoctorPaymentHideFiveFiveHeader = inwardDoctorPaymentHideFiveFiveHeader;
     }
 
     public boolean isOpdDoctorPaymentHideFiveFiveHeader() {
