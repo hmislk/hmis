@@ -14,6 +14,7 @@ import com.divudi.bean.common.ControllerWithPatient;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.WebUserController;
 import com.divudi.core.util.JsfUtil;
+import com.divudi.service.inward.AdmissionCancellationRules;
 import com.divudi.service.inward.AdmissionGuardianRules;
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.PaymentMethod;
@@ -28,7 +29,9 @@ import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.Patient;
 import com.divudi.core.entity.Person;
 import com.divudi.core.entity.Speciality;
+import com.divudi.core.entity.Staff;
 import com.divudi.core.entity.inward.Admission;
+import com.divudi.core.entity.inward.AdmissionCancellationReason;
 import com.divudi.core.entity.inward.EncounterComponent;
 import com.divudi.core.entity.inward.PatientRoom;
 import com.divudi.core.facade.AdmissionFacade;
@@ -147,6 +150,9 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
     private boolean admissionEditFormReady;
     String selectText = "";
     String comment;
+    /** Cancellation reason from the admin list and who decided the cancellation (#25745). */
+    private AdmissionCancellationReason cancellationReason;
+    private Staff cancellationDecidedBy;
 
     private Institution institution;
 
@@ -491,6 +497,10 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
             return "";
         }
 
+        String notes = getComment();
+        AdmissionCancellationReason reason = cancellationReason;
+        Staff decidedBy = cancellationDecidedBy;
+
         if (checkPaymentIsMade()) {
             JsfUtil.addErrorMessage("This BHT has one or more active (non-cancelled) bills. "
                     + "Please cancel all bills associated with BHT " + current.getBhtNo()
@@ -498,8 +508,9 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
             return "";
         }
 
-        if (getComment() == null || getComment().trim().equals("")) {
-            JsfUtil.addErrorMessage("A cancellation reason is required. Please enter the reason before proceeding.");
+        String missing = AdmissionCancellationRules.firstMissing(notes, reason, decidedBy);
+        if (missing != null) {
+            JsfUtil.addErrorMessage(missing);
             return "";
         }
 
@@ -528,7 +539,9 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
         current.setRetireComments("BHT Cancel");
         current.setRetiredAt(new Date());
         current.setRetirer(getSessionController().getLoggedUser());
-        current.setComments(comment);
+        current.setComments(notes);
+        current.setCancellationReason(reason);
+        current.setCancellationDecidedBy(decidedBy);
         getEjbFacade().edit(current);
 
         // Give the BHT number back to its series when it is still the last one
@@ -552,7 +565,13 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
         Map<String, Object> afterCancel = new HashMap<>();
         admissionToAuditMap(afterCancel, current);
         afterCancel.put("retired", current.isRetired());
-        afterCancel.put("cancellationReason", comment);
+        afterCancel.put("cancellationReason", notes);
+        afterCancel.put("cancellationReasonCode", reason.getName());
+        afterCancel.put("cancellationDecidedBy", decidedBy.getPerson() != null
+                ? decidedBy.getPerson().getNameWithTitle() : decidedBy.getId());
+        afterCancel.put("admissionDecidedBy", current.getReferringConsultant() != null
+                && current.getReferringConsultant().getPerson() != null
+                ? current.getReferringConsultant().getPerson().getNameWithTitle() : null);
         afterCancel.put("retiredRoomCount", retiredRoomCount);
         afterCancel.put("reversedAdmissionChargeBills", reversedChargeBills.size());
         afterCancel.put("bhtNumberReturned", bhtNumberReturned);
@@ -688,6 +707,8 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
 
     public void prepereForNew() {
         patientRoom = null;
+        cancellationReason = null;
+        cancellationDecidedBy = null;
         selectedItems = null;
         items = null;
         patientList = null;
@@ -911,6 +932,8 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
             return "";
         }
         comment = null;
+        cancellationReason = null;
+        cancellationDecidedBy = null;
         createPatientRoom();
         return "/inward/inward_cancel_admission?faces-redirect=true";
     }
@@ -975,6 +998,22 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
 
     public void setComment(String comment) {
         this.comment = comment;
+    }
+
+    public AdmissionCancellationReason getCancellationReason() {
+        return cancellationReason;
+    }
+
+    public void setCancellationReason(AdmissionCancellationReason cancellationReason) {
+        this.cancellationReason = cancellationReason;
+    }
+
+    public Staff getCancellationDecidedBy() {
+        return cancellationDecidedBy;
+    }
+
+    public void setCancellationDecidedBy(Staff cancellationDecidedBy) {
+        this.cancellationDecidedBy = cancellationDecidedBy;
     }
 
     public boolean isAdmissionEditFormReady() {
