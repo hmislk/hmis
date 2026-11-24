@@ -322,6 +322,8 @@ public class PharmacySaleBhtController implements Serializable {
     // When true, medicines are issued at retail rate with NO inward price-matrix
     // service charge (used by the Issue Discharge Medicines page).
     boolean dischargeIssueMode = false;
+    /** Id of the bill the last successful settleBhtIssue committed (#26044). */
+    private Long lastCommittedIssueBillId;
     // Idempotency guards for the two irreversible stock mutations inside a
     // settlement attempt. batchStockDeduction()/transferIssuedStockToPorter()
     // each run as their own committed EJB transaction, independent of whatever
@@ -406,11 +408,21 @@ public class PharmacySaleBhtController implements Serializable {
             // Not saved: do not link a stale print bill to the surgery. Issue #26044.
             return;
         }
-        if (getPrintBill() == null) {
+        // The issue is committed. Link it to the surgery even when the print
+        // preview could not be loaded: look the committed bill up again.
+        Bill committed = getPrintBill();
+        if (committed == null && lastCommittedIssueBillId != null) {
+            try {
+                committed = getBillFacade().find(lastCommittedIssueBillId);
+            } catch (Exception e) {
+                LOGGER.log(Level.SEVERE, "Theatre issue saved, but the bill could not be loaded to link it to the surgery", e);
+            }
+        }
+        if (committed == null) {
             JsfUtil.addErrorMessage("The issue was saved but could not be linked to the surgery. Please contact the system administrator.");
             return;
         }
-        getBillBean().saveEncounterComponents(getPrintBill(), getBatchBill(), getSessionController().getLoggedUser());
+        getBillBean().saveEncounterComponents(committed, getBatchBill(), getSessionController().getLoggedUser());
         getBillBean().updateBatchBill(getBatchBill());
     }
 
@@ -1968,6 +1980,7 @@ public class PharmacySaleBhtController implements Serializable {
      * failure leaves nothing saved and no stock moved. Issue #26044.
      */
     private boolean settleBhtIssue(BillType btp, BillTypeAtomic bta, Department matrixDepartment) {
+        lastCommittedIssueBillId = null;
         if (matrixDepartment == null) {
             JsfUtil.addErrorMessage("This Bht can't issue as this Surgery Has No Department");
             return false;
@@ -2017,17 +2030,20 @@ public class PharmacySaleBhtController implements Serializable {
             FacesContext fc = FacesContext.getCurrentInstance();
             boolean causeShown = fc != null && fc.getMessageList().stream()
                     .anyMatch(m -> cause.equals(m.getSummary()));
+            // A step's own message (e.g. insufficient stock) is already shown; raw
+            // system errors stay in the log only, never on the page.
             JsfUtil.addErrorMessage("The issue was not saved and no stock was moved. "
                     + (rebuilt ? "Check the items and issue again." : "Start the issue again from the patient.")
-                    + (causeShown ? "" : " Error: " + cause));
+                    + (causeShown ? "" : " If it fails again, contact the system administrator."));
             return false;
         }
 
         // Committed. A print-preview failure must not read as a failed issue.
         // Cleared first so a failed find never leaves the previous bill as the print bill.
         setPrintBill(null);
+        lastCommittedIssueBillId = getPreBill().getId();
         try {
-            setPrintBill(getBillFacade().find(getPreBill().getId()));
+            setPrintBill(getBillFacade().find(lastCommittedIssueBillId));
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "BHT issue saved, but the print preview could not be loaded", e);
             JsfUtil.addErrorMessage("The issue was saved, but the print preview could not be loaded. Reprint it from the bill search.");
@@ -2477,7 +2493,7 @@ public class PharmacySaleBhtController implements Serializable {
                     + (reloaded
                             ? "The list was reloaded from the request; check it and issue again."
                             : "The list could not be reloaded; open the request again from the request list.")
-                    + (causeShown ? "" : " Error: " + cause));
+                    + (causeShown ? "" : " If it fails again, contact the system administrator."));
             return false;
         }
 
