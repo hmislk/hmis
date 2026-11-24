@@ -2047,12 +2047,20 @@ public class InwardReportControllerBht implements Serializable {
                 // payables too, even though no separate professional fee bill exists.
                 + "AND (b.billType = :billType "
                 + "OR (b.billTypeAtomic = :serviceBillAtomic AND bf.staff IS NOT NULL AND bf.feeValue > 0)) "
+                // Cancelling a fee bill also writes a negative cancellation bill (not flagged
+                // cancelled); leave it out so a cancelled fee disappears from the report (#26052).
+                // Older cancellation bills have no billTypeAtomic, hence the TYPE check too.
+                + "AND (b.billTypeAtomic IS NULL OR b.billTypeAtomic NOT IN :excludedAtomics) "
+                + "AND TYPE(b) <> CancelledBill "
                 // Collected by the doctor at billing: not a hospital payable (#17490).
                 + " and (bf.collectedByDoctorAtBilling = false or bf.collectedByDoctorAtBilling is null) ";
 
         Map<String, Object> params = new HashMap<>();
         params.put("billType", BillType.InwardProfessional);
         params.put("serviceBillAtomic", BillTypeAtomic.INWARD_SERVICE_BILL);
+        params.put("excludedAtomics", Arrays.asList(
+                BillTypeAtomic.INWARD_PROFESSIONAL_FEE_BILL_CANCELLATION,
+                BillTypeAtomic.INWARD_THEATRE_PROFESSIONAL_FEE_BILL_CANCELLATION));
 
         jpql = appendProfessionalPaymentScopePredicate(jpql, params);
         jpql = appendProfessionalPaymentAdmissionTypePredicate(jpql, params);
