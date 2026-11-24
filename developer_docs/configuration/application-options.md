@@ -75,6 +75,7 @@ A print or settings dialog must use the **same** controller as the page or templ
 | ---------------------------------------------------------------- | --------- | ------- | ------------------------------------------------------------------------------------------------------- |
 | `OPD Billing - Clear Referring Doctor on New Bill`              | Boolean   | `true`  | When true, clears the referring doctor and referring institution when starting a new OPD bill. When false, the values are preserved across consecutive bills. |
 | `Show Mark Foreigner and Mark Local Buttons in Billing`         | Boolean   | `true`  | Controls visibility of the Mark Foreigner / Mark Local buttons across OPD Billing, Channel Booking, Clinic Sessions, and Inward Service Bill screens. Independent of `Save the Patient with Patient Status` (which only controls the read-only status badge/toggle shown during patient registration). See issue #22311. |
+| `OPD Bill Display Fee Breakdown - Five Five Custom 4`           | Boolean   | `false` | When `true`, the OPD 5x5 Custom 4 bill (`ezcomp/prints/five_five_opd_bill_custom_4.xhtml`) prints each item's fees as sub-rows under the item (fee name and amount; a staff fee shows the staff name; fees collected by the doctor show the collected-by-the-doctor note). When `false`, the item row only. Independent of `OPD Bill Display Fee Breakdown`, which is read by the 5x5 with-headings bill. |
 
 ## Inward Discharge
 
