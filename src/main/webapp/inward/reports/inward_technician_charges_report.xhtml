@@ -1,0 +1,216 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:body>
+        <ui:composition template="/resources/template/template.xhtml">
+            <ui:define name="content">
+                <h:form id="form">
+                    <p:growl id="growl" />
+                    <p:panel>
+                        <f:facet name="header">
+                            <h:outputText styleClass="fa fa-user-cog" />
+                            <h:outputText value="&nbsp;&nbsp;Inward Technician Charges Report" styleClass="m-2" />
+                        </f:facet>
+
+                        <style>
+                            @media print {
+                                @page {
+                                    size: A4 portrait;
+                                    margin: 10mm;
+                                }
+                                .tc-report-table thead {
+                                    display: table-header-group;
+                                }
+                                .tc-report-table tr {
+                                    page-break-inside: avoid;
+                                }
+                            }
+                            .tc-report-table {
+                                width: 100%;
+                                border-collapse: collapse;
+                                font-size: 0.85rem;
+                            }
+                            .tc-report-table th,
+                            .tc-report-table td {
+                                border: 1px solid #dee2e6;
+                                padding: 2px 6px;
+                            }
+                            .tc-report-table th {
+                                background-color: #f1f3f5;
+                            }
+                            .tc-report-table .tc-subtotal td,
+                            .tc-report-table .tc-grand td {
+                                font-weight: bold;
+                                background-color: #f8f9fa;
+                            }
+                        </style>
+
+                        <div class="row">
+                            <div class="col-md-3">
+                                <p:outputLabel value="Date Basis" for="dateBasis" />
+                                <p:selectOneMenu id="dateBasis" value="#{inwardTechnicianChargesReportController.dateBasis}" styleClass="w-100">
+                                    <f:selectItem itemLabel="Admission Date" itemValue="admission" />
+                                    <f:selectItem itemLabel="Discharge Date" itemValue="discharge" />
+                                    <f:selectItem itemLabel="Final Bill Created Date" itemValue="finalBillCreated" />
+                                    <f:selectItem itemLabel="Professional Fee Added Date" itemValue="feeAdded" />
+                                </p:selectOneMenu>
+                            </div>
+                            <div class="col-md-3">
+                                <p:outputLabel value="From Date" for="fromDate" />
+                                <p:calendar id="fromDate" value="#{inwardTechnicianChargesReportController.fromDate}"
+                                            navigator="false" styleClass="w-100" inputStyleClass="w-100 form-control"
+                                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                            </div>
+                            <div class="col-md-3">
+                                <p:outputLabel value="To Date" for="toDate" />
+                                <p:calendar id="toDate" value="#{inwardTechnicianChargesReportController.toDate}"
+                                            navigator="false" styleClass="w-100" inputStyleClass="w-100 form-control"
+                                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                            </div>
+                            <div class="col-md-3">
+                                <p:outputLabel value="Admission Type" for="admissionType" />
+                                <p:selectOneMenu id="admissionType" value="#{inwardTechnicianChargesReportController.admissionType}" styleClass="w-100">
+                                    <f:selectItem itemLabel="All" itemValue="#{null}" />
+                                    <f:selectItems value="#{admissionTypeController.items}" var="at" itemValue="#{at}" itemLabel="#{at.name}" />
+                                </p:selectOneMenu>
+                            </div>
+                        </div>
+                        <div class="row mt-2">
+                            <div class="col-md-3">
+                                <p:outputLabel value="Payment Method" for="paymentMethod" />
+                                <p:selectOneMenu id="paymentMethod" value="#{inwardTechnicianChargesReportController.paymentMethod}" styleClass="w-100">
+                                    <f:selectItem itemLabel="All" itemValue="#{null}" />
+                                    <f:selectItems value="#{enumController.paymentMethodForAdmission}" />
+                                </p:selectOneMenu>
+                            </div>
+                            <div class="col-md-3">
+                                <p:outputLabel value="Institution" for="institution" />
+                                <p:selectOneMenu id="institution" value="#{inwardTechnicianChargesReportController.institution}"
+                                                 autoWidth="false" filter="true" filterMatchMode="contains" styleClass="w-100">
+                                    <f:selectItem itemLabel="All Institutions" itemValue="#{null}" />
+                                    <f:selectItems value="#{institutionController.companies}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}" />
+                                    <p:ajax process="@this" update="department" listener="#{inwardTechnicianChargesReportController.clearDepartment()}" />
+                                </p:selectOneMenu>
+                            </div>
+                            <div class="col-md-3">
+                                <p:outputLabel value="Department" for="department" />
+                                <p:selectOneMenu id="department" value="#{inwardTechnicianChargesReportController.department}"
+                                                 autoWidth="false" filter="true" filterMatchMode="contains" styleClass="w-100">
+                                    <f:selectItem itemLabel="All Departments" itemValue="#{null}" />
+                                    <f:selectItems value="#{departmentController.getDepartmentsOfInstitutionAndSite(inwardTechnicianChargesReportController.institution, null)}"
+                                                   var="dept" itemLabel="#{dept.name}" itemValue="#{dept}" />
+                                    <p:ajax process="@this" />
+                                </p:selectOneMenu>
+                            </div>
+                            <div class="col-md-3">
+                                <p:outputLabel value="Technician" for="technician" />
+                                <p:autoComplete id="technician" value="#{inwardTechnicianChargesReportController.technician}"
+                                                completeMethod="#{staffController.completeStaff}" var="t"
+                                                itemLabel="#{t.person.name}" itemValue="#{t}"
+                                                forceSelection="true" maxResults="15"
+                                                placeholder="All Technicians"
+                                                styleClass="w-100" inputStyleClass="w-100 form-control" />
+                            </div>
+                        </div>
+
+                        <div class="d-flex gap-2 mt-2 mb-2">
+                            <p:commandButton value="Process" icon="fas fa-search" ajax="false"
+                                             styleClass="ui-button-warning" style="min-width:120px"
+                                             action="#{inwardTechnicianChargesReportController.processReport()}" />
+                            <p:commandButton value="Excel" icon="fas fa-file-excel" ajax="false"
+                                             styleClass="ui-button-success"
+                                             action="#{inwardTechnicianChargesReportController.downloadExcel()}" />
+                            <p:commandButton value="PDF" icon="fas fa-file-pdf" ajax="false"
+                                             styleClass="ui-button-danger"
+                                             action="#{inwardTechnicianChargesReportController.downloadPdf()}" />
+                            <p:commandButton value="Print" icon="fa fa-print" ajax="false"
+                                             styleClass="ui-button-info"
+                                             disabled="#{not inwardTechnicianChargesReportController.processed}">
+                                <p:printer target="printArea" />
+                            </p:commandButton>
+                        </div>
+
+                        <h:panelGroup id="printArea" layout="block" rendered="#{inwardTechnicianChargesReportController.processed}">
+                            <div class="mb-2">
+                                <h:outputText value="Inward Technician Charges Report" style="font-weight:bold; font-size:1.1rem;" />
+                                <br />
+                                <h:outputText value="#{inwardTechnicianChargesReportController.filterSummary}" style="font-size:0.8rem;" />
+                            </div>
+                            <h:outputText value="No technician fees found for the selected filters."
+                                          rendered="#{empty inwardTechnicianChargesReportController.groups}" />
+                            <table class="tc-report-table" style="#{empty inwardTechnicianChargesReportController.groups ? 'display:none' : ''}">
+                                <thead>
+                                    <tr>
+                                        <th>BHT No</th>
+                                        <th>Technician Name</th>
+                                        <th>Fee Added Date</th>
+                                        <th style="text-align:right">Added Fee Value</th>
+                                        <th style="text-align:right">Paid Fee Value</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <ui:repeat value="#{inwardTechnicianChargesReportController.groups}" var="g">
+                                        <ui:repeat value="#{g.rows}" var="row">
+                                            <tr>
+                                                <td><h:outputText value="#{row.bhtNo}" /></td>
+                                                <td><h:outputText value="#{row.technicianName}" /></td>
+                                                <td>
+                                                    <h:outputText value="#{row.feeAddedDate}">
+                                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                                    </h:outputText>
+                                                </td>
+                                                <td style="text-align:right">
+                                                    <h:outputText value="#{row.addedFeeValue}">
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputText>
+                                                </td>
+                                                <td style="text-align:right">
+                                                    <h:outputText value="#{row.paidFeeValue}">
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputText>
+                                                </td>
+                                            </tr>
+                                        </ui:repeat>
+                                        <tr class="tc-subtotal">
+                                            <td colspan="3"><h:outputText value="Subtotal - #{g.technicianName}" /></td>
+                                            <td style="text-align:right">
+                                                <h:outputText value="#{g.addedFeeTotal}">
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                </h:outputText>
+                                            </td>
+                                            <td style="text-align:right">
+                                                <h:outputText value="#{g.paidFeeTotal}">
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                </h:outputText>
+                                            </td>
+                                        </tr>
+                                    </ui:repeat>
+                                    <ui:fragment rendered="#{inwardTechnicianChargesReportController.showGrandTotal and not empty inwardTechnicianChargesReportController.groups}">
+                                        <tr class="tc-grand">
+                                            <td colspan="3"><h:outputText value="Grand Total" /></td>
+                                            <td style="text-align:right">
+                                                <h:outputText value="#{inwardTechnicianChargesReportController.grandAddedTotal}">
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                </h:outputText>
+                                            </td>
+                                            <td style="text-align:right">
+                                                <h:outputText value="#{inwardTechnicianChargesReportController.grandPaidTotal}">
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                </h:outputText>
+                                            </td>
+                                        </tr>
+                                    </ui:fragment>
+                                </tbody>
+                            </table>
+                        </h:panelGroup>
+                    </p:panel>
+                </h:form>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>
