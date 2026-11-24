@@ -124,6 +124,21 @@ class AdmissionTypeTimelineTest {
     }
 
     @Test
+    void roomDiscountTypeIsTheTypeAtRoomStartForTheWholeRoomStay() throws Exception {
+        AdmissionType etu = type(1, "ETU", 0, 0);
+        AdmissionType inward = type(2, "Inward", 100, 500);
+        AdmissionTypeTimeline tl = new AdmissionTypeTimeline(inward, Arrays.asList(
+                row(etu, d("2026-03-01 09:00"), d("2026-03-03 14:00")), row(inward, d("2026-03-03 14:00"), null)));
+        // product owner: room discounts and margin use typeAt(room start), as the room loops call it
+        Date roomEnteredBeforeChangeDay = d("2026-03-02 22:00");
+        Date roomEnteredOnChangeDay = d("2026-03-03 08:00");
+        Date roomEnteredAfter = d("2026-03-04 10:00");
+        assertSame(etu, tl.typeAt(roomEnteredBeforeChangeDay));
+        assertSame(inward, tl.typeAt(roomEnteredOnChangeDay));
+        assertSame(inward, tl.typeAt(roomEnteredAfter));
+    }
+
+    @Test
     void changeOnTheAdmissionDayLeavesNoPeriodForTheOldType() throws Exception {
         AdmissionType etu = type(1, "ETU", 0, 0);
         AdmissionType inward = type(2, "Inward", 100, 500);
