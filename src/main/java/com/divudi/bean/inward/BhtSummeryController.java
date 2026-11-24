@@ -3591,7 +3591,8 @@ public class BhtSummeryController implements Serializable {
         // on screen: populateCreditCompanyAllocations() stops allocating once the due
         // is covered, so a registered company can be absent from the allocation list
         // and would otherwise be persisted a second time here.
-        for (EncounterCreditCompany registered : fillCreditCompaniesByPatient(patientEncounter)) {
+        List<EncounterCreditCompany> alreadyRegistered = fillCreditCompaniesByPatient(patientEncounter);
+        for (EncounterCreditCompany registered : alreadyRegistered) {
             if (newEncounterCreditCompany.getInstitution().equals(registered.getInstitution())) {
                 JsfUtil.addErrorMessage(newEncounterCreditCompany.getInstitution().getName()
                         + " is already registered for this BHT");
@@ -3612,6 +3613,12 @@ public class BhtSummeryController implements Serializable {
         newEncounterCreditCompany.setCreater(sessionController.getLoggedUser());
         newEncounterCreditCompany.setRetired(false);
         encounterCreditCompanyFacade.create(newEncounterCreditCompany);
+        // Issue #26077 follow-up: the admission's company follows the first added company
+        if (alreadyRegistered.isEmpty()
+                && !newEncounterCreditCompany.getInstitution().equals(patientEncounter.getCreditCompany())) {
+            patientEncounter.setCreditCompany(newEncounterCreditCompany.getInstitution());
+            getPatientEncounterFacade().edit(patientEncounter);
+        }
 
         double expected = Math.max(0.0, (grantTotal - discount) - paidByPatient - paidByCompany);
         double ccSum = 0.0;
