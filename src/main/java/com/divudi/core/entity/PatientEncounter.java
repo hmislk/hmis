@@ -11,6 +11,7 @@ import com.divudi.core.data.inward.EncounterRegistrationFlag;
 import com.divudi.core.data.inward.PatientEncounterType;
 import com.divudi.core.entity.clinical.ClinicalEntity;
 import com.divudi.core.entity.clinical.ClinicalFindingValue;
+import com.divudi.core.entity.inward.AdmissionCancellationReason;
 import com.divudi.core.entity.inward.AdmissionType;
 import com.divudi.core.entity.inward.EncounterComponent;
 import com.divudi.core.entity.inward.PatientRoom;
@@ -228,6 +229,12 @@ public class PatientEncounter implements Serializable, RetirableEntity {
     private Staff referringConsultant;
     @ManyToOne
     private Staff referringStaff;
+    /** Why the admission was cancelled, from the admin-maintained list (#25745). Empty for older cancellations. */
+    @ManyToOne
+    private AdmissionCancellationReason cancellationReason;
+    /** The doctor or staff member who decided the cancellation (#25745). Empty for older cancellations. */
+    @ManyToOne
+    private Staff cancellationDecidedBy;
     private boolean convertedToAnotherEncounter;
     @ManyToOne
     private ClinicalEntity primaryReason;
@@ -1313,6 +1320,22 @@ public class PatientEncounter implements Serializable, RetirableEntity {
 
     public void setReferringConsultant(Staff referringConsultant) {
         this.referringConsultant = referringConsultant;
+    }
+
+    public AdmissionCancellationReason getCancellationReason() {
+        return cancellationReason;
+    }
+
+    public void setCancellationReason(AdmissionCancellationReason cancellationReason) {
+        this.cancellationReason = cancellationReason;
+    }
+
+    public Staff getCancellationDecidedBy() {
+        return cancellationDecidedBy;
+    }
+
+    public void setCancellationDecidedBy(Staff cancellationDecidedBy) {
+        this.cancellationDecidedBy = cancellationDecidedBy;
     }
 
     public Staff getReferringStaff() {

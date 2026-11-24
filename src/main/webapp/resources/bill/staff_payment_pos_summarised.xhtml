@@ -12,6 +12,7 @@
         <cc:attribute name="controller" />
         <cc:attribute name="bill" type="com.divudi.core.entity.Bill" />
         <cc:attribute name="dup" type="java.lang.Boolean"/>
+        <cc:attribute name="patientFeesLabel" type="java.lang.String" default="Patient Consultation Fees"/>
     </cc:interface>
 
     <!-- IMPLEMENTATION -->
@@ -88,7 +89,7 @@
                 <table width="90%" style="width: 90%; margin-left:0.5cm;">
                     <tr>
                         <td style="text-align: left; width: 65%; font-size: 11px;">
-                            <h:outputLabel value="Patient Consultation Fees" />
+                            <h:outputLabel value="#{cc.attrs.patientFeesLabel}" />
                             <h:outputLabel value=" (x#{billBeanController.countPatientRelatedBillItems(cc.attrs.bill)})" style="font-size: 10px;" />
                         </td>
                         <td style="text-align: right; width: 35%; padding-right: 0px; font-size: 11px;">

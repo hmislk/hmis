@@ -88,6 +88,21 @@ A print or settings dialog must use the **same** controller as the page or templ
 | --- | --- | --- | --- |
 | `Inward Professional Fee - Allow Fee Collected By Doctor` | Boolean | `false` | Controls whether the inward professional fee add page offers a "Collected by Doctor" switch beside FOC, that is, whether NEW fees can be marked. A fee added with it on is saved with `BillFee.collectedByDoctorAtBilling` and is not payable by the hospital: it is left out of the patient bill total, due and claimable amount (final and interim) and out of the payment due lists, makes no Payment/drawer/cashbook entry, and patient bills print only the note "Fees Collected by the Doctor" outside the net total. `paidValue` and `settleValue` stay 0 (the fee is not recorded as paid), so the bill can still be cancelled. Turning the option off only stops new fees being marked; fees already marked keep the saved flag, stay excluded and still print the note. Fees flagged on the surgery payment page (`feeCollectedByDoctor`) behave as before, with the key on or off. See issue #17490. |
 
+## Inward Professional Payment Vouchers
+
+Pages: Professional Payment - Inward (`inward/inward_bill_professional_payment.xhtml`) and its reprint (`inward/inward_reprint_staff_payment.xhtml`). See issue #25999.
+
+| Key | Type | Default | Description |
+| --- | --- | --- | --- |
+| `Inward Doctor Payment - Show Bill Format Tabs and Paper Settings` | Boolean (application scope) | `false` | When `true`, both pages show the voucher in tabs (Detailed, Summarised, Summary, Individual), like Professional Payment - OPD, and a Settings button (privilege `ChangeReceiptPrintingPaperTypes`) to choose the paper. When `false`, the pages print as before, from the `Inward Doctor payment bill is a ...` keys. |
+| `Inward Doctor Payment Tabs - Paper is A4` | Boolean (application scope) | `true` | With the tabs on, prints each tab on A4. The Detailed tab uses the inward A4 voucher (BHT number and surgery). |
+| `Inward Doctor Payment Tabs - Paper is Five Five` | Boolean (application scope) | `false` | With the tabs on, prints each tab on 5x5 paper. |
+| `Inward Doctor Payment Tabs - Paper is POS` | Boolean (application scope) | `false` | With the tabs on, prints each tab on POS paper. |
+| `Hide the details on the Inward Doctor Payment Bill` | Boolean (application scope) | `false` | With the tabs on, hides the fee list on the A4 Detailed voucher. Inward copy of the OPD key `Hide the details on the OPD Doctor Payment Bill`. |
+| `Hide the Header Details on the Inward Doctor Payment 5x5 Bill` | Boolean (application scope) | `false` | With the tabs on, replaces the hospital header with a blank space on the 5x5 Detailed, Summarised and Summary vouchers. Inward copy of the OPD key `Hide the Header Details on the OPD Doctor Payment 5x5 Bill`. |
+
+The two inward Hide keys are in the Settings dialog of the settle page. The OPD keys no longer affect the inward tabs; OPD pages and the inward view with the tabs off print as before. The shared 5x5 Summarised and Summary vouchers take the key to read as the attribute `hideHeaderConfigKey` (default: the OPD key); the inward A4 and 5x5 vouchers take `hideDetailsConfigKey` / `hideHeaderConfigKey` (default: none, never hidden).
+
 ## OPD Billing Fees
 
 | Key | Type | Default | Description |
@@ -249,6 +264,15 @@ Both keys are application-wide Booleans, default `false`. With both off, neither
 A hospital that had one of these set to Yes must set the matching new key to Yes to keep the buttons.
 
 Do not confuse these with `Inward Final Bill - Show Custom Bill 4 Format`, an older key that switches on the "Custom Bill 3 (Letterhead)" tab on the reprint page (see `printer-configuration-system.md`).
+
+## Inward Final Bill Reprint - Custom Bill 3 Claimable / Not Claimable copies
+
+Issue #26002. The same copies on the final bill reprint page (`inward/inward_reprint_bill_final.xhtml`, tab Custom Bills), inside the Custom Bill 3 section, so that section must also be shown (`Inward Final Bill - Show Custom Bill 4 Format`). Application-wide Booleans, default `false`; with both off the page is unchanged. The settle-page keys above are not read here.
+
+| Key | Type | Default | Description |
+| --- | --- | --- | --- |
+| `Inward Final Bill Reprint - Custom Bill 3 - Show Claimable Copies` | Boolean | `false` | Adds a "Custom Bill 3 - Claimable Copies" panel with Patient, Hospital and Duplicate copy buttons (professional fees included). |
+| `Inward Final Bill Reprint - Custom Bill 3 - Show Not Claimable Copies` | Boolean | `false` | Adds a "Custom Bill 3 - Not Claimable Copies" panel with Patient, Hospital and Duplicate copy buttons (without professional fees) and a Professional Fees copy button. |
 
 ## Inward VAT per charge type
 

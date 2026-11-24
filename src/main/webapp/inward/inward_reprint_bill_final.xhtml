@@ -779,7 +779,7 @@
                                                 
                                                 <bi:unapprovedHeading bill="#{inwardSearch.bill}" />
 
-                                                <h:panelGroup id="originalCustom4BillPriview">
+                                                <h:panelGroup id="originalCustom4BillPriview" styleClass="custom4BillWrapper">
                                                     <bi:finalBillCustom4 bill="#{inwardSearch.showOrginalBill ? inwardSearch.bill.referenceBill : inwardSearch.bill}" duplicate="false" showProfessional="#{inwardSearch.withProfessionalFee}"/>
                                                 </h:panelGroup>
 
@@ -803,7 +803,7 @@
                                                 
                                                 <bi:unapprovedHeading bill="#{inwardSearch.bill}" />
 
-                                                <h:panelGroup id="duplicateCustom4BillPriview">
+                                                <h:panelGroup id="duplicateCustom4BillPriview" styleClass="custom4BillWrapper">
                                                     <bi:finalBillCustom4 bill="#{inwardSearch.showOrginalBill ? inwardSearch.bill.referenceBill : inwardSearch.bill}" duplicate="true" showProfessional="#{inwardSearch.withProfessionalFee}"/>
                                                 </h:panelGroup>
 
@@ -811,6 +811,86 @@
                                         </div>
                                     </div>
 
+                                    <!-- Custom Bill 3 copy sets, same copies as the settle page (inward_bill_final.xhtml), behind reprint-only keys -->
+                                    <h:panelGroup layout="block" styleClass="mt-3" rendered="#{configOptionApplicationController.getBooleanValueByKey('Inward Final Bill Reprint - Custom Bill 3 - Show Claimable Copies', false)}">
+                                        <p:panel id="reprintC3ClaimPanel" toggleable="true">
+                                            <f:facet name="header">
+                                                <div class="d-flex justify-content-between align-items-center w-100">
+                                                    <h:outputLabel value="Custom Bill 3 - Claimable Copies" class="mt-2"/>
+                                                    <div class="d-flex gap-2">
+                                                        <p:commandButton id="btnReprintC3ClaimPatient" value="Claimable - Patient Copy" type="button"
+                                                                         styleClass="ui-button-info" icon="fas fa-print"
+                                                                         title="Custom Bill 3: Claimable - Patient Copy"
+                                                                         onclick="printCustom4Bill('#{p:resolveFirstComponentWithId('reprintC3ClaimPatient',view).clientId}', '#{resource['js:paged.polyfill.js']}'); return false;" />
+                                                        <p:commandButton id="btnReprintC3ClaimHospital" value="Claimable - Hospital Copy" type="button"
+                                                                         styleClass="ui-button-info" icon="fas fa-print"
+                                                                         title="Custom Bill 3: Claimable - Hospital Copy"
+                                                                         onclick="printCustom4Bill('#{p:resolveFirstComponentWithId('reprintC3ClaimHospital',view).clientId}', '#{resource['js:paged.polyfill.js']}'); return false;" />
+                                                        <p:commandButton id="btnReprintC3ClaimDuplicate" value="Claimable - Duplicate Copy" type="button"
+                                                                         styleClass="ui-button-info" icon="fas fa-print"
+                                                                         title="Custom Bill 3: Claimable - Duplicate Copy"
+                                                                         onclick="printCustom4Bill('#{p:resolveFirstComponentWithId('reprintC3ClaimDuplicate',view).clientId}', '#{resource['js:paged.polyfill.js']}'); return false;" />
+                                                    </div>
+                                                </div>
+                                            </f:facet>
+
+                                            <bi:unapprovedHeading bill="#{inwardSearch.bill}" />
+
+                                            <h:panelGroup id="reprintC3ClaimPatient" styleClass="noBorder custom4BillWrapper">
+                                                <bi:finalBillCustom4 bill="#{inwardSearch.showOrginalBill ? inwardSearch.bill.referenceBill : inwardSearch.bill}" duplicate="false" showProfessional="true"/>
+                                            </h:panelGroup>
+                                            <h:panelGroup id="reprintC3ClaimHospital" styleClass="noBorder custom4BillWrapper">
+                                                <bi:finalBillCustom4 bill="#{inwardSearch.showOrginalBill ? inwardSearch.bill.referenceBill : inwardSearch.bill}" hosCopy="true" duplicate="false" showProfessional="true"/>
+                                            </h:panelGroup>
+                                            <h:panelGroup id="reprintC3ClaimDuplicate" styleClass="noBorder custom4BillWrapper">
+                                                <bi:finalBillCustom4 bill="#{inwardSearch.showOrginalBill ? inwardSearch.bill.referenceBill : inwardSearch.bill}" duplicate="true" showProfessional="true"/>
+                                            </h:panelGroup>
+                                        </p:panel>
+                                    </h:panelGroup>
+
+                                    <h:panelGroup layout="block" styleClass="mt-3" rendered="#{configOptionApplicationController.getBooleanValueByKey('Inward Final Bill Reprint - Custom Bill 3 - Show Not Claimable Copies', false)}">
+                                        <p:panel id="reprintC3NoClaimPanel" toggleable="true">
+                                            <f:facet name="header">
+                                                <div class="d-flex justify-content-between align-items-center w-100">
+                                                    <h:outputLabel value="Custom Bill 3 - Not Claimable Copies" class="mt-2"/>
+                                                    <div class="d-flex gap-2">
+                                                        <p:commandButton id="btnReprintC3NoClaimPatient" value="Not Claimable - Patient Copy without Professional" type="button"
+                                                                         styleClass="ui-button-info" icon="fas fa-print"
+                                                                         title="Custom Bill 3: Not Claimable - Patient Copy without Professional"
+                                                                         onclick="printCustom4Bill('#{p:resolveFirstComponentWithId('reprintC3NoClaimPatient',view).clientId}', '#{resource['js:paged.polyfill.js']}'); return false;" />
+                                                        <p:commandButton id="btnReprintC3NoClaimHospital" value="Not Claimable - Hospital Copy without Professional" type="button"
+                                                                         styleClass="ui-button-info" icon="fas fa-print"
+                                                                         title="Custom Bill 3: Not Claimable - Hospital Copy without Professional"
+                                                                         onclick="printCustom4Bill('#{p:resolveFirstComponentWithId('reprintC3NoClaimHospital',view).clientId}', '#{resource['js:paged.polyfill.js']}'); return false;" />
+                                                        <p:commandButton id="btnReprintC3NoClaimDuplicate" value="Not Claimable - Duplicate Copy without Professional" type="button"
+                                                                         styleClass="ui-button-info" icon="fas fa-print"
+                                                                         title="Custom Bill 3: Not Claimable - Duplicate Copy without Professional"
+                                                                         onclick="printCustom4Bill('#{p:resolveFirstComponentWithId('reprintC3NoClaimDuplicate',view).clientId}', '#{resource['js:paged.polyfill.js']}'); return false;" />
+                                                        <p:commandButton id="btnReprintC3ProfessionalFees" value="Not Claimable - Professional Fees" ajax="false"
+                                                                         styleClass="ui-button-info" icon="fas fa-print"
+                                                                         title="Professional Fees copy">
+                                                            <p:printer target="reprintC3ProfessionalFees"/>
+                                                        </p:commandButton>
+                                                    </div>
+                                                </div>
+                                            </f:facet>
+
+                                            <bi:unapprovedHeading bill="#{inwardSearch.bill}" />
+
+                                            <h:panelGroup id="reprintC3NoClaimPatient" styleClass="noBorder custom4BillWrapper">
+                                                <bi:finalBillCustom4 bill="#{inwardSearch.showOrginalBill ? inwardSearch.bill.referenceBill : inwardSearch.bill}" duplicate="false" showProfessional="false"/>
+                                            </h:panelGroup>
+                                            <h:panelGroup id="reprintC3NoClaimHospital" styleClass="noBorder custom4BillWrapper">
+                                                <bi:finalBillCustom4 bill="#{inwardSearch.showOrginalBill ? inwardSearch.bill.referenceBill : inwardSearch.bill}" hosCopy="true" duplicate="false" showProfessional="false"/>
+                                            </h:panelGroup>
+                                            <h:panelGroup id="reprintC3NoClaimDuplicate" styleClass="noBorder custom4BillWrapper">
+                                                <bi:finalBillCustom4 bill="#{inwardSearch.showOrginalBill ? inwardSearch.bill.referenceBill : inwardSearch.bill}" duplicate="true" showProfessional="false"/>
+                                            </h:panelGroup>
+                                            <h:panelGroup id="reprintC3ProfessionalFees" styleClass="noBorder">
+                                                <bi:finalProfessionalBill bill="#{inwardSearch.showOrginalBill ? inwardSearch.bill.referenceBill : inwardSearch.bill}"/>
+                                            </h:panelGroup>
+                                        </p:panel>
+                                    </h:panelGroup>
 
                                     <!-- Custom Bill 4 copy sets, same copies and same keys as the settle page (inward_bill_final.xhtml) -->
                                     <h:panelGroup layout="block" styleClass="mt-3" rendered="#{configOptionApplicationController.getBooleanValueByKey('Inward Final Bill - Custom Bill 4 - Show Claimable Copies', false)}">
