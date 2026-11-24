@@ -27,8 +27,8 @@ class InwardCreditFiguresTest {
     private final Map<Long, Map<Long, double[]>> commitments = new HashMap<>();
     private boolean failQueries;
     private final Map<Long, Double> patientPaid = new HashMap<>();
-    /** "finalBillId:companyId" of commitments whose receipt used PaymentMethod.Card */
-    private final List<Object[]> cardReceipts = new ArrayList<>();
+    /** {finalBillId, companyId, PaymentMethod} of each non-cancelled company receipt */
+    private final List<Object[]> companyReceipts = new ArrayList<>();
 
     private final BillFacade billFacade = new BillFacade() {
         @Override
@@ -37,8 +37,14 @@ class InwardCreditFiguresTest {
             if (failQueries) {
                 return null;
             }
-            if (jpql.contains("paidBill.paymentMethod")) {
-                return cardReceipts;
+            if (jpql.contains("bi.bill.paymentMethod")) {
+                assertTrue(jpql.contains("bi.bill.cancelled = false"));
+                for (Object[] r : companyReceipts) {
+                    if (r[2] == parameters.get("pm")) {
+                        out.add(new Object[]{r[0], r[1]});
+                    }
+                }
+                return out;
             }
             if (jpql.contains("InwardPaymentBill") || parameters.containsKey("btp")) {
                 for (Object id : (List<?>) parameters.get("ids")) {
@@ -194,10 +200,32 @@ class InwardCreditFiguresTest {
         company(1, "A");
         company(2, "B");
         PatientEncounter pe = admission(16, 1000, 200, new double[]{1, 400, 100}, new double[]{2, 300, 300});
-        cardReceipts.add(new Object[]{pe.getFinalBill().getId(), 2L});
+        companyReceipts.add(new Object[]{pe.getFinalBill().getId(), 2L, PaymentMethod.Card});
+        companyReceipts.add(new Object[]{pe.getFinalBill().getId(), 1L, PaymentMethod.Cash});
         List<InstitutionBillEncounter> r = figures.buildReportRows(Arrays.asList(pe), "any", "any", null, PaymentMethod.Card);
         assertEquals(1, r.size());
         assertEquals("B", r.get(0).getInstitution().getName());
+        assertEquals(300, r.get(0).getPaidByCompany(), D); // figures stay the company totals
+        r = figures.buildReportRows(Arrays.asList(pe), "any", "any", null, PaymentMethod.Cash);
+        assertEquals(1, r.size());
+        assertEquals("A", r.get(0).getInstitution().getName());
+        assertEquals(100, r.get(0).getPaidByCompany(), D);
+        r = figures.buildReportRows(Arrays.asList(pe), "any", "any", null, PaymentMethod.Cheque);
+        assertEquals(0, r.size());
+    }
+
+    @Test
+    void companyFilterRowCarriesTheSelectedCompanysOwnPaid() {
+        Institution a = company(1, "A");
+        company(2, "B");
+        PatientEncounter pe = admission(18, 1000, 200, new double[]{1, 400, 100}, new double[]{2, 300, 300});
+        List<InstitutionBillEncounter> r = figures.buildReportRows(Arrays.asList(pe), "any", "any", a, null);
+        assertEquals(1, r.size());
+        assertEquals(100, r.get(0).getPaidByCompany(), D);
+        assertEquals(400, r.get(0).getTotalPaidByCompanies(), D); // all companies, before the debtor report narrows it
+        InwardCreditFigures.showSelectedCompanyPaid(r);
+        assertEquals(100, r.get(0).getTotalPaidByCompanies(), D);
+        assertEquals(400, r.get(0).getTotalDue(), D); // total due is unchanged
     }
 
     @Test

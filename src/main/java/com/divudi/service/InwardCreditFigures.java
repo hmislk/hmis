@@ -1,7 +1,9 @@
 package com.divudi.service;
 
+import com.divudi.core.data.BillCategory;
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.BillTypeAtomic;
+import com.divudi.core.data.CountedServiceType;
 import com.divudi.core.data.PaymentMethod;
 import com.divudi.core.data.dataStructure.InstitutionBillEncounter;
 import com.divudi.core.entity.Institution;
@@ -340,8 +342,8 @@ public class InwardCreditFigures implements Serializable {
     }
 
     /**
-     * Commitment bills of these final bills whose payment bill used the given
-     * method, as "finalBillId:companyId" keys (companyId "none" when the bill
+     * Commitment bills of these final bills that have a non-cancelled company
+     * payment (receipt) bill paid by the given method, as "finalBillId:companyId" keys (companyId "none" when the bill
      * has no company). Used by the report payment-method filter.
      */
     public Set<String> commitmentKeysPaidBy(List<PatientEncounter> encounters, PaymentMethod method) {
@@ -358,16 +360,22 @@ public class InwardCreditFigures implements Serializable {
         }
         for (int from = 0; from < finalBillIds.size(); from += 500) {
             List<Long> chunk = finalBillIds.subList(from, Math.min(from + 500, finalBillIds.size()));
-            String jpql = "SELECT DISTINCT c.referenceBill.id, cc.id FROM Bill c"
+            String jpql = "SELECT DISTINCT c.referenceBill.id, cc.id FROM BillItem bi"
+                    + " JOIN bi.referenceBill c"
                     + " LEFT JOIN c.creditCompany cc"
                     + " WHERE c.billTypeAtomic = :bta"
                     + " AND c.referenceBill.id IN :ids"
                     + " AND c.cancelled = false"
                     + " AND c.retired = false"
-                    + " AND c.paidBill.paymentMethod = :pm";
+                    + " AND bi.retired = false"
+                    + " AND bi.bill.billTypeAtomic IN :receiptTypes"
+                    + " AND bi.bill.cancelled = false"
+                    + " AND bi.bill.retired = false"
+                    + " AND bi.bill.paymentMethod = :pm";
             Map<String, Object> params = new HashMap<>();
             params.put("bta", BillTypeAtomic.INWARD_FINAL_BILL_PAYMENT_BY_CREDIT_COMPANY);
             params.put("ids", new ArrayList<>(chunk));
+            params.put("receiptTypes", companyReceiptTypes());
             params.put("pm", method);
             List<Object[]> rows = billFacade.findAggregates(jpql, params);
             if (rows == null) {
@@ -378,6 +386,21 @@ public class InwardCreditFigures implements Serializable {
             }
         }
         return keys;
+    }
+
+    /**
+     * The receipt bill types the company paid figure is built from (the
+     * CREDIT_SETTLE_BY_COMPANY types, see CreditBean.getSettledAmountByCompany),
+     * leaving out the cancellation and refund types.
+     */
+    private static List<BillTypeAtomic> companyReceiptTypes() {
+        List<BillTypeAtomic> types = new ArrayList<>();
+        for (BillTypeAtomic t : BillTypeAtomic.findByCountedServiceType(CountedServiceType.CREDIT_SETTLE_BY_COMPANY)) {
+            if (t.getBillCategory() == BillCategory.BILL) {
+                types.add(t);
+            }
+        }
+        return types;
     }
 
     private static String commitmentKey(Long finalBillId, Long companyId) {
@@ -466,6 +489,20 @@ public class InwardCreditFigures implements Serializable {
             rows.addAll(admissionRows);
         }
         return rows;
+    }
+
+    /**
+     * For a report filtered to one credit company: Paid by Companies shows that
+     * company's own paid figure instead of the admission's total paid by all
+     * companies (#26071). Total due is not touched.
+     */
+    public static void showSelectedCompanyPaid(List<InstitutionBillEncounter> rows) {
+        if (rows == null) {
+            return;
+        }
+        for (InstitutionBillEncounter r : rows) {
+            r.setTotalPaidByCompanies(r.getPaidByCompany());
+        }
     }
 
     private static boolean paidByMethod(Set<String> methodKeys, PatientEncounter pe, Institution company) {
