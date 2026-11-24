@@ -1846,7 +1846,7 @@ public class BhtSummeryController implements Serializable {
      * A null date counts only in a window with no end (the stretch in force now).
      * With both bounds null every date is in the window (#25814).
      */
-    private static boolean inWindow(Date date, Date from, Date to) {
+    public static boolean inWindow(Date date, Date from, Date to) {
         if (from == null && to == null) {
             return true;
         }

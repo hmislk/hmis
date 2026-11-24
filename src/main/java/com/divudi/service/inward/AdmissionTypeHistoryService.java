@@ -20,6 +20,9 @@ import javax.ejb.Stateless;
 /**
  * The dated history of an admission's type, and the change itself (#25814).
  *
+ * <p>A change takes effect at the start of the calendar day it was made on
+ * (see {@link AdmissionTypeTimeline}).
+ *
  * <p>Bill-time calculations ask {@link #timelineFor} for the type in force at
  * a date. An admission with no history rows answers with its current type for
  * every date, so nothing changes for admissions that were never converted.
@@ -126,10 +129,20 @@ public class AdmissionTypeHistoryService {
      * @throws AdmissionTypeChangeException when the change is refused
      */
     public void changeAdmissionType(PatientEncounter encounterRef, AdmissionType newType, String reason, WebUser user) {
+        changeAdmissionType(encounterRef, newType, reason, user, null);
+    }
+
+    /**
+     * As above. The admission row is locked for the transaction, so two saves at
+     * once run one after the other; when the page showed a type
+     * ({@code expectedCurrentType}) and the admission now has another, the change
+     * is refused instead of writing a second history row on stale data.
+     */
+    public void changeAdmissionType(PatientEncounter encounterRef, AdmissionType newType, String reason, WebUser user, AdmissionType expectedCurrentType) {
         if (encounterRef == null || encounterRef.getId() == null) {
             throw new AdmissionTypeChangeException("No admission selected.");
         }
-        PatientEncounter encounter = patientEncounterFacade.find(encounterRef.getId());
+        PatientEncounter encounter = patientEncounterFacade.findWithLock(encounterRef.getId());
         if (encounter == null) {
             throw new AdmissionTypeChangeException("Admission not found.");
         }
@@ -140,6 +153,10 @@ public class AdmissionTypeHistoryService {
             throw new AdmissionTypeChangeException("Enter the reason for the change.");
         }
         AdmissionType oldType = encounter.getAdmissionType();
+        if (expectedCurrentType != null && expectedCurrentType.getId() != null
+                && (oldType == null || !expectedCurrentType.getId().equals(oldType.getId()))) {
+            throw new AdmissionTypeChangeException("The admission type was changed by someone else. Open the Change Admission Type page again.");
+        }
         if (oldType != null && oldType.getId() != null && oldType.getId().equals(newType.getId())) {
             throw new AdmissionTypeChangeException("The admission already has this admission type.");
         }
@@ -154,6 +171,9 @@ public class AdmissionTypeHistoryService {
         }
 
         Date now = new Date();
+        if (encounter.getDateOfAdmission() != null && encounter.getDateOfAdmission().after(now)) {
+            throw new AdmissionTypeChangeException("The admission date is in the future. The admission type cannot be changed yet.");
+        }
         String cleanReason = reason.trim();
         List<AdmissionTypeHistory> rows = fetchHistory(encounter);
         if (rows.isEmpty()) {

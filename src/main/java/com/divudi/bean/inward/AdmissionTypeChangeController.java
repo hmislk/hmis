@@ -47,6 +47,7 @@ public class AdmissionTypeChangeController implements Serializable {
 
     private PatientEncounter admission;
     private AdmissionType newType;
+    private AdmissionType shownType;
     private String reason;
     private long interimBillCount;
     private List<AdmissionType> choices = new ArrayList<>();
@@ -74,6 +75,7 @@ public class AdmissionTypeChangeController implements Serializable {
             return "";
         }
         admission = fresh;
+        shownType = fresh.getAdmissionType();
         newType = null;
         reason = null;
         interimBillCount = admissionTypeHistoryService.countInterimBills(fresh);
@@ -105,7 +107,7 @@ public class AdmissionTypeChangeController implements Serializable {
             return "";
         }
         try {
-            admissionTypeHistoryService.changeAdmissionType(admission, newType, reason, sessionController.getLoggedUser());
+            admissionTypeHistoryService.changeAdmissionType(admission, newType, reason, sessionController.getLoggedUser(), shownType);
         } catch (AdmissionTypeChangeException e) {
             JsfUtil.addErrorMessage(e.getMessage());
             return "";
