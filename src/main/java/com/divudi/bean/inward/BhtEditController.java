@@ -308,7 +308,8 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
         encounterCreditCompanys = new ArrayList<>();
         String sql = "select ecc from EncounterCreditCompany ecc"
                 + "  where ecc.retired=false "
-                + " and ecc.patientEncounter=:pEnc ";
+                + " and ecc.patientEncounter=:pEnc "
+                + " order by ecc.id ";
         HashMap hm = new HashMap();
         hm.put("pEnc", current);
         encounterCreditCompanys = encounterCreditCompanyFacade.findByJpql(sql, hm);
@@ -343,6 +344,11 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
 
     private void syncAdmissionCompanyWithList() {
         if (encounterCreditCompanys == null || encounterCreditCompanys.isEmpty()) {
+            return;
+        }
+        // Replace only a missing or unlisted company; a valid company that is in
+        // the list stays as the billed company.
+        if (current.getCreditCompany() != null && getUnlistedAdmissionCompany() == null) {
             return;
         }
         Institution first = encounterCreditCompanys.get(0).getInstitution();
@@ -384,10 +390,13 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
         before.put("admissionCreditCompany", unlisted.getName());
         current.setCreditCompany(null);
         getEjbFacade().edit(current);
-        auditService.logEncounterAudit(current, "Admission Credit Company Cleared",
-                before, new HashMap<String, Object>(), sessionController.getLoggedUser(),
-                "PatientEncounter", current.getId());
         syncAdmissionCompanyWithList();
+        Map<String, Object> after = new HashMap<>();
+        after.put("admissionCreditCompany",
+                current.getCreditCompany() != null ? current.getCreditCompany().getName() : null);
+        auditService.logEncounterAudit(current, "Admission Credit Company Cleared",
+                before, after, sessionController.getLoggedUser(),
+                "PatientEncounter", current.getId());
         JsfUtil.addSuccessMessage("Company removed from the admission");
     }
 
