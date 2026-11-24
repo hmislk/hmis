@@ -2479,6 +2479,66 @@ public class PharmacySaleBhtController implements Serializable {
         bi.setAdjustedValue(bi.getNetValue());
     }
 
+    /**
+     * The inward discount-matrix amount for one line (#23220), as a positive
+     * currency value to subtract from the net value. Used by the request issue
+     * save (updateMargin) and by the request issue screen (calculateRates), so
+     * the screen shows what the save will charge (#26055).
+     */
+    private double inwardDiscountValue(BillItem bi, Department matrixDepartment, PaymentMethod paymentMethod, PatientEncounter encounter) {
+        try {
+            Item item = bi.getItem();
+            if (item != null && matrixDepartment != null && priceMatrixNativeSqlService.isDiscountAllowed(item.getId())) {
+                Long schemeId = encounter != null && encounter.getPaymentScheme() != null ? encounter.getPaymentScheme().getId() : null;
+                Long admTypeId = encounter != null && encounter.getAdmissionType() != null ? encounter.getAdmissionType().getId() : null;
+                String pmName = paymentMethod != null ? paymentMethod.name() : null;
+                double discountPct = priceMatrixNativeSqlService.getInwardDiscountPct(item.getId(), pmName, schemeId, admTypeId, matrixDepartment.getId());
+                // Gross value in this flow is stored positive, so the discount is
+                // a positive amount subtracted from the net value.
+                return (discountPct / 100.0) * Math.abs(bi.getGrossValue());
+            }
+        } catch (Exception e) {
+            LOGGER.log(Level.WARNING, "[updateMargin] inward discount lookup failed for billItem id={0}", bi.getId());
+        }
+        return 0.0;
+    }
+
+    /** The request issue page; its save (settlePharmacyBhtIssueAccept) discounts every line. */
+    private static final String REQUEST_ISSUE_VIEW_ID = "/ward/ward_pharmacy_bht_issue.xhtml";
+
+    /**
+     * On the request issue screen only, take off the same inward discount the
+     * save will take off, so Net Value matches the saved bill (#26055). That
+     * covers lines that came from the request (built before the page opens, so
+     * they are recognised by their request line) and lines added or substituted
+     * on the page itself. Direct, discharge and theatre issues save the screen
+     * values as they are and keep no discount here.
+     */
+    private void applyRequestIssueDiscountToPreview(BillItem bi, Department matrixDept, PaymentMethod paymentMethod) {
+        if (dischargeIssueMode || (bi.getReferanceBillItem() == null && !onRequestIssuePage())) {
+            return;
+        }
+        double discount = inwardDiscountValue(bi, matrixDept, paymentMethod, getPatientEncounter());
+        if (discount == 0.0) {
+            return;
+        }
+        double net = bi.getGrossValue() + bi.getMarginValue() - discount;
+        bi.setDiscount(discount);
+        bi.setNetValue(net);
+        bi.setAdjustedValue(net);
+        double unitQty = Math.abs(bi.getQty());
+        if (unitQty > 0) {
+            bi.setDiscountRate(discount / unitQty);
+            bi.setNetRate(net / unitQty);
+        }
+    }
+
+    private boolean onRequestIssuePage() {
+        FacesContext fc = FacesContext.getCurrentInstance();
+        return fc != null && fc.getViewRoot() != null
+                && REQUEST_ISSUE_VIEW_ID.equals(fc.getViewRoot().getViewId());
+    }
+
     @Deprecated
     public void updateMargin(List<BillItem> billItems, Bill bill, Department matrixDepartment, PaymentMethod paymentMethod) {
         double total = 0;
@@ -2514,23 +2574,7 @@ public class PharmacySaleBhtController implements Serializable {
             // PharmacyPreSettleController.calTotal()/settle() and
             // BhtIssueReturnController/IssueReturnController elsewhere in
             // this codebase: netValue = grossValue [+ marginValue] - discount.
-            double discountValue = 0.0;
-            try {
-                Item item = bi.getItem();
-                if (item != null && matrixDepartment != null && priceMatrixNativeSqlService.isDiscountAllowed(item.getId())) {
-                    Long schemeId = encounter != null && encounter.getPaymentScheme() != null ? encounter.getPaymentScheme().getId() : null;
-                    Long admTypeId = encounter != null && encounter.getAdmissionType() != null ? encounter.getAdmissionType().getId() : null;
-                    String pmName = paymentMethod != null ? paymentMethod.name() : null;
-                    double discountPct = priceMatrixNativeSqlService.getInwardDiscountPct(item.getId(), pmName, schemeId, admTypeId, matrixDepartment.getId());
-                    // Gross value in this flow is stored positive (see the
-                    // margin calculation above, which ADDS to netValue), so
-                    // the discount amount is likewise computed and applied
-                    // as a positive currency value subtracted from netValue.
-                    discountValue = (discountPct / 100.0) * Math.abs(bi.getGrossValue());
-                }
-            } catch (Exception e) {
-                LOGGER.log(Level.WARNING, "[updateMargin] inward discount lookup failed for billItem id={0}", bi.getId());
-            }
+            double discountValue = inwardDiscountValue(bi, matrixDepartment, paymentMethod, encounter);
             bi.setDiscount(discountValue);
 
             bi.setNetValue(bi.getGrossValue() + bi.getMarginValue() - bi.getDiscount());
@@ -3114,6 +3158,7 @@ public class PharmacySaleBhtController implements Serializable {
         bi.setNetRate(originalRate + marginRate);
         bi.setAdjustedValue(netValue);
         bi.setDiscount(0);
+        applyRequestIssueDiscountToPreview(bi, matrixDept, paymentMethod);
 
         if (LOGGER.isLoggable(Level.FINE)) {
             LOGGER.log(Level.FINE, "[calculateRates] TOTAL: {0}ms",
@@ -3155,6 +3200,7 @@ public class PharmacySaleBhtController implements Serializable {
         bi.setNetRate(retailRate + marginRate);
         bi.setAdjustedValue(netValue);
         bi.setDiscount(0);
+        applyRequestIssueDiscountToPreview(bi, matrixDept, paymentMethod);
     }
 
     /**
