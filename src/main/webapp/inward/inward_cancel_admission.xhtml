@@ -26,6 +26,7 @@
                             <p:commandButton
                                 value="Inpatient Dashboard"
                                 icon="fa fa-id-card"
+                                title="Back to the Inpatient Dashboard"
                                 ajax="false"
                                 action="#{admissionController.navigateToAdmissionProfilePage}"
                                 class="ui-button-secondary">
@@ -136,6 +137,7 @@
                                         class="ui-button-danger"
                                         icon="fas fa-ban"
                                         value="Cancel Admission"
+                                        title="Cancel this admission; it cannot be undone"
                                         action="#{bhtEditController.cancelBht}"
                                         ajax="false"
                                         onclick="return confirm('Are you sure you want to cancel admission for #{bhtEditController.current.patient.person.nameWithTitle} (BHT: #{bhtEditController.current.bhtNo})? This action cannot be undone.');"
