@@ -4,6 +4,7 @@
  */
 package com.divudi.bean.common;
 
+import com.divudi.service.CreditCompanyClaimService;
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.PaymentMethod;
@@ -1376,7 +1377,11 @@ public class CreditCompanyDueController implements Serializable {
             items = new ArrayList<>();
             paymentSelectionMap = new HashMap<>();
             for (Institution ins : setIns) {
-                List<Payment> payments = getCreditBean().getCreditPayments(ins, btas, getFromDate(), getToDate(), true);
+                List<Payment> payments = new ArrayList<>(getCreditBean().getCreditPayments(ins, btas, getFromDate(), getToDate(), true));
+                // Same cut-off as Create Claim: due to 2 decimal places, above 0.10 (#25873).
+                payments.removeIf(p -> p.getBill() != null
+                        && CreditCompanyClaimService.dueDecimalOf(p.getBill())
+                                .compareTo(java.math.BigDecimal.valueOf(CreditCompanyClaimService.MIN_DUE)) <= 0);
                 InstitutionBills newIns = new InstitutionBills();
                 newIns.setInstitution(ins);
                 newIns.setPayments(payments);

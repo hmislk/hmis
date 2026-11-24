@@ -34,6 +34,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
+import javax.enterprise.context.ContextNotActiveException;
+import javax.inject.Inject;
 
 /**
  * Claims sent to credit companies for OPD credit bills (#25847). Business
@@ -61,6 +63,27 @@ public class CreditCompanyClaimService {
     private BillService billService;
     @EJB
     private CreditCompanyWriteOffService writeOffService;
+    @Inject
+    private ClaimBillRequestGuard requestGuard;
+
+    /** Shown when Create Claim and a refund, return or cancel reach the same bill at once (#25873). */
+    public static final String BILL_BUSY = "Another user is creating a claim for, or changing, this bill right now. Try again in a moment.";
+
+    /**
+     * Takes the bill for this request until it ends, so Create Claim and a refund,
+     * return or cancel of the bill cannot run at once (#25873). Outside a web
+     * request there is no page action to race with.
+     */
+    private boolean takeBill(Long billId) {
+        if (requestGuard == null) {
+            return true;
+        }
+        try {
+            return requestGuard.acquire(billId);
+        } catch (ContextNotActiveException e) {
+            return true;
+        }
+    }
 
     /** Due = net total less refunds less settlements (as OPD Due Search). */
     public static double dueOf(Bill bill) {
@@ -144,6 +167,19 @@ public class CreditCompanyClaimService {
         }
         if (company == null || company.getId() == null) {
             throw new CreditCompanyClaimException("Select the credit company.");
+        }
+        // Before any check: a refund, return or cancel of one of these bills that is under way
+        // holds it until its request ends, and one that starts now is refused (#25873).
+        Set<Long> toTake = new TreeSet<>();
+        for (Long id : billIds) {
+            if (id != null) {
+                toTake.add(id);
+            }
+        }
+        for (Long id : toTake) {
+            if (!takeBill(id)) {
+                throw new CreditCompanyClaimException("A selected bill is being refunded, returned or cancelled by another user right now. Try again in a moment.");
+            }
         }
         // Must be the first database call: serialises claim creation per company,
         // so two overlapping requests cannot put one bill in two open claims.
@@ -268,6 +304,11 @@ public class CreditCompanyClaimService {
             }
             for (Bill x : new Bill[]{b, b.getBackwardReferenceBill(), b.getBilledBill(), b.getReferenceBill()}) {
                 if (x != null && x.getId() != null) {
+                    // Taken before the check and kept to the end of the request, so a claim
+                    // cannot be created for the bill between this check and the save (#25873).
+                    if (!takeBill(x.getId())) {
+                        return BILL_BUSY;
+                    }
                     String no;
                     try {
                         no = openClaimNoFor(x.getId());
