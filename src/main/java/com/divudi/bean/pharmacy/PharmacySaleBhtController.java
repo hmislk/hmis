@@ -2381,8 +2381,13 @@ public class PharmacySaleBhtController implements Serializable {
             // Nothing was saved, but the in-memory bill and lines may carry ids and
             // flags from the rolled-back attempt. Rebuild the screen from the request.
             reloadIssueFromRequestAfterRollback();
-            JsfUtil.addErrorMessage("The issue was not saved and no stock was moved. The list was reloaded from the request; check it and issue again. Error: "
-                    + rootCauseMessage(e));
+            // Skip the cause when a step already showed it (e.g. insufficient stock).
+            String cause = rootCauseMessage(e);
+            FacesContext fc = FacesContext.getCurrentInstance();
+            boolean causeShown = fc != null && fc.getMessageList().stream()
+                    .anyMatch(m -> cause.equals(m.getSummary()));
+            JsfUtil.addErrorMessage("The issue was not saved and no stock was moved. The list was reloaded from the request; check it and issue again."
+                    + (causeShown ? "" : " Error: " + cause));
             return false;
         }
 
