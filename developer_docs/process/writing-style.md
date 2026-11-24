@@ -21,6 +21,30 @@ issues, PR bodies, comments and docs.
 7. **Numbers and facts over adjectives.** "3 of 4 buttons" beats "several".
 8. **Business-rule docs are not narrative.** A business rule states the current practice only. Decisions, history, reasons for change and customer communication go in the issue, the PR or `tmp/`, never in the rule doc.
 
+## Simplified Technical English (ASD-STE100)
+
+Hub messages, asks to the user and Telegram replies follow ASD-STE100
+(team request, 24 Nov 2026). Target: 80% of sentences obey all rules.
+
+1. An instruction has 20 words or fewer. A description has 25 words or fewer.
+2. Write one instruction or one fact in one sentence.
+3. Use the active voice ("Tharu merged PR 26064").
+4. Use simple tenses only: present, simple past, future. No -ing verb forms.
+5. Write the subject first and the result before the details.
+6. Use one word for one thing. Use the words on the screen.
+7. No method names, class names, commit codes or code in text for the user.
+8. A paragraph has 6 sentences or fewer. Use a numbered list for steps.
+9. Write full words, not short forms ("review", not "REV"; "test in the app", not "e2e").
+10. Write full sentences with "the" and "a". Do not write in note form.
+11. When you give a PR or issue number, say what it is: "PR 26067 (inpatient due reports)".
+12. Put gate words, commit codes and code names on the last line, after the label "For sessions:".
+
+Fixed gate words such as "REV OK <sha>" on a PR stay exactly as written.
+
+Measure: once a week one session scores 10 random hub messages (sentences
+that obey all rules / all sentences) and reports the score to the user. If
+the user replies "unclear", the sender rewrites the message.
+
 ## Length guide
 
 | Where | Aim |
