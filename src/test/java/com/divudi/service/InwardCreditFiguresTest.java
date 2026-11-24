@@ -25,6 +25,7 @@ class InwardCreditFiguresTest {
     private final Map<Long, Institution> companies = new HashMap<>();
     /** final bill id -> company id -> {committed, paid} */
     private final Map<Long, Map<Long, double[]>> commitments = new HashMap<>();
+    private boolean failQueries;
     private final Map<Long, Double> patientPaid = new HashMap<>();
     /** "finalBillId:companyId" of commitments whose receipt used PaymentMethod.Card */
     private final List<Object[]> cardReceipts = new ArrayList<>();
@@ -33,6 +34,9 @@ class InwardCreditFiguresTest {
         @Override
         public List<Object[]> findAggregates(String jpql, Map<String, Object> parameters) {
             List<Object[]> out = new ArrayList<>();
+            if (failQueries) {
+                return null;
+            }
             if (jpql.contains("paidBill.paymentMethod")) {
                 return cardReceipts;
             }
@@ -114,16 +118,18 @@ class InwardCreditFiguresTest {
         assertEquals(2, r.size());
         double patientDue = 0;
         double companyDue = 0;
+        double paidByPatient = 0;
         for (InstitutionBillEncounter x : r) {
             patientDue += x.getPatientDue();
             companyDue += x.getCompanyDue();
             assertEquals(1000, x.getNetTotal(), D);
-            assertEquals(200, x.getPaidByPatient(), D);
+            paidByPatient += x.getPaidByPatient();
             assertEquals(400, x.getTotalPaidByCompanies(), D);
             assertEquals(400, x.getTotalDue(), D);
             assertEquals(300, x.getPatientGopAmount(), D);
         }
         assertEquals(100, patientDue, D);
+        assertEquals(200, paidByPatient, D);
         assertEquals(300, companyDue, D);
     }
 
@@ -131,12 +137,12 @@ class InwardCreditFiguresTest {
     void dueFilterKeepsOnlyRowsWithSomethingDue() {
         company(1, "A");
         company(2, "B");
-        PatientEncounter pe = admission(10, 1000, 200, new double[]{1, 400, 100}, new double[]{2, 300, 300});
+        PatientEncounter pe = admission(10, 1000, 300, new double[]{1, 400, 100}, new double[]{2, 300, 300});
         List<InstitutionBillEncounter> r = rows(Arrays.asList(pe), "due", "any", null);
         assertEquals(1, r.size());
         assertEquals("A", r.get(0).getInstitution().getName());
         assertEquals(300, r.get(0).getCompanyDue(), D);
-        assertEquals(100, r.get(0).getPatientDue(), D);
+        assertEquals(0, r.get(0).getPatientDue(), D);
         assertEquals(100, r.get(0).getPaidByCompany(), D);
         assertEquals(400, r.get(0).getGopAmount(), D);
     }
@@ -222,5 +228,59 @@ class InwardCreditFiguresTest {
         InstitutionBillEncounter row = rows(Arrays.asList(pe), "any", "any", null).get(0);
         assertEquals(0, row.getPatientDue(), 0.0);
         assertEquals(0, row.getPatientExcess(), 0.0);
+    }
+
+    @Test
+    void patientPaidIsShownOnTheFirstListedRowOnly() {
+        company(1, "A");
+        company(2, "B");
+        PatientEncounter pe = admission(20, 1000, 200, new double[]{1, 400, 100}, new double[]{2, 300, 300});
+        List<InstitutionBillEncounter> r = rows(Arrays.asList(pe), "any", "any", null);
+        assertEquals(2, r.size());
+        assertEquals(200, r.get(0).getPaidByPatient() + r.get(1).getPaidByPatient(), D);
+        assertEquals(200, r.get(0).getPaidByPatient(), D);
+        assertEquals(0, r.get(1).getPaidByPatient(), D);
+    }
+
+    private List<String> dueListing(long idOfDueCompany, long idOfSettledCompany) {
+        company(idOfDueCompany, "Due");
+        company(idOfSettledCompany, "Settled");
+        PatientEncounter pe = admission(30 + idOfDueCompany, 1000, 200,
+                new double[]{idOfDueCompany, 400, 100}, new double[]{idOfSettledCompany, 300, 300});
+        List<String> names = new ArrayList<>();
+        for (InstitutionBillEncounter x : rows(Arrays.asList(pe), "due", "any", null)) {
+            names.add(x.getInstitution().getName());
+        }
+        java.util.Collections.sort(names);
+        return names;
+    }
+
+    @Test
+    void listedRowsDoNotDependOnCompanyOrder() {
+        assertEquals(dueListing(1, 2), dueListing(2, 1));
+    }
+
+    @Test
+    void settledCompanyIsNotListedWhenNothingIsDueToThePatient() {
+        company(1, "A");
+        company(2, "B");
+        PatientEncounter first = admission(40, 1000, 300, new double[]{1, 400, 100}, new double[]{2, 300, 300});
+        PatientEncounter reversed = admission(41, 1000, 300, new double[]{2, 400, 100}, new double[]{1, 300, 300});
+        assertEquals(1, rows(Arrays.asList(first), "due", "any", null).size());
+        assertEquals(1, rows(Arrays.asList(reversed), "due", "any", null).size());
+    }
+
+    @Test
+    void failedQueryGivesNoRowsInsteadOfLegacyFigures() {
+        Institution a = company(1, "A");
+        company(2, "B");
+        PatientEncounter pe = admission(50, 1000, 0, new double[]{1, 400, 0}, new double[]{2, 600, 0});
+        pe.setPaymentMethod(PaymentMethod.Credit);
+        pe.setCreditCompany(a);
+        pe.setCreditUsedAmount(400);
+        failQueries = true;
+        assertTrue(rows(Arrays.asList(pe), "any", "any", null).isEmpty());
+        failQueries = false;
+        assertEquals(2, rows(Arrays.asList(pe), "any", "any", null).size());
     }
 }

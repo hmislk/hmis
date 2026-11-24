@@ -55,6 +55,9 @@ public class InwardCreditFigures implements Serializable {
 
     private final Map<Long, Institution> institutionsById = new HashMap<>();
 
+    /** Final bills whose commitment query failed; they have no figures (not legacy ones) until the next load(). */
+    private final Set<Long> failedFinalBillIds = new HashSet<>();
+
     public InwardCreditFigures(BillFacade billFacade, InstitutionFacade institutionFacade) {
         this.billFacade = billFacade;
         this.institutionFacade = institutionFacade;
@@ -95,6 +98,7 @@ public class InwardCreditFigures implements Serializable {
         ccCompanyRawByFinalBillId.clear();
         ccCompanyMergedByFinalBillId.clear();
         patientPaidByEncounterId.clear();
+        failedFinalBillIds.clear();
         add(encounters);
     }
 
@@ -128,7 +132,9 @@ public class InwardCreditFigures implements Serializable {
             for (Long id : chunk) {
                 ccFiguresByFinalBillId.put(id, new double[0]);
             }
-            putCcFigures(chunk);
+            if (!putCcFigures(chunk)) {
+                failedFinalBillIds.addAll(chunk);
+            }
         }
     }
 
@@ -162,7 +168,8 @@ public class InwardCreditFigures implements Serializable {
         }
     }
 
-    private void putCcFigures(List<Long> finalBillIds) {
+    /** @return false when a query failed (findAggregates returns null then), so the caller must not treat the bills as having no commitments */
+    private boolean putCcFigures(List<Long> finalBillIds) {
         String jpql = "SELECT c.referenceBill.id, SUM(c.netTotal), SUM(c.settledAmountBySponsor) FROM Bill c"
                 + " WHERE c.billTypeAtomic = :bta"
                 + " AND c.referenceBill.id IN :ids"
@@ -174,7 +181,7 @@ public class InwardCreditFigures implements Serializable {
         params.put("ids", new ArrayList<>(finalBillIds));
         List<Object[]> rows = billFacade.findAggregates(jpql, params);
         if (rows == null) {
-            return;
+            return false;
         }
         for (Object[] row : rows) {
             Long id = (Long) row[0];
@@ -182,7 +189,7 @@ public class InwardCreditFigures implements Serializable {
             double paid = row[2] == null ? 0.0 : ((Number) row[2]).doubleValue();
             ccFiguresByFinalBillId.put(id, new double[]{committed, paid});
         }
-        putCcCompanyFigures(finalBillIds);
+        return putCcCompanyFigures(finalBillIds);
     }
 
     /**
@@ -191,7 +198,7 @@ public class InwardCreditFigures implements Serializable {
      * bill and commitment bill company. A bill with no company is kept under a
      * null company id so the split always adds up to the admission total.
      */
-    private void putCcCompanyFigures(List<Long> finalBillIds) {
+    private boolean putCcCompanyFigures(List<Long> finalBillIds) {
         String jpql = "SELECT c.referenceBill.id, cc.id, SUM(c.netTotal), SUM(c.settledAmountBySponsor) FROM Bill c"
                 + " LEFT JOIN c.creditCompany cc"
                 + " WHERE c.billTypeAtomic = :bta"
@@ -204,7 +211,7 @@ public class InwardCreditFigures implements Serializable {
         params.put("ids", new ArrayList<>(finalBillIds));
         List<Object[]> rows = billFacade.findAggregates(jpql, params);
         if (rows == null) {
-            return;
+            return false;
         }
         for (Object[] row : rows) {
             Long finalBillId = (Long) row[0];
@@ -214,6 +221,7 @@ public class InwardCreditFigures implements Serializable {
             ccCompanyRawByFinalBillId.computeIfAbsent(finalBillId, k -> new LinkedHashMap<>())
                     .put(companyId, new double[]{committed, paid});
         }
+        return true;
     }
 
     private Institution institutionById(Long id) {
@@ -240,6 +248,10 @@ public class InwardCreditFigures implements Serializable {
         }
         double[] admissionFigures = ccFigures(pe); // loads the admission and its split when not yet loaded
         Long fbId = pe.getFinalBill().getId();
+        if (failedFinalBillIds.contains(fbId)) {
+            // The lookup failed: neither legacy figures nor a cached answer; it is retried on the next load().
+            return Collections.emptyList();
+        }
         List<CompanyFigures> merged = ccCompanyMergedByFinalBillId.get(fbId);
         if (merged != null) {
             return merged;
@@ -281,7 +293,9 @@ public class InwardCreditFigures implements Serializable {
         Long id = pe.getFinalBill().getId();
         if (!ccFiguresByFinalBillId.containsKey(id)) {
             ccFiguresByFinalBillId.put(id, new double[0]);
-            putCcFigures(Collections.singletonList(id));
+            if (!putCcFigures(Collections.singletonList(id))) {
+                failedFinalBillIds.add(id);
+            }
         }
         double[] figures = ccFiguresByFinalBillId.get(id);
         return figures.length == 0 ? null : figures;
@@ -378,8 +392,9 @@ public class InwardCreditFigures implements Serializable {
      * Rows for the inpatient debtor balance and opd-and-inward due reports:
      * one row per commitment company of each admission, from the commitment
      * and payment bills (the same figures as the Credit Company Due pages).
-     * Patient due and excess are carried on the admission's first row only, so
-     * an admission with two companies does not count the patient twice. Excess
+     * The patient's paid, due and excess are carried on the admission's first
+     * listed row only, so an admission with two companies does not count the
+     * patient twice; which rows are listed does not depend on company order. Excess
      * is negative (balance sign), as these reports have always shown it.
      *
      * @param dueType "due", "excess", "settled" or anything else for all rows
@@ -406,7 +421,7 @@ public class InwardCreditFigures implements Serializable {
             // Round to cents before the sign tests: the final bill net can carry
             // more decimals than the bills, which would list a 0.00 balance row.
             double patientBalance = cents(netTotal - totalCommitted - patientPaid);
-            boolean first = true;
+            List<InstitutionBillEncounter> admissionRows = new ArrayList<>();
             for (CompanyFigures f : companyFigures(pe)) {
                 if (f.company == null) {
                     continue;
@@ -418,10 +433,6 @@ public class InwardCreditFigures implements Serializable {
                     continue;
                 }
                 double companyBalance = cents(f.committed - f.paid);
-                double patientDue = first && patientBalance > 0 ? patientBalance : 0.0;
-                double patientExcess = first && patientBalance < 0 ? patientBalance : 0.0;
-                first = false;
-
                 InstitutionBillEncounter row = new InstitutionBillEncounter();
                 row.setInstitution(f.company);
                 row.setBhtNo(pe.getBhtNo());
@@ -429,9 +440,9 @@ public class InwardCreditFigures implements Serializable {
                 row.setPatient(pe.getPatient());
                 row.setNetTotal(netTotal);
                 row.setGopAmount(f.committed);
-                row.setPaidByPatient(patientPaid);
-                row.setPatientDue(patientDue);
-                row.setPatientExcess(patientExcess);
+                row.setPaidByPatient(0.0);
+                row.setPatientDue(0.0);
+                row.setPatientExcess(0.0);
                 row.setPaidByCompany(f.paid);
                 row.setCompanyDue(companyBalance > 0 ? companyBalance : 0.0);
                 row.setCompanyExcess(companyBalance < 0 ? companyBalance : 0.0);
@@ -439,10 +450,20 @@ public class InwardCreditFigures implements Serializable {
                 row.setTotalPaidByCompanies(totalCompanyPaid);
                 row.setTotalDue(cents(netTotal - (patientPaid + totalCompanyPaid)));
                 row.setPatientGopAmount(netTotal - totalCommitted);
+                // Whether a row is listed depends on its own company balance and the
+                // admission's patient balance only, never on the order of the companies.
                 if (matches(row, patientBalance, dueType, filterBy)) {
-                    rows.add(row);
+                    admissionRows.add(row);
                 }
             }
+            // The patient's figures are shown once per admission, on its first listed row.
+            if (!admissionRows.isEmpty()) {
+                InstitutionBillEncounter first = admissionRows.get(0);
+                first.setPaidByPatient(patientPaid);
+                first.setPatientDue(patientBalance > 0 ? patientBalance : 0.0);
+                first.setPatientExcess(patientBalance < 0 ? patientBalance : 0.0);
+            }
+            rows.addAll(admissionRows);
         }
         return rows;
     }
@@ -460,9 +481,9 @@ public class InwardCreditFigures implements Serializable {
     private static boolean matches(InstitutionBillEncounter r, double admissionPatientBalance, String dueType, String filterBy) {
         String type = dueType == null ? "any" : dueType.toLowerCase();
         String by = filterBy == null ? "any" : filterBy.toLowerCase();
-        boolean patientDue = r.getPatientDue() > 0;
+        boolean patientDue = admissionPatientBalance > 0;
         boolean companyDue = r.getCompanyDue() > 0;
-        boolean patientExcess = r.getPatientExcess() < 0;
+        boolean patientExcess = admissionPatientBalance < 0;
         boolean companyExcess = r.getCompanyExcess() < 0;
         boolean patientSettled = admissionPatientBalance == 0;
         boolean companySettled = r.getCompanyDue() == 0 && r.getCompanyExcess() == 0;
