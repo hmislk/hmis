@@ -1,6 +1,6 @@
 # Working rules (detail)
 
-Moved from the root CLAUDE.md; each rule there links here. Changed in this move: the Discuss rule is narrowed to the list below (implementation-level choices are yours to make).
+Detail for the working rules in the root CLAUDE.md; some rules here have no CLAUDE.md entry. The Discuss rule covers only the list below (implementation-level choices are yours to make).
 
 - No worktrees: never use `isolation: "worktree"`; edit in the main checkout. If you are under `.claude/worktrees/*`, stop and move there. Worktrees desync the developer's branch.
 - No Artifact tool for deliverables: recipients cannot open them without a Claude account. Write `.md` in `tmp/` (working), `developer_docs/` (tracked) or `../hmis.wiki/` (wiki; never inside this repo).
@@ -8,5 +8,5 @@ Moved from the root CLAUDE.md; each rule there links here. Changed in this move:
 - Finish everything the request covers before stopping. If the user asked for several items ("all videos", "fix all of these"), never end a turn asking whether to do the next in-scope item; an unanswered question idles the work for hours. Ask only about things outside the request or decisions only the user can make, and keep working meanwhile.
 - Removing or hiding a feature: check production usage first. Run a read-only query of its bill types/tables on every production DB before coding, not at merge. Keep the results in `tmp/`.
 - Waiting on a review or another member: take a second task, finish it, then check the review. Never idle while the board has work.
-- Before dispatching a follow-up fix, check the open PRs that touch the same page or class (`gh pr list --search <file>` or the PR file lists), so two sessions do not fix the same thing.
+- Before dispatching a follow-up fix, check the open PRs that touch the same page or class so two sessions do not fix the same thing: `gh pr list -R hmislk/hmis --state open --limit 200 --json number,files --jq '.[] | select(any(.files[]; .path | test("<name>"))) | .number'`. Do not rely on `--search`; it matches text, not changed files.
 - Before debugging a data mismatch locally, check that the local DB covers the dates in the issue. If it does not, ask for the read-only production query first.

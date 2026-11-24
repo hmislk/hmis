@@ -1,6 +1,6 @@
 # Code rules (detail)
 
-Moved from the root CLAUDE.md; each rule there links here. The rules are unchanged.
+Detail for the code rules in the root CLAUDE.md; some rules here have no CLAUDE.md entry.
 
 - Line endings: they differ by machine (many files are CRLF on Windows). Edit with the Edit tool; if you script a replacement, match the file's line endings and check the diff for whole-file changes.
 - COUNT queries: use `findLongByJpql`, never `findDoubleByJpql` (it silently returns 0.0).
