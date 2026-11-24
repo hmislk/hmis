@@ -37,7 +37,6 @@ import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.PharmacyBean;
 import com.divudi.ejb.PharmacyCalculation;
 import com.divudi.ejb.PharmacyService;
-import com.divudi.ejb.SingleTransactionRunner;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.BillItem;
 import com.divudi.core.entity.Category;
@@ -256,8 +255,6 @@ public class PharmacySaleBhtController implements Serializable {
     BillNumberGenerator billNumberBean;
     @EJB
     BillService billService;
-    @EJB
-    private SingleTransactionRunner singleTransactionRunner;
     @EJB
     private PharmacyService pharmacyService;
     @EJB
@@ -2432,7 +2429,7 @@ public class PharmacySaleBhtController implements Serializable {
         // failed issue can no longer leave a zero-value bill with the stock already
         // gone from the pharmacy. Issue #26021.
         try {
-            singleTransactionRunner.run(() -> {
+            pharmacyBean.runStockSave(() -> {
                 savePreBillFinally(pt, matrixDepartment, btp, bta);
                 savePreBillItemsFinally(tmpBillItems);
                 transferIssuedStockToPorter(tmpBillItems, getPreBill().getToStaff());
@@ -2449,13 +2446,16 @@ public class PharmacySaleBhtController implements Serializable {
             LOGGER.log(Level.SEVERE, "Settlement failure details", e);
             // Nothing was saved, but the in-memory bill and lines may carry ids and
             // flags from the rolled-back attempt. Rebuild the screen from the request.
-            reloadIssueFromRequestAfterRollback();
+            boolean reloaded = reloadIssueFromRequestAfterRollback();
             // Skip the cause when a step already showed it (e.g. insufficient stock).
             String cause = rootCauseMessage(e);
             FacesContext fc = FacesContext.getCurrentInstance();
             boolean causeShown = fc != null && fc.getMessageList().stream()
                     .anyMatch(m -> cause.equals(m.getSummary()));
-            JsfUtil.addErrorMessage("The issue was not saved and no stock was moved. The list was reloaded from the request; check it and issue again."
+            JsfUtil.addErrorMessage("The issue was not saved and no stock was moved. "
+                    + (reloaded
+                            ? "The list was reloaded from the request; check it and issue again."
+                            : "The list could not be reloaded; open the request again from the request list.")
                     + (causeShown ? "" : " Error: " + cause));
             return false;
         }
@@ -2472,7 +2472,8 @@ public class PharmacySaleBhtController implements Serializable {
         }
         clearBill();
         clearBillItem();
-        billPreview = true;
+        // No preview when the saved bill could not be loaded; never show an older bill.
+        billPreview = getPrintBill() != null;
         return true;
     }
 
@@ -2480,20 +2481,27 @@ public class PharmacySaleBhtController implements Serializable {
      * After a rolled-back request issue, drop the unsaved bill and rebuild the
      * issuing list from the request, keeping the selected porter. Issue #26021.
      */
-    private void reloadIssueFromRequestAfterRollback() {
+    private boolean reloadIssueFromRequestAfterRollback() {
         Staff porter = preBill != null ? preBill.getToStaff() : null;
-        clearBill();
-        clearBillItem();
-        if (bhtRequestBill != null && bhtRequestBill.getId() != null) {
-            PatientEncounter preservedEncounter = bhtRequestBill.getPatientEncounter();
-            Bill freshBill = getBillItemFacade().loadBillWithItemsFresh(bhtRequestBill.getId());
-            if (freshBill != null) {
-                freshBill.setPatientEncounter(preservedEncounter);
-                bhtRequestBill = freshBill;
-                generateIssueBillComponentsForBhtRequest(freshBill);
+        try {
+            clearBill();
+            clearBillItem();
+            if (bhtRequestBill != null && bhtRequestBill.getId() != null) {
+                PatientEncounter preservedEncounter = bhtRequestBill.getPatientEncounter();
+                Bill freshBill = getBillItemFacade().loadBillWithItemsFresh(bhtRequestBill.getId());
+                if (freshBill != null) {
+                    freshBill.setPatientEncounter(preservedEncounter);
+                    bhtRequestBill = freshBill;
+                    generateIssueBillComponentsForBhtRequest(freshBill);
+                }
             }
+            return true;
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Could not reload the request after a failed issue", e);
+            return false;
+        } finally {
+            getPreBill().setToStaff(porter);
         }
-        getPreBill().setToStaff(porter);
     }
 
     private String rootCauseMessage(Throwable t) {
