@@ -184,7 +184,7 @@ public class InwardTechnicianChargesReportController implements Serializable {
                 + "AND b.billType = :billType "
                 // Cancelling a fee bill also writes a negative contra bill (not flagged cancelled); leave it out
                 // so a cancelled fee disappears from the report.
-                + "AND b.billTypeAtomic NOT IN :excludedAtomics "
+                + "AND (b.billTypeAtomic IS NULL OR b.billTypeAtomic NOT IN :excludedAtomics) "
                 // Fee Category = Technician Fee (never affected by the merged-fees toggle).
                 + professionalFeeClassificationService.staffCondition("bf", InwardChargeType.TechnicianAndParamedicalCharge, params);
 
