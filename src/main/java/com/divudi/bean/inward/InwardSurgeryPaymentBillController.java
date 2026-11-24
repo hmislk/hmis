@@ -682,8 +682,10 @@ public class InwardSurgeryPaymentBillController implements Serializable {
         tmp.setCreater(getSessionController().getLoggedUser());
         tmp.setDepartment(getSessionController().getLoggedUser().getDepartment());
 
-        tmp.setDeptId(getBillNumberBean().departmentBillNumberGeneratorYearly(getSessionController().getDepartment(), BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_INWARD_SERVICE));
-        tmp.setInsId(getBillNumberBean().departmentBillNumberGeneratorYearly(getSessionController().getDepartment(), BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_INWARD_SERVICE));
+        // One serial per payment: the same number goes on both fields (#26075).
+        String billNumber = getBillNumberBean().departmentBillNumberGeneratorYearly(getSessionController().getDepartment(), BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_INWARD_SERVICE);
+        tmp.setDeptId(billNumber);
+        tmp.setInsId(billNumber);
 
         tmp.setDiscount(0.0);
         tmp.setDiscountPercent(0.0);
