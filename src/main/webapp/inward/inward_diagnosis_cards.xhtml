@@ -236,6 +236,24 @@
                                                 <p:fileDownload value="#{inpatientClinicalDataController.downloadAsPdf()}"/>
                                             </p:commandButton>
                                             <p:commandButton
+                                                id="btnDownloadCardWord"
+                                                ajax="false"
+                                                value="Word"
+                                                icon="pi pi-file-word"
+                                                class="ui-button-success ui-button-outlined"
+                                                title="Download as an editable Word (.docx) file">
+                                                <p:fileDownload value="#{inpatientClinicalDataController.downloadAsWord()}"/>
+                                            </p:commandButton>
+                                            <p:commandButton
+                                                id="btnDownloadCardRtf"
+                                                ajax="false"
+                                                value="RTF"
+                                                icon="pi pi-file"
+                                                class="ui-button-success ui-button-outlined"
+                                                title="Download as an editable RTF file">
+                                                <p:fileDownload value="#{inpatientClinicalDataController.downloadAsRtf()}"/>
+                                            </p:commandButton>
+                                            <p:commandButton
                                                 id="btnEmailCard"
                                                 icon="fas fa-envelope"
                                                 title="Send by Email"
