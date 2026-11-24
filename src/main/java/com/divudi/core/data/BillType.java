@@ -197,7 +197,10 @@ public enum BillType {
     OPERATIONAL_EXPENSES,
     OPERATIONAL_EXPENSES_CANCELLED,
     CHEQUE_PAID,
-    CHEQUE_REALIZED;
+    CHEQUE_REALIZED,
+    // Appended last on purpose: PriceMatrix stores BillType by ordinal, so never insert mid-enum.
+    /** Ward request to the issuing pharmacy to return (part of) a direct issue to an inpatient (#25506). */
+    InwardDirectIssueReturnRequest;
 
     public String getLabel() {
         switch (this) {

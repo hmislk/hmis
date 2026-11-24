@@ -50,7 +50,12 @@ public class BhtIssueReturnController implements Serializable {
     private boolean printPreview;
     private List<BillItem> billItems;
     private String returnComment = "";
-    
+    /**
+     * The ward's return request (#25506) this return is being settled for, or
+     * null for an ordinary return. Completed when the return is settled.
+     */
+    private Bill returnRequest;
+
     
     ///////
     @EJB
@@ -94,11 +99,60 @@ public class BhtIssueReturnController implements Serializable {
         return navigateToReturnPharmacyDirectIssueToInpatients();
     }
 
+    /**
+     * Approval of a ward return request (#25506): opens the normal direct-issue
+     * return of the issuing department with the requested quantities pre-filled
+     * (capped by the balance). The pharmacist can adjust them and settles as usual.
+     */
+    public String navigateToReturnForRequest(Bill issueBill, Bill request) {
+        String view = navigateToReturnPharmacyDirectIssueToInpatients(issueBill);
+        if (view == null) {
+            return null;
+        }
+        returnRequest = request;
+        for (BillItem bi : getBillItems()) {
+            double requested = 0.0;
+            if (request != null && request.getId() != null && bi.getReferanceBillItem() != null) {
+                String jpql = "SELECT SUM(r.qty) FROM BillItem r WHERE r.bill.id = :requestId "
+                        + "AND r.referanceBillItem.id = :itemId";
+                java.util.Map<String, Object> params = new java.util.HashMap<>();
+                params.put("requestId", request.getId());
+                params.put("itemId", bi.getReferanceBillItem().getId());
+                requested = Math.abs(getBillItemFacade().findDoubleByJpql(jpql, params));
+            }
+            bi.setQty(Math.min(requested, bi.getRemainingQty()));
+        }
+        calTotal();
+        return view;
+    }
+
+    /**
+     * Marks the linked ward return request as approved once its return has been
+     * settled, and links the return bill (#25506).
+     */
+    private void completeLinkedReturnRequest() {
+        if (returnRequest == null || returnRequest.getId() == null) {
+            return;
+        }
+        Bill fresh = getBillFacade().findWithoutCache(returnRequest.getId());
+        if (fresh != null && !fresh.isCancelled() && !fresh.isCompleted()) {
+            fresh.setCompleted(true);
+            fresh.setCompletedAt(Calendar.getInstance().getTime());
+            fresh.setCompletedBy(getSessionController().getLoggedUser());
+            fresh.setApproveAt(Calendar.getInstance().getTime());
+            fresh.setApproveUser(getSessionController().getLoggedUser());
+            fresh.setForwardReferenceBill(getReturnBill());
+            getBillFacade().edit(fresh);
+        }
+        returnRequest = null;
+    }
+
     public String navigateToReturnPharmacyDirectIssueToInpatients() {
         if (bill == null) {
             JsfUtil.addErrorMessage("No Bill Selected");
             return null;
         }
+        returnRequest = null;
         printPreview = false;
         billItems = null;
         returnComment = "";
@@ -196,6 +250,7 @@ public class BhtIssueReturnController implements Serializable {
     }
 
     public void makeNull() {
+        returnRequest = null;
         bill = null;
         returnBill = null;
         printPreview = false;
@@ -408,6 +463,7 @@ public class BhtIssueReturnController implements Serializable {
         getBillFacade().edit(getBill());
 
         /// setOnlyReturnValue();
+        completeLinkedReturnRequest();
         printPreview = true;
         returnComment = "";
         JsfUtil.addSuccessMessage("Successfully Returned");
@@ -478,6 +534,7 @@ public class BhtIssueReturnController implements Serializable {
 
             tmp.setQtyInUnit(tmpQty);
             bi.setQty(tmpQty);
+            bi.setRemainingQty(tmpQty);
 
             bi.setPharmaceuticalBillItem(tmp);
 

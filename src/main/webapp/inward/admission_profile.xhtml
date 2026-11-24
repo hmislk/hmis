@@ -641,6 +641,27 @@
                                 </div>
                                 <div class="col-6">
                                     <p:commandButton
+                                        id="btnReturnMedicinesToPharmacyInpatient"
+                                        value="Return Medicines to Pharmacy"
+                                        ajax="false"
+                                        action="#{wardPharmacyReturnToPharmacyController.navigateToReturn(admissionController.current)}"
+                                        icon="fa fa-truck-ramp-box"
+                                        rendered="#{webUserController.hasPrivilege('InwardPharmacyReturnSubmit')}"
+                                        class="w-100"/>
+                                </div>
+                                <div class="col-6">
+                                    <p:commandButton
+                                        id="btnRequestDirectIssueReturnInpatient"
+                                        value="Request Return of Direct Issue"
+                                        title="Ask the issuing pharmacy to take back medicines it issued directly to this patient"
+                                        ajax="false"
+                                        action="#{directIssueReturnRequestController.navigateToRequestForEncounter(admissionController.current)}"
+                                        icon="fa fa-rotate-left"
+                                        rendered="#{webUserController.hasPrivilege('InwardPharmacyReturnSubmit')}"
+                                        class="w-100"/>
+                                </div>
+                                <div class="col-6">
+                                    <p:commandButton
                                         value="View Pharmacy Requests"
                                         action="#{admissionController.navigateToSearchInwardBills}"
                                         rendered="#{webUserController.hasPrivilege('InwardPharmacyIssueRequestSearch')}"

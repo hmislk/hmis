@@ -2671,7 +2671,9 @@ public class InwardBeanController implements Serializable {
         BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION,
         BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD,
         BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN,
-        BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_CANCELLATION
+        BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_CANCELLATION,
+        // Ward return to pharmacy: the BHT is credited when the pharmacy accepts it (#25509).
+        BillTypeAtomic.ACCEPT_RETURN_MEDICINE_INWARD
     );
     public double calculateInwardTotal(PatientEncounter patientEncounter) {
         if (patientEncounter == null) {
