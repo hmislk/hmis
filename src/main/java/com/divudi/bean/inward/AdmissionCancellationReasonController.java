@@ -4,11 +4,14 @@ import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.WebUserController;
 import com.divudi.core.entity.inward.AdmissionCancellationReason;
 import com.divudi.core.facade.AdmissionCancellationReasonFacade;
+import com.divudi.core.facade.AdmissionFacade;
 import com.divudi.core.util.JsfUtil;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
@@ -29,6 +32,8 @@ public class AdmissionCancellationReasonController implements Serializable {
 
     @EJB
     private AdmissionCancellationReasonFacade facade;
+    @EJB
+    private AdmissionFacade admissionFacade;
     @Inject
     private SessionController sessionController;
     @Inject
@@ -71,6 +76,24 @@ public class AdmissionCancellationReasonController implements Serializable {
             JsfUtil.addErrorMessage("Enter the reason name.");
             return;
         }
+        Long ownId = current.getId();
+        Long sameName = facade.findLongByJpql(
+                "select count(c) from AdmissionCancellationReason c where c.retired=false"
+                + " and lower(trim(c.name)) = :n" + (ownId == null ? "" : " and c.id <> :id"),
+                duplicateParams(name, ownId));
+        if (sameName != null && sameName > 0) {
+            JsfUtil.addErrorMessage("A reason with this name already exists.");
+            return;
+        }
+        if (ownId != null) {
+            AdmissionCancellationReason stored = facade.find(ownId);
+            if (stored != null && !name.equals(stored.getName() == null ? null : stored.getName().trim())
+                    && isUsed(stored)) {
+                JsfUtil.addErrorMessage("This reason is used by past cancellations. Remove it and add a new reason instead.");
+                current = stored;
+                return;
+            }
+        }
         current.setName(name);
         if (current.getId() != null) {
             facade.edit(current);
@@ -83,6 +106,23 @@ public class AdmissionCancellationReasonController implements Serializable {
         }
         items = null;
         current = new AdmissionCancellationReason();
+    }
+
+    private static Map<String, Object> duplicateParams(String name, Long ownId) {
+        Map<String, Object> m = new HashMap<>();
+        m.put("n", name.toLowerCase());
+        if (ownId != null) {
+            m.put("id", ownId);
+        }
+        return m;
+    }
+
+    private boolean isUsed(AdmissionCancellationReason reason) {
+        Map<String, Object> m = new HashMap<>();
+        m.put("r", reason);
+        Long used = admissionFacade.findLongByJpql(
+                "select count(a) from Admission a where a.cancellationReason = :r", m);
+        return used != null && used > 0;
     }
 
     public void retire() {

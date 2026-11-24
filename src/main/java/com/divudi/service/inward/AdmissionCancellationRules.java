@@ -18,10 +18,13 @@ public final class AdmissionCancellationRules {
      */
     public static String firstMissing(String notes, AdmissionCancellationReason reason, Staff decidedBy) {
         if (notes == null || notes.trim().isEmpty()) {
-            return "A cancellation reason is required. Please enter the reason before proceeding.";
+            return "Notes are required. Please enter notes before proceeding.";
         }
         if (reason == null) {
             return "Select the cancellation reason from the list before proceeding.";
+        }
+        if (reason.isRetired()) {
+            return "The selected cancellation reason has been removed. Select another reason before proceeding.";
         }
         if (decidedBy == null) {
             return "Select who decided the cancellation before proceeding.";

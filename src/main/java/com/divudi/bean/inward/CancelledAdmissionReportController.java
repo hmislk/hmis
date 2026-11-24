@@ -53,14 +53,9 @@ public class CancelledAdmissionReportController implements Serializable {
         }
         Map<String, Object> params = new HashMap<>();
         String jpql = buildJpql(params, fromDate, toDate, admissionType, reason, institution, site, department);
-        List<Object> results = admissionFacade.findObjectByJpql(jpql, params, TemporalType.TIMESTAMP);
-        List<CancelledAdmissionDTO> list = new ArrayList<>();
-        if (results != null) {
-            for (Object o : results) {
-                list.add((CancelledAdmissionDTO) o);
-            }
-        }
-        rows = list;
+        @SuppressWarnings("unchecked")
+        List<CancelledAdmissionDTO> list = (List<CancelledAdmissionDTO>) admissionFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
+        rows = list == null ? new ArrayList<>() : list;
     }
 
     /**
@@ -74,20 +69,26 @@ public class CancelledAdmissionReportController implements Serializable {
                 + "ad.id,"
                 + "ad.retiredAt,"
                 + "ad.bhtNo,"
-                + "ad.patient.person.name,"
-                + "ad.patient.phn,"
-                + "ad.admissionType,"
+                + "pp.name,"
+                + "p.phn,"
+                + "at.name,"
                 + "ad.dateOfAdmission,"
-                + "rc,"
+                + "rcp.name,"
                 + "cr.name,"
                 + "ad.comments,"
-                + "cdb,"
-                + "ru"
+                + "cdbp.name,"
+                + "coalesce(rup.name, ru.name)"
                 + ") from Admission ad"
+                + " left join ad.patient p"
+                + " left join p.person pp"
+                + " left join ad.admissionType at"
                 + " left join ad.referringConsultant rc"
+                + " left join rc.person rcp"
                 + " left join ad.cancellationReason cr"
                 + " left join ad.cancellationDecidedBy cdb"
+                + " left join cdb.person cdbp"
                 + " left join ad.retirer ru"
+                + " left join ru.webUserPerson rup"
                 + " where ad.retired = true"
                 + " and ad.retireComments = :cancelMark"
                 + " and ad.retiredAt between :fromDate and :toDate");

@@ -38,4 +38,17 @@ public class AdmissionCancellationRulesTest {
         String message = AdmissionCancellationRules.firstMissing("Entered by mistake", reason, null);
         assertTrue(message.contains("who decided"));
     }
+
+    @Test
+    public void removedReasonIsRefused() {
+        AdmissionCancellationReason removed = new AdmissionCancellationReason();
+        removed.setRetired(true);
+        String message = AdmissionCancellationRules.firstMissing("Entered by mistake", removed, staff);
+        assertTrue(message.contains("has been removed"));
+    }
+
+    @Test
+    public void blankNotesMessageNamesNotes() {
+        assertTrue(AdmissionCancellationRules.firstMissing(" ", reason, staff).startsWith("Notes are required"));
+    }
 }

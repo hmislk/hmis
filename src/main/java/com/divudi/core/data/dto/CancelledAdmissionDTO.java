@@ -1,8 +1,5 @@
 package com.divudi.core.data.dto;
 
-import com.divudi.core.entity.Staff;
-import com.divudi.core.entity.WebUser;
-import com.divudi.core.entity.inward.AdmissionType;
 import java.io.Serializable;
 import java.util.Date;
 
@@ -20,7 +17,7 @@ public class CancelledAdmissionDTO implements Serializable {
     private String bhtNo;
     private String patientName;
     private String patientPhn;
-    private AdmissionType admissionType;
+    private String admissionTypeName;
     private Date dateOfAdmission;
     private String admissionDecidedBy;
     private String cancellationReason;
@@ -37,31 +34,25 @@ public class CancelledAdmissionDTO implements Serializable {
             String bhtNo,
             String patientName,
             String patientPhn,
-            AdmissionType admissionType,
+            String admissionTypeName,
             Date dateOfAdmission,
-            Staff admissionDecidedBy,
+            String admissionDecidedBy,
             String cancellationReason,
             String notes,
-            Staff cancellationDecidedBy,
-            WebUser cancelledBy) {
+            String cancellationDecidedBy,
+            String cancelledBy) {
         this.admissionId = admissionId;
         this.cancelledAt = cancelledAt;
         this.bhtNo = bhtNo;
         this.patientName = patientName;
         this.patientPhn = patientPhn;
-        this.admissionType = admissionType;
+        this.admissionTypeName = admissionTypeName;
         this.dateOfAdmission = dateOfAdmission;
-        this.admissionDecidedBy = staffName(admissionDecidedBy);
+        this.admissionDecidedBy = admissionDecidedBy;
         this.cancellationReason = cancellationReason;
         this.notes = notes;
-        this.cancellationDecidedBy = staffName(cancellationDecidedBy);
-        this.cancelledBy = cancelledBy == null ? null
-                : cancelledBy.getWebUserPerson() != null ? cancelledBy.getWebUserPerson().getName()
-                : cancelledBy.getName();
-    }
-
-    private static String staffName(Staff staff) {
-        return staff == null || staff.getPerson() == null ? null : staff.getPerson().getNameWithTitle();
+        this.cancellationDecidedBy = cancellationDecidedBy;
+        this.cancelledBy = cancelledBy;
     }
 
     public Long getAdmissionId() {
@@ -84,12 +75,8 @@ public class CancelledAdmissionDTO implements Serializable {
         return patientPhn;
     }
 
-    public AdmissionType getAdmissionType() {
-        return admissionType;
-    }
-
     public String getAdmissionTypeName() {
-        return admissionType == null ? "" : admissionType.getName();
+        return admissionTypeName == null ? "" : admissionTypeName;
     }
 
     public Date getDateOfAdmission() {
