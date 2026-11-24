@@ -235,6 +235,14 @@ Issue #17566. Both keys are application-wide Booleans, default `false` (existing
 | `Inward Final Bill - Custom Bill 3 - Show Claimable Copies` | Boolean | `false` | Adds Claimable Patient, Hospital and Duplicate copy buttons (Custom Bill 3 layout, professional fees included) to the inward Final Bill page. |
 | `Inward Final Bill - Custom Bill 3 - Show Not Claimable Copies` | Boolean | `false` | Adds Not Claimable Patient, Hospital and Duplicate copy buttons (Custom Bill 3 layout, without professional fees) and a Professional Fees copy button. |
 
+## Inward Final Bill - Custom Bill 3 payments on copies without professional fees
+
+Issue #26027. Read in `resources/inward/bill/finalBillCustom4.xhtml`, so it applies wherever Custom Bill 3 prints (Final Bill page and its reprint).
+
+| Key | Type | Default | Description |
+| --- | --- | --- | --- |
+| `Inward Final Bill - Custom Bill 3 - Show Payments On Copies Without Professional Fees` | Boolean (application scope) | `false` | On copies printed without professional fees (Not Claimable copies, Hospital Copy without professional fees), shows Paid By Patient, Paid By Company and Total Paid. The Due lines (Due from company, Due Amount) stay hidden. When `false` these copies show no payments, as before. Copies with professional fees are not affected. |
+
 ## Inward VAT per charge type
 
 Issue #17491. One application-wide Double key per inward charge type, default `0` (VAT off). With every rate at 0 an inward bill is exactly as before.
