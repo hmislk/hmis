@@ -173,6 +173,23 @@ public class AdmissionCancellationReasonController implements Serializable {
         return list == null ? new ArrayList<>() : list;
     }
 
+    /**
+     * Every reason, including removed ones, for the Cancelled Admissions report
+     * filter, so past cancellations that used a removed reason can still be found.
+     */
+    public List<AdmissionCancellationReason> getAllReasonsForReport() {
+        List<AdmissionCancellationReason> list = facade.findByJpql(
+                "select c from AdmissionCancellationReason c order by c.name");
+        return list == null ? new ArrayList<>() : list;
+    }
+
+    public String reportLabel(AdmissionCancellationReason r) {
+        if (r == null) {
+            return "";
+        }
+        return r.getName() + (r.isRetired() ? " (removed)" : "");
+    }
+
     public AdmissionCancellationReasonFacade getFacade() {
         return facade;
     }

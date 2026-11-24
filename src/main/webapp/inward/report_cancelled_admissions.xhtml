@@ -52,8 +52,8 @@
                                 <p:selectOneMenu id="reasonMenu" styleClass="w-100" filter="true" filterMatchMode="contains"
                                                  value="#{cancelledAdmissionReportController.reason}">
                                     <f:selectItem itemLabel="All" itemValue="#{null}"/>
-                                    <f:selectItems value="#{admissionCancellationReasonController.activeReasons}" var="r"
-                                                   itemValue="#{r}" itemLabel="#{r.name}"/>
+                                    <f:selectItems value="#{admissionCancellationReasonController.allReasonsForReport}" var="r"
+                                                   itemValue="#{r}" itemLabel="#{admissionCancellationReasonController.reportLabel(r)}"/>
                                 </p:selectOneMenu>
                             </div>
                             <div class="col-md-3">

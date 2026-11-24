@@ -497,6 +497,10 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
             return "";
         }
 
+        String notes = getComment();
+        AdmissionCancellationReason reason = cancellationReason;
+        Staff decidedBy = cancellationDecidedBy;
+
         if (checkPaymentIsMade()) {
             JsfUtil.addErrorMessage("This BHT has one or more active (non-cancelled) bills. "
                     + "Please cancel all bills associated with BHT " + current.getBhtNo()
@@ -504,7 +508,7 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
             return "";
         }
 
-        String missing = AdmissionCancellationRules.firstMissing(getComment(), cancellationReason, cancellationDecidedBy);
+        String missing = AdmissionCancellationRules.firstMissing(notes, reason, decidedBy);
         if (missing != null) {
             JsfUtil.addErrorMessage(missing);
             return "";
@@ -535,9 +539,9 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
         current.setRetireComments("BHT Cancel");
         current.setRetiredAt(new Date());
         current.setRetirer(getSessionController().getLoggedUser());
-        current.setComments(comment);
-        current.setCancellationReason(cancellationReason);
-        current.setCancellationDecidedBy(cancellationDecidedBy);
+        current.setComments(notes);
+        current.setCancellationReason(reason);
+        current.setCancellationDecidedBy(decidedBy);
         getEjbFacade().edit(current);
 
         // Give the BHT number back to its series when it is still the last one
@@ -561,10 +565,10 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
         Map<String, Object> afterCancel = new HashMap<>();
         admissionToAuditMap(afterCancel, current);
         afterCancel.put("retired", current.isRetired());
-        afterCancel.put("cancellationReason", comment);
-        afterCancel.put("cancellationReasonCode", cancellationReason.getName());
-        afterCancel.put("cancellationDecidedBy", cancellationDecidedBy.getPerson() != null
-                ? cancellationDecidedBy.getPerson().getNameWithTitle() : cancellationDecidedBy.getId());
+        afterCancel.put("cancellationReason", notes);
+        afterCancel.put("cancellationReasonCode", reason.getName());
+        afterCancel.put("cancellationDecidedBy", decidedBy.getPerson() != null
+                ? decidedBy.getPerson().getNameWithTitle() : decidedBy.getId());
         afterCancel.put("admissionDecidedBy", current.getReferringConsultant() != null
                 && current.getReferringConsultant().getPerson() != null
                 ? current.getReferringConsultant().getPerson().getNameWithTitle() : null);
