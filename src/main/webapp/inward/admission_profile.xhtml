@@ -278,6 +278,16 @@
                                 </div>
                                 <div class="col-6">
                                     <p:commandButton
+                                        value="Change Admission Type"
+                                        ajax="false"
+                                        rendered="#{webUserController.hasPrivilege('InwardChangeAdmissionType')}"
+                                        disabled="#{admissionController.current.id eq null or admissionController.current.discharged eq true or admissionController.current.paymentFinalized eq true}"
+                                        action="#{admissionTypeChangeController.navigateToChangeAdmissionType(admissionController.current)}"
+                                        icon="fa fa-exchange-alt"
+                                        class="w-100 ui-button-warning"/>
+                                </div>
+                                <div class="col-6">
+                                    <p:commandButton
                                         value="Cancel Admission"
                                         ajax="false"
                                         rendered="#{webUserController.hasPrivilege('InwardAdmissionCancel')}"

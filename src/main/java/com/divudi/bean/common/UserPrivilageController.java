@@ -183,6 +183,7 @@ public class UserPrivilageController implements Serializable {
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardAdmissionsInwardAppoinment, "Inward Appointment"), admissionsNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardEditPatientDetailsFromAdmission, "Edit Patient Details From Admission"), admissionsNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardEditPaymentDetails, "Edit Payment Details"), admissionsNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardChangeAdmissionType, "Change Admission Type"), admissionsNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardManageAllergies, "Manage Allergies"), admissionsNode);
 
         TreeNode appointmentNode = new DefaultTreeNode(new PrivilegeHolder(null, "Appointment"), inwardNode);

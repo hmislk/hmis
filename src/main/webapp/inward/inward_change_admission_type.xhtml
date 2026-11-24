@@ -1,0 +1,100 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui">
+
+    <ui:define name="content">
+        <h:form id="changeTypeForm">
+            <p:growl id="changeTypeGrowl" showDetail="true"/>
+            <p:panel>
+                <f:facet name="header">
+                    <div class="d-flex justify-content-between align-items-center w-100">
+                        <div class="d-flex align-items-center gap-2">
+                            <h:outputText styleClass="fa fa-exchange-alt"/>
+                            <h:outputLabel value="Change Admission Type" class="mx-2"/>
+                            <h:outputText value="BHT: #{admissionTypeChangeController.admission.bhtNo} — #{admissionTypeChangeController.admission.patient.person.nameWithTitle}"
+                                          rendered="#{admissionTypeChangeController.admission ne null}"
+                                          styleClass="text-muted"/>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <p:commandButton
+                                id="btnCancel"
+                                value="Inpatient Dashboard"
+                                icon="fa fa-id-card"
+                                ajax="false"
+                                immediate="true"
+                                rendered="#{admissionTypeChangeController.admission ne null}"
+                                action="#{admissionTypeChangeController.cancel}"
+                                class="ui-button-info ui-button-outlined"/>
+                        </div>
+                    </div>
+                </f:facet>
+
+                <h:panelGroup rendered="#{admissionTypeChangeController.admission eq null}" layout="block">
+                    <div class="alert alert-warning">
+                        <i class="fa fa-exclamation-triangle me-2"></i>
+                        No admission selected. Please open this from the Inpatient Dashboard.
+                    </div>
+                </h:panelGroup>
+
+                <h:panelGroup rendered="#{admissionTypeChangeController.admission ne null}" layout="block">
+                    <div class="row">
+                        <div class="col-12 col-lg-6">
+                            <p:panelGrid columns="2" layout="tabular" styleClass="w-100"
+                                         columnClasses="col-4,col-8">
+                                <p:outputLabel value="Current admission type"/>
+                                <h:outputText value="#{admissionTypeChangeController.admission.admissionType.name}" styleClass="fw-bold"/>
+
+                                <p:outputLabel for="newType" value="New admission type"/>
+                                <p:selectOneMenu id="newType"
+                                                 value="#{admissionTypeChangeController.newType}"
+                                                 converter="admissionTypeConverter"
+                                                 required="true"
+                                                 requiredMessage="Select the new admission type."
+                                                 styleClass="w-100">
+                                    <f:selectItem itemLabel="Select Admission Type" noSelectionOption="true"/>
+                                    <f:selectItems value="#{admissionTypeChangeController.choices}"
+                                                   var="t" itemValue="#{t}" itemLabel="#{t.name}"/>
+                                </p:selectOneMenu>
+
+                                <p:outputLabel for="reason" value="Reason"/>
+                                <p:inputTextarea id="reason"
+                                                 value="#{admissionTypeChangeController.reason}"
+                                                 required="true"
+                                                 requiredMessage="Enter the reason for the change."
+                                                 maxlength="500"
+                                                 rows="3"
+                                                 styleClass="w-100"/>
+                            </p:panelGrid>
+
+                            <div class="alert alert-info mt-2">
+                                <i class="fa fa-info-circle me-2"></i>
+                                Charges before the change keep the old type. The BHT number does not change.
+                            </div>
+                            <h:panelGroup rendered="#{admissionTypeChangeController.interimBillWarning}" layout="block">
+                                <div class="alert alert-warning">
+                                    <i class="fa fa-exclamation-triangle me-2"></i>
+                                    An interim bill has already been issued for this admission. It will not change; later bills will use the new type from now on.
+                                </div>
+                            </h:panelGroup>
+
+                            <div class="d-flex gap-2 mt-2">
+                                <p:commandButton
+                                    id="btnSave"
+                                    value="Change Admission Type"
+                                    icon="fa fa-check"
+                                    ajax="false"
+                                    action="#{admissionTypeChangeController.save}"
+                                    class="ui-button-success"/>
+                            </div>
+                        </div>
+                    </div>
+                </h:panelGroup>
+            </p:panel>
+        </h:form>
+    </ui:define>
+</ui:composition>
