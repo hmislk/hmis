@@ -2000,6 +2000,16 @@ public class PharmacySaleBhtController implements Serializable {
             } catch (Exception re) {
                 LOGGER.log(Level.SEVERE, "Could not rebuild the issue after a failed save", re);
                 rebuilt = false;
+                // Drop the failed bill: its flags (e.g. stock already deducted) would
+                // make the next Issue save a bill without moving stock.
+                try {
+                    clearBill();
+                    clearBillItem();
+                } catch (Exception ce) {
+                    LOGGER.log(Level.SEVERE, "Could not clear the failed issue", ce);
+                    preBill = null;
+                    settlementStockDeducted = false;
+                }
             }
             String cause = rootCauseMessage(e);
             FacesContext fc = FacesContext.getCurrentInstance();
