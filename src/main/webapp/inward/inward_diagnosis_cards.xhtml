@@ -20,7 +20,7 @@
                                 ajax="false"
                                 action="#{admissionController.navigateToAdmissionProfilePage}"
                                 icon="fa fa-arrow-left"
-                                class="ui-button-warning">
+                                class="ui-button-info ui-button-outlined">
                                 <f:setPropertyActionListener
                                     value="#{inpatientClinicalDataController.parentAdmission}"
                                     target="#{admissionController.current}" />
@@ -30,7 +30,7 @@
                                 ajax="false"
                                 action="#{inpatientClinicalDataController.navigateToEncounterClinicalData()}"
                                 icon="fa fa-stethoscope"
-                                class="ui-button-secondary">
+                                class="ui-button-info ui-button-outlined">
                             </p:commandButton>
                         </div>
                     </div>
@@ -200,7 +200,7 @@
                                                 id="btnSaveCard"
                                                 value="Save"
                                                 icon="pi pi-save"
-                                                class="ui-button-warning"
+                                                class="ui-button-success"
                                                 action="#{inpatientClinicalDataController.saveEncounterReferral()}"
                                                 process="btnSaveCard txeCardEdit"
                                                 update="lstSavedCards gpCardDoc msgDx"
