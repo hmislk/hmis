@@ -409,6 +409,10 @@ public class PharmacySaleBhtController implements Serializable {
             // Not saved: do not link a stale print bill to the surgery. Issue #26044.
             return;
         }
+        if (getPrintBill() == null) {
+            JsfUtil.addErrorMessage("The issue was saved but could not be linked to the surgery. Please contact the system administrator.");
+            return;
+        }
         getBillBean().saveEncounterComponents(getPrintBill(), getBatchBill(), getSessionController().getLoggedUser());
         getBillBean().updateBatchBill(getBatchBill());
     }
@@ -2003,6 +2007,8 @@ public class PharmacySaleBhtController implements Serializable {
         }
 
         // Committed. A print-preview failure must not read as a failed issue.
+        // Cleared first so a failed find never leaves the previous bill as the print bill.
+        setPrintBill(null);
         try {
             setPrintBill(getBillFacade().find(getPreBill().getId()));
         } catch (Exception e) {
@@ -2034,6 +2040,10 @@ public class PharmacySaleBhtController implements Serializable {
                 BillItem line = new BillItem();
                 line.copy(old);
                 line.setReferanceBillItem(old.getReferanceBillItem());
+                // Keep the dose/frequency/duration the user entered (discharge issue).
+                if (old.peekPrescription() != null) {
+                    line.setPrescription(old.peekPrescription().cloneForNewEntity());
+                }
                 PharmaceuticalBillItem pbi = new PharmaceuticalBillItem();
                 pbi.copy(old.getPharmaceuticalBillItem());
                 pbi.setStaffStock(null);
