@@ -226,14 +226,29 @@ The shared and yearly keys combine: shared plus yearly gives one series per year
 
 **Deploy order.** `AdmissionNumber.counterYear` is mapped on the entity, so every BHT number read fails until the column exists, even with all keys off. Add it **before** the WAR containing it is deployed: a nullable integer column `counterYear` on the admission number table (check that table's name case on the target database; the build being replaced cannot add it). Add Missing Fields in the new build also adds it, but only after the deploy, when BHT reads already fail.
 
-## Inward Final Bill - Custom Bill 3 Claimable / Not Claimable copies
+## Inward Final Bill - Custom Bill 4 Claimable / Not Claimable copies
 
-Issue #17566. Both keys are application-wide Booleans, default `false` (existing "Custom Bill 3" and "Custom Bill 3 (Duplicate)" buttons are unchanged when both are off). Set either or both.
+Issue #17566, separated from Custom Bill 3 under #26061. "Custom Bill 3" (the letterhead format Coop uses, component `finalBillCustom4`) is never changed by these keys. "Custom Bill 4" is its own component, `finalBillCustomBill4`, with its own stylesheet and wrapper class.
+
+**Print and reprint use the same settings.** Both the Inward Final Bill page (`inward_bill_final.xhtml`) and the Final Bill Reprint page (`inward_reprint_bill_final.xhtml`) read the same two keys. There is no separate reprint key.
+
+Both keys are application-wide Booleans, default `false`. With both off, neither page shows any Custom Bill 4 button. Set either or both.
 
 | Key | Type | Default | Description |
 | --- | --- | --- | --- |
-| `Inward Final Bill - Custom Bill 3 - Show Claimable Copies` | Boolean | `false` | Adds Claimable Patient, Hospital and Duplicate copy buttons (Custom Bill 3 layout, professional fees included) to the inward Final Bill page. |
-| `Inward Final Bill - Custom Bill 3 - Show Not Claimable Copies` | Boolean | `false` | Adds Not Claimable Patient, Hospital and Duplicate copy buttons (Custom Bill 3 layout, without professional fees) and a Professional Fees copy button. |
+| `Inward Final Bill - Custom Bill 4 - Show Claimable Copies` | Boolean | `false` | Adds Claimable Patient, Hospital and Duplicate copy buttons (Custom Bill 4 layout, professional fees included) to the Final Bill and Final Bill Reprint pages. |
+| `Inward Final Bill - Custom Bill 4 - Show Not Claimable Copies` | Boolean | `false` | Adds Not Claimable Patient, Hospital and Duplicate copy buttons (Custom Bill 4 layout, without professional fees) and a Professional Fees copy button to the Final Bill and Final Bill Reprint pages. |
+
+**Retired keys (no longer read; leave any stored rows alone):**
+
+- `Inward Final Bill - Custom Bill 3 - Show Claimable Copies`
+- `Inward Final Bill - Custom Bill 3 - Show Not Claimable Copies`
+- `Inward Final Bill Reprint - Custom Bill 3 - Show Claimable Copies`
+- `Inward Final Bill Reprint - Custom Bill 3 - Show Not Claimable Copies`
+
+A hospital that had one of these set to Yes must set the matching new key to Yes to keep the buttons.
+
+Do not confuse these with `Inward Final Bill - Show Custom Bill 4 Format`, an older key that switches on the "Custom Bill 3 (Letterhead)" tab on the reprint page (see `printer-configuration-system.md`).
 
 ## Inward VAT per charge type
 

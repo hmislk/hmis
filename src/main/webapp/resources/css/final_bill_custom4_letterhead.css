@@ -69,8 +69,7 @@
 [id$="originalCustom4BillPriview"] .container-fluid,
 [id$="duplicateCustom4BillPriview"] .container-fluid,
 [id$="custom4BillOnly"] .container-fluid,
-[id$="custom4BillOnlyDuplicate"] .container-fluid,
-.custom4BillWrapper .container-fluid {
+[id$="custom4BillOnlyDuplicate"] .container-fluid {
     font-family: Arial, "Liberation Sans", sans-serif;
 }
 
@@ -83,8 +82,7 @@
 [id$="originalCustom4BillPriview"] .headingPrinting,
 [id$="duplicateCustom4BillPriview"] .headingPrinting,
 [id$="custom4BillOnly"] .headingPrinting,
-[id$="custom4BillOnlyDuplicate"] .headingPrinting,
-.custom4BillWrapper .headingPrinting {
+[id$="custom4BillOnlyDuplicate"] .headingPrinting {
     text-align: center !important;
     width: 100% !important;
     margin: auto !important;
@@ -95,8 +93,7 @@
 [id$="originalCustom4BillPriview"] .mark,
 [id$="duplicateCustom4BillPriview"] .mark,
 [id$="custom4BillOnly"] .mark,
-[id$="custom4BillOnlyDuplicate"] .mark,
-.custom4BillWrapper .mark {
+[id$="custom4BillOnlyDuplicate"] .mark {
     font-weight: bold;
 }
 
@@ -108,8 +105,7 @@
     [id$="originalCustom4BillPriview"] .container-fluid,
     [id$="duplicateCustom4BillPriview"] .container-fluid,
     [id$="custom4BillOnly"] .container-fluid,
-    [id$="custom4BillOnlyDuplicate"] .container-fluid,
-    .custom4BillWrapper .container-fluid {
+    [id$="custom4BillOnlyDuplicate"] .container-fluid {
         background-color: #fff9db;
     }
 }
@@ -118,8 +114,7 @@
     [id$="originalCustom4BillPriview"] .container-fluid,
     [id$="duplicateCustom4BillPriview"] .container-fluid,
     [id$="custom4BillOnly"] .container-fluid,
-    [id$="custom4BillOnlyDuplicate"] .container-fluid,
-    .custom4BillWrapper .container-fluid {
+    [id$="custom4BillOnlyDuplicate"] .container-fluid {
         /* Bootstrap's own .container-fluid gutter padding stacks on top of the
            margin below - zero it out here so only the margin controls the
            reserved space. */
@@ -142,8 +137,7 @@
     [id$="originalCustom4BillPriview"] tr,
     [id$="duplicateCustom4BillPriview"] tr,
     [id$="custom4BillOnly"] tr,
-    [id$="custom4BillOnlyDuplicate"] tr,
-    .custom4BillWrapper tr {
+    [id$="custom4BillOnlyDuplicate"] tr {
         page-break-inside: avoid;
         break-inside: avoid;
     }

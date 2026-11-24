@@ -687,7 +687,7 @@
 
                                     <!-- Loop through ProfessionalCharge last -->
                                     <ui:repeat value="#{cc.attrs.bill.billItems}" var="bip">
-                                        <h:panelGroup rendered="#{cc.attrs.showProfessional eq true and bip.inwardChargeType eq 'ProfessionalCharge' and (bip.adjustedValue != 0 or bip.hasFreeOfChargeProFee)}" style="font-size: 12px;">
+                                        <h:panelGroup rendered="#{bip.inwardChargeType eq 'ProfessionalCharge' and (bip.adjustedValue != 0 or bip.hasFreeOfChargeProFee)}" style="font-size: 12px;">
                                             <tr style="width: 100%; font-weight: 400; line-height: 18px;">
                                                 <td style="text-align: left; font-size: 13px !important;
                                                     max-width: 150px; white-space: nowrap;
@@ -744,7 +744,7 @@
 
                                 <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Display All Doctor Chargers as a One and Show Sum Value of a Doctor',false)}">
                                     <!-- Loop through ProfessionalCharge last -->
-                                    <ui:repeat value="#{bhtSummeryController.getSummaryOfDoctorChargers(cc.attrs.bill.billItems,cc.attrs.bill.patientEncounter,cc.attrs.showProfessional)}" var="bip">
+                                    <ui:repeat value="#{bhtSummeryController.getSummaryOfDoctorChargers(cc.attrs.bill.billItems,cc.attrs.bill.patientEncounter)}" var="bip">
                                         <h:panelGroup rendered="#{(bip.inwardChargeType eq 'ProfessionalCharge' or bip.inwardChargeType eq 'DoctorAndNurses') and (bip.adjustedValue != 0 or bip.hasFreeOfChargeProFee)}" style="font-size: 12px;">
                                             <tr style="width: 100%; font-weight: 400; line-height: 18px;">
                                                 <td style="text-align: left; font-size: 13px !important;
