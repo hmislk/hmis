@@ -1982,7 +1982,7 @@ public class PharmacySaleBhtController implements Serializable {
         List<BillItem> tmpBillItems = new ArrayList<>(itemsToIssue);
 
         try {
-            singleTransactionRunner.run(() -> {
+            pharmacyBean.runStockSave(() -> {
                 savePreBillFinally(pt, matrixDepartment, btp, bta);
                 savePreBillItemsFinally(tmpBillItems);
                 billService.createBillFinancialDetailsForInpatientDirectIssueBill(getPreBill());
@@ -1993,12 +1993,20 @@ public class PharmacySaleBhtController implements Serializable {
             LOGGER.log(Level.SEVERE, "Settlement failure details", e);
             // Keep the user's lines, but as new unsaved copies: the rolled-back
             // attempt may have given the old objects ids that no longer exist.
-            rebuildDirectIssueForRetry(itemsToIssue);
+            boolean rebuilt;
+            try {
+                rebuildDirectIssueForRetry(itemsToIssue);
+                rebuilt = true;
+            } catch (Exception re) {
+                LOGGER.log(Level.SEVERE, "Could not rebuild the issue after a failed save", re);
+                rebuilt = false;
+            }
             String cause = rootCauseMessage(e);
             FacesContext fc = FacesContext.getCurrentInstance();
             boolean causeShown = fc != null && fc.getMessageList().stream()
                     .anyMatch(m -> cause.equals(m.getSummary()));
-            JsfUtil.addErrorMessage("The issue was not saved and no stock was moved. Check the items and issue again."
+            JsfUtil.addErrorMessage("The issue was not saved and no stock was moved. "
+                    + (rebuilt ? "Check the items and issue again." : "Start the issue again from the patient.")
                     + (causeShown ? "" : " Error: " + cause));
             return false;
         }
@@ -2014,7 +2022,8 @@ public class PharmacySaleBhtController implements Serializable {
         }
         clearBill();
         clearBillItem();
-        billPreview = true;
+        // No preview when the saved bill could not be loaded; never show an older bill.
+        billPreview = getPrintBill() != null;
         return true;
     }
 
