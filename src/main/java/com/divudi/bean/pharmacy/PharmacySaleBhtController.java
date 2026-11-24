@@ -1525,7 +1525,7 @@ public class PharmacySaleBhtController implements Serializable {
                         new Object[]{list.size(), getPreBill().getId()});
             } catch (Exception e) {
                 String errorMsg = "Failed to process stock deductions. " + e.getMessage();
-                LOGGER.log(Level.SEVERE, "Batch stock deduction failed during BHT settlement: {0}", errorMsg);
+                LOGGER.log(Level.SEVERE, "Batch stock deduction failed during BHT settlement", e);
                 LOGGER.log(Level.SEVERE, "Bill ID: {0}, Department: {1}, User: {2}",
                         new Object[]{
                             getPreBill().getId(),
@@ -1533,8 +1533,8 @@ public class PharmacySaleBhtController implements Serializable {
                             getSessionController().getLoggedUser() != null
                                 ? getSessionController().getLoggedUser().getName() : "unknown"
                         });
-                JsfUtil.addErrorMessage(errorMsg);
-                throw new RuntimeException(errorMsg);
+                showStockMessageOnly(e);
+                throw new RuntimeException(errorMsg, e);
             }
         } else {
             LOGGER.log(Level.INFO, "Stock already deducted for this settlement attempt (retrying after a later "
@@ -1629,7 +1629,7 @@ public class PharmacySaleBhtController implements Serializable {
                     new Object[]{validItems.size(), getPreBill().getId()});
         } catch (Exception e) {
             String errorMsg = "Failed to process stock deductions for request settlement. " + e.getMessage();
-            LOGGER.log(Level.SEVERE, "Batch stock deduction failed during BHT request settlement: {0}", errorMsg);
+            LOGGER.log(Level.SEVERE, "Batch stock deduction failed during BHT request settlement", e);
             LOGGER.log(Level.SEVERE, "Request Bill ID: {0}, Department: {1}, User: {2}",
                     new Object[]{
                         getPreBill().getId(),
@@ -1637,8 +1637,8 @@ public class PharmacySaleBhtController implements Serializable {
                         getSessionController().getLoggedUser() != null
                             ? getSessionController().getLoggedUser().getName() : "unknown"
                     });
-            JsfUtil.addErrorMessage(errorMsg);
-            throw new RuntimeException(errorMsg);
+            showStockMessageOnly(e);
+            throw new RuntimeException(errorMsg, e);
         }
 
         // PERFORMANCE OPTIMIZATION: UserStock cleanup removed to match cashier workflow
@@ -2538,6 +2538,17 @@ public class PharmacySaleBhtController implements Serializable {
             return false;
         } finally {
             getPreBill().setToStaff(porter);
+        }
+    }
+
+    /**
+     * Shows the clean insufficient-stock message from the deduction service on the
+     * page; any other failure adds nothing here (the caller's friendly message covers it).
+     */
+    private void showStockMessageOnly(Throwable t) {
+        String cause = rootCauseMessage(t);
+        if (cause.startsWith("Failed to deduct stock for item:") && cause.contains("Insufficient stock")) {
+            JsfUtil.addErrorMessage(cause);
         }
     }
 
