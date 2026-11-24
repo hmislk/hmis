@@ -2503,14 +2503,19 @@ public class PharmacySaleBhtController implements Serializable {
         return 0.0;
     }
 
+    /** The request issue page; its save (settlePharmacyBhtIssueAccept) discounts every line. */
+    private static final String REQUEST_ISSUE_VIEW_ID = "/ward/ward_pharmacy_bht_issue.xhtml";
+
     /**
-     * On the request issue screen only (lines that came from a request), take
-     * off the same inward discount the save will take off, so Net Value matches
-     * the saved bill (#26055). Direct, discharge and theatre issues save the
-     * screen values as they are and keep no discount here.
+     * On the request issue screen only, take off the same inward discount the
+     * save will take off, so Net Value matches the saved bill (#26055). That
+     * covers lines that came from the request (built before the page opens, so
+     * they are recognised by their request line) and lines added or substituted
+     * on the page itself. Direct, discharge and theatre issues save the screen
+     * values as they are and keep no discount here.
      */
     private void applyRequestIssueDiscountToPreview(BillItem bi, Department matrixDept, PaymentMethod paymentMethod) {
-        if (dischargeIssueMode || bi.getReferanceBillItem() == null) {
+        if (dischargeIssueMode || (bi.getReferanceBillItem() == null && !onRequestIssuePage())) {
             return;
         }
         double discount = inwardDiscountValue(bi, matrixDept, paymentMethod, getPatientEncounter());
@@ -2526,6 +2531,12 @@ public class PharmacySaleBhtController implements Serializable {
             bi.setDiscountRate(discount / unitQty);
             bi.setNetRate(net / unitQty);
         }
+    }
+
+    private boolean onRequestIssuePage() {
+        FacesContext fc = FacesContext.getCurrentInstance();
+        return fc != null && fc.getViewRoot() != null
+                && REQUEST_ISSUE_VIEW_ID.equals(fc.getViewRoot().getViewId());
     }
 
     @Deprecated
