@@ -101,11 +101,20 @@
                                             </h:outputLabel>
                                         </p:column>
 
+                                        <p:column style="text-align: right;" rendered="#{webUserController.hasPrivilege('IPBillingViewDiscount')}">
+                                            <f:facet name="header">
+                                                <h:outputLabel value="Discount"/>
+                                            </f:facet>
+                                            <h:outputLabel value="#{bip.discount}">
+                                                <f:convertNumber pattern="#0.00" />
+                                            </h:outputLabel>
+                                        </p:column>
+
                                         <p:column style="text-align: right;">
                                             <f:facet name="header">
                                                 <h:outputLabel value="Net Value"/>
                                             </f:facet>
-                                            <h:outputLabel value="#{bip.grossValue + bip.marginValue}">
+                                            <h:outputLabel value="#{bip.netValue}">
                                                 <f:convertNumber pattern="#0.00" />
                                             </h:outputLabel>
                                         </p:column>
@@ -119,7 +128,14 @@
                                                         </h:outputLabel>
                                                     </f:facet>
                                                 </p:column>
-                                                <p:column  style="text-align: right;" colspan="2">
+                                                <p:column  style="text-align: right;" colspan="2" rendered="#{webUserController.hasPrivilege('IPBillingViewDiscount')}">
+                                                    <f:facet name="footer">
+                                                        <h:outputLabel value="#{reportsTransfer.previewBill.discount}">
+                                                            <f:convertNumber pattern="#0.00" />
+                                                        </h:outputLabel>
+                                                    </f:facet>
+                                                </p:column>
+                                                <p:column  style="text-align: right;" colspan="#{webUserController.hasPrivilege('IPBillingViewDiscount') ? 1 : 2}">
                                                     <f:facet name="footer">
                                                         <h:outputLabel value="#{reportsTransfer.previewBill.netTotal}">
                                                             <f:convertNumber pattern="#0.00" />

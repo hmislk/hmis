@@ -112,25 +112,53 @@
                                             </h:outputLabel>
                                         </p:column>
 
+                                        <p:column style="text-align: right;" rendered="#{webUserController.hasPrivilege('IPBillingViewDiscount')}">
+                                            <f:facet name="header">
+                                                <h:outputLabel value="Discount"/>
+                                            </f:facet>
+                                            <h:outputLabel value="#{bip.discount}">
+                                                <f:convertNumber pattern="#0.00" />
+                                            </h:outputLabel>
+                                        </p:column>
+
                                         <p:column style="text-align: right;" rendered="#{webUserController.hasPrivilege('NursingIPBillingViewRates')}">
                                             <f:facet name="header">
                                                 <h:outputLabel value="Net Value"/>
                                             </f:facet>
-                                            <h:outputLabel value="#{bip.grossValue + bip.marginValue}">
+                                            <h:outputLabel value="#{bip.netValue}">
                                                 <f:convertNumber pattern="#0.00" />
                                             </h:outputLabel>
                                         </p:column>
 
                                         <p:columnGroup type="footer">
                                             <p:row>
-                                                <p:column  style="text-align: right;" colspan="4" rendered="#{webUserController.hasPrivilege('NursingIPBillingViewRates')}">
+                                                <p:column style="text-align: right;" colspan="3" rendered="#{webUserController.hasPrivilege('NursingIPBillingViewRates')}">
+                                                    <f:facet name="footer">
+                                                        <h:outputLabel value="Total"/>
+                                                    </f:facet>
+                                                </p:column>
+                                                <p:column style="text-align: right;" rendered="#{webUserController.hasPrivilege('NursingIPBillingViewRates')}">
                                                     <f:facet name="footer">
                                                         <h:outputLabel value="#{pharmacyBillSearch.bill.total}">
                                                             <f:convertNumber pattern="#0.00" />
                                                         </h:outputLabel>
                                                     </f:facet>
                                                 </p:column>
-                                                <p:column  style="text-align: right;" colspan="2" rendered="#{webUserController.hasPrivilege('NursingIPBillingViewRates')}">
+                                                <p:column style="text-align: right;" rendered="#{webUserController.hasPrivilege('IPBillingViewDiscount')}">
+                                                    <f:facet name="footer">
+                                                        <h:outputLabel value="#{pharmacyBillSearch.bill.margin}">
+                                                            <f:convertNumber pattern="#0.00" />
+                                                        </h:outputLabel>
+                                                    </f:facet>
+                                                </p:column>
+                                                <p:column style="text-align: right;" rendered="#{webUserController.hasPrivilege('IPBillingViewDiscount')}">
+                                                    <f:facet name="footer">
+                                                        <h:outputLabel value="#{pharmacyBillSearch.bill.discount}">
+                                                            <f:convertNumber pattern="#0.00" />
+                                                        </h:outputLabel>
+                                                    </f:facet>
+                                                </p:column>
+                                                <p:column style="text-align: right;" rendered="#{webUserController.hasPrivilege('NursingIPBillingViewRates')}">
                                                     <f:facet name="footer">
                                                         <h:outputLabel value="#{pharmacyBillSearch.bill.netTotal}">
                                                             <f:convertNumber pattern="#0.00" />
