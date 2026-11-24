@@ -2,6 +2,7 @@ package com.divudi.bean.inward;
 
 import com.divudi.bean.common.SessionController;
 import com.divudi.core.data.BillType;
+import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.PaymentMethod;
 import com.divudi.core.data.dto.InwardTechnicianChargeGroupDTO;
 import com.divudi.core.data.dto.InwardTechnicianChargeRowDTO;
@@ -100,11 +101,22 @@ public class InwardTechnicianChargesReportController implements Serializable {
         if (toDate == null) {
             toDate = CommonFunctions.getEndOfDay(new Date());
         }
+        dateBasis = DATE_BASIS_ADMISSION;
+        admissionType = null;
+        paymentMethod = null;
+        department = null;
+        technician = null;
+        filterSummary = "";
+        showGrandTotal = false;
         groups = new ArrayList<>();
         grandAddedTotal = 0;
         grandPaidTotal = 0;
         processed = false;
         return "/inward/reports/inward_technician_charges_report?faces-redirect=true";
+    }
+
+    public void clearTechnician() {
+        technician = null;
     }
 
     public void clearDepartment() {
@@ -147,6 +159,10 @@ public class InwardTechnicianChargesReportController implements Serializable {
         boolean byFinalBill = DATE_BASIS_FINAL_BILL.equals(dateBasis);
         Map<String, Object> params = new HashMap<>();
         params.put("billType", BillType.InwardProfessional);
+        List<BillTypeAtomic> excludedAtomics = new ArrayList<>();
+        excludedAtomics.add(BillTypeAtomic.INWARD_PROFESSIONAL_FEE_BILL_CANCELLATION);
+        excludedAtomics.add(BillTypeAtomic.INWARD_THEATRE_PROFESSIONAL_FEE_BILL_CANCELLATION);
+        params.put("excludedAtomics", excludedAtomics);
 
         String jpql = "SELECT new com.divudi.core.data.dto.InwardTechnicianChargeRowDTO("
                 + "COALESCE(pe.bhtNo, ''), "
@@ -166,6 +182,9 @@ public class InwardTechnicianChargesReportController implements Serializable {
                 + "AND b.retired = false "
                 + "AND b.cancelled = false "
                 + "AND b.billType = :billType "
+                // Cancelling a fee bill also writes a negative contra bill (not flagged cancelled); leave it out
+                // so a cancelled fee disappears from the report.
+                + "AND b.billTypeAtomic NOT IN :excludedAtomics "
                 // Fee Category = Technician Fee (never affected by the merged-fees toggle).
                 + professionalFeeClassificationService.staffCondition("bf", InwardChargeType.TechnicianAndParamedicalCharge, params);
 

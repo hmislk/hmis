@@ -114,7 +114,10 @@
                                                 itemLabel="#{t.person.name}" itemValue="#{t}"
                                                 forceSelection="true" maxResults="15"
                                                 placeholder="All Technicians"
-                                                styleClass="w-100" inputStyleClass="w-100 form-control" />
+                                                styleClass="w-100" inputStyleClass="w-100 form-control">
+                                    <p:ajax event="clear" process="@this"
+                                            listener="#{inwardTechnicianChargesReportController.clearTechnician()}" />
+                                </p:autoComplete>
                             </div>
                         </div>
 
