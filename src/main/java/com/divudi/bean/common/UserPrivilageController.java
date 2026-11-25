@@ -23,9 +23,11 @@ import com.divudi.core.entity.WebUserRole;
 import com.divudi.core.entity.WebUserRolePrivilege;
 import com.divudi.core.facade.WebUserRolePrivilegeFacade;
 import com.divudi.service.AuditEventService;
+import com.divudi.service.PrivilegeSaveService;
 import com.divudi.core.entity.AuditEvent;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -67,6 +69,8 @@ public class UserPrivilageController implements Serializable {
     WebUserPrivilegeFacade webUserPrivilegeFacade;
     @EJB
     AuditEventService auditEventService;
+    @EJB
+    PrivilegeSaveService privilegeSaveService;
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Class Variables">
     private static final long serialVersionUID = 1L;
@@ -84,6 +88,9 @@ public class UserPrivilageController implements Serializable {
     private List<PrivilegeHolder> currentUserPrivilegeHolders;
     private boolean privilegesLoaded;
     private String searchText;
+    // Privileges shown as ticked when the tree was last listed, and for which
+    // user and department (or role) - the save baseline (#26090).
+    private final PrivilegeListGuard listGuard = new PrivilegeListGuard();
     @Inject
     SessionController sessionController;
 
@@ -1637,116 +1644,160 @@ public class UserPrivilageController implements Serializable {
         return phs;
     }
 
-    public void saveWebUserPrivileges(WebUser u, List<PrivilegeHolder> selected, Department dept) {
+    /**
+     * Applies a role's privileges to a user in a department (Add Users to a
+     * role). Among the privileges the tree offers, the user ends up with
+     * exactly the role's ones. Rows the tree does not offer stay untouched,
+     * existing rows are kept, and retired rows record who and when (#26090).
+     *
+     * @return true when the privileges were saved; false when nothing was
+     * changed (missing user or department, or the write failed)
+     */
+    public boolean saveWebUserPrivileges(WebUser u, List<PrivilegeHolder> selected, Department dept) {
         currentWebUser = u;
         department = dept;
-        List<PrivilegeHolder> selectedPrivileges = selected;
-        for (WebUserPrivilege wup : getCurrentWebUserPrivileges()) {
-            if (wup.getPrivilege() != null) {
-                wup.setRetired(true);
-            }
+        if (u == null || dept == null) {
+            return false;
         }
-        getFacade().batchEdit(getCurrentWebUserPrivileges());
-        if (selectedPrivileges == null) {
-            return;
-        }
-
-        List<WebUserPrivilege> newWups = new ArrayList<>();
-        List<WebUserPrivilege> oldWups = new ArrayList<>();
-
-        for (PrivilegeHolder ph : selectedPrivileges) {
-            if (ph.getPrivilege() == null) {
-                continue;
-            }
-            String jpql = "select w"
-                    + " from WebUserPrivilege w "
-                    + " where w.department=:dep "
-                    + " and w.webUser=:wu "
-                    + " and w.privilege=:p";
-            Map m = new HashMap();
-            m.put("dep", department);
-            m.put("wu", currentWebUser);
-            m.put("p", ph.getPrivilege());
-            WebUserPrivilege wup = getFacade().findFirstByJpql(jpql, m);
-            if (wup == null) {
-                wup = new WebUserPrivilege();
-                wup.setDepartment(department);
-                wup.setWebUser(currentWebUser);
-                wup.setPrivilege(ph.getPrivilege());
-                newWups.add(wup);
-            } else {
-                wup.setRetired(false);
-                oldWups.add(wup);
-            }
-        }
-        getFacade().batchCreate(newWups);
-        getFacade().batchEdit(oldWups);
-
-        fillUserPrivileges();
-        JsfUtil.addSuccessMessage("Updated");
-    }
-
-    public void saveWebUserPrivileges() {
-        List<PrivilegeHolder> selectedPrivileges = extractPrivileges(selectedNodes);
-
-        // Retire all current web user privileges initially
-        List<WebUserPrivilege> currentPrivileges = getCurrentWebUserPrivileges();
-        // A row whose privilege name this build does not know reads as null
-        // (PrivilegesConverter); leave it untouched so a newer build keeps it.
-        for (WebUserPrivilege wup : currentPrivileges) {
-            if (wup.getPrivilege() != null) {
-                wup.setRetired(true);
-            }
-        }
-
-        if (selectedPrivileges == null) {
-            getFacade().batchEdit(currentPrivileges);
-            return;
-        }
-
-        List<WebUserPrivilege> newWups = new ArrayList<>();
-        List<WebUserPrivilege> nonRetiredPrivileges = new ArrayList<>();
-
-        for (PrivilegeHolder ph : selectedPrivileges) {
-            if (ph.getPrivilege() == null) {
-                continue;
-            }
-
-            boolean found = false;
-            for (WebUserPrivilege wup : currentPrivileges) {
-                if (isSamePrivilege(wup.getPrivilege(), ph.getPrivilege())) {
-                    wup.setRetired(false);
-                    nonRetiredPrivileges.add(wup);
-                    found = true;
-                    break;
+        List<Privileges> selectedPrivileges = new ArrayList<>();
+        if (selected != null) {
+            for (PrivilegeHolder ph : selected) {
+                if (ph != null && ph.getPrivilege() != null) {
+                    selectedPrivileges.add(ph.getPrivilege());
                 }
             }
+        }
+        Set<Privileges> offered = PrivilegeSaveDiff
+                .readTree(getRootTreeNode(), null, UserPrivilageController::privilegeOfNodeData)
+                .getOffered();
+        // No baseline here: applying a role replaces the user's tree privileges
+        // with the role's, as before.
+        PrivilegeSaveDiff.Result<WebUserPrivilege> diff = applyUserPrivilegeChanges(u, dept, fetchLiveUserPrivileges(u, dept),
+                PrivilegeSaveDiff.forPrivileges(offered, selectedPrivileges));
+        fillUserPrivileges();
+        if (diff == null) {
+            JsfUtil.addErrorMessage(SAVE_FAILED_MESSAGE);
+            return false;
+        }
+        JsfUtil.addSuccessMessage("Updated");
+        return true;
+    }
 
-            if (!found) {
-                WebUserPrivilege newWup = new WebUserPrivilege();
-                newWup.setDepartment(department);
-                newWup.setWebUser(currentWebUser);
-                newWup.setPrivilege(ph.getPrivilege());
-                newWups.add(newWup);
+    /**
+     * Saves the Manage Privileges tree for the user and department. Only what
+     * the admin ticked or unticked changes (#26090): a row is retired only
+     * when its privilege is offered in the tree and not selected; privileges
+     * the tree does not offer are kept; only newly ticked privileges get a
+     * new row, so existing rows keep their ids.
+     */
+    public void saveWebUserPrivileges() {
+        if (currentWebUser == null) {
+            JsfUtil.addErrorMessage("Please select a user");
+            return;
+        }
+        if (department == null) {
+            JsfUtil.addErrorMessage("Please select a department");
+            return;
+        }
+        Set<Privileges> baseline = listGuard.baselineForSave(privilegesLoaded, userKey(currentWebUser, department));
+        if (baseline == null) {
+            JsfUtil.addErrorMessage(NOT_LISTED_MESSAGE);
+            return;
+        }
+        PrivilegeSaveDiff.TreeState state = PrivilegeSaveDiff.readTree(
+                getRootTreeNode(), selectedNodeList(), UserPrivilageController::privilegeOfNodeData, baseline);
+        List<WebUserPrivilege> current = fetchLiveUserPrivileges(currentWebUser, department);
+        String refusal = PrivilegeSaveDiff.refusalReason(state);
+        if (refusal != null) {
+            JsfUtil.addErrorMessage(refusal);
+            return;
+        }
+        PrivilegeSaveDiff.Result<WebUserPrivilege> diff = applyUserPrivilegeChanges(currentWebUser, department, current, state);
+        fillUserPrivileges();
+        if (diff == null) {
+            JsfUtil.addErrorMessage(SAVE_FAILED_MESSAGE);
+            return;
+        }
+        JsfUtil.addSuccessMessage("Updated. Added " + diff.getToAdd().size()
+                + ", removed " + diff.getToRetire().size());
+    }
+
+    private PrivilegeSaveDiff.Result<WebUserPrivilege> applyUserPrivilegeChanges(WebUser wu, Department dept,
+            List<WebUserPrivilege> current, PrivilegeSaveDiff.TreeState state) {
+        if (wu == null || dept == null) {
+            return new PrivilegeSaveDiff.Result<>();
+        }
+        PrivilegeSaveDiff.Result<WebUserPrivilege> diff = PrivilegeSaveDiff.compute(current, WebUserPrivilege::getPrivilege, state);
+        Date now = new Date();
+        WebUser actor = sessionController == null ? null : sessionController.getLoggedUser();
+        for (WebUserPrivilege wup : diff.getToRetire()) {
+            wup.setRetired(true);
+            wup.setRetirer(actor);
+            wup.setRetiredAt(now);
+        }
+        List<WebUserPrivilege> newRows = new ArrayList<>();
+        for (Privileges p : diff.getToAdd()) {
+            WebUserPrivilege wup = new WebUserPrivilege();
+            wup.setDepartment(dept);
+            wup.setWebUser(wu);
+            wup.setPrivilege(p);
+            wup.setCreater(actor);
+            wup.setCreatedAt(now);
+            newRows.add(wup);
+        }
+        try {
+            privilegeSaveService.saveUserPrivilegeChanges(newRows, diff.getToRetire());
+        } catch (RuntimeException e) {
+            java.util.logging.Logger.getLogger(UserPrivilageController.class.getName())
+                    .log(java.util.logging.Level.SEVERE, "User privilege save rolled back", e);
+            return null;
+        }
+        return diff;
+    }
+
+    private static final String NOT_LISTED_MESSAGE = "Click List Privileges first, then make the changes and save. Nothing was saved.";
+    private static final String SAVE_FAILED_MESSAGE = "The privileges could not be saved. Nothing was changed. Please try again.";
+
+    private static String userKey(WebUser wu, Department dept) {
+        return PrivilegeListGuard.userKey(wu == null ? null : wu.getId(), dept == null ? null : dept.getId());
+    }
+
+    private List<WebUserPrivilege> fetchLiveUserPrivileges(WebUser wu, Department dept) {
+        if (wu == null || dept == null) {
+            return new ArrayList<>();
+        }
+        String jpql = "select w "
+                + " from WebUserPrivilege w "
+                + " where w.webUser=:wu "
+                + " and w.department=:dep "
+                + " and w.retired=:ret";
+        Map<String, Object> m = new HashMap<>();
+        m.put("wu", wu);
+        m.put("dep", dept);
+        m.put("ret", false);
+        return getFacade().findByJpqlWithoutCache(jpql, m);
+    }
+
+    private List<TreeNode> selectedNodeList() {
+        List<TreeNode> list = new ArrayList<>();
+        if (selectedNodes != null) {
+            list.addAll(Arrays.asList(selectedNodes));
+        }
+        return list;
+    }
+
+    private static <R> Set<Privileges> baselineOf(List<R> rows, java.util.function.Function<R, Privileges> privilegeOf) {
+        List<Privileges> ps = new ArrayList<>();
+        if (rows != null) {
+            for (R r : rows) {
+                ps.add(privilegeOf.apply(r));
             }
         }
+        return PrivilegeSaveDiff.canonicalSet(ps);
+    }
 
-        getFacade().batchCreate(newWups);
-        getFacade().batchEdit(currentPrivileges);
-
-        // Combine non-retired current privileges and newly added privileges
-        List<WebUserPrivilege> updatedPrivileges = new ArrayList<>(nonRetiredPrivileges);
-        updatedPrivileges.addAll(newWups);
-
-        // Set the combined list as current web user privileges
-        setCurrentWebUserPrivileges(updatedPrivileges);
-        // Log final state after saving
-
-        for (WebUserPrivilege wup : updatedPrivileges) {
-        }
-
-        fillUserPrivileges();
-        JsfUtil.addSuccessMessage("Updated");
+    static Privileges privilegeOfNodeData(Object data) {
+        return data instanceof PrivilegeHolder ? ((PrivilegeHolder) data).getPrivilege() : null;
     }
 
     private List<PrivilegeHolder> extractPrivileges(TreeNode[] selectedNodes) {
@@ -1778,49 +1829,68 @@ public class UserPrivilageController implements Serializable {
 //        }
 //        return privileges;
 //    }
+    /**
+     * Saves the privilege tree for a user role with the same rule as the user
+     * save (#26090): only ticked or unticked privileges change.
+     */
     public void saveWebUserRolePrivileges() {
-        List<PrivilegeHolder> selectedPrivileges = extractPrivileges(selectedNodes);
-
-        for (WebUserRolePrivilege wup : getCurrentWebUserRolePrivileges()) {
-            if (wup.getPrivilege() != null) {
-                wup.setRetired(true);
-            }
-        }
-
-        getRoleFacede().batchEdit(getCurrentWebUserRolePrivileges());
-        if (selectedPrivileges == null) {
+        if (webUserRole == null) {
+            JsfUtil.addErrorMessage("Please select a User Role");
             return;
         }
-
-        List<WebUserRolePrivilege> newWups = new ArrayList<>();
-        List<WebUserRolePrivilege> oldWups = new ArrayList<>();
-
-        for (PrivilegeHolder ph : selectedPrivileges) {
-            if (ph.getPrivilege() == null) {
-                continue;
-            }
-            String jpql = "select w"
-                    + " from WebUserRolePrivilege w "
-                    + " where w.webUserRole=:wu "
-                    + " and w.privilege=:p";
-            Map m = new HashMap();
-            m.put("wu", webUserRole);
-            m.put("p", ph.getPrivilege());
-            WebUserRolePrivilege wup = getRoleFacede().findFirstByJpql(jpql, m);
-            if (wup == null) {
-                wup = new WebUserRolePrivilege();
-                wup.setWebUserRole(webUserRole);
-                wup.setPrivilege(ph.getPrivilege());
-                newWups.add(wup);
-            } else {
-                wup.setRetired(false);
-                oldWups.add(wup);
-            }
+        Set<Privileges> baseline = listGuard.baselineForSave(privilegesLoaded, PrivilegeListGuard.roleKey(webUserRole.getId()));
+        if (baseline == null) {
+            JsfUtil.addErrorMessage(NOT_LISTED_MESSAGE);
+            return;
         }
-        getRoleFacede().batchCreate(newWups);
-        getRoleFacede().batchEdit(oldWups);
+        PrivilegeSaveDiff.TreeState state = PrivilegeSaveDiff.readTree(
+                getRootTreeNode(), selectedNodeList(), UserPrivilageController::privilegeOfNodeData, baseline);
+        List<WebUserRolePrivilege> current = fetchLiveRolePrivileges(webUserRole);
+        String refusal = PrivilegeSaveDiff.refusalReason(state);
+        if (refusal != null) {
+            JsfUtil.addErrorMessage(refusal);
+            return;
+        }
+        PrivilegeSaveDiff.Result<WebUserRolePrivilege> diff = PrivilegeSaveDiff.compute(current, WebUserRolePrivilege::getPrivilege, state);
+        Date now = new Date();
+        WebUser actor = sessionController == null ? null : sessionController.getLoggedUser();
+        for (WebUserRolePrivilege wurp : diff.getToRetire()) {
+            wurp.setRetired(true);
+            wurp.setRetirer(actor);
+            wurp.setRetiredAt(now);
+        }
+        List<WebUserRolePrivilege> newRows = new ArrayList<>();
+        for (Privileges p : diff.getToAdd()) {
+            WebUserRolePrivilege wurp = new WebUserRolePrivilege();
+            wurp.setWebUserRole(webUserRole);
+            wurp.setPrivilege(p);
+            wurp.setCreater(actor);
+            wurp.setCreatedAt(now);
+            newRows.add(wurp);
+        }
+        try {
+            privilegeSaveService.saveRolePrivilegeChanges(newRows, diff.getToRetire());
+        } catch (RuntimeException e) {
+            java.util.logging.Logger.getLogger(UserPrivilageController.class.getName())
+                    .log(java.util.logging.Level.SEVERE, "Role privilege save rolled back", e);
+            fillUserRolePrivileges();
+            JsfUtil.addErrorMessage(SAVE_FAILED_MESSAGE);
+            return;
+        }
         fillUserRolePrivileges();
-        JsfUtil.addSuccessMessage("Updated");
+        JsfUtil.addSuccessMessage("Updated. Added " + diff.getToAdd().size()
+                + ", removed " + diff.getToRetire().size());
+    }
+
+    private List<WebUserRolePrivilege> fetchLiveRolePrivileges(WebUserRole role) {
+        String jpql = "select w "
+                + " from WebUserRolePrivilege w "
+                + " where w.webUserRole=:role "
+                + " and w.retired=:ret";
+        Map<String, Object> m = new HashMap<>();
+        m.put("role", role);
+        m.put("ret", false);
+        return getRoleFacede().findByJpqlWithoutCache(jpql, m);
     }
     
     private static void checkNodes(TreeNode root, List<PrivilegeHolder> privilegesToCheck) {
@@ -1915,9 +1985,17 @@ public class UserPrivilageController implements Serializable {
     }
 
     public void fillUserPrivileges() {
-        List<WebUserPrivilege> wups;
         if (currentWebUser == null) {
-            JsfUtil.addErrorMessage("User?");
+            JsfUtil.addErrorMessage("Please select a user");
+            privilegesLoaded = false;
+            listGuard.clear();
+            return;
+        }
+        if (department == null) {
+            JsfUtil.addErrorMessage("Please select a department");
+            privilegesLoaded = false;
+            listGuard.clear();
+            return;
         }
         String j = "SELECT i "
                 + " FROM WebUserPrivilege i "
@@ -1930,6 +2008,7 @@ public class UserPrivilageController implements Serializable {
         m.put("dep", department);
         currentWebUserPrivileges = getEjbFacade().findByJpql(j, m);
         currentUserPrivilegeHolders = createPrivilegeHolders(currentWebUserPrivileges);
+        listGuard.listed(userKey(currentWebUser, department), baselineOf(currentWebUserPrivileges, WebUserPrivilege::getPrivilege));
         unselectTreeNodes(rootTreeNode);
         checkNodes(rootTreeNode, currentUserPrivilegeHolders);
         privilegesLoaded = true;
@@ -2057,6 +2136,7 @@ public class UserPrivilageController implements Serializable {
 
     public void makePrivilegesNeededToBeReloaded() {
         privilegesLoaded = false;
+        listGuard.clear();
     }
 
     public void fillUserRolePrivileges(WebUserRole u) {
@@ -2065,9 +2145,11 @@ public class UserPrivilageController implements Serializable {
     }
 
     public void fillUserRolePrivileges() {
-        List<WebUserRolePrivilege> wups;
         if (webUserRole == null) {
-            JsfUtil.addErrorMessage("User Role?");
+            JsfUtil.addErrorMessage("Please select a User Role");
+            privilegesLoaded = false;
+            listGuard.clear();
+            return;
         }
         String j = "SELECT i "
                 + " FROM WebUserRolePrivilege i "
@@ -2078,6 +2160,8 @@ public class UserPrivilageController implements Serializable {
         m.put("ret", false);
         currentWebUserRolePrivileges = getRoleFacede().findByJpql(j, m);
         currentUserPrivilegeHolders = createRolePrivilegeHolders(currentWebUserRolePrivileges);
+        listGuard.listed(PrivilegeListGuard.roleKey(webUserRole.getId()),
+                baselineOf(currentWebUserRolePrivileges, WebUserRolePrivilege::getPrivilege));
         unselectTreeNodes(rootTreeNode);
         checkNodes(rootTreeNode, currentUserPrivilegeHolders);
         privilegesLoaded = true;
@@ -2242,8 +2326,15 @@ public class UserPrivilageController implements Serializable {
         return privilegesLoaded;
     }
 
+    PrivilegeListGuard getListGuard() {
+        return listGuard;
+    }
+
     public void setPrivilegesLoaded(boolean privilegesLoaded) {
         this.privilegesLoaded = privilegesLoaded;
+        if (!privilegesLoaded) {
+            listGuard.clear();
+        }
     }
 
     public String getSearchText() {
