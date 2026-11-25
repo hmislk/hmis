@@ -17,16 +17,21 @@
                     <h:panelGroup rendered="#{!pharmacyBillSearch.printPreview}">
                         <p:panel class="m-1">
                             <f:facet name="header">
-                                <div class="d-flex justify-content-between">
-                                    <div><h:outputText value="Pharmacy Bill Reversal - BHT Issue" class="mt-2"/></div>
-                                    <div class="d-flex gap-2">
-                                        <p:inputText placeholder="Enter Comments for Reversal" value="#{pharmacyBillSearch.bill.comments}" style="width: 400px;"/> 
+                                <div class="d-flex justify-content-between align-items-center w-100">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <h:outputText styleClass="fa fa-undo" />
+                                        <h:outputText value="Pharmacy Bill Reversal - BHT Issue"/>
+                                    </div>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <p:inputText placeholder="Enter Comments for Reversal" title="Comments for the reversal" value="#{pharmacyBillSearch.bill.comments}" style="width: 400px;"/> 
                                         <p:commandButton 
                                             ajax="false"
                                             value="Reverse Bill" 
                                             icon="fa fa-undo"
                                             onclick="return confirm('Are you sure you want to reverse this bill? This will create a reverse bill with negative quantities.');"
-                                            class="ui-button-warning" 
+                                            class="ui-button-warning"
+                                            style="min-width:120px"
+                                            title="Reverse this bill"
                                             action="#{pharmacyBillSearch.reversePharmacyDirectIssueToBht()}" 
                                             rendered="#{pharmacyBillSearch.bill != null and pharmacyBillSearch.bill.cancelled == false}">
                                         </p:commandButton> 
@@ -86,7 +91,8 @@
                                     <p:panel header="Bill Items">
                                         <p:dataTable 
                                             rowIndexVar="rowIndex"
-                                            styleClass="condensed-table"
+                                            styleClass="condensed-table p-datatable-sm"
+                                            stickyHeader="true"
                                             value="#{pharmacyBillSearch.bill.billItems}"
                                             var="bip"
                                             emptyMessage="No items found">
@@ -163,10 +169,17 @@
                     <h:panelGroup rendered="#{pharmacyBillSearch.printPreview}">
                         <p:panel header="Print Preview">
                             <f:facet name="header">
-                                <h:outputLabel value="BHT Issue Reversal" class="mt-2"></h:outputLabel>
-                                <p:commandButton value="Print" ajax="false" style="float: right;" class="ui-button-info" icon="fas fa-print">
-                                    <p:printer target="gpBillPreview" />
-                                </p:commandButton>
+                                <div class="d-flex justify-content-between align-items-center w-100">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <h:outputText styleClass="fa fa-undo" />
+                                        <h:outputText value="BHT Issue Reversal"/>
+                                    </div>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <p:commandButton value="Print" ajax="false" class="ui-button-info" icon="fas fa-print" style="min-width:120px">
+                                            <p:printer target="gpBillPreview" />
+                                        </p:commandButton>
+                                    </div>
+                                </div>
                             </f:facet>
 
                             <div class="d-flex justify-content-end">
