@@ -13,7 +13,7 @@
         <ui:composition template="/dataAdmin/admin_data_administration.xhtml">
             <ui:define name="subcontent">
                 <h:form>
-                  <h:panelGroup rendered="#{webUserController.hasPrivilege('AdminItems')}">
+                  <h:panelGroup rendered="#{webUserController.hasPrivilege('ReversePharmacyBhtIssue')}">
 
                     <h:panelGroup rendered="#{!pharmacyBillSearch.printPreview}">
                         <p:panel class="m-1">

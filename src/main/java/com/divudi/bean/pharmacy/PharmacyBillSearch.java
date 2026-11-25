@@ -259,8 +259,8 @@ public class PharmacyBillSearch implements Serializable {
     }
 
     public String navigateToReversePharmacyDirectIssueToInpatients() {
-        if (!webUserController.hasPrivilege(Privileges.AdminItems.toString())) {
-            JsfUtil.addErrorMessage("Not authorised");
+        if (!webUserController.hasPrivilege(Privileges.ReversePharmacyBhtIssue.toString())) {
+            JsfUtil.addErrorMessage("You do not have the privilege to reverse a pharmacy BHT issue");
             return null;
         }
         if (bill == null) {
@@ -279,8 +279,8 @@ public class PharmacyBillSearch implements Serializable {
     }
 
     public String navigateToReversePharmacyDirectIssueToInpatientsById(Long billId) {
-        if (!webUserController.hasPrivilege(Privileges.AdminItems.toString())) {
-            JsfUtil.addErrorMessage("Not authorised");
+        if (!webUserController.hasPrivilege(Privileges.ReversePharmacyBhtIssue.toString())) {
+            JsfUtil.addErrorMessage("You do not have the privilege to reverse a pharmacy BHT issue");
             return null;
         }
         if (billId == null) {
@@ -3667,8 +3667,8 @@ public class PharmacyBillSearch implements Serializable {
     }
 
     public void reversePharmacyDirectIssueToBht() {
-        if (!webUserController.hasPrivilege(Privileges.AdminItems.toString())) {
-            JsfUtil.addErrorMessage("Not authorised");
+        if (!webUserController.hasPrivilege(Privileges.ReversePharmacyBhtIssue.toString())) {
+            JsfUtil.addErrorMessage("You do not have the privilege to reverse a pharmacy BHT issue");
             return;
         }
         if (getBill() == null) {
