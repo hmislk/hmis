@@ -63,8 +63,7 @@ public class InpatientPharmacyIssueDTO implements Serializable {
                 || billTypeAtomic == BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION
                 || billTypeAtomic == BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN
                 || billTypeAtomic == BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_CANCELLATION
-                || billTypeAtomic == BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN
-                || billTypeAtomic == BillTypeAtomic.ACCEPT_RETURN_MEDICINE_INWARD;
+                || billTypeAtomic == BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN;
     }
 
     // JavaBeans property getter for JSF access
