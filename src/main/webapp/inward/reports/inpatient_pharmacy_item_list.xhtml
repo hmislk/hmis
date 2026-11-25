@@ -327,7 +327,7 @@
                                     <f:facet name="header">
                                         <h:outputLabel value="Net Value" />
                                     </f:facet>
-                                    <h:outputLabel value="#{bip.referanceBillItem ne null and (bip.referanceBillItem.bill.billTypeAtomic ne 'REQUEST_MEDICINE_INWARD' or bip.referanceBillItem.bill.cancelled) ? (bip.netValue lt 0 ? -bip.netValue : bip.netValue) : bip.netValue}">
+                                    <h:outputLabel value="#{inwardReportControllerBht.pharmacyItemListRowValue(bip)}">
                                         <f:convertNumber pattern="#0.00" />
                                     </h:outputLabel>
                                     <f:facet name="footer">

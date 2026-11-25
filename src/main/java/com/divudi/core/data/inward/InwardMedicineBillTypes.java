@@ -78,10 +78,29 @@ public final class InwardMedicineBillTypes {
      */
     public static final List<BillTypeAtomic> ALL_EXCLUDING_ISSUE_CANCELLATIONS;
 
+    /**
+     * The issue bill types only: {@link #ALL} without the returns, the accept bill
+     * and the issue cancellations.
+     */
+    public static final List<BillTypeAtomic> ISSUES;
+
     static {
         List<BillTypeAtomic> l = new java.util.ArrayList<>(ALL);
         l.removeAll(ISSUE_CANCELLATIONS);
         ALL_EXCLUDING_ISSUE_CANCELLATIONS = Collections.unmodifiableList(l);
+        List<BillTypeAtomic> issues = new java.util.ArrayList<>(l);
+        issues.removeAll(ITEM_LIST_RETURNS);
+        ISSUES = Collections.unmodifiableList(issues);
+    }
+
+    /**
+     * Whether a bill of this type stays in a list that skips cancelled issue bills.
+     * A cancelled issue drops out (with its cancellation). A cancelled return stays:
+     * its own cancellation bill is not one of {@link #ALL}, so the interim bill
+     * still deducts the return, and the list must too (#26105).
+     */
+    public static boolean isCountedInLiveList(BillTypeAtomic billTypeAtomic, boolean billCancelled) {
+        return !billCancelled || isItemListReturn(billTypeAtomic);
     }
 
     /**
