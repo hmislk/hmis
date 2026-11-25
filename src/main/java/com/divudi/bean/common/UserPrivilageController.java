@@ -1686,7 +1686,7 @@ public class UserPrivilageController implements Serializable {
         PrivilegeSaveDiff.TreeState state = PrivilegeSaveDiff.readTree(
                 getRootTreeNode(), selectedNodeList(), UserPrivilageController::privilegeOfNodeData);
         List<WebUserPrivilege> current = fetchLiveUserPrivileges(currentWebUser, department);
-        String refusal = PrivilegeSaveDiff.refusalReason(state, current, WebUserPrivilege::getPrivilege);
+        String refusal = PrivilegeSaveDiff.refusalReason(state);
         if (refusal != null) {
             JsfUtil.addErrorMessage(refusal);
             return;
@@ -1798,7 +1798,7 @@ public class UserPrivilageController implements Serializable {
         PrivilegeSaveDiff.TreeState state = PrivilegeSaveDiff.readTree(
                 getRootTreeNode(), selectedNodeList(), UserPrivilageController::privilegeOfNodeData);
         List<WebUserRolePrivilege> current = fetchLiveRolePrivileges(webUserRole);
-        String refusal = PrivilegeSaveDiff.refusalReason(state, current, WebUserRolePrivilege::getPrivilege);
+        String refusal = PrivilegeSaveDiff.refusalReason(state);
         if (refusal != null) {
             JsfUtil.addErrorMessage(refusal);
             return;

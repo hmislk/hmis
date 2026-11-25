@@ -138,33 +138,16 @@ public final class PrivilegeSaveDiff {
 
     /**
      * Why a save must be refused, or null when it may go ahead. A save is
-     * refused when the ticked nodes are not from the current tree, or when
-     * nothing is ticked but the save would remove live privileges the tree
-     * shows. Either way nothing is changed.
+     * refused, and nothing is changed, when a ticked node is not from the
+     * current tree. An empty selection is allowed: it removes every privilege
+     * the tree offers.
      *
-     * @param <R> stored row type
      * @param state the tree state
-     * @param currentRows the live stored rows
-     * @param privilegeOfRow reads a row's privilege
      * @return the message to show, or null
      */
-    public static <R> String refusalReason(TreeState state, List<R> currentRows, Function<R, Privileges> privilegeOfRow) {
+    public static String refusalReason(TreeState state) {
         if (state.foreignSelection) {
             return "The privilege list changed after it was shown. Nothing was saved. Click List Privileges, tick the privileges again and save.";
-        }
-        if (!state.selected.isEmpty() || currentRows == null) {
-            return null;
-        }
-        int wouldRemove = 0;
-        for (R row : currentRows) {
-            Privileges p = UserPrivilageController.canonicalPrivilege(privilegeOfRow.apply(row));
-            if (p != null && state.offered.contains(p) && !state.undetermined.contains(p)) {
-                wouldRemove++;
-            }
-        }
-        if (wouldRemove > 0) {
-            return "No privileges are ticked, so this save would remove all " + wouldRemove
-                    + " privileges shown in the list. Nothing was saved. Click List Privileges and try again.";
         }
         return null;
     }

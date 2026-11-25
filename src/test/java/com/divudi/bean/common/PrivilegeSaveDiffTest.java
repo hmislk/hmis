@@ -209,7 +209,7 @@ public class PrivilegeSaveDiffTest {
 
         // The save itself is refused, because the ticked nodes are not from the current tree.
         assertTrue(state.isForeignSelection());
-        assertNotNull(PrivilegeSaveDiff.refusalReason(state, rows, x -> x.privilege));
+        assertNotNull(PrivilegeSaveDiff.refusalReason(state));
     }
 
     @Test
@@ -247,15 +247,21 @@ public class PrivilegeSaveDiffTest {
     }
 
     @Test
-    public void emptySelectionThatWouldRemoveShownPrivilegesIsRefused() {
+    public void emptySelectionRetiresAllOfferedAndKeepsUnoffered() {
+        // Unticking everything is a real admin action: allowed, not refused.
         TreeNode root = new DefaultTreeNode("root", null);
         new DefaultTreeNode(Privileges.InwardRoom, root);
-        PrivilegeSaveDiff.TreeState state = PrivilegeSaveDiff.readTree(root, null, NODE_PRIVILEGE);
+        new DefaultTreeNode(Privileges.LabBillSearch, root);
+        PrivilegeSaveDiff.TreeState state = PrivilegeSaveDiff.readTree(root, new ArrayList<TreeNode>(), NODE_PRIVILEGE);
+        assertNull(PrivilegeSaveDiff.refusalReason(state));
 
-        assertNotNull(PrivilegeSaveDiff.refusalReason(state, Collections.singletonList(new Row(Privileges.InwardRoom)), x -> x.privilege));
-        // Nothing shown would be removed: allowed.
-        assertNull(PrivilegeSaveDiff.refusalReason(state, Collections.singletonList(new Row(Privileges.User)), x -> x.privilege));
-        assertNull(PrivilegeSaveDiff.refusalReason(state, new ArrayList<Row>(), x -> x.privilege));
+        Row room = new Row(Privileges.InwardRoom);
+        Row lab = new Row(Privileges.LabBillSearch);
+        Row notOffered = new Row(Privileges.User);
+        Row unknown = new Row(null);
+        PrivilegeSaveDiff.Result<Row> r = diff(Arrays.asList(room, lab, notOffered, unknown), state);
+        assertEquals(Arrays.asList(room, lab), r.getToRetire());
+        assertTrue(r.getToAdd().isEmpty());
     }
 
     @Test
@@ -266,8 +272,7 @@ public class PrivilegeSaveDiffTest {
         PrivilegeSaveDiff.TreeState state = PrivilegeSaveDiff.readTree(root, Collections.singletonList(a), NODE_PRIVILEGE);
 
         assertFalse(state.isForeignSelection());
-        assertNull(PrivilegeSaveDiff.refusalReason(state,
-                Arrays.asList(new Row(Privileges.InwardRoom), new Row(Privileges.LabBillSearch)), x -> x.privilege));
+        assertNull(PrivilegeSaveDiff.refusalReason(state));
     }
 
     private static void collect(TreeNode node, Privileges p, List<TreeNode> out) {
