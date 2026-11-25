@@ -207,7 +207,7 @@
                                     <f:facet name="header">
                                         <h:outputLabel value="Gross Value" />
                                     </f:facet>
-                                    <h:outputLabel value="#{dto.cancellationOrReturn ? (dto.grossValue lt 0 ? -dto.grossValue : dto.grossValue) : dto.grossValue}">
+                                    <h:outputLabel value="#{inwardReportControllerBht.pharmacyItemListDtoRowValue(dto, dto.grossValue)}">
                                         <f:convertNumber pattern="#0.00" />
                                     </h:outputLabel>
                                     <f:facet name="footer">
@@ -235,7 +235,7 @@
                                     <f:facet name="header">
                                         <h:outputLabel value="Service Charge" />
                                     </f:facet>
-                                    <h:outputLabel value="#{dto.cancellationOrReturn ? (dto.marginValue lt 0 ? -dto.marginValue : dto.marginValue) : dto.marginValue}">
+                                    <h:outputLabel value="#{inwardReportControllerBht.pharmacyItemListDtoRowValue(dto, dto.marginValue)}">
                                         <f:convertNumber pattern="#0.00" />
                                     </h:outputLabel>
                                     <f:facet name="footer">
@@ -249,7 +249,7 @@
                                     <f:facet name="header">
                                         <h:outputLabel value="Net Value" />
                                     </f:facet>
-                                    <h:outputLabel value="#{dto.cancellationOrReturn ? (dto.netValue lt 0 ? -dto.netValue : dto.netValue) : dto.netValue}">
+                                    <h:outputLabel value="#{inwardReportControllerBht.pharmacyItemListDtoRowValue(dto, dto.netValue)}">
                                         <f:convertNumber pattern="#0.00" />
                                     </h:outputLabel>
                                     <f:facet name="footer">

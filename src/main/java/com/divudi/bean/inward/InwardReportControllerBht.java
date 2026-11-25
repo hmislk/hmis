@@ -2320,6 +2320,17 @@ public class InwardReportControllerBht implements Serializable {
     }
 
     /**
+     * Signed amount of a DTO list row (net, gross or service charge): negative for a
+     * return, so the rows add up to the footer total (#26105).
+     */
+    public double pharmacyItemListDtoRowValue(InpatientPharmacyIssueDTO dto, Double value) {
+        if (dto == null) {
+            return 0.0;
+        }
+        return InwardMedicineBillTypes.itemListSignedValue(dto.getBillTypeAtomic(), value);
+    }
+
+    /**
      * Ids of the admission and its child admissions (such as a baby BHT), as the
      * interim bill sums them.
      */
