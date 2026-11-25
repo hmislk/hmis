@@ -245,7 +245,7 @@ The shared and yearly keys combine: shared plus yearly gives one series per year
 
 Issue #17566, separated from Custom Bill 3 under #26061. "Custom Bill 3" (the letterhead format Coop uses, component `finalBillCustom4`) is never changed by these keys. "Custom Bill 4" is its own component, `finalBillCustomBill4`, with its own stylesheet and wrapper class.
 
-**Print and reprint use the same settings.** Both the Inward Final Bill page (`inward_bill_final.xhtml`) and the Final Bill Reprint page (`inward_reprint_bill_final.xhtml`) read the same two keys. There is no separate reprint key.
+**Print and reprint use the same settings.** Both the Inward Final Bill page (`inward_bill_final.xhtml`) and the Final Bill Reprint page (`inward_reprint_bill_final.xhtml`) read the same two keys. There is no separate reprint key. On the reprint page the Custom Bill 4 copies are in the Custom Bills tab, inside the "Custom Bill 3 (Letterhead)" section, so that section must also be shown (`Inward Final Bill - Show Custom Bill 4 Format`).
 
 Both keys are application-wide Booleans, default `false`. With both off, neither page shows any Custom Bill 4 button. Set either or both.
 
@@ -261,7 +261,7 @@ Both keys are application-wide Booleans, default `false`. With both off, neither
 
 A hospital that had one of these set to Yes must set the matching new key to Yes to keep the buttons on the Final Bill page. The `Inward Final Bill Reprint - Custom Bill 3 - ...` keys below are still read.
 
-Do not confuse these with `Inward Final Bill - Show Custom Bill 4 Format`, an older key that switches on the "Custom Bill 3 (Letterhead)" tab on the reprint page (see `printer-configuration-system.md`).
+Do not confuse these with `Inward Final Bill - Show Custom Bill 4 Format`, an older key that switches on the "Custom Bill 3 (Letterhead)" section on the reprint page (see `printer-configuration-system.md`).
 
 ## Inward Final Bill - Custom Bill 4 payments on copies without professional fees
 
@@ -281,7 +281,7 @@ Issue #26027. Read in `resources/inward/bill/finalBillCustom4.xhtml`, so it appl
 
 ## Inward Final Bill Reprint - Custom Bill 3 Claimable / Not Claimable copies
 
-Issue #26002. The same copies on the final bill reprint page (`inward/inward_reprint_bill_final.xhtml`, tab Custom Bills), inside the Custom Bill 3 section, so that section must also be shown (`Inward Final Bill - Show Custom Bill 4 Format`). Application-wide Booleans, default `false`; with both off the page is unchanged. The settle-page keys above are not read here.
+Issue #26002. Claimable and Not Claimable copies in the Custom Bill 3 layout on the final bill reprint page (`inward/inward_reprint_bill_final.xhtml`, tab Custom Bills), inside the Custom Bill 3 section, so that section must also be shown (`Inward Final Bill - Show Custom Bill 4 Format`). Application-wide Booleans, default `false`; with both off the page shows no Custom Bill 3 copy sets. Only the reprint page reads these keys; the Custom Bill 4 keys do not affect these copies.
 
 | Key | Type | Default | Description |
 | --- | --- | --- | --- |

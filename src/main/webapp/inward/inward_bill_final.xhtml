@@ -1206,13 +1206,13 @@
                             </div>
                         </f:facet>
 
-                        <h:panelGroup id="custom4BillOnly" styleClass="noBorder">
+                        <h:panelGroup id="custom4BillOnly" styleClass="noBorder custom4BillWrapper">
                             <bi:finalBillCustom4
                                 bill="#{bhtSummeryController.showOrginalBill ? bhtSummeryController.current.referenceBill : bhtSummeryController.current}"
                                 duplicate="false" showProfessional="true"/>
                         </h:panelGroup>
 
-                        <h:panelGroup id="custom4BillOnlyDuplicate" styleClass="noBorder">
+                        <h:panelGroup id="custom4BillOnlyDuplicate" styleClass="noBorder custom4BillWrapper">
                             <bi:finalBillCustom4
                                 bill="#{bhtSummeryController.showOrginalBill ? bhtSummeryController.current.referenceBill : bhtSummeryController.current}"
                                 duplicate="true" showProfessional="true"/>
