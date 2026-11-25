@@ -27,6 +27,8 @@ import org.primefaces.model.TreeNode;
  * <li>only selected privileges that have no stored row are added; existing
  * rows are kept, so their ids stay stable.</li>
  * </ul>
+ * Tree nodes are matched by privilege value, never by node object, so a
+ * rebuilt tree gives the same result.
  * Privileges are compared with {@link UserPrivilageController#canonicalPrivilege}
  * so both stored spellings of one permission match.
  */
@@ -43,6 +45,7 @@ public final class PrivilegeSaveDiff {
         private final Set<Privileges> offered = new LinkedHashSet<>();
         private final Set<Privileges> selected = new LinkedHashSet<>();
         private final Set<Privileges> undetermined = new LinkedHashSet<>();
+        private boolean foreignSelection;
 
         public Set<Privileges> getOffered() {
             return Collections.unmodifiableSet(offered);
@@ -54,6 +57,13 @@ public final class PrivilegeSaveDiff {
 
         public Set<Privileges> getUndetermined() {
             return Collections.unmodifiableSet(undetermined);
+        }
+
+        /**
+         * True when a submitted node is not part of the current tree.
+         */
+        public boolean isForeignSelection() {
+            return foreignSelection;
         }
     }
 
@@ -77,29 +87,86 @@ public final class PrivilegeSaveDiff {
     }
 
     /**
-     * Reads the tree.
+     * Reads the tree. Everything is compared by privilege value, not by node
+     * object, so a tree rebuilt between render and save still matches.
      *
-     * @param root tree root
+     * @param root the current tree root
      * @param selectedNodes nodes the tree submitted as selected (may be null)
      * @param privilegeOf reads the privilege from a node's data, or null for a
      * grouping node
-     * @return the offered, selected and part-ticked privileges
+     * @return the offered, ticked and part-ticked privileges
      */
     public static TreeState readTree(TreeNode root, Collection<TreeNode> selectedNodes, Function<Object, Privileges> privilegeOf) {
         TreeState state = new TreeState();
-        Set<TreeNode> selectedSet = Collections.newSetFromMap(new IdentityHashMap<>());
+        Set<TreeNode> treeNodes = Collections.newSetFromMap(new IdentityHashMap<>());
+        if (root != null) {
+            collectNodes(root, treeNodes);
+        }
         if (selectedNodes != null) {
             for (TreeNode n : selectedNodes) {
-                if (n != null) {
-                    selectedSet.add(n);
+                if (n == null) {
+                    continue;
+                }
+                if (!treeNodes.contains(n)) {
+                    state.foreignSelection = true;
+                }
+                Privileges p = UserPrivilageController.canonicalPrivilege(privilegeOf.apply(n.getData()));
+                if (p != null) {
+                    state.selected.add(p);
                 }
             }
         }
         if (root != null) {
-            walk(root, selectedSet, privilegeOf, state);
+            walk(root, privilegeOf, state);
         }
         state.undetermined.removeAll(state.selected);
         return state;
+    }
+
+    private static void collectNodes(TreeNode node, Set<TreeNode> out) {
+        out.add(node);
+        List<?> children = node.getChildren();
+        if (children == null) {
+            return;
+        }
+        for (Object child : children) {
+            if (child instanceof TreeNode) {
+                collectNodes((TreeNode) child, out);
+            }
+        }
+    }
+
+    /**
+     * Why a save must be refused, or null when it may go ahead. A save is
+     * refused when the ticked nodes are not from the current tree, or when
+     * nothing is ticked but the save would remove live privileges the tree
+     * shows. Either way nothing is changed.
+     *
+     * @param <R> stored row type
+     * @param state the tree state
+     * @param currentRows the live stored rows
+     * @param privilegeOfRow reads a row's privilege
+     * @return the message to show, or null
+     */
+    public static <R> String refusalReason(TreeState state, List<R> currentRows, Function<R, Privileges> privilegeOfRow) {
+        if (state.foreignSelection) {
+            return "The privilege list changed after it was shown. Nothing was saved. Click List Privileges, tick the privileges again and save.";
+        }
+        if (!state.selected.isEmpty() || currentRows == null) {
+            return null;
+        }
+        int wouldRemove = 0;
+        for (R row : currentRows) {
+            Privileges p = UserPrivilageController.canonicalPrivilege(privilegeOfRow.apply(row));
+            if (p != null && state.offered.contains(p) && !state.undetermined.contains(p)) {
+                wouldRemove++;
+            }
+        }
+        if (wouldRemove > 0) {
+            return "No privileges are ticked, so this save would remove all " + wouldRemove
+                    + " privileges shown in the list. Nothing was saved. Click List Privileges and try again.";
+        }
+        return null;
     }
 
     /**
@@ -134,29 +201,27 @@ public final class PrivilegeSaveDiff {
 
     /**
      * Walks a node and its children. Returns true when this node or any
-     * descendant is selected.
+     * descendant is ticked (by privilege value) or part-selected.
      */
-    private static boolean walk(TreeNode node, Set<TreeNode> selectedSet, Function<Object, Privileges> privilegeOf, TreeState state) {
-        boolean nodeSelected = selectedSet.contains(node);
-        boolean descendantSelected = false;
+    private static boolean walk(TreeNode node, Function<Object, Privileges> privilegeOf, TreeState state) {
+        boolean descendantTicked = false;
         List<?> children = node.getChildren();
         if (children != null) {
             for (Object child : children) {
-                if (child instanceof TreeNode && walk((TreeNode) child, selectedSet, privilegeOf, state)) {
-                    descendantSelected = true;
+                if (child instanceof TreeNode && walk((TreeNode) child, privilegeOf, state)) {
+                    descendantTicked = true;
                 }
             }
         }
         Privileges p = UserPrivilageController.canonicalPrivilege(privilegeOf.apply(node.getData()));
+        boolean ticked = p != null && state.selected.contains(p);
         if (p != null) {
             state.offered.add(p);
-            if (nodeSelected) {
-                state.selected.add(p);
-            } else if (descendantSelected) {
+            if (!ticked && (descendantTicked || node.isPartialSelected())) {
                 state.undetermined.add(p);
             }
         }
-        return nodeSelected || descendantSelected;
+        return ticked || descendantTicked || node.isPartialSelected();
     }
 
     /**

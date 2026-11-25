@@ -7,10 +7,14 @@ import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
 import org.junit.jupiter.api.Test;
+import org.primefaces.model.CheckboxTreeNode;
 import org.primefaces.model.DefaultTreeNode;
 import org.primefaces.model.TreeNode;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
@@ -183,6 +187,87 @@ public class PrivilegeSaveDiffTest {
 
         assertTrue(r.getToRetire().isEmpty());
         assertTrue(r.getToAdd().isEmpty());
+    }
+
+    @Test
+    public void rebuiltTreeMatchesByPrivilegeValue() {
+        // Nodes ticked on one tree instance, read against a rebuilt tree.
+        TreeNode renderedRoot = new UserPrivilageController().getRootTreeNode();
+        TreeNode rebuiltRoot = new UserPrivilageController().getRootTreeNode();
+        List<TreeNode> ticked = new ArrayList<>();
+        collect(renderedRoot, Privileges.LabBillSearch, ticked);
+        collect(renderedRoot, Privileges.InwardRoomOccupancyAnyInstitute, ticked);
+
+        PrivilegeSaveDiff.TreeState state = PrivilegeSaveDiff.readTree(rebuiltRoot, ticked, UserPrivilageController::privilegeOfNodeData);
+        assertTrue(state.getSelected().contains(Privileges.LabBillSearch));
+        assertTrue(state.getSelected().contains(Privileges.InwardRoomOccupancyAnyInstitute));
+
+        List<Row> rows = Arrays.asList(new Row(Privileges.LabBillSearch), new Row(Privileges.User));
+        PrivilegeSaveDiff.Result<Row> r = diff(rows, state);
+        assertTrue(r.getToRetire().isEmpty());
+        assertEquals(Collections.singletonList(Privileges.InwardRoomOccupancyAnyInstitute), r.getToAdd());
+
+        // The save itself is refused, because the ticked nodes are not from the current tree.
+        assertTrue(state.isForeignSelection());
+        assertNotNull(PrivilegeSaveDiff.refusalReason(state, rows, x -> x.privilege));
+    }
+
+    @Test
+    public void detachedNodesWithEqualPrivilegeMatch() {
+        TreeNode root = new DefaultTreeNode("root", null);
+        TreeNode parent = new DefaultTreeNode(Privileges.OpdCollectingCentreBilling, root);
+        new DefaultTreeNode(Privileges.OpdCollectingCentreBillingMenu, parent);
+        new DefaultTreeNode(Privileges.InwardRoom, root);
+        // Different node objects carrying equal privilege values.
+        TreeNode detachedMenu = new DefaultTreeNode(Privileges.OpdCollectingCentreBillingMenu, null);
+        TreeNode detachedRoom = new DefaultTreeNode(Privileges.InwardRoom, null);
+
+        PrivilegeSaveDiff.TreeState state = PrivilegeSaveDiff.readTree(root, Arrays.asList(detachedMenu, detachedRoom), NODE_PRIVILEGE);
+        assertEquals(new java.util.HashSet<>(Arrays.asList(Privileges.OpdCollectingCentreBillingMenu, Privileges.InwardRoom)), state.getSelected());
+        // Part-ticked parent is found by value too.
+        assertEquals(Collections.singleton(Privileges.OpdCollectingCentreBilling), state.getUndetermined());
+
+        Row parentRow = new Row(Privileges.OpdCollectingCentreBilling);
+        Row room = new Row(Privileges.InwardRoom);
+        PrivilegeSaveDiff.Result<Row> r = diff(Arrays.asList(parentRow, room), state);
+        assertTrue(r.getToRetire().isEmpty());
+        assertEquals(Collections.singletonList(Privileges.OpdCollectingCentreBillingMenu), r.getToAdd());
+    }
+
+    @Test
+    public void partSelectedFlagMarksParentAsPartTicked() {
+        CheckboxTreeNode root = new CheckboxTreeNode("root", null);
+        CheckboxTreeNode parent = new CheckboxTreeNode(Privileges.Cashier, root);
+        new CheckboxTreeNode(Privileges.OpdBilling, parent);
+        parent.setPartialSelected(true);
+
+        PrivilegeSaveDiff.TreeState state = PrivilegeSaveDiff.readTree(root, null, NODE_PRIVILEGE);
+        assertTrue(state.getUndetermined().contains(Privileges.Cashier));
+        assertTrue(diff(Collections.singletonList(new Row(Privileges.Cashier)), state).getToRetire().isEmpty());
+    }
+
+    @Test
+    public void emptySelectionThatWouldRemoveShownPrivilegesIsRefused() {
+        TreeNode root = new DefaultTreeNode("root", null);
+        new DefaultTreeNode(Privileges.InwardRoom, root);
+        PrivilegeSaveDiff.TreeState state = PrivilegeSaveDiff.readTree(root, null, NODE_PRIVILEGE);
+
+        assertNotNull(PrivilegeSaveDiff.refusalReason(state, Collections.singletonList(new Row(Privileges.InwardRoom)), x -> x.privilege));
+        // Nothing shown would be removed: allowed.
+        assertNull(PrivilegeSaveDiff.refusalReason(state, Collections.singletonList(new Row(Privileges.User)), x -> x.privilege));
+        assertNull(PrivilegeSaveDiff.refusalReason(state, new ArrayList<Row>(), x -> x.privilege));
+    }
+
+    @Test
+    public void currentTreeSelectionIsNotRefused() {
+        TreeNode root = new DefaultTreeNode("root", null);
+        TreeNode a = new DefaultTreeNode(Privileges.InwardRoom, root);
+        new DefaultTreeNode(Privileges.LabBillSearch, root);
+        PrivilegeSaveDiff.TreeState state = PrivilegeSaveDiff.readTree(root, Collections.singletonList(a), NODE_PRIVILEGE);
+
+        assertFalse(state.isForeignSelection());
+        assertNull(PrivilegeSaveDiff.refusalReason(state,
+                Arrays.asList(new Row(Privileges.InwardRoom), new Row(Privileges.LabBillSearch)), x -> x.privilege));
     }
 
     private static void collect(TreeNode node, Privileges p, List<TreeNode> out) {

@@ -1661,7 +1661,8 @@ public class UserPrivilageController implements Serializable {
         Set<Privileges> offered = PrivilegeSaveDiff
                 .readTree(getRootTreeNode(), null, UserPrivilageController::privilegeOfNodeData)
                 .getOffered();
-        applyUserPrivilegeChanges(u, dept, PrivilegeSaveDiff.forPrivileges(offered, selectedPrivileges));
+        applyUserPrivilegeChanges(u, dept, fetchLiveUserPrivileges(u, dept),
+                PrivilegeSaveDiff.forPrivileges(offered, selectedPrivileges));
         fillUserPrivileges();
         JsfUtil.addSuccessMessage("Updated");
     }
@@ -1674,16 +1675,33 @@ public class UserPrivilageController implements Serializable {
      * new row, so existing rows keep their ids.
      */
     public void saveWebUserPrivileges() {
+        if (currentWebUser == null) {
+            JsfUtil.addErrorMessage("Please select a user");
+            return;
+        }
+        if (department == null) {
+            JsfUtil.addErrorMessage("Please select a department");
+            return;
+        }
         PrivilegeSaveDiff.TreeState state = PrivilegeSaveDiff.readTree(
                 getRootTreeNode(), selectedNodeList(), UserPrivilageController::privilegeOfNodeData);
-        PrivilegeSaveDiff.Result<WebUserPrivilege> diff = applyUserPrivilegeChanges(currentWebUser, department, state);
+        List<WebUserPrivilege> current = fetchLiveUserPrivileges(currentWebUser, department);
+        String refusal = PrivilegeSaveDiff.refusalReason(state, current, WebUserPrivilege::getPrivilege);
+        if (refusal != null) {
+            JsfUtil.addErrorMessage(refusal);
+            return;
+        }
+        PrivilegeSaveDiff.Result<WebUserPrivilege> diff = applyUserPrivilegeChanges(currentWebUser, department, current, state);
         fillUserPrivileges();
         JsfUtil.addSuccessMessage("Updated. Added " + diff.getToAdd().size()
                 + ", removed " + diff.getToRetire().size());
     }
 
-    private PrivilegeSaveDiff.Result<WebUserPrivilege> applyUserPrivilegeChanges(WebUser wu, Department dept, PrivilegeSaveDiff.TreeState state) {
-        List<WebUserPrivilege> current = fetchLiveUserPrivileges(wu, dept);
+    private PrivilegeSaveDiff.Result<WebUserPrivilege> applyUserPrivilegeChanges(WebUser wu, Department dept,
+            List<WebUserPrivilege> current, PrivilegeSaveDiff.TreeState state) {
+        if (wu == null || dept == null) {
+            return new PrivilegeSaveDiff.Result<>();
+        }
         PrivilegeSaveDiff.Result<WebUserPrivilege> diff = PrivilegeSaveDiff.compute(current, WebUserPrivilege::getPrivilege, state);
         Date now = new Date();
         WebUser actor = sessionController == null ? null : sessionController.getLoggedUser();
@@ -1774,11 +1792,17 @@ public class UserPrivilageController implements Serializable {
      */
     public void saveWebUserRolePrivileges() {
         if (webUserRole == null) {
+            JsfUtil.addErrorMessage("Please select a User Role");
             return;
         }
         PrivilegeSaveDiff.TreeState state = PrivilegeSaveDiff.readTree(
                 getRootTreeNode(), selectedNodeList(), UserPrivilageController::privilegeOfNodeData);
         List<WebUserRolePrivilege> current = fetchLiveRolePrivileges(webUserRole);
+        String refusal = PrivilegeSaveDiff.refusalReason(state, current, WebUserRolePrivilege::getPrivilege);
+        if (refusal != null) {
+            JsfUtil.addErrorMessage(refusal);
+            return;
+        }
         PrivilegeSaveDiff.Result<WebUserRolePrivilege> diff = PrivilegeSaveDiff.compute(current, WebUserRolePrivilege::getPrivilege, state);
         Date now = new Date();
         WebUser actor = sessionController == null ? null : sessionController.getLoggedUser();
@@ -1910,9 +1934,15 @@ public class UserPrivilageController implements Serializable {
     }
 
     public void fillUserPrivileges() {
-        List<WebUserPrivilege> wups;
         if (currentWebUser == null) {
-            JsfUtil.addErrorMessage("User?");
+            JsfUtil.addErrorMessage("Please select a user");
+            privilegesLoaded = false;
+            return;
+        }
+        if (department == null) {
+            JsfUtil.addErrorMessage("Please select a department");
+            privilegesLoaded = false;
+            return;
         }
         String j = "SELECT i "
                 + " FROM WebUserPrivilege i "
@@ -2060,9 +2090,10 @@ public class UserPrivilageController implements Serializable {
     }
 
     public void fillUserRolePrivileges() {
-        List<WebUserRolePrivilege> wups;
         if (webUserRole == null) {
-            JsfUtil.addErrorMessage("User Role?");
+            JsfUtil.addErrorMessage("Please select a User Role");
+            privilegesLoaded = false;
+            return;
         }
         String j = "SELECT i "
                 + " FROM WebUserRolePrivilege i "
