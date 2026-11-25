@@ -250,6 +250,14 @@ Issue #17566. Both keys are application-wide Booleans, default `false` (existing
 | `Inward Final Bill - Custom Bill 3 - Show Claimable Copies` | Boolean | `false` | Adds Claimable Patient, Hospital and Duplicate copy buttons (Custom Bill 3 layout, professional fees included) to the inward Final Bill page. |
 | `Inward Final Bill - Custom Bill 3 - Show Not Claimable Copies` | Boolean | `false` | Adds Not Claimable Patient, Hospital and Duplicate copy buttons (Custom Bill 3 layout, without professional fees) and a Professional Fees copy button. |
 
+## Inward Final Bill - Custom Bill 3 payments on copies without professional fees
+
+Issue #26027. Read in `resources/inward/bill/finalBillCustom4.xhtml`, so it applies wherever Custom Bill 3 prints (Final Bill page and its reprint).
+
+| Key | Type | Default | Description |
+| --- | --- | --- | --- |
+| `Inward Final Bill - Custom Bill 3 - Show Payments On Copies Without Professional Fees` | Boolean (application scope) | `false` | On copies printed without professional fees (Not Claimable copies, Hospital Copy without professional fees), shows Paid By Patient, Paid By Company and Total Paid. The Due lines (Due from company, Due Amount) stay hidden. When `false` these copies show no payments, as before. Copies with professional fees are not affected. |
+
 ## Inward Final Bill Reprint - Custom Bill 3 Claimable / Not Claimable copies
 
 Issue #26002. The same copies on the final bill reprint page (`inward/inward_reprint_bill_final.xhtml`, tab Custom Bills), inside the Custom Bill 3 section, so that section must also be shown (`Inward Final Bill - Show Custom Bill 4 Format`). Application-wide Booleans, default `false`; with both off the page is unchanged. The settle-page keys above are not read here.
