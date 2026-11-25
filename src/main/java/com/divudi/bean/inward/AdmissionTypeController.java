@@ -213,7 +213,13 @@ public class AdmissionTypeController implements Serializable {
             }
             AdmissionTypeController controller = (AdmissionTypeController) facesContext.getApplication().getELResolver().
                     getValue(facesContext.getELContext(), null, "admissionTypeController");
-            return controller.getEjbFacade().find(getKey(value));
+            java.lang.Long key;
+            try {
+                key = getKey(value);
+            } catch (NumberFormatException e) {
+                return null; // no-selection label, not an id
+            }
+            return controller.getEjbFacade().find(key);
         }
 
         java.lang.Long getKey(String value) {

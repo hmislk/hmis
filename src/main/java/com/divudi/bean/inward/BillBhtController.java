@@ -1429,6 +1429,13 @@ public class BillBhtController implements Serializable {
      *
      * @param bf the fee whose gross value was edited
      */
+    /** The admission type in force on the fee's bill date; the current type for a bill not yet dated (#25814). */
+    private com.divudi.core.entity.inward.AdmissionType admissionTypeOfFeeBill(BillFee bf) {
+        java.util.Date billDate = (bf != null && bf.getBillItem() != null && bf.getBillItem().getBill() != null)
+                ? bf.getBillItem().getBill().getCreatedAt() : null;
+        return getInwardBean().admissionTypeAtDate(getPatientEncounter(), billDate);
+    }
+
     public void feeChanged(BillFee bf) {
         if (bf.getFeeGrossValue() == null) {
             return;
@@ -1449,7 +1456,7 @@ public class BillBhtController implements Serializable {
 
         Department feeDepartment = feeDepartment(getPatientEncounter());
 
-        PriceMatrix priceMatrix = getPriceMatrixController().fetchInwardMargin(bf.getBillItem(), bf.getFeeUnitGrossValue(), feeDepartment, getPatientEncounter().getPaymentMethod(), null, getPatientEncounter().getAdmissionType(), resolveCurrentRoomCategory(getPatientEncounter()));
+        PriceMatrix priceMatrix = getPriceMatrixController().fetchInwardMargin(bf.getBillItem(), bf.getFeeUnitGrossValue(), feeDepartment, getPatientEncounter().getPaymentMethod(), null, admissionTypeOfFeeBill(bf), resolveCurrentRoomCategory(getPatientEncounter()));
 
         getInwardBean().updateBillItemMargin(bf, bf.getFeeGrossValue(), getPatientEncounter(), feeDepartment, priceMatrix);
 
@@ -1474,7 +1481,7 @@ public class BillBhtController implements Serializable {
         lstBillItems = null;
         getLstBillItems();
 
-        PriceMatrix priceMatrix = getPriceMatrixController().fetchInwardMargin(bf.getBillItem(), bf.getFeeGrossValue(), getBatchBill().getFromDepartment(), getPatientEncounter().getPaymentMethod(), null, getPatientEncounter().getAdmissionType(), resolveCurrentRoomCategory(getPatientEncounter()));
+        PriceMatrix priceMatrix = getPriceMatrixController().fetchInwardMargin(bf.getBillItem(), bf.getFeeGrossValue(), getBatchBill().getFromDepartment(), getPatientEncounter().getPaymentMethod(), null, admissionTypeOfFeeBill(bf), resolveCurrentRoomCategory(getPatientEncounter()));
 
         getInwardBean().updateBillItemMargin(bf, bf.getFeeGrossValue(), getPatientEncounter(), getBatchBill().getFromDepartment(), priceMatrix);
 

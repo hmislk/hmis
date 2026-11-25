@@ -121,69 +121,76 @@
                         </h:panelGrid>
 
                         <p:commandButton
-                            class="ui-button-warning my-4 mx-2"
+                            class="ui-button-warning m-1"
                             style="width: 150px"
                             ajax="false"
+                            title="Run the report for all admissions in the period"
                             value="Process All"
                             action="#{reportsController.generateDebtorBalanceReport(false)}"
                             icon="fas fa-cogs">
                         </p:commandButton>
 
                         <p:commandButton
-                            class="ui-button-warning my-4 mx-2"
+                            class="ui-button-warning m-1"
                             style="width: 190px"
                             ajax="false"
+                            title="Run the report for admissions that still have a balance due"
                             value="Process Due Only"
                             action="#{reportsController.generateDebtorBalanceReport(true)}"
                             icon="fas fa-cogs">
                         </p:commandButton>
 
                         <p:commandButton
-                            class="ui-button-info my-4 mx-2"
+                            class="ui-button-info m-1"
                             style="width: 150px"
                             icon="fas fa-print"
                             ajax="false"
+                            title="Print the report"
                             value="Print">
                             <p:printer target="printPanel"/>
                         </p:commandButton>
 
                         <p:commandButton
-                            class="ui-button-success my-4 mx-2"
+                            class="ui-button-success m-1"
                             style="width: 150px"
                             icon="fas fa-file-excel"
                             ajax="false"
                             rendered="#{reportsController.visitType eq 'OP'}"
+                            title="Download the report as Excel"
                             value="Excel">
                             <p:dataExporter type="xlsx" target="tbl" fileName="debtor_balance_report.xlsx"/>
                         </p:commandButton>
 
                         <p:commandButton
-                            class="ui-button-danger my-4 mx-2"
+                            class="ui-button-danger m-1"
                             style="width: 150px"
                             icon="fas fa-file-pdf"
                             ajax="false"
                             rendered="#{reportsController.visitType eq 'OP'}"
                             action="#{reportsController.exportDebtorBalanceReportOPToPdf()}"
+                            title="Download the report as PDF"
                             value="PDF">
                         </p:commandButton>
 
                         <p:commandButton
-                            class="ui-button-success my-4 mx-2"
+                            class="ui-button-success m-1"
                             style="width: 150px"
                             icon="fas fa-file-excel"
                             ajax="false"
                             rendered="#{reportsController.visitType eq 'IP'}"
                             action="#{reportsController.exportDebtorBalanceReportIPToExcel()}"
+                            title="Download the report as Excel"
                             value="Excel">
                         </p:commandButton>
 
                         <p:commandButton
-                            class="ui-button-danger my-4 mx-2"
+                            class="ui-button-danger m-1"
                             style="width: 150px"
                             icon="fas fa-file-pdf"
                             ajax="false"
                             rendered="#{reportsController.visitType eq 'IP'}"
                             action="#{reportsController.exportDebtorBalanceReportIPToPdf()}"
+                            title="Download the report as PDF"
                             value="PDF">
                         </p:commandButton>
                         <h:panelGroup id="printPanel">
@@ -204,7 +211,7 @@
                                 </h:panelGrid>
                             </ui:fragment>
 
-                            <p:dataTable id="tbl" styleClass="noBorder normalFont"
+                            <p:dataTable id="tbl" styleClass="noBorder normalFont p-datatable-sm"
                                          value="#{reportsController.bundle.reportTemplateRows}" var="i" rowIndexVar="in"
                                          rendered="#{reportsController.visitType eq 'OP'}">
                                 <p:column headerText="No">
@@ -579,7 +586,7 @@
                                             </td>
                                             <td style="vertical-align: middle;">
                                                 <h:outputText
-                                                    value="#{reportsController.billed - reportsController.paidByPatient - reportsController.paidByCompany}"
+                                                    value="#{reportsController.debtorTotalDue}"
                                                     style="font-weight: bold;">
                                                     <f:convertNumber pattern="#,##0.00"/>
                                                 </h:outputText>

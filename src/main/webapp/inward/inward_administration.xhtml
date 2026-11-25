@@ -18,19 +18,33 @@
                                         <div class="d-grid gap-2">
                                             <p:commandButton ajax="false" 
                                                              value="Admission Types" 
+                                                             icon="fa fa-bed"
+                                                             title="Manage the admission types"
                                                              class="w-100" 
                                                              action="#{admissionTypeController.navigateToManageAdmissionTypes}"  >
                                             </p:commandButton>
                                             <p:commandButton
                                                 ajax="false"
                                                 value="Automatic Admission Charges"
+                                                icon="fa fa-file-invoice-dollar"
+                                                title="Manage the charges billed automatically at admission"
                                                 class="w-100"
                                                 action="#{admissionChargeItemController.navigateToManageAdmissionCharges()}"  ></p:commandButton>
                                             <p:commandButton
                                                 ajax="false"
                                                 value="BHT Number Management"
+                                                icon="fa fa-hashtag"
+                                                title="Manage the BHT number series"
                                                 class="w-100"
                                                 action="#{admissionNumberController.navigateToManageAdmissionNumbers()}" />
+                                            <p:commandButton
+                                                ajax="false"
+                                                value="Admission Cancellation Reasons"
+                                                icon="fa fa-ban"
+                                                title="Manage the reasons offered when an admission is cancelled"
+                                                rendered="#{admissionCancellationReasonController.canManage}"
+                                                class="w-100"
+                                                action="#{admissionCancellationReasonController.navigateToReasons()}" />
                                         </div>
                                     </p:tab>
                                     

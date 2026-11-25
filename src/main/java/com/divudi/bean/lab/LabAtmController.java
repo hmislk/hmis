@@ -8,6 +8,7 @@
  */
 package com.divudi.bean.lab;
 
+import com.divudi.service.ItemAuditHelper;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.AuditEventController;
 import com.divudi.service.AuditService;
@@ -553,6 +554,7 @@ public class LabAtmController implements Serializable {
             auditData.put("id", atm.getId());
             auditData.put("name", atm.getName());
             auditData.put("code", atm.getCode());
+            ItemAuditHelper.putNameFields(auditData, atm);
             auditData.put("retired", atm.isRetired());
             auditData.put("inactive", atm.isInactive());
             auditData.put("departmentType", atm.getDepartmentType() != null ? atm.getDepartmentType().toString() : null);

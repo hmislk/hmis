@@ -7,6 +7,8 @@
  * (94) 71 5812399
  */
 package com.divudi.bean.inward;
+import java.util.Map;
+import com.divudi.service.ItemAuditHelper;
 import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.ItemController;
@@ -52,6 +54,8 @@ import javax.persistence.TemporalType;
 @Named
 @SessionScoped
 public class InwardServiceController implements Serializable {
+    @EJB
+    private ItemAuditHelper itemAuditHelper;
 
     private static final long serialVersionUID = 1L;
     @Inject
@@ -264,13 +268,16 @@ public class InwardServiceController implements Serializable {
                 //////// // System.out.println("3");
                 getCurrent().setReportedAs(getCurrent());
             }
+            Map<String, Object> beforeNames = itemAuditHelper.snapshotFromDb(getCurrent().getId());
             getFacade().edit(getCurrent());
+            itemAuditHelper.logUpdate(beforeNames, getCurrent(), getSessionController().getLoggedUser(), "UI");
             JsfUtil.addSuccessMessage("Updated Successfully.");
         } else {
             //////// // System.out.println("4");
             getCurrent().setCreatedAt(new Date());
             getCurrent().setCreater(getSessionController().getLoggedUser());
             getFacade().create(getCurrent());
+            itemAuditHelper.logCreate(getCurrent(), getSessionController().getLoggedUser(), "UI");
             if (billedAs == false) {
                 //////// // System.out.println("5");
                 getCurrent().setBilledAs(getCurrent());

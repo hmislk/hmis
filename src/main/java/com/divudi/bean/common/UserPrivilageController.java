@@ -147,6 +147,7 @@ public class UserPrivilageController implements Serializable {
         TreeNode addNewCollectingCentre = new DefaultTreeNode(new PrivilegeHolder(Privileges.OpdAddNewCollectingCentre, "Add New Referral Center"), opdNode);
         TreeNode opdQuotationNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.OpdQuotationCreate, "OPD Quotation (Create, Search and Print)"), opdNode);
         TreeNode opdEditPatientDetailsNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.OpdEditPatientDetails, "Edit Patient Details in OPD Billing"), opdNode);
+        TreeNode restrictPatientSearchNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.RestrictPatientSearchToOwnRegistrations, "Restrict Patient Search To Own Registrations (own user or own institution only)"), opdNode);
         TreeNode patientComplaintNode = new DefaultTreeNode(new PrivilegeHolder(null, "Patient Complaints"), opdNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.PatientComplaintHandle, "Handle Complaints (register, assign, respond, close)"), patientComplaintNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.PatientComplaintCreate, "Record On-site Complaint"), patientComplaintNode);
@@ -182,6 +183,7 @@ public class UserPrivilageController implements Serializable {
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardAdmissionsInwardAppoinment, "Inward Appointment"), admissionsNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardEditPatientDetailsFromAdmission, "Edit Patient Details From Admission"), admissionsNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardEditPaymentDetails, "Edit Payment Details"), admissionsNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardChangeAdmissionType, "Change Admission Type"), admissionsNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardManageAllergies, "Manage Allergies"), admissionsNode);
 
         TreeNode appointmentNode = new DefaultTreeNode(new PrivilegeHolder(null, "Appointment"), inwardNode);
@@ -471,6 +473,7 @@ public class UserPrivilageController implements Serializable {
         new DefaultTreeNode(new PrivilegeHolder(Privileges.Pharmacy, "Pharmacy Menu"), pharmacyNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyAdministration, "Pharmacy Administration"), pharmacyNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyItemNameEdit, "Pharmacy Item Name Edit"), pharmacyNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyItemUnretire, "Pharmacy Item Un-retire"), pharmacyNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyDonation, "Pharmacy Donation"), pharmacyNode);
 
         // Channelling Privileges

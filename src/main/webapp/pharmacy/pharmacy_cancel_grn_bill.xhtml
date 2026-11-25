@@ -31,6 +31,7 @@
                                             ajax="false"
                                             icon="fa fa-cancel"
                                             class="ui-button-danger" 
+                                            disabled="#{pharmacyBillSearch.billACancellationBill}"
                                             action="#{pharmacyBillSearch.pharmacyGrnCancel()}" >
                                         </p:commandButton> 
                                     </div>
@@ -108,7 +109,7 @@
                                 </div>
                                 <div class="col-md-8">
                                     <p:panel header="Bill Item Details">
-                                        <p:dataTable 
+                                        <p:dataTable styleClass="p-datatable-sm" 
                                             rowIndexVar="rowIndex" 
                                             value="#{pharmacyBillSearch.bill.billItems}" 
                                             var="bip" 

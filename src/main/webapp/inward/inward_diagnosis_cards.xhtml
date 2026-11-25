@@ -20,7 +20,7 @@
                                 ajax="false"
                                 action="#{admissionController.navigateToAdmissionProfilePage}"
                                 icon="fa fa-arrow-left"
-                                class="ui-button-warning">
+                                class="ui-button-info ui-button-outlined">
                                 <f:setPropertyActionListener
                                     value="#{inpatientClinicalDataController.parentAdmission}"
                                     target="#{admissionController.current}" />
@@ -30,7 +30,7 @@
                                 ajax="false"
                                 action="#{inpatientClinicalDataController.navigateToEncounterClinicalData()}"
                                 icon="fa fa-stethoscope"
-                                class="ui-button-secondary">
+                                class="ui-button-info ui-button-outlined">
                             </p:commandButton>
                         </div>
                     </div>
@@ -200,7 +200,7 @@
                                                 id="btnSaveCard"
                                                 value="Save"
                                                 icon="pi pi-save"
-                                                class="ui-button-warning"
+                                                class="ui-button-success"
                                                 action="#{inpatientClinicalDataController.saveEncounterReferral()}"
                                                 process="btnSaveCard txeCardEdit"
                                                 update="lstSavedCards gpCardDoc msgDx"
@@ -234,6 +234,24 @@
                                                 class="ui-button-success"
                                                 title="Download as PDF">
                                                 <p:fileDownload value="#{inpatientClinicalDataController.downloadAsPdf()}"/>
+                                            </p:commandButton>
+                                            <p:commandButton
+                                                id="btnDownloadCardWord"
+                                                ajax="false"
+                                                value="Word"
+                                                icon="pi pi-file-word"
+                                                class="ui-button-success ui-button-outlined"
+                                                title="Download as an editable Word (.docx) file">
+                                                <p:fileDownload value="#{inpatientClinicalDataController.downloadAsWord()}"/>
+                                            </p:commandButton>
+                                            <p:commandButton
+                                                id="btnDownloadCardRtf"
+                                                ajax="false"
+                                                value="RTF"
+                                                icon="pi pi-file"
+                                                class="ui-button-success ui-button-outlined"
+                                                title="Download as an editable RTF file">
+                                                <p:fileDownload value="#{inpatientClinicalDataController.downloadAsRtf()}"/>
                                             </p:commandButton>
                                             <p:commandButton
                                                 id="btnEmailCard"

@@ -7,6 +7,7 @@
  * (94) 71 5812399
  */
 package com.divudi.bean.common;
+import com.divudi.service.ItemAuditHelper;
 import com.divudi.core.entity.Item;
 import com.divudi.core.entity.MedicalPackage;
 import com.divudi.core.facade.ItemFacade;
@@ -33,6 +34,8 @@ import com.divudi.core.util.JsfUtil;
 @Named
 @SessionScoped
 public  class MedicalPackageNameController implements Serializable {
+    @EJB
+    private ItemAuditHelper itemAuditHelper;
 
     private static final long serialVersionUID = 1L;
     @EJB
@@ -179,13 +182,16 @@ public  class MedicalPackageNameController implements Serializable {
 
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
 
+            Map<String, Object> beforeNames = itemAuditHelper.snapshotFromDb(current.getId());
             getFacade().edit(current);
+            itemAuditHelper.logUpdate(beforeNames, current, getSessionController().getLoggedUser(), "UI");
 
             JsfUtil.addSuccessMessage("Updated Successfully.");
         } else {
             current.setCreatedAt(new Date());
             current.setCreater(getSessionController().getLoggedUser());
             getFacade().create(current);
+            itemAuditHelper.logCreate(current, getSessionController().getLoggedUser(), "UI");
             JsfUtil.addSuccessMessage("Saved Successfully");
         }
         recreateModel();

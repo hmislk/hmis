@@ -70,6 +70,8 @@ import java.util.List;
 import java.util.Map;
 import javax.ejb.EJB;
 import javax.ejb.Singleton;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
 import javax.inject.Inject;
 import javax.persistence.TemporalType;
 import com.divudi.bean.common.ConfigOptionApplicationController;
@@ -101,6 +103,31 @@ import java.math.BigDecimal;
  */
 @Singleton
 public class PharmacyBean {
+
+    /**
+     * Runs a save that makes several stock changes in ONE transaction, holding
+     * this bean's lock for the whole save (#26021).
+     * <p>
+     * The stock methods of this bean hold its write lock only for each call.
+     * Inside one longer transaction a save would keep the stock row locks it
+     * took between those calls, so a second save could wait on a row while
+     * holding this lock, and the first wait on this lock: neither finishes
+     * until the database lock timeout. Holding the lock for the whole save
+     * avoids that; nested calls from the same thread re-enter the lock.
+     */
+    @TransactionAttribute(TransactionAttributeType.REQUIRED)
+    public void runStockSave(Runnable work) {
+        work.run();
+    }
+
+    /**
+     * Same as {@link #runStockSave(Runnable)}, for a save that returns a
+     * result (#26057).
+     */
+    @TransactionAttribute(TransactionAttributeType.REQUIRED)
+    public <T> T runStockSave(java.util.function.Supplier<T> work) {
+        return work.get();
+    }
 
     @EJB
     PharmaceuticalItemCategoryFacade PharmaceuticalItemCategoryFacade;

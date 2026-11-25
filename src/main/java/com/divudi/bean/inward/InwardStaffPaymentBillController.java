@@ -1369,6 +1369,12 @@ public class InwardStaffPaymentBillController implements Serializable {
 
         }
         dueBillFees.removeAll(removeingBillFees);
+        // Default each fee's UI-only paying amount to the outstanding balance, as
+        // Find Due Payments does; otherwise "Amount to Pay" is blank and settle
+        // rejects it as invalid — issue #26007.
+        for (BillFee bf : dueBillFees) {
+            bf.setPayingAmount(bf.getFeeValue() - bf.getPaidValue());
+        }
         // performCalculations (not just the selection) so the payable/on-hold
         // split is right on the first render of the payment page — issue #22483.
         performCalculations();
@@ -1761,8 +1767,10 @@ public class InwardStaffPaymentBillController implements Serializable {
         tmp.setCreater(getSessionController().getLoggedUser());
         tmp.setDepartment(getSessionController().getLoggedUser().getDepartment());
 
-        tmp.setDeptId(getBillNumberBean().departmentBillNumberGeneratorYearly(getSessionController().getDepartment(), BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_INWARD_SERVICE));
-        tmp.setInsId(getBillNumberBean().departmentBillNumberGeneratorYearly(getSessionController().getDepartment(), BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_INWARD_SERVICE));
+        // One serial per payment: the same number goes on both fields (#26075).
+        String billNumber = getBillNumberBean().departmentBillNumberGeneratorYearly(getSessionController().getDepartment(), BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_INWARD_SERVICE);
+        tmp.setDeptId(billNumber);
+        tmp.setInsId(billNumber);
 
         Department voucherDepartment = getSessionController().getDepartment();
         Long voucherStartingNumber = configOptionApplicationController.getLongValueByKeyForDepartment(

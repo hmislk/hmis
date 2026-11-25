@@ -9,12 +9,12 @@
     </h:head>
     <h:body>
         <h:form  >
-            <p:panelGrid columns="5" >
+            <p:panelGrid columns="5" layout="tabular" >
                 <p:outputLabel value="Search Users" ></p:outputLabel>
                 <p:inputText autocomplete="off" id="txtSearch" value="#{webUserController.selectText}" >
                     <f:ajax execute="txtSearch" render="lstSelect" event="keyup" listener="#{webUserController.createTable()}" />
                 </p:inputText>
-                <p:commandButton ajax="false" value="List Users" action="#{webUserController.createTable()}"/>
+                <p:commandButton ajax="false" value="List Users" icon="fa fa-list" styleClass="ui-button-secondary" action="#{webUserController.createTable()}"/>
             </p:panelGrid>
 
             <h:panelGrid columns="2" styleClass="alignTop" >

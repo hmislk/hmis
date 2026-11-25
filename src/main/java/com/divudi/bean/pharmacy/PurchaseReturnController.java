@@ -145,6 +145,15 @@ public class PurchaseReturnController implements Serializable {
     public void onEdit(BillItem tmp) {
         //    PharmaceuticalBillItem tmp = (PharmaceuticalBillItem) event.getObject();
 
+        // A negative return qty would flip the sign of the stock and value postings (#23385).
+        if (tmp.getQty() < 0) {
+            tmp.setQty(0.0);
+            JsfUtil.addErrorMessage("Returning Qty cannot be negative");
+        }
+        if (tmp.getPharmaceuticalBillItem() != null && tmp.getPharmaceuticalBillItem().getFreeQty() < 0) {
+            tmp.getPharmaceuticalBillItem().setFreeQty(0.0);
+            JsfUtil.addErrorMessage("Returning Free Qty cannot be negative");
+        }
         double remain = getRemainingQty(tmp.getReferanceBillItem());
         if (tmp.getQty() > remain) {
             tmp.setQty(remain);
@@ -291,6 +300,14 @@ public class PurchaseReturnController implements Serializable {
     }
 
     public void settle() {
+        // onEdit() fires per row; a fast submit can still reach here with a negative
+        // qty, so check again before anything is saved (#23385).
+        for (BillItem bi : getBillItems()) {
+            if (bi.getQty() < 0 || (bi.getPharmaceuticalBillItem() != null && bi.getPharmaceuticalBillItem().getFreeQty() < 0)) {
+                JsfUtil.addErrorMessage("Returning Qty cannot be negative");
+                return;
+            }
+        }
         if (checkGrnItems()) {
             JsfUtil.addErrorMessage("Items for this GRN Already issued so you can't cancel ");
             return;

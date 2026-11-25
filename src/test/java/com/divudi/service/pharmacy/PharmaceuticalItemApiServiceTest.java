@@ -8,6 +8,8 @@ package com.divudi.service.pharmacy;
 import com.divudi.core.data.dto.AmppDto;
 import com.divudi.core.data.dto.pharmaceutical.AmppRequestDTO;
 import com.divudi.core.entity.WebUser;
+import com.divudi.core.entity.Item;
+import com.divudi.service.ItemAuditHelper;
 import com.divudi.core.entity.pharmacy.Amp;
 import com.divudi.core.entity.pharmacy.Ampp;
 import com.divudi.core.entity.pharmacy.MeasurementUnit;
@@ -149,6 +151,14 @@ public class PharmaceuticalItemApiServiceTest {
         @Override public MeasurementUnit find(Object id) { return db.get(id); }
     }
 
+    private static class DummyItemAuditHelper extends ItemAuditHelper {
+        @Override public Map<String, Object> snapshotFromDb(Long id) { return null; }
+        @Override public void logCreate(Item item, WebUser user, String source) { }
+        @Override public void logUpdate(Map<String, Object> before, Item item, WebUser user, String source) { }
+        @Override public void logUpdateById(Map<String, Object> before, Long id, WebUser user, String source) { }
+        @Override public void logSave(Map<String, Object> before, Item item, WebUser user, String source) { }
+    }
+
     @BeforeEach
     void setUp() throws Exception {
         service = new PharmaceuticalItemApiService();
@@ -163,6 +173,7 @@ public class PharmaceuticalItemApiServiceTest {
         injectField("vmppFacade", dummyVmppFacade);
         injectField("ampFacade", dummyAmpFacade);
         injectField("measurementUnitFacade", dummyMeasurementUnitFacade);
+        injectField("itemAuditHelper", new DummyItemAuditHelper());
 
         testUser = new WebUser();
         testUser.setId(1L);
@@ -496,6 +507,7 @@ public class PharmaceuticalItemApiServiceTest {
         injectField("vmppFacade", dummyVmppFacade);
         injectField("ampFacade", dummyAmpFacade);
         injectField("measurementUnitFacade", dummyMeasurementUnitFacade);
+        injectField("itemAuditHelper", new DummyItemAuditHelper());
         return rollbackCalls;
     }
 

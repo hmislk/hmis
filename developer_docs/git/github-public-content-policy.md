@@ -61,6 +61,10 @@ is between naming the reporter and publishing that hospital's data. Naming the
 hospital plus a bug is fine; naming the hospital plus its record counts,
 identifiers, dates and schema is not.
 
+## Check before posting
+
+Run the `hmis-public-guard` check on every issue, PR, comment or commit text and get a PASS before you post it to GitHub. This includes text a sub-agent writes.
+
 ## Why this is easy to get wrong
 
 Impact evidence is good engineering practice — "here is how many records this

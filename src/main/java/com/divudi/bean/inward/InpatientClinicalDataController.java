@@ -63,6 +63,7 @@ import com.divudi.core.facade.PatientInvestigationFacade;
 import com.divudi.core.facade.PersonFacade;
 import com.divudi.core.facade.PrescriptionFacade;
 import com.divudi.ejb.PrescriptionService;
+import com.divudi.core.util.HtmlDocumentConverter;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.util.CardHtmlSanitizer;
 import java.io.Serializable;
@@ -5348,6 +5349,108 @@ public class InpatientClinicalDataController implements Serializable {
                     .build();
         } catch (Exception e) {
             JsfUtil.addErrorMessage("Error generating PDF: " + e.getMessage());
+            return null;
+        }
+    }
+
+    /**
+     * The selected diagnosis card as an editable Word file, converted from
+     * the same rendered HTML the screen and the PDF use (#25614).
+     */
+    public StreamedContent downloadAsWord() {
+        return downloadEditable("docx",
+                "application/vnd.openxmlformats-officedocument.wordprocessingml.document");
+    }
+
+    /**
+     * The selected diagnosis card as an RTF file (#25614).
+     */
+    public StreamedContent downloadAsRtf() {
+        return downloadEditable("rtf", "application/rtf");
+    }
+
+    private StreamedContent downloadEditable(String extension, String contentType) {
+        if (encounterReferral == null || encounterReferral.getLobValue() == null) {
+            JsfUtil.addErrorMessage("No document selected or document content is empty");
+            return null;
+        }
+        try {
+            String html = encounterReferral.getLobValue();
+            HtmlDocumentConverter.ImageResolver resolver = this::loadAppImage;
+            byte[] bytes = "rtf".equals(extension)
+                    ? HtmlDocumentConverter.toRtf(html, resolver)
+                    : HtmlDocumentConverter.toDocx(html, resolver);
+            String fileName = "DiagnosisCard";
+            if (encounterReferral.getStringValue() != null && !encounterReferral.getStringValue().isEmpty()) {
+                fileName = encounterReferral.getStringValue().replaceAll("[^a-zA-Z0-9.-]", "_");
+            }
+            fileName += "_" + new SimpleDateFormat("yyyy-MM-dd_HH-mm").format(new Date()) + "." + extension;
+            return DefaultStreamedContent.builder()
+                    .name(fileName)
+                    .contentType(contentType)
+                    .stream(() -> new ByteArrayInputStream(bytes))
+                    .build();
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage("Error generating the " + extension.toUpperCase() + " file: " + e.getMessage());
+            return null;
+        }
+    }
+
+    /**
+     * Bytes of an image the card references by a path inside this
+     * application (e.g. /rh/resources/image/logo.png); null for anything
+     * else, so the file is never built from an outside URL.
+     */
+    private byte[] loadAppImage(String src) {
+        if (src == null || src.contains("://") || src.startsWith("//")) {
+            return null;
+        }
+        javax.faces.context.FacesContext fc = javax.faces.context.FacesContext.getCurrentInstance();
+        if (fc == null) {
+            return null;
+        }
+        javax.faces.context.ExternalContext ec = fc.getExternalContext();
+        String[] parts = src.split("[?#]");
+        if (parts.length == 0 || parts[0].isEmpty() || parts[0].contains("%")) {
+            return null;
+        }
+        String path;
+        try {
+            // Hardening, tracked under #25614.
+            path = new java.net.URI(null, null, parts[0], null).normalize().getPath();
+        } catch (java.net.URISyntaxException e) {
+            return null;
+        }
+        if (path == null) {
+            return null;
+        }
+        path = path.replaceAll("/{2,}", "/");
+        String contextPath = ec.getRequestContextPath();
+        if (contextPath != null && !contextPath.isEmpty() && path.startsWith(contextPath + "/")) {
+            path = path.substring(contextPath.length());
+        }
+        // Hardening, tracked under #25614: only image files outside WEB-INF/META-INF.
+        String lower = path.toLowerCase(java.util.Locale.ROOT);
+        if (!path.startsWith("/") || path.contains("..") || path.contains("\\")
+                || lower.startsWith("/web-inf") || lower.startsWith("/meta-inf")
+                || !lower.matches(".*\\.(png|jpe?g|gif|bmp)$")) {
+            return null;
+        }
+        try (java.io.InputStream in = ec.getResourceAsStream(path)) {
+            if (in == null) {
+                return null;
+            }
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            byte[] buf = new byte[8192];
+            int r;
+            while ((r = in.read(buf)) != -1) {
+                out.write(buf, 0, r);
+                if (out.size() > 5_000_000) {
+                    return null;
+                }
+            }
+            return out.toByteArray();
+        } catch (java.io.IOException e) {
             return null;
         }
     }

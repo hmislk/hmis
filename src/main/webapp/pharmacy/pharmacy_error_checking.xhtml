@@ -15,7 +15,7 @@
                 <f:facet name="header" >
                     <h:outputLabel value="Pharmacy Bin Card" ></h:outputLabel>
                 </f:facet>
-                <p:panelGrid columns="7" class="w-100">
+                <p:panelGrid columns="7" layout="tabular" class="w-100">
                     <p:outputLabel value="Department" ></p:outputLabel>
                     <p:autoComplete value="#{pharmacyErrorChecking.department}"
                                     style="text-align: left; margin: 5px; padding: 5px; max-width: 300px!important;"  completeMethod="#{departmentController.completeDept}" var="dept" itemValue="#{dept}" itemLabel="#{dept.name}"
@@ -49,9 +49,9 @@
                     <p:spacer ></p:spacer>
 
                     <h:panelGroup >
-                        <p:commandButton class="m-1" ajax="false" value="Process" action="#{pharmacyErrorChecking.listPharmacyMovement() }" >
+                        <p:commandButton class="m-1" styleClass="ui-button-warning" icon="fa fa-cogs" ajax="false" value="Process" action="#{pharmacyErrorChecking.listPharmacyMovement() }" >
                         </p:commandButton>
-                        <p:commandButton class="m-1" ajax="false" value="Download" >
+                        <p:commandButton class="m-1" styleClass="ui-button-success" icon="fa fa-file-excel" ajax="false" value="Download" >
                             <p:dataExporter fileName="Stock Hx" target="tbl" type="xlsx" ></p:dataExporter>
                         </p:commandButton>
                     </h:panelGroup>

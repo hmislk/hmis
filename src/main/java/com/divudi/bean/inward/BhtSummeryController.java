@@ -31,6 +31,7 @@ import com.divudi.core.data.dataStructure.DepartmentBillItems;
 import com.divudi.core.data.dataStructure.InwardBillItem;
 import com.divudi.core.data.dto.FinalBillPrintRowDTO;
 import com.divudi.core.data.inward.AdmissionTypeEnum;
+import com.divudi.core.data.inward.AdmissionTypeTimeline;
 import com.divudi.core.data.inward.InwardChargeType;
 import static com.divudi.core.data.inward.InwardChargeType.RoomCharges;
 import com.divudi.ejb.BillNumberGenerator;
@@ -204,6 +205,9 @@ public class BhtSummeryController implements Serializable {
     private com.divudi.service.inward.InwardProfessionalFeeClassificationService professionalFeeClassificationService;
     @EJB
     private com.divudi.service.inward.InwardRoomChargeCalculationService inwardRoomChargeCalculationService;
+    /** Which admission type was in force at a date (#25814). */
+    @EJB
+    private com.divudi.service.inward.AdmissionTypeHistoryService admissionTypeHistoryService;
     @EJB
     private com.divudi.service.inward.InpatientPackagePricingService inpatientPackagePricingService;
     ////////////////////////
@@ -838,6 +842,12 @@ public class BhtSummeryController implements Serializable {
         List<BillFee> all = new ArrayList<>(getProfesionallFee());
         all.addAll(getDoctorAndNurseFee());
         all.addAll(getTechnicianFee());
+        // Issue #25993: some hospitals do not want the cancellation (negative)
+        // fee listed as its own row; the original fee stays, labelled cancelled.
+        if (configOptionApplicationController.getBooleanValueByKey(
+                "Inward Interim Bill - Hide Cancellation Rows In Professional Fees", false)) {
+            all.removeIf(bf -> bf.getBill() != null && !(bf.getBill() instanceof BilledBill));
+        }
         return all;
     }
 
@@ -1726,7 +1736,57 @@ public class BhtSummeryController implements Serializable {
     @Inject
     MembershipSchemeController membershipSchemeController;
 
+    /** When the room started, used to pick the admission type in force for it. */
+    private static Date roomStartOf(PatientRoom room) {
+        return room.getAdmittedAt() != null ? room.getAdmittedAt() : room.getCreatedAt();
+    }
+
+    /** Date the fee's bill was made, used to pick the admission type in force. */
+    private static Date billDateOf(BillFee bf) {
+        return bf != null && bf.getBillItem() != null && bf.getBillItem().getBill() != null
+                ? bf.getBillItem().getBill().getCreatedAt() : null;
+    }
+
+    /**
+     * {@link #discountSet(ChargeItemTotal)} for an admission whose type was
+     * changed: each stretch of the stay is discounted under the type in force
+     * then. The rule in each stretch is the one the single-type code applies.
+     */
+    private double discountSetByPeriods(ChargeItemTotal cit, AdmissionTypeTimeline timeline) {
+        boolean staffCharge = cit.getInwardChargeType() == InwardChargeType.ProfessionalCharge
+                || cit.getInwardChargeType() == InwardChargeType.DoctorAndNurses
+                || cit.getInwardChargeType() == InwardChargeType.TechnicianAndParamedicalCharge;
+        double dis = 0;
+        for (AdmissionTypeTimeline.Period period : timeline.periods()) {
+            PriceMatrix pm = getPriceMatrixController().getInwardMemberDisCount(getPatientEncounter().getPaymentMethod(), null, getPatientEncounter().getCreditCompany(), cit.getInwardChargeType(), period.getAdmissionType());
+            if (staffCharge) {
+                clearServicesAndItems(cit.getInwardChargeType(), period.getFromDate(), period.getToDate());
+            } else if (pm == null) {
+                updatePatientItems(cit.getInwardChargeType(), 0, period.getFromDate(), period.getToDate());
+                dis += reapplyInwardDiscountMatrixToServiceBillFees(cit.getInwardChargeType(), period.getFromDate(), period.getToDate());
+            } else if (pm.getDiscountPercent() == 0 || cit.getTotal() == 0) {
+                clearServicesAndItems(cit.getInwardChargeType(), period.getFromDate(), period.getToDate());
+            } else {
+                dis += updateServiceBillFees(cit.getInwardChargeType(), pm.getDiscountPercent(), period.getFromDate(), period.getToDate());
+                dis += updatePatientItems(cit.getInwardChargeType(), pm.getDiscountPercent(), period.getFromDate(), period.getToDate());
+            }
+        }
+        cit.setDiscount(dis);
+        cit.setAdjustedTotal(cit.getTotal());
+        return dis;
+    }
+
+    /** Removes the discounts from the services and timed items of a stretch (no matrix applies). */
+    private void clearServicesAndItems(InwardChargeType type, Date from, Date to) {
+        updateServiceBillFees(type, 0, from, to);
+        updatePatientItems(type, 0, from, to);
+    }
+
     public double discountSet(ChargeItemTotal cit) {
+        AdmissionTypeTimeline admissionTypeTimeline = admissionTypeHistoryService.timelineFor(getPatientEncounter());
+        if (admissionTypeTimeline.hasHistory()) {
+            return discountSetByPeriods(cit, admissionTypeTimeline);
+        }
 //        MembershipScheme membershipScheme = membershipSchemeController.fetchPatientMembershipScheme(getPatientEncounter().getPatient(), getSessionController().getApplicationPreference().isMembershipExpires());
         PriceMatrix pm = getPriceMatrixController().getInwardMemberDisCount(getPatientEncounter().getPaymentMethod(), null, getPatientEncounter().getCreditCompany(), cit.getInwardChargeType(), getPatientEncounter().getAdmissionType());
         if (pm == null || pm.getDiscountPercent() == 0 || cit.getTotal() == 0
@@ -1778,6 +1838,26 @@ public class BhtSummeryController implements Serializable {
     }
 
     private double updateServiceBillFees(InwardChargeType inwardChargeType, double discountPercent) {
+        return updateServiceBillFees(inwardChargeType, discountPercent, null, null);
+    }
+
+    /**
+     * True when the date falls in the window [from, to); a null bound is open.
+     * A null date counts only in a window with no end (the stretch in force now).
+     * With both bounds null every date is in the window (#25814).
+     */
+    public static boolean inWindow(Date date, Date from, Date to) {
+        if (from == null && to == null) {
+            return true;
+        }
+        if (date == null) {
+            return to == null;
+        }
+        return (from == null || !date.before(from)) && (to == null || date.before(to));
+    }
+
+    /** Service fees of the charge type whose bill was made in the window [from, to). */
+    private double updateServiceBillFees(InwardChargeType inwardChargeType, double discountPercent, Date from, Date to) {
         double disTot = 0;
         List<BillFee> list = getInwardBean().getServiceBillFeesByInwardChargeType(inwardChargeType, getPatientEncounter());
 
@@ -1786,6 +1866,9 @@ public class BhtSummeryController implements Serializable {
         }
 
         for (BillFee bf : list) {
+            if (!inWindow(billDateOf(bf), from, to)) {
+                continue;
+            }
             double value = bf.getFeeGrossValue() + bf.getFeeMargin();
             double dis = (value * discountPercent) / 100;
             disTot += dis;
@@ -1810,14 +1893,26 @@ public class BhtSummeryController implements Serializable {
      * returns the total fee discount.
      */
     private double reapplyInwardDiscountMatrixToServiceBillFees(InwardChargeType inwardChargeType) {
+        return reapplyInwardDiscountMatrixToServiceBillFees(inwardChargeType, null, null);
+    }
+
+    /**
+     * As above, for the fees whose bill was made in the window [from, to). Each
+     * fee is discounted under the admission type in force on its bill date.
+     */
+    private double reapplyInwardDiscountMatrixToServiceBillFees(InwardChargeType inwardChargeType, Date from, Date to) {
         double disTot = 0;
         List<BillFee> list = getInwardBean().getServiceBillFeesByInwardChargeType(inwardChargeType, getPatientEncounter());
         if (list == null || list.isEmpty()) {
             return disTot;
         }
+        AdmissionTypeTimeline timeline = admissionTypeHistoryService.timelineFor(getPatientEncounter());
         for (BillFee bf : list) {
+            if (!inWindow(billDateOf(bf), from, to)) {
+                continue;
+            }
             Item item = bf.getBillItem() != null ? bf.getBillItem().getItem() : null;
-            getInwardBean().applyInwardDiscountToBillFee(bf, item, getPatientEncounter());
+            getInwardBean().applyInwardDiscountToBillFee(bf, item, getPatientEncounter(), timeline.typeAt(billDateOf(bf)));
             double dis = bf.getFeeDiscount();
             bf.setFeeValue(bf.getFeeGrossValue() + bf.getFeeMargin() - dis);
             getBillFeeFacade().edit(bf);
@@ -1856,7 +1951,12 @@ public class BhtSummeryController implements Serializable {
     }
 
     private double updatePatientItems(InwardChargeType inwardChargeType, double discountPercent) {
-        double disTot = updateTimedServiceBillItems(inwardChargeType, discountPercent);
+        return updatePatientItems(inwardChargeType, discountPercent, null, null);
+    }
+
+    /** Timed items of the charge type that started in the window [from, to). */
+    private double updatePatientItems(InwardChargeType inwardChargeType, double discountPercent, Date from, Date to) {
+        double disTot = updateTimedServiceBillItems(inwardChargeType, discountPercent, from, to);
 
         List<PatientItem> list = getInwardBean().fetchTimedPatientItemByInwardChargeType(inwardChargeType, getPatientEncounter());
         if (list == null || list.isEmpty()) {
@@ -1864,6 +1964,9 @@ public class BhtSummeryController implements Serializable {
         }
 
         for (PatientItem bf : list) {
+            if (!inWindow(bf.getFromTime() != null ? bf.getFromTime() : bf.getCreatedAt(), from, to)) {
+                continue;
+            }
             double value = bf.getServiceValue();
             double dis = (value * discountPercent) / 100;
             disTot += dis;
@@ -1884,7 +1987,7 @@ public class BhtSummeryController implements Serializable {
      * recomputing its net value from fees would zero the charge. The matching
      * PatientItem is kept in step so the breakdown screens agree with the bill.
      */
-    private double updateTimedServiceBillItems(InwardChargeType inwardChargeType, double discountPercent) {
+    private double updateTimedServiceBillItems(InwardChargeType inwardChargeType, double discountPercent, Date from, Date to) {
         List<BillItem> list = getInwardBean().fetchTimedServiceBillItemsByInwardChargeType(inwardChargeType, getPatientEncounter());
         double disTot = 0;
         if (list == null || list.isEmpty()) {
@@ -1892,6 +1995,9 @@ public class BhtSummeryController implements Serializable {
         }
 
         for (BillItem bi : list) {
+            if (!inWindow(bi.getBill() != null ? bi.getBill().getCreatedAt() : null, from, to)) {
+                continue;
+            }
             double value = bi.getGrossValue() + bi.getMarginValue();
             double dis = (value * discountPercent) / 100;
             disTot += dis;
@@ -1922,6 +2028,7 @@ public class BhtSummeryController implements Serializable {
      */
     private double updateTheatreRoomMembershipDiscounts() {
         List<PatientRoom> list = getInwardBean().fetchPatientRoomAll(getPatientEncounter(), childPatientEncouters);
+        AdmissionTypeTimeline roomTimeline = admissionTypeHistoryService.timelineFor(getPatientEncounter());
         double disTot = 0;
         if (list == null || list.isEmpty()) {
             return disTot;
@@ -1936,7 +2043,7 @@ public class BhtSummeryController implements Serializable {
             }
             for (InwardChargeType type : roomTypes) {
                 PriceMatrix pm = getPriceMatrixController().getInwardMemberDisCount(
-                        getPatientEncounter().getPaymentMethod(), null, getPatientEncounter().getCreditCompany(), type, getPatientEncounter().getAdmissionType(), bf.getRoomFacilityCharge().getRoomCategory());
+                        getPatientEncounter().getPaymentMethod(), null, getPatientEncounter().getCreditCompany(), type, roomTimeline.typeAt(roomStartOf(bf)), bf.getRoomFacilityCharge().getRoomCategory());
                 if (pm == null) {
                     continue;
                 }
@@ -1973,6 +2080,7 @@ public class BhtSummeryController implements Serializable {
 
     private double updatePatientRoomCharge(InwardChargeType inwardChargeType) {
         List<PatientRoom> list = getInwardBean().fetchPatientRoomAll(getPatientEncounter(), childPatientEncouters);
+        AdmissionTypeTimeline roomTimeline = admissionTypeHistoryService.timelineFor(getPatientEncounter());
         double disTot = 0;
         if (list == null || list.isEmpty()) {
             return disTot;
@@ -1983,7 +2091,7 @@ public class BhtSummeryController implements Serializable {
                 continue;
             }
             PriceMatrix pm = getPriceMatrixController().getInwardMemberDisCount(
-                    getPatientEncounter().getPaymentMethod(), null, getPatientEncounter().getCreditCompany(), inwardChargeType, getPatientEncounter().getAdmissionType(), bf.getRoomFacilityCharge().getRoomCategory());
+                    getPatientEncounter().getPaymentMethod(), null, getPatientEncounter().getCreditCompany(), inwardChargeType, roomTimeline.typeAt(roomStartOf(bf)), bf.getRoomFacilityCharge().getRoomCategory());
 
             if (pm != null) {
                 disTot += updatePatientRoomCharge(bf, pm.getDiscountPercent());
@@ -2013,6 +2121,7 @@ public class BhtSummeryController implements Serializable {
 
     private double updatePatientMaintainCharge(InwardChargeType inwardChargeType) {
         List<PatientRoom> list = getInwardBean().fetchPatientRoomAll(getPatientEncounter(), childPatientEncouters);
+        AdmissionTypeTimeline roomTimeline = admissionTypeHistoryService.timelineFor(getPatientEncounter());
         double disTot = 0;
         if (list == null || list.isEmpty()) {
             return disTot;
@@ -2024,7 +2133,7 @@ public class BhtSummeryController implements Serializable {
                 continue;
             }
             pm = getPriceMatrixController().getInwardMemberDisCount(getPatientEncounter().getPaymentMethod(),
-                    null, getPatientEncounter().getCreditCompany(), inwardChargeType, getPatientEncounter().getAdmissionType(), bf.getRoomFacilityCharge().getRoomCategory());
+                    null, getPatientEncounter().getCreditCompany(), inwardChargeType, roomTimeline.typeAt(roomStartOf(bf)), bf.getRoomFacilityCharge().getRoomCategory());
 
             if (pm != null) {
                 disTot += updatePatientMaintainCharge(bf, pm.getDiscountPercent());
@@ -2041,6 +2150,21 @@ public class BhtSummeryController implements Serializable {
     }
 
     private double calDiscountServicePatientItems(InwardChargeType inwardChargeType) {
+        AdmissionTypeTimeline admissionTypeTimeline = admissionTypeHistoryService.timelineFor(getPatientEncounter());
+        if (admissionTypeTimeline.hasHistory()) {
+            double dis = 0;
+            for (AdmissionTypeTimeline.Period period : admissionTypeTimeline.periods()) {
+                PriceMatrix periodMatrix = getPriceMatrixController().getInwardMemberDisCount(getPatientEncounter().getPaymentMethod(),
+                        null, getPatientEncounter().getCreditCompany(), inwardChargeType, period.getAdmissionType());
+                if (periodMatrix != null) {
+                    dis += updateServiceBillFees(inwardChargeType, periodMatrix.getDiscountPercent(), period.getFromDate(), period.getToDate());
+                    dis += updatePatientItems(inwardChargeType, periodMatrix.getDiscountPercent(), period.getFromDate(), period.getToDate());
+                } else {
+                    clearServicesAndItems(inwardChargeType, period.getFromDate(), period.getToDate());
+                }
+            }
+            return dis;
+        }
         PriceMatrix pm = getPriceMatrixController().getInwardMemberDisCount(getPatientEncounter().getPaymentMethod(),
                 null, getPatientEncounter().getCreditCompany(), inwardChargeType, getPatientEncounter().getAdmissionType());
         double disTot = 0;
@@ -2077,6 +2201,7 @@ public class BhtSummeryController implements Serializable {
 
     private double updatePatientMoCharge(InwardChargeType inwardChargeType) {
         List<PatientRoom> list = getInwardBean().fetchPatientRoomAll(getPatientEncounter(), childPatientEncouters);
+        AdmissionTypeTimeline roomTimeline = admissionTypeHistoryService.timelineFor(getPatientEncounter());
         double disTot = 0;
         if (list == null || list.isEmpty()) {
             return disTot;
@@ -2087,7 +2212,7 @@ public class BhtSummeryController implements Serializable {
                 continue;
             }
             PriceMatrix pm = getPriceMatrixController().getInwardMemberDisCount(getPatientEncounter().getPaymentMethod(),
-                    null, getPatientEncounter().getCreditCompany(), inwardChargeType, getPatientEncounter().getAdmissionType(), bf.getRoomFacilityCharge().getRoomCategory());
+                    null, getPatientEncounter().getCreditCompany(), inwardChargeType, roomTimeline.typeAt(roomStartOf(bf)), bf.getRoomFacilityCharge().getRoomCategory());
 
             if (pm != null) {
                 disTot += updatePatientMoCharge(bf, pm.getDiscountPercent());
@@ -2116,6 +2241,7 @@ public class BhtSummeryController implements Serializable {
 
     private double updatePatientMedicalCareIcuCharge(InwardChargeType inwardChargeType) {
         List<PatientRoom> list = getInwardBean().fetchPatientRoomAll(getPatientEncounter(), childPatientEncouters);
+        AdmissionTypeTimeline roomTimeline = admissionTypeHistoryService.timelineFor(getPatientEncounter());
         double disTot = 0;
         if (list == null || list.isEmpty()) {
             return disTot;
@@ -2126,7 +2252,7 @@ public class BhtSummeryController implements Serializable {
                 continue;
             }
             PriceMatrix pm = getPriceMatrixController().getInwardMemberDisCount(getPatientEncounter().getPaymentMethod(),
-                    null, getPatientEncounter().getCreditCompany(), inwardChargeType, getPatientEncounter().getAdmissionType(), bf.getRoomFacilityCharge().getRoomCategory());
+                    null, getPatientEncounter().getCreditCompany(), inwardChargeType, roomTimeline.typeAt(roomStartOf(bf)), bf.getRoomFacilityCharge().getRoomCategory());
 
             if (pm != null) {
                 disTot += updatePatientMedicalCareIcuCharge(bf, pm.getDiscountPercent());
@@ -2155,6 +2281,7 @@ public class BhtSummeryController implements Serializable {
 
     private double updatePatientAdministrationCharge(InwardChargeType inwardChargeType) {
         List<PatientRoom> list = getInwardBean().fetchPatientRoomAll(getPatientEncounter(), childPatientEncouters);
+        AdmissionTypeTimeline roomTimeline = admissionTypeHistoryService.timelineFor(getPatientEncounter());
         double disTot = 0;
         if (list == null || list.isEmpty()) {
             return disTot;
@@ -2165,7 +2292,7 @@ public class BhtSummeryController implements Serializable {
                 continue;
             }
             PriceMatrix pm = getPriceMatrixController().getInwardMemberDisCount(getPatientEncounter().getPaymentMethod(),
-                    null, getPatientEncounter().getCreditCompany(), inwardChargeType, getPatientEncounter().getAdmissionType(), bf.getRoomFacilityCharge().getRoomCategory());
+                    null, getPatientEncounter().getCreditCompany(), inwardChargeType, roomTimeline.typeAt(roomStartOf(bf)), bf.getRoomFacilityCharge().getRoomCategory());
             if (pm != null) {
                 disTot += updatePatientAdministrationCharge(bf, pm.getDiscountPercent());
             }
@@ -2194,6 +2321,7 @@ public class BhtSummeryController implements Serializable {
 
     private double updatePatientLinenCharge(InwardChargeType inwardChargeType) {
         List<PatientRoom> list = getInwardBean().fetchPatientRoomAll(getPatientEncounter(), childPatientEncouters);
+        AdmissionTypeTimeline roomTimeline = admissionTypeHistoryService.timelineFor(getPatientEncounter());
         double disTot = 0;
         if (list == null || list.isEmpty()) {
             return disTot;
@@ -2204,7 +2332,7 @@ public class BhtSummeryController implements Serializable {
                 continue;
             }
             PriceMatrix pm = getPriceMatrixController().getInwardMemberDisCount(getPatientEncounter().getPaymentMethod(),
-                    null, getPatientEncounter().getCreditCompany(), inwardChargeType, getPatientEncounter().getAdmissionType(), bf.getRoomFacilityCharge().getRoomCategory());
+                    null, getPatientEncounter().getCreditCompany(), inwardChargeType, roomTimeline.typeAt(roomStartOf(bf)), bf.getRoomFacilityCharge().getRoomCategory());
             if (pm != null) {
                 disTot += updatePatientLinenCharge(bf, pm.getDiscountPercent());
             }
@@ -2232,6 +2360,7 @@ public class BhtSummeryController implements Serializable {
 
     private double updatePatientNursingCharge(InwardChargeType inwardChargeType) {
         List<PatientRoom> list = getInwardBean().fetchPatientRoomAll(getPatientEncounter(), childPatientEncouters);
+        AdmissionTypeTimeline roomTimeline = admissionTypeHistoryService.timelineFor(getPatientEncounter());
         double disTot = 0;
         if (list == null || list.isEmpty()) {
             return disTot;
@@ -2242,7 +2371,7 @@ public class BhtSummeryController implements Serializable {
                 continue;
             }
             PriceMatrix pm = getPriceMatrixController().getInwardMemberDisCount(getPatientEncounter().getPaymentMethod(),
-                    null, getPatientEncounter().getCreditCompany(), inwardChargeType, getPatientEncounter().getAdmissionType(), bf.getRoomFacilityCharge().getRoomCategory());
+                    null, getPatientEncounter().getCreditCompany(), inwardChargeType, roomTimeline.typeAt(roomStartOf(bf)), bf.getRoomFacilityCharge().getRoomCategory());
 
             if (pm != null) {
                 disTot += updatePatientNursingCharge(bf, pm.getDiscountPercent());
@@ -2806,8 +2935,10 @@ public class BhtSummeryController implements Serializable {
             return true;
         }
 
-        if (getPatientEncounter().getAdmissionType() != null
-                && getPatientEncounter().getAdmissionType().isRoomChargesAllowed()) {
+        // Whether room charges apply is judged by the type in force at the discharge time (#25814).
+        AdmissionType typeAtDischarge = admissionTypeHistoryService.typeAt(getPatientEncounter(), date);
+        if (typeAtDischarge != null
+                && typeAtDischarge.isRoomChargesAllowed()) {
             boolean nursingDischargeRequired = configOptionApplicationController.getBooleanValueByKey(
                     "Inward Administrative Discharge - Require Nursing Discharge", true);
             if (nursingDischargeRequired && !getPatientEncounter().isNursingDischarged()) {
@@ -3904,14 +4035,25 @@ public class BhtSummeryController implements Serializable {
             return;
         }
 
+        // A ward return is credited to the BHT only when pharmacy accepts it, so the
+        // patient cannot be discharged while one is still waiting (#23973).
+        List<String> pendingReturns = getInwardBean().findWardReturnsAwaitingPharmacy(getPatientEncounter());
+        if (!pendingReturns.isEmpty()) {
+            JsfUtil.addErrorMessage("Cannot discharge: ward return " + String.join(", ", pendingReturns)
+                    + " is waiting for pharmacy. Pharmacy must accept it in Accept Returns from Ward first.");
+            return;
+        }
+
         finalizeRunningTimedServices(date);
 
         if (!getPatientEncounter().isClinicallyDischarged()) {
             JsfUtil.addErrorMessage("Warning: Clinical discharge has not been confirmed for this patient.");
         }
 
-        if (getPatientEncounter().getAdmissionType() != null
-                && getPatientEncounter().getAdmissionType().isRoomChargesAllowed()) {
+        // Whether room charges apply is judged by the type in force at the discharge time (#25814).
+        AdmissionType typeAtDischarge = admissionTypeHistoryService.typeAt(getPatientEncounter(), date);
+        if (typeAtDischarge != null
+                && typeAtDischarge.isRoomChargesAllowed()) {
             // Re-fetch the encounter from the DB/L2 cache to get the authoritative currentPatientRoom FK.
             // The session-scoped patientEncounter may be stale: a room change via RoomChangeController
             // updates PatientEncounter.currentPatientRoom in the DB but not in this session object,

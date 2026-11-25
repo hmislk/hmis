@@ -26,6 +26,7 @@
                             <p:commandButton
                                 value="Inpatient Dashboard"
                                 icon="fa fa-id-card"
+                                title="Back to the Inpatient Dashboard"
                                 ajax="false"
                                 action="#{admissionController.navigateToAdmissionProfilePage}"
                                 class="ui-button-secondary">
@@ -63,7 +64,7 @@
                                         <f:convertDateTime pattern="dd/MMM/yyyy hh:mm:ss a" />
                                     </h:outputText>
 
-                                    <h:outputLabel value="Consultant" />
+                                    <h:outputLabel value="Admission decided by (Consultant)" />
                                     <h:outputText value="#{bhtEditController.current.referringConsultant.person.nameWithTitle}" />
 
                                     <h:outputLabel value="Payment Method" />
@@ -91,13 +92,43 @@
                                 </div>
 
                                 <div class="mb-3">
-                                    <h:outputLabel for="com" value="Cancellation Reason (required)" styleClass="form-label fw-bold" />
+                                    <h:outputLabel for="reasonCode" value="Cancellation Reason (required)" styleClass="form-label fw-bold" />
+                                    <p:selectOneMenu
+                                        id="reasonCode"
+                                        value="#{bhtEditController.cancellationReason}"
+                                        filter="true"
+                                        filterMatchMode="contains"
+                                        styleClass="w-100">
+                                        <f:selectItem itemLabel="Select a reason" itemValue="#{null}" noSelectionOption="true" />
+                                        <f:selectItems value="#{admissionCancellationReasonController.activeReasons}"
+                                                       var="r" itemValue="#{r}" itemLabel="#{r.name}" />
+                                    </p:selectOneMenu>
+                                </div>
+
+                                <div class="mb-3">
+                                    <h:outputLabel for="decidedBy" value="Cancellation decided by (required)" styleClass="form-label fw-bold" />
+                                    <p:autoComplete
+                                        id="decidedBy"
+                                        forceSelection="true"
+                                        value="#{bhtEditController.cancellationDecidedBy}"
+                                        completeMethod="#{staffController.completeStaff}"
+                                        var="ds"
+                                        itemLabel="#{ds.person.nameWithTitle}"
+                                        itemValue="#{ds}"
+                                        placeholder="Doctor or staff member"
+                                        maxResults="15"
+                                        styleClass="w-100"
+                                        inputStyleClass="w-100" />
+                                </div>
+
+                                <div class="mb-3">
+                                    <h:outputLabel for="com" value="Notes (required)" styleClass="form-label fw-bold" />
                                     <p:inputTextarea
                                         id="com"
                                         value="#{bhtEditController.comment}"
                                         class="w-100"
                                         rows="4"
-                                        placeholder="Enter reason for cancellation...">
+                                        placeholder="Enter notes on the cancellation...">
                                     </p:inputTextarea>
                                 </div>
 
@@ -106,6 +137,7 @@
                                         class="ui-button-danger"
                                         icon="fas fa-ban"
                                         value="Cancel Admission"
+                                        title="Cancel this admission; it cannot be undone"
                                         action="#{bhtEditController.cancelBht}"
                                         ajax="false"
                                         onclick="return confirm('Are you sure you want to cancel admission for #{bhtEditController.current.patient.person.nameWithTitle} (BHT: #{bhtEditController.current.bhtNo})? This action cannot be undone.');"

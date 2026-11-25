@@ -8,6 +8,7 @@
  */
 package com.divudi.bean.inward;
 
+import com.divudi.service.ItemAuditHelper;
 import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.core.util.JsfUtil;
@@ -41,6 +42,8 @@ import javax.inject.Named;
 @Named
 @SessionScoped
 public class TimedItemController implements Serializable {
+    @EJB
+    private ItemAuditHelper itemAuditHelper;
 
     private static final long serialVersionUID = 1L;
     @Inject
@@ -285,6 +288,7 @@ public class TimedItemController implements Serializable {
             getCurrent().setCreatedAt(new Date());
             getCurrent().setCreater(getSessionController().getLoggedUser());
             getFacade().create(current);
+            itemAuditHelper.logCreate(current, getSessionController().getLoggedUser(), "UI");
             JsfUtil.addSuccessMessage("Created Successfully");
         } else {
 //
@@ -295,7 +299,9 @@ public class TimedItemController implements Serializable {
 //            if (reportedAs == false) {
 //                getCurrent().setReportedAs(getCurrent());
 //            }
+            Map<String, Object> beforeNames = itemAuditHelper.snapshotFromDb(getCurrent().getId());
             getFacade().edit(getCurrent());
+            itemAuditHelper.logUpdate(beforeNames, getCurrent(), getSessionController().getLoggedUser(), "UI");
             ////System.out.println("current.getDepartmentType() = " + current.getDepartmentType());
             JsfUtil.addSuccessMessage("Updated Successfully");
         }

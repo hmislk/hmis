@@ -16,47 +16,55 @@
                 <h:form>
                     <p:panel header="Reprint" >
                         <f:facet name="header" >
-                            <h:outputLabel value="Reprint BHT Issue" ></h:outputLabel>
-                            <p:commandButton 
-                                class="ui-button-secondary mx-2" 
-                                icon="fas fa-arrow-left" 
-                                ajax="false" 
-                                style="float: right;"
-                                action="ward_pharmacy_bht_issue_request_list_for_issue" 
-                                actionListener="#{pharmacySaleBhtController.makeNullWithFill()}" 
-                                value="Requested List">
-                            </p:commandButton>
-                            <p:commandButton 
-                                class="ui-button-danger mx-1"
-                                style="float: right;"
-                                icon="fas fa-cancel"
-                                ajax="false"
-                                action="#{pharmacyBillSearch.navigateToCancelBhtRequest}"
-                                disabled="#{!(pharmacyBillSearch.bill.returnBhtIssueBills.size() eq 0) or pharmacyBillSearch.currentBillIssueAcceptedByWard}"
-                                value="Cancel Request">
-                            </p:commandButton>
-                            <p:commandButton 
-                                        ajax="false" 
+                            <div class="d-flex justify-content-between align-items-center w-100">
+                                <div class="d-flex align-items-center gap-2">
+                                    <h:outputText styleClass="fa fa-print" />
+                                    <h:outputLabel value="Reprint BHT Issue" ></h:outputLabel>
+                                    <p:commandButton
+                                        styleClass="ui-button-secondary ui-button-outlined"
+                                        icon="fa fa-cog"
+                                        ajax="false"
+                                        rendered="#{webUserController.hasPrivilege('Admin')}"
+                                        title="Page Configuration Management"
+                                        action="#{pageAdminController.navigateToPageAdmin('ward/ward_pharmacy_reprint_bht_issue_bill_reprint')}"
+                                        value="Config">
+                                    </p:commandButton>
+                                </div>
+                                <div class="d-flex gap-2">
+                                    <p:commandButton
+                                        styleClass="ui-button-info ui-button-outlined"
+                                        icon="fas fa-arrow-left"
+                                        ajax="false"
+                                        title="Back to the requested list"
+                                        action="ward_pharmacy_bht_issue_request_list_for_issue"
+                                        actionListener="#{pharmacySaleBhtController.makeNullWithFill()}"
+                                        value="Requested List">
+                                    </p:commandButton>
+                                </div>
+                                <div class="d-flex gap-2 align-items-center">
+                                    <p:commandButton
+                                        ajax="false"
                                         value="To Return Item (Deprecated)"
                                         title="Deprecated: this route will be removed. Return medicines from the ward with Return Medicines to Pharmacy (ward → porter → pharmacy accept)."
-                                        style="float: right;"
-                                        action="#{bhtIssueReturnController.navigateToReturnPharmacyDirectIssueToInpatients(pharmacyBillSearch.bill)}"   
+                                        styleClass="ui-button-secondary"
+                                        action="#{bhtIssueReturnController.navigateToReturnPharmacyDirectIssueToInpatients(pharmacyBillSearch.bill)}"
                                         icon="fa fa-undo"
-                                        disabled="#{pharmacyBillSearch.bill.cancelled eq true or pharmacyBillSearch.bill.patientEncounter.discharged eq true}"  >                                
+                                        disabled="#{pharmacyBillSearch.bill.cancelled eq true or pharmacyBillSearch.bill.patientEncounter.discharged eq true}"  >
                                         <f:setPropertyActionListener
                                             value="#{pharmacyBillSearch.bill}"
                                             target="#{bhtIssueReturnController.bill}"  />
-                            </p:commandButton>
-                            <p:commandButton
-                                class="ui-button-secondary mx-1"
-                                style="float: right;"
-                                icon="fa fa-cog"
-                                ajax="false"
-                                rendered="#{webUserController.hasPrivilege('Admin')}"
-                                title="Page Configuration Management"
-                                action="#{pageAdminController.navigateToPageAdmin('ward/ward_pharmacy_reprint_bht_issue_bill_reprint')}"
-                                value="Config">
-                            </p:commandButton>
+                                    </p:commandButton>
+                                    <p:commandButton
+                                        styleClass="ui-button-danger"
+                                        icon="fas fa-cancel"
+                                        ajax="false"
+                                        title="Cancel this BHT issue request"
+                                        action="#{pharmacyBillSearch.navigateToCancelBhtRequest}"
+                                        disabled="#{!(pharmacyBillSearch.bill.returnBhtIssueBills.size() eq 0) or pharmacyBillSearch.currentBillIssueAcceptedByWard}"
+                                        value="Cancel Request">
+                                    </p:commandButton>
+                                </div>
+                            </div>
                         </f:facet>
 
                         <div class="row">
@@ -70,31 +78,32 @@
                                     <p:dataTable
                                         id="tbl"
                                         rowIndexVar="rowIndex"
+                                        styleClass="p-datatable-sm"
                                         value="#{pharmacyBillSearch.bill.billItems}"
                                         var="bip">
 
-                                        <p:column>
+                                        <p:column width="2em">
                                             <f:facet name="header">
                                                 <h:outputLabel value="No"/>
                                             </f:facet>
                                             <h:outputLabel value="#{rowIndex+1}"/>
                                         </p:column>
 
-                                        <p:column>
+                                        <p:column width="15em">
                                             <f:facet name="header">
                                                 <h:outputLabel value="Item Name"/>
                                             </f:facet>
                                             <h:outputLabel value="#{bip.item.name}"/>
                                         </p:column>
 
-                                        <p:column>
+                                        <p:column width="6em">
                                             <f:facet name="header">
                                                 <h:outputLabel value="QTY"/>
                                             </f:facet>
                                             <p:outputLabel value="#{bip.qty}"/>
                                         </p:column>
 
-                                        <p:column style="text-align: right;" rendered="#{webUserController.hasPrivilege('NursingIPBillingViewRates')}">
+                                        <p:column width="6em" style="text-align: right;" rendered="#{webUserController.hasPrivilege('NursingIPBillingViewRates')}">
                                             <f:facet name="header">
                                                 <h:outputLabel value="Gross Value"/>
                                             </f:facet>
@@ -103,7 +112,7 @@
                                             </h:outputLabel>
                                         </p:column>
 
-                                        <p:column style="text-align: right;" rendered="#{webUserController.hasPrivilege('IPBillingViewDiscount')}">
+                                        <p:column width="6em" style="text-align: right;" rendered="#{webUserController.hasPrivilege('IPBillingViewDiscount')}">
                                             <f:facet name="header">
                                                 <h:outputLabel value="Matrix Value"/>
                                             </f:facet>
@@ -112,25 +121,53 @@
                                             </h:outputLabel>
                                         </p:column>
 
-                                        <p:column style="text-align: right;" rendered="#{webUserController.hasPrivilege('NursingIPBillingViewRates')}">
+                                        <p:column width="6em" style="text-align: right;" rendered="#{webUserController.hasPrivilege('IPBillingViewDiscount')}">
+                                            <f:facet name="header">
+                                                <h:outputLabel value="Discount"/>
+                                            </f:facet>
+                                            <h:outputLabel value="#{bip.discount}">
+                                                <f:convertNumber pattern="#0.00" />
+                                            </h:outputLabel>
+                                        </p:column>
+
+                                        <p:column width="6em" style="text-align: right;" rendered="#{webUserController.hasPrivilege('NursingIPBillingViewRates')}">
                                             <f:facet name="header">
                                                 <h:outputLabel value="Net Value"/>
                                             </f:facet>
-                                            <h:outputLabel value="#{bip.grossValue + bip.marginValue}">
+                                            <h:outputLabel value="#{bip.netValue}">
                                                 <f:convertNumber pattern="#0.00" />
                                             </h:outputLabel>
                                         </p:column>
 
                                         <p:columnGroup type="footer">
                                             <p:row>
-                                                <p:column  style="text-align: right;" colspan="4" rendered="#{webUserController.hasPrivilege('NursingIPBillingViewRates')}">
+                                                <p:column style="text-align: right;" colspan="3" rendered="#{webUserController.hasPrivilege('NursingIPBillingViewRates')}">
+                                                    <f:facet name="footer">
+                                                        <h:outputLabel value="Total"/>
+                                                    </f:facet>
+                                                </p:column>
+                                                <p:column width="6em" style="text-align: right;" rendered="#{webUserController.hasPrivilege('NursingIPBillingViewRates')}">
                                                     <f:facet name="footer">
                                                         <h:outputLabel value="#{pharmacyBillSearch.bill.total}">
                                                             <f:convertNumber pattern="#0.00" />
                                                         </h:outputLabel>
                                                     </f:facet>
                                                 </p:column>
-                                                <p:column  style="text-align: right;" colspan="2" rendered="#{webUserController.hasPrivilege('NursingIPBillingViewRates')}">
+                                                <p:column style="text-align: right;" rendered="#{webUserController.hasPrivilege('IPBillingViewDiscount')}">
+                                                    <f:facet name="footer">
+                                                        <h:outputLabel value="#{pharmacyBillSearch.bill.margin}">
+                                                            <f:convertNumber pattern="#0.00" />
+                                                        </h:outputLabel>
+                                                    </f:facet>
+                                                </p:column>
+                                                <p:column style="text-align: right;" rendered="#{webUserController.hasPrivilege('IPBillingViewDiscount')}">
+                                                    <f:facet name="footer">
+                                                        <h:outputLabel value="#{pharmacyBillSearch.bill.discount}">
+                                                            <f:convertNumber pattern="#0.00" />
+                                                        </h:outputLabel>
+                                                    </f:facet>
+                                                </p:column>
+                                                <p:column style="text-align: right;" rendered="#{webUserController.hasPrivilege('NursingIPBillingViewRates')}">
                                                     <f:facet name="footer">
                                                         <h:outputLabel value="#{pharmacyBillSearch.bill.netTotal}">
                                                             <f:convertNumber pattern="#0.00" />
