@@ -84,7 +84,9 @@ public class InpatientPharmacyIssueDTO implements Serializable {
                 || billTypeAtomic == BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_CANCELLATION
                 || billTypeAtomic == BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_RETURN
                 || billTypeAtomic == BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_CANCELLATION
-                || billTypeAtomic == BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN;
+                || billTypeAtomic == BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN
+                // Porter-based ward return: credited on the ward's RETURN bill on this branch (#26093)
+                || billTypeAtomic == BillTypeAtomic.RETURN_MEDICINE_INWARD;
     }
 
     // JavaBeans property getter for JSF access

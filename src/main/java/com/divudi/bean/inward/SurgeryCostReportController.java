@@ -120,6 +120,10 @@ public class SurgeryCostReportController implements Serializable {
             BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD,
             BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN,
             BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_CANCELLATION,
+            // Porter ward return, credited on the ward's RETURN bill (negative net total) and
+            // offset by its cancellation: the same two types the interim bill's Medicine total uses (#26093).
+            BillTypeAtomic.RETURN_MEDICINE_INWARD,
+            BillTypeAtomic.RETURN_MEDICINE_INWARD_CANCELLATION,
             BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE,
             BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_RETURN,
             BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_CANCELLATION

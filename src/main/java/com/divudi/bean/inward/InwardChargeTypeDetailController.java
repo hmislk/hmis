@@ -292,6 +292,10 @@ public class InwardChargeTypeDetailController implements Serializable {
         btas.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD);
         btas.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN);
         btas.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_CANCELLATION);
+        // Porter ward return: credited on the ward's RETURN bill on this branch. Its lines carry no
+        // inwardChargeType of their own and are always Medicine, so match them by bill type (#26093).
+        // A cancelled return is skipped by the b.cancelled filter and its cancellation has no lines.
+        btas.add(BillTypeAtomic.RETURN_MEDICINE_INWARD);
 
         StringBuilder jpql = new StringBuilder(
                 "select bi from BillItem bi join bi.bill b join b.patientEncounter enc"
@@ -299,8 +303,9 @@ public class InwardChargeTypeDetailController implements Serializable {
                 + " and b.retired = false"
                 + " and b.cancelled = false"
                 + " and b.billTypeAtomic in :btas"
-                + " and bi.inwardChargeType = :ct");
+                + " and (bi.inwardChargeType = :ct or b.billTypeAtomic = :wardReturnBta)");
         Map<String, Object> params = new HashMap<>();
+        params.put("wardReturnBta", BillTypeAtomic.RETURN_MEDICINE_INWARD);
         params.put("btas", btas);
         params.put("ct", selectedChargeType);
         appendEncounterFilters(jpql, params, "enc");
