@@ -11,6 +11,7 @@
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
                 <h:form id="bill" >
+                    <h:outputScript library="js" name="pharmacy_sale_keyboard.js" />
                     <script>
                         window.onload = function () {
                             document.getElementById("acStock").focus();
@@ -73,13 +74,10 @@
 
                         <p:panel class="w-100">
                             <f:facet name="header" >
+                                <div class="d-flex justify-content-between align-items-center w-100">
+                                <div class="d-flex align-items-center gap-2">
                                 <h:outputText styleClass="fas fa-mortar-pestle" />
-                                <h:outputLabel value="Pharmacy Retail Bill (Sale 1)" class="mx-4"></h:outputLabel>
-                                <p:commandButton class="m-1" icon="fas fa-file-invoice" disabled="true" value="Sale 1"  action="pharmacy_bill_retail_sale?faces-redirect=true" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController.pharmacyRetailSale()}" />
-                                <p:commandButton class="m-1"  icon="fas fa-file-invoice" value="Sale 2" action="pharmacy_bill_retail_sale_1?faces-redirect=true" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController1.pharmacyRetailSale()}" />
-                                <p:commandButton class="m-1"  icon="fas fa-file-invoice" value="Sale 3" action="pharmacy_bill_retail_sale_2?faces-redirect=true" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController2.pharmacyRetailSale()}" />
-                                <p:commandButton class="m-1"  icon="fas fa-file-invoice" value="Sale 4" action="pharmacy_bill_retail_sale_3?faces-redirect=true" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController3.pharmacyRetailSale()}" />
-                                <p:commandButton class="m-1 ui-button-warning" icon="fas fa-bolt" value="Fast Sale" action="pharmacy_bill_retail_sale_native?faces-redirect=true" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{retailSaleNativeSqlController.resetAll()}" />
+                                <h:outputLabel value="Pharmacy Retail Bill (Sale 1)"></h:outputLabel>
                                 <!-- Admin Configuration Button (only for administrators) -->
                                 <h:panelGroup rendered="#{webUserController.hasPrivilege('Admin')}">
                                     <p:commandButton
@@ -88,9 +86,18 @@
                                         title="Page Configuration Management"
                                         action="#{pageAdminController.navigateToPageAdmin('pharmacy/pharmacy_bill_retail_sale')}"
                                         ajax="false"
-                                        class="ui-button-secondary mx-2">
+                                        class="ui-button-secondary ui-button-outlined">
                                     </p:commandButton>
                                 </h:panelGroup>
+                                </div>
+                                <div class="d-flex align-items-center gap-2">
+                                <p:commandButton class="ui-button-info ui-button-outlined" icon="fas fa-file-invoice" disabled="true" value="Sale 1"  action="pharmacy_bill_retail_sale?faces-redirect=true" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController.pharmacyRetailSale()}" />
+                                <p:commandButton class="ui-button-info ui-button-outlined" icon="fas fa-file-invoice" value="Sale 2" action="pharmacy_bill_retail_sale_1?faces-redirect=true" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController1.pharmacyRetailSale()}" />
+                                <p:commandButton class="ui-button-info ui-button-outlined" icon="fas fa-file-invoice" value="Sale 3" action="pharmacy_bill_retail_sale_2?faces-redirect=true" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController2.pharmacyRetailSale()}" />
+                                <p:commandButton class="ui-button-info ui-button-outlined" icon="fas fa-file-invoice" value="Sale 4" action="pharmacy_bill_retail_sale_3?faces-redirect=true" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController3.pharmacyRetailSale()}" />
+                                <p:commandButton class="ui-button-warning" icon="fas fa-bolt" value="Fast Sale" action="pharmacy_bill_retail_sale_native?faces-redirect=true" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{retailSaleNativeSqlController.resetAll()}" />
+                                </div>
+                                <div class="d-flex align-items-center gap-2">
                                 <ui:fragment rendered="#{configOptionApplicationController.getBooleanValueByKey('Find Last Sale Rate of Medicines in Retail Sale',false)}">
                                     <i class="fas fa-shopping-cart rounded-circle shadow-lg m-1"
                                        onclick="PF('findAMP').show()"
@@ -99,29 +106,31 @@
                                        tabindex="0"
                                        title="Find AMP"
                                        aria-label="Open Find AMP dialog"
-                                       style="font-size: 20px; color: purple; padding: 8px; background-color: #A9CCE3; cursor: pointer; vertical-align: middle; float: right;">
+                                       style="font-size: 20px; color: purple; padding: 8px; background-color: #A9CCE3; cursor: pointer; vertical-align: middle;">
                                     </i>
                                 </ui:fragment>
                                 <p:commandButton
                                     accesskey="n"
                                     icon="fa fa-plus"
                                     value="New Bill"
-                                    style="float: right;"
                                     ajax="false" action="pharmacy_bill_retail_sale"
-                                    class="mx-1 ui-button-warning"
+                                    class="ui-button-warning"
                                     actionListener="#{pharmacySaleController.resetAll()}"  >
                                 </p:commandButton>
                                 <p:commandButton
+                                    id="btnSettle"
                                     ajax="false"
                                     accesskey="s"
                                     value="Settle"
                                     icon="fa fa-check"
-                                    style="float: right;"
-                                    class="ui-button-success mx-1"
+                                    style="min-width:120px"
+                                    class="ui-button-success"
                                     onclick="if (!confirm('Are you sure?'))
                                                 return false"
                                     action="#{pharmacySaleController.settleBillWithPay}" >
                                 </p:commandButton>
+                                </div>
+                                </div>
                             </f:facet>
 
                             <style>
@@ -162,6 +171,7 @@
                                                         minQueryLength="3"
                                                         maxResults="10"
                                                         styleClass="w-100"
+                                                        panelStyleClass="hmis-sale-item-ac"
                                                         forceSelection="true"
                                                         value="#{pharmacySaleController.stockDto}"
                                                         queryDelay="300" completeMethod="#{pharmacySaleController.completeAvailableStockOptimizedDto}"
@@ -305,7 +315,7 @@
                                         </f:facet>
 
                                         <p:dataTable id="tblBillItem" value="#{pharmacySaleController.preBill.billItems}"
-                                                     var="bi" rowIndexVar="s" editable="true" sortBy="#{bi.searialNo}" class="w-100">
+                                                     var="bi" rowIndexVar="s" editable="true" sortBy="#{bi.searialNo}" class="w-100" styleClass="p-datatable-sm">
 
                                             <p:ajax event="rowEdit" listener="#{pharmacySaleController.onEdit}" update="@this gros :#{p:resolveFirstComponentWithId('panelBillDetails',view).clientId}" />
                                             <p:ajax event="rowEditCancel" listener="#{pharmacySaleController.onEdit}" update="@this gros :#{p:resolveFirstComponentWithId('panelBillDetails',view).clientId}" />
@@ -656,7 +666,7 @@
                                             </f:facet>
                                             <h:panelGroup id="selectPatient" >
                                                 <h:panelGroup rendered="#{patientController.quickSearchPatientList ne null and not empty patientController.quickSearchPatientList}">
-                                                    <p:dataTable id="tblPatients" value="#{patientController.quickSearchPatientList}" var="ps">
+                                                    <p:dataTable styleClass="p-datatable-sm" id="tblPatients" value="#{patientController.quickSearchPatientList}" var="ps">
                                                         <p:column headerText="Name">
                                                             #{ps.person.name}
                                                         </p:column>
@@ -1255,6 +1265,7 @@
                                                                 class="form-control text-end"
                                                                 autocomplete="off"
                                                                 accesskey="t"
+                                                                onkeydown="return hmisTenderedEnter(event, this);"
                                                                 onfocus="this.select()">
                                                                 <p:ajax process="total dis netTotal paid" update="balance netTotal" event="keyup" />
                                                             </p:inputText>
@@ -1341,10 +1352,10 @@
                             </div>
                             <div class="col-6 text-center">
                                 <div  >
-                                    <p:commandButton class="m-1" icon="fas fa-file-invoice" disabled="true" value="Sale 1"  action="pharmacy_bill_retail_sale?faces-redirect=true" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController.pharmacyRetailSale()}" />
-                                    <p:commandButton class="m-1"  icon="fas fa-file-invoice" value="Sale 2" action="pharmacy_bill_retail_sale_1?faces-redirect=true" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController1.pharmacyRetailSale()}" />
-                                    <p:commandButton class="m-1"  icon="fas fa-file-invoice" value="Sale 3" action="pharmacy_bill_retail_sale_2?faces-redirect=true" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController2.pharmacyRetailSale()}" />
-                                    <p:commandButton class="m-1"  icon="fas fa-file-invoice" value="Sale 4" action="pharmacy_bill_retail_sale_3?faces-redirect=true" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController3.pharmacyRetailSale()}" />
+                                    <p:commandButton class="ui-button-info ui-button-outlined" icon="fas fa-file-invoice" disabled="true" value="Sale 1"  action="pharmacy_bill_retail_sale?faces-redirect=true" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController.pharmacyRetailSale()}" />
+                                    <p:commandButton class="ui-button-info ui-button-outlined" icon="fas fa-file-invoice" value="Sale 2" action="pharmacy_bill_retail_sale_1?faces-redirect=true" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController1.pharmacyRetailSale()}" />
+                                    <p:commandButton class="ui-button-info ui-button-outlined" icon="fas fa-file-invoice" value="Sale 3" action="pharmacy_bill_retail_sale_2?faces-redirect=true" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController2.pharmacyRetailSale()}" />
+                                    <p:commandButton class="ui-button-info ui-button-outlined" icon="fas fa-file-invoice" value="Sale 4" action="pharmacy_bill_retail_sale_3?faces-redirect=true" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController3.pharmacyRetailSale()}" />
                                     <p:commandButton class="m-1 ui-button-warning" icon="fas fa-bolt" value="Fast Sale" action="pharmacy_bill_retail_sale_native?faces-redirect=true" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{retailSaleNativeSqlController.resetAll()}" />
                                 </div>
                             </div>

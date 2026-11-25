@@ -68,6 +68,7 @@ public enum Privileges {
     InwardAdmissionsInwardAppoinment("Inward Admissions Inward Appointment"),
     InwardRoom("Inward Room"),
     InwardRoomRoomOccupency("Inward Room Occupancy"),
+    InwardRoomOccupancyAnyInstitute("Inward Room Occupancy - Any Institute"),
     InwardRoomRoomChange("Inward Room Change"),
     
     // IP Appointment
