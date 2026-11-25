@@ -954,7 +954,7 @@
                                               resizable="true"
                                               closeOnEscape="true">
 
-                                        <p:ajax event="open" listener="#{bhtSummeryController.loadCustom2Config}" update="custom2ConfigForm" />
+                                        <p:ajax event="open" listener="#{bhtSummeryController.loadCustom2Config}" update="custom2ConfigForm" resetValues="true" />
 
                                         <h:panelGroup id="custom2ConfigForm" layout="block" rendered="#{webUserController.hasPrivilege('ChangeReceiptPrintingPaperTypes')}">
                                             <div class="card-body">
