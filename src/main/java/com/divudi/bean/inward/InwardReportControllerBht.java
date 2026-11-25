@@ -2210,7 +2210,7 @@ public class InwardReportControllerBht implements Serializable {
             copy.copy(bi);
             copy.setBill(bi.getBill());
             copy.setReferanceBillItem(bi.getReferanceBillItem());
-            copy.setQty(Math.abs(bi.getQty()));
+            copy.setQty(bi.getQty() == null ? null : Math.abs(bi.getQty()));
             copy.setNetValue(Math.abs(bi.getNetValue()));
             copy.setGrossValue(Math.abs(bi.getGrossValue()));
             copy.setMarginValue(Math.abs(bi.getMarginValue()));
