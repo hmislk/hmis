@@ -49,18 +49,22 @@
                         id="doe"
                         inputStyleClass="w-100"
                         class="w-100"
+                        pattern="#{sessionController.applicationPreference.longDateFormat}"
+                        navigator="true"
                         value="#{apiKeyController.current.dateOfExpiary}" ></p:calendar>
                     <p:spacer ></p:spacer>
                     <p:commandButton
                         ajax="false" 
-                        class="w-100"
+                        class="w-100 ui-button-success"
+                        icon="fa fa-plus"
+                        title="Add this API key"
                         value="Add Key"
                         action="#{apiKeyController.saveSelected()}" ></p:commandButton>
                 </p:panelGrid>
             </h:form>
 
             <h:form >
-                <p:dataTable value="#{apiKeyController.items}" var="i" rowKey="#{i.id}" >
+                <p:dataTable value="#{apiKeyController.items}" var="i" rowKey="#{i.id}" styleClass="p-datatable-sm" >
                     <f:facet name="header" >
                         <p:outputLabel value="My Active API Keys" ></p:outputLabel>
                     </f:facet>
@@ -76,7 +80,7 @@
                         </p:outputLabel>
                     </p:column>
                     <p:column headerText="Actions" >
-                        <p:commandButton ajax="false" value="Remove" action="#{apiKeyController.delete()}" >
+                        <p:commandButton ajax="false" value="Remove" icon="fa fa-trash" styleClass="ui-button-danger" title="Remove this API key" action="#{apiKeyController.delete()}" >
                             <f:setPropertyActionListener value="#{i}" target="#{apiKeyController.removing}" ></f:setPropertyActionListener>
                         </p:commandButton>
                     </p:column>
