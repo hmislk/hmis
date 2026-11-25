@@ -79,7 +79,7 @@
                             <h:panelGroup rendered="#{admissionTypeChangeController.interimBillWarning}" layout="block">
                                 <div class="alert alert-warning">
                                     <i class="fa fa-exclamation-triangle me-2"></i>
-                                    An interim bill has already been issued for this admission. The new type applies to the whole day of the change, from 00:00. Charges dated before that day keep the old type. Bills already saved do not change.
+                                    An interim bill has already been issued for this admission. The new type applies to charges dated at or after the change time. Charges dated before it keep the old type. Linen for the day of the change stays at the old type; the new type applies from the next day. Bills already saved do not change.
                                 </div>
                             </h:panelGroup>
 
