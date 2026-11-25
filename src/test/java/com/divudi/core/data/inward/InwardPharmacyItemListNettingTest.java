@@ -240,4 +240,39 @@ public class InwardPharmacyItemListNettingTest {
         assertTrue(InwardMedicineBillTypes.isCountedInLiveList(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE, false, false));
         assertFalse(InwardMedicineBillTypes.isCountedInLiveList(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE, true, false));
     }
+
+    @Test
+    void reversalAndCancelledReturnInTheSameListNetToTheInterimBill() {
+        // O1 + its reversal R1 net to 0; O2 stays charged in full: its return was cancelled,
+        // and the cancellation bill (the return's value inverted) offsets the return.
+        BillItem[] pair = reversedPair(40);
+        BillItem o2 = line(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE, false, 10, 100, null);
+        BillItem cancelledReturn = line(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN, true, -4, -40, o2);
+        BillItem offset = line(BillTypeAtomic.PHARMACY_RETURN_ITEMS_AND_PAYMENTS_CANCELLATION, false, 4, 40, cancelledReturn);
+        List<BillItem> all = Arrays.asList(pair[0], pair[1], o2, cancelledReturn, offset);
+
+        // The interim bill is summed first: rows() changes the issue lines in place.
+        double interimSigned = 0.0;
+        for (BillItem bi : all) {
+            interimSigned += InwardMedicineBillTypes.signedRowValue(bi.getBill().getBillTypeAtomic(), bi.getNetValue());
+        }
+
+        List<BillItem> rows = InwardPharmacyItemListNetting.rows(liveTypesOnly(all));
+
+        assertEquals(100.0, interimSigned, 0.0001);
+        assertEquals(100.0, InwardPharmacyItemListNetting.total(rows), 0.0001);
+        assertFalse(rows.contains(pair[0]));
+        assertFalse(rows.contains(pair[1]));
+    }
+
+    @Test
+    void reversalAndCancelledReturnNetTheSameInAnyListOrder() {
+        BillItem[] pair = reversedPair(40);
+        BillItem o2 = line(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE, false, 10, 100, null);
+        BillItem cancelledReturn = line(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN, true, -4, -40, o2);
+        BillItem offset = line(BillTypeAtomic.PHARMACY_RETURN_ITEMS_AND_PAYMENTS_CANCELLATION, false, 4, 40, cancelledReturn);
+        List<BillItem> rows = InwardPharmacyItemListNetting.rows(liveTypesOnly(
+                Arrays.asList(offset, cancelledReturn, o2, pair[1], pair[0])));
+        assertEquals(100.0, InwardPharmacyItemListNetting.total(rows), 0.0001);
+    }
 }
