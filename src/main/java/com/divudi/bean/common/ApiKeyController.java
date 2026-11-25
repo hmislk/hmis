@@ -141,13 +141,16 @@ public class ApiKeyController implements Serializable {
             JsfUtil.addErrorMessage("Please enter the Date of Expiary");
             return;
         }
-        Calendar today = Calendar.getInstance();
-        today.set(Calendar.HOUR_OF_DAY, 0);
-        today.set(Calendar.MINUTE, 0);
-        today.set(Calendar.SECOND, 0);
-        today.set(Calendar.MILLISECOND, 0);
-        if (expiry.before(today.getTime())) {
-            JsfUtil.addErrorMessage("The Date of Expiary cannot be in the past");
+        // The column is a DATE, so the key expires at 00:00 of the chosen day:
+        // a key expiring today would be invalid at once.
+        Calendar tomorrow = Calendar.getInstance();
+        tomorrow.set(Calendar.HOUR_OF_DAY, 0);
+        tomorrow.set(Calendar.MINUTE, 0);
+        tomorrow.set(Calendar.SECOND, 0);
+        tomorrow.set(Calendar.MILLISECOND, 0);
+        tomorrow.add(Calendar.DATE, 1);
+        if (expiry.before(tomorrow.getTime())) {
+            JsfUtil.addErrorMessage("The Date of Expiary must be after today");
             return;
         }
         Calendar limit = Calendar.getInstance();
