@@ -258,12 +258,18 @@ Both keys are application-wide Booleans, default `false`. With both off, neither
 
 - `Inward Final Bill - Custom Bill 3 - Show Claimable Copies`
 - `Inward Final Bill - Custom Bill 3 - Show Not Claimable Copies`
-- `Inward Final Bill Reprint - Custom Bill 3 - Show Claimable Copies`
-- `Inward Final Bill Reprint - Custom Bill 3 - Show Not Claimable Copies`
 
-A hospital that had one of these set to Yes must set the matching new key to Yes to keep the buttons.
+A hospital that had one of these set to Yes must set the matching new key to Yes to keep the buttons on the Final Bill page. The `Inward Final Bill Reprint - Custom Bill 3 - ...` keys below are still read.
 
 Do not confuse these with `Inward Final Bill - Show Custom Bill 4 Format`, an older key that switches on the "Custom Bill 3 (Letterhead)" tab on the reprint page (see `printer-configuration-system.md`).
+
+## Inward Final Bill - Custom Bill 4 payments on copies without professional fees
+
+Read in `resources/inward/bill/finalBillCustomBill4.xhtml`, so it applies wherever Custom Bill 4 prints (Final Bill page and its reprint). The Custom Bill 3 key of the same name does not affect Custom Bill 4, and this key does not affect Custom Bill 3.
+
+| Key | Type | Default | Description |
+| --- | --- | --- | --- |
+| `Inward Final Bill - Custom Bill 4 - Show Payments On Copies Without Professional Fees` | Boolean (application scope) | `false` | On Custom Bill 4 copies printed without professional fees (Not Claimable copies), shows Paid By Patient, Paid By Company and Total Paid. The Due lines (Due from company, Due Amount) stay hidden. When `false` these copies show no payments. Copies with professional fees are not affected. |
 
 ## Inward Final Bill - Custom Bill 3 payments on copies without professional fees
 
