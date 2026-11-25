@@ -13,11 +13,15 @@ import java.util.List;
 /**
  * Which admission type was in force on a given date for one admission (#25814).
  *
- * <p>One boundary rule for every reader: a change takes effect at the start
- * (00:00) of the calendar day on which it was made, so the whole change day is
- * billed at the new type. Two changes on one day: the last one wins for that
- * day. The history rows keep the real change time for the audit; only this
- * class turns it into the boundary.
+ * <p>Two rules, both from the product owner:
+ * <ul>
+ * <li>A dated charge (a service, an item, a room start) takes the type in force
+ * at its exact time: before the change time the old type, at or after it the
+ * new type.</li>
+ * <li>A per-day charge (linen) takes the type in force at the start of the
+ * calendar day, so the change day is charged at the old type and the new type
+ * applies from the next day.</li>
+ * </ul>
  *
  * <p>Built from the admission's current type and its history rows. With no
  * history rows (an admission whose type never changed, and every admission
@@ -104,30 +108,11 @@ public class AdmissionTypeTimeline {
                 }
             });
         }
-        Date lastDay = null;
         for (int i = 0; i < rows.size(); i++) {
             AdmissionTypeHistory r = rows.get(i);
-            if (i == 0) {
-                effTypes.add(r.getAdmissionType());
-                effFrom.add(null);
-                lastDay = boundaryOf(r.getFromDate());
-                continue;
-            }
-            Date boundary = boundaryOf(r.getFromDate());
-            if (!boundary.after(lastDay)) {
-                // the earlier type never had a billable day: the later change wins
-                effTypes.set(effTypes.size() - 1, r.getAdmissionType());
-            } else {
-                effTypes.add(r.getAdmissionType());
-                effFrom.add(boundary);
-            }
-            lastDay = boundary;
+            effTypes.add(r.getAdmissionType());
+            effFrom.add(i == 0 ? null : r.getFromDate());
         }
-    }
-
-    /** The moment a change made at this time takes effect: the start of its calendar day. */
-    public static Date boundaryOf(Date changeTime) {
-        return CommonFunctions.getStartOfDay(changeTime);
     }
 
     /** True when the type was changed at least once. */
@@ -173,10 +158,10 @@ public class AdmissionTypeTimeline {
     /**
      * Splits the billed days of a stay by admission type. The number of days is
      * the same as {@link CommonFunctions#getDayCount} (a stay that counts as 0
-     * days is billed as 1). Each calendar day takes the type in force at the end
-     * of that day, so the day a change is made is billed at the new type (the
-     * last change of that day wins). The days always add up to the single-type
-     * day count.
+     * days is billed as 1). Each calendar day takes the type in force at the
+     * start of that day, so the day a change is made is billed at the old type
+     * and the new type applies from the next day. The days always add up to the
+     * single-type day count.
      */
     public List<TypeDays> splitDays(Date from, Date to) {
         long dayCount = CommonFunctions.getDayCount(from, to);
