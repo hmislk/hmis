@@ -73,10 +73,30 @@ public class InwardMedicineBillTypesTest {
 
     @Test
     void listTotalMatchesInterimBillForIssueReturnAndCancelledPair() {
-        // Issue 100, return 30, second issue 50 later cancelled (cancelled issue and its
-        // cancellation bill are both skipped by the list); interim bill: 100 - 30 + 50 - 50 = 70.
-        double total = InwardMedicineBillTypes.itemListSignedValue(BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE, 100.0)
-                + InwardMedicineBillTypes.itemListSignedValue(BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_RETURN, -30.0);
-        assertEquals(70.0, total, 0.0001);
+        // Issue 100, return 30 (stored negative), issue 50 later cancelled.
+        // Interim bill: sums every bill of ALL by type, ignoring the cancelled flag, so the
+        // cancelled issue (+50) and its cancellation bill (-50) net to 0: 100 - 30 + 50 - 50 = 70.
+        // List: skips cancelled issues and has no cancellation types, so the pair drops out.
+        Object[][] bills = {
+            {BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE, 100.0, false},
+            {BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_RETURN, -30.0, false},
+            {BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE, 50.0, true},
+            {BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_CANCELLATION, -50.0, false}
+        };
+        double interim = 0.0;
+        double list = 0.0;
+        for (Object[] b : bills) {
+            BillTypeAtomic type = (BillTypeAtomic) b[0];
+            double net = (Double) b[1];
+            boolean cancelled = (Boolean) b[2];
+            if (InwardMedicineBillTypes.ALL.contains(type)) {
+                interim += net;
+            }
+            if (InwardMedicineBillTypes.ALL_EXCLUDING_ISSUE_CANCELLATIONS.contains(type) && !cancelled) {
+                list += InwardMedicineBillTypes.itemListSignedValue(type, net);
+            }
+        }
+        assertEquals(70.0, interim, 0.0001);
+        assertEquals(interim, list, 0.0001);
     }
 }

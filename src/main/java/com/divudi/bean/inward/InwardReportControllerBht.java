@@ -2231,7 +2231,7 @@ public class InwardReportControllerBht implements Serializable {
                 + "bi.discount, "
                 + "bi.marginValue) "
                 + "FROM BillItem bi LEFT JOIN bi.referanceBillItem refBi "
-                + "WHERE bi.bill.patientEncounter IN :patientEncounters "
+                + "WHERE bi.bill.patientEncounter.id IN :peIds "
                 + "AND bi.bill.billTypeAtomic IN :billTypeAtomics "
                 + "AND bi.retired = FALSE "
                 + "AND bi.bill.retired = FALSE "
@@ -2240,13 +2240,15 @@ public class InwardReportControllerBht implements Serializable {
         Map<String, Object> params = new HashMap<>();
         params.put("billTypeAtomics", billTypes);
         // The admission and its child admissions (such as a baby BHT), as the interim bill sums them.
-        List<PatientEncounter> encounters = new ArrayList<>();
-        encounters.add(patientEncounter);
+        List<Long> peIds = new ArrayList<>();
+        peIds.add(patientEncounter.getId());
         List<PatientEncounter> children = inwardBeanController.fetchChildPatientEncounter(patientEncounter);
         if (children != null) {
-            encounters.addAll(children);
+            for (PatientEncounter child : children) {
+                peIds.add(child.getId());
+            }
         }
-        params.put("patientEncounters", encounters);
+        params.put("peIds", peIds);
 
         if (department != null) {
             jpql += "AND bi.bill.department = :department ";
