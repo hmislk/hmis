@@ -891,6 +891,7 @@
                                             </h:panelGroup>
                                         </p:panel>
                                     </h:panelGroup>
+                                    </h:panelGroup>
 
                                     <!-- Custom Bill 4 copy sets, same copies and same keys as the settle page (inward_bill_final.xhtml) -->
                                     <h:panelGroup layout="block" styleClass="mt-3" rendered="#{configOptionApplicationController.getBooleanValueByKey('Inward Final Bill - Custom Bill 4 - Show Claimable Copies', false)}">
@@ -971,7 +972,6 @@
                                                 <bi:finalProfessionalBill bill="#{inwardSearch.showOrginalBill ? inwardSearch.bill.referenceBill : inwardSearch.bill}"/>
                                             </h:panelGroup>
                                         </p:panel>
-                                    </h:panelGroup>
                                     </h:panelGroup>
 
                                     <h:panelGroup layout="block" rendered="#{configOptionController.getBooleanValueByKeyReadOnly('Inward Final Bill - Show Bundled Custom 1 Format', false)}">

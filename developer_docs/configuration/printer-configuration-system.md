@@ -127,7 +127,7 @@ directly should use this table, not guess from the on-screen label:
 | "Custom Bill" | `finalBillCustom2` | `Inward Final Bill - Show Custom Bill 2 Format` |
 | "Custom Bill 2" | `finalBillCustom3` | `Inward Final Bill - Show Custom Bill 3 Format` |
 | "Custom Bill 3 (Letterhead)" | `finalBillCustom4` | `Inward Final Bill - Show Custom Bill 4 Format` |
-| "Custom Bill 4" (Claimable / Not Claimable copies) | `finalBillCustomBill4` | `Inward Final Bill - Custom Bill 4 - Show Claimable Copies` and `... - Show Not Claimable Copies` (read by both the Final Bill and Final Bill Reprint pages; on the reprint page they sit inside the "Custom Bill 3 (Letterhead)" section) |
+| "Custom Bill 4" (Claimable / Not Claimable copies) | `finalBillCustomBill4` | `Inward Final Bill - Custom Bill 4 - Show Claimable Copies` and `... - Show Not Claimable Copies` (read by both the Final Bill and Final Bill Reprint pages) |
 
 The three `Show Custom Bill N Format` keys default `false` except `Show Custom Bill 2 Format` (default
 `true`), so a fresh department sees only "Custom Bill" until an admin

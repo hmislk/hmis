@@ -241,35 +241,14 @@ The shared and yearly keys combine: shared plus yearly gives one series per year
 
 **Deploy order.** `AdmissionNumber.counterYear` is mapped on the entity, so every BHT number read fails until the column exists, even with all keys off. Add it **before** the WAR containing it is deployed: a nullable integer column `counterYear` on the admission number table (check that table's name case on the target database; the build being replaced cannot add it). Add Missing Fields in the new build also adds it, but only after the deploy, when BHT reads already fail.
 
-## Inward Final Bill - Custom Bill 4 Claimable / Not Claimable copies
+## Inward Final Bill - Custom Bill 3 Claimable / Not Claimable copies
 
-Issue #17566, separated from Custom Bill 3 under #26061. "Custom Bill 3" (the letterhead format Coop uses, component `finalBillCustom4`) is never changed by these keys. "Custom Bill 4" is its own component, `finalBillCustomBill4`, with its own stylesheet and wrapper class.
-
-**Print and reprint use the same settings.** Both the Inward Final Bill page (`inward_bill_final.xhtml`) and the Final Bill Reprint page (`inward_reprint_bill_final.xhtml`) read the same two keys. There is no separate reprint key. On the reprint page the Custom Bill 4 copies are in the Custom Bills tab, inside the "Custom Bill 3 (Letterhead)" section, so that section must also be shown (`Inward Final Bill - Show Custom Bill 4 Format`).
-
-Both keys are application-wide Booleans, default `false`. With both off, neither page shows any Custom Bill 4 button. Set either or both.
+Issue #17566. Both keys are application-wide Booleans, default `false` (existing "Custom Bill 3" and "Custom Bill 3 (Duplicate)" buttons are unchanged when both are off). Set either or both.
 
 | Key | Type | Default | Description |
 | --- | --- | --- | --- |
-| `Inward Final Bill - Custom Bill 4 - Show Claimable Copies` | Boolean | `false` | Adds Claimable Patient, Hospital and Duplicate copy buttons (Custom Bill 4 layout, professional fees included) to the Final Bill and Final Bill Reprint pages. |
-| `Inward Final Bill - Custom Bill 4 - Show Not Claimable Copies` | Boolean | `false` | Adds Not Claimable Patient, Hospital and Duplicate copy buttons (Custom Bill 4 layout, without professional fees) and a Professional Fees copy button to the Final Bill and Final Bill Reprint pages. |
-
-**Retired keys (no longer read; leave any stored rows alone):**
-
-- `Inward Final Bill - Custom Bill 3 - Show Claimable Copies`
-- `Inward Final Bill - Custom Bill 3 - Show Not Claimable Copies`
-
-A hospital that had one of these set to Yes must set the matching new key to Yes to keep the buttons on the Final Bill page. The `Inward Final Bill Reprint - Custom Bill 3 - ...` keys below are still read.
-
-Do not confuse these with `Inward Final Bill - Show Custom Bill 4 Format`, an older key that switches on the "Custom Bill 3 (Letterhead)" section on the reprint page (see `printer-configuration-system.md`).
-
-## Inward Final Bill - Custom Bill 4 payments on copies without professional fees
-
-Read in `resources/inward/bill/finalBillCustomBill4.xhtml`, so it applies wherever Custom Bill 4 prints (Final Bill page and its reprint). The Custom Bill 3 key of the same name does not affect Custom Bill 4, and this key does not affect Custom Bill 3.
-
-| Key | Type | Default | Description |
-| --- | --- | --- | --- |
-| `Inward Final Bill - Custom Bill 4 - Show Payments On Copies Without Professional Fees` | Boolean (application scope) | `false` | On Custom Bill 4 copies printed without professional fees (Not Claimable copies), shows Paid By Patient, Paid By Company and Total Paid. The Due lines (Due from company, Due Amount) stay hidden. When `false` these copies show no payments. Copies with professional fees are not affected. |
+| `Inward Final Bill - Custom Bill 3 - Show Claimable Copies` | Boolean | `false` | Adds Claimable Patient, Hospital and Duplicate copy buttons (Custom Bill 3 layout, professional fees included) to the inward Final Bill page. |
+| `Inward Final Bill - Custom Bill 3 - Show Not Claimable Copies` | Boolean | `false` | Adds Not Claimable Patient, Hospital and Duplicate copy buttons (Custom Bill 3 layout, without professional fees) and a Professional Fees copy button. |
 
 ## Inward Final Bill - Custom Bill 3 payments on copies without professional fees
 
@@ -281,12 +260,35 @@ Issue #26027. Read in `resources/inward/bill/finalBillCustom4.xhtml`, so it appl
 
 ## Inward Final Bill Reprint - Custom Bill 3 Claimable / Not Claimable copies
 
-Issue #26002. Claimable and Not Claimable copies in the Custom Bill 3 layout on the final bill reprint page (`inward/inward_reprint_bill_final.xhtml`, tab Custom Bills), inside the Custom Bill 3 section, so that section must also be shown (`Inward Final Bill - Show Custom Bill 4 Format`). Application-wide Booleans, default `false`; with both off the page shows no Custom Bill 3 copy sets. Only the reprint page reads these keys; the Custom Bill 4 keys do not affect these copies.
+Issue #26002. The same copies on the final bill reprint page (`inward/inward_reprint_bill_final.xhtml`, tab Custom Bills), inside the Custom Bill 3 section, so that section must also be shown (`Inward Final Bill - Show Custom Bill 4 Format`). Application-wide Booleans, default `false`; with both off the page is unchanged. The settle-page keys above are not read here.
 
 | Key | Type | Default | Description |
 | --- | --- | --- | --- |
 | `Inward Final Bill Reprint - Custom Bill 3 - Show Claimable Copies` | Boolean | `false` | Adds a "Custom Bill 3 - Claimable Copies" panel with Patient, Hospital and Duplicate copy buttons (professional fees included). |
 | `Inward Final Bill Reprint - Custom Bill 3 - Show Not Claimable Copies` | Boolean | `false` | Adds a "Custom Bill 3 - Not Claimable Copies" panel with Patient, Hospital and Duplicate copy buttons (without professional fees) and a Professional Fees copy button. |
+
+## Inward Final Bill - Custom Bill 4 Claimable / Not Claimable copies
+
+Issue #26061. "Custom Bill 4" is its own component, `finalBillCustomBill4`, with its own stylesheet and wrapper class. The Custom Bill 3 keys above do not affect it, and these keys do not affect Custom Bill 3. On the Final Bill page the Custom Bill 4 buttons sit beside the Custom Bill 3 buttons.
+
+**Print and reprint use the same settings.** Both the Inward Final Bill page (`inward_bill_final.xhtml`) and the Final Bill Reprint page (`inward_reprint_bill_final.xhtml`, tab Custom Bills) read the same two keys. There is no separate reprint key, and the reprint copies do not need a `Show ... Format` setting.
+
+Both keys are application-wide Booleans, default `false`. With both off, neither page shows any Custom Bill 4 button. Set either or both.
+
+| Key | Type | Default | Description |
+| --- | --- | --- | --- |
+| `Inward Final Bill - Custom Bill 4 - Show Claimable Copies` | Boolean | `false` | Adds Claimable Patient, Hospital and Duplicate copy buttons (Custom Bill 4 layout, professional fees included) to the Final Bill and Final Bill Reprint pages. |
+| `Inward Final Bill - Custom Bill 4 - Show Not Claimable Copies` | Boolean | `false` | Adds Not Claimable Patient, Hospital and Duplicate copy buttons (Custom Bill 4 layout, without professional fees) and a Professional Fees copy button to the Final Bill and Final Bill Reprint pages. |
+
+Do not confuse these with `Inward Final Bill - Show Custom Bill 4 Format`, an older key that switches on the "Custom Bill 3 (Letterhead)" section on the reprint page (see `printer-configuration-system.md`).
+
+## Inward Final Bill - Custom Bill 4 payments on copies without professional fees
+
+Read in `resources/inward/bill/finalBillCustomBill4.xhtml`, so it applies wherever Custom Bill 4 prints (Final Bill page and its reprint). The Custom Bill 3 key of the same name does not affect Custom Bill 4, and this key does not affect Custom Bill 3.
+
+| Key | Type | Default | Description |
+| --- | --- | --- | --- |
+| `Inward Final Bill - Custom Bill 4 - Show Payments On Copies Without Professional Fees` | Boolean (application scope) | `false` | On Custom Bill 4 copies printed without professional fees (Not Claimable copies), shows Paid By Patient, Paid By Company and Total Paid. The Due lines (Due from company, Due Amount) stay hidden. When `false` these copies show no payments. Copies with professional fees are not affected. |
 
 ## Inward VAT per charge type
 
