@@ -41,6 +41,27 @@ public final class InwardMedicineBillTypes {
             BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_CANCELLATION
     ));
 
+    /**
+     * Medicine bill types that take value off the BHT's medicine total in a
+     * per-item pharmacy list (a return, as opposed to an issue). The accept bill
+     * is the one that carries the credit for a porter-based ward return (#25509),
+     * so the ward's own return bill is not in this list.
+     */
+    public static final List<BillTypeAtomic> ITEM_LIST_RETURNS = Collections.unmodifiableList(Arrays.asList(
+            BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN,
+            BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_RETURN,
+            BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN,
+            BillTypeAtomic.ACCEPT_RETURN_MEDICINE_INWARD
+    ));
+
+    /**
+     * True when a line of this bill type is deducted, not added, in an
+     * inpatient pharmacy item list total.
+     */
+    public static boolean isItemListReturn(BillTypeAtomic billTypeAtomic) {
+        return billTypeAtomic != null && ITEM_LIST_RETURNS.contains(billTypeAtomic);
+    }
+
     private InwardMedicineBillTypes() {
     }
 }

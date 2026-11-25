@@ -477,6 +477,9 @@ public class InwardChargeTypeBreakdownController implements Serializable {
         btas.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD);
         btas.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN);
         btas.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_CANCELLATION);
+        // Porter ward return: credited when the pharmacy accepts it (#25509). Its lines carry no
+        // inwardChargeType of their own and are always Medicine, so match them by bill type (#26093).
+        btas.add(BillTypeAtomic.ACCEPT_RETURN_MEDICINE_INWARD);
 
         StringBuilder jpql = new StringBuilder(
                 "select bi from BillItem bi join bi.bill b join b.patientEncounter enc"
@@ -484,9 +487,10 @@ public class InwardChargeTypeBreakdownController implements Serializable {
                 + " and b.retired = false"
                 + " and b.cancelled = false"
                 + " and b.billTypeAtomic in :btas"
-                + " and bi.inwardChargeType = :ct");
+                + " and (bi.inwardChargeType = :ct or b.billTypeAtomic = :acceptReturnBta)");
 
         Map<String, Object> params = new HashMap<>();
+        params.put("acceptReturnBta", BillTypeAtomic.ACCEPT_RETURN_MEDICINE_INWARD);
         params.put("btas", btas);
         params.put("ct", selectedChargeType);
         appendEncounterFilters(jpql, params, "enc");
