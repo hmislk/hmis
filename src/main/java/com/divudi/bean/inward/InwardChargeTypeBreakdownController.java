@@ -470,8 +470,9 @@ public class InwardChargeTypeBreakdownController implements Serializable {
         // listed. Its cancellation bill must be left out too, or it is deducted with nothing to
         // offset it. The interim bill counts both, which nets to zero (#26093). The porter ward
         // return is credited on the pharmacy accept bill, which is never cancelled (#25509); it
-        // has no charge type of its own, so it is matched by bill type below.
-        List<BillTypeAtomic> btas = new ArrayList<>(InwardMedicineBillTypes.ALL_EXCLUDING_ISSUE_CANCELLATIONS);
+        // has no charge type of its own, so it is matched by bill type below. A cancelled return
+        // is skipped too, so the cancellation of a return is left out as well (#26105).
+        List<BillTypeAtomic> btas = new ArrayList<>(InwardMedicineBillTypes.ALL_LIVE_BILLS);
 
         StringBuilder jpql = new StringBuilder(
                 "select bi from BillItem bi join bi.bill b join b.patientEncounter enc"

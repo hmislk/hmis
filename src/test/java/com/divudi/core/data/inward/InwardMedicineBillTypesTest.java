@@ -120,4 +120,39 @@ public class InwardMedicineBillTypesTest {
         assertEquals(interim, list, 0.0001);
         assertEquals(0.0, InwardMedicineBillTypes.listSignedValueWithCancellations(null, null), 0.0001);
     }
+
+    @Test
+    void cancelledReturnNetsToZeroAndIsNotAnIssue() {
+        BillTypeAtomic cancel = BillTypeAtomic.PHARMACY_RETURN_ITEMS_AND_PAYMENTS_CANCELLATION;
+        assertTrue(InwardMedicineBillTypes.ALL.contains(cancel));
+        assertTrue(InwardMedicineBillTypes.ALL_EXCLUDING_ISSUE_CANCELLATIONS.contains(cancel));
+        assertFalse(InwardMedicineBillTypes.ISSUES.contains(cancel));
+        // 100 issued, 40 returned (deducted), the return cancelled (added back): 100.
+        double total = InwardMedicineBillTypes.itemListSignedValue(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE, 100.0)
+                + InwardMedicineBillTypes.itemListSignedValue(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN, -40.0)
+                + InwardMedicineBillTypes.itemListSignedValue(cancel, 40.0);
+        assertEquals(100.0, total, 0.0001);
+    }
+
+    @Test
+    void liveBillsListLeavesOutTheReturnCancellationAndTheIssueCancellations() {
+        // The Charge Type Breakdown and Detail skip cancelled bills, so the cancelled return is
+        // already out; its cancellation must be out too.
+        assertFalse(InwardMedicineBillTypes.ALL_LIVE_BILLS.contains(BillTypeAtomic.PHARMACY_RETURN_ITEMS_AND_PAYMENTS_CANCELLATION));
+        for (BillTypeAtomic t : InwardMedicineBillTypes.ISSUE_CANCELLATIONS) {
+            assertFalse(InwardMedicineBillTypes.ALL_LIVE_BILLS.contains(t));
+        }
+        assertTrue(InwardMedicineBillTypes.ALL_LIVE_BILLS.contains(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN));
+        assertTrue(InwardMedicineBillTypes.ALL_LIVE_BILLS.contains(BillTypeAtomic.ACCEPT_RETURN_MEDICINE_INWARD));
+        assertTrue(InwardMedicineBillTypes.ALL_EXCLUDING_ISSUE_CANCELLATIONS.contains(BillTypeAtomic.PHARMACY_RETURN_ITEMS_AND_PAYMENTS_CANCELLATION));
+    }
+
+    @Test
+    void returnCancellationIsAddedBackByMagnitude() {
+        BillTypeAtomic cancel = BillTypeAtomic.PHARMACY_RETURN_ITEMS_AND_PAYMENTS_CANCELLATION;
+        assertTrue(InwardMedicineBillTypes.isReturnCancellation(cancel));
+        assertEquals(40.0, InwardMedicineBillTypes.signedRowValue(cancel, -40.0), 0.0001);
+        assertEquals(40.0, InwardMedicineBillTypes.signedRowValue(cancel, 40.0), 0.0001);
+        assertEquals(40.0, InwardMedicineBillTypes.listSignedValueWithCancellations(cancel, -40.0), 0.0001);
+    }
 }

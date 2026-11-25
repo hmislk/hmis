@@ -282,6 +282,10 @@ public class BhtSummeryFinalizedController implements Serializable {
     }
 
     public double signedByBill(BillItem item, double value) {
+        if (item != null && item.getBill() != null
+                && com.divudi.core.data.inward.InwardMedicineBillTypes.isReturnCancellation(item.getBill().getBillTypeAtomic())) {
+            return Math.abs(value);
+        }
         if (item != null && item.getBill() != null && item.getBill().getNetTotal() < 0 && value > 0) {
             return -value;
         }
