@@ -136,6 +136,27 @@ public class ApiKeyController implements Serializable {
             return;
         }
 
+        Date expiry = getCurrent().getDateOfExpiary();
+        if (expiry == null) {
+            JsfUtil.addErrorMessage("Please enter the Date of Expiary");
+            return;
+        }
+        Calendar today = Calendar.getInstance();
+        today.set(Calendar.HOUR_OF_DAY, 0);
+        today.set(Calendar.MINUTE, 0);
+        today.set(Calendar.SECOND, 0);
+        today.set(Calendar.MILLISECOND, 0);
+        if (expiry.before(today.getTime())) {
+            JsfUtil.addErrorMessage("The Date of Expiary cannot be in the past");
+            return;
+        }
+        Calendar limit = Calendar.getInstance();
+        limit.add(Calendar.YEAR, 10);
+        if (expiry.after(limit.getTime())) {
+            JsfUtil.addErrorMessage("The Date of Expiary cannot be more than 10 years from today");
+            return;
+        }
+
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getFacade().edit(current);
             JsfUtil.addSuccessMessage("Updated Successfully.");
