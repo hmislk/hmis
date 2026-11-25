@@ -107,7 +107,7 @@ public class BhtIssueReversalService {
         }
     }
 
-    public Bill reverse(Long originalBillId, WebUser user, Institution institution, Department department, String deptId) {
+    public Bill reverse(Long originalBillId, WebUser user, Institution institution, Department department, String deptId, String comments) {
         if (originalBillId == null) {
             throw new BhtIssueReversalException("No Bill Found");
         }
@@ -141,6 +141,10 @@ public class BhtIssueReversalService {
 
         Bill reversalBill = new Bill();
         reversalBill.copy(original);
+        // The reason typed on the reverse page; the original's stored comments are not changed.
+        if (comments != null && !comments.trim().isEmpty()) {
+            reversalBill.setComments(comments);
+        }
         reversalBill.setCreatedAt(new Date());
         reversalBill.setCreater(user);
         reversalBill.setInstitution(institution);

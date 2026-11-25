@@ -3677,10 +3677,13 @@ public class PharmacyBillSearch implements Serializable {
         }
         // Same once-only claim as the BHT issue cancel: a concurrent reverse or
         // cancel of this bill waits, then finds it cancelled.
-        cancelIssueToBhtOnce(this::reversePharmacyDirectIssueToBhtUnderLock);
+        // The reason typed on the page sits on the page's bill; the once-only claim
+        // swaps that bill for the database copy, so read it first.
+        final String typedComments = getBill().getComments();
+        cancelIssueToBhtOnce(() -> reversePharmacyDirectIssueToBhtUnderLock(typedComments));
     }
 
-    private void reversePharmacyDirectIssueToBhtUnderLock() {
+    private void reversePharmacyDirectIssueToBhtUnderLock(String typedComments) {
         if (getBill().getBillType() != BillType.PharmacyBhtPre) {
             JsfUtil.addErrorMessage("Invalid Bill Type for Reversal");
             return;
@@ -3714,7 +3717,8 @@ public class PharmacyBillSearch implements Serializable {
                     getSessionController().getLoggedUser(),
                     getSessionController().getInstitution(),
                     getSessionController().getDepartment(),
-                    deptId));
+                    deptId,
+                    typedComments));
         } catch (BhtIssueReversalException e) {
             JsfUtil.addErrorMessage(e.getMessage());
             return;
