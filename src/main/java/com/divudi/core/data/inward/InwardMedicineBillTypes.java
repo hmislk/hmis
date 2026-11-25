@@ -78,10 +78,29 @@ public final class InwardMedicineBillTypes {
      */
     public static final List<BillTypeAtomic> ALL_EXCLUDING_ISSUE_CANCELLATIONS;
 
+    /**
+     * The issue bill types only: {@link #ALL} without the returns, the accept bill
+     * and the issue cancellations.
+     */
+    public static final List<BillTypeAtomic> ISSUES;
+
     static {
         List<BillTypeAtomic> l = new java.util.ArrayList<>(ALL);
         l.removeAll(ISSUE_CANCELLATIONS);
         ALL_EXCLUDING_ISSUE_CANCELLATIONS = Collections.unmodifiableList(l);
+        List<BillTypeAtomic> issues = new java.util.ArrayList<>(l);
+        issues.removeAll(ITEM_LIST_RETURNS);
+        ISSUES = Collections.unmodifiableList(issues);
+    }
+
+    /**
+     * Whether a bill of this type stays in a list that skips cancelled issue bills.
+     * A cancelled issue drops out (with its cancellation). A cancelled return stays:
+     * its own cancellation bill is not one of {@link #ALL}, so the interim bill
+     * still deducts the return, and the list must too (#26105).
+     */
+    public static boolean isCountedInLiveList(BillTypeAtomic billTypeAtomic, boolean billCancelled) {
+        return !billCancelled || isItemListReturn(billTypeAtomic);
     }
 
     /**
@@ -115,6 +134,19 @@ public final class InwardMedicineBillTypes {
         boolean deducted = isItemListReturn(billTypeAtomic)
                 || (billTypeAtomic != null && ISSUE_CANCELLATIONS.contains(billTypeAtomic));
         return deducted ? -magnitude : magnitude;
+    }
+
+    /**
+     * The value a displayed row adds to a list total. A return, an accept bill
+     * or a cancellation is deducted (negative magnitude). An issue row keeps the
+     * sign it holds, because a netted issue row (issue less the returns that
+     * refer to it) can be below zero and must not be shown as positive (#26105).
+     */
+    public static double signedRowValue(BillTypeAtomic billTypeAtomic, Double netValue) {
+        double value = netValue != null ? netValue : 0.0;
+        boolean deducted = isItemListReturn(billTypeAtomic)
+                || (billTypeAtomic != null && ISSUE_CANCELLATIONS.contains(billTypeAtomic));
+        return deducted ? -Math.abs(value) : value;
     }
 
     private InwardMedicineBillTypes() {

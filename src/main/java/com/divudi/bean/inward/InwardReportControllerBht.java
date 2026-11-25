@@ -12,6 +12,7 @@ import com.divudi.core.util.JsfUtil;
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.inward.InwardMedicineBillTypes;
+import com.divudi.core.data.inward.InwardPharmacyItemListNetting;
 import com.divudi.core.data.FeeType;
 import static com.divudi.core.data.FeeType.Service;
 import com.divudi.core.data.PaymentMethod;
@@ -241,41 +242,12 @@ public class InwardReportControllerBht implements Serializable {
         if (configOptionApplicationController.getBooleanValueByKey("Use Legacy Calculation Method for Pharmacy Summary in Inward Patient Profile", true)) {
             loadLegacyPharmacyIssueBillItems();
         } else {
-            List<BillTypeAtomic> btas = new ArrayList<>();
-            btas.add(BillTypeAtomic.PHARMACY_DIRECT_ISSUE);
-            btas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE);
-            btas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE);
-            btas.add(BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE);
-            List<BillItem> pharmacyIssuedDrugs = billService.fetchBillItemsOfEncounters(department, btas, encounterIdsWithChildren());
-
-            btas = new ArrayList<>();
-            btas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN);
-            btas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_RETURN);
-            btas.add(BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_RETURN);
-            List<BillItem> pharmacyIssuedReturnedDrugs = billService.fetchBillItemsOfEncounters(department, btas, encounterIdsWithChildren());
-
-            List<BillItem> pharmacyIssuesWithoutCanceled = new ArrayList<>();
-
-            for (BillItem bi : pharmacyIssuedDrugs) {
-                if (!bi.getBill().isCancelled()) {
-                    pharmacyIssuesWithoutCanceled.add(bi);
-                }
-            }
-
-            pharmacyIssueBillItemsToPatientEncounter = new ArrayList<>();
-            pharmacyIssueBillItemsToPatientEncounterNetTotal = 0.0;
-
-            for (BillItem bic : pharmacyIssuesWithoutCanceled) {
-                for (BillItem bir : pharmacyIssuedReturnedDrugs) {
-                    if (bir.getReferanceBillItem() != null && bir.getReferanceBillItem().equals(bic)) {
-                        bic.setQty(bic.getQty() - Math.abs(bir.getQty()));
-                        bic.setNetValue(bic.getNetValue() - Math.abs(bir.getNetValue()));
-                    }
-                }
-                pharmacyIssueBillItemsToPatientEncounter.add(bic);
-                pharmacyIssueBillItemsToPatientEncounterNetTotal += bic.getNetValue();
-            }
-
+            // Same bill types as the interim bill's Medicine total, less the issue
+            // cancellations; cancelled issues drop out, returns stay (#26105).
+            List<BillItem> items = billService.fetchBillItemsOfEncounters(
+                    department, InwardMedicineBillTypes.ALL_EXCLUDING_ISSUE_CANCELLATIONS, encounterIdsWithChildren());
+            pharmacyIssueBillItemsToPatientEncounter = InwardPharmacyItemListNetting.rows(items);
+            pharmacyIssueBillItemsToPatientEncounterNetTotal = InwardPharmacyItemListNetting.total(pharmacyIssueBillItemsToPatientEncounter);
         }
         //department = null;
         return "/inward/reports/inpatient_pharmacy_item_list?faces-redirect=true";
@@ -2201,10 +2173,13 @@ public class InwardReportControllerBht implements Serializable {
                 + "AND bi.bill.billTypeAtomic IN :billTypeAtomics "
                 + "AND bi.retired = FALSE "
                 + "AND bi.bill.retired = FALSE "
-                + "AND bi.bill.cancelled = FALSE ";
+                // A cancelled issue drops out with its cancellation; a cancelled return stays,
+                // as the interim bill still deducts it (#26105).
+                + "AND (bi.bill.cancelled = FALSE OR bi.bill.billTypeAtomic IN :returnTypes) ";
 
         Map<String, Object> params = new HashMap<>();
         params.put("billTypeAtomics", billTypes);
+        params.put("returnTypes", InwardMedicineBillTypes.ITEM_LIST_RETURNS);
         List<Long> peIds = encounterIdsWithChildren();
         params.put("peIds", peIds);
 
@@ -2331,6 +2306,28 @@ public class InwardReportControllerBht implements Serializable {
                         += InwardMedicineBillTypes.listSignedValueWithCancellations(bi.getBill().getBillTypeAtomic(), bi.getNetValue());
             }
         }
+    }
+
+    /**
+     * The value a row of the item list adds to its footer total: negative for a
+     * return or a cancellation, so the rows add up to the footer (#26105).
+     */
+    public double pharmacyItemListRowValue(BillItem bi) {
+        if (bi == null || bi.getBill() == null) {
+            return 0.0;
+        }
+        return InwardMedicineBillTypes.signedRowValue(bi.getBill().getBillTypeAtomic(), bi.getNetValue());
+    }
+
+    /**
+     * Signed amount of a DTO list row (net, gross or service charge): negative for a
+     * return, so the rows add up to the footer total (#26105).
+     */
+    public double pharmacyItemListDtoRowValue(InpatientPharmacyIssueDTO dto, Double value) {
+        if (dto == null) {
+            return 0.0;
+        }
+        return InwardMedicineBillTypes.itemListSignedValue(dto.getBillTypeAtomic(), value);
     }
 
     /**
