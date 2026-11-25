@@ -108,21 +108,21 @@
                                                 </small>
                                             </p:column>
                                             
-                                            <p:column styleClass="text-end" width="5em">
+                                            <p:column styleClass="text-end">
                                                 <f:facet name="header">Qty</f:facet>
                                                 <h:outputLabel value="#{bip.qty}">
                                                     <f:convertNumber pattern="#,##0.00" />
                                                 </h:outputLabel>
                                             </p:column>
                                             
-                                            <p:column styleClass="text-end" width="6em">
+                                            <p:column styleClass="text-end">
                                                 <f:facet name="header">Unit Rate</f:facet>
                                                 <h:outputLabel value="#{bip.netValue/bip.qty}">
                                                     <f:convertNumber pattern="#,##0.00" />
                                                 </h:outputLabel>
                                             </p:column>
                                             
-                                            <p:column styleClass="text-end" width="7em">
+                                            <p:column styleClass="text-end">
                                                 <f:facet name="header">Line Total</f:facet>
                                                 <h:outputLabel value="#{bip.netValue}">
                                                     <f:convertNumber pattern="#,##0.00" />
