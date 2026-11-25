@@ -1,8 +1,11 @@
 package com.divudi.service.pharmacy;
 
+import com.divudi.core.data.BillType;
+import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.BillItem;
 import com.divudi.core.entity.Department;
+import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.WebUser;
 import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
 import com.divudi.core.facade.BillFacade;
@@ -37,6 +40,22 @@ public class BhtIssueReversalService {
     private BillService billService;
 
     public static final String REVERSAL_OF_REVERSAL_MESSAGE = "This bill is a reversal and cannot be reversed";
+
+    public static final String REQUEST_ISSUE_MESSAGE = "Request issues cannot be reversed here. Use the BHT issue cancel.";
+
+    /**
+     * True only for the direct issue types this reversal handles. Request
+     * issues have a ward step and a request to reopen, which the BHT issue
+     * cancel does.
+     */
+    public static boolean isReversibleDirectIssue(Bill bill) {
+        if (bill == null) {
+            return false;
+        }
+        BillTypeAtomic atomic = bill.getBillTypeAtomic();
+        return atomic == BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE
+                || atomic == BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE;
+    }
 
     /**
      * True when the bill is itself the reversal of another bill: its reference
@@ -88,7 +107,7 @@ public class BhtIssueReversalService {
         }
     }
 
-    public Bill reverse(Long originalBillId, WebUser user, Department department, String deptId) {
+    public Bill reverse(Long originalBillId, WebUser user, Institution institution, Department department, String deptId) {
         if (originalBillId == null) {
             throw new BhtIssueReversalException("No Bill Found");
         }
@@ -98,18 +117,37 @@ public class BhtIssueReversalService {
         if (original == null) {
             throw new BhtIssueReversalException("No Bill Found");
         }
+        if (original.getBillType() != BillType.PharmacyBhtPre) {
+            throw new BhtIssueReversalException("Invalid Bill Type for Reversal");
+        }
+        if (!isReversibleDirectIssue(original)) {
+            throw new BhtIssueReversalException(REQUEST_ISSUE_MESSAGE);
+        }
         if (isReversal(original)) {
             throw new BhtIssueReversalException(REVERSAL_OF_REVERSAL_MESSAGE);
         }
         if (original.isCancelled() || original.getCancelledBill() != null) {
             throw new BhtIssueReversalException("Bill is already cancelled. Cannot reverse cancelled bills");
         }
+        if (original.getPatientEncounter() != null && original.getPatientEncounter().isPaymentFinalized()) {
+            throw new BhtIssueReversalException("This Bill Already Discharged");
+        }
+        if (original.getCheckedBy() != null) {
+            throw new BhtIssueReversalException("Checked Bill. Can not reverse");
+        }
+        if (original.checkActiveReturnBhtIssueBills()) {
+            throw new BhtIssueReversalException("There are some return bills for this. Please cancel those bills first");
+        }
 
         Bill reversalBill = new Bill();
         reversalBill.copy(original);
         reversalBill.setCreatedAt(new Date());
         reversalBill.setCreater(user);
+        reversalBill.setInstitution(institution);
         reversalBill.setDepartment(department);
+        reversalBill.setBillDate(new Date());
+        reversalBill.setBillTime(new Date());
+        reversalBill.setDepartmentType(original.getDepartmentType());
         reversalBill.setReferenceBill(original);
         reversalBill.setBilledBill(original);
         reversalBill.setForwardReferenceBill(original.getForwardReferenceBill());

@@ -1,5 +1,6 @@
 package com.divudi.service.pharmacy;
 
+import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.entity.Bill;
 import org.junit.jupiter.api.Test;
 
@@ -45,5 +46,18 @@ public class BhtIssueReversalServiceTest {
         original.setCancelledBill(reversal);
         assertTrue(BhtIssueReversalService.isReversal(reversal));
         assertFalse(BhtIssueReversalService.isReversal(original));
+    }
+
+    @Test
+    public void onlyDirectIssueTypesCanBeReversed() {
+        Bill bill = new Bill();
+        assertFalse(BhtIssueReversalService.isReversibleDirectIssue(null));
+        assertFalse(BhtIssueReversalService.isReversibleDirectIssue(bill));
+        for (BillTypeAtomic atomic : BillTypeAtomic.values()) {
+            bill.setBillTypeAtomic(atomic);
+            boolean expected = atomic == BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE
+                    || atomic == BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE;
+            assertEquals(expected, BhtIssueReversalService.isReversibleDirectIssue(bill), atomic.name());
+        }
     }
 }

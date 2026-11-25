@@ -267,6 +267,10 @@ public class PharmacyBillSearch implements Serializable {
             JsfUtil.addErrorMessage("No Bill Selected");
             return null;
         }
+        if (!BhtIssueReversalService.isReversibleDirectIssue(bill)) {
+            JsfUtil.addErrorMessage(BhtIssueReversalService.REQUEST_ISSUE_MESSAGE);
+            return null;
+        }
         if (BhtIssueReversalService.isReversal(bill)) {
             JsfUtil.addErrorMessage(BhtIssueReversalService.REVERSAL_OF_REVERSAL_MESSAGE);
             return null;
@@ -295,6 +299,10 @@ public class PharmacyBillSearch implements Serializable {
             return null;
         }
 
+        if (!BhtIssueReversalService.isReversibleDirectIssue(selectedBill)) {
+            JsfUtil.addErrorMessage(BhtIssueReversalService.REQUEST_ISSUE_MESSAGE);
+            return null;
+        }
         if (BhtIssueReversalService.isReversal(selectedBill)) {
             JsfUtil.addErrorMessage(BhtIssueReversalService.REVERSAL_OF_REVERSAL_MESSAGE);
             return null;
@@ -3667,31 +3675,25 @@ public class PharmacyBillSearch implements Serializable {
             JsfUtil.addErrorMessage("No Bill Found");
             return;
         }
+        // Same once-only claim as the BHT issue cancel: a concurrent reverse or
+        // cancel of this bill waits, then finds it cancelled.
+        cancelIssueToBhtOnce(this::reversePharmacyDirectIssueToBhtUnderLock);
+    }
+
+    private void reversePharmacyDirectIssueToBhtUnderLock() {
         if (getBill().getBillType() != BillType.PharmacyBhtPre) {
             JsfUtil.addErrorMessage("Invalid Bill Type for Reversal");
+            return;
+        }
+        if (!BhtIssueReversalService.isReversibleDirectIssue(getBill())) {
+            JsfUtil.addErrorMessage(BhtIssueReversalService.REQUEST_ISSUE_MESSAGE);
             return;
         }
         if (BhtIssueReversalService.isReversal(getBill())) {
             JsfUtil.addErrorMessage(BhtIssueReversalService.REVERSAL_OF_REVERSAL_MESSAGE);
             return;
         }
-        if (getBill().getPatientEncounter().isPaymentFinalized()) {
-            JsfUtil.addErrorMessage("This Bill Already Discharged");
-            return;
-        }
-        if (getBill().getCheckedBy() != null) {
-            JsfUtil.addErrorMessage("Checked Bill. Can not reverse");
-            return;
-        }
-        if (getBill().checkActiveReturnBhtIssueBills()) {
-            JsfUtil.addErrorMessage("There are some return bills for this. Please cancel those bills first");
-            return;
-        }
         if (checkDepartment(getBill())) {
-            return;
-        }
-        if (getBill().isCancelled()) {
-            JsfUtil.addErrorMessage("Bill is already cancelled. Cannot reverse cancelled bills");
             return;
         }
 
@@ -3702,14 +3704,17 @@ public class PharmacyBillSearch implements Serializable {
         );
 
         // One transaction: save the reversal, put the stock back, mark the original
-        // cancelled. A failure rolls everything back (#26109).
+        // cancelled. A failure rolls everything back (#26109). The service checks
+        // the bill again from the database inside the transaction.
         Bill reversalBill;
         try {
-            reversalBill = bhtIssueReversalService.reverse(
-                    getBill().getId(),
+            final Long billId = getBill().getId();
+            reversalBill = pharmacyBean.runStockSave(() -> bhtIssueReversalService.reverse(
+                    billId,
                     getSessionController().getLoggedUser(),
+                    getSessionController().getInstitution(),
                     getSessionController().getDepartment(),
-                    deptId);
+                    deptId));
         } catch (BhtIssueReversalException e) {
             JsfUtil.addErrorMessage(e.getMessage());
             return;
