@@ -48,7 +48,9 @@ public class AdmissionTypeHistoryService {
                 + " order by h.fromDate, h.id";
         Map<String, Object> m = new HashMap<>();
         m.put("pe", encounter);
-        return admissionTypeHistoryFacade.findByJpql(jpql, m);
+        // the TemporalType overload lets a query failure propagate, so a failed
+        // lookup is not read as "no history"
+        return admissionTypeHistoryFacade.findByJpql(jpql, m, javax.persistence.TemporalType.TIMESTAMP);
     }
 
     /** The timeline for an admission: its current type plus any history rows. */
@@ -82,7 +84,7 @@ public class AdmissionTypeHistoryService {
                     + " order by h.fromDate, h.id";
             Map<String, Object> m = new HashMap<>();
             m.put("ids", new java.util.ArrayList<>(chunk));
-            List<AdmissionTypeHistory> rows = admissionTypeHistoryFacade.findByJpql(jpql, m);
+            List<AdmissionTypeHistory> rows = admissionTypeHistoryFacade.findByJpql(jpql, m, javax.persistence.TemporalType.TIMESTAMP);
             if (rows != null) {
                 for (AdmissionTypeHistory h : rows) {
                     rowsById.computeIfAbsent(h.getPatientEncounter().getId(), k -> new java.util.ArrayList<>()).add(h);
@@ -105,6 +107,11 @@ public class AdmissionTypeHistoryService {
     /** The type the admission started with; the admission fee follows it. */
     public AdmissionType firstType(PatientEncounter encounter) {
         return timelineFor(encounter).firstType();
+    }
+
+    /** Drops the milliseconds so a DATETIME column never rounds the value up to the next second or day. */
+    static Date wholeSeconds(Date d) {
+        return new Date((d.getTime() / 1000L) * 1000L);
     }
 
     /** Interim bills still standing on the admission (a warning, not a block). */
@@ -170,17 +177,26 @@ public class AdmissionTypeHistoryService {
             throw new AdmissionTypeChangeException("The final bill is already settled. The admission type cannot be changed.");
         }
 
-        Date now = new Date();
+        Date now = wholeSeconds(new Date());
         if (encounter.getDateOfAdmission() != null && encounter.getDateOfAdmission().after(now)) {
             throw new AdmissionTypeChangeException("The admission date is in the future. The admission type cannot be changed yet.");
         }
         String cleanReason = reason.trim();
-        List<AdmissionTypeHistory> rows = fetchHistory(encounter);
+        List<AdmissionTypeHistory> rows;
+        try {
+            rows = fetchHistory(encounter);
+        } catch (RuntimeException e) {
+            if (e instanceof AdmissionTypeChangeException) {
+                throw e;
+            }
+            throw new AdmissionTypeChangeException("The admission type history could not be read. Nothing was changed. Try again.");
+        }
         if (rows.isEmpty()) {
             AdmissionTypeHistory first = new AdmissionTypeHistory();
             first.setPatientEncounter(encounter);
             first.setAdmissionType(oldType);
-            first.setFromDate(encounter.getDateOfAdmission() != null ? encounter.getDateOfAdmission() : encounter.getCreatedAt());
+            Date firstFrom = encounter.getDateOfAdmission() != null ? encounter.getDateOfAdmission() : encounter.getCreatedAt();
+            first.setFromDate(firstFrom != null ? wholeSeconds(firstFrom) : null);
             first.setToDate(now);
             first.setCreatedAt(now);
             first.setCreater(user);

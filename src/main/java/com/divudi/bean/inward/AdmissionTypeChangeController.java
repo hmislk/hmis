@@ -46,6 +46,8 @@ public class AdmissionTypeChangeController implements Serializable {
     private PatientEncounterFacade patientEncounterFacade;
 
     private PatientEncounter admission;
+    /** Id of the admission the open page was built for; posted back from the form. */
+    private Long pageAdmissionId;
     private AdmissionType newType;
     private AdmissionType shownType;
     private String reason;
@@ -75,6 +77,7 @@ public class AdmissionTypeChangeController implements Serializable {
             return "";
         }
         admission = fresh;
+        pageAdmissionId = fresh.getId();
         shownType = fresh.getAdmissionType();
         newType = null;
         reason = null;
@@ -106,6 +109,10 @@ public class AdmissionTypeChangeController implements Serializable {
             JsfUtil.addErrorMessage("No admission selected.");
             return "";
         }
+        if (pageAdmissionId == null || !pageAdmissionId.equals(admission.getId())) {
+            JsfUtil.addErrorMessage("This page was opened for another admission. Open Change Admission Type again from the admission.");
+            return "";
+        }
         try {
             admissionTypeHistoryService.changeAdmissionType(admission, newType, reason, sessionController.getLoggedUser(), shownType);
         } catch (AdmissionTypeChangeException e) {
@@ -118,6 +125,7 @@ public class AdmissionTypeChangeController implements Serializable {
             admissionController.setCurrent((Admission) fresh);
         }
         admission = null;
+        pageAdmissionId = null;
         newType = null;
         reason = null;
         return admissionController.navigateToAdmissionProfilePage();
@@ -136,6 +144,14 @@ public class AdmissionTypeChangeController implements Serializable {
 
     public PatientEncounter getAdmission() {
         return admission;
+    }
+
+    public Long getPageAdmissionId() {
+        return pageAdmissionId;
+    }
+
+    public void setPageAdmissionId(Long pageAdmissionId) {
+        this.pageAdmissionId = pageAdmissionId;
     }
 
     public AdmissionType getNewType() {

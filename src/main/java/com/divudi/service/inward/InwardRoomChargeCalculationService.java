@@ -129,6 +129,9 @@ public class InwardRoomChargeCalculationService {
             Institution creditCompany = creditCompanies.get(billingEncounter.getId());
 
             for (PatientRoom p : e.getValue()) {
+                // Remember the room's real start (admittedAt, else createdAt) before
+                // admittedAt is defaulted to now, so both entry points pick the same type.
+                ctx.effectiveStarts.put(p, p.getAdmittedAt() != null ? p.getAdmittedAt() : p.getCreatedAt());
                 if (p.getAdmittedAt() == null) {
                     p.setAdmittedAt(new Date());
                 }
@@ -171,6 +174,8 @@ public class InwardRoomChargeCalculationService {
         private final Map<List<Object>, double[]> discountPercents = new HashMap<>();
         /** Admission type timeline per billing admission id, loaded once per pass. */
         private final Map<Long, AdmissionTypeTimeline> timelines = new HashMap<>();
+        /** Room start before admittedAt was defaulted to now (#25814). */
+        private final Map<PatientRoom, Date> effectiveStarts = new java.util.IdentityHashMap<>();
         /** Departments that have any room-charge price-matrix row; loaded on first use. */
         private Set<Long> roomMatrixDepartmentIds;
     }
@@ -190,7 +195,14 @@ public class InwardRoomChargeCalculationService {
                 ctx.timelines.put(encounter.getId(), timeline);
             }
         }
-        Date started = p != null ? (p.getAdmittedAt() != null ? p.getAdmittedAt() : p.getCreatedAt()) : null;
+        Date started = null;
+        if (p != null) {
+            if (ctx.effectiveStarts.containsKey(p)) {
+                started = ctx.effectiveStarts.get(p);
+            } else {
+                started = p.getAdmittedAt() != null ? p.getAdmittedAt() : p.getCreatedAt();
+            }
+        }
         return timeline.typeAt(started);
     }
 

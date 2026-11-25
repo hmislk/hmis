@@ -9,6 +9,7 @@
 
     <ui:define name="content">
         <h:form id="changeTypeForm">
+            <h:inputHidden id="pageAdmissionId" value="#{admissionTypeChangeController.pageAdmissionId}"/>
             <p:growl id="changeTypeGrowl" showDetail="true"/>
             <p:panel>
                 <f:facet name="header">
