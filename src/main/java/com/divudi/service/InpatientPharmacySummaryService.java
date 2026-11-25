@@ -2,6 +2,7 @@ package com.divudi.service;
 
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.dto.InpatientPharmacyItemMovementDTO;
+import com.divudi.core.data.inward.InwardMedicineBillTypes;
 import com.divudi.core.data.dto.InpatientPharmacyNetSummaryDTO;
 import com.divudi.core.entity.PatientEncounter;
 import com.divudi.core.facade.BillItemFacade;
@@ -161,6 +162,10 @@ public class InpatientPharmacySummaryService {
                 + "AND bi.bill.billTypeAtomic IN :billTypes "
                 + "AND bi.retired = FALSE "
                 + "AND bi.bill.retired = FALSE "
+                // The data-admin reversal of an issue (same issue type, negative values) and
+                // the original it cancelled net to 0 in the interim bill; drop both (#26107).
+                + "AND " + InwardMedicineBillTypes.JPQL_NOT_REVERSAL_BILL
+                + "AND " + InwardMedicineBillTypes.JPQL_NOT_REVERSED_ORIGINAL
                 + "GROUP BY bi.item.id, bi.item.name, bi.bill.billTypeAtomic "
                 + "ORDER BY bi.item.name";
 

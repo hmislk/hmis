@@ -27,7 +27,9 @@
                                             value="Reverse Bill" 
                                             icon="fa fa-undo"
                                             onclick="return confirm('Are you sure you want to reverse this bill? This will create a reverse bill with negative quantities.');"
-                                            class="ui-button-warning" 
+                                            class="ui-button-warning"
+                                            style="min-width:120px"
+                                            title="Reverse this bill"
                                             action="#{pharmacyBillSearch.reversePharmacyDirectIssueToBht()}" 
                                             rendered="#{pharmacyBillSearch.bill != null and pharmacyBillSearch.bill.cancelled == false}">
                                         </p:commandButton> 

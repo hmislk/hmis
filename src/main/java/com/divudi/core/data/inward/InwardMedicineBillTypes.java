@@ -1,6 +1,7 @@
 package com.divudi.core.data.inward;
 
 import com.divudi.core.data.BillTypeAtomic;
+import com.divudi.core.entity.Bill;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -120,6 +121,52 @@ public final class InwardMedicineBillTypes {
     public static boolean isCountedInLiveList(BillTypeAtomic billTypeAtomic, boolean billCancelled) {
         return !billCancelled || isItemListReturn(billTypeAtomic);
     }
+
+    /**
+     * Whether a bill of this type stays in a list that skips cancelled issue bills.
+     * As {@link #isCountedInLiveList(BillTypeAtomic, boolean)}, and a reversal bill
+     * drops out too: the data-admin reversal of an issue writes a bill of the same
+     * issue type with negative values and flags the original as cancelled. The
+     * interim bill sums both and nets them to zero, so a list that drops the
+     * original must drop the reversal (#26107).
+     */
+    public static boolean isCountedInLiveList(BillTypeAtomic billTypeAtomic, boolean billCancelled, boolean billIsReversal) {
+        return !billIsReversal && isCountedInLiveList(billTypeAtomic, billCancelled);
+    }
+
+    /**
+     * True for the bill the data-admin "reverse a direct issue to a BHT" action
+     * writes: the original's cancelled bill, with the same bill type as the
+     * original. A retired reversal does not count: the original stands again. A normal cancellation has its own cancellation bill type.
+     */
+    public static boolean isReversalBill(Bill bill) {
+        if (bill == null || bill.getBillTypeAtomic() == null || bill.isRetired()) {
+            return false;
+        }
+        Bill original = bill.getReferenceBill();
+        return original != null
+                && original.getCancelledBill() != null
+                && original.getCancelledBill().equals(bill)
+                && bill.getBillTypeAtomic() == original.getBillTypeAtomic();
+    }
+
+    /**
+     * JPQL condition for a query over {@code BillItem bi}: drops a reversal bill
+     * (see {@link #isReversalBill(Bill)}). Pair it with a filter that drops the
+     * cancelled original, so the pair nets to zero as in the interim bill (#26107).
+     */
+    public static final String JPQL_NOT_REVERSAL_BILL
+            = "NOT EXISTS (SELECT rv.id FROM Bill rv WHERE rv.cancelledBill.id = bi.bill.id "
+            + "AND rv.retired = false AND rv.billTypeAtomic = bi.bill.billTypeAtomic) ";
+
+    /**
+     * JPQL condition for a query over {@code BillItem bi} that does not filter on
+     * the cancelled flag: drops an original that a reversal bill (same bill type)
+     * cancelled (#26107).
+     */
+    public static final String JPQL_NOT_REVERSED_ORIGINAL
+            = "NOT EXISTS (SELECT rv.id FROM Bill rv WHERE rv.id = bi.bill.cancelledBill.id "
+            + "AND rv.retired = false AND rv.billTypeAtomic = bi.bill.billTypeAtomic) ";
 
     /**
      * True for the cancellation of a BHT issue return. Its line is stored with

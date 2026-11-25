@@ -29,7 +29,8 @@ public final class InwardPharmacyItemListNetting {
             if (bi == null || bi.getBill() == null) {
                 continue;
             }
-            if (!InwardMedicineBillTypes.isCountedInLiveList(bi.getBill().getBillTypeAtomic(), bi.getBill().isCancelled())) {
+            if (!InwardMedicineBillTypes.isCountedInLiveList(bi.getBill().getBillTypeAtomic(), bi.getBill().isCancelled(),
+                    InwardMedicineBillTypes.isReversalBill(bi.getBill()))) {
                 continue;
             }
             if (InwardMedicineBillTypes.isItemListReturn(bi.getBill().getBillTypeAtomic())) {

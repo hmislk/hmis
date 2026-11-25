@@ -167,4 +167,77 @@ public class InwardPharmacyItemListNettingTest {
         assertEquals(-7.0, InwardMedicineBillTypes.signedRowValue(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION, -7.0), 0.0001);
         assertEquals(0.0, InwardMedicineBillTypes.signedRowValue(null, null), 0.0001);
     }
+
+    /** An original issue line, its data-admin reversal (same type, negative) and the cancelled flag set. */
+    private static BillItem[] reversedPair(double net) {
+        BillItem original = line(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE, false, 3, net, null);
+        BillItem reversal = line(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE, false, -3, -net, null);
+        original.getBill().setId(nextId++);
+        reversal.getBill().setId(nextId++);
+        reversal.getBill().setReferenceBill(original.getBill());
+        original.getBill().setCancelled(true);
+        original.getBill().setCancelledBill(reversal.getBill());
+        return new BillItem[]{original, reversal};
+    }
+
+    @Test
+    void reversalBillIsRecognisedAndTheOriginalIsNot() {
+        BillItem[] pair = reversedPair(40);
+        assertTrue(InwardMedicineBillTypes.isReversalBill(pair[1].getBill()));
+        assertFalse(InwardMedicineBillTypes.isReversalBill(pair[0].getBill()));
+        assertFalse(InwardMedicineBillTypes.isReversalBill(null));
+    }
+
+    @Test
+    void retiredReversalIsNotAReversal() {
+        BillItem[] pair = reversedPair(40);
+        pair[1].getBill().setRetired(true);
+        assertFalse(InwardMedicineBillTypes.isReversalBill(pair[1].getBill()));
+    }
+
+    @Test
+    void cancellationBillOfAnotherTypeIsNotAReversal() {
+        BillItem[] pair = reversedPair(40);
+        pair[1].getBill().setBillTypeAtomic(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION);
+        assertFalse(InwardMedicineBillTypes.isReversalBill(pair[1].getBill()));
+    }
+
+    @Test
+    void reversedIssueNetsToZeroInTheNettingLikeTheInterimBill() {
+        BillItem[] pair = reversedPair(40);
+        BillItem other = line(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE, false, 1, 25, null);
+        List<BillItem> all = Arrays.asList(pair[0], pair[1], other);
+        List<BillItem> rows = InwardPharmacyItemListNetting.rows(all);
+        assertEquals(1, rows.size());
+        assertEquals(25.0, InwardPharmacyItemListNetting.total(rows), 0.0001);
+        // The interim bill sums every bill and ignores the cancelled flag: 40 - 40 + 25.
+        double interimSigned = 0.0;
+        for (BillItem bi : all) {
+            interimSigned += InwardMedicineBillTypes.signedRowValue(bi.getBill().getBillTypeAtomic(), bi.getNetValue());
+        }
+        assertEquals(interimSigned, InwardPharmacyItemListNetting.total(rows), 0.0001);
+    }
+
+    @Test
+    void legacyFooterEqualsTheRowsWhenAReversalIsStoredNegative() {
+        BillItem[] pair = reversedPair(40);
+        BillItem returned = line(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN, false, -1, -5, null);
+        double footer = 0.0;
+        double rowsSum = 0.0;
+        for (BillItem bi : Arrays.asList(pair[0], pair[1], returned)) {
+            footer += InwardMedicineBillTypes.signedRowValue(bi.getBill().getBillTypeAtomic(), bi.getNetValue());
+            rowsSum += InwardPharmacyItemListNetting.rowValue(bi);
+        }
+        assertEquals(-5.0, footer, 0.0001);
+        assertEquals(rowsSum, footer, 0.0001);
+        assertEquals(0.0, InwardMedicineBillTypes.signedRowValue(pair[0].getBill().getBillTypeAtomic(), pair[0].getNetValue())
+                + InwardMedicineBillTypes.signedRowValue(pair[1].getBill().getBillTypeAtomic(), pair[1].getNetValue()), 0.0001);
+    }
+
+    @Test
+    void liveListCountsRule() {
+        assertFalse(InwardMedicineBillTypes.isCountedInLiveList(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE, false, true));
+        assertTrue(InwardMedicineBillTypes.isCountedInLiveList(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE, false, false));
+        assertFalse(InwardMedicineBillTypes.isCountedInLiveList(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE, true, false));
+    }
 }
