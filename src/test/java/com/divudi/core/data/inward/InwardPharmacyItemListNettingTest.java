@@ -153,6 +153,13 @@ public class InwardPharmacyItemListNettingTest {
     }
 
     @Test
+    void retiredReversalIsNotAReversal() {
+        BillItem[] pair = reversedPair(40);
+        pair[1].getBill().setRetired(true);
+        assertFalse(InwardMedicineBillTypes.isReversalBill(pair[1].getBill()));
+    }
+
+    @Test
     void cancellationBillOfAnotherTypeIsNotAReversal() {
         BillItem[] pair = reversedPair(40);
         pair[1].getBill().setBillTypeAtomic(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION);

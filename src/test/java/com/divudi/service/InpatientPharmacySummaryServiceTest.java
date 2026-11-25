@@ -36,4 +36,13 @@ public class InpatientPharmacySummaryServiceTest {
         org.junit.jupiter.api.Assertions.assertTrue(
                 com.divudi.core.data.inward.InwardMedicineBillTypes.JPQL_NOT_REVERSED_ORIGINAL.contains("rv.id = bi.bill.cancelledBill.id"));
     }
+
+    @Test
+    void reversalFragmentsCountOnlyAReversalThatIsNotRetired() {
+        // A retired reversal means the original stands again, so neither fragment may match it.
+        org.junit.jupiter.api.Assertions.assertTrue(
+                com.divudi.core.data.inward.InwardMedicineBillTypes.JPQL_NOT_REVERSAL_BILL.contains("rv.retired = false"));
+        org.junit.jupiter.api.Assertions.assertTrue(
+                com.divudi.core.data.inward.InwardMedicineBillTypes.JPQL_NOT_REVERSED_ORIGINAL.contains("rv.retired = false"));
+    }
 }

@@ -119,10 +119,10 @@ public final class InwardMedicineBillTypes {
     /**
      * True for the bill the data-admin "reverse a direct issue to a BHT" action
      * writes: the original's cancelled bill, with the same bill type as the
-     * original. A normal cancellation has its own cancellation bill type.
+     * original. A retired reversal does not count: the original stands again. A normal cancellation has its own cancellation bill type.
      */
     public static boolean isReversalBill(Bill bill) {
-        if (bill == null || bill.getBillTypeAtomic() == null) {
+        if (bill == null || bill.getBillTypeAtomic() == null || bill.isRetired()) {
             return false;
         }
         Bill original = bill.getReferenceBill();
@@ -139,7 +139,7 @@ public final class InwardMedicineBillTypes {
      */
     public static final String JPQL_NOT_REVERSAL_BILL
             = "NOT EXISTS (SELECT rv.id FROM Bill rv WHERE rv.cancelledBill.id = bi.bill.id "
-            + "AND rv.billTypeAtomic = bi.bill.billTypeAtomic) ";
+            + "AND rv.retired = false AND rv.billTypeAtomic = bi.bill.billTypeAtomic) ";
 
     /**
      * JPQL condition for a query over {@code BillItem bi} that does not filter on
@@ -148,7 +148,7 @@ public final class InwardMedicineBillTypes {
      */
     public static final String JPQL_NOT_REVERSED_ORIGINAL
             = "NOT EXISTS (SELECT rv.id FROM Bill rv WHERE rv.id = bi.bill.cancelledBill.id "
-            + "AND rv.billTypeAtomic = bi.bill.billTypeAtomic) ";
+            + "AND rv.retired = false AND rv.billTypeAtomic = bi.bill.billTypeAtomic) ";
 
     /**
      * True when a line of this bill type is deducted, not added, in an
