@@ -51,6 +51,42 @@ public class InwardPharmacyItemListNettingTest {
     }
 
     @Test
+    void cancelledReturnWithTheStoredSignsNetsToTheIssue() {
+        // As BhtIssueReturnController and the return cancel write them: the return line is
+        // stored positive under a bill of -40, the cancellation line is the return line
+        // inverted (-40) under a bill of +40. Only the bill type may decide the sign.
+        BillItem issue = line(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE, false, 10, 100, null);
+        BillItem ret = line(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN, true, 4, 40, issue);
+        ret.getBill().setNetTotal(-40.0);
+        BillItem cancel = line(BillTypeAtomic.PHARMACY_RETURN_ITEMS_AND_PAYMENTS_CANCELLATION, false, -4, -40, issue);
+        cancel.getBill().setNetTotal(40.0);
+        List<BillItem> all = Arrays.asList(issue, ret, cancel);
+
+        assertEquals(100.0, InwardPharmacyItemListNetting.total(InwardPharmacyItemListNetting.rows(liveTypesOnly(all))), 0.0001);
+
+        // legacy list: no netting, rows read through signedRowValue, footer through listSignedValueWithCancellations
+        // (the netting above changed the issue line in place, so use a fresh one)
+        BillItem legacyIssue = line(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE, false, 10, 100, null);
+        double rows = 0.0;
+        double footer = 0.0;
+        for (BillItem bi : Arrays.asList(legacyIssue, ret, cancel)) {
+            rows += InwardMedicineBillTypes.signedRowValue(bi.getBill().getBillTypeAtomic(), bi.getNetValue());
+            footer += InwardMedicineBillTypes.listSignedValueWithCancellations(bi.getBill().getBillTypeAtomic(), bi.getNetValue());
+        }
+        assertEquals(100.0, rows, 0.0001);
+        assertEquals(100.0, footer, 0.0001);
+
+        // the same with a return line stored negative
+        BillItem retNegative = line(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN, true, -4, -40, issue);
+        BillItem cancelPositive = line(BillTypeAtomic.PHARMACY_RETURN_ITEMS_AND_PAYMENTS_CANCELLATION, false, 4, 40, issue);
+        double rows2 = 0.0;
+        for (BillItem bi : Arrays.asList(legacyIssue, retNegative, cancelPositive)) {
+            rows2 += InwardMedicineBillTypes.signedRowValue(bi.getBill().getBillTypeAtomic(), bi.getNetValue());
+        }
+        assertEquals(100.0, rows2, 0.0001);
+    }
+
+    @Test
     void listTotalEqualsInterimForIssueRequestIssueCancelledIssuePartialReturnAndAcceptedReturn() {
         BillItem direct = line(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE, false, 10, 100, null);
         BillItem directReturn = line(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN, false, -2, -20, direct);

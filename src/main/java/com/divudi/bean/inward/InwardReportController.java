@@ -35,6 +35,7 @@ import static com.divudi.core.data.inward.AdmissionStatus.ANY_STATUS;
 import static com.divudi.core.data.inward.AdmissionStatus.DISCHARGED_AND_FINAL_BILL_COMPLETED;
 import static com.divudi.core.data.inward.AdmissionStatus.DISCHARGED_BUT_FINAL_BILL_NOT_COMPLETED;
 import com.divudi.core.data.inward.InwardChargeType;
+import com.divudi.core.data.inward.InwardMedicineBillTypes;
 
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.BillItem;
@@ -1228,6 +1229,13 @@ public class InwardReportController implements Serializable {
     }
 
     /**
+     * The cancellation of a BHT issue return shares its bill type with the retail and OPD
+     * return cancels, so it counts as inpatient income only on a bill with a patient encounter.
+     */
+    private static final String IP_INCOME_RETURN_CANCEL_NEEDS_ENCOUNTER
+            = " and (b.billTypeAtomic <> :retCancel or b.patientEncounter is not null) ";
+
+    /**
      * Inward bills that are actually charged to a BHT. Requests, drafts,
      * acceptances, theatre store transfers and ward consumption bills share
      * ServiceType.INWARD_SERVICE but are not income, and counting them
@@ -1264,7 +1272,7 @@ public class InwardReportController implements Serializable {
                 + " COALESCE(i.name, refI.name, refRefI.name),"
                 + " COALESCE(c.id, refC.id, refRefC.id),"
                 + " COALESCE(c.name, refC.name, refRefC.name),"
-                + " pe.paymentMethod, b.paymentMethod"
+                + " pe.paymentMethod, b.paymentMethod, b.billTypeAtomic"
                 + ")"
                 + " from BillItem bi"
                 + " join bi.bill b"
@@ -1290,6 +1298,8 @@ public class InwardReportController implements Serializable {
             case "IP":
                 jpql.append(" and bi.bill.billTypeAtomic in :btas ");
                 m.put("btas", btasIP);
+                jpql.append(IP_INCOME_RETURN_CANCEL_NEEDS_ENCOUNTER);
+                m.put("retCancel", BillTypeAtomic.PHARMACY_RETURN_ITEMS_AND_PAYMENTS_CANCELLATION);
 
                 if (roomCategories != null && !roomCategories.isEmpty()) {
                     jpql.append(" AND bi.bill.patientEncounter.currentPatientRoom.roomFacilityCharge.roomCategory IN :cat ");
@@ -1324,6 +1334,8 @@ public class InwardReportController implements Serializable {
                 if (!allBtas.isEmpty()) {
                     jpql.append(" and bi.bill.billTypeAtomic in :btas ");
                     m.put("btas", allBtas);
+                    jpql.append(IP_INCOME_RETURN_CANCEL_NEEDS_ENCOUNTER);
+                    m.put("retCancel", BillTypeAtomic.PHARMACY_RETURN_ITEMS_AND_PAYMENTS_CANCELLATION);
                 }
                 if (paymentType != null && !paymentType.isEmpty() && !"Any".equalsIgnoreCase(paymentType)) {
                     jpql.append(" and bi.bill.patientEncounter.paymentMethod in :pmAny ");
@@ -1630,6 +1642,10 @@ public class InwardReportController implements Serializable {
      * saved sign would add returns to income.
      */
     private double ipIncomeSignedValue(IpIncomeCategoryWiseRowDTO rowDto, Double value) {
+        if (InwardMedicineBillTypes.isReturnCancellation(rowDto.getBillTypeAtomic())) {
+            // The cancellation of a return adds the return back; its line carries either sign.
+            return Math.abs(nullSafeDouble(value));
+        }
         if (rowDto.getBillType() == BillType.PaymentBill
                 || rowDto.getBillClassType() == BillClassType.RefundBill) {
             return ipIncomeBillClassSign(rowDto) * Math.abs(nullSafeDouble(value));
