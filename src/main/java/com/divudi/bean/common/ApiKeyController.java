@@ -15,7 +15,6 @@ import com.divudi.core.entity.ApiKey;
 import com.divudi.core.entity.WebUser;
 import com.divudi.core.facade.ApiKeyFacade;
 import com.divudi.core.facade.WebUserPrivilegeFacade;
-import com.divudi.core.facade.WebUserRolePrivilegeFacade;
 import java.io.Serializable;
 import java.security.SecureRandom;
 import java.util.ArrayList;
@@ -53,8 +52,6 @@ public class ApiKeyController implements Serializable {
     private ApiKeyFacade ejbFacade;
     @EJB
     private WebUserPrivilegeFacade webUserPrivilegeFacade;
-    @EJB
-    private WebUserRolePrivilegeFacade webUserRolePrivilegeFacade;
     private static final SecureRandom SECURE_RANDOM = new SecureRandom();
     private ApiKey current;
     private ApiKey removing;
@@ -109,16 +106,7 @@ public class ApiKeyController implements Serializable {
         Map<String, Object> m = new HashMap<>();
         m.put("u", user);
         m.put("p", Privileges.Admin);
-        if (!webUserPrivilegeFacade.findByJpql("select wp from WebUserPrivilege wp where wp.retired=false and wp.webUser=:u and wp.privilege=:p", m).isEmpty()) {
-            return true;
-        }
-        if (user.getRole() == null) {
-            return false;
-        }
-        Map<String, Object> r = new HashMap<>();
-        r.put("r", user.getRole());
-        r.put("p", Privileges.Admin);
-        return !webUserRolePrivilegeFacade.findByJpql("select rp from WebUserRolePrivilege rp where rp.retired=false and rp.webUserRole=:r and rp.privilege=:p", r).isEmpty();
+        return !webUserPrivilegeFacade.findByJpql("select wp from WebUserPrivilege wp where wp.retired=false and wp.webUser=:u and wp.privilege=:p", m).isEmpty();
     }
 
     public void listMyApiKeys() {
