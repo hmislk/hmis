@@ -5,6 +5,7 @@ import com.divudi.core.data.dto.InpatientPharmacyItemMovementDTO;
 import com.divudi.core.data.dto.InpatientPharmacyNetSummaryDTO;
 import com.divudi.core.entity.PatientEncounter;
 import com.divudi.core.facade.BillItemFacade;
+import com.divudi.core.facade.PatientEncounterFacade;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -31,6 +32,8 @@ public class InpatientPharmacySummaryService {
 
     @EJB
     private BillItemFacade billItemFacade;
+    @EJB
+    private PatientEncounterFacade patientEncounterFacade;
 
     private static final List<BillTypeAtomic> DIRECT_ISSUE_TYPES = Arrays.asList(
             BillTypeAtomic.PHARMACY_DIRECT_ISSUE,
@@ -133,6 +136,8 @@ public class InpatientPharmacySummaryService {
         billTypes.addAll(RETURN_TYPES);
         billTypes.addAll(CANCELLATION_TYPES);
 
+        List<Long> peIds = encounterIdsWithChildren(patientEncounter);
+
         String jpql = "SELECT bi.item.id, bi.item.name, bi.bill.billTypeAtomic, "
                 + "SUM(ABS(pbi.qty)), "
                 + "SUM(ABS(bi.grossValue)), "
@@ -140,7 +145,7 @@ public class InpatientPharmacySummaryService {
                 + "SUM(ABS(bi.marginValue)), "
                 + "SUM(ABS(bi.netValue)) "
                 + "FROM BillItem bi LEFT JOIN bi.pharmaceuticalBillItem pbi "
-                + "WHERE bi.bill.patientEncounter = :patientEncounter "
+                + "WHERE bi.bill.patientEncounter.id IN :peIds "
                 + "AND bi.bill.billTypeAtomic IN :billTypes "
                 + "AND bi.retired = FALSE "
                 + "AND bi.bill.retired = FALSE "
@@ -148,11 +153,34 @@ public class InpatientPharmacySummaryService {
                 + "ORDER BY bi.item.name";
 
         Map<String, Object> params = new HashMap<>();
-        params.put("patientEncounter", patientEncounter);
+        params.put("peIds", peIds);
         params.put("billTypes", billTypes);
 
         List<Object[]> rows = billItemFacade.findObjectArrayByJpql(jpql, params, null);
         return rows != null ? rows : new ArrayList<>();
+    }
+
+    /**
+     * The admission and its child admissions (such as a baby BHT): the interim
+     * bill sums them with the parent, so this summary does too (#26100).
+     */
+    private List<Long> encounterIdsWithChildren(PatientEncounter patientEncounter) {
+        Map<String, Object> params = new HashMap<>();
+        params.put("pe", patientEncounter);
+        List<PatientEncounter> children = patientEncounterFacade.findByJpql(
+                "SELECT pe FROM PatientEncounter pe WHERE pe.parentEncounter = :pe AND pe.retired = false", params);
+        return idsOf(patientEncounter, children);
+    }
+
+    static List<Long> idsOf(PatientEncounter patientEncounter, List<PatientEncounter> children) {
+        List<Long> ids = new ArrayList<>();
+        ids.add(patientEncounter.getId());
+        if (children != null) {
+            for (PatientEncounter child : children) {
+                ids.add(child.getId());
+            }
+        }
+        return ids;
     }
 
     private double toDouble(Object o) {

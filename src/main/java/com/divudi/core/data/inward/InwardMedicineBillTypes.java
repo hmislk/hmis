@@ -103,6 +103,20 @@ public final class InwardMedicineBillTypes {
         return isItemListReturn(billTypeAtomic) ? -magnitude : magnitude;
     }
 
+    /**
+     * The amount a bill line adds to a pharmacy item list that keeps the issue
+     * cancellations in its query (the legacy list), so a cancelled issue and its
+     * cancellation net to zero as in the interim bill: positive for an issue,
+     * negative for a return, an accept bill or a cancellation. The magnitude of
+     * the net value is used, as return lines are not stored with a consistent sign.
+     */
+    public static double listSignedValueWithCancellations(BillTypeAtomic billTypeAtomic, Double netValue) {
+        double magnitude = netValue != null ? Math.abs(netValue) : 0.0;
+        boolean deducted = isItemListReturn(billTypeAtomic)
+                || (billTypeAtomic != null && ISSUE_CANCELLATIONS.contains(billTypeAtomic));
+        return deducted ? -magnitude : magnitude;
+    }
+
     private InwardMedicineBillTypes() {
     }
 }

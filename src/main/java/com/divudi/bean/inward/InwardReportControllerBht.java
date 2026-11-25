@@ -239,56 +239,20 @@ public class InwardReportControllerBht implements Serializable {
             return null;
         }
         if (configOptionApplicationController.getBooleanValueByKey("Use Legacy Calculation Method for Pharmacy Summary in Inward Patient Profile", true)) {
-            List<BillTypeAtomic> btas = new ArrayList<>();
-            btas.add(BillTypeAtomic.PHARMACY_DIRECT_ISSUE);
-            btas.add(BillTypeAtomic.PHARMACY_DIRECT_ISSUE_CANCELLED);
-            btas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE);
-            btas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION);
-            btas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN);
-            btas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE);
-            btas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_CANCELLATION);
-            btas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_RETURN);
-            btas.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD);
-            btas.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN);
-            btas.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_CANCELLATION);
-            // Porter-based ward return: the BHT is credited when the pharmacy accepts it (#25744)
-            btas.add(BillTypeAtomic.ACCEPT_RETURN_MEDICINE_INWARD);
-            pharmacyIssueBillItemsToPatientEncounterNetTotal = 0.0;
-            pharmacyIssueBillItemsToPatientEncounter = billService.fetchBillItems(null, null, null, null, department, null, btas, patientEncounter);
-            if (pharmacyIssueBillItemsToPatientEncounter != null) {
-                for (BillItem bi : pharmacyIssueBillItemsToPatientEncounter) {
-                    switch (bi.getBill().getBillTypeAtomic()) {
-                        case PHARMACY_DIRECT_ISSUE_CANCELLED:
-                        case DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION:
-                        case DIRECT_ISSUE_INWARD_MEDICINE_RETURN:
-                        case DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_CANCELLATION:
-                        case DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_RETURN:
-                        case ISSUE_MEDICINE_ON_REQUEST_INWARD_CANCELLATION:
-                        case ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN:
-                        case ACCEPT_RETURN_MEDICINE_INWARD:
-                            pharmacyIssueBillItemsToPatientEncounterNetTotal -= Math.abs(bi.getNetValue());
-                            break;
-                        case PHARMACY_DIRECT_ISSUE:
-                        case DIRECT_ISSUE_INWARD_MEDICINE:
-                        case DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE:
-                        case ISSUE_MEDICINE_ON_REQUEST_INWARD:
-                            pharmacyIssueBillItemsToPatientEncounterNetTotal += Math.abs(bi.getNetValue());
-                            break;
-                    }
-
-                }
-            }
+            loadLegacyPharmacyIssueBillItems();
         } else {
             List<BillTypeAtomic> btas = new ArrayList<>();
             btas.add(BillTypeAtomic.PHARMACY_DIRECT_ISSUE);
             btas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE);
             btas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE);
-            List<BillItem> pharmacyIssuedDrugs = billService.fetchBillItems(null, null, null, null, department, null, btas, patientEncounter);
+            btas.add(BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE);
+            List<BillItem> pharmacyIssuedDrugs = billService.fetchBillItemsOfEncounters(department, btas, encounterIdsWithChildren());
 
             btas = new ArrayList<>();
             btas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN);
             btas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_RETURN);
-            List<BillItem> pharmacyIssuedReturnedDrugs = billService.fetchBillItems(null, null, null, null, department, null, btas, patientEncounter);
+            btas.add(BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_RETURN);
+            List<BillItem> pharmacyIssuedReturnedDrugs = billService.fetchBillItemsOfEncounters(department, btas, encounterIdsWithChildren());
 
             List<BillItem> pharmacyIssuesWithoutCanceled = new ArrayList<>();
 
@@ -515,14 +479,16 @@ public class InwardReportControllerBht implements Serializable {
                 + "COALESCE(bi.bill.department.name, 'N/A'), "
                 + "bi.bill.cancelled) "
                 + "FROM BillItem bi "
-                + "WHERE bi.bill.patientEncounter = :patientEncounter "
+                + "WHERE bi.bill.patientEncounter.id IN :peIds "
                 + "AND bi.bill.billTypeAtomic IN :billTypeAtomics "
                 + "AND bi.retired = FALSE "
                 + "AND bi.bill.retired = FALSE ";
 
         Map<String, Object> params = new HashMap<>();
         params.put("billTypeAtomics", billTypes);
-        params.put("patientEncounter", patientEncounter);
+        // The admission and its child admissions, as the interim bill sums service charges
+        // (InwardBeanController.calServiceBillItemsTotalByInwardChargeTypeBulk).
+        params.put("peIds", encounterIdsWithChildren());
 
         if (department != null) {
             jpql += "AND bi.bill.department = :department ";
@@ -2239,15 +2205,7 @@ public class InwardReportControllerBht implements Serializable {
 
         Map<String, Object> params = new HashMap<>();
         params.put("billTypeAtomics", billTypes);
-        // The admission and its child admissions (such as a baby BHT), as the interim bill sums them.
-        List<Long> peIds = new ArrayList<>();
-        peIds.add(patientEncounter.getId());
-        List<PatientEncounter> children = inwardBeanController.fetchChildPatientEncounter(patientEncounter);
-        if (children != null) {
-            for (PatientEncounter child : children) {
-                peIds.add(child.getId());
-            }
-        }
+        List<Long> peIds = encounterIdsWithChildren();
         params.put("peIds", peIds);
 
         if (department != null) {
@@ -2354,45 +2312,41 @@ public class InwardReportControllerBht implements Serializable {
             return;
         }
         patient = patientEncounter.getPatient();
-        List<BillTypeAtomic> btas = new ArrayList<>();
-        btas.add(BillTypeAtomic.PHARMACY_DIRECT_ISSUE);
-        btas.add(BillTypeAtomic.PHARMACY_DIRECT_ISSUE_CANCELLED);
-        btas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE);
-        btas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION);
-        btas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN);
-        btas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE);
-        btas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_CANCELLATION);
-        btas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_RETURN);
-        btas.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD);
-        btas.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN);
-        btas.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_CANCELLATION);
-        // Porter-based ward return: the BHT is credited when the pharmacy accepts it (#25744)
-        btas.add(BillTypeAtomic.ACCEPT_RETURN_MEDICINE_INWARD);
+        loadLegacyPharmacyIssueBillItems();
+    }
+
+    /**
+     * Legacy pharmacy item list: the same bill types as the interim bill's Medicine
+     * total, for the admission and its child admissions. The issue cancellations stay
+     * in the query and are deducted, so a cancelled issue nets to 0 and a return is
+     * deducted once (#26100).
+     */
+    private void loadLegacyPharmacyIssueBillItems() {
         pharmacyIssueBillItemsToPatientEncounterNetTotal = 0.0;
-        pharmacyIssueBillItemsToPatientEncounter = billService.fetchBillItems(null, null, null, null, department, null, btas, patientEncounter);
+        pharmacyIssueBillItemsToPatientEncounter = billService.fetchBillItemsOfEncounters(
+                department, InwardMedicineBillTypes.ALL, encounterIdsWithChildren());
         if (pharmacyIssueBillItemsToPatientEncounter != null) {
             for (BillItem bi : pharmacyIssueBillItemsToPatientEncounter) {
-                switch (bi.getBill().getBillTypeAtomic()) {
-                    case PHARMACY_DIRECT_ISSUE_CANCELLED:
-                    case DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION:
-                    case DIRECT_ISSUE_INWARD_MEDICINE_RETURN:
-                    case DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_CANCELLATION:
-                    case DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_RETURN:
-                    case ISSUE_MEDICINE_ON_REQUEST_INWARD_CANCELLATION:
-                    case ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN:
-                    case ACCEPT_RETURN_MEDICINE_INWARD:
-                        pharmacyIssueBillItemsToPatientEncounterNetTotal -= Math.abs(bi.getNetValue());
-                        break;
-                    case PHARMACY_DIRECT_ISSUE:
-                    case DIRECT_ISSUE_INWARD_MEDICINE:
-                    case DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE:
-                    case ISSUE_MEDICINE_ON_REQUEST_INWARD:
-                        pharmacyIssueBillItemsToPatientEncounterNetTotal += Math.abs(bi.getNetValue());
-                        break;
-                }
-
+                pharmacyIssueBillItemsToPatientEncounterNetTotal
+                        += InwardMedicineBillTypes.listSignedValueWithCancellations(bi.getBill().getBillTypeAtomic(), bi.getNetValue());
             }
         }
+    }
+
+    /**
+     * Ids of the admission and its child admissions (such as a baby BHT), as the
+     * interim bill sums them.
+     */
+    private List<Long> encounterIdsWithChildren() {
+        List<Long> peIds = new ArrayList<>();
+        peIds.add(patientEncounter.getId());
+        List<PatientEncounter> children = inwardBeanController.fetchChildPatientEncounter(patientEncounter);
+        if (children != null) {
+            for (PatientEncounter child : children) {
+                peIds.add(child.getId());
+            }
+        }
+        return peIds;
     }
 
     public Double[] fetchRoomValues() {
