@@ -4,6 +4,7 @@ import com.divudi.core.data.BillType;
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.BillItem;
+import com.divudi.core.entity.BillItemFinanceDetails;
 import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.WebUser;
@@ -12,7 +13,6 @@ import com.divudi.core.facade.BillFacade;
 import com.divudi.core.facade.BillItemFacade;
 import com.divudi.core.facade.PharmaceuticalBillItemFacade;
 import com.divudi.ejb.PharmacyBean;
-import com.divudi.service.BillService;
 import java.util.ArrayList;
 import java.util.Date;
 import javax.ejb.EJB;
@@ -36,12 +36,10 @@ public class BhtIssueReversalService {
     private PharmaceuticalBillItemFacade pharmaceuticalBillItemFacade;
     @EJB
     private PharmacyBean pharmacyBean;
-    @EJB
-    private BillService billService;
 
     public static final String REVERSAL_OF_REVERSAL_MESSAGE = "This bill is a reversal and cannot be reversed";
 
-    public static final String REQUEST_ISSUE_MESSAGE = "Request issues cannot be reversed here. Use the BHT issue cancel.";
+    public static final String REQUEST_ISSUE_MESSAGE = "Only direct issues to a BHT can be reversed here. Use the BHT issue cancel for other issues.";
 
     /**
      * True only for the direct issue types this reversal handles. Request
@@ -107,6 +105,20 @@ public class BhtIssueReversalService {
         }
     }
 
+    /**
+     * Gives the reversal line the original line's finance details with money,
+     * quantities and stock values negated; rates stay as they are.
+     */
+    public static void applyNegatedFinanceDetails(BillItem reversalItem, BillItem originalItem) {
+        if (!originalItem.hasBillItemFinanceDetails()) {
+            return;
+        }
+        BillItemFinanceDetails negated = new BillItemFinanceDetails();
+        negated.invertValue(originalItem.getBillItemFinanceDetails());
+        negated.setBillItem(reversalItem);
+        reversalItem.setBillItemFinanceDetails(negated);
+    }
+
     public Bill reverse(Long originalBillId, WebUser user, Institution institution, Department department, String deptId, String comments) {
         if (originalBillId == null) {
             throw new BhtIssueReversalException("No Bill Found");
@@ -169,6 +181,7 @@ public class BhtIssueReversalService {
             reversalItem.setCreatedAt(new Date());
             reversalItem.setCreater(user);
             reversalItem.invertValue(originalItem);
+            applyNegatedFinanceDetails(reversalItem, originalItem);
 
             PharmaceuticalBillItem originalPbi = originalItem.getPharmaceuticalBillItem();
             if (originalPbi != null) {

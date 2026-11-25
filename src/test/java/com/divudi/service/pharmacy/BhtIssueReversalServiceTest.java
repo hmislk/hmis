@@ -2,6 +2,8 @@ package com.divudi.service.pharmacy;
 
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.BillItem;
+import java.math.BigDecimal;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -59,5 +61,28 @@ public class BhtIssueReversalServiceTest {
                     || atomic == BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE;
             assertEquals(expected, BhtIssueReversalService.isReversibleDirectIssue(bill), atomic.name());
         }
+    }
+
+    @Test
+    public void reversalLineFinanceDetailsAreNegatedAndRatesKept() {
+        BillItem original = new BillItem();
+        original.getBillItemFinanceDetails().setLineNetTotal(new BigDecimal("50.00"));
+        original.getBillItemFinanceDetails().setQuantity(new BigDecimal("5"));
+        original.getBillItemFinanceDetails().setValueAtRetailRate(new BigDecimal("60"));
+        original.getBillItemFinanceDetails().setLineGrossRate(new BigDecimal("10"));
+        BillItem reversal = new BillItem();
+        BhtIssueReversalService.applyNegatedFinanceDetails(reversal, original);
+        assertEquals(0, new BigDecimal("-50.00").compareTo(reversal.getBillItemFinanceDetails().getLineNetTotal()));
+        assertEquals(0, new BigDecimal("-5").compareTo(reversal.getBillItemFinanceDetails().getQuantity()));
+        assertEquals(0, new BigDecimal("-60").compareTo(reversal.getBillItemFinanceDetails().getValueAtRetailRate()));
+        assertEquals(0, new BigDecimal("10").compareTo(reversal.getBillItemFinanceDetails().getLineGrossRate()));
+        assertEquals(0, new BigDecimal("50.00").compareTo(original.getBillItemFinanceDetails().getLineNetTotal()));
+    }
+
+    @Test
+    public void reversalLineWithoutFinanceDetailsStaysWithout() {
+        BillItem reversal = new BillItem();
+        BhtIssueReversalService.applyNegatedFinanceDetails(reversal, new BillItem());
+        assertFalse(reversal.hasBillItemFinanceDetails());
     }
 }
