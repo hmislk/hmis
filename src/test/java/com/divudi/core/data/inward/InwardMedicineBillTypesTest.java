@@ -99,4 +99,25 @@ public class InwardMedicineBillTypesTest {
         assertEquals(70.0, interim, 0.0001);
         assertEquals(interim, list, 0.0001);
     }
+
+    @Test
+    void legacyListKeepsCancellationsAndNetsToTheInterimTotal() {
+        // Same bills as above, but the legacy list does not skip cancelled issues: the
+        // cancelled issue (+50) and its cancellation (-50) both stay and net to 0.
+        Object[][] bills = {
+            {BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE, 100.0},
+            {BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_RETURN, -30.0},
+            {BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE, 50.0},
+            {BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_CANCELLATION, -50.0},
+            {BillTypeAtomic.ACCEPT_RETURN_MEDICINE_INWARD, 10.0}
+        };
+        double interim = 100.0 - 30.0 + 50.0 - 50.0 - 10.0;
+        double list = 0.0;
+        for (Object[] b : bills) {
+            list += InwardMedicineBillTypes.listSignedValueWithCancellations((BillTypeAtomic) b[0], (Double) b[1]);
+        }
+        assertEquals(60.0, interim, 0.0001);
+        assertEquals(interim, list, 0.0001);
+        assertEquals(0.0, InwardMedicineBillTypes.listSignedValueWithCancellations(null, null), 0.0001);
+    }
 }

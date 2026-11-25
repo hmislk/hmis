@@ -3872,6 +3872,35 @@ public class BillService {
         return fetchedBillItems;
     }
 
+    /**
+     * Bill items of the given bill types for a set of encounters (an admission
+     * plus its child admissions), bound as an id list.
+     */
+    public List<BillItem> fetchBillItemsOfEncounters(Department department,
+            List<BillTypeAtomic> billTypeAtomics,
+            List<Long> patientEncounterIds) {
+        if (patientEncounterIds == null || patientEncounterIds.isEmpty()) {
+            return new ArrayList<>();
+        }
+        Map<String, Object> params = new HashMap<>();
+        String jpql = "select bi "
+                + " from BillItem bi "
+                + " join bi.bill b"
+                + " where b.retired=:ret "
+                + " and bi.retired=:ret "
+                + " and b.billTypeAtomic in :billTypesAtomics "
+                + " and b.patientEncounter.id in :peIds ";
+        params.put("ret", false);
+        params.put("billTypesAtomics", billTypeAtomics);
+        params.put("peIds", patientEncounterIds);
+        if (department != null) {
+            jpql += " and b.department=:dep ";
+            params.put("dep", department);
+        }
+        jpql += " order by b.createdAt, bi.id ";
+        return billItemFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
+    }
+
     public List<BillItem> fetchBillItemsWithoutCancellationsAndReturns(Date fromDate,
             Date toDate,
             Institution institution,
