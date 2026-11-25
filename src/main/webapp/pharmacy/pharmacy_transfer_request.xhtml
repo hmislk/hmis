@@ -51,6 +51,8 @@
                                             id="btnSelect"
                                             ajax="false"
                                             value="Select"
+                                            icon="fas fa-check"
+                                            class="ui-button-success"
                                             action="#{transferRequestController.processTransferRequest}"
                                             />
                                     </h:panelGroup>
@@ -80,59 +82,57 @@
 
                 <p:panel rendered="#{transferRequestController.toDepartment ne null and transferRequestController.toDepartment  ne sessionController.loggedUser.department}">
                     <f:facet name="header" >
-                        <div class="row">
-                            <div class="col-2">
-                                <h:outputLabel styleClass="fas fa-arrow-right-arrow-left" />
-                                <h:outputLabel value="Transfer Request" class="mx-4" />
+                        <div class="d-flex justify-content-between align-items-center w-100">
+                            <div class="d-flex align-items-center gap-2">
+                                <h:outputText styleClass="fas fa-arrow-right-arrow-left" />
+                                <h:outputText value="Transfer Request" />
+                                <h:panelGroup rendered="#{webUserController.hasPrivilege('Admin')}">
+                                    <p:commandButton
+                                        value="Config"
+                                        icon="fa fa-cog"
+                                        title="Page Configuration Management"
+                                        action="#{pageAdminController.navigateToPageAdmin('pharmacy/pharmacy_transfer_request')}"
+                                        ajax="false"
+                                        styleClass="ui-button-secondary ui-button-outlined">
+                                    </p:commandButton>
+                                </h:panelGroup>
                             </div>
-                            <div class="col-5">
-                                <div class="float-left" >
-                                    <p:commandButton 
-                                        value="Change Department" 
-                                        class="ui-button-primary mx-1"
-                                        ajax="false" 
-                                        icon="pi pi-refresh"
-                                        action="#{transferRequestController.changeDepartment()}" />
-                                    <p:commandButton
-                                        value="Clear &amp; Create A New Transfer Request Bill"
-                                        action="#{transferRequestController.recreate}"
-                                        ajax="false"
-                                        icon="pi pi-plus"
-                                        class="ui-button-warning"/>
-                                    <h:panelGroup rendered="#{webUserController.hasPrivilege('Admin')}">
-                                        <p:commandButton
-                                            value="Config"
-                                            icon="fa fa-cog"
-                                            title="Page Configuration Management"
-                                            action="#{pageAdminController.navigateToPageAdmin('pharmacy/pharmacy_transfer_request')}"
-                                            ajax="false"
-                                            styleClass="ui-button-secondary mx-1">
-                                        </p:commandButton>
-                                    </h:panelGroup>
-                                </div>
+                            <div class="d-flex gap-2">
+                                <p:commandButton
+                                    value="Change Department"
+                                    title="Choose another department to request from"
+                                    class="ui-button-info ui-button-outlined"
+                                    ajax="false"
+                                    icon="pi pi-refresh"
+                                    action="#{transferRequestController.changeDepartment()}" />
                             </div>
-                            <div class="col-5" >
-                                <div class="float-end" >
-                                    <p:commandButton
-                                        id="btnSave"
-                                        value="Save"
-                                        action="#{transferRequestController.saveTranserRequestPreBill()}"
-                                        ajax="false"
-                                        icon="fas fa-floppy-disk"
-                                        styleClass="mx-1 ui-button-stage-save"
-                                        disabled="#{not webUserController.hasPrivilege('PharmacyDisbursementRequest')}"
-                                        />
-                                    <p:commandButton
-                                        id="btnFinalize"
-                                        value="Finalize"
-                                        action="#{transferRequestController.finalizeTranserRequestPreBill()}"
-                                        ajax="false"
-                                        icon="fas fa-lock"
-                                        styleClass="mx-1 ui-button-stage-finalize"
-                                        onclick="return confirm('Are you sure you want to finalize this transfer request? This action cannot be undone.');"
-                                        disabled="#{not webUserController.hasPrivilege('PharmacyDisbursementFinalizeRequest')}"
-                                        />
-                                </div>
+                            <div class="d-flex gap-2 align-items-center">
+                                <p:commandButton
+                                    value="Clear &amp; Create A New Transfer Request Bill"
+                                    action="#{transferRequestController.recreate}"
+                                    ajax="false"
+                                    icon="pi pi-plus"
+                                    class="ui-button-warning"/>
+                                <p:commandButton
+                                    id="btnSave"
+                                    value="Save"
+                                    action="#{transferRequestController.saveTranserRequestPreBill()}"
+                                    ajax="false"
+                                    icon="fas fa-floppy-disk"
+                                    styleClass="ui-button-stage-save"
+                                    disabled="#{not webUserController.hasPrivilege('PharmacyDisbursementRequest')}"
+                                    />
+                                <p:commandButton
+                                    id="btnFinalize"
+                                    value="Finalize"
+                                    action="#{transferRequestController.finalizeTranserRequestPreBill()}"
+                                    ajax="false"
+                                    icon="fas fa-lock"
+                                    style="min-width:120px"
+                                    styleClass="ui-button-stage-finalize"
+                                    onclick="return confirm('Are you sure you want to finalize this transfer request? This action cannot be undone.');"
+                                    disabled="#{not webUserController.hasPrivilege('PharmacyDisbursementFinalizeRequest')}"
+                                    />
                             </div>
                         </div>
                     </f:facet>
@@ -212,13 +212,13 @@
                                         </div>
                                     </h:panelGroup>
 
-                                    <div class="col-1">
+                                    <div class="col-auto d-flex flex-column">
                                         <p:outputLabel value="&nbsp;"/>
                                         <p:commandButton
                                             id="btnAddItem"
                                             value="Add Item"
                                             icon="fas fa-plus"
-                                            class="ui-button-success w-100"
+                                            class="ui-button-success text-nowrap"
                                             action="#{transferRequestController.addItem}"
                                             process="@form"
                                             update="itemAutoComplete txtQty panelRateInput panelValueInput itemList requestTotals focusItem"/>
@@ -236,6 +236,7 @@
                                     var="bi"
                                     value="#{transferRequestController.billItems}"
                                     id="itemList"
+                                    styleClass="p-datatable-sm"
                                     editable="true" >
 
                                     <p:column headerText="Item Name">

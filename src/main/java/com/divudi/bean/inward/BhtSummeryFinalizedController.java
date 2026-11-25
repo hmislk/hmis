@@ -15,6 +15,7 @@ import com.divudi.core.data.PaymentMethod;
 import com.divudi.core.data.inward.InwardChargeType;
 
 import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.BilledBill;
 import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.BillFee;
@@ -721,6 +722,36 @@ public class BhtSummeryFinalizedController implements Serializable {
      * hospital the assistant list is empty and {@link #getProBillFee()}
      * already holds those fees, so nothing is listed twice.
      */
+    /**
+     * Option key: leave cancelled professional fees out of the BHT Break Down
+     * (Table Format) report. Off by default.
+     */
+    public static final String HIDE_CANCELLED_PROFESSIONAL_FEES_KEY
+            = "BHT Break Down Table - Hide Cancelled Professional Fees";
+
+    /**
+     * The staff fees for the BHT Break Down report. With the option on, a fee
+     * that was cancelled before the bill was settled is left out together with
+     * its cancellation (minus) row, so neither shows. The two cancel out, so the
+     * final bill and its totals are the same either way; this only changes what
+     * the report lists.
+     */
+    public List<BillFee> getAllStaffBillFeesForBreakDown() {
+        List<BillFee> all = getAllStaffBillFees();
+        if (!configOptionApplicationController.getBooleanValueByKey(HIDE_CANCELLED_PROFESSIONAL_FEES_KEY, false)) {
+            return all;
+        }
+        List<BillFee> kept = new ArrayList<>();
+        for (BillFee bf : all) {
+            Bill b = bf == null ? null : bf.getBill();
+            boolean cancelledFee = b != null && (b.isCancelled() || !(b instanceof BilledBill));
+            if (!cancelledFee) {
+                kept.add(bf);
+            }
+        }
+        return kept;
+    }
+
     public List<BillFee> getAllStaffBillFees() {
         List<BillFee> all = new ArrayList<>();
         if (proBillFee != null) {

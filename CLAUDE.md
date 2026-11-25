@@ -40,7 +40,7 @@
 - **🚨 Inpatient medicines have exactly two workflows, both always on;** never add a config option to switch one off. [+](developer_docs/pharmacy/inpatient-medicine-issue-policy.md)
 
 ### Security
-- **🚨 No hospital data in GitHub** (issues, PRs, comments, commits, screenshots): no record counts, production bill/BHT/PHN numbers or IDs, schema names, cutover dates, staff stats, patient/doctor details, or data-fix logs. Describe the defect instead; naming the reporting hospital is fine. [+](developer_docs/git/github-public-content-policy.md)
+- **🚨 No hospital data in GitHub** (issues, PRs, comments, commits, screenshots): no record counts, production bill/BHT/PHN numbers or IDs, schema names, cutover dates, staff stats, patient/doctor details, or data-fix logs. Describe the defect instead; naming the reporting hospital is fine. Get PASS from `hmis-public-guard` before posting. [+](developer_docs/git/github-public-content-policy.md)
 - **🚨 Never write credentials (passwords, API keys, DB users, IPs, hostnames, SSH strings) into any file in the project folder,** and never print a credentials file, even masked; pass the one value straight into the command. [+](developer_docs/rules/security.md)
 - **🚨 No live-vulnerability detail on ANY public GitHub surface until the fix is deployed everywhere;** write only "hardening, tracked under #N". [+](developer_docs/rules/security.md)
 - **🚨 Security PRs need a threat-model note before review:** forgery AND replay AND cross-purpose use. [+](developer_docs/rules/security.md)
