@@ -38,7 +38,11 @@ public final class InwardMedicineBillTypes {
             BillTypeAtomic.ACCEPT_RETURN_MEDICINE_INWARD,
             BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE,
             BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_RETURN,
-            BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_CANCELLATION
+            BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_CANCELLATION,
+            // Cancelling a BHT issue return (#26105): the patient keeps the medicines, so the
+            // cancellation (positive, the return's value inverted) offsets the return that
+            // stays in the total. Created only by the cancel-return action of a BHT return.
+            BillTypeAtomic.PHARMACY_RETURN_ITEMS_AND_PAYMENTS_CANCELLATION
     ));
 
     /**
@@ -90,6 +94,7 @@ public final class InwardMedicineBillTypes {
         ALL_EXCLUDING_ISSUE_CANCELLATIONS = Collections.unmodifiableList(l);
         List<BillTypeAtomic> issues = new java.util.ArrayList<>(l);
         issues.removeAll(ITEM_LIST_RETURNS);
+        issues.remove(BillTypeAtomic.PHARMACY_RETURN_ITEMS_AND_PAYMENTS_CANCELLATION);
         ISSUES = Collections.unmodifiableList(issues);
     }
 

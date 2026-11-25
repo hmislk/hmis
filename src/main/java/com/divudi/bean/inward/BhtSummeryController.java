@@ -6792,6 +6792,8 @@ public class BhtSummeryController implements Serializable {
         medicineCancellationBtas.add(BillTypeAtomic.ACCEPT_RETURN_MEDICINE_INWARD);
         medicineCancellationBtas.add(BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_CANCELLATION);
         medicineCancellationBtas.add(BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_RETURN);
+        // A cancelled return adds back what the return deducted (#26105).
+        medicineCancellationBtas.add(BillTypeAtomic.PHARMACY_RETURN_ITEMS_AND_PAYMENTS_CANCELLATION);
 
         for (ChargeItemTotal i : chargeItemTotals) {
             switch (i.getInwardChargeType()) {
