@@ -124,8 +124,10 @@ public class BhtIssueReversalService {
             throw new BhtIssueReversalException("No Bill Found");
         }
         // Read the original inside this transaction: merging the page's copy
-        // could drop its items.
-        Bill original = billFacade.findWithoutCache(originalBillId);
+        // could drop its items. The row lock is held until the transaction
+        // ends and serialises concurrent reversals across app servers; the
+        // JVM claim in PharmacyBillSearch only covers one server.
+        Bill original = billFacade.findWithLock(originalBillId);
         if (original == null) {
             throw new BhtIssueReversalException("No Bill Found");
         }
