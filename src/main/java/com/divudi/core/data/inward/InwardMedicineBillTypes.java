@@ -114,9 +114,9 @@ public final class InwardMedicineBillTypes {
 
     /**
      * Whether a bill of this type stays in a list that skips cancelled issue bills.
-     * A cancelled issue drops out (with its cancellation). A cancelled return stays:
-     * its own cancellation bill is not one of {@link #ALL}, so the interim bill
-     * still deducts the return, and the list must too (#26105).
+     * A cancelled issue drops out (with its cancellation). A cancelled return stays
+     * in the list, and its cancellation bill, which is one of {@link #ALL}, offsets
+     * it, as the interim bill does (#26105).
      */
     public static boolean isCountedInLiveList(BillTypeAtomic billTypeAtomic, boolean billCancelled) {
         return !billCancelled || isItemListReturn(billTypeAtomic);
