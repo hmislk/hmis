@@ -90,10 +90,7 @@ public class UserPrivilageController implements Serializable {
     private String searchText;
     // Privileges shown as ticked when the tree was last listed, and for which
     // user and department (or role) - the save baseline (#26090).
-    private Set<Privileges> listedUserBaseline;
-    private String listedUserKey;
-    private Set<Privileges> listedRoleBaseline;
-    private Long listedRoleId;
+    private final PrivilegeListGuard listGuard = new PrivilegeListGuard();
     @Inject
     SessionController sessionController;
 
@@ -1652,12 +1649,15 @@ public class UserPrivilageController implements Serializable {
      * role). Among the privileges the tree offers, the user ends up with
      * exactly the role's ones. Rows the tree does not offer stay untouched,
      * existing rows are kept, and retired rows record who and when (#26090).
+     *
+     * @return true when the privileges were saved; false when nothing was
+     * changed (missing user or department, or the write failed)
      */
-    public void saveWebUserPrivileges(WebUser u, List<PrivilegeHolder> selected, Department dept) {
+    public boolean saveWebUserPrivileges(WebUser u, List<PrivilegeHolder> selected, Department dept) {
         currentWebUser = u;
         department = dept;
         if (u == null || dept == null) {
-            return;
+            return false;
         }
         List<Privileges> selectedPrivileges = new ArrayList<>();
         if (selected != null) {
@@ -1677,9 +1677,10 @@ public class UserPrivilageController implements Serializable {
         fillUserPrivileges();
         if (diff == null) {
             JsfUtil.addErrorMessage(SAVE_FAILED_MESSAGE);
-            return;
+            return false;
         }
         JsfUtil.addSuccessMessage("Updated");
+        return true;
     }
 
     /**
@@ -1698,12 +1699,13 @@ public class UserPrivilageController implements Serializable {
             JsfUtil.addErrorMessage("Please select a department");
             return;
         }
-        if (listedUserBaseline == null || !userKey(currentWebUser, department).equals(listedUserKey)) {
+        Set<Privileges> baseline = listGuard.baselineForSave(privilegesLoaded, userKey(currentWebUser, department));
+        if (baseline == null) {
             JsfUtil.addErrorMessage(NOT_LISTED_MESSAGE);
             return;
         }
         PrivilegeSaveDiff.TreeState state = PrivilegeSaveDiff.readTree(
-                getRootTreeNode(), selectedNodeList(), UserPrivilageController::privilegeOfNodeData, listedUserBaseline);
+                getRootTreeNode(), selectedNodeList(), UserPrivilageController::privilegeOfNodeData, baseline);
         List<WebUserPrivilege> current = fetchLiveUserPrivileges(currentWebUser, department);
         String refusal = PrivilegeSaveDiff.refusalReason(state);
         if (refusal != null) {
@@ -1757,7 +1759,7 @@ public class UserPrivilageController implements Serializable {
     private static final String SAVE_FAILED_MESSAGE = "The privileges could not be saved. Nothing was changed. Please try again.";
 
     private static String userKey(WebUser wu, Department dept) {
-        return (wu == null ? "null" : String.valueOf(wu.getId())) + "|" + (dept == null ? "null" : String.valueOf(dept.getId()));
+        return PrivilegeListGuard.userKey(wu == null ? null : wu.getId(), dept == null ? null : dept.getId());
     }
 
     private List<WebUserPrivilege> fetchLiveUserPrivileges(WebUser wu, Department dept) {
@@ -1836,12 +1838,13 @@ public class UserPrivilageController implements Serializable {
             JsfUtil.addErrorMessage("Please select a User Role");
             return;
         }
-        if (listedRoleBaseline == null || !Objects.equals(listedRoleId, webUserRole.getId())) {
+        Set<Privileges> baseline = listGuard.baselineForSave(privilegesLoaded, PrivilegeListGuard.roleKey(webUserRole.getId()));
+        if (baseline == null) {
             JsfUtil.addErrorMessage(NOT_LISTED_MESSAGE);
             return;
         }
         PrivilegeSaveDiff.TreeState state = PrivilegeSaveDiff.readTree(
-                getRootTreeNode(), selectedNodeList(), UserPrivilageController::privilegeOfNodeData, listedRoleBaseline);
+                getRootTreeNode(), selectedNodeList(), UserPrivilageController::privilegeOfNodeData, baseline);
         List<WebUserRolePrivilege> current = fetchLiveRolePrivileges(webUserRole);
         String refusal = PrivilegeSaveDiff.refusalReason(state);
         if (refusal != null) {
@@ -1985,11 +1988,13 @@ public class UserPrivilageController implements Serializable {
         if (currentWebUser == null) {
             JsfUtil.addErrorMessage("Please select a user");
             privilegesLoaded = false;
+            listGuard.clear();
             return;
         }
         if (department == null) {
             JsfUtil.addErrorMessage("Please select a department");
             privilegesLoaded = false;
+            listGuard.clear();
             return;
         }
         String j = "SELECT i "
@@ -2003,8 +2008,7 @@ public class UserPrivilageController implements Serializable {
         m.put("dep", department);
         currentWebUserPrivileges = getEjbFacade().findByJpql(j, m);
         currentUserPrivilegeHolders = createPrivilegeHolders(currentWebUserPrivileges);
-        listedUserBaseline = baselineOf(currentWebUserPrivileges, WebUserPrivilege::getPrivilege);
-        listedUserKey = userKey(currentWebUser, department);
+        listGuard.listed(userKey(currentWebUser, department), baselineOf(currentWebUserPrivileges, WebUserPrivilege::getPrivilege));
         unselectTreeNodes(rootTreeNode);
         checkNodes(rootTreeNode, currentUserPrivilegeHolders);
         privilegesLoaded = true;
@@ -2132,6 +2136,7 @@ public class UserPrivilageController implements Serializable {
 
     public void makePrivilegesNeededToBeReloaded() {
         privilegesLoaded = false;
+        listGuard.clear();
     }
 
     public void fillUserRolePrivileges(WebUserRole u) {
@@ -2143,6 +2148,7 @@ public class UserPrivilageController implements Serializable {
         if (webUserRole == null) {
             JsfUtil.addErrorMessage("Please select a User Role");
             privilegesLoaded = false;
+            listGuard.clear();
             return;
         }
         String j = "SELECT i "
@@ -2154,8 +2160,8 @@ public class UserPrivilageController implements Serializable {
         m.put("ret", false);
         currentWebUserRolePrivileges = getRoleFacede().findByJpql(j, m);
         currentUserPrivilegeHolders = createRolePrivilegeHolders(currentWebUserRolePrivileges);
-        listedRoleBaseline = baselineOf(currentWebUserRolePrivileges, WebUserRolePrivilege::getPrivilege);
-        listedRoleId = webUserRole.getId();
+        listGuard.listed(PrivilegeListGuard.roleKey(webUserRole.getId()),
+                baselineOf(currentWebUserRolePrivileges, WebUserRolePrivilege::getPrivilege));
         unselectTreeNodes(rootTreeNode);
         checkNodes(rootTreeNode, currentUserPrivilegeHolders);
         privilegesLoaded = true;
@@ -2320,8 +2326,15 @@ public class UserPrivilageController implements Serializable {
         return privilegesLoaded;
     }
 
+    PrivilegeListGuard getListGuard() {
+        return listGuard;
+    }
+
     public void setPrivilegesLoaded(boolean privilegesLoaded) {
         this.privilegesLoaded = privilegesLoaded;
+        if (!privilegesLoaded) {
+            listGuard.clear();
+        }
     }
 
     public String getSearchText() {
