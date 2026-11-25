@@ -68,6 +68,8 @@ import com.divudi.service.BillService;
 import com.divudi.service.pharmacy.PharmacyPoCancellationException;
 import com.divudi.service.pharmacy.PharmacyPurchaseOrderApprovalCancellationService;
 import com.divudi.service.pharmacy.TransferIssueNativeSqlService;
+import com.divudi.service.pharmacy.BhtIssueReversalException;
+import com.divudi.service.pharmacy.BhtIssueReversalService;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
@@ -144,6 +146,8 @@ public class PharmacyBillSearch implements Serializable {
     private EmailFacade emailFacade;
     @EJB
     private EmailManagerEjb emailManagerEjb;
+    @EJB
+    private BhtIssueReversalService bhtIssueReversalService;
     @EJB
     private TransferIssueNativeSqlService transferIssueNativeSqlService;
     @EJB
@@ -3637,64 +3641,6 @@ public class PharmacyBillSearch implements Serializable {
 
     }
 
-    private Bill createReversalBillWithCorrectStockAdjustment(Bill originalBill, WebUser user, Department department, BillNumberSuffix billNumberSuffix) {
-        // Create a new reversal bill using built-in copy method
-        Bill reversalBill = new Bill();
-        reversalBill.copy(originalBill);
-
-        // Set reversal-specific properties
-        reversalBill.setCreatedAt(new Date());
-        reversalBill.setCreater(user);
-        reversalBill.setDepartment(department);
-
-        // Set reference relationships
-        reversalBill.setReferenceBill(originalBill);
-        reversalBill.setBilledBill(originalBill);
-
-        // Initialize bill items collection
-        reversalBill.setBillItems(new ArrayList<>());
-
-        // Create reversal bill items using built-in methods
-        for (BillItem originalItem : originalBill.getBillItems()) {
-            // Create new bill item using copy method
-            BillItem reversalItem = new BillItem();
-            reversalItem.copy(originalItem);
-            reversalItem.setBill(reversalBill);
-            reversalItem.setCreatedAt(new Date());
-            reversalItem.setCreater(user);
-
-            // Use built-in invert method
-            reversalItem.invertValue(originalItem);
-
-            // Handle pharmaceutical bill item if it exists
-            if (originalItem.getPharmaceuticalBillItem() != null) {
-                PharmaceuticalBillItem originalPbi = originalItem.getPharmaceuticalBillItem();
-
-                // Create new PBI using copy method
-                PharmaceuticalBillItem reversalPbi = new PharmaceuticalBillItem();
-                reversalPbi.copy(originalPbi);
-                reversalPbi.setBillItem(reversalItem);
-                reversalPbi.setCreatedAt(new Date());
-                reversalPbi.setCreater(user);
-
-                // Use built-in invert method
-                reversalPbi.invertValue(originalPbi);
-
-                reversalItem.setPharmaceuticalBillItem(reversalPbi);
-
-                // Apply correct stock adjustment using the reversed quantity
-                if (reversalPbi.getQty() != 0 && reversalPbi.getStock() != null) {
-                    getPharmacyBean().addToStock(reversalPbi.getStock(), reversalPbi.getQty(), reversalPbi, department);
-                }
-            }
-
-            // Add the bill item to the reversal bill
-            reversalBill.getBillItems().add(reversalItem);
-        }
-
-        return reversalBill;
-    }
-
     public void reversePharmacyDirectIssueToBht() {
         if (getBill() == null) {
             JsfUtil.addErrorMessage("No Bill Found");
@@ -3730,30 +3676,25 @@ public class PharmacyBillSearch implements Serializable {
                 getBill().getBillTypeAtomic() // Keep the same bill type atomic
         );
 
-        // Create reversal bill using custom logic to handle proper stock adjustments
-        Bill reversalBill = createReversalBillWithCorrectStockAdjustment(
-                getBill(),
-                getSessionController().getLoggedUser(),
-                getSessionController().getDepartment(),
-                BillNumberSuffix.PHISSCAN
-        );
-
-        // Set reversal bill properties - keep original bill type and bill type atomic
-        reversalBill.setForwardReferenceBill(getBill().getForwardReferenceBill());
-        reversalBill.setBillType(getBill().getBillType()); // Keep same bill type
-        reversalBill.setBillTypeAtomic(getBill().getBillTypeAtomic()); // Keep same bill type atomic
-        reversalBill.setDeptId(deptId);
-        reversalBill.setReferenceBill(getBill()); // Reference to original bill
-        reversalBill.setBilledBill(getBill()); // Reference as billedBill
-
-        // Save the reversal bill
-        getBillFacade().edit(reversalBill);
-        billService.createBillFinancialDetailsForPharmacyBill(reversalBill);
-
-        // Update original bill to mark as reversed
+        // One transaction: save the reversal, put the stock back, mark the original
+        // cancelled. A failure rolls everything back (#26109).
+        Bill reversalBill;
+        try {
+            reversalBill = bhtIssueReversalService.reverse(
+                    getBill().getId(),
+                    getSessionController().getLoggedUser(),
+                    getSessionController().getDepartment(),
+                    deptId);
+        } catch (BhtIssueReversalException e) {
+            JsfUtil.addErrorMessage(e.getMessage());
+            return;
+        } catch (RuntimeException e) {
+            JsfUtil.addErrorMessage("The bill could not be reversed. Nothing was changed.");
+            return;
+        }
+        // Show the page as reversed.
         getBill().setCancelled(true);
         getBill().setCancelledBill(reversalBill);
-        getBillFacade().edit(getBill());
 
         JsfUtil.addSuccessMessage("Bill Reversed Successfully. Reversal Bill No: " + reversalBill.getDeptId());
         printPreview = true;
