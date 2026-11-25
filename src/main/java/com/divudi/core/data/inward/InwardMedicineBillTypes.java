@@ -39,7 +39,13 @@ public final class InwardMedicineBillTypes {
             BillTypeAtomic.ACCEPT_RETURN_MEDICINE_INWARD,
             BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE,
             BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_RETURN,
-            BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_CANCELLATION
+            BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_CANCELLATION,
+            // Cancelling a BHT issue return (#26105): the patient keeps the medicines, so the
+            // cancellation (positive, the return's value inverted) offsets the return that
+            // stays in the total. The same type is also written by the retail and OPD return
+            // cancels, so a report that covers more than inpatients must count it only for a
+            // bill with a patient encounter.
+            BillTypeAtomic.PHARMACY_RETURN_ITEMS_AND_PAYMENTS_CANCELLATION
     ));
 
     /**
@@ -80,6 +86,14 @@ public final class InwardMedicineBillTypes {
     public static final List<BillTypeAtomic> ALL_EXCLUDING_ISSUE_CANCELLATIONS;
 
     /**
+     * Medicine bill types for a report that skips every cancelled bill
+     * (b.cancelled = false): {@link #ALL_EXCLUDING_ISSUE_CANCELLATIONS} without the
+     * cancellation of a return. The cancelled return already drops out of such a
+     * report, so its cancellation must too, or the return is added back twice (#26105).
+     */
+    public static final List<BillTypeAtomic> ALL_LIVE_BILLS;
+
+    /**
      * The issue bill types only: {@link #ALL} without the returns, the accept bill
      * and the issue cancellations.
      */
@@ -89,8 +103,12 @@ public final class InwardMedicineBillTypes {
         List<BillTypeAtomic> l = new java.util.ArrayList<>(ALL);
         l.removeAll(ISSUE_CANCELLATIONS);
         ALL_EXCLUDING_ISSUE_CANCELLATIONS = Collections.unmodifiableList(l);
+        List<BillTypeAtomic> live = new java.util.ArrayList<>(l);
+        live.remove(BillTypeAtomic.PHARMACY_RETURN_ITEMS_AND_PAYMENTS_CANCELLATION);
+        ALL_LIVE_BILLS = Collections.unmodifiableList(live);
         List<BillTypeAtomic> issues = new java.util.ArrayList<>(l);
         issues.removeAll(ITEM_LIST_RETURNS);
+        issues.remove(BillTypeAtomic.PHARMACY_RETURN_ITEMS_AND_PAYMENTS_CANCELLATION);
         ISSUES = Collections.unmodifiableList(issues);
     }
 
@@ -151,6 +169,15 @@ public final class InwardMedicineBillTypes {
             + "AND rv.retired = false AND rv.billTypeAtomic = bi.bill.billTypeAtomic) ";
 
     /**
+     * True for the cancellation of a BHT issue return. Its line is stored with
+     * either sign (a return line is usually stored positive and the cancellation
+     * inverts it), so it is always added back by magnitude.
+     */
+    public static boolean isReturnCancellation(BillTypeAtomic billTypeAtomic) {
+        return billTypeAtomic == BillTypeAtomic.PHARMACY_RETURN_ITEMS_AND_PAYMENTS_CANCELLATION;
+    }
+
+    /**
      * True when a line of this bill type is deducted, not added, in an
      * inpatient pharmacy item list total.
      */
@@ -191,6 +218,9 @@ public final class InwardMedicineBillTypes {
      */
     public static double signedRowValue(BillTypeAtomic billTypeAtomic, Double netValue) {
         double value = netValue != null ? netValue : 0.0;
+        if (isReturnCancellation(billTypeAtomic)) {
+            return Math.abs(value);
+        }
         boolean deducted = isItemListReturn(billTypeAtomic)
                 || (billTypeAtomic != null && ISSUE_CANCELLATIONS.contains(billTypeAtomic));
         return deducted ? -Math.abs(value) : value;

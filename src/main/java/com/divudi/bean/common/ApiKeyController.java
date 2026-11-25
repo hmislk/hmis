@@ -10,15 +10,20 @@ package com.divudi.bean.common;
 
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.data.ApiKeyType;
+import com.divudi.core.data.Privileges;
 import com.divudi.core.entity.ApiKey;
+import com.divudi.core.entity.WebUser;
 import com.divudi.core.facade.ApiKeyFacade;
+import com.divudi.core.facade.WebUserPrivilegeFacade;
 import java.io.Serializable;
+import java.security.SecureRandom;
+import java.util.ArrayList;
+import java.util.Base64;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
@@ -41,19 +46,67 @@ public class ApiKeyController implements Serializable {
     private static final long serialVersionUID = 1L;
     @Inject
     SessionController sessionController;
+    @Inject
+    WebUserController webUserController;
     @EJB
     private ApiKeyFacade ejbFacade;
+    @EJB
+    private WebUserPrivilegeFacade webUserPrivilegeFacade;
+    private static final SecureRandom SECURE_RANDOM = new SecureRandom();
     private ApiKey current;
     private ApiKey removing;
     private List<ApiKey> items = null;
 
     public String toManageMyApiKeys() {
+        if (!canChangeMyApiKeys()) {
+            JsfUtil.addErrorMessage("You do not have the privilege to manage API keys.");
+            return null;
+        }
         listMyApiKeys();
         return "/user_api_key?faces-redirect=true";
     }
 
-    public ApiKeyType[] getApiKeyTypes() {
-        return ApiKeyType.values();
+    private boolean canChangeMyApiKeys() {
+        return webUserController != null
+                && webUserController.hasPrivilege(Privileges.ChangeMyApiKeys.name());
+    }
+
+    private boolean loggedUserHoldsAdmin() {
+        return webUserController != null
+                && webUserController.hasPrivilege(Privileges.Admin.name());
+    }
+
+    // API key hardening
+    public static List<ApiKeyType> selectableTypes(boolean holdsAdmin) {
+        List<ApiKeyType> l = new ArrayList<>();
+        for (ApiKeyType t : ApiKeyType.values()) {
+            if (holdsAdmin || (t != ApiKeyType.Config && t != ApiKeyType.Admin)) {
+                l.add(t);
+            }
+        }
+        return l;
+    }
+
+    public List<ApiKeyType> getApiKeyTypes() {
+        return selectableTypes(loggedUserHoldsAdmin());
+    }
+
+    // API key hardening
+    public static String generateKeyValue() {
+        byte[] b = new byte[32];
+        SECURE_RANDOM.nextBytes(b);
+        return Base64.getUrlEncoder().withoutPadding().encodeToString(b);
+    }
+
+    // API key hardening
+    public boolean isActiveAdminUser(WebUser user) {
+        if (user == null || user.isRetired() || !user.isActivated()) {
+            return false;
+        }
+        Map<String, Object> m = new HashMap<>();
+        m.put("u", user);
+        m.put("p", Privileges.Admin);
+        return !webUserPrivilegeFacade.findByJpql("select wp from WebUserPrivilege wp where wp.retired=false and wp.webUser=:u and wp.privilege=:p", m).isEmpty();
     }
 
     public void listMyApiKeys() {
@@ -84,9 +137,6 @@ public class ApiKeyController implements Serializable {
         if (k.getDateOfExpiary().before(new Date())) {
             return false;
         }
-        if (k.getKeyType() == ApiKeyType.Config) {
-            return true;
-        }
         if (k.getWebUser() == null) {
             return false;
         }
@@ -115,12 +165,10 @@ public class ApiKeyController implements Serializable {
     }
 
     public void createNewApiKey() {
-        UUID uuid = UUID.randomUUID();
         current = new ApiKey();
         current.setWebUser(sessionController.getLoggedUser());
         current.setInstitution(sessionController.getInstitution());
         current.setKeyType(ApiKeyType.Token);
-        current.setKeyValue(uuid.toString());
         Calendar c = Calendar.getInstance();
         c.add(Calendar.MONTH, 1);
         current.setDateOfExpiary(c.getTime());
@@ -131,8 +179,13 @@ public class ApiKeyController implements Serializable {
     }
 
     public void saveSelected() {
-        if (getCurrent().getKeyValue() == null || getCurrent().getKeyValue().isEmpty()) {
-            JsfUtil.addErrorMessage("Please enter Key Value");
+        if (!canChangeMyApiKeys()) {
+            JsfUtil.addErrorMessage("You do not have the privilege to manage API keys.");
+            return;
+        }
+        if (getCurrent().getKeyType() == null
+                || !selectableTypes(loggedUserHoldsAdmin()).contains(getCurrent().getKeyType())) {
+            JsfUtil.addErrorMessage("This key type is not allowed for your account.");
             return;
         }
 
@@ -161,9 +214,18 @@ public class ApiKeyController implements Serializable {
         }
 
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
-            getFacade().edit(current);
+            ApiKey stored = getFacade().find(getCurrent().getId());
+            if (stored == null || stored.getWebUser() == null
+                    || !stored.getWebUser().equals(sessionController.getLoggedUser())) {
+                JsfUtil.addErrorMessage("Key not found.");
+                return;
+            }
+            stored.setDateOfExpiary(current.getDateOfExpiary());
+            getFacade().edit(stored);
             JsfUtil.addSuccessMessage("Updated Successfully.");
         } else {
+            current.setKeyValue(generateKeyValue());
+            current.setWebUser(sessionController.getLoggedUser());
             current.setCreatedAt(new Date());
             current.setCreater(getSessionController().getLoggedUser());
             getFacade().create(current);
@@ -206,6 +268,17 @@ public class ApiKeyController implements Serializable {
     }
 
     public void delete() {
+        if (!canChangeMyApiKeys()) {
+            JsfUtil.addErrorMessage("You do not have the privilege to manage API keys.");
+            removing = null;
+            return;
+        }
+        if (removing != null && (removing.getWebUser() == null
+                || !removing.getWebUser().equals(sessionController.getLoggedUser()))) {
+            JsfUtil.addErrorMessage("Key not found.");
+            removing = null;
+            return;
+        }
         if (removing != null) {
             removing.setRetired(true);
             removing.setRetiredAt(new Date());

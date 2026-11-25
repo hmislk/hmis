@@ -90,7 +90,7 @@
                             id="tblBills" 
                             value="#{searchController.bills}" 
                             var="bill"  
-                            class="w-100"
+                            class="w-100 p-datatable-sm"
                             rows="10"
                             paginator="true" 
                             paginatorPosition="bottom"
@@ -257,7 +257,7 @@
                                     action="#{pharmacyBillSearch.navigateToReversePharmacyDirectIssueToInpatientsById(bill.id)}" 
                                     ajax="false"
                                     onclick="return confirm('Are you sure you want to proceed to reverse this Pharmacy BHT bill? This action will create a reverse bill with negative quantities.');"
-                                    rendered="#{bill.billType.toString() == 'PharmacyBhtPre' and !bill.cancelled}">
+                                    rendered="#{bill.billType.toString() == 'PharmacyBhtPre' and !bill.cancelled and webUserController.hasPrivilege('ReversePharmacyBhtIssue')}">
                                 </p:commandButton>
 
                                 <p:commandButton 

@@ -65,6 +65,14 @@ public class InpatientPharmacySummaryService {
     );
 
     /**
+     * Cancelling a BHT issue return: the patient keeps the medicines, so it adds back
+     * what the return deducted (#26105).
+     */
+    private static final List<BillTypeAtomic> RETURN_CANCELLATION_TYPES = Arrays.asList(
+            BillTypeAtomic.PHARMACY_RETURN_ITEMS_AND_PAYMENTS_CANCELLATION
+    );
+
+    /**
      * One row per item with Direct Issue / Issued on Request / Returned /
      * Cancelled quantities and net values, ordered by item name.
      */
@@ -88,6 +96,8 @@ public class InpatientPharmacySummaryService {
                 dto.addReturn(qty, value);
             } else if (CANCELLATION_TYPES.contains(bta)) {
                 dto.addCancelled(qty, value);
+            } else if (RETURN_CANCELLATION_TYPES.contains(bta)) {
+                dto.addReturn(-qty, -value);
             }
         }
         return new ArrayList<>(byItem.values());
@@ -117,7 +127,8 @@ public class InpatientPharmacySummaryService {
     }
 
     private double signOf(BillTypeAtomic bta) {
-        if (DIRECT_ISSUE_TYPES.contains(bta) || REQUEST_ISSUE_TYPES.contains(bta)) {
+        if (DIRECT_ISSUE_TYPES.contains(bta) || REQUEST_ISSUE_TYPES.contains(bta)
+                || RETURN_CANCELLATION_TYPES.contains(bta)) {
             return 1.0;
         }
         return -1.0;
@@ -136,6 +147,7 @@ public class InpatientPharmacySummaryService {
         billTypes.addAll(REQUEST_ISSUE_TYPES);
         billTypes.addAll(RETURN_TYPES);
         billTypes.addAll(CANCELLATION_TYPES);
+        billTypes.addAll(RETURN_CANCELLATION_TYPES);
 
         List<Long> peIds = encounterIdsWithChildren(patientEncounter);
 
