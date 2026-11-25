@@ -52,4 +52,31 @@ public class InwardMedicineBillTypesTest {
         assertEquals(InwardMedicineBillTypes.ALL.size() - InwardMedicineBillTypes.ISSUE_CANCELLATIONS.size(),
                 InwardMedicineBillTypes.ALL_EXCLUDING_ISSUE_CANCELLATIONS.size());
     }
+
+    @Test
+    void theatreMedicineIsListedAndItsReturnIsDeducted() {
+        assertTrue(InwardMedicineBillTypes.ALL_EXCLUDING_ISSUE_CANCELLATIONS.contains(BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE));
+        assertTrue(InwardMedicineBillTypes.ALL_EXCLUDING_ISSUE_CANCELLATIONS.contains(BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_RETURN));
+        assertFalse(InwardMedicineBillTypes.ALL_EXCLUDING_ISSUE_CANCELLATIONS.contains(BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_CANCELLATION));
+        assertTrue(InwardMedicineBillTypes.isItemListReturn(BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_RETURN));
+        assertFalse(InwardMedicineBillTypes.isItemListReturn(BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE));
+    }
+
+    @Test
+    void signedValueDeductsAReturnOnceWhateverItsStoredSign() {
+        assertEquals(100.0, InwardMedicineBillTypes.itemListSignedValue(BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE, 100.0), 0.0001);
+        assertEquals(100.0, InwardMedicineBillTypes.itemListSignedValue(BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE, -100.0), 0.0001);
+        assertEquals(-40.0, InwardMedicineBillTypes.itemListSignedValue(BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_RETURN, 40.0), 0.0001);
+        assertEquals(-40.0, InwardMedicineBillTypes.itemListSignedValue(BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_RETURN, -40.0), 0.0001);
+        assertEquals(0.0, InwardMedicineBillTypes.itemListSignedValue(BillTypeAtomic.ACCEPT_RETURN_MEDICINE_INWARD, null), 0.0001);
+    }
+
+    @Test
+    void listTotalMatchesInterimBillForIssueReturnAndCancelledPair() {
+        // Issue 100, return 30, second issue 50 later cancelled (cancelled issue and its
+        // cancellation bill are both skipped by the list); interim bill: 100 - 30 + 50 - 50 = 70.
+        double total = InwardMedicineBillTypes.itemListSignedValue(BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE, 100.0)
+                + InwardMedicineBillTypes.itemListSignedValue(BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_RETURN, -30.0);
+        assertEquals(70.0, total, 0.0001);
+    }
 }

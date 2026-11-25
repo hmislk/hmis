@@ -51,7 +51,8 @@ public final class InwardMedicineBillTypes {
             BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN,
             BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_RETURN,
             BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN,
-            BillTypeAtomic.ACCEPT_RETURN_MEDICINE_INWARD
+            BillTypeAtomic.ACCEPT_RETURN_MEDICINE_INWARD,
+            BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_RETURN
     ));
 
     /**
@@ -89,6 +90,17 @@ public final class InwardMedicineBillTypes {
      */
     public static boolean isItemListReturn(BillTypeAtomic billTypeAtomic) {
         return billTypeAtomic != null && ITEM_LIST_RETURNS.contains(billTypeAtomic);
+    }
+
+    /**
+     * The amount a line adds to an inpatient pharmacy item list total: the
+     * magnitude of its net value, positive for an issue and negative for a
+     * return. Return lines are not stored with a consistent sign, so only the
+     * bill type decides.
+     */
+    public static double itemListSignedValue(BillTypeAtomic billTypeAtomic, Double netValue) {
+        double magnitude = netValue != null ? Math.abs(netValue) : 0.0;
+        return isItemListReturn(billTypeAtomic) ? -magnitude : magnitude;
     }
 
     private InwardMedicineBillTypes() {

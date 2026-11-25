@@ -11,6 +11,7 @@ import com.divudi.core.util.CommonFunctions;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.BillTypeAtomic;
+import com.divudi.core.data.inward.InwardMedicineBillTypes;
 import com.divudi.core.data.FeeType;
 import static com.divudi.core.data.FeeType.Service;
 import com.divudi.core.data.PaymentMethod;
@@ -328,17 +329,10 @@ public class InwardReportControllerBht implements Serializable {
         pharmacyIssueDtosToPatientEncounterServiceChargeTotal = 0.0;
         try {
 
-            // New mode: Include regular issues and returns, but omit cancellations
-            List<BillTypeAtomic> pharmacyTypes = new ArrayList<>();
-            pharmacyTypes.add(BillTypeAtomic.PHARMACY_DIRECT_ISSUE);
-            pharmacyTypes.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE);
-            pharmacyTypes.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN);
-            pharmacyTypes.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE);
-            pharmacyTypes.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_RETURN);
-            pharmacyTypes.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD);
-            pharmacyTypes.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN);
-            // Porter-based ward return, credited when the pharmacy accepts it (#25744)
-            pharmacyTypes.add(BillTypeAtomic.ACCEPT_RETURN_MEDICINE_INWARD);
+            // Same bill types as the interim bill's Medicine total, less the issue
+            // cancellations: fetchPharmacyIssueDtos() skips cancelled issues, so an issue
+            // and its cancellation both drop out and net to 0 (#26093).
+            List<BillTypeAtomic> pharmacyTypes = InwardMedicineBillTypes.ALL_EXCLUDING_ISSUE_CANCELLATIONS;
 
             List<InpatientPharmacyIssueDTO> allDtos = fetchPharmacyIssueDtos(pharmacyTypes);
 
@@ -354,10 +348,7 @@ public class InwardReportControllerBht implements Serializable {
                 double marginValue = dto.getMarginValue() != null ? dto.getMarginValue() : 0.0;
                 double discount = dto.getDiscount() != null ? dto.getDiscount() : 0.0;
 
-                boolean isReturn = billType == BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN
-                        || billType == BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_RETURN
-                        || billType == BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN
-                        || billType == BillTypeAtomic.ACCEPT_RETURN_MEDICINE_INWARD;
+                boolean isReturn = InwardMedicineBillTypes.isItemListReturn(billType);
 
                 if (isReturn) {
                     pharmacyIssueDtosToPatientEncounterNetTotal -= Math.abs(netValue);
@@ -467,26 +458,14 @@ public class InwardReportControllerBht implements Serializable {
         pharmacyIssueDtosToPatientEncounter = new ArrayList<>();
         pharmacyIssueDtosToPatientEncounterNetTotal = 0.0;
         try {
-            List<BillTypeAtomic> pharmacyTypes = new ArrayList<>();
-            pharmacyTypes.add(BillTypeAtomic.PHARMACY_DIRECT_ISSUE);
-            pharmacyTypes.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE);
-            pharmacyTypes.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN);
-            pharmacyTypes.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE);
-            pharmacyTypes.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_RETURN);
-            pharmacyTypes.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD);
-            pharmacyTypes.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN);
-            // Porter-based ward return, credited when the pharmacy accepts it (#25509, #26093)
-            pharmacyTypes.add(BillTypeAtomic.ACCEPT_RETURN_MEDICINE_INWARD);
+            // Same bill types as the interim bill's Medicine total, less the issue
+            // cancellations (cancelled issues are skipped, so the pair nets to 0) (#26093).
+            List<BillTypeAtomic> pharmacyTypes = InwardMedicineBillTypes.ALL_EXCLUDING_ISSUE_CANCELLATIONS;
             List<InpatientPharmacyIssueDTO> allDtos = fetchPharmacyIssueDtos(pharmacyTypes);
             pharmacyIssueDtosToPatientEncounter.addAll(allDtos);
             for (InpatientPharmacyIssueDTO dto : allDtos) {
-                BillTypeAtomic billType = dto.getBillTypeAtomic();
-                double netValue = dto.getNetValue() != null ? dto.getNetValue() : 0.0;
-                if (com.divudi.core.data.inward.InwardMedicineBillTypes.isItemListReturn(billType)) {
-                    pharmacyIssueDtosToPatientEncounterNetTotal -= Math.abs(netValue);
-                } else {
-                    pharmacyIssueDtosToPatientEncounterNetTotal += Math.abs(netValue);
-                }
+                pharmacyIssueDtosToPatientEncounterNetTotal
+                        += InwardMedicineBillTypes.itemListSignedValue(dto.getBillTypeAtomic(), dto.getNetValue());
             }
         } catch (Exception e) {
             Logger.getLogger(InwardReportControllerBht.class.getName()).log(Level.SEVERE, "Error loading pharmacy issue DTOs for combined report", e);
@@ -2252,7 +2231,7 @@ public class InwardReportControllerBht implements Serializable {
                 + "bi.discount, "
                 + "bi.marginValue) "
                 + "FROM BillItem bi LEFT JOIN bi.referanceBillItem refBi "
-                + "WHERE bi.bill.patientEncounter = :patientEncounter "
+                + "WHERE bi.bill.patientEncounter IN :patientEncounters "
                 + "AND bi.bill.billTypeAtomic IN :billTypeAtomics "
                 + "AND bi.retired = FALSE "
                 + "AND bi.bill.retired = FALSE "
@@ -2260,7 +2239,14 @@ public class InwardReportControllerBht implements Serializable {
 
         Map<String, Object> params = new HashMap<>();
         params.put("billTypeAtomics", billTypes);
-        params.put("patientEncounter", patientEncounter);
+        // The admission and its child admissions (such as a baby BHT), as the interim bill sums them.
+        List<PatientEncounter> encounters = new ArrayList<>();
+        encounters.add(patientEncounter);
+        List<PatientEncounter> children = inwardBeanController.fetchChildPatientEncounter(patientEncounter);
+        if (children != null) {
+            encounters.addAll(children);
+        }
+        params.put("patientEncounters", encounters);
 
         if (department != null) {
             jpql += "AND bi.bill.department = :department ";
