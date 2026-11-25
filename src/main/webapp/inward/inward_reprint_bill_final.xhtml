@@ -916,15 +916,16 @@
                                                 </div>
                                             </f:facet>
 
-                                            <bi:unapprovedHeading bill="#{inwardSearch.bill}" />
-
                                             <h:panelGroup id="reprintC4ClaimPatient" styleClass="noBorder customBill4Wrapper">
+                                                <bi:unapprovedHeading bill="#{inwardSearch.bill}" />
                                                 <bi:finalBillCustomBill4 bill="#{inwardSearch.showOrginalBill ? inwardSearch.bill.referenceBill : inwardSearch.bill}" duplicate="false" showProfessional="true"/>
                                             </h:panelGroup>
                                             <h:panelGroup id="reprintC4ClaimHospital" styleClass="noBorder customBill4Wrapper">
+                                                <bi:unapprovedHeading bill="#{inwardSearch.bill}" />
                                                 <bi:finalBillCustomBill4 bill="#{inwardSearch.showOrginalBill ? inwardSearch.bill.referenceBill : inwardSearch.bill}" hosCopy="true" duplicate="false" showProfessional="true"/>
                                             </h:panelGroup>
                                             <h:panelGroup id="reprintC4ClaimDuplicate" styleClass="noBorder customBill4Wrapper">
+                                                <bi:unapprovedHeading bill="#{inwardSearch.bill}" />
                                                 <bi:finalBillCustomBill4 bill="#{inwardSearch.showOrginalBill ? inwardSearch.bill.referenceBill : inwardSearch.bill}" duplicate="true" showProfessional="true"/>
                                             </h:panelGroup>
                                         </p:panel>
@@ -957,18 +958,20 @@
                                                 </div>
                                             </f:facet>
 
-                                            <bi:unapprovedHeading bill="#{inwardSearch.bill}" />
-
                                             <h:panelGroup id="reprintC4NoClaimPatient" styleClass="noBorder customBill4Wrapper">
+                                                <bi:unapprovedHeading bill="#{inwardSearch.bill}" />
                                                 <bi:finalBillCustomBill4 bill="#{inwardSearch.showOrginalBill ? inwardSearch.bill.referenceBill : inwardSearch.bill}" duplicate="false" showProfessional="false"/>
                                             </h:panelGroup>
                                             <h:panelGroup id="reprintC4NoClaimHospital" styleClass="noBorder customBill4Wrapper">
+                                                <bi:unapprovedHeading bill="#{inwardSearch.bill}" />
                                                 <bi:finalBillCustomBill4 bill="#{inwardSearch.showOrginalBill ? inwardSearch.bill.referenceBill : inwardSearch.bill}" hosCopy="true" duplicate="false" showProfessional="false"/>
                                             </h:panelGroup>
                                             <h:panelGroup id="reprintC4NoClaimDuplicate" styleClass="noBorder customBill4Wrapper">
+                                                <bi:unapprovedHeading bill="#{inwardSearch.bill}" />
                                                 <bi:finalBillCustomBill4 bill="#{inwardSearch.showOrginalBill ? inwardSearch.bill.referenceBill : inwardSearch.bill}" duplicate="true" showProfessional="false"/>
                                             </h:panelGroup>
                                             <h:panelGroup id="reprintC4ProfessionalFees" styleClass="noBorder">
+                                                <bi:unapprovedHeading bill="#{inwardSearch.bill}" />
                                                 <bi:finalProfessionalBill bill="#{inwardSearch.showOrginalBill ? inwardSearch.bill.referenceBill : inwardSearch.bill}"/>
                                             </h:panelGroup>
                                         </p:panel>

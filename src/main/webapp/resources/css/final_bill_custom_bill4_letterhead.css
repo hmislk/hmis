@@ -80,6 +80,7 @@
     text-align: center !important;
     width: 100% !important;
     margin: auto !important;
+    padding-top: 0 !important;
     font-size: 13px !important;
     font-weight: bold;
 }
