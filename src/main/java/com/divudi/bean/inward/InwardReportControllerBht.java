@@ -2175,7 +2175,10 @@ public class InwardReportControllerBht implements Serializable {
                 + "AND bi.bill.retired = FALSE "
                 // A cancelled issue drops out with its cancellation; a cancelled return stays,
                 // as the interim bill still deducts it (#26105).
-                + "AND (bi.bill.cancelled = FALSE OR bi.bill.billTypeAtomic IN :returnTypes) ";
+                + "AND (bi.bill.cancelled = FALSE OR bi.bill.billTypeAtomic IN :returnTypes) "
+                // A data-admin reversal (same issue type, negative values) drops out with
+                // the original it cancelled, so the pair nets to 0 as in the interim bill (#26107).
+                + "AND " + InwardMedicineBillTypes.JPQL_NOT_REVERSAL_BILL;
 
         Map<String, Object> params = new HashMap<>();
         params.put("billTypeAtomics", billTypes);
@@ -2302,8 +2305,10 @@ public class InwardReportControllerBht implements Serializable {
                 department, InwardMedicineBillTypes.ALL, encounterIdsWithChildren());
         if (pharmacyIssueBillItemsToPatientEncounter != null) {
             for (BillItem bi : pharmacyIssueBillItemsToPatientEncounter) {
+                // The footer adds what the rows show, so an original and its data-admin
+                // reversal (stored negative) net to 0 as in the interim bill (#26107).
                 pharmacyIssueBillItemsToPatientEncounterNetTotal
-                        += InwardMedicineBillTypes.listSignedValueWithCancellations(bi.getBill().getBillTypeAtomic(), bi.getNetValue());
+                        += InwardMedicineBillTypes.signedRowValue(bi.getBill().getBillTypeAtomic(), bi.getNetValue());
             }
         }
     }
