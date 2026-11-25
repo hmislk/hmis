@@ -3857,7 +3857,7 @@ public class InwardBeanController implements Serializable {
      * way they did in issue #23871 (a porter-flow return counted in the
      * total but missing from the list).
      */
-    private static final List<BillTypeAtomic> INWARD_MEDICINE_BILL_TYPES = Arrays.asList(
+    public static final List<BillTypeAtomic> INWARD_MEDICINE_BILL_TYPES = Arrays.asList(
         BillTypeAtomic.PHARMACY_DIRECT_ISSUE,
         BillTypeAtomic.PHARMACY_DIRECT_ISSUE_CANCELLED,
         BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE,

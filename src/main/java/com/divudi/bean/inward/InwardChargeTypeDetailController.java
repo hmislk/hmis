@@ -7,6 +7,7 @@ import com.divudi.core.data.dto.InwardChargeTypeDetailRowDto;
 import com.divudi.core.data.inward.AdmissionStatus;
 import com.divudi.core.data.inward.CalculationMethod;
 import com.divudi.core.data.inward.InwardChargeType;
+import com.divudi.core.data.inward.InwardMedicineBillTypes;
 import com.divudi.core.entity.BillFee;
 import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Institution;
@@ -280,18 +281,14 @@ public class InwardChargeTypeDetailController implements Serializable {
      * Fetches BillItems from inward pharmacy bills for PHARMACY_BILL charge types.
      */
     private List<InwardChargeTypeDetailRowDto> fetchPharmacyBillItemRows() {
-        List<BillTypeAtomic> btas = new ArrayList<>();
-        btas.add(BillTypeAtomic.PHARMACY_DIRECT_ISSUE);
-        btas.add(BillTypeAtomic.PHARMACY_DIRECT_ISSUE_CANCELLED);
-        btas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE);
-        btas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN);
-        btas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION);
-        btas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE);
-        btas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_RETURN);
-        btas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_CANCELLATION);
-        btas.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD);
-        btas.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN);
-        btas.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_CANCELLATION);
+        // Same bill types as the interim bill's Medicine total, minus the issue cancellations. This
+        // report skips cancelled issues (b.cancelled = false), so their cancellation bills must go
+        // too, or each is deducted with nothing to offset it (#26093). The porter ward return is
+        // credited on the ward's RETURN bill on this branch; its lines carry no inwardChargeType of
+        // their own, so they are matched by bill type below. A cancelled return is skipped by the
+        // cancelled filter and its cancellation bill has no lines, so the pair nets to zero.
+        List<BillTypeAtomic> btas = InwardMedicineBillTypes.withoutIssueCancellations(
+                InwardBeanController.INWARD_MEDICINE_BILL_TYPES);
 
         StringBuilder jpql = new StringBuilder(
                 "select bi from BillItem bi join bi.bill b join b.patientEncounter enc"
@@ -299,8 +296,9 @@ public class InwardChargeTypeDetailController implements Serializable {
                 + " and b.retired = false"
                 + " and b.cancelled = false"
                 + " and b.billTypeAtomic in :btas"
-                + " and bi.inwardChargeType = :ct");
+                + " and (bi.inwardChargeType = :ct or b.billTypeAtomic = :wardReturnBta)");
         Map<String, Object> params = new HashMap<>();
+        params.put("wardReturnBta", BillTypeAtomic.RETURN_MEDICINE_INWARD);
         params.put("btas", btas);
         params.put("ct", selectedChargeType);
         appendEncounterFilters(jpql, params, "enc");
