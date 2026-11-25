@@ -148,6 +148,8 @@ public class InwardReportControllerBht implements Serializable {
             btas.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD);
             btas.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN);
             btas.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_CANCELLATION);
+            // Porter-based ward return: the BHT is credited when the pharmacy accepts it (#25509, #26093)
+            btas.add(BillTypeAtomic.ACCEPT_RETURN_MEDICINE_INWARD);
             pharmacyIssueBillItemsToPatientEncounterNetTotal = 0.0;
             pharmacyIssueBillItemsToPatientEncounter = billService.fetchBillItems(null, null, null, null, department, null, btas, patientEncounter);
             if (pharmacyIssueBillItemsToPatientEncounter != null) {
@@ -158,6 +160,7 @@ public class InwardReportControllerBht implements Serializable {
                         case DIRECT_ISSUE_INWARD_MEDICINE_RETURN:
                         case ISSUE_MEDICINE_ON_REQUEST_INWARD_CANCELLATION:
                         case ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN:
+                        case ACCEPT_RETURN_MEDICINE_INWARD:
                             pharmacyIssueBillItemsToPatientEncounterNetTotal -= Math.abs(bi.getNetValue());
                             break;
                         case PHARMACY_DIRECT_ISSUE:
@@ -222,6 +225,8 @@ public class InwardReportControllerBht implements Serializable {
             pharmacyTypes.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN);
             pharmacyTypes.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD);
             pharmacyTypes.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN);
+            // Porter-based ward return, credited when the pharmacy accepts it (#25509, #26093)
+            pharmacyTypes.add(BillTypeAtomic.ACCEPT_RETURN_MEDICINE_INWARD);
 
             List<InpatientPharmacyIssueDTO> allDtos = fetchPharmacyIssueDtos(pharmacyTypes);
 
@@ -235,7 +240,8 @@ public class InwardReportControllerBht implements Serializable {
                 double netValue = dto.getNetValue() != null ? dto.getNetValue() : 0.0;
 
                 if (billType == BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN
-                        || billType == BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN) {
+                        || billType == BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN
+                        || billType == BillTypeAtomic.ACCEPT_RETURN_MEDICINE_INWARD) {
                     pharmacyIssueDtosToPatientEncounterNetTotal -= Math.abs(netValue);
                 } else {
                     pharmacyIssueDtosToPatientEncounterNetTotal += Math.abs(netValue);
@@ -301,13 +307,16 @@ public class InwardReportControllerBht implements Serializable {
             pharmacyTypes.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN);
             pharmacyTypes.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD);
             pharmacyTypes.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN);
+            // Porter-based ward return, credited when the pharmacy accepts it (#25509, #26093)
+            pharmacyTypes.add(BillTypeAtomic.ACCEPT_RETURN_MEDICINE_INWARD);
             List<InpatientPharmacyIssueDTO> allDtos = fetchPharmacyIssueDtos(pharmacyTypes);
             pharmacyIssueDtosToPatientEncounter.addAll(allDtos);
             for (InpatientPharmacyIssueDTO dto : allDtos) {
                 BillTypeAtomic billType = dto.getBillTypeAtomic();
                 double netValue = dto.getNetValue() != null ? dto.getNetValue() : 0.0;
                 if (billType == BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN
-                        || billType == BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN) {
+                        || billType == BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN
+                        || billType == BillTypeAtomic.ACCEPT_RETURN_MEDICINE_INWARD) {
                     pharmacyIssueDtosToPatientEncounterNetTotal -= Math.abs(netValue);
                 } else {
                     pharmacyIssueDtosToPatientEncounterNetTotal += Math.abs(netValue);
@@ -508,6 +517,8 @@ public class InwardReportControllerBht implements Serializable {
         btas.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD);
         btas.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN);
         btas.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_CANCELLATION);
+        // Porter-based ward return: the BHT is credited when the pharmacy accepts it (#25509, #26093)
+        btas.add(BillTypeAtomic.ACCEPT_RETURN_MEDICINE_INWARD);
         pharmacyIssueBillItemsToPatientEncounterNetTotal = 0.0;
         pharmacyIssueBillItemsToPatientEncounter = billService.fetchBillItems(null, null, null, null, department, null, btas, patientEncounter);
         if (pharmacyIssueBillItemsToPatientEncounter != null) {
@@ -518,6 +529,7 @@ public class InwardReportControllerBht implements Serializable {
                     case DIRECT_ISSUE_INWARD_MEDICINE_RETURN:
                     case ISSUE_MEDICINE_ON_REQUEST_INWARD_CANCELLATION:
                     case ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN:
+                    case ACCEPT_RETURN_MEDICINE_INWARD:
                         pharmacyIssueBillItemsToPatientEncounterNetTotal -= Math.abs(bi.getNetValue());
                         break;
                     case PHARMACY_DIRECT_ISSUE:
