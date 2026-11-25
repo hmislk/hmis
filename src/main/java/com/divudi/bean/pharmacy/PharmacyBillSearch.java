@@ -3679,9 +3679,10 @@ public class PharmacyBillSearch implements Serializable {
         // cancel of this bill waits, then finds it cancelled.
         // The reason typed on the page sits on the page's bill; the once-only claim
         // swaps that bill for the database copy, so read it first.
+        final Long typedBillId = getBill().getId();
         final String typedComments = getBill().getComments();
         cancelIssueToBhtOnce(() -> reversePharmacyDirectIssueToBhtUnderLock(typedComments));
-        if (!printPreview && getBill() != null) {
+        if (!printPreview && getBill() != null && typedBillId != null && typedBillId.equals(getBill().getId())) {
             // The reversal did not happen and the page bill may now be the database
             // copy: put the typed reason back so a resubmit does not use the stored comment.
             getBill().setComments(typedComments);
