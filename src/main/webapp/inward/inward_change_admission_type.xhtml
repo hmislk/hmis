@@ -56,7 +56,7 @@
                                                  required="true"
                                                  requiredMessage="Select the new admission type."
                                                  styleClass="w-100">
-                                    <f:selectItem itemLabel="Select Admission Type" noSelectionOption="true"/>
+                                    <f:selectItem itemLabel="Select Admission Type" itemValue="#{null}" noSelectionOption="true"/>
                                     <f:selectItems value="#{admissionTypeChangeController.choices}"
                                                    var="t" itemValue="#{t}" itemLabel="#{t.name}"/>
                                 </p:selectOneMenu>
