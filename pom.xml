@@ -440,7 +440,7 @@
         <dependency>
             <groupId>com.itextpdf</groupId>
             <artifactId>io</artifactId>
-            <version>8.0.5</version>
+            <version>8.0.6</version>
             <type>jar</type>
         </dependency>
         <dependency>
