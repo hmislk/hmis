@@ -1,6 +1,7 @@
 package com.divudi.core.data.inward;
 
 import com.divudi.core.data.BillTypeAtomic;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.Test;
@@ -37,5 +38,18 @@ public class InwardMedicineBillTypesTest {
     @Test
     void everyItemListReturnIsInTheInterimMedicineList() {
         assertTrue(InwardMedicineBillTypes.ALL.containsAll(InwardMedicineBillTypes.ITEM_LIST_RETURNS));
+    }
+
+    @Test
+    void liveOnlyListDropsEveryIssueCancellationAndKeepsReturns() {
+        for (BillTypeAtomic c : InwardMedicineBillTypes.ISSUE_CANCELLATIONS) {
+            assertTrue(InwardMedicineBillTypes.ALL.contains(c));
+            assertFalse(InwardMedicineBillTypes.ALL_EXCLUDING_ISSUE_CANCELLATIONS.contains(c));
+        }
+        assertTrue(InwardMedicineBillTypes.ALL_EXCLUDING_ISSUE_CANCELLATIONS.contains(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD));
+        assertTrue(InwardMedicineBillTypes.ALL_EXCLUDING_ISSUE_CANCELLATIONS.contains(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN));
+        assertTrue(InwardMedicineBillTypes.ALL_EXCLUDING_ISSUE_CANCELLATIONS.contains(BillTypeAtomic.ACCEPT_RETURN_MEDICINE_INWARD));
+        assertEquals(InwardMedicineBillTypes.ALL.size() - InwardMedicineBillTypes.ISSUE_CANCELLATIONS.size(),
+                InwardMedicineBillTypes.ALL_EXCLUDING_ISSUE_CANCELLATIONS.size());
     }
 }

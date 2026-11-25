@@ -55,6 +55,35 @@ public final class InwardMedicineBillTypes {
     ));
 
     /**
+     * The bill types that cancel a whole issue bill. The interim bill sums every
+     * bill of {@link #ALL} without looking at the cancelled flag, so an issue and
+     * its cancellation net to zero. A report that skips cancelled issue bills
+     * (cancelled = true) must skip these as well, or the cancellation is deducted
+     * with nothing to offset it (#26093). Returns and the ward accept bill are not
+     * cancellations and stay counted.
+     */
+    public static final List<BillTypeAtomic> ISSUE_CANCELLATIONS = Collections.unmodifiableList(Arrays.asList(
+            BillTypeAtomic.PHARMACY_DIRECT_ISSUE_CANCELLED,
+            BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION,
+            BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_CANCELLATION,
+            BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_CANCELLATION,
+            BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_CANCELLATION
+    ));
+
+    /**
+     * Medicine bill types for a report that lists only live (not cancelled) issue
+     * bills: {@link #ALL} without the issue cancellations, so a cancelled issue and
+     * its cancellation both drop out and the report agrees with the interim bill.
+     */
+    public static final List<BillTypeAtomic> ALL_EXCLUDING_ISSUE_CANCELLATIONS;
+
+    static {
+        List<BillTypeAtomic> l = new java.util.ArrayList<>(ALL);
+        l.removeAll(ISSUE_CANCELLATIONS);
+        ALL_EXCLUDING_ISSUE_CANCELLATIONS = Collections.unmodifiableList(l);
+    }
+
+    /**
      * True when a line of this bill type is deducted, not added, in an
      * inpatient pharmacy item list total.
      */
