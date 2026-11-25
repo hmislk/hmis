@@ -23,6 +23,7 @@ import com.divudi.core.entity.WebUserRole;
 import com.divudi.core.entity.WebUserRolePrivilege;
 import com.divudi.core.facade.WebUserRolePrivilegeFacade;
 import com.divudi.service.AuditEventService;
+import com.divudi.service.PrivilegeSaveService;
 import com.divudi.core.entity.AuditEvent;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -68,6 +69,8 @@ public class UserPrivilageController implements Serializable {
     WebUserPrivilegeFacade webUserPrivilegeFacade;
     @EJB
     AuditEventService auditEventService;
+    @EJB
+    PrivilegeSaveService privilegeSaveService;
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Class Variables">
     private static final long serialVersionUID = 1L;
@@ -85,6 +88,12 @@ public class UserPrivilageController implements Serializable {
     private List<PrivilegeHolder> currentUserPrivilegeHolders;
     private boolean privilegesLoaded;
     private String searchText;
+    // Privileges shown as ticked when the tree was last listed, and for which
+    // user and department (or role) - the save baseline (#26090).
+    private Set<Privileges> listedUserBaseline;
+    private String listedUserKey;
+    private Set<Privileges> listedRoleBaseline;
+    private Long listedRoleId;
     @Inject
     SessionController sessionController;
 
@@ -1661,9 +1670,15 @@ public class UserPrivilageController implements Serializable {
         Set<Privileges> offered = PrivilegeSaveDiff
                 .readTree(getRootTreeNode(), null, UserPrivilageController::privilegeOfNodeData)
                 .getOffered();
-        applyUserPrivilegeChanges(u, dept, fetchLiveUserPrivileges(u, dept),
+        // No baseline here: applying a role replaces the user's tree privileges
+        // with the role's, as before.
+        PrivilegeSaveDiff.Result<WebUserPrivilege> diff = applyUserPrivilegeChanges(u, dept, fetchLiveUserPrivileges(u, dept),
                 PrivilegeSaveDiff.forPrivileges(offered, selectedPrivileges));
         fillUserPrivileges();
+        if (diff == null) {
+            JsfUtil.addErrorMessage(SAVE_FAILED_MESSAGE);
+            return;
+        }
         JsfUtil.addSuccessMessage("Updated");
     }
 
@@ -1683,8 +1698,12 @@ public class UserPrivilageController implements Serializable {
             JsfUtil.addErrorMessage("Please select a department");
             return;
         }
+        if (listedUserBaseline == null || !userKey(currentWebUser, department).equals(listedUserKey)) {
+            JsfUtil.addErrorMessage(NOT_LISTED_MESSAGE);
+            return;
+        }
         PrivilegeSaveDiff.TreeState state = PrivilegeSaveDiff.readTree(
-                getRootTreeNode(), selectedNodeList(), UserPrivilageController::privilegeOfNodeData);
+                getRootTreeNode(), selectedNodeList(), UserPrivilageController::privilegeOfNodeData, listedUserBaseline);
         List<WebUserPrivilege> current = fetchLiveUserPrivileges(currentWebUser, department);
         String refusal = PrivilegeSaveDiff.refusalReason(state);
         if (refusal != null) {
@@ -1693,6 +1712,10 @@ public class UserPrivilageController implements Serializable {
         }
         PrivilegeSaveDiff.Result<WebUserPrivilege> diff = applyUserPrivilegeChanges(currentWebUser, department, current, state);
         fillUserPrivileges();
+        if (diff == null) {
+            JsfUtil.addErrorMessage(SAVE_FAILED_MESSAGE);
+            return;
+        }
         JsfUtil.addSuccessMessage("Updated. Added " + diff.getToAdd().size()
                 + ", removed " + diff.getToRetire().size());
     }
@@ -1720,13 +1743,21 @@ public class UserPrivilageController implements Serializable {
             wup.setCreatedAt(now);
             newRows.add(wup);
         }
-        if (!diff.getToRetire().isEmpty()) {
-            getFacade().batchEdit(diff.getToRetire());
-        }
-        if (!newRows.isEmpty()) {
-            getFacade().batchCreate(newRows);
+        try {
+            privilegeSaveService.saveUserPrivilegeChanges(newRows, diff.getToRetire());
+        } catch (RuntimeException e) {
+            java.util.logging.Logger.getLogger(UserPrivilageController.class.getName())
+                    .log(java.util.logging.Level.SEVERE, "User privilege save rolled back", e);
+            return null;
         }
         return diff;
+    }
+
+    private static final String NOT_LISTED_MESSAGE = "Click List Privileges first, then make the changes and save. Nothing was saved.";
+    private static final String SAVE_FAILED_MESSAGE = "The privileges could not be saved. Nothing was changed. Please try again.";
+
+    private static String userKey(WebUser wu, Department dept) {
+        return (wu == null ? "null" : String.valueOf(wu.getId())) + "|" + (dept == null ? "null" : String.valueOf(dept.getId()));
     }
 
     private List<WebUserPrivilege> fetchLiveUserPrivileges(WebUser wu, Department dept) {
@@ -1751,6 +1782,16 @@ public class UserPrivilageController implements Serializable {
             list.addAll(Arrays.asList(selectedNodes));
         }
         return list;
+    }
+
+    private static <R> Set<Privileges> baselineOf(List<R> rows, java.util.function.Function<R, Privileges> privilegeOf) {
+        List<Privileges> ps = new ArrayList<>();
+        if (rows != null) {
+            for (R r : rows) {
+                ps.add(privilegeOf.apply(r));
+            }
+        }
+        return PrivilegeSaveDiff.canonicalSet(ps);
     }
 
     static Privileges privilegeOfNodeData(Object data) {
@@ -1795,8 +1836,12 @@ public class UserPrivilageController implements Serializable {
             JsfUtil.addErrorMessage("Please select a User Role");
             return;
         }
+        if (listedRoleBaseline == null || !Objects.equals(listedRoleId, webUserRole.getId())) {
+            JsfUtil.addErrorMessage(NOT_LISTED_MESSAGE);
+            return;
+        }
         PrivilegeSaveDiff.TreeState state = PrivilegeSaveDiff.readTree(
-                getRootTreeNode(), selectedNodeList(), UserPrivilageController::privilegeOfNodeData);
+                getRootTreeNode(), selectedNodeList(), UserPrivilageController::privilegeOfNodeData, listedRoleBaseline);
         List<WebUserRolePrivilege> current = fetchLiveRolePrivileges(webUserRole);
         String refusal = PrivilegeSaveDiff.refusalReason(state);
         if (refusal != null) {
@@ -1820,11 +1865,14 @@ public class UserPrivilageController implements Serializable {
             wurp.setCreatedAt(now);
             newRows.add(wurp);
         }
-        if (!diff.getToRetire().isEmpty()) {
-            getRoleFacede().batchEdit(diff.getToRetire());
-        }
-        if (!newRows.isEmpty()) {
-            getRoleFacede().batchCreate(newRows);
+        try {
+            privilegeSaveService.saveRolePrivilegeChanges(newRows, diff.getToRetire());
+        } catch (RuntimeException e) {
+            java.util.logging.Logger.getLogger(UserPrivilageController.class.getName())
+                    .log(java.util.logging.Level.SEVERE, "Role privilege save rolled back", e);
+            fillUserRolePrivileges();
+            JsfUtil.addErrorMessage(SAVE_FAILED_MESSAGE);
+            return;
         }
         fillUserRolePrivileges();
         JsfUtil.addSuccessMessage("Updated. Added " + diff.getToAdd().size()
@@ -1955,6 +2003,8 @@ public class UserPrivilageController implements Serializable {
         m.put("dep", department);
         currentWebUserPrivileges = getEjbFacade().findByJpql(j, m);
         currentUserPrivilegeHolders = createPrivilegeHolders(currentWebUserPrivileges);
+        listedUserBaseline = baselineOf(currentWebUserPrivileges, WebUserPrivilege::getPrivilege);
+        listedUserKey = userKey(currentWebUser, department);
         unselectTreeNodes(rootTreeNode);
         checkNodes(rootTreeNode, currentUserPrivilegeHolders);
         privilegesLoaded = true;
@@ -2104,6 +2154,8 @@ public class UserPrivilageController implements Serializable {
         m.put("ret", false);
         currentWebUserRolePrivileges = getRoleFacede().findByJpql(j, m);
         currentUserPrivilegeHolders = createRolePrivilegeHolders(currentWebUserRolePrivileges);
+        listedRoleBaseline = baselineOf(currentWebUserRolePrivileges, WebUserRolePrivilege::getPrivilege);
+        listedRoleId = webUserRole.getId();
         unselectTreeNodes(rootTreeNode);
         checkNodes(rootTreeNode, currentUserPrivilegeHolders);
         privilegesLoaded = true;

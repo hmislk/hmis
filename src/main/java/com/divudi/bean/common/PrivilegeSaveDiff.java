@@ -25,7 +25,11 @@ import org.primefaces.model.TreeNode;
  * checkbox tree drops such a node from the selection when a child is
  * ticked;</li>
  * <li>only selected privileges that have no stored row are added; existing
- * rows are kept, so their ids stay stable.</li>
+ * rows are kept, so their ids stay stable;</li>
+ * <li>with a baseline (the privileges ticked when the tree was listed), a row
+ * is retired only if its privilege was ticked then, and a privilege is added
+ * only if it was not ticked then. Changes another admin made in the
+ * meantime are left alone.</li>
  * </ul>
  * Tree nodes are matched by privilege value, never by node object, so a
  * rebuilt tree gives the same result.
@@ -46,6 +50,7 @@ public final class PrivilegeSaveDiff {
         private final Set<Privileges> selected = new LinkedHashSet<>();
         private final Set<Privileges> undetermined = new LinkedHashSet<>();
         private boolean foreignSelection;
+        private Set<Privileges> baseline;
 
         public Set<Privileges> getOffered() {
             return Collections.unmodifiableSet(offered);
@@ -64,6 +69,14 @@ public final class PrivilegeSaveDiff {
          */
         public boolean isForeignSelection() {
             return foreignSelection;
+        }
+
+        /**
+         * Privileges shown as ticked when the tree was listed, or null when
+         * the save has no baseline (role application replaces).
+         */
+        public Set<Privileges> getBaseline() {
+            return baseline == null ? null : Collections.unmodifiableSet(baseline);
         }
     }
 
@@ -97,7 +110,28 @@ public final class PrivilegeSaveDiff {
      * @return the offered, ticked and part-ticked privileges
      */
     public static TreeState readTree(TreeNode root, Collection<TreeNode> selectedNodes, Function<Object, Privileges> privilegeOf) {
+        return readTree(root, selectedNodes, privilegeOf, null);
+    }
+
+    /**
+     * Reads the tree against a baseline: the privileges shown as ticked when
+     * the tree was listed. With a baseline, a save retires only privileges
+     * that were ticked then and are unticked now, and adds only privileges
+     * ticked now that were not ticked then. A grant or removal made by
+     * another admin after the list was loaded is therefore left alone.
+     *
+     * @param root the current tree root
+     * @param selectedNodes nodes the tree submitted as selected (may be null)
+     * @param privilegeOf reads the privilege from a node's data
+     * @param baseline privileges ticked when listed, or null for none
+     * @return the tree state
+     */
+    public static TreeState readTree(TreeNode root, Collection<TreeNode> selectedNodes, Function<Object, Privileges> privilegeOf,
+            Collection<Privileges> baseline) {
         TreeState state = new TreeState();
+        if (baseline != null) {
+            state.baseline = canonicalSet(baseline);
+        }
         Set<TreeNode> treeNodes = Collections.newSetFromMap(new IdentityHashMap<>());
         if (root != null) {
             collectNodes(root, treeNodes);
@@ -121,6 +155,25 @@ public final class PrivilegeSaveDiff {
         }
         state.undetermined.removeAll(state.selected);
         return state;
+    }
+
+    /**
+     * Canonical form of a set of privileges, nulls dropped.
+     *
+     * @param privileges privileges, may be null
+     * @return a new set
+     */
+    public static Set<Privileges> canonicalSet(Collection<Privileges> privileges) {
+        Set<Privileges> out = new LinkedHashSet<>();
+        if (privileges != null) {
+            for (Privileges p : privileges) {
+                Privileges c = UserPrivilageController.canonicalPrivilege(p);
+                if (c != null) {
+                    out.add(c);
+                }
+            }
+        }
+        return out;
     }
 
     private static void collectNodes(TreeNode node, Set<TreeNode> out) {
@@ -228,13 +281,15 @@ public final class PrivilegeSaveDiff {
                 held.add(p);
                 if (state.offered.contains(p)
                         && !state.selected.contains(p)
-                        && !state.undetermined.contains(p)) {
+                        && !state.undetermined.contains(p)
+                        && (state.baseline == null || state.baseline.contains(p))) {
                     result.toRetire.add(row);
                 }
             }
         }
         for (Privileges p : state.selected) {
-            if (!held.contains(p)) {
+            if (!held.contains(p)
+                    && (state.baseline == null || !state.baseline.contains(p))) {
                 result.toAdd.add(p);
             }
         }

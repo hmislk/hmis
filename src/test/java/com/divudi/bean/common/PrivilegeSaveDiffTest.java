@@ -275,6 +275,72 @@ public class PrivilegeSaveDiffTest {
         assertNull(PrivilegeSaveDiff.refusalReason(state));
     }
 
+    @Test
+    public void anotherAdminsGrantIsKept() {
+        // Listed with InwardRoom ticked; meanwhile another admin granted LabBillSearch.
+        TreeNode root = new DefaultTreeNode("root", null);
+        TreeNode room = new DefaultTreeNode(Privileges.InwardRoom, root);
+        new DefaultTreeNode(Privileges.LabBillSearch, root);
+        TreeNode occupancy = new DefaultTreeNode(Privileges.InwardRoomOccupancyAnyInstitute, root);
+
+        Row roomRow = new Row(Privileges.InwardRoom);
+        Row otherAdminGrant = new Row(Privileges.LabBillSearch);
+        // This admin keeps InwardRoom and ticks Room Occupancy - Any Institute.
+        PrivilegeSaveDiff.TreeState state = PrivilegeSaveDiff.readTree(root, Arrays.asList(room, occupancy), NODE_PRIVILEGE,
+                Collections.singletonList(Privileges.InwardRoom));
+        PrivilegeSaveDiff.Result<Row> r = diff(Arrays.asList(roomRow, otherAdminGrant), state);
+
+        assertTrue(r.getToRetire().isEmpty());
+        assertEquals(Collections.singletonList(Privileges.InwardRoomOccupancyAnyInstitute), r.getToAdd());
+    }
+
+    @Test
+    public void anotherAdminsRemovalIsNotReAddedUnlessTicked() {
+        // Listed with InwardRoom and LabBillSearch ticked; another admin then
+        // removed LabBillSearch. This admin leaves both ticked.
+        TreeNode root = new DefaultTreeNode("root", null);
+        TreeNode room = new DefaultTreeNode(Privileges.InwardRoom, root);
+        TreeNode lab = new DefaultTreeNode(Privileges.LabBillSearch, root);
+        List<Privileges> baseline = Arrays.asList(Privileges.InwardRoom, Privileges.LabBillSearch);
+        List<Row> live = Collections.singletonList(new Row(Privileges.InwardRoom));
+
+        PrivilegeSaveDiff.Result<Row> kept = diff(live,
+                PrivilegeSaveDiff.readTree(root, Arrays.asList(room, lab), NODE_PRIVILEGE, baseline));
+        assertTrue(kept.getToRetire().isEmpty());
+        assertTrue(kept.getToAdd().isEmpty());
+
+        // Listed without LabBillSearch and this admin ticks it: it is added.
+        PrivilegeSaveDiff.Result<Row> ticked = diff(live,
+                PrivilegeSaveDiff.readTree(root, Arrays.asList(room, lab), NODE_PRIVILEGE,
+                        Collections.singletonList(Privileges.InwardRoom)));
+        assertEquals(Collections.singletonList(Privileges.LabBillSearch), ticked.getToAdd());
+    }
+
+    @Test
+    public void baselineUntickRetiresOnlyWhatWasTicked() {
+        TreeNode root = new DefaultTreeNode("root", null);
+        new DefaultTreeNode(Privileges.InwardRoom, root);
+        new DefaultTreeNode(Privileges.LabBillSearch, root);
+        Row room = new Row(Privileges.InwardRoom);
+        Row lateGrant = new Row(Privileges.LabBillSearch);
+
+        // Listed with InwardRoom only; admin unticks it.
+        PrivilegeSaveDiff.Result<Row> r = diff(Arrays.asList(room, lateGrant),
+                PrivilegeSaveDiff.readTree(root, null, NODE_PRIVILEGE, Collections.singletonList(Privileges.InwardRoom)));
+        assertEquals(Collections.singletonList(room), r.getToRetire());
+        assertTrue(r.getToAdd().isEmpty());
+    }
+
+    @Test
+    public void baselineMatchesLegacySpelling() {
+        TreeNode root = new DefaultTreeNode("root", null);
+        new DefaultTreeNode(Privileges.PharmacySaleWithoutStock, root);
+        Row legacy = new Row(Privileges.PharmacySaleWithOutStock);
+        PrivilegeSaveDiff.Result<Row> r = diff(Collections.singletonList(legacy),
+                PrivilegeSaveDiff.readTree(root, null, NODE_PRIVILEGE, Collections.singletonList(Privileges.PharmacySaleWithOutStock)));
+        assertEquals(Collections.singletonList(legacy), r.getToRetire());
+    }
+
     private static void collect(TreeNode node, Privileges p, List<TreeNode> out) {
         if (UserPrivilageController.privilegeOfNodeData(node.getData()) == p) {
             out.add(node);
