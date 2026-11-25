@@ -248,6 +248,17 @@
                                                             class="w-100">
                                                         </p:commandButton>
 
+                                                        <p:commandButton
+                                                            id="btnIssueMedicinesNurse"
+                                                            value="Issue Medicines"
+                                                            title="Issue medicines requested for BHT #{admissionController.current.bhtNo}"
+                                                            action="/ward/ward_pharmacy_bht_issue_request_list_for_issue?faces-redirect=true"
+                                                            actionListener="#{pharmacySaleBhtController.resetAll()}"
+                                                            rendered="#{webUserController.hasPrivilege('PharmacyBHTIssueAccept') or webUserController.hasPrivilege('PharmacyBhtIssueRequest')}"
+                                                            icon="fas fa-clipboard-list"
+                                                            class="w-100"
+                                                            ajax="false"/>
+
                                                         <p:commandButton 
                                                             value="Direct Issue to BHTs" 
                                                             action="/inward/pharmacy_bill_issue_bht?faces-redirect=true"  
