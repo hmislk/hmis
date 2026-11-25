@@ -36,6 +36,58 @@ public class BhtIssueReversalService {
     @EJB
     private BillService billService;
 
+    public static final String REVERSAL_OF_REVERSAL_MESSAGE = "This bill is a reversal and cannot be reversed";
+
+    /**
+     * True when the bill is itself the reversal of another bill: its reference
+     * bill is the original, and the original points back to it as cancelled by.
+     */
+    public static boolean isReversal(Bill bill) {
+        if (bill == null || bill.getReferenceBill() == null) {
+            return false;
+        }
+        Bill cancelledBy = bill.getReferenceBill().getCancelledBill();
+        if (cancelledBy == null) {
+            return false;
+        }
+        if (cancelledBy == bill) {
+            return true;
+        }
+        return cancelledBy.getId() != null && cancelledBy.getId().equals(bill.getId());
+    }
+
+    /**
+     * Sets every money field of the reversal bill to the negated original, so
+     * the interim bill and the lists net the reversal against the issue.
+     */
+    public static void applyNegatedBillValues(Bill reversal, Bill original) {
+        double discountPercent = original.getDiscountPercent();
+        reversal.copyValue(original);
+        reversal.invertValueOfThisBill();
+        reversal.setDiscountPercent(discountPercent);
+        // invertValueOfThisBill() negates staffFee twice, so set it here.
+        reversal.setStaffFee(0 - original.getStaffFee());
+        reversal.setMargin(0 - original.getMargin());
+        reversal.setServiceCharge(0 - original.getServiceCharge());
+        reversal.setSaleValue(0 - original.getSaleValue());
+        reversal.setFreeValue(0 - original.getFreeValue());
+        reversal.setPerformInstitutionFee(0 - original.getPerformInstitutionFee());
+        reversal.setBillerFee(0 - original.getBillerFee());
+        reversal.setPaidAmount(0 - original.getPaidAmount());
+        reversal.setBalance(0 - original.getBalance());
+        reversal.setCashPaid(0 - original.getCashPaid());
+        reversal.setCashBalance(0 - original.getCashBalance());
+        reversal.setRefundAmount(0 - original.getRefundAmount());
+        reversal.setExpenseTotal(0 - original.getExpenseTotal());
+        reversal.setClaimableTotal(0 - original.getClaimableTotal());
+        reversal.setTotalHospitalFee(0 - original.getTotalHospitalFee());
+        reversal.setTotalCenterFee(0 - original.getTotalCenterFee());
+        reversal.setTotalStaffFee(0 - original.getTotalStaffFee());
+        if (original.hasBillFinanceDetails()) {
+            reversal.getBillFinanceDetails().invertValue(original.getBillFinanceDetails());
+        }
+    }
+
     public Bill reverse(Long originalBillId, WebUser user, Department department, String deptId) {
         if (originalBillId == null) {
             throw new BhtIssueReversalException("No Bill Found");
@@ -45,6 +97,9 @@ public class BhtIssueReversalService {
         Bill original = billFacade.findWithoutCache(originalBillId);
         if (original == null) {
             throw new BhtIssueReversalException("No Bill Found");
+        }
+        if (isReversal(original)) {
+            throw new BhtIssueReversalException(REVERSAL_OF_REVERSAL_MESSAGE);
         }
         if (original.isCancelled() || original.getCancelledBill() != null) {
             throw new BhtIssueReversalException("Bill is already cancelled. Cannot reverse cancelled bills");
@@ -62,6 +117,7 @@ public class BhtIssueReversalService {
         reversalBill.setBillTypeAtomic(original.getBillTypeAtomic());
         reversalBill.setDeptId(deptId);
         reversalBill.setBillItems(new ArrayList<>());
+        applyNegatedBillValues(reversalBill, original);
 
         ArrayList<PharmaceuticalBillItem> reversalPbis = new ArrayList<>();
         for (BillItem originalItem : original.getBillItems()) {
@@ -103,8 +159,6 @@ public class BhtIssueReversalService {
                 }
             }
         }
-
-        billService.createBillFinancialDetailsForPharmacyBill(reversalBill);
 
         original.setCancelled(true);
         original.setCancelledBill(reversalBill);

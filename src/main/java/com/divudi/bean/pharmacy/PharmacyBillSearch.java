@@ -263,6 +263,10 @@ public class PharmacyBillSearch implements Serializable {
             JsfUtil.addErrorMessage("No Bill Selected");
             return null;
         }
+        if (BhtIssueReversalService.isReversal(bill)) {
+            JsfUtil.addErrorMessage(BhtIssueReversalService.REVERSAL_OF_REVERSAL_MESSAGE);
+            return null;
+        }
         return "/dataAdmin/pharmacy_bill_reverse_bht?faces-redirect=true";
     }
 
@@ -280,6 +284,11 @@ public class PharmacyBillSearch implements Serializable {
 
         if (selectedBill.getBillType() != BillType.PharmacyBhtPre) {
             JsfUtil.addErrorMessage("Invalid Bill Type for Reversal");
+            return null;
+        }
+
+        if (BhtIssueReversalService.isReversal(selectedBill)) {
+            JsfUtil.addErrorMessage(BhtIssueReversalService.REVERSAL_OF_REVERSAL_MESSAGE);
             return null;
         }
 
@@ -3648,6 +3657,10 @@ public class PharmacyBillSearch implements Serializable {
         }
         if (getBill().getBillType() != BillType.PharmacyBhtPre) {
             JsfUtil.addErrorMessage("Invalid Bill Type for Reversal");
+            return;
+        }
+        if (BhtIssueReversalService.isReversal(getBill())) {
+            JsfUtil.addErrorMessage(BhtIssueReversalService.REVERSAL_OF_REVERSAL_MESSAGE);
             return;
         }
         if (getBill().getPatientEncounter().isPaymentFinalized()) {
