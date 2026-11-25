@@ -23,8 +23,18 @@
                         </div>
                         <div class="d-flex gap-2">
                             <p:commandButton
+                                id="btnSave"
+                                value="Change Admission Type"
+                                title="Save the new admission type"
+                                icon="fa fa-check"
+                                ajax="false"
+                                rendered="#{admissionTypeChangeController.admission ne null}"
+                                action="#{admissionTypeChangeController.save}"
+                                class="ui-button-success"/>
+                            <p:commandButton
                                 id="btnCancel"
                                 value="Inpatient Dashboard"
+                                title="Back to the Inpatient Dashboard"
                                 icon="fa fa-id-card"
                                 ajax="false"
                                 immediate="true"
@@ -83,15 +93,6 @@
                                 </div>
                             </h:panelGroup>
 
-                            <div class="d-flex gap-2 mt-2">
-                                <p:commandButton
-                                    id="btnSave"
-                                    value="Change Admission Type"
-                                    icon="fa fa-check"
-                                    ajax="false"
-                                    action="#{admissionTypeChangeController.save}"
-                                    class="ui-button-success"/>
-                            </div>
                         </div>
                     </div>
                 </h:panelGroup>
