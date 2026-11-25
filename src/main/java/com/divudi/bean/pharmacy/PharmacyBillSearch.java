@@ -259,6 +259,10 @@ public class PharmacyBillSearch implements Serializable {
     }
 
     public String navigateToReversePharmacyDirectIssueToInpatients() {
+        if (!webUserController.hasPrivilege(Privileges.AdminItems.toString())) {
+            JsfUtil.addErrorMessage("Not authorised");
+            return null;
+        }
         if (bill == null) {
             JsfUtil.addErrorMessage("No Bill Selected");
             return null;
@@ -271,6 +275,10 @@ public class PharmacyBillSearch implements Serializable {
     }
 
     public String navigateToReversePharmacyDirectIssueToInpatientsById(Long billId) {
+        if (!webUserController.hasPrivilege(Privileges.AdminItems.toString())) {
+            JsfUtil.addErrorMessage("Not authorised");
+            return null;
+        }
         if (billId == null) {
             JsfUtil.addErrorMessage("No Bill ID Provided");
             return null;
@@ -3651,6 +3659,10 @@ public class PharmacyBillSearch implements Serializable {
     }
 
     public void reversePharmacyDirectIssueToBht() {
+        if (!webUserController.hasPrivilege(Privileges.AdminItems.toString())) {
+            JsfUtil.addErrorMessage("Not authorised");
+            return;
+        }
         if (getBill() == null) {
             JsfUtil.addErrorMessage("No Bill Found");
             return;
