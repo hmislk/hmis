@@ -78,6 +78,6 @@ public final class InwardPharmacyItemListNetting {
         if (bi == null || bi.getBill() == null) {
             return 0.0;
         }
-        return InwardMedicineBillTypes.itemListSignedValue(bi.getBill().getBillTypeAtomic(), bi.getNetValue());
+        return InwardMedicineBillTypes.signedRowValue(bi.getBill().getBillTypeAtomic(), bi.getNetValue());
     }
 }
