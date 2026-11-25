@@ -136,6 +136,19 @@ public final class InwardMedicineBillTypes {
         return deducted ? -magnitude : magnitude;
     }
 
+    /**
+     * The value a displayed row adds to a list total. A return, an accept bill
+     * or a cancellation is deducted (negative magnitude). An issue row keeps the
+     * sign it holds, because a netted issue row (issue less the returns that
+     * refer to it) can be below zero and must not be shown as positive (#26105).
+     */
+    public static double signedRowValue(BillTypeAtomic billTypeAtomic, Double netValue) {
+        double value = netValue != null ? netValue : 0.0;
+        boolean deducted = isItemListReturn(billTypeAtomic)
+                || (billTypeAtomic != null && ISSUE_CANCELLATIONS.contains(billTypeAtomic));
+        return deducted ? -Math.abs(value) : value;
+    }
+
     private InwardMedicineBillTypes() {
     }
 }

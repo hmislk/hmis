@@ -108,4 +108,27 @@ public class InwardPharmacyItemListNettingTest {
         assertFalse(InwardMedicineBillTypes.ISSUES.contains(BillTypeAtomic.ACCEPT_RETURN_MEDICINE_INWARD));
         assertFalse(InwardMedicineBillTypes.ISSUES.contains(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION));
     }
+
+    @Test
+    void issueRowNettedBelowZeroKeepsItsSign() {
+        // A return valued above its issue line (for example after a rate change)
+        // nets the issue row below zero; the row must show that, not a positive value.
+        BillItem issue = line(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE, false, 2, 10, null);
+        BillItem ret = line(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN, false, -2, -15, issue);
+        double interimTotal = interim(Arrays.asList(issue, ret));
+        List<BillItem> rows = InwardPharmacyItemListNetting.rows(Arrays.asList(issue, ret));
+        assertEquals(1, rows.size());
+        assertEquals(-5.0, InwardPharmacyItemListNetting.rowValue(rows.get(0)), 0.0001);
+        assertEquals(-5.0, InwardPharmacyItemListNetting.total(rows), 0.0001);
+        assertEquals(interimTotal, InwardPharmacyItemListNetting.total(rows), 0.0001);
+    }
+
+    @Test
+    void signedRowValueDeductsReturnsAndKeepsIssueSign() {
+        assertEquals(-7.0, InwardMedicineBillTypes.signedRowValue(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE, -7.0), 0.0001);
+        assertEquals(7.0, InwardMedicineBillTypes.signedRowValue(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE, 7.0), 0.0001);
+        assertEquals(-7.0, InwardMedicineBillTypes.signedRowValue(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN, 7.0), 0.0001);
+        assertEquals(-7.0, InwardMedicineBillTypes.signedRowValue(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION, -7.0), 0.0001);
+        assertEquals(0.0, InwardMedicineBillTypes.signedRowValue(null, null), 0.0001);
+    }
 }

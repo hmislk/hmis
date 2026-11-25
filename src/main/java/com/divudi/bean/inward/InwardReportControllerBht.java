@@ -2316,7 +2316,7 @@ public class InwardReportControllerBht implements Serializable {
         if (bi == null || bi.getBill() == null) {
             return 0.0;
         }
-        return InwardMedicineBillTypes.listSignedValueWithCancellations(bi.getBill().getBillTypeAtomic(), bi.getNetValue());
+        return InwardMedicineBillTypes.signedRowValue(bi.getBill().getBillTypeAtomic(), bi.getNetValue());
     }
 
     /**
