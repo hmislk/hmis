@@ -1,6 +1,7 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:prints="http://xmlns.jcp.org/jsf/composite/ezcomp/prints"
       xmlns:cc="http://xmlns.jcp.org/jsf/composite"
       xmlns:f="http://xmlns.jcp.org/jsf/core"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
@@ -298,6 +299,7 @@
 
                                             </div>
                                         </div>
+                                        <prints:opd_fee_collected_by_doctor_note billItem="#{bip}"/>
                                     </td>
                                     <td style="text-align: right">
                                         <h:outputLabel class="itemsBlockRightFiveFive"   value="#{bip.grossValue}"    >
@@ -321,7 +323,7 @@
 
                             </h:panelGroup>
                             <h:panelGroup rendered="#{bip.item.printFeesForBills}">
-                                <ui:repeat value="#{bip.billFees}" var="bf" >
+                                <ui:repeat value="#{bip.billFees}" var="bf" ><h:panelGroup rendered="#{not bf.collectedByDoctorAtBilling}">
                                     <tr>
                                         <td >
                                             <div class="d-flex justify-content-between">
@@ -348,7 +350,8 @@
                                             </h:outputLabel>
                                         </td>
                                     </tr>
-                                </ui:repeat>
+                                </h:panelGroup></ui:repeat>
+                                <prints:opd_fee_collected_by_doctor_note billItem="#{bip}" asRow="true" breakdown="true"/>
                             </h:panelGroup>
 
 
@@ -452,6 +455,7 @@
                 </table>
 
             </div>
+
 
             <div style="font-size: 9pt" class="d-flex justify-content-between">
                 <h:outputLabel value="Payment : #{cc.attrs.bill.paymentMethod}" ></h:outputLabel>

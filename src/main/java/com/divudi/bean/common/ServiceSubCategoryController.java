@@ -12,6 +12,7 @@ import com.divudi.core.entity.ServiceSubCategory;
 import com.divudi.core.facade.ServiceSubCategoryFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Map;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -45,7 +46,9 @@ public class ServiceSubCategoryController implements Serializable {
     String selectText = "";
 
     public List<ServiceSubCategory> getSelectedItems() {
-        selectedItems = getFacade().findByJpql("select c from ServiceSubCategory c where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
+        Map<String, Object> likeParams = new HashMap<>();
+        likeParams.put("txt", "%" + getSelectText().toUpperCase() + "%");
+        selectedItems = getFacade().findByJpql("select c from ServiceSubCategory c where c.retired=false and (c.name) like :txt order by c.name", likeParams);
         return selectedItems;
     }
 

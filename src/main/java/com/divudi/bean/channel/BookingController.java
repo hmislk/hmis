@@ -652,6 +652,39 @@ public class BookingController implements Serializable, ControllerWithPatient, C
         sessionInstanceByDoctor = sessionInstanceFacade.findByJpql(jpql.toString(), m, TemporalType.DATE);
     }
 
+    /**
+     * A reschedule must not change what the patient was charged. Returns an
+     * error message when the target session's total differs from the source
+     * session's total (the booking bill is charged the originating session's
+     * total), otherwise null.
+     */
+    public static final String RESCHEDULE_TOTAL_CHECK_KEY = "Channel Reschedule - Refuse when the target session fee total differs";
+
+    public static String rescheduleTotalMismatchMessage(BillSession from, SessionInstance to) {
+        if (from == null || to == null || from.getSessionInstance() == null) {
+            return null;
+        }
+        double fromTotal = sessionTotal(from.getSessionInstance());
+        double toTotal = sessionTotal(to);
+        if (Math.abs(fromTotal - toTotal) > 0.005) {
+            return "Cannot reschedule: the selected session's fee total (" + String.format("%.2f", toTotal)
+                    + ") differs from the current session's fee total (" + String.format("%.2f", fromTotal)
+                    + "). Choose a session with the same total.";
+        }
+        return null;
+    }
+
+    private static double sessionTotal(SessionInstance si) {
+        Double t = null;
+        if (si.getOriginatingSession() != null) {
+            t = si.getOriginatingSession().getTotal();
+        }
+        if (t == null) {
+            t = si.getTotal();
+        }
+        return t == null ? 0.0 : t;
+    }
+
     public void sessionReschedule() {
         if (getSelectedSessionInstanceForRechedule() == null) {
             JsfUtil.addErrorMessage("Pleace Select Session For Rechedule");
@@ -660,6 +693,14 @@ public class BookingController implements Serializable, ControllerWithPatient, C
 
         if (selectedBillSession == null) {
             JsfUtil.addErrorMessage("Bill session is not valid !");
+            return;
+        }
+
+        String totalMismatch = configOptionApplicationController.getBooleanValueByKey(BookingController.RESCHEDULE_TOTAL_CHECK_KEY, true)
+                ? BookingController.rescheduleTotalMismatchMessage(selectedBillSession, getSelectedSessionInstanceForRechedule())
+                : null;
+        if (totalMismatch != null) {
+            JsfUtil.addErrorMessage(totalMismatch);
             return;
         }
 
@@ -1935,12 +1976,13 @@ public class BookingController implements Serializable, ControllerWithPatient, C
             suggestions = new ArrayList<>();
         } else {
             if (getSpeciality() != null) {
-                sql = "select p from Staff p where p.retired=false and ((p.person.name) like '%" + query.toUpperCase() + "%'or  (p.code) like '%" + query.toUpperCase() + "%' ) and p.speciality.id = " + getSpeciality().getId() + " order by p.person.name";
+                sql = "select p from Staff p where p.retired=false and ((p.person.name) like :q or  (p.code) like :q ) and p.speciality.id = " + getSpeciality().getId() + " order by p.person.name";
             } else {
-                sql = "select p from Staff p where p.retired=false and ((p.person.name) like '%" + query.toUpperCase() + "%'or  (p.code) like '%" + query.toUpperCase() + "%' ) order by p.person.name";
+                sql = "select p from Staff p where p.retired=false and ((p.person.name) like :q or  (p.code) like :q ) order by p.person.name";
             }
-            ////System.out.println(sql);
-            suggestions = getStaffFacade().findByJpql(sql);
+            java.util.Map<String, Object> qm = new java.util.HashMap<>();
+            qm.put("q", "%" + query.toUpperCase() + "%");
+            suggestions = getStaffFacade().findByJpql(sql, qm);
         }
         return suggestions;
     }

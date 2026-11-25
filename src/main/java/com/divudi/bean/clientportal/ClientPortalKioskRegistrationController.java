@@ -475,7 +475,8 @@ public class ClientPortalKioskRegistrationController implements Serializable {
 
         newPatient.setRegistrationSource(PatientRegistrationSource.KIOSK);
         newPatient.setCreatedAt(new Date());
-        String phn = applicationController.createNewPersonalHealthNumber(institutionFacade.findDefaultInstitution());
+        // Quietly: a PHN configuration message means nothing to the person at the kiosk (#24347).
+        String phn = applicationController.createNewPersonalHealthNumberQuietly(institutionFacade.findDefaultInstitution());
         if (phn != null) {
             newPatient.setPhn(phn);
         }

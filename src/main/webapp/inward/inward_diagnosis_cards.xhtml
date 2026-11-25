@@ -20,7 +20,7 @@
                                 ajax="false"
                                 action="#{admissionController.navigateToAdmissionProfilePage}"
                                 icon="fa fa-arrow-left"
-                                class="ui-button-warning">
+                                class="ui-button-info ui-button-outlined">
                                 <f:setPropertyActionListener
                                     value="#{inpatientClinicalDataController.parentAdmission}"
                                     target="#{admissionController.current}" />
@@ -30,7 +30,7 @@
                                 ajax="false"
                                 action="#{inpatientClinicalDataController.navigateToEncounterClinicalData()}"
                                 icon="fa fa-stethoscope"
-                                class="ui-button-secondary">
+                                class="ui-button-info ui-button-outlined">
                             </p:commandButton>
                         </div>
                     </div>
@@ -110,11 +110,30 @@
                                         </p:commandButton>
                                     </div>
                                 </div>
-                                <div class="row">
+                                <div class="row mb-2">
+                                    <div class="col-12">
+                                        <p:commandButton
+                                            id="btnCreateCard"
+                                            value="Create Diagnosis Card"
+                                            icon="fa fa-file-medical"
+                                            title="Create a diagnosis card from the selected template, then edit it"
+                                            class="ui-button-success w-100"
+                                            process="btnCreateCard somDxTemplates"
+                                            update="lstSavedCards gpCardDoc msgDx"
+                                            action="#{inpatientClinicalDataController.createDiagnosisCardManually}">
+                                        </p:commandButton>
+                                    </div>
+                                </div>
+                                <h:panelGroup layout="block" styleClass="row" rendered="#{not inpatientClinicalDataController.aiConfigured}">
+                                    <div class="col-12">
+                                        <h:outputText value="AI generation is off (no AI key set). You can still create, edit, save and print cards." styleClass="text-muted"/>
+                                    </div>
+                                </h:panelGroup>
+                                <h:panelGroup layout="block" styleClass="row" rendered="#{inpatientClinicalDataController.aiConfigured}">
                                     <div class="col-12">
                                         <p:commandButton
                                             id="btnGenerateAi"
-                                            value="Generate"
+                                            value="Generate with AI"
                                             icon="fa fa-magic"
                                             title="Generate diagnosis card using AI"
                                             class="ui-button-info w-100"
@@ -125,7 +144,7 @@
                                             oncomplete="PF('aiBlockUI').hide();">
                                         </p:commandButton>
                                     </div>
-                                </div>
+                                </h:panelGroup>
                             </p:panel>
 
                             <!-- Saved diagnosis cards list -->
@@ -181,7 +200,7 @@
                                                 id="btnSaveCard"
                                                 value="Save"
                                                 icon="pi pi-save"
-                                                class="ui-button-warning"
+                                                class="ui-button-success"
                                                 action="#{inpatientClinicalDataController.saveEncounterReferral()}"
                                                 process="btnSaveCard txeCardEdit"
                                                 update="lstSavedCards gpCardDoc msgDx"
@@ -215,6 +234,24 @@
                                                 class="ui-button-success"
                                                 title="Download as PDF">
                                                 <p:fileDownload value="#{inpatientClinicalDataController.downloadAsPdf()}"/>
+                                            </p:commandButton>
+                                            <p:commandButton
+                                                id="btnDownloadCardWord"
+                                                ajax="false"
+                                                value="Word"
+                                                icon="pi pi-file-word"
+                                                class="ui-button-success ui-button-outlined"
+                                                title="Download as an editable Word (.docx) file">
+                                                <p:fileDownload value="#{inpatientClinicalDataController.downloadAsWord()}"/>
+                                            </p:commandButton>
+                                            <p:commandButton
+                                                id="btnDownloadCardRtf"
+                                                ajax="false"
+                                                value="RTF"
+                                                icon="pi pi-file"
+                                                class="ui-button-success ui-button-outlined"
+                                                title="Download as an editable RTF file">
+                                                <p:fileDownload value="#{inpatientClinicalDataController.downloadAsRtf()}"/>
                                             </p:commandButton>
                                             <p:commandButton
                                                 id="btnEmailCard"

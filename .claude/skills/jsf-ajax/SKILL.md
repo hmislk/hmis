@@ -19,6 +19,7 @@ user-invocable: true
 3. **COMPONENT REFERENCES**: Use `p:resolveFirstComponentWithId` for updates: `update=":#{p:resolveFirstComponentWithId('componentId',view).clientId}"`
 4. **NO CSS/jQuery SELECTORS**: NEVER use `@(.class)`, `@(#id)`, `@parent` in `update` or `process` attributes. Use `@this`, `@form`, explicit IDs, or `:#{p:resolveFirstComponentWithId(...)}`
 5. **`empty` IS A RESERVED EL KEYWORD**: `#{bean.list.empty}` fails with "Error Parsing" (HTTP 500). Use `#{empty bean.list}`, `#{bean.list.size() gt 0}` or call `#{bean.isEmpty()}`
+6. **ROW ID MUST MATCH WHAT WAS RENDERED**: `action="#{bean.method(row.id)}"` is resolved against the server-side list at submit time, so a changed list can hand you another row. When the id must match the rendered row, pass it with `<f:param name="rowId" value="#{row.id}"/>` and read it from the request parameters. `f:param` alone does not cover a row that vanished after the list changed; check the row still exists and show a message if not
 
 ## Wrong vs Correct
 
@@ -96,6 +97,22 @@ For complete reference, read [developer_docs/jsf/ajax-update-guidelines.md](../.
 Also: bind selection to an **array** (`MyDTO[] selected`), not a `List`. Always include `rowKey`.
 
 For complete reference (single-selection, controller pattern, `selectAllFilteredOnly`, troubleshooting), read [developer_docs/jsf/primefaces-datatable-selection.md](../../developer_docs/jsf/primefaces-datatable-selection.md).
+
+### Footer totals that follow a column filter
+
+A dataTable filter response re-renders only the table body, so `<p:ajax event="filter" update="...">` never refreshes column footers. Re-render them after the filter with a remote command placed in the same form:
+
+```xml
+<p:remoteCommand name="refreshTotals" process="@this" update="lst:total1 lst:total2"/>
+<p:dataTable id="lst" filteredValue="#{bean.filteredList}" ...>
+    <p:ajax event="filter" process="@this" oncomplete="refreshTotals()"/>
+    <p:column ...>
+        <f:facet name="footer"><h:outputText id="total1" value="#{bean.total1}"/></f:facet>
+    </p:column>
+</p:dataTable>
+```
+
+The total getters sum `filteredList` when it is set, otherwise the full list, and the Process action resets `filteredList` to null (#25782).
 
 ---
 

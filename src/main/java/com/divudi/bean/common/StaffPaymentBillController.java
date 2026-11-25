@@ -368,7 +368,7 @@ public class StaffPaymentBillController implements Serializable {
                 + " and bf.bill.cancelled=:bc "
                 + " and bf.bill.refunded=:brfnd "
                 + " and bf.bill.createdAt between :fd and :td "
-                + " and (bf.feeValue - bf.paidValue) > 0 ";
+                + " and (bf.feeValue - bf.paidValue) > 0 and (bf.collectedByDoctorAtBilling = false or bf.collectedByDoctorAtBilling is null) ";
 
         if (currentStaff != null) {
             jpql += " and bf.staff=:staff ";
@@ -442,7 +442,7 @@ public class StaffPaymentBillController implements Serializable {
                     + " b.retired=false"
                     + " and b.bill.billTypeAtomic in :btcs"
                     + " and b.bill.cancelled=false "
-                    + " and (b.feeValue - b.paidValue) > 0 "
+                    + " and (b.feeValue - b.paidValue) > 0 and (b.collectedByDoctorAtBilling = false or b.collectedByDoctorAtBilling is null) "
                     + " and b.staff=:staff ";
             h.put("btcs", btcs);
             h.put("staff", currentStaff);
@@ -490,7 +490,7 @@ public class StaffPaymentBillController implements Serializable {
                     + " and bf.bill.createdAt between :fd and :td "
                     + " and bf.bill.billTypeAtomic in :btcs"
                     + " and bf.bill.cancelled=false "
-                    + " and (bf.feeValue - bf.paidValue) > 0 "
+                    + " and (bf.feeValue - bf.paidValue) > 0 and (bf.collectedByDoctorAtBilling = false or bf.collectedByDoctorAtBilling is null) "
                     + " and bf.staff=:staff ";
             params.put("btcs", btcs);
             params.put("fd", fromDate);
@@ -649,7 +649,9 @@ public class StaffPaymentBillController implements Serializable {
     }
 
     public List<Bill> getSelectedItems() {
-        selectedItems = getFacade().findByJpql("select c from Bill c where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
+        Map<String, Object> likeParams = new HashMap<>();
+        likeParams.put("txt", "%" + getSelectText().toUpperCase() + "%");
+        selectedItems = getFacade().findByJpql("select c from Bill c where c.retired=false and (c.name) like :txt order by c.name", likeParams);
         return selectedItems;
     }
 
@@ -1043,7 +1045,7 @@ public class StaffPaymentBillController implements Serializable {
     public List<BillFee> getDueBillFeeReport() {
         String sql;
         Map temMap = new HashMap();
-        sql = "select b from BillFee b where b.retired=false and b.bill.cancelled=false and (b.feeValue - b.paidValue) > 0 and b.bill.institution.id=" + getSessionController().getInstitution().getId() + " and b.bill.billDate between :fromDate and :toDate order by b.staff.id  ";
+        sql = "select b from BillFee b where b.retired=false and b.bill.cancelled=false and (b.feeValue - b.paidValue) > 0 and (b.collectedByDoctorAtBilling = false or b.collectedByDoctorAtBilling is null) and b.bill.institution.id=" + getSessionController().getInstitution().getId() + " and b.bill.billDate between :fromDate and :toDate order by b.staff.id  ";
         //////// // System.out.println("sql is " + sql);
         temMap.put("toDate", getToDate());
         temMap.put("fromDate", getFromDate());
@@ -1063,9 +1065,10 @@ public class StaffPaymentBillController implements Serializable {
         String sql;
         Map temMap = new HashMap();
         if (!getSelectText().equals("")) {
-            sql = "select b from BillFee b where b.retired=false and (b.bill.billType!=:btp and b.bill.billType!=:btp2) and b.bill.cancelled=false and (b.feeValue - b.paidValue) > 0 and  b.bill.billDate between :fromDate and :toDate and (b.staff.person.name) like '%" + selectText.toUpperCase() + "%' order by b.staff.id  ";
+            sql = "select b from BillFee b where b.retired=false and (b.bill.billType!=:btp and b.bill.billType!=:btp2) and b.bill.cancelled=false and (b.feeValue - b.paidValue) > 0 and (b.collectedByDoctorAtBilling = false or b.collectedByDoctorAtBilling is null) and  b.bill.billDate between :fromDate and :toDate and (b.staff.person.name) like :txt order by b.staff.id  ";
+            temMap.put("txt", "%" + selectText.toUpperCase() + "%");
         } else {
-            sql = "select b from BillFee b where b.retired=false and (b.bill.billType!=:btp and b.bill.billType!=:btp2) and b.bill.cancelled=false and (b.feeValue - b.paidValue) > 0 and  b.bill.billDate between :fromDate and :toDate order by b.staff.id  ";
+            sql = "select b from BillFee b where b.retired=false and (b.bill.billType!=:btp and b.bill.billType!=:btp2) and b.bill.cancelled=false and (b.feeValue - b.paidValue) > 0 and (b.collectedByDoctorAtBilling = false or b.collectedByDoctorAtBilling is null) and  b.bill.billDate between :fromDate and :toDate order by b.staff.id  ";
         }
         //////// // System.out.println("sql is " + sql);
         temMap.put("toDate", getToDate());

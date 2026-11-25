@@ -4,6 +4,7 @@
  */
 package com.divudi.bean.store;
 
+import com.divudi.service.ItemAuditHelper;
 import com.divudi.bean.common.InstitutionController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.core.util.JsfUtil;
@@ -87,6 +88,8 @@ import org.primefaces.model.file.UploadedFile;
 @Named
 @SessionScoped
 public class StoreItemExcelManager implements Serializable {
+    @EJB
+    private ItemAuditHelper itemAuditHelper;
 
     /**
      *
@@ -595,10 +598,10 @@ public class StoreItemExcelManager implements Serializable {
                             amp.setCategory(cat);
                         }
                         amp.setVmp(vmp);
-                        getAmpFacade().create(amp);
+                        createAmpWithAudit(amp);
                     } else {
                         amp.setRetired(false);
-                        getAmpFacade().edit(amp);
+                        editAmpWithAudit(amp);
                     }
                 } else {
                     amp = null;
@@ -619,13 +622,13 @@ public class StoreItemExcelManager implements Serializable {
                 }
                 ////System.out.println("strCode = " + strCode);
                 amp.setCode(strCode);
-                getAmpFacade().edit(amp);
+                editAmpWithAudit(amp);
                 //Code
                 cell = sheet.getCell(barcodeCol, i);
                 strBarcode = cell.getContents();
                 ////System.out.println("strBarCode = " + strBarcode);
                 amp.setBarcode(strBarcode);
-                getAmpFacade().edit(amp);
+                editAmpWithAudit(amp);
                 //Distributor
                 cell = sheet.getCell(distributorCol, i);
                 strDistributor = cell.getContents();
@@ -819,7 +822,7 @@ public class StoreItemExcelManager implements Serializable {
                         } else {
                             amp.setCategory(cat);
                         }
-                        getAmpFacade().create(amp);
+                        createAmpWithAudit(amp);
                     } else {
                         amp.setName(strAmp);
                         if (subCat != null) {
@@ -828,7 +831,7 @@ public class StoreItemExcelManager implements Serializable {
                             amp.setCategory(cat);
                         }
                         amp.setRetired(false);
-                        getAmpFacade().edit(amp);
+                        editAmpWithAudit(amp);
                     }
                 } else {
                     amp = null;
@@ -1263,10 +1266,10 @@ public class StoreItemExcelManager implements Serializable {
                         amp.setDblValue((double) strengthUnitsPerIssueUnit);
                         amp.setCategory(cat);
                         amp.setVmp(vmp);
-                        getAmpFacade().create(amp);
+                        createAmpWithAudit(amp);
                     } else {
                         amp.setRetired(false);
-                        getAmpFacade().edit(amp);
+                        editAmpWithAudit(amp);
                     }
                 } else {
                     amp = null;
@@ -1284,13 +1287,13 @@ public class StoreItemExcelManager implements Serializable {
                 strCode = cell.getContents();
                 ////System.out.println("strCode = " + strCode);
                 amp.setCode(strCode);
-                getAmpFacade().edit(amp);
+                editAmpWithAudit(amp);
                 //Code
                 cell = sheet.getCell(barcodeCol, i);
                 strBarcode = cell.getContents();
                 ////System.out.println("strBarCode = " + strBarcode);
                 amp.setCode(strBarcode);
-                getAmpFacade().edit(amp);
+                editAmpWithAudit(amp);
                 //Distributor
                 cell = sheet.getCell(distributorCol, i);
                 strDistributor = cell.getContents();
@@ -1397,14 +1400,14 @@ public class StoreItemExcelManager implements Serializable {
                     amp.setCode(itemCode);
                     amp.setCategory(cat);
                     amp.setDepartmentType(DepartmentType.Store);
-                    getAmpFacade().create(amp);
+                    createAmpWithAudit(amp);
                 } else {
                     amp.setRetired(false);
                     amp.setName(itenName);
                     amp.setCode(itemCode);
                     amp.setCategory(cat);
                     amp.setDepartmentType(DepartmentType.Store);
-                    getAmpFacade().edit(amp);
+                    editAmpWithAudit(amp);
                 }
             }
 
@@ -1583,7 +1586,7 @@ public class StoreItemExcelManager implements Serializable {
 
                 } else {
                     amp.setRetired(false);
-                    getAmpFacade().edit(amp);
+                    editAmpWithAudit(amp);
                 }
 
                 if (amp == null) {
@@ -1600,7 +1603,7 @@ public class StoreItemExcelManager implements Serializable {
                 strBarcode = cell.getContents();
                 amp.setBarcode(strBarcode);
 
-                getAmpFacade().edit(amp);
+                editAmpWithAudit(amp);
 
             }
 
@@ -1668,11 +1671,11 @@ public class StoreItemExcelManager implements Serializable {
                         amp = new Amp();
                         amp.setName(strAmp);
                         amp.setCategory(cat);
-                        getAmpFacade().create(amp);
+                        createAmpWithAudit(amp);
                     } else {
                         amp.setRetired(false);
                         amp.setCategory(cat);
-                        getAmpFacade().edit(amp);
+                        editAmpWithAudit(amp);
                     }
                 } else {
                     amp = null;
@@ -2037,4 +2040,19 @@ public class StoreItemExcelManager implements Serializable {
         this.storeItemCategoryFacade = storeItemCategoryFacade;
     }
 
+
+    private void editAmpWithAudit(Amp amp) {
+        Map<String, Object> beforeNames = itemAuditHelper.snapshotFromDb(amp.getId());
+        getAmpFacade().edit(amp);
+        itemAuditHelper.logUpdate(beforeNames, amp, auditUser(), "UI upload");
+    }
+
+    private void createAmpWithAudit(Amp amp) {
+        getAmpFacade().create(amp);
+        itemAuditHelper.logCreate(amp, auditUser(), "UI upload");
+    }
+
+    private com.divudi.core.entity.WebUser auditUser() {
+        return sessionController.getLoggedUser();
+    }
 }

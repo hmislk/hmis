@@ -8,6 +8,7 @@
  */
 package com.divudi.bean.pharmacy;
 
+import com.divudi.service.ItemAuditHelper;
 import com.divudi.bean.common.AuditEventController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.core.data.DepartmentType;
@@ -43,6 +44,8 @@ import javax.persistence.TemporalType;
 @Named
 @SessionScoped
 public class AtmController implements Serializable {
+    @EJB
+    private ItemAuditHelper itemAuditHelper;
 
     private static final long serialVersionUID = 1L;
     @Inject
@@ -88,8 +91,8 @@ public class AtmController implements Serializable {
         if (query == null) {
             atmList = new ArrayList<>();
         } else {
-            sql = "select c from Atm c where c.retired=false and (c.name) like '%" + query.toUpperCase() + "%' order by c.name";
-            atmList = getFacade().findByJpql(sql);
+            sql = "select c from Atm c where c.retired=false and (c.name) like :q order by c.name";
+            atmList = getFacade().findByJpql(sql, java.util.Map.of("q", "%" + query.toUpperCase() + "%"));
         }
         return atmList;
     }
@@ -116,6 +119,7 @@ public class AtmController implements Serializable {
         }
         if (atm.getId() == null) {
             getFacade().create(atm);
+            itemAuditHelper.logCreate(atm, getSessionController().getLoggedUser(), "UI find-or-create");
         }
         return atm;
     }
@@ -163,6 +167,7 @@ public class AtmController implements Serializable {
         if (atm.getId() == null) {
             atm.setVtm(vtm);
             getFacade().create(atm);
+            itemAuditHelper.logCreate(atm, getSessionController().getLoggedUser(), "UI find-or-create");
         }
         return atm;
     }
@@ -172,8 +177,8 @@ public class AtmController implements Serializable {
         if (selectText == null || selectText.trim().isEmpty()) {
             selectedItems = getFacade().findByJpql("select c from Atm c where c.retired=false order by c.name");
         } else {
-            String sql = "select c from Atm c where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name";
-            selectedItems = getFacade().findByJpql(sql);
+            String sql = "select c from Atm c where c.retired=false and (c.name) like :q order by c.name";
+            selectedItems = getFacade().findByJpql(sql, java.util.Map.of("q", "%" + getSelectText().toUpperCase() + "%"));
 
         }
         return selectedItems;
@@ -223,9 +228,11 @@ public class AtmController implements Serializable {
 
                 // Capture after state for audit
                 Map<String, Object> afterData = createAuditMap(getCurrent());
-                auditService.logAudit(beforeData, afterData,
-                        getSessionController().getLoggedUser(),
-                        "Atm", "Update ATM", getCurrent().getId());
+                if (ItemAuditHelper.differs(beforeData, afterData)) {
+                    auditService.logAudit(beforeData, afterData,
+                            getSessionController().getLoggedUser(),
+                            "Atm", "Update ATM", getCurrent().getId());
+                }
 
                 JsfUtil.addSuccessMessage("Updated Successfully.");
             } else {
@@ -261,9 +268,12 @@ public class AtmController implements Serializable {
         if(atm==null) return;
 
         if (atm.getId() != null) {
+            Map<String, Object> beforeNames = itemAuditHelper.snapshotFromDb(atm.getId());
             getFacade().edit(atm);
+            itemAuditHelper.logUpdate(beforeNames, atm, getSessionController().getLoggedUser(), "UI");
         } else {
             getFacade().create(atm);
+            itemAuditHelper.logCreate(atm, getSessionController().getLoggedUser(), "UI");
         }
     }
 
@@ -757,6 +767,7 @@ public class AtmController implements Serializable {
             auditData.put("id", atm.getId());
             auditData.put("name", atm.getName());
             auditData.put("code", atm.getCode());
+            ItemAuditHelper.putNameFields(auditData, atm);
             auditData.put("retired", atm.isRetired());
             auditData.put("inactive", atm.isInactive());
             auditData.put("departmentType", atm.getDepartmentType() != null ? atm.getDepartmentType().toString() : null);

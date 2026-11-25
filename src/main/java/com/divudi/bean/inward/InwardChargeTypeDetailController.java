@@ -12,6 +12,7 @@ import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.PatientEncounter;
 import com.divudi.core.entity.inward.AdmissionType;
+import com.divudi.core.util.CommonFunctions;
 import com.divudi.core.entity.BillItem;
 import com.divudi.core.entity.PatientItem;
 import com.divudi.core.facade.BillFeeFacade;
@@ -45,6 +46,9 @@ import javax.persistence.TemporalType;
 @SessionScoped
 public class InwardChargeTypeDetailController implements Serializable {
 
+    @javax.ejb.EJB
+    private com.divudi.service.inward.AdmissionTypeHistoryService admissionTypeHistoryService;
+
     // -------------------------------------------------------------------------
     // EJBs / CDI
     // -------------------------------------------------------------------------
@@ -65,7 +69,7 @@ public class InwardChargeTypeDetailController implements Serializable {
     // Filter fields
     // -------------------------------------------------------------------------
     private Date fromDate = startOfCurrentMonth();
-    private Date toDate   = new Date();
+    private Date toDate   = CommonFunctions.getEndOfDay(new Date());
 
     /** "admissionDate" or "dischargeDate" */
     private String dateBasis = "dischargeDate";
@@ -441,8 +445,9 @@ public class InwardChargeTypeDetailController implements Serializable {
             return rows;
         }
         for (PatientEncounter enc : encounters) {
-            double fee = (enc.getAdmissionType() != null)
-                    ? enc.getAdmissionType().getAdmissionFee() : 0.0;
+            // The admission fee follows the type the admission started with (#25814).
+            com.divudi.core.entity.inward.AdmissionType feeType = admissionTypeHistoryService.firstType(enc);
+            double fee = (feeType != null) ? feeType.getAdmissionFee() : 0.0;
             if (fee == 0.0) {
                 continue;
             }
@@ -548,7 +553,7 @@ public class InwardChargeTypeDetailController implements Serializable {
 
     public void makeNull() {
         fromDate          = startOfCurrentMonth();
-        toDate            = new Date();
+        toDate            = CommonFunctions.getEndOfDay(new Date());
         dateBasis         = "dischargeDate";
         admissionStatus   = AdmissionStatus.DISCHARGED_AND_FINAL_BILL_COMPLETED;
         admissionType     = null;

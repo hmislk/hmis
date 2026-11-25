@@ -372,6 +372,9 @@ public class AgentPaymentReceiveSearchController implements Serializable {
     }
 
     public void cancelAgencyDepositBill() {
+        if (com.divudi.core.util.CancellationBillCheck.refuse(getBill())) {
+            return;
+        }
         System.out.println("cancelAgencyDepositBill");
         System.out.println("agencyDepositCanellationStarted = " + agencyDepositCanellationStarted);
         if (agencyDepositCanellationStarted) {
@@ -931,6 +934,10 @@ public class AgentPaymentReceiveSearchController implements Serializable {
 
     public void setCancelledBill(CancelledBill cancelledBill) {
         this.cancelledBill = cancelledBill;
+    }
+
+    public boolean isBillACancellationBill() {
+        return com.divudi.core.util.CancellationBillCheck.isCancellationBill(getBill());
     }
 
 }

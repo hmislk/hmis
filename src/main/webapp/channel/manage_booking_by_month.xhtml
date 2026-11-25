@@ -32,14 +32,14 @@
                         <div class="d-flex gap-2">
                             <p:commandButton 
                                 ajax="false" 
-                                class="mx-1 ui-button-secondary"
+                                class="ui-button-info ui-button-outlined"
                                 value="Back to Bookings"
                                 immediate="true"
                                 action="#{bookingControllerViewScopeMonth.navigateBackToBookingsFromBillSession()}"
                                 icon="fa-solid fa-arrow-left" />
                             <p:commandButton 
                                 ajax="false" 
-                                class="mx-1 ui-button-secondary"
+                                class="ui-button-info ui-button-outlined"
                                 value="Back"
                                 immediate="true"
                                 action="#{bookingControllerViewScopeMonth.navigateToManageSessionInstance(bookingControllerViewScopeMonth.selectedSessionInstance)}"
@@ -785,7 +785,7 @@
                                                 ></p:commandButton>
 
 
-                                            <p:dataTable id="tblBillItemsForAddingNewItem" 
+                                            <p:dataTable styleClass="p-datatable-sm" id="tblBillItemsForAddingNewItem" 
                                                          value="#{bookingControllerViewScopeMonth.selectedBillSession.billItem.bill.billItems}" 
                                                          var="bi" >
                                                 <p:column >
@@ -810,7 +810,7 @@
                                             </p:dataTable>
 
                                             <p:growl id="msg" life="2000"></p:growl>
-                                            <p:dataTable 
+                                            <p:dataTable styleClass="p-datatable-sm" 
                                                 id="tblBillFeesForAddingNewItem" 
                                                 value="#{bookingControllerViewScopeMonth.selectedBillSession.billItem.bill.billFeesWIthoutZeroValue}" 
                                                 var="bf" >
@@ -1339,7 +1339,8 @@
 
                                 <p:commandButton value="Cancel Booking"  class="my-2 ui-button-danger" icon="fas fa-cancel"
                                                  disabled="#{bookingControllerViewScopeMonth.selectedBillSession.bill.refunded==true
-                                                             or bookingControllerViewScopeMonth.selectedBillSession.bill.cancelled==true}"
+                                                             or bookingControllerViewScopeMonth.selectedBillSession.bill.cancelled==true
+                                                             or bookingControllerViewScopeMonth.selectedBillACancellationBill}"
                                                  onclick="PF('confirmationDialog').show();"/>
                             </h:panelGroup>
                             <h:panelGroup rendered="#{bookingControllerViewScopeMonth.printPreviewC}" >
@@ -1451,7 +1452,7 @@
                                     <h:outputLabel value="Refundable Total : "/>
                                     <h:outputLabel id="tot" value="#{bookingControllerViewScopeMonth.refundableTotal}"/>
                                 </h:panelGrid>
-                                <p:dataTable value="#{bookingControllerViewScopeMonth.billSession.bill.billFeesWIthoutZeroValue}" var="bi">
+                                <p:dataTable styleClass="p-datatable-sm" value="#{bookingControllerViewScopeMonth.billSession.bill.billFeesWIthoutZeroValue}" var="bi">
                                     <p:column headerText="Fee Name">
                                         <p:outputLabel value="#{bi.fee.name}"/>
                                     </p:column>
@@ -1610,7 +1611,7 @@
 
                             </p:commandButton>
 
-                            <p:dataTable id="bSessionSearch" value="#{channelSearchController.searchedBillSessions}" var='bs'
+                            <p:dataTable styleClass="p-datatable-sm" id="bSessionSearch" value="#{channelSearchController.searchedBillSessions}" var='bs'
                                          filteredValue="#{channelSearchController.filteredbillSessions}">
 
 
@@ -1791,7 +1792,7 @@
                                             <p:panel header="Other Sessions">
                                                 <p:commandButton id="btnFill" class="m-1" value="FIll" action="#{bookingControllerViewScopeMonth.fillSessionInstanceByDoctor()}" process="btnFill" update="lstSelect" />
                                                 <h:panelGroup id="lstSelect">
-                                                    <p:dataTable value="#{bookingControllerViewScopeMonth.sessionInstanceByDoctor}" var="myItem" selection="#{bookingControllerViewScopeMonth.selectedSessionInstanceForRechedule}" selectionMode="single"  rowKey="#{myItem.id}">
+                                                    <p:dataTable styleClass="p-datatable-sm" value="#{bookingControllerViewScopeMonth.sessionInstanceByDoctor}" var="myItem" selection="#{bookingControllerViewScopeMonth.selectedSessionInstanceForRechedule}" selectionMode="single"  rowKey="#{myItem.id}">
                                                         <p:column>
                                                             <f:facet name="header">Name</f:facet>
                                                                 #{myItem.name}

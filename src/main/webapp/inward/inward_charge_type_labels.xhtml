@@ -24,9 +24,11 @@
                             </p:commandButton>
                         </f:facet>
 
-                        <p:messages id="msgs" autoUpdate="true" closable="true"/>
+                        <p:messages id="msgs" closable="true">
+                            <p:autoUpdate/>
+                        </p:messages>
 
-                        <p:dataTable
+                        <p:dataTable styleClass="p-datatable-sm"
                             id="labelsTable"
                             value="#{inwardChargeTypeLabelController.chargeTypes}"
                             var="chargeType"
@@ -94,6 +96,19 @@
                             </p:column>
 
                             <p:column
+                                headerText="VAT %"
+                                style="width: 8%; padding: 7px;">
+                                <p:inputText
+                                    rendered="#{chargeType.name() ne 'ComputedVAT'}"
+                                    style="width: 100%; text-align: right;"
+                                    value="#{inwardChargeTypeLabelController.vatPercentageMap[chargeType.name()]}"
+                                    placeholder="0"
+                                    title="VAT percentage added to the interim and final bill for #{chargeType.name()}, on its net after discounts. 0 or blank means no VAT.">
+                                    <f:validateRegex pattern="^$|^[0-9]{1,3}(\.[0-9]{1,2})?$"/>
+                                </p:inputText>
+                            </p:column>
+
+                            <p:column
                                 headerText="Save"
                                 style="width: 8%; padding: 7px; text-align: center;">
                                 <p:commandButton
@@ -101,7 +116,7 @@
                                     styleClass="ui-button-success"
                                     title="Save this label"
                                     process="chargeTypeLabelForm"
-                                    update="labelsTable msgs"
+                                    update=":chargeTypeLabelForm"
                                     action="#{inwardChargeTypeLabelController.saveOne(chargeType)}"/>
                             </p:column>
 
@@ -109,8 +124,8 @@
 
                     </p:panel>
                     <p:confirmDialog global="true" showEffect="fade" hideEffect="fade">
-                        <p:commandButton value="Yes" type="button" styleClass="ui-confirmdialog-yes ui-button-danger"/>
-                        <p:commandButton value="No" type="button" styleClass="ui-confirmdialog-no ui-button-secondary"/>
+                        <p:commandButton icon="fa fa-check" value="Yes" type="button" styleClass="ui-confirmdialog-yes ui-button-danger"/>
+                        <p:commandButton icon="fa fa-times" value="No" type="button" styleClass="ui-confirmdialog-no ui-button-secondary"/>
                     </p:confirmDialog>
                 </h:form>
             </ui:define>

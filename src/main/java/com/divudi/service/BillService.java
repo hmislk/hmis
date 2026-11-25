@@ -335,6 +335,10 @@ public class BillService {
         List<BillFee> bfs = fetchBillFees(bi);
 
         for (BillFee bf : bfs) {
+            if (bf.isCollectedByDoctorAtBilling()) {
+                // Collected by the doctor: not part of the bill's fee totals (#25731).
+                continue;
+            }
             if (bf.getInstitution() != null && bf.getInstitution().getInstitutionType() == InstitutionType.CollectingCentre) {
                 collectingCentreFeesCalculateByBillFees += bf.getFeeGrossValue();
             } else if (bf.getStaff() != null || bf.getSpeciality() != null) {
@@ -380,6 +384,10 @@ public class BillService {
         }
 
         for (BillFee bf : duplicateBillfess) {
+            if (bf.isCollectedByDoctorAtBilling()) {
+                // Collected by the doctor: not part of the bill's fee totals (#25731).
+                continue;
+            }
             if (bf.getInstitution() != null && bf.getInstitution().getInstitutionType() == InstitutionType.CollectingCentre) {
                 collectingCentreFeesCalculateByBillFees += bf.getFeeGrossValue();
             } else if (bf.getStaff() != null || bf.getSpeciality() != null) {
@@ -990,6 +998,10 @@ public class BillService {
             List<BillFee> billFees = fetchBillFees(bi);
             for (BillFee bf : billFees) {
 
+                if (bf.isCollectedByDoctorAtBilling()) {
+                    // Collected by the doctor: not part of the bill's fee totals (#25731).
+                    continue;
+                }
                 // Calculate fees based on InstitutionType, Staff, or Speciality
                 if (bf.getInstitution() != null
                         && bf.getInstitution().getInstitutionType() == InstitutionType.CollectingCentre) {

@@ -14,6 +14,7 @@ import com.divudi.bean.common.ControllerWithPatient;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.WebUserController;
 import com.divudi.core.util.JsfUtil;
+import com.divudi.service.inward.AdmissionCancellationRules;
 import com.divudi.service.inward.AdmissionGuardianRules;
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.PaymentMethod;
@@ -28,7 +29,9 @@ import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.Patient;
 import com.divudi.core.entity.Person;
 import com.divudi.core.entity.Speciality;
+import com.divudi.core.entity.Staff;
 import com.divudi.core.entity.inward.Admission;
+import com.divudi.core.entity.inward.AdmissionCancellationReason;
 import com.divudi.core.entity.inward.EncounterComponent;
 import com.divudi.core.entity.inward.PatientRoom;
 import com.divudi.core.facade.AdmissionFacade;
@@ -40,6 +43,7 @@ import com.divudi.core.facade.RoomFacade;
 import com.divudi.core.util.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -146,6 +150,9 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
     private boolean admissionEditFormReady;
     String selectText = "";
     String comment;
+    /** Cancellation reason from the admin list and who decided the cancellation (#25745). */
+    private AdmissionCancellationReason cancellationReason;
+    private Staff cancellationDecidedBy;
 
     private Institution institution;
 
@@ -167,13 +174,19 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
     
     // <editor-fold defaultstate="collapsed" desc="Functons">
     public void addPatientAllergy() {
-        if (currentPatientAllergy == null || currentPatientAllergy.getItemValue() == null) {
+        if (currentPatientAllergy == null) {
             JsfUtil.addErrorMessage("Please select the allergy drug.");
             return;
         }
-        if (currentPatientAllergy.getPatient() == null) {
-            currentPatientAllergy.setPatient(getCurrent().getPatient());
+        String allergyError = currentPatientAllergy.validateAllergyInputs();
+        if (allergyError != null) {
+            JsfUtil.addErrorMessage(allergyError);
+            return;
         }
+        currentPatientAllergy.applyAllergyInputs();
+        // Always the admission on this page: a form object created for an earlier
+        // admission may still carry that patient.
+        currentPatientAllergy.setPatient(getCurrent().getPatient());
         if (currentPatientAllergy.getClinicalFindingValueType() == null) {
             currentPatientAllergy.setClinicalFindingValueType(ClinicalFindingValueType.PatientAllergy);
         }
@@ -193,8 +206,9 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
         if (pa == null) {
             return m;
         }
-        m.put("allergy", pa.getItemValue() != null ? pa.getItemValue().getName() : null);
-        m.put("value", pa.getStringValue());
+        m.put("allergyType", pa.getAllergyTypeLabel());
+        m.put("allergy", pa.getAllergyName());
+        m.put("value", pa.getAllergyRemark());
         m.put("retired", pa.isRetired());
         return m;
     }
@@ -234,9 +248,9 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
         }
         patientAllergies = new ArrayList<>();
         Map params = new HashMap<>();
-        String s = "SELECT c FROM ClinicalFindingValue c WHERE c.retired = false AND c.patient = :pt AND c.clinicalFindingValueType = :type";
+        String s = "SELECT c FROM ClinicalFindingValue c WHERE c.retired = false AND c.patient = :pt AND c.clinicalFindingValueType in :types";
         params.put("pt", pt);
-        params.put("type", ClinicalFindingValueType.PatientAllergy);
+        params.put("types", ClinicalFindingValueType.patientAllergyTypes());
         patientAllergies = clinicalFindingValueFacade.findByJpql(s, params);
         patientAllergiesLoadedForPatientId = pt.getId();
     }
@@ -483,6 +497,10 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
             return "";
         }
 
+        String notes = getComment();
+        AdmissionCancellationReason reason = cancellationReason;
+        Staff decidedBy = cancellationDecidedBy;
+
         if (checkPaymentIsMade()) {
             JsfUtil.addErrorMessage("This BHT has one or more active (non-cancelled) bills. "
                     + "Please cancel all bills associated with BHT " + current.getBhtNo()
@@ -490,8 +508,9 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
             return "";
         }
 
-        if (getComment() == null || getComment().trim().equals("")) {
-            JsfUtil.addErrorMessage("A cancellation reason is required. Please enter the reason before proceeding.");
+        String missing = AdmissionCancellationRules.firstMissing(notes, reason, decidedBy);
+        if (missing != null) {
+            JsfUtil.addErrorMessage(missing);
             return "";
         }
 
@@ -520,7 +539,9 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
         current.setRetireComments("BHT Cancel");
         current.setRetiredAt(new Date());
         current.setRetirer(getSessionController().getLoggedUser());
-        current.setComments(comment);
+        current.setComments(notes);
+        current.setCancellationReason(reason);
+        current.setCancellationDecidedBy(decidedBy);
         getEjbFacade().edit(current);
 
         // Give the BHT number back to its series when it is still the last one
@@ -531,14 +552,26 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
         if (returnBhtNumber) {
             boolean institutionBasedBht = configOptionApplicationController
                     .getBooleanValueByKey("Generate Separate BHT Number Series for Each Institution");
+            Integer admissionYear = null;
+            if (current.getCreatedAt() != null) {
+                Calendar createdAt = Calendar.getInstance();
+                createdAt.setTime(current.getCreatedAt());
+                admissionYear = createdAt.get(Calendar.YEAR);
+            }
             bhtNumberReturned = billNumberGenerator.returnAdmissionNumber(current.getAdmissionType(),
-                    current.getInstitution(), institutionBasedBht, current.getBhtLong());
+                    current.getInstitution(), institutionBasedBht, current.getBhtLong(), admissionYear);
         }
 
         Map<String, Object> afterCancel = new HashMap<>();
         admissionToAuditMap(afterCancel, current);
         afterCancel.put("retired", current.isRetired());
-        afterCancel.put("cancellationReason", comment);
+        afterCancel.put("cancellationReason", notes);
+        afterCancel.put("cancellationReasonCode", reason.getName());
+        afterCancel.put("cancellationDecidedBy", decidedBy.getPerson() != null
+                ? decidedBy.getPerson().getNameWithTitle() : decidedBy.getId());
+        afterCancel.put("admissionDecidedBy", current.getReferringConsultant() != null
+                && current.getReferringConsultant().getPerson() != null
+                ? current.getReferringConsultant().getPerson().getNameWithTitle() : null);
         afterCancel.put("retiredRoomCount", retiredRoomCount);
         afterCancel.put("reversedAdmissionChargeBills", reversedChargeBills.size());
         afterCancel.put("bhtNumberReturned", bhtNumberReturned);
@@ -569,7 +602,7 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
     }
 
     public List<Admission> getSelectedItems() {
-        selectedItems = getFacade().findByJpql("select c from Admission c where c.retired=false and c.discharged!=true and (c.bhtNo) like '%" + getSelectText().toUpperCase() + "%' or (c.patient.person.name) like '%" + getSelectText().toUpperCase() + "%' order by c.bhtNo");
+        selectedItems = getFacade().findByJpql("select c from Admission c where c.retired=false and c.discharged!=true and (c.bhtNo) like :q or (c.patient.person.name) like :q order by c.bhtNo", java.util.Map.of("q", "%" + getSelectText().toUpperCase() + "%"));
         return selectedItems;
     }
 
@@ -583,12 +616,13 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
             sql = "select c from Admission c "
                     + " where c.retired=false "
                     + " and c.discharged=false "
-                    + " and ((c.bhtNo) like '%" + query.toUpperCase() + "%' "
-                    + " or (c.patient.person.name) like '%" + query.toUpperCase() + "%' "
+                    + " and ((c.bhtNo) like :qlike "
+                    + " or (c.patient.person.name) like :qlike "
                     + " or (c.patient.phn) =:q )"
                     + " order by c.bhtNo";
 
             h.put("q", query.toUpperCase());
+            h.put("qlike", "%" + query.toUpperCase() + "%");
             suggestions = getFacade().findByJpql(sql, h, 20);
         }
         return suggestions;
@@ -620,9 +654,11 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
             sql = "select c from Admission c where "
                     + " c.retired=false "
                     //                    + " and c.discharged=false "
-                    + " and ((c.bhtNo) like '%" + query.toUpperCase() + "%' or (c.patient.person.name) like '%" + query.toUpperCase() + "%' or (c.patient.code) like '%" + query.toUpperCase() + "%') "
+                    + " and ((c.bhtNo) like :qlike or (c.patient.person.name) like :qlike or (c.patient.code) like :qlike) "
                     + " order by c.bhtNo ";
-            suggestions = getFacade().findByJpql(sql);
+            HashMap<String, Object> hq = new HashMap<>();
+            hq.put("qlike", "%" + query.toUpperCase() + "%");
+            suggestions = getFacade().findByJpql(sql, hq);
         }
         return suggestions;
     }
@@ -671,6 +707,8 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
 
     public void prepereForNew() {
         patientRoom = null;
+        cancellationReason = null;
+        cancellationDecidedBy = null;
         selectedItems = null;
         items = null;
         patientList = null;
@@ -894,6 +932,8 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
             return "";
         }
         comment = null;
+        cancellationReason = null;
+        cancellationDecidedBy = null;
         createPatientRoom();
         return "/inward/inward_cancel_admission?faces-redirect=true";
     }
@@ -903,6 +943,8 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
             JsfUtil.addErrorMessage("No Admission Selected");
             return "";
         }
+        // Drop an entry started for another admission, so it can't be saved to that patient.
+        currentPatientAllergy = null;
         fillCurrentPatientAllergies(current.getPatient());
         return "/inward/inward_manage_allergies?faces-redirect=true";
     }
@@ -956,6 +998,22 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
 
     public void setComment(String comment) {
         this.comment = comment;
+    }
+
+    public AdmissionCancellationReason getCancellationReason() {
+        return cancellationReason;
+    }
+
+    public void setCancellationReason(AdmissionCancellationReason cancellationReason) {
+        this.cancellationReason = cancellationReason;
+    }
+
+    public Staff getCancellationDecidedBy() {
+        return cancellationDecidedBy;
+    }
+
+    public void setCancellationDecidedBy(Staff cancellationDecidedBy) {
+        this.cancellationDecidedBy = cancellationDecidedBy;
     }
 
     public boolean isAdmissionEditFormReady() {
@@ -1137,6 +1195,43 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
             fillCurrentPatientAllergies(pt);
         }
         return patientAllergies;
+    }
+
+    /**
+     * Allergies of the given patient. Used by the Inpatient Dashboard, which shows
+     * admissionController's admission: {@link #getPatientAllergies()} prefers this
+     * bean's own admission, which still holds the last one opened in Edit BHT or
+     * Manage Allergies, so it could show another patient's allergies.
+     */
+    public List<ClinicalFindingValue> patientAllergiesOf(Patient pt) {
+        if (pt == null || pt.getId() == null) {
+            return new ArrayList<>();
+        }
+        // Own list, not patientAllergies: Manage Allergies (maybe in another tab, for
+        // another patient) edits that one. Cached for this request only, so a save on
+        // any page shows on the next load and two requests never share the list.
+        FacesContext fc = FacesContext.getCurrentInstance();
+        String cacheKey = "bhtEditController.dashboardAllergies." + pt.getId();
+        if (fc != null) {
+            @SuppressWarnings("unchecked")
+            List<ClinicalFindingValue> cached = (List<ClinicalFindingValue>) fc.getAttributes().get(cacheKey);
+            if (cached != null) {
+                return cached;
+            }
+        }
+        Map<String, Object> params = new HashMap<>();
+        params.put("pt", pt);
+        params.put("types", ClinicalFindingValueType.patientAllergyTypes());
+        List<ClinicalFindingValue> loaded = clinicalFindingValueFacade.findByJpql(
+                "SELECT c FROM ClinicalFindingValue c WHERE c.retired = false AND c.patient = :pt AND c.clinicalFindingValueType in :types",
+                params);
+        if (loaded == null) {
+            loaded = new ArrayList<>();
+        }
+        if (fc != null) {
+            fc.getAttributes().put(cacheKey, loaded);
+        }
+        return loaded;
     }
 
     public void setPatientAllergies(List<ClinicalFindingValue> patientAllergies) {

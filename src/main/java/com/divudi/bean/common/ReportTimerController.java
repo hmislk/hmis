@@ -10,6 +10,8 @@ import javax.ejb.EJBTransactionRolledbackException;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
+import com.divudi.core.util.JsfUtil;
+import javax.faces.context.FacesContext;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.concurrent.Future;
@@ -40,10 +42,19 @@ public class ReportTimerController implements Serializable {
 
         ReportLog savedLog = null;
 
+        // Auditing is a side concern: if the log row cannot be written, log it and still
+        // run the report. Before, a failed write skipped the report and left it empty (#23525).
         try {
             Future<ReportLog> futureLog = reportLogAsyncService.logReport(reportLog);
             savedLog = futureLog.get();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            LOGGER.log(Level.SEVERE, "Report log could not be written; running the report anyway", e);
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Report log could not be written; running the report anyway", e);
+        }
 
+        try {
             reportGenerationLogic.run();
         } catch (IllegalArgumentException e) {
             LOGGER.log(Level.WARNING, "Skipping report generation due to invalid date range or missing date values", e);
@@ -59,9 +70,11 @@ public class ReportTimerController implements Serializable {
                 LOGGER.log(Level.WARNING, "Skipping report generation due to invalid date range or missing date values", foundCause);
             } else {
                 LOGGER.log(Level.SEVERE, "Error occurred while generating the report", e);
+                showReportFailedMessage();
             }
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Error occurred while generating the report", e);
+            showReportFailedMessage();
         }
 
         final Date endTime = new Date();
@@ -70,5 +83,16 @@ public class ReportTimerController implements Serializable {
             savedLog.setEndTime(endTime);
             reportLogAsyncService.logReport(savedLog);
         }
+    }
+
+    /**
+     * Tells the user the report did not run, so an empty result is not read as
+     * "no transactions" (#23525). Skipped outside a JSF request (e.g. REST callers).
+     */
+    private void showReportFailedMessage() {
+        if (FacesContext.getCurrentInstance() == null) {
+            return;
+        }
+        JsfUtil.addErrorMessage("The report could not be generated. Please try again, or contact the system administrator if it keeps happening.");
     }
 }

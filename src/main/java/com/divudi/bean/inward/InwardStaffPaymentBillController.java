@@ -336,6 +336,8 @@ public class InwardStaffPaymentBillController implements Serializable {
                 + " and bf.bill.cancelled=false "
                 + " and bf.bill.createdAt between :fd and :td "
                 + " and (bf.feeValue - bf.paidValue) > 0 "
+                // Collected by the doctor at billing: the hospital never pays it (#17490).
+                + " and (bf.collectedByDoctorAtBilling = false or bf.collectedByDoctorAtBilling is null) "
                 // Held fees are listed (flagged "On Hold" in the UI) rather than
                 // hidden, so the payer can see the money exists — issue #22484.
                 + " and bf.staff=:stf "
@@ -971,6 +973,7 @@ public class InwardStaffPaymentBillController implements Serializable {
                 + " and b.bill.cancelled=false "
                 + " and b.billItem.bill.patientEncounter.discharged=true "
                 + " and (b.feeValue - b.paidValue) > 0"
+                + " and (b.collectedByDoctorAtBilling = false or b.collectedByDoctorAtBilling is null) "
                 + " and b.bill.billDate between :fromDate and :toDate "
                 + " order by b.staff.id ";
 
@@ -999,6 +1002,7 @@ public class InwardStaffPaymentBillController implements Serializable {
                 + " and b.bill.cancelled=false "
                 + " and b.billItem.bill.patientEncounter.discharged=false "
                 + " and (b.feeValue - b.paidValue) > 0"
+                + " and (b.collectedByDoctorAtBilling = false or b.collectedByDoctorAtBilling is null) "
                 + " and  b.bill.billDate between :fromDate and :toDate "
                 + " order by b.staff.id ";
 
@@ -1264,12 +1268,12 @@ public class InwardStaffPaymentBillController implements Serializable {
             suggestions = new ArrayList<Staff>();
         } else {
             if (speciality != null) {
-                sql = "select p from Staff p where p.retired=false and ((p.person.name) like '%" + query.toUpperCase() + "%'or  (p.code) like '%" + query.toUpperCase() + "%' ) and p.speciality.id = " + getSpeciality().getId() + " order by p.person.name";
+                sql = "select p from Staff p where p.retired=false and ((p.person.name) like :q or  (p.code) like :q ) and p.speciality.id = " + getSpeciality().getId() + " order by p.person.name";
             } else {
-                sql = "select p from Staff p where p.retired=false and ((p.person.name) like '%" + query.toUpperCase() + "%'or  (p.code) like '%" + query.toUpperCase() + "%' ) order by p.person.name";
+                sql = "select p from Staff p where p.retired=false and ((p.person.name) like :q or  (p.code) like :q ) order by p.person.name";
             }
             //   ////// // System.out.println(sql);
-            suggestions = staffFacade.findByJpql(sql);
+            suggestions = staffFacade.findByJpql(sql, java.util.Map.of("q", "%" + query.toUpperCase() + "%"));
         }
         return suggestions;
     }
@@ -1284,11 +1288,12 @@ public class InwardStaffPaymentBillController implements Serializable {
             suggestions = new ArrayList<Staff>();
         } else {
             if (getReferringDoctorSpeciality() != null) {
-                sql = "select p from Staff p where p.retired=false and ((p.person.name) like '%" + query.toUpperCase() + "%'or  (p.code) like '%" + query.toUpperCase() + "%' ) and p.speciality=:rd order by p.person.name";
+                sql = "select p from Staff p where p.retired=false and ((p.person.name) like :q or  (p.code) like :q ) and p.speciality=:rd order by p.person.name";
+                m.put("q", "%" + query.toUpperCase() + "%");
                 suggestions = staffFacade.findByJpql(sql, m);
             } else {
-                sql = "select p from Staff p where p.retired=false and ((p.person.name) like '%" + query.toUpperCase() + "%'or  (p.code) like '%" + query.toUpperCase() + "%' ) order by p.person.name";
-                suggestions = staffFacade.findByJpql(sql);
+                sql = "select p from Staff p where p.retired=false and ((p.person.name) like :q or  (p.code) like :q ) order by p.person.name";
+                suggestions = staffFacade.findByJpql(sql, java.util.Map.of("q", "%" + query.toUpperCase() + "%"));
             }
         }
         return suggestions;
@@ -1337,6 +1342,8 @@ public class InwardStaffPaymentBillController implements Serializable {
                 + " and b.bill.cancelled=false "
                 //                + " and b.bill.refunded=false "
                 + " and (b.feeValue - b.paidValue) > 0 "
+                // Collected by the doctor at billing: the hospital never pays it (#17490).
+                + " and (b.collectedByDoctorAtBilling = false or b.collectedByDoctorAtBilling is null) "
                 // Held fees are listed (flagged "On Hold" in the UI) rather than
                 // hidden, so the payer can see the money exists — issue #22484.
                 + " and b.staff=:stf ";
@@ -1362,6 +1369,12 @@ public class InwardStaffPaymentBillController implements Serializable {
 
         }
         dueBillFees.removeAll(removeingBillFees);
+        // Default each fee's UI-only paying amount to the outstanding balance, as
+        // Find Due Payments does; otherwise "Amount to Pay" is blank and settle
+        // rejects it as invalid — issue #26007.
+        for (BillFee bf : dueBillFees) {
+            bf.setPayingAmount(bf.getFeeValue() - bf.getPaidValue());
+        }
         // performCalculations (not just the selection) so the payable/on-hold
         // split is right on the first render of the payment page — issue #22483.
         performCalculations();
@@ -1754,8 +1767,10 @@ public class InwardStaffPaymentBillController implements Serializable {
         tmp.setCreater(getSessionController().getLoggedUser());
         tmp.setDepartment(getSessionController().getLoggedUser().getDepartment());
 
-        tmp.setDeptId(getBillNumberBean().departmentBillNumberGeneratorYearly(getSessionController().getDepartment(), BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_INWARD_SERVICE));
-        tmp.setInsId(getBillNumberBean().departmentBillNumberGeneratorYearly(getSessionController().getDepartment(), BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_INWARD_SERVICE));
+        // One serial per payment: the same number goes on both fields (#26075).
+        String billNumber = getBillNumberBean().departmentBillNumberGeneratorYearly(getSessionController().getDepartment(), BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_INWARD_SERVICE);
+        tmp.setDeptId(billNumber);
+        tmp.setInsId(billNumber);
 
         Department voucherDepartment = getSessionController().getDepartment();
         Long voucherStartingNumber = configOptionApplicationController.getLongValueByKeyForDepartment(

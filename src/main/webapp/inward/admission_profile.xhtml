@@ -15,22 +15,22 @@
             <p:growl id="inpatientDashboardGrowl"/>
             <p:panel >
                 <f:facet name="header" >
-                    <div class="d-flex justify-content-between">
-                        <div>
+                    <div class="d-flex justify-content-between align-items-center w-100">
+                        <div class="d-flex align-items-center gap-2">
                             <h:outputText styleClass="fa fa-id-card"/>
-                            <p:outputLabel value="Inpatient Dashboard" class="mt-2 mx-3"/>
+                            <p:outputLabel value="Inpatient Dashboard" class="mx-2"/>
                             <h:panelGroup rendered="#{admissionController.current.parentEncounter != null}">
                                 <p:tag value="Baby Admission — Mother: #{admissionController.current.parentEncounter.patient.person.nameWithTitle} (BHT #{admissionController.current.parentEncounter.bhtNo})"
                                        icon="fa fa-baby" severity="warning" class="mx-2"/>
                             </h:panelGroup>
                         </div>
-                        <div><div class="d-flex gap-2">
+                        <div class="d-flex flex-grow-1 justify-content-center"><div class="d-flex gap-2">
                                 <h:panelGroup rendered="#{webUserController.hasPrivilege('InwardSearch')}">
                                     <p:commandButton
                                         value="Back to Search Admission"
                                         action="#{admissionController.navigateToSearchAdmissions()}"
                                         ajax="false"
-                                        class="ui-button-warning"
+                                        class="ui-button-info ui-button-outlined"
                                         icon="fa fa-arrow-left">
                                     </p:commandButton>
                                 </h:panelGroup>
@@ -39,8 +39,18 @@
                                         value="Nursing WorkBench"
                                         action="#{nursingWorkBenchController.navigateToBackNursingWorkBench()}"
                                         ajax="false"
-                                        class="ui-button-operating-theatre"
+                                        class="ui-button-info ui-button-outlined"
                                         icon="fa fa-arrow-left">
+                                    </p:commandButton>
+                                </h:panelGroup>
+                                <h:panelGroup rendered="#{webUserController.hasPrivilege('ReportsVisitHistory')}">
+                                    <p:commandButton
+                                        value="Visit History"
+                                        action="#{visitHistoryController.navigateToVisitHistoryForPatient(admissionController.current.patient)}"
+                                        ajax="false"
+                                        class="ui-button-info ui-button-outlined"
+                                        icon="fa fa-history"
+                                        title="All bills and admissions of this patient">
                                     </p:commandButton>
                                 </h:panelGroup>
                             </div>
@@ -208,22 +218,14 @@
                                     <h:outputText styleClass="fa-solid fa-allergies"/>
                                     <h:outputLabel value="Allergies" class="mx-4"/>
                                 </f:facet>
-                                <h:panelGroup rendered="#{empty bhtEditController.patientAllergies}">
+                                <h:panelGroup rendered="#{empty bhtEditController.patientAllergiesOf(admissionController.current.patient)}">
                                     <p:outputLabel value="No known allergies" styleClass="text-muted"/>
                                 </h:panelGroup>
-                                <h:panelGroup rendered="#{not empty bhtEditController.patientAllergies}">
-                                    <ui:repeat value="#{bhtEditController.patientAllergies}" var="al">
+                                <h:panelGroup rendered="#{not empty bhtEditController.patientAllergiesOf(admissionController.current.patient)}">
+                                    <ui:repeat value="#{bhtEditController.patientAllergiesOf(admissionController.current.patient)}" var="al">
                                         <div class="alert alert-warning py-1 px-2 my-1" role="alert">
                                             <h:outputText styleClass="fa-solid fa-triangle-exclamation me-1"/>
-                                            <h:outputText
-                                                rendered="#{not empty al.itemValue and not empty al.stringValue}"
-                                                value="#{al.itemValue.name} - #{al.stringValue}"/>
-                                            <h:outputText
-                                                rendered="#{not empty al.itemValue and empty al.stringValue}"
-                                                value="#{al.itemValue.name}"/>
-                                            <h:outputText
-                                                rendered="#{empty al.itemValue}"
-                                                value="#{al.stringValue}"/>
+                                            <h:outputText value="#{al.allergyDisplay}"/>
                                         </div>
                                     </ui:repeat>
                                 </h:panelGroup>
@@ -238,6 +240,7 @@
                                 <div class="col-12">
                                     <p:commandButton
                                         value="Edit Admission"
+                                        title="Edit the admission details"
                                         ajax="false"
                                         rendered="#{webUserController.hasPrivilege('InwardAdmissionsEditAdmission')}"
                                         action="#{admissionController.navigateToEditAdmission}"
@@ -251,6 +254,7 @@
                                 <div class="col-6">
                                     <p:commandButton
                                         value="Edit Patient Details"
+                                        title="Edit the patient's personal details"
                                         ajax="false"
                                         rendered="#{webUserController.hasPrivilege('InwardEditPatientDetailsFromAdmission')}"
                                         action="#{patientController.navigateToOpdPatientEdit()}"
@@ -264,6 +268,7 @@
                                 <div class="col-6">
                                     <p:commandButton
                                         value="Edit Payment Details"
+                                        title="Edit the payment method and credit details of this admission"
                                         ajax="false"
                                         rendered="#{webUserController.hasPrivilege('InwardEditPaymentDetails')}"
                                         action="#{bhtEditController.navigateToEditPaymentDetails()}"
@@ -276,7 +281,19 @@
                                 </div>
                                 <div class="col-6">
                                     <p:commandButton
+                                        value="Change Admission Type"
+                                        title="Change the admission type of this admitted patient. Past charges keep the old type."
+                                        ajax="false"
+                                        rendered="#{webUserController.hasPrivilege('InwardChangeAdmissionType')}"
+                                        disabled="#{admissionController.current.id eq null or admissionController.current.discharged eq true or admissionController.current.paymentFinalized eq true}"
+                                        action="#{admissionTypeChangeController.navigateToChangeAdmissionType(admissionController.current)}"
+                                        icon="fa fa-exchange-alt"
+                                        class="w-100 ui-button-warning"/>
+                                </div>
+                                <div class="col-6">
+                                    <p:commandButton
                                         value="Cancel Admission"
+                                        title="Cancel this admission"
                                         ajax="false"
                                         rendered="#{webUserController.hasPrivilege('InwardAdmissionCancel')}"
                                         action="#{bhtEditController.navigateToCancelAdmission()}"
@@ -290,6 +307,7 @@
                                 <h:panelGroup rendered="#{admissionController.current.parentEncounter != null}" layout="block" styleClass="col-12">
                                     <p:commandButton
                                         value="Mother's Inpatient Profile"
+                                        title="Open the mother's inpatient dashboard"
                                         action="#{admissionController.navigateToAdmissionProfileById(admissionController.current.parentEncounter.id)}"
                                         icon="fa fa-female"
                                         ajax="false"
@@ -1105,6 +1123,7 @@
                                     <div class="col-6">
                                         <p:commandButton
                                             value="Request from Pharmacy"
+                                            title="Request from Pharmacy"
                                             ajax="false"
                                             rendered="#{webUserController.hasPrivilege('InwardPharmacyIssueRequest')}"
                                             action="#{admissionController.navigateToPharmacyBhtRequest}"
@@ -1117,7 +1136,20 @@
                                     </div>
                                     <div class="col-6">
                                         <p:commandButton
+                                            id="btnIssueMedicinesInpatient"
+                                            value="Issue Medicines"
+                                            title="Issue medicines requested for BHT #{admissionController.current.bhtNo}"
+                                            action="/ward/ward_pharmacy_bht_issue_request_list_for_issue?faces-redirect=true"
+                                            actionListener="#{pharmacySaleBhtController.resetAll()}"
+                                            rendered="#{webUserController.hasPrivilege('PharmacyBHTIssueAccept') or webUserController.hasPrivilege('PharmacyBhtIssueRequest')}"
+                                            icon="fas fa-clipboard-list"
+                                            class="w-100"
+                                            ajax="false"/>
+                                    </div>
+                                    <div class="col-6">
+                                        <p:commandButton
                                             value="Direct Issue to BHTs"
+                                            title="Direct Issue to BHTs"
                                             action="/inward/pharmacy_bill_issue_bht?faces-redirect=true"
                                             actionListener="#{inpatientDirectIssueNativeSqlController.resetAll()}"
                                             rendered="#{webUserController.hasPrivilege('PharmacySale') or webUserController.hasPrivilege('PharmacyDirectIssueToBht')}"
@@ -1133,6 +1165,7 @@
                                         <p:commandButton
                                             id="issueDischargeMedicinesBtn"
                                             value="Issue Discharge Medicines"
+                                            title="Issue Discharge Medicines"
                                             action="/inward/pharmacy_discharge_medicine_issue?faces-redirect=true"
                                             actionListener="#{pharmacySaleBhtController.resetAllForDischargeIssue()}"
                                             rendered="#{webUserController.hasPrivilege('PharmacyDischargeMedicineIssue')}"
@@ -1147,6 +1180,7 @@
                                     <div class="col-6">
                                         <p:commandButton
                                             value="Direct Issue to Theatre Cases"
+                                            title="Direct Issue to Theatre Cases"
                                             action="/theater/inward_bill_surgery_issue?faces-redirect=true"
                                             actionListener="#{pharmacySaleBhtController.resetAll()}"
                                             rendered="#{webUserController.hasPrivilege('PharmacySale')}"
@@ -1162,6 +1196,7 @@
                                         <p:commandButton
                                             id="btnReceiveMedicinesFromPharmacyInpatient"
                                             value="Receive Medicines from Pharmacy"
+                                            title="Receive Medicines from Pharmacy"
                                             ajax="false"
                                             action="#{wardPharmacyBhtIssueReceiveController.navigateToPendingListForAdmission(admissionController.current)}"
                                             icon="fa fa-truck-medical"
@@ -1172,6 +1207,7 @@
                                         <p:commandButton
                                             id="btnReturnMedicinesToPharmacyInpatient"
                                             value="Return Medicines to Pharmacy"
+                                            title="Return Medicines to Pharmacy"
                                             ajax="false"
                                             action="#{wardPharmacyReturnToPharmacyController.navigateToReturn(admissionController.current)}"
                                             icon="fa fa-truck-ramp-box"
@@ -1201,6 +1237,7 @@
                                         <p:commandButton
                                             id="btnPharmacyRequestsHistory"
                                             value="Pharmacy Requests"
+                                            title="Pharmacy Requests"
                                             action="#{inwardPharmacyEncounterReportController.navigateToInpatientPharmacyRequestsList()}"
                                             rendered="#{webUserController.hasPrivilege('PharmacyBHTIssueAccept') or webUserController.hasPrivilege('InwardPharmacyIssueRequestSearch')}"
                                             icon="fa fa-clipboard-list"
@@ -1215,6 +1252,7 @@
                                         <p:commandButton
                                             id="btnPharmacyRequestDrafts"
                                             value="Draft Pharmacy Requests"
+                                            title="Draft Pharmacy Requests"
                                             action="#{inwardPharmacyEncounterReportController.navigateToInpatientPharmacyRequestDraftsList()}"
                                             rendered="#{webUserController.hasPrivilege('InwardPharmacyIssueRequest') or webUserController.hasPrivilege('InwardPharmacyIssueRequestSearch')}"
                                             icon="fa fa-file-pen"
@@ -1229,6 +1267,7 @@
                                         <p:commandButton
                                             id="btnDirectIssuesHistory"
                                             value="Direct Issues"
+                                            title="Direct Issues"
                                             action="#{inwardPharmacyEncounterReportController.navigateToInpatientPharmacyDirectIssuesList()}"
                                             rendered="#{webUserController.hasPrivilege('PharmacySale')}"
                                             icon="fa fa-file-invoice"
@@ -1243,6 +1282,7 @@
                                         <p:commandButton
                                             id="btnIssueReturnsHistory"
                                             value="Issue Returns"
+                                            title="Issue Returns"
                                             action="#{inwardPharmacyEncounterReportController.navigateToInpatientPharmacyReturnsList()}"
                                             rendered="#{webUserController.hasPrivilege('PharmacySale')}"
                                             icon="fa fa-rotate-left"
@@ -1257,6 +1297,7 @@
                                         <p:commandButton
                                             id="btnUnacceptedIssuesHistory"
                                             value="Unaccepted Issues"
+                                            title="Unaccepted Issues"
                                             action="#{inwardPharmacyEncounterReportController.navigateToInpatientPharmacyUnacceptedIssuesList()}"
                                             rendered="#{webUserController.hasPrivilege('PharmacyBHTIssueAccept') or webUserController.hasPrivilege('InwardPharmacyIssueRequestSearch')}"
                                             icon="fa fa-triangle-exclamation"

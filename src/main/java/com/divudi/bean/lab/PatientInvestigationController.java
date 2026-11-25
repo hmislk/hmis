@@ -1743,7 +1743,9 @@ public class PatientInvestigationController implements Serializable {
             if (selectText == null || selectText.trim().isEmpty()) {
                 temSql = "SELECT i FROM PatientInvestigation i where i.retired=false and i.collected = true and i.sampledAt between :fromDate and :toDate and i.receiveDepartment.id = " + getSessionController().getDepartment().getId();
             } else {
-                temSql = "select pi from PatientInvestigation pi join pi.investigation i join pi.billItem.bill b join b.patient.person p   where ((p.name) like '%" + selectText.toUpperCase() + "%' or (b.insId) like '%" + selectText.toUpperCase() + "%' or p.phone like '%" + selectText + "%' or (i.name) like '%" + selectText.toUpperCase() + "%' )  and pi.retired=false and b.createdAt between :fromDate and :toDate and pi.receiveDepartment.id = " + getSessionController().getDepartment().getId();
+                temSql = "select pi from PatientInvestigation pi join pi.investigation i join pi.billItem.bill b join b.patient.person p   where ((p.name) like :q or (b.insId) like :q or p.phone like :qraw or (i.name) like :q )  and pi.retired=false and b.createdAt between :fromDate and :toDate and pi.receiveDepartment.id = " + getSessionController().getDepartment().getId();
+                temMap.put("q", "%" + selectText.toUpperCase() + "%");
+                temMap.put("qraw", "%" + selectText + "%");
             }
 
             temMap.put("toDate", getToDate());
@@ -5620,12 +5622,20 @@ public class PatientInvestigationController implements Serializable {
     }
 
     public void markAsPrinted() {
-        if (getCurrent().getId() != null || getCurrent().getId() != 0) {
-            getCurrent().setPrinted(Boolean.TRUE);
-            getCurrent().setPrintingUser(getSessionController().getLoggedUser());
-            getCurrent().setPrintingAt(new Date());
-            getEjbFacade().edit(getCurrent());
+        if (getCurrent() == null || getCurrent().getId() == null) {
+            return;
         }
+        // Re-read before saving so a stale session copy cannot overwrite a
+        // newer approval (or other changes) when only the print is recorded.
+        PatientInvestigation fresh = getEjbFacade().findWithoutCache(getCurrent().getId());
+        if (fresh == null) {
+            return;
+        }
+        fresh.setPrinted(Boolean.TRUE);
+        fresh.setPrintingUser(getSessionController().getLoggedUser());
+        fresh.setPrintingAt(new Date());
+        getEjbFacade().edit(fresh);
+        setCurrent(fresh);
     }
 
     public void delete() {

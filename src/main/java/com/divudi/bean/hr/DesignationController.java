@@ -45,14 +45,14 @@ public class DesignationController implements Serializable {
     String selectText = "";
 
     public List<Designation> getSelectedItems() {
-        selectedItems = getFacade().findByJpql("select c from Designation c where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
+        selectedItems = getFacade().findByJpql("select c from Designation c where c.retired=false and (c.name) like :q order by c.name", java.util.Map.of("q", "%" + getSelectText().toUpperCase() + "%"));
         return selectedItems;
     }
 
     public List<Designation> completeDesignation(String qry) {
         List<Designation> a = null;
         if (qry != null) {
-            a = getFacade().findByJpql("select c from Designation c where c.retired=false and (c.name) like '%" + qry.toUpperCase() + "%' order by c.name");
+            a = getFacade().findByJpql("select c from Designation c where c.retired=false and (c.name) like :q order by c.name", java.util.Map.of("q", "%" + qry.toUpperCase() + "%"));
         }
         if (a == null) {
             a = new ArrayList<Designation>();

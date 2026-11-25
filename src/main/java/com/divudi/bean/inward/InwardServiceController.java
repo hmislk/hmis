@@ -7,6 +7,8 @@
  * (94) 71 5812399
  */
 package com.divudi.bean.inward;
+import java.util.Map;
+import com.divudi.service.ItemAuditHelper;
 import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.ItemController;
@@ -52,6 +54,8 @@ import javax.persistence.TemporalType;
 @Named
 @SessionScoped
 public class InwardServiceController implements Serializable {
+    @EJB
+    private ItemAuditHelper itemAuditHelper;
 
     private static final long serialVersionUID = 1L;
     @Inject
@@ -122,9 +126,9 @@ public class InwardServiceController implements Serializable {
         if (query == null) {
             suggestions = new ArrayList<>();
         } else {
-            sql = "select c from InwardService c where c.retired=false and (c.name) like '%" + query.toUpperCase() + "%' order by c.name";
+            sql = "select c from InwardService c where c.retired=false and (c.name) like :q order by c.name";
             //////// // System.out.println(sql);
-            suggestions = getFacade().findByJpql(sql);
+            suggestions = getFacade().findByJpql(sql, java.util.Map.of("q", "%" + query.toUpperCase() + "%"));
         }
         return suggestions;
     }
@@ -133,7 +137,7 @@ public class InwardServiceController implements Serializable {
         if (selectText.trim().equals("")) {
             selectedItems = getFacade().findByJpql("select c from InwardService c where c.retired=false order by c.name");
         } else {
-            selectedItems = getFacade().findByJpql("select c from InwardService c where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
+            selectedItems = getFacade().findByJpql("select c from InwardService c where c.retired=false and (c.name) like :q order by c.name", java.util.Map.of("q", "%" + getSelectText().toUpperCase() + "%"));
         }
         return selectedItems;
     }
@@ -164,7 +168,7 @@ public class InwardServiceController implements Serializable {
     }
 
     public List<InwardService> completeItem(String qry) {
-        List<InwardService> completeItems = getFacade().findByJpql("select c from Item c where ( type(c) = InwardService or type(c) = Packege ) and c.retired=false and (c.name) like '%" + qry.toUpperCase() + "%' order by c.name");
+        List<InwardService> completeItems = getFacade().findByJpql("select c from Item c where ( type(c) = InwardService or type(c) = Packege ) and c.retired=false and (c.name) like :q order by c.name", java.util.Map.of("q", "%" + qry.toUpperCase() + "%"));
         return completeItems;
     }
 
@@ -264,13 +268,16 @@ public class InwardServiceController implements Serializable {
                 //////// // System.out.println("3");
                 getCurrent().setReportedAs(getCurrent());
             }
+            Map<String, Object> beforeNames = itemAuditHelper.snapshotFromDb(getCurrent().getId());
             getFacade().edit(getCurrent());
+            itemAuditHelper.logUpdate(beforeNames, getCurrent(), getSessionController().getLoggedUser(), "UI");
             JsfUtil.addSuccessMessage("Updated Successfully.");
         } else {
             //////// // System.out.println("4");
             getCurrent().setCreatedAt(new Date());
             getCurrent().setCreater(getSessionController().getLoggedUser());
             getFacade().create(getCurrent());
+            itemAuditHelper.logCreate(getCurrent(), getSessionController().getLoggedUser(), "UI");
             if (billedAs == false) {
                 //////// // System.out.println("5");
                 getCurrent().setBilledAs(getCurrent());
@@ -408,10 +415,10 @@ public class InwardServiceController implements Serializable {
         if (selectText.isEmpty()) {
             sql = "select c from InwardService c where c.retired=false order by c.category.name,c.name";
         } else {
-            sql = "select c from InwardService c where c.retired=false and (c.name) like '%" + selectText.toUpperCase() + "%' order by c.category.name,c.name";
+            sql = "select c from InwardService c where c.retired=false and (c.name) like :q order by c.category.name,c.name";
         }
         //////// // System.out.println(sql);
-        items = getFacade().findByJpql(sql);
+        items = selectText.isEmpty() ? getFacade().findByJpql(sql) : getFacade().findByJpql(sql, java.util.Map.of("q", "%" + selectText.toUpperCase() + "%"));
 
         if (items == null) {
             items = new ArrayList<InwardService>();

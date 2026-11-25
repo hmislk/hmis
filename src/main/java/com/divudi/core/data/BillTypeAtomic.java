@@ -410,7 +410,11 @@ public enum BillTypeAtomic {
     DRAWER_ADJUSTMENT("Drawer Adjustment", BillCategory.BILL, ServiceType.OTHER, BillFinanceType.FLOAT_CHANGE, CountedServiceType.OTHER, PaymentCategory.OTHER, BillType.DrawerAdjustment),
     // Ward request to the issuing pharmacy to return a direct issue to an inpatient (#25506).
     // No stock and no bill value until the pharmacy approves and settles the return.
-    REQUEST_DIRECT_ISSUE_RETURN_INWARD("Request Return of Direct Issued Medicines for Inward Patients", BillCategory.BILL, ServiceType.INWARD_SERVICE, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.OTHER, PaymentCategory.NO_PAYMENT, BillType.InwardDirectIssueReturnRequest);
+    REQUEST_DIRECT_ISSUE_RETURN_INWARD("Request Return of Direct Issued Medicines for Inward Patients", BillCategory.BILL, ServiceType.INWARD_SERVICE, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.OTHER, PaymentCategory.NO_PAYMENT, BillType.InwardDirectIssueReturnRequest),
+    // Serial key for credit company claim numbers (#25847). Not a stored bill type; claims are not bills.
+    OPD_CREDIT_COMPANY_CLAIM("OPD Credit Company Claim", BillCategory.BILL, ServiceType.OTHER, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.NONE, PaymentCategory.NO_PAYMENT),
+    // Serial key for OPD quotation numbers (#25885). Not a stored bill type; quotations are not bills.
+    OPD_QUOTATION("OPD Quotation", BillCategory.BILL, ServiceType.OTHER, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.NONE, PaymentCategory.NO_PAYMENT);
 
     public static List<BillTypeAtomic> findOpdAndInpatientServiceAndInvestigationIndividualBillTypes() {
         List<BillTypeAtomic> btas = new ArrayList<>();

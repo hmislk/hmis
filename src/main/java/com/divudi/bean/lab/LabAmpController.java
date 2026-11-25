@@ -8,6 +8,7 @@
  */
 package com.divudi.bean.lab;
 
+import com.divudi.service.ItemAuditHelper;
 import com.divudi.bean.common.CategoryController;
 import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.SessionController;
@@ -789,6 +790,7 @@ public class LabAmpController implements Serializable {
             auditData.put("id", amp.getId());
             auditData.put("name", amp.getName());
             auditData.put("code", amp.getCode());
+            ItemAuditHelper.putNameFields(auditData, amp);
             auditData.put("barcode", amp.getBarcode());
             auditData.put("retired", amp.isRetired());
             auditData.put("inactive", amp.isInactive());
@@ -806,8 +808,11 @@ public class LabAmpController implements Serializable {
             auditData.put("consumptionAllowed", amp.isConsumptionAllowed());
             auditData.put("allowFractions", amp.isAllowFractions());
             auditData.put("strengthOfAnIssueUnit", amp.getStrengthOfAnIssueUnit());
-            auditData.put("strengthUnit", amp.getStrengthUnit());
-            auditData.put("issueUnit", amp.getIssueUnit());
+            // Scalars only: a raw entity here makes Gson walk the graph back into the Amp and the audit row is lost
+            auditData.put("strengthUnit", amp.getStrengthUnit() != null ? amp.getStrengthUnit().getName() : null);
+            auditData.put("strengthUnitId", amp.getStrengthUnit() != null ? amp.getStrengthUnit().getId() : null);
+            auditData.put("issueUnit", amp.getIssueUnit() != null ? amp.getIssueUnit().getName() : null);
+            auditData.put("issueUnitId", amp.getIssueUnit() != null ? amp.getIssueUnit().getId() : null);
         }
         return auditData;
     }

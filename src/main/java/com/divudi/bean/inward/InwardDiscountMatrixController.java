@@ -339,10 +339,10 @@ public class InwardDiscountMatrixController implements Serializable {
                 + " left join a.category cat"
                 + " where a.retired = false"
                 + " and a.inwardChargeType is null"
-                + " and (type(a.category) = :svc"
-                + "   or type(a.category) = :sub"
-                + "   or type(a.category) = :inv"
-                + "   or a.category is null)");
+                + " and (type(cat) = :svc"
+                + "   or type(cat) = :sub"
+                + "   or type(cat) = :inv"
+                + "   or cat is null)");
         hm.put("svc", ServiceCategory.class);
         hm.put("sub", ServiceSubCategory.class);
         hm.put("inv", InvestigationCategory.class);
@@ -365,8 +365,8 @@ public class InwardDiscountMatrixController implements Serializable {
                 + " left join a.category cat"
                 + " where a.retired = false"
                 + " and a.inwardChargeType is null"
-                + " and (type(a.category) = :pharm"
-                + "   or a.category is null)");
+                + " and (type(cat) = :pharm"
+                + "   or cat is null)");
         hm.put("pharm", PharmaceuticalItemCategory.class);
         appendSelectionFilters(sql, hm);
         sql.append(" order by ps.name, dept.name, cat.name");

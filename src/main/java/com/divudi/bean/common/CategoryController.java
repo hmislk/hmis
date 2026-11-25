@@ -339,8 +339,8 @@ public class CategoryController implements Serializable {
             suggestions = new ArrayList<>();
         } else {
 
-            sql = "select c from Category c where c.retired=false and type(c)= :cat and (c.name) like '%" + query.toUpperCase() + "%' order by c.name";
-            //////// // System.out.println(sql);
+            sql = "select c from Category c where c.retired=false and type(c)= :cat and (c.name) like :qry order by c.name";
+            tmpMap.put("qry", "%" + query.toUpperCase() + "%");
             tmpMap.put("cat", InvestigationCategory.class);
             suggestions = getFacade().findByJpql(sql, tmpMap, TemporalType.TIMESTAMP);
         }
@@ -355,8 +355,8 @@ public class CategoryController implements Serializable {
             suggestions = new ArrayList<>();
         } else {
 
-            sql = "select c from Category c where c.retired=false and (type(c)= :sup or type(c)= :sub or type(c)= :inv) and (c.name) like '%" + query.toUpperCase() + "%' order by c.name";
-            //////// // System.out.println(sql);
+            sql = "select c from Category c where c.retired=false and (type(c)= :sup or type(c)= :sub or type(c)= :inv) and (c.name) like :qry order by c.name";
+            tmpMap.put("qry", "%" + query.toUpperCase() + "%");
             tmpMap.put("sup", ServiceCategory.class);
             tmpMap.put("sub", ServiceSubCategory.class);
             tmpMap.put("inv", InvestigationCategory.class);
@@ -626,7 +626,9 @@ public class CategoryController implements Serializable {
     }
 
     public List<Category> getSelectedItems() {
-        selectedItems = getFacade().findByJpql("select c from Category c where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
+        Map<String, Object> m = new HashMap<>();
+        m.put("sel", "%" + getSelectText().toUpperCase() + "%");
+        selectedItems = getFacade().findByJpql("select c from Category c where c.retired=false and (c.name) like :sel order by c.name", m);
         return selectedItems;
     }
 

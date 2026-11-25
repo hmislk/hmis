@@ -58,6 +58,7 @@ public enum Privileges {
     ChangeProfessionalFee("Change Professional Fee"),
     OpdPackageBillCancel("OPD Package Bill Cancel"),
     OpdEditPatientDetails("OPD Edit Patient Details"),
+    RestrictPatientSearchToOwnRegistrations("Restrict Patient Search To Own Registrations"),
     //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="Inpatient">
@@ -68,6 +69,7 @@ public enum Privileges {
     InwardAdmissionsInwardAppoinment("Inward Admissions Inward Appointment"),
     InwardRoom("Inward Room"),
     InwardRoomRoomOccupency("Inward Room Occupancy"),
+    InwardRoomOccupancyAnyInstitute("Inward Room Occupancy - Any Institute"),
     InwardRoomRoomChange("Inward Room Change"),
     
     // IP Appointment
@@ -173,6 +175,7 @@ public enum Privileges {
     InwardPackageChange("Inward Package Change"),
     InwardEditPatientDetailsFromAdmission("Inward Edit Patient Details From Admission"),
     InwardEditPaymentDetails("Inward Edit Payment Details"),
+    InwardChangeAdmissionType("Inward Change Admission Type"),
     InwardManageAllergies("Inward Manage Allergies"),
     InwardDoctorPaymentAccess("Inward Doctor Payment Access"),
     InwardMakeDepositAccess("Inward Make Deposit Access"),
@@ -429,6 +432,7 @@ public enum Privileges {
     StoreSummery("Store Summary"),
     StoreAdministration("Store Administration"),
     PharmacyItemNameEdit("Pharmacy Item Name Edit"),
+    PharmacyItemUnretire("Pharmacy Item Un-retire"),
     //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="Channel">
@@ -589,6 +593,7 @@ public enum Privileges {
     ClinicalPatientPhoneNumberEdit("Clinical Patient Phone Number Edit"),
     ClinicalPatientBlacklist("Clinical Patient Blacklist"),
     ClinicalPatientPseudonymise("Clinical Patient Pseudonymise"),
+    EmrVisitsByDiagnosisReport("EMR Visits by Diagnosis Report"),
     //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="Pharmacy">
@@ -1290,6 +1295,25 @@ public enum Privileges {
     ReportsPatientJourney("Reports Page - 1. Patient Journey"),
     ReportsPatientLedger("Reports Page - 2. Patient Ledger"),
     ReportsSpecialityWiseDemograhicData("Reports Page - 3. Speciality Wise Demographic Data"),
+    ReportsVisitHistory("Reports Page - 4. Visit History"),
+    ManageMaintenanceWindows("Manage Maintenance Windows"),
+    //</editor-fold>
+    //<editor-fold defaultstate="collapsed" desc="OPD Credit Company Claims (#25847)">
+    OpdCreditClaimCreate("OPD Credit Claim - Create"),
+    OpdCreditClaimSubmit("OPD Credit Claim - Submit"),
+    OpdCreditClaimReject("OPD Credit Claim - Record Rejection"),
+    OpdCreditClaimResubmit("OPD Credit Claim - Resubmit"),
+    OpdCreditClaimSettle("OPD Credit Claim - Settle"),
+    OpdCreditClaimReports("OPD Credit Claim - Reports"),
+    OpdCreditWriteOffRequest("OPD Credit - Request Write-off"),
+    OpdCreditWriteOffApprove("OPD Credit - Approve Write-off"),
+    //</editor-fold>
+    //<editor-fold defaultstate="collapsed" desc="OPD Quotation (#25885)">
+    OpdQuotationCreate("OPD Quotation - Create, Search and Print"),
+    //</editor-fold>
+    //<editor-fold defaultstate="collapsed" desc="Patient Complaints (#25886)">
+    PatientComplaintHandle("Patient Complaints - Handle (view register, assign, respond, change status, close)"),
+    PatientComplaintCreate("Patient Complaints - Record On-site Complaint"),
     //</editor-fold>
     ;
 
@@ -1337,6 +1361,7 @@ public enum Privileges {
             case OpdReprint:
             case OpdBillSearch:
             case OpdPreBilling:
+            case OpdQuotationCreate:
             case OpdReactivate:
             case OpdBillItemSearch:
             case OpdBillSearchEdit:
@@ -1583,6 +1608,7 @@ public enum Privileges {
             case PrintOriginalPoBillFromReprint:
             case PrintOriginalGrnBillFromReprint:
             case PharmacyItemNameEdit:
+            case PharmacyItemUnretire:
 
                 return "Pharmacy";
 
@@ -1769,6 +1795,7 @@ public enum Privileges {
             case InwardReportPharmacyIssueSummaryLegacy:
             case InwardEditPatientDetailsFromAdmission:
             case InwardEditPaymentDetails:
+            case InwardChangeAdmissionType:
             case InwardManageAllergies:
             case InwardDoctorPaymentAccess:
             case InwardMakeDepositAccess:
@@ -2198,6 +2225,7 @@ public enum Privileges {
             case ReportsPatientJourney:
             case ReportsPatientLedger:
             case ReportsSpecialityWiseDemograhicData:
+            case ReportsVisitHistory:
                 return "Reports";
 
             default:

@@ -38,6 +38,7 @@ import com.divudi.core.entity.lab.WorksheetItem;
 import com.divudi.core.data.dto.InvestigationDTO;
 import com.divudi.core.facade.DepartmentFacade;
 import com.divudi.core.facade.InvestigationFacade;
+import com.divudi.service.ItemAuditHelper;
 import com.divudi.service.lab.InvestigationConversionService;
 import com.divudi.core.facade.InvestigationItemFacade;
 import com.divudi.core.facade.InvestigationItemValueFlagFacade;
@@ -99,6 +100,8 @@ public class InvestigationController implements Serializable {
      */
     @Inject
     SessionController sessionController;
+    @EJB
+    private ItemAuditHelper itemAuditHelper;
     @Inject
     private BillBeanController billBean;
     @Inject
@@ -375,6 +378,7 @@ public class InvestigationController implements Serializable {
             i.setCreatedAt(new Date());
             i.setCreater(getSessionController().getLoggedUser());
             getFacade().create(i);
+            itemAuditHelper.logCreate(i, getSessionController().getLoggedUser(), "UI add many");
 
             i.setReportedAs(i);
             i.setBilledAs(i);
@@ -1086,9 +1090,9 @@ public class InvestigationController implements Serializable {
             suggestions = new ArrayList<>();
         } else {
             // sql = "select c from Investigation c where c.retired=false and (c.name) like '%" + query.toUpperCase() + "%' order by c.name";
-            sql = "select c from Investigation c where c.retired=false and type(c)!=Packege and (c.name) like '%" + query.toUpperCase() + "%' order by c.name";
+            sql = "select c from Investigation c where c.retired=false and type(c)!=Packege and (c.name) like :q order by c.name";
             //////// // System.out.println(sql);
-            suggestions = getFacade().findByJpql(sql);
+            suggestions = getFacade().findByJpql(sql, java.util.Map.of("q", "%" + query.toUpperCase() + "%"));
         }
         return suggestions;
     }
@@ -1327,7 +1331,7 @@ public class InvestigationController implements Serializable {
         if (selectText.trim().equals("")) {
             selectedItems = getFacade().findByJpql("select c from Investigation c where c.retired=false order by c.name");
         } else {
-            selectedItems = getFacade().findByJpql("select c from Investigation c where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
+            selectedItems = getFacade().findByJpql("select c from Investigation c where c.retired=false and (c.name) like :q order by c.name", java.util.Map.of("q", "%" + getSelectText().toUpperCase() + "%"));
         }
         return selectedItems;
     }
@@ -1398,7 +1402,8 @@ public class InvestigationController implements Serializable {
 //            m.put("pak", Investigation.class);
             m.put("ins", getSessionController().getInstitution());
             sql = "select c from Item c where ( type(c) = Investigation or type(c) = Packege ) "
-                    + "and c.retired=false and c.institution=:ins and (c.name) like '%" + qry.toUpperCase() + "%' order by c.name";
+                    + "and c.retired=false and c.institution=:ins and (c.name) like :q order by c.name";
+            m.put("q", "%" + qry.toUpperCase() + "%");
             List<Investigation> completeItems = getFacade().findByJpql(sql, m);
             return completeItems;
         } else {
@@ -1511,13 +1516,16 @@ public class InvestigationController implements Serializable {
             if (reportedAs == false) {
                 getCurrent().setReportedAs(getCurrent());
             }
+            Map<String, Object> beforeNames = itemAuditHelper.snapshotFromDb(getCurrent().getId());
             getFacade().edit(getCurrent());
+            itemAuditHelper.logUpdate(beforeNames, getCurrent(), getSessionController().getLoggedUser(), "UI");
             JsfUtil.addSuccessMessage("Updated Successfully.");
         } else {
             getCurrent().setCreatedAt(new Date());
             getCurrent().setCreater(getSessionController().getLoggedUser());
 
             getFacade().create(getCurrent());
+            itemAuditHelper.logCreate(getCurrent(), getSessionController().getLoggedUser(), "UI");
             if (billedAs == false) {
                 getCurrent().setBilledAs(getCurrent());
             }
@@ -1532,6 +1540,7 @@ public class InvestigationController implements Serializable {
             sc.setName(getCurrent().getName());
             sc.setParentItem(getCurrent());
             getItemFacade().create(sc);
+            itemAuditHelper.logCreate(sc, getSessionController().getLoggedUser(), "UI auto sample component");
             JsfUtil.addSuccessMessage("Saved Successfully");
         }
         recreateModel();
@@ -1581,12 +1590,15 @@ public class InvestigationController implements Serializable {
             if (reportedAs == false) {
                 getCurrent().setReportedAs(getCurrent());
             }
+            Map<String, Object> beforeNames = itemAuditHelper.snapshotFromDb(getCurrent().getId());
             getFacade().edit(getCurrent());
+            itemAuditHelper.logUpdate(beforeNames, getCurrent(), getSessionController().getLoggedUser(), "UI");
             JsfUtil.addSuccessMessage("Updated Successfully.");
         } else {
             getCurrent().setCreatedAt(new Date());
             getCurrent().setCreater(getSessionController().getLoggedUser());
             getFacade().create(getCurrent());
+            itemAuditHelper.logCreate(getCurrent(), getSessionController().getLoggedUser(), "UI");
             if (billedAs == false) {
                 getCurrent().setBilledAs(getCurrent());
             }
@@ -1601,6 +1613,7 @@ public class InvestigationController implements Serializable {
             sc.setName(getCurrent().getName());
             sc.setParentItem(getCurrent());
             getItemFacade().create(sc);
+            itemAuditHelper.logCreate(sc, getSessionController().getLoggedUser(), "UI auto sample component");
             JsfUtil.addSuccessMessage("Saved Successfully");
         }
         recreateModel();
@@ -1619,12 +1632,15 @@ public class InvestigationController implements Serializable {
             if (reportedAs == false) {
                 i.setReportedAs(i);
             }
+            Map<String, Object> beforeNames = itemAuditHelper.snapshotFromDb(i.getId());
             getFacade().edit(i);
+            itemAuditHelper.logUpdate(beforeNames, i, getSessionController().getLoggedUser(), "UI");
             JsfUtil.addSuccessMessage("Updated Successfully.");
         } else {
             i.setCreatedAt(new Date());
             i.setCreater(getSessionController().getLoggedUser());
             getFacade().create(i);
+            itemAuditHelper.logCreate(i, getSessionController().getLoggedUser(), "UI");
             if (billedAs == false) {
                 i.setBilledAs(i);
             }
@@ -1639,6 +1655,7 @@ public class InvestigationController implements Serializable {
             sc.setName(i.getName());
             sc.setParentItem(i);
             getItemFacade().create(sc);
+            itemAuditHelper.logCreate(sc, getSessionController().getLoggedUser(), "UI auto sample component");
             JsfUtil.addSuccessMessage("Saved Successfully");
         }
         recreateModel();
@@ -1648,8 +1665,11 @@ public class InvestigationController implements Serializable {
     public void saveSelected(Investigation tix) {
         if (tix.getId() == null) {
             getFacade().create(tix);
+            itemAuditHelper.logCreate(tix, getSessionController().getLoggedUser(), "UI");
         } else {
+            Map<String, Object> beforeNames = itemAuditHelper.snapshotFromDb(tix.getId());
             getFacade().edit(tix);
+            itemAuditHelper.logUpdate(beforeNames, tix, getSessionController().getLoggedUser(), "UI");
         }
     }
 
@@ -1987,12 +2007,20 @@ public class InvestigationController implements Serializable {
         String jpql = "SELECT new com.divudi.core.data.dto.InvestigationDTO("
                 + "i.id, "
                 + "i.name, "
-                + "i.investigationCategory.name, "
-                + "i.institution.name, "
-                + "i.machine.name, "
+                + "COALESCE(cat.name, legacyCat.name), "
+                + "ins.name, "
+                + "mac.name, "
                 + "i.retired, "
-                + "i.department.name) "
+                + "dep.name) "
                 + "FROM Investigation i "
+                // Explicit LEFT JOINs: path navigation (i.machine.name) is an inner
+                // join, which dropped every investigation without a machine,
+                // legacy category, institution or department (#23416).
+                + "LEFT JOIN i.category cat "
+                + "LEFT JOIN i.investigationCategory legacyCat "
+                + "LEFT JOIN i.institution ins "
+                + "LEFT JOIN i.machine mac "
+                + "LEFT JOIN i.department dep "
                 + "ORDER BY i.name";
 
         investigationDtos = (List<InvestigationDTO>) getFacade().findLightsByJpql(jpql);

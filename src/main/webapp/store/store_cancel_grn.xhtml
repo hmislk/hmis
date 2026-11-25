@@ -12,12 +12,20 @@
             <ui:define name="content">
                 <h:form>
                     <h:panelGroup rendered="#{!storeBillSearch.printPreview}" styleClass="alignTop" >
-                        <p:panel  header="Cancellation">
+                        <p:panel>
+                            <f:facet name="header">
+                                <div class="d-flex justify-content-between align-items-center w-100">
+                                    <h:outputText value="Cancellation"/>
+                                    <div class="d-flex gap-2 align-items-center">
+                                        <p:commandButton value="Cancel" ajax="false" icon="fa fa-ban" styleClass="ui-button-danger"
+                                                         action="#{storeBillSearch.pharmacyGrnCancel()}"
+                                                         disabled="#{storeBillSearch.billACancellationBill}"/>
+                                    </div>
+                                </div>
+                            </f:facet>
                             <p:selectOneMenu   id="cmbPs" value="#{storeBillSearch.bill.paymentMethod}" required="true"  >
                                 <f:selectItems value="#{enumController.paymentMethods}"/>
                             </p:selectOneMenu>
-                            <h:commandButton value="Cancel" action="#{storeBillSearch.pharmacyGrnCancel()}" >
-                            </h:commandButton>                            
                         </p:panel>
                         <p:panelGrid columns="2" style="width: 100%;">
                             <p:panel header="Supplier Detail">
@@ -40,7 +48,7 @@
                             </p:panel>
                         </p:panelGrid>
                         <p:panel header="Bill Item Detail">
-                            <p:dataTable rowIndexVar="rowIndex" value="#{storeBillSearch.bill.billItems}" var="bip" >
+                            <p:dataTable styleClass="p-datatable-sm" rowIndexVar="rowIndex" value="#{storeBillSearch.bill.billItems}" var="bip" >
                                 <p:column>
                                     <f:facet name="header">No</f:facet>
                                         #{rowIndex+1}

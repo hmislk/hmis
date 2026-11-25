@@ -184,6 +184,8 @@ public class ConfigOptionApplicationController implements Serializable {
     private void loadOpdBillingConfigurationDefaults() {
         // Feature toggle: whether all departments share the same OPD payment methods
         getBooleanValueByKey("All Departments Use Same Payment Methods for OPD Billing", true);
+        // Seeded so an admin can find it; the OPD billing page reads it with the read-only getter (#25731).
+        getBooleanValueByKey(OPD_BILLING_ALLOW_FEE_COLLECTED_BY_DOCTOR, false);
     }
 
     private void loadInwardConfigurationDefaults() {
@@ -198,6 +200,8 @@ public class ConfigOptionApplicationController implements Serializable {
         // Replaces "Need to check inward bills before discharge", which was read
         // inverted - see BhtSummeryController.INWARD_BILL_CHECKING_REQUIRED.
         getBooleanValueByKey("Inward bills must be checked before the final bill is settled", true);
+        // Seeded so an admin can find it; the fee page reads it with the read-only getter (#17490).
+        getBooleanValueByKey(INWARD_PROFESSIONAL_FEE_ALLOW_FEE_COLLECTED_BY_DOCTOR, false);
         // Theatre surgery service bill item list. Four booleans selecting one
         // mode, read in a fixed precedence by ItemController.completeTheatreItems
         // (mapped, then all services and investigations, then all services,
@@ -1071,6 +1075,8 @@ public class ConfigOptionApplicationController implements Serializable {
         // must enter a 6-digit authenticator code after their password.
         getBooleanValueByKey("Enable authenticator app two-factor login", false);
         getBooleanValueByKey("Require authenticator app two-factor login for all users", false);
+        // Seeded so an admin can find it; the login check reads it with the read-only getter
+        getBooleanValueByKey(SERVICE_LOGIN_ONLY_SERVICE_ACCOUNTS_KEY, false);
         getShortTextValueByKey("Authenticator app issuer name", "HMIS");
     }
 
@@ -1670,6 +1676,48 @@ public class ConfigOptionApplicationController implements Serializable {
         saveShortTextOption(key, group == null ? "" : group.trim());
     }
 
+    /**
+     * Key holding the VAT rate (percent) for one inward charge type (issue
+     * #17491). Uses the enum {@code name()}, not the label, because labels can
+     * be renamed. Default 0 = no VAT.
+     */
+    public static String inwardVatPercentageKey(InwardChargeType type) {
+        return "Inward VAT Percentage - " + type.name();
+    }
+
+    /**
+     * VAT rate (percent) for one inward charge type; 0 when the key was never
+     * set. Read-only: never creates the ConfigOption row, so bill calculation
+     * writes nothing. A malformed or negative stored value counts as 0.
+     */
+    public double getInwardVatPercentage(InwardChargeType type) {
+        if (type == null || type == InwardChargeType.ComputedVAT) {
+            return 0.0;
+        }
+        ConfigOption option = getApplicationOption(inwardVatPercentageKey(type));
+        if (option == null || option.getValueType() != OptionValueType.DOUBLE) {
+            return 0.0;
+        }
+        try {
+            double rate = Double.parseDouble(option.getOptionValue());
+            return isValidInwardVatPercentage(rate) && rate > 0 ? rate : 0.0;
+        } catch (NumberFormatException | NullPointerException e) {
+            return 0.0;
+        }
+    }
+
+    /** A usable VAT rate is a finite number from 0 to 100 (percent). */
+    public static boolean isValidInwardVatPercentage(double rate) {
+        return Double.isFinite(rate) && rate >= 0 && rate <= 100;
+    }
+
+    public void saveInwardVatPercentage(InwardChargeType type, double percentage) {
+        if (type == null || type == InwardChargeType.ComputedVAT || !isValidInwardVatPercentage(percentage)) {
+            return;
+        }
+        setDoubleValueByKey(inwardVatPercentageKey(type), percentage > 0 ? percentage : 0.0);
+    }
+
     public String getColorValueByKey(String key) {
         ConfigOption option = getApplicationOption(key);
         if (option == null || option.getValueType() != OptionValueType.COLOR) {
@@ -1783,6 +1831,35 @@ public class ConfigOptionApplicationController implements Serializable {
      */
     public boolean isProfessionalAndAssistingFeesMerged() {
         return getBooleanValueByKeyReadOnly(PROFESSIONAL_AND_ASSISTING_FEES_MERGED, false);
+    }
+
+    /**
+     * Key that lets an inward professional fee be marked "Collected by Doctor" when it is added.
+     * It controls only the marking of NEW fees. A marked fee is not payable by the hospital: it is
+     * left out of the patient's bill total, due and claimable amount and out of the doctor payment
+     * due lists, and is printed on patient bills only as the note "Fees Collected by the Doctor".
+     * The fee is not recorded as paid (paidValue and settleValue stay 0). Turning the key off
+     * later does not change fees already marked. Default false.
+     */
+    public static final String INWARD_PROFESSIONAL_FEE_ALLOW_FEE_COLLECTED_BY_DOCTOR
+            = "Inward Professional Fee - Allow Fee Collected By Doctor";
+
+    public boolean isInwardProfessionalFeeCollectedByDoctorAllowed() {
+        return getBooleanValueByKeyReadOnly(INWARD_PROFESSIONAL_FEE_ALLOW_FEE_COLLECTED_BY_DOCTOR, false);
+    }
+
+    /**
+     * Key that lets a doctor (staff) fee be marked "Collected by Doctor" on the OPD billing page.
+     * It controls only the marking of NEW fees. A marked fee is left out of the bill net total
+     * and the amount paid at the cashier, is not payable by the hospital (left out of the doctor
+     * payment due lists) and the printed bill labels the fee under its item with the doctor's name
+     * and "Collected by the Doctor", with no amount. Turning the key off later does not change fees already marked. Default false.
+     */
+    public static final String OPD_BILLING_ALLOW_FEE_COLLECTED_BY_DOCTOR
+            = "OPD Billing - Allow Fee Collected By Doctor";
+
+    public boolean isOpdFeeCollectedByDoctorAllowed() {
+        return getBooleanValueByKeyReadOnly(OPD_BILLING_ALLOW_FEE_COLLECTED_BY_DOCTOR, false);
     }
 
     /**
@@ -1978,6 +2055,109 @@ public class ConfigOptionApplicationController implements Serializable {
 
     public boolean isAuthenticatorAppTwoFactorLoginRequiredForAllUsers() {
         return getBooleanValueByKey("Require authenticator app two-factor login for all users", false);
+    }
+
+    /**
+     * Whether two-factor login protects this account one by one: the
+     * service-login rule used by machine-to-machine logins (lab analysers,
+     * middleware, channelling API), which cannot ask for a code. A user who
+     * is linked, flagged as required, or allowed SMS codes is refused. The
+     * "for all users" switch is not applied, so unflagged service accounts
+     * keep working, unless the separate key
+     * "Refuse API logins of accounts not ticked as Service account while two-factor login is required for all users"
+     * is on: then, while the "for all users" switch is on, only accounts
+     * ticked as service accounts are accepted.
+     */
+    public boolean doesTwoFactorApplyToServiceLogin(WebUser u) {
+        if (u == null || !isAuthenticatorAppTwoFactorLoginEnabled()) {
+            return false;
+        }
+        if (isServiceLoginRestrictedToServiceAccounts() && !u.isServiceAccount()) {
+            return true;
+        }
+        return u.isTwoFactorRequired()
+                || u.isTwoFactorEnrolled()
+                || (isTwoFactorSmsLoginEnabled() && u.isTwoFactorSmsAllowed());
+    }
+
+    /**
+     * True when machine logins must come from accounts ticked as Service
+     * account: the "for all users" switch is on and the new refusal key
+     * (default false) is on.
+     */
+    public boolean isServiceLoginRestrictedToServiceAccounts() {
+        return isAuthenticatorAppTwoFactorLoginRequiredForAllUsers()
+                && getBooleanValueByKeyReadOnly(SERVICE_LOGIN_ONLY_SERVICE_ACCOUNTS_KEY, false);
+    }
+
+    public static final String SERVICE_LOGIN_ONLY_SERVICE_ACCOUNTS_KEY
+            = "Refuse API logins of accounts not ticked as Service account while two-factor login is required for all users";
+
+    // Set-up window (see TwoFactorAuthController): the system records when each 2FA switch was turned on
+    public static final String TWO_FACTOR_MASTER_KEY = "Enable authenticator app two-factor login";
+    public static final String TWO_FACTOR_ALL_USERS_KEY = "Require authenticator app two-factor login for all users";
+    private static final String TWO_FACTOR_MASTER_ON_AT_KEY = "Two-factor login master switch turned on at (set by the system)";
+    private static final String TWO_FACTOR_ALL_USERS_ON_AT_KEY = "Two-factor all-users switch turned on at (set by the system)";
+
+    /**
+     * Called by the Application Options page after a value is saved: when one
+     * of the two switches changed, records the time it was turned on (0 when
+     * turned off). A set-up window for a user starts no earlier than this.
+     */
+    public void recordTwoFactorSwitchChange(String key, boolean wasOn, boolean isOn) {
+        if (wasOn == isOn) {
+            return;
+        }
+        String timeKey;
+        if (TWO_FACTOR_MASTER_KEY.equals(key)) {
+            timeKey = TWO_FACTOR_MASTER_ON_AT_KEY;
+        } else if (TWO_FACTOR_ALL_USERS_KEY.equals(key)) {
+            timeKey = TWO_FACTOR_ALL_USERS_ON_AT_KEY;
+        } else {
+            return;
+        }
+        setLongValueByKey(timeKey, isOn ? System.currentTimeMillis() : 0L);
+    }
+
+    /**
+     * The later of the times the master switch and the all-users switch were
+     * last turned on; null when neither time was recorded.
+     */
+    public Date getTwoFactorSwitchesOnAt() {
+        long a = onAtOf(TWO_FACTOR_MASTER_ON_AT_KEY, isAuthenticatorAppTwoFactorLoginEnabled());
+        long b = onAtOf(TWO_FACTOR_ALL_USERS_ON_AT_KEY, isAuthenticatorAppTwoFactorLoginRequiredForAllUsers());
+        long t = Math.max(a, b);
+        return t > 0 ? new Date(t) : null;
+    }
+
+    /**
+     * The recorded time a switch was turned on. A switch that is on but has
+     * no recorded time (it was on before times were kept, or the write after
+     * a save failed) gets the current time recorded here, so a covered user
+     * always has a 24-hour set-up period from the first check.
+     */
+    private long onAtOf(String timeKey, boolean switchIsOn) {
+        if (!switchIsOn) {
+            // A switch that is off has no activation time, whatever is stored
+            return 0L;
+        }
+        Long v = getLongValueByKey(timeKey, 0L);
+        long t = v == null ? 0L : v;
+        if (t <= 0) {
+            t = System.currentTimeMillis();
+            // Written only while the stored time is still unset, so a concurrent change is never overwritten
+            Map<String, Object> p = new HashMap<>();
+            p.put("k", timeKey);
+            p.put("v", Long.toString(t));
+            int done = optionFacade.updateByJpql("update ConfigOption o set o.optionValue=:v"
+                    + " where o.optionKey=:k and o.retired=false and (o.optionValue='0' or o.optionValue is null)", p);
+            loadApplicationOptions();
+            if (done != 1) {
+                Long again = getLongValueByKey(timeKey, 0L);
+                t = again == null ? 0L : again;
+            }
+        }
+        return t;
     }
 
     public String getAuthenticatorAppIssuerName() {

@@ -322,6 +322,8 @@ public class PharmacySaleBhtController implements Serializable {
     // When true, medicines are issued at retail rate with NO inward price-matrix
     // service charge (used by the Issue Discharge Medicines page).
     boolean dischargeIssueMode = false;
+    /** Id of the bill the last successful settleBhtIssue committed (#26044). */
+    private Long lastCommittedIssueBillId;
     // Idempotency guards for the two irreversible stock mutations inside a
     // settlement attempt. batchStockDeduction()/transferIssuedStockToPorter()
     // each run as their own committed EJB transaction, independent of whatever
@@ -402,8 +404,25 @@ public class PharmacySaleBhtController implements Serializable {
         }
         BillTypeAtomic bta = BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE;
         BillType bt = BillType.PharmacyBhtPre;
-        settleBhtIssue(bt, bta, getBatchBill().getFromDepartment());
-        getBillBean().saveEncounterComponents(getPrintBill(), getBatchBill(), getSessionController().getLoggedUser());
+        if (!settleBhtIssue(bt, bta, getBatchBill().getFromDepartment())) {
+            // Not saved: do not link a stale print bill to the surgery. Issue #26044.
+            return;
+        }
+        // The issue is committed. Link it to the surgery even when the print
+        // preview could not be loaded: look the committed bill up again.
+        Bill committed = getPrintBill();
+        if (committed == null && lastCommittedIssueBillId != null) {
+            try {
+                committed = getBillFacade().find(lastCommittedIssueBillId);
+            } catch (Exception e) {
+                LOGGER.log(Level.SEVERE, "Theatre issue saved, but the bill could not be loaded to link it to the surgery", e);
+            }
+        }
+        if (committed == null) {
+            JsfUtil.addErrorMessage("The issue was saved but could not be linked to the surgery. Please contact the system administrator.");
+            return;
+        }
+        getBillBean().saveEncounterComponents(committed, getBatchBill(), getSessionController().getLoggedUser());
         getBillBean().updateBatchBill(getBatchBill());
     }
 
@@ -461,6 +480,9 @@ public class PharmacySaleBhtController implements Serializable {
     }
 
     public String navigateToCancelBhtRequest() {
+        if (com.divudi.core.util.CancellationBillCheck.refuse(bill)) {
+            return "";
+        }
         if (bill == null) {
             JsfUtil.addErrorMessage("Nothing to cancel");
             return "";
@@ -1378,7 +1400,9 @@ public class PharmacySaleBhtController implements Serializable {
     private void savePreBillFinally(Patient pt, Department matrixDepartment, BillType billType, BillTypeAtomic billTypeAtomic) {
         getPreBill().setBillType(billType);
         getPreBill().setBillTypeAtomic(billTypeAtomic);
-        String deptId = getBillNumberBean().departmentBillNumberGeneratorYearly(getSessionController().getLoggedUser().getDepartment(), billTypeAtomic);
+        // Own transaction: the request-issue save runs inside one transaction (#26021),
+        // and the counter must commit at once so a concurrent save gets the next number.
+        String deptId = getBillNumberBean().departmentBillNumberGeneratorYearlyInNewTransaction(getSessionController().getLoggedUser().getDepartment(), billTypeAtomic);
         getPreBill().setInsId(deptId);
         getPreBill().setDeptId(deptId);
 
@@ -1501,7 +1525,7 @@ public class PharmacySaleBhtController implements Serializable {
                         new Object[]{list.size(), getPreBill().getId()});
             } catch (Exception e) {
                 String errorMsg = "Failed to process stock deductions. " + e.getMessage();
-                LOGGER.log(Level.SEVERE, "Batch stock deduction failed during BHT settlement: {0}", errorMsg);
+                LOGGER.log(Level.SEVERE, "Batch stock deduction failed during BHT settlement", e);
                 LOGGER.log(Level.SEVERE, "Bill ID: {0}, Department: {1}, User: {2}",
                         new Object[]{
                             getPreBill().getId(),
@@ -1509,8 +1533,8 @@ public class PharmacySaleBhtController implements Serializable {
                             getSessionController().getLoggedUser() != null
                                 ? getSessionController().getLoggedUser().getName() : "unknown"
                         });
-                JsfUtil.addErrorMessage(errorMsg);
-                throw new RuntimeException(errorMsg);
+                showStockMessageOnly(e);
+                throw new RuntimeException(errorMsg, e);
             }
         } else {
             LOGGER.log(Level.INFO, "Stock already deducted for this settlement attempt (retrying after a later "
@@ -1605,7 +1629,7 @@ public class PharmacySaleBhtController implements Serializable {
                     new Object[]{validItems.size(), getPreBill().getId()});
         } catch (Exception e) {
             String errorMsg = "Failed to process stock deductions for request settlement. " + e.getMessage();
-            LOGGER.log(Level.SEVERE, "Batch stock deduction failed during BHT request settlement: {0}", errorMsg);
+            LOGGER.log(Level.SEVERE, "Batch stock deduction failed during BHT request settlement", e);
             LOGGER.log(Level.SEVERE, "Request Bill ID: {0}, Department: {1}, User: {2}",
                     new Object[]{
                         getPreBill().getId(),
@@ -1613,8 +1637,8 @@ public class PharmacySaleBhtController implements Serializable {
                         getSessionController().getLoggedUser() != null
                             ? getSessionController().getLoggedUser().getName() : "unknown"
                     });
-            JsfUtil.addErrorMessage(errorMsg);
-            throw new RuntimeException(errorMsg);
+            showStockMessageOnly(e);
+            throw new RuntimeException(errorMsg, e);
         }
 
         // PERFORMANCE OPTIMIZATION: UserStock cleanup removed to match cashier workflow
@@ -1826,7 +1850,9 @@ public class PharmacySaleBhtController implements Serializable {
             bhtIssueRequestPrintDtoBillId = null;
         }
 
-        userNotificationController.userNotificationRequestComplete();
+        // By the request bill: a notification may not be open when the request
+        // was picked from the list (#26049).
+        userNotificationController.completeRequestNotifications(bhtRequestBill);
 
     }
 
@@ -1948,15 +1974,21 @@ public class PharmacySaleBhtController implements Serializable {
         return false;
     }
 
-    private void settleBhtIssue(BillType btp, BillTypeAtomic bta, Department matrixDepartment) {
+    /**
+     * Saves a direct BHT issue (discharge medicines, theatre issue). Returns true
+     * only when the issue was committed. The save runs in one transaction, so a
+     * failure leaves nothing saved and no stock moved. Issue #26044.
+     */
+    private boolean settleBhtIssue(BillType btp, BillTypeAtomic bta, Department matrixDepartment) {
+        lastCommittedIssueBillId = null;
         if (matrixDepartment == null) {
             JsfUtil.addErrorMessage("This Bht can't issue as this Surgery Has No Department");
-            return;
+            return false;
         }
 
         List<BillItem> itemsToIssue = getPreBill().getBillItems();
         if (hasAllergyConflicts(itemsToIssue)) {
-            return;
+            return false;
         }
 
         Patient pt = getPatientEncounter().getPatient();
@@ -1965,22 +1997,101 @@ public class PharmacySaleBhtController implements Serializable {
         List<BillItem> tmpBillItems = new ArrayList<>(itemsToIssue);
 
         try {
-            savePreBillFinally(pt, matrixDepartment, btp, bta);
-            savePreBillItemsFinally(tmpBillItems);
-            billService.createBillFinancialDetailsForInpatientDirectIssueBill(getPreBill());
-//        updateMargin(getPreBill().getBillItems(), getPreBill(), getPreBill().getFromDepartment(), getPatientEncounter().getPaymentMethod());
-            setPrintBill(getBillFacade().find(getPreBill().getId()));
-            clearBill();
-            clearBillItem();
-            billPreview = true;
+            pharmacyBean.runStockSave(() -> {
+                savePreBillFinally(pt, matrixDepartment, btp, bta);
+                savePreBillItemsFinally(tmpBillItems);
+                billService.createBillFinancialDetailsForInpatientDirectIssueBill(getPreBill());
+            });
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Error during BHT settlement for patient encounter: {0}",
                     new Object[]{getPatientEncounter() != null ? getPatientEncounter().getId() : "unknown"});
             LOGGER.log(Level.SEVERE, "Settlement failure details", e);
-            JsfUtil.addErrorMessage("Failed to settle bill. Please try again. Error: " + e.getMessage());
-            // DO NOT clear the bill - keep items visible so user doesn't lose their work
+            // Keep the user's lines, but as new unsaved copies: the rolled-back
+            // attempt may have given the old objects ids that no longer exist.
+            boolean rebuilt;
+            try {
+                rebuildDirectIssueForRetry(itemsToIssue);
+                rebuilt = true;
+            } catch (Exception re) {
+                LOGGER.log(Level.SEVERE, "Could not rebuild the issue after a failed save", re);
+                rebuilt = false;
+                // Drop the failed bill: its flags (e.g. stock already deducted) would
+                // make the next Issue save a bill without moving stock.
+                try {
+                    clearBill();
+                    clearBillItem();
+                } catch (Exception ce) {
+                    LOGGER.log(Level.SEVERE, "Could not clear the failed issue", ce);
+                    preBill = null;
+                    settlementStockDeducted = false;
+                }
+            }
+            String cause = rootCauseMessage(e);
+            FacesContext fc = FacesContext.getCurrentInstance();
+            boolean causeShown = fc != null && fc.getMessageList().stream()
+                    .anyMatch(m -> cause.equals(m.getSummary()));
+            // A step's own message (e.g. insufficient stock) is already shown; raw
+            // system errors stay in the log only, never on the page.
+            JsfUtil.addErrorMessage("The issue was not saved and no stock was moved. "
+                    + (rebuilt ? "Check the items and issue again." : "Start the issue again from the patient.")
+                    + (causeShown ? "" : " If it fails again, contact the system administrator."));
+            return false;
         }
 
+        // Committed. A print-preview failure must not read as a failed issue.
+        // Cleared first so a failed find never leaves the previous bill as the print bill.
+        setPrintBill(null);
+        lastCommittedIssueBillId = getPreBill().getId();
+        try {
+            setPrintBill(getBillFacade().find(lastCommittedIssueBillId));
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "BHT issue saved, but the print preview could not be loaded", e);
+            JsfUtil.addErrorMessage("The issue was saved, but the print preview could not be loaded. Reprint it from the bill search.");
+        }
+        clearBill();
+        clearBillItem();
+        // No preview when the saved bill could not be loaded; never show an older bill.
+        billPreview = getPrintBill() != null;
+        return true;
+    }
+
+    /**
+     * After a rolled-back direct issue, replace the bill and its lines with new
+     * unsaved copies that keep what the user entered (item, stock, quantity,
+     * rates, porter, comments). Issue #26044.
+     */
+    private void rebuildDirectIssueForRetry(List<BillItem> failedLines) {
+        // Build the copies BEFORE clearBill(): it empties the old bill's list
+        // (often this same list) and zeroes the old bill's totals.
+        PreBill fresh = new PreBill();
+        if (preBill != null) {
+            fresh.copy(preBill);
+            fresh.copyValue(preBill);
+        }
+        List<BillItem> lines = new ArrayList<>();
+        if (failedLines != null) {
+            for (BillItem old : failedLines) {
+                BillItem line = new BillItem();
+                line.copy(old);
+                line.setReferanceBillItem(old.getReferanceBillItem());
+                // Keep the dose/frequency/duration the user entered (discharge issue).
+                if (old.peekPrescription() != null) {
+                    line.setPrescription(old.peekPrescription().cloneForNewEntity());
+                }
+                PharmaceuticalBillItem pbi = new PharmaceuticalBillItem();
+                pbi.copy(old.getPharmaceuticalBillItem());
+                // Not a column, so copy() skips it; the line shows this name.
+                pbi.setTransDisplayItemName(old.getPharmaceuticalBillItem().getTransDisplayItemName());
+                pbi.setStaffStock(null);
+                pbi.setBillItem(line);
+                line.setPharmaceuticalBillItem(pbi);
+                lines.add(line);
+            }
+        }
+        fresh.setBillItems(lines);
+        clearBill();
+        clearBillItem();
+        preBill = fresh;
     }
 
     private void settleBhtIssueRequest(BillType btp, Department matrixDepartment, BillNumberSuffix billNumberSuffix) {
@@ -2349,33 +2460,104 @@ public class PharmacySaleBhtController implements Serializable {
         // propagated uncaught to the container, crashing to the generic "System
         // Error" page instead of a normal on-page message. Mirrors the same
         // try/catch settleBhtIssue() already uses for its equivalent call. Issue #23352.
+        //
+        // The whole save (bill, lines, stock deduction, porter stock, margin, finance
+        // details) runs in ONE transaction: any failure rolls all of it back, so a
+        // failed issue can no longer leave a zero-value bill with the stock already
+        // gone from the pharmacy. Issue #26021.
         try {
-            savePreBillFinally(pt, matrixDepartment, btp, bta);
-            savePreBillItemsFinally(tmpBillItems);
-            transferIssuedStockToPorter(tmpBillItems, getPreBill().getToStaff());
+            pharmacyBean.runStockSave(() -> {
+                savePreBillFinally(pt, matrixDepartment, btp, bta);
+                savePreBillItemsFinally(tmpBillItems);
+                transferIssuedStockToPorter(tmpBillItems, getPreBill().getToStaff());
 
-            // Calculation Margin — must run BEFORE the finance details are built,
-            // for the reason recorded at the other call site. Issue #23952.
-            updateMargin(getPreBill().getBillItems(), getPreBill(), getPreBill().getFromDepartment(), getPatientEncounter().getPaymentMethod());
-            //pdateBillTotals(getPreBill().getBillItems(),  getPreBill());
+                // Calculation Margin — must run BEFORE the finance details are built,
+                // for the reason recorded at the other call site. Issue #23952.
+                updateMargin(getPreBill().getBillItems(), getPreBill(), getPreBill().getFromDepartment(), getPatientEncounter().getPaymentMethod());
 
-            billService.createBillFinancialDetailsForInpatientDirectIssueBill(getPreBill());
-
-            setPrintBill(getBillFacade().find(getPreBill().getId()));
-
-            clearBill();
-            clearBillItem();
-            billPreview = true;
+                billService.createBillFinancialDetailsForInpatientDirectIssueBill(getPreBill());
+            });
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Error during BHT request settlement for patient encounter: {0}",
                     new Object[]{getPatientEncounter() != null ? getPatientEncounter().getId() : "unknown"});
             LOGGER.log(Level.SEVERE, "Settlement failure details", e);
-            JsfUtil.addErrorMessage("Failed to settle bill. Please try again. Error: " + e.getMessage());
-            // DO NOT clear the bill - keep items visible so user doesn't lose their work
+            // Nothing was saved, but the in-memory bill and lines may carry ids and
+            // flags from the rolled-back attempt. Rebuild the screen from the request.
+            boolean reloaded = reloadIssueFromRequestAfterRollback();
+            // Skip the cause when a step already showed it (e.g. insufficient stock).
+            String cause = rootCauseMessage(e);
+            FacesContext fc = FacesContext.getCurrentInstance();
+            boolean causeShown = fc != null && fc.getMessageList().stream()
+                    .anyMatch(m -> cause.equals(m.getSummary()));
+            JsfUtil.addErrorMessage("The issue was not saved and no stock was moved. "
+                    + (reloaded
+                            ? "The list was reloaded from the request; check it and issue again."
+                            : "The list could not be reloaded; open the request again from the request list.")
+                    + (causeShown ? "" : " If it fails again, contact the system administrator."));
             return false;
         }
 
+        // Committed from here on. A failure while loading the print preview must not
+        // read as a failed issue, or the user would issue the same medicines again.
+        // Cleared first so a failed find never leaves the previous bill as the print bill.
+        setPrintBill(null);
+        try {
+            setPrintBill(getBillFacade().find(getPreBill().getId()));
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "BHT request issue saved, but the print preview could not be loaded", e);
+            JsfUtil.addErrorMessage("The issue was saved, but the print preview could not be loaded. Reprint it from the bill search.");
+        }
+        clearBill();
+        clearBillItem();
+        // No preview when the saved bill could not be loaded; never show an older bill.
+        billPreview = getPrintBill() != null;
         return true;
+    }
+
+    /**
+     * After a rolled-back request issue, drop the unsaved bill and rebuild the
+     * issuing list from the request, keeping the selected porter. Issue #26021.
+     */
+    private boolean reloadIssueFromRequestAfterRollback() {
+        Staff porter = preBill != null ? preBill.getToStaff() : null;
+        try {
+            clearBill();
+            clearBillItem();
+            if (bhtRequestBill != null && bhtRequestBill.getId() != null) {
+                PatientEncounter preservedEncounter = bhtRequestBill.getPatientEncounter();
+                Bill freshBill = getBillItemFacade().loadBillWithItemsFresh(bhtRequestBill.getId());
+                if (freshBill != null) {
+                    freshBill.setPatientEncounter(preservedEncounter);
+                    bhtRequestBill = freshBill;
+                    generateIssueBillComponentsForBhtRequest(freshBill);
+                }
+            }
+            return true;
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Could not reload the request after a failed issue", e);
+            return false;
+        } finally {
+            getPreBill().setToStaff(porter);
+        }
+    }
+
+    /**
+     * Shows the clean insufficient-stock message from the deduction service on the
+     * page; any other failure adds nothing here (the caller's friendly message covers it).
+     */
+    private void showStockMessageOnly(Throwable t) {
+        String cause = rootCauseMessage(t);
+        if (cause.startsWith("Failed to deduct stock for item:") && cause.contains("Insufficient stock")) {
+            JsfUtil.addErrorMessage(cause);
+        }
+    }
+
+    private String rootCauseMessage(Throwable t) {
+        Throwable root = t;
+        while (root.getCause() != null && root.getCause() != root) {
+            root = root.getCause();
+        }
+        return root.getMessage() != null ? root.getMessage() : root.getClass().getSimpleName();
     }
 
     /**
@@ -2410,6 +2592,66 @@ public class PharmacySaleBhtController implements Serializable {
         bi.setMarginValue(margin);
         bi.setNetValue(bi.getGrossValue() + bi.getMarginValue());
         bi.setAdjustedValue(bi.getNetValue());
+    }
+
+    /**
+     * The inward discount-matrix amount for one line (#23220), as a positive
+     * currency value to subtract from the net value. Used by the request issue
+     * save (updateMargin) and by the request issue screen (calculateRates), so
+     * the screen shows what the save will charge (#26055).
+     */
+    private double inwardDiscountValue(BillItem bi, Department matrixDepartment, PaymentMethod paymentMethod, PatientEncounter encounter) {
+        try {
+            Item item = bi.getItem();
+            if (item != null && matrixDepartment != null && priceMatrixNativeSqlService.isDiscountAllowed(item.getId())) {
+                Long schemeId = encounter != null && encounter.getPaymentScheme() != null ? encounter.getPaymentScheme().getId() : null;
+                Long admTypeId = encounter != null && encounter.getAdmissionType() != null ? encounter.getAdmissionType().getId() : null;
+                String pmName = paymentMethod != null ? paymentMethod.name() : null;
+                double discountPct = priceMatrixNativeSqlService.getInwardDiscountPct(item.getId(), pmName, schemeId, admTypeId, matrixDepartment.getId());
+                // Gross value in this flow is stored positive, so the discount is
+                // a positive amount subtracted from the net value.
+                return (discountPct / 100.0) * Math.abs(bi.getGrossValue());
+            }
+        } catch (Exception e) {
+            LOGGER.log(Level.WARNING, "[updateMargin] inward discount lookup failed for billItem id={0}", bi.getId());
+        }
+        return 0.0;
+    }
+
+    /** The request issue page; its save (settlePharmacyBhtIssueAccept) discounts every line. */
+    private static final String REQUEST_ISSUE_VIEW_ID = "/ward/ward_pharmacy_bht_issue.xhtml";
+
+    /**
+     * On the request issue screen only, take off the same inward discount the
+     * save will take off, so Net Value matches the saved bill (#26055). That
+     * covers lines that came from the request (built before the page opens, so
+     * they are recognised by their request line) and lines added or substituted
+     * on the page itself. Direct, discharge and theatre issues save the screen
+     * values as they are and keep no discount here.
+     */
+    private void applyRequestIssueDiscountToPreview(BillItem bi, Department matrixDept, PaymentMethod paymentMethod) {
+        if (dischargeIssueMode || (bi.getReferanceBillItem() == null && !onRequestIssuePage())) {
+            return;
+        }
+        double discount = inwardDiscountValue(bi, matrixDept, paymentMethod, getPatientEncounter());
+        if (discount == 0.0) {
+            return;
+        }
+        double net = bi.getGrossValue() + bi.getMarginValue() - discount;
+        bi.setDiscount(discount);
+        bi.setNetValue(net);
+        bi.setAdjustedValue(net);
+        double unitQty = Math.abs(bi.getQty());
+        if (unitQty > 0) {
+            bi.setDiscountRate(discount / unitQty);
+            bi.setNetRate(net / unitQty);
+        }
+    }
+
+    private boolean onRequestIssuePage() {
+        FacesContext fc = FacesContext.getCurrentInstance();
+        return fc != null && fc.getViewRoot() != null
+                && REQUEST_ISSUE_VIEW_ID.equals(fc.getViewRoot().getViewId());
     }
 
     @Deprecated
@@ -2447,27 +2689,19 @@ public class PharmacySaleBhtController implements Serializable {
             // PharmacyPreSettleController.calTotal()/settle() and
             // BhtIssueReturnController/IssueReturnController elsewhere in
             // this codebase: netValue = grossValue [+ marginValue] - discount.
-            double discountValue = 0.0;
-            try {
-                Item item = bi.getItem();
-                if (item != null && matrixDepartment != null && priceMatrixNativeSqlService.isDiscountAllowed(item.getId())) {
-                    Long schemeId = encounter != null && encounter.getPaymentScheme() != null ? encounter.getPaymentScheme().getId() : null;
-                    Long admTypeId = encounter != null && encounter.getAdmissionType() != null ? encounter.getAdmissionType().getId() : null;
-                    String pmName = paymentMethod != null ? paymentMethod.name() : null;
-                    double discountPct = priceMatrixNativeSqlService.getInwardDiscountPct(item.getId(), pmName, schemeId, admTypeId, matrixDepartment.getId());
-                    // Gross value in this flow is stored positive (see the
-                    // margin calculation above, which ADDS to netValue), so
-                    // the discount amount is likewise computed and applied
-                    // as a positive currency value subtracted from netValue.
-                    discountValue = (discountPct / 100.0) * Math.abs(bi.getGrossValue());
-                }
-            } catch (Exception e) {
-                LOGGER.log(Level.WARNING, "[updateMargin] inward discount lookup failed for billItem id={0}", bi.getId());
-            }
+            double discountValue = inwardDiscountValue(bi, matrixDepartment, paymentMethod, encounter);
             bi.setDiscount(discountValue);
 
             bi.setNetValue(bi.getGrossValue() + bi.getMarginValue() - bi.getDiscount());
             bi.setAdjustedValue(bi.getNetValue());
+            // Per-unit rates: BhtIssueReturnController copies discountRate and netRate
+            // from the issued line, so without them a return credits the undiscounted
+            // price, more than the patient was charged (issue #24031).
+            double unitQty = Math.abs(bi.getQty());
+            if (unitQty > 0) {
+                bi.setDiscountRate(bi.getDiscount() / unitQty);
+                bi.setNetRate(bi.getNetValue() / unitQty);
+            }
             getBillItemFacade().edit(bi);
 
             total += bi.getGrossValue();
@@ -3039,6 +3273,7 @@ public class PharmacySaleBhtController implements Serializable {
         bi.setNetRate(originalRate + marginRate);
         bi.setAdjustedValue(netValue);
         bi.setDiscount(0);
+        applyRequestIssueDiscountToPreview(bi, matrixDept, paymentMethod);
 
         if (LOGGER.isLoggable(Level.FINE)) {
             LOGGER.log(Level.FINE, "[calculateRates] TOTAL: {0}ms",
@@ -3080,6 +3315,7 @@ public class PharmacySaleBhtController implements Serializable {
         bi.setNetRate(retailRate + marginRate);
         bi.setAdjustedValue(netValue);
         bi.setDiscount(0);
+        applyRequestIssueDiscountToPreview(bi, matrixDept, paymentMethod);
     }
 
     /**

@@ -106,3 +106,8 @@ finding this rule is meant to produce proactively next time, without needing
 the user to notice and ask first.
 
 See also: [Design spec](../specs/2026-09-28-continuous-improvement-retrospective-design.md).
+
+
+## From CLAUDE.md (moved detail)
+
+if a documented fact would have prevented a mistake, propose the CLAUDE.md/doc/skill fix, open the PR and report it (the dev-hub merge gate still applies). Write it as a short rule, not a story.

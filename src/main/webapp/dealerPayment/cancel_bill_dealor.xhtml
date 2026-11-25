@@ -10,16 +10,19 @@
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
                 <h:form>
-                    <p:messages id="messages" autoUpdate="true" />
+                    <p:messages id="messages">
+                        <p:autoUpdate/>
+                    </p:messages>
                     <h:panelGroup rendered="#{!dealorPaymentBillSearch.printPreview}" styleClass="alignTop">
                         <p:panel header="Cancellation">
                             <p:selectOneMenu id="cmbPs" value="#{dealorPaymentBillSearch.bill.paymentMethod}">
                                 <f:selectItems value="#{enumController.paymentMethods}" />
                             </p:selectOneMenu>
                             <h:panelGroup style="float: right;">    
-                                <p:commandButton value="Cancel" 
+                                <p:commandButton icon="fa fa-ban" value="Cancel" 
                                                  class="ui-button-danger" 
-                                                 action="#{dealorPaymentBillSearch.cancelBill()}" 
+                                                 action="#{dealorPaymentBillSearch.cancelBill()}"
+                                disabled="#{dealorPaymentBillSearch.billACancellationBill}" 
                                                  update="@form" 
                                                  onclick="if (!confirm('Are you sure you want to Cancel This Bill?'))
                                                              return false;">
@@ -43,7 +46,7 @@
                             </p:panel>
                         </p:panelGrid>
                         <p:panel id="billItemsTable" header="Bill Item Detail">
-                            <p:dataTable rowIndexVar="rowIndex" value="#{dealorPaymentBillSearch.billItems}" var="b">
+                            <p:dataTable styleClass="p-datatable-sm" rowIndexVar="rowIndex" value="#{dealorPaymentBillSearch.billItems}" var="b">
                                 <p:column>
                                     <f:facet name="header">
                                         <p:outputLabel value="No" />
@@ -71,7 +74,7 @@
                     </h:panelGroup>
 
                     <p:panel rendered="#{dealorPaymentBillSearch.printPreview}">
-                        <p:commandButton value="Print" ajax="false" action="#"  >
+                        <p:commandButton icon="fa fa-print" styleClass="ui-button-info" value="Print" ajax="false" action="#"  >
                             <p:printer target="gpBillPreview" ></p:printer>
                         </p:commandButton>   
                         <h:panelGroup id="gpBillPreview">

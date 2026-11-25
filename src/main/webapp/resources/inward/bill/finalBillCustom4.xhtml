@@ -687,7 +687,7 @@
 
                                     <!-- Loop through ProfessionalCharge last -->
                                     <ui:repeat value="#{cc.attrs.bill.billItems}" var="bip">
-                                        <h:panelGroup rendered="#{bip.inwardChargeType eq 'ProfessionalCharge' and (bip.adjustedValue != 0 or bip.hasFreeOfChargeProFee)}" style="font-size: 12px;">
+                                        <h:panelGroup rendered="#{cc.attrs.showProfessional eq true and bip.inwardChargeType eq 'ProfessionalCharge' and (bip.adjustedValue != 0 or bip.hasFreeOfChargeProFee)}" style="font-size: 12px;">
                                             <tr style="width: 100%; font-weight: 400; line-height: 18px;">
                                                 <td style="text-align: left; font-size: 13px !important;
                                                     max-width: 150px; white-space: nowrap;
@@ -744,7 +744,7 @@
 
                                 <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Display All Doctor Chargers as a One and Show Sum Value of a Doctor',false)}">
                                     <!-- Loop through ProfessionalCharge last -->
-                                    <ui:repeat value="#{bhtSummeryController.getSummaryOfDoctorChargers(cc.attrs.bill.billItems,cc.attrs.bill.patientEncounter)}" var="bip">
+                                    <ui:repeat value="#{bhtSummeryController.getSummaryOfDoctorChargers(cc.attrs.bill.billItems,cc.attrs.bill.patientEncounter,cc.attrs.showProfessional)}" var="bip">
                                         <h:panelGroup rendered="#{(bip.inwardChargeType eq 'ProfessionalCharge' or bip.inwardChargeType eq 'DoctorAndNurses') and (bip.adjustedValue != 0 or bip.hasFreeOfChargeProFee)}" style="font-size: 12px;">
                                             <tr style="width: 100%; font-weight: 400; line-height: 18px;">
                                                 <td style="text-align: left; font-size: 13px !important;
@@ -1102,6 +1102,15 @@
                                 </tr>
                             </h:panelGroup>
 
+                            <!--DISCOUNT COMMENT (#25699)-->
+                            <h:panelGroup rendered="#{cc.attrs.bill.discount ne 0.0 and not empty cc.attrs.bill.discountCommentText}">
+                                <tr>
+                                    <td colspan="3" style="text-align: left;font-size: 12px;">
+                                        <h:outputLabel value="Discount Comment: "/><h:outputText value="#{cc.attrs.bill.discountCommentText}"/>
+                                    </td>
+                                </tr>
+                            </h:panelGroup>
+
                             <h:panelGroup >
                                 <tr>
                                     <td>&nbsp;</td>
@@ -1132,7 +1141,8 @@
                                 </tr>
                             </h:panelGroup>
 
-                            <h:panelGroup rendered="#{cc.attrs.showProfessional}">
+                            <!-- Payments block. Copies without professional fees show it only with the option on, and then without the Due lines (#26027). -->
+                            <h:panelGroup rendered="#{cc.attrs.showProfessional or configOptionApplicationController.getBooleanValueByKey('Inward Final Bill - Custom Bill 3 - Show Payments On Copies Without Professional Fees', false)}">
                                 <h:panelGroup
                                     rendered="#{cc.attrs.bill.paidAmount !=0 and cc.attrs.bill.settledAmountByPatient !=0 }">
 
@@ -1241,6 +1251,7 @@
                                     </tr>
                                 </h:panelGroup>
 
+                                <h:panelGroup rendered="#{cc.attrs.showProfessional}">
                                 <h:panelGroup rendered="#{not empty bhtSummeryController.creditCompanyDueBreakdownForPrint(cc.attrs.bill)}">
                                     <ui:repeat value="#{bhtSummeryController.creditCompanyDueBreakdownForPrint(cc.attrs.bill)}" var="due">
                                         <tr>
@@ -1274,10 +1285,16 @@
                                         </td>
                                     </tr>
                                 </h:panelGroup>
+                                </h:panelGroup>
 
                             </h:panelGroup>
 
                         </table>
+                        <h:panelGroup layout="block" rendered="#{inwardBeanController.hasFeesCollectedByDoctor(cc.attrs.bill.patientEncounter)}">
+                            <div style="font-size: 11px; margin-top: 6px; text-align: left;">
+                                <h:outputText value="Fees Collected by the Doctor" />
+                            </div>
+                        </h:panelGroup>
                     </div>
 
                     <div class="row mt-4" style="font-size: 11px;">

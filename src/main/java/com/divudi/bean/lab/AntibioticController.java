@@ -73,8 +73,8 @@ public class AntibioticController implements Serializable {
         if (query == null) {
             suggestions = new ArrayList<>();
         } else {
-            sql = "select c from Antibiotic c where c.retired=false and (c.name) like '%" + query.toUpperCase() + "%' order by c.name";
-            suggestions = getFacade().findByJpql(sql);
+            sql = "select c from Antibiotic c where c.retired=false and (c.name) like :q order by c.name";
+            suggestions = getFacade().findByJpql(sql, java.util.Map.of("q", "%" + query.toUpperCase() + "%"));
         }
         return suggestions;
     }
@@ -116,8 +116,8 @@ public class AntibioticController implements Serializable {
         if (selectText.trim().equals("")) {
             selectedItems = getFacade().findByJpql("select c from Antibiotic c where c.retired=false order by c.name");
         } else {
-            String sql = "select c from Antibiotic c where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name";
-            selectedItems = getFacade().findByJpql(sql);
+            String sql = "select c from Antibiotic c where c.retired=false and (c.name) like :q order by c.name";
+            selectedItems = getFacade().findByJpql(sql, java.util.Map.of("q", "%" + getSelectText().toUpperCase() + "%"));
         }
         return selectedItems;
     }

@@ -108,6 +108,9 @@ import java.util.stream.Collectors;
 @SessionScoped
 public class PharmacyBillSearch implements Serializable {
 
+    @javax.ejb.EJB
+    private com.divudi.service.CreditCompanyClaimService creditCompanyClaimService;
+
     private static final Logger LOGGER = Logger.getLogger(PharmacyBillSearch.class.getName());
 
     private static final String DEFAULT_INWARD_PHARMACY_REQUEST_REPRINT_RETURN_PAGE =
@@ -237,6 +240,9 @@ public class PharmacyBillSearch implements Serializable {
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Navigation Methods">
     public String navigateToCancelPharmacyDirectIssueToInpatients() {
+        if (com.divudi.core.util.CancellationBillCheck.refuse(bill)) {
+            return null;
+        }
         if (bill == null) {
             JsfUtil.addErrorMessage("No Bill Selected");
             return null;
@@ -339,6 +345,9 @@ public class PharmacyBillSearch implements Serializable {
     }
 
     public String navigateToCancelPharmacyRetailSale() {
+        if (com.divudi.core.util.CancellationBillCheck.refuse(bill)) {
+            return null;
+        }
         if (bill == null) {
             JsfUtil.addErrorMessage("No Bill Selected");
             return null;
@@ -931,6 +940,9 @@ public class PharmacyBillSearch implements Serializable {
     }
 
     public String cancelPharmacyTransferRequestBill() {
+        if (com.divudi.core.util.CancellationBillCheck.refuse(bill)) {
+            return "";
+        }
         if (comment == null || comment.trim().isEmpty()) {
             JsfUtil.addErrorMessage("Please Provide a comment to cancel the bill");
             return "";
@@ -1007,6 +1019,9 @@ public class PharmacyBillSearch implements Serializable {
     }
 
     public String navigateToCancelBhtRequest() {
+        if (com.divudi.core.util.CancellationBillCheck.refuse(bill)) {
+            return "";
+        }
         if (bill == null) {
             JsfUtil.addErrorMessage("Nothing to cancel");
             return "";
@@ -1124,6 +1139,9 @@ public class PharmacyBillSearch implements Serializable {
     }
 
     public void cancelBill() {
+        if (com.divudi.core.util.CancellationBillCheck.refuse(getBill())) {
+            return;
+        }
         if (getBill() == null) {
             JsfUtil.addErrorMessage("Please Select a Bill");
             return;
@@ -1647,6 +1665,9 @@ public class PharmacyBillSearch implements Serializable {
             }
             if (getBill().getId() == null) {
                 JsfUtil.addErrorMessage("No Saved bill");
+                continue;
+            }
+            if (com.divudi.core.util.CancellationBillCheck.refuse(getBill())) {
                 continue;
             }
 
@@ -3177,6 +3198,14 @@ public class PharmacyBillSearch implements Serializable {
     }
 
     public void pharmacyRetailCancelBill() {
+        if (com.divudi.core.util.CancellationBillCheck.refuse(getBill())) {
+            return;
+        }
+        String openClaimMessage = creditCompanyClaimService.openClaimRefusal(getBill());
+        if (openClaimMessage != null) {
+            JsfUtil.addErrorMessage(openClaimMessage);
+            return;
+        }
         if (getBill() != null && getBill().getId() != null && getBill().getId() != 0) {
             if (pharmacyErrorCheck()) {
                 return;
@@ -3243,6 +3272,14 @@ public class PharmacyBillSearch implements Serializable {
     private boolean cancellationStarted;
 
     public void pharmacyRetailCancelBillWithStock() throws ParseException {
+        if (com.divudi.core.util.CancellationBillCheck.refuse(getBill())) {
+            return;
+        }
+        String openClaimMessage = creditCompanyClaimService.openClaimRefusal(getBill());
+        if (openClaimMessage != null) {
+            JsfUtil.addErrorMessage(openClaimMessage);
+            return;
+        }
         if (cancellationStarted) {
             JsfUtil.addErrorMessage("Cancellation already started");
             return;
@@ -3512,6 +3549,9 @@ public class PharmacyBillSearch implements Serializable {
     }
 
     public void cancelPharmacyDirectIssueToBht() {
+        if (com.divudi.core.util.CancellationBillCheck.refuse(getBill())) {
+            return;
+        }
         cancelIssueToBhtOnce(this::cancelPharmacyDirectIssueToBhtUnderLock);
     }
 
@@ -3720,6 +3760,9 @@ public class PharmacyBillSearch implements Serializable {
     }
 
     public void cancelPharmacyRequestIssueToBht() {
+        if (com.divudi.core.util.CancellationBillCheck.refuse(getBill())) {
+            return;
+        }
         cancelIssueToBhtOnce(this::cancelPharmacyRequestIssueToBhtUnderLock);
     }
 
@@ -3954,6 +3997,9 @@ public class PharmacyBillSearch implements Serializable {
     }
 
     public void pharmacyReturnPreCancel() {
+        if (com.divudi.core.util.CancellationBillCheck.refuse(getBill())) {
+            return;
+        }
         if (getBill() != null && getBill().getId() != null && getBill().getId() != 0) {
             if (pharmacyErrorCheck()) {
                 return;
@@ -4103,6 +4149,9 @@ public class PharmacyBillSearch implements Serializable {
     }
 
     public void pharmacyReturnCashCancel() {
+        if (com.divudi.core.util.CancellationBillCheck.refuse(getBill())) {
+            return;
+        }
         if (getBill() != null && getBill().getId() != null && getBill().getId() != 0) {
             if (pharmacyErrorCheck()) {
                 return;
@@ -4152,6 +4201,9 @@ public class PharmacyBillSearch implements Serializable {
     }
 
     public void pharmacyPoCancel() {
+        if (com.divudi.core.util.CancellationBillCheck.refuse(getBill())) {
+            return;
+        }
         if (!isAuthorized("CANCEL", "PharmacyOrderCancellation")) {
             return;
         }
@@ -4176,6 +4228,9 @@ public class PharmacyBillSearch implements Serializable {
                         break;
                     case NOT_APPROVAL_TYPE:
                         JsfUtil.addErrorMessage("This bill is not a Pharmacy Purchase Order Approval bill");
+                        break;
+                    case CANCELLATION_BILL:
+                        JsfUtil.addErrorMessage(com.divudi.core.util.CancellationBillCheck.MESSAGE);
                         break;
                     case NOT_FOUND:
                     default:
@@ -4287,6 +4342,9 @@ public class PharmacyBillSearch implements Serializable {
     }
 
     public void pharmacyGrnCancel() {
+        if (com.divudi.core.util.CancellationBillCheck.refuse(getBill())) {
+            return;
+        }
         if (!isAuthorized("PHARMACY_GRN_CANCEL", "PharmacyGrnCancel")) {
             return;
         }
@@ -4511,6 +4569,9 @@ public class PharmacyBillSearch implements Serializable {
     }
 
     public void pharmacyPurchaseCancel() {
+        if (com.divudi.core.util.CancellationBillCheck.refuse(getBill())) {
+            return;
+        }
         if (getBill() != null && getBill().getId() != null && getBill().getId() != 0) {
             if (pharmacyErrorCheck()) {
                 return;
@@ -4607,6 +4668,9 @@ public class PharmacyBillSearch implements Serializable {
     }
 
     public void pharmacyGrnReturnCancel() {
+        if (com.divudi.core.util.CancellationBillCheck.refuse(getBill())) {
+            return;
+        }
         if (!isAuthorized("PHARMACY_GRN_RETURN_CANCEL", "PharmacyGrnReturnCancel")) {
             return;
         }
@@ -4848,7 +4912,8 @@ public class PharmacyBillSearch implements Serializable {
             } else {
                 sql = "select b from BilledBill b where b.retired=false and"
                         + " b.id in(Select bt.bill.id From BillItem bt Where bt.referenceBill.billType!=:btp and bt.referenceBill.billType!=:btp2) "
-                        + "and b.billType=:type and b.createdAt between :fromDate and :toDate and ((b.staff.person.name) like '%" + txtSearch.toUpperCase() + "%'  or (b.staff.person.phone) like '%" + txtSearch.toUpperCase() + "%'  or (b.insId) like '%" + txtSearch.toUpperCase() + "%') order by b.id desc  ";
+                        + "and b.billType=:type and b.createdAt between :fromDate and :toDate and ((b.staff.person.name) like :q  or (b.staff.person.phone) like :q  or (b.insId) like :q) order by b.id desc  ";
+                temMap.put("q", "%" + txtSearch.toUpperCase() + "%");
             }
 
             temMap.put("toDate", getToDate());
@@ -6824,6 +6889,72 @@ public class PharmacyBillSearch implements Serializable {
         if (purchaseSearchDtos == null) {
             purchaseSearchDtos = new ArrayList<>();
         }
+        calculatePurchaseSearchTotals(maxResult);
+    }
+
+    /**
+     * Totals of the listed direct purchase bills (issue #25787): the same rows the
+     * table shows, so they follow the date range, bill type, department and the
+     * search keywords. Cancelled bills stay in the list, so they are totalled
+     * separately and left out of the "excluding cancelled" figures.
+     */
+    private void calculatePurchaseSearchTotals(int maxResult) {
+        purchaseTotalNet = 0.0;
+        purchaseTotalSale = 0.0;
+        purchaseCancelledNet = 0.0;
+        purchaseCancelledSale = 0.0;
+        purchaseCancelledCount = 0;
+        for (com.divudi.core.data.dto.PharmacyDirectPurchaseSearchDTO dto : purchaseSearchDtos) {
+            double net = dto.getNetTotal() == null ? 0.0 : dto.getNetTotal();
+            double sale = dto.getSaleValue() == null ? 0.0 : dto.getSaleValue();
+            purchaseTotalNet += net;
+            purchaseTotalSale += sale;
+            if (dto.isCancelled()) {
+                purchaseCancelledNet += net;
+                purchaseCancelledSale += sale;
+                purchaseCancelledCount++;
+            }
+        }
+        purchaseListCapped = maxResult > 0 && purchaseSearchDtos.size() >= maxResult;
+    }
+
+    private double purchaseTotalNet;
+    private double purchaseTotalSale;
+    private double purchaseCancelledNet;
+    private double purchaseCancelledSale;
+    private int purchaseCancelledCount;
+    private boolean purchaseListCapped;
+
+    public double getPurchaseTotalNet() {
+        return purchaseTotalNet;
+    }
+
+    public double getPurchaseTotalSale() {
+        return purchaseTotalSale;
+    }
+
+    public double getPurchaseCancelledNet() {
+        return purchaseCancelledNet;
+    }
+
+    public double getPurchaseCancelledSale() {
+        return purchaseCancelledSale;
+    }
+
+    public int getPurchaseCancelledCount() {
+        return purchaseCancelledCount;
+    }
+
+    public double getPurchaseActiveNet() {
+        return purchaseTotalNet - purchaseCancelledNet;
+    }
+
+    public double getPurchaseActiveSale() {
+        return purchaseTotalSale - purchaseCancelledSale;
+    }
+
+    public boolean isPurchaseListCapped() {
+        return purchaseListCapped;
     }
 
     public List<com.divudi.core.data.dto.PharmacyGrnReturnSearchDTO> getGrnReturnSearchDtos() {
@@ -7202,6 +7333,10 @@ public class PharmacyBillSearch implements Serializable {
         if (purchaseReturnSearchDtos == null) {
             purchaseReturnSearchDtos = new ArrayList<>();
         }
+    }
+
+    public boolean isBillACancellationBill() {
+        return com.divudi.core.util.CancellationBillCheck.isCancellationBill(getBill());
     }
 
 }

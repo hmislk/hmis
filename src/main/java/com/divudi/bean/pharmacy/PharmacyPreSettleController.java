@@ -42,7 +42,6 @@ import com.divudi.core.entity.Payment;
 import com.divudi.core.entity.Person;
 import com.divudi.core.entity.PreBill;
 import com.divudi.core.entity.PriceMatrix;
-import com.divudi.core.entity.RefundBill;
 import com.divudi.core.entity.Staff;
 import com.divudi.core.entity.Token;
 import com.divudi.core.entity.WebUser;
@@ -150,7 +149,6 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
     BillService billService;
 /////////////////////////
     Item selectedAlternative;
-    Bill saleReturnBill;
 
     private Bill preBill;
     private Bill saleBill;
@@ -506,67 +504,10 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
 
     }
 
-    private boolean alreadyPaid(Bill itemReturnBill) {
-        String jpql = "Select b "
-                + " from Bill b"
-                + " where b.referenceBill=:bil"
-                + " and b.retired=false "
-                + " and b.billTypeAtomic=:bta "
-                + " and b.cancelled=false ";
-        HashMap hm = new HashMap();
-        hm.put("bil", itemReturnBill);
-        hm.put("bta", BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEM_PAYMENTS);
-        Bill b = getBillFacade().findFirstByJpql(jpql, hm);
-        if (b == null) {
-            return false;
-        }
-        return true;
-    }
-
-    public String toSettleReturn(Bill itemReturnBill) {
-        System.out.println("toSettleReturn");
-        System.out.println("args = " + itemReturnBill);
-
-        if (itemReturnBill == null) {
-            JsfUtil.addErrorMessage("No Bill. Programmatic Error. Inform system administrator.");
-            return null;
-        }
-        if (itemReturnBill.getBillTypeAtomic() == null) {
-            JsfUtil.addErrorMessage("No Bill. Programmatic Error. Inform system administrator.");
-            return null;
-        }
-        if (alreadyPaid(itemReturnBill)) {
-            JsfUtil.addErrorMessage("This bill is already paid");
-            return null;
-        }
-
-        // Store the original sale bill before setPreBill clears everything
-        Bill originalSaleBill = itemReturnBill.getReferenceBill();
-        System.out.println("originalSaleBill = " + originalSaleBill);
-
-        // setPreBill calls makeNull() which clears paymentMethodData
-        setPreBill(itemReturnBill);
-
-        // NOW initialize payment method data AFTER setPreBill has completed
-        // This must happen after setPreBill because setPreBill clears all data
-        if (originalSaleBill != null && originalSaleBill.getPayments() != null && !originalSaleBill.getPayments().isEmpty()) {
-            System.out.println("=== TOSETTLE RETURN: About to initialize refund payments ===");
-            // Initialize payment method data based on original payments
-            initializeRefundPaymentFromOriginalPayments(originalSaleBill.getPayments());
-            System.out.println("=== TOSETTLE RETURN: Completed initialization ===");
-            return "/pharmacy/pharmacy_bill_return_pre_cash?faces-redirect=true";
-        } else {
-            System.out.println("no original bill");
-            return null;
-        }
-
-    }
-
     public void makeNull() {
         selectedAlternative = null;
         preBill = null;
         saleBill = null;
-        saleReturnBill = null;
         bill = null;
         billItem = null;
         removingBillItem = null;
@@ -897,45 +838,6 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
         }
     }
 
-    private void saveSaleReturnBill() {
-        getSaleReturnBill().copy(getPreBill());
-        getSaleReturnBill().copyValue(getPreBill());
-
-        // For refunds, all values should be negative
-        getSaleReturnBill().setNetTotal(0 - Math.abs(getSaleReturnBill().getNetTotal()));
-        getSaleReturnBill().setTotal(0 - Math.abs(getSaleReturnBill().getTotal()));
-        getSaleReturnBill().setDiscount(0 - Math.abs(getSaleReturnBill().getDiscount()));
-        getSaleReturnBill().setHospitalFee(0 - Math.abs(getSaleReturnBill().getHospitalFee()));
-        getSaleReturnBill().setProfessionalFee(0 - Math.abs(getSaleReturnBill().getProfessionalFee()));
-
-        getSaleReturnBill().setBillType(BillType.PharmacySale);
-        getSaleReturnBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEM_PAYMENTS);
-        getSaleReturnBill().setReferenceBill(getPreBill());
-        getSaleReturnBill().setDepartment(getSessionController().getLoggedUser().getDepartment());
-        getSaleReturnBill().setInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
-
-        getBillBean().setPaymentMethodData(getSaleReturnBill(), getSaleReturnBill().getPaymentMethod(), paymentMethodData);
-
-        getSaleReturnBill().setBillDate(new Date());
-        getSaleReturnBill().setBillTime(new Date());
-        getSaleReturnBill().setCreatedAt(Calendar.getInstance().getTime());
-        getSaleReturnBill().setCreater(getSessionController().getLoggedUser());
-
-        getSaleReturnBill().setInsId(getPreBill().getInsId());
-        getSaleReturnBill().setDeptId(getPreBill().getDeptId());
-
-        if (getSaleReturnBill().getId() == null) {
-            getBillFacade().create(getSaleReturnBill());
-        }
-
-        updateSaleReturnPreBill();
-    }
-
-    private void updateSaleReturnPreBill() {
-        getPreBill().setReferenceBill(getSaleReturnBill());
-        getBillFacade().editAndCommit(getPreBill());
-    }
-
     private void updatePreBill() {
         getPreBill().setReferenceBill(getSaleBill());
         getBillFacade().editAndCommit(getPreBill());
@@ -1028,38 +930,6 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
         }
         getBillFacade().editAndCommit(getSaleBill());
 
-    }
-
-    private void saveSaleReturnBillItems() {
-        for (BillItem tbi : getPreBill().getBillItems()) {
-
-            BillItem sbi = new BillItem();
-
-            sbi.copy(tbi);
-            // sbi.invertAndAssignValuesFromOtherBill(tbi);
-
-            sbi.setBill(getSaleReturnBill());
-            sbi.setReferanceBillItem(tbi);
-            sbi.setCreatedAt(Calendar.getInstance().getTime());
-            sbi.setCreater(getSessionController().getLoggedUser());
-
-            if (sbi.getId() == null) {
-                getBillItemFacade().create(sbi);
-            }
-
-            PharmaceuticalBillItem ph = new PharmaceuticalBillItem();
-            ph.copy(tbi.getPharmaceuticalBillItem());
-
-            ph.setBillItem(sbi);
-
-            if (ph.getId() == null) {
-                getPharmaceuticalBillItemFacade().create(ph);
-            }
-
-            //        getPharmacyBean().deductFromStock(tbi.getItem(), tbi.getQty(), tbi.getBill().getDepartment());
-            getSaleReturnBill().getBillItems().add(sbi);
-        }
-        getBillFacade().edit(getSaleReturnBill());
     }
 
     public List<Payment> createPaymentsForBill(Bill b) {
@@ -1251,37 +1121,6 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
             ps.add(p);
         }
         return ps;
-    }
-
-    private void saveSaleReturnBillItems(List<Payment> refundPayments) {
-        for (BillItem tbi : getPreBill().getBillItems()) {
-
-            BillItem sbi = new BillItem();
-
-            sbi.copy(tbi);
-            // sbi.invertAndAssignValuesFromOtherBill(tbi);
-
-            sbi.setBill(getSaleReturnBill());
-            sbi.setReferanceBillItem(tbi);
-            sbi.setCreatedAt(Calendar.getInstance().getTime());
-            sbi.setCreater(getSessionController().getLoggedUser());
-
-            if (sbi.getId() == null) {
-                getBillItemFacade().create(sbi);
-            }
-
-            PharmaceuticalBillItem ph = new PharmaceuticalBillItem();
-            ph.copy(tbi.getPharmaceuticalBillItem());
-
-            ph.setBillItem(sbi);
-
-            if (ph.getId() == null) {
-                getPharmaceuticalBillItemFacade().create(ph);
-            }
-
-            //        getPharmacyBean().deductFromStock(tbi.getItem(), tbi.getQty(), tbi.getBill().getDepartment());
-            getSaleReturnBill().getBillItems().add(sbi);
-        }
     }
 
     public boolean errorCheckOnPaymentMethod() {
@@ -2106,31 +1945,6 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
         this.cashTransactionBean = cashTransactionBean;
     }
 
-    public void settleReturnBillWithPay() {
-        editingQty = null;
-        if (getPreBill().getBillType() == BillType.PharmacyPre
-                && getPreBill().getBillClassType() != BillClassType.RefundBill) {
-            JsfUtil.addErrorMessage("This Bill isn't Return. Please Try Again.");
-            clearBill();
-            clearBillItem();
-            return;
-        }
-
-        saveSaleReturnBill();
-
-        List<Payment> refundPayments = paymentService.createPayment(getSaleReturnBill(), getPaymentMethodData());
-        saveSaleReturnBillItems(refundPayments);
-
-        getBillFacade().edit(getPreBill());
-
-        setBill(getBillFacade().find(getSaleReturnBill().getId()));
-        paymentService.updateBalances(refundPayments);
-        clearBill();
-        clearBillItem();
-        billPreview = true;
-
-    }
-
     private void clearBill() {
         preBill = null;
         saleBill = null;
@@ -2371,15 +2185,6 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
             saleBill = new BilledBill();
         }
         return saleBill;
-    }
-
-    public Bill getSaleReturnBill() {
-        if (saleReturnBill == null) {
-            saleReturnBill = new RefundBill();
-            saleReturnBill.setBillType(BillType.PharmacySale);
-            saleReturnBill.setBillTypeAtomic(BillTypeAtomic.PHARMACY_RETAIL_SALE_REFUND);
-        }
-        return saleReturnBill;
     }
 
     public void setSaleBill(Bill saleBill) {
@@ -2653,133 +2458,6 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
             }
         }
         return new ArrayList<>();
-    }
-
-    /**
-     * Automatically initializes refund payment method data based on original
-     * bill's payments. This ensures refunds use the same payment methods as the
-     * original sale for proper audit trail.
-     *
-     * @param originalPayments List of payments from the original sale bill
-     */
-    private void initializeRefundPaymentFromOriginalPayments(List<Payment> originalPayments) {
-        if (originalPayments == null || originalPayments.isEmpty()) {
-            System.out.println("=== INIT REFUND PAYMENT DEBUG: No original payments ===");
-            return;
-        }
-
-        System.out.println("=== INIT REFUND PAYMENT DEBUG ===");
-        System.out.println("Original payments count: " + originalPayments.size());
-
-        // If single payment method
-        if (originalPayments.size() == 1) {
-            Payment originalPayment = originalPayments.get(0);
-            getPreBill().setPaymentMethod(originalPayment.getPaymentMethod());
-
-            System.out.println("Payment Method: " + originalPayment.getPaymentMethod());
-
-            // Initialize paymentMethodData based on payment method
-            switch (originalPayment.getPaymentMethod()) {
-                case Cash:
-                    getPaymentMethodData().getCash().setTotalValue(Math.abs(getPreBill().getNetTotal()));
-                    break;
-                case Card:
-                    getPaymentMethodData().getCreditCard().setInstitution(originalPayment.getBank());
-                    getPaymentMethodData().getCreditCard().setNo(originalPayment.getCreditCardRefNo());
-                    getPaymentMethodData().getCreditCard().setTotalValue(Math.abs(getPreBill().getNetTotal()));
-                    break;
-                case Cheque:
-                    getPaymentMethodData().getCheque().setDate(originalPayment.getChequeDate());
-                    getPaymentMethodData().getCheque().setNo(originalPayment.getChequeRefNo());
-                    getPaymentMethodData().getCheque().setTotalValue(Math.abs(getPreBill().getNetTotal()));
-                    break;
-                case Slip:
-                    getPaymentMethodData().getSlip().setTotalValue(Math.abs(getPreBill().getNetTotal()));
-                    break;
-                case ewallet:
-                    getPaymentMethodData().getEwallet().setTotalValue(Math.abs(getPreBill().getNetTotal()));
-                    getPaymentMethodData().getEwallet().setComment(originalPayment.getComments());
-                    break;
-                case PatientDeposit:
-                    getPaymentMethodData().getPatient_deposit().setTotalValue(Math.abs(getPreBill().getNetTotal()));
-                    getPaymentMethodData().getPatient_deposit().setPatient(getPreBill().getPatient());
-                    break;
-                case Credit:
-                    System.out.println("Credit Company: " + (originalPayment.getCreditCompany() != null ? originalPayment.getCreditCompany().getName() : "NULL"));
-                    System.out.println("Policy No: " + originalPayment.getPolicyNo());
-                    System.out.println("Reference No: " + originalPayment.getReferenceNo());
-                    System.out.println("Comments: " + originalPayment.getComments());
-
-                    getPaymentMethodData().getCredit().setInstitution(originalPayment.getCreditCompany());
-                    getPaymentMethodData().getCredit().setReferenceNo(originalPayment.getReferenceNo());
-                    getPaymentMethodData().getCredit().setReferralNo(originalPayment.getPolicyNo());
-                    getPaymentMethodData().getCredit().setTotalValue(Math.abs(getPreBill().getNetTotal()));
-                    getPaymentMethodData().getCredit().setComment(originalPayment.getComments());
-
-                    System.out.println("After setting - Institution: " + (getPaymentMethodData().getCredit().getInstitution() != null ? getPaymentMethodData().getCredit().getInstitution().getName() : "NULL"));
-                    System.out.println("After setting - Referral No: " + getPaymentMethodData().getCredit().getReferralNo());
-                    System.out.println("After setting - Reference No: " + getPaymentMethodData().getCredit().getReferenceNo());
-                    System.out.println("After setting - Comment: " + getPaymentMethodData().getCredit().getComment());
-                    break;
-                default:
-                    // For other payment methods, just set the total value
-                    break;
-            }
-        } // If multiple payment methods
-        else {
-            getPreBill().setPaymentMethod(PaymentMethod.MultiplePaymentMethods);
-
-            // Clear any existing multiple payment details
-            getPaymentMethodData().getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().clear();
-
-            for (Payment originalPayment : originalPayments) {
-                ComponentDetail cd = new ComponentDetail();
-                cd.setPaymentMethodData(new PaymentMethodData());
-                cd.setPaymentMethod(originalPayment.getPaymentMethod());
-
-                // Set payment details based on method - use absolute value for refunds
-                double refundAmount = Math.abs(originalPayment.getPaidValue());
-
-                switch (originalPayment.getPaymentMethod()) {
-                    case Cash:
-                        cd.getPaymentMethodData().getCash().setTotalValue(refundAmount);
-                        break;
-                    case Card:
-                        cd.getPaymentMethodData().getCreditCard().setInstitution(originalPayment.getBank());
-                        cd.getPaymentMethodData().getCreditCard().setNo(originalPayment.getCreditCardRefNo());
-                        cd.getPaymentMethodData().getCreditCard().setTotalValue(refundAmount);
-                        break;
-                    case Cheque:
-                        cd.getPaymentMethodData().getCheque().setDate(originalPayment.getChequeDate());
-                        cd.getPaymentMethodData().getCheque().setNo(originalPayment.getChequeRefNo());
-                        cd.getPaymentMethodData().getCheque().setTotalValue(refundAmount);
-                        break;
-                    case Slip:
-                        cd.getPaymentMethodData().getSlip().setTotalValue(refundAmount);
-                        break;
-                    case ewallet:
-                        cd.getPaymentMethodData().getEwallet().setTotalValue(refundAmount);
-                        cd.getPaymentMethodData().getEwallet().setComment(originalPayment.getComments());
-                        break;
-                    case PatientDeposit:
-                        cd.getPaymentMethodData().getPatient_deposit().setTotalValue(refundAmount);
-                        cd.getPaymentMethodData().getPatient_deposit().setPatient(getPreBill().getPatient());
-                        break;
-                    case Credit:
-                        cd.getPaymentMethodData().getCredit().setInstitution(originalPayment.getCreditCompany());
-                        cd.getPaymentMethodData().getCredit().setReferenceNo(originalPayment.getReferenceNo());
-                        cd.getPaymentMethodData().getCredit().setReferralNo(originalPayment.getPolicyNo());
-                        cd.getPaymentMethodData().getCredit().setTotalValue(refundAmount);
-                        cd.getPaymentMethodData().getCredit().setComment(originalPayment.getComments());
-                        break;
-                    default:
-                        // For other payment methods
-                        break;
-                }
-
-                getPaymentMethodData().getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().add(cd);
-            }
-        }
     }
 
     /**

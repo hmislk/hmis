@@ -25,3 +25,8 @@ When done: log_work on the hub and report branch, PR number and files changed.
 ```
 
 Why: the coordinating session keeps a free window for conversation, and a worker that has read the project rules is far less likely to sweep untracked files or leak data. See also the git rules in CLAUDE.md.
+
+
+## From CLAUDE.md (moved detail)
+
+any task that WRITES to git (commit, push, branch creation, or a scripted/bulk edit of more than ~10 files) runs in a dedicated worker session, not the communication session. A hand-made commit of a few explicit paths may stay inline; read-only lookups are always inline.

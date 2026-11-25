@@ -1,0 +1,16 @@
+{
+  "version": "v2.26.0",
+  "description": "Create CREDITCOMPANYCLAIM and CREDITCOMPANYCLAIMITEM (OPD credit company claims) if missing",
+  "githubIssue": "25847",
+  "author": "Dr M H B Ariyaratne",
+  "date": "2026-11-21",
+  "requiresDowntime": false,
+  "estimatedDurationMinutes": 1,
+  "affectedTables": ["creditcompanyclaim", "creditcompanyclaimitem"],
+  "preRequisites": [
+    "Run migration.sql by hand on the database BEFORE deploying any build that contains the CreditCompanyClaim entities (development from #25871 on). The migration page only gets this file in that same build, so it cannot run this step first.",
+    "Without these tables every OPD and pharmacy cancel, refund and return is refused.",
+    "Idempotent; changes no data. Tables are created in the same case as the existing WEBUSER table."
+  ],
+  "rollbackNotes": ["rollback.sql drops CREDITCOMPANYCLAIMITEM, then CREDITCOMPANYCLAIM"]
+}

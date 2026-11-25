@@ -35,8 +35,10 @@ import javax.inject.Inject;
  * ("Consultant Fee"), a {@link Doctor} (non-consultant) defaults to
  * {@link InwardChargeType#DoctorAndNurses} ("Assistant Fee"), and anyone else (nurse,
  * technician, other paramedical staff) defaults to
- * {@link InwardChargeType#TechnicianAndParamedicalCharge} ("Technician Fee"). The user
- * may still change the preselected category before saving.
+ * {@link InwardChargeType#TechnicianAndParamedicalCharge} ("Technician Fee"). With no
+ * staff and no configured speciality default (a package fee not yet assigned to anyone)
+ * it is {@link InwardChargeType#ProfessionalCharge}, as for a fee with no category. The
+ * user may still change the preselected category before saving.
  *
  * <p>Hospitals that bill consultant and assistant fees as one professional charge
  * enable {@link ConfigOptionApplicationController#PROFESSIONAL_AND_ASSISTING_FEES_MERGED},
@@ -95,7 +97,7 @@ public class InwardProfessionalFeeClassificationService implements Serializable 
         if (fromSpeciality != null) {
             return fromSpeciality;
         }
-        if (staff instanceof Consultant) {
+        if (staff == null || staff instanceof Consultant) {
             return InwardChargeType.ProfessionalCharge;
         }
         if (staff instanceof Doctor) {
@@ -185,6 +187,28 @@ public class InwardProfessionalFeeClassificationService implements Serializable 
      *         charge type, or is one this hospital does not use
      */
     public String staffCondition(String feeAlias, InwardChargeType target, Map<String, Object> params) {
+        return categoryCondition(feeAlias, target) + excludeCollectedByDoctor(feeAlias);
+    }
+
+    /**
+     * A JPQL fragment that leaves out the fees marked "Collected by Doctor"
+     * (the patient pays the doctor directly, so the fee is not part of the
+     * hospital bill, the patient's due or the claimable amount). It honours the
+     * flag saved on the fee whatever the current value of
+     * {@link ConfigOptionApplicationController#INWARD_PROFESSIONAL_FEE_ALLOW_FEE_COLLECTED_BY_DOCTOR}:
+     * that option only shows or hides the switch on the add page, so turning it
+     * off later never changes bills already saved. Until a fee is flagged the
+     * column is false or NULL and every query returns what it did before.
+     *
+     * <p>{@link #staffCondition} already appends it, so every bill total, fee
+     * list and report column built from it agrees. A fee saved before the flag
+     * existed may hold NULL, hence the explicit null test.
+     */
+    public String excludeCollectedByDoctor(String feeAlias) {
+        return " and (" + feeAlias + ".collectedByDoctorAtBilling = false or " + feeAlias + ".collectedByDoctorAtBilling is null) ";
+    }
+
+    private String categoryCondition(String feeAlias, InwardChargeType target) {
         if (target != InwardChargeType.ProfessionalCharge
                 && target != InwardChargeType.DoctorAndNurses
                 && target != InwardChargeType.TechnicianAndParamedicalCharge) {

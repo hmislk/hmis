@@ -1,15 +1,6 @@
 ---
 name: dependabot-triage
-description: >
-  Use when Dependabot (or Renovate/any bot) has open dependency-bump PRs on
-  hmislk/hmis and the developer wants them checked and merged or closed, e.g.
-  "handle the dependabot PRs", "merge or close the pending dependency
-  updates", "/dependabot-triage". Verifies each bump against our JDK 11 /
-  Payara 5 / javax stack beyond CI compile (bytecode level, javax vs jakarta,
-  sibling-artifact versions, pom pins, release-note breaking changes, a
-  combined build and a local runtime smoke test), then merges the safe ones,
-  closes the rest with a reason, and adds a dependabot.yml ignore rule so a
-  rejected bump does not come back.
+description: 'Check open Dependabot/Renovate bump PRs on hmislk/hmis against JDK 11/Payara 5/javax, then merge or close with a reason. Use for "handle the dependabot PRs", /dependabot-triage.'
 ---
 
 # Dependabot Triage
@@ -177,3 +168,8 @@ A table in chat: PR · artifact from→to · scope · used where · checks run �
 - Never edit `pom.xml` on `development` directly to "fix" a Dependabot PR; push the fix to the Dependabot branch or close the PR.
 - No worktrees; snapshots via `git archive` under `tmp/`.
 - Closing comments follow the [Public Content Policy](../../../developer_docs/git/github-public-content-policy.md).
+
+
+## From CLAUDE.md (moved detail)
+
+green CI is not enough. Check bytecode <= Java 11, no `jakarta.*`, sibling artifacts on one version (e.g. `poi`/`poi-ooxml`), no `pom.xml` pin holding back a transitive (e.g. `commons-io`), release notes read, a combined JDK 11 build, and a local Payara smoke test of each runtime jar. Close a rejected bump with the evidence and add a `.github/dependabot.yml` ignore rule. CI compile catches none of these runtime failures.

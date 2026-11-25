@@ -7,6 +7,8 @@
  * (94) 71 5812399
  */
 package com.divudi.bean.inward;
+import java.util.Map;
+import com.divudi.service.ItemAuditHelper;
 import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.ItemController;
@@ -51,6 +53,8 @@ import javax.persistence.TemporalType;
 @Named
 @SessionScoped
 public class TheatreServiceController implements Serializable {
+    @EJB
+    private ItemAuditHelper itemAuditHelper;
 
     private static final long serialVersionUID = 1L;
     @Inject
@@ -129,7 +133,7 @@ public class TheatreServiceController implements Serializable {
         if (selectText.trim().equals("")) {
             selectedItems = getTheatreServiceFacade().findByJpql("select c from TheatreService c where c.retired=false order by c.name");
         } else {
-            selectedItems = getTheatreServiceFacade().findByJpql("select c from TheatreService c where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
+            selectedItems = getTheatreServiceFacade().findByJpql("select c from TheatreService c where c.retired=false and (c.name) like :q order by c.name", java.util.Map.of("q", "%" + getSelectText().toUpperCase() + "%"));
         }
         return selectedItems;
     }
@@ -161,7 +165,7 @@ public class TheatreServiceController implements Serializable {
     }
 
     public List<TheatreService> completeItem(String qry) {
-        List<TheatreService> completeItems = getTheatreServiceFacade().findByJpql("select c from Item c where ( type(c) = TheatreService or type(c) = Packege ) and c.retired=false and (c.name) like '%" + qry.toUpperCase() + "%' order by c.name");
+        List<TheatreService> completeItems = getTheatreServiceFacade().findByJpql("select c from Item c where ( type(c) = TheatreService or type(c) = Packege ) and c.retired=false and (c.name) like :q order by c.name", java.util.Map.of("q", "%" + qry.toUpperCase() + "%"));
         return completeItems;
     }
 
@@ -262,13 +266,16 @@ public class TheatreServiceController implements Serializable {
                 //////// // System.out.println("3");
                 getCurrent().setReportedAs(getCurrent());
             }
+            Map<String, Object> beforeNames = itemAuditHelper.snapshotFromDb(getCurrent().getId());
             getTheatreServiceFacade().edit(getCurrent());
+            itemAuditHelper.logUpdate(beforeNames, getCurrent(), getSessionController().getLoggedUser(), "UI");
             JsfUtil.addSuccessMessage("Updated Successfully.");
         } else {
             //////// // System.out.println("4");
             getCurrent().setCreatedAt(new Date());
             getCurrent().setCreater(getSessionController().getLoggedUser());
             getTheatreServiceFacade().create(getCurrent());
+            itemAuditHelper.logCreate(getCurrent(), getSessionController().getLoggedUser(), "UI");
             if (billedAs == false) {
                 //////// // System.out.println("5");
                 getCurrent().setBilledAs(getCurrent());
@@ -405,10 +412,10 @@ public class TheatreServiceController implements Serializable {
         if (selectText.isEmpty()) {
             sql = "select c from TheatreService c where c.retired=false order by c.category.name,c.name";
         } else {
-            sql = "select c from TheatreService c where c.retired=false and (c.name) like '%" + selectText.toUpperCase() + "%' order by c.category.name,c.name";
+            sql = "select c from TheatreService c where c.retired=false and (c.name) like :q order by c.category.name,c.name";
         }
         //////// // System.out.println(sql);
-        items = getTheatreServiceFacade().findByJpql(sql);
+        items = selectText.isEmpty() ? getTheatreServiceFacade().findByJpql(sql) : getTheatreServiceFacade().findByJpql(sql, java.util.Map.of("q", "%" + selectText.toUpperCase() + "%"));
 
         if (items == null) {
             items = new ArrayList<TheatreService>();

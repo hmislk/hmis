@@ -1,6 +1,7 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:prints="http://xmlns.jcp.org/jsf/composite/ezcomp/prints"
       xmlns:cc="http://xmlns.jcp.org/jsf/composite"
       xmlns:f="http://xmlns.jcp.org/jsf/core"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
@@ -119,7 +120,7 @@
                         <tr class="billDetailsFiveFive">
                             <td  style="width:80%!important;">
                                 <h:outputLabel value="#{billItem.item.printName}"></h:outputLabel>
-                            </td>
+                            <prints:opd_fee_collected_by_doctor_note billItem="#{billItem}"/></td>
                             <td style="width:10%!important;">
                                 <h:panelGroup rendered="#{billItem.item.printSessionNumber}" >
                                     <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Print Individual Bill Item Session Number in OPD Bills')}" >

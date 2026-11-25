@@ -212,6 +212,8 @@ public class Bill implements Serializable, RetirableEntity {
     private double settledAmountByPatient;
     private double settledAmountBySponsor;
     private double refundAmount;
+    /** Sum of the approved write-offs of this credit bill (#25847). Null until the first one. Recomputed, never incremented. */
+    private Double writtenOffAmount;
     private double balance;
     /**
      * WARNING: This field is DEPRECATED for pharmacy billing - use 'margin' instead.
@@ -1941,6 +1943,41 @@ public class Bill implements Serializable, RetirableEntity {
         this.comments = comments;
     }
 
+    private static final String DATA_CORRECTION_MARKER = "[Bill Data Correction]";
+
+    /**
+     * The patient-facing part of {@link #comments}: the text before the first
+     * "[Bill Data Correction]" audit marker, trimmed. Not a column; derived
+     * from comments, so no migration is needed.
+     */
+    public String getDiscountCommentText() {
+        if (comments == null) {
+            return null;
+        }
+        int idx = comments.indexOf(DATA_CORRECTION_MARKER);
+        return (idx < 0 ? comments : comments.substring(0, idx)).trim();
+    }
+
+    /**
+     * Replaces only the leading patient-facing part of {@link #comments} and
+     * keeps any "[Bill Data Correction]" block after it unchanged.
+     */
+    public void setDiscountCommentText(String text) {
+        String lead = text == null ? "" : text.trim();
+        String audit = null;
+        if (comments != null) {
+            int idx = comments.indexOf(DATA_CORRECTION_MARKER);
+            if (idx >= 0) {
+                audit = comments.substring(idx);
+            }
+        }
+        if (audit == null) {
+            comments = lead.isEmpty() ? null : lead;
+        } else {
+            comments = lead.isEmpty() ? audit : lead + "\n\n" + audit;
+        }
+    }
+
     public String getPaymentMemo() {
         return paymentMemo;
     }
@@ -2664,6 +2701,14 @@ public class Bill implements Serializable, RetirableEntity {
 
     public double getRefundAmount() {
         return refundAmount;
+    }
+
+    public Double getWrittenOffAmount() {
+        return writtenOffAmount == null ? 0.0 : writtenOffAmount;
+    }
+
+    public void setWrittenOffAmount(Double writtenOffAmount) {
+        this.writtenOffAmount = writtenOffAmount;
     }
 
     public void setRefundAmount(double refundAmount) {

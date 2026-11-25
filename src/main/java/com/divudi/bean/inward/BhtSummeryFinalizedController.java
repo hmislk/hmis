@@ -15,6 +15,7 @@ import com.divudi.core.data.PaymentMethod;
 import com.divudi.core.data.inward.InwardChargeType;
 
 import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.BilledBill;
 import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.BillFee;
@@ -495,6 +496,10 @@ public class BhtSummeryFinalizedController implements Serializable {
                 if (bi.getInwardChargeType() == InwardChargeType.VAT || bi.getInwardChargeType() == InwardChargeType.HospitalSupportService) {
                     vat += bi.getNetValue();
                 }
+                // Computed VAT line (#25766): amount is on the item; Bill.vat is not read here.
+                if (bi.getInwardChargeType() == InwardChargeType.ComputedVAT) {
+                    vat += bi.getVat();
+                }
                 if (bi.getInwardChargeType() == InwardChargeType.Medicine) {
                     med += bi.getNetValue();
                 }
@@ -505,6 +510,7 @@ public class BhtSummeryFinalizedController implements Serializable {
                 if (bi.getInwardChargeType() != InwardChargeType.ProfessionalCharge && bi.getInwardChargeType() != InwardChargeType.DoctorAndNurses
                         && bi.getInwardChargeType() != InwardChargeType.TechnicianAndParamedicalCharge
                         && bi.getInwardChargeType() != InwardChargeType.Medicine && bi.getInwardChargeType() != InwardChargeType.VAT
+                        && bi.getInwardChargeType() != InwardChargeType.ComputedVAT
                         && bi.getInwardChargeType() != InwardChargeType.RoomCharges
                         && bi.getInwardChargeType() != InwardChargeType.HospitalSupportService) {
                     hos += bi.getNetValue();
@@ -716,6 +722,36 @@ public class BhtSummeryFinalizedController implements Serializable {
      * hospital the assistant list is empty and {@link #getProBillFee()}
      * already holds those fees, so nothing is listed twice.
      */
+    /**
+     * Option key: leave cancelled professional fees out of the BHT Break Down
+     * (Table Format) report. Off by default.
+     */
+    public static final String HIDE_CANCELLED_PROFESSIONAL_FEES_KEY
+            = "BHT Break Down Table - Hide Cancelled Professional Fees";
+
+    /**
+     * The staff fees for the BHT Break Down report. With the option on, a fee
+     * that was cancelled before the bill was settled is left out together with
+     * its cancellation (minus) row, so neither shows. The two cancel out, so the
+     * final bill and its totals are the same either way; this only changes what
+     * the report lists.
+     */
+    public List<BillFee> getAllStaffBillFeesForBreakDown() {
+        List<BillFee> all = getAllStaffBillFees();
+        if (!configOptionApplicationController.getBooleanValueByKey(HIDE_CANCELLED_PROFESSIONAL_FEES_KEY, false)) {
+            return all;
+        }
+        List<BillFee> kept = new ArrayList<>();
+        for (BillFee bf : all) {
+            Bill b = bf == null ? null : bf.getBill();
+            boolean cancelledFee = b != null && (b.isCancelled() || !(b instanceof BilledBill));
+            if (!cancelledFee) {
+                kept.add(bf);
+            }
+        }
+        return kept;
+    }
+
     public List<BillFee> getAllStaffBillFees() {
         List<BillFee> all = new ArrayList<>();
         if (proBillFee != null) {
@@ -850,6 +886,7 @@ public class BhtSummeryFinalizedController implements Serializable {
 
     public void makeNullList() {
         patientRooms = null;
+        chargeTypeTotals = null;
         billItems = null;
         proBillFee = null;
         assistBillFee = null;
@@ -890,6 +927,7 @@ public class BhtSummeryFinalizedController implements Serializable {
         List<PatientEncounter> cpts = getInwardBean().fetchChildPatientEncounter(patientEncounter);
         makeNullList();
         patientRooms = getInwardBean().fetchPatientRoomAll(getPatientEncounter(),cpts);
+        chargeTypeTotals = createChargeTypeTotals();
         billItems = getInwardBean().fetchEagerBillItems(getPatientEncounter());
         billFees = getInwardBean().fetchBillFees(getPatientEncounter());
         patientItems = getInwardBean().fetchPatientItem(getPatientEncounter(),cpts);
@@ -912,6 +950,93 @@ public class BhtSummeryFinalizedController implements Serializable {
             creditCompanyCommittedPaidTotal += c.getSettledAmountBySponsor();
         }
 
+    }
+
+    /**
+     * One row of the "Charge Type Totals" table: a final-bill heading and its total.
+     */
+    public static class ChargeTypeTotal implements java.io.Serializable {
+
+        private final String heading;
+        private final double total;
+
+        public ChargeTypeTotal(String heading, double total) {
+            this.heading = heading;
+            this.total = total;
+        }
+
+        public String getHeading() {
+            return heading;
+        }
+
+        public double getTotal() {
+            return total;
+        }
+    }
+
+    @Inject
+    private com.divudi.bean.common.ConfigOptionApplicationController configOptionApplicationController;
+    @Inject
+    private com.divudi.bean.common.ConfigOptionController configOptionController;
+
+    private List<ChargeTypeTotal> chargeTypeTotals;
+    private double finalBillDiscount;
+    private double finalBillNetTotal;
+
+    /**
+     * Headings and totals read from the settled final bill itself (its bill
+     * items hold the amount each heading printed, margin included), grouped and
+     * named the way the final bill prints them: the Final Bill label, and the
+     * Final Bill Group when "Inward Final Bill - Bundle Grouped Charge Types" is
+     * on. Uses {@link BhtSummeryController#buildBundledRows}, the same row
+     * builder as the bundled final bill (issue #17560).
+     */
+    private List<ChargeTypeTotal> createChargeTypeTotals() {
+        List<ChargeTypeTotal> rows = new ArrayList<>();
+        finalBillDiscount = 0.0;
+        finalBillNetTotal = 0.0;
+        if (getPatientEncounter() == null) {
+            return rows;
+        }
+        Bill finalBill = getPatientEncounter().getFinalBill();
+        if (finalBill == null) {
+            return rows;
+        }
+        finalBillDiscount = finalBill.getDiscount();
+        finalBillNetTotal = finalBill.getNetTotal();
+        List<BillItem> items = finalBill.getBillItems();
+        if (items == null) {
+            return rows;
+        }
+        boolean bundled = configOptionController.getBooleanValueByKeyReadOnly("Inward Final Bill - Bundle Grouped Charge Types", false);
+        Map<InwardChargeType, String> groupByType = new java.util.EnumMap<>(InwardChargeType.class);
+        Map<InwardChargeType, Integer> orderByType = new java.util.EnumMap<>(InwardChargeType.class);
+        Map<InwardChargeType, String> labelByType = new java.util.EnumMap<>(InwardChargeType.class);
+        for (BillItem bi : items) {
+            InwardChargeType type = bi == null ? null : bi.getInwardChargeType();
+            if (type == null || groupByType.containsKey(type)) {
+                continue;
+            }
+            groupByType.put(type, bundled ? configOptionApplicationController.getInwardChargeTypeFinalBillGroup(type) : "");
+            orderByType.put(type, configOptionApplicationController.getInwardChargeTypeFinalBillOrder(type));
+            labelByType.put(type, configOptionApplicationController.getInwardChargeTypeFinalBillLabel(type));
+        }
+        for (com.divudi.core.data.dto.FinalBillPrintRowDTO r : BhtSummeryController.buildBundledRows(items, groupByType, orderByType, labelByType)) {
+            rows.add(new ChargeTypeTotal(r.getLabel(), r.getAmount()));
+        }
+        return rows;
+    }
+
+    public double getFinalBillDiscount() {
+        return finalBillDiscount;
+    }
+
+    public double getFinalBillNetTotal() {
+        return finalBillNetTotal;
+    }
+
+    public List<ChargeTypeTotal> getChargeTypeTotals() {
+        return chargeTypeTotals;
     }
 
     /**

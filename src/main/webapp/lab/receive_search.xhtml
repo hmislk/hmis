@@ -45,7 +45,7 @@
 
                             <h:panelGroup>
 
-                                <p:panelGrid columns="5">
+                                <p:panelGrid columns="5" layout="tabular">
                                     <p:inputText autocomplete="off" id="txtSearch" value="#{patientInvestigationController.selectText}" >
                                         <p:ajax event="keyup" 
                                                 update=":#{p:resolveFirstComponentWithId('pPrintWorksheet',view).clientId} :#{p:resolveFirstComponentWithId('dtF',view).clientId}" process=":#{p:resolveFirstComponentWithId('txtSearch',view).clientId} :#{p:resolveFirstComponentWithId('dtF',view).clientId}"  />  

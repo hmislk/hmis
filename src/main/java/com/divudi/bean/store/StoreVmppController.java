@@ -8,6 +8,7 @@
  */
 package com.divudi.bean.store;
 
+import com.divudi.service.ItemAuditHelper;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.AuditEventController;
 import com.divudi.service.AuditService;
@@ -522,6 +523,7 @@ public class StoreVmppController implements Serializable {
             auditData.put("id", vmpp.getId());
             auditData.put("name", vmpp.getName());
             auditData.put("code", vmpp.getCode());
+            ItemAuditHelper.putNameFields(auditData, vmpp);
             auditData.put("retired", vmpp.isRetired());
             auditData.put("inactive", vmpp.isInactive());
             auditData.put("departmentType", vmpp.getDepartmentType() != null

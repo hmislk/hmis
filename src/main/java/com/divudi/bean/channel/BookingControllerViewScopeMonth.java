@@ -350,6 +350,14 @@ public class BookingControllerViewScopeMonth implements Serializable, Controller
             return;
         }
 
+        String totalMismatch = configOptionApplicationController.getBooleanValueByKey(BookingController.RESCHEDULE_TOTAL_CHECK_KEY, true)
+                ? BookingController.rescheduleTotalMismatchMessage(selectedBillSession, getSelectedSessionInstanceForRechedule())
+                : null;
+        if (totalMismatch != null) {
+            JsfUtil.addErrorMessage(totalMismatch);
+            return;
+        }
+
         if (getSelectedSessionInstanceForRechedule().getMaxNo() != 0 && configOptionApplicationController.getBooleanValueByKey("Limited appoinments session can't get appoinement more than max amount.")) {
             if (getSelectedSessionInstanceForRechedule().getBookedPatientCount() != null) {
                 int maxNo = getSelectedSessionInstanceForRechedule().getMaxNo();
@@ -1904,6 +1912,9 @@ public class BookingControllerViewScopeMonth implements Serializable, Controller
     }
 
     public void channelBookingCancel() {
+        if (selectedBillSession != null && com.divudi.core.util.CancellationBillCheck.refuse(selectedBillSession.getBill())) {
+            return;
+        }
         if (selectedBillSession.getBill().getBillType() == BillType.ChannelAgent) {
             cancelAgentPaidBill();
             return;
@@ -1927,6 +1938,9 @@ public class BookingControllerViewScopeMonth implements Serializable, Controller
     }
 
     public void cancelAgentPaidBill() {
+        if (getBillSession() != null && com.divudi.core.util.CancellationBillCheck.refuse(getBillSession().getBill())) {
+            return;
+        }
         if (getBillSession() == null) {
             JsfUtil.addErrorMessage("No BillSession");
             return;
@@ -1979,6 +1993,9 @@ public class BookingControllerViewScopeMonth implements Serializable, Controller
     }
 
     public void cancelCashFlowBill() {
+        if (getBillSession() != null && com.divudi.core.util.CancellationBillCheck.refuse(getBillSession().getBill())) {
+            return;
+        }
         if (errorCheckCancelling()) {
             return;
         }
@@ -1990,6 +2007,9 @@ public class BookingControllerViewScopeMonth implements Serializable, Controller
     }
 
     public void cancelBookingBill() {
+        if (getBillSession() != null && com.divudi.core.util.CancellationBillCheck.refuse(getBillSession().getBill())) {
+            return;
+        }
         if (errorCheckCancelling()) {
             return;
         }
@@ -2079,6 +2099,9 @@ public class BookingControllerViewScopeMonth implements Serializable, Controller
     }
 
     public void cancelCreditPaidBill() {
+        if (getBillSession() != null && com.divudi.core.util.CancellationBillCheck.refuse(getBillSession().getBill())) {
+            return;
+        }
         if (getBillSession() == null) {
             JsfUtil.addErrorMessage("No BillSession");
             return;
@@ -3457,12 +3480,13 @@ public class BookingControllerViewScopeMonth implements Serializable, Controller
             suggestions = new ArrayList<>();
         } else {
             if (getSpeciality() != null) {
-                sql = "select p from Staff p where p.retired=false and ((p.person.name) like '%" + query.toUpperCase() + "%'or  (p.code) like '%" + query.toUpperCase() + "%' ) and p.speciality.id = " + getSpeciality().getId() + " order by p.person.name";
+                sql = "select p from Staff p where p.retired=false and ((p.person.name) like :q or  (p.code) like :q ) and p.speciality.id = " + getSpeciality().getId() + " order by p.person.name";
             } else {
-                sql = "select p from Staff p where p.retired=false and ((p.person.name) like '%" + query.toUpperCase() + "%'or  (p.code) like '%" + query.toUpperCase() + "%' ) order by p.person.name";
+                sql = "select p from Staff p where p.retired=false and ((p.person.name) like :q or  (p.code) like :q ) order by p.person.name";
             }
-            ////System.out.println(sql);
-            suggestions = getStaffFacade().findByJpql(sql);
+            java.util.Map<String, Object> qm = new java.util.HashMap<>();
+            qm.put("q", "%" + query.toUpperCase() + "%");
+            suggestions = getStaffFacade().findByJpql(sql, qm);
         }
         return suggestions;
     }
@@ -8247,4 +8271,8 @@ public class BookingControllerViewScopeMonth implements Serializable, Controller
             billItem.setHospitalFee(hosFee);
         }
     }
+    public boolean isSelectedBillACancellationBill() {
+        return selectedBillSession != null && com.divudi.core.util.CancellationBillCheck.isCancellationBill(selectedBillSession.getBill());
+    }
+
 }

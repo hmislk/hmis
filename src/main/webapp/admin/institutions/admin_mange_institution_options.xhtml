@@ -75,7 +75,7 @@
                                      value="#{configOptionController.options}"
                                      var="option"
                                      emptyMessage="No institution options found. Please select an institution and click 'List Options'."
-                                     styleClass="table table-striped"
+                                     styleClass="table table-striped p-datatable-sm"
                                      paginator="true"
                                      rows="20"
                                      widgetVar="institutionOptionsTableWidget">
@@ -96,9 +96,9 @@
                                 </h:panelGroup>
                             </p:column>
 
-                            <p:column headerText="Current Value" filterBy="#{option.optionValue}" style="width: 35%">
-                                <h:outputText value="#{option.optionValue}"
-                                              title="#{option.optionValue}"/>
+                            <p:column headerText="Current Value" filterBy="#{configOptionController.displayValue(option)}" style="width: 35%">
+                                <h:outputText value="#{configOptionController.displayValue(option)}"
+                                              title="#{configOptionController.displayValue(option)}"/>
                             </p:column>
 
                             <p:column headerText="Actions" style="width: 10%">
@@ -141,31 +141,32 @@
                                     <p:outputLabel value="Key Value" />
                                 </div>
                                 <div class="col-9">
+                                    <h:outputText value="Leave blank to keep the current value" styleClass="text-muted d-block" rendered="#{configOptionController.editingSecretOption}"/>
                                     <p:inputText
                                         class="w-100"
-                                        id="valueInputShortText" value="#{configOptionController.option.optionValue}"
+                                        id="valueInputShortText" value="#{configOptionController.editOptionValue}"
                                         rendered="#{configOptionController.option.valueType eq 'SHORT_TEXT'}" />
 
                                     <p:inputText
                                         class="w-100"
                                         id="valueInputLong"
-                                        value="#{configOptionController.option.optionValue}"
+                                        value="#{configOptionController.editOptionValue}"
                                         rendered="#{configOptionController.option.valueType eq 'LONG'}" />
 
                                     <p:inputTextarea
                                         class="w-100"
                                         rows="5"
-                                        id="valueInputLongText" value="#{configOptionController.option.optionValue}"
+                                        id="valueInputLongText" value="#{configOptionController.editOptionValue}"
                                         rendered="#{configOptionController.option.valueType eq 'LONG_TEXT'}"
                                         autoResize="false"/>
 
                                     <p:inputText
                                         class="w-100"
-                                        id="valueInputDouble" value="#{configOptionController.option.optionValue}"
+                                        id="valueInputDouble" value="#{configOptionController.editOptionValue}"
                                         rendered="#{configOptionController.option.valueType eq 'DOUBLE'}" />
 
                                     <p:toggleSwitch
-                                        value="#{configOptionController.option.optionValue}"
+                                        value="#{configOptionController.editOptionValue}"
                                         onIcon="pi pi-check"
                                         offIcon="pi pi-times"
                                         rendered="#{configOptionController.option.valueType eq 'BOOLEAN'}">

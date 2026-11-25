@@ -71,6 +71,10 @@ public class PharmacyPurchaseOrderApprovalCancellationService {
             throw new PharmacyPoCancellationException(Reason.NOT_FOUND, "No Bill to cancel");
         }
 
+        if (com.divudi.core.util.CancellationBillCheck.isCancellationBill(bill)) {
+            throw new PharmacyPoCancellationException(Reason.CANCELLATION_BILL, com.divudi.core.util.CancellationBillCheck.MESSAGE);
+        }
+
         if (bill.getBillType() != BillType.PharmacyOrderApprove) {
             throw new PharmacyPoCancellationException(Reason.NOT_APPROVAL_TYPE, "This bill is not a Pharmacy Purchase Order Approval bill");
         }

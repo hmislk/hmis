@@ -112,6 +112,9 @@ import org.primefaces.event.TabChangeEvent;
 @SessionScoped
 public class OpdBatchBillCancellationController implements Serializable, ControllerWithMultiplePayments {
 
+    @javax.ejb.EJB
+    private com.divudi.service.CreditCompanyClaimService creditCompanyClaimService;
+
     private static final long serialVersionUID = 1L;
 
     /**
@@ -667,8 +670,13 @@ public class OpdBatchBillCancellationController implements Serializable, Control
 //        this.recurseCount = recurseCount;
 //    }
     public boolean findByFilter(String property, String value) {
-        String sql = "Select b From Bill b where b.retired=false and (b." + property + ") like '%" + value.toUpperCase() + " %'";
-        Bill b = getBillFacade().findFirstByJpql(sql);
+        if (property == null || value == null || !property.matches("^[A-Za-z][A-Za-z0-9_.]*$")) {
+            return false;
+        }
+        String sql = "Select b From Bill b where b.retired=false and (b." + property + ") like :val";
+        java.util.Map<String, Object> m = new java.util.HashMap<>();
+        m.put("val", "%" + value.toUpperCase() + " %");
+        Bill b = getBillFacade().findFirstByJpql(sql, m);
         if (b != null) {
             return true;
         } else {
@@ -1881,7 +1889,7 @@ public class OpdBatchBillCancellationController implements Serializable, Control
                 + " and bf.staff=:staff "
                 + " and bf.bill.cancelled=:can"
                 + " and bf.billItem.refunded=:ret"
-                + " and (bf.feeValue - bf.paidValue) > 0 "
+                + " and (bf.feeValue - bf.paidValue) > 0 and (bf.collectedByDoctorAtBilling = false or bf.collectedByDoctorAtBilling is null) "
                 + " and bf.bill.billTypeAtomic in :btcs "
                 + " and bf.fee.feeType=:ft";
 
@@ -1952,6 +1960,9 @@ public class OpdBatchBillCancellationController implements Serializable, Control
     private Request currentRequest;
 
     public String navigateToCancelOpdBatchBill() {
+        if (com.divudi.core.util.CancellationBillCheck.refuse(getBatchBill())) {
+            return "";
+        }
         if (batchBill == null) {
             JsfUtil.addErrorMessage("No Batch bill is selected");
             return "";
@@ -2745,6 +2756,10 @@ public class OpdBatchBillCancellationController implements Serializable, Control
     public String cancelOpdBatchBill() {
 
         batchBillCancellationStarted = true;
+        if (com.divudi.core.util.CancellationBillCheck.refuse(getBatchBill())) {
+            batchBillCancellationStarted = false;
+            return "";
+        }
         if (getBatchBill() == null) {
             JsfUtil.addErrorMessage("No bill");
             batchBillCancellationStarted = false;
@@ -2752,6 +2767,12 @@ public class OpdBatchBillCancellationController implements Serializable, Control
         }
         if (getBatchBill().getId() == null) {
             JsfUtil.addErrorMessage("No Saved bill");
+            batchBillCancellationStarted = false;
+            return "";
+        }
+        String openClaimMessage = creditCompanyClaimService.openClaimRefusal(getBatchBill());
+        if (openClaimMessage != null) {
+            JsfUtil.addErrorMessage(openClaimMessage);
             batchBillCancellationStarted = false;
             return "";
         }
@@ -2949,6 +2970,12 @@ public class OpdBatchBillCancellationController implements Serializable, Control
         }
         if (getBatchBill().getId() == null) {
             JsfUtil.addErrorMessage("No Saved bill");
+            batchBillCancellationStarted = false;
+            return "";
+        }
+        String openClaimMessage = creditCompanyClaimService.openClaimRefusal(getBatchBill());
+        if (openClaimMessage != null) {
+            JsfUtil.addErrorMessage(openClaimMessage);
             batchBillCancellationStarted = false;
             return "";
         }
@@ -3504,6 +3531,8 @@ public class OpdBatchBillCancellationController implements Serializable, Control
             newBillFee.setSettleValue(0 - originalBillFee.getSettleValue());
             newBillFee.setFeeVat(0 - originalBillFee.getFeeVat());
             newBillFee.setFeeVatPlusValue(0 - originalBillFee.getFeeVatPlusValue());
+            // A reversal mirrors its original, so a doctor-collected fee stays out of the sums (#25731).
+            newBillFee.setCollectedByDoctorAtBilling(originalBillFee.isCollectedByDoctorAtBilling());
             newBillFee.setCreatedAt(new Date());
             newBillFee.setCreater(getSessionController().getLoggedUser());
             getBillFeeFacade().create(newBillFee);

@@ -306,6 +306,9 @@ public class PdfController {
         sb.append("<div class='section'><h3>Financial Summary</h3><table>");
         sb.append("<tr><td>Gross Total</td><td class='txt-right'>").append(df.format(grantTotal)).append("</td></tr>");
         sb.append("<tr><td>Discount</td><td class='txt-right'>").append(df.format(discount)).append("</td></tr>");
+        if (bill != null && discount != 0.0 && bill.getDiscountCommentText() != null && !bill.getDiscountCommentText().isEmpty()) {
+            sb.append("<tr><td colspan='2'>Discount Comment: ").append(escapeHtml(bill.getDiscountCommentText())).append("</td></tr>");
+        }
         sb.append("<tr><td>Claimable Total</td><td class='txt-right'>").append(df.format(claimableTotal)).append("</td></tr>");
         sb.append("<tr><td><b>Net Total</b></td><td class='txt-right'><b>").append(df.format(netTotal)).append("</b></td></tr>");
         sb.append("<tr><td>Paid Amount</td><td class='txt-right'>").append(df.format(paidAmount)).append("</td></tr>");
@@ -2405,8 +2408,37 @@ public class PdfController {
         document.add(lineSeparator);
     }
 
+    /**
+     * Date/time pattern for the report header and footer, taken from the
+     * application preference so the exported PDF matches what the page shows
+     * rather than a pattern hardcoded here. UserPreference already falls back
+     * to "dd MMM yyyy HH:mm:ss" when unset; this guards the preference itself
+     * being unavailable.
+     */
+    private String reportDateTimeFormat() {
+        if (sessionController != null && sessionController.getApplicationPreference() != null) {
+            String pattern = sessionController.getApplicationPreference().getLongDateTimeFormat();
+            if (pattern != null && !pattern.trim().isEmpty()) {
+                return pattern;
+            }
+        }
+        return "dd MMM yyyy HH:mm:ss";
+    }
+
+    /**
+     * Formatter for the configured pattern; an invalid stored pattern falls back
+     * to the default instead of failing the whole PDF.
+     */
+    private SimpleDateFormat reportDateTimeFormatter() {
+        try {
+            return new SimpleDateFormat(reportDateTimeFormat());
+        } catch (IllegalArgumentException e) {
+            return new SimpleDateFormat("dd MMM yyyy HH:mm:ss");
+        }
+    }
+
     private void addReportHeader(Document document, ReportTemplateRowBundle bundle) {
-        SimpleDateFormat sdf = new SimpleDateFormat("dd MMM yyyy HH:mm:ss");
+        SimpleDateFormat sdf = reportDateTimeFormatter();
 
         String institutionName = sessionController.getInstitution() != null
                 ? sessionController.getInstitution().getName()
@@ -2559,7 +2591,7 @@ public class PdfController {
         String userName = sessionController.getLoggedUser() != null
                 ? sessionController.getLoggedUser().getName()
                 : "";
-        String printedTime = new SimpleDateFormat("dd MMM yyyy HH:mm:ss").format(new Date());
+        String printedTime = reportDateTimeFormatter().format(new Date());
 
         document.add(new Paragraph(" "));
 

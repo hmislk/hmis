@@ -7,12 +7,15 @@
  * (94) 71 5812399
  */
 package com.divudi.bean.common;
+import com.divudi.service.ItemAuditHelper;
 import com.divudi.core.entity.Item;
 import com.divudi.core.entity.MedicalPackage;
 import com.divudi.core.facade.ItemFacade;
 import com.divudi.core.facade.MedicalPackageFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Date;
 import java.util.List;
 import javax.ejb.EJB;
@@ -31,6 +34,8 @@ import com.divudi.core.util.JsfUtil;
 @Named
 @SessionScoped
 public  class MedicalPackageNameController implements Serializable {
+    @EJB
+    private ItemAuditHelper itemAuditHelper;
 
     private static final long serialVersionUID = 1L;
     @EJB
@@ -52,9 +57,10 @@ public  class MedicalPackageNameController implements Serializable {
         } else {
             sql = "select p from MedicalPackage p where p.retired=false"
                     + " and (p.inactive=false or p.inactive is null)"
-                    + "and ((p.name) like '%" + query.toUpperCase() + "%'or  (p.code) like '%" + query.toUpperCase() + "%' ) order by p.name";
-            //////// // System.out.println(sql);
-            suggestions = getFacade().findByJpql(sql);
+                    + "and ((p.name) like :qry or  (p.code) like :qry ) order by p.name";
+            Map<String, Object> m = new HashMap<>();
+            m.put("qry", "%" + query.toUpperCase() + "%");
+            suggestions = getFacade().findByJpql(sql, m);
         }
         return suggestions;
     }
@@ -176,13 +182,16 @@ public  class MedicalPackageNameController implements Serializable {
 
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
 
+            Map<String, Object> beforeNames = itemAuditHelper.snapshotFromDb(current.getId());
             getFacade().edit(current);
+            itemAuditHelper.logUpdate(beforeNames, current, getSessionController().getLoggedUser(), "UI");
 
             JsfUtil.addSuccessMessage("Updated Successfully.");
         } else {
             current.setCreatedAt(new Date());
             current.setCreater(getSessionController().getLoggedUser());
             getFacade().create(current);
+            itemAuditHelper.logCreate(current, getSessionController().getLoggedUser(), "UI");
             JsfUtil.addSuccessMessage("Saved Successfully");
         }
         recreateModel();

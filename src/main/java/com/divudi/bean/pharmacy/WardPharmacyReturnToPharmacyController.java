@@ -499,7 +499,18 @@ public class WardPharmacyReturnToPharmacyController implements Serializable {
         if (!(rowObject instanceof ReturnLine)) {
             return;
         }
-        ReturnLine line = (ReturnLine) rowObject;
+        onReturnQuantityChanged((ReturnLine) rowObject);
+    }
+
+    /**
+     * Change listener for the directly editable "Return Quantity" cell
+     * (#25812). Clamps the entered quantity to {@code [0, returnable]} and
+     * keeps the bill item quantity in step; same rules as the row editor.
+     */
+    public void onReturnQuantityChanged(ReturnLine line) {
+        if (line == null) {
+            return;
+        }
         BillItem bi = line.getReturnItem();
         PharmaceuticalBillItem pbi = bi.getPharmaceuticalBillItem();
 
@@ -556,6 +567,9 @@ public class WardPharmacyReturnToPharmacyController implements Serializable {
      * porter's staff stock and credits back to ward department stock).
      */
     public void cancelReturnBill() {
+        if (com.divudi.core.util.CancellationBillCheck.refuse(returnBill)) {
+            return;
+        }
         if (!webUserController.hasPrivilege(Privileges.InwardPharmacyReturnCancel.name())) {
             JsfUtil.addErrorMessage("You do not have the privilege to cancel this return.");
             return;
@@ -1021,6 +1035,10 @@ public class WardPharmacyReturnToPharmacyController implements Serializable {
 
     public void setComment(String comment) {
         this.comment = comment;
+    }
+
+    public boolean isReturnBillACancellationBill() {
+        return com.divudi.core.util.CancellationBillCheck.isCancellationBill(returnBill);
     }
 
 }

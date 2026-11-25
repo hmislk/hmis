@@ -67,3 +67,8 @@ For complete reference, read:
 - [Application Options](../../developer_docs/configuration/application-options.md)
 - [Bill Number Config](../../developer_docs/configuration/bill-number-config-options.md)
 - [Printer Configuration](../../developer_docs/configuration/printer-configuration-system.md)
+
+
+## From CLAUDE.md (moved detail)
+
+Live config: apply agreed values exactly, check the deployed branch has the code, then verify a newly created record, not the config row.

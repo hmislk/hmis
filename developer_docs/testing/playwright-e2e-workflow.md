@@ -34,7 +34,7 @@ or by § number below, and read only that section.
   one.** A named test environment (local, QA, `*-local-staging`) is not a question:
   go there, create fictional test data freely (§15a), and ask only for a missing
   URL or login. Never assume which deployment or database a local URL points at. Credentials live **outside** the
-  repo (`C:\Credentials\`) — never paste them into docs, code, or commit
+  repo (the credentials folder outside the repo) — never paste them into docs, code, or commit
   messages.
 - The app must already be deployed and running. Playwright does **not** build or
   deploy — it only drives a browser against a running instance.
@@ -54,7 +54,7 @@ laptop. It does **not** apply to shared/staging/production Payara, where the
 still governs.
 
 ```powershell
-# Paths vary per machine — check C:\Credentials\Credentials.txt for your local values
+# Paths vary per machine — see the build-tools and Payara reference notes, or ask the developer
 $env:JAVA_HOME="<path-to-jdk>"
 & "<path-to-mvn.cmd>" clean package -DskipTests
 & "<path-to-asadmin.bat>" [--port <admin-port>] redeploy --name rh "<project-root>\target\rh-3.0.0.war"
@@ -65,7 +65,7 @@ $env:JAVA_HOME="<path-to-jdk>"
   leave stale `.class` files in `target/`.
 - A redeploy invalidates the current session (see §1) — log in again
   afterward.
-- Watch `<payara-install>\glassfish\domains\domain1\logs\server.log` for deployment errors
+- Watch `<payara-domain>/logs/server.log` for deployment errors
   before starting the browser flow.
 - **`--name` must match the actual deployed app name.** `asadmin list-applications`
   first — on some machines it is `rh-3.0.0`, not `rh`. A `redeploy` with the
@@ -80,13 +80,26 @@ $env:JAVA_HOME="<path-to-jdk>"
   (the name/context root you confirmed above, not a hardcoded guess).
 - **Running `asadmin` from Git Bash: set `MSYS_NO_PATHCONV=1`.** MSYS rewrites any
   argument that looks like a Unix path, so `--contextroot /rh` is handed to Payara
-  as `D:/Program Files/Git/rh`. The deploy then fails deep inside JSF parsing —
-  `Unable to parse document 'jndi:/server/D:/Program%20Files/Git/rh/WEB-INF/faces-config.xml'`
+  as `<install-dir>/rh`. The deploy then fails deep inside JSF parsing —
+  `Unable to parse document 'jndi:/server/<install-dir>/rh/WEB-INF/faces-config.xml'`
   — which reads like a broken WAR and is nothing of the sort. Worse, that failed
   `redeploy` leaves the app *undeployed*, so the retry fails with "not deployed" and
   you have to `deploy` fresh. Prefix the command:
   `MSYS_NO_PATHCONV=1 asadmin deploy --name rh --contextroot /rh <war>`. PowerShell
   is unaffected.
+- **One deploy at a time.** Run it in the background and wait for the deploy
+  command itself to exit successfully, then check the context root answers
+  (302/200). A
+  second `asadmin deploy` started meanwhile can leave the app undeployed. After a
+  failed redeploy: stop the domain, delete only `applications/<app>` and
+  `generated/*/<app>`, start the domain, deploy once. With one local app, e2e
+  runs are serial.
+- **Credentials.** Never write a password into a helper script or file, and
+  never `cat`/`grep`/`sed` a file that may hold one. Query with
+  `mysql --defaults-extra-file=<file>` without reading the file.
+- **A route that never reaches the page under test is NOT REACHED, never PASS.**
+  Say which page and why. A page with no menu path is a FAIL; NOT REACHED is for a
+  route that exists but test data or setup is missing.
 
 ---
 
@@ -371,7 +384,7 @@ before concluding the underlying JPQL is wrong.
 ## 6. Verify against the database
 
 After the UI flow, confirm correctness directly in the DB (the local copy, with
-credentials from `C:\Credentials\`). For pharmacy transfers the key checks are:
+credentials from the credentials folder outside the repo). For pharmacy transfers the key checks are:
 
 - **No duplicate bill items:** group `billitem` by `ITEM_ID + ITEMBATCH_ID`;
   every combination should appear exactly once. Confirm the
@@ -539,7 +552,7 @@ Clean up **only when explicitly asked**, and only what was asked for.
 | Environment | Create test data? | Clean up afterwards? |
 |---|---|---|
 | Local (`localhost`, no tunnel) | Yes, freely | No — and the DB is disposable anyway (§15) |
-| Hospital test/staging box (e.g. `rhLocal`) | Yes | No, unless explicitly asked |
+| Hospital test/staging box (e.g. `<env-name>`) | Yes | No, unless explicitly asked |
 | Production on Azure | You should not be testing here | n/a — if you are about to write, stop and ask |
 
 Production is the real signal: a request to *test* a workflow is essentially
@@ -549,8 +562,8 @@ and confirm which environment is meant, rather than proceeding carefully.
 
 Say what you created, so the user can decide:
 
-> Test data created on rhLocal: patient ZZ TEST THEATRE PATIENT, admission
-> Day Case/3, settled service bill RHDDC006INWSER/71 (5.00).
+> Test data created on <env-name>: patient ZZ TEST THEATRE PATIENT, admission
+> `<type>/<n>`, a ZZ TEST settled service bill.
 
 That sentence is the whole obligation. Naming records with an obvious test
 prefix (`ZZ TEST ...`) is what makes them harmless to leave.
@@ -584,3 +597,10 @@ prefix (`ZZ TEST ...`) is what makes them harmless to leave.
 - [ ] Before writing "did not reproduce", checked every `getBooleanValueByKey(...)` branch in the code path and flipped any option whose local value differs from the reporter's likely setting (§107) — and, when verifying a fix, exercised **both** settings of any option gating the changed code.
 - [ ] For any admission flow: confirmed the local DB actually has a vacant room (`completeRoom` returns suggestions); if not, freed some by SQL (§111) before concluding the Room autocomplete is broken.
 - [ ] Before trying to reproduce a same-session state-change race (item A staged, then a dependency of A is invalidated by a legitimate app action before A is submitted), checked whether a `@SessionScoped` controller's already-held entity reference would even observe the change (§96) rather than assuming any in-app mutation propagates live.
+
+
+## From CLAUDE.md (moved detail)
+
+never navigate to an inner page by URL; open only the app root, then click through the menus. A URL-loaded page shows artifacts, not defects; a page with no menu path is itself the finding. Record the menu path in the issue/PR.
+
+See also §15a above:  never clean up test data unasked; leave records in place and list what you created; never write test data to production without confirming the environment.

@@ -33,42 +33,21 @@
 
                         <p:panel styleClass="alignTop" rendered="#{inwardSearch.patient.person ne null and inwardSearch.bill ne null and (inwardSearch.bill.approveAt ne null or webUserController.hasPrivilege('InwardFinalBillViewUnapproved') or webUserController.hasPrivilege('InwardFinalBillApprove'))}" class="">
                             <f:facet name="header">
-                                <div class="d-flex justify-content-between">
-                                    <div class="d-flex">
+                                <div class="d-flex justify-content-between align-items-center w-100">
+                                    <!-- LEFT: title -->
+                                    <div class="d-flex align-items-center gap-2">
                                         <h:outputText styleClass="fas fa-print"></h:outputText>
-                                        <h:outputLabel value="Final Bill" class="mx-4"></h:outputLabel>
+                                        <h:outputLabel value="Final Bill"></h:outputLabel>
                                     </div>
+
+                                    <!-- CENTER: entity navigation -->
                                     <div class="d-flex gap-2">
-                                        <p:selectBooleanCheckbox value="#{inwardSearch.showOrginalBill}"
-                                                                 label="Show Original Bill" itemLabel="Show Original Bill"
-                                                                 class="mx-2">
-                                            <p:ajax process="@this" update="@all"/>
-                                        </p:selectBooleanCheckbox>
-                                        <p:commandButton
-                                            icon=" fa fa-refresh"
-                                            value="Process Bill"
-                                            action="#"
-                                            ajax="false" />
-                                        <p:commandButton
-                                            ajax="false"
-                                            icon="fa fa-cancel"
-                                            class="ui-button-danger"
-                                            value="To Cancel Bill"
-                                            action="inward_cancel_bill_final?faces-redirect=true"
-                                            disabled="#{inwardSearch.bill.cancelled}"  />
-                                        <p:commandButton
-                                            ajax="false"
-                                            icon="fa fa-plus"
-                                            class="ui-button-warning"
-                                            value="Create New Version"
-                                            title="Create New Version from #{inwardSearch.bill.deptId}"
-                                            action="#{bhtSummeryController.createNewVersionFromBill(inwardSearch.bill)}"
-                                            rendered="#{not inwardSearch.bill.cancelled and webUserController.hasPrivilege('InwardFinalBillCreateVersion')}" />
                                         <p:commandButton
                                             ajax="false"
                                             icon="fas fa-id-card"
-                                            class="ui-button-secondary "
+                                            styleClass="ui-button-info ui-button-outlined"
                                             value="Inpatient Dashboard"
+                                            title="Open the inpatient dashboard of this admission"
                                             action="#{bhtSummeryController.navigateToInpatientProfile()}"
                                             >
                                             <f:setPropertyActionListener
@@ -76,6 +55,37 @@
                                                 target="#{admissionController.current}" >
                                             </f:setPropertyActionListener>
                                         </p:commandButton>
+                                    </div>
+
+                                    <!-- RIGHT: actions, left = least important -->
+                                    <div class="d-flex gap-2 align-items-center">
+                                        <p:selectBooleanCheckbox value="#{inwardSearch.showOrginalBill}"
+                                                                 label="Show Original Bill" itemLabel="Show Original Bill">
+                                            <p:ajax process="@this" update="@all"/>
+                                        </p:selectBooleanCheckbox>
+                                        <p:commandButton
+                                            ajax="false"
+                                            icon="fa fa-cancel"
+                                            styleClass="ui-button-danger"
+                                            value="To Cancel Bill"
+                                            title="Go to cancel this final bill"
+                                            action="inward_cancel_bill_final?faces-redirect=true"
+                                            disabled="#{inwardSearch.bill.cancelled or inwardSearch.billACancellationBill}"  />
+                                        <p:commandButton
+                                            ajax="false"
+                                            icon="fa fa-plus"
+                                            styleClass="ui-button-warning"
+                                            value="Create New Version"
+                                            title="Create New Version from #{inwardSearch.bill.deptId}"
+                                            action="#{bhtSummeryController.createNewVersionFromBill(inwardSearch.bill)}"
+                                            rendered="#{not inwardSearch.bill.cancelled and webUserController.hasPrivilege('InwardFinalBillCreateVersion')}" />
+                                        <p:commandButton
+                                            icon="fa fa-refresh"
+                                            styleClass="ui-button-info"
+                                            value="Process Bill"
+                                            title="Reload the bill"
+                                            action="#"
+                                            ajax="false" />
                                     </div>
                                 </div>
 
@@ -178,10 +188,12 @@
                                                     <h:outputLabel value="Bill Details" ></h:outputLabel>
                                                 </div>
                                                 <div>
-                                                    <p:commandButton 
-                                                        value="View Charges" 
+                                                    <p:commandButton
+                                                        value="View Charges"
                                                         icon="fa fa-line-chart"
-                                                        type="button" 
+                                                        styleClass="ui-button-info ui-button-outlined"
+                                                        title="Show the inward charges of this bill"
+                                                        type="button"
                                                         onclick="PF('chargesList').show();" >
                                                     </p:commandButton>
 
@@ -313,6 +325,7 @@
                                     <p:panel header="Sent Emails">
                                         <p:dataTable
                                             value="#{inwardSearch.sentEmailsForBill}"
+                                            styleClass="p-datatable-sm"
                                             var="e"
                                             emptyMessage="No emails sent for this bill.">
                                             <p:column headerText="Recipient">
@@ -625,12 +638,13 @@
 
                                 <p:tab title="Custom Bills">
                                     <h:outputScript library="js" name="custom4-paged-print.js" target="head"/>
-                                    <div class="d-flex justify-content-end mb-2">
+                                    <div class="d-flex justify-content-end gap-2 mb-2">
                                         <p:commandButton
                                             rendered="#{webUserController.hasPrivilege('ChangeReceiptPrintingPaperTypes')}"
                                             value="Settings"
                                             icon="fas fa-cog"
-                                            class="ui-button-secondary mx-1"
+                                            title="Choose which custom bill formats are shown"
+                                            styleClass="ui-button-secondary ui-button-outlined"
                                             type="button"
                                             onclick="PF('custom2ConfigDialog').show();" />
                                     </div>
@@ -747,14 +761,14 @@
                                                 <f:facet name="header">
                                                     <div class="d-flex justify-content-between">
                                                         <div><h:outputLabel value="Original" class="mt-2"/></div>
-                                                        <div>
+                                                        <div class="d-flex gap-2">
                                                             <p:commandButton
                                                                 icon="fa fa-print"
                                                                 value="Custom Bill 3"
                                                                 class="ui-button-info"
                                                                 type="button"
                                                                 onclick="printCustom4Bill('#{p:resolveFirstComponentWithId('originalCustom4BillPriview',view).clientId}', '#{resource['js:paged.polyfill.js']}'); return false;" />
-                                                                <p:commandButton styleClass="ui-button-info mx-1" id="btnFinalRawTextOriginal"
+                                                                <p:commandButton styleClass="ui-button-info" id="btnFinalRawTextOriginal"
                                                                     rendered="#{inwardRawTextReceiptController.rawTextPaper}"
                                                                     value="Print (Raw Text)" ajax="false" icon="fa fa-file-lines"
                                                                     title="Print on the dot-matrix printer (pre-printed stationery)"
@@ -765,7 +779,7 @@
                                                 
                                                 <bi:unapprovedHeading bill="#{inwardSearch.bill}" />
 
-                                                <h:panelGroup id="originalCustom4BillPriview">
+                                                <h:panelGroup id="originalCustom4BillPriview" styleClass="custom4BillWrapper">
                                                     <bi:finalBillCustom4 bill="#{inwardSearch.showOrginalBill ? inwardSearch.bill.referenceBill : inwardSearch.bill}" duplicate="false" showProfessional="#{inwardSearch.withProfessionalFee}"/>
                                                 </h:panelGroup>
 
@@ -789,13 +803,94 @@
                                                 
                                                 <bi:unapprovedHeading bill="#{inwardSearch.bill}" />
 
-                                                <h:panelGroup id="duplicateCustom4BillPriview">
+                                                <h:panelGroup id="duplicateCustom4BillPriview" styleClass="custom4BillWrapper">
                                                     <bi:finalBillCustom4 bill="#{inwardSearch.showOrginalBill ? inwardSearch.bill.referenceBill : inwardSearch.bill}" duplicate="true" showProfessional="#{inwardSearch.withProfessionalFee}"/>
                                                 </h:panelGroup>
 
                                             </p:panel>
                                         </div>
                                     </div>
+
+                                    <!-- Custom Bill 3 copy sets, same copies as the settle page (inward_bill_final.xhtml), behind reprint-only keys -->
+                                    <h:panelGroup layout="block" styleClass="mt-3" rendered="#{configOptionApplicationController.getBooleanValueByKey('Inward Final Bill Reprint - Custom Bill 3 - Show Claimable Copies', false)}">
+                                        <p:panel id="reprintC3ClaimPanel" toggleable="true">
+                                            <f:facet name="header">
+                                                <div class="d-flex justify-content-between align-items-center w-100">
+                                                    <h:outputLabel value="Custom Bill 3 - Claimable Copies" class="mt-2"/>
+                                                    <div class="d-flex gap-2">
+                                                        <p:commandButton id="btnReprintC3ClaimPatient" value="Claimable - Patient Copy" type="button"
+                                                                         styleClass="ui-button-info" icon="fas fa-print"
+                                                                         title="Custom Bill 3: Claimable - Patient Copy"
+                                                                         onclick="printCustom4Bill('#{p:resolveFirstComponentWithId('reprintC3ClaimPatient',view).clientId}', '#{resource['js:paged.polyfill.js']}'); return false;" />
+                                                        <p:commandButton id="btnReprintC3ClaimHospital" value="Claimable - Hospital Copy" type="button"
+                                                                         styleClass="ui-button-info" icon="fas fa-print"
+                                                                         title="Custom Bill 3: Claimable - Hospital Copy"
+                                                                         onclick="printCustom4Bill('#{p:resolveFirstComponentWithId('reprintC3ClaimHospital',view).clientId}', '#{resource['js:paged.polyfill.js']}'); return false;" />
+                                                        <p:commandButton id="btnReprintC3ClaimDuplicate" value="Claimable - Duplicate Copy" type="button"
+                                                                         styleClass="ui-button-info" icon="fas fa-print"
+                                                                         title="Custom Bill 3: Claimable - Duplicate Copy"
+                                                                         onclick="printCustom4Bill('#{p:resolveFirstComponentWithId('reprintC3ClaimDuplicate',view).clientId}', '#{resource['js:paged.polyfill.js']}'); return false;" />
+                                                    </div>
+                                                </div>
+                                            </f:facet>
+
+                                            <bi:unapprovedHeading bill="#{inwardSearch.bill}" />
+
+                                            <h:panelGroup id="reprintC3ClaimPatient" styleClass="noBorder custom4BillWrapper">
+                                                <bi:finalBillCustom4 bill="#{inwardSearch.showOrginalBill ? inwardSearch.bill.referenceBill : inwardSearch.bill}" duplicate="false" showProfessional="true"/>
+                                            </h:panelGroup>
+                                            <h:panelGroup id="reprintC3ClaimHospital" styleClass="noBorder custom4BillWrapper">
+                                                <bi:finalBillCustom4 bill="#{inwardSearch.showOrginalBill ? inwardSearch.bill.referenceBill : inwardSearch.bill}" hosCopy="true" duplicate="false" showProfessional="true"/>
+                                            </h:panelGroup>
+                                            <h:panelGroup id="reprintC3ClaimDuplicate" styleClass="noBorder custom4BillWrapper">
+                                                <bi:finalBillCustom4 bill="#{inwardSearch.showOrginalBill ? inwardSearch.bill.referenceBill : inwardSearch.bill}" duplicate="true" showProfessional="true"/>
+                                            </h:panelGroup>
+                                        </p:panel>
+                                    </h:panelGroup>
+
+                                    <h:panelGroup layout="block" styleClass="mt-3" rendered="#{configOptionApplicationController.getBooleanValueByKey('Inward Final Bill Reprint - Custom Bill 3 - Show Not Claimable Copies', false)}">
+                                        <p:panel id="reprintC3NoClaimPanel" toggleable="true">
+                                            <f:facet name="header">
+                                                <div class="d-flex justify-content-between align-items-center w-100">
+                                                    <h:outputLabel value="Custom Bill 3 - Not Claimable Copies" class="mt-2"/>
+                                                    <div class="d-flex gap-2">
+                                                        <p:commandButton id="btnReprintC3NoClaimPatient" value="Not Claimable - Patient Copy without Professional" type="button"
+                                                                         styleClass="ui-button-info" icon="fas fa-print"
+                                                                         title="Custom Bill 3: Not Claimable - Patient Copy without Professional"
+                                                                         onclick="printCustom4Bill('#{p:resolveFirstComponentWithId('reprintC3NoClaimPatient',view).clientId}', '#{resource['js:paged.polyfill.js']}'); return false;" />
+                                                        <p:commandButton id="btnReprintC3NoClaimHospital" value="Not Claimable - Hospital Copy without Professional" type="button"
+                                                                         styleClass="ui-button-info" icon="fas fa-print"
+                                                                         title="Custom Bill 3: Not Claimable - Hospital Copy without Professional"
+                                                                         onclick="printCustom4Bill('#{p:resolveFirstComponentWithId('reprintC3NoClaimHospital',view).clientId}', '#{resource['js:paged.polyfill.js']}'); return false;" />
+                                                        <p:commandButton id="btnReprintC3NoClaimDuplicate" value="Not Claimable - Duplicate Copy without Professional" type="button"
+                                                                         styleClass="ui-button-info" icon="fas fa-print"
+                                                                         title="Custom Bill 3: Not Claimable - Duplicate Copy without Professional"
+                                                                         onclick="printCustom4Bill('#{p:resolveFirstComponentWithId('reprintC3NoClaimDuplicate',view).clientId}', '#{resource['js:paged.polyfill.js']}'); return false;" />
+                                                        <p:commandButton id="btnReprintC3ProfessionalFees" value="Not Claimable - Professional Fees" ajax="false"
+                                                                         styleClass="ui-button-info" icon="fas fa-print"
+                                                                         title="Professional Fees copy">
+                                                            <p:printer target="reprintC3ProfessionalFees"/>
+                                                        </p:commandButton>
+                                                    </div>
+                                                </div>
+                                            </f:facet>
+
+                                            <bi:unapprovedHeading bill="#{inwardSearch.bill}" />
+
+                                            <h:panelGroup id="reprintC3NoClaimPatient" styleClass="noBorder custom4BillWrapper">
+                                                <bi:finalBillCustom4 bill="#{inwardSearch.showOrginalBill ? inwardSearch.bill.referenceBill : inwardSearch.bill}" duplicate="false" showProfessional="false"/>
+                                            </h:panelGroup>
+                                            <h:panelGroup id="reprintC3NoClaimHospital" styleClass="noBorder custom4BillWrapper">
+                                                <bi:finalBillCustom4 bill="#{inwardSearch.showOrginalBill ? inwardSearch.bill.referenceBill : inwardSearch.bill}" hosCopy="true" duplicate="false" showProfessional="false"/>
+                                            </h:panelGroup>
+                                            <h:panelGroup id="reprintC3NoClaimDuplicate" styleClass="noBorder custom4BillWrapper">
+                                                <bi:finalBillCustom4 bill="#{inwardSearch.showOrginalBill ? inwardSearch.bill.referenceBill : inwardSearch.bill}" duplicate="true" showProfessional="false"/>
+                                            </h:panelGroup>
+                                            <h:panelGroup id="reprintC3ProfessionalFees" styleClass="noBorder">
+                                                <bi:finalProfessionalBill bill="#{inwardSearch.showOrginalBill ? inwardSearch.bill.referenceBill : inwardSearch.bill}"/>
+                                            </h:panelGroup>
+                                        </p:panel>
+                                    </h:panelGroup>
                                     </h:panelGroup>
 
                                     <h:panelGroup layout="block" rendered="#{configOptionController.getBooleanValueByKeyReadOnly('Inward Final Bill - Show Bundled Custom 1 Format', false)}">

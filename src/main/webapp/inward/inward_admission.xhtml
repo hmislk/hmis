@@ -13,7 +13,15 @@
 
 
     <ui:define name="content"> 
-        <h:form>
+        <h:form id="frmAdmission">
+            <p:messages 
+                id="messages" 
+                showDetail="true" 
+                closable="true"
+                class="w-100">
+                <p:autoUpdate/>
+            </p:messages>
+
             <h:panelGroup id="gpDetail" rendered="#{!admissionController.printPreview}" >
                 <p:panel >
                     <f:facet name="header">
@@ -89,6 +97,7 @@
                                     styleClass="ui-button-success"
                                     icon="pi pi-check-circle"
                                     style="min-width:120px"
+                                    onclick="PF('admitLoadingDlg').show();"
                                     value="Admit">
                                 </p:commandButton>
                             </div>
@@ -97,13 +106,6 @@
                     </f:facet>
 
                     <div class="row">
-                        <p:messages 
-                            id="messages" 
-                            showDetail="true" 
-                            closable="true"
-                            class="w-100">
-                            <p:autoUpdate/>
-                        </p:messages>
                         <div class="col-md-3 p-2">
                             <p:outputLabel 
                                 class="m-1 form-label"
@@ -370,6 +372,67 @@
                                                         </p:column>
                                                     </p:autoComplete> 
 
+                                                    <p:dataTable id="tblPendingAppointments"
+                                                                 widgetVar="tblPendingAppointmentsWidget"
+                                                                 value="#{admissionController.pendingAppointments}"
+                                                                 var="pa"
+                                                                 rowKey="#{pa.appointmentId}"
+                                                                 globalFilter="#{admissionController.pendingAppointmentsGlobalFilter}"
+                                                                 emptyMessage="No pending appointments"
+                                                                 paginator="true"
+                                                                 rows="10"
+                                                                 styleClass="mt-2"
+                                                                 size="small">
+                                                        <f:facet name="header">
+                                                            <div class="d-flex justify-content-between align-items-center">
+                                                                <h:outputText value="Pending Appointments" class="fw-bold" />
+                                                                <p:inputText id="globalFilter"
+                                                                             placeholder="Filter appointments..."
+                                                                             title="Filter pending appointments"
+                                                                             onkeyup="PF('tblPendingAppointmentsWidget').filter()" />
+                                                            </div>
+                                                        </f:facet>
+                                                        <p:column headerText="Appointment No" filterBy="#{pa.appointmentNumber}" filterMatchMode="contains">
+                                                            <h:outputText value="#{pa.appointmentNumber}" />
+                                                        </p:column>
+                                                        <p:column headerText="Date and Time">
+                                                            <h:outputText value="#{pa.appointmentDate}">
+                                                                <f:convertDateTime pattern="dd/MM/yyyy" />
+                                                            </h:outputText>
+                                                            <h:outputText value=" " />
+                                                            <h:outputText value="#{pa.appointmentTimeFrom}">
+                                                                <f:convertDateTime pattern="hh:mm a" />
+                                                            </h:outputText>
+                                                        </p:column>
+                                                        <p:column headerText="Patient" filterBy="#{pa.patientNameWithTitle}" filterMatchMode="contains">
+                                                            <h:outputText value="#{pa.patientNameWithTitle}" />
+                                                        </p:column>
+                                                        <p:column headerText="Phone" filterBy="#{pa.patientPhone}" filterMatchMode="contains">
+                                                            <h:outputText value="#{pa.patientPhone}" />
+                                                        </p:column>
+                                                        <p:column headerText="Type">
+                                                            <h:outputText value="#{pa.typeLabel}" />
+                                                        </p:column>
+                                                        <p:column headerText="Procedure" filterBy="#{pa.procedureName}" filterMatchMode="contains">
+                                                            <h:outputText value="#{pa.procedureName}" />
+                                                        </p:column>
+                                                        <p:column headerText="Room" filterBy="#{pa.roomName}" filterMatchMode="contains">
+                                                            <h:outputText value="#{pa.roomName}" />
+                                                        </p:column>
+                                                        <p:column headerText="Payment">
+                                                            <h:outputText value="#{pa.paidLabel}" />
+                                                        </p:column>
+                                                        <p:column headerText="Action">
+                                                            <p:commandButton id="btnSelectPendingAppointment"
+                                                                             value="Select"
+                                                                             title="Select appointment #{pa.appointmentNumber}"
+                                                                             icon="fas fa-check"
+                                                                             styleClass="ui-button-success"
+                                                                             process="@this"
+                                                                             update=":#{p:resolveFirstComponentWithId('tblPendingAppointments',view).clientId} :#{p:resolveFirstComponentWithId('ptd',view).clientId} :#{p:resolveFirstComponentWithId('aBill',view).clientId} :#{p:resolveFirstComponentWithId('cmbDoc',view).clientId} :#{p:resolveFirstComponentWithId('refCon',view).clientId} :#{p:resolveFirstComponentWithId('lstSelect',view).clientId} :#{p:resolveFirstComponentWithId('panSearch2',view).clientId} :#{p:resolveFirstComponentWithId('pg1',view).clientId} :#{p:resolveFirstComponentWithId('messages',view).clientId}"
+                                                                             action="#{admissionController.selectPendingAppointment(pa.billId)}" />
+                                                        </p:column>
+                                                    </p:dataTable>
 
                                                     <h:panelGrid id="panSearch2" columns="2">
                                                         <p:outputLabel  rendered="#{admissionController.appointmentBill!=null}" value="Name" />
@@ -765,6 +828,18 @@
 
             </p:panel>
 
+            <p:dialog widgetVar="admitLoadingDlg"
+                      modal="true"
+                      closable="false"
+                      showHeader="true"
+                      header="Processing - Please Wait"
+                      style="min-width: 320px; text-align: center;">
+                <div style="padding: 20px;">
+                    <i class="pi pi-spin pi-spinner" style="font-size: 3rem; color: #4CAF50;"></i>
+                    <p style="margin-top: 15px; font-size: 1rem;">Admitting the patient, please wait...</p>
+                    <p style="color: #888; font-size: 0.85rem;">Do not refresh or close this page.</p>
+                </div>
+            </p:dialog>
         </h:form>
 
 

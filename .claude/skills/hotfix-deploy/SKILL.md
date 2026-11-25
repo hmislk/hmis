@@ -1,14 +1,6 @@
 ---
 name: hotfix-deploy
-description: >
-  Full hotfix workflow for deploying urgent fixes to a production branch
-  (coop-production, rh-production, southernlanka-production, etc.). Covers branch creation,
-  fix, commit, push, and PR targeting the production branch. Use when you need
-  to apply an urgent fix directly to a production environment without going
-  through the normal development → QA → prod pipeline. The agent may invoke
-  this on its own judgment to prepare a hotfix (branch, fix, commit, push,
-  PR) — merging the PR, which is what actually triggers CI/CD deployment,
-  remains a manual human action.
+description: 'Hotfix workflow to a production branch (coop-production, rh-production, ...): branch, fix, commit, push, PR to the production branch. Never merges; merging deploys. Use for urgent fixes, /hotfix-deploy.'
 allowed-tools: Bash, Read, Grep, Edit, Write
 argument-hint: "<prod-branch> <description>"
 ---
@@ -135,6 +127,8 @@ git ls-tree -r HEAD | awk '$2=="commit"{print $4}'   # re-check: must print noth
 
 Make only the minimal changes required. Do NOT port unrelated features or refactors. Always compile the hotfix branch before opening the PR: PRs to deploy branches get no compile CI, and older branches often lack newer enum values or facade methods that a cherry-pick uses (2026-11-05: coop-staging lacked an `InwardChargeType` value; mp-production lacked `AbstractFacade.updateByJpql`).
 
+A green compile does not prove a port. Also diff each changed method against `development`, and click the changed action once in the app and check its expected result.
+
 Before editing `persistence.xml`, compare against the target production branch to understand the current state:
 ```bash
 MSYS_NO_PATHCONV=1 git show origin/$0:src/main/resources/META-INF/persistence.xml   # MSYS_NO_PATHCONV: Git Bash on Windows
@@ -218,13 +212,15 @@ When you plan or schedule several hotfix merges for one window:
   minutes apart. Apps on different VMs may share a slot. The staging VM
   counts too: its apps are live.
 - **One merge per deploy branch per window.** The second PR to the same
-  branch keeps a red `single-deploy-pr` status after the first merges, until
-  the `single_deploy_pr_sweep` workflow re-runs (every 15 minutes), and a
-  scheduled merge of it can stop on that status. Put both fixes in one PR
+  branch can keep a red `single-deploy-pr` status after the first merges,
+  until the `single_deploy_pr_sweep` workflow re-runs. It runs when the deploy
+  of the first PR starts (about a minute), with a 15-minute schedule as
+  fallback, and a scheduled merge of it can stop on that status. Put both fixes in one PR
   (Step 1a). If two PRs already exist, give the second a slot at least 20
   minutes after the first, and before it merges confirm its
   `single-deploy-pr` status is green; if not, run the sweep by hand
-  (`gh workflow run single_deploy_pr_sweep.yml`) and wait for green.
+  (`gh workflow run single_deploy_pr_sweep.yml --ref development`) and wait
+  for green.
 
 ## Step 7b — Verify the Deploy Run
 
@@ -320,3 +316,8 @@ before (it had to be closed and redone against the correct branch).
 
 - [Commit Conventions — Hotfix Branches](../../developer_docs/git/commit-conventions.md#hotfix-branches)
 - [Production Deployment Guide](../../wiki-docs/Deployment/Production-Deployment-Guide.md)
+
+
+## From CLAUDE.md (moved detail)
+
+sync `.gitignore` first (`git checkout origin/development -- .gitignore`); mirror every merged hotfix into `development` unless its commits were cherry-picked from `development` (Step 9a).

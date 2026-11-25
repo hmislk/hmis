@@ -15,7 +15,8 @@ When invoked:
 2. Find the nearest existing page doing the same job (`git grep` the controller name or a similar page) and copy its structure, template and component choices.
 3. Use the backing bean's existing properties and methods. Add backend code only when the brief asks; then hand that part to `java-backend-developer` or say so.
 4. Make the smallest XHTML change that does the job. XHTML-only changes need no compile; hot-copy them to the local deployment if the brief asks for a check.
-5. Report what the caller should verify. Verification is a separate `hmis-qa-verifier` run that the caller dispatches.
+5. Touched page = upgraded page: after the requested change, bring each edited page up to the guidelines (three-zone action bar, compact tables, standard buttons, labels) using the checklist in the `ui-guidelines` skill. Do it as a separate commit-sized step, without changing behaviour, bean calls, ids used by `update=`/`process=` or tests, or composite names. On a very large page upgrade only the panels you touched and list the rest. Skip it on hotfix branches unless the brief asks.
+6. Report what the caller should verify. Verification is a separate `hmis-qa-verifier` run that the caller dispatches.
 
 Checklist (rules from the skills and CLAUDE.md; follow the source, not this list):
 - Never `ui:fragment`; use `h:panelGroup rendered="..."` (`layout="block"` for a div).

@@ -40,3 +40,13 @@ updates:
         applies-to: security-updates
         patterns:
           - "com.fasterxml.jackson*"
+      # hapi-base and hapi-structures-v24/v25 (HL7 v2, used by LIMS) must move together:
+      # each structures pom pins hapi-base at its own version, so a single-artifact bump
+      # splits the set (#25739). Not the FHIR artifacts (group ca.uhn.hapi.fhir).
+      hapi-hlseven:
+        patterns:
+          - "ca.uhn.hapi:*"
+      hapi-hlseven-security:
+        applies-to: security-updates
+        patterns:
+          - "ca.uhn.hapi:*"

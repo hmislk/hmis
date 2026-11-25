@@ -1,0 +1,264 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:body>
+        <ui:composition template="/payments/credit_company_pay_index.xhtml">
+            <ui:define name="admin">
+                <h:form id="claimForm">
+                    <h:outputText value="You do not have privilege to view claims." rendered="#{not creditCompanyClaimController.hasAnyClaimPrivilege()}"/>
+                    <h:panelGroup rendered="#{creditCompanyClaimController.hasAnyClaimPrivilege()}">
+                    <h:inputHidden id="claimIdOnPage" value="#{creditCompanyClaimController.claimIdOnPage}"/>
+                    <p:panel>
+                        <f:facet name="header">
+                            <div class="d-flex justify-content-between align-items-center w-100">
+                                <div class="d-flex align-items-center gap-2">
+                                    <h:outputText styleClass="fas fa-file-invoice-dollar"/>
+                                    <h:outputText value="Credit Company Claim"/>
+                                </div>
+                                <div class="d-flex gap-2">
+                                    <p:commandButton value="Back to Claims" icon="fas fa-arrow-left"
+                                                     styleClass="ui-button-info ui-button-outlined" ajax="false" immediate="true"
+                                                     action="#{creditCompanyClaimController.backToClaims}"/>
+                                </div>
+                                <div class="d-flex gap-2 align-items-center">
+                                    <p:commandButton value="Cancel Claim" icon="fas fa-times" styleClass="ui-button-danger"
+                                                     title="Cancel this claim and free its bills" ajax="false"
+                                                     rendered="#{creditCompanyClaimController.cancellable and webUserController.hasPrivilege('OpdCreditClaimCreate')}"
+                                                     onclick="return confirm('Cancel this claim?');"
+                                                     action="#{creditCompanyClaimController.cancelClaim}"/>
+                                    <p:commandButton value="Settle" icon="fas fa-money-bill" styleClass="ui-button-success" style="min-width:120px"
+                                                     title="Open Outpatient Credit Collection with this claim's bills that are still due" ajax="false"
+                                                     rendered="#{creditCompanyClaimController.settleable and webUserController.hasPrivilege('OpdCreditClaimSettle')}"
+                                                     action="#{creditCompanyClaimController.settleClaim}"/>
+                                    <p:commandButton value="Resubmit Claim" icon="fas fa-redo" styleClass="ui-button-success" style="min-width:120px"
+                                                     title="Record that the corrected claim was sent again" ajax="false"
+                                                     rendered="#{creditCompanyClaimController.rejected and webUserController.hasPrivilege('OpdCreditClaimResubmit')}"
+                                                     action="#{creditCompanyClaimController.resubmit}"/>
+                                    <p:commandButton value="Submit Claim" icon="fas fa-paper-plane" styleClass="ui-button-success" style="min-width:120px"
+                                                     title="Record that this claim was sent to the company" ajax="false"
+                                                     rendered="#{creditCompanyClaimController.draft and webUserController.hasPrivilege('OpdCreditClaimSubmit')}"
+                                                     action="#{creditCompanyClaimController.submit}"/>
+                                </div>
+                            </div>
+                        </f:facet>
+                        <p:panelGrid columns="4" layout="tabular" styleClass="my-2 w-100">
+                            <h:outputText value="Claim No"/>
+                            <h:outputText value="#{creditCompanyClaimController.claim.claimNo}" style="user-select:all;"/>
+                            <h:outputText value="Status"/>
+                            <h:outputText value="#{creditCompanyClaimController.claim.status.label}"/>
+                            <h:outputText value="Credit Company"/>
+                            <h:outputText value="#{creditCompanyClaimController.claim.creditCompany.name}"/>
+                            <h:outputText value="Department"/>
+                            <h:outputText value="#{creditCompanyClaimController.claim.department.name}"/>
+                            <h:outputText value="Created"/>
+                            <h:outputText value="#{creditCompanyClaimController.claim.createdAt}">
+                                <f:convertDateTime pattern="yyyy MM dd HH:mm"/>
+                            </h:outputText>
+                            <h:outputText value="Created By"/>
+                            <h:outputText value="#{creditCompanyClaimController.claim.creater.webUserPerson.name}"/>
+                            <h:outputText value="Submitted"/>
+                            <h:outputText value="#{creditCompanyClaimController.claim.submittedAt}">
+                                <f:convertDateTime pattern="yyyy MM dd"/>
+                            </h:outputText>
+                            <h:outputText value="Company Reference"/>
+                            <h:outputText value="#{creditCompanyClaimController.claim.companyReference}"/>
+                            <h:outputText value="Resubmitted Times"/>
+                            <h:outputText value="#{creditCompanyClaimController.claim.resubmitCount}"/>
+                            <h:outputText value="Claimed Total"/>
+                            <h:outputText value="#{creditCompanyClaimController.claim.claimedTotal}">
+                                <f:convertNumber pattern="#,##0.00"/>
+                            </h:outputText>
+                            <h:outputText value="Settled"/>
+                            <h:outputText value="#{creditCompanyClaimController.settledAmount}">
+                                <f:convertNumber pattern="#,##0.00"/>
+                            </h:outputText>
+                            <h:outputText value="Outstanding"/>
+                            <h:outputText value="#{creditCompanyClaimController.outstandingAmount}">
+                                <f:convertNumber pattern="#,##0.00"/>
+                            </h:outputText>
+                        </p:panelGrid>
+
+                        <h:panelGroup layout="block" rendered="#{not empty creditCompanyClaimController.claim.rejectReason}" styleClass="my-2">
+                            <h:outputText value="Last rejection: " styleClass="fw-bold"/>
+                            <h:outputText value="#{creditCompanyClaimController.claim.rejectReason}"/>
+                        </h:panelGroup>
+
+                        <h:panelGroup layout="block" rendered="#{not empty creditCompanyClaimController.claim.closeReason}" styleClass="my-2">
+                            <h:outputText value="Closed because: " styleClass="fw-bold"/>
+                            <h:outputText value="#{creditCompanyClaimController.claim.closeReason}"/>
+                        </h:panelGroup>
+
+                        <h:panelGroup id="actions" layout="block" styleClass="my-2">
+                            <p:panelGrid columns="2" layout="tabular" styleClass="w-100 my-2"
+                                         rendered="#{creditCompanyClaimController.draft or creditCompanyClaimController.rejected}">
+                                <p:outputLabel for="submittedOn" value="Date Submitted"/>
+                                <p:calendar id="submittedOn" styleClass="w-100" inputStyleClass="w-100"
+                                            value="#{creditCompanyClaimController.submittedOn}"
+                                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                <p:outputLabel for="companyRef" value="Company Reference"/>
+                                <p:inputText id="companyRef" styleClass="w-100"
+                                             value="#{creditCompanyClaimController.companyReference}"/>
+                            </p:panelGrid>
+
+
+                            <h:panelGroup layout="block"
+                                          rendered="#{creditCompanyClaimController.awaitingCompany and webUserController.hasPrivilege('OpdCreditClaimReject')}">
+                                <p:panelGrid columns="2" layout="tabular" styleClass="w-100 my-2">
+                                    <p:outputLabel for="rejectReason" value="Reason the company rejected the claim"/>
+                                    <p:inputTextarea id="rejectReason" styleClass="w-100" rows="2"
+                                                     value="#{creditCompanyClaimController.rejectReason}"/>
+                                </p:panelGrid>
+                                <div class="d-flex justify-content-end gap-2">
+                                    <p:commandButton value="Record Rejection" icon="fas fa-ban" styleClass="ui-button-danger"
+                                                     title="Record that the company rejected this claim" ajax="false"
+                                                     action="#{creditCompanyClaimController.reject}"/>
+                                </div>
+                            </h:panelGroup>
+
+                            <h:panelGroup layout="block"
+                                          rendered="#{creditCompanyClaimController.partiallySettled and webUserController.hasPrivilege('OpdCreditClaimCreate')}">
+                                <p:panelGrid columns="2" layout="tabular" styleClass="w-100 my-2">
+                                    <p:outputLabel for="closeReason" value="Reason for closing the claim"/>
+                                    <p:inputTextarea id="closeReason" styleClass="w-100" rows="2"
+                                                     value="#{creditCompanyClaimController.closeReason}"/>
+                                </p:panelGrid>
+                                <div class="d-flex justify-content-end gap-2">
+                                    <p:commandButton id="closeClaimButton" value="Close Claim" icon="fas fa-lock" styleClass="ui-button-danger"
+                                                     title="Close this claim; the unpaid balance stays due on the bills" ajax="false"
+                                                     onclick="return confirm('Close this claim? The unpaid balance stays due.');"
+                                                     action="#{creditCompanyClaimController.closePartial}"/>
+                                </div>
+                            </h:panelGroup>
+                        </h:panelGroup>
+
+                        <p:dataTable id="items" widgetVar="claimItemsWidget" rowKey="#{i.id}" value="#{creditCompanyClaimController.claimItems}" var="i"
+                                     styleClass="p-datatable-sm" emptyMessage="No bills">
+                            <f:facet name="header">
+                                <h:outputText value="Bills in this claim"/>
+                            </f:facet>
+                            <p:column headerText="Bill No">
+                                <h:outputText value="#{i.bill.deptId}" style="user-select:all;"/>
+                            </p:column>
+                            <p:column headerText="Client Name">
+                                <h:outputText value="#{i.bill.patient.person.nameWithTitle}"/>
+                            </p:column>
+                            <p:column headerText="Bill Date">
+                                <h:outputText value="#{i.bill.createdAt}">
+                                    <f:convertDateTime pattern="yyyy MM dd"/>
+                                </h:outputText>
+                            </p:column>
+                            <p:column headerText="Billed Amount" styleClass="text-end">
+                                <h:outputText value="#{i.bill.netTotal}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputText>
+                            </p:column>
+                            <p:column headerText="Claimed Amount" styleClass="text-end">
+                                <h:outputText value="#{i.claimedAmount}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputText>
+                            </p:column>
+                            <p:column headerText="Written Off" styleClass="text-end">
+                                <h:outputText value="#{i.bill.writtenOffAmount}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputText>
+                            </p:column>
+                            <p:column headerText="Due Now" styleClass="text-end">
+                                <h:outputText value="#{creditCompanyClaimController.dueOf(i)}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputText>
+                            </p:column>
+                            <p:column headerText="Write-off" style="width:9rem" rendered="#{creditCompanyClaimController.writeOffAllowed}">
+                                <p:commandButton value="Request" icon="fas fa-eraser" styleClass="ui-button-warning ui-button-sm"
+                                                 title="Request a write-off of the due on bill #{i.bill.deptId}" ajax="false"
+                                                 rendered="#{creditCompanyClaimController.dueOf(i) gt 0.1}"
+                                                 action="#{creditCompanyClaimController.startWriteOff(i.id)}"/>
+                            </p:column>
+                        </p:dataTable>
+
+                        <h:panelGroup id="writeOffRequest" layout="block" styleClass="my-2"
+                                      rendered="#{creditCompanyClaimController.writeOffFormOpen}">
+                            <h:inputHidden id="writeOffItemIdOnPage" value="#{creditCompanyClaimController.writeOffItemIdOnPage}"/>
+                            <p:panelGrid columns="2" layout="tabular" styleClass="w-100 my-2">
+                                <f:facet name="header">
+                                    <h:outputText value="Request write-off for bill #{creditCompanyClaimController.writeOffItem.bill.deptId}"/>
+                                </f:facet>
+                                <p:outputLabel for="woAmount" value="Amount to write off"/>
+                                <p:inputNumber id="woAmount" styleClass="w-100" inputStyleClass="w-100" decimalPlaces="2"
+                                               minValue="0" value="#{creditCompanyClaimController.writeOffAmount}"/>
+                                <p:outputLabel for="woReason" value="Reason"/>
+                                <p:inputTextarea id="woReason" styleClass="w-100" rows="2" maxlength="500"
+                                                 value="#{creditCompanyClaimController.writeOffReason}"/>
+                            </p:panelGrid>
+                            <div class="d-flex justify-content-end gap-2">
+                                <p:commandButton value="Close" icon="fas fa-times" styleClass="ui-button-secondary"
+                                                 title="Close without requesting" ajax="false" immediate="true"
+                                                 action="#{creditCompanyClaimController.cancelWriteOffForm}"/>
+                                <p:commandButton value="Submit Request" icon="fas fa-paper-plane" styleClass="ui-button-success"
+                                                 style="min-width:120px"
+                                                 title="Send for approval by another user" ajax="false"
+                                                 action="#{creditCompanyClaimController.requestWriteOff}"/>
+                            </div>
+                        </h:panelGroup>
+
+                        <p:dataTable id="writeOffs" value="#{creditCompanyClaimController.claimWriteOffs}" var="wo"
+                                     styleClass="p-datatable-sm my-2" emptyMessage="No write-offs for these bills">
+                            <f:facet name="header">
+                                <h:outputText value="Write-offs"/>
+                            </f:facet>
+                            <p:column headerText="Bill No">
+                                <h:outputText value="#{wo.bill.deptId}"/>
+                            </p:column>
+                            <p:column headerText="Amount" styleClass="text-end">
+                                <h:outputText value="#{wo.amount}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputText>
+                            </p:column>
+                            <p:column headerText="Reason">
+                                <h:outputText value="#{wo.reason}"/>
+                            </p:column>
+                            <p:column headerText="Status">
+                                <h:outputText value="#{wo.status.label}"/>
+                            </p:column>
+                            <p:column headerText="Requested By">
+                                <h:outputText value="#{wo.requestedBy.webUserPerson.name}"/>
+                            </p:column>
+                            <p:column headerText="Decided By">
+                                <h:outputText value="#{wo.decidedBy.webUserPerson.name}"/>
+                            </p:column>
+                        </p:dataTable>
+
+                        <p:dataTable id="settlements" value="#{creditCompanyClaimController.settlements}" var="st"
+                                     styleClass="p-datatable-sm my-2" emptyMessage="No settlements yet">
+                            <f:facet name="header">
+                                <h:outputText value="Settlement bills"/>
+                            </f:facet>
+                            <p:column headerText="Settlement Bill No">
+                                <h:outputText value="#{st.settlementBill.deptId}" style="user-select:all;"/>
+                            </p:column>
+                            <p:column headerText="Date">
+                                <h:outputText value="#{st.settlementBill.createdAt}">
+                                    <f:convertDateTime pattern="yyyy MM dd HH:mm"/>
+                                </h:outputText>
+                            </p:column>
+                            <p:column headerText="Claimed Bill No">
+                                <h:outputText value="#{st.claimedBill.deptId}"/>
+                            </p:column>
+                            <p:column headerText="Amount" styleClass="text-end">
+                                <h:outputText value="#{st.amount}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputText>
+                            </p:column>
+                        </p:dataTable>
+
+                    </p:panel>
+                    </h:panelGroup>
+                </h:form>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

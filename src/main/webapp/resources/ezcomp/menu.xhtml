@@ -111,6 +111,12 @@
                         value="Patient Lookup &amp; Registration" 
                         icon="fa fa-user-plus" 
                         rendered="true" />
+                    <p:menuitem
+                        ajax="false"
+                        action="#{opdQuotationController.navigateToNewQuotation()}"
+                        value="OPD Quotation"
+                        icon="fa fa-file-invoice"
+                        rendered="#{webUserController.hasPrivilege('OpdQuotationCreate')}" />
                     <p:menuitem 
                         ajax="false" 
                         action="#{opdTokenController.navigateToCreateNewOpdToken()}" 
@@ -339,6 +345,27 @@
                         action="#{cashierReportController.navigateToOpdAnalytics()}" 
                         value="OPD Analytics" 
                         icon="pi pi-chart-bar" >
+                    </p:menuitem>
+                    <p:menuitem
+                        ajax="false"
+                        action="#{patientComplaintController.navigateToRegister()}"
+                        value="Patient Complaints"
+                        icon="fa fa-comment-dots"
+                        rendered="#{webUserController.hasPrivilege('PatientComplaintHandle')}">
+                    </p:menuitem>
+                    <p:menuitem
+                        ajax="false"
+                        action="#{patientComplaintController.navigateToEntry()}"
+                        value="Record Patient Complaint"
+                        icon="fa fa-pen-to-square"
+                        rendered="#{webUserController.hasPrivilege('PatientComplaintCreate')}">
+                    </p:menuitem>
+                    <p:menuitem
+                        ajax="false"
+                        action="#{patientComplaintCategoryController.navigateToCategories()}"
+                        value="Complaint Categories"
+                        icon="fa fa-tags"
+                        rendered="#{webUserController.hasPrivilege('Admin')}">
                     </p:menuitem>
                     <p:menuitem 
                         ajax="false"
@@ -2239,6 +2266,13 @@
                         icon="fa fa-database"
                         rendered="#{webUserController.hasPrivilege('AdminItems')}" >
                     </p:menuitem>
+                    <p:menuitem
+                        ajax="false"
+                        action="#{maintenanceWindowController.navigateToMaintenanceWindows()}"
+                        value="Maintenance Windows"
+                        icon="fa fa-screwdriver-wrench"
+                        rendered="#{webUserController.hasPrivilege('ManageMaintenanceWindows')}" >
+                    </p:menuitem>
 
                 </p:submenu>
 
@@ -2273,7 +2307,50 @@
                 </f:facet>
 
             </p:menubar>
-            
+
+            <!-- Accessible name always; hover tooltip only when 'Show Tooltips on Top Menu Icons' is on (no visible change) -->
+            <script type="text/javascript">
+                //<![CDATA[
+                (function () {
+                    var names = {
+                        smOpd: 'OPD', smMembership: 'Membership', smInpatient: 'Inpatient',
+                        smCC: 'Collecting Centre', smLab: 'Laboratory', smPharmacy: 'Pharmacy',
+                        smTheatre: 'Theatre', smStore: 'Store', smChannelling: 'Channelling',
+                        smClinics: 'Clinics', smOpdOptician: 'Optician', smPayment: 'Payments',
+                        smHr: 'HR', smEmr: 'EMR', smReports: 'Reports', smSettings: 'Settings'
+                    };
+                    var showTooltips = #{configOptionApplicationController.getBooleanValueByKeyReadOnly('Show Tooltips on Top Menu Icons', false)};
+                    function labelMenuIcons() {
+                        var items = document.querySelectorAll('li.ui-menu-parent');
+                        for (var i = 0; i < items.length; i++) {
+                            var id = items[i].id || '';
+                            var key = id.substring(id.lastIndexOf(':') + 1);
+                            if (!names.hasOwnProperty(key)) {
+                                continue;
+                            }
+                            var link = items[i].getElementsByTagName('a')[0];
+                            if (!link) {
+                                continue;
+                            }
+                            if (showTooltips) {
+                                if (!link.getAttribute('title')) {
+                                    link.setAttribute('title', names[key]);
+                                }
+                            }
+                            if (!link.getAttribute('aria-label')) {
+                                link.setAttribute('aria-label', names[key]);
+                            }
+                        }
+                    }
+                    if (document.readyState === 'loading') {
+                        document.addEventListener('DOMContentLoaded', labelMenuIcons);
+                    } else {
+                        labelMenuIcons();
+                    }
+                })();
+                //]]>
+            </script>
+
             <!-- PENDING RECEIVE BANNER (1st Oct. 2026, Moved this code block from line 92 to line 2214 as QA required) -->
             <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Display Pending Disbursement Recieve Notice',false) and searchController.pendingTransferReceiveCountForLoggedDepartment > 0}">
                 <div class="pending-receive-menu-banner">

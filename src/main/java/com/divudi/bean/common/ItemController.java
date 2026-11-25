@@ -45,6 +45,7 @@ import com.divudi.core.facade.InvestigationFacade;
 import com.divudi.core.facade.ItemMappingFacade;
 import com.divudi.core.facade.ServiceFacade;
 import com.divudi.core.util.CommonFunctions;
+import com.divudi.service.ItemAuditHelper;
 import com.divudi.service.ItemFeeService;
 import java.io.IOException;
 import java.io.InputStream;
@@ -120,6 +121,8 @@ public class ItemController implements Serializable {
     DepartmentFacade departmentFacade;
     @EJB
     ItemFeeService itemFeeService;
+    @EJB
+    private ItemAuditHelper itemAuditHelper;
     /**
      * Managed Beans
      */
@@ -650,6 +653,7 @@ public class ItemController implements Serializable {
             }
 
             // Update item details
+            Map<String, Object> beforeNames = ItemAuditHelper.snapshot(item);
             item.setName(itemName);
             item.setRetired(retired);
             if (retired) {
@@ -660,6 +664,7 @@ public class ItemController implements Serializable {
             // Save the item
             itemsToSave.add(item);
             itemFacade.edit(item);
+            itemAuditHelper.logUpdate(beforeNames, item, sessionController.getLoggedUser(), "UI upload");
         }
 
         workbook.close(); // Always close the workbook to prevent memory leaks
@@ -1190,8 +1195,11 @@ public class ItemController implements Serializable {
         }
         if (current.getId() == null) {
             getFacade().create(current);
+            itemAuditHelper.logCreate(current, sessionController.getLoggedUser(), "UI");
         } else {
+            Map<String, Object> beforeNames = itemAuditHelper.snapshotFromDb(current.getId());
             getFacade().edit(current);
+            itemAuditHelper.logUpdate(beforeNames, current, sessionController.getLoggedUser(), "UI");
         }
         return toListInvestigations();
     }
@@ -1257,6 +1265,7 @@ public class ItemController implements Serializable {
                 item.setCode(code);
                 item.setParentItem(parentItem);
                 getFacade().create(item);
+                itemAuditHelper.logCreate(item, getSessionController().getLoggedUser(), "UI find-or-create");
             }
         }
         return item;
@@ -1293,6 +1302,7 @@ public class ItemController implements Serializable {
                 item.setCode(CommonFunctions.nameToCode(name));
                 item.setParentItem(parentItem);
                 getFacade().create(item);
+                itemAuditHelper.logCreate(item, getSessionController().getLoggedUser(), "UI find-or-create");
             }
         }
         return item;
@@ -1334,6 +1344,7 @@ public class ItemController implements Serializable {
                 item = new Item();
                 item.setName(name);
                 getFacade().create(item);
+                itemAuditHelper.logCreate(item, getSessionController().getLoggedUser(), "UI find-or-create");
             }
             return item;
         } catch (Exception e) {
@@ -1359,6 +1370,7 @@ public class ItemController implements Serializable {
                 item.setName(name);
                 item.setCode(code);
                 getFacade().create(item);
+                itemAuditHelper.logCreate(item, getSessionController().getLoggedUser(), "UI find-or-create");
             }
             return item;
         } catch (Exception e) {
@@ -1384,6 +1396,7 @@ public class ItemController implements Serializable {
                 item.setName(name);
                 item.setCode(code);
                 getFacade().create(item);
+                itemAuditHelper.logCreate(item, getSessionController().getLoggedUser(), "UI find-or-create");
             }
             return item;
         } catch (Exception e) {
@@ -1493,6 +1506,7 @@ public class ItemController implements Serializable {
                 sc.setCreater(sessionController.getLoggedUser());
                 sc.setName(ix.getName());
                 getFacade().create(sc);
+                itemAuditHelper.logCreate(sc, sessionController.getLoggedUser(), "UI auto sample component");
                 return sc;
             }
         }
@@ -1547,9 +1561,12 @@ public class ItemController implements Serializable {
 
         if (sampleComponent.getId() == null) {
             getFacade().create(sampleComponent);
+            itemAuditHelper.logCreate(sampleComponent, sessionController.getLoggedUser(), "UI");
             JsfUtil.addSuccessMessage("Added");
         } else {
+            Map<String, Object> beforeNames = itemAuditHelper.snapshotFromDb(sampleComponent.getId());
             getFacade().edit(sampleComponent);
+            itemAuditHelper.logUpdate(beforeNames, sampleComponent, sessionController.getLoggedUser(), "UI");
             JsfUtil.addSuccessMessage("Updated");
         }
         fillInvestigationSampleComponents();
@@ -1570,6 +1587,7 @@ public class ItemController implements Serializable {
                     sampleComponent.setCreatedAt(new Date());
                     sampleComponent.setCreater(sessionController.getLoggedUser());
                     getFacade().create(sampleComponent);
+                    itemAuditHelper.logCreate(sampleComponent, sessionController.getLoggedUser(), "UI auto sample component");
                 } else {
                     if (scs.size() > 1) {
                         tix.setHasMoreThanOneComponant(true);
@@ -1595,6 +1613,7 @@ public class ItemController implements Serializable {
             tmpSampleComponent.setCreatedAt(new Date());
             tmpSampleComponent.setCreater(sessionController.getLoggedUser());
             getFacade().create(tmpSampleComponent);
+            itemAuditHelper.logCreate(tmpSampleComponent, sessionController.getLoggedUser(), "UI auto sample component");
         } else {
             if (scs.size() > 1) {
 
@@ -1673,9 +1692,12 @@ public class ItemController implements Serializable {
 
         if (current.getId() == null) {
             getFacade().create(current);
+            itemAuditHelper.logCreate(current, sessionController.getLoggedUser(), "UI");
             JsfUtil.addSuccessMessage("Added");
         } else {
+            Map<String, Object> beforeNames = itemAuditHelper.snapshotFromDb(current.getId());
             getFacade().edit(current);
+            itemAuditHelper.logUpdate(beforeNames, current, sessionController.getLoggedUser(), "UI");
             JsfUtil.addSuccessMessage("Updated");
         }
         fillMachineTests();
@@ -2110,6 +2132,7 @@ public class ItemController implements Serializable {
             ni.setDepartment(department);
             ni.setItemFee(null);
             getFacade().create(ni);
+            itemAuditHelper.logCreate(ni, sessionController.getLoggedUser(), "UI copy from master item");
             i.setItemFees(itemFeeManager.fillFees(i));
 
             for (ItemFee f : i.getItemFees()) {
@@ -2805,13 +2828,14 @@ public class ItemController implements Serializable {
             suggestions = new ArrayList<>();
         } else {
             if (query.length() > 4) {
-                sql = "select c from Item c where c.retired=false and (type(c)= :amp or type(c)=:ampp ) and ((c.name) like '%" + query.toUpperCase() + "%' or (c.code) like '%" + query.toUpperCase() + "%' or (c.barcode) like '%" + query.toUpperCase() + "%') order by c.name";
+                sql = "select c from Item c where c.retired=false and (type(c)= :amp or type(c)=:ampp ) and ((c.name) like :searchText or (c.code) like :searchText or (c.barcode) like :searchText) order by c.name";
             } else {
-                sql = "select c from Item c where c.retired=false and (type(c)= :amp or type(c)=:ampp ) and ((c.name) like '%" + query.toUpperCase() + "%' or (c.code) like '%" + query.toUpperCase() + "%') order by c.name";
+                sql = "select c from Item c where c.retired=false and (type(c)= :amp or type(c)=:ampp ) and ((c.name) like :searchText or (c.code) like :searchText) order by c.name";
             }
 
             tmpMap.put("amp", Amp.class);
             tmpMap.put("ampp", amppTypeForItemSelection());
+            tmpMap.put("searchText", "%" + query.toUpperCase() + "%");
             suggestions = getFacade().findByJpql(sql, tmpMap, TemporalType.TIMESTAMP, 30);
         }
         return suggestions;
@@ -2861,7 +2885,7 @@ public class ItemController implements Serializable {
                 // - Query matches name, code, or barcode (case-insensitive)
                 // - Department type is in allowed list
                 // - Using COALESCE to handle null codes and barcodes
-                sql = "select c from Item c where c.retired=false and c.inactive=false and (type(c)= :amp or type(c)=:ampp ) and ((c.name) like '%" + query.toUpperCase() + "%' or COALESCE(c.code, '') like '%" + query.toUpperCase() + "%' or COALESCE(c.barcode, '') like '%" + query.toUpperCase() + "%') and c.departmentType in :dts order by c.name";
+                sql = "select c from Item c where c.retired=false and c.inactive=false and (type(c)= :amp or type(c)=:ampp ) and ((c.name) like :searchText or COALESCE(c.code, '') like :searchText or COALESCE(c.barcode, '') like :searchText) and c.departmentType in :dts order by c.name";
             } else {
                 // Criteria:
                 // - Not retired
@@ -2870,11 +2894,12 @@ public class ItemController implements Serializable {
                 // - Query matches name or code only
                 // - Department type is in allowed list
                 // - Using COALESCE to handle null codes
-                sql = "select c from Item c where c.retired=false and c.inactive=false and (type(c)= :amp or type(c)=:ampp ) and ((c.name) like '%" + query.toUpperCase() + "%' or COALESCE(c.code, '') like '%" + query.toUpperCase() + "%') and c.departmentType in :dts order by c.name";
+                sql = "select c from Item c where c.retired=false and c.inactive=false and (type(c)= :amp or type(c)=:ampp ) and ((c.name) like :searchText or COALESCE(c.code, '') like :searchText) and c.departmentType in :dts order by c.name";
             }
 
             tmpMap.put("amp", Amp.class);
             tmpMap.put("ampp", amppTypeForItemSelection());
+            tmpMap.put("searchText", "%" + query.toUpperCase() + "%");
             tmpMap.put("dts", sessionController.getAvailableDepartmentTypesForPharmacyTransactions());
             suggestions = getFacade().findByJpql(sql, tmpMap, TemporalType.TIMESTAMP, 30);
         }
@@ -2903,7 +2928,7 @@ public class ItemController implements Serializable {
                 // - Query matches name, code, or barcode (case-insensitive)
                 // - Department type is in allowed list
                 // - Using COALESCE to handle null codes and barcodes
-                sql = "select c from Item c where c.retired=false and c.inactive=false and (type(c)= :amp or type(c)=:ampp ) and ((c.name) like '%" + query.toUpperCase() + "%' or COALESCE(c.code, '') like '%" + query.toUpperCase() + "%' or COALESCE(c.barcode, '') like '%" + query.toUpperCase() + "%') and c.departmentType in :dts order by c.name";
+                sql = "select c from Item c where c.retired=false and c.inactive=false and (type(c)= :amp or type(c)=:ampp ) and ((c.name) like :searchText or COALESCE(c.code, '') like :searchText or COALESCE(c.barcode, '') like :searchText) and c.departmentType in :dts order by c.name";
             } else {
                 // Criteria:
                 // - Not retired
@@ -2912,11 +2937,12 @@ public class ItemController implements Serializable {
                 // - Query matches name or code only
                 // - Department type is in allowed list
                 // - Using COALESCE to handle null codes
-                sql = "select c from Item c where c.retired=false and c.inactive=false and (type(c)= :amp or type(c)=:ampp ) and ((c.name) like '%" + query.toUpperCase() + "%' or COALESCE(c.code, '') like '%" + query.toUpperCase() + "%') and c.departmentType in :dts order by c.name";
+                sql = "select c from Item c where c.retired=false and c.inactive=false and (type(c)= :amp or type(c)=:ampp ) and ((c.name) like :searchText or COALESCE(c.code, '') like :searchText) and c.departmentType in :dts order by c.name";
             }
 
             tmpMap.put("amp", Amp.class);
             tmpMap.put("ampp", amppTypeForItemSelection());
+            tmpMap.put("searchText", "%" + query.toUpperCase() + "%");
             tmpMap.put("dts", lstDepartmentTypes);
             suggestions = getFacade().findByJpql(sql, tmpMap, TemporalType.TIMESTAMP, 30);
         }
@@ -3188,14 +3214,15 @@ public class ItemController implements Serializable {
             suggestions = new ArrayList<>();
         } else {
             if (query.length() > 4) {
-                sql = "select c from Item c where c.retired=false and (type(c)= :amp or type(c)=:vmp ) and ((c.name) like '%" + query.toUpperCase() + "%' or (c.code) like '%" + query.toUpperCase() + "%' or (c.barcode) like '%" + query.toUpperCase() + "%') order by c.name";
+                sql = "select c from Item c where c.retired=false and (type(c)= :amp or type(c)=:vmp ) and ((c.name) like :searchText or (c.code) like :searchText or (c.barcode) like :searchText) order by c.name";
             } else {
-                sql = "select c from Item c where c.retired=false and (type(c)= :amp or type(c)=:vmp ) and ((c.name) like '%" + query.toUpperCase() + "%' or (c.code) like '%" + query.toUpperCase() + "%') order by c.name";
+                sql = "select c from Item c where c.retired=false and (type(c)= :amp or type(c)=:vmp ) and ((c.name) like :searchText or (c.code) like :searchText) order by c.name";
             }
 
 //////// // System.out.println(sql);
             tmpMap.put("amp", Amp.class);
             tmpMap.put("vmp", Vmp.class);
+            tmpMap.put("searchText", "%" + query.toUpperCase() + "%");
             suggestions = getFacade().findByJpql(sql, tmpMap, TemporalType.TIMESTAMP, 30);
         }
         return suggestions;
@@ -3226,8 +3253,10 @@ public class ItemController implements Serializable {
             sql = "select c from Item c where c.retired=false"
                     + " and (c.inactive=false or c.inactive is null) "
                     + "and type(c)=Packege "
-                    + "and (c.name) like '%" + query.toUpperCase() + "%' order by c.name";
-            suggestions = getFacade().findByJpql(sql);
+                    + "and (c.name) like :searchText order by c.name";
+            HashMap<String, Object> pkgParams = new HashMap<>();
+            pkgParams.put("searchText", "%" + query.toUpperCase() + "%");
+            suggestions = getFacade().findByJpql(sql, pkgParams);
         }
         return suggestions;
 
@@ -3311,8 +3340,10 @@ public class ItemController implements Serializable {
             sql = "select c from Item c where c.retired=false "
                     + " and (c.inactive=false or c.inactive is null) "
                     + "and type(c)=MedicalPackage "
-                    + "and (c.name) like '%" + query.toUpperCase() + "%' order by c.name";
-            suggestions = getFacade().findByJpql(sql);
+                    + "and (c.name) like :searchText order by c.name";
+            HashMap<String, Object> pkgParams = new HashMap<>();
+            pkgParams.put("searchText", "%" + query.toUpperCase() + "%");
+            suggestions = getFacade().findByJpql(sql, pkgParams);
         }
         return suggestions;
 
@@ -3867,9 +3898,11 @@ public class ItemController implements Serializable {
         if (query == null) {
             suggestions = new ArrayList<Item>();
         } else {
-            sql = "select c from Item c where c.institution.id = " + getSessionController().getInstitution().getId() + " and c.retired=false and type(c)!=Packege and type(c)!=TimedItem and (c.name) like '%" + query.toUpperCase() + "%' order by c.name";
+            sql = "select c from Item c where c.institution.id = " + getSessionController().getInstitution().getId() + " and c.retired=false and type(c)!=Packege and type(c)!=TimedItem and (c.name) like :searchText order by c.name";
+            HashMap<String, Object> itemParams = new HashMap<>();
+            itemParams.put("searchText", "%" + query.toUpperCase() + "%");
 
-            suggestions = getFacade().findByJpql(sql);
+            suggestions = getFacade().findByJpql(sql, itemParams);
         }
         return suggestions;
     }
@@ -4337,11 +4370,14 @@ public class ItemController implements Serializable {
 
     public void saveSelected(Item item) {
         if (item.getId() != null && item.getId() > 0) {
+            Map<String, Object> beforeNames = itemAuditHelper.snapshotFromDb(item.getId());
             getFacade().edit(item);
+            itemAuditHelper.logUpdate(beforeNames, item, getSessionController().getLoggedUser(), "UI");
         } else {
             item.setCreatedAt(new Date());
             item.setCreater(getSessionController().getLoggedUser());
             getFacade().create(item);
+            itemAuditHelper.logCreate(item, getSessionController().getLoggedUser(), "UI");
         }
     }
 

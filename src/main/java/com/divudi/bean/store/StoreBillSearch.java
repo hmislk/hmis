@@ -1485,6 +1485,9 @@ public class StoreBillSearch implements Serializable {
     }
 
     public void pharmacyGrnCancel() {
+        if (com.divudi.core.util.CancellationBillCheck.refuse(getBill())) {
+            return;
+        }
         if (getBill() != null && getBill().getId() != null && getBill().getId() != 0) {
             if (pharmacyErrorCheck()) {
                 return;
@@ -1596,6 +1599,9 @@ public class StoreBillSearch implements Serializable {
     }
 
     public void pharmacyPurchaseCancel() {
+        if (com.divudi.core.util.CancellationBillCheck.refuse(getBill())) {
+            return;
+        }
         if (getBill() != null && getBill().getId() != null && getBill().getId() != 0) {
             if (pharmacyErrorCheck()) {
                 return;
@@ -1643,6 +1649,9 @@ public class StoreBillSearch implements Serializable {
     }
 
     public void pharmacyGrnReturnCancel() {
+        if (com.divudi.core.util.CancellationBillCheck.refuse(getBill())) {
+            return;
+        }
         if (getBill() != null && getBill().getId() != null && getBill().getId() != 0) {
             if (pharmacyErrorCheck()) {
                 return;
@@ -1929,7 +1938,8 @@ public class StoreBillSearch implements Serializable {
                 } else {
                     sql = "select b from BilledBill b where b.retired=false and"
                             + " b.id in(Select bt.bill.id From BillItem bt Where bt.referenceBill.billType!=:btp and bt.referenceBill.billType!=:btp2) "
-                            + "and b.billType=:type and b.createdAt between :fromDate and :toDate and ((b.staff.person.name) like '%" + txtSearch.toUpperCase() + "%'  or (b.staff.person.phone) like '%" + txtSearch.toUpperCase() + "%'  or (b.insId) like '%" + txtSearch.toUpperCase() + "%') order by b.id desc  ";
+                            + "and b.billType=:type and b.createdAt between :fromDate and :toDate and ((b.staff.person.name) like :q  or (b.staff.person.phone) like :q  or (b.insId) like :q) order by b.id desc  ";
+                    temMap.put("q", "%" + txtSearch.toUpperCase() + "%");
                 }
 
                 temMap.put("toDate", getToDate());
@@ -2414,6 +2424,10 @@ public class StoreBillSearch implements Serializable {
 
     public void setSelectedBills(List<Bill> selectedBills) {
         this.selectedBills = selectedBills;
+    }
+
+    public boolean isBillACancellationBill() {
+        return com.divudi.core.util.CancellationBillCheck.isCancellationBill(getBill());
     }
 
 }

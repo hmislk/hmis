@@ -77,4 +77,10 @@ class InwardProfessionalFeeClassificationServiceDefaultCategoryTest {
         assertEquals(InwardChargeType.TechnicianAndParamedicalCharge,
                 service.defaultCategoryFor(null, speciality(InwardChargeType.TechnicianAndParamedicalCharge)));
     }
+
+    @Test
+    void noStaffAndNoConfiguredSpeciality_defaultsToProfessionalFee() {
+        assertEquals(InwardChargeType.ProfessionalCharge, service.defaultCategoryFor(null, null));
+        assertEquals(InwardChargeType.ProfessionalCharge, service.defaultCategoryFor(null, speciality(null)));
+    }
 }

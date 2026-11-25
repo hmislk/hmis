@@ -65,7 +65,7 @@
 
 
                 <p:panel  id="panelPrint">
-                    <p:dataTable id="sum1" value="#{pharmacySaleReportController.categoryMovementReportDtos}" var="i" rowKey="#{i.itemId}-#{i.rowType}" rowIndexVar="rowIndex">
+                    <p:dataTable id="sum1" value="#{pharmacySaleReportController.categoryMovementReportDtos}" var="i" rowKey="#{i.itemId}-#{i.rowType}" rowIndexVar="rowIndex" styleClass="p-datatable-sm">
                         <f:facet name="header">
                             <p:outputLabel value="CATEGORY - WISE MOVEMENT REPORT" />
                             &#13;&nbsp;
@@ -217,6 +217,51 @@
                             </h:outputLabel>
                             <f:facet name="footer">
                                 <h:outputLabel value="#{pharmacySaleReportController.totalTransferReceive}" style="float: right;">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputLabel>
+                            </f:facet>
+                        </p:column>
+
+                        <!-- Stock coming in from direct purchases, and signed stock adjustments (#25682, #25680) -->
+                        <p:column headerText="Direct Purchase Qty" style="text-align: right;">
+                            <h:outputLabel value="#{i.directPurchaseQty}">
+                                <f:convertNumber pattern="#,##0.##" />
+                            </h:outputLabel>
+                            <f:facet name="footer">
+                                <h:outputLabel value="#{pharmacySaleReportController.totalDirectPurchaseQty}" style="float: right;">
+                                    <f:convertNumber pattern="#,##0.##" />
+                                </h:outputLabel>
+                            </f:facet>
+                        </p:column>
+
+                        <p:column headerText="Direct Purchase (Purchase Value)" style="text-align: right;">
+                            <h:outputLabel value="#{i.directPurchase}">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputLabel>
+                            <f:facet name="footer">
+                                <h:outputLabel value="#{pharmacySaleReportController.totalDirectPurchase}" style="float: right;">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputLabel>
+                            </f:facet>
+                        </p:column>
+
+                        <p:column headerText="Stock Adjustment Qty" style="text-align: right;">
+                            <h:outputLabel value="#{i.stockAdjustmentQty}">
+                                <f:convertNumber pattern="#,##0.##" />
+                            </h:outputLabel>
+                            <f:facet name="footer">
+                                <h:outputLabel value="#{pharmacySaleReportController.totalStockAdjustmentQty}" style="float: right;">
+                                    <f:convertNumber pattern="#,##0.##" />
+                                </h:outputLabel>
+                            </f:facet>
+                        </p:column>
+
+                        <p:column headerText="Stock Adjustment (Purchase Value)" style="text-align: right;">
+                            <h:outputLabel value="#{i.stockAdjustment}">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputLabel>
+                            <f:facet name="footer">
+                                <h:outputLabel value="#{pharmacySaleReportController.totalStockAdjustment}" style="float: right;">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
                             </f:facet>

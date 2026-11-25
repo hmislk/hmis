@@ -813,6 +813,30 @@ public abstract class AbstractFacade<T> {
         return qry.getResultList();
     }
 
+    public List<T> findByJpql(String jpql, Map<String, Object> parameters, boolean withoutCache) {
+        TypedQuery<T> qry = getEntityManager().createQuery(jpql, entityClass);
+        if (withoutCache) {
+            qry.setHint("javax.persistence.cache.storeMode", "REFRESH");
+            qry.setHint("javax.persistence.cache.retrieveMode", "BYPASS");
+        }
+        for (Map.Entry<String, Object> m : parameters.entrySet()) {
+            String pPara = m.getKey();
+            if (m.getValue() instanceof Date) {
+                qry.setParameter(pPara, (Date) m.getValue(), TemporalType.DATE);
+            } else {
+                qry.setParameter(pPara, m.getValue());
+            }
+        }
+        List<T> ts;
+        try {
+            ts = qry.getResultList();
+        } catch (Exception e) {
+            logSwallowedQueryFailure("findByJpql", jpql, e);
+            ts = new ArrayList<>();
+        }
+        return ts;
+    }
+
     // ChatGPT contributed - 2025-05
     public List<T> findByJpqlWithRange(String jpql, int startPosition, int maxResults) {
         return getEntityManager()
@@ -877,6 +901,46 @@ public abstract class AbstractFacade<T> {
         qry.setFirstResult(Math.max(startPosition, 0));
         qry.setMaxResults(Math.max(maxResults, 1));
         return qry.getResultList();
+    }
+
+    /**
+     * Runs the query and lets any failure propagate, unlike the findLightsByJpql
+     * family, which logs the failure and returns an empty list. Use where an empty
+     * result would be read as "nothing found" and let an unsafe action go ahead.
+     */
+    public List<?> findLightsByJpqlStrict(String jpql, Map<String, Object> parameters) {
+        Query qry = getEntityManager().createQuery(jpql);
+        for (Map.Entry<String, Object> entry : parameters.entrySet()) {
+            qry.setParameter(entry.getKey(), entry.getValue());
+        }
+        return qry.getResultList();
+    }
+
+    /**
+     * Same as {@link #findLightsByJpql(String, Map, TemporalType, int)} but a query
+     * failure propagates instead of being turned into an empty list.
+     */
+    public List<?> findLightsByJpqlStrict(String jpql, Map<String, Object> parameters, TemporalType tt, int maxRecords) {
+        Query qry = getEntityManager().createQuery(jpql);
+        for (Map.Entry<String, Object> entry : parameters.entrySet()) {
+            if (entry.getValue() instanceof Date) {
+                qry.setParameter(entry.getKey(), (Date) entry.getValue(), tt);
+            } else {
+                qry.setParameter(entry.getKey(), entry.getValue());
+            }
+        }
+        qry.setMaxResults(maxRecords);
+        return qry.getResultList();
+    }
+
+    /** Single count result; any query failure propagates (findLongByJpql returns 0 instead). */
+    public long findLongByJpqlStrict(String jpql, Map<String, Object> parameters) {
+        TypedQuery<Long> qry = getEntityManager().createQuery(jpql, Long.class);
+        for (Map.Entry<String, Object> entry : parameters.entrySet()) {
+            qry.setParameter(entry.getKey(), entry.getValue());
+        }
+        Long n = qry.getSingleResult();
+        return n == null ? 0L : n;
     }
 
     public List<?> findLightsByJpql(String jpql) {

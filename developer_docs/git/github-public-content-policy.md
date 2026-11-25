@@ -61,6 +61,10 @@ is between naming the reporter and publishing that hospital's data. Naming the
 hospital plus a bug is fine; naming the hospital plus its record counts,
 identifiers, dates and schema is not.
 
+## Check before posting
+
+Run the `hmis-public-guard` check on every issue, PR, comment or commit text and get a PASS before you post it to GitHub. This includes text a sub-agent writes.
+
 ## Why this is easy to get wrong
 
 Impact evidence is good engineering practice — "here is how many records this
@@ -89,3 +93,8 @@ Two further traps:
 3. If a **credential** was exposed, editing is not enough: it must be rotated.
 4. Do not quietly fix the wording and move on — the disclosure is the part the
    developer needs to know about.
+
+
+## From CLAUDE.md (moved detail)
+
+no hospital data in GitHub (issues, PRs, comments, commits, screenshots): no record counts, production bill/BHT/PHN numbers or IDs, schema names, cutover dates, staff stats, patient/doctor details, or data-fix logs. Describe the defect instead; naming the reporting hospital is fine.

@@ -8,6 +8,7 @@
  */
 package com.divudi.bean.inward;
 
+import com.divudi.service.ItemAuditHelper;
 import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.core.util.JsfUtil;
@@ -41,6 +42,8 @@ import javax.inject.Named;
 @Named
 @SessionScoped
 public class TimedItemController implements Serializable {
+    @EJB
+    private ItemAuditHelper itemAuditHelper;
 
     private static final long serialVersionUID = 1L;
     @Inject
@@ -85,9 +88,9 @@ public class TimedItemController implements Serializable {
         if (query == null) {
             suggestions = new ArrayList<TimedItem>();
         } else {
-            sql = "select c from TimedItem c where c.retired=false and (c.name) like '%" + query.toUpperCase() + "%' order by c.name";
+            sql = "select c from TimedItem c where c.retired=false and (c.name) like :q order by c.name";
             //////System.out.println(sql);
-            suggestions = getFacade().findByJpql(sql);
+            suggestions = getFacade().findByJpql(sql, java.util.Map.of("q", "%" + query.toUpperCase() + "%"));
         }
         return suggestions;
     }
@@ -121,15 +124,16 @@ public class TimedItemController implements Serializable {
         } else {
             if (departmentType == null) {
                 sql = "select c from TimedItem c "
-                        + " where c.retired=false and (c.name) like '%" + query.toUpperCase() + "%' "
+                        + " where c.retired=false and (c.name) like :q "
                         + " order by c.name";
-                suggestions = getFacade().findByJpql(sql);
+                suggestions = getFacade().findByJpql(sql, java.util.Map.of("q", "%" + query.toUpperCase() + "%"));
             } else {
                 sql = "select c from TimedItem c "
-                        + " where c.retired=false and (c.name) like '%" + query.toUpperCase() + "%' "
+                        + " where c.retired=false and (c.name) like :q "
                         + " and c.departmentType=:dt "
                         + " order by c.name";
                 Map m = new HashMap();
+                m.put("q", "%" + query.toUpperCase() + "%");
                 m.put("dt", departmentType);
                 suggestions = getFacade().findByJpql(sql, m);
             }
@@ -284,6 +288,7 @@ public class TimedItemController implements Serializable {
             getCurrent().setCreatedAt(new Date());
             getCurrent().setCreater(getSessionController().getLoggedUser());
             getFacade().create(current);
+            itemAuditHelper.logCreate(current, getSessionController().getLoggedUser(), "UI");
             JsfUtil.addSuccessMessage("Created Successfully");
         } else {
 //
@@ -294,7 +299,9 @@ public class TimedItemController implements Serializable {
 //            if (reportedAs == false) {
 //                getCurrent().setReportedAs(getCurrent());
 //            }
+            Map<String, Object> beforeNames = itemAuditHelper.snapshotFromDb(getCurrent().getId());
             getFacade().edit(getCurrent());
+            itemAuditHelper.logUpdate(beforeNames, getCurrent(), getSessionController().getLoggedUser(), "UI");
             ////System.out.println("current.getDepartmentType() = " + current.getDepartmentType());
             JsfUtil.addSuccessMessage("Updated Successfully");
         }

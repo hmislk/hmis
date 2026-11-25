@@ -1,4 +1,6 @@
 package com.divudi.bean.store;
+import java.util.Map;
+import com.divudi.service.ItemAuditHelper;
 import com.divudi.bean.common.SessionController;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.data.DepartmentType;
@@ -25,6 +27,8 @@ import javax.inject.Named;
 @Named
 @SessionScoped
 public class StoreInventryAmpController implements Serializable {
+    @EJB
+    private ItemAuditHelper itemAuditHelper;
 
     private static final long serialVersionUID = 1L;
     @Inject
@@ -61,12 +65,15 @@ public class StoreInventryAmpController implements Serializable {
     public void saveSelected() {
 
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
+            Map<String, Object> beforeNames = itemAuditHelper.snapshotFromDb(current.getId());
             getFacade().edit(current);
+            itemAuditHelper.logUpdate(beforeNames, current, getSessionController().getLoggedUser(), "UI");
             JsfUtil.addSuccessMessage("Updated Successfully.");
         } else {
             getCurrent().setCreatedAt(new Date());
             getCurrent().setCreater(getSessionController().getLoggedUser());
             getFacade().create(getCurrent());
+            itemAuditHelper.logCreate(getCurrent(), getSessionController().getLoggedUser(), "UI");
             JsfUtil.addSuccessMessage("Saved Successfully");
         }
         recreateModel();

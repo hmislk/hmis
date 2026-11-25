@@ -822,6 +822,28 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         return "/opd/patient_search?faces-redirect=true";
     }
 
+    /** True when the "Collected by Doctor" tick may be offered on the OPD billing page. */
+    public boolean isFeeCollectedByDoctorAllowed() {
+        return configOptionApplicationController.isOpdFeeCollectedByDoctorAllowed();
+    }
+
+    /** True when the fee can carry the "Collected by Doctor" tick: a doctor (staff) fee. */
+    public boolean canFeeBeCollectedByDoctor(BillFee bf) {
+        return bf != null && bf.getFee() != null && bf.getFee().getFeeType() == FeeType.Staff;
+    }
+
+    /** Called when the "Collected by Doctor" tick of a fee is changed on the billing page. */
+    public void feeCollectedByDoctorChanged(BillFee bf) {
+        if (bf == null) {
+            return;
+        }
+        if (bf.isCollectedByDoctorAtBilling() && !canFeeBeCollectedByDoctor(bf)) {
+            bf.setCollectedByDoctorAtBilling(false);
+            JsfUtil.addErrorMessage("Only a doctor fee can be marked as collected by the doctor.");
+        }
+        calTotals();
+    }
+
     public void changeTheSelectedFeeFromFeeBundle(BillFee ibf) {
         if (billFeeBundleEntrys == null) {
             return;
@@ -1407,8 +1429,13 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
 //        this.recurseCount = recurseCount;
 //    }
     public boolean findByFilter(String property, String value) {
-        String sql = "Select b From Bill b where b.retired=false and (b." + property + ") like '%" + value.toUpperCase() + " %'";
-        Bill b = getBillFacade().findFirstByJpql(sql);
+        if (property == null || value == null || !property.matches("^[A-Za-z][A-Za-z0-9_.]*$")) {
+            return false;
+        }
+        String sql = "Select b From Bill b where b.retired=false and (b." + property + ") like :q";
+        Map<String, Object> qm = new HashMap<>();
+        qm.put("q", "%" + value.toUpperCase() + " %");
+        Bill b = getBillFacade().findFirstByJpql(sql, qm);
         //System.err.println("SQL " + sql);
         //System.err.println("Bill " + b);
         if (b != null) {
@@ -1742,7 +1769,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         HashMap hash = new HashMap();
 
         sql = "select b from BilledBill b  where"
-                + " (abs(b.netTotal)-abs(b.paidAmount))>:val "
+                + " (abs(b.netTotal)-(coalesce(b.refundAmount,0)+abs(b.paidAmount)+coalesce(b.writtenOffAmount,0)))>:val "
                 + " and b.billType in :btps"
                 + " and b.createdAt is not null "
                 + " and b.deptId is not null "
@@ -3329,6 +3356,23 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
             JsfUtil.addErrorMessage("No Items are added to the bill to settle");
             return true;
         }
+        for (BillFeeBundleEntry bfbe : getBillFeeBundleEntrys()) {
+            BillFee sf = bfbe.getSelectedBillFee();
+            if (sf != null && sf.isCollectedByDoctorAtBilling()) {
+                if (!isFeeCollectedByDoctorAllowed()) {
+                    sf.setCollectedByDoctorAtBilling(false);
+                    calTotals();
+                    JsfUtil.addErrorMessage("Collected by Doctor is no longer allowed. Review the fees and settle again.");
+                    return true;
+                }
+                if (!canFeeBeCollectedByDoctor(sf)) {
+                    sf.setCollectedByDoctorAtBilling(false);
+                    calTotals();
+                    JsfUtil.addErrorMessage("Only a doctor fee can be marked as collected by the doctor.");
+                    return true;
+                }
+            }
+        }
         if (getPatient() == null) {
             JsfUtil.addErrorMessage("New Patient is NULL. Programming Error. Contact Developer.");
             return true;
@@ -4082,6 +4126,11 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
                         }
                     }
                     bf.setFeeVatPlusValue(bf.getFeeValue() + bf.getFeeVat());
+
+                    // A fee the doctor collects from the patient is not paid at the counter (#25731).
+                    if (bf.isCollectedByDoctorAtBilling()) {
+                        continue;
+                    }
 
                     entryGross += bf.getFeeGrossValue();
                     entryNet += bf.getFeeValue();

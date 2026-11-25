@@ -58,6 +58,7 @@
             requiredMessage="#{cc.attrs.requiredMessage}"
             minQueryLength="2"
             style="width: 100%;"
+            maxResults="15"
             inputStyleClass="form-control form-control-lg">
             <p:ajax event="query" oncomplete="HmisAdmissionSearch.onQueryComplete('#{cc.attrs.widgetVar}', '#{cc.attrs.continueClientId}')" />
             <!-- With no itemSelectUpdate the pick must NOT write the admission into the bean

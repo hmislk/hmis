@@ -329,6 +329,9 @@ public class PettyCashBillSearch implements Serializable {
     }
 
     public void cancelBill() {
+        if (com.divudi.core.util.CancellationBillCheck.refuse(getBill())) {
+            return;
+        }
         Date current = new Date();
         Date midNight = getMidnight();
         if (configOptionApplicationController.getBooleanValueByKey("Enable PettyCash bill cancellation restriction after midnight")) {
@@ -452,7 +455,8 @@ public class PettyCashBillSearch implements Serializable {
                     bills = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP, 100);
 
                 } else {
-                    sql = "select b from BilledBill b where b.retired=false and b.billType=:type and b.createdAt between :fromDate and :toDate and ((b.staff.person.name) like '%" + txtSearch.toUpperCase() + "%'  or (b.staff.person.phone) like '%" + txtSearch.toUpperCase() + "%'  or (b.insId) like '%" + txtSearch.toUpperCase() + "%') order by b.id desc  ";
+                    sql = "select b from BilledBill b where b.retired=false and b.billType=:type and b.createdAt between :fromDate and :toDate and ((b.staff.person.name) like :txt  or (b.staff.person.phone) like :txt  or (b.insId) like :txt) order by b.id desc  ";
+                    temMap.put("txt", "%" + txtSearch.toUpperCase() + "%");
                     temMap.put("toDate", getToDate());
                     temMap.put("fromDate", getFromDate());
                     temMap.put("type", BillType.PaymentBill);

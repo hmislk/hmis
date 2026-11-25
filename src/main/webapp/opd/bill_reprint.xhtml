@@ -68,7 +68,7 @@
                                             value="To Cancel" 
                                             action="#{opdBillCancellationController.navigateToCancelOpdBill()}" 
                                             rendered="#{webUserController.hasPrivilege('OpdIndividualCancel')}"
-                                            disabled="#{billSearch.bill.cancelled or billSearch.bill.refunded}" 
+                                            disabled="#{billSearch.bill.cancelled or billSearch.bill.refunded or billSearch.billACancellationBill}" 
                                             class="ui-button-danger m-1 w-25" icon="fa fa-times" > 
                                             <f:setPropertyActionListener value="#{billSearch.bill}" target="#{opdBillCancellationController.bill}" ></f:setPropertyActionListener>
                                         </p:commandButton>

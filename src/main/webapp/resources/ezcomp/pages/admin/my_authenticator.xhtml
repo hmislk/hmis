@@ -707,7 +707,7 @@
                         </h:panelGroup>
 
                         <!-- Current status -->
-                        <h:panelGroup rendered="#{twoFactorAuthController.twoFactorEnabled and not twoFactorAuthController.selfSetupInProgress and not twoFactorAuthController.reloginRequired}" layout="block"
+                        <h:panelGroup rendered="#{twoFactorAuthController.twoFactorEnabled and not twoFactorAuthController.selfSetupInProgress and not twoFactorSmsController.setupProofInProgress and not twoFactorAuthController.reloginRequired}" layout="block"
                                       class="auth-status #{twoFactorAuthController.loggedUserEnrolled ? 'linked' : 'unlinked'}">
                             <div class="auth-status-icon">
                                 <h:panelGroup rendered="#{twoFactorAuthController.loggedUserEnrolled}"><i class="fa fa-check"></i></h:panelGroup>
@@ -737,7 +737,19 @@
                                 <h:outputText value=" A 6-digit code from your authenticator app is asked at every login." />
                             </h:panelGroup>
 
-                            <h:panelGroup rendered="#{not twoFactorAuthController.loggedUserEnrolled}" layout="block" class="auth-status-action">
+                            <!-- Why set-up cannot start (no server key, 24 h period ended, no staff mobile) -->
+                            <h:panelGroup rendered="#{not twoFactorAuthController.loggedUserEnrolled and twoFactorAuthController.setupBlockedMessage ne null}" layout="block" class="auth-info mb-0" id="setupBlockedNote">
+                                <i class="fa fa-info-circle"></i>
+                                <h:outputText value=" #{twoFactorAuthController.setupBlockedMessage}" />
+                            </h:panelGroup>
+                            <h:panelGroup rendered="#{not twoFactorAuthController.loggedUserEnrolled and twoFactorAuthController.loggedUserRequired and twoFactorAuthController.loggedUserSetupWindowEnd ne null and twoFactorAuthController.setupBlockedMessage eq null}" class="auth-status-date">
+                                <i class="fa fa-clock"></i>
+                                <h:outputText value=" Set up before " />
+                                <h:outputText value="#{twoFactorAuthController.loggedUserSetupWindowEnd}">
+                                    <f:convertDateTime pattern="dd MMM yyyy, HH:mm" />
+                                </h:outputText>
+                            </h:panelGroup>
+                            <h:panelGroup rendered="#{not twoFactorAuthController.loggedUserEnrolled and twoFactorAuthController.setupBlockedMessage eq null}" layout="block" class="auth-status-action">
                                 <p:commandButton value="Set Up Authenticator App"
                                                  icon="fa fa-qrcode"
                                                  class="ui-button-success"
@@ -758,6 +770,85 @@
                             <h:panelGroup rendered="#{not twoFactorAuthController.loggedUserEnrolled}" class="auth-meta">
                                 <h:outputText value="Takes about a minute: install Google or Microsoft Authenticator, scan the QR code, enter the code." />
                             </h:panelGroup>
+                        </h:panelGroup>
+
+                        <!-- Before the QR code: a code to the staff-record mobile, so a password alone cannot link a phone -->
+                        <h:panelGroup rendered="#{twoFactorAuthController.twoFactorEnabled and twoFactorSmsController.setupProofInProgress}" layout="block" class="auth-sms">
+                            <div class="auth-sms-head">
+                                <div class="auth-sms-icon"><i class="fa fa-sms"></i></div>
+                                <div>
+                                    <div class="auth-sms-title">
+                                        <h:outputText value="Confirm It Is You" />
+                                    </div>
+                                    <div class="auth-meta">
+                                        <h:outputText value="Before you link an authenticator app, we send a 6-digit code to the mobile number saved in the system for your account." />
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="auth-sms-body">
+                                <h:panelGroup rendered="#{not empty twoFactorSmsController.loggedUserStaffMobileMasked and not twoFactorSmsController.setupProofCodeSent}" layout="block" class="auth-meta mb-3">
+                                    <h:outputText value="The code will be sent to #{twoFactorSmsController.loggedUserStaffMobileMasked}." />
+                                </h:panelGroup>
+                                <h:panelGroup rendered="#{empty twoFactorSmsController.loggedUserStaffMobileMasked}" layout="block" class="auth-info mb-0">
+                                    <i class="fa fa-info-circle"></i>
+                                    <h:outputText value="No valid mobile number is saved in the system for your account. Ask your system administrator to add it to your staff record, then try again." />
+                                </h:panelGroup>
+
+                                <h:panelGroup rendered="#{twoFactorSmsController.setupProofCodeSent}" layout="block" class="auth-sent" role="status">
+                                    <span class="auth-sent-icon"><i class="fa fa-paper-plane"></i></span>
+                                    <span class="auth-sent-text">
+                                        <span class="auth-sent-title">Code sent to <b><h:outputText value="#{twoFactorSmsController.setupProofSentToMasked}" /></b></span>
+                                        <span class="auth-sent-sub">Enter the 6-digit code from the SMS below. It may take a minute to arrive.</span>
+                                    </span>
+                                </h:panelGroup>
+                                <h:panelGroup rendered="#{twoFactorSmsController.setupProofCodeSent}" layout="block" class="mt-3 auth-code-col">
+                                    <h:outputText value="SMS Code" class="auth-label" />
+                                    <ez:otp_input id="txtSetupProofCode" value="#{twoFactorSmsController.setupProofCode}" />
+                                </h:panelGroup>
+
+                                <div class="d-flex justify-content-center gap-2 mt-4 flex-wrap">
+                                    <p:commandButton id="btnConfirmSetupProof"
+                                                     rendered="#{twoFactorSmsController.setupProofCodeSent}"
+                                                     value="Verify"
+                                                     icon="fa fa-check"
+                                                     class="ui-button-success"
+                                                     title="Verify the code and show the QR code"
+                                                     process="@this txtSetupProofCode"
+                                                     update="@form"
+                                                     action="#{twoFactorSmsController.confirmSetupProofCode()}" />
+                                    <p:commandButton id="btnSendSetupProof"
+                                                     widgetVar="wvSendSetupProof"
+                                                     rendered="#{not empty twoFactorSmsController.loggedUserStaffMobileMasked}"
+                                                     value="#{twoFactorSmsController.setupProofCodeSent ? 'Resend Code' : 'Send Code'}"
+                                                     icon="fa fa-paper-plane"
+                                                     class="#{twoFactorSmsController.setupProofCodeSent ? 'ui-button-secondary ui-button-outlined' : 'ui-button-info'}"
+                                                     disabled="#{twoFactorSmsController.setupProofResendSecondsLeft gt 0}"
+                                                     title="Send a 6-digit code to the mobile number saved in the system"
+                                                     process="@this"
+                                                     update="@form"
+                                                     action="#{twoFactorSmsController.sendSetupProofCode()}" />
+                                    <p:commandButton value="Cancel"
+                                                     class="ui-button-danger ui-button-outlined"
+                                                     icon="fa fa-times"
+                                                     title="Cancel the setup"
+                                                     process="@this"
+                                                     update="@form"
+                                                     action="#{twoFactorSmsController.cancelSetupProof()}" />
+                                </div>
+                                <h:panelGroup rendered="#{twoFactorSmsController.setupProofCodeSent}">
+                                    <p:defaultCommand target="btnConfirmSetupProof" />
+                                </h:panelGroup>
+                                <!-- The button renders disabled during the resend wait; enable it when the wait ends -->
+                                <h:panelGroup rendered="#{not empty twoFactorSmsController.loggedUserStaffMobileMasked and twoFactorSmsController.setupProofResendSecondsLeft gt 0}">
+                                    <script>
+                                        setTimeout(function () {
+                                            if (window.PF &amp;&amp; PF('wvSendSetupProof')) {
+                                                PF('wvSendSetupProof').enable();
+                                            }
+                                        }, #{twoFactorSmsController.setupProofResendSecondsLeft} * 1000);
+                                    </script>
+                                </h:panelGroup>
+                            </div>
                         </h:panelGroup>
 
                         <!-- Setup -->
@@ -842,7 +933,7 @@
 
                         <!-- SMS code: the other login option, after the mobile number is verified -->
                         <h:panelGroup id="pnlSmsCode"
-                                      rendered="#{twoFactorAuthController.twoFactorEnabled and twoFactorSmsController.loggedUserSmsAllowed and not twoFactorAuthController.reloginRequired and not twoFactorAuthController.selfSetupInProgress}"
+                                      rendered="#{twoFactorAuthController.twoFactorEnabled and twoFactorSmsController.loggedUserSmsAllowed and not twoFactorAuthController.reloginRequired and not twoFactorAuthController.selfSetupInProgress and not twoFactorSmsController.setupProofInProgress}"
                                       layout="block" class="auth-sms">
                             <div class="auth-sms-head">
                                 <div class="auth-sms-icon"><i class="fa fa-sms"></i></div>
@@ -907,6 +998,9 @@
                             <!-- Verification -->
                             <h:panelGroup rendered="#{twoFactorSmsController.mobileVerificationInProgress}" layout="block" class="auth-sms-body">
                                 <h:outputText value="Mobile Number" class="auth-label" />
+                                <div class="auth-meta mb-2">
+                                    <h:outputText value="Use the mobile number saved in the system for your account." />
+                                </div>
                                 <div class="d-flex gap-2 flex-wrap align-items-center">
                                     <p:inputText id="txtSmsMobile"
                                                  value="#{twoFactorSmsController.mobileInput}"

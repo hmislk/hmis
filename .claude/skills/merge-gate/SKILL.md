@@ -1,15 +1,6 @@
 ---
 name: merge-gate
-description: >
-  Gate one or more open PRs before merge: CI check, then a code-level
-  regression/business-rule review, then (only if that's clean) end-to-end
-  Playwright verification of the PR's own workflow(s) plus two fixed
-  baseline checks. Posts one top-level status comment per PR per run
-  (PASSED or BLOCKED-*) so the outcome is visible on GitHub, not just in
-  chat. Use when asked to "gate PR(s) for merge", "run merge-gate on #N",
-  "check these PRs are safe to merge", or before merging any PR that
-  touches shared/core code (API, billing, pharmacy) where a regression
-  could silently break unrelated functions.
+description: 'Gate open PR(s) before merge: CI, code review against rules, then Playwright e2e. Posts a PASSED/BLOCKED status comment. Use for "gate PR #N", "run merge-gate on #N", "is this safe to merge".'
 argument-hint: "<pr-number> [pr-number...]"
 ---
 
@@ -209,7 +200,7 @@ Dispatch the `hmis-qa-verifier` subagent with the Phase 2 workflows and the two
 baseline checks below as its acceptance checks, plus the app root URL and
 environment. It runs the `playwright-e2e` workflow (login, department selection,
 AJAX-aware waits, DB verification per its workflow doc). Its `FAIL` verdict is
-blocking (`BLOCKED-E2E`); `BLOCKED` means set up the environment and re-run. **Reach every page through the
+blocking (`BLOCKED-E2E`); `BLOCKED` means set up the environment and re-run. A `NOT REACHED` check is never a pass: do not post `PASSED` while one remains; record `BLOCKED-E2E`, naming the check, the page and the missing setup. **Reach every page through the
 menus, never by URL** — a URL-loaded page renders against uninitialised
 session state and can fail in ways no user can reach (`playwright-e2e` §2). For **every** PR that reaches
 this phase, run all three of the following — the two baseline checks are
@@ -340,13 +331,13 @@ this workflow. Don't imply otherwise in the Final report either (see
 ```markdown
 ## 🚦 Merge Gate: BLOCKED — end-to-end verification found a bug
 
-**Failed:** <PR workflow name, or "Baseline A: COGS variance", or
+**Failed or not reached (setup missing, no bug established):** <PR workflow name, or "Baseline A: COGS variance", or
 "Baseline B: Cashier Details">
 
 <redacted description of what went wrong — no patient identifiers,
 credentials, or tokens>
 
-This was not auto-fixed — it needs discussion (per CLAUDE.md "discuss
+For a failure: this was not auto-fixed — it needs discussion (per CLAUDE.md "discuss
 uncertainties") as separate `dev-issue` work.
 ```
 

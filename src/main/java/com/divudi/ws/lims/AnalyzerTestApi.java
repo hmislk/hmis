@@ -5,6 +5,7 @@
  */
 package com.divudi.ws.lims;
 
+import com.divudi.service.ItemAuditHelper;
 import com.divudi.bean.common.ApiKeyController;
 import com.divudi.core.data.ItemType;
 import com.divudi.core.entity.ApiKey;
@@ -49,6 +50,8 @@ import java.util.logging.Logger;
 @Path("machines/{machineId}/tests")
 @RequestScoped
 public class AnalyzerTestApi {
+    @EJB
+    private ItemAuditHelper itemAuditHelper;
 
     @Context
     private HttpServletRequest requestContext;
@@ -219,6 +222,7 @@ public class AnalyzerTestApi {
             item.setCreatedAt(new Date());
             item.setCreater(user);
             itemFacade.create(item);
+            itemAuditHelper.logCreate(item, user, "API");
 
             return Response.status(201).entity(gson.toJson(successData(201, toDto(item)))).build();
 
@@ -270,6 +274,7 @@ public class AnalyzerTestApi {
                 return errorResponse("Request body is required", 400);
             }
 
+            Map<String, Object> beforeNames = ItemAuditHelper.snapshot(item);
             if (body.containsKey("name")) {
                 String name = asString(body.get("name"));
                 if (name == null || name.trim().isEmpty()) {
@@ -299,6 +304,7 @@ public class AnalyzerTestApi {
             }
 
             itemFacade.edit(item);
+            itemAuditHelper.logUpdate(beforeNames, item, user, "API");
             return successResponse(toDto(item));
 
         } catch (IllegalArgumentException e) {

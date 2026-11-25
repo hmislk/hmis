@@ -1069,6 +1069,9 @@ public class ChannelBillController implements Serializable {
     }
 
     public void channelBookingCancel() {
+        if (getBillSession() != null && com.divudi.core.util.CancellationBillCheck.refuse(getBillSession().getBill())) {
+            return;
+        }
         if (billSession.getBill().getBillType() == BillType.ChannelAgent) {
             cancelAgentPaidBill();
             return;
@@ -1118,6 +1121,9 @@ public class ChannelBillController implements Serializable {
     }
 
     public void cancelCashFlowBill() {
+        if (getBillSession() != null && com.divudi.core.util.CancellationBillCheck.refuse(getBillSession().getBill())) {
+            return;
+        }
         if (errorCheckCancelling()) {
             return;
         }
@@ -1128,6 +1134,9 @@ public class ChannelBillController implements Serializable {
     }
 
     public void cancelBookingBill() {
+        if (getBillSession() != null && com.divudi.core.util.CancellationBillCheck.refuse(getBillSession().getBill())) {
+            return;
+        }
         if (errorCheckCancelling()) {
             return;
         }
@@ -1146,6 +1155,9 @@ public class ChannelBillController implements Serializable {
     }
 
     public void cancelAgentPaidBill() {
+        if (getBillSession() != null && com.divudi.core.util.CancellationBillCheck.refuse(getBillSession().getBill())) {
+            return;
+        }
         if (getBillSession() == null) {
             JsfUtil.addErrorMessage("No BillSession");
             return;
@@ -1197,6 +1209,9 @@ public class ChannelBillController implements Serializable {
     }
 
     public void cancelCreditPaidBill() {
+        if (getBillSession() != null && com.divudi.core.util.CancellationBillCheck.refuse(getBillSession().getBill())) {
+            return;
+        }
         if (getBillSession() == null) {
             JsfUtil.addErrorMessage("No BillSession");
             return;
@@ -3407,6 +3422,10 @@ public class ChannelBillController implements Serializable {
 
     public void setPaymentFacade(PaymentFacade paymentFacade) {
         this.paymentFacade = paymentFacade;
+    }
+
+    public boolean isBillACancellationBill() {
+        return getBillSession() != null && com.divudi.core.util.CancellationBillCheck.isCancellationBill(getBillSession().getBill());
     }
 
 }

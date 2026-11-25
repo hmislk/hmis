@@ -56,6 +56,7 @@
                                     <p:dataTable 
                                         id="tbl" 
                                         rowIndexVar="rowIndex" 
+                                        styleClass="p-datatable-sm"
                                         value="#{reportsTransfer.previewBill.billItems}"  
                                         var="bip" 
                                         rendered="#{(webUserController.hasPrivilege('ShowInwardFee'))}">
@@ -101,11 +102,20 @@
                                             </h:outputLabel>
                                         </p:column>
 
+                                        <p:column style="text-align: right;" rendered="#{webUserController.hasPrivilege('IPBillingViewDiscount')}">
+                                            <f:facet name="header">
+                                                <h:outputLabel value="Discount"/>
+                                            </f:facet>
+                                            <h:outputLabel value="#{bip.discount}">
+                                                <f:convertNumber pattern="#0.00" />
+                                            </h:outputLabel>
+                                        </p:column>
+
                                         <p:column style="text-align: right;">
                                             <f:facet name="header">
                                                 <h:outputLabel value="Net Value"/>
                                             </f:facet>
-                                            <h:outputLabel value="#{bip.grossValue + bip.marginValue}">
+                                            <h:outputLabel value="#{bip.netValue}">
                                                 <f:convertNumber pattern="#0.00" />
                                             </h:outputLabel>
                                         </p:column>
@@ -119,7 +129,14 @@
                                                         </h:outputLabel>
                                                     </f:facet>
                                                 </p:column>
-                                                <p:column  style="text-align: right;" colspan="2">
+                                                <p:column  style="text-align: right;" colspan="2" rendered="#{webUserController.hasPrivilege('IPBillingViewDiscount')}">
+                                                    <f:facet name="footer">
+                                                        <h:outputLabel value="#{reportsTransfer.previewBill.discount}">
+                                                            <f:convertNumber pattern="#0.00" />
+                                                        </h:outputLabel>
+                                                    </f:facet>
+                                                </p:column>
+                                                <p:column  style="text-align: right;" colspan="#{webUserController.hasPrivilege('IPBillingViewDiscount') ? 1 : 2}">
                                                     <f:facet name="footer">
                                                         <h:outputLabel value="#{reportsTransfer.previewBill.netTotal}">
                                                             <f:convertNumber pattern="#0.00" />
@@ -153,11 +170,11 @@
                                     <h:panelGroup   id="gpBillPreview" class="mt-2"> 
 
                                         <h:panelGroup   id="gpBillPreviewSingle" rendered="#{sessionController.departmentPreference.pharmacyBillPaperType eq 'PosPaper'}">
-                                            <ph:issueBill bill="#{reportsTransfer.previewBill}" duplicate="true" />
+                                            <ph:issueBill bill="#{reportsTransfer.previewBill}" duplicate="true" showPositiveDiscount="true" />
                                         </h:panelGroup>
 
                                         <h:panelGroup id="gpBillPreviewFiveFive" rendered="#{sessionController.departmentPreference.pharmacyBillPaperType eq 'FiveFivePaper'}"> 
-                                            <phi:saleBill_five_five bill="#{reportsTransfer.previewBill}"></phi:saleBill_five_five>
+                                            <phi:saleBill_five_five bill="#{reportsTransfer.previewBill}" showPositiveDiscount="true"></phi:saleBill_five_five>
                                         </h:panelGroup>        
 
                                         <h:panelGroup id="gpBillPreviewFiveFiveCustom3" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Inward Direct Issue Bill is FiveFiveCustom3',true)}"> 

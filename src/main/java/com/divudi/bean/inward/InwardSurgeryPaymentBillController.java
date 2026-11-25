@@ -177,6 +177,8 @@ public class InwardSurgeryPaymentBillController implements Serializable {
                 + " and bf.bill.cancelled=false "
                 + " and bf.bill.createdAt between :fd and :td "
                 + " and (bf.feeValue - bf.paidValue) > 0 "
+                // Collected by the doctor at billing: the hospital never pays it (#17490).
+                + " and (bf.collectedByDoctorAtBilling = false or bf.collectedByDoctorAtBilling is null) "
                 // Held fees are listed (flagged "On Hold" in the UI) rather than
                 // hidden, so the payer can see the money exists — issue #22484.
                 + " and bf.staff=:stf ";
@@ -680,8 +682,10 @@ public class InwardSurgeryPaymentBillController implements Serializable {
         tmp.setCreater(getSessionController().getLoggedUser());
         tmp.setDepartment(getSessionController().getLoggedUser().getDepartment());
 
-        tmp.setDeptId(getBillNumberBean().departmentBillNumberGeneratorYearly(getSessionController().getDepartment(), BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_INWARD_SERVICE));
-        tmp.setInsId(getBillNumberBean().departmentBillNumberGeneratorYearly(getSessionController().getDepartment(), BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_INWARD_SERVICE));
+        // One serial per payment: the same number goes on both fields (#26075).
+        String billNumber = getBillNumberBean().departmentBillNumberGeneratorYearly(getSessionController().getDepartment(), BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_INWARD_SERVICE);
+        tmp.setDeptId(billNumber);
+        tmp.setInsId(billNumber);
 
         tmp.setDiscount(0.0);
         tmp.setDiscountPercent(0.0);

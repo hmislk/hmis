@@ -8,6 +8,7 @@
  */
 package com.divudi.bean.common;
 
+import com.divudi.service.ItemAuditHelper;
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.DepartmentType;
 import com.divudi.core.data.FeeType;
@@ -60,6 +61,8 @@ import javax.servlet.http.HttpServletResponse;
 @Named
 @SessionScoped
 public class ServiceController implements Serializable {
+    @EJB
+    private ItemAuditHelper itemAuditHelper;
 
     private static final long serialVersionUID = 1L;
     @Inject
@@ -283,9 +286,10 @@ public class ServiceController implements Serializable {
         if (query == null) {
             suggestions = new ArrayList<Service>();
         } else {
-            sql = "select c from Service c where c.retired=false and (c.name) like '%" + query.toUpperCase() + "%' order by c.name";
-            //////// // System.out.println(sql);
-            suggestions = getFacade().findByJpql(sql);
+            sql = "select c from Service c where c.retired=false and (c.name) like :qry order by c.name";
+            Map<String, Object> m = new HashMap<>();
+            m.put("qry", "%" + query.toUpperCase() + "%");
+            suggestions = getFacade().findByJpql(sql, m);
         }
         return suggestions;
     }
@@ -294,7 +298,9 @@ public class ServiceController implements Serializable {
         if (selectText.trim().isEmpty()) {
             selectedItems = getFacade().findByJpql("select c from Service c where c.retired=false order by c.name");
         } else {
-            selectedItems = getFacade().findByJpql("select c from Service c where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
+            Map<String, Object> likeParams = new HashMap<>();
+            likeParams.put("txt", "%" + getSelectText().toUpperCase() + "%");
+            selectedItems = getFacade().findByJpql("select c from Service c where c.retired=false and (c.name) like :txt order by c.name", likeParams);
         }
         return selectedItems;
     }
@@ -303,7 +309,9 @@ public class ServiceController implements Serializable {
         if (selectRetiredText.trim().isEmpty()) {
             selectedRetiredItems = getFacade().findByJpql("select c from Service c where c.retired=true order by c.name");
         } else {
-            selectedRetiredItems = getFacade().findByJpql("select c from Service c where c.retired=true and (c.name) like '%" + getSelectRetiredText().toUpperCase() + "%' order by c.name");
+            Map<String, Object> likeParams = new HashMap<>();
+            likeParams.put("txt", "%" + getSelectRetiredText().toUpperCase() + "%");
+            selectedRetiredItems = getFacade().findByJpql("select c from Service c where c.retired=true and (c.name) like :txt order by c.name", likeParams);
         }
         return selectedRetiredItems;
     }
@@ -334,10 +342,12 @@ public class ServiceController implements Serializable {
     }
 
     public List<Service> completeItem(String qry) {
+        Map<String, Object> likeParams = new HashMap<>();
+        likeParams.put("txt", "%" + qry.toUpperCase() + "%");
         List<Service> completeItems = getFacade().findByJpql("select c from Item c "
                 + " where ( type(c) = Service or type(c) = Packege ) "
-                + " and c.retired=false and (c.name) like '%" + qry.toUpperCase() + "%'"
-                + "  order by c.name");
+                + " and c.retired=false and (c.name) like :txt"
+                + "  order by c.name", likeParams);
         return completeItems;
     }
 
@@ -554,12 +564,15 @@ public class ServiceController implements Serializable {
         itemController.warnIfItemNameDuplicated(getCurrent());
 
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
+            Map<String, Object> beforeNames = itemAuditHelper.snapshotFromDb(getCurrent().getId());
             getFacade().edit(getCurrent());
+            itemAuditHelper.logUpdate(beforeNames, getCurrent(), getSessionController().getLoggedUser(), "UI");
             JsfUtil.addSuccessMessage("Update Successfully");
         } else {
             getCurrent().setCreatedAt(new Date());
             getCurrent().setCreater(getSessionController().getLoggedUser());
             getFacade().create(getCurrent());
+            itemAuditHelper.logCreate(getCurrent(), getSessionController().getLoggedUser(), "UI");
             JsfUtil.addSuccessMessage("Saved Successfully");
         }
 
@@ -607,7 +620,9 @@ public class ServiceController implements Serializable {
                 //////// // System.out.println("3");
                 service.setReportedAs(service);
             }
+            Map<String, Object> beforeNames = itemAuditHelper.snapshotFromDb(service.getId());
             getFacade().edit(service);
+            itemAuditHelper.logUpdate(beforeNames, service, getSessionController().getLoggedUser(), "UI");
             JsfUtil.addSuccessMessage("Saved Old Successfully");
         } else {
             //////// // System.out.println("4");
@@ -619,6 +634,7 @@ public class ServiceController implements Serializable {
                 return;
             } else {
                 getFacade().create(service);
+                itemAuditHelper.logCreate(service, getSessionController().getLoggedUser(), "UI");
             }
 
             if (billedAs == false) {
@@ -883,6 +899,7 @@ public class ServiceController implements Serializable {
         i.setTotalFfee(fee);
         i.setRequestForQuentity(true);
         ejbFacade.create(i);
+        itemAuditHelper.logCreate(i, sessionController.getLoggedUser(), "UI bulk add");
         return i;
     }
 
@@ -924,13 +941,14 @@ public class ServiceController implements Serializable {
 
     public List<Service> getItem() {
         String sql;
+        Map<String, Object> likeParams = new HashMap<>();
         if (selectText.isEmpty()) {
             sql = "select c from Service c where c.retired=false order by c.category.name,c.name";
         } else {
-            sql = "select c from Service c where c.retired=false and (c.name) like '%" + selectText.toUpperCase() + "%' order by c.category.name,c.name";
+            sql = "select c from Service c where c.retired=false and (c.name) like :txt order by c.category.name,c.name";
+            likeParams.put("txt", "%" + selectText.toUpperCase() + "%");
         }
-        //////// // System.out.println(sql);
-        items = getFacade().findByJpql(sql);
+        items = getFacade().findByJpql(sql, likeParams);
 
         if (items == null) {
             items = new ArrayList<Service>();

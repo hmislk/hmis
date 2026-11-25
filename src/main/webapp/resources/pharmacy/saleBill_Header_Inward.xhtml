@@ -239,7 +239,7 @@
                                 <h:outputLabel  rendered="#{cc.attrs.bill.discount ne 0.0 and cc.attrs.showDiscount}" value="Discount " style="font-weight: bolder!important;"/>
                             </td>
                             <td  class="totalsBlock1" style="text-align: right!important; ;">
-                                <h:outputLabel rendered="#{cc.attrs.bill.discount ne 0.0 and cc.attrs.showDiscount}"   value="#{-cc.attrs.bill.discount}" style="font-weight: bolder!important;" >
+                                <h:outputLabel rendered="#{cc.attrs.bill.discount ne 0.0 and cc.attrs.showDiscount}"   value="#{cc.attrs.bill.discount lt 0 ? -cc.attrs.bill.discount : cc.attrs.bill.discount}" style="font-weight: bolder!important;" >
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
                             </td>

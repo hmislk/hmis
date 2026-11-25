@@ -56,29 +56,44 @@
                             <div>
                                 <div class="row">
                                     <div class="col-10 d-flex">
-                                        <p:autoComplete
-                                            id="acAllergy"
-                                            placeholder="Search Patient Allergies"
-                                            completeMethod="#{vtmController.completeVtm}"
-                                            var="pta"
-                                            style="width: 150px"
-                                            maxResults="15"
-                                            itemLabel="#{pta}"
-                                            itemValue="#{pta}"
-                                            forceSelection="true"
-                                            value="#{bhtEditController.currentPatientAllergy.itemValue}"
-                                            inputStyleClass="form-control w-100"
-                                            class="w-100"/>
-
-                                        <p:inputText placeholder="Remark" class="mx-4 w-100" id="txtAllergy" value="#{bhtEditController.currentPatientAllergy.stringValue}"/>
+                                        <p:selectOneMenu id="selAllergyType" style="width: 150px" value="#{bhtEditController.currentPatientAllergy.clinicalFindingValueType}">
+                                            <f:selectItem itemLabel="Medicine" itemValue="PatientAllergy"/>
+                                            <f:selectItem itemLabel="Food" itemValue="PatientFoodAllergy"/>
+                                            <f:selectItem itemLabel="Plaster" itemValue="PatientPlasterAllergy"/>
+                                            <f:selectItem itemLabel="Other" itemValue="PatientOtherAllergy"/>
+                                            <p:ajax event="change" process="@this" update="pnlAllergyEntry"/>
+                                        </p:selectOneMenu>
+                                        <h:panelGroup id="pnlAllergyEntry" layout="block" class="d-flex w-100 mx-2">
+                                            <p:autoComplete
+                                                id="acAllergy"
+                                                rendered="#{bhtEditController.currentPatientAllergy.medicineAllergy}"
+                                                placeholder="Search Patient Allergies"
+                                                completeMethod="#{vtmController.completeVtm}"
+                                                var="pta"
+                                                style="width: 150px"
+                                                maxResults="15"
+                                                itemLabel="#{pta}"
+                                                itemValue="#{pta}"
+                                                forceSelection="true"
+                                                value="#{bhtEditController.currentPatientAllergy.itemValue}"
+                                                inputStyleClass="form-control w-100"
+                                                class="w-100"/>
+                                            <p:inputText
+                                                id="txtAllergyText"
+                                                rendered="#{not bhtEditController.currentPatientAllergy.medicineAllergy}"
+                                                placeholder="#{bhtEditController.currentPatientAllergy.allergyTypeLabel} allergy (required)"
+                                                class="w-100"
+                                                value="#{bhtEditController.currentPatientAllergy.allergyTextInput}"/>
+                                            <p:inputText placeholder="Remark" class="mx-4 w-100" id="txtAllergy" value="#{bhtEditController.currentPatientAllergy.allergyRemarkInput}"/>
+                                        </h:panelGroup>
                                     </div>
                                     <div class="col-2">
                                         <p:commandButton
                                             id="btnAddAllergy"
                                             value="Add"
                                             class="w-100"
-                                            process="btnAddAllergy acAllergy txtAllergy"
-                                            update="ptAl txtAllergy acAllergy msg"
+                                            process="btnAddAllergy selAllergyType pnlAllergyEntry"
+                                            update="ptAl selAllergyType pnlAllergyEntry msg"
                                             action="#{bhtEditController.addPatientAllergy()}">
                                         </p:commandButton>
                                     </div>
@@ -90,12 +105,7 @@
                                                 <div class="card my-1 w-100">
                                                     <div class="d-flex justify-content-between align-items-center p-1">
                                                         <div>
-                                                            <h:outputText
-                                                                rendered="#{not empty al.itemValue and not empty al.stringValue}"
-                                                                value="#{al.itemValue.name.concat(' - ').concat(al.stringValue)}"/>
-                                                            <h:outputText
-                                                                rendered="#{empty al.itemValue or empty al.stringValue}"
-                                                                value="#{al.itemValue.name}#{al.stringValue}"/>
+                                                            <h:outputText value="#{al.allergyDisplay}"/>
                                                         </div>
                                                         <div>
                                                             <p:commandButton
