@@ -41,6 +41,56 @@ public final class InwardMedicineBillTypes {
             BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_CANCELLATION
     ));
 
+    /**
+     * Medicine bill types that take value off the BHT's medicine total in a
+     * per-item pharmacy list (a return, as opposed to an issue). The accept bill
+     * is the one that carries the credit for a porter-based ward return (#25509),
+     * so the ward's own return bill is not in this list.
+     */
+    public static final List<BillTypeAtomic> ITEM_LIST_RETURNS = Collections.unmodifiableList(Arrays.asList(
+            BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN,
+            BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_RETURN,
+            BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN,
+            BillTypeAtomic.ACCEPT_RETURN_MEDICINE_INWARD
+    ));
+
+    /**
+     * The bill types that cancel a whole issue bill. The interim bill sums every
+     * bill of {@link #ALL} without looking at the cancelled flag, so an issue and
+     * its cancellation net to zero. A report that skips cancelled issue bills
+     * (cancelled = true) must skip these as well, or the cancellation is deducted
+     * with nothing to offset it (#26093). Returns and the ward accept bill are not
+     * cancellations and stay counted.
+     */
+    public static final List<BillTypeAtomic> ISSUE_CANCELLATIONS = Collections.unmodifiableList(Arrays.asList(
+            BillTypeAtomic.PHARMACY_DIRECT_ISSUE_CANCELLED,
+            BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION,
+            BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_CANCELLATION,
+            BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_CANCELLATION,
+            BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_CANCELLATION
+    ));
+
+    /**
+     * Medicine bill types for a report that lists only live (not cancelled) issue
+     * bills: {@link #ALL} without the issue cancellations, so a cancelled issue and
+     * its cancellation both drop out and the report agrees with the interim bill.
+     */
+    public static final List<BillTypeAtomic> ALL_EXCLUDING_ISSUE_CANCELLATIONS;
+
+    static {
+        List<BillTypeAtomic> l = new java.util.ArrayList<>(ALL);
+        l.removeAll(ISSUE_CANCELLATIONS);
+        ALL_EXCLUDING_ISSUE_CANCELLATIONS = Collections.unmodifiableList(l);
+    }
+
+    /**
+     * True when a line of this bill type is deducted, not added, in an
+     * inpatient pharmacy item list total.
+     */
+    public static boolean isItemListReturn(BillTypeAtomic billTypeAtomic) {
+        return billTypeAtomic != null && ITEM_LIST_RETURNS.contains(billTypeAtomic);
+    }
+
     private InwardMedicineBillTypes() {
     }
 }

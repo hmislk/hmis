@@ -475,14 +475,14 @@ public class InwardReportControllerBht implements Serializable {
             pharmacyTypes.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_RETURN);
             pharmacyTypes.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD);
             pharmacyTypes.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN);
+            // Porter-based ward return, credited when the pharmacy accepts it (#25509, #26093)
+            pharmacyTypes.add(BillTypeAtomic.ACCEPT_RETURN_MEDICINE_INWARD);
             List<InpatientPharmacyIssueDTO> allDtos = fetchPharmacyIssueDtos(pharmacyTypes);
             pharmacyIssueDtosToPatientEncounter.addAll(allDtos);
             for (InpatientPharmacyIssueDTO dto : allDtos) {
                 BillTypeAtomic billType = dto.getBillTypeAtomic();
                 double netValue = dto.getNetValue() != null ? dto.getNetValue() : 0.0;
-                if (billType == BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN
-                        || billType == BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_RETURN
-                        || billType == BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN) {
+                if (com.divudi.core.data.inward.InwardMedicineBillTypes.isItemListReturn(billType)) {
                     pharmacyIssueDtosToPatientEncounterNetTotal -= Math.abs(netValue);
                 } else {
                     pharmacyIssueDtosToPatientEncounterNetTotal += Math.abs(netValue);
