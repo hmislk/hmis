@@ -11,5 +11,5 @@
     "Run migration.sql by hand on the database BEFORE deploying a build that maps these fields. The migration page only gets this file in that same build, so it cannot run this step first.",
     "Idempotent; changes no data. Every new column is nullable (flags and amounts default to 0)."
   ],
-  "rollbackNotes": ["rollback.sql drops the added columns and the ADMISSIONCHARGEITEM table. Values saved in them are lost."]
+  "rollbackNotes": ["rollback.sql changes nothing: the columns and table may have existed before this migration and hold data. Drop them by hand only after checking."]
 }
