@@ -110,15 +110,22 @@ public class ApiKeyController implements Serializable {
     }
 
     // API key hardening
-    public WebUser resolveConfigKeyOwner(ApiKey apiKey) {
+    public WebUser resolveAdminKeyOwner(ApiKey apiKey) {
         if (apiKey == null || apiKey.isRetired()
-                || apiKey.getKeyType() != ApiKeyType.Config
                 || apiKey.getDateOfExpiary() == null
                 || apiKey.getDateOfExpiary().before(new Date())) {
             return null;
         }
         WebUser owner = apiKey.getWebUser();
         return isActiveAdminUser(owner) ? owner : null;
+    }
+
+    // API key hardening
+    public WebUser resolveConfigKeyOwner(ApiKey apiKey) {
+        if (apiKey == null || apiKey.getKeyType() != ApiKeyType.Config) {
+            return null;
+        }
+        return resolveAdminKeyOwner(apiKey);
     }
 
     public void listMyApiKeys() {

@@ -101,4 +101,37 @@ class ApiKeyControllerTest {
         k.setKeyType(ApiKeyType.Finance);
         assertNull(controllerWithAdmin(true).resolveConfigKeyOwner(k));
     }
+
+    private static ApiKey keyOfType(ApiKeyType t, WebUser owner, boolean retired, long expiryOffsetMs) {
+        ApiKey k = configKey(owner, retired, expiryOffsetMs);
+        k.setKeyType(t);
+        return k;
+    }
+
+    @Test
+    void adminOwnerIsAcceptedForEveryKeyType() {
+        for (ApiKeyType t : ApiKeyType.values()) {
+            WebUser owner = new WebUser();
+            assertSame(owner, controllerWithAdmin(true).resolveAdminKeyOwner(keyOfType(t, owner, false, 100000)), t.name());
+        }
+    }
+
+    @Test
+    void nonAdminOwnerIsRejectedForEveryKeyType() {
+        for (ApiKeyType t : ApiKeyType.values()) {
+            assertNull(controllerWithAdmin(false).resolveAdminKeyOwner(keyOfType(t, new WebUser(), false, 100000)), t.name());
+        }
+    }
+
+    @Test
+    void adminCheckRejectsRetiredExpiredNoExpiryNoOwnerAndNull() {
+        ApiKeyController c = controllerWithAdmin(true);
+        assertNull(c.resolveAdminKeyOwner(keyOfType(ApiKeyType.General, new WebUser(), true, 100000)));
+        assertNull(c.resolveAdminKeyOwner(keyOfType(ApiKeyType.Finance, new WebUser(), false, -100000)));
+        ApiKey noExpiry = keyOfType(ApiKeyType.Token, new WebUser(), false, 100000);
+        noExpiry.setDateOfExpiary(null);
+        assertNull(c.resolveAdminKeyOwner(noExpiry));
+        assertNull(c.resolveAdminKeyOwner(keyOfType(ApiKeyType.General, null, false, 100000)));
+        assertNull(c.resolveAdminKeyOwner(null));
+    }
 }
