@@ -1909,6 +1909,15 @@ public class CashRecieveBillController implements Serializable {
     }
 
     private void updateSettlingCreditBillSettledValues(BillItem billItemWithReferanceToCreditBill) {
+        Bill commitment = billItemWithReferanceToCreditBill.getReferenceBill();
+        // An inpatient company commitment is read and saved under the final bill lock (#26159).
+        getBillBean().runUnderFinalBillLockOfCommitment(commitment,
+                () -> updateSettlingCreditBillSettledValuesLocked(billItemWithReferanceToCreditBill));
+        // After the receipt has committed, recount the final bill and company shares (#26159).
+        getBillBean().recountFinalBillAfterCompanyReceipt(billItemWithReferanceToCreditBill.getReferenceBill());
+    }
+
+    private void updateSettlingCreditBillSettledValuesLocked(BillItem billItemWithReferanceToCreditBill) {
         // Work on a fresh copy of the reference bill, not the copy held in this session bean
         // since the bill was selected, so other payments are never overwritten.
         Bill referenceBill = billItemWithReferanceToCreditBill.getReferenceBill();

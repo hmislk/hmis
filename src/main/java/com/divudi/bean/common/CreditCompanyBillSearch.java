@@ -758,6 +758,14 @@ public class CreditCompanyBillSearch implements Serializable {
     private com.divudi.service.CreditCompanyClaimService creditCompanyClaimService;
 
     private void updateReferenceBill(BillItem cancellationBillItem) {
+        // An inpatient company commitment is read and saved under the final bill lock (#26159).
+        getBillBean().runUnderFinalBillLockOfCommitment(cancellationBillItem.getReferenceBill(),
+                () -> updateReferenceBillLocked(cancellationBillItem));
+        // After the cancel has committed, recount the final bill and company shares (#26159).
+        getBillBean().recountFinalBillAfterCompanyReceipt(cancellationBillItem.getReferenceBill());
+    }
+
+    private void updateReferenceBillLocked(BillItem cancellationBillItem) {
         Bill referenceBill = cancellationBillItem.getReferenceBill();
         if (referenceBill != null && referenceBill.getId() != null) {
             // Fresh copy, so a stale one never writes back an older netTotal (#26159).

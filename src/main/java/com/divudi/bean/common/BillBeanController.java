@@ -2733,6 +2733,65 @@ public class BillBeanController implements Serializable {
         });
     }
 
+    /**
+     * True when {@code bill} is the amount committed to a credit company when
+     * an inpatient final bill was settled, and it points at that final bill (#26159).
+     */
+    public boolean isInwardFinalBillCompanyCommitment(Bill bill) {
+        return bill != null
+                && bill.getBillTypeAtomic() == BillTypeAtomic.INWARD_FINAL_BILL_PAYMENT_BY_CREDIT_COMPANY
+                && bill.getPatientEncounter() != null && bill.getPatientEncounter().getId() != null
+                && bill.getReferenceBill() != null && bill.getReferenceBill().getId() != null;
+    }
+
+    /**
+     * Runs a company receipt or cancel update of a commitment bill under the
+     * per-admission final bill lock when it is an inpatient commitment, so the
+     * read-modify-write cannot interleave with a final bill recount; any other
+     * bill runs the action directly (#26159).
+     */
+    public void runUnderFinalBillLockOfCommitment(Bill commitment, Runnable action) {
+        if (isInwardFinalBillCompanyCommitment(commitment)) {
+            finalBillLockBean.withFinalBillVersionLock(commitment.getPatientEncounter(), action);
+        } else {
+            action.run();
+        }
+    }
+
+    /**
+     * After a credit company receipt or its cancel has been saved on a
+     * commitment bill, recounts the final bill's paid figures and the company
+     * shares, whose floor is what each company has paid (#26159). Reloads the
+     * final bill inside the per-admission lock. Runs after the receipt save has
+     * committed; a failure is logged and never undoes the receipt, and the next
+     * payment, receipt or admin reset recounts again. Does nothing for a bill
+     * that is not an inpatient commitment.
+     */
+    public void recountFinalBillAfterCompanyReceipt(Bill commitmentOrFinalBill) {
+        if (commitmentOrFinalBill == null) {
+            return;
+        }
+        try {
+            if (!isInwardFinalBillCompanyCommitment(commitmentOrFinalBill)) {
+                return;
+            }
+            Long finalBillId = commitmentOrFinalBill.getReferenceBill().getId();
+            finalBillLockBean.withFinalBillVersionLock(commitmentOrFinalBill.getPatientEncounter(), () -> {
+                Bill fresh = getBillFacade().findWithoutCache(finalBillId);
+                if (fresh == null || fresh.isRetired()) {
+                    return null;
+                }
+                getInwardBean().recountFinalBillPaid(fresh);
+                getInwardBean().recountCreditCompanyShares(fresh);
+                getBillFacade().edit(fresh);
+                return null;
+            });
+        } catch (RuntimeException e) {
+            java.util.logging.Logger.getLogger(BillBeanController.class.getName())
+                    .log(java.util.logging.Level.WARNING, "Recount after a credit company receipt failed", e);
+        }
+    }
+
     private FinalBillLinkResult linkToFreshFinalBill(PatientEncounter patientEncounter, Bill bill, boolean refresh) {
         return linkToFreshFinalBill(patientEncounter, bill, refresh, bill == null ? 0 : bill.getNetTotal());
     }
