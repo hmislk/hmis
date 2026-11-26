@@ -4175,7 +4175,8 @@ public class PharmacyBillSearch implements Serializable {
 
                 getBill().setCancelledBill(cb);
                 getBillFacade().edit(getBill());
-                if (getBill().getBillTypeAtomic() == BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEM_PAYMENTS) {
+                if (getBill().getBillTypeAtomic() == BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEM_PAYMENTS
+                        || getBill().getBillTypeAtomic() == BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS) {
                     clearItemRefundFlagsIfNoActiveRefund(getBill());
                 }
 
@@ -4218,9 +4219,19 @@ public class PharmacyBillSearch implements Serializable {
             Map<String, Object> params = new HashMap<>();
             params.put("refundId", cancelledRefundBill.getId());
             // Fresh query, not the lazy bill item list: that list can be stale across requests.
-            List<BillItem> originals = getBillItemFacede().findByJpql(
-                    "SELECT DISTINCT o FROM BillItem sbi JOIN sbi.referanceBillItem tbi JOIN tbi.referanceBillItem o "
-                    + "WHERE sbi.bill.id = :refundId", params);
+            // An items-only refund payment reaches the original through its return item; a
+            // "Return Items and Payments" bill keeps the pre return bill as its reference bill,
+            // and that bill's items point at the original.
+            List<BillItem> originals;
+            if (cancelledRefundBill.getBillTypeAtomic() == BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS) {
+                originals = getBillItemFacede().findByJpql(
+                        "SELECT DISTINCT o FROM Bill f, BillItem ri JOIN ri.referanceBillItem o "
+                        + "WHERE f.id = :refundId AND ri.bill.id = f.referenceBill.id", params);
+            } else {
+                originals = getBillItemFacede().findByJpql(
+                        "SELECT DISTINCT o FROM BillItem sbi JOIN sbi.referanceBillItem tbi JOIN tbi.referanceBillItem o "
+                        + "WHERE sbi.bill.id = :refundId", params);
+            }
             if (originals == null) {
                 return;
             }
@@ -4229,6 +4240,16 @@ public class PharmacyBillSearch implements Serializable {
                 p.put("refundId", cancelledRefundBill.getId());
                 p.put("originalId", original.getId());
                 p.put("bta", BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEM_PAYMENTS);
+                p.put("btaWithItems", BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS);
+                Long othersWithItems = getBillItemFacede().countByJpql(
+                        "SELECT COUNT(ri) FROM Bill f, BillItem ri "
+                        + "WHERE ri.bill.id = f.referenceBill.id "
+                        + "AND ri.retired = false "
+                        + "AND f.id <> :refundId "
+                        + "AND f.cancelled = false "
+                        + "AND f.retired = false "
+                        + "AND f.billTypeAtomic = :btaWithItems "
+                        + "AND ri.referanceBillItem.id = :originalId", p);
                 Long others = getBillItemFacede().countByJpql(
                         "SELECT COUNT(sbi) FROM BillItem sbi "
                         + "WHERE sbi.retired = false "
@@ -4237,10 +4258,10 @@ public class PharmacyBillSearch implements Serializable {
                         + "AND sbi.bill.retired = false "
                         + "AND sbi.bill.billTypeAtomic = :bta "
                         + "AND sbi.referanceBillItem.referanceBillItem.id = :originalId", p);
-                if (others == null) {
+                if (others == null || othersWithItems == null) {
                     continue;
                 }
-                if (PharmacyItemRefundFlags.clearAfterRefundCancelled(original, others)) {
+                if (PharmacyItemRefundFlags.clearAfterRefundCancelled(original, others + othersWithItems)) {
                     getBillItemFacede().edit(original);
                 }
             }

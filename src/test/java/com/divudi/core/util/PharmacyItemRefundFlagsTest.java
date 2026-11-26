@@ -76,4 +76,22 @@ class PharmacyItemRefundFlagsTest {
                 1L, "D1", null, 2L, "n", "c", 1.0, 1.0, "p", false, false, false);
         assertEquals(Boolean.FALSE, none.getRefunded());
     }
+
+    @Test
+    void returnWithPaymentMarksTheReturnedItemAndShowsTheLabel() {
+        BillItem original = new BillItem();
+        BillItem returnItem = new BillItem();
+        returnItem.setReferanceBillItem(original);
+        assertTrue(PharmacyItemRefundFlags.markRefunded(returnItem.getReferanceBillItem()));
+        assertTrue(PharmacyItemRefundFlags.isShownRefunded(original.isRefunded(), null));
+    }
+
+    @Test
+    void cancellingAReturnWithPaymentKeepsTheLabelWhileAnotherRefundIsActive() {
+        BillItem original = flagged();
+        assertFalse(PharmacyItemRefundFlags.clearAfterRefundCancelled(original, 1));
+        assertTrue(original.isRefunded());
+        assertTrue(PharmacyItemRefundFlags.clearAfterRefundCancelled(original, 0));
+        assertFalse(PharmacyItemRefundFlags.isShownRefunded(original.isRefunded(), null));
+    }
 }
