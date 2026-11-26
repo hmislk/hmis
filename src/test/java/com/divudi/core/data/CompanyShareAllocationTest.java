@@ -54,4 +54,39 @@ class CompanyShareAllocationTest {
         // the originals are never changed by a recount
         assertArrayEquals(new double[]{3000.0, 1000.0}, originals, EPS);
     }
+
+    @Test
+    void companyPaidInFullKeepsItsShare() {
+        assertArrayEquals(new double[]{5000.0},
+                CompanyShareAllocation.lowerShares(new double[]{5000.0}, new double[]{5000.0}, 1000.0), EPS);
+    }
+
+    @Test
+    void shareFloorsAtWhatTheCompanyPaid() {
+        assertArrayEquals(new double[]{2000.0},
+                CompanyShareAllocation.lowerShares(new double[]{5000.0}, new double[]{2000.0}, 4000.0), EPS);
+    }
+
+    @Test
+    void reductionSkipsAFullyPaidLastCompanyAndGoesToTheEarlierOne() {
+        assertArrayEquals(new double[]{2000.0, 1000.0},
+                CompanyShareAllocation.lowerShares(new double[]{3000.0, 1000.0},
+                        new double[]{0.0, 1000.0}, 1000.0), EPS);
+    }
+
+    @Test
+    void smallerReductionAfterACancelRestoresFromTheOriginals() {
+        double[] originals = {5000.0};
+        double[] paid = {2000.0};
+        assertArrayEquals(new double[]{2000.0},
+                CompanyShareAllocation.lowerShares(originals, paid, 4000.0), EPS);
+        assertArrayEquals(new double[]{4000.0},
+                CompanyShareAllocation.lowerShares(originals, paid, 1000.0), EPS);
+    }
+
+    @Test
+    void paidAboveTheShareIsCappedAtTheShare() {
+        assertArrayEquals(new double[]{1000.0},
+                CompanyShareAllocation.lowerShares(new double[]{1000.0}, new double[]{9000.0}, 500.0), EPS);
+    }
 }

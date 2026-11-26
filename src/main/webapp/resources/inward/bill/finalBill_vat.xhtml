@@ -476,7 +476,7 @@
                                 <!--DUE AMOUNT-->
                                 <tr>
                                     <td style="text-align: left;font-size: 13px!important;font-weight: bold!important;">
-                                        <h:outputLabel   value="Due Amount" />
+                                        <h:outputLabel   value="#{(cc.attrs.bill.netTotal-cc.attrs.bill.paidAmount) lt 0 ? 'Refund Due' : 'Due Amount'}" />
                                     </td>
                                     <td>
                                         &nbsp;

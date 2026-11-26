@@ -135,7 +135,7 @@
 
                                         <h:outputLabel value="Paid So Far" />
                                         <h:outputLabel value=":" />
-                                        <h:outputText value="#{postFinalBillInwardPaymentController.current.patientEncounter.finalBill.netTotal - postFinalBillInwardPaymentController.liveBalanceDue}">
+                                        <h:outputText value="#{postFinalBillInwardPaymentController.current.patientEncounter.finalBill.netTotal - postFinalBillInwardPaymentController.liveBalance}">
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputText>
                                     </h:panelGrid>
@@ -150,6 +150,18 @@
                                             </h:outputText>
                                         </span>
                                     </div>
+
+                                    <h:panelGroup layout="block" rendered="#{postFinalBillInwardPaymentController.liveBalance lt -0.005}"
+                                                  styleClass="d-flex justify-content-between align-items-center mt-2 p-2 rounded border border-warning bg-warning-subtle">
+                                        <span class="fw-bold text-uppercase">
+                                            <i class="fa fa-money-bill-wave me-1"/> Refund Due
+                                        </span>
+                                        <span class="fw-bold fs-5 text-danger">
+                                            <h:outputText value="#{0 - postFinalBillInwardPaymentController.liveBalance}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputText>
+                                        </span>
+                                    </h:panelGroup>
                                 </div>
 
                                 <div class="row mt-1">

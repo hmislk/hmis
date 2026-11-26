@@ -3442,8 +3442,9 @@ public class InwardBeanController implements Serializable {
      * keeps the share fixed at settle in {@code total}; {@code netTotal} (what
      * the company still owes, read by the company receipt page and the credit
      * reports) is that share lowered by the post final payments the final bill
-     * carries, last company first, never below 0
-     * ({@link CompanyShareAllocation}). A recount, not increments, so the order
+     * carries, last company first, never below 0 and never below what that
+     * company has already paid ({@link CompanyShareAllocation}); the rest is a
+     * patient overpayment (final bill balance below 0). A recount, not increments, so the order
      * of payments and cancels does not matter. An approved final bill carries
      * only the rows created up to its approval time (#23848), the same rule as
      * {@link #getPostFinalPaymentTotalIncludedIn}. Each commitment bill is
@@ -3467,6 +3468,7 @@ public class InwardBeanController implements Serializable {
         commitments.sort(Comparator.comparing(Bill::getId));
         List<Bill> fresh = new ArrayList<>();
         double[] originals = new double[commitments.size()];
+        double[] paid = new double[commitments.size()];
         for (int i = 0; i < commitments.size(); i++) {
             Bill f = getBillFacade().findWithoutCache(commitments.get(i).getId());
             if (f == null) {
@@ -3476,8 +3478,10 @@ public class InwardBeanController implements Serializable {
             // total is the share fixed at settle and nothing else writes it afterwards;
             // a commitment with no total (older data) takes it from netTotal once.
             originals[i] = f.getTotal() > 0 ? f.getTotal() : f.getNetTotal();
+            // paidAmount = settled by company receipts net of cancels (credit receipt and cancel pages)
+            paid[i] = f.getPaidAmount();
         }
-        double[] lowered = CompanyShareAllocation.lowerShares(originals,
+        double[] lowered = CompanyShareAllocation.lowerShares(originals, paid,
                 getPostFinalPaymentTotalIncludedIn(finalBill));
         for (int i = 0; i < fresh.size(); i++) {
             Bill f = fresh.get(i);
