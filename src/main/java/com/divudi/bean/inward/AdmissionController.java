@@ -644,6 +644,11 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
                     break;
                 }
             }
+            // Issue #26077: keep the admission's company in step with the added list
+            if (current != null) {
+                current.setCreditCompany(encounterCreditCompanies.isEmpty()
+                        ? null : encounterCreditCompanies.get(0).getInstitution());
+            }
             encounterCreditCompany = new EncounterCreditCompany();
         }
     }
@@ -827,64 +832,6 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             }
         }
 
-    }
-
-    /**
-     * Returns a list of discharged credit admissions with outstanding credit
-     * balances matching the given query.
-     *
-     * The query matches against BHT number, patient name, or credit company
-     * name. Only admissions with a positive credit balance, payment method set
-     * to credit, and not retired are included.
-     *
-     * @param qry the search string to match against BHT number, patient name,
-     * or credit company name
-     * @return a list of matching admissions with outstanding credit balances
-     */
-    public List<Admission> completeBhtCredit(String qry) {
-        List<Admission> a = null;
-        String sql;
-        HashMap hash = new HashMap();
-        if (qry != null) {
-            sql = "select c from Admission c "
-                    + " where abs(c.creditUsedAmount)-abs(c.creditPaidAmount) >:val  "
-                    + " and c.paymentMethod= :pm "
-                    + " and c.discharged=true "
-                    + " and c.retired=false "
-                    + " and ((c.bhtNo) like :q"
-                    + " or (c.patient.person.name) like :q "
-                    + " or (c.creditCompany.name) like :q ) "
-                    + " order by c.creditCompany.name";
-
-            hash.put("pm", PaymentMethod.Credit);
-            hash.put("val", 0.1);
-            hash.put("q", "%" + qry.toUpperCase() + "%");
-            a = getFacade().findByJpql(sql, hash, 20);
-        }
-        if (a == null) {
-            a = new ArrayList<>();
-        }
-        return a;
-    }
-
-    public List<Admission> getCreditBillsBht(Institution institution) {
-        String sql;
-        HashMap hash = new HashMap();
-
-        sql = "select c from PatientEncounter c "
-                + " where c.retired=false "
-                + " and abs(c.creditUsedAmount)-abs(c.creditPaidAmount) >:val "
-                + " and c.discharged=true "
-                + " and c.paymentMethod=:pm  "
-                + " and c.creditCompany=:ins ";
-
-        hash.put("pm", PaymentMethod.Credit);
-        hash.put("val", 0.1);
-        hash.put("ins", institution);
-        //     hash.put("pm", PaymentMethod.Credit);
-        List<Admission> lst = getFacade().findByJpql(sql, hash);
-
-        return lst;
     }
 
     public List<Bill> getCreditPaymentBillsBht(Institution institution) {
@@ -2454,12 +2401,13 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         }
 
         if (getCurrent().getPaymentMethod() == PaymentMethod.Credit) {
-            if (encounterCreditCompany.getInstitution() != null) {
-                getCurrent().setCreditCompany(encounterCreditCompany.getInstitution());
-                getCurrent().setCreditLimit(encounterCreditCompany.getCreditLimit());
-                getCurrent().setPolicyNo(encounterCreditCompany.getPolicyNo());
-                getCurrent().setReferanceNo(encounterCreditCompany.getReferanceNo());
-                //TO DO - Add credit limit, etc
+            // Issue #26077: a company only selected in Company Name (not added with
+            // Add Credit Company) must not be admitted; the admission's company
+            // comes only from the added list.
+            if (getEncounterCreditCompany().getInstitution() != null || getEncounterCreditCompanies().isEmpty()) {
+                getCurrent().setCreditCompany(null);
+                JsfUtil.addErrorMessage("Please click Add Credit Company, or clear the Company Name");
+                return true;
             }
 
             if (!getEncounterCreditCompanies().isEmpty()) {
@@ -2481,10 +2429,6 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
                 //TO Do - add other fields
             }
 
-            if (getCurrent().getCreditCompany() == null) {
-                JsfUtil.addErrorMessage("Select Credit Company");
-                return true;
-            }
         }
 
         // Rapid / Temp A&E admissions skip the "room is required" check and the

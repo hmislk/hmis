@@ -32,7 +32,7 @@
                             fileName="Report By Referring Doctor"/>  
                     </p:commandButton>
 
-                    <p:panelGrid columns="5" style="min-width: 100%;">
+                    <p:panelGrid columns="5" layout="tabular" style="min-width: 100%;">
                         <h:outputLabel value="From Date"/>
                         <p:calendar id="frmDate" value="#{commonReport.fromDate}" navigator="true"  pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
                         </p:calendar>

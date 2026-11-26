@@ -36,6 +36,7 @@
                                                 icon="fa fa-ban"
                                                 styleClass="ui-button-danger"
                                                 ajax="false"
+                                                disabled="#{pharmacyBillSearch.billACancellationBill}"
                                                 title="Cancel direct purchase"/>
                             </p:toolbarGroup>
                         </p:toolbar>
@@ -64,7 +65,7 @@
 
                         <!-- Bill Items -->
                         <p:panel header="Bill Item Detail">
-                            <p:dataTable rowIndexVar="rowIndex" value="#{pharmacyBillSearch.bill.billItems}" var="bip">
+                            <p:dataTable styleClass="p-datatable-sm" rowIndexVar="rowIndex" value="#{pharmacyBillSearch.bill.billItems}" var="bip">
                                 <p:column>
                                     <f:facet name="header">No</f:facet>
                                     #{rowIndex+1}

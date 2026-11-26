@@ -363,7 +363,7 @@
 
                 <!-- Print config dialog for settle preview -->
                 <p:dialog header="Print Settings" widgetVar="profFeeSettleConfigDialog" modal="true" responsive="true" style="width: 350px;">
-                    <p:ajax event="open" listener="#{inwardProfessionalBillController.loadProfFeeConfig}" update="profFeeSettleConfigForm"/>
+                    <p:ajax event="open" listener="#{inwardProfessionalBillController.loadProfFeeConfig}" update="profFeeSettleConfigForm" resetValues="true" />
                     <h:panelGroup id="profFeeSettleConfigForm" layout="block">
                         <h:panelGrid columns="2" cellpadding="5">
                             <h:selectBooleanCheckbox id="chkA4Settle" value="#{inwardProfessionalBillController.profFeeA4}"/>

@@ -1485,6 +1485,9 @@ public class StoreBillSearch implements Serializable {
     }
 
     public void pharmacyGrnCancel() {
+        if (com.divudi.core.util.CancellationBillCheck.refuse(getBill())) {
+            return;
+        }
         if (getBill() != null && getBill().getId() != null && getBill().getId() != 0) {
             if (pharmacyErrorCheck()) {
                 return;
@@ -1596,6 +1599,9 @@ public class StoreBillSearch implements Serializable {
     }
 
     public void pharmacyPurchaseCancel() {
+        if (com.divudi.core.util.CancellationBillCheck.refuse(getBill())) {
+            return;
+        }
         if (getBill() != null && getBill().getId() != null && getBill().getId() != 0) {
             if (pharmacyErrorCheck()) {
                 return;
@@ -1643,6 +1649,9 @@ public class StoreBillSearch implements Serializable {
     }
 
     public void pharmacyGrnReturnCancel() {
+        if (com.divudi.core.util.CancellationBillCheck.refuse(getBill())) {
+            return;
+        }
         if (getBill() != null && getBill().getId() != null && getBill().getId() != 0) {
             if (pharmacyErrorCheck()) {
                 return;
@@ -2415,6 +2424,10 @@ public class StoreBillSearch implements Serializable {
 
     public void setSelectedBills(List<Bill> selectedBills) {
         this.selectedBills = selectedBills;
+    }
+
+    public boolean isBillACancellationBill() {
+        return com.divudi.core.util.CancellationBillCheck.isCancellationBill(getBill());
     }
 
 }

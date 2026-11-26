@@ -85,6 +85,16 @@ public class NonCashSettlementRulesTest {
     }
 
     @Test
+    public void paymentBlocker_inUnacceptedHandover() {
+        // #24503
+        Bill b = bill(1);
+        WebUser h = user(10);
+        Payment p = payment(7, PaymentMethod.Card, 1, b, h);
+        p.setHandingOverStarted(true);
+        assertNotNull(NonCashSettlementRules.paymentApprovalBlocker(p, b, h));
+    }
+
+    @Test
     public void paymentBlocker_alreadySettled() {
         Bill b = bill(1);
         WebUser h = user(10);

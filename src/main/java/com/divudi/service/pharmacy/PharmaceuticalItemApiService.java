@@ -5,6 +5,7 @@
  */
 package com.divudi.service.pharmacy;
 
+import com.divudi.service.ItemAuditHelper;
 import com.divudi.core.data.DepartmentType;
 import com.divudi.core.data.dto.AmpDto;
 import com.divudi.core.data.dto.AmppDto;
@@ -62,6 +63,8 @@ import java.util.Map;
  */
 @Stateless
 public class PharmaceuticalItemApiService implements Serializable {
+    @EJB
+    private ItemAuditHelper itemAuditHelper;
 
     @EJB
     private VtmFacade vtmFacade;
@@ -422,6 +425,7 @@ public class PharmaceuticalItemApiService implements Serializable {
         }
         setAuditFieldsForCreate(item, user);
         vtmFacade.createAndFlush(item);
+        itemAuditHelper.logCreate(item, user, "API");
         return buildVtmDto(item);
     }
 
@@ -442,6 +446,7 @@ public class PharmaceuticalItemApiService implements Serializable {
         }
         setAuditFieldsForCreate(item, user);
         atmFacade.createAndFlush(item);
+        itemAuditHelper.logCreate(item, user, "API");
         return buildAtmDto(item);
     }
 
@@ -470,6 +475,7 @@ public class PharmaceuticalItemApiService implements Serializable {
         }
         setAuditFieldsForCreate(item, user);
         vmpFacade.createAndFlush(item);
+        itemAuditHelper.logCreate(item, user, "API");
         return buildVmpDto(item);
     }
 
@@ -484,6 +490,7 @@ public class PharmaceuticalItemApiService implements Serializable {
         }
         setAuditFieldsForCreate(item, user);
         ampFacade.createAndFlush(item);
+        itemAuditHelper.logCreate(item, user, "API");
         return buildAmpDto(item);
     }
 
@@ -498,6 +505,7 @@ public class PharmaceuticalItemApiService implements Serializable {
         }
         setAuditFieldsForCreate(item, user);
         vmppFacade.createAndFlush(item);
+        itemAuditHelper.logCreate(item, user, "API");
         return buildVmppDto(item);
     }
 
@@ -545,12 +553,22 @@ public class PharmaceuticalItemApiService implements Serializable {
 
         setAuditFieldsForCreate(item, user);
         amppFacade.createAndFlush(item);
+        itemAuditHelper.logCreate(item, user, "API");
         return buildAmppDto(item);
     }
 
     // ==================== UPDATE ====================
 
     public Object updateItem(String type, Long id, String requestJson, WebUser user,
+                             com.google.gson.Gson gson) throws Exception {
+        // Name fields as stored before the update is applied (audit)
+        Map<String, Object> beforeNames = itemAuditHelper.snapshotFromDb(id);
+        Object result = updateItemInternal(type, id, requestJson, user, gson);
+        itemAuditHelper.logUpdateById(beforeNames, id, user, "API");
+        return result;
+    }
+
+    private Object updateItemInternal(String type, Long id, String requestJson, WebUser user,
                              com.google.gson.Gson gson) throws Exception {
         if (id == null) {
             throw new Exception("Item ID is required");
@@ -1176,6 +1194,7 @@ public class PharmaceuticalItemApiService implements Serializable {
             v.setName(vmp.getName() + " (" + dblValue + " " + unitName + ")");
             setAuditFieldsForCreate(v, user);
             vmppFacade.createAndFlush(v);
+            itemAuditHelper.logCreate(v, user, "API");
         }
         return v;
     }

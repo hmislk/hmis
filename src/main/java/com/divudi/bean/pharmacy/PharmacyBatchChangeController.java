@@ -9,12 +9,15 @@ import com.divudi.bean.common.ConfigOptionController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.WebUserController;
 import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.Department;
+import com.divudi.core.entity.WebUser;
 import com.divudi.core.entity.pharmacy.Amp;
 import com.divudi.core.entity.pharmacy.ItemBatch;
 import com.divudi.core.entity.pharmacy.Stock;
 import com.divudi.core.facade.ItemBatchFacade;
 import com.divudi.core.facade.StockFacade;
 import com.divudi.core.util.JsfUtil;
+import com.divudi.ejb.PharmacyBean;
 import com.divudi.service.pharmacy.PharmacyBatchChangeException;
 import com.divudi.service.pharmacy.PharmacyBatchChangeService;
 import java.io.Serializable;
@@ -57,6 +60,8 @@ public class PharmacyBatchChangeController implements Serializable {
     private ItemBatchFacade itemBatchFacade;
     @EJB
     private PharmacyBatchChangeService pharmacyBatchChangeService;
+    @EJB
+    private PharmacyBean pharmacyBean;
 
     private Amp amp;
     private List<Stock> stocks;
@@ -157,8 +162,15 @@ public class PharmacyBatchChangeController implements Serializable {
             return;
         }
         try {
-            bill = pharmacyBatchChangeService.changeBatch(selectedStock.getId(), targetBatchId, qty, comment,
-                    sessionController.getLoggedUser(), sessionController.getDepartment());
+            // Take the PharmacyBean lock before the save's transaction locks any stock row (#26057).
+            final Long sourceStockId = selectedStock.getId();
+            final Long targetId = targetBatchId;
+            final double moveQty = qty;
+            final String reason = comment;
+            final WebUser user = sessionController.getLoggedUser();
+            final Department department = sessionController.getDepartment();
+            bill = pharmacyBean.runStockSave(() -> pharmacyBatchChangeService.changeBatch(
+                    sourceStockId, targetId, moveQty, reason, user, department));
             printPreview = true;
             JsfUtil.addSuccessMessage("Batch changed successfully.");
         } catch (PharmacyBatchChangeException e) {

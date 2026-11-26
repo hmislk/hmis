@@ -5,6 +5,8 @@
  */
 package com.divudi.service.inward;
 
+import com.divudi.service.ItemAuditHelper;
+import com.divudi.service.ItemApiValidationException;
 import com.divudi.core.data.DepartmentType;
 import com.divudi.core.data.dto.timeditem.TimedItemCreateRequestDTO;
 import com.divudi.core.data.dto.timeditem.TimedItemFeeCreateRequestDTO;
@@ -53,6 +55,8 @@ import java.util.Set;
  */
 @Stateless
 public class TimedItemApiService implements Serializable {
+    @EJB
+    private ItemAuditHelper itemAuditHelper;
 
     @EJB
     private TimedItemFacade timedItemFacade;
@@ -110,7 +114,7 @@ public class TimedItemApiService implements Serializable {
             try {
                 params.put("departmentType", DepartmentType.valueOf(departmentType.trim()));
             } catch (IllegalArgumentException e) {
-                throw new Exception("Invalid departmentType: " + departmentType);
+                throw new ItemApiValidationException("Invalid departmentType: " + departmentType);
             }
         }
 
@@ -119,7 +123,7 @@ public class TimedItemApiService implements Serializable {
             try {
                 params.put("inwardChargeType", InwardChargeType.valueOf(inwardChargeType.trim()));
             } catch (IllegalArgumentException e) {
-                throw new Exception("Invalid inwardChargeType: " + inwardChargeType);
+                throw new ItemApiValidationException("Invalid inwardChargeType: " + inwardChargeType);
             }
         }
 
@@ -184,21 +188,21 @@ public class TimedItemApiService implements Serializable {
 
     public TimedItemResponseDTO createTimedItem(TimedItemCreateRequestDTO request, WebUser user) throws Exception {
         if (request == null || !request.isValid()) {
-            throw new Exception("Valid create request required (name, departmentType, inwardChargeType are required)");
+            throw new ItemApiValidationException("Valid create request required (name, departmentType, inwardChargeType are required)");
         }
 
         DepartmentType deptType;
         try {
             deptType = DepartmentType.valueOf(request.getDepartmentType().trim());
         } catch (IllegalArgumentException e) {
-            throw new Exception("Invalid departmentType: " + request.getDepartmentType());
+            throw new ItemApiValidationException("Invalid departmentType: " + request.getDepartmentType());
         }
 
         InwardChargeType chargeType;
         try {
             chargeType = InwardChargeType.valueOf(request.getInwardChargeType().trim());
         } catch (IllegalArgumentException e) {
-            throw new Exception("Invalid inwardChargeType: " + request.getInwardChargeType());
+            throw new ItemApiValidationException("Invalid inwardChargeType: " + request.getInwardChargeType());
         }
 
         TimedItem item = new TimedItem();
@@ -222,7 +226,7 @@ public class TimedItemApiService implements Serializable {
         if (request.getDepartmentId() != null) {
             Department dept = departmentFacade.find(request.getDepartmentId());
             if (dept == null) {
-                throw new Exception("Department not found with ID: " + request.getDepartmentId());
+                throw new ItemApiValidationException("Department not found with ID: " + request.getDepartmentId());
             }
             item.setDepartment(dept);
         }
@@ -230,7 +234,7 @@ public class TimedItemApiService implements Serializable {
         if (request.getInstitutionId() != null) {
             Institution inst = institutionFacade.find(request.getInstitutionId());
             if (inst == null) {
-                throw new Exception("Institution not found with ID: " + request.getInstitutionId());
+                throw new ItemApiValidationException("Institution not found with ID: " + request.getInstitutionId());
             }
             item.setInstitution(inst);
         }
@@ -245,6 +249,7 @@ public class TimedItemApiService implements Serializable {
         // Flush so the IDENTITY id is assigned now: a plain persist leaves it
         // null until commit, and the create response would omit "id" (#24143).
         timedItemFacade.createAndFlush(item);
+        itemAuditHelper.logCreate(item, user, "API");
 
         // Self-references set after initial persist (ID now available)
         item.setBilledAs(item);
@@ -260,10 +265,11 @@ public class TimedItemApiService implements Serializable {
 
     public TimedItemResponseDTO updateTimedItem(Long id, TimedItemUpdateRequestDTO request, WebUser user) throws Exception {
         if (request == null || !request.isValid()) {
-            throw new Exception("Valid update request required (at least one field must be provided)");
+            throw new ItemApiValidationException("Valid update request required (at least one field must be provided)");
         }
 
         TimedItem item = loadAndValidate(id);
+        Map<String, Object> beforeNames = ItemAuditHelper.snapshot(item);
 
         if (request.getName() != null && !request.getName().trim().isEmpty()) {
             item.setName(request.getName().trim());
@@ -281,14 +287,14 @@ public class TimedItemApiService implements Serializable {
             try {
                 item.setDepartmentType(DepartmentType.valueOf(request.getDepartmentType().trim()));
             } catch (IllegalArgumentException e) {
-                throw new Exception("Invalid departmentType: " + request.getDepartmentType());
+                throw new ItemApiValidationException("Invalid departmentType: " + request.getDepartmentType());
             }
         }
         if (request.getInwardChargeType() != null && !request.getInwardChargeType().trim().isEmpty()) {
             try {
                 item.setInwardChargeType(InwardChargeType.valueOf(request.getInwardChargeType().trim()));
             } catch (IllegalArgumentException e) {
-                throw new Exception("Invalid inwardChargeType: " + request.getInwardChargeType());
+                throw new ItemApiValidationException("Invalid inwardChargeType: " + request.getInwardChargeType());
             }
         }
         if (request.getInactive() != null) {
@@ -297,14 +303,14 @@ public class TimedItemApiService implements Serializable {
         if (request.getDepartmentId() != null) {
             Department dept = departmentFacade.find(request.getDepartmentId());
             if (dept == null) {
-                throw new Exception("Department not found with ID: " + request.getDepartmentId());
+                throw new ItemApiValidationException("Department not found with ID: " + request.getDepartmentId());
             }
             item.setDepartment(dept);
         }
         if (request.getInstitutionId() != null) {
             Institution inst = institutionFacade.find(request.getInstitutionId());
             if (inst == null) {
-                throw new Exception("Institution not found with ID: " + request.getInstitutionId());
+                throw new ItemApiValidationException("Institution not found with ID: " + request.getInstitutionId());
             }
             item.setInstitution(inst);
         }
@@ -315,6 +321,7 @@ public class TimedItemApiService implements Serializable {
         item.setEditer(user);
         item.setEditedAt(Calendar.getInstance().getTime());
         timedItemFacade.edit(item);
+        itemAuditHelper.logUpdate(beforeNames, item, user, "API");
 
         List<TimedItemFee> fees = fetchFees(item);
         return buildResponseDTO(item, fees, "TimedItem updated successfully");
@@ -342,7 +349,7 @@ public class TimedItemApiService implements Serializable {
     public TimedItemResponseDTO restoreTimedItem(Long id, WebUser user) throws Exception {
         TimedItem item = loadAllowingRetired(id);
         if (!item.isRetired()) {
-            throw new Exception("TimedItem with ID " + id + " is not retired");
+            throw new ItemApiValidationException("TimedItem with ID " + id + " is not retired");
         }
         item.setRetired(false);
         item.setRetiredAt(null);
@@ -396,10 +403,10 @@ public class TimedItemApiService implements Serializable {
 
     public TimedItemResponseDTO addFee(Long timedItemId, TimedItemFeeCreateRequestDTO request, WebUser user) throws Exception {
         if (request == null || request.getName() == null || request.getName().trim().isEmpty()) {
-            throw new Exception("Valid fee request required (name is required)");
+            throw new ItemApiValidationException("Valid fee request required (name is required)");
         }
         if (request.getFee() < 0) {
-            throw new Exception("Fee must be a non-negative value");
+            throw new ItemApiValidationException("Fee must be a non-negative value");
         }
 
         TimedItem item = loadAndValidate(timedItemId);
@@ -440,7 +447,7 @@ public class TimedItemApiService implements Serializable {
     public TimedItemResponseDTO updateFee(Long timedItemId, Long feeId,
             TimedItemFeeUpdateRequestDTO request, WebUser user) throws Exception {
         if (request == null || !request.isValid()) {
-            throw new Exception("Valid update request required (at least one field must be provided)");
+            throw new ItemApiValidationException("Valid update request required (at least one field must be provided)");
         }
 
         TimedItem item = loadAndValidate(timedItemId);
@@ -451,13 +458,13 @@ public class TimedItemApiService implements Serializable {
         }
         if (request.getFee() != null) {
             if (request.getFee() < 0) {
-                throw new Exception("Fee must be a non-negative value");
+                throw new ItemApiValidationException("Fee must be a non-negative value");
             }
             fee.setFee(request.getFee());
         }
         if (request.getFfee() != null) {
             if (request.getFfee() < 0) {
-                throw new Exception("Foreigner fee must be a non-negative value");
+                throw new ItemApiValidationException("Foreigner fee must be a non-negative value");
             }
             fee.setFfee(request.getFfee());
         }
@@ -519,17 +526,17 @@ public class TimedItemApiService implements Serializable {
         TimedItem item = loadAndValidate(timedItemId);
 
         if (feeId == null) {
-            throw new Exception("Fee ID is required");
+            throw new ItemApiValidationException("Fee ID is required");
         }
         TimedItemFee fee = timedItemFeeFacade.find(feeId);
         if (fee == null) {
-            throw new Exception("TimedItemFee not found with ID: " + feeId);
+            throw new ItemApiValidationException("TimedItemFee not found with ID: " + feeId);
         }
         if (fee.getItem() == null || !fee.getItem().getId().equals(item.getId())) {
-            throw new Exception("Fee with ID " + feeId + " does not belong to TimedItem with ID " + item.getId());
+            throw new ItemApiValidationException("Fee with ID " + feeId + " does not belong to TimedItem with ID " + item.getId());
         }
         if (!fee.isRetired()) {
-            throw new Exception("TimedItemFee with ID " + feeId + " is not retired");
+            throw new ItemApiValidationException("TimedItemFee with ID " + feeId + " is not retired");
         }
 
         // The slot this fee used to occupy may have been taken while it was retired.
@@ -689,7 +696,7 @@ public class TimedItemApiService implements Serializable {
     private TimedItemCategory resolveCategory(Long categoryId) throws Exception {
         Category category = categoryFacade.find(categoryId);
         if (category == null || !(category instanceof TimedItemCategory) || category.isRetired()) {
-            throw new Exception("TimedItemCategory not found with ID: " + categoryId);
+            throw new ItemApiValidationException("TimedItemCategory not found with ID: " + categoryId);
         }
         return (TimedItemCategory) category;
     }
@@ -697,7 +704,7 @@ public class TimedItemApiService implements Serializable {
     private TimedItem loadAndValidate(Long id) throws Exception {
         TimedItem item = loadAllowingRetired(id);
         if (item.isRetired()) {
-            throw new Exception("TimedItem with ID " + id + " is retired");
+            throw new ItemApiValidationException("TimedItem with ID " + id + " is retired");
         }
         return item;
     }
@@ -705,28 +712,28 @@ public class TimedItemApiService implements Serializable {
     /** Load without rejecting a retired row — for reads that opted in, and for restore. */
     private TimedItem loadAllowingRetired(Long id) throws Exception {
         if (id == null) {
-            throw new Exception("TimedItem ID is required");
+            throw new ItemApiValidationException("TimedItem ID is required");
         }
         TimedItem item = timedItemFacade.find(id);
         if (item == null) {
-            throw new Exception("TimedItem not found with ID: " + id);
+            throw new ItemApiValidationException("TimedItem not found with ID: " + id);
         }
         return item;
     }
 
     private TimedItemFee loadAndValidateFee(Long feeId, TimedItem item) throws Exception {
         if (feeId == null) {
-            throw new Exception("Fee ID is required");
+            throw new ItemApiValidationException("Fee ID is required");
         }
         TimedItemFee fee = timedItemFeeFacade.find(feeId);
         if (fee == null) {
-            throw new Exception("TimedItemFee not found with ID: " + feeId);
+            throw new ItemApiValidationException("TimedItemFee not found with ID: " + feeId);
         }
         if (fee.isRetired()) {
-            throw new Exception("TimedItemFee with ID " + feeId + " is already retired");
+            throw new ItemApiValidationException("TimedItemFee with ID " + feeId + " is already retired");
         }
         if (fee.getItem() == null || !fee.getItem().getId().equals(item.getId())) {
-            throw new Exception("Fee with ID " + feeId + " does not belong to TimedItem with ID " + item.getId());
+            throw new ItemApiValidationException("Fee with ID " + feeId + " does not belong to TimedItem with ID " + item.getId());
         }
         return fee;
     }

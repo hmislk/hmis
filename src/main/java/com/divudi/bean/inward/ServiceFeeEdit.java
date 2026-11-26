@@ -175,7 +175,7 @@ public class ServiceFeeEdit implements Serializable {
                 && encounter.getCurrentPatientRoom().getRoomFacilityCharge() != null)
                 ? encounter.getCurrentPatientRoom().getRoomFacilityCharge().getRoomCategory()
                 : null;
-        PriceMatrix priceMatrix = getPriceMatrixController().fetchInwardMargin(billItem, billFee.getFeeGrossValue(), billItem.getBill().getFromDepartment(), encounter.getPaymentMethod(), null, encounter.getAdmissionType(), roomCategory);
+        PriceMatrix priceMatrix = getPriceMatrixController().fetchInwardMargin(billItem, billFee.getFeeGrossValue(), billItem.getBill().getFromDepartment(), encounter.getPaymentMethod(), null, getInwardBean().admissionTypeAtDate(encounter, billItem.getBill().getCreatedAt()), roomCategory);
 
         getInwardBean().updateBillItemMargin(billItem, billFee.getFeeGrossValue(), encounter, billItem.getBill().getFromDepartment(), priceMatrix);
 

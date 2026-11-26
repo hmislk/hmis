@@ -19,6 +19,7 @@ user-invocable: true
 3. **COMPONENT REFERENCES**: Use `p:resolveFirstComponentWithId` for updates: `update=":#{p:resolveFirstComponentWithId('componentId',view).clientId}"`
 4. **NO CSS/jQuery SELECTORS**: NEVER use `@(.class)`, `@(#id)`, `@parent` in `update` or `process` attributes. Use `@this`, `@form`, explicit IDs, or `:#{p:resolveFirstComponentWithId(...)}`
 5. **`empty` IS A RESERVED EL KEYWORD**: `#{bean.list.empty}` fails with "Error Parsing" (HTTP 500). Use `#{empty bean.list}`, `#{bean.list.size() gt 0}` or call `#{bean.isEmpty()}`
+6. **ROW ID MUST MATCH WHAT WAS RENDERED**: `action="#{bean.method(row.id)}"` is resolved against the server-side list at submit time, so a changed list can hand you another row. When the id must match the rendered row, pass it with `<f:param name="rowId" value="#{row.id}"/>` and read it from the request parameters. `f:param` alone does not cover a row that vanished after the list changed; check the row still exists and show a message if not
 
 ## Wrong vs Correct
 

@@ -156,16 +156,16 @@ public class InwardDiscountMatrixApi {
                 }
             } else if ("service".equals(scope)) {
                 jpql.append(" and a.inwardChargeType is null");
-                jpql.append(" and (type(a.category) = :svc"
-                        + " or type(a.category) = :sub"
-                        + " or type(a.category) = :inv"
-                        + " or a.category is null)");
+                jpql.append(" and (type(cat) = :svc"
+                        + " or type(cat) = :sub"
+                        + " or type(cat) = :inv"
+                        + " or cat is null)");
                 params.put("svc", ServiceCategory.class);
                 params.put("sub", ServiceSubCategory.class);
                 params.put("inv", InvestigationCategory.class);
             } else if ("pharmacy".equals(scope)) {
                 jpql.append(" and a.inwardChargeType is null");
-                jpql.append(" and (type(a.category) = :pharm or a.category is null)");
+                jpql.append(" and (type(cat) = :pharm or cat is null)");
                 params.put("pharm", PharmaceuticalItemCategory.class);
             } else if (scope != null && !scope.isEmpty()) {
                 return errorResponse("Invalid scope. Use 'service', 'pharmacy' or 'room'.", 400);

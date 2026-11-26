@@ -210,6 +210,14 @@ public class PharmacyConfigController implements Serializable {
     private boolean opdDoctorPaymentHideDetails;
     private boolean opdDoctorPaymentHideFiveFiveHeader;
 
+    // Inward Doctor Payment format tabs paper settings (issue #25999), used only when
+    // 'Inward Doctor Payment - Show Bill Format Tabs and Paper Settings' is on
+    private boolean inwardDoctorPaymentTabsA4Paper;
+    private boolean inwardDoctorPaymentTabsFiveFivePaper;
+    private boolean inwardDoctorPaymentTabsPosPaper;
+    private boolean inwardDoctorPaymentHideDetails;
+    private boolean inwardDoctorPaymentHideFiveFiveHeader;
+
     // Inward BHT Direct Issue Bill Settings
     private boolean bhtIssuePosPaper;
     private boolean bhtIssueFiveFivePaper;
@@ -432,6 +440,13 @@ public class PharmacyConfigController implements Serializable {
         opdDoctorPaymentPosPaper = configOptionApplicationController.getBooleanValueByKey("OPD Doctor payment bill is POS paper", false);
         opdDoctorPaymentHideDetails = configOptionApplicationController.getBooleanValueByKey("Hide the details on the OPD Doctor Payment Bill", false);
         opdDoctorPaymentHideFiveFiveHeader = configOptionApplicationController.getBooleanValueByKey("Hide the Header Details on the OPD Doctor Payment 5x5 Bill", false);
+
+        // Inward Doctor Payment format tabs paper settings (issue #25999)
+        inwardDoctorPaymentTabsA4Paper = configOptionApplicationController.getBooleanValueByKey("Inward Doctor Payment Tabs - Paper is A4", true);
+        inwardDoctorPaymentTabsFiveFivePaper = configOptionApplicationController.getBooleanValueByKey("Inward Doctor Payment Tabs - Paper is Five Five", false);
+        inwardDoctorPaymentTabsPosPaper = configOptionApplicationController.getBooleanValueByKey("Inward Doctor Payment Tabs - Paper is POS", false);
+        inwardDoctorPaymentHideDetails = configOptionApplicationController.getBooleanValueByKey("Hide the details on the Inward Doctor Payment Bill", false);
+        inwardDoctorPaymentHideFiveFiveHeader = configOptionApplicationController.getBooleanValueByKey("Hide the Header Details on the Inward Doctor Payment 5x5 Bill", false);
 
         // Inward BHT Direct Issue Bill Settings
         bhtIssuePosPaper = configOptionController.getBooleanValueByKey("Pharmacy Inward Direct Issue Bill is POS Paper", false);
@@ -993,6 +1008,28 @@ public class PharmacyConfigController implements Serializable {
 
         } catch (Exception e) {
             JsfUtil.addErrorMessage("Error saving OPD Doctor Payment configuration: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Save the paper types of the Inward Doctor Payment format tabs (issue #25999).
+     */
+    public void saveInwardDoctorPaymentTabsConfig() {
+        if (!inwardDoctorPaymentTabsA4Paper && !inwardDoctorPaymentTabsFiveFivePaper && !inwardDoctorPaymentTabsPosPaper) {
+            // Refuse: with no paper type every format tab prints nothing. Nothing is saved.
+            JsfUtil.addErrorMessage("Select at least one paper type.");
+            return;
+        }
+        try {
+            configOptionApplicationController.setBooleanValueByKey("Inward Doctor Payment Tabs - Paper is A4", inwardDoctorPaymentTabsA4Paper);
+            configOptionApplicationController.setBooleanValueByKey("Inward Doctor Payment Tabs - Paper is Five Five", inwardDoctorPaymentTabsFiveFivePaper);
+            configOptionApplicationController.setBooleanValueByKey("Inward Doctor Payment Tabs - Paper is POS", inwardDoctorPaymentTabsPosPaper);
+            configOptionApplicationController.setBooleanValueByKey("Hide the details on the Inward Doctor Payment Bill", inwardDoctorPaymentHideDetails);
+            configOptionApplicationController.setBooleanValueByKey("Hide the Header Details on the Inward Doctor Payment 5x5 Bill", inwardDoctorPaymentHideFiveFiveHeader);
+            JsfUtil.addSuccessMessage("Inward Doctor Payment paper settings saved");
+            loadCurrentConfig();
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage("Error saving Inward Doctor Payment paper settings: " + e.getMessage());
         }
     }
 
@@ -2079,6 +2116,46 @@ public class PharmacyConfigController implements Serializable {
 
     public void setOpdDoctorPaymentHideDetails(boolean opdDoctorPaymentHideDetails) {
         this.opdDoctorPaymentHideDetails = opdDoctorPaymentHideDetails;
+    }
+
+    public boolean isInwardDoctorPaymentTabsA4Paper() {
+        return inwardDoctorPaymentTabsA4Paper;
+    }
+
+    public void setInwardDoctorPaymentTabsA4Paper(boolean inwardDoctorPaymentTabsA4Paper) {
+        this.inwardDoctorPaymentTabsA4Paper = inwardDoctorPaymentTabsA4Paper;
+    }
+
+    public boolean isInwardDoctorPaymentTabsFiveFivePaper() {
+        return inwardDoctorPaymentTabsFiveFivePaper;
+    }
+
+    public void setInwardDoctorPaymentTabsFiveFivePaper(boolean inwardDoctorPaymentTabsFiveFivePaper) {
+        this.inwardDoctorPaymentTabsFiveFivePaper = inwardDoctorPaymentTabsFiveFivePaper;
+    }
+
+    public boolean isInwardDoctorPaymentTabsPosPaper() {
+        return inwardDoctorPaymentTabsPosPaper;
+    }
+
+    public void setInwardDoctorPaymentTabsPosPaper(boolean inwardDoctorPaymentTabsPosPaper) {
+        this.inwardDoctorPaymentTabsPosPaper = inwardDoctorPaymentTabsPosPaper;
+    }
+
+    public boolean isInwardDoctorPaymentHideDetails() {
+        return inwardDoctorPaymentHideDetails;
+    }
+
+    public void setInwardDoctorPaymentHideDetails(boolean inwardDoctorPaymentHideDetails) {
+        this.inwardDoctorPaymentHideDetails = inwardDoctorPaymentHideDetails;
+    }
+
+    public boolean isInwardDoctorPaymentHideFiveFiveHeader() {
+        return inwardDoctorPaymentHideFiveFiveHeader;
+    }
+
+    public void setInwardDoctorPaymentHideFiveFiveHeader(boolean inwardDoctorPaymentHideFiveFiveHeader) {
+        this.inwardDoctorPaymentHideFiveFiveHeader = inwardDoctorPaymentHideFiveFiveHeader;
     }
 
     public boolean isOpdDoctorPaymentHideFiveFiveHeader() {

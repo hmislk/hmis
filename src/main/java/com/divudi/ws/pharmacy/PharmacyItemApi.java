@@ -1,5 +1,6 @@
 package com.divudi.ws.pharmacy;
 
+import com.divudi.service.ItemAuditHelper;
 import com.divudi.bean.common.ApiKeyController;
 import com.divudi.core.entity.ApiKey;
 import com.divudi.core.entity.Category;
@@ -41,6 +42,8 @@ import javax.ws.rs.core.UriInfo;
 @Path("pharmacy/items")
 @RequestScoped
 public class PharmacyItemApi {
+    @EJB
+    private ItemAuditHelper itemAuditHelper;
 
     @Context
     private HttpServletRequest requestContext;
@@ -147,6 +150,7 @@ public class PharmacyItemApi {
             item.setCreater(user);
             applyRequest(item, req, refs, false);
             pharmaceuticalItemFacade.create(item);
+            itemAuditHelper.logCreate(item, user, "API");
             return Response.status(201).entity(gson.toJson(successData(toDto(item), 201))).build();
         } catch (JsonSyntaxException e) {
             return errorResponse("Invalid JSON format", 400);
@@ -177,11 +181,13 @@ public class PharmacyItemApi {
                     refs.department != null ? refs.department : item.getDepartment(), id);
             if (existing != null) return errorResponse("Pharmacy item name already exists in this institution/department scope", 400);
 
+            Map<String, Object> beforeNames = ItemAuditHelper.snapshot(item);
             item.setName(name);
             item.setEditedAt(new Date());
             item.setEditer(user);
             applyRequest(item, req, refs, true);
             pharmaceuticalItemFacade.edit(item);
+            itemAuditHelper.logUpdate(beforeNames, item, user, "API");
             return successResponse(toDto(item));
         } catch (JsonSyntaxException e) {
             return errorResponse("Invalid JSON format", 400);

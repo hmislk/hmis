@@ -8,6 +8,7 @@
  */
 package com.divudi.bean.common;
 
+import com.divudi.service.ItemAuditHelper;
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.DepartmentType;
 import com.divudi.core.data.FeeType;
@@ -60,6 +61,8 @@ import javax.servlet.http.HttpServletResponse;
 @Named
 @SessionScoped
 public class ServiceController implements Serializable {
+    @EJB
+    private ItemAuditHelper itemAuditHelper;
 
     private static final long serialVersionUID = 1L;
     @Inject
@@ -561,12 +564,15 @@ public class ServiceController implements Serializable {
         itemController.warnIfItemNameDuplicated(getCurrent());
 
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
+            Map<String, Object> beforeNames = itemAuditHelper.snapshotFromDb(getCurrent().getId());
             getFacade().edit(getCurrent());
+            itemAuditHelper.logUpdate(beforeNames, getCurrent(), getSessionController().getLoggedUser(), "UI");
             JsfUtil.addSuccessMessage("Update Successfully");
         } else {
             getCurrent().setCreatedAt(new Date());
             getCurrent().setCreater(getSessionController().getLoggedUser());
             getFacade().create(getCurrent());
+            itemAuditHelper.logCreate(getCurrent(), getSessionController().getLoggedUser(), "UI");
             JsfUtil.addSuccessMessage("Saved Successfully");
         }
 
@@ -614,7 +620,9 @@ public class ServiceController implements Serializable {
                 //////// // System.out.println("3");
                 service.setReportedAs(service);
             }
+            Map<String, Object> beforeNames = itemAuditHelper.snapshotFromDb(service.getId());
             getFacade().edit(service);
+            itemAuditHelper.logUpdate(beforeNames, service, getSessionController().getLoggedUser(), "UI");
             JsfUtil.addSuccessMessage("Saved Old Successfully");
         } else {
             //////// // System.out.println("4");
@@ -626,6 +634,7 @@ public class ServiceController implements Serializable {
                 return;
             } else {
                 getFacade().create(service);
+                itemAuditHelper.logCreate(service, getSessionController().getLoggedUser(), "UI");
             }
 
             if (billedAs == false) {
@@ -890,6 +899,7 @@ public class ServiceController implements Serializable {
         i.setTotalFfee(fee);
         i.setRequestForQuentity(true);
         ejbFacade.create(i);
+        itemAuditHelper.logCreate(i, sessionController.getLoggedUser(), "UI bulk add");
         return i;
     }
 
