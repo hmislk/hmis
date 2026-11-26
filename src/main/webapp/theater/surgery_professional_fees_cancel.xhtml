@@ -81,6 +81,7 @@
                         <p:panel header="Fee Lines" class="mt-3">
                             <p:dataTable value="#{inwardProfessionalBillController.getEncounterComponentsForBill(inwardSearch.bill)}"
                                          var="ec"
+                                         styleClass="p-datatable-sm"
                                          emptyMessage="No fee lines found.">
                                 <p:column headerText="Role">
                                     <h:outputLabel value="#{ec.patientEncounterComponentType.label}"/>
