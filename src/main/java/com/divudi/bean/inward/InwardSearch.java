@@ -1015,6 +1015,12 @@ public class InwardSearch implements Serializable {
         b.setApproveUser(sessionController.getLoggedUser());
         b.setApproveAt(new Date());
         getBillFacade().edit(b);
+        try {
+            billBean.refreshFinalBillAfterApproval(b);
+        } catch (RuntimeException ex) {
+            java.util.logging.Logger.getLogger(InwardSearch.class.getName())
+                    .log(java.util.logging.Level.SEVERE, "Final bill paid amount refresh failed on approval", ex);
+        }
 
         try {
             byte[] snapshotBytes = finalBillPdfSnapshotService.getOrCreateSnapshot(b);

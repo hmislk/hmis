@@ -2713,6 +2713,46 @@ public class BillBeanController implements Serializable {
         });
     }
 
+    /**
+     * Called right after a final bill version's approval time is saved
+     * (#26125). Recomputes the paid amount and balance under the same
+     * per-admission lock the post final payment refresh takes, so a payment
+     * saved before the approval time is counted even when the refresh found
+     * the bill already approved and skipped it. Rows created after the
+     * approval time are left out by
+     * {@link InwardBeanController#getPostFinalPaymentTotalIncludedIn}. Only
+     * the admission's current confirmed final bill carries a paid amount.
+     * The caller's copy is updated with the new figures.
+     */
+    public void refreshFinalBillAfterApproval(Bill approved) {
+        if (approved == null || approved.getId() == null || approved.getPatientEncounter() == null
+                || approved.getPatientEncounter().getId() == null) {
+            return;
+        }
+        PatientEncounter pe = approved.getPatientEncounter();
+        finalBillLockBean.withFinalBillVersionLock(pe, () -> {
+            PatientEncounter fresh = finalBillPatientEncounterFacade.findWithoutCache(pe.getId());
+            if (fresh == null || !fresh.isPaymentFinalized()) {
+                return null;
+            }
+            Bill finalBill = getInwardBean().fetchFinalBill(fresh);
+            if (finalBill == null || !approved.getId().equals(finalBill.getId())) {
+                return null;
+            }
+            Bill stored = getBillFacade().findWithoutCache(approved.getId());
+            if (stored == null || stored.getApproveAt() == null) {
+                return null;
+            }
+            getInwardBean().updateFinalFill(fresh);
+            Bill updated = getBillFacade().findWithoutCache(approved.getId());
+            if (updated != null) {
+                approved.setPaidAmount(updated.getPaidAmount());
+                approved.setBalance(updated.getBalance());
+            }
+            return null;
+        });
+    }
+
     private FinalBillLinkResult linkToFreshFinalBill(PatientEncounter patientEncounter, Bill bill, boolean refresh) {
         return linkToFreshFinalBill(patientEncounter, bill, refresh, bill == null ? 0 : bill.getNetTotal());
     }
