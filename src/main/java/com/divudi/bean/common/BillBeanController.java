@@ -2566,9 +2566,22 @@ public class BillBeanController implements Serializable {
                     return false;
                 }
                 bill.setForwardReferenceBill(finalBill);
-                getBillFacade().edit(bill);
-                if (!finalBill.getBackwardReferenceBills().contains(bill)) {
-                    finalBill.getBackwardReferenceBills().add(bill);
+                // Never merge the caller's payment bill here: it is a detached copy whose
+                // payments and billItems lists may predate rows saved after it was read.
+                // Bill.payments is cascade ALL with orphanRemoval, so the merge would
+                // schedule a DELETE of the saved Payment, and the recount's first query
+                // would flush it (FK from DRAWERENTRY, rollback). Set the link on the
+                // copy this transaction reads, which carries the real collections.
+                Bill linkedBill = bill.getId() == null ? null : getBillFacade().findWithoutCache(bill.getId());
+                if (linkedBill != null) {
+                    linkedBill.setForwardReferenceBill(finalBill);
+                    getBillFacade().edit(linkedBill);
+                } else {
+                    getBillFacade().edit(bill);
+                }
+                Bill linked = linkedBill != null ? linkedBill : bill;
+                if (!finalBill.getBackwardReferenceBills().contains(linked)) {
+                    finalBill.getBackwardReferenceBills().add(linked);
                 }
                 // The paid amount, balance and settled amounts are recounted from the
                 // bills, not added to: the same figures whatever happened before and

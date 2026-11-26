@@ -41,6 +41,10 @@ public class InpatientCreditCompanyPaymentMultiAdmissionFinalBillTest {
     /** Final bill id -> what its bills add up to (what a real recount would read). */
     private Map<Long, FinalBillPaidFigures> billsAddUpTo;
     private List<Bill> recounted;
+    /** Every entity passed to the facade's edit, in order. */
+    private List<Bill> edited;
+    /** What each edit saw: how many bills had been recounted before it. */
+    private List<Integer> recountsBeforeEdit;
 
     @BeforeEach
     void setUp() {
@@ -48,6 +52,8 @@ public class InpatientCreditCompanyPaymentMultiAdmissionFinalBillTest {
         billStore = new HashMap<>();
         billsAddUpTo = new HashMap<>();
         recounted = new ArrayList<>();
+        edited = new ArrayList<>();
+        recountsBeforeEdit = new ArrayList<>();
 
         BillFacade fakeFacade = new BillFacade() {
             @Override
@@ -57,6 +63,8 @@ public class InpatientCreditCompanyPaymentMultiAdmissionFinalBillTest {
 
             @Override
             public void edit(Bill entity) {
+                edited.add(entity);
+                recountsBeforeEdit.add(recounted.size());
                 if (entity != null && entity.getId() != null) {
                     billStore.put(entity.getId(), entity);
                 }
@@ -237,5 +245,24 @@ public class InpatientCreditCompanyPaymentMultiAdmissionFinalBillTest {
                 bill(9003L, BillTypeAtomic.INWARD_PAYMENT, 200.0)));
 
         assertTrue(recounted.isEmpty());
+    }
+
+    @Test
+    @DisplayName("The caller's detached payment bill is never merged; the link goes on the copy read in the transaction (#26152)")
+    void detachedPaymentBillIsNotMerged() {
+        PatientEncounter admission = admissionWithFinalBill(101L, 1001L, 10000.0);
+        billsAddUpTo.put(1001L, FinalBillPaidFigures.of(3000, 0, 0, 0));
+        Bill detached = bill(5001L, BillTypeAtomic.INWARD_PAYMENT, 3000.0);
+        Bill managed = bill(5001L, BillTypeAtomic.INWARD_PAYMENT, 3000.0);
+        billStore.put(5001L, managed);
+
+        assertTrue(billBeanController.updateInwardDipositList(admission, detached));
+
+        assertFalse(edited.stream().anyMatch(e -> e == detached), "the detached copy must not be merged");
+        assertSame(billStore.get(1001L), managed.getForwardReferenceBill());
+        assertSame(billStore.get(1001L), detached.getForwardReferenceBill());
+        // The payment bill's edit is before the recount, but it is the managed copy.
+        assertSame(managed, edited.get(0));
+        assertEquals(1, recounted.size());
     }
 }
