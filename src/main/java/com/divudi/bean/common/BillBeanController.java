@@ -2688,67 +2688,42 @@ public class BillBeanController implements Serializable {
     }
 
     /**
-     * Refreshes the final bill's paid amount and balance after a Post Final
-     * Bill Payment, or its cancellation or refund, is saved (#26125). The
-     * paid amount is recomputed from the database, so a cancelled payment
-     * drops out. An approved final bill is frozen (#23848) and is left alone;
-     * the same rule is in {@link InwardBeanController#getPostFinalPaymentTotalIncludedIn}.
-     * Same per-admission lock as the other final bill updates.
+     * Changes the final bill's paid amount and balance by the amount of one
+     * saved Post Final Bill Payment row, or its cancellation or refund row
+     * (negative netTotal) (#26125). Same idea as
+     * {@link #updateInwardDipositList(PatientEncounter, Bill, double)}, but the
+     * row is NOT linked as a backward reference bill: those rows print as the
+     * "paid by" lines of the final bill, and the settle and confirm paths
+     * rebuild them from inward payments only. Nothing is recounted, so other
+     * paid amounts (such as company receipts) are not touched. An approved
+     * final bill is frozen (#23848): it takes the row only if the row was
+     * created up to its approval time, the same rule as
+     * {@link InwardBeanController#getPostFinalPaymentTotalIncludedIn}. Call
+     * once per saved row. Same per-admission lock as the other final bill
+     * updates.
      */
-    public void refreshFinalBillAfterPostFinalPayment(PatientEncounter patientEncounter) {
-        if (patientEncounter == null || patientEncounter.getId() == null) {
+    public void addPostFinalPaymentToFinalBill(PatientEncounter patientEncounter, Bill postFinalRow) {
+        if (patientEncounter == null || patientEncounter.getId() == null || postFinalRow == null) {
             return;
         }
         finalBillLockBean.withFinalBillVersionLock(patientEncounter, () -> {
             PatientEncounter fresh = finalBillPatientEncounterFacade.findWithoutCache(patientEncounter.getId());
-            if (fresh == null || !fresh.isPaymentFinalized()) {
+            if (fresh == null || !fresh.isPaymentFinalized() || fresh.getFinalBill() == null
+                    || fresh.getFinalBill().getId() == null) {
                 return null;
             }
-            Bill finalBill = getInwardBean().fetchFinalBill(fresh);
-            if (finalBill == null || finalBill.getApproveAt() != null) {
+            Bill finalBill = getBillFacade().findWithoutCache(fresh.getFinalBill().getId());
+            if (finalBill == null || finalBill.isCancelled() || finalBill.isRetired()) {
                 return null;
             }
-            getInwardBean().updateFinalFill(fresh);
-            return null;
-        });
-    }
-
-    /**
-     * Called right after a final bill version's approval time is saved
-     * (#26125). Recomputes the paid amount and balance under the same
-     * per-admission lock the post final payment refresh takes, so a payment
-     * saved before the approval time is counted even when the refresh found
-     * the bill already approved and skipped it. Rows created after the
-     * approval time are left out by
-     * {@link InwardBeanController#getPostFinalPaymentTotalIncludedIn}. Only
-     * the admission's current confirmed final bill carries a paid amount.
-     * The caller's copy is updated with the new figures.
-     */
-    public void refreshFinalBillAfterApproval(Bill approved) {
-        if (approved == null || approved.getId() == null || approved.getPatientEncounter() == null
-                || approved.getPatientEncounter().getId() == null) {
-            return;
-        }
-        PatientEncounter pe = approved.getPatientEncounter();
-        finalBillLockBean.withFinalBillVersionLock(pe, () -> {
-            PatientEncounter fresh = finalBillPatientEncounterFacade.findWithoutCache(pe.getId());
-            if (fresh == null || !fresh.isPaymentFinalized()) {
+            if (finalBill.getApproveAt() != null
+                    && (postFinalRow.getCreatedAt() == null
+                    || postFinalRow.getCreatedAt().after(finalBill.getApproveAt()))) {
                 return null;
             }
-            Bill finalBill = getInwardBean().fetchFinalBill(fresh);
-            if (finalBill == null || !approved.getId().equals(finalBill.getId())) {
-                return null;
-            }
-            Bill stored = getBillFacade().findWithoutCache(approved.getId());
-            if (stored == null || stored.getApproveAt() == null) {
-                return null;
-            }
-            getInwardBean().updateFinalFill(fresh);
-            Bill updated = getBillFacade().findWithoutCache(approved.getId());
-            if (updated != null) {
-                approved.setPaidAmount(updated.getPaidAmount());
-                approved.setBalance(updated.getBalance());
-            }
+            finalBill.setPaidAmount(finalBill.getPaidAmount() + postFinalRow.getNetTotal());
+            finalBill.setBalance(finalBill.getNetTotal() - finalBill.getPaidAmount());
+            getBillFacade().edit(finalBill);
             return null;
         });
     }

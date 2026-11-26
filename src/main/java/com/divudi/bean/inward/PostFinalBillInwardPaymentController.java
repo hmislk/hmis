@@ -650,7 +650,7 @@ public class PostFinalBillInwardPaymentController implements Serializable, Contr
             return;
         }
 
-        refreshFinalBillPaidAmount(current.getPatientEncounter());
+        refreshFinalBillPaidAmount(current.getPatientEncounter(), current);
         JsfUtil.addSuccessMessage("Payment Bill Saved");
         paymentMethod = null;
         postFinalPaymentBillsForCurrentEncounter = null;
@@ -808,7 +808,7 @@ public class PostFinalBillInwardPaymentController implements Serializable, Contr
 
         WebUser wb = getCashTransactionBean().saveBillCashOutTransaction(cb, getSessionController().getLoggedUser());
         getSessionController().setLoggedUser(wb);
-        refreshFinalBillPaidAmount(getCurrent().getPatientEncounter());
+        refreshFinalBillPaidAmount(getCurrent().getPatientEncounter(), cb);
         JsfUtil.addSuccessMessage("Cancelled");
 
         printPreview = true;
@@ -889,7 +889,7 @@ public class PostFinalBillInwardPaymentController implements Serializable, Contr
 
         WebUser wb = getCashTransactionBean().saveBillCashOutTransaction(getRefundCurrent(), getSessionController().getLoggedUser());
         getSessionController().setLoggedUser(wb);
-        refreshFinalBillPaidAmount(getRefundCurrent().getPatientEncounter());
+        refreshFinalBillPaidAmount(getRefundCurrent().getPatientEncounter(), getRefundCurrent());
         JsfUtil.addSuccessMessage("Payment Bill Saved");
     }
 
@@ -899,9 +899,9 @@ public class PostFinalBillInwardPaymentController implements Serializable, Contr
      * the reports agree with the receipt (#26125). The payment is already
      * saved at this point, so a failure here is reported and not rolled back.
      */
-    private void refreshFinalBillPaidAmount(PatientEncounter pe) {
+    private void refreshFinalBillPaidAmount(PatientEncounter pe, Bill row) {
         try {
-            getBillBean().refreshFinalBillAfterPostFinalPayment(pe);
+            getBillBean().addPostFinalPaymentToFinalBill(pe, row);
         } catch (RuntimeException e) {
             java.util.logging.Logger.getLogger(PostFinalBillInwardPaymentController.class.getName())
                     .log(java.util.logging.Level.SEVERE, "Final bill paid amount refresh failed after a post final payment", e);
