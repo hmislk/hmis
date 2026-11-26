@@ -50,6 +50,7 @@ import java.util.Calendar;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import javax.ejb.EJB;
@@ -3160,15 +3161,11 @@ public class InwardReportController1 implements Serializable {
         if (wantFinalized) {
             List<Bill> allBills = findCreditCompanyCommitmentBills();
 
+            // A company's receipts count once per admission, whichever version's commitment
+            // bill they sit on (#26163).
+            Map<Long, Double> settledByBillId = findCommitmentSettledAmounts(allBills);
             for (Bill b : allBills) {
-                String settledSql = "Select sum(bi.netValue) from BillItem bi "
-                        + " where bi.retired=false "
-                        + " and bi.referenceBill=:bill "
-                        + " and bi.bill.billTypeAtomic in :types";
-                HashMap<String, Object> settledParams = new HashMap<>();
-                settledParams.put("bill", b);
-                settledParams.put("types", settlementTypes);
-                double settled = BillItemFacade.findDoubleByJpql(settledSql, settledParams);
+                double settled = b.getId() == null ? 0.0 : settledByBillId.getOrDefault(b.getId(), 0.0);
                 b.setPaidAmount(settled);
                 b.setSettledAmountBySponsor(settled);
 
@@ -3179,8 +3176,11 @@ public class InwardReportController1 implements Serializable {
 
                 String lastSettledSql = "Select max(bi.bill.createdAt) from BillItem bi "
                         + " where bi.retired=false "
-                        + " and bi.referenceBill=:bill "
+                        + " and bi.referenceBill.id in :ids "
                         + " and bi.bill.billTypeAtomic in :types";
+                HashMap<String, Object> settledParams = new HashMap<>();
+                settledParams.put("ids", inwardBeanController.fetchCommitmentIdsOfSameCompany(b));
+                settledParams.put("types", settlementTypes);
                 Date lastSettlementDate = getBillItemFacade().findDateByJpql(lastSettledSql, settledParams, TemporalType.TIMESTAMP);
                 b.setTransLastSettlementDate(lastSettlementDate);
 
@@ -3518,6 +3518,31 @@ public class InwardReportController1 implements Serializable {
         if (commitmentRows == null || commitmentRows.isEmpty()) {
             return paid;
         }
+        // A commitment with a company and an encounter shows the company's paid across all its
+        // commitment bills in the admission, counted once: given to the commitments in id order,
+        // each capped by its net total, the last taking any rest (#26163).
+        Map<String, List<Bill>> byCompany = new LinkedHashMap<>();
+        List<Bill> perBill = new ArrayList<>();
+        for (Bill b : commitmentRows) {
+            if (b.getId() != null && b.getCreditCompany() != null && b.getPatientEncounter() != null) {
+                byCompany.computeIfAbsent(b.getPatientEncounter().getId() + ":" + b.getCreditCompany().getId(),
+                        k -> new ArrayList<>()).add(b);
+            } else {
+                perBill.add(b);
+            }
+        }
+        for (List<Bill> group : byCompany.values()) {
+            group.sort(Comparator.comparing(Bill::getId));
+            Bill first = group.get(0);
+            double remaining = inwardBeanController.fetchCompanyPaidAmount(first.getPatientEncounter(), first.getCreditCompany());
+            for (int g = 0; g < group.size(); g++) {
+                Bill b = group.get(g);
+                double share = g == group.size() - 1 ? remaining : Math.min(remaining, b.getNetTotal());
+                paid.put(b.getId(), share);
+                remaining -= share;
+            }
+        }
+        commitmentRows = perBill;
         List<BillTypeAtomic> settlementTypes =
                 BillTypeAtomic.findByCountedServiceType(CountedServiceType.CREDIT_SETTLE_BY_COMPANY);
         int chunk = 500;

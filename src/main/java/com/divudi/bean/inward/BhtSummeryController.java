@@ -3697,12 +3697,12 @@ public class BhtSummeryController implements Serializable {
      */
     private boolean companyShareBelowPaid() {
         if (getPatientEncounter() == null
-                || getPatientEncounter().getPaymentMethod() != PaymentMethod.Credit
-                || creditCompanyAllocations == null) {
+                || getPatientEncounter().getPaymentMethod() != PaymentMethod.Credit) {
             return false;
         }
         java.util.Map<Institution, Double> shares = new java.util.LinkedHashMap<>();
-        for (CreditCompanyAllocation alloc : creditCompanyAllocations) {
+        for (CreditCompanyAllocation alloc : creditCompanyAllocations == null
+                ? new java.util.ArrayList<CreditCompanyAllocation>() : creditCompanyAllocations) {
             if (!alloc.isPatientPortion() && alloc.getCreditCompany() != null) {
                 shares.merge(alloc.getCreditCompany(), alloc.getAllocatedAmount(), Double::sum);
             }
