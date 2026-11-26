@@ -41,4 +41,17 @@ class CompanyShareAllocationTest {
         assertArrayEquals(new double[0], CompanyShareAllocation.lowerShares(new double[0], 500.0), EPS);
         assertArrayEquals(new double[0], CompanyShareAllocation.lowerShares(null, 500.0), EPS);
     }
+
+    @Test
+    void floorThenPartialCancelRestoresSharesFromTheOriginals() {
+        double[] originals = {3000.0, 1000.0};
+        // reduction 3500 floors the last share at 0 and spills 2500 to the earlier one
+        assertArrayEquals(new double[]{500.0, 0.0},
+                CompanyShareAllocation.lowerShares(originals, 3500.0), EPS);
+        // a partial cancel makes the reduction fall to 800: recount from the originals
+        assertArrayEquals(new double[]{3000.0, 200.0},
+                CompanyShareAllocation.lowerShares(originals, 800.0), EPS);
+        // the originals are never changed by a recount
+        assertArrayEquals(new double[]{3000.0, 1000.0}, originals, EPS);
+    }
 }

@@ -1913,7 +1913,7 @@ public class CashRecieveBillController implements Serializable {
         // since the bill was selected, so other payments are never overwritten.
         Bill referenceBill = billItemWithReferanceToCreditBill.getReferenceBill();
         if (referenceBill != null && referenceBill.getId() != null) {
-            Bill fresh = getBillFacade().find(referenceBill.getId());
+            Bill fresh = getBillFacade().findWithoutCache(referenceBill.getId());
             if (fresh != null) {
                 referenceBill = fresh;
                 billItemWithReferanceToCreditBill.setReferenceBill(fresh);
