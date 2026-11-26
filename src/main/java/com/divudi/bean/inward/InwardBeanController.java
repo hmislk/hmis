@@ -4242,6 +4242,81 @@ public class InwardBeanController implements Serializable {
      */
     public void applyInwardDiscountToBillFee(BillFee billFee, Item item, PatientEncounter patientEncounter,
             com.divudi.core.entity.inward.AdmissionType admissionTypeAtBill) {
+        applyInwardDiscountToBillFee(billFee, item, patientEncounter, admissionTypeAtBill, null);
+    }
+
+    /**
+     * Values shared by every fee of one discount run (#17562): the encounter's
+     * single credit company (read once) and the discount percents already looked
+     * up, keyed by everything the lookup depends on. It lives only for one run,
+     * so a change in the matrix is seen on the next run.
+     */
+    public static class DiscountRunCache {
+
+        private boolean creditCompanyRead;
+        private com.divudi.core.entity.Institution creditCompany;
+        private final Map<List<Object>, Double> percents = new HashMap<>();
+
+        public Double percent(List<Object> key, java.util.function.DoubleSupplier loader) {
+            if (key == null) {
+                return loader.getAsDouble();
+            }
+            Double known = percents.get(key);
+            if (known == null) {
+                known = loader.getAsDouble();
+                percents.put(key, known);
+            }
+            return known;
+        }
+
+        int size() {
+            return percents.size();
+        }
+    }
+
+    /**
+     * Memo key for one percent lookup. Null when a part is not saved yet (no id),
+     * so two different unsaved rows are never mistaken for one.
+     */
+    public static List<Object> discountPercentKey(Object bhtType, Object scheme, Object admissionType,
+            Object department, Object item, Object creditCompany) {
+        Object[] parts = {bhtType, scheme, admissionType, department, item, creditCompany};
+        List<Object> key = new ArrayList<>(parts.length);
+        for (Object part : parts) {
+            Object id = null;
+            if (part instanceof com.divudi.core.entity.Item) {
+                id = ((com.divudi.core.entity.Item) part).getId();
+            } else if (part instanceof Department) {
+                id = ((Department) part).getId();
+            } else if (part instanceof com.divudi.core.entity.Institution) {
+                id = ((com.divudi.core.entity.Institution) part).getId();
+            } else if (part instanceof com.divudi.core.entity.inward.AdmissionType) {
+                id = ((com.divudi.core.entity.inward.AdmissionType) part).getId();
+            } else if (part instanceof com.divudi.core.entity.PaymentScheme) {
+                id = ((com.divudi.core.entity.PaymentScheme) part).getId();
+            } else {
+                key.add(part);
+                continue;
+            }
+            if (id == null) {
+                if (part != null) {
+                    return null;
+                }
+                key.add(null);
+            } else {
+                key.add(part.getClass().getName() + "#" + id);
+            }
+        }
+        return key;
+    }
+
+    /**
+     * As the four-argument form; a non-null cache supplies the credit company and
+     * remembers discount percents for the rest of the run. A null cache behaves
+     * exactly as before.
+     */
+    public void applyInwardDiscountToBillFee(BillFee billFee, Item item, PatientEncounter patientEncounter,
+            com.divudi.core.entity.inward.AdmissionType admissionTypeAtBill, DiscountRunCache cache) {
         if (billFee == null || item == null || patientEncounter == null) {
             return;
         }
@@ -4257,14 +4332,36 @@ public class InwardBeanController implements Serializable {
         if (matrixDept == null && billFee.getBillItem() != null && billFee.getBillItem().getBill() != null) {
             matrixDept = billFee.getBillItem().getBill().getDepartment();
         }
-        com.divudi.core.entity.Institution creditCompany = resolveSingleCreditCompany(patientEncounter);
-        double pct = priceMatrixController.getInwardDiscountPercent(
-                patientEncounter.getPaymentMethod(),
-                patientEncounter.getPaymentScheme(),
-                admissionTypeAtBill,
-                matrixDept,
-                item,
-                creditCompany);
+        com.divudi.core.entity.Institution creditCompany;
+        double pct;
+        if (cache == null) {
+            creditCompany = resolveSingleCreditCompany(patientEncounter);
+            pct = priceMatrixController.getInwardDiscountPercent(
+                    patientEncounter.getPaymentMethod(),
+                    patientEncounter.getPaymentScheme(),
+                    admissionTypeAtBill,
+                    matrixDept,
+                    item,
+                    creditCompany);
+        } else {
+            if (!cache.creditCompanyRead) {
+                cache.creditCompany = resolveSingleCreditCompany(patientEncounter);
+                cache.creditCompanyRead = true;
+            }
+            creditCompany = cache.creditCompany;
+            final com.divudi.core.entity.Institution cc = creditCompany;
+            final Department dept = matrixDept;
+            pct = cache.percent(
+                    discountPercentKey(patientEncounter.getPaymentMethod(), patientEncounter.getPaymentScheme(),
+                            admissionTypeAtBill, matrixDept, item, creditCompany),
+                    () -> priceMatrixController.getInwardDiscountPercent(
+                            patientEncounter.getPaymentMethod(),
+                            patientEncounter.getPaymentScheme(),
+                            admissionTypeAtBill,
+                            dept,
+                            item,
+                            cc));
+        }
         double qty = (billFee.getBillItem() != null && billFee.getBillItem().getQty() != null && billFee.getBillItem().getQty() > 0)
                 ? billFee.getBillItem().getQty() : 1.0;
         double unitGross = (billFee.getFeeUnitGrossValue() != null)

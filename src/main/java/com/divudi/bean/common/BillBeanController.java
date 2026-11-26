@@ -4831,62 +4831,41 @@ public class BillBeanController implements Serializable {
     }
 
     public void updateBillItemByBillFee(BillItem billItem) {
-        String sql = "SELECT sum(b.feeGrossValue) "
+        // One query returns all five sums (was five separate queries); same filter, same values.
+        String sql = "SELECT sum(b.feeGrossValue), sum(b.feeValue), sum(b.feeMargin), "
+                + " sum(b.feeDiscount), sum(b.feeVat) "
                 + " FROM BillFee b "
                 + " WHERE b.retired=false "
                 + " and b.billItem=:bItm ";
-        HashMap hm = new HashMap();
+        HashMap<String, Object> hm = new HashMap<>();
         hm.put("bItm", billItem);
-        double val = getBillFeeFacade().findDoubleByJpql(sql, hm);
-
-        billItem.setGrossValue(val);
-
-        sql = "SELECT sum(b.feeValue) "
-                + " FROM BillFee b "
-                + " WHERE b.retired=false "
-                + " and b.billItem=:bItm ";
-        hm = new HashMap();
-        hm.put("bItm", billItem);
-        val = getBillFeeFacade().findDoubleByJpql(sql, hm);
-
-        billItem.setNetValue(val);
-
-        sql = "SELECT sum(b.feeMargin) "
-                + " FROM BillFee b "
-                + " WHERE b.retired=false "
-                + " and b.billItem=:bItm ";
-        hm = new HashMap();
-        hm.put("bItm", billItem);
-        val = getBillFeeFacade().findDoubleByJpql(sql, hm);
-
-        billItem.setMarginValue(val);
-
-        sql = "SELECT sum(b.feeDiscount) "
-                + " FROM BillFee b "
-                + " WHERE b.retired=false "
-                + " and b.billItem=:bItm ";
-        hm = new HashMap();
-        hm.put("bItm", billItem);
-        val = getBillFeeFacade().findDoubleByJpql(sql, hm);
-
-        billItem.setDiscount(val);
-
-        sql = "SELECT sum(b.feeVat) "
-                + " FROM BillFee b "
-                + " WHERE b.retired=false "
-                + " and b.billItem=:bItm ";
-        hm = new HashMap();
-        hm.put("bItm", billItem);
-        val = getBillFeeFacade().findDoubleByJpql(sql, hm);
-
-        billItem.setVat(val);
-        billItem.setVatPlusNetValue(billItem.getNetValue() + billItem.getVat());
-//
-//        billItem.setEditedAt(new Date());
-//        billItem.setEditor(webUser);
+        List<Object[]> rows = getBillFeeFacade().findRawResultsByJpql(sql, hm, TemporalType.DATE);
+        Object[] row = (rows == null || rows.isEmpty()) ? null : rows.get(0);
+        applyBillFeeSumsToBillItem(billItem, row);
 
         getBillItemFacade().edit(billItem);
 
+    }
+
+    /**
+     * Copies the five BillFee sums (gross, net, margin, discount, vat; in that
+     * order) onto the bill item. A missing row or a null sum counts as zero,
+     * as the former one-query-per-sum code did.
+     */
+    public static void applyBillFeeSumsToBillItem(BillItem billItem, Object[] sums) {
+        billItem.setGrossValue(sumAt(sums, 0));
+        billItem.setNetValue(sumAt(sums, 1));
+        billItem.setMarginValue(sumAt(sums, 2));
+        billItem.setDiscount(sumAt(sums, 3));
+        billItem.setVat(sumAt(sums, 4));
+        billItem.setVatPlusNetValue(billItem.getNetValue() + billItem.getVat());
+    }
+
+    private static double sumAt(Object[] sums, int index) {
+        if (sums == null || sums.length <= index || sums[index] == null) {
+            return 0.0;
+        }
+        return ((Number) sums[index]).doubleValue();
     }
 
     private void savePatientInvestigation(BillEntry billEntry, BillComponent bc, WebUser wu) {
