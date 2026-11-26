@@ -11,53 +11,48 @@
                 <h:form >
                     <p:panel header="OPD Sale" >
 
-                        <h:panelGrid columns="8" class="w-100">          
+                        <div class="row">
+                            <div class="col-lg-3 col-md-6 mb-3">
+                                <div class="mb-1">
+                                    <h:outputText value="&#xf073;" styleClass="fa mr-2" />
+                                    <p:outputLabel value="From Date" for="fromDate" />
+                                </div>
+                                <p:calendar
+                                    styleClass="w-100"
+                                    inputStyleClass="w-100 form-control"
+                                    id="fromDate"
+                                    value="#{pharmacyReportController.fromDate}"
+                                    navigator="false"
+                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                    />
+                            </div>
 
+                            <div class="col-lg-3 col-md-6 mb-3">
+                                <div class="mb-1">
+                                    <h:outputText value="&#xf073;" styleClass="fa mr-2" />
+                                    <p:outputLabel value="To Date" for="toDate" />
+                                </div>
+                                <p:calendar
+                                    styleClass="w-100"
+                                    inputStyleClass="w-100 form-control"
+                                    id="toDate"
+                                    value="#{pharmacyReportController.toDate}"
+                                    navigator="false"
+                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                    />
+                            </div>
 
-                            <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText value="&#xf073;" styleClass="fa mr-2" />
-                                <p:outputLabel value="From Date" for="fromDate" class="m-3" >
-                                </p:outputLabel>
-                            </h:panelGroup>
-                            <p:calendar 
-                                styleClass="w-100" 
-                                inputStyleClass="w-100 form-control" 
-                                id="fromDate" 
-                                value="#{pharmacyReportController.fromDate}" 
-                                navigator="false" 
-                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
-                                />
-
-                            <p:spacer width="10"></p:spacer>
-
-                            <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText value="&#xf073;" styleClass="fa mr-1" />
-                                <p:outputLabel value="To Date" for="toDate" class="m-3" >
-                                </p:outputLabel>
-                            </h:panelGroup>
-                            <p:calendar 
-                                styleClass="w-100" 
-                                inputStyleClass="w-100 form-control" 
-                                id="toDate" 
-                                value="#{pharmacyReportController.toDate}" 
-                                navigator="false" 
-                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
-                                />
-
-
-                            
-                            <p:spacer width="10"></p:spacer>
-                            <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText styleClass="fa fa-building mr-2"/>
-                                <p:outputLabel value="Department Type" for="departmentTypeFilter" class="m-3"/>
-                            </h:panelGroup>
-                            <h:panelGroup layout="block" styleClass="form-group">
+                            <div class="col-lg-3 col-md-6 mb-3">
+                                <div class="mb-1">
+                                    <h:outputText styleClass="fa fa-building mr-2" />
+                                    <p:outputLabel value="Department Type" for="departmentTypeFilter" />
+                                </div>
                                 <p:selectCheckboxMenu
                                     id="departmentTypeFilter"
                                     value="#{pharmacyReportController.selectedDepartmentTypes}"
                                     label="Select Department Types"
                                     updateLabel="true"
-                                    class="w-100"
+                                    styleClass="w-100"
                                     filter="true"
                                     filterMatchMode="contains"
                                     showHeader="true"
@@ -70,141 +65,201 @@
                                         itemValue="#{depType}"/>
                                 </p:selectCheckboxMenu>
                                 <p:tooltip for="departmentTypeFilter" value="Select one or more department types to filter results. Leave empty to include all departments." position="top"/>
-                            </h:panelGroup>
+                            </div>
 
-                            <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText styleClass="fa fa-university mr-2" />
-                                <p:outputLabel value="Payment Method" for="phmIns" class="m-3" >
-                                </p:outputLabel>
-                            </h:panelGroup>
-                            <p:selectOneMenu 
-                                id="pM"
-                                class="w-100"
-                                value="#{pharmacyReportController.paymentMethod}"
-                                filter="true">
-                                <f:selectItem itemLabel="All" />
-                                <f:selectItems value="#{enumController.paymentMethodsForPharmacyBilling}" var="p" itemLabel="#{p.label}" itemValue="#{p}"/>
-                            </p:selectOneMenu>
-
-                            <p:spacer width="10"></p:spacer>
-                            <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText styleClass="fa fa-university mr-2" />
-                                <p:outputLabel value="Institution" for="phmIns" class="m-3" >
-                                </p:outputLabel>
-                            </h:panelGroup>
-                            <p:selectOneMenu 
-                                id="phmIns"
-                                class="w-100"
-                                value="#{pharmacyReportController.institution}"
-                                filter="true">
-                                <f:selectItem itemLabel="All Institutions" />
-                                <f:selectItems value="#{institutionController.companies}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}" />
-                                <p:ajax process="phmIns" update="phmDept" />
-                            </p:selectOneMenu>        
-
-
-                            <p:spacer width="10"></p:spacer>
-
-
-                            <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText styleClass="fa fa-map-marker-alt mr-2" />
-                                <p:outputLabel value="Site" for="phmSite" class="m-3"></p:outputLabel>
-                            </h:panelGroup>
-                            <p:selectOneMenu 
-                                id="phmSite"
-                                class="w-100"
-                                value="#{pharmacyReportController.site}"
-                                filter="true">
-                                <f:selectItem itemLabel="All Sites" />
-                                <f:selectItems value="#{institutionController.sites}" var="site" itemLabel="#{site.name}" itemValue="#{site}" />
-                                <p:ajax process="phmSite" update="phmDept" />
-                            </p:selectOneMenu>
-
-
-
-
-                            <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText styleClass="fa fa-building mr-2" />
-                                <p:outputLabel value="Department" for="phmDept" class="m-3">
-                                </p:outputLabel>
-                            </h:panelGroup>
-                            <h:panelGroup id="phmDept">
-
-                                <!-- Component 1: Without Institution and Site -->
+                            <div class="col-lg-3 col-md-6 mb-3">
+                                <div class="mb-1">
+                                    <h:outputText styleClass="fa fa-credit-card mr-2" />
+                                    <p:outputLabel value="Payment Method" for="pM" />
+                                </div>
                                 <p:selectOneMenu
-                                    rendered="#{pharmacyReportController.institution eq null and pharmacyReportController.site eq null}"
-                                    styleClass="w-100 form-control"
-                                    value="#{pharmacyReportController.department}"
-                                    filterMatchMode="contains"
-                                    filter="true"> 
-                                    <f:selectItem itemLabel="All Departments" />
-                                    <f:selectItems  
-                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite()}"
-                                        var="dept" 
-                                        itemLabel="#{dept.name}" 
-                                        itemValue="#{dept}" />
+                                    id="pM"
+                                    styleClass="w-100"
+                                    value="#{pharmacyReportController.paymentMethod}"
+                                    filter="true">
+                                    <f:selectItem itemLabel="All" />
+                                    <f:selectItems value="#{enumController.paymentMethodsForPharmacyBilling}" var="p" itemLabel="#{p.label}" itemValue="#{p}"/>
                                 </p:selectOneMenu>
+                            </div>
 
-                                <!-- Component 2: With Site Only -->
+                            <div class="col-lg-3 col-md-6 mb-3">
+                                <div class="mb-1">
+                                    <h:outputText styleClass="fa fa-university mr-2" />
+                                    <p:outputLabel value="Institution" for="phmIns" />
+                                </div>
                                 <p:selectOneMenu
-                                    rendered="#{pharmacyReportController.institution eq null and pharmacyReportController.site ne null}"
-                                    styleClass="w-100 form-control"
-                                    value="#{pharmacyReportController.department}"
-                                    filterMatchMode="contains"
-                                    filter="true"> 
-                                    <f:selectItem itemLabel="All Departments" />
-                                    <f:selectItems  
-                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite(pharmacyReportController.site)}" 
-                                        var="dept" 
-                                        itemLabel="#{dept.name}" 
-                                        itemValue="#{dept}" />
+                                    id="phmIns"
+                                    styleClass="w-100"
+                                    value="#{pharmacyReportController.institution}"
+                                    filter="true">
+                                    <f:selectItem itemLabel="All Institutions" />
+                                    <f:selectItems value="#{institutionController.companies}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}" />
+                                    <p:ajax process="phmIns" update="phmDept" />
                                 </p:selectOneMenu>
-                                
-                                <!-- Component 3: With Institution Only --> 
+                            </div>
+
+                            <div class="col-lg-3 col-md-6 mb-3">
+                                <div class="mb-1">
+                                    <h:outputText styleClass="fa fa-map-marker-alt mr-2" />
+                                    <p:outputLabel value="Site" for="phmSite" />
+                                </div>
                                 <p:selectOneMenu
-                                    rendered="#{pharmacyReportController.institution ne null and pharmacyReportController.site eq null}"
-                                    styleClass="w-100 form-control"
-                                    value="#{pharmacyReportController.department}"
-                                    filterMatchMode="contains"
-                                    filter="true"> 
-                                    <f:selectItem itemLabel="All Departments" />
-                                    <f:selectItems  
-                                        value="#{departmentController.getDepartmentsOfInstitutionAndSiteForInstitution(pharmacyReportController.institution)}" 
-                                        var="dept" 
-                                        itemLabel="#{dept.name}" 
-                                        itemValue="#{dept}" />
+                                    id="phmSite"
+                                    styleClass="w-100"
+                                    value="#{pharmacyReportController.site}"
+                                    filter="true">
+                                    <f:selectItem itemLabel="All Sites" />
+                                    <f:selectItems value="#{institutionController.sites}" var="site" itemLabel="#{site.name}" itemValue="#{site}" />
+                                    <p:ajax process="phmSite" update="phmDept" />
                                 </p:selectOneMenu>
-                                
-                                <!-- Component 4: With Both Institution and Site --> 
-                                <p:selectOneMenu
-                                    rendered="#{pharmacyReportController.institution ne null and pharmacyReportController.site ne null}"
-                                    styleClass="w-100 form-control"
-                                    value="#{pharmacyReportController.department}"
-                                    filterMatchMode="contains"
-                                    filter="true"> 
-                                    <f:selectItem itemLabel="All Departments" />
-                                    <f:selectItems  
-                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite(pharmacyReportController.institution, pharmacyReportController.site)}" 
-                                        var="dept" 
-                                        itemLabel="#{dept.name}" 
-                                        itemValue="#{dept}" />
-                                </p:selectOneMenu>
-                            </h:panelGroup>
+                            </div>
 
+                            <div class="col-lg-3 col-md-6 mb-3">
+                                <div class="mb-1">
+                                    <h:outputText styleClass="fa fa-building mr-2" />
+                                    <h:outputText value="Department" styleClass="ui-outputlabel" />
+                                </div>
+                                <h:panelGroup id="phmDept" layout="block">
 
+                                    <!-- Component 1: Without Institution and Site -->
+                                    <p:selectOneMenu
+                                        rendered="#{pharmacyReportController.institution eq null and pharmacyReportController.site eq null}"
+                                        styleClass="w-100"
+                                        value="#{pharmacyReportController.department}"
+                                        filterMatchMode="contains"
+                                        filter="true">
+                                        <f:selectItem itemLabel="All Departments" />
+                                        <f:selectItems
+                                            value="#{departmentController.getDepartmentsOfInstitutionAndSite()}"
+                                            var="dept"
+                                            itemLabel="#{dept.name}"
+                                            itemValue="#{dept}" />
+                                    </p:selectOneMenu>
 
-                        </h:panelGrid>
+                                    <!-- Component 2: With Site Only -->
+                                    <p:selectOneMenu
+                                        rendered="#{pharmacyReportController.institution eq null and pharmacyReportController.site ne null}"
+                                        styleClass="w-100"
+                                        value="#{pharmacyReportController.department}"
+                                        filterMatchMode="contains"
+                                        filter="true">
+                                        <f:selectItem itemLabel="All Departments" />
+                                        <f:selectItems
+                                            value="#{departmentController.getDepartmentsOfInstitutionAndSite(pharmacyReportController.site)}"
+                                            var="dept"
+                                            itemLabel="#{dept.name}"
+                                            itemValue="#{dept}" />
+                                    </p:selectOneMenu>
 
-                        <div class="d-flex align-items-center mt-5">
+                                    <!-- Component 3: With Institution Only -->
+                                    <p:selectOneMenu
+                                        rendered="#{pharmacyReportController.institution ne null and pharmacyReportController.site eq null}"
+                                        styleClass="w-100"
+                                        value="#{pharmacyReportController.department}"
+                                        filterMatchMode="contains"
+                                        filter="true">
+                                        <f:selectItem itemLabel="All Departments" />
+                                        <f:selectItems
+                                            value="#{departmentController.getDepartmentsOfInstitutionAndSiteForInstitution(pharmacyReportController.institution)}"
+                                            var="dept"
+                                            itemLabel="#{dept.name}"
+                                            itemValue="#{dept}" />
+                                    </p:selectOneMenu>
+
+                                    <!-- Component 4: With Both Institution and Site -->
+                                    <p:selectOneMenu
+                                        rendered="#{pharmacyReportController.institution ne null and pharmacyReportController.site ne null}"
+                                        styleClass="w-100"
+                                        value="#{pharmacyReportController.department}"
+                                        filterMatchMode="contains"
+                                        filter="true">
+                                        <f:selectItem itemLabel="All Departments" />
+                                        <f:selectItems
+                                            value="#{departmentController.getDepartmentsOfInstitutionAndSite(pharmacyReportController.institution, pharmacyReportController.site)}"
+                                            var="dept"
+                                            itemLabel="#{dept.name}"
+                                            itemValue="#{dept}" />
+                                    </p:selectOneMenu>
+                                </h:panelGroup>
+                            </div>
+                        </div>
+
+                        <style>
+                            .cogs-items-table { width: 100%; table-layout: fixed; border-collapse: collapse; }
+                            .cogs-items-table td, .cogs-items-table th { padding: 2px 3px; vertical-align: top; }
+                            .cogs-items-table td.cogs-name-col { white-space: normal; word-break: break-word; overflow-wrap: anywhere; }
+                            .cogs-items-table td.cogs-item-col { white-space: nowrap; }
+                            .cogs-items-table th { white-space: normal !important; word-break: normal !important; overflow-wrap: normal !important; overflow: visible !important; }
+                            /* Screen: show the whole items table; scroll sideways on narrow screens instead of clipping (#25497) */
+                            .cogs-sale-print .ui-datatable-tablewrapper { overflow-x: auto; }
+                            .cogs-sale-print .ui-datatable-tablewrapper > table { table-layout: auto; width: 100%; }
+                            .cogs-sale-print .ui-datatable th.cogs-items-col, .cogs-sale-print .ui-datatable td.cogs-items-col { overflow: visible; min-width: 69em; padding: 0; }
+                            .cogs-sale-print .ui-datatable td.cogs-bill-col, .cogs-sale-print .ui-datatable th.cogs-bill-col { white-space: nowrap; }
+                            /* Print: fit every column on the page, no scroll bar (#25497) */
+                            @page { size: A4 landscape; margin: 8mm; }
+                            @media print {
+                                .cogs-sale-print,
+                                .cogs-sale-print .ui-datatable,
+                                .cogs-sale-print .ui-datatable-tablewrapper {
+                                    overflow: visible !important;
+                                    height: auto !important;
+                                    max-height: none !important;
+                                }
+                                .cogs-sale-print .ui-datatable-tablewrapper > table {
+                                    width: 100% !important;
+                                    table-layout: auto !important;
+                                }
+                                .cogs-sale-print .ui-datatable th:not(.cogs-bill-col),
+                                .cogs-sale-print .ui-datatable td:not(.cogs-bill-col) {
+                                    width: auto !important;
+                                    padding: 2px 3px !important;
+                                    font-size: 9px !important;
+                                    white-space: normal !important;
+                                    word-break: break-word;
+                                }
+                                /* Bill columns keep their width: one line, never one letter per line */
+                                .cogs-sale-print .ui-datatable th.cogs-bill-col,
+                                .cogs-sale-print .ui-datatable td.cogs-bill-col {
+                                    width: auto !important;
+                                    white-space: nowrap !important;
+                                    word-break: normal !important;
+                                    padding: 2px 3px !important;
+                                    font-size: 9px !important;
+                                }
+                                .cogs-sale-print .ui-datatable th.cogs-bill-col.cogs-bill-wide,
+                                .cogs-sale-print .ui-datatable td.cogs-bill-col.cogs-bill-wide { min-width: 80px !important; }
+                                .cogs-sale-print .ui-datatable th.cogs-bill-col.cogs-bill-num,
+                                .cogs-sale-print .ui-datatable td.cogs-bill-col.cogs-bill-num { min-width: 60px !important; }
+                                .cogs-sale-print .ui-datatable th.cogs-items-col,
+                                .cogs-sale-print .ui-datatable td.cogs-items-col { min-width: 0 !important; width: 100% !important; padding: 0 !important; }
+                                /* Item columns: one line per item so CODE, QTY and rates stay aligned; NAME and BATCH NO wrap so long names fit the page */
+                                .cogs-sale-print .ui-datatable td.cogs-item-col {
+                                    white-space: nowrap !important;
+                                    word-break: normal;
+                                }
+                                .cogs-sale-print .ui-datatable td.cogs-name-col {
+                                    white-space: normal !important;
+                                    word-break: break-word;
+                                    overflow-wrap: anywhere;
+                                }
+                                .cogs-sale-print .ui-paginator { display: none !important; }
+                                .cogs-sale-print .ui-datatable thead { display: table-header-group; }
+                                .cogs-sale-print .ui-datatable tr { page-break-inside: avoid; }
+                            }
+                        </style>
+
+                        <p:defaultCommand target="btnProcess" />
+                        <div class="d-flex align-items-center mt-2">
                             <p:commandButton 
-                                class="ui-button-secondary mx-1" 
+                                class="ui-button-secondary m-1" 
                                 icon="fas fa-arrow-left" 
                                 ajax="false" 
                                 value="Back"
                                 action="#{reportController.navigateToCostOfGoodsSold()}">
                             </p:commandButton>
                             <p:commandButton 
-                                class="ui-button-warning mx-1" 
+                                id="btnProcess"
+                                class="ui-button-success m-1" 
                                 icon="fas fa-cogs" 
                                 ajax="false"  
                                 value="Process" 
@@ -212,7 +267,7 @@
                             </p:commandButton>
 
                             <p:commandButton
-                                class="ui-button- mx-1"
+                                class="ui-button-warning m-1"
                                 icon="fas fa-print"
                                 type="button"
                                 value="Print All"
@@ -227,7 +282,7 @@
                             </p:commandButton>
 
                             <p:commandButton 
-                                class="ui-button-success mx-1" 
+                                class="ui-button-info m-1" 
                                 icon="fas fa-file-excel" 
                                 ajax="false" 
                                 value="Download"
@@ -235,7 +290,7 @@
                             </p:commandButton>
 
                             <p:commandButton 
-                                class="ui-button-danger mx-1" 
+                                class="ui-button-info m-1" 
                                 icon= "fas fa-file-pdf" 
                                 ajax="false" 
                                 value="PDF"
@@ -275,7 +330,7 @@
                             }
                         </h:outputScript>
 
-                        <h:panelGroup id="printPanel" layout="block">
+                        <h:panelGroup id="printPanel" layout="block" styleClass="cogs-sale-print">
                             <h:panelGroup layout="block" styleClass="cogs-print-filters" style="display:none; margin-bottom:8px;">
                                 <h:outputText value="OPD Sale" style="font-weight:bold; font-size:1.2em" />
                                 <h:panelGrid columns="4" cellpadding="3">
@@ -295,11 +350,11 @@
                                     <h:outputText value="#{pharmacyReportController.department eq null ? 'All Departments' : pharmacyReportController.department.name}" />
                                 </h:panelGrid>
                             </h:panelGroup>
-                        <p:dataTable id="tbl" widgetVar="wCogsSaleTbl" value="#{pharmacyReportController.cogsBillDtos}" var="b" rowIndexVar="n" paginator="true" paginatorPosition="bottom" rows="10"
+                        <p:dataTable id="tbl" styleClass="p-datatable-sm" widgetVar="wCogsSaleTbl" value="#{pharmacyReportController.cogsBillDtos}" var="b" rowIndexVar="n" paginator="true" paginatorPosition="bottom" rows="10"
                                      paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                      currentPageReportTemplate="Showing {startRecord} to {endRecord} of {totalRecords}" rowsPerPageTemplate="5,10,15,25,50,100,500,1000,{ShowAll|'All'}">
 
-                            <p:column headerText="Date" width="4em">
+                            <p:column headerText="Date" width="4em" styleClass="cogs-bill-col cogs-bill-wide">
                                 <h:outputText value="#{b.billCreatedAt}">
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                                 </h:outputText>
@@ -308,7 +363,7 @@
                                 </f:facet>
                             </p:column>
 
-                            <p:column headerText="Bill Number" sortBy="#{b.billDeptId}" width="16em">
+                            <p:column headerText="Bill Number" sortBy="#{b.billDeptId}" width="16em" styleClass="cogs-bill-col cogs-bill-wide">
                                 <p:commandLink value="#{b.billDeptId}" action="#{billSearch.navigateToViewBillByAtomicBillType()}" ajax="false" styleClass="ui-button-info">
                                     <f:setPropertyActionListener value="#{b.bill}" target="#{billSearch.bill}" />
                                 </p:commandLink>
@@ -316,87 +371,57 @@
 
                             <p:columnGroup type="header" >
                                 <p:row >
-                                    <p:column headerText="Date" width="6em"/>
-                                    <p:column headerText="Doc. No" width="6em"/>
-                                    <p:column headerText="NAME" width="12em"/>
-                                    <p:column headerText="CODE" width="6em"/>
-                                    <p:column headerText="BATCH NO" width="6em"/>
-                                    <p:column headerText="QTY" width="4em"/>
-                                    <p:column headerText="COST RATE" width="6em"/>
-                                    <p:column headerText="COST VALUE" width="6em"/>
-                                    <p:column headerText="PURCHASE RATE" width="6em"/>
-                                    <p:column headerText="PURCHASE VALUE" width="6em"/>
-                                    <p:column headerText="MRP" width="6em"/>
-                                    <p:column headerText="MRP Value" width="6em"/>
-                                    <p:column headerText="Net Total" width="6em"/>
-                                    <p:column headerText="Payment Mode/Modes" width="12em"/>
-                                    <p:column headerText="Discount" width="6em"/>
+                                    <p:column headerText="Date" width="6em" styleClass="cogs-bill-col cogs-bill-wide"/>
+                                    <p:column headerText="Doc. No" width="6em" styleClass="cogs-bill-col cogs-bill-wide"/>
+                                    <p:column styleClass="cogs-items-col">
+                                        <f:facet name="header">
+                                            <table class="cogs-items-table"><colgroup><col style="width:12em"/><col style="width:6em"/><col style="width:6em"/><col style="width:4em"/><col style="width:6em"/><col style="width:7em"/><col style="width:8em"/><col style="width:8em"/><col style="width:6em"/><col style="width:6em"/></colgroup>
+                                                <tr><th class="cogs-name-col">NAME</th><th class="cogs-item-col text-end">CODE</th><th class="cogs-name-col">BATCH NO</th><th class="cogs-item-col text-end">QTY</th><th class="cogs-item-col text-end">COST RATE</th><th class="cogs-item-col text-end">COST VALUE</th><th class="cogs-item-col text-end">PURCHASE RATE</th><th class="cogs-item-col text-end">PURCHASE VALUE</th><th class="cogs-item-col text-end">MRP</th><th class="cogs-item-col text-end">MRP Value</th></tr>
+                                            </table>
+                                        </f:facet>
+                                    </p:column>
+                                    <p:column headerText="Net Total" width="6em" styleClass="cogs-bill-col cogs-bill-num"/>
+                                    <p:column headerText="Payment Mode/Modes" width="12em" styleClass="cogs-bill-col cogs-bill-wide"/>
+                                    <p:column headerText="Discount" width="6em" styleClass="cogs-bill-col cogs-bill-num"/>
                                 </p:row>
                             </p:columnGroup>
 
-                            <p:column headerText="NAME" width="50em">
-                                <ui:repeat value="#{b.billItemsMap.values()}" var="biObject" >
-                                    <h:outputText value="#{biObject.itemName}" /><p:divider/><br/>
-                                </ui:repeat>
-                            </p:column>
-                            <p:column headerText="CODE">
-                                <ui:repeat value="#{b.billItemsMap.values()}" var="biObject">
-                                    <h:outputText value="#{biObject.itemCode}" /><p:divider/><br/>
-                                </ui:repeat>
-                            </p:column>
-                            <p:column headerText="BATCH NO">
-                                <ui:repeat value="#{b.billItemsMap.values()}" var="biObject">
-                                    <h:outputText value="#{biObject.batchNo}" /><p:divider/><br/>
-                                </ui:repeat>
-                            </p:column>
-                            <p:column headerText="QTY">
-                                <ui:repeat value="#{b.billItemsMap.values()}" var="biObject">
-                                    <h:outputText value="#{biObject.qty}" ><f:convertNumber pattern="#,##0"/></h:outputText><p:divider/><br/>
-                                </ui:repeat>
-                            </p:column>
-                            <p:column headerText="COST RATE">
-                                <ui:repeat value="#{b.billItemsMap.values()}" var="biObject">
-                                    <h:outputText value="#{biObject.costRate}" ><f:convertNumber pattern="#,##0.00"/></h:outputText><p:divider/><br/>
-                                </ui:repeat>
-                            </p:column>
-                            <p:column headerText="COST VALUE">
-                                <ui:repeat value="#{b.billItemsMap.values()}" var="biObject">
-                                    <h:outputText value="#{biObject.qty * biObject.costRate}" ><f:convertNumber pattern="#,##0.00"/></h:outputText><p:divider/><br/>
-                                </ui:repeat>
+<p:column headerText="Items" styleClass="cogs-items-col">
+                                <table class="cogs-items-table"><colgroup><col style="width:12em"/><col style="width:6em"/><col style="width:6em"/><col style="width:4em"/><col style="width:6em"/><col style="width:7em"/><col style="width:8em"/><col style="width:8em"/><col style="width:6em"/><col style="width:6em"/></colgroup>
+                                    <ui:repeat value="#{b.billItemsMap.values()}" var="biObject">
+                                        <tr>
+                                            <td class="cogs-name-col"><h:outputText value="#{biObject.itemName}" /></td>
+                                            <td class="cogs-item-col"><h:outputText value="#{biObject.itemCode}" /></td>
+                                            <td class="cogs-name-col"><h:outputText value="#{biObject.batchNo}" /></td>
+                                            <td class="cogs-item-col text-end"><h:outputText value="#{biObject.qty}"><f:convertNumber pattern="#,##0"/></h:outputText></td>
+                                            <td class="cogs-item-col text-end"><h:outputText value="#{biObject.costRate}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td>
+                                            <td class="cogs-item-col text-end"><h:outputText value="#{biObject.qty * biObject.costRate}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td>
+                                            <td class="cogs-item-col text-end"><h:outputText value="#{biObject.purchaseRate}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td>
+                                            <td class="cogs-item-col text-end"><h:outputText value="#{biObject.qty * biObject.purchaseRate}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td>
+                                            <td class="cogs-item-col text-end"><h:outputText value="#{biObject.retailRate}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td>
+                                            <td class="cogs-item-col text-end"><h:outputText value="#{biObject.qty * biObject.retailRate}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td>
+                                        </tr>
+                                    </ui:repeat>
+                                </table>
                                 <f:facet name="footer">
-                                    <h:outputText value="#{pharmacyReportController.totalCostValue}" >
-                                        <f:convertNumber pattern="#,##0.00"/>
-                                    </h:outputText>
+                                    <table class="cogs-items-table"><colgroup><col style="width:12em"/><col style="width:6em"/><col style="width:6em"/><col style="width:4em"/><col style="width:6em"/><col style="width:7em"/><col style="width:8em"/><col style="width:8em"/><col style="width:6em"/><col style="width:6em"/></colgroup>
+                                        <tr>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                            <td class="cogs-item-col text-end"><h:outputText value="#{pharmacyReportController.totalCostValue}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td>
+                                            <td></td>
+                                            <td class="cogs-item-col text-end"><h:outputText value="#{pharmacyReportController.totalPurchaseValue}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td>
+                                            <td></td>
+                                            <td></td>
+                                        </tr>
+                                    </table>
                                 </f:facet>
-                            </p:column>
-                            <p:column headerText="PURCHASE RATE">
-                                <ui:repeat value="#{b.billItemsMap.values()}" var="biObject">
-                                    <h:outputText value="#{biObject.purchaseRate}" ><f:convertNumber pattern="#,##0.00"/></h:outputText><p:divider/><br/>
-                                </ui:repeat>
-                            </p:column>
-                            <p:column headerText="PURCHASE VALUE">
-                                <ui:repeat value="#{b.billItemsMap.values()}" var="biObject">
-                                    <h:outputText value="#{biObject.qty * biObject.purchaseRate}" ><f:convertNumber pattern="#,##0.00"/></h:outputText><p:divider/>   <br/>
-                                </ui:repeat>
-                                <f:facet name="footer">
-                                    <h:outputText value="#{pharmacyReportController.totalPurchaseValue}" >
-                                        <f:convertNumber pattern="#,##0.00"/>
-                                    </h:outputText>
-                                </f:facet>
-                            </p:column>
-                            
-                            <p:column headerText="MRP" width="8em" class="text-end">
-                                <ui:repeat value="#{b.billItemsMap.values()}" var="biObject">
-                                    <h:outputText value="#{biObject.retailRate}" ><f:convertNumber pattern="#,##0.00"/></h:outputText><p:divider/><br/>
-                                </ui:repeat>
-                            </p:column>
-                            <p:column headerText="MRP Value" width="8em" class="text-end">
-                                <ui:repeat value="#{b.billItemsMap.values()}" var="biObject">
-                                    <h:outputText value="#{biObject.qty * biObject.retailRate}" ><f:convertNumber pattern="#,##0.00"/></h:outputText><p:divider/>   <br/>
-                                </ui:repeat>
                             </p:column>
 
-                            <p:column headerText="Net Total"  class="text-end" width="6em">
+                            <p:column headerText="Net Total"  styleClass="text-end cogs-bill-col cogs-bill-num" width="6em">
                                 <h:outputText value="#{b.netTotal}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
@@ -407,7 +432,7 @@
                                 </f:facet>
                             </p:column>
 
-                            <p:column headerText="Payment Mode/Modes" sortBy="#{b.paymentMethod}" width="12em">
+                            <p:column headerText="Payment Mode/Modes" sortBy="#{b.paymentMethod}" width="12em" styleClass="cogs-bill-col cogs-bill-wide">
                                 <h:outputText value="Staff credit" rendered="#{b.paymentMethod eq 'Staff'}" />
 
                                 <h:panelGroup rendered="#{b.paymentMethod ne 'Staff' and b.paymentMethod ne 'MultiplePaymentMethods'}">
@@ -427,7 +452,7 @@
                                 </h:panelGroup>
                             </p:column>
                             
-                            <p:column headerText="Discount" width="8em">
+                            <p:column headerText="Discount" width="8em" styleClass="cogs-bill-col cogs-bill-num">
                                 <h:outputText value="#{b.discount}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
