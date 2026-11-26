@@ -73,7 +73,7 @@
                                     <h:outputText styleClass="fas fa-list-alt"></h:outputText>
                                     <h:outputLabel value="Bill Item Detail" class="mx-2"></h:outputLabel>
                                 </f:facet>
-                                <p:dataTable rowIndexVar="rowIndex" value="#{pharmacyBillSearch.bill.billItems}" var="bip">
+                                <p:dataTable rowIndexVar="rowIndex" styleClass="p-datatable-sm" value="#{pharmacyBillSearch.bill.billItems}" var="bip">
                                     <p:column>
                                         <f:facet name="header">No</f:facet>
                                         <h:outputLabel value="#{rowIndex+1}"/>
