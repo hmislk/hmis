@@ -3402,13 +3402,40 @@ public class InwardBeanController implements Serializable {
             return;
         }
 
-        double paid = getPaidValue(patientEncounter);
+        double paid = getPaidValue(patientEncounter) + getPostFinalPaymentTotalIncludedIn(b);
 //        System.err.println("NET " + b.getNetTotal());
 //        System.err.println("PAID " + paid);
 
         b.setPaidAmount(paid);
+        b.setBalance(b.getNetTotal() - paid);
         getBillFacade().edit(b);
 
+    }
+
+    /**
+     * The part of the Post Final Bill Payments (payments, and their
+     * cancellations and refunds as negative rows) that the final bill's
+     * paidAmount carries (#26125). An unapproved final bill is live, so it
+     * carries all of them. An approved final bill is frozen (#23848), so it
+     * carries only the rows created up to its approval time. Deliberately
+     * unfiltered by cancelled, as the cancellation is its own negative row.
+     */
+    public double getPostFinalPaymentTotalIncludedIn(Bill finalBill) {
+        if (finalBill == null || finalBill.getPatientEncounter() == null) {
+            return 0.0;
+        }
+        HashMap hm = new HashMap();
+        String sql = "SELECT sum(b.netTotal) FROM Bill b "
+                + " WHERE b.retired=false "
+                + " and b.billType=:btp "
+                + " and b.patientEncounter=:pe ";
+        hm.put("btp", BillType.PostFinalBillInwardPayment);
+        hm.put("pe", finalBill.getPatientEncounter());
+        if (finalBill.getApproveAt() != null) {
+            sql += " and b.createdAt<=:approveAt ";
+            hm.put("approveAt", finalBill.getApproveAt());
+        }
+        return getBillFacade().findDoubleByJpql(sql, hm, TemporalType.TIMESTAMP);
     }
 
     public double getPaidValue(PatientEncounter patientEncounter) {
