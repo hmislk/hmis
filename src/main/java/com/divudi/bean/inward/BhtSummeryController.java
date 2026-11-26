@@ -3084,6 +3084,9 @@ public class BhtSummeryController implements Serializable {
         if (errorCheck() || discountCommentMissing("settling")) {
             return;
         }
+        if (companyShareBelowPaid()) {
+            return;
+        }
 
         persistGroupedProfessionalFeeOrder();
 
@@ -3682,6 +3685,42 @@ public class BhtSummeryController implements Serializable {
         // The patient co-payment row is ALWAYS shown (even at 0.00) so it can be
         // adjusted by hand against the company rows.
         creditCompanyAllocations.add(new CreditCompanyAllocation(Math.max(0.0, remaining), true));
+    }
+
+    /**
+     * A credit company's share cannot fall below what that company has already
+     * paid in this admission, over every final bill version (#26163). Runs on
+     * Save Final Bill (settle), first settle or new version; a first settle has
+     * nothing paid, so it never blocks.
+     *
+     * @return true when a share is too low (the error message is added)
+     */
+    private boolean companyShareBelowPaid() {
+        if (getPatientEncounter() == null
+                || getPatientEncounter().getPaymentMethod() != PaymentMethod.Credit
+                || creditCompanyAllocations == null) {
+            return false;
+        }
+        java.util.Map<Institution, Double> shares = new java.util.LinkedHashMap<>();
+        for (CreditCompanyAllocation alloc : creditCompanyAllocations) {
+            if (!alloc.isPatientPortion() && alloc.getCreditCompany() != null) {
+                shares.merge(alloc.getCreditCompany(), alloc.getAllocatedAmount(), Double::sum);
+            }
+        }
+        for (java.util.Map.Entry<Institution, Double> e : shares.entrySet()) {
+            double paid = getInwardBean().fetchCompanyPaidAmount(getPatientEncounter(), e.getKey());
+            if (isShareBelowPaid(e.getValue(), paid)) {
+                JsfUtil.addErrorMessage(e.getKey().getName() + " has already paid "
+                        + String.format("%.2f", paid) + ". Its share cannot be less than that.");
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /** True when the share is lower than what was paid, beyond a 0.01 tolerance. */
+    static boolean isShareBelowPaid(double allocated, double paid) {
+        return paid - allocated > 0.01;
     }
 
     private boolean checkCreditAllocationTotal() {

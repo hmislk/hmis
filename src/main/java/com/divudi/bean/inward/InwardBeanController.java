@@ -3515,6 +3515,29 @@ public class InwardBeanController implements Serializable {
     }
 
     /**
+     * What one credit company has paid in an admission: company receipts net of
+     * cancels on all of that company's commitment bills, across every final
+     * bill version (#26163).
+     */
+    public double fetchCompanyPaidAmount(PatientEncounter encounter, Institution company) {
+        if (encounter == null || company == null) {
+            return 0.0;
+        }
+        String jpql = "select b.id from Bill b "
+                + " where b.retired = false "
+                + " and b.cancelled = false "
+                + " and b.billTypeAtomic = :bta "
+                + " and b.patientEncounter = :pe "
+                + " and b.creditCompany = :cc ";
+        Map<String, Object> params = new HashMap<>();
+        params.put("bta", BillTypeAtomic.INWARD_FINAL_BILL_PAYMENT_BY_CREDIT_COMPANY);
+        params.put("pe", encounter);
+        params.put("cc", company);
+        List<Long> ids = getBillFacade().findLongList(jpql, params);
+        return creditBean.getSettledAmountOnCommitments(ids, CountedServiceType.CREDIT_SETTLE_BY_COMPANY);
+    }
+
+    /**
      * Ids of the non-cancelled, non-retired company commitment bills of the
      * same credit company in the same admission as {@code commitment}
      * (itself included), across every final bill version (#26163).
