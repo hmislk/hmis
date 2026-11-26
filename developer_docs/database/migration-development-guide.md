@@ -11,6 +11,8 @@ The HMIS Database Migration System provides a comprehensive framework for managi
 - EclipseLink's DDL auto-update adds missing columns on application startup in development.
 - On production, the admin runs **`/faces/dataAdmin/missing_database_fields.xhtml`** to detect and apply any missing columns before deploying new code.
 
+**CI check (#26178):** the `Entity migration guard` job fails a PR that adds a mapped column or table that no migration mentions and that is not in `src/test/resources/entity-migration-baseline.txt`. The failure names the entity, field and expected column. Fix it with a migration (idempotent, like v2.34.0). Add a `TABLE.COLUMN` line to the baseline only when the base schema already has the column. Regenerate the whole baseline with `mvn -q test -Dtest=EntityMigrationCoverageTest -Dentity.baseline.regenerate=true` (review the diff: it must only shrink).
+
 **Exception:** a new `@Entity` / table, or a column read at startup or on the login path (e.g. `WebUser`), needs a migration script plus a pre-deploy step, because a missing column locks everyone out, including admins who would run Add Missing Fields. Example: #25075 / PR #25080.
 
 **Data migrations** (backfilling values in existing rows, transforming data, fixing historical records) require a migration script under `src/main/resources/db/migrations/`. The admin executes these via **`/faces/admin/database_migration.xhtml`**.
