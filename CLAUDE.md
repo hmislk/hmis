@@ -23,6 +23,7 @@
 - **🚨 No mock data** or temporary workarounds in business logic.
 - **🚨 Never "fix" intentional typos** (e.g. `purcahseRate`); they are DB column names.
 - **🚨 Never rename composite components** without checking every usage.
+- **Changing how a money figure is counted? List every reader of it first** (reports, prints, dashboards) and give each a verdict in the PR. [+](developer_docs/rules/code.md)
 - **🚨 Never modify or remove existing constructors;** add new ones delegating via `this(...)`. [+](developer_docs/dto/implementation-guidelines.md)
 - **🚨 JPQL first.** Native SQL only for a demonstrated performance need JPQL can't meet.
 - **🚨 `COUNT(...)` queries use `findLongByJpql`,** never `findDoubleByJpql`. [+](developer_docs/rules/code.md)
