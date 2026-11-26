@@ -47,7 +47,7 @@
                                     <f:selectItems value="#{dischargeConditionController.items}"
                                                    var="myItem"
                                                    itemValue="#{myItem}"
-                                                   itemLabel="#{myItem.name}"/>
+                                                   itemLabel="#{empty myItem.name ? '(no name)' : myItem.name}"/>
                                     <f:converter converterId="dischargeConditionConverter"/>
                                     <f:ajax render="gpDetail" execute="lstSelect"/>
                                 </p:selectOneListbox>

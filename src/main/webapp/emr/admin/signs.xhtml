@@ -52,7 +52,7 @@
                                                      filter="true"
                                                      filterMatchMode="contains"
                                                      scrollHeight="500">
-                                    <f:selectItems  value="#{signController.items}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" ></f:selectItems>
+                                    <f:selectItems  value="#{signController.items}" var="myItem" itemValue="#{myItem}" itemLabel="#{empty myItem.name ? '(no name)' : myItem.name}" ></f:selectItems>
                                     <f:ajax render="gpDetail" execute="lstSelect" >
                                     </f:ajax>
                                 </p:selectOneListbox>
