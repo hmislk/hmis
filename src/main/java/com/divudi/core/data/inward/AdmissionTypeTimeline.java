@@ -115,6 +115,11 @@ public class AdmissionTypeTimeline {
         }
     }
 
+    /** The admission's current type this timeline was built with. */
+    public AdmissionType getCurrentType() {
+        return currentType;
+    }
+
     /** True when the type was changed at least once. */
     public boolean hasHistory() {
         return !rows.isEmpty();

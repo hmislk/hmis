@@ -158,10 +158,22 @@ public class InwardRoomChargeCalculationService {
      * edited on the interim bill survives.
      */
     public void recalculateMargins(List<PatientRoom> rooms, PatientEncounter billingEncounter) {
+        recalculateMargins(rooms, billingEncounter, null);
+    }
+
+    /**
+     * As the two-argument form, with the admission's type timeline the caller
+     * already read; null reads it here. Saves one history query per call.
+     */
+    public void recalculateMargins(List<PatientRoom> rooms, PatientEncounter billingEncounter,
+            AdmissionTypeTimeline knownTimeline) {
         if (rooms == null || rooms.isEmpty() || billingEncounter == null) {
             return;
         }
         Context ctx = new Context();
+        if (knownTimeline != null && billingEncounter.getId() != null) {
+            ctx.timelines.put(billingEncounter.getId(), knownTimeline);
+        }
         Institution creditCompany = resolveSingleCreditCompany(billingEncounter);
         for (PatientRoom p : rooms) {
             calculateComponents(p, billingEncounter, creditCompany, ctx);

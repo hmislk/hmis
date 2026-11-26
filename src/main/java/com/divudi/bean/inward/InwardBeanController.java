@@ -151,6 +151,9 @@ public class InwardBeanController implements Serializable {
     /** Which admission type was in force at a date (#25814). */
     @javax.ejb.EJB
     com.divudi.service.inward.AdmissionTypeHistoryService admissionTypeHistoryService;
+    /** Reads each admission's type history once per request (#17562). */
+    @Inject
+    com.divudi.service.inward.AdmissionTypeTimelineRequestCache admissionTypeTimelineCache;
 
     private Long lastGeneratedBhtLong;
 
@@ -1854,7 +1857,7 @@ public class InwardBeanController implements Serializable {
         for (PatientEncounter pt : pts) {
             // The admission fee is charged once, at admission, so it follows the type
             // the admission started with, not a type it was changed to later (#25814).
-            com.divudi.core.entity.inward.AdmissionType feeType = admissionTypeHistoryService.firstType(pt);
+            com.divudi.core.entity.inward.AdmissionType feeType = timelineOf(pt).firstType();
             if (feeType != null) {
                 total = total + feeType.getAdmissionFee();
             }
@@ -4343,7 +4346,19 @@ public class InwardBeanController implements Serializable {
         if (date == null) {
             return patientEncounter.getAdmissionType();
         }
-        return admissionTypeHistoryService.typeAt(patientEncounter, date);
+        return timelineOf(patientEncounter).typeAt(date);
+    }
+
+    /**
+     * The admission's type timeline, read once per request. Outside a request
+     * (no request scope) it is read directly, as before.
+     */
+    private com.divudi.core.data.inward.AdmissionTypeTimeline timelineOf(PatientEncounter patientEncounter) {
+        try {
+            return admissionTypeTimelineCache.timelineFor(patientEncounter);
+        } catch (javax.enterprise.context.ContextNotActiveException e) {
+            return admissionTypeHistoryService.timelineFor(patientEncounter);
+        }
     }
 
     public void setBillFeeMargin(BillFee billFee, Item item, PriceMatrix priceMatrix, PatientEncounter patientEncounter) {
@@ -4809,7 +4824,7 @@ public class InwardBeanController implements Serializable {
         // Days before an admission type change are charged at the old type and the days
         // after it at the new type (#25814). With no history this is the single current
         // type for every day, exactly as before.
-        linen += linenForDays(admissionTypeHistoryService.timelineFor(patientEncounter),
+        linen += linenForDays(timelineOf(patientEncounter),
                 patientEncounter.getDateOfAdmission(), patientEncounter.getDateOfDischarge());
 
         return linen;

@@ -40,6 +40,8 @@ public class AdmissionTypeChangeController implements Serializable {
 
     @EJB
     private AdmissionTypeHistoryService admissionTypeHistoryService;
+    @Inject
+    private com.divudi.service.inward.AdmissionTypeTimelineRequestCache admissionTypeTimelineCache;
     @EJB
     private AdmissionTypeFacade admissionTypeFacade;
     @EJB
@@ -115,6 +117,7 @@ public class AdmissionTypeChangeController implements Serializable {
         }
         try {
             admissionTypeHistoryService.changeAdmissionType(admission, newType, reason, sessionController.getLoggedUser(), shownType);
+            admissionTypeTimelineCache.clear();
         } catch (AdmissionTypeChangeException e) {
             JsfUtil.addErrorMessage(e.getMessage());
             return "";

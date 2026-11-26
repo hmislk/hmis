@@ -208,6 +208,9 @@ public class BhtSummeryController implements Serializable {
     /** Which admission type was in force at a date (#25814). */
     @EJB
     private com.divudi.service.inward.AdmissionTypeHistoryService admissionTypeHistoryService;
+    /** Reads each admission's type history once per request (#17562). */
+    @Inject
+    private com.divudi.service.inward.AdmissionTypeTimelineRequestCache admissionTypeTimelineCache;
     @EJB
     private com.divudi.service.inward.InpatientPackagePricingService inpatientPackagePricingService;
     ////////////////////////
@@ -1604,7 +1607,7 @@ public class BhtSummeryController implements Serializable {
     private InwardBeanController.DiscountRunCache runDiscountCache;
 
     private AdmissionTypeTimeline timelineForRun() {
-        return runTimeline != null ? runTimeline : admissionTypeHistoryService.timelineFor(getPatientEncounter());
+        return runTimeline != null ? runTimeline : admissionTypeTimelineCache.timelineFor(getPatientEncounter());
     }
 
     private List<PatientRoom> patientRoomsForRun() {
@@ -1614,7 +1617,7 @@ public class BhtSummeryController implements Serializable {
 
     public void calculateDiscount() {
         if (getPatientEncounter() != null) {
-            runTimeline = admissionTypeHistoryService.timelineFor(getPatientEncounter());
+            runTimeline = admissionTypeTimelineCache.timelineFor(getPatientEncounter());
             runPatientRooms = getInwardBean().fetchPatientRoomAll(getPatientEncounter(), childPatientEncouters);
             runDiscountCache = new InwardBeanController.DiscountRunCache();
         }
@@ -3005,7 +3008,7 @@ public class BhtSummeryController implements Serializable {
         }
 
         // Whether room charges apply is judged by the type in force at the discharge time (#25814).
-        AdmissionType typeAtDischarge = admissionTypeHistoryService.typeAt(getPatientEncounter(), date);
+        AdmissionType typeAtDischarge = admissionTypeTimelineCache.typeAt(getPatientEncounter(), date);
         if (typeAtDischarge != null
                 && typeAtDischarge.isRoomChargesAllowed()) {
             boolean nursingDischargeRequired = configOptionApplicationController.getBooleanValueByKey(
@@ -4226,7 +4229,7 @@ public class BhtSummeryController implements Serializable {
         }
 
         // Whether room charges apply is judged by the type in force at the discharge time (#25814).
-        AdmissionType typeAtDischarge = admissionTypeHistoryService.typeAt(getPatientEncounter(), date);
+        AdmissionType typeAtDischarge = admissionTypeTimelineCache.typeAt(getPatientEncounter(), date);
         if (typeAtDischarge != null
                 && typeAtDischarge.isRoomChargesAllowed()) {
             // Re-fetch the encounter from the DB/L2 cache to get the authoritative currentPatientRoom FK.
@@ -6720,7 +6723,7 @@ public class BhtSummeryController implements Serializable {
      */
     private Map<InwardChargeType, Double> sumRoomMatrixMargins() {
         Map<InwardChargeType, Double> margins = new HashMap<>();
-        inwardRoomChargeCalculationService.recalculateMargins(getPatientRooms(), getPatientEncounter());
+        inwardRoomChargeCalculationService.recalculateMargins(getPatientRooms(), getPatientEncounter(), timelineForRun());
         for (PatientRoom p : getPatientRooms()) {
             if (getInwardBean().isTheatreTimeAsOt(p)) {
                 double theatreMargin = p.getMarginRoomCharge() + p.getMarginMaintainCharge()
