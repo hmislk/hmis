@@ -12,8 +12,10 @@ Detail for the working rules in the root CLAUDE.md; some rules here have no CLAU
 
 - Re-read the request line by line and tick off each item, including scheduling or timing rules it states.
 - Recount every number you report (jobs, files, rows, PRs) from the source, not from memory.
-- Stale-entity save: an entity loaded earlier in the flow must not be saved (`edit`/`merge`) after a recount, a lock, or another service's update to the same row; that overwrites the fresh values. Re-`find` it (or refresh) first, and save only after the last update.
+- Stale-entity save: an entity loaded earlier in the flow must not be saved (`edit`/`merge`) after a recount, a lock, or another service's update to the same row; that overwrites the fresh values. Call `refresh` on it first (a `find` in the same persistence context can return the stale managed copy), and save only after the last update.
 - Say what you verified by running and what you only read.
+## While you work
+
 - Waiting on a review or another member: take a second task, finish it, then check the review. Never idle while the board has work.
 - Before dispatching a follow-up fix, check the open PRs that touch the same page or class so two sessions do not fix the same thing: `gh pr list -R hmislk/hmis --state open --limit 200 --json number,files --jq '.[] | select(any(.files[]; .path | test("<name>"))) | .number'`. Do not rely on `--search`; it matches text, not changed files.
 - Before debugging a data mismatch locally, check that the local DB covers the dates in the issue. If it does not, ask for the read-only production query first.

@@ -26,7 +26,7 @@ Checklist (greps that catch most violations; still read the context):
 - Billing: item-level cancellation; report buttons on a Favorites page added to only one tab.
 - Files: `persistence.xml` JNDI changed in the diff; credentials, IPs, hostnames or hospital data in any added line; screenshots or dumps committed.
 - Migrations: a new `@Entity` class or new table in the diff with no `src/main/resources/db/migrations/v*` folder in the same diff = **Blocking**; a migration version already used by another open PR (list their migration paths: `gh pr list --state open --json number --jq '.[].number' | xargs -I{} sh -c 'gh pr diff {} --name-only | grep "^src/main/resources/db/migrations/" | sed "s/^/#{}: /"'`) = **Blocking**.
-- Stale entity: a path that saves (`edit`/`merge`) an entity instance loaded before a recount, a lock, or another service's update in the same flow, where a fresh `find`/refresh is needed first (the save overwrites fresh values) = **Blocking**.
+- Stale entity: a path that saves (`edit`/`merge`) an entity instance loaded before a recount, a lock, or another service's update in the same flow, where a `refresh` is needed first (the save overwrites fresh values) = **Blocking**.
 - JSF: `ui:fragment` or `p:repeat` in added XHTML (project rule in the ui-guidelines skill).
 
 Classification (same as merge-gate Phase 1):
