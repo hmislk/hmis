@@ -27,6 +27,7 @@
                                         value="Cancel Bill" 
                                         icon="fa fa-cancel"
                                         action="#{pharmacyBillSearch.cancelPharmacyRequestIssueToBht}"
+                                        rendered="#{webUserController.hasPrivilege('PharmacySaleCancel')}"
                                 disabled="#{pharmacyBillSearch.billACancellationBill}"
                                         style="float: right"
                                         class="ui-button-danger" >
