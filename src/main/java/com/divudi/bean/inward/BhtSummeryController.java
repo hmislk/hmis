@@ -3246,6 +3246,7 @@ public class BhtSummeryController implements Serializable {
             JsfUtil.addErrorMessage(PAYMENT_FINALIZED_MESSAGE);
             return "";
         }
+        recountSettledFinalBillSafely();
 
         updatePaymentBillList();
         JsfUtil.addSuccessMessage("Bill Saved");
@@ -3328,28 +3329,40 @@ public class BhtSummeryController implements Serializable {
             getInwardBean().updateCreditDetail(getPatientEncounter(), getCurrent().getNetTotal());
         }
         getCurrent().setReferenceBill(originalBill);
-        // Same recount as every later payment, refund and receipt (#26152). A failed
-        // recount must not undo the conversion; the next payment or receipt recounts.
-        try {
-            getInwardBean().recountFinalBillPaid(getCurrent());
-            getBillFacade().edit(getCurrent());
-        } catch (RuntimeException e) {
-            java.util.logging.Logger.getLogger(BhtSummeryController.class.getName())
-                    .log(java.util.logging.Level.WARNING, "Paid recount after converting a provisional bill failed", e);
-        }
+        getBillFacade().edit(getCurrent());
         return true;
     }
 
+    /**
+     * Recounts the paid figures of the final bill just saved (#26152), in its own
+     * transaction under the per-admission lock, after the save has committed, so a
+     * failed recount cannot undo it; the next payment, receipt or admin reset
+     * recounts it again. The bill is reloaded inside the lock and only that fresh
+     * copy is saved, so a stale session copy never writes back a confirmed flag
+     * another session has changed since; the page copy only gets the figures.
+     */
     private void recountSettledFinalBillSafely() {
+        Bill shown = getCurrent();
+        if (shown == null || shown.getId() == null) {
+            return;
+        }
         try {
             getFinalBillLockBean().withFinalBillVersionLock(getPatientEncounter(), () -> {
-                getInwardBean().recountFinalBillPaid(getCurrent());
-                getBillFacade().edit(getCurrent());
+                Bill fresh = getBillFacade().findWithoutCache(shown.getId());
+                if (fresh == null) {
+                    return null;
+                }
+                getInwardBean().recountFinalBillPaid(fresh);
+                getBillFacade().edit(fresh);
+                shown.setPaidAmount(fresh.getPaidAmount());
+                shown.setBalance(fresh.getBalance());
+                shown.setSettledAmountByPatient(fresh.getSettledAmountByPatient());
+                shown.setSettledAmountBySponsor(fresh.getSettledAmountBySponsor());
                 return null;
             });
         } catch (RuntimeException e) {
             java.util.logging.Logger.getLogger(BhtSummeryController.class.getName())
-                    .log(java.util.logging.Level.WARNING, "Paid recount after settling a final bill failed", e);
+                    .log(java.util.logging.Level.WARNING, "Paid recount of a saved final bill failed", e);
         }
     }
 
