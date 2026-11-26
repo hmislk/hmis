@@ -3151,12 +3151,14 @@ public class BhtSummeryController implements Serializable {
             if (getPatientEncounter().getPaymentMethod() == PaymentMethod.Credit) {
                 getInwardBean().updateCreditDetail(getPatientEncounter(), getCurrent().getNetTotal());
             }
-            // The paid and settled figures use the same recount as every later payment,
-            // refund and receipt, so they do not change on the first recount (#26152).
-            getInwardBean().recountFinalBillPaid(getCurrent());
-            getBillFacade().edit(getCurrent());
             return null;
         });
+
+        // The paid and settled figures use the same recount as every later payment,
+        // refund and receipt (#26152). It runs in its own locked transaction after the
+        // settlement above has committed, so a failed recount cannot roll the settlement
+        // back; the next payment, receipt or admin reset recounts it again.
+        recountSettledFinalBillSafely();
 
         updatePaymentBillList();
 
@@ -3326,10 +3328,29 @@ public class BhtSummeryController implements Serializable {
             getInwardBean().updateCreditDetail(getPatientEncounter(), getCurrent().getNetTotal());
         }
         getCurrent().setReferenceBill(originalBill);
-        // Same recount as every later payment, refund and receipt (#26152).
-        getInwardBean().recountFinalBillPaid(getCurrent());
-        getBillFacade().edit(getCurrent());
+        // Same recount as every later payment, refund and receipt (#26152). A failed
+        // recount must not undo the conversion; the next payment or receipt recounts.
+        try {
+            getInwardBean().recountFinalBillPaid(getCurrent());
+            getBillFacade().edit(getCurrent());
+        } catch (RuntimeException e) {
+            java.util.logging.Logger.getLogger(BhtSummeryController.class.getName())
+                    .log(java.util.logging.Level.WARNING, "Paid recount after converting a provisional bill failed", e);
+        }
         return true;
+    }
+
+    private void recountSettledFinalBillSafely() {
+        try {
+            getFinalBillLockBean().withFinalBillVersionLock(getPatientEncounter(), () -> {
+                getInwardBean().recountFinalBillPaid(getCurrent());
+                getBillFacade().edit(getCurrent());
+                return null;
+            });
+        } catch (RuntimeException e) {
+            java.util.logging.Logger.getLogger(BhtSummeryController.class.getName())
+                    .log(java.util.logging.Level.WARNING, "Paid recount after settling a final bill failed", e);
+        }
     }
 
     /**

@@ -433,7 +433,7 @@
                         <h:panelGroup >
                             <tr>
                                 <td style="text-align: left;font-size: 13px!important;font-weight: bold!important;">
-                                    <h:outputLabel   value="Paid By Patient " rendered="#{cc.attrs.bill.paidAmount !=0}"/>
+                                    <h:outputLabel   value="Paid By Patient " rendered="#{cc.attrs.bill.settledAmountByPatient !=0}"/>
                                 </td>
                                 <td style="text-align: left;font-size: 13px!important;">
                                     <ui:repeat value="#{bhtSummeryController.getPatientPaymentBillsForFinalBill(cc.attrs.bill)}" var="b">
@@ -452,7 +452,18 @@
 
                                 </td>
                                 <td style="text-align: right;font-size: 13px!important;font-weight: bold!important;">
-                                    <h:outputLabel  value="#{cc.attrs.bill.paidAmount}" rendered="#{cc.attrs.bill.paidAmount !=0}" >
+                                    <h:outputLabel  value="#{cc.attrs.bill.settledAmountByPatient}" rendered="#{cc.attrs.bill.settledAmountByPatient !=0}" >
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="text-align: left;font-size: 13px!important;font-weight: bold!important;">
+                                    <h:outputLabel   value="Paid By Credit Company " rendered="#{cc.attrs.bill.settledAmountBySponsor !=0}"/>
+                                </td>
+                                <td>&nbsp;</td>
+                                <td style="text-align: right;font-size: 13px!important;font-weight: bold!important;">
+                                    <h:outputLabel  value="#{cc.attrs.bill.settledAmountBySponsor}" rendered="#{cc.attrs.bill.settledAmountBySponsor !=0}" >
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </td>

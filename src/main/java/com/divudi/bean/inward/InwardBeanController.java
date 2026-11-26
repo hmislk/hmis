@@ -3500,6 +3500,42 @@ public class InwardBeanController implements Serializable {
         return getBillFacade().findDoubleByJpql(sql, hm, TemporalType.TIMESTAMP);
     }
 
+    /**
+     * What the admission had paid before {@code before}, leaving out the post
+     * final payments (#26152): the inward payment bills (signed) plus the credit
+     * company receipts net of their cancels, each created strictly before that
+     * time. Same rules as {@link #recountFinalBillPaid}, scoped in time, so a
+     * reprinted post final receipt does not change when a later receipt arrives.
+     */
+    public double getPaidExcludingPostFinalBefore(PatientEncounter patientEncounter, Date before) {
+        if (patientEncounter == null || before == null) {
+            return 0.0;
+        }
+        HashMap hm = new HashMap();
+        String sql = "SELECT sum(b.netTotal) FROM Bill b "
+                + " WHERE b.retired=false "
+                + " and b.billType=:btp "
+                + " and b.patientEncounter=:pe "
+                + " and b.createdAt<:before ";
+        hm.put("btp", BillType.InwardPaymentBill);
+        hm.put("pe", patientEncounter);
+        hm.put("before", before);
+        double payments = getBillFacade().findDoubleByJpql(sql, hm, TemporalType.TIMESTAMP);
+
+        HashMap hm2 = new HashMap();
+        String sql2 = "SELECT sum(bi.netValue) FROM BillItem bi "
+                + " WHERE bi.retired=false "
+                + " and bi.bill.retired=false "
+                + " and bi.bill.billType=:bty "
+                + " and bi.patientEncounter=:pe "
+                + " and bi.bill.createdAt<:before ";
+        hm2.put("bty", BillType.CashRecieveBill);
+        hm2.put("pe", patientEncounter);
+        hm2.put("before", before);
+        double receipts = getBillItemFacade().findDoubleByJpql(sql2, hm2, TemporalType.TIMESTAMP);
+        return payments + receipts;
+    }
+
     public double getPaidValue(PatientEncounter patientEncounter) {
 
         HashMap hm = new HashMap();
