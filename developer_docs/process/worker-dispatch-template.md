@@ -22,6 +22,14 @@ Follow every 🚨 rule in it. Hard rules, restated:
   text files only.
 - Do not merge. Open the PR and report.
 
+For a QA or e2e brief, add:
+- Login: the brief names the login route. Either the approved loader puts the one
+  value into a variable with one command, or a SQL hash reset of the local test
+  user on a local DB. Never run grep, sed, cat, head, loops or any read on files
+  in the credentials folder. Never print a masked or shaped form of any line.
+  If the login fails or a check refuses a step, stop and return BLOCKED. Do not
+  work round it, even for a deadline.
+
 Task: <what to do, with the exact files in scope and any files to stay out of>
 When done: log_work on the hub and report branch, PR number and files changed.
 ```
