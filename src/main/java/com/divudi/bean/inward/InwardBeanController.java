@@ -10,6 +10,7 @@ import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.BillTypeAtomic;
+import com.divudi.core.data.CompanyShareAllocation;
 import com.divudi.core.data.FinalBillPaidFigures;
 import com.divudi.core.data.DepartmentType;
 import com.divudi.core.data.FeeType;
@@ -3431,6 +3432,62 @@ public class InwardBeanController implements Serializable {
         finalBill.setSettledAmountByPatient(figures.getSettledAmountByPatient());
         finalBill.setSettledAmountBySponsor(figures.getSettledAmountBySponsor());
         finalBill.setBalance(figures.balanceFor(finalBill.getNetTotal()));
+    }
+
+    /**
+     * Recounts the credit company shares of a settled final bill after a post
+     * final patient payment, cancel or refund (#26159). Each commitment bill
+     * keeps the share fixed at settle in {@code total}; {@code netTotal} (what
+     * the company still owes, read by the company receipt page and the credit
+     * reports) is that share lowered by the post final payments the final bill
+     * carries, last company first, never below 0
+     * ({@link CompanyShareAllocation}). A recount, not increments, so the order
+     * of payments and cancels does not matter. An approved final bill carries
+     * only the rows created up to its approval time (#23848), the same rule as
+     * {@link #getPostFinalPaymentTotalIncludedIn}. Each commitment bill is
+     * reloaded and only that fresh copy is saved. Call it under the
+     * per-admission final bill lock.
+     */
+    public void recountCreditCompanyShares(Bill finalBill) {
+        if (finalBill == null || finalBill.getId() == null || finalBill.getPatientEncounter() == null) {
+            return;
+        }
+        List<Bill> found = fetchCreditCompanyCommitmentBills(finalBill.getPatientEncounter());
+        List<Bill> commitments = new ArrayList<>();
+        for (Bill b : found) {
+            if (b.getReferenceBill() != null && finalBill.getId().equals(b.getReferenceBill().getId())) {
+                commitments.add(b);
+            }
+        }
+        if (commitments.isEmpty()) {
+            return;
+        }
+        commitments.sort(Comparator.comparing(Bill::getId));
+        List<Bill> fresh = new ArrayList<>();
+        double[] originals = new double[commitments.size()];
+        for (int i = 0; i < commitments.size(); i++) {
+            Bill f = getBillFacade().findWithoutCache(commitments.get(i).getId());
+            if (f == null) {
+                return;
+            }
+            fresh.add(f);
+            // total is the share fixed at settle and nothing else writes it afterwards;
+            // a commitment with no total (older data) takes it from netTotal once.
+            originals[i] = f.getTotal() > 0 ? f.getTotal() : f.getNetTotal();
+        }
+        double[] lowered = CompanyShareAllocation.lowerShares(originals,
+                getPostFinalPaymentTotalIncludedIn(finalBill));
+        for (int i = 0; i < fresh.size(); i++) {
+            Bill f = fresh.get(i);
+            double oldNet = f.getNetTotal();
+            if (f.getTotal() <= 0) {
+                f.setTotal(originals[i]);
+            }
+            f.setNetTotal(lowered[i]);
+            double balance = f.getBalance() + (lowered[i] - oldNet);
+            f.setBalance(Math.max(0.0, balance));
+            getBillFacade().edit(f);
+        }
     }
 
     /**

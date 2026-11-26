@@ -2727,6 +2727,8 @@ public class BillBeanController implements Serializable {
             }
             getInwardBean().recountFinalBillPaid(finalBill);
             getBillFacade().edit(finalBill);
+            // The payment lowers what the credit companies still owe (#26159).
+            getInwardBean().recountCreditCompanyShares(finalBill);
             return null;
         });
     }

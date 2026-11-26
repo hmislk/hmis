@@ -759,6 +759,13 @@ public class CreditCompanyBillSearch implements Serializable {
 
     private void updateReferenceBill(BillItem cancellationBillItem) {
         Bill referenceBill = cancellationBillItem.getReferenceBill();
+        if (referenceBill != null && referenceBill.getId() != null) {
+            // Fresh copy, so a stale one never writes back an older netTotal (#26159).
+            Bill fresh = getBillFacade().findWithoutCache(referenceBill.getId());
+            if (fresh != null) {
+                referenceBill = fresh;
+            }
+        }
 
 
         // CRITICAL FIX: Remove manual paidAmount adjustment that corrupts balance calculation
