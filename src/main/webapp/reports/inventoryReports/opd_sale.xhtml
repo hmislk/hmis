@@ -207,10 +207,15 @@
                                     white-space: normal !important;
                                     word-break: break-word;
                                 }
-                                /* Item columns: one line per item so NAME, CODE, BATCH NO, QTY and rates stay aligned */
+                                /* Item columns: one line per item so CODE, QTY and rates stay aligned; NAME and BATCH NO wrap so long names fit the page */
                                 .cogs-sale-print .ui-datatable td.cogs-item-col {
                                     white-space: nowrap !important;
                                     word-break: normal;
+                                }
+                                .cogs-sale-print .ui-datatable td.cogs-name-col {
+                                    white-space: normal !important;
+                                    word-break: break-word;
+                                    overflow-wrap: anywhere;
                                 }
                                 .cogs-sale-print .ui-paginator { display: none !important; }
                                 .cogs-sale-print .ui-datatable thead { display: table-header-group; }
@@ -357,7 +362,7 @@
                                 </p:row>
                             </p:columnGroup>
 
-                            <p:column headerText="NAME" width="12em" styleClass="cogs-item-col">
+                            <p:column headerText="NAME" width="12em" styleClass="cogs-name-col">
                                 <ui:repeat value="#{b.billItemsMap.values()}" var="biObject" >
                                     <h:outputText value="#{biObject.itemName}" /><p:divider/><br/>
                                 </ui:repeat>
@@ -367,7 +372,7 @@
                                     <h:outputText value="#{biObject.itemCode}" /><p:divider/><br/>
                                 </ui:repeat>
                             </p:column>
-                            <p:column headerText="BATCH NO" styleClass="cogs-item-col">
+                            <p:column headerText="BATCH NO" styleClass="cogs-name-col">
                                 <ui:repeat value="#{b.billItemsMap.values()}" var="biObject">
                                     <h:outputText value="#{biObject.batchNo}" /><p:divider/><br/>
                                 </ui:repeat>
