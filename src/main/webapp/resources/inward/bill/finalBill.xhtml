@@ -1243,7 +1243,7 @@
                                             &nbsp;
                                         </td>
                                         <td style="text-align: right;font-size: 13px!important;font-weight: bold!important;">
-                                            <h:outputLabel value="#{cc.attrs.bill.netTotal-(cc.attrs.bill.paidAmount)}">
+                                            <h:outputLabel value="#{(cc.attrs.bill.netTotal-cc.attrs.bill.paidAmount) lt 0 ? (cc.attrs.bill.paidAmount-cc.attrs.bill.netTotal) : (cc.attrs.bill.netTotal-cc.attrs.bill.paidAmount)}">
                                                 <f:convertNumber pattern="#,##0.00" />
                                             </h:outputLabel>
                                         </td>

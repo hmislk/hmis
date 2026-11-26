@@ -2778,7 +2778,7 @@ public class BillBeanController implements Serializable {
             Long finalBillId = commitmentOrFinalBill.getReferenceBill().getId();
             finalBillLockBean.withFinalBillVersionLock(commitmentOrFinalBill.getPatientEncounter(), () -> {
                 Bill fresh = getBillFacade().findWithoutCache(finalBillId);
-                if (fresh == null || fresh.isRetired()) {
+                if (fresh == null || fresh.isRetired() || fresh.isCancelled()) {
                     return null;
                 }
                 getInwardBean().recountFinalBillPaid(fresh);
