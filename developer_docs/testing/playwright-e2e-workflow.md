@@ -110,6 +110,12 @@ The HMIS login + landing flow has a fixed shape:
 1. `browser_navigate` to the deployment URL.
 2. Fill username/password and submit. Use real key events (see §3) if a plain
    fill doesn't register.
+   The brief gives the login route: the approved loader puts the one value into a
+   variable with one command, or a SQL hash reset of the local test user on a
+   local DB. Never run grep, sed, cat, head, loops or any read on files in the
+   credentials folder. Never print a masked or shaped form of any line. If the
+   login fails or a check refuses a step, stop and return BLOCKED. Do not work
+   round it, even for a deadline.
 3. After login the app lands on an **index/landing** page. The main menu bar
    (Pharmacy, Inward, etc.) **only appears on inner pages**, not on the
    department-selection screen.

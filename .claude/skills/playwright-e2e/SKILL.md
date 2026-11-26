@@ -116,6 +116,12 @@ table. If you are that subagent, skip this paragraph.
    [§1](../../../developer_docs/testing/playwright-e2e-workflow.md#1-login-and-department-selection).
    Then reach the page under test **through the menus only** — never by URL
    (see above).
+   **Login route.** The brief gives it: the approved loader puts the one value
+   into a variable with one command, or a SQL hash reset of the local test user
+   on a local DB. Never run grep, sed, cat, head, loops or any read on files in
+   the credentials folder. Never print a masked or shaped form of any line. If
+   the login fails or a check refuses a step, stop and return BLOCKED. Do not
+   work round it, even for a deadline.
 4. **Drive the feature** using accessibility snapshots (`browser_snapshot`)
    to locate elements, real key events for PrimeFaces inputs (§3), and
    `browser_handle_dialog` for `confirm()` guards (§4). Wait on the expected
