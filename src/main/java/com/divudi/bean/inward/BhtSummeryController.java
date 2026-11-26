@@ -3354,6 +3354,8 @@ public class BhtSummeryController implements Serializable {
                 }
                 getInwardBean().recountFinalBillPaid(fresh);
                 getBillFacade().edit(fresh);
+                // The new commitments start at the settle share; post final payments lower them (#26159).
+                getInwardBean().recountCreditCompanyShares(fresh);
                 shown.setPaidAmount(fresh.getPaidAmount());
                 shown.setBalance(fresh.getBalance());
                 shown.setSettledAmountByPatient(fresh.getSettledAmountByPatient());
@@ -3436,7 +3438,10 @@ public class BhtSummeryController implements Serializable {
                 // duplicate EncounterCreditCompany registrations for the same institution
                 // are possible via older data paths (e.g. AdmissionController), which
                 // would otherwise silently drop all but the last bill's amount here.
-                allocatedByCompany.merge(ccBill.getCreditCompany(), ccBill.getNetTotal(), Double::sum);
+                // The share fixed at settle (total), not the netTotal a post final payment may have
+                // lowered (#26159); the new version's own recount lowers it again.
+                allocatedByCompany.merge(ccBill.getCreditCompany(),
+                        ccBill.getTotal() > 0 ? ccBill.getTotal() : ccBill.getNetTotal(), Double::sum);
             }
         }
 

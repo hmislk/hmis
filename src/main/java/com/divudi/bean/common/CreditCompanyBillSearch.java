@@ -784,12 +784,7 @@ public class CreditCompanyBillSearch implements Serializable {
         referenceBill.setSettledAmountBySponsor(settledCreditValueByCompanies);
 
         // Calculate the accurate current balance using the same formula used in settlement process
-        double netTotal = Math.abs(referenceBill.getNetTotal() + referenceBill.getVat());
-        double refundAmount = Math.abs(getCreditBean().getRefundAmount(referenceBill));
-        double currentBalance = netTotal - (totalSettlement + refundAmount);
-
-
-        referenceBill.setBalance(Math.max(0, currentBalance)); // Ensure balance doesn't go negative
+        referenceBill.setBalance(getCreditBean().calculateOutstandingBalance(referenceBill));
 
         getBillFacade().edit(referenceBill);
 

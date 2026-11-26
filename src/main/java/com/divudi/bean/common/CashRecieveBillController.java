@@ -1931,10 +1931,7 @@ public class CashRecieveBillController implements Serializable {
 
         // CRITICAL FIX: Update balance field to stay synchronized with paid amount
         // Calculate the accurate current balance using the same formula as calculateCurrentBalance
-        double netTotal = Math.abs(referenceBill.getNetTotal() + referenceBill.getVat());
-        double refundAmount = Math.abs(getCreditBean().getRefundAmount(referenceBill));
-        double currentBalance = netTotal - (settleCreditValueTotal + refundAmount + referenceBill.getWrittenOffAmount());
-        referenceBill.setBalance(Math.max(0, currentBalance)); // Ensure balance doesn't go negative
+        referenceBill.setBalance(getCreditBean().calculateOutstandingBalance(referenceBill));
 
         // Check if bill is fully paid and set paidAt timestamp
         double absBillAmount = Math.abs(referenceBill.getNetTotal());

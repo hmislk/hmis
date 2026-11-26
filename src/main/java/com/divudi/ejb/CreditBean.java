@@ -683,6 +683,21 @@ public class CreditBean {
         return getBillItemFacade().findDoubleByJpql(sql, hm);
     }
 
+    /**
+     * The outstanding balance of a credit bill, computed from scratch so it
+     * never depends on earlier values: |netTotal + vat| less paid, refunded
+     * and written off, never below 0. The one formula for the company receipt,
+     * its cancel and the post final share recount (#26159).
+     */
+    public double calculateOutstandingBalance(Bill b) {
+        if (b == null) {
+            return 0.0;
+        }
+        double billTotal = Math.abs(b.getNetTotal() + b.getVat());
+        double refund = Math.abs(getRefundAmount(b));
+        return Math.max(0.0, billTotal - (b.getPaidAmount() + refund + b.getWrittenOffAmount()));
+    }
+
     public double getRefundAmount(Bill b) {
         // Finds the refund/cancellation bills linked to a bill, handling different structures:
         // 1. Direct refunds: rb.billedBill = b

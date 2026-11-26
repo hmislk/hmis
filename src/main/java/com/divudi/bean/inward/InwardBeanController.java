@@ -95,6 +95,8 @@ import javax.persistence.TemporalType;
 public class InwardBeanController implements Serializable {
 
     @EJB
+    private com.divudi.ejb.CreditBean creditBean;
+    @EJB
     private PatientRoomFacade patientRoomFacade;
     @EJB
     PatientEncounterFacade patientEncounterFacade;
@@ -3479,13 +3481,11 @@ public class InwardBeanController implements Serializable {
                 getPostFinalPaymentTotalIncludedIn(finalBill));
         for (int i = 0; i < fresh.size(); i++) {
             Bill f = fresh.get(i);
-            double oldNet = f.getNetTotal();
             if (f.getTotal() <= 0) {
                 f.setTotal(originals[i]);
             }
             f.setNetTotal(lowered[i]);
-            double balance = f.getBalance() + (lowered[i] - oldNet);
-            f.setBalance(Math.max(0.0, balance));
+            f.setBalance(creditBean.calculateOutstandingBalance(f));
             getBillFacade().edit(f);
         }
     }
