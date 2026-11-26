@@ -1087,6 +1087,59 @@ public class InwardBeanController implements Serializable {
         return getPatientItemFacade().findByJpql(sql, hm);
     }
 
+    /** Largest id list bound to one bulk UPDATE. */
+    public static final int BULK_UPDATE_ID_CHUNK = 500;
+
+    /**
+     * Splits {@code ids} into consecutive lists of at most {@code size}. The
+     * lists are copies, so the source can change afterwards.
+     */
+    public static List<List<Long>> chunkIds(List<Long> ids, int size) {
+        if (size < 1) {
+            throw new IllegalArgumentException("size must be at least 1");
+        }
+        List<List<Long>> chunks = new ArrayList<>();
+        if (ids == null) {
+            return chunks;
+        }
+        for (int i = 0; i < ids.size(); i += size) {
+            chunks.add(new ArrayList<>(ids.subList(i, Math.min(ids.size(), i + size))));
+        }
+        return chunks;
+    }
+
+    /**
+     * Rewrites {@code UPDATE X s SET ... WHERE <path conditions>} so MySQL gets
+     * plain {@code UPDATE ... WHERE id IN (...)} statements. EclipseLink turns
+     * a bulk UPDATE whose WHERE walks a relationship into a temporary-table
+     * dance (CREATE / INSERT / UPDATE join / DELETE, issue #17562). Here the
+     * ids are read once with the same WHERE (a SELECT, no entities loaded),
+     * then updated by id in chunks. Nothing is sent when no row matches.
+     *
+     * @param updateJpql the original "UPDATE X alias SET ... WHERE ..." text
+     * @return rows matched by the WHERE
+     */
+    private <T> int bulkUpdateByIds(com.divudi.core.facade.AbstractFacade<T> facade, String entityName, String updateJpql, Map<String, Object> params) {
+        String lower = updateJpql.toLowerCase();
+        int whereAt = lower.indexOf(" where ");
+        int setAt = lower.indexOf(" set ");
+        String alias = updateJpql.substring(lower.indexOf(entityName.toLowerCase()) + entityName.length(), setAt).trim();
+        String selectJpql = "SELECT " + alias + ".id FROM " + entityName + " " + alias + updateJpql.substring(whereAt);
+        List<Long> ids = facade.findLongList(selectJpql, params);
+        if (ids == null) {
+            throw new RuntimeException("Failed to read the rows for bulk update: " + selectJpql);
+        }
+        int updated = 0;
+        String setClause = updateJpql.substring(setAt + 5, whereAt);
+        String byId = "UPDATE " + entityName + " " + alias + " SET " + setClause + " WHERE " + alias + ".id IN :ids";
+        for (List<Long> chunk : chunkIds(ids, BULK_UPDATE_ID_CHUNK)) {
+            Map<String, Object> idParams = new HashMap<>();
+            idParams.put("ids", chunk);
+            updated += facade.updateByJpql(byId, idParams);
+        }
+        return updated;
+    }
+
     /**
      * Clears any previously applied discount on timed-service BillItems when no
      * price matrix applies. Mirrors {@link #bulkClearPatientItemsWithOutMatrix}
@@ -1112,7 +1165,7 @@ public class InwardBeanController implements Serializable {
         hm.put("cls", TimedItem.class);
         hm.put("pe", patientEncounter);
         hm.put("inw", inwardChargeType);
-        getBillItemFacade().updateByJpql(sql, hm);
+        bulkUpdateByIds(getBillItemFacade(), "BillItem", sql, hm);
         String piSql = "UPDATE PatientItem s SET s.discount = 0.0"
                 + " WHERE s.retired = false"
                 + " AND type(s.item) = :cls"
@@ -1123,7 +1176,7 @@ public class InwardBeanController implements Serializable {
         piHm.put("cls", TimedItem.class);
         piHm.put("pe", patientEncounter);
         piHm.put("inw", inwardChargeType);
-        getPatientItemFacade().updateByJpql(piSql, piHm);
+        bulkUpdateByIds(getPatientItemFacade(), "PatientItem", piSql, piHm);
     }
 
     public List<BillFee> createDoctorAndNurseFee(PatientEncounter patientEncounter, List<PatientEncounter> cpts) {
@@ -1210,7 +1263,7 @@ public class InwardBeanController implements Serializable {
         hm.put("ftp", FeeType.Staff);
         hm.put("btp", BillType.InwardProfessional);
         hm.put("pe", pts);
-        getBillFeeFacade().updateByJpql(sql, hm);
+        bulkUpdateByIds(getBillFeeFacade(), "BillFee", sql, hm);
     }
 
     /**
@@ -1239,7 +1292,7 @@ public class InwardBeanController implements Serializable {
         hm.put("ftp", FeeType.Staff);
         hm.put("btp", BillType.InwardProfessional);
         hm.put("pe", pts);
-        getBillFeeFacade().updateByJpql(sql, hm);
+        bulkUpdateByIds(getBillFeeFacade(), "BillFee", sql, hm);
     }
 
     /**
@@ -1257,7 +1310,7 @@ public class InwardBeanController implements Serializable {
         hm.put("ftp", FeeType.Staff);
         hm.put("btp", BillType.InwardProfessional);
         hm.put("pe", encounterWithChildren(patientEncounter, cpts));
-        getBillFeeFacade().updateByJpql(sql, hm);
+        bulkUpdateByIds(getBillFeeFacade(), "BillFee", sql, hm);
     }
 
     public void bulkClearServiceBillFeesWithOutMatrix(InwardChargeType inwardChargeType, PatientEncounter patientEncounter) {
@@ -1272,7 +1325,7 @@ public class InwardBeanController implements Serializable {
         hm.put("pe", patientEncounter);
         hm.put("inw", inwardChargeType);
         hm.put("st", FeeType.Staff);
-        getBillFeeFacade().updateByJpql(sql, hm);
+        bulkUpdateByIds(getBillFeeFacade(), "BillFee", sql, hm);
 
         String biSql = "UPDATE BillItem s SET s.discount = 0.0, s.netValue = s.grossValue + s.marginValue"
                 + " WHERE s.retired = false"
@@ -1283,7 +1336,7 @@ public class InwardBeanController implements Serializable {
         biHm.put("btp", BillType.InwardBill);
         biHm.put("pe", patientEncounter);
         biHm.put("inw", inwardChargeType);
-        getBillItemFacade().updateByJpql(biSql, biHm);
+        bulkUpdateByIds(getBillItemFacade(), "BillItem", biSql, biHm);
     }
 
     public void bulkClearPatientItemsWithOutMatrix(InwardChargeType inwardChargeType, PatientEncounter patientEncounter) {
@@ -1297,7 +1350,7 @@ public class InwardBeanController implements Serializable {
         hm.put("cls", TimedItem.class);
         hm.put("pe", patientEncounter);
         hm.put("inw", inwardChargeType);
-        getPatientItemFacade().updateByJpql(sql, hm);
+        bulkUpdateByIds(getPatientItemFacade(), "PatientItem", sql, hm);
     }
 
     /**
