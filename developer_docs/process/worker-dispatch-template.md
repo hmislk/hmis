@@ -15,6 +15,8 @@ Follow every 🚨 rule in it. Hard rules, restated:
   (issue, PR, comment, review), write the text to a file and run the
   `hmis-public-guard` subagent on it; post only after a PASS. The
   public-guard hook also scans those commands.
+- Hardening brief: the PR body starts with `@coderabbitai ignore`; public text is
+  "hardening, tracked under #N" only.
 - Screenshots, Playwright output, PDFs and DB dumps go to the out-of-repo
   per-machine directory, never inside the repo tree. In-repo tmp/ is for small
   text files only.
