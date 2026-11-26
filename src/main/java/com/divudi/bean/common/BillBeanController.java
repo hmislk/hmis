@@ -2687,6 +2687,32 @@ public class BillBeanController implements Serializable {
         return allLinked;
     }
 
+    /**
+     * Refreshes the final bill's paid amount and balance after a Post Final
+     * Bill Payment, or its cancellation or refund, is saved (#26125). The
+     * paid amount is recomputed from the database, so a cancelled payment
+     * drops out. An approved final bill is frozen (#23848) and is left alone;
+     * the same rule is in {@link InwardBeanController#getPostFinalPaymentTotalIncludedIn}.
+     * Same per-admission lock as the other final bill updates.
+     */
+    public void refreshFinalBillAfterPostFinalPayment(PatientEncounter patientEncounter) {
+        if (patientEncounter == null || patientEncounter.getId() == null) {
+            return;
+        }
+        finalBillLockBean.withFinalBillVersionLock(patientEncounter, () -> {
+            PatientEncounter fresh = finalBillPatientEncounterFacade.findWithoutCache(patientEncounter.getId());
+            if (fresh == null || !fresh.isPaymentFinalized()) {
+                return null;
+            }
+            Bill finalBill = getInwardBean().fetchFinalBill(fresh);
+            if (finalBill == null || finalBill.getApproveAt() != null) {
+                return null;
+            }
+            getInwardBean().updateFinalFill(fresh);
+            return null;
+        });
+    }
+
     private FinalBillLinkResult linkToFreshFinalBill(PatientEncounter patientEncounter, Bill bill, boolean refresh) {
         return linkToFreshFinalBill(patientEncounter, bill, refresh, bill == null ? 0 : bill.getNetTotal());
     }
