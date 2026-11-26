@@ -23,8 +23,8 @@ issues, PR bodies, comments and docs.
 
 ## Simplified Technical English (ASD-STE100)
 
-Hub messages, asks to the user and Telegram replies follow ASD-STE100
-(team request, 24 Nov 2026). Target: 80% of sentences obey all rules.
+Replies to the user, hub messages, asks to the user and Telegram replies follow
+ASD-STE100. Target: 80% of sentences obey all rules.
 
 1. An instruction has 20 words or fewer. A description has 25 words or fewer.
 2. Write one instruction or one fact in one sentence.
@@ -32,9 +32,9 @@ Hub messages, asks to the user and Telegram replies follow ASD-STE100
 4. Use simple tenses only: present, simple past, future. No -ing verb forms.
 5. Write the subject first and the result before the details.
 6. Use one word for one thing. Use the words on the screen.
-7. No method names, class names, commit codes or code in text for the user.
+7. Technical terms the team normally uses are OK (for example commit, branch, API, query, cache). Do not put method names, class names, commit codes or code in text for the user.
 8. A paragraph has 6 sentences or fewer. Use a numbered list for steps.
-9. Do not use jargon. Use only the agreed short words below; write every other short form in full.
+9. Do not invent terms. Use the normal technical terms and the agreed short words below. Write every other short form in full.
 10. Write full sentences with "the" and "a". Do not write in note form.
 11. When you give a PR or issue number, say what it is: "PR 26067 (inpatient due reports)".
 12. Put gate words, commit codes and code names on the last line, after the label "For sessions:".
