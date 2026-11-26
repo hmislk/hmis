@@ -56,7 +56,7 @@ class PharmacyItemRefundFlagsTest {
     }
 
     @Test
-    void labelShowsWhenEitherFlagIsSet() {
+    void labelShowsWhenEitherItemFlagIsSet() {
         assertTrue(PharmacyItemRefundFlags.isShownRefunded(true, false));
         assertTrue(PharmacyItemRefundFlags.isShownRefunded(false, true));
         assertTrue(PharmacyItemRefundFlags.isShownRefunded(null, true));
@@ -69,6 +69,9 @@ class PharmacyItemRefundFlagsTest {
         PharmacySaleBillItemSearchDTO itemOnly = new PharmacySaleBillItemSearchDTO(
                 1L, "D1", null, 2L, "n", "c", 1.0, 1.0, "p", false, false, true);
         assertEquals(Boolean.TRUE, itemOnly.getRefunded());
+        PharmacySaleBillItemSearchDTO linkedOnly = new PharmacySaleBillItemSearchDTO(
+                1L, "D1", null, 2L, "n", "c", 1.0, 1.0, "p", false, null, true);
+        assertEquals(Boolean.TRUE, linkedOnly.getRefunded());
         PharmacySaleBillItemSearchDTO none = new PharmacySaleBillItemSearchDTO(
                 1L, "D1", null, 2L, "n", "c", 1.0, 1.0, "p", false, false, false);
         assertEquals(Boolean.FALSE, none.getRefunded());

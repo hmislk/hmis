@@ -4175,7 +4175,9 @@ public class PharmacyBillSearch implements Serializable {
 
                 getBill().setCancelledBill(cb);
                 getBillFacade().edit(getBill());
-                clearItemRefundFlagsIfNoActiveRefund(getBill());
+                if (getBill().getBillTypeAtomic() == BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEM_PAYMENTS) {
+                    clearItemRefundFlagsIfNoActiveRefund(getBill());
+                }
 
                 getCashTransactionBean().saveBillCashInTransaction(cb, getSessionController().getLoggedUser());
 
@@ -6330,10 +6332,11 @@ public class PharmacyBillSearch implements Serializable {
                 + "it.id, COALESCE(it.name, ''), COALESCE(it.code, ''), "
                 + "bi.qty, bi.netValue, "
                 + "COALESCE(pp.name, ''), "
-                + "rb.cancelled, rb.refunded, bi.refunded) "
+                + "rb.cancelled, bi.refunded, lbi.refunded) "
                 + "FROM BillItem bi "
                 + "JOIN bi.bill b "
                 + "JOIN b.referenceBill rb "
+                + "LEFT JOIN bi.referanceBillItem lbi "
                 + "LEFT JOIN bi.item it "
                 + "LEFT JOIN b.patient p "
                 + "LEFT JOIN p.person pp "

@@ -47,10 +47,11 @@ public final class PharmacyItemRefundFlags {
     }
 
     /**
-     * Label rule for Search Sale Bill Items: refunded when the settled sale
-     * bill is flagged or the item itself is flagged.
+     * Label rule for Search Sale Bill Items: refunded when the pre-bill item or
+     * its billed-bill copy is flagged. The sale bill's refunded flag means
+     * "returned", so it is not part of this rule.
      */
-    public static boolean isShownRefunded(Boolean saleBillRefunded, Boolean itemRefunded) {
-        return Boolean.TRUE.equals(saleBillRefunded) || Boolean.TRUE.equals(itemRefunded);
+    public static boolean isShownRefunded(Boolean itemRefunded, Boolean linkedItemRefunded) {
+        return Boolean.TRUE.equals(itemRefunded) || Boolean.TRUE.equals(linkedItemRefunded);
     }
 }

@@ -1531,12 +1531,25 @@ public class PharmacyRefundForItemReturnsController implements Serializable, Con
 
             //        getPharmacyBean().deductFromStock(tbi.getItem(), tbi.getQty(), tbi.getBill().getDepartment());
 //            getRefundBill().getBillItems().add(sbi);
+        }
+    }
 
-            BillItem originalBillItem = tbi.getReferanceBillItem();
-
-            if (PharmacyItemRefundFlags.markRefunded(originalBillItem)) {
-                getBillItemFacade().editAndFlush(originalBillItem);
+    /**
+     * Flags the original sale items as refunded once the refund and the
+     * balances are saved. A failure is logged and never undoes the refund
+     * (#24485).
+     */
+    private void markOriginalItemsRefunded() {
+        try {
+            for (BillItem tbi : itemReturnBill.getBillItems()) {
+                BillItem originalBillItem = tbi.getReferanceBillItem();
+                if (PharmacyItemRefundFlags.markRefunded(originalBillItem)) {
+                    getBillItemFacade().editAndFlush(originalBillItem);
+                }
             }
+        } catch (RuntimeException e) {
+            java.util.logging.Logger.getLogger(PharmacyRefundForItemReturnsController.class.getName())
+                    .log(java.util.logging.Level.SEVERE, "Could not mark the original items refunded", e);
         }
     }
 
@@ -2392,6 +2405,8 @@ public class PharmacyRefundForItemReturnsController implements Serializable, Con
 
 //        getBillFacade().edit(getRefundBill());
         paymentService.updateBalances(refundPayments);
+
+        markOriginalItemsRefunded();
 
         Long tmpBillId = getRefundBill().getId();
 
