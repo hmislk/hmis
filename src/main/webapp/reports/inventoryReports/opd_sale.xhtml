@@ -185,6 +185,10 @@
                         </div>
 
                         <style>
+                            .cogs-items-table { width: 100%; table-layout: fixed; border-collapse: collapse; }
+                            .cogs-items-table td, .cogs-items-table th { padding: 2px 3px; vertical-align: top; }
+                            .cogs-items-table td.cogs-name-col { white-space: normal; word-break: break-word; overflow-wrap: anywhere; }
+                            .cogs-items-table td.cogs-item-col { white-space: nowrap; }
                             /* Print: fit every column on the page, no scroll bar (#25497) */
                             @page { size: A4 landscape; margin: 8mm; }
                             @media print {
@@ -348,82 +352,52 @@
                                 <p:row >
                                     <p:column headerText="Date" width="6em"/>
                                     <p:column headerText="Doc. No" width="6em"/>
-                                    <p:column headerText="NAME" width="12em"/>
-                                    <p:column headerText="CODE" width="6em"/>
-                                    <p:column headerText="BATCH NO" width="6em"/>
-                                    <p:column headerText="QTY" width="4em"/>
-                                    <p:column headerText="COST RATE" width="6em"/>
-                                    <p:column headerText="COST VALUE" width="6em"/>
-                                    <p:column headerText="PURCHASE RATE" width="6em"/>
-                                    <p:column headerText="PURCHASE VALUE" width="6em"/>
-                                    <p:column headerText="MRP" width="6em"/>
-                                    <p:column headerText="MRP Value" width="6em"/>
+                                    <p:column colspan="10" styleClass="cogs-items-col">
+                                        <f:facet name="header">
+                                            <table class="cogs-items-table"><colgroup><col style="width:12em"/><col style="width:6em"/><col style="width:6em"/><col style="width:4em"/><col style="width:6em"/><col style="width:6em"/><col style="width:6em"/><col style="width:6em"/><col style="width:6em"/><col style="width:6em"/></colgroup>
+                                                <tr><th class="cogs-name-col">NAME</th><th class="cogs-item-col text-end">CODE</th><th class="cogs-name-col">BATCH NO</th><th class="cogs-item-col text-end">QTY</th><th class="cogs-item-col text-end">COST RATE</th><th class="cogs-item-col text-end">COST VALUE</th><th class="cogs-item-col text-end">PURCHASE RATE</th><th class="cogs-item-col text-end">PURCHASE VALUE</th><th class="cogs-item-col text-end">MRP</th><th class="cogs-item-col text-end">MRP Value</th></tr>
+                                            </table>
+                                        </f:facet>
+                                    </p:column>
                                     <p:column headerText="Net Total" width="6em"/>
                                     <p:column headerText="Payment Mode/Modes" width="12em"/>
                                     <p:column headerText="Discount" width="6em"/>
                                 </p:row>
                             </p:columnGroup>
 
-                            <p:column headerText="NAME" width="12em" styleClass="cogs-name-col">
-                                <ui:repeat value="#{b.billItemsMap.values()}" var="biObject" >
-                                    <h:outputText value="#{biObject.itemName}" /><p:divider/><br/>
-                                </ui:repeat>
-                            </p:column>
-                            <p:column headerText="CODE" styleClass="cogs-item-col">
-                                <ui:repeat value="#{b.billItemsMap.values()}" var="biObject">
-                                    <h:outputText value="#{biObject.itemCode}" /><p:divider/><br/>
-                                </ui:repeat>
-                            </p:column>
-                            <p:column headerText="BATCH NO" styleClass="cogs-name-col">
-                                <ui:repeat value="#{b.billItemsMap.values()}" var="biObject">
-                                    <h:outputText value="#{biObject.batchNo}" /><p:divider/><br/>
-                                </ui:repeat>
-                            </p:column>
-                            <p:column headerText="QTY" styleClass="cogs-item-col">
-                                <ui:repeat value="#{b.billItemsMap.values()}" var="biObject">
-                                    <h:outputText value="#{biObject.qty}" ><f:convertNumber pattern="#,##0"/></h:outputText><p:divider/><br/>
-                                </ui:repeat>
-                            </p:column>
-                            <p:column headerText="COST RATE" styleClass="cogs-item-col">
-                                <ui:repeat value="#{b.billItemsMap.values()}" var="biObject">
-                                    <h:outputText value="#{biObject.costRate}" ><f:convertNumber pattern="#,##0.00"/></h:outputText><p:divider/><br/>
-                                </ui:repeat>
-                            </p:column>
-                            <p:column headerText="COST VALUE" styleClass="cogs-item-col">
-                                <ui:repeat value="#{b.billItemsMap.values()}" var="biObject">
-                                    <h:outputText value="#{biObject.qty * biObject.costRate}" ><f:convertNumber pattern="#,##0.00"/></h:outputText><p:divider/><br/>
-                                </ui:repeat>
+<p:column headerText="Items" styleClass="cogs-items-col">
+                                <table class="cogs-items-table"><colgroup><col style="width:12em"/><col style="width:6em"/><col style="width:6em"/><col style="width:4em"/><col style="width:6em"/><col style="width:6em"/><col style="width:6em"/><col style="width:6em"/><col style="width:6em"/><col style="width:6em"/></colgroup>
+                                    <ui:repeat value="#{b.billItemsMap.values()}" var="biObject">
+                                        <tr>
+                                            <td class="cogs-name-col"><h:outputText value="#{biObject.itemName}" /></td>
+                                            <td class="cogs-item-col"><h:outputText value="#{biObject.itemCode}" /></td>
+                                            <td class="cogs-name-col"><h:outputText value="#{biObject.batchNo}" /></td>
+                                            <td class="cogs-item-col text-end"><h:outputText value="#{biObject.qty}"><f:convertNumber pattern="#,##0"/></h:outputText></td>
+                                            <td class="cogs-item-col text-end"><h:outputText value="#{biObject.costRate}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td>
+                                            <td class="cogs-item-col text-end"><h:outputText value="#{biObject.qty * biObject.costRate}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td>
+                                            <td class="cogs-item-col text-end"><h:outputText value="#{biObject.purchaseRate}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td>
+                                            <td class="cogs-item-col text-end"><h:outputText value="#{biObject.qty * biObject.purchaseRate}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td>
+                                            <td class="cogs-item-col text-end"><h:outputText value="#{biObject.retailRate}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td>
+                                            <td class="cogs-item-col text-end"><h:outputText value="#{biObject.qty * biObject.retailRate}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td>
+                                        </tr>
+                                    </ui:repeat>
+                                </table>
                                 <f:facet name="footer">
-                                    <h:outputText value="#{pharmacyReportController.totalCostValue}" >
-                                        <f:convertNumber pattern="#,##0.00"/>
-                                    </h:outputText>
+                                    <table class="cogs-items-table"><colgroup><col style="width:12em"/><col style="width:6em"/><col style="width:6em"/><col style="width:4em"/><col style="width:6em"/><col style="width:6em"/><col style="width:6em"/><col style="width:6em"/><col style="width:6em"/><col style="width:6em"/></colgroup>
+                                        <tr>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                            <td class="cogs-item-col text-end"><h:outputText value="#{pharmacyReportController.totalCostValue}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td>
+                                            <td></td>
+                                            <td class="cogs-item-col text-end"><h:outputText value="#{pharmacyReportController.totalPurchaseValue}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td>
+                                            <td></td>
+                                            <td></td>
+                                        </tr>
+                                    </table>
                                 </f:facet>
-                            </p:column>
-                            <p:column headerText="PURCHASE RATE" styleClass="cogs-item-col">
-                                <ui:repeat value="#{b.billItemsMap.values()}" var="biObject">
-                                    <h:outputText value="#{biObject.purchaseRate}" ><f:convertNumber pattern="#,##0.00"/></h:outputText><p:divider/><br/>
-                                </ui:repeat>
-                            </p:column>
-                            <p:column headerText="PURCHASE VALUE" styleClass="cogs-item-col">
-                                <ui:repeat value="#{b.billItemsMap.values()}" var="biObject">
-                                    <h:outputText value="#{biObject.qty * biObject.purchaseRate}" ><f:convertNumber pattern="#,##0.00"/></h:outputText><p:divider/>   <br/>
-                                </ui:repeat>
-                                <f:facet name="footer">
-                                    <h:outputText value="#{pharmacyReportController.totalPurchaseValue}" >
-                                        <f:convertNumber pattern="#,##0.00"/>
-                                    </h:outputText>
-                                </f:facet>
-                            </p:column>
-                            
-                            <p:column headerText="MRP" width="8em" styleClass="text-end cogs-item-col">
-                                <ui:repeat value="#{b.billItemsMap.values()}" var="biObject">
-                                    <h:outputText value="#{biObject.retailRate}" ><f:convertNumber pattern="#,##0.00"/></h:outputText><p:divider/><br/>
-                                </ui:repeat>
-                            </p:column>
-                            <p:column headerText="MRP Value" width="8em" styleClass="text-end cogs-item-col">
-                                <ui:repeat value="#{b.billItemsMap.values()}" var="biObject">
-                                    <h:outputText value="#{biObject.qty * biObject.retailRate}" ><f:convertNumber pattern="#,##0.00"/></h:outputText><p:divider/>   <br/>
-                                </ui:repeat>
                             </p:column>
 
                             <p:column headerText="Net Total"  class="text-end" width="6em">
