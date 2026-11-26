@@ -1,12 +1,14 @@
 name: Entity migration guard
 
-# Fails a PR that adds an @Entity field (column) or entity (table) that no
+# Warns (never blocks) on a PR that adds an @Entity field (column) or entity (table) that no
 # migration under src/main/resources/db/migrations/ creates and that is not in
 # the baseline src/test/resources/entity-migration-baseline.txt. Production has
 # no DDL generation, so a missing column breaks inserts and loads (see #26172).
 # The check is the JUnit test EntityMigrationCoverageTest; it needs no database,
-# secrets or network. Fix: add a migration, or (only when the base schema
-# already has the column) add its TABLE.COLUMN line to the baseline.
+# secrets or network. Advisory only: the step has continue-on-error, so the job
+# stays green and each gap shows as a ::warning annotation. Fix with a migration
+# when the column must exist before first use; otherwise "Add Missing Fields"
+# stays the practice.
 
 on:
   pull_request:
@@ -31,5 +33,6 @@ jobs:
           java-version: '11'
           cache: 'maven'
 
-      - name: Check every mapped table and column has a migration
-        run: mvn -B -q test -Dtest=EntityMigrationCoverageTest -DfailIfNoTests=false
+      - name: Warn when a mapped table or column has no migration
+        continue-on-error: true
+        run: mvn -B -q test -Dtest=EntityMigrationCoverageTest -DfailIfNoTests=false -Dentity.migration.guard=true

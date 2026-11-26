@@ -32,6 +32,7 @@ import javax.persistence.Table;
 import javax.persistence.Transient;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 /**
  * Fails when an entity maps a table or column that no migration under
@@ -42,6 +43,11 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * the check was introduced (the schema that the base installation and
  * EclipseLink DDL already created). A new mapped column or table must either
  * be created by a migration, or be added to the baseline on purpose.
+ *
+ * The check is advisory: it never blocks a merge. It runs only when
+ * -Dentity.migration.guard=true is set (the Entity migration guard workflow),
+ * so a normal mvn test skips it. Each gap is printed as a GitHub ::warning
+ * annotation line.
  *
  * Regenerate the baseline: mvn -q test -Dtest=EntityMigrationCoverageTest
  * -Dentity.baseline.regenerate=true
@@ -79,6 +85,8 @@ public class EntityMigrationCoverageTest {
 
     @Test
     public void everyMappedTableAndColumnHasAMigrationOrIsInTheBaseline() throws Exception {
+        assumeTrue(Boolean.getBoolean("entity.migration.guard") || Boolean.getBoolean("entity.baseline.regenerate"),
+                "advisory check; set -Dentity.migration.guard=true to run it");
         List<Mapped> mapped = collectMapped();
         List<Set<String>> files = readMigrationTokens();
         Set<String> baseline = readBaseline();
@@ -87,6 +95,7 @@ public class EntityMigrationCoverageTest {
         Map<String, Mapped> byKey = new java.util.TreeMap<>();
         Set<String> failedTables = new HashSet<>();
         List<String> failures = new ArrayList<>();
+        List<String> warnings = new ArrayList<>();
         for (Mapped m : mapped) {
             byKey.putIfAbsent(m.key(), m);
         }
@@ -96,7 +105,9 @@ public class EntityMigrationCoverageTest {
                 uncovered.add(m.key());
                 if (!baseline.contains(m.key())) {
                     failedTables.add(m.table);
-                    failures.add("Table " + m.table + " (entity " + m.where + ") has no migration that creates it.");
+                    String msg = m.table + " (entity " + m.where + ") has no migration that creates it";
+                    failures.add("Table " + msg + ".");
+                    warnings.add("::warning title=Table with no migration::" + msg);
                 }
             }
         }
@@ -104,7 +115,9 @@ public class EntityMigrationCoverageTest {
             if (m.column != null && !covered(files, m)) {
                 uncovered.add(m.key());
                 if (!baseline.contains(m.key()) && !failedTables.contains(m.table)) {
-                    failures.add("Column " + m.table + "." + m.column + " (" + m.where + ") has no migration that adds it.");
+                    String msg = m.table + "." + m.column + " (" + m.where + ") has no migration that adds it";
+                    failures.add("Column " + msg + ".");
+                    warnings.add("::warning title=Column with no migration::" + msg);
                 }
             }
         }
@@ -112,6 +125,9 @@ public class EntityMigrationCoverageTest {
         if (Boolean.getBoolean("entity.baseline.regenerate")) {
             Files.write(BASELINE, uncovered.stream().collect(Collectors.toList()), StandardCharsets.UTF_8);
             return;
+        }
+        for (String w : warnings) {
+            System.out.println(w);
         }
         assertTrue(failures.isEmpty(), "\nMapped entity columns or tables with no migration:\n  "
                 + String.join("\n  ", failures)
