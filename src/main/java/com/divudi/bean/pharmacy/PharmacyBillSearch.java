@@ -244,7 +244,6 @@ public class PharmacyBillSearch implements Serializable {
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Navigation Methods">
     public String navigateToCancelPharmacyDirectIssueToInpatients() {
-        // Same privilege as the cancel button
         if (!webUserController.hasPrivilege(Privileges.PharmacySaleCancel.toString())) {
             JsfUtil.addErrorMessage("You do not have the privilege to cancel a pharmacy BHT issue");
             return null;
@@ -3583,7 +3582,6 @@ public class PharmacyBillSearch implements Serializable {
     }
 
     public void cancelPharmacyDirectIssueToBht() {
-        // Same privilege as the cancel button
         if (!webUserController.hasPrivilege(Privileges.PharmacySaleCancel.toString())) {
             JsfUtil.addErrorMessage("You do not have the privilege to cancel a pharmacy BHT issue");
             return;
