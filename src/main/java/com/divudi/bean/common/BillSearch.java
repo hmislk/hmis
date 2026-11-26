@@ -5924,6 +5924,10 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
     }
 
     public String navigateToPharmacyBhtIssueCancellationBillView() {
+        if (!webUserController.hasPrivilege(com.divudi.core.data.Privileges.PharmacySaleCancel.toString())) {
+            JsfUtil.addErrorMessage("You do not have the privilege to cancel a pharmacy BHT issue");
+            return null;
+        }
         prepareToPharmacyCancellationBill();
         return "/inward/bht_bill_cancel?faces-redirect=true";
     }
