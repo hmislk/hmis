@@ -56,6 +56,7 @@ import com.divudi.ejb.EmailManagerEjb;
 import com.divudi.core.entity.AppEmail;
 import com.divudi.core.data.MessageType;
 import com.divudi.core.util.JsfUtil;
+import com.divudi.core.util.PharmacyItemRefundFlags;
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.entity.BillFinanceDetails;
 import com.divudi.core.entity.BillItemFinanceDetails;
@@ -4174,6 +4175,10 @@ public class PharmacyBillSearch implements Serializable {
 
                 getBill().setCancelledBill(cb);
                 getBillFacade().edit(getBill());
+                if (getBill().getBillTypeAtomic() == BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEM_PAYMENTS
+                        || getBill().getBillTypeAtomic() == BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS) {
+                    clearItemRefundFlagsIfNoActiveRefund(getBill());
+                }
 
                 getCashTransactionBean().saveBillCashInTransaction(cb, getSessionController().getLoggedUser());
 
@@ -4194,6 +4199,80 @@ public class PharmacyBillSearch implements Serializable {
 
         } else {
             JsfUtil.addErrorMessage("No Bill to cancel");
+        }
+    }
+
+    /**
+     * After the payment of an items-only return is cancelled, clears the refund
+     * flags this refund set on the original sale items, so Search Sale Bill
+     * Items stops showing "Refunded". An item keeps its flags when another
+     * refund payment that is not cancelled still covers it (#24485). A failure
+     * here is logged and never reported as a failed cancellation.
+     *
+     * @param cancelledRefundBill the refund payment bill that was just cancelled
+     */
+    private void clearItemRefundFlagsIfNoActiveRefund(Bill cancelledRefundBill) {
+        try {
+            if (cancelledRefundBill == null || cancelledRefundBill.getId() == null) {
+                return;
+            }
+            Map<String, Object> params = new HashMap<>();
+            params.put("refundId", cancelledRefundBill.getId());
+            // Fresh query, not the lazy bill item list: that list can be stale across requests.
+            // An items-only refund payment reaches the original through its return item; a
+            // "Return Items and Payments" bill keeps the pre return bill as its reference bill,
+            // and that bill's items point at the original.
+            List<BillItem> originals;
+            if (cancelledRefundBill.getBillTypeAtomic() == BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS) {
+                originals = getBillItemFacede().findByJpql(
+                        "SELECT DISTINCT o FROM Bill f, BillItem ri JOIN ri.referanceBillItem o "
+                        + "WHERE f.id = :refundId AND ri.bill.id = f.referenceBill.id AND ri.qty <> 0", params);
+            } else {
+                originals = getBillItemFacede().findByJpql(
+                        "SELECT DISTINCT o FROM BillItem sbi JOIN sbi.referanceBillItem tbi JOIN tbi.referanceBillItem o "
+                        + "WHERE sbi.bill.id = :refundId", params);
+            }
+            if (originals == null) {
+                return;
+            }
+            for (BillItem original : originals) {
+                // One parameter map per query: EclipseLink rejects a parameter the query does not use.
+                Map<String, Object> pWithItems = new HashMap<>();
+                pWithItems.put("refundId", cancelledRefundBill.getId());
+                pWithItems.put("originalId", original.getId());
+                pWithItems.put("btaWithItems", BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS);
+                Map<String, Object> pItemOnly = new HashMap<>();
+                pItemOnly.put("refundId", cancelledRefundBill.getId());
+                pItemOnly.put("originalId", original.getId());
+                pItemOnly.put("bta", BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEM_PAYMENTS);
+                Long othersWithItems = getBillItemFacede().countByJpql(
+                        "SELECT COUNT(ri) FROM Bill f, BillItem ri "
+                        + "WHERE ri.bill.id = f.referenceBill.id "
+                        + "AND ri.retired = false "
+                        + "AND ri.qty <> 0 "
+                        + "AND f.id <> :refundId "
+                        + "AND f.cancelled = false "
+                        + "AND f.retired = false "
+                        + "AND f.billTypeAtomic = :btaWithItems "
+                        + "AND ri.referanceBillItem.id = :originalId", pWithItems);
+                Long others = getBillItemFacede().countByJpql(
+                        "SELECT COUNT(sbi) FROM BillItem sbi "
+                        + "WHERE sbi.retired = false "
+                        + "AND sbi.bill.id <> :refundId "
+                        + "AND sbi.bill.cancelled = false "
+                        + "AND sbi.bill.retired = false "
+                        + "AND sbi.bill.billTypeAtomic = :bta "
+                        + "AND sbi.referanceBillItem.referanceBillItem.id = :originalId", pItemOnly);
+                if (others == null || othersWithItems == null) {
+                    continue;
+                }
+                if (PharmacyItemRefundFlags.clearAfterRefundCancelled(original, others + othersWithItems)) {
+                    getBillItemFacede().edit(original);
+                }
+            }
+        } catch (RuntimeException e) {
+            LOGGER.log(Level.SEVERE, "Could not clear the item refund flags after cancelling refund bill id "
+                    + (cancelledRefundBill == null ? null : cancelledRefundBill.getId()), e);
         }
     }
 
@@ -6279,10 +6358,11 @@ public class PharmacyBillSearch implements Serializable {
                 + "it.id, COALESCE(it.name, ''), COALESCE(it.code, ''), "
                 + "bi.qty, bi.netValue, "
                 + "COALESCE(pp.name, ''), "
-                + "rb.cancelled, rb.refunded) "
+                + "rb.cancelled, bi.refunded, lbi.refunded) "
                 + "FROM BillItem bi "
                 + "JOIN bi.bill b "
                 + "JOIN b.referenceBill rb "
+                + "LEFT JOIN bi.referanceBillItem lbi "
                 + "LEFT JOIN bi.item it "
                 + "LEFT JOIN b.patient p "
                 + "LEFT JOIN p.person pp "
@@ -6332,6 +6412,32 @@ public class PharmacyBillSearch implements Serializable {
         if (saleBillItemDtos == null) {
             saleBillItemDtos = new ArrayList<>();
         }
+        markRowsWhoseBilledItemIsRefunded();
+    }
+
+    /**
+     * The cashier settle flow copies a pre-bill item into the billed bill with no
+     * item level link, and the refund flags the billed item. So the label also
+     * shows when the billed bill holds a refunded item for the same item (#24485).
+     */
+    private void markRowsWhoseBilledItemIsRefunded() {
+        if (saleBillItemDtos.isEmpty()) {
+            return;
+        }
+        Map<String, Object> m = new HashMap<>();
+        m.put("rClass", com.divudi.core.entity.BilledBill.class);
+        m.put("rBType", com.divudi.core.data.BillType.PharmacySale);
+        m.put("fromDate", searchController.getFromDate());
+        m.put("toDate", searchController.getToDate());
+        m.put("ins", sessionController.getInstitution());
+        List<?> pairs = getBillItemFacade().findLightsByJpql(
+                "SELECT x.bill.id, x.item.id FROM BillItem x "
+                + "WHERE x.refunded = true AND x.retired = false "
+                + "AND type(x.bill) = :rClass "
+                + "AND x.bill.billType = :rBType "
+                + "AND x.bill.institution = :ins "
+                + "AND x.bill.createdAt BETWEEN :fromDate AND :toDate", m, TemporalType.TIMESTAMP);
+        PharmacyItemRefundFlags.applyBilledItemFlags(saleBillItemDtos, PharmacyItemRefundFlags.lineKeys(pairs));
     }
 
     // -----------------------------------------------------------------------
