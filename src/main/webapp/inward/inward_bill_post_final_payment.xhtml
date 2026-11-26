@@ -36,7 +36,9 @@
 
                         <p:commandButton
                             id="btnSelect"
-                            value="select"
+                            value="Select"
+                            icon="fa fa-check-circle"
+                            styleClass="ui-button-success"
                             ajax="false"
                             action="#{postFinalBillInwardPaymentController.bhtListener}" >
                         </p:commandButton>
@@ -69,45 +71,44 @@
         <h:panelGroup rendered="#{postFinalBillInwardPaymentController.current.patientEncounter ne null}">
             <h:form  >
 
-                <p:panel header="Post Final Bill Payment" rendered="#{!postFinalBillInwardPaymentController.printPreview}">
+                <p:panel rendered="#{!postFinalBillInwardPaymentController.printPreview}">
                     <f:facet name="header">
-                        <div class="row">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <div>
-                                    <h:outputLabel value="Post Final Bill Payment" />
-                                </div>
-                                <div class="mx-4" >
-                                    <p:commandButton
-                                        ajax="false"
-                                        icon="fa fa-search"
-                                        class="ui-button-warning"
-                                        value="Lookup"
-                                        action="#{patientController.navigateToSearchPatients()}"
-                                        >
-                                    </p:commandButton>
-
-                                    <p:commandButton
-                                        ajax="false"
-                                        icon="fa fa-user"
-                                        value="Patient Profile"
-                                        class="ui-button-warning  mx-2"
-                                        action="#{patientController.navigateToOpdPatientProfile()}">
-                                        <f:setPropertyActionListener
-                                            value="#{postFinalBillInwardPaymentController.current.patientEncounter.patient}"
-                                            target="#{patientController.current}" >
-                                        </f:setPropertyActionListener>
-                                    </p:commandButton>
-
-
-                                    <p:commandButton
-                                        ajax="false"
-                                        icon="fas fa-id-card"
-                                        value="Inpatient Dashboard"
-                                        class="ui-button-secondary "
-                                        action="#{postFinalBillInwardPaymentController.navigateToInpationDashbord()}" >
-                                    </p:commandButton>
-                                </div>
+                        <div class="d-flex justify-content-between align-items-center w-100">
+                            <div class="d-flex align-items-center gap-2">
+                                <h:outputText styleClass="fas fa-money-bill-wave" />
+                                <h:outputText value="Post Final Bill Payment" />
                             </div>
+                            <div class="d-flex align-items-center gap-2">
+                                <p:commandButton
+                                    ajax="false"
+                                    icon="fa fa-search"
+                                    styleClass="ui-button-info ui-button-outlined"
+                                    value="Lookup"
+                                    action="#{patientController.navigateToSearchPatients()}"
+                                    >
+                                </p:commandButton>
+
+                                <p:commandButton
+                                    ajax="false"
+                                    icon="fa fa-user"
+                                    value="Patient Profile"
+                                    styleClass="ui-button-info ui-button-outlined"
+                                    action="#{patientController.navigateToOpdPatientProfile()}">
+                                    <f:setPropertyActionListener
+                                        value="#{postFinalBillInwardPaymentController.current.patientEncounter.patient}"
+                                        target="#{patientController.current}" >
+                                    </f:setPropertyActionListener>
+                                </p:commandButton>
+
+                                <p:commandButton
+                                    ajax="false"
+                                    icon="fas fa-id-card"
+                                    value="Inpatient Dashboard"
+                                    styleClass="ui-button-info ui-button-outlined"
+                                    action="#{postFinalBillInwardPaymentController.navigateToInpationDashbord()}" >
+                                </p:commandButton>
+                            </div>
+                            <div></div>
                         </div>
                     </f:facet>
                     <div class="row">
@@ -258,27 +259,26 @@
                                     </div>
                                 </div>
 
-                                <div class="d-flex justify-content-end gap-3">
+                                <div class="d-flex justify-content-end gap-2">
                                     <p:commandButton
-                                        class="ui-button-success"
+                                        styleClass="ui-button-secondary"
+                                        icon="fas fa-ban"
+                                        value="Clear"
+                                        ajax="false"
+                                        style="min-width:120px;"
+                                        action="#{postFinalBillInwardPaymentController.makeNull}" >
+                                    </p:commandButton>
+
+                                    <p:commandButton
+                                        styleClass="ui-button-success"
                                         icon="fas fa-money-bill"
                                         id="btnPay"
                                         value="Pay"
-                                        style="width:250px;"
+                                        style="min-width:120px;"
                                         ajax="false"
                                         onclick="if (!confirm('Record this payment?')) return false;"
                                         action="#{postFinalBillInwardPaymentController.pay()}" >
                                     </p:commandButton>
-
-                                    <p:commandButton
-                                        class="ui-button-danger mx-2"
-                                        icon="fas fa-ban"
-                                        value="Clear"
-                                        ajax="false"
-                                        style="width:250px;"
-                                        action="#{postFinalBillInwardPaymentController.makeNull}" >
-                                    </p:commandButton>
-
                                 </div>
 
                             </p:panel>
@@ -329,7 +329,7 @@
                                     ajax="false"
                                     value="View"
                                     icon="fa fa-eye"
-                                    class="ui-button-info"
+                                    styleClass="ui-button-info ui-button-outlined"
                                     title="View, print, cancel or refund this payment"
                                     action="#{postFinalBillInwardPaymentController.navigateToViewPostFinalPayment(pfp)}"/>
                             </p:column>
@@ -339,52 +339,60 @@
 
                 <p:panel rendered="#{postFinalBillInwardPaymentController.printPreview}">
                     <f:facet name="header">
-                        <h:outputLabel value="Post Final Bill Payment Receipt" class="mt-2"/>
-                        <div class="d-flex gap-2" style="float: right;">
-                            <p:commandButton
-                                value="New Payment"
-                                icon="fa-solid fa-plus"
-                                class="ui-button-success"
-                                ajax="false"
-                                action="#{postFinalBillInwardPaymentController.makeNull}" >
-                            </p:commandButton>
-                            <p:commandButton
-                                value="Print"
-                                ajax="false"
-                                icon="fa fa-print"
-                                class="ui-button-info"
-                                action="#"  >
-                                <p:printer target="gpBillPreview" ></p:printer>
-                            </p:commandButton>
-                            <p:commandButton
-                                id="btnViewCancelPostFinalPayment"
-                                value="View / Cancel"
-                                ajax="false"
-                                icon="fa fa-eye"
-                                class="ui-button-warning"
-                                title="Open this payment to cancel or refund it"
-                                action="#{postFinalBillInwardPaymentController.navigateToViewPostFinalPayment(postFinalBillInwardPaymentController.current)}"/>
-                            <p:commandButton
-                                rendered="#{webUserController.hasPrivilege('ChangeReceiptPrintingPaperTypes')}"
-                                value="Settings"
-                                icon="fas fa-cog"
-                                class="ui-button-secondary"
-                                type="button"
-                                onclick="PF('postFinalPaymentConfigDialog').show();"/>
-                            <p:commandButton
-                                ajax="false"
-                                icon="fas fa-file-invoice-dollar"
-                                value="Interim Bill"
-                                class="ui-button-info mx-1"
-                                action="#{bhtSummeryController.navigateToIntrimBillRefreshFromPostFinalPayment()}"
-                                />
-                            <p:commandButton
-                                ajax="false"
-                                icon="fas fa-id-card"
-                                value="Inpatient Dashboard"
-                                class="ui-button-secondary "
-                                action="#{postFinalBillInwardPaymentController.navigateToInpationDashbord()}"
-                                />
+                        <div class="d-flex justify-content-between align-items-center w-100">
+                            <div class="d-flex align-items-center gap-2">
+                                <h:outputText styleClass="fas fa-receipt" />
+                                <h:outputText value="Post Final Bill Payment Receipt" />
+                                <p:commandButton
+                                    rendered="#{webUserController.hasPrivilege('ChangeReceiptPrintingPaperTypes')}"
+                                    value="Settings"
+                                    icon="fas fa-cog"
+                                    styleClass="ui-button-secondary ui-button-outlined"
+                                    type="button"
+                                    onclick="PF('postFinalPaymentConfigDialog').show();"/>
+                            </div>
+                            <div class="d-flex align-items-center gap-2">
+                                <p:commandButton
+                                    ajax="false"
+                                    icon="fas fa-file-invoice-dollar"
+                                    value="Interim Bill"
+                                    styleClass="ui-button-info ui-button-outlined"
+                                    action="#{bhtSummeryController.navigateToIntrimBillRefreshFromPostFinalPayment()}"
+                                    />
+                                <p:commandButton
+                                    ajax="false"
+                                    icon="fas fa-id-card"
+                                    value="Inpatient Dashboard"
+                                    styleClass="ui-button-info ui-button-outlined"
+                                    action="#{postFinalBillInwardPaymentController.navigateToInpationDashbord()}"
+                                    />
+                            </div>
+                            <div class="d-flex align-items-center gap-2">
+                                <p:commandButton
+                                    id="btnViewCancelPostFinalPayment"
+                                    value="View / Cancel"
+                                    ajax="false"
+                                    icon="fa fa-eye"
+                                    styleClass="ui-button-warning"
+                                    title="Open this payment to cancel or refund it"
+                                    action="#{postFinalBillInwardPaymentController.navigateToViewPostFinalPayment(postFinalBillInwardPaymentController.current)}"/>
+                                <p:commandButton
+                                    value="Print"
+                                    ajax="false"
+                                    icon="fa fa-print"
+                                    styleClass="ui-button-info"
+                                    action="#"  >
+                                    <p:printer target="gpBillPreview" ></p:printer>
+                                </p:commandButton>
+                                <p:commandButton
+                                    value="New Payment"
+                                    icon="fa-solid fa-plus"
+                                    styleClass="ui-button-success"
+                                    style="min-width:120px;"
+                                    ajax="false"
+                                    action="#{postFinalBillInwardPaymentController.makeNull}" >
+                                </p:commandButton>
+                            </div>
                         </div>
                     </f:facet>
 
@@ -448,12 +456,13 @@
                 <div class="d-flex gap-2 mt-3">
                     <p:commandButton value="Apply &amp; Close"
                                      icon="fas fa-save"
-                                     class="ui-button-success"
+                                     styleClass="ui-button-success"
+                                     style="min-width:120px;"
                                      ajax="false"
                                      action="#{pharmacyConfigController.saveInwardPaymentConfig}"/>
                     <p:commandButton value="Cancel"
                                      icon="fas fa-times"
-                                     class="ui-button-secondary"
+                                     styleClass="ui-button-secondary"
                                      type="button"
                                      onclick="PF('postFinalPaymentConfigDialog').hide(); return false;"/>
                 </div>
