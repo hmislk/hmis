@@ -195,7 +195,7 @@
                     <div style="font-size: 13px;">
                         <h:outputLabel value ="Enclosed please find our bill for Rs."/>
                         <h:outputLabel value="&nbsp;&nbsp;"/>
-                        <b> <h:outputLabel value="#{cc.attrs.bill.netTotal-(cc.attrs.bill.paidAmount+cc.attrs.bill.patientEncounter.paidByCreditCompany)}" >
+                        <b> <h:outputLabel value="#{cc.attrs.bill.netTotal-(cc.attrs.bill.paidAmount)}" >
                                 <f:convertNumber pattern="#,###.##" ></f:convertNumber>
                             </h:outputLabel> </b>
                         <h:outputLabel value="&nbsp;&nbsp;  "/>

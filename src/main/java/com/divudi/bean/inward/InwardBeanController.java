@@ -10,6 +10,7 @@ import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.BillTypeAtomic;
+import com.divudi.core.data.FinalBillPaidFigures;
 import com.divudi.core.data.DepartmentType;
 import com.divudi.core.data.FeeType;
 import com.divudi.core.data.PaymentMethod;
@@ -3401,15 +3402,75 @@ public class InwardBeanController implements Serializable {
         if (b == null) {
             return;
         }
-
-        double paid = getPaidValue(patientEncounter) + getPostFinalPaymentTotalIncludedIn(b);
-//        System.err.println("NET " + b.getNetTotal());
-//        System.err.println("PAID " + paid);
-
-        b.setPaidAmount(paid);
-        b.setBalance(b.getNetTotal() - paid);
+        recountFinalBillPaid(b);
         getBillFacade().edit(b);
+    }
 
+    /**
+     * The one recount of an inpatient final bill's paid amount, balance,
+     * settledAmountByPatient and settledAmountBySponsor (#26152). Every path
+     * that changes them calls this, so they never depend on the order of
+     * earlier actions: a credit company receipt is not lost by the next
+     * patient payment, and a refund or cancel is not missed. See
+     * {@link FinalBillPaidFigures} for how the parts add up. An approved
+     * final bill carries only the post final payments made up to its approval
+     * time (#23848). Sets the fields on the bill and does NOT save it; the
+     * caller saves, under the per-admission final bill lock.
+     */
+    public void recountFinalBillPaid(Bill finalBill) {
+        if (finalBill == null || finalBill.getPatientEncounter() == null) {
+            return;
+        }
+        PatientEncounter pe = finalBill.getPatientEncounter();
+        FinalBillPaidFigures figures = FinalBillPaidFigures.of(
+                getPaidValue(pe),
+                getPaidByCreditMethodValue(pe),
+                getPostFinalPaymentTotalIncludedIn(finalBill),
+                getCreditCompanyReceiptsNet(pe));
+        finalBill.setPaidAmount(figures.getPaidAmount());
+        finalBill.setSettledAmountByPatient(figures.getSettledAmountByPatient());
+        finalBill.setSettledAmountBySponsor(figures.getSettledAmountBySponsor());
+        finalBill.setBalance(figures.balanceFor(finalBill.getNetTotal()));
+    }
+
+    /**
+     * The part of {@link #getPaidValue} paid with the Credit method (old flows
+     * recorded company money that way). Signed like getPaidValue.
+     */
+    public double getPaidByCreditMethodValue(PatientEncounter patientEncounter) {
+        HashMap hm = new HashMap();
+        String sql = "SELECT sum(b.netTotal) FROM Bill b "
+                + " WHERE b.retired=false "
+                + " and b.billType=:btp "
+                + " and b.paymentMethod=:pm "
+                + " and b.patientEncounter=:pe ";
+        hm.put("btp", BillType.InwardPaymentBill);
+        hm.put("pm", PaymentMethod.Credit);
+        hm.put("pe", patientEncounter);
+        return getBillFacade().findDoubleByJpql(sql, hm, TemporalType.TIMESTAMP);
+    }
+
+    /**
+     * What credit companies paid against the admission, net of cancelled
+     * receipts (#26152). The receipt bills carry the admission on their items,
+     * not on the bill. Receipt items count positive and the items of the
+     * cancellation bill carry the negative of them, so both are summed and the
+     * receipt bill's own cancelled flag is deliberately not filtered (the
+     * same rule as BhtPaymentDetailReportController.fetchCreditSettlementItems).
+     */
+    public double getCreditCompanyReceiptsNet(PatientEncounter patientEncounter) {
+        HashMap hm = new HashMap();
+        String sql = "SELECT sum(bi.netValue) FROM BillItem bi "
+                + " WHERE bi.retired=false "
+                + " and bi.bill.retired=false "
+                + " and bi.bill.billTypeAtomic in :btas "
+                + " and bi.patientEncounter=:pe ";
+        List<BillTypeAtomic> btas = new ArrayList<>();
+        btas.add(BillTypeAtomic.INPATIENT_CREDIT_COMPANY_PAYMENT_RECEIVED);
+        btas.add(BillTypeAtomic.INPATIENT_CREDIT_COMPANY_PAYMENT_CANCELLATION);
+        hm.put("btas", btas);
+        hm.put("pe", patientEncounter);
+        return getBillItemFacade().findDoubleByJpql(sql, hm, TemporalType.TIMESTAMP);
     }
 
     /**

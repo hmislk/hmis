@@ -420,8 +420,8 @@ public class PdfController {
 
         double netTotal = bill.getNetTotal();
         double paidAmount = bill.getPaidAmount();
-        double paidByCreditCompany = pe.getPaidByCreditCompany();
-        double dueForCreditCompany = netTotal - paidAmount - paidByCreditCompany;
+        // The final bill's paid amount already counts credit company receipts (#26152).
+        double dueForCreditCompany = netTotal - paidAmount;
 
         sb.append("<div class='section' style='page-break-inside:avoid;'><h3>Credit Company Letter</h3>");
         if (creditCompany.getName() != null) {

@@ -566,7 +566,7 @@
                                               headerText="Paid"
                                               width="100px"
                                               rendered="#{inwardReportController.finalBillTotal}">
-                                        <h:outputLabel value="#{i.paidByCreditCompany+i.finalBill.paidAmount}">
+                                        <h:outputLabel value="#{i.finalBill.paidAmount}">
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>
                                         <f:facet name="footer">
@@ -580,7 +580,7 @@
                                               headerText="Due"
                                               width="100px"
                                               rendered="#{inwardReportController.finalBillTotal}">
-                                        <h:outputLabel value="#{i.finalBill.netTotal-(i.paidByCreditCompany+i.finalBill.paidAmount)}">
+                                        <h:outputLabel value="#{i.finalBill.netTotal-i.finalBill.paidAmount}">
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>
                                         <f:facet name="footer">

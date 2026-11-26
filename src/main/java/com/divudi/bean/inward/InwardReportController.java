@@ -5416,7 +5416,7 @@ public class InwardReportController implements Serializable {
         for (PatientEncounter p : patientEncounters) {
             if (p.getFinalBill() != null) {
                 netTotal += p.getFinalBill().getNetTotal();
-                netPaid += p.getPaidByCreditCompany() + p.getFinalBill().getPaidAmount();
+                netPaid += p.getFinalBill().getPaidAmount();
             }
         }
     }

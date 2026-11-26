@@ -181,7 +181,7 @@ public class ApiInward {
                     }
                     if (pe.getFinalBill() != null) {
                         double netTotal = pe.getFinalBill().getNetTotal();
-                        double paidAmount = pe.getFinalBill().getPaidAmount() + fetchCreditPaymentTotal(pe);
+                        double paidAmount = pe.getFinalBill().getPaidAmount();
                         object.put("net_total", netTotal);
                         object.put("paid_amount", paidAmount);
                         object.put("balance", netTotal - paidAmount);
@@ -232,7 +232,7 @@ public class ApiInward {
                     }
                     if (pe.getFinalBill() != null) {
                         double netTotal = pe.getFinalBill().getNetTotal();
-                        double paidAmount = pe.getFinalBill().getPaidAmount() + fetchCreditPaymentTotal(pe);
+                        double paidAmount = pe.getFinalBill().getPaidAmount();
                         object.put("net_total", netTotal);
                         object.put("paid_amount", paidAmount);
                         object.put("balance", netTotal - paidAmount);
@@ -510,9 +510,9 @@ public class ApiInward {
         m.put("d", 0.1);
         List<PatientEncounter> temps = getPatientEncounterFacade().findByJpql(sql, m, 20);
         List<PatientEncounter> removeTemps = new ArrayList<>();
+        // The final bill's paid amount already counts credit company receipts (#26152).
         for (PatientEncounter p : temps) {
-            double d = fetchCreditPaymentTotal(p);
-            if (p.getFinalBill().getNetTotal() - (p.getFinalBill().getPaidAmount() + d) < 0.1) {
+            if (p.getFinalBill().getNetTotal() - p.getFinalBill().getPaidAmount() < 0.1) {
                 removeTemps.add(p);
             }
         }
@@ -553,9 +553,9 @@ public class ApiInward {
         m.put("d", 0.1);
         List<PatientEncounter> temps = getPatientEncounterFacade().findByJpql(sql, m, 20);
         List<PatientEncounter> removeTemps = new ArrayList<>();
+        // The final bill's paid amount already counts credit company receipts (#26152).
         for (PatientEncounter p : temps) {
-            double d = fetchCreditPaymentTotal(p);
-            if (p.getFinalBill().getNetTotal() - (p.getFinalBill().getPaidAmount() + d) < 0.1) {
+            if (p.getFinalBill().getNetTotal() - p.getFinalBill().getPaidAmount() < 0.1) {
                 removeTemps.add(p);
             }
         }
@@ -811,21 +811,6 @@ public class ApiInward {
 
         Bill b = getBillFacade().findFirstByJpql(sql, m);
         return b;
-    }
-
-    public double fetchCreditPaymentTotal(PatientEncounter pe) {
-        String sql;
-        Map m = new HashMap();
-        sql = "SELECT sum(bi.netValue) FROM BillItem bi "
-                + " WHERE bi.retired=false "
-                + " and bi.bill.billType=:bty"
-                + " and bi.patientEncounter=:bhtno";
-
-        m.put("bty", BillType.CashRecieveBill);
-        m.put("bhtno", pe);
-
-        double d = getBillItemFacade().findDoubleByJpql(sql, m);
-        return d;
     }
 
     // =========================================================================
