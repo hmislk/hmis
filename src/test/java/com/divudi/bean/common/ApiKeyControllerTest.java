@@ -3,10 +3,14 @@ package com.divudi.bean.common;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.divudi.core.data.ApiKeyType;
 import com.divudi.core.entity.WebUser;
+import com.divudi.core.entity.ApiKey;
+import java.util.Date;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 
@@ -46,5 +50,55 @@ class ApiKeyControllerTest {
         WebUser inactive = new WebUser();
         inactive.setActivated(false);
         assertFalse(c.isActiveAdminUser(inactive));
+    }
+
+    private static ApiKeyController controllerWithAdmin(boolean admin) {
+        return new ApiKeyController() {
+            @Override
+            public boolean isActiveAdminUser(WebUser user) {
+                return admin && user != null;
+            }
+        };
+    }
+
+    private static ApiKey configKey(WebUser owner, boolean retired, long expiryOffsetMs) {
+        ApiKey k = new ApiKey();
+        k.setKeyType(ApiKeyType.Config);
+        k.setWebUser(owner);
+        k.setRetired(retired);
+        k.setDateOfExpiary(new Date(System.currentTimeMillis() + expiryOffsetMs));
+        return k;
+    }
+
+    @Test
+    void configKeyOfActiveAdminOwnerReturnsOwner() {
+        WebUser owner = new WebUser();
+        assertSame(owner, controllerWithAdmin(true).resolveConfigKeyOwner(configKey(owner, false, 100000)));
+    }
+
+    @Test
+    void configKeyOfNonAdminOwnerIsRejected() {
+        assertNull(controllerWithAdmin(false).resolveConfigKeyOwner(configKey(new WebUser(), false, 100000)));
+    }
+
+    @Test
+    void retiredOrExpiredConfigKeyIsRejected() {
+        ApiKeyController c = controllerWithAdmin(true);
+        assertNull(c.resolveConfigKeyOwner(configKey(new WebUser(), true, 100000)));
+        assertNull(c.resolveConfigKeyOwner(configKey(new WebUser(), false, -100000)));
+    }
+
+    @Test
+    void configKeyWithoutOwnerOrNullKeyIsRejected() {
+        ApiKeyController c = controllerWithAdmin(true);
+        assertNull(c.resolveConfigKeyOwner(configKey(null, false, 100000)));
+        assertNull(c.resolveConfigKeyOwner(null));
+    }
+
+    @Test
+    void nonConfigKeyIsRejectedByConfigCheck() {
+        ApiKey k = configKey(new WebUser(), false, 100000);
+        k.setKeyType(ApiKeyType.Finance);
+        assertNull(controllerWithAdmin(true).resolveConfigKeyOwner(k));
     }
 }

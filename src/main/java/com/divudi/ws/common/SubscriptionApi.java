@@ -407,7 +407,8 @@ public class SubscriptionApi {
         if (apiKey == null) return null;
         if (apiKey.getDateOfExpiary() == null || apiKey.getDateOfExpiary().before(new Date())) return null;
         if (apiKey.isRetired()) return null;
-        if (apiKey.getKeyType() == ApiKeyType.Config) return new WebUser();
+        // API key hardening
+        if (apiKey.getKeyType() == ApiKeyType.Config) return apiKeyController.resolveConfigKeyOwner(apiKey);
         WebUser user = apiKey.getWebUser();
         if (user == null || user.isRetired() || !user.isActivated()) return null;
         return user;
