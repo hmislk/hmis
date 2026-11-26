@@ -3084,6 +3084,9 @@ public class BhtSummeryController implements Serializable {
         if (errorCheck() || discountCommentMissing("settling")) {
             return;
         }
+        if (companyShareBelowPaid()) {
+            return;
+        }
 
         persistGroupedProfessionalFeeOrder();
 
@@ -3682,6 +3685,57 @@ public class BhtSummeryController implements Serializable {
         // The patient co-payment row is ALWAYS shown (even at 0.00) so it can be
         // adjusted by hand against the company rows.
         creditCompanyAllocations.add(new CreditCompanyAllocation(Math.max(0.0, remaining), true));
+    }
+
+    /**
+     * A credit company's share cannot fall below what that company has already
+     * paid in this admission, over every final bill version (#26163). Runs on
+     * Save Final Bill (settle), first settle or new version; a first settle has
+     * nothing paid, so it never blocks.
+     *
+     * @return true when a share is too low (the error message is added)
+     */
+    private boolean companyShareBelowPaid() {
+        if (getPatientEncounter() == null
+                || getPatientEncounter().getPaymentMethod() != PaymentMethod.Credit) {
+            return false;
+        }
+        java.util.Map<Institution, Double> shares = new java.util.LinkedHashMap<>();
+        for (CreditCompanyAllocation alloc : creditCompanyAllocations == null
+                ? new java.util.ArrayList<CreditCompanyAllocation>() : creditCompanyAllocations) {
+            if (!alloc.isPatientPortion() && alloc.getCreditCompany() != null) {
+                shares.merge(alloc.getCreditCompany(), alloc.getAllocatedAmount(), Double::sum);
+            }
+        }
+        // Every company that has receipts on this admission, including one left out of the new version.
+        java.util.Map<Institution, Double> paidByCompany = getInwardBean().fetchPaidByCompanyWithReceipts(getPatientEncounter());
+        Institution low = firstCompanyBelowPaid(shares, paidByCompany);
+        if (low != null) {
+            JsfUtil.addErrorMessage(low.getName() + " has already paid "
+                    + String.format("%.2f", paidByCompany.get(low)) + ". Its share cannot be less than that.");
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * The first company whose share (0 when it has no allocation row) is lower
+     * than what it has paid, or null when none is.
+     */
+    static <K> K firstCompanyBelowPaid(java.util.Map<K, Double> shares, java.util.Map<K, Double> paidByCompany) {
+        for (java.util.Map.Entry<K, Double> e : paidByCompany.entrySet()) {
+            Double share = shares.get(e.getKey());
+            double paid = e.getValue() == null ? 0.0 : e.getValue();
+            if (isShareBelowPaid(share == null ? 0.0 : share, paid)) {
+                return e.getKey();
+            }
+        }
+        return null;
+    }
+
+    /** True when the share is lower than what was paid, beyond a 0.01 tolerance. */
+    static boolean isShareBelowPaid(double allocated, double paid) {
+        return Math.round((paid - allocated) * 100) > 1;
     }
 
     private boolean checkCreditAllocationTotal() {

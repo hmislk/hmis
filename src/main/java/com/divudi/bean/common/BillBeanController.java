@@ -2775,9 +2775,15 @@ public class BillBeanController implements Serializable {
             if (!isInwardFinalBillCompanyCommitment(commitmentOrFinalBill)) {
                 return;
             }
-            Long finalBillId = commitmentOrFinalBill.getReferenceBill().getId();
+            // The receipt may sit on a commitment of an older version; the admission's
+            // confirmed final bill is the one that carries the paid figures (#26163).
+            Long encounterId = commitmentOrFinalBill.getPatientEncounter().getId();
             finalBillLockBean.withFinalBillVersionLock(commitmentOrFinalBill.getPatientEncounter(), () -> {
-                Bill fresh = getBillFacade().findWithoutCache(finalBillId);
+                PatientEncounter freshPe = finalBillPatientEncounterFacade.findWithoutCache(encounterId);
+                if (freshPe == null || freshPe.getFinalBill() == null || freshPe.getFinalBill().getId() == null) {
+                    return null;
+                }
+                Bill fresh = getBillFacade().findWithoutCache(freshPe.getFinalBill().getId());
                 if (fresh == null || fresh.isRetired() || fresh.isCancelled()) {
                     return null;
                 }
