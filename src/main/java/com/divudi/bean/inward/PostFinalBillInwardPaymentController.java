@@ -203,6 +203,14 @@ public class PostFinalBillInwardPaymentController implements Serializable, Contr
      *                 bills for this patientEncounter)
      */
     public double getLiveBalanceDue() {
+        return Math.max(0.0, getLiveBalance());
+    }
+
+    /**
+     * The same live balance, not clamped: below 0 the patient has paid more
+     * than the final bill needs and a refund is due (#26159).
+     */
+    public double getLiveBalance() {
         if (getCurrent().getPatientEncounter() == null) {
             return 0.0;
         }
@@ -218,7 +226,7 @@ public class PostFinalBillInwardPaymentController implements Serializable, Contr
         double alreadyPaidPostFinal = getPostFinalPaymentTotal(pe);
         double paidWithoutPostFinal = finalBill.getPaidAmount() - getInwardBean().getPostFinalPaymentTotalIncludedIn(finalBill);
         double balance = finalBill.getNetTotal() - paidWithoutPostFinal - alreadyPaidPostFinal;
-        return Math.max(0.0, balance);
+        return balance;
     }
 
     /**

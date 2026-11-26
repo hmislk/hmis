@@ -758,7 +758,22 @@ public class CreditCompanyBillSearch implements Serializable {
     private com.divudi.service.CreditCompanyClaimService creditCompanyClaimService;
 
     private void updateReferenceBill(BillItem cancellationBillItem) {
+        // An inpatient company commitment is read and saved under the final bill lock (#26159).
+        getBillBean().runUnderFinalBillLockOfCommitment(cancellationBillItem.getReferenceBill(),
+                () -> updateReferenceBillLocked(cancellationBillItem));
+        // After the cancel has committed, recount the final bill and company shares (#26159).
+        getBillBean().recountFinalBillAfterCompanyReceipt(cancellationBillItem.getReferenceBill());
+    }
+
+    private void updateReferenceBillLocked(BillItem cancellationBillItem) {
         Bill referenceBill = cancellationBillItem.getReferenceBill();
+        if (referenceBill != null && referenceBill.getId() != null) {
+            // Fresh copy, so a stale one never writes back an older netTotal (#26159).
+            Bill fresh = getBillFacade().findWithoutCache(referenceBill.getId());
+            if (fresh != null) {
+                referenceBill = fresh;
+            }
+        }
 
 
         // CRITICAL FIX: Remove manual paidAmount adjustment that corrupts balance calculation
@@ -777,12 +792,7 @@ public class CreditCompanyBillSearch implements Serializable {
         referenceBill.setSettledAmountBySponsor(settledCreditValueByCompanies);
 
         // Calculate the accurate current balance using the same formula used in settlement process
-        double netTotal = Math.abs(referenceBill.getNetTotal() + referenceBill.getVat());
-        double refundAmount = Math.abs(getCreditBean().getRefundAmount(referenceBill));
-        double currentBalance = netTotal - (totalSettlement + refundAmount);
-
-
-        referenceBill.setBalance(Math.max(0, currentBalance)); // Ensure balance doesn't go negative
+        referenceBill.setBalance(getCreditBean().calculateOutstandingBalance(referenceBill));
 
         getBillFacade().edit(referenceBill);
 
