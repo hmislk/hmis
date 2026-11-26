@@ -1141,8 +1141,8 @@
                                 </tr>
                             </h:panelGroup>
 
-                            <!-- Payments block. Copies without professional fees show it only with the option on, and then without the Due lines (#26027). -->
-                            <h:panelGroup rendered="#{cc.attrs.showProfessional or configOptionApplicationController.getBooleanValueByKey('Inward Final Bill - Custom Bill 4 - Show Payments On Copies Without Professional Fees', false)}">
+                            <!-- Payments block. Copies without professional fees show payments with either option on (#26027), and the Due lines only with the "Payments And Due Amounts" option (#26169). -->
+                            <h:panelGroup rendered="#{cc.attrs.showProfessional or configOptionApplicationController.getBooleanValueByKey('Inward Final Bill - Custom Bill 4 - Show Payments On Copies Without Professional Fees', false) or configOptionApplicationController.getBooleanValueByKey('Inward Final Bill - Custom Bill 4 - Show Payments And Due Amounts On Copies Without Professional Fees', false)}">
                                 <h:panelGroup
                                     rendered="#{cc.attrs.bill.paidAmount !=0 and cc.attrs.bill.settledAmountByPatient !=0 }">
 
@@ -1251,7 +1251,7 @@
                                     </tr>
                                 </h:panelGroup>
 
-                                <h:panelGroup rendered="#{cc.attrs.showProfessional}">
+                                <h:panelGroup rendered="#{cc.attrs.showProfessional or configOptionApplicationController.getBooleanValueByKey('Inward Final Bill - Custom Bill 4 - Show Payments And Due Amounts On Copies Without Professional Fees', false)}">
                                 <h:panelGroup rendered="#{not empty bhtSummeryController.creditCompanyDueBreakdownForPrint(cc.attrs.bill)}">
                                     <ui:repeat value="#{bhtSummeryController.creditCompanyDueBreakdownForPrint(cc.attrs.bill)}" var="due">
                                         <tr>
