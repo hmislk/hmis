@@ -53,4 +53,18 @@ public class InwardMedicineSignedLineValueTest {
         assertEquals(15.0, InwardMedicineBillTypes.signedLineValue(line(null, 15)), 0.0001);
         assertEquals(0.0, InwardMedicineBillTypes.signedLineValue(null), 0.0001);
     }
+
+    @Test
+    void positivelyStoredReturnSignsGrossDiscountAndNetTogether() {
+        BillItem r = line(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN, 90);
+        r.setGrossValue(100.0);
+        r.setDiscount(10.0);
+        double gross = InwardMedicineBillTypes.signedByBillType(r, r.getGrossValue());
+        double disc = InwardMedicineBillTypes.signedByBillType(r, r.getDiscount());
+        double net = InwardMedicineBillTypes.signedLineValue(r);
+        assertEquals(-100.0, gross, 0.0001);
+        assertEquals(-10.0, disc, 0.0001);
+        assertEquals(-90.0, net, 0.0001);
+        assertEquals(net, gross - disc, 0.0001);
+    }
 }

@@ -353,8 +353,8 @@ public class InwardChargeTypeDetailController implements Serializable {
             } else if (bi.getInwardChargeType() != null) {
                 row.setItemName(getChargeTypeLabel(bi.getInwardChargeType()));
             }
-            row.setGrossValue(bi.getGrossValue());
-            row.setDiscount(bi.getDiscount());
+            row.setGrossValue(InwardMedicineBillTypes.signedByBillType(bi, bi.getGrossValue()));
+            row.setDiscount(InwardMedicineBillTypes.signedByBillType(bi, bi.getDiscount()));
             row.setNetValue(InwardMedicineBillTypes.signedLineValue(bi));
             // fromTime/toTime left null for regular bill items
             // sortTime = billItem.billTime, falling back to bill.billTime

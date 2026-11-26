@@ -233,11 +233,16 @@ public final class InwardMedicineBillTypes {
      * stored value (#26123).
      */
     public static double signedLineValue(com.divudi.core.entity.BillItem bi) {
-        if (bi == null) {
-            return 0.0;
-        }
-        BillTypeAtomic bta = bi.getBill() != null ? bi.getBill().getBillTypeAtomic() : null;
-        return signedRowValue(bta, bi.getNetValue());
+        return bi == null ? 0.0 : signedByBillType(bi, bi.getNetValue());
+    }
+
+    /**
+     * Signs any amount of a bill line (gross, discount or net) by the line's bill
+     * type, so gross - discount = net holds for every row of the Detail report.
+     */
+    public static double signedByBillType(com.divudi.core.entity.BillItem bi, Double value) {
+        BillTypeAtomic bta = bi != null && bi.getBill() != null ? bi.getBill().getBillTypeAtomic() : null;
+        return signedRowValue(bta, value);
     }
 
     private InwardMedicineBillTypes() {
