@@ -294,7 +294,7 @@ public class InwardChargeTypeBreakdownController implements Serializable {
             String bhtNo = enc.getBhtNo();
             BhtBreakdownRow row = bhtMap.computeIfAbsent(bhtNo, k -> createRow(enc));
             String key = String.valueOf(bi.getItem().getId());
-            double net = bi.getNetValue();
+            double net = InwardMedicineBillTypes.signedLineValue(bi);
             row.getCellValues().merge(key, net, Double::sum);
         }
 
@@ -418,7 +418,7 @@ public class InwardChargeTypeBreakdownController implements Serializable {
                 continue;
             }
             BhtBreakdownRow row = bhtMap.computeIfAbsent(enc.getBhtNo(), k -> createRow(enc));
-            row.getCellValues().merge(String.valueOf(bi.getItem().getId()), bi.getNetValue(), Double::sum);
+            row.getCellValues().merge(String.valueOf(bi.getItem().getId()), InwardMedicineBillTypes.signedLineValue(bi), Double::sum);
         }
 
         // 4. Accumulate PatientItem (timed service) values per BHT

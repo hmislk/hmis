@@ -226,6 +226,25 @@ public final class InwardMedicineBillTypes {
         return deducted ? -Math.abs(value) : value;
     }
 
+    /**
+     * The value a bill line adds to a charge total (Charge Type Breakdown and
+     * Detail). A return line is often stored positive, so it is signed by its bill
+     * type through {@link #signedRowValue}; a line of any other bill type keeps its
+     * stored value (#26123).
+     */
+    public static double signedLineValue(com.divudi.core.entity.BillItem bi) {
+        return bi == null ? 0.0 : signedByBillType(bi, bi.getNetValue());
+    }
+
+    /**
+     * Signs any amount of a bill line (gross, discount or net) by the line's bill
+     * type, so gross - discount = net holds for every row of the Detail report.
+     */
+    public static double signedByBillType(com.divudi.core.entity.BillItem bi, Double value) {
+        BillTypeAtomic bta = bi != null && bi.getBill() != null ? bi.getBill().getBillTypeAtomic() : null;
+        return signedRowValue(bta, value);
+    }
+
     private InwardMedicineBillTypes() {
     }
 }
