@@ -11,6 +11,8 @@
       xmlns:c="http://java.sun.com/jsp/jstl/core">
     <h:body>
         <ui:composition template="/resources/template/template.xhtml">
+            <!-- This page shows its own messages (p:messages); skip the template growl so messages do not show twice -->
+            <ui:param name="hideTemplateGrowl" value="true" />
             <ui:define name="content">
                 <h:panelGroup rendered="#{patientController.current ne null}">
                     <h:form>
@@ -55,10 +57,11 @@
                                 </div>
 
                             </f:facet>
+                            <p:messages id="msgs" autoUpdate="true" closable="true" showDetail="false" />
                             <div class="container-fluid">
                                 <div class="row form-group mb-1">
                                     <div class="col-md-2">
-                                        <p:outputLabel value="Title:"  class="form-label" />
+                                        <p:outputLabel value="Title:" for="cmbTitle" class="form-label" />
                                         <p:selectOneMenu id="cmbTitle" value="#{patientController.current.person.title}" class="form-control" required="true" requiredMessage="Please Select a title">
                                             <f:selectItem itemLabel="Select Title" />
                                             <f:selectItems value="#{billController.title}" var="i" itemLabel="#{i.label}"
@@ -127,9 +130,11 @@
                                 </div>
                                 <div class="row form-group mb-1">
                                     <div class="col-md-3">
-                                        <p:outputLabel value="Phone for Quick Search:"  class="form-label" />
+                                        <p:outputLabel value="Phone for Quick Search:" for="txtPhone" class="form-label" />
                                         <p:inputText
+                                            id="txtPhone"
                                             required="true"
+                                            requiredMessage="Please Enter a phone number"
                                             value="#{patientController.current.phoneNumberStringTransient}"
                                             class="form-control"
                                             validatorMessage="Please enter Valid Phone Number."
