@@ -3151,6 +3151,10 @@ public class BhtSummeryController implements Serializable {
             if (getPatientEncounter().getPaymentMethod() == PaymentMethod.Credit) {
                 getInwardBean().updateCreditDetail(getPatientEncounter(), getCurrent().getNetTotal());
             }
+            // The paid and settled figures use the same recount as every later payment,
+            // refund and receipt, so they do not change on the first recount (#26152).
+            getInwardBean().recountFinalBillPaid(getCurrent());
+            getBillFacade().edit(getCurrent());
             return null;
         });
 
@@ -3322,6 +3326,8 @@ public class BhtSummeryController implements Serializable {
             getInwardBean().updateCreditDetail(getPatientEncounter(), getCurrent().getNetTotal());
         }
         getCurrent().setReferenceBill(originalBill);
+        // Same recount as every later payment, refund and receipt (#26152).
+        getInwardBean().recountFinalBillPaid(getCurrent());
         getBillFacade().edit(getCurrent());
         return true;
     }
