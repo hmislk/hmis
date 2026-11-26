@@ -67,7 +67,7 @@
 - **🚨 Branches targeting a production/staging branch end in `-hotfix`.** [+](developer_docs/rules/git.md)
 - **🚨 One open PR per production/staging branch;** add to its branch instead of opening another. [+](developer_docs/rules/git.md)
 - **🚨 Before pushing to an existing PR's branch, run `gh pr view <N> --json state`;** if MERGED, use a new branch. [+](developer_docs/rules/git.md)
-- **🚨 Dev-hub team sessions may open a PR unasked; merge into `development` only under the merge gate** (non-author `REV OK <sha> — <member>`, CI green, CodeRabbit on the head sha or `CR skipped`, threads resolved, `--match-head-commit`, never `--admin`). [+](developer_docs/git/merge-rules.md)
+- **🚨 Dev-hub team sessions may open a PR unasked; merge into `development` only under the merge gate** (non-author `REV OK <sha> — <member>`, CI green, CodeRabbit on the head sha or `CR skipped`, threads resolved, `--match-head-commit`, never `--admin`). Agree pass/fail "done" criteria before the code; one failed criterion fails the e2e. [+](developer_docs/git/merge-rules.md)
 - **🚨 Never merge into `master` or any `*-production` / `*-staging` branch;** merging deploys, the user decides. Opening hotfix PRs is fine.
 - **🚨 Mirror every merged hotfix into `development`** unless cherry-picked from it. [+](.claude/skills/hotfix-deploy/SKILL.md)
 - **🚨 Dependabot PRs: green CI isn't enough;** triage with the dependabot-triage skill. [+](.claude/skills/dependabot-triage/SKILL.md)

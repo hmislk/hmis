@@ -12,3 +12,12 @@ Dev-hub team sessions (the user's own Claude sessions) may open a PR without ask
 7. Never `--admin`.
 If the author is not sure the fix is right, two members must e2e-test it before merge (the author plus one other, on a different machine/app) and record both results on the PR. Minor changes need only the REV OK.
 Also: never merge into `master` or any `*-production` / `*-staging` branch; merging deploys and stays the user's call. Opening hotfix PRs to them is fine.
+
+## "Done" criteria
+
+For work that needs an e2e test:
+1. Before the code, the author and the tester agree the pass/fail "done" criteria.
+2. Each criterion names its measure: a screen, a query or a counter. Example: "the settle sends no temporary-table statements, counted with the MySQL statement counter".
+3. A reviewer may add a criterion during the REV.
+4. One failed criterion fails the e2e.
+5. Write the criteria and measures in the issue. The repo is public. Put hardening criteria, and criteria with hospital data, in the hub task notes.
