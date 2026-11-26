@@ -290,6 +290,7 @@ Read in `resources/inward/bill/finalBillCustomBill4.xhtml`, so it applies wherev
 | Key | Type | Default | Description |
 | --- | --- | --- | --- |
 | `Inward Final Bill - Custom Bill 4 - Show Payments On Copies Without Professional Fees` | Boolean (application scope) | `false` | On Custom Bill 4 copies printed without professional fees (Not Claimable copies), shows Paid By Patient, Paid By Company and Total Paid. The Due lines (Due from company, Due Amount) stay hidden. When `false` these copies show no payments. Copies with professional fees are not affected. |
+| `Inward Final Bill - Custom Bill 4 - Show Payments And Due Amounts On Copies Without Professional Fees` | Boolean (application scope) | `false` | On Custom Bill 4 copies printed without professional fees (Not Claimable copies), shows the paid lines and the Due lines (Due from company, Due Amount). The amounts are for the whole bill, as on copies with professional fees, so they do not match the totals on these copies. Switch it on only for a hospital that asks for this. It works with or without the option above. Copies with professional fees are not affected. |
 
 ## Inward VAT per charge type
 

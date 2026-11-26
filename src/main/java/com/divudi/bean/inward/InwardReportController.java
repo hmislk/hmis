@@ -5416,7 +5416,7 @@ public class InwardReportController implements Serializable {
         for (PatientEncounter p : patientEncounters) {
             if (p.getFinalBill() != null) {
                 netTotal += p.getFinalBill().getNetTotal();
-                netPaid += p.getPaidByCreditCompany() + p.getFinalBill().getPaidAmount();
+                netPaid += p.getFinalBill().getPaidAmount();
             }
         }
     }
@@ -5515,7 +5515,8 @@ public class InwardReportController implements Serializable {
             }
 
             creditUsed += p.getCreditUsedAmount();
-            creditPaid += p.getPaidByCreditCompany();
+            // Company money is already in the final bill's paid amount (#26152); the old
+            // encounter field it was read from is no longer written.
             calTotal += p.getTransTotal();
         }
         rebuildPaidCaches();

@@ -10,6 +10,9 @@ import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.BillTypeAtomic;
+import com.divudi.core.data.CompanyShareAllocation;
+import com.divudi.core.data.CountedServiceType;
+import com.divudi.core.data.FinalBillPaidFigures;
 import com.divudi.core.data.DepartmentType;
 import com.divudi.core.data.FeeType;
 import com.divudi.core.data.PaymentMethod;
@@ -92,6 +95,8 @@ import javax.persistence.TemporalType;
 @SessionScoped
 public class InwardBeanController implements Serializable {
 
+    @EJB
+    private com.divudi.ejb.CreditBean creditBean;
     @EJB
     private PatientRoomFacade patientRoomFacade;
     @EJB
@@ -3401,15 +3406,259 @@ public class InwardBeanController implements Serializable {
         if (b == null) {
             return;
         }
-
-        double paid = getPaidValue(patientEncounter) + getPostFinalPaymentTotalIncludedIn(b);
-//        System.err.println("NET " + b.getNetTotal());
-//        System.err.println("PAID " + paid);
-
-        b.setPaidAmount(paid);
-        b.setBalance(b.getNetTotal() - paid);
+        recountFinalBillPaid(b);
         getBillFacade().edit(b);
+    }
 
+    /**
+     * The one recount of an inpatient final bill's paid amount, balance,
+     * settledAmountByPatient and settledAmountBySponsor (#26152). Every path
+     * that changes them calls this, so they never depend on the order of
+     * earlier actions: a credit company receipt is not lost by the next
+     * patient payment, and a refund or cancel is not missed. See
+     * {@link FinalBillPaidFigures} for how the parts add up. An approved
+     * final bill carries only the post final payments made up to its approval
+     * time (#23848). Sets the fields on the bill and does NOT save it; the
+     * caller saves, under the per-admission final bill lock.
+     */
+    public void recountFinalBillPaid(Bill finalBill) {
+        if (finalBill == null || finalBill.getPatientEncounter() == null) {
+            return;
+        }
+        PatientEncounter pe = finalBill.getPatientEncounter();
+        FinalBillPaidFigures figures = FinalBillPaidFigures.of(
+                getPaidValue(pe),
+                getPaidByCreditMethodValue(pe),
+                getPostFinalPaymentTotalIncludedIn(finalBill),
+                getCreditCompanyReceiptsNet(pe));
+        finalBill.setPaidAmount(figures.getPaidAmount());
+        finalBill.setSettledAmountByPatient(figures.getSettledAmountByPatient());
+        finalBill.setSettledAmountBySponsor(figures.getSettledAmountBySponsor());
+        finalBill.setBalance(figures.balanceFor(finalBill.getNetTotal()));
+    }
+
+    /**
+     * Recounts the credit company shares of a settled final bill after a post
+     * final patient payment, cancel or refund (#26159). Each commitment bill
+     * keeps the share fixed at settle in {@code total}; {@code netTotal} (what
+     * the company still owes, read by the company receipt page and the credit
+     * reports) is that share lowered by the post final payments the final bill
+     * carries, last company first, never below 0 and never below what that
+     * company has already paid ({@link CompanyShareAllocation}); the rest is a
+     * patient overpayment (final bill balance below 0). A recount, not increments, so the order
+     * of payments and cancels does not matter. An approved final bill carries
+     * only the rows created up to its approval time (#23848), the same rule as
+     * {@link #getPostFinalPaymentTotalIncludedIn}. Each commitment bill is
+     * reloaded and only that fresh copy is saved. Call it under the
+     * per-admission final bill lock.
+     */
+    public void recountCreditCompanyShares(Bill finalBill) {
+        if (finalBill == null || finalBill.getId() == null || finalBill.getPatientEncounter() == null
+                || finalBill.getPatientEncounter().getId() == null) {
+            return;
+        }
+        // Read the confirmed state fresh, inside the lock: only the confirmed version
+        // carries the company shares (#26163).
+        PatientEncounter freshPe = patientEncounterFacade.findWithoutCache(finalBill.getPatientEncounter().getId());
+        Bill freshFinal = getBillFacade().findWithoutCache(finalBill.getId());
+        if (freshPe == null || freshFinal == null || !freshFinal.isConfirmedFinalBill()
+                || (freshPe.getFinalBill() != null && freshPe.getFinalBill().getId() != null
+                && !freshPe.getFinalBill().getId().equals(freshFinal.getId()))) {
+            return;
+        }
+        finalBill = freshFinal;
+        List<Bill> found = fetchCreditCompanyCommitmentBills(freshPe);
+        List<Bill> commitments = new ArrayList<>();
+        for (Bill b : found) {
+            if (b.getReferenceBill() != null && finalBill.getId().equals(b.getReferenceBill().getId())) {
+                commitments.add(b);
+            }
+        }
+        if (commitments.isEmpty()) {
+            return;
+        }
+        commitments.sort(Comparator.comparing(Bill::getId));
+        List<Bill> fresh = new ArrayList<>();
+        double[] originals = new double[commitments.size()];
+        double[] paid = new double[commitments.size()];
+        double[] settledByCompany = new double[commitments.size()];
+        double[] settledByPatient = new double[commitments.size()];
+        Object[] companyKeys = new Object[commitments.size()];
+        for (int i = 0; i < commitments.size(); i++) {
+            Bill f = getBillFacade().findWithoutCache(commitments.get(i).getId());
+            if (f == null) {
+                return;
+            }
+            fresh.add(f);
+            companyKeys[i] = f.getCreditCompany() == null ? null : f.getCreditCompany().getId();
+            // total is the share fixed at settle and nothing else writes it afterwards;
+            // a commitment with no total (older data) takes it from netTotal once.
+            originals[i] = f.getTotal() > 0 ? f.getTotal() : f.getNetTotal();
+            // What the company has paid this admission, across every version's commitment (#26163).
+            // Duplicate commitments of one company all read the same company total here.
+            settledByCompany[i] = sumSettled(f, CountedServiceType.CREDIT_SETTLE_BY_COMPANY);
+            settledByPatient[i] = sumSettled(f, CountedServiceType.CREDIT_SETTLE_BY_PATIENT);
+            paid[i] = settledByCompany[i] + settledByPatient[i];
+        }
+        // One floor per company, spread back over its commitments (#26163).
+        double[] lowered = CompanyShareAllocation.lowerSharesByCompany(originals, companyKeys, paid,
+                getPostFinalPaymentTotalIncludedIn(finalBill));
+        double[] fractions = CompanyShareAllocation.paidFractions(companyKeys, lowered, paid);
+        for (int i = 0; i < fresh.size(); i++) {
+            Bill f = fresh.get(i);
+            if (f.getTotal() <= 0) {
+                f.setTotal(originals[i]);
+            }
+            f.setNetTotal(lowered[i]);
+            f.setPaidAmount(paid[i] * fractions[i]);
+            f.setSettledAmountBySponsor(settledByCompany[i] * fractions[i]);
+            f.setSettledAmountByPatient(settledByPatient[i] * fractions[i]);
+            f.setBalance(creditBean.calculateOutstandingBalance(f));
+            getBillFacade().edit(f);
+        }
+    }
+
+    /**
+     * Credit companies that have receipts (company or patient settle items) on
+     * any non-cancelled commitment bill of the admission, whichever final bill
+     * version the commitment belongs to (#26163), with what each has paid
+     * (company receipts net of cancels). Used to block a share below the paid
+     * figure even for a company left out of the new version.
+     */
+    public Map<Institution, Double> fetchPaidByCompanyWithReceipts(PatientEncounter encounter) {
+        Map<Institution, Double> result = new java.util.LinkedHashMap<>();
+        if (encounter == null) {
+            return result;
+        }
+        String jpql = "select b from Bill b "
+                + " where b.retired = false "
+                + " and b.cancelled = false "
+                + " and b.billTypeAtomic = :bta "
+                + " and b.patientEncounter = :pe "
+                + " and b.creditCompany is not null "
+                + " and exists (select bi.id from BillItem bi where bi.retired = false and bi.referenceBill = b)";
+        Map<String, Object> params = new HashMap<>();
+        params.put("bta", BillTypeAtomic.INWARD_FINAL_BILL_PAYMENT_BY_CREDIT_COMPANY);
+        params.put("pe", encounter);
+        List<Bill> bills = getBillFacade().findByJpql(jpql, params);
+        if (bills != null) {
+            for (Bill b : bills) {
+                Institution c = b.getCreditCompany();
+                if (c != null && !result.containsKey(c)) {
+                    result.put(c, fetchCompanyPaidAmount(encounter, c));
+                }
+            }
+        }
+        return result;
+    }
+
+    /**
+     * The settle items (company or patient, net of cancels) on every
+     * non-cancelled company commitment bill of the same credit company in the
+     * same admission, whichever final bill version the commitment belongs to
+     * (#26163). A commitment with no credit company counts only itself.
+     */
+    private double sumSettled(Bill commitment, CountedServiceType type) {
+        return creditBean.getSettledAmountOnCommitments(fetchCommitmentIdsOfSameCompany(commitment), type);
+    }
+
+    /**
+     * What one credit company has paid in an admission: company receipts net of
+     * cancels on all of that company's commitment bills, across every final
+     * bill version (#26163).
+     */
+    public double fetchCompanyPaidAmount(PatientEncounter encounter, Institution company) {
+        if (encounter == null || company == null) {
+            return 0.0;
+        }
+        String jpql = "select b.id from Bill b "
+                + " where b.retired = false "
+                + " and b.cancelled = false "
+                + " and b.billTypeAtomic = :bta "
+                + " and b.patientEncounter = :pe "
+                + " and b.creditCompany = :cc ";
+        Map<String, Object> params = new HashMap<>();
+        params.put("bta", BillTypeAtomic.INWARD_FINAL_BILL_PAYMENT_BY_CREDIT_COMPANY);
+        params.put("pe", encounter);
+        params.put("cc", company);
+        List<Long> ids = getBillFacade().findLongList(jpql, params);
+        return creditBean.getSettledAmountOnCommitments(ids, CountedServiceType.CREDIT_SETTLE_BY_COMPANY);
+    }
+
+    /**
+     * Ids of the non-cancelled, non-retired company commitment bills of the
+     * same credit company in the same admission as {@code commitment}
+     * (itself included), across every final bill version (#26163).
+     */
+    public List<Long> fetchCommitmentIdsOfSameCompany(Bill commitment) {
+        List<Long> ids = new ArrayList<>();
+        if (commitment == null || commitment.getId() == null) {
+            return ids;
+        }
+        ids.add(commitment.getId());
+        if (commitment.getCreditCompany() == null || commitment.getPatientEncounter() == null) {
+            return ids;
+        }
+        String jpql = "select b.id from Bill b "
+                + " where b.retired = false "
+                + " and b.cancelled = false "
+                + " and b.billTypeAtomic = :bta "
+                + " and b.patientEncounter = :pe "
+                + " and b.creditCompany = :cc ";
+        Map<String, Object> params = new HashMap<>();
+        params.put("bta", BillTypeAtomic.INWARD_FINAL_BILL_PAYMENT_BY_CREDIT_COMPANY);
+        params.put("pe", commitment.getPatientEncounter());
+        params.put("cc", commitment.getCreditCompany());
+        List<Long> found = getBillFacade().findLongList(jpql, params);
+        if (found != null) {
+            for (Long id : found) {
+                if (id != null && !ids.contains(id)) {
+                    ids.add(id);
+                }
+            }
+        }
+        return ids;
+    }
+
+    /**
+     * The part of {@link #getPaidValue} paid with the Credit method (old flows
+     * recorded company money that way). Signed like getPaidValue.
+     */
+    public double getPaidByCreditMethodValue(PatientEncounter patientEncounter) {
+        HashMap hm = new HashMap();
+        String sql = "SELECT sum(b.netTotal) FROM Bill b "
+                + " WHERE b.retired=false "
+                + " and b.billType=:btp "
+                + " and b.paymentMethod=:pm "
+                + " and b.patientEncounter=:pe ";
+        hm.put("btp", BillType.InwardPaymentBill);
+        hm.put("pm", PaymentMethod.Credit);
+        hm.put("pe", patientEncounter);
+        return getBillFacade().findDoubleByJpql(sql, hm, TemporalType.TIMESTAMP);
+    }
+
+    /**
+     * What credit companies paid against the admission, net of cancelled
+     * receipts (#26152). The receipt bills carry the admission on their items,
+     * not on the bill. Same coverage as the sum the APIs and the discharge
+     * book used before: every non-retired item of a CashRecieveBill bill
+     * (receipts and their cancellations, whatever their billTypeAtomic, so
+     * older receipts with no atomic type are in) for the admission. Receipt
+     * items count positive and the items of the cancellation bill carry the
+     * negative of them, so the sum is net, and the receipt bill's own cancelled
+     * flag is deliberately not filtered. Only inpatient receipts have an
+     * admission on their items, so OPD and pharmacy receipts are not in it.
+     */
+    public double getCreditCompanyReceiptsNet(PatientEncounter patientEncounter) {
+        HashMap hm = new HashMap();
+        String sql = "SELECT sum(bi.netValue) FROM BillItem bi "
+                + " WHERE bi.retired=false "
+                + " and bi.bill.retired=false "
+                + " and bi.bill.billType=:bty "
+                + " and bi.patientEncounter=:pe ";
+        hm.put("bty", BillType.CashRecieveBill);
+        hm.put("pe", patientEncounter);
+        return getBillItemFacade().findDoubleByJpql(sql, hm, TemporalType.TIMESTAMP);
     }
 
     /**
@@ -3436,6 +3685,42 @@ public class InwardBeanController implements Serializable {
             hm.put("approveAt", finalBill.getApproveAt());
         }
         return getBillFacade().findDoubleByJpql(sql, hm, TemporalType.TIMESTAMP);
+    }
+
+    /**
+     * What the admission had paid before {@code before}, leaving out the post
+     * final payments (#26152): the inward payment bills (signed) plus the credit
+     * company receipts net of their cancels, each created strictly before that
+     * time. Same rules as {@link #recountFinalBillPaid}, scoped in time, so a
+     * reprinted post final receipt does not change when a later receipt arrives.
+     */
+    public double getPaidExcludingPostFinalBefore(PatientEncounter patientEncounter, Date before) {
+        if (patientEncounter == null || before == null) {
+            return 0.0;
+        }
+        HashMap hm = new HashMap();
+        String sql = "SELECT sum(b.netTotal) FROM Bill b "
+                + " WHERE b.retired=false "
+                + " and b.billType=:btp "
+                + " and b.patientEncounter=:pe "
+                + " and b.createdAt<:before ";
+        hm.put("btp", BillType.InwardPaymentBill);
+        hm.put("pe", patientEncounter);
+        hm.put("before", before);
+        double payments = getBillFacade().findDoubleByJpql(sql, hm, TemporalType.TIMESTAMP);
+
+        HashMap hm2 = new HashMap();
+        String sql2 = "SELECT sum(bi.netValue) FROM BillItem bi "
+                + " WHERE bi.retired=false "
+                + " and bi.bill.retired=false "
+                + " and bi.bill.billType=:bty "
+                + " and bi.patientEncounter=:pe "
+                + " and bi.bill.createdAt<:before ";
+        hm2.put("bty", BillType.CashRecieveBill);
+        hm2.put("pe", patientEncounter);
+        hm2.put("before", before);
+        double receipts = getBillItemFacade().findDoubleByJpql(sql2, hm2, TemporalType.TIMESTAMP);
+        return payments + receipts;
     }
 
     public double getPaidValue(PatientEncounter patientEncounter) {
@@ -4144,6 +4429,81 @@ public class InwardBeanController implements Serializable {
      */
     public void applyInwardDiscountToBillFee(BillFee billFee, Item item, PatientEncounter patientEncounter,
             com.divudi.core.entity.inward.AdmissionType admissionTypeAtBill) {
+        applyInwardDiscountToBillFee(billFee, item, patientEncounter, admissionTypeAtBill, null);
+    }
+
+    /**
+     * Values shared by every fee of one discount run (#17562): the encounter's
+     * single credit company (read once) and the discount percents already looked
+     * up, keyed by everything the lookup depends on. It lives only for one run,
+     * so a change in the matrix is seen on the next run.
+     */
+    public static class DiscountRunCache {
+
+        private boolean creditCompanyRead;
+        private com.divudi.core.entity.Institution creditCompany;
+        private final Map<List<Object>, Double> percents = new HashMap<>();
+
+        public Double percent(List<Object> key, java.util.function.DoubleSupplier loader) {
+            if (key == null) {
+                return loader.getAsDouble();
+            }
+            Double known = percents.get(key);
+            if (known == null) {
+                known = loader.getAsDouble();
+                percents.put(key, known);
+            }
+            return known;
+        }
+
+        int size() {
+            return percents.size();
+        }
+    }
+
+    /**
+     * Memo key for one percent lookup. Null when a part is not saved yet (no id),
+     * so two different unsaved rows are never mistaken for one.
+     */
+    public static List<Object> discountPercentKey(Object bhtType, Object scheme, Object admissionType,
+            Object department, Object item, Object creditCompany) {
+        Object[] parts = {bhtType, scheme, admissionType, department, item, creditCompany};
+        List<Object> key = new ArrayList<>(parts.length);
+        for (Object part : parts) {
+            Object id = null;
+            if (part instanceof com.divudi.core.entity.Item) {
+                id = ((com.divudi.core.entity.Item) part).getId();
+            } else if (part instanceof Department) {
+                id = ((Department) part).getId();
+            } else if (part instanceof com.divudi.core.entity.Institution) {
+                id = ((com.divudi.core.entity.Institution) part).getId();
+            } else if (part instanceof com.divudi.core.entity.inward.AdmissionType) {
+                id = ((com.divudi.core.entity.inward.AdmissionType) part).getId();
+            } else if (part instanceof com.divudi.core.entity.PaymentScheme) {
+                id = ((com.divudi.core.entity.PaymentScheme) part).getId();
+            } else {
+                key.add(part);
+                continue;
+            }
+            if (id == null) {
+                if (part != null) {
+                    return null;
+                }
+                key.add(null);
+            } else {
+                key.add(part.getClass().getName() + "#" + id);
+            }
+        }
+        return key;
+    }
+
+    /**
+     * As the four-argument form; a non-null cache supplies the credit company and
+     * remembers discount percents for the rest of the run. A null cache behaves
+     * exactly as before.
+     */
+    public void applyInwardDiscountToBillFee(BillFee billFee, Item item, PatientEncounter patientEncounter,
+            com.divudi.core.entity.inward.AdmissionType admissionTypeAtBill, DiscountRunCache cache) {
         if (billFee == null || item == null || patientEncounter == null) {
             return;
         }
@@ -4159,14 +4519,36 @@ public class InwardBeanController implements Serializable {
         if (matrixDept == null && billFee.getBillItem() != null && billFee.getBillItem().getBill() != null) {
             matrixDept = billFee.getBillItem().getBill().getDepartment();
         }
-        com.divudi.core.entity.Institution creditCompany = resolveSingleCreditCompany(patientEncounter);
-        double pct = priceMatrixController.getInwardDiscountPercent(
-                patientEncounter.getPaymentMethod(),
-                patientEncounter.getPaymentScheme(),
-                admissionTypeAtBill,
-                matrixDept,
-                item,
-                creditCompany);
+        com.divudi.core.entity.Institution creditCompany;
+        double pct;
+        if (cache == null) {
+            creditCompany = resolveSingleCreditCompany(patientEncounter);
+            pct = priceMatrixController.getInwardDiscountPercent(
+                    patientEncounter.getPaymentMethod(),
+                    patientEncounter.getPaymentScheme(),
+                    admissionTypeAtBill,
+                    matrixDept,
+                    item,
+                    creditCompany);
+        } else {
+            if (!cache.creditCompanyRead) {
+                cache.creditCompany = resolveSingleCreditCompany(patientEncounter);
+                cache.creditCompanyRead = true;
+            }
+            creditCompany = cache.creditCompany;
+            final com.divudi.core.entity.Institution cc = creditCompany;
+            final Department dept = matrixDept;
+            pct = cache.percent(
+                    discountPercentKey(patientEncounter.getPaymentMethod(), patientEncounter.getPaymentScheme(),
+                            admissionTypeAtBill, matrixDept, item, creditCompany),
+                    () -> priceMatrixController.getInwardDiscountPercent(
+                            patientEncounter.getPaymentMethod(),
+                            patientEncounter.getPaymentScheme(),
+                            admissionTypeAtBill,
+                            dept,
+                            item,
+                            cc));
+        }
         double qty = (billFee.getBillItem() != null && billFee.getBillItem().getQty() != null && billFee.getBillItem().getQty() > 0)
                 ? billFee.getBillItem().getQty() : 1.0;
         double unitGross = (billFee.getFeeUnitGrossValue() != null)

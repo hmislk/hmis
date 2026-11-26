@@ -58,6 +58,7 @@
                                         styleClass="ui-button-danger"
                                         icon="fas fa-cancel"
                                         ajax="false"
+                                        rendered="#{webUserController.hasPrivilege('PharmacySaleCancel')}"
                                         title="Cancel this BHT issue request"
                                         action="#{pharmacyBillSearch.navigateToCancelBhtRequest}"
                                         disabled="#{!(pharmacyBillSearch.bill.returnBhtIssueBills.size() eq 0) or pharmacyBillSearch.currentBillIssueAcceptedByWard}"
