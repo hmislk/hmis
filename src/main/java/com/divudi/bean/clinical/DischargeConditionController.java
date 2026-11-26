@@ -69,15 +69,24 @@ public class DischargeConditionController implements Serializable {
     }
 
     public void saveSelected() {
-        current.setSymanticType(SymanticType.Discharge_Condition);
-        if (getCurrent().getId() != null && getCurrent().getId() > 0) {
-            getFacade().edit(current);
-            JsfUtil.addSuccessMessage("Updated");
-        } else {
-            current.setCreatedAt(new Date());
-            current.setCreater(getSessionController().getLoggedUser());
-            getFacade().create(current);
-            JsfUtil.addSuccessMessage("Saved");
+        if (current == null) {
+            JsfUtil.addErrorMessage("Nothing to save");
+            return;
+        }
+        try {
+            current.setSymanticType(SymanticType.Discharge_Condition);
+            if (getCurrent().getId() != null && getCurrent().getId() > 0) {
+                getFacade().edit(current);
+                JsfUtil.addSuccessMessage("Updated");
+            } else {
+                current.setCreatedAt(new Date());
+                current.setCreater(getSessionController().getLoggedUser());
+                getFacade().create(current);
+                JsfUtil.addSuccessMessage("Saved");
+            }
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage("Error saving: " + e.getMessage());
+            return;
         }
         recreateModel();
         getItems();
