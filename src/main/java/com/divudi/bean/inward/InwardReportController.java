@@ -5515,7 +5515,8 @@ public class InwardReportController implements Serializable {
             }
 
             creditUsed += p.getCreditUsedAmount();
-            creditPaid += p.getPaidByCreditCompany();
+            // Company money is already in the final bill's paid amount (#26152); the old
+            // encounter field it was read from is no longer written.
             calTotal += p.getTransTotal();
         }
         rebuildPaidCaches();

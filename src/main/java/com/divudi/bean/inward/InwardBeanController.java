@@ -3453,22 +3453,23 @@ public class InwardBeanController implements Serializable {
     /**
      * What credit companies paid against the admission, net of cancelled
      * receipts (#26152). The receipt bills carry the admission on their items,
-     * not on the bill. Receipt items count positive and the items of the
-     * cancellation bill carry the negative of them, so both are summed and the
-     * receipt bill's own cancelled flag is deliberately not filtered (the
-     * same rule as BhtPaymentDetailReportController.fetchCreditSettlementItems).
+     * not on the bill. Same coverage as the sum the APIs and the discharge
+     * book used before: every non-retired item of a CashRecieveBill bill
+     * (receipts and their cancellations, whatever their billTypeAtomic, so
+     * older receipts with no atomic type are in) for the admission. Receipt
+     * items count positive and the items of the cancellation bill carry the
+     * negative of them, so the sum is net, and the receipt bill's own cancelled
+     * flag is deliberately not filtered. Only inpatient receipts have an
+     * admission on their items, so OPD and pharmacy receipts are not in it.
      */
     public double getCreditCompanyReceiptsNet(PatientEncounter patientEncounter) {
         HashMap hm = new HashMap();
         String sql = "SELECT sum(bi.netValue) FROM BillItem bi "
                 + " WHERE bi.retired=false "
                 + " and bi.bill.retired=false "
-                + " and bi.bill.billTypeAtomic in :btas "
+                + " and bi.bill.billType=:bty "
                 + " and bi.patientEncounter=:pe ";
-        List<BillTypeAtomic> btas = new ArrayList<>();
-        btas.add(BillTypeAtomic.INPATIENT_CREDIT_COMPANY_PAYMENT_RECEIVED);
-        btas.add(BillTypeAtomic.INPATIENT_CREDIT_COMPANY_PAYMENT_CANCELLATION);
-        hm.put("btas", btas);
+        hm.put("bty", BillType.CashRecieveBill);
         hm.put("pe", patientEncounter);
         return getBillItemFacade().findDoubleByJpql(sql, hm, TemporalType.TIMESTAMP);
     }

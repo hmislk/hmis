@@ -2572,9 +2572,10 @@ public class BillBeanController implements Serializable {
                 }
                 // The paid amount, balance and settled amounts are recounted from the
                 // bills, not added to: the same figures whatever happened before and
-                // however many times this runs (#26152). The amount is no longer
-                // needed for the money; a payment for several admissions is counted
-                // per admission by its items.
+                // however many times this runs (#26152). The amount is not used. A
+                // company receipt for several admissions is split per admission
+                // because the recount reads its items; inward payments, deposits
+                // and refunds belong to one admission.
                 getInwardBean().recountFinalBillPaid(finalBill);
                 getBillFacade().edit(finalBill);
                 patientEncounter.setFinalBill(finalBill);
