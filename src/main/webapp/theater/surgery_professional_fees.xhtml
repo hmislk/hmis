@@ -215,6 +215,7 @@
 
                     <h:panelGroup id="panelBillItems">
                         <p:dataTable value="#{inwardProfessionalBillController.proEncounterComponents}" var="c"
+                                     styleClass="p-datatable-sm"
                                      emptyMessage="No fees added yet. Use the form above to add fees, then click 'Save Bill'.">
                             <p:column headerText="Role">
                                 <h:outputLabel value="#{c.patientEncounterComponentType.label}"/>
@@ -247,6 +248,7 @@
                             <h:outputText value="Saved Professional Fee Bills" class="mx-2"/>
                         </f:facet>
                         <p:dataTable value="#{inwardProfessionalBillController.surgeryProfessionalFeeBills}" var="sb"
+                                     styleClass="p-datatable-sm"
                                      emptyMessage="No saved bills yet.">
                             <p:column headerText="Bill No">
                                 <h:outputLabel value="#{sb.deptId}"/>
