@@ -254,6 +254,22 @@ public class DrawerController implements Serializable {
         }
     }
 
+    /**
+     * Undoes the drawer rows of a cancelled bill (#26196). The caller has already
+     * committed the cancellation, so a busy drawer must not undo it: it is logged
+     * for an admin to apply by a drawer adjustment, and the cashier is told.
+     */
+    public void reverseDrawerEntriesOfBill(Bill originalBill, Bill cancellationBill, WebUser webUser) {
+        try {
+            drawerService.reverseDrawerEntriesOfBill(originalBill, cancellationBill, webUser);
+        } catch (DrawerBusyException e) {
+            LOGGER.log(Level.SEVERE, "Cash drawer NOT updated (drawer busy): reversal of bill id {0}, cancellation bill id {1}, drawer user {2}. Apply it with a drawer adjustment.",
+                    new Object[]{String.valueOf(originalBill == null ? null : originalBill.getId()),
+                        String.valueOf(cancellationBill == null ? null : cancellationBill.getId()), userName(webUser)});
+            tellCashier();
+        }
+    }
+
     public void updateDrawerForIns(Payment payment) {
         updateCreatorsDrawerOrReport(payment, Math.abs(payment.getPaidValue()));
     }

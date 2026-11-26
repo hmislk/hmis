@@ -4182,6 +4182,9 @@ public class PharmacyBillSearch implements Serializable {
 
                 getCashTransactionBean().saveBillCashInTransaction(cb, getSessionController().getLoggedUser());
 
+                // The refund took its amount out of the drawer; a cancelled refund puts it back (#26196).
+                drawerController.reverseDrawerEntriesOfBill(getBill(), cb, getSessionController().getLoggedUser());
+
                 JsfUtil.addSuccessMessage("Cancelled");
                 if (getBill().getPaymentMethod() == PaymentMethod.Credit) {
                     if (getBill().getToStaff() != null) {

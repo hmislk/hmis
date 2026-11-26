@@ -438,6 +438,68 @@ public class DrawerService {
     }
 
     /**
+     * The drawer value that undoes one drawer history row: same payment method,
+     * opposite sign (#26196).
+     */
+    public static double reversalValue(DrawerEntry entry) {
+        if (entry == null || entry.getTransactionValue() == null) {
+            return 0.0;
+        }
+        return 0.0 - entry.getTransactionValue();
+    }
+
+    /**
+     * True when the history row has something to undo: it is live, names a
+     * payment method and carries a non-zero value.
+     */
+    public static boolean isReversible(DrawerEntry entry) {
+        return entry != null
+                && !entry.isRetired()
+                && entry.getPaymentMethod() != null
+                && reversalValue(entry) != 0.0;
+    }
+
+    /**
+     * Puts back what {@code originalBill} took from or added to the drawer. Each
+     * live drawer history row of the original bill is undone with a row of the
+     * same payment method and the opposite value, filed under
+     * {@code cancellationBill} in {@code webUser}'s drawer. An original with no
+     * drawer history rows changes nothing. All rows run in one transaction under
+     * one drawer row lock; a busy drawer throws DrawerBusyException and applies none.
+     */
+    public void reverseDrawerEntriesOfBill(Bill originalBill, Bill cancellationBill, WebUser webUser) {
+        if (originalBill == null || originalBill.getId() == null || cancellationBill == null || webUser == null) {
+            return;
+        }
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("billId", originalBill.getId());
+        List<DrawerEntry> entries = ejbFacade.findByJpql(
+                "select de from DrawerEntry de where de.bill.id = :billId and de.retired = false order by de.id", params);
+        if (entries == null || entries.isEmpty()) {
+            return;
+        }
+        Drawer drawer = null;
+        for (DrawerEntry entry : entries) {
+            if (!isReversible(entry)) {
+                continue;
+            }
+            if (drawer == null) {
+                drawer = lockUsersDrawer(webUser);
+                if (drawer == null) {
+                    System.err.println("No drawer found for the user.");
+                    return;
+                }
+            }
+            double value = reversalValue(entry);
+            drawerEntryUpdate(cancellationBill, drawer, entry.getPaymentMethod(), webUser, value);
+            addToBalance(drawer, entry.getPaymentMethod(), value);
+        }
+        if (drawer != null) {
+            drawerFacade.editAndCommit(drawer);
+        }
+    }
+
+    /**
      * The user's drawer, re-read from the database with a row lock (SELECT ... FOR
      * UPDATE) held until the current transaction ends. Every balance change reads the
      * old value and writes the new one, so two requests on one drawer (the same
