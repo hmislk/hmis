@@ -2,6 +2,7 @@ package com.divudi.core.data.dto;
 
 import com.divudi.core.data.BillClassType;
 import com.divudi.core.data.BillType;
+import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.PaymentMethod;
 
 public class IpIncomeCategoryWiseRowDTO {
@@ -22,6 +23,7 @@ public class IpIncomeCategoryWiseRowDTO {
     private final String categoryName;
     private final PaymentMethod encounterPaymentMethod;
     private final PaymentMethod billPaymentMethod;
+    private BillTypeAtomic billTypeAtomic;
 
     public IpIncomeCategoryWiseRowDTO(Long billId,
             BillClassType billClassType,
@@ -55,6 +57,33 @@ public class IpIncomeCategoryWiseRowDTO {
         this.categoryName = categoryName;
         this.encounterPaymentMethod = encounterPaymentMethod;
         this.billPaymentMethod = billPaymentMethod;
+    }
+
+    public IpIncomeCategoryWiseRowDTO(Long billId,
+            BillClassType billClassType,
+            BillType billType,
+            Double billDiscount,
+            String billDeptId,
+            Double grossValue,
+            Double hospitalFee,
+            Double discount,
+            Double staffFee,
+            Double netValue,
+            Long itemId,
+            String itemName,
+            Long categoryId,
+            String categoryName,
+            PaymentMethod encounterPaymentMethod,
+            PaymentMethod billPaymentMethod,
+            BillTypeAtomic billTypeAtomic) {
+        this(billId, billClassType, billType, billDiscount, billDeptId, grossValue, hospitalFee,
+                discount, staffFee, netValue, itemId, itemName, categoryId, categoryName,
+                encounterPaymentMethod, billPaymentMethod);
+        this.billTypeAtomic = billTypeAtomic;
+    }
+
+    public BillTypeAtomic getBillTypeAtomic() {
+        return billTypeAtomic;
     }
 
     public Long getBillId() {

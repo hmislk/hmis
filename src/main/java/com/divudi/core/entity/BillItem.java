@@ -1327,6 +1327,11 @@ public class BillItem implements Serializable, RetirableEntity {
         this.reagentFee = reagentFee;
     }
 
+    /** True when finance details exist, without creating them. */
+    public boolean hasBillItemFinanceDetails() {
+        return billItemFinanceDetails != null;
+    }
+
     /**
      * TODO: MIGRATION NEEDED - Replace all callers with initializeBillItemFinanceDetails()
      * This getter currently auto-creates to maintain compatibility, but this causes

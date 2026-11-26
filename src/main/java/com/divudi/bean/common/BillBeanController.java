@@ -2687,6 +2687,47 @@ public class BillBeanController implements Serializable {
         return allLinked;
     }
 
+    /**
+     * Changes the final bill's paid amount and balance by the amount of one
+     * saved Post Final Bill Payment row, or its cancellation or refund row
+     * (negative netTotal) (#26125). Same idea as
+     * {@link #updateInwardDipositList(PatientEncounter, Bill, double)}, but the
+     * row is NOT linked as a backward reference bill: those rows print as the
+     * "paid by" lines of the final bill, and the settle and confirm paths
+     * rebuild them from inward payments only. Nothing is recounted, so other
+     * paid amounts (such as company receipts) are not touched. An approved
+     * final bill is frozen (#23848): it takes the row only if the row was
+     * created up to its approval time, the same rule as
+     * {@link InwardBeanController#getPostFinalPaymentTotalIncludedIn}. Call
+     * once per saved row. Same per-admission lock as the other final bill
+     * updates.
+     */
+    public void addPostFinalPaymentToFinalBill(PatientEncounter patientEncounter, Bill postFinalRow) {
+        if (patientEncounter == null || patientEncounter.getId() == null || postFinalRow == null) {
+            return;
+        }
+        finalBillLockBean.withFinalBillVersionLock(patientEncounter, () -> {
+            PatientEncounter fresh = finalBillPatientEncounterFacade.findWithoutCache(patientEncounter.getId());
+            if (fresh == null || !fresh.isPaymentFinalized() || fresh.getFinalBill() == null
+                    || fresh.getFinalBill().getId() == null) {
+                return null;
+            }
+            Bill finalBill = getBillFacade().findWithoutCache(fresh.getFinalBill().getId());
+            if (finalBill == null || finalBill.isCancelled() || finalBill.isRetired()) {
+                return null;
+            }
+            if (finalBill.getApproveAt() != null
+                    && (postFinalRow.getCreatedAt() == null
+                    || postFinalRow.getCreatedAt().after(finalBill.getApproveAt()))) {
+                return null;
+            }
+            finalBill.setPaidAmount(finalBill.getPaidAmount() + postFinalRow.getNetTotal());
+            finalBill.setBalance(finalBill.getNetTotal() - finalBill.getPaidAmount());
+            getBillFacade().edit(finalBill);
+            return null;
+        });
+    }
+
     private FinalBillLinkResult linkToFreshFinalBill(PatientEncounter patientEncounter, Bill bill, boolean refresh) {
         return linkToFreshFinalBill(patientEncounter, bill, refresh, bill == null ? 0 : bill.getNetTotal());
     }
