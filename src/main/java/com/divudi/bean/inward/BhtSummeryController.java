@@ -2036,31 +2036,48 @@ public class BhtSummeryController implements Serializable {
      * PatientItem is kept in step so the breakdown screens agree with the bill.
      */
     private double updateTimedServiceBillItems(InwardChargeType inwardChargeType, double discountPercent, Date from, Date to) {
-        List<BillItem> list = getInwardBean().fetchTimedServiceBillItemsByInwardChargeType(inwardChargeType, getPatientEncounter());
-        double disTot = 0;
-        if (list == null || list.isEmpty()) {
-            return disTot;
+        List<Object[]> rows = getInwardBean().fetchTimedServiceBillItemRows(inwardChargeType, getPatientEncounter());
+        TimedDiscountPlan plan = planTimedServiceDiscount(rows, discountPercent, from, to);
+        if (plan.ids.isEmpty()) {
+            return plan.total;
         }
+        getInwardBean().applyDiscountPercentToBillItems(plan.ids, discountPercent);
+        for (Map.Entry<Double, List<Long>> e : plan.idsByDiscount.entrySet()) {
+            getInwardBean().mirrorDiscountToPatientItems(e.getValue(), e.getKey());
+        }
+        return plan.total;
+    }
 
-        for (BillItem bi : list) {
-            if (!inWindow(bi.getBill() != null ? bi.getBill().getCreatedAt() : null, from, to)) {
+    /** What one timed-service discount step changes: the rows, their discounts and the total. */
+    static final class TimedDiscountPlan {
+
+        final List<Long> ids = new ArrayList<>();
+        final Map<Double, List<Long>> idsByDiscount = new LinkedHashMap<>();
+        double total;
+    }
+
+    /**
+     * Works out, from the rows (id, gross, margin, bill time) the discount of
+     * each timed-service BillItem in the window [from, to): the same formula
+     * and the same summing order as the old per-row loop.
+     */
+    static TimedDiscountPlan planTimedServiceDiscount(List<Object[]> rows, double discountPercent, Date from, Date to) {
+        TimedDiscountPlan plan = new TimedDiscountPlan();
+        if (rows == null) {
+            return plan;
+        }
+        for (Object[] row : rows) {
+            if (!inWindow((Date) row[3], from, to)) {
                 continue;
             }
-            double value = bi.getGrossValue() + bi.getMarginValue();
+            double value = ((Number) row[1]).doubleValue() + ((Number) row[2]).doubleValue();
             double dis = (value * discountPercent) / 100;
-            disTot += dis;
-            bi.setDiscount(dis);
-            bi.setNetValue(value - dis);
-            getBillItemFacade().edit(bi);
-
-            PatientItem pi = getInwardBean().fetchPatientItemByBillItem(bi);
-            if (pi != null) {
-                pi.setDiscount(dis);
-                getPatientItemFacade().edit(pi);
-            }
+            plan.total += dis;
+            Long id = ((Number) row[0]).longValue();
+            plan.ids.add(id);
+            plan.idsByDiscount.computeIfAbsent(dis, k -> new ArrayList<>()).add(id);
         }
-
-        return disTot;
+        return plan;
     }
 
     private void updatePatientItemsWithOutMatrix(InwardChargeType inwardChargeType) {

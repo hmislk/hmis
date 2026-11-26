@@ -1041,6 +1041,62 @@ public class InwardBeanController implements Serializable {
     }
 
     /**
+     * Id, gross, margin and bill time of the timed-service BillItems of one
+     * charge type, in id order. A projection, so no BillItem (with its fees and
+     * price matrix) is loaded per row. Same rows as
+     * {@link #fetchTimedServiceBillItemsByInwardChargeType}.
+     */
+    public List<Object[]> fetchTimedServiceBillItemRows(InwardChargeType inwardChargeType, PatientEncounter patientEncounter) {
+        String sql = "Select s.id, s.grossValue, s.marginValue, b.createdAt From BillItem s join s.bill b"
+                + " where s.retired=false "
+                + " and b.billType=:btp"
+                + " and b.patientEncounter=:pe"
+                + " and type(s.item)=:cls "
+                + " and s.item.inwardChargeType=:inw "
+                + " order by s.id";
+        HashMap hm = new HashMap();
+        hm.put("btp", BillType.InwardBill);
+        hm.put("pe", patientEncounter);
+        hm.put("cls", TimedItem.class);
+        hm.put("inw", inwardChargeType);
+        return getBillItemFacade().findObjectArrayByJpql(sql, hm, TemporalType.TIMESTAMP);
+    }
+
+    /**
+     * Sets the discount of the given timed-service BillItems to
+     * {@code (gross + margin) * percent / 100} and the net value to
+     * {@code gross + margin - discount}, in the database, in id chunks. Same
+     * arithmetic and order as the per-row Java version, so the values match.
+     */
+    public void applyDiscountPercentToBillItems(List<Long> billItemIds, double discountPercent) {
+        String sql = "UPDATE BillItem s SET"
+                + " s.discount = ((s.grossValue + s.marginValue) * :pct) / 100,"
+                + " s.netValue = (s.grossValue + s.marginValue) - (((s.grossValue + s.marginValue) * :pct) / 100)"
+                + " WHERE s.id IN :ids";
+        for (List<Long> chunk : chunkIds(billItemIds, BULK_UPDATE_ID_CHUNK)) {
+            HashMap hm = new HashMap();
+            hm.put("pct", discountPercent);
+            hm.put("ids", chunk);
+            getBillItemFacade().updateByJpql(sql, hm);
+        }
+    }
+
+    /**
+     * Mirrors a discount onto the PatientItems behind the given BillItems.
+     * One UPDATE per chunk of BillItems that share the same discount.
+     */
+    public void mirrorDiscountToPatientItems(List<Long> billItemIds, double discount) {
+        String sql = "UPDATE PatientItem p SET p.discount = :dis"
+                + " WHERE p.retired=false AND p.billItem.id IN :ids";
+        for (List<Long> chunk : chunkIds(billItemIds, BULK_UPDATE_ID_CHUNK)) {
+            HashMap hm = new HashMap();
+            hm.put("dis", discount);
+            hm.put("ids", chunk);
+            getPatientItemFacade().updateByJpql(sql, hm);
+        }
+    }
+
+    /**
      * The PatientItem carrying the timing behind a timed-service BillItem.
      * BillItem has no back-reference, so it is looked up from the owning side.
      */
