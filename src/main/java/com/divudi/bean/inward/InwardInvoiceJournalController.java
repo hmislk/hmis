@@ -465,10 +465,11 @@ public class InwardInvoiceJournalController implements Serializable {
     private Map<Long, Double> fetchCreditCompanyDueByEncounter(List<PatientEncounter> encounters) {
         Map<Long, Double> result = new HashMap<>();
 
-        String jpql = "select b from Bill b"
+        String jpql = "select b from Bill b left join b.referenceBill fb"
                 + " where b.retired = false"
                 + " and b.cancelled = false"
                 + " and b.billTypeAtomic = :bta"
+                + " and (fb is null or fb.confirmedFinalBill = true)"
                 + " and b.patientEncounter in :encs";
 
         Map<String, Object> params = new HashMap<>();

@@ -3063,6 +3063,12 @@ public class InwardReportController1 implements Serializable {
                 + " and (fb is null or (fb.retired=false and (fb.cancelled=false or fb.cancelled is null))) "
                 + " and b.billTypeAtomic=:bta "
                 + " and " + dateField + " between :frm and :to ";
+        if (!commitmentReport) {
+            // Only the confirmed final bill version's commitments, so a revised bill's
+            // earlier versions are not counted again (#26163). Backfilled commitments
+            // with no final bill stay in.
+            sql += " and (fb is null or fb.confirmedFinalBill=true) ";
+        }
 
         if (institution != null) {
             sql += " and b.creditCompany=:cc ";

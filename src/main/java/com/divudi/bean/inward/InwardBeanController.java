@@ -11,6 +11,7 @@ import com.divudi.bean.common.SessionController;
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.CompanyShareAllocation;
+import com.divudi.core.data.CountedServiceType;
 import com.divudi.core.data.FinalBillPaidFigures;
 import com.divudi.core.data.DepartmentType;
 import com.divudi.core.data.FeeType;
@@ -3452,7 +3453,9 @@ public class InwardBeanController implements Serializable {
      * per-admission final bill lock.
      */
     public void recountCreditCompanyShares(Bill finalBill) {
-        if (finalBill == null || finalBill.getId() == null || finalBill.getPatientEncounter() == null) {
+        if (finalBill == null || finalBill.getId() == null || finalBill.getPatientEncounter() == null
+                || !finalBill.isConfirmedFinalBill()) {
+            // Only the confirmed version carries the company shares (#26163).
             return;
         }
         List<Bill> found = fetchCreditCompanyCommitmentBills(finalBill.getPatientEncounter());
@@ -3469,6 +3472,8 @@ public class InwardBeanController implements Serializable {
         List<Bill> fresh = new ArrayList<>();
         double[] originals = new double[commitments.size()];
         double[] paid = new double[commitments.size()];
+        double[] settledByCompany = new double[commitments.size()];
+        double[] settledByPatient = new double[commitments.size()];
         for (int i = 0; i < commitments.size(); i++) {
             Bill f = getBillFacade().findWithoutCache(commitments.get(i).getId());
             if (f == null) {
@@ -3478,8 +3483,10 @@ public class InwardBeanController implements Serializable {
             // total is the share fixed at settle and nothing else writes it afterwards;
             // a commitment with no total (older data) takes it from netTotal once.
             originals[i] = f.getTotal() > 0 ? f.getTotal() : f.getNetTotal();
-            // paidAmount = settled by company receipts net of cancels (credit receipt and cancel pages)
-            paid[i] = f.getPaidAmount();
+            // What the company has paid this admission, across every version's commitment (#26163).
+            settledByCompany[i] = sumSettled(f, CountedServiceType.CREDIT_SETTLE_BY_COMPANY);
+            settledByPatient[i] = sumSettled(f, CountedServiceType.CREDIT_SETTLE_BY_PATIENT);
+            paid[i] = settledByCompany[i] + settledByPatient[i];
         }
         double[] lowered = CompanyShareAllocation.lowerShares(originals, paid,
                 getPostFinalPaymentTotalIncludedIn(finalBill));
@@ -3489,9 +3496,57 @@ public class InwardBeanController implements Serializable {
                 f.setTotal(originals[i]);
             }
             f.setNetTotal(lowered[i]);
+            f.setPaidAmount(paid[i]);
+            f.setSettledAmountBySponsor(settledByCompany[i]);
+            f.setSettledAmountByPatient(settledByPatient[i]);
             f.setBalance(creditBean.calculateOutstandingBalance(f));
             getBillFacade().edit(f);
         }
+    }
+
+    /**
+     * The settle items (company or patient, net of cancels) on every
+     * non-cancelled company commitment bill of the same credit company in the
+     * same admission, whichever final bill version the commitment belongs to
+     * (#26163). A commitment with no credit company counts only itself.
+     */
+    private double sumSettled(Bill commitment, CountedServiceType type) {
+        return creditBean.getSettledAmountOnCommitments(fetchCommitmentIdsOfSameCompany(commitment), type);
+    }
+
+    /**
+     * Ids of the non-cancelled, non-retired company commitment bills of the
+     * same credit company in the same admission as {@code commitment}
+     * (itself included), across every final bill version (#26163).
+     */
+    public List<Long> fetchCommitmentIdsOfSameCompany(Bill commitment) {
+        List<Long> ids = new ArrayList<>();
+        if (commitment == null || commitment.getId() == null) {
+            return ids;
+        }
+        ids.add(commitment.getId());
+        if (commitment.getCreditCompany() == null || commitment.getPatientEncounter() == null) {
+            return ids;
+        }
+        String jpql = "select b.id from Bill b "
+                + " where b.retired = false "
+                + " and b.cancelled = false "
+                + " and b.billTypeAtomic = :bta "
+                + " and b.patientEncounter = :pe "
+                + " and b.creditCompany = :cc ";
+        Map<String, Object> params = new HashMap<>();
+        params.put("bta", BillTypeAtomic.INWARD_FINAL_BILL_PAYMENT_BY_CREDIT_COMPANY);
+        params.put("pe", commitment.getPatientEncounter());
+        params.put("cc", commitment.getCreditCompany());
+        List<Long> found = getBillFacade().findLongList(jpql, params);
+        if (found != null) {
+            for (Long id : found) {
+                if (id != null && !ids.contains(id)) {
+                    ids.add(id);
+                }
+            }
+        }
+        return ids;
     }
 
     /**
