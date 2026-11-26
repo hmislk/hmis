@@ -223,16 +223,18 @@
                             }
                         </style>
 
+                        <p:defaultCommand target="btnProcess" />
                         <div class="d-flex align-items-center mt-2">
                             <p:commandButton 
-                                class="ui-button-secondary mx-1" 
+                                class="ui-button-secondary m-1" 
                                 icon="fas fa-arrow-left" 
                                 ajax="false" 
                                 value="Back"
                                 action="#{reportController.navigateToCostOfGoodsSold()}">
                             </p:commandButton>
                             <p:commandButton 
-                                class="ui-button-warning mx-1" 
+                                id="btnProcess"
+                                class="ui-button-success m-1" 
                                 icon="fas fa-cogs" 
                                 ajax="false"  
                                 value="Process" 
@@ -240,7 +242,7 @@
                             </p:commandButton>
 
                             <p:commandButton
-                                class="ui-button- mx-1"
+                                class="ui-button-warning m-1"
                                 icon="fas fa-print"
                                 type="button"
                                 value="Print All"
@@ -255,7 +257,7 @@
                             </p:commandButton>
 
                             <p:commandButton 
-                                class="ui-button-success mx-1" 
+                                class="ui-button-info m-1" 
                                 icon="fas fa-file-excel" 
                                 ajax="false" 
                                 value="Download"
@@ -263,7 +265,7 @@
                             </p:commandButton>
 
                             <p:commandButton 
-                                class="ui-button-danger mx-1" 
+                                class="ui-button-info m-1" 
                                 icon= "fas fa-file-pdf" 
                                 ajax="false" 
                                 value="PDF"
