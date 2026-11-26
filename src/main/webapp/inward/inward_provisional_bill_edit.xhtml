@@ -249,7 +249,7 @@
                                                 </div>
                                             </div>
                                         </f:facet>
-                                        <p:dataTable value="#{inwardSearch.bill.billItems}" 
+                                        <p:dataTable styleClass="p-datatable-sm" value="#{inwardSearch.bill.billItems}" 
                                                      var="bip"
                                                      class="w-100">
                                             <p:column rendered="#{inwardSearch.showZeroInwardChargeCategoryTypes or bip.adjustedValue ne 0}" filterBy="#{bip.inwardChargeType.name}" filterMatchMode="contains">
@@ -272,7 +272,7 @@
                                         </p:dataTable>
                                         <ui:repeat value="#{inwardSearch.bill.billItems}" var="bip">
                                             <h:panelGroup rendered="#{bip.inwardChargeType eq 'ProfessionalCharge' or bip.inwardChargeType eq 'DoctorAndNurses' or bip.inwardChargeType eq 'TechnicianAndParamedicalCharge'}">
-                                                <p:dataTable value="#{bip.proFees}" var="fe" class="my-2" rendered="#{bip.proFees.size() ne 0 or not empty bip.proFees}">
+                                                <p:dataTable styleClass="p-datatable-sm" value="#{bip.proFees}" var="fe" class="my-2" rendered="#{bip.proFees.size() ne 0 or not empty bip.proFees}">
                                                     <f:facet name="header">
                                                         <h:outputLabel value="Professional Charges" rendered="#{bip.inwardChargeType eq 'ProfessionalCharge'}"/>
                                                         <h:outputLabel value="Doctor Charges" rendered="#{bip.inwardChargeType eq 'DoctorAndNurses'}"/>
@@ -366,7 +366,7 @@
                             <div style="width: 100%; text-align: center; margin: auto; padding: 10px; " >
 
                                 <div>
-                                    <p:dataTable id="pharmacy" value="#{bhtSummeryFinalizedController.pharmacyItems}" var="iss" 
+                                    <p:dataTable styleClass="p-datatable-sm" id="pharmacy" value="#{bhtSummeryFinalizedController.pharmacyItems}" var="iss" 
                                                  sortBy="#{iss.bill.deptId}"
                                                  rowStyleClass="#{(iss.bill.netTotal ne 0 )                                                                       
                                                                   and                                                                        

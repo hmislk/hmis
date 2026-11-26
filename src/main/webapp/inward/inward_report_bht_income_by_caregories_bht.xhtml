@@ -49,12 +49,12 @@
 
 
                         <p:panelGrid columns="3" >
-                            <p:commandButton ajax="false" value="Process" action="#{inwardReportControllerBht.process()}"   ></p:commandButton>
-                            <p:commandButton value="Print" ajax="false" action="#" >
+                            <p:commandButton ajax="false" value="Process" icon="fa fa-cogs" styleClass="ui-button-success" title="Process the BHT income report" action="#{inwardReportControllerBht.process()}"   ></p:commandButton>
+                            <p:commandButton value="Print" ajax="false" icon="fa fa-print" styleClass="ui-button-secondary" title="Print the report" action="#" >
                                 <p:printer target="gpBillPreview" ></p:printer>
                             </p:commandButton>
 
-                            <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton"  >
+                            <p:commandButton ajax="false" value="Excel" icon="fa fa-file-excel" styleClass="noPrintButton ui-button-secondary" title="Export the report to Excel"  >
                                 <p:dataExporter type="xlsx" target="tb1,tb2,tb3,tb4,tb5,tbl2,tbl3" fileName="BHT_Income_by_Categories"  />
                             </p:commandButton>  
 
@@ -173,7 +173,7 @@
                             </p:panelGrid >
 
 
-                            <p:dataTable id="tb1" value="#{inwardReportControllerBht.opdServices}" var="rec" >
+                            <p:dataTable styleClass="p-datatable-sm" id="tb1" value="#{inwardReportControllerBht.opdServices}" var="rec" >
 
 
 
@@ -246,7 +246,7 @@
 
                             </p:dataTable>
 
-                            <p:dataTable id="tb2" value="#{inwardReportControllerBht.roomChargeInwards}" var="rm">
+                            <p:dataTable styleClass="p-datatable-sm" id="tb2" value="#{inwardReportControllerBht.roomChargeInwards}" var="rm">
 
                                 <f:facet name="header">
                                     <h:outputLabel value="BHT NO #{inwardReportControllerBht.patientEncounter.bhtNo} : "/>
@@ -308,7 +308,7 @@
                                 </p:column>
                             </p:dataTable>
 
-                            <p:dataTable id="tb3" value="#{inwardReportControllerBht.timedServices}" var="tim">
+                            <p:dataTable styleClass="p-datatable-sm" id="tb3" value="#{inwardReportControllerBht.timedServices}" var="tim">
                                 <f:facet name="header">
                                     <h:outputLabel value="BHT NO #{inwardReportControllerBht.patientEncounter.bhtNo} : "/>
                                     <h:outputLabel value="Timed Service"/>
@@ -367,7 +367,7 @@
 
                             </p:dataTable>
 
-                            <p:dataTable id="tb4" value="#{inwardReportControllerBht.professionals}" var="pro" >
+                            <p:dataTable styleClass="p-datatable-sm" id="tb4" value="#{inwardReportControllerBht.professionals}" var="pro" >
                                 <f:facet name="header">
                                     <h:outputLabel value="BHT NO #{inwardReportControllerBht.patientEncounter.bhtNo} : "/>
                                     <h:outputLabel value="Professional Fee"/>
@@ -417,7 +417,7 @@
                                 </p:column>
                             </p:dataTable>
 
-                            <p:dataTable id="tb5" value="#{inwardReportControllerBht.inwardCharges}" var="in">
+                            <p:dataTable styleClass="p-datatable-sm" id="tb5" value="#{inwardReportControllerBht.inwardCharges}" var="in">
                                 <f:facet name="header">
                                     <h:outputLabel value="BHT NO #{inwardReportControllerBht.patientEncounter.bhtNo} : "/>
                                     <h:outputLabel value="Inward Charges"/>
@@ -497,7 +497,7 @@
 
                                 </p:column>
                             </p:dataTable>
-                            <p:dataTable value="#{inwardReportControllerBht.paidbyPatientBillList}" var="pay" id="tbl2">
+                            <p:dataTable styleClass="p-datatable-sm" value="#{inwardReportControllerBht.paidbyPatientBillList}" var="pay" id="tbl2">
                                 <f:facet name="header">
                                     <h:outputLabel value="BHT NO #{inwardReportControllerBht.patientEncounter.bhtNo} : "/>
                                     <h:outputLabel value="Paid by Patient"/>
@@ -532,7 +532,7 @@
                             </p:dataTable>
 
 
-                            <p:dataTable value="#{inwardReportControllerBht.creditPayment}" var="cre" id="tbl3">
+                            <p:dataTable styleClass="p-datatable-sm" value="#{inwardReportControllerBht.creditPayment}" var="cre" id="tbl3">
                                 <f:facet name="header">
                                     <h:outputLabel value="BHT NO #{inwardReportControllerBht.patientEncounter.bhtNo} : "/>
                                     <h:outputLabel value="Credit Company Payment"/>

@@ -1162,7 +1162,7 @@
                             <div style="width: 100%; text-align: center; margin: auto; padding: 10px; " >
 
                                 <div>
-                                    <p:dataTable id="pharmacy" value="#{bhtSummeryFinalizedController.pharmacyItems}" var="iss"
+                                    <p:dataTable styleClass="p-datatable-sm" id="pharmacy" value="#{bhtSummeryFinalizedController.pharmacyItems}" var="iss"
                                                  sortBy="#{iss.bill.deptId}"
                                                  rowStyleClass="#{(iss.bill.netTotal ne 0 )
                                                                   and
