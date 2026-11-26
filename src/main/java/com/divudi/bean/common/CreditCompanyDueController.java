@@ -4537,9 +4537,9 @@ public class CreditCompanyDueController implements Serializable {
     //
     // Company receipts and cancels recalculate each commitment bill
     // (INWARD_FINAL_BILL_PAYMENT_BY_CREDIT_COMPANY, referenceBill = final bill)
-    // from the database. finalBill.paidAmount is not used: company receipts add
-    // to it, but the next patient payment resets it to patient money only
-    // (InwardBeanController.updateFinalFill). Patient money is read from the
+    // from the database. finalBill.paidAmount is not used here because it holds
+    // patient and company money together (InwardBeanController.recountFinalBillPaid,
+    // #26152); these figures need them apart. Patient money is read from the
     // InwardPaymentBill bills instead, and the encounter's creditPaidAmount
     // (no longer written) must not be read.
     // -------------------------------------------------------------------------
@@ -4954,7 +4954,7 @@ public class CreditCompanyDueController implements Serializable {
     /**
      * Returns the outstanding patient co-payment for a given encounter.
      * Formula: max(0, finalBill.netTotal − ccCommitted − patientPaid), where
-     * patientPaid is finalBill.paidAmount less the companies' payments (#25601).
+     * patientPaid is the patient's own payments, read from the payment bills (#25601).
      */
     public double getPatientCopaymentDue(PatientEncounter pe) {
         if (pe == null || pe.getFinalBill() == null) {

@@ -290,24 +290,13 @@ public class AdmissionSearchApi {
 
         if (pe.getFinalBill() != null) {
             double netTotal = pe.getFinalBill().getNetTotal();
-            double paidAmount = pe.getFinalBill().getPaidAmount() + fetchCreditPaymentTotal(pe);
+            double paidAmount = pe.getFinalBill().getPaidAmount();
             m.put("netTotal", netTotal);
             m.put("paidAmount", paidAmount);
             m.put("balance", netTotal - paidAmount);
         }
 
         return m;
-    }
-
-    private double fetchCreditPaymentTotal(PatientEncounter pe) {
-        String sql = "SELECT sum(bi.netValue) FROM BillItem bi "
-                + " WHERE bi.retired=false "
-                + " and bi.bill.billType=:bty"
-                + " and bi.patientEncounter=:bhtno";
-        Map<String, Object> m = new HashMap<>();
-        m.put("bty", BillType.CashRecieveBill);
-        m.put("bhtno", pe);
-        return getBillItemFacade().findDoubleByJpql(sql, m);
     }
 
     private boolean nonEmpty(String s) {

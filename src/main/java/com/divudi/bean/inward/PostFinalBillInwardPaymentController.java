@@ -207,7 +207,7 @@ public class PostFinalBillInwardPaymentController implements Serializable, Contr
             return 0.0;
         }
         PatientEncounter pe = getCurrent().getPatientEncounter();
-        Bill finalBill = pe.getFinalBill();
+        Bill finalBill = currentFinalBill(pe);
         if (finalBill == null) {
             return 0.0;
         }
@@ -263,12 +263,17 @@ public class PostFinalBillInwardPaymentController implements Serializable, Contr
         if (bill == null || bill.getPatientEncounter() == null) {
             return 0.0;
         }
-        Bill finalBill = resolveFinalBill(bill);
-        // The final bill's paid amount carries part of the post final payments (#26125);
-        // take that part out, as the post final payments are added below id-scoped.
-        double finalBillPaidAmount = finalBill != null
-                ? finalBill.getPaidAmount() - getInwardBean().getPostFinalPaymentTotalIncludedIn(finalBill) : 0.0;
-        return finalBillPaidAmount + getPostFinalPaymentTotalBefore(bill.getPatientEncounter(), bill.getId());
+        if (bill.getCreatedAt() == null) {
+            // Not saved yet: nothing is later than it, so the stored figure is right.
+            Bill finalBill = resolveFinalBill(bill);
+            double stored = finalBill != null
+                    ? finalBill.getPaidAmount() - getInwardBean().getPostFinalPaymentTotalIncludedIn(finalBill) : 0.0;
+            return stored + getPostFinalPaymentTotalBefore(bill.getPatientEncounter(), bill.getId());
+        }
+        // Counted as of this receipt's creation time, so a payment or company receipt made
+        // later does not change a reprint (#26152); post final payments are id-scoped below.
+        return getInwardBean().getPaidExcludingPostFinalBefore(bill.getPatientEncounter(), bill.getCreatedAt())
+                + getPostFinalPaymentTotalBefore(bill.getPatientEncounter(), bill.getId());
     }
 
     /** Balance outstanding immediately before this payment was made. */
@@ -288,7 +293,21 @@ public class PostFinalBillInwardPaymentController implements Serializable, Contr
         if (bill == null || bill.getPatientEncounter() == null) {
             return null;
         }
-        return bill.getPatientEncounter().getFinalBill();
+        return currentFinalBill(bill.getPatientEncounter());
+    }
+
+    /**
+     * The final bill as stored now. The copy on the encounter can be older than
+     * the recount that follows a pay, cancel or refund (#26152), so its paid
+     * amount is not used for the receipt or the live balance.
+     */
+    private Bill currentFinalBill(PatientEncounter pe) {
+        Bill cached = pe == null ? null : pe.getFinalBill();
+        if (cached == null || cached.getId() == null) {
+            return cached;
+        }
+        Bill fresh = getBillFacade().findWithoutCache(cached.getId());
+        return fresh != null ? fresh : cached;
     }
 
     private double getPostFinalPaymentTotalBefore(PatientEncounter pe, Long billId) {

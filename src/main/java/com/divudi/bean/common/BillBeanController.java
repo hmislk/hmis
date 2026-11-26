@@ -2551,6 +2551,8 @@ public class BillBeanController implements Serializable {
      * final bill changes by {@code amount} (same sign as the bill's netTotal)
      * instead of the bill's whole netTotal. Used when one payment covers more
      * than one admission, so each final bill takes only its own share (#25547).
+     * Since #26152 the amount is not used: the final bill's figures are
+     * recounted from the bills.
      */
     public boolean updateInwardDipositList(PatientEncounter patientEncounter, Bill bill, double amount) {
         if (patientEncounter != null && bill != null) {
@@ -2564,25 +2566,30 @@ public class BillBeanController implements Serializable {
                     return false;
                 }
                 bill.setForwardReferenceBill(finalBill);
-                getBillFacade().edit(bill);
-                if (!finalBill.getBackwardReferenceBills().contains(bill)) {
-                    finalBill.getBackwardReferenceBills().add(bill);
-                    finalBill.setPaidAmount(finalBill.getPaidAmount() + amount);
-                    // Balance is derived from net - paid (#25570). The old "balance <= 0 means
-                    // not set" reset could not tell a settled bill from a new one, so a
-                    // cancel of a receipt that cleared the balance doubled it, and it also
-                    // ignored payments taken at finalization.
-                    finalBill.setBalance(finalBill.getNetTotal() - finalBill.getPaidAmount());
-
-                    if (bill.getBillTypeAtomic() == BillTypeAtomic.INWARD_PAYMENT
-                            || bill.getBillTypeAtomic() == BillTypeAtomic.INWARD_DEPOSIT) {
-                        finalBill.setSettledAmountByPatient(finalBill.getSettledAmountByPatient() + amount);
-                    } else if (bill.getBillTypeAtomic() == BillTypeAtomic.INPATIENT_CREDIT_COMPANY_PAYMENT_RECEIVED) {
-                        finalBill.setSettledAmountBySponsor(finalBill.getSettledAmountBySponsor() + amount);
-                    } else if (bill.getBillTypeAtomic() == BillTypeAtomic.INPATIENT_CREDIT_COMPANY_PAYMENT_CANCELLATION) {
-                        finalBill.setSettledAmountBySponsor(finalBill.getSettledAmountBySponsor() - Math.abs(amount));
-                    }
+                // Never merge the caller's payment bill here: it is a detached copy whose
+                // payments and billItems lists may predate rows saved after it was read.
+                // Bill.payments is cascade ALL with orphanRemoval, so the merge would
+                // schedule a DELETE of the saved Payment, and the recount's first query
+                // would flush it (FK from DRAWERENTRY, rollback). Set the link on the
+                // copy this transaction reads, which carries the real collections.
+                Bill linkedBill = bill.getId() == null ? null : getBillFacade().findWithoutCache(bill.getId());
+                if (linkedBill != null) {
+                    linkedBill.setForwardReferenceBill(finalBill);
+                    getBillFacade().edit(linkedBill);
+                } else {
+                    getBillFacade().edit(bill);
                 }
+                Bill linked = linkedBill != null ? linkedBill : bill;
+                if (!finalBill.getBackwardReferenceBills().contains(linked)) {
+                    finalBill.getBackwardReferenceBills().add(linked);
+                }
+                // The paid amount, balance and settled amounts are recounted from the
+                // bills, not added to: the same figures whatever happened before and
+                // however many times this runs (#26152). The amount is not used. A
+                // company receipt for several admissions is split per admission
+                // because the recount reads its items; inward payments, deposits
+                // and refunds belong to one admission.
+                getInwardBean().recountFinalBillPaid(finalBill);
                 getBillFacade().edit(finalBill);
                 patientEncounter.setFinalBill(finalBill);
             }
@@ -2688,19 +2695,16 @@ public class BillBeanController implements Serializable {
     }
 
     /**
-     * Changes the final bill's paid amount and balance by the amount of one
-     * saved Post Final Bill Payment row, or its cancellation or refund row
-     * (negative netTotal) (#26125). Same idea as
-     * {@link #updateInwardDipositList(PatientEncounter, Bill, double)}, but the
-     * row is NOT linked as a backward reference bill: those rows print as the
-     * "paid by" lines of the final bill, and the settle and confirm paths
-     * rebuild them from inward payments only. Nothing is recounted, so other
-     * paid amounts (such as company receipts) are not touched. An approved
-     * final bill is frozen (#23848): it takes the row only if the row was
-     * created up to its approval time, the same rule as
-     * {@link InwardBeanController#getPostFinalPaymentTotalIncludedIn}. Call
-     * once per saved row. Same per-admission lock as the other final bill
-     * updates.
+     * Updates the final bill after one saved Post Final Bill Payment row, or
+     * its cancellation or refund row (negative netTotal) (#26125). Same
+     * recount as {@link #updateInwardDipositList(PatientEncounter, Bill, double)}
+     * (#26152), but the row is NOT linked as a backward reference bill: those
+     * rows print as the "paid by" lines of the final bill, and the settle and
+     * confirm paths rebuild them from inward payments only. An approved final
+     * bill is frozen (#23848): a row created after its approval time changes
+     * nothing, and the recount itself leaves such rows out, the same rule as
+     * {@link InwardBeanController#getPostFinalPaymentTotalIncludedIn}. Same
+     * per-admission lock as the other final bill updates.
      */
     public void addPostFinalPaymentToFinalBill(PatientEncounter patientEncounter, Bill postFinalRow) {
         if (patientEncounter == null || patientEncounter.getId() == null || postFinalRow == null) {
@@ -2721,8 +2725,7 @@ public class BillBeanController implements Serializable {
                     || postFinalRow.getCreatedAt().after(finalBill.getApproveAt()))) {
                 return null;
             }
-            finalBill.setPaidAmount(finalBill.getPaidAmount() + postFinalRow.getNetTotal());
-            finalBill.setBalance(finalBill.getNetTotal() - finalBill.getPaidAmount());
+            getInwardBean().recountFinalBillPaid(finalBill);
             getBillFacade().edit(finalBill);
             return null;
         });
@@ -2743,7 +2746,7 @@ public class BillBeanController implements Serializable {
             }
             boolean ok = updateInwardDipositList(fresh, bill, amount);
             if (refresh && ok && fresh.isPaymentFinalized() && fresh.getFinalBill() != null) {
-                getInwardBean().updateFinalFill(fresh);
+                // updateInwardDipositList has just recounted the final bill (#26152).
                 if (fresh.getPaymentMethod() == PaymentMethod.Credit) {
                     getInwardBean().updateCreditDetail(fresh, fresh.getFinalBill().getNetTotal());
                 }
