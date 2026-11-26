@@ -34,7 +34,7 @@ ASD-STE100. Target: 80% of sentences obey all rules.
 6. Use one word for one thing. Use the words on the screen.
 7. Technical terms the team normally uses are OK (for example commit, branch, API, query, cache). Do not put method names, class names, commit codes or code in text for the user.
 8. A paragraph has 6 sentences or fewer. Use a numbered list for steps.
-9. Do not invent terms. Use the normal technical terms and the agreed short words below. Write every other short form in full.
+9. Do not invent terms. The normal technical terms, with short forms such as API, are OK. The agreed short words below are also OK. Write every other short form in full.
 10. Write full sentences with "the" and "a". Do not write in note form.
 11. When you give a PR or issue number, say what it is: "PR 26067 (inpatient due reports)".
 12. Put gate words, commit codes and code names on the last line, after the label "For sessions:".
