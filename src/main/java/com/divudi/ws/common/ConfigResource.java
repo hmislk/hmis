@@ -436,6 +436,10 @@ public class ConfigResource {
                 || apiKey.getDateOfExpiary().before(new java.util.Date())) {
             return null;
         }
+        // API key hardening
+        if (!apiKeyController.isActiveAdminUser(apiKey.getWebUser())) {
+            return null;
+        }
         return apiKey;
     }
 
