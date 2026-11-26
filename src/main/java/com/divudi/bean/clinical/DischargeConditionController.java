@@ -56,6 +56,13 @@ public class DischargeConditionController implements Serializable {
     public DischargeConditionController() {
     }
 
+    public String navigateToManageDischargeConditions() {
+        items = null;
+        current = null;
+        prepareAdd();
+        return "/emr/admin/discharge_conditions?faces-redirect=true";
+    }
+
     public void prepareAdd() {
         current = new ClinicalEntity();
         current.setSymanticType(SymanticType.Discharge_Condition);
