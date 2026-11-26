@@ -36,6 +36,12 @@ class BhtSummeryControllerCompanyShareTest {
     }
 
     @Test
+    public void oneCentDifferenceIsNotBlockedButTwoCentsIs() {
+        assertFalse(BhtSummeryController.isShareBelowPaid(99.99, 100.00));
+        assertTrue(BhtSummeryController.isShareBelowPaid(99.98, 100.00));
+    }
+
+    @Test
     void companyLeftOutOfNewVersionIsBlockedWhenItHasPaid() {
         Map<String, Double> shares = new LinkedHashMap<>();
         shares.put("A", 500.0);

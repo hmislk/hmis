@@ -3735,7 +3735,7 @@ public class BhtSummeryController implements Serializable {
 
     /** True when the share is lower than what was paid, beyond a 0.01 tolerance. */
     static boolean isShareBelowPaid(double allocated, double paid) {
-        return paid - allocated > 0.01;
+        return Math.round((paid - allocated) * 100) > 1;
     }
 
     private boolean checkCreditAllocationTotal() {
