@@ -200,7 +200,7 @@
                                     <f:facet name="header">
                                         <h:outputLabel value="Net Value" />
                                     </f:facet>
-                                    <h:outputLabel value="#{dto.cancellationOrReturn and !dto.billCancelled ? 0 - dto.netValue : dto.netValue}">
+                                    <h:outputLabel value="#{dto.cancellationOrReturn and !dto.billCancelled ? (dto.netValue gt 0 ? 0 - dto.netValue : dto.netValue) : dto.netValue}">
                                         <f:convertNumber pattern="#0.00" />
                                     </h:outputLabel>
                                     <f:facet name="footer">
