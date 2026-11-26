@@ -2,9 +2,11 @@ package com.divudi.service;
 
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.dto.InpatientPharmacyItemMovementDTO;
+import com.divudi.core.data.inward.InwardMedicineBillTypes;
 import com.divudi.core.data.dto.InpatientPharmacyNetSummaryDTO;
 import com.divudi.core.entity.PatientEncounter;
 import com.divudi.core.facade.BillItemFacade;
+import com.divudi.core.facade.PatientEncounterFacade;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -31,6 +33,8 @@ public class InpatientPharmacySummaryService {
 
     @EJB
     private BillItemFacade billItemFacade;
+    @EJB
+    private PatientEncounterFacade patientEncounterFacade;
 
     private static final List<BillTypeAtomic> DIRECT_ISSUE_TYPES = Arrays.asList(
             BillTypeAtomic.PHARMACY_DIRECT_ISSUE,
@@ -61,6 +65,14 @@ public class InpatientPharmacySummaryService {
     );
 
     /**
+     * Cancelling a BHT issue return: the patient keeps the medicines, so it adds back
+     * what the return deducted (#26105).
+     */
+    private static final List<BillTypeAtomic> RETURN_CANCELLATION_TYPES = Arrays.asList(
+            BillTypeAtomic.PHARMACY_RETURN_ITEMS_AND_PAYMENTS_CANCELLATION
+    );
+
+    /**
      * One row per item with Direct Issue / Issued on Request / Returned /
      * Cancelled quantities and net values, ordered by item name.
      */
@@ -84,6 +96,8 @@ public class InpatientPharmacySummaryService {
                 dto.addReturn(qty, value);
             } else if (CANCELLATION_TYPES.contains(bta)) {
                 dto.addCancelled(qty, value);
+            } else if (RETURN_CANCELLATION_TYPES.contains(bta)) {
+                dto.addReturn(-qty, -value);
             }
         }
         return new ArrayList<>(byItem.values());
@@ -113,7 +127,8 @@ public class InpatientPharmacySummaryService {
     }
 
     private double signOf(BillTypeAtomic bta) {
-        if (DIRECT_ISSUE_TYPES.contains(bta) || REQUEST_ISSUE_TYPES.contains(bta)) {
+        if (DIRECT_ISSUE_TYPES.contains(bta) || REQUEST_ISSUE_TYPES.contains(bta)
+                || RETURN_CANCELLATION_TYPES.contains(bta)) {
             return 1.0;
         }
         return -1.0;
@@ -132,6 +147,9 @@ public class InpatientPharmacySummaryService {
         billTypes.addAll(REQUEST_ISSUE_TYPES);
         billTypes.addAll(RETURN_TYPES);
         billTypes.addAll(CANCELLATION_TYPES);
+        billTypes.addAll(RETURN_CANCELLATION_TYPES);
+
+        List<Long> peIds = encounterIdsWithChildren(patientEncounter);
 
         String jpql = "SELECT bi.item.id, bi.item.name, bi.bill.billTypeAtomic, "
                 + "SUM(ABS(pbi.qty)), "
@@ -140,19 +158,46 @@ public class InpatientPharmacySummaryService {
                 + "SUM(ABS(bi.marginValue)), "
                 + "SUM(ABS(bi.netValue)) "
                 + "FROM BillItem bi LEFT JOIN bi.pharmaceuticalBillItem pbi "
-                + "WHERE bi.bill.patientEncounter = :patientEncounter "
+                + "WHERE bi.bill.patientEncounter.id IN :peIds "
                 + "AND bi.bill.billTypeAtomic IN :billTypes "
                 + "AND bi.retired = FALSE "
                 + "AND bi.bill.retired = FALSE "
+                // The data-admin reversal of an issue (same issue type, negative values) and
+                // the original it cancelled net to 0 in the interim bill; drop both (#26107).
+                + "AND " + InwardMedicineBillTypes.JPQL_NOT_REVERSAL_BILL
+                + "AND " + InwardMedicineBillTypes.JPQL_NOT_REVERSED_ORIGINAL
                 + "GROUP BY bi.item.id, bi.item.name, bi.bill.billTypeAtomic "
                 + "ORDER BY bi.item.name";
 
         Map<String, Object> params = new HashMap<>();
-        params.put("patientEncounter", patientEncounter);
+        params.put("peIds", peIds);
         params.put("billTypes", billTypes);
 
         List<Object[]> rows = billItemFacade.findObjectArrayByJpql(jpql, params, null);
         return rows != null ? rows : new ArrayList<>();
+    }
+
+    /**
+     * The admission and its child admissions (such as a baby BHT): the interim
+     * bill sums them with the parent, so this summary does too (#26100).
+     */
+    private List<Long> encounterIdsWithChildren(PatientEncounter patientEncounter) {
+        Map<String, Object> params = new HashMap<>();
+        params.put("pe", patientEncounter);
+        List<PatientEncounter> children = patientEncounterFacade.findByJpql(
+                "SELECT pe FROM PatientEncounter pe WHERE pe.parentEncounter = :pe AND pe.retired = false", params);
+        return idsOf(patientEncounter, children);
+    }
+
+    static List<Long> idsOf(PatientEncounter patientEncounter, List<PatientEncounter> children) {
+        List<Long> ids = new ArrayList<>();
+        ids.add(patientEncounter.getId());
+        if (children != null) {
+            for (PatientEncounter child : children) {
+                ids.add(child.getId());
+            }
+        }
+        return ids;
     }
 
     private double toDouble(Object o) {

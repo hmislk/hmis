@@ -67,7 +67,7 @@ class AdmissionTypeTimelineTest {
     }
 
     @Test
-    void typeAtFollowsTheStartOfTheChangeDay() throws Exception {
+    void typeAtFollowsTheExactChangeTime() throws Exception {
         AdmissionType etu = type(1, "ETU", 0, 0);
         AdmissionType inward = type(2, "Inward", 100, 500);
         Date admitted = d("2026-03-01 09:00");
@@ -78,16 +78,17 @@ class AdmissionTypeTimelineTest {
         assertSame(etu, tl.firstType());
         assertSame(etu, tl.typeAt(d("2026-03-01 09:00")));
         assertSame(etu, tl.typeAt(d("2026-03-02 23:59")));
-        assertSame(inward, tl.typeAt(d("2026-03-03 00:00")));
-        assertSame(inward, tl.typeAt(d("2026-03-03 09:00")));
+        assertSame(etu, tl.typeAt(d("2026-03-03 00:00")));
+        assertSame(etu, tl.typeAt(d("2026-03-03 09:00")));
+        assertSame(inward, tl.typeAt(d("2026-03-03 14:00")));
         assertSame(inward, tl.typeAt(d("2026-03-10 00:00")));
         // before the first row (e.g. admission time edited later) the first type applies
         assertSame(etu, tl.typeAt(d("2026-02-28 00:00")));
         assertEquals(2, tl.periods().size());
         assertSame(etu, tl.periods().get(0).getAdmissionType());
         assertNull(tl.periods().get(0).getFromDate());
-        assertEquals(d("2026-03-03 00:00"), tl.periods().get(0).getToDate());
-        assertEquals(d("2026-03-03 00:00"), tl.periods().get(1).getFromDate());
+        assertEquals(changed, tl.periods().get(0).getToDate());
+        assertEquals(changed, tl.periods().get(1).getFromDate());
         assertNull(tl.periods().get(1).getToDate());
         assertTrue(tl.periods().get(0).contains(d("2026-03-02 00:00")));
         assertFalse(tl.periods().get(0).contains(changed));
@@ -95,13 +96,16 @@ class AdmissionTypeTimelineTest {
     }
 
     @Test
-    void feeBilledOnTheChangeDayTakesTheNewTypeAndTheDayBeforeTheOld() throws Exception {
+    void feeBilledOnTheChangeDayFollowsTheExactChangeTime() throws Exception {
         AdmissionType etu = type(1, "ETU", 0, 0);
         AdmissionType inward = type(2, "Inward", 100, 500);
         AdmissionTypeTimeline tl = new AdmissionTypeTimeline(inward, Arrays.asList(
                 row(etu, d("2026-03-01 09:00"), d("2026-03-03 14:00")), row(inward, d("2026-03-03 14:00"), null)));
         // typeAt is what the margin and bill-fee discount lookups call
-        assertSame(inward, tl.typeAt(d("2026-03-03 09:00")));
+        assertSame(etu, tl.typeAt(d("2026-03-03 09:00")));
+        assertSame(etu, tl.typeAt(d("2026-03-03 13:59")));
+        assertSame(inward, tl.typeAt(d("2026-03-03 14:00")));
+        assertSame(inward, tl.typeAt(d("2026-03-03 15:00")));
         assertSame(etu, tl.typeAt(d("2026-03-02 23:59")));
     }
 
@@ -119,8 +123,11 @@ class AdmissionTypeTimelineTest {
         // the helper used by BhtSummeryController.discountSetByPeriods and the fee loops
         assertTrue(com.divudi.bean.inward.BhtSummeryController.inWindow(billedBefore, oldP.getFromDate(), oldP.getToDate()));
         assertFalse(com.divudi.bean.inward.BhtSummeryController.inWindow(billedBefore, newP.getFromDate(), newP.getToDate()));
-        assertFalse(com.divudi.bean.inward.BhtSummeryController.inWindow(billedChangeDayMorning, oldP.getFromDate(), oldP.getToDate()));
-        assertTrue(com.divudi.bean.inward.BhtSummeryController.inWindow(billedChangeDayMorning, newP.getFromDate(), newP.getToDate()));
+        assertTrue(com.divudi.bean.inward.BhtSummeryController.inWindow(billedChangeDayMorning, oldP.getFromDate(), oldP.getToDate()));
+        assertFalse(com.divudi.bean.inward.BhtSummeryController.inWindow(billedChangeDayMorning, newP.getFromDate(), newP.getToDate()));
+        Date billedChangeDayAfternoon = d("2026-03-03 15:00");
+        assertFalse(com.divudi.bean.inward.BhtSummeryController.inWindow(billedChangeDayAfternoon, oldP.getFromDate(), oldP.getToDate()));
+        assertTrue(com.divudi.bean.inward.BhtSummeryController.inWindow(billedChangeDayAfternoon, newP.getFromDate(), newP.getToDate()));
     }
 
     @Test
@@ -134,19 +141,20 @@ class AdmissionTypeTimelineTest {
         Date roomEnteredOnChangeDay = d("2026-03-03 08:00");
         Date roomEnteredAfter = d("2026-03-04 10:00");
         assertSame(etu, tl.typeAt(roomEnteredBeforeChangeDay));
-        assertSame(inward, tl.typeAt(roomEnteredOnChangeDay));
+        assertSame(etu, tl.typeAt(roomEnteredOnChangeDay));
+        assertSame(inward, tl.typeAt(d("2026-03-03 15:00")));
         assertSame(inward, tl.typeAt(roomEnteredAfter));
     }
 
     @Test
-    void changeOnTheAdmissionDayLeavesNoPeriodForTheOldType() throws Exception {
+    void changeOnTheAdmissionDaySplitsThatDayAtTheChangeTime() throws Exception {
         AdmissionType etu = type(1, "ETU", 0, 0);
         AdmissionType inward = type(2, "Inward", 100, 500);
         AdmissionTypeTimeline tl = new AdmissionTypeTimeline(inward, Arrays.asList(
                 row(etu, d("2026-03-01 09:00"), d("2026-03-01 15:00")), row(inward, d("2026-03-01 15:00"), null)));
-        assertEquals(1, tl.periods().size());
-        assertSame(inward, tl.periods().get(0).getAdmissionType());
-        assertSame(inward, tl.typeAt(d("2026-03-01 10:00")));
+        assertEquals(2, tl.periods().size());
+        assertSame(etu, tl.typeAt(d("2026-03-01 10:00")));
+        assertSame(inward, tl.typeAt(d("2026-03-01 16:00")));
         assertSame(etu, tl.firstType());
     }
 
@@ -170,23 +178,23 @@ class AdmissionTypeTimelineTest {
     }
 
     @Test
-    void changeDayIsBilledAtTheNewType() throws Exception {
+    void changeDayLinenIsChargedAtTheOldType() throws Exception {
         AdmissionType etu = type(1, "ETU", 40, 0);
         AdmissionType inward = type(2, "Inward", 100, 500);
         Date admitted = d("2026-03-01 09:00");
         Date changed = d("2026-03-03 14:00");
         AdmissionTypeTimeline tl = new AdmissionTypeTimeline(inward, Arrays.asList(
                 row(etu, admitted, changed), row(inward, changed, null)));
-        // 1,2 March at ETU; 3 March (the change day) onward at Inward
+        // 1,2,3 March (3 March is the change day) at ETU; 4,5 March at Inward
         List<AdmissionTypeTimeline.TypeDays> split = tl.splitDays(admitted, d("2026-03-05 11:00"));
         assertEquals(2, split.size());
-        assertEquals(2, split.get(0).getDays());
-        assertEquals(3, split.get(1).getDays());
-        assertEquals(2 * 40.0 + 3 * 100.0, InwardBeanController.linenForDays(tl, admitted, d("2026-03-05 11:00")), 0.0001);
+        assertEquals(3, split.get(0).getDays());
+        assertEquals(2, split.get(1).getDays());
+        assertEquals(3 * 40.0 + 2 * 100.0, InwardBeanController.linenForDays(tl, admitted, d("2026-03-05 11:00")), 0.0001);
     }
 
     @Test
-    void twoChangesOnTheSameDayLastOneWins() throws Exception {
+    void twoChangesOnTheSameDayLinenStaysOldForThatDay() throws Exception {
         AdmissionType a = type(1, "A", 10, 0);
         AdmissionType b = type(2, "B", 20, 0);
         AdmissionType c = type(3, "C", 30, 0);
@@ -195,16 +203,18 @@ class AdmissionTypeTimelineTest {
                 row(a, admitted, d("2026-03-03 08:00")),
                 row(b, d("2026-03-03 08:00"), d("2026-03-03 16:00")),
                 row(c, d("2026-03-03 16:00"), null)));
-        // 1,2 March A; 3 March C (last change of the day); 4,5 March C
+        // 1,2,3 March A (3 March is the change day); 4,5 March C
         List<AdmissionTypeTimeline.TypeDays> split = tl.splitDays(admitted, d("2026-03-05 11:00"));
         assertEquals(2, split.size());
         assertSame(a, split.get(0).getAdmissionType());
-        assertEquals(2, split.get(0).getDays());
+        assertEquals(3, split.get(0).getDays());
         assertSame(c, split.get(1).getAdmissionType());
-        assertEquals(3, split.get(1).getDays());
-        // the earlier change of the day has no period of its own
-        assertEquals(2, tl.periods().size());
-        assertSame(c, tl.typeAt(d("2026-03-03 00:00")));
+        assertEquals(2, split.get(1).getDays());
+        // dated charges follow the exact times
+        assertEquals(3, tl.periods().size());
+        assertSame(a, tl.typeAt(d("2026-03-03 07:00")));
+        assertSame(b, tl.typeAt(d("2026-03-03 09:00")));
+        assertSame(c, tl.typeAt(d("2026-03-03 17:00")));
     }
 
     @Test
@@ -222,7 +232,7 @@ class AdmissionTypeTimelineTest {
             total += td.getDays();
         }
         assertEquals(com.divudi.core.util.CommonFunctions.getDayCount(admitted, d("2026-03-06 09:00")).longValue(), total);
-        assertEquals(10.0 * 1 + 20.0 * 2 + 30.0 * 3, InwardBeanController.linenForDays(tl, admitted, d("2026-03-06 09:00")), 0.0001);
+        assertEquals(10.0 * 2 + 20.0 * 2 + 30.0 * 2, InwardBeanController.linenForDays(tl, admitted, d("2026-03-06 09:00")), 0.0001);
     }
 
     @Test

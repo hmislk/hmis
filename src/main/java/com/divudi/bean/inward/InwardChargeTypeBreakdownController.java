@@ -4,6 +4,7 @@ import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.BillTypeAtomic;
+import com.divudi.core.data.inward.InwardMedicineBillTypes;
 import com.divudi.core.data.inward.AdmissionStatus;
 import com.divudi.core.data.inward.CalculationMethod;
 import com.divudi.core.data.inward.InwardChargeType;
@@ -293,7 +294,7 @@ public class InwardChargeTypeBreakdownController implements Serializable {
             String bhtNo = enc.getBhtNo();
             BhtBreakdownRow row = bhtMap.computeIfAbsent(bhtNo, k -> createRow(enc));
             String key = String.valueOf(bi.getItem().getId());
-            double net = bi.getNetValue();
+            double net = InwardMedicineBillTypes.signedLineValue(bi);
             row.getCellValues().merge(key, net, Double::sum);
         }
 
@@ -417,7 +418,7 @@ public class InwardChargeTypeBreakdownController implements Serializable {
                 continue;
             }
             BhtBreakdownRow row = bhtMap.computeIfAbsent(enc.getBhtNo(), k -> createRow(enc));
-            row.getCellValues().merge(String.valueOf(bi.getItem().getId()), bi.getNetValue(), Double::sum);
+            row.getCellValues().merge(String.valueOf(bi.getItem().getId()), InwardMedicineBillTypes.signedLineValue(bi), Double::sum);
         }
 
         // 4. Accumulate PatientItem (timed service) values per BHT
@@ -465,18 +466,16 @@ public class InwardChargeTypeBreakdownController implements Serializable {
     // -------------------------------------------------------------------------
 
     private void buildFromPharmacyBillItems() {
-        List<BillTypeAtomic> btas = new ArrayList<>();
-        btas.add(BillTypeAtomic.PHARMACY_DIRECT_ISSUE);
-        btas.add(BillTypeAtomic.PHARMACY_DIRECT_ISSUE_CANCELLED);
-        btas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE);
-        btas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN);
-        btas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION);
-        btas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE);
-        btas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_RETURN);
-        btas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_CANCELLATION);
-        btas.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD);
-        btas.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN);
-        btas.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_CANCELLATION);
+        // This query skips cancelled bills (b.cancelled = false), so a cancelled issue is not
+        // listed. Its cancellation bill must be left out too, or it is deducted with nothing to
+        // offset it. The interim bill counts both, which nets to zero (#26093). The porter ward
+        // return is credited on the pharmacy accept bill, which is never cancelled (#25509); it
+        // has no charge type of its own, so it is matched by bill type below. A cancelled return
+        // is skipped too, so the cancellation of a return is left out as well (#26105). The
+        // data-admin reversal of an issue is a bill of the same type with negative values; the
+        // original it cancelled is already skipped, so the reversal is skipped too and the pair
+        // nets to 0 (#26107).
+        List<BillTypeAtomic> btas = new ArrayList<>(InwardMedicineBillTypes.ALL_LIVE_BILLS);
 
         StringBuilder jpql = new StringBuilder(
                 "select bi from BillItem bi join bi.bill b join b.patientEncounter enc"
@@ -484,9 +483,11 @@ public class InwardChargeTypeBreakdownController implements Serializable {
                 + " and b.retired = false"
                 + " and b.cancelled = false"
                 + " and b.billTypeAtomic in :btas"
-                + " and bi.inwardChargeType = :ct");
+                + " and " + InwardMedicineBillTypes.JPQL_NOT_REVERSAL_BILL
+                + " and (bi.inwardChargeType = :ct or b.billTypeAtomic = :acceptReturnBta)");
 
         Map<String, Object> params = new HashMap<>();
+        params.put("acceptReturnBta", BillTypeAtomic.ACCEPT_RETURN_MEDICINE_INWARD);
         params.put("btas", btas);
         params.put("ct", selectedChargeType);
         appendEncounterFilters(jpql, params, "enc");

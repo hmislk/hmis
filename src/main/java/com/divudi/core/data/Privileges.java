@@ -852,6 +852,7 @@ public enum Privileges {
     MergePatients("Merge Patients"),
     ManageCreditCompany("Manage Credit Company"),
     AdminFilterWithoutDepartment("Admin Filter Without Department"),
+    ReversePharmacyBhtIssue("Reverse Pharmacy BHT Issue"),
     //</editor-fold>
     
     //<editor-fold defaultstate="collapsed" desc="Approval">

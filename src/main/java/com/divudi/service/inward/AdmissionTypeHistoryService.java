@@ -20,7 +20,7 @@ import javax.ejb.Stateless;
 /**
  * The dated history of an admission's type, and the change itself (#25814).
  *
- * <p>A change takes effect at the start of the calendar day it was made on
+ * <p>A change takes effect at its exact time for dated charges; per-day charges (linen) switch from the next day
  * (see {@link AdmissionTypeTimeline}).
  *
  * <p>Bill-time calculations ask {@link #timelineFor} for the type in force at

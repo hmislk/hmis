@@ -308,7 +308,8 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
         encounterCreditCompanys = new ArrayList<>();
         String sql = "select ecc from EncounterCreditCompany ecc"
                 + "  where ecc.retired=false "
-                + " and ecc.patientEncounter=:pEnc ";
+                + " and ecc.patientEncounter=:pEnc "
+                + " order by ecc.id ";
         HashMap hm = new HashMap();
         hm.put("pEnc", current);
         encounterCreditCompanys = encounterCreditCompanyFacade.findByJpql(sql, hm);
@@ -334,11 +335,92 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
                 sessionController.getLoggedUser(),
                 "EncounterCreditCompany", newEncounterCreditCompany.getId());
         encounterCreditCompanys.add(newEncounterCreditCompany);
-        if (current.getCreditCompany() == null) {
-            current.setCreditCompany(newEncounterCreditCompany.getInstitution());
+        // Issue #26077 follow-up: the admission's company follows the first company
+        // in the added list, so adding the right company replaces a wrong one.
+        syncAdmissionCompanyWithList();
+        newEncounterCreditCompany = new EncounterCreditCompany();
+        JsfUtil.addSuccessMessage("Credit company added");
+    }
+
+    private void syncAdmissionCompanyWithList() {
+        if (encounterCreditCompanys == null || encounterCreditCompanys.isEmpty()) {
+            return;
+        }
+        // Replace only a missing or unlisted company; a valid company that is in
+        // the list stays as the billed company.
+        if (current.getCreditCompany() != null && getUnlistedAdmissionCompany() == null) {
+            return;
+        }
+        Institution first = encounterCreditCompanys.get(0).getInstitution();
+        if (first != null && !first.equals(current.getCreditCompany())) {
+            current.setCreditCompany(first);
             getEjbFacade().edit(current);
         }
-        newEncounterCreditCompany = new EncounterCreditCompany();
+    }
+
+    /**
+     * The company set on the admission when it is not in the added list (an
+     * admission made before issue #26077 was fixed); null when there is none.
+     * Existing data is not changed by showing it.
+     */
+    public Institution getUnlistedAdmissionCompany() {
+        if (current == null || current.getCreditCompany() == null) {
+            return null;
+        }
+        if (encounterCreditCompanys != null) {
+            for (EncounterCreditCompany e : encounterCreditCompanys) {
+                if (current.getCreditCompany().equals(e.getInstitution())) {
+                    return null;
+                }
+            }
+        }
+        return current.getCreditCompany();
+    }
+
+    /**
+     * Clears the admission's company that was never added to the list. Runs only
+     * when the user clicks the button.
+     */
+    public void clearUnlistedAdmissionCompany() {
+        Institution unlisted = getUnlistedAdmissionCompany();
+        if (unlisted == null) {
+            return;
+        }
+        Map<String, Object> before = new HashMap<>();
+        before.put("admissionCreditCompany", unlisted.getName());
+        current.setCreditCompany(null);
+        getEjbFacade().edit(current);
+        syncAdmissionCompanyWithList();
+        Map<String, Object> after = new HashMap<>();
+        after.put("admissionCreditCompany",
+                current.getCreditCompany() != null ? current.getCreditCompany().getName() : null);
+        auditService.logEncounterAudit(current, "Admission Credit Company Cleared",
+                before, after, sessionController.getLoggedUser(),
+                "PatientEncounter", current.getId());
+        JsfUtil.addSuccessMessage("Company removed from the admission");
+    }
+
+    /**
+     * Adds the admission's unlisted company to the credit company list, so it is
+     * recorded properly.
+     */
+    public void addUnlistedAdmissionCompanyToList() {
+        Institution unlisted = getUnlistedAdmissionCompany();
+        if (unlisted == null) {
+            return;
+        }
+        EncounterCreditCompany ecc = new EncounterCreditCompany();
+        ecc.setInstitution(unlisted);
+        ecc.setPatientEncounter(current);
+        ecc.setCreatedAt(new Date());
+        ecc.setCreater(sessionController.getLoggedUser());
+        ecc.setRetired(false);
+        encounterCreditCompanyFacade.create(ecc);
+        auditService.logEncounterAudit(current, "Credit Company Added",
+                null, creditCompanyAuditMap(ecc),
+                sessionController.getLoggedUser(),
+                "EncounterCreditCompany", ecc.getId());
+        encounterCreditCompanys.add(ecc);
         JsfUtil.addSuccessMessage("Credit company added");
     }
 
