@@ -56,6 +56,7 @@ import com.divudi.ejb.EmailManagerEjb;
 import com.divudi.core.entity.AppEmail;
 import com.divudi.core.data.MessageType;
 import com.divudi.core.util.JsfUtil;
+import com.divudi.core.util.PharmacyItemRefundFlags;
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.entity.BillFinanceDetails;
 import com.divudi.core.entity.BillItemFinanceDetails;
@@ -4174,6 +4175,7 @@ public class PharmacyBillSearch implements Serializable {
 
                 getBill().setCancelledBill(cb);
                 getBillFacade().edit(getBill());
+                clearItemRefundFlagsIfNoActiveRefund(getBill());
 
                 getCashTransactionBean().saveBillCashInTransaction(cb, getSessionController().getLoggedUser());
 
@@ -4194,6 +4196,55 @@ public class PharmacyBillSearch implements Serializable {
 
         } else {
             JsfUtil.addErrorMessage("No Bill to cancel");
+        }
+    }
+
+    /**
+     * After the payment of an items-only return is cancelled, clears the refund
+     * flags this refund set on the original sale items, so Search Sale Bill
+     * Items stops showing "Refunded". An item keeps its flags when another
+     * refund payment that is not cancelled still covers it (#24485). A failure
+     * here is logged and never reported as a failed cancellation.
+     *
+     * @param cancelledRefundBill the refund payment bill that was just cancelled
+     */
+    private void clearItemRefundFlagsIfNoActiveRefund(Bill cancelledRefundBill) {
+        try {
+            if (cancelledRefundBill == null || cancelledRefundBill.getId() == null) {
+                return;
+            }
+            Map<String, Object> params = new HashMap<>();
+            params.put("refundId", cancelledRefundBill.getId());
+            // Fresh query, not the lazy bill item list: that list can be stale across requests.
+            List<BillItem> originals = getBillItemFacede().findByJpql(
+                    "SELECT DISTINCT o FROM BillItem sbi JOIN sbi.referanceBillItem tbi JOIN tbi.referanceBillItem o "
+                    + "WHERE sbi.bill.id = :refundId", params);
+            if (originals == null) {
+                return;
+            }
+            for (BillItem original : originals) {
+                Map<String, Object> p = new HashMap<>();
+                p.put("refundId", cancelledRefundBill.getId());
+                p.put("originalId", original.getId());
+                p.put("bta", BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEM_PAYMENTS);
+                Long others = getBillItemFacede().countByJpql(
+                        "SELECT COUNT(sbi) FROM BillItem sbi "
+                        + "WHERE sbi.retired = false "
+                        + "AND sbi.bill.id <> :refundId "
+                        + "AND sbi.bill.cancelled = false "
+                        + "AND sbi.bill.retired = false "
+                        + "AND sbi.bill.billTypeAtomic = :bta "
+                        + "AND sbi.referanceBillItem.referanceBillItem.id = :originalId", p);
+                if (others == null) {
+                    continue;
+                }
+                if (PharmacyItemRefundFlags.clearAfterRefundCancelled(original, others)) {
+                    getBillItemFacede().edit(original);
+                }
+            }
+        } catch (RuntimeException e) {
+            LOGGER.log(Level.SEVERE, "Could not clear the item refund flags after cancelling refund bill id "
+                    + (cancelledRefundBill == null ? null : cancelledRefundBill.getId()), e);
         }
     }
 
@@ -6279,10 +6330,10 @@ public class PharmacyBillSearch implements Serializable {
                 + "it.id, COALESCE(it.name, ''), COALESCE(it.code, ''), "
                 + "bi.qty, bi.netValue, "
                 + "COALESCE(pp.name, ''), "
-                + "rb.cancelled, CASE WHEN rb.refunded = true OR bi.refunded = true THEN true ELSE false END) "
+                + "rb.cancelled, rb.refunded, bi.refunded) "
                 + "FROM BillItem bi "
-                + "JOIN bi.bill rb "
-                + "JOIN rb.referenceBill b "
+                + "JOIN bi.bill b "
+                + "JOIN b.referenceBill rb "
                 + "LEFT JOIN bi.item it "
                 + "LEFT JOIN b.patient p "
                 + "LEFT JOIN p.person pp "

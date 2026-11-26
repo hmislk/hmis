@@ -65,6 +65,7 @@ import com.divudi.core.facade.StockFacade;
 import com.divudi.core.facade.TokenFacade;
 import com.divudi.core.util.CommonFunctions;
 import com.divudi.core.util.JsfUtil;
+import com.divudi.core.util.PharmacyItemRefundFlags;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CashTransactionBean;
 import com.divudi.ejb.PharmacyBean;
@@ -1533,9 +1534,7 @@ public class PharmacyRefundForItemReturnsController implements Serializable, Con
 
             BillItem originalBillItem = tbi.getReferanceBillItem();
 
-            if (originalBillItem != null) {
-                originalBillItem.setRefunded(true);
-                originalBillItem.setBillItemRefunded(true);
+            if (PharmacyItemRefundFlags.markRefunded(originalBillItem)) {
                 getBillItemFacade().editAndFlush(originalBillItem);
             }
         }
