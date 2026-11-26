@@ -13,6 +13,7 @@
 - **🚨 Discuss with the user only** decisions about PRODUCTION (merges, live data, live config), MONEY, CLINICAL meaning, and FLOW, DESIGN or BUSINESS-PROCESS changes. Decide every other (non-production, implementation-level) choice yourself, say so, and keep working. [+](developer_docs/rules/working.md)
 - **🚨 Finish everything the request covers before stopping.** Never end a turn asking whether to do the next in-scope item. [+](developer_docs/rules/working.md)
 - **🚨 Removing or hiding a feature? Query production usage on every production DB first,** before coding. [+](developer_docs/rules/working.md)
+- **🚨 Before calling a long task done,** re-read the request, recount every number you report, and check no stale entity copy is saved after a recount or lock. [+](developer_docs/rules/working.md)
 - **🚨 Live config: apply agreed values exactly,** check the deployed branch has the code, verify a new record. [+](.claude/skills/app-configuration/SKILL.md)
 - **🚨 Retrospect after nontrivial work.** Propose the CLAUDE.md/doc/skill fix as a short rule and open the PR. [+](developer_docs/process/continuous-improvement-retrospective.md)
 - **🚨 Write short and plain,** lead with the point, use screen words, ask one question at a time. Business-rule docs state current practice only; history and decisions go in issues/PRs. [+](developer_docs/process/writing-style.md)
