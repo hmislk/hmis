@@ -2070,7 +2070,7 @@ public class BhtSummeryController implements Serializable {
             if (!inWindow((Date) row[3], from, to)) {
                 continue;
             }
-            double value = ((Number) row[1]).doubleValue() + ((Number) row[2]).doubleValue();
+            double value = toDouble(row[1]) + toDouble(row[2]);
             double dis = (value * discountPercent) / 100;
             plan.total += dis;
             Long id = ((Number) row[0]).longValue();
@@ -2078,6 +2078,10 @@ public class BhtSummeryController implements Serializable {
             plan.idsByDiscount.computeIfAbsent(dis, k -> new ArrayList<>()).add(id);
         }
         return plan;
+    }
+
+    private static double toDouble(Object o) {
+        return o == null ? 0.0 : ((Number) o).doubleValue();
     }
 
     private void updatePatientItemsWithOutMatrix(InwardChargeType inwardChargeType) {

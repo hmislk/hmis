@@ -1047,7 +1047,7 @@ public class InwardBeanController implements Serializable {
      * {@link #fetchTimedServiceBillItemsByInwardChargeType}.
      */
     public List<Object[]> fetchTimedServiceBillItemRows(InwardChargeType inwardChargeType, PatientEncounter patientEncounter) {
-        String sql = "Select s.id, s.grossValue, s.marginValue, b.createdAt From BillItem s join s.bill b"
+        String sql = "Select s.id, COALESCE(s.grossValue, 0.0), COALESCE(s.marginValue, 0.0), b.createdAt From BillItem s join s.bill b"
                 + " where s.retired=false "
                 + " and b.billType=:btp"
                 + " and b.patientEncounter=:pe"
@@ -1070,8 +1070,8 @@ public class InwardBeanController implements Serializable {
      */
     public void applyDiscountPercentToBillItems(List<Long> billItemIds, double discountPercent) {
         String sql = "UPDATE BillItem s SET"
-                + " s.discount = ((s.grossValue + s.marginValue) * :pct) / 100,"
-                + " s.netValue = (s.grossValue + s.marginValue) - (((s.grossValue + s.marginValue) * :pct) / 100)"
+                + " s.discount = ((COALESCE(s.grossValue, 0.0) + COALESCE(s.marginValue, 0.0)) * :pct) / 100,"
+                + " s.netValue = (COALESCE(s.grossValue, 0.0) + COALESCE(s.marginValue, 0.0)) - (((COALESCE(s.grossValue, 0.0) + COALESCE(s.marginValue, 0.0)) * :pct) / 100)"
                 + " WHERE s.id IN :ids";
         for (List<Long> chunk : chunkIds(billItemIds, BULK_UPDATE_ID_CHUNK)) {
             HashMap hm = new HashMap();

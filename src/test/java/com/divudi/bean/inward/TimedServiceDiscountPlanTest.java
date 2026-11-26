@@ -56,6 +56,18 @@ class TimedServiceDiscountPlanTest {
     }
 
     @Test
+    void nullGrossOrMarginReadsAsZero() {
+        List<Object[]> rows = Arrays.asList(
+                new Object[]{1L, null, 50.0, null},
+                new Object[]{2L, 100.0, null, null},
+                new Object[]{3L, null, null, null});
+        BhtSummeryController.TimedDiscountPlan plan = BhtSummeryController.planTimedServiceDiscount(rows, 10, null, null);
+        assertEquals(Arrays.asList(1L, 2L, 3L), plan.ids);
+        assertEquals(15.0, plan.total, 0.0);
+        assertEquals(Arrays.asList(3L), plan.idsByDiscount.get(0.0));
+    }
+
+    @Test
     void noRowsGiveAnEmptyPlan() {
         assertTrue(BhtSummeryController.planTimedServiceDiscount(new ArrayList<>(), 10, null, null).ids.isEmpty());
         assertTrue(BhtSummeryController.planTimedServiceDiscount(null, 10, null, null).ids.isEmpty());
