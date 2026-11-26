@@ -1,6 +1,10 @@
 package com.divudi.core.util;
 
+import com.divudi.core.data.dto.PharmacySaleBillItemSearchDTO;
 import com.divudi.core.entity.BillItem;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Rules for the refund flags of the original sale bill item when an item-only
@@ -53,5 +57,52 @@ public final class PharmacyItemRefundFlags {
      */
     public static boolean isShownRefunded(Boolean itemRefunded, Boolean linkedItemRefunded) {
         return Boolean.TRUE.equals(itemRefunded) || Boolean.TRUE.equals(linkedItemRefunded);
+    }
+
+    /**
+     * Key of a sale bill line: the billed bill and the item. The cashier
+     * settle flow copies pre-bill items into the billed bill without an item
+     * level link, so the line is matched by bill and item.
+     */
+    public static String lineKey(Long billId, Long itemId) {
+        return billId + ":" + itemId;
+    }
+
+    /**
+     * Turns the label on for search rows whose billed-bill item (same bill and
+     * item) is flagged refunded. Rows already shown refunded stay so.
+     *
+     * @param rows search rows, may be null
+     * @param refundedLines {@link #lineKey} values of the flagged billed items
+     */
+    public static void applyBilledItemFlags(List<PharmacySaleBillItemSearchDTO> rows, Set<String> refundedLines) {
+        if (rows == null || refundedLines == null || refundedLines.isEmpty()) {
+            return;
+        }
+        for (PharmacySaleBillItemSearchDTO row : rows) {
+            if (row != null && !Boolean.TRUE.equals(row.getRefunded())
+                    && refundedLines.contains(lineKey(row.getBillId(), row.getItemId()))) {
+                row.setRefunded(true);
+            }
+        }
+    }
+
+    /**
+     * Collects {@link #lineKey} values from rows of (bill id, item id).
+     */
+    public static Set<String> lineKeys(List<?> idPairs) {
+        Set<String> keys = new HashSet<>();
+        if (idPairs == null) {
+            return keys;
+        }
+        for (Object o : idPairs) {
+            if (o instanceof Object[]) {
+                Object[] a = (Object[]) o;
+                if (a.length >= 2 && a[0] != null && a[1] != null) {
+                    keys.add(lineKey(((Number) a[0]).longValue(), ((Number) a[1]).longValue()));
+                }
+            }
+        }
+        return keys;
     }
 }

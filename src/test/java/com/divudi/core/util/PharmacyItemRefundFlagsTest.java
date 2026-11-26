@@ -94,4 +94,35 @@ class PharmacyItemRefundFlagsTest {
         assertTrue(PharmacyItemRefundFlags.clearAfterRefundCancelled(original, 0));
         assertFalse(PharmacyItemRefundFlags.isShownRefunded(original.isRefunded(), null));
     }
+
+    private static PharmacySaleBillItemSearchDTO row(Long billId, Long itemId, Boolean refunded) {
+        return new PharmacySaleBillItemSearchDTO(
+                billId, "D", null, itemId, "n", "c", 1.0, 1.0, "p", false, refunded);
+    }
+
+    @Test
+    void billedItemFlagShowsTheLabelOnlyForTheSameBillAndItem() {
+        PharmacySaleBillItemSearchDTO same = row(10L, 5L, false);
+        PharmacySaleBillItemSearchDTO otherItem = row(10L, 6L, false);
+        PharmacySaleBillItemSearchDTO otherBill = row(11L, 5L, false);
+        java.util.List<PharmacySaleBillItemSearchDTO> rows = java.util.Arrays.asList(same, otherItem, otherBill);
+        java.util.List<Object[]> pairs = new java.util.ArrayList<>();
+        pairs.add(new Object[]{10L, 5L});
+        PharmacyItemRefundFlags.applyBilledItemFlags(rows, PharmacyItemRefundFlags.lineKeys(pairs));
+        assertEquals(Boolean.TRUE, same.getRefunded());
+        assertEquals(Boolean.FALSE, otherItem.getRefunded());
+        assertEquals(Boolean.FALSE, otherBill.getRefunded());
+    }
+
+    @Test
+    void billedItemFlagKeepsAnAlreadyShownLabelAndToleratesNulls() {
+        PharmacySaleBillItemSearchDTO shown = row(10L, 5L, true);
+        PharmacyItemRefundFlags.applyBilledItemFlags(java.util.Arrays.asList(shown), new java.util.HashSet<>());
+        assertEquals(Boolean.TRUE, shown.getRefunded());
+        PharmacyItemRefundFlags.applyBilledItemFlags(null, null);
+        assertTrue(PharmacyItemRefundFlags.lineKeys(null).isEmpty());
+        java.util.List<Object[]> pairs = new java.util.ArrayList<>();
+        pairs.add(new Object[]{10L, null});
+        assertTrue(PharmacyItemRefundFlags.lineKeys(pairs).isEmpty());
+    }
 }

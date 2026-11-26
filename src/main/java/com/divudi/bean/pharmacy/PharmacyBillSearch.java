@@ -4226,7 +4226,7 @@ public class PharmacyBillSearch implements Serializable {
             if (cancelledRefundBill.getBillTypeAtomic() == BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS) {
                 originals = getBillItemFacede().findByJpql(
                         "SELECT DISTINCT o FROM Bill f, BillItem ri JOIN ri.referanceBillItem o "
-                        + "WHERE f.id = :refundId AND ri.bill.id = f.referenceBill.id", params);
+                        + "WHERE f.id = :refundId AND ri.bill.id = f.referenceBill.id AND ri.qty <> 0", params);
             } else {
                 originals = getBillItemFacede().findByJpql(
                         "SELECT DISTINCT o FROM BillItem sbi JOIN sbi.referanceBillItem tbi JOIN tbi.referanceBillItem o "
@@ -4236,20 +4236,25 @@ public class PharmacyBillSearch implements Serializable {
                 return;
             }
             for (BillItem original : originals) {
-                Map<String, Object> p = new HashMap<>();
-                p.put("refundId", cancelledRefundBill.getId());
-                p.put("originalId", original.getId());
-                p.put("bta", BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEM_PAYMENTS);
-                p.put("btaWithItems", BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS);
+                // One parameter map per query: EclipseLink rejects a parameter the query does not use.
+                Map<String, Object> pWithItems = new HashMap<>();
+                pWithItems.put("refundId", cancelledRefundBill.getId());
+                pWithItems.put("originalId", original.getId());
+                pWithItems.put("btaWithItems", BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS);
+                Map<String, Object> pItemOnly = new HashMap<>();
+                pItemOnly.put("refundId", cancelledRefundBill.getId());
+                pItemOnly.put("originalId", original.getId());
+                pItemOnly.put("bta", BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEM_PAYMENTS);
                 Long othersWithItems = getBillItemFacede().countByJpql(
                         "SELECT COUNT(ri) FROM Bill f, BillItem ri "
                         + "WHERE ri.bill.id = f.referenceBill.id "
                         + "AND ri.retired = false "
+                        + "AND ri.qty <> 0 "
                         + "AND f.id <> :refundId "
                         + "AND f.cancelled = false "
                         + "AND f.retired = false "
                         + "AND f.billTypeAtomic = :btaWithItems "
-                        + "AND ri.referanceBillItem.id = :originalId", p);
+                        + "AND ri.referanceBillItem.id = :originalId", pWithItems);
                 Long others = getBillItemFacede().countByJpql(
                         "SELECT COUNT(sbi) FROM BillItem sbi "
                         + "WHERE sbi.retired = false "
@@ -4257,7 +4262,7 @@ public class PharmacyBillSearch implements Serializable {
                         + "AND sbi.bill.cancelled = false "
                         + "AND sbi.bill.retired = false "
                         + "AND sbi.bill.billTypeAtomic = :bta "
-                        + "AND sbi.referanceBillItem.referanceBillItem.id = :originalId", p);
+                        + "AND sbi.referanceBillItem.referanceBillItem.id = :originalId", pItemOnly);
                 if (others == null || othersWithItems == null) {
                     continue;
                 }
@@ -6407,6 +6412,32 @@ public class PharmacyBillSearch implements Serializable {
         if (saleBillItemDtos == null) {
             saleBillItemDtos = new ArrayList<>();
         }
+        markRowsWhoseBilledItemIsRefunded();
+    }
+
+    /**
+     * The cashier settle flow copies a pre-bill item into the billed bill with no
+     * item level link, and the refund flags the billed item. So the label also
+     * shows when the billed bill holds a refunded item for the same item (#24485).
+     */
+    private void markRowsWhoseBilledItemIsRefunded() {
+        if (saleBillItemDtos.isEmpty()) {
+            return;
+        }
+        Map<String, Object> m = new HashMap<>();
+        m.put("rClass", com.divudi.core.entity.BilledBill.class);
+        m.put("rBType", com.divudi.core.data.BillType.PharmacySale);
+        m.put("fromDate", searchController.getFromDate());
+        m.put("toDate", searchController.getToDate());
+        m.put("ins", sessionController.getInstitution());
+        List<?> pairs = getBillItemFacade().findLightsByJpql(
+                "SELECT x.bill.id, x.item.id FROM BillItem x "
+                + "WHERE x.refunded = true AND x.retired = false "
+                + "AND type(x.bill) = :rClass "
+                + "AND x.bill.billType = :rBType "
+                + "AND x.bill.institution = :ins "
+                + "AND x.bill.createdAt BETWEEN :fromDate AND :toDate", m, TemporalType.TIMESTAMP);
+        PharmacyItemRefundFlags.applyBilledItemFlags(saleBillItemDtos, PharmacyItemRefundFlags.lineKeys(pairs));
     }
 
     // -----------------------------------------------------------------------
