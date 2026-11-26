@@ -67,6 +67,17 @@ public class MiddlewareController {
 // Deserialize the incoming JSON into QueryRecord
             // Deserialize the incoming JSON into QueryRecord
             DataBundle dataBundle = gson.fromJson(jsonInput, DataBundle.class);
+            // Same credential check as test_results
+            if (dataBundle == null || dataBundle.getMiddlewareSettings() == null
+                    || dataBundle.getMiddlewareSettings().getLimsSettings() == null) {
+                return Response.status(Response.Status.UNAUTHORIZED).build();
+            }
+            WebUser requestSendingUser
+                    = findRequestSendingUser(dataBundle.getMiddlewareSettings().getLimsSettings().getUsername(),
+                            dataBundle.getMiddlewareSettings().getLimsSettings().getPassword());
+            if (requestSendingUser == null) {
+                return Response.status(Response.Status.UNAUTHORIZED).build();
+            }
             String analyzerName = dataBundle.getMiddlewareSettings().getAnalyzerDetails().getAnalyzerName();
             QueryRecord queryRecord = dataBundle.getQueryRecords().get(0);
 
