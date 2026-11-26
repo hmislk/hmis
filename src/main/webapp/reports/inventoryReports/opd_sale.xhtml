@@ -408,12 +408,12 @@
                                 </f:facet>
                             </p:column>
                             
-                            <p:column headerText="MRP" width="8em" class="text-end" styleClass="cogs-item-col">
+                            <p:column headerText="MRP" width="8em" styleClass="text-end cogs-item-col">
                                 <ui:repeat value="#{b.billItemsMap.values()}" var="biObject">
                                     <h:outputText value="#{biObject.retailRate}" ><f:convertNumber pattern="#,##0.00"/></h:outputText><p:divider/><br/>
                                 </ui:repeat>
                             </p:column>
-                            <p:column headerText="MRP Value" width="8em" class="text-end" styleClass="cogs-item-col">
+                            <p:column headerText="MRP Value" width="8em" styleClass="text-end cogs-item-col">
                                 <ui:repeat value="#{b.billItemsMap.values()}" var="biObject">
                                     <h:outputText value="#{biObject.qty * biObject.retailRate}" ><f:convertNumber pattern="#,##0.00"/></h:outputText><p:divider/>   <br/>
                                 </ui:repeat>
