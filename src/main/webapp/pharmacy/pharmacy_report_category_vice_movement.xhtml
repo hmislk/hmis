@@ -389,11 +389,11 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <ui:fragment rendered="#{empty pharmacySaleReportController.categoryMovementReportDtos}">
+                            <h:panelGroup rendered="#{empty pharmacySaleReportController.categoryMovementReportDtos}">
                                 <tr>
                                     <td colspan="19" class="mv-empty">No records found</td>
                                 </tr>
-                            </ui:fragment>
+                            </h:panelGroup>
                             <ui:repeat value="#{pharmacySaleReportController.categoryMovementReportDtos}" var="i" varStatus="st">
                                 <tr class="#{i.rowType eq 'Movement' ? '' : 'mv-reversal'}">
                                     <td class="mv-num"><h:outputText value="#{st.index + 1}"/></td>
