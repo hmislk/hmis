@@ -65,6 +65,8 @@ public class InwardInvoiceJournalController implements Serializable {
     @EJB
     private com.divudi.ejb.CreditBean creditBean;
     @Inject
+    private InwardBeanController inwardBean;
+    @Inject
     private ConfigOptionApplicationController configOptionApplicationController;
     @EJB
     private com.divudi.service.inward.InwardProfessionalFeeClassificationService professionalFeeClassificationService;
@@ -478,14 +480,28 @@ public class InwardInvoiceJournalController implements Serializable {
 
         List<com.divudi.core.entity.Bill> bills = billFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
         if (bills != null) {
+            // What a company has paid is counted once per company per admission, over every
+            // final bill version (#26163). This is right for commitments saved before the
+            // change too: it reads the receipt items, not a stored figure that an older
+            // final bill never recounted.
+            Map<String, Double> paidByCompany = new HashMap<>();
             for (com.divudi.core.entity.Bill b : bills) {
                 if (b.getPatientEncounter() == null) {
                     continue;
                 }
-                double settled = creditBean.getSettledAmountByCompany(b);
-                double due = b.getNetTotal() - settled;
                 Long encId = b.getPatientEncounter().getId();
-                result.merge(encId, due, Double::sum);
+                result.merge(encId, b.getNetTotal(), Double::sum);
+                if (b.getCreditCompany() == null) {
+                    result.merge(encId, -creditBean.getSettledAmountByCompany(b), Double::sum);
+                    continue;
+                }
+                String key = encId + ":" + b.getCreditCompany().getId();
+                if (paidByCompany.containsKey(key)) {
+                    continue;
+                }
+                double paid = inwardBean.fetchCompanyPaidAmount(b.getPatientEncounter(), b.getCreditCompany());
+                paidByCompany.put(key, paid);
+                result.merge(encId, -paid, Double::sum);
             }
         }
         return result;

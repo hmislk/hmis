@@ -3454,11 +3454,20 @@ public class InwardBeanController implements Serializable {
      */
     public void recountCreditCompanyShares(Bill finalBill) {
         if (finalBill == null || finalBill.getId() == null || finalBill.getPatientEncounter() == null
-                || !finalBill.isConfirmedFinalBill()) {
-            // Only the confirmed version carries the company shares (#26163).
+                || finalBill.getPatientEncounter().getId() == null) {
             return;
         }
-        List<Bill> found = fetchCreditCompanyCommitmentBills(finalBill.getPatientEncounter());
+        // Read the confirmed state fresh, inside the lock: only the confirmed version
+        // carries the company shares (#26163).
+        PatientEncounter freshPe = patientEncounterFacade.findWithoutCache(finalBill.getPatientEncounter().getId());
+        Bill freshFinal = getBillFacade().findWithoutCache(finalBill.getId());
+        if (freshPe == null || freshFinal == null || !freshFinal.isConfirmedFinalBill()
+                || (freshPe.getFinalBill() != null && freshPe.getFinalBill().getId() != null
+                && !freshPe.getFinalBill().getId().equals(freshFinal.getId()))) {
+            return;
+        }
+        finalBill = freshFinal;
+        List<Bill> found = fetchCreditCompanyCommitmentBills(freshPe);
         List<Bill> commitments = new ArrayList<>();
         for (Bill b : found) {
             if (b.getReferenceBill() != null && finalBill.getId().equals(b.getReferenceBill().getId())) {
@@ -3474,34 +3483,73 @@ public class InwardBeanController implements Serializable {
         double[] paid = new double[commitments.size()];
         double[] settledByCompany = new double[commitments.size()];
         double[] settledByPatient = new double[commitments.size()];
+        Object[] companyKeys = new Object[commitments.size()];
         for (int i = 0; i < commitments.size(); i++) {
             Bill f = getBillFacade().findWithoutCache(commitments.get(i).getId());
             if (f == null) {
                 return;
             }
             fresh.add(f);
+            companyKeys[i] = f.getCreditCompany() == null ? null : f.getCreditCompany().getId();
             // total is the share fixed at settle and nothing else writes it afterwards;
             // a commitment with no total (older data) takes it from netTotal once.
             originals[i] = f.getTotal() > 0 ? f.getTotal() : f.getNetTotal();
             // What the company has paid this admission, across every version's commitment (#26163).
+            // Duplicate commitments of one company all read the same company total here.
             settledByCompany[i] = sumSettled(f, CountedServiceType.CREDIT_SETTLE_BY_COMPANY);
             settledByPatient[i] = sumSettled(f, CountedServiceType.CREDIT_SETTLE_BY_PATIENT);
             paid[i] = settledByCompany[i] + settledByPatient[i];
         }
-        double[] lowered = CompanyShareAllocation.lowerShares(originals, paid,
+        // One floor per company, spread back over its commitments (#26163).
+        double[] lowered = CompanyShareAllocation.lowerSharesByCompany(originals, companyKeys, paid,
                 getPostFinalPaymentTotalIncludedIn(finalBill));
+        double[] fractions = CompanyShareAllocation.paidFractions(companyKeys, lowered, paid);
         for (int i = 0; i < fresh.size(); i++) {
             Bill f = fresh.get(i);
             if (f.getTotal() <= 0) {
                 f.setTotal(originals[i]);
             }
             f.setNetTotal(lowered[i]);
-            f.setPaidAmount(paid[i]);
-            f.setSettledAmountBySponsor(settledByCompany[i]);
-            f.setSettledAmountByPatient(settledByPatient[i]);
+            f.setPaidAmount(paid[i] * fractions[i]);
+            f.setSettledAmountBySponsor(settledByCompany[i] * fractions[i]);
+            f.setSettledAmountByPatient(settledByPatient[i] * fractions[i]);
             f.setBalance(creditBean.calculateOutstandingBalance(f));
             getBillFacade().edit(f);
         }
+    }
+
+    /**
+     * Credit companies that have receipts (company or patient settle items) on
+     * any non-cancelled commitment bill of the admission, whichever final bill
+     * version the commitment belongs to (#26163), with what each has paid
+     * (company receipts net of cancels). Used to block a share below the paid
+     * figure even for a company left out of the new version.
+     */
+    public Map<Institution, Double> fetchPaidByCompanyWithReceipts(PatientEncounter encounter) {
+        Map<Institution, Double> result = new java.util.LinkedHashMap<>();
+        if (encounter == null) {
+            return result;
+        }
+        String jpql = "select b from Bill b "
+                + " where b.retired = false "
+                + " and b.cancelled = false "
+                + " and b.billTypeAtomic = :bta "
+                + " and b.patientEncounter = :pe "
+                + " and b.creditCompany is not null "
+                + " and exists (select bi.id from BillItem bi where bi.retired = false and bi.referenceBill = b)";
+        Map<String, Object> params = new HashMap<>();
+        params.put("bta", BillTypeAtomic.INWARD_FINAL_BILL_PAYMENT_BY_CREDIT_COMPANY);
+        params.put("pe", encounter);
+        List<Bill> bills = getBillFacade().findByJpql(jpql, params);
+        if (bills != null) {
+            for (Bill b : bills) {
+                Institution c = b.getCreditCompany();
+                if (c != null && !result.containsKey(c)) {
+                    result.put(c, fetchCompanyPaidAmount(encounter, c));
+                }
+            }
+        }
+        return result;
     }
 
     /**

@@ -3707,15 +3707,30 @@ public class BhtSummeryController implements Serializable {
                 shares.merge(alloc.getCreditCompany(), alloc.getAllocatedAmount(), Double::sum);
             }
         }
-        for (java.util.Map.Entry<Institution, Double> e : shares.entrySet()) {
-            double paid = getInwardBean().fetchCompanyPaidAmount(getPatientEncounter(), e.getKey());
-            if (isShareBelowPaid(e.getValue(), paid)) {
-                JsfUtil.addErrorMessage(e.getKey().getName() + " has already paid "
-                        + String.format("%.2f", paid) + ". Its share cannot be less than that.");
-                return true;
-            }
+        // Every company that has receipts on this admission, including one left out of the new version.
+        java.util.Map<Institution, Double> paidByCompany = getInwardBean().fetchPaidByCompanyWithReceipts(getPatientEncounter());
+        Institution low = firstCompanyBelowPaid(shares, paidByCompany);
+        if (low != null) {
+            JsfUtil.addErrorMessage(low.getName() + " has already paid "
+                    + String.format("%.2f", paidByCompany.get(low)) + ". Its share cannot be less than that.");
+            return true;
         }
         return false;
+    }
+
+    /**
+     * The first company whose share (0 when it has no allocation row) is lower
+     * than what it has paid, or null when none is.
+     */
+    static <K> K firstCompanyBelowPaid(java.util.Map<K, Double> shares, java.util.Map<K, Double> paidByCompany) {
+        for (java.util.Map.Entry<K, Double> e : paidByCompany.entrySet()) {
+            Double share = shares.get(e.getKey());
+            double paid = e.getValue() == null ? 0.0 : e.getValue();
+            if (isShareBelowPaid(share == null ? 0.0 : share, paid)) {
+                return e.getKey();
+            }
+        }
+        return null;
     }
 
     /** True when the share is lower than what was paid, beyond a 0.01 tolerance. */
