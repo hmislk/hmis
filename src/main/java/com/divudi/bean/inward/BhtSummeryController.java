@@ -1594,7 +1594,40 @@ public class BhtSummeryController implements Serializable {
         updateTotal();
     }
 
+    /**
+     * Values looked up once per {@link #calculateDiscount()} run and reused by the
+     * per-fee and per-room steps, so they are not read again for every fee (#17562).
+     * All are null outside a run, when each step reads its own.
+     */
+    private AdmissionTypeTimeline runTimeline;
+    private List<PatientRoom> runPatientRooms;
+    private InwardBeanController.DiscountRunCache runDiscountCache;
+
+    private AdmissionTypeTimeline timelineForRun() {
+        return runTimeline != null ? runTimeline : admissionTypeHistoryService.timelineFor(getPatientEncounter());
+    }
+
+    private List<PatientRoom> patientRoomsForRun() {
+        return runPatientRooms != null ? runPatientRooms
+                : getInwardBean().fetchPatientRoomAll(getPatientEncounter(), childPatientEncouters);
+    }
+
     public void calculateDiscount() {
+        if (getPatientEncounter() != null) {
+            runTimeline = admissionTypeHistoryService.timelineFor(getPatientEncounter());
+            runPatientRooms = getInwardBean().fetchPatientRoomAll(getPatientEncounter(), childPatientEncouters);
+            runDiscountCache = new InwardBeanController.DiscountRunCache();
+        }
+        try {
+            calculateDiscountInRun();
+        } finally {
+            runTimeline = null;
+            runPatientRooms = null;
+            runDiscountCache = null;
+        }
+    }
+
+    private void calculateDiscountInRun() {
         Map<InwardChargeType, Double> packageAllocations = packageAllocationsOfRows != null ? packageAllocationsOfRows
                 : getPatientEncounter() != null
                 ? resolvePackageChargeTypeAllocationsIfApplicable(getPatientEncounter().getInpatientPackage(), getPatientEncounter()) : new HashMap<>();
@@ -1783,7 +1816,7 @@ public class BhtSummeryController implements Serializable {
     }
 
     public double discountSet(ChargeItemTotal cit) {
-        AdmissionTypeTimeline admissionTypeTimeline = admissionTypeHistoryService.timelineFor(getPatientEncounter());
+        AdmissionTypeTimeline admissionTypeTimeline = timelineForRun();
         if (admissionTypeTimeline.hasHistory()) {
             return discountSetByPeriods(cit, admissionTypeTimeline);
         }
@@ -1872,9 +1905,13 @@ public class BhtSummeryController implements Serializable {
             double value = bf.getFeeGrossValue() + bf.getFeeMargin();
             double dis = (value * discountPercent) / 100;
             disTot += dis;
+            boolean changed = Double.compare(bf.getFeeDiscount(), dis) != 0
+                    || Double.compare(bf.getFeeValue(), value - dis) != 0;
             bf.setFeeDiscount(dis);
             bf.setFeeValue(value - dis);
-            getBillFeeFacade().edit(bf);
+            if (changed) {
+                getBillFeeFacade().edit(bf);
+            }
         }
 
         List<BillItem> listBillItems = getInwardBean().getServiceBillItemByInwardChargeType(inwardChargeType, getPatientEncounter());
@@ -1906,16 +1943,24 @@ public class BhtSummeryController implements Serializable {
         if (list == null || list.isEmpty()) {
             return disTot;
         }
-        AdmissionTypeTimeline timeline = admissionTypeHistoryService.timelineFor(getPatientEncounter());
+        AdmissionTypeTimeline timeline = timelineForRun();
         for (BillFee bf : list) {
             if (!inWindow(billDateOf(bf), from, to)) {
                 continue;
             }
             Item item = bf.getBillItem() != null ? bf.getBillItem().getItem() : null;
-            getInwardBean().applyInwardDiscountToBillFee(bf, item, getPatientEncounter(), timeline.typeAt(billDateOf(bf)));
+            double oldDiscount = bf.getFeeDiscount();
+            double oldValue = bf.getFeeValue();
+            Double oldUnitDiscount = bf.getFeeUnitDiscount();
+            getInwardBean().applyInwardDiscountToBillFee(bf, item, getPatientEncounter(), timeline.typeAt(billDateOf(bf)), runDiscountCache);
             double dis = bf.getFeeDiscount();
             bf.setFeeValue(bf.getFeeGrossValue() + bf.getFeeMargin() - dis);
-            getBillFeeFacade().edit(bf);
+            boolean changed = Double.compare(oldDiscount, dis) != 0
+                    || Double.compare(oldValue, bf.getFeeValue()) != 0
+                    || !java.util.Objects.equals(oldUnitDiscount, bf.getFeeUnitDiscount());
+            if (changed) {
+                getBillFeeFacade().edit(bf);
+            }
             disTot += dis;
         }
         for (BillItem b : getInwardBean().getServiceBillItemByInwardChargeType(inwardChargeType, getPatientEncounter())) {
@@ -1970,8 +2015,11 @@ public class BhtSummeryController implements Serializable {
             double value = bf.getServiceValue();
             double dis = (value * discountPercent) / 100;
             disTot += dis;
+            boolean changed = Double.compare(bf.getDiscount(), dis) != 0;
             bf.setDiscount(dis);
-            getPatientItemFacade().edit(bf);
+            if (changed) {
+                getPatientItemFacade().edit(bf);
+            }
         }
 
         return disTot;
@@ -2027,8 +2075,8 @@ public class BhtSummeryController implements Serializable {
      * applies it to the room's matching discount field.
      */
     private double updateTheatreRoomMembershipDiscounts() {
-        List<PatientRoom> list = getInwardBean().fetchPatientRoomAll(getPatientEncounter(), childPatientEncouters);
-        AdmissionTypeTimeline roomTimeline = admissionTypeHistoryService.timelineFor(getPatientEncounter());
+        List<PatientRoom> list = patientRoomsForRun();
+        AdmissionTypeTimeline roomTimeline = timelineForRun();
         double disTot = 0;
         if (list == null || list.isEmpty()) {
             return disTot;
@@ -2079,8 +2127,8 @@ public class BhtSummeryController implements Serializable {
     }
 
     private double updatePatientRoomCharge(InwardChargeType inwardChargeType) {
-        List<PatientRoom> list = getInwardBean().fetchPatientRoomAll(getPatientEncounter(), childPatientEncouters);
-        AdmissionTypeTimeline roomTimeline = admissionTypeHistoryService.timelineFor(getPatientEncounter());
+        List<PatientRoom> list = patientRoomsForRun();
+        AdmissionTypeTimeline roomTimeline = timelineForRun();
         double disTot = 0;
         if (list == null || list.isEmpty()) {
             return disTot;
@@ -2112,16 +2160,19 @@ public class BhtSummeryController implements Serializable {
         double value = patientRoom.getCalculatedRoomCharge();
         double dis = (value * discountPercent) / 100;
 
+        boolean changed = Double.compare(patientRoom.getDiscountRoomCharge(), dis) != 0;
         patientRoom.setDiscountRoomCharge(dis);
         //   patientRoom.setAdjustedRoomCharge(value);
-        getPatientRoomFacade().edit(patientRoom);
+        if (changed) {
+            getPatientRoomFacade().edit(patientRoom);
+        }
 
         return dis;
     }
 
     private double updatePatientMaintainCharge(InwardChargeType inwardChargeType) {
-        List<PatientRoom> list = getInwardBean().fetchPatientRoomAll(getPatientEncounter(), childPatientEncouters);
-        AdmissionTypeTimeline roomTimeline = admissionTypeHistoryService.timelineFor(getPatientEncounter());
+        List<PatientRoom> list = patientRoomsForRun();
+        AdmissionTypeTimeline roomTimeline = timelineForRun();
         double disTot = 0;
         if (list == null || list.isEmpty()) {
             return disTot;
@@ -2150,7 +2201,7 @@ public class BhtSummeryController implements Serializable {
     }
 
     private double calDiscountServicePatientItems(InwardChargeType inwardChargeType) {
-        AdmissionTypeTimeline admissionTypeTimeline = admissionTypeHistoryService.timelineFor(getPatientEncounter());
+        AdmissionTypeTimeline admissionTypeTimeline = timelineForRun();
         if (admissionTypeTimeline.hasHistory()) {
             double dis = 0;
             for (AdmissionTypeTimeline.Period period : admissionTypeTimeline.periods()) {
@@ -2192,16 +2243,19 @@ public class BhtSummeryController implements Serializable {
 
         double value = patientRoom.getCalculatedMaintainCharge();
         double dis = (value * discountPercent) / 100;
+        boolean changed = Double.compare(patientRoom.getDiscountMaintainCharge(), dis) != 0;
         patientRoom.setDiscountMaintainCharge(dis);
         //   patientRoom.setAdjustedMaintainCharge(value);
-        getPatientRoomFacade().edit(patientRoom);
+        if (changed) {
+            getPatientRoomFacade().edit(patientRoom);
+        }
 
         return dis;
     }
 
     private double updatePatientMoCharge(InwardChargeType inwardChargeType) {
-        List<PatientRoom> list = getInwardBean().fetchPatientRoomAll(getPatientEncounter(), childPatientEncouters);
-        AdmissionTypeTimeline roomTimeline = admissionTypeHistoryService.timelineFor(getPatientEncounter());
+        List<PatientRoom> list = patientRoomsForRun();
+        AdmissionTypeTimeline roomTimeline = timelineForRun();
         double disTot = 0;
         if (list == null || list.isEmpty()) {
             return disTot;
@@ -2232,16 +2286,19 @@ public class BhtSummeryController implements Serializable {
 
         double value = patientRoom.getCalculatedMoCharge();
         double dis = (value * discountPercent) / 100;
+        boolean changed = Double.compare(patientRoom.getDiscountMoCharge(), dis) != 0;
         patientRoom.setDiscountMoCharge(dis);
         // patientRoom.setAdjustedMoCharge(value);
-        getPatientRoomFacade().edit(patientRoom);
+        if (changed) {
+            getPatientRoomFacade().edit(patientRoom);
+        }
 
         return dis;
     }
 
     private double updatePatientMedicalCareIcuCharge(InwardChargeType inwardChargeType) {
-        List<PatientRoom> list = getInwardBean().fetchPatientRoomAll(getPatientEncounter(), childPatientEncouters);
-        AdmissionTypeTimeline roomTimeline = admissionTypeHistoryService.timelineFor(getPatientEncounter());
+        List<PatientRoom> list = patientRoomsForRun();
+        AdmissionTypeTimeline roomTimeline = timelineForRun();
         double disTot = 0;
         if (list == null || list.isEmpty()) {
             return disTot;
@@ -2272,16 +2329,19 @@ public class BhtSummeryController implements Serializable {
 
         double value = patientRoom.getCalculatedMedicalCareCharge();
         double dis = (value * discountPercent) / 100;
+        boolean changed = Double.compare(patientRoom.getDiscountMedicalCareCharge(), dis) != 0;
         patientRoom.setDiscountMedicalCareCharge(dis);
         //  patientRoom.setAjdustedMedicalCareCharge(value);
-        getPatientRoomFacade().edit(patientRoom);
+        if (changed) {
+            getPatientRoomFacade().edit(patientRoom);
+        }
 
         return dis;
     }
 
     private double updatePatientAdministrationCharge(InwardChargeType inwardChargeType) {
-        List<PatientRoom> list = getInwardBean().fetchPatientRoomAll(getPatientEncounter(), childPatientEncouters);
-        AdmissionTypeTimeline roomTimeline = admissionTypeHistoryService.timelineFor(getPatientEncounter());
+        List<PatientRoom> list = patientRoomsForRun();
+        AdmissionTypeTimeline roomTimeline = timelineForRun();
         double disTot = 0;
         if (list == null || list.isEmpty()) {
             return disTot;
@@ -2312,16 +2372,19 @@ public class BhtSummeryController implements Serializable {
         double value = patientRoom.getCalculatedAdministrationCharge();
 
         double dis = (value * discountPercent) / 100;
+        boolean changed = Double.compare(patientRoom.getDiscountAdministrationCharge(), dis) != 0;
         patientRoom.setDiscountAdministrationCharge(dis);
         //  patientRoom.setAjdustedAdministrationCharge(value);
-        getPatientRoomFacade().edit(patientRoom);
+        if (changed) {
+            getPatientRoomFacade().edit(patientRoom);
+        }
 
         return dis;
     }
 
     private double updatePatientLinenCharge(InwardChargeType inwardChargeType) {
-        List<PatientRoom> list = getInwardBean().fetchPatientRoomAll(getPatientEncounter(), childPatientEncouters);
-        AdmissionTypeTimeline roomTimeline = admissionTypeHistoryService.timelineFor(getPatientEncounter());
+        List<PatientRoom> list = patientRoomsForRun();
+        AdmissionTypeTimeline roomTimeline = timelineForRun();
         double disTot = 0;
         if (list == null || list.isEmpty()) {
             return disTot;
@@ -2351,16 +2414,19 @@ public class BhtSummeryController implements Serializable {
 
         double value = patientRoom.getCalculatedLinenCharge();
         double dis = (value * discountPercent) / 100;
+        boolean changed = Double.compare(patientRoom.getDiscountLinenCharge(), dis) != 0;
         patientRoom.setDiscountLinenCharge(dis);
         //    patientRoom.setAjdustedLinenCharge(value);
-        getPatientRoomFacade().edit(patientRoom);
+        if (changed) {
+            getPatientRoomFacade().edit(patientRoom);
+        }
         return dis;
 
     }
 
     private double updatePatientNursingCharge(InwardChargeType inwardChargeType) {
-        List<PatientRoom> list = getInwardBean().fetchPatientRoomAll(getPatientEncounter(), childPatientEncouters);
-        AdmissionTypeTimeline roomTimeline = admissionTypeHistoryService.timelineFor(getPatientEncounter());
+        List<PatientRoom> list = patientRoomsForRun();
+        AdmissionTypeTimeline roomTimeline = timelineForRun();
         double disTot = 0;
         if (list == null || list.isEmpty()) {
             return disTot;
@@ -2391,9 +2457,12 @@ public class BhtSummeryController implements Serializable {
 
         double value = patientRoom.getCalculatedNursingCharge();
         double dis = (value * discountPercent) / 100;
+        boolean changed = Double.compare(patientRoom.getDiscountNursingCharge(), dis) != 0;
         patientRoom.setDiscountNursingCharge(dis);
         //   patientRoom.setAjdustedNursingCharge(value);
-        getPatientRoomFacade().edit(patientRoom);
+        if (changed) {
+            getPatientRoomFacade().edit(patientRoom);
+        }
 
         return dis;
     }
