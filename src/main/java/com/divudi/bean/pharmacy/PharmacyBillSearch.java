@@ -4195,6 +4195,9 @@ public class PharmacyBillSearch implements Serializable {
                     }
                 }
 
+                // The refund took its amount out of the drawer; a cancelled refund puts it back (#26196).
+                drawerController.reverseDrawerEntriesOfBill(getBill(), cb, getSessionController().getLoggedUser());
+
                 printPreview = true;
             } catch (RuntimeException e) {
                 releaseReturnCancellationClaimAfterFailure(cb, reversalStarted, e);
