@@ -2538,6 +2538,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         }
 
         if (depositTake != null) {
+            setBatchBill(null);
             depositTake.markBillSaved();
         }
         saveBatchBill();
