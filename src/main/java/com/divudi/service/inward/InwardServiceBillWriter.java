@@ -250,8 +250,6 @@ public class InwardServiceBillWriter {
             billItem.setReferanceBillItem(billEntry.getSourceRequestBillItem());
         }
 
-        billBean.saveBillComponent(billEntry, bill, wu);
-
         for (BillFee bf : billFees) {
             inwardBean.prepareBillFee(bf, billItem, bill, wu);
             billItem.getBillFees().add(bf);
@@ -325,6 +323,10 @@ public class InwardServiceBillWriter {
                 billFeeFacade.create(bf);
             }
         }
+
+        // After the item and its fees: a component points at the item, and a query run
+        // while the item is still new would flush a component that points at it, and fail.
+        billBean.saveBillComponent(billEntry, bill, wu);
 
         return billItem;
     }
