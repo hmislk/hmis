@@ -411,7 +411,7 @@ public class PaymentService {
                         double paidValue = cd.getPaymentMethodData().getPatient_deposit().getTotalValue();
                         PatientDeposit currentDeposit = cd.getPaymentMethodData().getPatient_deposit().getPatientDepost();
                         p.setPaidValue(paidValue);
-                        patientDepositService.updateBalance(p, currentDeposit);
+                        patientDepositService.updateBalance(p, patientDepositService.lockedCopyOf(currentDeposit));
                         JsfUtil.addSuccessMessage("Patient Deposit Balance Updated");
                         break;
 
@@ -471,7 +471,7 @@ public class PaymentService {
                     double paidValue = paymentMethodData.getPatient_deposit().getTotalValue();
                     PatientDeposit currentDeposit = paymentMethodData.getPatient_deposit().getPatientDepost();
                     p.setPaidValue(paidValue);
-                    patientDepositService.updateBalance(p, currentDeposit);
+                    patientDepositService.updateBalance(p, patientDepositService.lockedCopyOf(currentDeposit));
                     break;
                 case OnlineSettlement:
                     p.setBank(paymentMethodData.getOnlineSettlement().getInstitution());
@@ -790,7 +790,8 @@ public class PaymentService {
             pt.setRunningBalance(0.0 - p.getPaidValue());
         }
         patientFacade.editAndFlush(pt);
-        PatientDeposit pd = patientDepositService.getDepositOfThePatient(pt, p.getDepartment());
+        // Hardening, tracked under #26265.
+        PatientDeposit pd = patientDepositService.lockedCopyOf(patientDepositService.getDepositOfThePatient(pt, p.getDepartment()));
         patientDepositService.updateBalance(p, pd);
 
     }
