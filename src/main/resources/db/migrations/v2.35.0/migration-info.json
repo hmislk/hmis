@@ -1,0 +1,15 @@
+{
+  "version": "v2.35.0",
+  "description": "Add index IDX_BILLFEE_REFERENCEBILLITEM on BILLFEE(REFERENCEBILLITEM_ID) if no index starts on that column",
+  "author": "Dr M H B Ariyaratne",
+  "date": "2026-11-27",
+  "requiresDowntime": false,
+  "estimatedDurationMinutes": 5,
+  "affectedTables": ["billfee"],
+  "affectedModules": ["Inward"],
+  "preRequisites": [
+    "Idempotent; changes no data. The code works with or without the index.",
+    "The index build time depends on the table size. Prefer a quiet time."
+  ],
+  "rollbackNotes": ["rollback.sql drops IDX_BILLFEE_REFERENCEBILLITEM only."]
+}
