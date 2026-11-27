@@ -51,7 +51,7 @@
 - XHTML-only changes need no compile or test.
 - **🚨 Never navigate to an inner page by URL;** open the app root and click through the menus. [+](developer_docs/testing/playwright-e2e-workflow.md)
 - **🚨 Never clean up test data unasked;** list what you created; never write test data to production. [+](developer_docs/testing/playwright-e2e-workflow.md)
-- **🚨 Local test logins: agents use the shared local QA user; never reset or change any existing user's password.** [+](developer_docs/testing/local-test-logins.md)
+- **🚨 Local test logins: agents use the shared local QA user; never reset or change any existing user's password (only the QA user may be set again, to its stored password).** [+](developer_docs/testing/local-test-logins.md)
 
 ### Git and deployment
 - **🚨 After every `git push`,** without being asked, restore local JNDI in `persistence.xml` and leave it unstaged: `${JDBC_DATASOURCE}` → `jdbc/coop`, `${JDBC_AUDIT_DATASOURCE}` → `jdbc/ruhunuAudit`. [+](developer_docs/deployment/persistence-verification.md)
