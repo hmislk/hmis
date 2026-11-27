@@ -1,0 +1,397 @@
+/*
+ * Laboratory Management Dashboard - mobile layout.
+ *
+ * Used by lab/laboratory_management_dashboard.xhtml and the composite
+ * components in resources/ezcomp/lab/dashboard/.
+ *
+ * All layout rules are inside "screen and (max-width: 767.98px)", so the
+ * desktop layout and the printed barcode stickers do not change.
+ *
+ * Hooks used in the XHTML:
+ *   .lab-dashboard         - the dashboard form (scope for every rule)
+ *   .lab-dashboard-menu    - the top mega menu
+ *   .lab-filter-grid       - the 6-column filter h:panelGrid
+ *   .lab-filter-spacer     - an empty filler cell in the filter grid
+ *   .lab-filter-action     - the cell that holds the Search button
+ *   .lab-card-table        - a p:dataTable (with reflow="true") shown as cards
+ *   .lab-sample-actions    - the sample action side panel
+ *   .lab-report-row        - one patient report row (buttons + status icons)
+ *   .lab-barcode-panel     - the barcode sticker panel
+ *   .lab-dialog            - a p:dialog that must fit the phone screen
+ */
+
+/* ---------- Dialogs (outside the form scope on purpose) ---------- */
+.ui-dialog.lab-dialog {
+    max-width: calc(100vw - 1rem);
+}
+
+@media screen and (max-width: 767.98px) {
+
+    /* ---------- General ---------- */
+    .lab-dashboard h1,
+    .lab-dashboard h3 {
+        font-size: 1.15rem;
+        margin-bottom: .25rem;
+    }
+
+    .lab-dashboard .mx-3 {
+        margin-left: .5rem !important;
+        margin-right: .5rem !important;
+    }
+
+    /* ---------- Top mega menu: compact tiles, 3 per row ---------- */
+    .lab-dashboard .lab-dashboard-menu {
+        margin-top: .5rem !important;
+        padding: .25rem;
+    }
+
+    .lab-dashboard .lab-dashboard-menu > .ui-menu-list {
+        display: grid !important;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: .25rem;
+        width: 100%;
+    }
+
+    .lab-dashboard .lab-dashboard-menu > .ui-menu-list > .ui-menuitem {
+        float: none !important;
+        width: auto !important;
+        margin: 0 !important;
+    }
+
+    .lab-dashboard .lab-dashboard-menu > .ui-menu-list > .ui-menuitem > .ui-menuitem-link {
+        width: 100% !important;
+        font-size: 12px !important;
+        font-weight: 600 !important;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        gap: .25rem;
+        padding: .5rem .25rem !important;
+        white-space: normal;
+        line-height: 1.2;
+    }
+
+    .lab-dashboard .lab-dashboard-menu .ui-menuitem-link i {
+        margin: 0 !important;
+        font-size: 1.1rem;
+    }
+
+    /* ---------- Filter grid: 2 columns (1 column on small phones) ---------- */
+    .lab-dashboard table.lab-filter-grid {
+        display: block;
+        width: 100% !important;
+    }
+
+    .lab-dashboard table.lab-filter-grid > tbody {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: .25rem .5rem;
+        width: 100%;
+    }
+
+    .lab-dashboard table.lab-filter-grid > tbody > tr {
+        display: contents;
+    }
+
+    .lab-dashboard table.lab-filter-grid > tbody > tr > td {
+        display: block;
+        min-width: 0;
+        padding: 0;
+    }
+
+    .lab-dashboard table.lab-filter-grid > tbody > tr > td:has(> table.lab-filter-spacer) {
+        display: none;
+    }
+
+    .lab-dashboard table.lab-filter-grid > tbody > tr > td:has(> table.lab-filter-action) {
+        grid-column: 1 / -1;
+    }
+
+    .lab-dashboard table.lab-filter-grid table {
+        width: 100%;
+    }
+
+    .lab-dashboard table.lab-filter-grid table td {
+        padding: 2px 0;
+    }
+
+    .lab-dashboard .lab-filter-grid .ui-selectonemenu,
+    .lab-dashboard .lab-filter-grid .ui-autocomplete,
+    .lab-dashboard .lab-filter-grid .ui-datepicker,
+    .lab-dashboard .lab-filter-grid .ui-calendar,
+    .lab-dashboard .lab-filter-grid input {
+        width: 100% !important;
+        min-width: 0 !important;
+        max-width: 100%;
+    }
+
+    .lab-dashboard .lab-filter-grid .lab-filter-action .ui-button {
+        margin: .5rem 0 0 0 !important;
+    }
+
+    /* ---------- Data tables shown as cards ---------- */
+    .lab-dashboard .lab-card-table table {
+        display: block;
+        width: 100% !important;
+        table-layout: auto !important;
+    }
+
+    .lab-dashboard .lab-card-table thead,
+    .lab-dashboard .lab-card-table tfoot {
+        display: none !important;
+    }
+
+    .lab-dashboard .lab-card-table .ui-datatable-data {
+        display: block;
+        width: 100%;
+        border: 0 none !important;
+        background: transparent !important;
+    }
+
+    .lab-dashboard .lab-card-table .ui-datatable-data > tr.ui-widget-content {
+        display: block;
+        position: relative;
+        margin: 0 0 .75rem 0;
+        padding: .25rem 0;
+        border: 1px solid #dee2e6 !important;
+        border-radius: .5rem;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, .08);
+        overflow: hidden;
+    }
+
+    .lab-dashboard .lab-card-table .ui-datatable-data > tr.ui-state-highlight {
+        box-shadow: 0 0 0 2px #0d6efd;
+    }
+
+    .lab-dashboard .lab-card-table .ui-datatable-data > tr > td[role="gridcell"] {
+        display: block !important;
+        float: none !important;
+        position: relative;
+        width: 100% !important;
+        box-sizing: border-box;
+        padding: .4rem .75rem .4rem 7.5rem !important;
+        border: 0 none !important;
+        border-bottom: 1px dashed #e9ecef !important;
+        text-align: left !important;
+        white-space: normal;
+        word-break: break-word;
+        overflow: visible !important;
+    }
+
+    .lab-dashboard .lab-card-table .ui-datatable-data > tr > td[role="gridcell"]:last-child {
+        border-bottom: 0 none !important;
+    }
+
+    .lab-dashboard .lab-card-table .ui-datatable-data > tr > td[role="gridcell"] > .ui-column-title {
+        display: block !important;
+        position: absolute;
+        left: .75rem;
+        top: .4rem;
+        width: 6.25rem;
+        min-width: 0 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        font-weight: 700;
+        font-size: .8rem;
+        color: #6c757d;
+        text-transform: uppercase;
+        white-space: normal;
+    }
+
+    /* Row selection check box: top-right corner of the card */
+    .lab-dashboard .lab-card-table .ui-datatable-data > tr > td.ui-selection-column {
+        position: absolute !important;
+        top: .5rem;
+        right: .5rem;
+        width: auto !important;
+        padding: 0 !important;
+        border: 0 none !important;
+        z-index: 1;
+    }
+
+    .lab-dashboard .lab-card-table .ui-datatable-data > tr > td.ui-selection-column > .ui-column-title {
+        display: none !important;
+    }
+
+    /* Content inside the cards */
+    .lab-dashboard .lab-card-table td .d-flex {
+        flex-wrap: wrap;
+    }
+
+    .lab-dashboard .lab-card-table td .ui-badge {
+        max-width: 100%;
+        white-space: normal;
+    }
+
+    .lab-dashboard .lab-card-table td .w-50 {
+        width: auto !important;
+    }
+
+    .lab-dashboard .lab-card-table td .justify-content-center {
+        justify-content: flex-start !important;
+    }
+
+    .lab-dashboard .lab-card-table td .mt-4 {
+        margin-top: 0 !important;
+    }
+
+    .lab-dashboard .lab-card-table td .ui-g-12 {
+        padding-left: 0;
+        padding-right: 0;
+    }
+
+    .lab-dashboard .lab-card-table td[role="gridcell"] .ui-button {
+        margin-bottom: .25rem;
+    }
+
+    .lab-dashboard .lab-card-table .ui-datatable-empty-message > td {
+        display: block;
+        padding: 1rem !important;
+        text-align: center;
+        border: 1px dashed #dee2e6 !important;
+        border-radius: .5rem;
+    }
+
+    /* Patient report rows: buttons on one line, status icons below */
+    .lab-dashboard .lab-report-row {
+        flex-direction: column;
+        gap: .25rem;
+        padding-bottom: .5rem;
+        margin-bottom: .5rem;
+        border-bottom: 1px solid #f1f3f5;
+    }
+
+    .lab-dashboard .lab-report-row:last-child {
+        border-bottom: 0 none;
+        margin-bottom: 0;
+    }
+
+    .lab-dashboard .lab-report-row > .justify-content-end {
+        justify-content: flex-start !important;
+        align-items: center;
+    }
+
+    .lab-dashboard .lab-report-row img {
+        height: 34px !important;
+        width: 34px !important;
+    }
+
+    /* Paginator */
+    .lab-dashboard .lab-card-table .ui-paginator {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        align-items: center;
+        gap: .25rem;
+        padding: .5rem .25rem;
+    }
+
+    .lab-dashboard .lab-card-table .ui-paginator .ui-paginator-current {
+        flex-basis: 100%;
+        text-align: center;
+    }
+
+    /* ---------- Samples: action side panel ---------- */
+    .lab-dashboard .lab-sample-actions {
+        width: 100%;
+    }
+
+    .lab-dashboard .lab-sample-actions .d-flex {
+        flex-wrap: wrap;
+    }
+
+    .lab-dashboard .lab-sample-actions .d-flex > .ui-button {
+        flex: 1 1 auto;
+        width: auto !important;
+        min-width: 8rem;
+    }
+
+    .lab-dashboard .lab-sample-actions .d-flex > .ui-button.w-100 {
+        flex-basis: 100%;
+    }
+
+    .lab-dashboard .lab-sample-actions .ui-selectonemenu {
+        width: 100% !important;
+        min-width: 0 !important;
+    }
+
+    /* ---------- Barcode panel ---------- */
+    .lab-dashboard .lab-barcode-panel .ui-panel-titlebar > .d-flex,
+    .lab-dashboard .lab-barcode-panel .ui-panel-titlebar .d-flex {
+        flex-wrap: wrap;
+        gap: .5rem;
+    }
+
+    .lab-dashboard .lab-barcode-panel .ui-panel-titlebar .mt-3,
+    .lab-dashboard .lab-barcode-panel .ui-panel-titlebar .mt-2 {
+        margin-top: .25rem !important;
+    }
+
+    .lab-dashboard .lab-barcode-panel .ui-panel-content {
+        overflow-x: auto;
+    }
+
+    .lab-dashboard .lab-barcode-panel table.ui-panelgrid,
+    .lab-dashboard .lab-barcode-panel table.ui-panelgrid > tbody,
+    .lab-dashboard .lab-barcode-panel table.ui-panelgrid > tbody > tr,
+    .lab-dashboard .lab-barcode-panel table.ui-panelgrid > tbody > tr > td {
+        display: block;
+        width: 100%;
+    }
+
+    .lab-dashboard .lab-barcode-panel table.ui-panelgrid {
+        margin-bottom: .75rem;
+        border: 1px solid #dee2e6;
+        border-radius: .5rem;
+    }
+
+    .lab-dashboard .lab-barcode-panel table.ui-panelgrid .mt-4 {
+        margin-top: .5rem !important;
+    }
+
+    .lab-dashboard .lab-barcode-panel table.ui-panelgrid .ui-button {
+        white-space: normal;
+        max-width: 100%;
+    }
+
+    .lab-dashboard .lab-barcode-panel .mx-5 {
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+    }
+
+    /* ---------- Dialogs ---------- */
+    .ui-dialog.lab-dialog .ui-dialog-content {
+        height: auto !important;
+    }
+
+    .ui-dialog.lab-dialog .ui-dialog-content .d-flex {
+        flex-direction: column;
+        gap: .25rem !important;
+    }
+
+    .ui-dialog.lab-dialog .w-50 {
+        width: 100% !important;
+    }
+}
+
+@media screen and (max-width: 575.98px) {
+
+    .lab-dashboard table.lab-filter-grid > tbody {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    /* Card cells: label above the value on small phones */
+    .lab-dashboard .lab-card-table .ui-datatable-data > tr > td[role="gridcell"] {
+        padding: .4rem .75rem !important;
+    }
+
+    .lab-dashboard .lab-card-table .ui-datatable-data > tr > td[role="gridcell"] > .ui-column-title {
+        position: static;
+        width: auto;
+        margin-bottom: .15rem !important;
+    }
+
+    .lab-dashboard .lab-card-table .ui-datatable-data > tr > td.ui-selection-column {
+        padding: 0 !important;
+    }
+}
