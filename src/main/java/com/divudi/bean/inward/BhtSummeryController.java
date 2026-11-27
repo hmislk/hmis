@@ -3757,6 +3757,25 @@ public class BhtSummeryController implements Serializable {
     private static final String CB4_HOSPITAL_CHARGES_ONLY_KEY = "Inward Final Bill - Custom Bill 4 - Calculate Totals And Due From Hospital Charges On Copies Without Professional Fees";
 
     /**
+     * "Due from" rows printed on Custom Bill 4. On a copy without professional
+     * fees with the option on, a list holding only the patient row is dropped:
+     * that row is the whole-bill due, and the copy prints its own Due Amount
+     * line instead. Lists with a credit company row are not changed (#26243).
+     */
+    public List<CreditCompanyAllocation> copyDueBreakdown(Bill bill, boolean showProfessional) {
+        List<CreditCompanyAllocation> breakdown = creditCompanyDueBreakdownForPrint(bill);
+        if (showProfessional || !configOptionApplicationController.getBooleanValueByKey(CB4_HOSPITAL_CHARGES_ONLY_KEY, false)) {
+            return breakdown;
+        }
+        for (CreditCompanyAllocation row : breakdown) {
+            if (!row.isPatientPortion()) {
+                return breakdown;
+            }
+        }
+        return new ArrayList<>();
+    }
+
+    /**
      * Total for a final bill copy printed without professional fees. With the
      * option off this is the saved hospital fee. With it on, the saved charge
      * lines other than professional charges are added up, which is the same
