@@ -271,6 +271,10 @@ public class SiteApi {
             return null;
         }
 
+        if (apiKey.isRetired()) {
+            return null;
+        }
+
         WebUser user = apiKey.getWebUser();
         if (user == null) {
             return null;
