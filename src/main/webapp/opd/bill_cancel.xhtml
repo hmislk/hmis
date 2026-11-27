@@ -38,7 +38,7 @@
                                         <p:commandButton 
                                             ajax="false"
                                             value="Cancel Bill" 
-                                            icon="fa fa-cancel"
+                                            icon="fas fa-ban"
                                             class="ui-button-danger" 
                                             action="#{opdBillCancellationController.cancelOpdBill()}">
                                         </p:commandButton>
@@ -79,7 +79,7 @@
                                         </p:selectOneMenu>
                                     </p:panel>
 
-                                    <p:panel id="testPanel" >
+                                    <p:panel id="testPanel" visible="false" >
                                         Test Panel
 
                                         Payment Method is 
@@ -91,10 +91,6 @@
                                         <f:facet name="header">
                                             <h:outputText styleClass="fas fa-credit-card me-2"></h:outputText>
                                             <h:outputLabel value="Cancellation Payment Details"></h:outputLabel>
-
-                                            Payment Method is 
-                                            #{opdBillCancellationController.paymentMethod}
-
                                         </f:facet>
 
                                         <h:panelGroup >
@@ -126,12 +122,6 @@
                                                     id="creditCard"
                                                     rendered="#{opdBillCancellationController.paymentMethod eq 'Card'}">
 
-                                                    Batch bill
-                                                    #{opdBillCancellationController.bill.backwardReferenceBill}" 
-                                                    
-                                                    Batch bill payment method
-                                                    #{opdBillCancellationController.bill.backwardReferenceBill.paymentMethod}" 
-                                                    
                                                     <!-- If original bill used multiple payment methods, show picker -->
                                                     <h:panelGroup rendered="#{opdBillCancellationController.bill.backwardReferenceBill != null and opdBillCancellationController.bill.backwardReferenceBill.paymentMethod eq 'MultiplePaymentMethods'}" layout="block">
                                                         <div class="card border-primary">
