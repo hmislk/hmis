@@ -258,7 +258,8 @@ public class InstitutionLabSumeryController implements Serializable {
                 + " (f.paymentMethod = :pm1 "
                 + " or f.paymentMethod = :pm2 "
                 + " or f.paymentMethod = :pm3 "
-                + " or f.paymentMethod = :pm4)"
+                + " or f.paymentMethod = :pm4"
+                + " or f.paymentMethod = :pm5)"
                 + " and f.institution=:billedIns "
                 + " and f.createdAt between :fromDate and :toDate "
                 + " and f.toInstitution=:ins ";
@@ -272,6 +273,7 @@ public class InstitutionLabSumeryController implements Serializable {
         tm.put("pm2", PaymentMethod.Card);
         tm.put("pm3", PaymentMethod.Cheque);
         tm.put("pm4", PaymentMethod.Slip);
+        tm.put("pm5", PaymentMethod.MultiplePaymentMethods);
         tm.put("billedIns", getSessionController().getInstitution());
         if (department!=null) {
             sql+=" and f.toDepartment=:dep";
@@ -289,7 +291,7 @@ public class InstitutionLabSumeryController implements Serializable {
                 + "  and type(f) = :billClass "
                 + " and f.institution=:billedIns "
                 + " and (f.paymentMethod = :pm1 or f.paymentMethod = :pm2 "
-                + " or f.paymentMethod = :pm3  or f.paymentMethod = :pm4) and"
+                + " or f.paymentMethod = :pm3  or f.paymentMethod = :pm4 or f.paymentMethod = :pm5) and"
                 + " f.billType = :billType and f.createdAt between :fromDate and :toDate and f.toInstitution=:ins ";
         tm = new HashMap();
         tm.put("fromDate", fromDate);
@@ -301,6 +303,7 @@ public class InstitutionLabSumeryController implements Serializable {
         tm.put("pm2", PaymentMethod.Card);
         tm.put("pm3", PaymentMethod.Cheque);
         tm.put("pm4", PaymentMethod.Slip);
+        tm.put("pm5", PaymentMethod.MultiplePaymentMethods);
         tm.put("billedIns", getSessionController().getInstitution());
         if (department!=null) {
             sql+=" and f.toDepartment=:dep";
@@ -316,7 +319,7 @@ public class InstitutionLabSumeryController implements Serializable {
                 + " f.retired=false and type(f) = :billClass "
                 + " and f.institution=:billedIns "
                 + " and (f.paymentMethod = :pm1 or f.paymentMethod = :pm2 "
-                + " or f.paymentMethod = :pm3  or f.paymentMethod = :pm4) and "
+                + " or f.paymentMethod = :pm3  or f.paymentMethod = :pm4 or f.paymentMethod = :pm5) and "
                 + " f.billType = :billType and f.createdAt between :fromDate and :toDate "
                 + " and f.toInstitution=:ins";
         tm = new HashMap();
@@ -329,6 +332,7 @@ public class InstitutionLabSumeryController implements Serializable {
         tm.put("pm2", PaymentMethod.Card);
         tm.put("pm3", PaymentMethod.Cheque);
         tm.put("pm4", PaymentMethod.Slip);
+        tm.put("pm5", PaymentMethod.MultiplePaymentMethods);
         tm.put("billedIns", getSessionController().getInstitution());
         if (department!=null) {
             sql+=" and f.toDepartment=:dep";
@@ -969,7 +973,8 @@ public class InstitutionLabSumeryController implements Serializable {
                 + " and (f.paymentMethod = :pm1 "
                 + " or f.paymentMethod = :pm2 "
                 + " or f.paymentMethod = :pm3 "
-                + " or f.paymentMethod = :pm4 ) "
+                + " or f.paymentMethod = :pm4 "
+                + " or f.paymentMethod = :pm5 ) "
                 + " and f.institution=:ins "
                 + " and f.toInstitution=:toIns "
                 + " and f.createdAt  between :fromDate and :toDate";
@@ -983,6 +988,7 @@ public class InstitutionLabSumeryController implements Serializable {
         tm.put("pm2", PaymentMethod.Card);
         tm.put("pm3", PaymentMethod.Cheque);
         tm.put("pm4", PaymentMethod.Slip);
+        tm.put("pm5", PaymentMethod.MultiplePaymentMethods);
         tm.put("ins", getSessionController().getInstitution());
         tm.put("toIns", getInstitution());
         if (department!=null) {
@@ -1050,7 +1056,7 @@ public class InstitutionLabSumeryController implements Serializable {
             Map tm;
 
             sql = "select f from Bill f where f.retired=false and f.billType = :billType and "
-                    + "(f.paymentMethod = :pm1 or f.paymentMethod = :pm2 or f.paymentMethod = :pm3 or f.paymentMethod = :pm4 ) "
+                    + "(f.paymentMethod = :pm1 or f.paymentMethod = :pm2 or f.paymentMethod = :pm3 or f.paymentMethod = :pm4 or f.paymentMethod = :pm5 ) "
                     + "and f.institution=:ins and f.toInstitution=:toIns and f.createdAt between :fromDate and :toDate order by type(f), f.insId";
 
             tm = new HashMap();
@@ -1061,6 +1067,7 @@ public class InstitutionLabSumeryController implements Serializable {
             tm.put("pm2", PaymentMethod.Card);
             tm.put("pm3", PaymentMethod.Cheque);
             tm.put("pm4", PaymentMethod.Slip);
+            tm.put("pm5", PaymentMethod.MultiplePaymentMethods);
             tm.put("ins", getSessionController().getInstitution());
             tm.put("toIns", getInstitution());
             labBills = getBillFacade().findByJpql(sql, tm, TemporalType.TIMESTAMP);

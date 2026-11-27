@@ -221,12 +221,14 @@ public class ServiceSummery implements Serializable {
                 sql += " and ( bi.bill.paymentMethod = :pm1 "
                         + " or  bi.bill.paymentMethod = :pm2 "
                         + " or  bi.bill.paymentMethod = :pm3"
-                        + " or  bi.bill.paymentMethod = :pm4) ";
+                        + " or  bi.bill.paymentMethod = :pm4"
+                        + " or  bi.bill.paymentMethod = :pm5) ";
 
                 temMap.put("pm1", PaymentMethod.Cash);
                 temMap.put("pm2", PaymentMethod.Card);
                 temMap.put("pm3", PaymentMethod.Cheque);
                 temMap.put("pm4", PaymentMethod.Slip);
+                temMap.put("pm5", PaymentMethod.MultiplePaymentMethods);
             }
 
         }
@@ -268,12 +270,14 @@ public class ServiceSummery implements Serializable {
                 sql += " and ( bi.bill.paymentMethod = :pm1 "
                         + " or  bi.bill.paymentMethod = :pm2 "
                         + " or  bi.bill.paymentMethod = :pm3"
-                        + " or  bi.bill.paymentMethod = :pm4) ";
+                        + " or  bi.bill.paymentMethod = :pm4"
+                        + " or  bi.bill.paymentMethod = :pm5) ";
 
                 temMap.put("pm1", PaymentMethod.Cash);
                 temMap.put("pm2", PaymentMethod.Card);
                 temMap.put("pm3", PaymentMethod.Cheque);
                 temMap.put("pm4", PaymentMethod.Slip);
+                temMap.put("pm5", PaymentMethod.MultiplePaymentMethods);
             }
 
         }
@@ -529,12 +533,14 @@ public class ServiceSummery implements Serializable {
                 sql += " and ( bi.bill.paymentMethod = :pm1 "
                         + " or  bi.bill.paymentMethod = :pm2 "
                         + " or  bi.bill.paymentMethod = :pm3"
-                        + " or  bi.bill.paymentMethod = :pm4) ";
+                        + " or  bi.bill.paymentMethod = :pm4"
+                        + " or  bi.bill.paymentMethod = :pm5) ";
 
                 temMap.put("pm1", PaymentMethod.Cash);
                 temMap.put("pm2", PaymentMethod.Card);
                 temMap.put("pm3", PaymentMethod.Cheque);
                 temMap.put("pm4", PaymentMethod.Slip);
+                temMap.put("pm5", PaymentMethod.MultiplePaymentMethods);
             }
 
         }
@@ -645,12 +651,14 @@ public class ServiceSummery implements Serializable {
                 sql += " and ( bi.bill.paymentMethod = :pm1 "
                         + " or  bi.bill.paymentMethod = :pm2 "
                         + " or  bi.bill.paymentMethod = :pm3"
-                        + " or  bi.bill.paymentMethod = :pm4) ";
+                        + " or  bi.bill.paymentMethod = :pm4"
+                        + " or  bi.bill.paymentMethod = :pm5) ";
 
                 temMap.put("pm1", PaymentMethod.Cash);
                 temMap.put("pm2", PaymentMethod.Card);
                 temMap.put("pm3", PaymentMethod.Cheque);
                 temMap.put("pm4", PaymentMethod.Slip);
+                temMap.put("pm5", PaymentMethod.MultiplePaymentMethods);
             }
 
         }

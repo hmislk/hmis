@@ -57,6 +57,7 @@ import java.io.Serializable;
 import java.text.DateFormat;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
+import com.divudi.service.MultiplePaymentSplitService;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -107,6 +108,8 @@ public class BookKeepingSummery implements Serializable {
     BillFacade billFacade;
     @EJB
     BillFeeFacade billFeeFacade;
+    @EJB
+    MultiplePaymentSplitService multiplePaymentSplitService;
     @EJB
     CategoryFacade categoryFacade;
     //List
@@ -4292,7 +4295,8 @@ public class BookKeepingSummery implements Serializable {
             return;
         }
 
-        PaymentMethod[] paymentMethods = {PaymentMethod.Cash, PaymentMethod.Cheque, PaymentMethod.Slip, PaymentMethod.Card};
+        // Multiple Payment Methods bills never include credit, so they belong in the cash side (#26211).
+        PaymentMethod[] paymentMethods = {PaymentMethod.Cash, PaymentMethod.Cheque, PaymentMethod.Slip, PaymentMethod.Card, PaymentMethod.MultiplePaymentMethods};
         createOPdListWithProDayEndTable(Arrays.asList(paymentMethods));
         createOPdListWithProDayEndTableCredit(Arrays.asList(PaymentMethod.Credit));
         opdCashVatTotal = createOPdListWithProDayEndTableTotal(Arrays.asList(paymentMethods));
@@ -4355,6 +4359,11 @@ public class BookKeepingSummery implements Serializable {
         creditCardTotal = getBillBean().calBillTotal(PaymentMethod.Card, getFromDate(), getToDate(), getInstitution());
         chequeTotal = getBillBean().calBillTotal(PaymentMethod.Cheque, getFromDate(), getToDate(), getInstitution());
         slipTotal = getBillBean().calBillTotal(PaymentMethod.Slip, getFromDate(), getToDate(), getInstitution());
+        // The Card, Cheque and Slip parts of Multiple Payment Methods OPD bills come off Net Cash too (#26211).
+        Map<PaymentMethod, Double> multiplePaymentParts = multiplePaymentSplitService.fetchNetTotalByPaymentMethod(BillType.OpdBill, getFromDate(), getToDate(), getInstitution());
+        creditCardTotal += multiplePaymentParts.getOrDefault(PaymentMethod.Card, 0.0);
+        chequeTotal += multiplePaymentParts.getOrDefault(PaymentMethod.Cheque, 0.0);
+        slipTotal += multiplePaymentParts.getOrDefault(PaymentMethod.Slip, 0.0);
         createFinalSummery();
 
 
