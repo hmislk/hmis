@@ -252,7 +252,7 @@ public class InwardServiceBillWriter {
 
         for (BillFee bf : billFees) {
             inwardBean.prepareBillFee(bf, billItem, bill, wu);
-            billItem.getBillFees().add(bf);
+            InwardServiceBillSums.appendOnce(billItem.getBillFees(), bf);
         }
 
         // The item's gross, net, margin, discount and vat are the sums of its fees as

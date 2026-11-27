@@ -80,6 +80,32 @@ final class InwardServiceBillSums {
     }
 
     /**
+     * Puts the fee in the list once. The same object already in the list stays as
+     * it is. A different object with the same non-null id (a reused item holds a
+     * copy of the saved fee; the entry brings the copy the writer has prepared
+     * for the new bill) replaces the held copy, so the list keeps the prepared
+     * one, as it did when both were listed and the prepared one was saved last.
+     * Counting the fee twice made the loops that sum the list (hospital fee,
+     * margin) double it (#26242).
+     *
+     * @return true when the list changed
+     */
+    static boolean appendOnce(List<BillFee> list, BillFee bf) {
+        for (int i = 0; i < list.size(); i++) {
+            BillFee existing = list.get(i);
+            if (existing == bf) {
+                return false;
+            }
+            if (existing != null && bf.getId() != null && bf.getId().equals(existing.getId())) {
+                list.set(i, bf);
+                return true;
+            }
+        }
+        list.add(bf);
+        return true;
+    }
+
+    /**
      * Sets total, net total, vat and vat plus net total on the bill from its
      * fees, as {@code BillBeanController.updateBillByBillFee} does from the
      * database. A missing sum is zero.
