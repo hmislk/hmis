@@ -6,6 +6,7 @@
       xmlns:f="http://xmlns.jcp.org/jsf/core"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
       xmlns:p="http://primefaces.org/ui">
 
     <cc:interface>
@@ -28,6 +29,8 @@
 
         <!-- Composite Component Implementation -->
         <cc:implementation>
+            <!-- Reversal prints (cancellation or refund) show every amount as negative. Stored data is not changed. -->
+            <c:set var="c4Reversal" value="#{cc.attrs.bill.billTypeAtomic.billCategory eq 'CANCELLATION' or cc.attrs.bill.billTypeAtomic.billCategory eq 'REFUND'}" />
             <h:panelGroup rendered="#{!configOptionApplicationController.getBooleanValueByKey('Enable OPD 5x5 Custom 4 Bill Header',false)}" >
                 <h:outputStylesheet library="css" name="five_eight_bill.css" />
             </h:panelGroup>
@@ -216,7 +219,7 @@
                                     <prints:opd_fee_collected_by_doctor_note billItem="#{item}"/>
                                 </h:panelGroup></td>
                                 <td style="text-align: right">
-                                    <h:outputLabel value="#{item.grossValue}">
+                                    <h:outputLabel value="#{c4Reversal and item.grossValue gt 0 ? 0 - item.grossValue : item.grossValue}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </td>
@@ -233,7 +236,7 @@
                                                 </div>
                                             </td>
                                             <td style="text-align: right">
-                                                <h:outputText value="#{bf.feeGrossValue}">
+                                                <h:outputText value="#{c4Reversal and bf.feeGrossValue gt 0 ? 0 - bf.feeGrossValue : bf.feeGrossValue}">
                                                     <f:convertNumber pattern="#,##0.00" />
                                                 </h:outputText>
                                             </td>
@@ -286,7 +289,7 @@
                                     <tr>
                                         <td >Total Amount</td>
                                         <td  style="text-align: right;">
-                                            <h:outputLabel value="#{cc.attrs.bill.total}" >
+                                            <h:outputLabel value="#{c4Reversal and cc.attrs.bill.total gt 0 ? 0 - cc.attrs.bill.total : cc.attrs.bill.total}" >
                                                 <f:convertNumber pattern="#,##0.00" />
                                             </h:outputLabel>
                                         </td>
@@ -298,7 +301,7 @@
                                                           rendered="#{cc.attrs.bill.paymentScheme ne null}"/>
                                         </td>
                                         <td  style="text-align: right;">
-                                            <h:outputLabel  value="#{- cc.attrs.bill.discount}">
+                                            <h:outputLabel  value="#{c4Reversal ? (cc.attrs.bill.discount lt 0 ? 0 - cc.attrs.bill.discount : cc.attrs.bill.discount) : 0 - cc.attrs.bill.discount}">
                                                 <f:convertNumber pattern="#,##0.00" />
                                             </h:outputLabel>
                                         </td>
@@ -308,7 +311,7 @@
                             <tr>
                                 <td >Net Amount</td>
                                 <td style="text-align: right;">
-                                    <h:outputLabel value="#{cc.attrs.bill.netTotal}">
+                                    <h:outputLabel value="#{c4Reversal and cc.attrs.bill.netTotal gt 0 ? 0 - cc.attrs.bill.netTotal : cc.attrs.bill.netTotal}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </td>
