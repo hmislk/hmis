@@ -36,13 +36,17 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.inject.Inject;
+import javax.persistence.TemporalType;
 
 /**
  * Writes the inward service bills of one settle in ONE container transaction
@@ -135,9 +139,49 @@ public class InwardServiceBillWriter {
             created.addAll(putToBills(request, ctx));
         }
 
+        recomputeEarlierBills(ctx, created, request);
+
         result.setBills(created);
         result.setBatchBill(saveBatchBill(request));
         return result;
+    }
+
+    /**
+     * A bill that gave items to a new bill of this settle keeps only what is
+     * left on it: its figures are set again from its remaining fees (zero when
+     * none are left), in this transaction. The bill is not retired or cancelled.
+     * A bill that is retired, cancelled or refunded is left as it is. The
+     * caller's own copy of the bill gets the same figures: {@code saveBatchBill}
+     * edits that copy, and its old figures would be merged back.
+     */
+    private void recomputeEarlierBills(RunContext ctx, List<Bill> created, InwardServiceBillRequest request) {
+        for (Long id : ctx.earlierBills.keySet()) {
+            boolean isNew = false;
+            for (Bill c : created) {
+                if (id.equals(c.getId())) {
+                    isNew = true;
+                    break;
+                }
+            }
+            if (isNew) {
+                continue;
+            }
+            Bill earlier = billFacade.find(id);
+            if (earlier == null || InwardServiceBillSums.isClosed(earlier)) {
+                continue;
+            }
+            Map<String, Object> params = new HashMap<>();
+            params.put("billId", id);
+            // The overload with a temporal-type map throws on a query error; the
+            // two-argument one returns an empty list, which would set the bill to 0.
+            List<BillFee> remaining = billFeeFacade.findByJpql(
+                    "select bf from BillFee bf where bf.bill.id = :billId and bf.retired = false"
+                    + " and bf.billItem.retired = false and bf.billItem.bill.id = :billId",
+                    params, new HashMap<String, TemporalType>());
+            InwardServiceBillSums.applyAllToBillFromFees(earlier, remaining);
+            billFacade.edit(earlier);
+            InwardServiceBillSums.copyFiguresToCopies(earlier, request.getBillCollector());
+        }
     }
 
     /**
@@ -209,6 +253,8 @@ public class InwardServiceBillWriter {
 
         final AdmissionTypeTimeline timeline;
         final InwardBeanController.DiscountRunCache cache;
+        /** Bills that gave an item to a bill of this settle, by id (#26273). */
+        final Map<Long, Bill> earlierBills = new LinkedHashMap<>();
 
         RunContext(AdmissionTypeTimeline timeline, InwardBeanController.DiscountRunCache cache) {
             this.timeline = timeline;
@@ -239,6 +285,10 @@ public class InwardServiceBillWriter {
 
         billItem.setCreatedAt(new Date());
         billItem.setCreater(wu);
+        Bill earlier = billItem.getBill();
+        if (earlier != null && earlier.getId() != null && !earlier.getId().equals(bill.getId())) {
+            ctx.earlierBills.putIfAbsent(earlier.getId(), earlier);
+        }
         billItem.setBill(bill);
 
         if (billItem.getInwardChargeType() == null && billItem.getItem() != null
