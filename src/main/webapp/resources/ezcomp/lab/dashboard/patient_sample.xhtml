@@ -23,7 +23,7 @@
         <h:panelGroup rendered="#{(webUserController.hasPrivilege('DashBoardMenu') and webUserController.hasPrivilege('DashBoardSampleSearch'))}">
 
             <h3><h:outputText value="SAMPLES" class="d-flex justify-content-center mt-4"/> </h3>
-            <h:panelGrid columns="6" class="w-100 mt-2" style="font-weight: bolder">
+            <h:panelGrid columns="6" class="w-100 lab-filter-grid mt-2" style="font-weight: bolder">
                 <h:panelGrid columns="1" class="w-100">
                     <h:outputLabel class="w-100" value="From Date"/>
                     <p:datePicker 
@@ -166,10 +166,10 @@
                         </p:selectOneMenu>
                     </h:panelGroup>
                 </h:panelGrid>
-                <h:panelGrid columns="1" class="w-100"/>
-                <h:panelGrid columns="1" class="w-100"/>
-                <h:panelGrid columns="1" class="w-100"/>
-                <h:panelGrid columns="1" class="w-100">
+                <h:panelGrid columns="1" class="w-100 lab-filter-spacer"/>
+                <h:panelGrid columns="1" class="w-100 lab-filter-spacer"/>
+                <h:panelGrid columns="1" class="w-100 lab-filter-spacer"/>
+                <h:panelGrid columns="1" class="w-100 lab-filter-action">
                     <h:outputLabel class="w-100"/>
                     <p:commandButton 
                         ajax="false" 
@@ -181,11 +181,11 @@
                 </h:panelGrid>
 
             </h:panelGrid>
-            <div class="d-flex mt-2 gap-2">
+            <div class="d-flex flex-column flex-md-row mt-2 gap-2">
                 <div class="col-md-9">
                     <p:dataTable  
                         id="samples1"
-                        class="w-100"
+                        reflow="true" class="w-100 lab-card-table"
                         value="#{laboratoryManagementController.sampleDtos}"
                         var="ps" 
                         paginator="true"
@@ -369,8 +369,8 @@
                 </div>
                 
                 
-                <div class="col-md-3">
-                    
+                <div class="col-md-3 lab-sample-actions order-first order-md-last">
+
                     <h:panelGroup 
                         id="sampleCollect"
                         rendered="#{webUserController.hasPrivilege('LabSampleCollecting')}"
@@ -587,7 +587,7 @@
                         </p:commandButton>
                     </h:panelGroup>
 
-                    <p:dialog header="Sent Sample" widgetVar="dlg2" width="600" showEffect="fade" modal="true" closeOnEscape="true">
+                    <p:dialog header="Sent Sample" widgetVar="dlg2" width="600" showEffect="fade" modal="true" closeOnEscape="true" styleClass="lab-dialog">
                         <div>
                             <div class="d-flex gap-3 my-2">
                                 <h:outputLabel class="w-50 mt-2" value="Sample Transporter"/>

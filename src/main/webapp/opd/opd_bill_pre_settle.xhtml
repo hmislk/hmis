@@ -17,16 +17,21 @@
                     <p:panel rendered="#{!opdPreSettleController.billPreview}">
                         <p:growl id="msg" ></p:growl>
                         <f:facet name="header" >
-
-                            <h:outputLabel value="OPD Bill Accept Payment" ></h:outputLabel>  
-                            <p:commandButton 
-                                ajax="false" 
-                                value="Back To Search"
-                                class="ui-button-warning mx-2"
-                                style="float: right;"
-                                icon="fa fa-arrow-left"
-                                actionListener="#{searchController.createOpdPreTable}"
-                                action="/opd/opd_search_pre_bill"/>
+                            <div class="d-flex align-items-center justify-content-between w-100">
+                                <div>
+                                    <h:outputLabel value="OPD Bill Accept Payment" ></h:outputLabel>
+                                </div>
+                                <div>
+                                    <p:commandButton 
+                                        ajax="false" 
+                                        value="Back To Search"
+                                        title="Back to the pre-bill search"
+                                        class="ui-button-info ui-button-outlined mx-2"
+                                        icon="fa fa-arrow-left"
+                                        actionListener="#{searchController.createOpdPreTable}"
+                                        action="/opd/opd_search_pre_bill"/>
+                                </div>
+                            </div>
                             <p:defaultCommand target="settle"/>
                         </f:facet>
 
@@ -49,6 +54,7 @@
                                             ajax= "false"  
                                             value="Accept Payment &amp; Settle"
                                             style="float: right;"
+                                            title="Accept the payment and settle the bill"
                                             class="ui-button-success mx-2"
                                             icon="fa fa-check"
                                             id="settle"
@@ -75,7 +81,7 @@
                                         <div style="width: 150px;"></div>
                                         <div class="col-9">
                                             <h:panelGroup id="payDetails" class="mt-2">
-                                                <h:panelGroup id="creditCard" class="mt-2" style="display:#{opdPreSettleController.preBill.paymentMethod ne 'Card' ? 'none' : 'block'} ; ">
+                                                <h:panelGroup id="creditCard" class="mt-2" layout="block" rendered="#{opdPreSettleController.preBill.paymentMethod eq 'Card'}">
                                                     <pa:creditCard paymentMethodData="#{opdPreSettleController.paymentMethodData}"/>
                                                 </h:panelGroup>
 
@@ -86,15 +92,15 @@
                                                     <pa:patient_deposit paymentMethodData="#{opdPreSettleController.paymentMethodData}"/>
                                                 </h:panelGroup>
 
-                                                <h:panelGroup id="cheque" class="mt-2" style="display:#{opdPreSettleController.preBill.paymentMethod ne 'Cheque' ? 'none' : 'block'} ; " >
+                                                <h:panelGroup id="cheque" class="mt-2" layout="block" rendered="#{opdPreSettleController.preBill.paymentMethod eq 'Cheque'}" >
                                                     <pa:cheque paymentMethodData="#{opdPreSettleController.paymentMethodData}"/>
                                                 </h:panelGroup>
 
-                                                <h:panelGroup id="slip" class="mt-2" style="display:#{opdPreSettleController.preBill.paymentMethod ne 'Slip' ? 'none' : 'block'} ;">
+                                                <h:panelGroup id="slip" class="mt-2" layout="block" rendered="#{opdPreSettleController.preBill.paymentMethod eq 'Slip'}">
                                                     <pa:slip paymentMethodData="#{opdPreSettleController.paymentMethodData}"/>
                                                 </h:panelGroup>
 
-                                                <h:panelGroup id="eWallet" class="mt-2" style="display:#{opdPreSettleController.preBill.paymentMethod ne 'ewallet' ? 'none' : 'block'} ;">
+                                                <h:panelGroup id="eWallet" class="mt-2" layout="block" rendered="#{opdPreSettleController.preBill.paymentMethod eq 'ewallet'}">
                                                     <pa:ewallet paymentMethodData="#{opdPreSettleController.paymentMethodData}"/>
                                                 </h:panelGroup>
 
@@ -102,7 +108,7 @@
                                                     class="row mt-2"
                                                     layout="block"  
                                                     id="creditStaff"
-                                                    style="display:#{opdPreSettleController.preBill.paymentMethod ne 'Staff' ? 'none' : 'block'} ; " >
+                                                    rendered="#{opdPreSettleController.preBill.paymentMethod eq 'Staff'}" >
                                                     <div class="my-1" >
                                                         <div class="row">
                                                             <div class="col-12">
@@ -145,7 +151,7 @@
                                                     class="row mt-2"
                                                     layout="block"  
                                                     id="welfareStaff"
-                                                    style="display:#{opdPreSettleController.preBill.paymentMethod ne 'Staff_Welfare' ? 'none' : 'block'} ; " >
+                                                    rendered="#{opdPreSettleController.preBill.paymentMethod eq 'Staff_Welfare'}" >
                                                     <div class="my-1">
                                                         <div class="row">
                                                             <div class="col-12">
@@ -188,12 +194,12 @@
                                                     class="row mt-2"
                                                     layout="block"
                                                     id="credit"
-                                                    style="display:#{opdPreSettleController.preBill.paymentMethod ne 'Credit' ? 'none' : 'block'} ; "
+                                                    rendered="#{opdPreSettleController.preBill.paymentMethod eq 'Credit'}"
                                                     >
                                                     <pa:creditNew paymentMethodData="#{opdPreSettleController.paymentMethodData}"/>
                                                 </h:panelGroup>
 
-                                                <h:panelGroup class="w-100 mt-2" id="MultiplePaymentMethods" style="display:#{opdPreSettleController.preBill.paymentMethod ne 'MultiplePaymentMethods' ? 'none' : 'block'} ;">
+                                                <h:panelGroup class="w-100 mt-2" id="MultiplePaymentMethods" rendered="#{opdPreSettleController.preBill.paymentMethod eq 'MultiplePaymentMethods'}">
                                                     <pa:multiple_payment_methods controller="#{opdPreSettleController}" paymentMethods="#{configOptionController.paymentMethodsUnderMultipleForOpdBilling}" class="w-100"/>
                                                 </h:panelGroup>
                                             </h:panelGroup>
@@ -320,7 +326,7 @@
                                                     </h:panelGrid>
                                                 </div>
                                                 <div class="col-md-9">
-                                                    <p:dataTable rowIndexVar="rowIndex" value="#{preBill.billItems}" var="bipi" >
+                                                    <p:dataTable styleClass="p-datatable-sm" rowIndexVar="rowIndex" value="#{preBill.billItems}" var="bipi" >
                                                         <p:column>
                                                             <f:facet name="header">No</f:facet>
                                                                 #{rowIndex+1}

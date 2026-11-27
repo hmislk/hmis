@@ -20,11 +20,12 @@
                 <div class="row" >
                     <div class="col-md-5" >
                         <h:panelGrid id="gpSelect" columns="1"   class="w-100">
-                            <h:panelGrid id="gpSelectButtons" columns="3" class="w-100">
+                            <h:panelGrid id="gpSelectButtons" columns="3" class="w-80">
                                 <p:commandButton id="btnAdd" 
                                                  value="Add" 
                                                  action="#{clinicalEntityController.prepareAdd()}"  
-                                                 class="w-100"
+                                                 class="m-1 ui-button-success w-23"
+                                                 icon="fa fa-plus"
                                                  update="btnAdd  btnDelete btnSave   lstSelect gpDetail detailFocus" >
                                 </p:commandButton>
                                 <p:commandButton 
@@ -34,7 +35,8 @@
                                                 return false;" 
                                     action="#{clinicalEntityController.delete()}"  
                                     value="Delete" 
-                                    class="w-100">
+                                    class="m-1 ui-button-danger w-23"
+                                    icon="fa fa-trash">
                                 </p:commandButton>
                             </h:panelGrid>
                             <h:panelGrid id="gpSelectText" class="w-100" >
@@ -44,7 +46,7 @@
                                                      filter="true"
                                                      filterMatchMode="contains"
                                                      scrollHeight="500">
-                                    <f:selectItems  value="#{clinicalEntityController.items}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" ></f:selectItems>
+                                    <f:selectItems  value="#{clinicalEntityController.items}" var="myItem" itemValue="#{myItem}" itemLabel="#{empty myItem.name ? '(no name)' : myItem.name}" ></f:selectItems>
                                     <f:ajax render="gpDetail" execute="lstSelect" >
                                     </f:ajax>
                                 </p:selectOneListbox>
@@ -73,7 +75,8 @@
                             </h:panelGrid>
                             <h:panelGrid id="gpDetailButtons" columns="2"  class="w-100">
                                 <p:commandButton id="btnSave" value="Save" 
-                                                 action="#{clinicalEntityController.saveSelected()}"  class="w-100"
+                                                 action="#{clinicalEntityController.saveSelected()}"  class="m-1 ui-button-success"
+                                                 icon="fas fa-save"
                                                  update="btnAdd  btnDelete btnSave   lstSelect gpDetail selectFocus"  
                                                  process="gpDetail" >
                                 </p:commandButton>

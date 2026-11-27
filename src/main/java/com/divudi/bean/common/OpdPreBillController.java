@@ -1192,11 +1192,21 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
         return billSessions;
     }
 
+    public void fillBillSessions() {
+        fillBillSessions((SelectEvent) null);
+    }
+
     public void fillBillSessions(SelectEvent event) {
         ////// // System.out.println("event = " + event);
         ////// // System.out.println("this = filling bill sessions");
-        if (lastBillItem != null && lastBillItem.getItem() != null) {
-            billSessions = getServiceSessionBean().getBillSessions(lastBillItem.getItem(), getSessionDate());
+        Item sessionItem = null;
+        if (currentBillItem != null && currentBillItem.getItem() != null) {
+            sessionItem = currentBillItem.getItem();
+        } else if (lastBillItem != null && lastBillItem.getItem() != null) {
+            sessionItem = lastBillItem.getItem();
+        }
+        if (sessionItem != null) {
+            billSessions = getServiceSessionBean().getBillSessions(sessionItem, getSessionDate());
             ////// // System.out.println("billSessions = " + billSessions);
         } else {
             ////// // System.out.println("billSessions = " + billSessions);

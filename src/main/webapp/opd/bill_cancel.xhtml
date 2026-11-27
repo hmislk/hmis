@@ -38,7 +38,7 @@
                                         <p:commandButton 
                                             ajax="false"
                                             value="Cancel Bill" 
-                                            icon="fa fa-cancel"
+                                            icon="fas fa-ban"
                                             class="ui-button-danger" 
                                             action="#{opdBillCancellationController.cancelOpdBill()}">
                                         </p:commandButton>
@@ -66,7 +66,7 @@
                                         <p:selectOneMenu
                                             id="cmbPs"
                                             value="#{opdBillCancellationController.paymentMethod}"
-                                            disabled="#{opdBillCancellationController.paymentMethod eq 'Credit'}" >
+                                            disabled="#{opdBillCancellationController.paymentMethod eq 'Credit' or opdBillCancellationController.multiplePaymentCancellation}" >
                                             <f:selectItem itemLabel="Select a Cancellation Payment Method" ></f:selectItem>
                                             <f:selectItems value="#{enumController.paymentMethodsForOpdBillCanceling}"/>
                                             <p:ajax
@@ -79,7 +79,7 @@
                                         </p:selectOneMenu>
                                     </p:panel>
 
-                                    <p:panel id="testPanel" >
+                                    <p:panel id="testPanel" visible="false" >
                                         Test Panel
 
                                         Payment Method is 
@@ -91,10 +91,6 @@
                                         <f:facet name="header">
                                             <h:outputText styleClass="fas fa-credit-card me-2"></h:outputText>
                                             <h:outputLabel value="Cancellation Payment Details"></h:outputLabel>
-
-                                            Payment Method is 
-                                            #{opdBillCancellationController.paymentMethod}
-
                                         </f:facet>
 
                                         <h:panelGroup >
@@ -126,12 +122,6 @@
                                                     id="creditCard"
                                                     rendered="#{opdBillCancellationController.paymentMethod eq 'Card'}">
 
-                                                    Batch bill
-                                                    #{opdBillCancellationController.bill.backwardReferenceBill}" 
-                                                    
-                                                    Batch bill payment method
-                                                    #{opdBillCancellationController.bill.backwardReferenceBill.paymentMethod}" 
-                                                    
                                                     <!-- If original bill used multiple payment methods, show picker -->
                                                     <h:panelGroup rendered="#{opdBillCancellationController.bill.backwardReferenceBill != null and opdBillCancellationController.bill.backwardReferenceBill.paymentMethod eq 'MultiplePaymentMethods'}" layout="block">
                                                         <div class="card border-primary">
@@ -477,29 +467,23 @@
 
                                                     <!-- Check if original bill used Multiple Payment Methods -->
                                                     <h:panelGroup rendered="#{opdBillCancellationController.bill.paymentMethod eq 'MultiplePaymentMethods'}" layout="block">
-                                                        <!-- Warning message for original multiple payment method bills -->
-                                                        <div class="alert alert-warning mb-3">
-                                                            <div class="d-flex align-items-start">
-                                                                <i class="fas fa-exclamation-triangle me-2 mt-1"></i>
-                                                                <div>
-                                                                    <h6 class="alert-heading mb-2">
-                                                                        <i class="fas fa-credit-card me-1"></i>
-                                                                        Multiple Payment Method Cannot Be Used for Individual Bill Cancellation
-                                                                    </h6>
-                                                                    <p class="mb-2">
-                                                                        This bill was originally paid using multiple payment methods. Individual bill cancellation with multiple payment methods is not allowed.
-                                                                    </p>
-                                                                    <div class="alert-actions">
-                                                                        <p class="mb-2"><strong>Available Options:</strong></p>
-                                                                        <ul class="mb-2">
-                                                                            <li>Cancel the entire batch bill instead</li>
-                                                                            <li>Use a different single payment method for cancellation (Cash, Card, Cheque, etc.)</li>
-                                                                        </ul>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
+                                                        <!-- Read-only refund: same methods as the original bill, by this bill's share -->
+                                                        <div class="alert alert-info mb-2">
+                                                            <i class="fas fa-info-circle me-2"></i>
+                                                            This bill was paid by multiple payment methods. It is refunded by the same methods, as shown below.
                                                         </div>
-
+                                                        <p:dataTable value="#{opdBillCancellationController.multiplePaymentRefundLines}"
+                                                                     var="line"
+                                                                     styleClass="p-datatable-sm">
+                                                            <p:column headerText="Payment Method">
+                                                                <h:outputText value="#{line.paymentMethod.label}"/>
+                                                            </p:column>
+                                                            <p:column headerText="Refund Amount" styleClass="text-end">
+                                                                <h:outputText value="#{line.amount}">
+                                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                                </h:outputText>
+                                                            </p:column>
+                                                        </p:dataTable>
                                                     </h:panelGroup>
 
                                                     <!-- Editable multiple payment methods for bills not originally paid with multiple methods -->

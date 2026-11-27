@@ -1,0 +1,409 @@
+/*
+ * Lab Patient Report - mobile layout.
+ *
+ * Used by lab/patient_report.xhtml (report entry / approve) and
+ * lab/patient_report_print.xhtml (report view / print).
+ *
+ * Phone layout rules are inside "screen and (max-width: 767.98px)". The
+ * report preview card rules apply on all screen sizes, like the preview in
+ * lab/microbiology_patient_report.xhtml. The printed report (p:printer) and
+ * the exported PDF (html2pdf clones #pdf outside these hooks) do not change.
+ *
+ * Hooks used in the XHTML:
+ *   .lab-patient-report  - the form (scope for every rule)
+ *   .lab-pr-header       - the panel header row (title, format, buttons)
+ *   .lab-pr-format       - the "Report Format" h:panelGrid
+ *   .lab-pr-toolbar      - a row of button groups
+ *   .lab-pr-actions      - one group of buttons
+ *   .lab-pr-alert        - a priority alert box
+ *   .lab-pr-handover     - the "Handover to ..." row
+ *   .lab-pr-body         - the two-column body row (entry / preview)
+ *   .lab-pr-side         - the preview column
+ *   .lab-pr-entry-table  - a label / input table in an entry panel
+ *   .lab-pr-wrap         - a flex row that may wrap
+ *   .lab-pr-warning      - the patient-details warning box
+ *   .lab-pr-preview-card - the report preview card (toolbar + preview)
+ *   .lab-pr-preview-toolbar - "Report Preview" title and Show Background
+ *   .lab-pr-preview      - the box around the A4 report preview; with
+ *                          .lab-pr-preview-outer / -inner it is scaled to
+ *                          fit by lab-report-preview-fit.js (all sizes)
+ *   .lab-pr-dialog       - a p:dialog that must fit the phone screen
+ *   .lab-pr-minw-200/280/300 - desktop minimum width; 0 on phones
+ *   .lab-pr-form-grid    - a 2-column h:panelGrid shown as 1 column
+ *
+ * @author H.K. Damith Deshan | hkddrajapaksha@gmail.com
+ */
+
+/* ---------- Dialogs: never wider than the screen ---------- */
+.ui-dialog.lab-pr-dialog {
+    max-width: calc(100vw - 1rem);
+}
+
+/* ---------- Report preview card (all screen sizes) ----------
+   Same look as the preview in lab/microbiology_patient_report.xhtml.
+   lab-report-preview-fit.js scales the A4 page down to the box width. */
+.lab-pr-preview-card {
+    border: 1px solid #dee2e6;
+    border-radius: 6px;
+    background: #eef0f2;
+    overflow: hidden;
+    margin-top: .5rem;
+}
+
+.lab-pr-preview-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 8px 12px;
+    background: #fff;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.lab-pr-preview {
+    box-sizing: border-box;
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    max-width: 100%;
+    overflow: hidden;
+}
+
+.lab-pr-preview-card .lab-pr-preview {
+    padding: 12px;
+}
+
+.lab-pr-preview-outer {
+    overflow: hidden;
+    flex: 0 0 auto;
+}
+
+.lab-pr-preview-inner {
+    display: inline-block;
+    width: max-content;
+    transform-origin: top left;
+}
+
+.lab-pr-preview-card .labReport,
+.lab-pr-preview-card .labReport1 {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* Desktop minimum widths for entry cells and selects (reset on phones) */
+.lab-patient-report .lab-pr-minw-200 {
+    min-width: 200px !important;
+}
+
+.lab-patient-report .lab-pr-minw-280 {
+    min-width: 280px !important;
+}
+
+.lab-patient-report .lab-pr-minw-300 {
+    min-width: 300px !important;
+}
+
+@media print {
+    .lab-pr-preview-card,
+    .lab-pr-preview,
+    .lab-pr-preview-outer {
+        display: block !important;
+        overflow: visible !important;
+        width: auto !important;
+        height: auto !important;
+        padding: 0 !important;
+        border: none !important;
+        background: none !important;
+    }
+
+    .lab-pr-preview-inner {
+        transform: none !important;
+        width: auto !important;
+    }
+
+    .lab-pr-preview-toolbar {
+        display: none !important;
+    }
+
+    .lab-pr-preview-card .labReport,
+    .lab-pr-preview-card .labReport1 {
+        box-shadow: none !important;
+    }
+}
+
+@media screen and (max-width: 767.98px) {
+
+    /* ---------- General ---------- */
+    .lab-patient-report .ui-panel .ui-panel-content {
+        padding: .5rem;
+    }
+
+    .lab-patient-report .ui-panel .ui-panel-titlebar {
+        padding: .5rem;
+    }
+
+    /* ---------- Header: title, report format, buttons stacked ---------- */
+    .lab-patient-report .lab-pr-header {
+        margin-left: 0;
+        margin-right: 0;
+        row-gap: .5rem;
+    }
+
+    .lab-patient-report .lab-pr-header > [class*="col-"] {
+        width: 100%;
+        flex: 0 0 100%;
+        max-width: 100%;
+        padding-left: 0;
+        padding-right: 0;
+        justify-content: flex-start !important;
+    }
+
+    .lab-patient-report .lab-pr-header h4 {
+        font-size: 1.1rem;
+        margin: 0 !important;
+    }
+
+    .lab-patient-report table.lab-pr-format {
+        width: 100%;
+    }
+
+    .lab-patient-report table.lab-pr-format,
+    .lab-patient-report table.lab-pr-format > tbody,
+    .lab-patient-report table.lab-pr-format > tbody > tr,
+    .lab-patient-report table.lab-pr-format > tbody > tr > td {
+        display: block;
+        width: 100%;
+    }
+
+    .lab-patient-report table.lab-pr-format label {
+        margin: 0 0 .25rem 0 !important;
+    }
+
+    .lab-patient-report table.lab-pr-format .ui-selectonemenu {
+        max-width: 100%;
+    }
+
+    /* ---------- Button rows wrap ---------- */
+    .lab-patient-report .lab-pr-toolbar {
+        flex-wrap: wrap;
+        gap: .5rem;
+    }
+
+    .lab-patient-report .lab-pr-toolbar > .ui-outputlabel,
+    .lab-patient-report .lab-pr-toolbar > span:not(.ui-button) {
+        width: 100%;
+    }
+
+    .lab-patient-report .lab-pr-actions {
+        flex-wrap: wrap;
+        gap: .35rem !important;
+    }
+
+    .lab-patient-report .lab-pr-actions > .ui-button {
+        float: none !important;
+        margin: 0 !important;
+    }
+
+    /* ---------- Priority alert ---------- */
+    .lab-patient-report .lab-pr-alert {
+        padding: .5rem;
+    }
+
+    .lab-patient-report .lab-pr-alert > div {
+        line-height: 1.3 !important;
+    }
+
+    .lab-patient-report .lab-pr-alert h2 {
+        font-size: 1.15rem;
+        text-align: center;
+    }
+
+    .lab-patient-report .lab-pr-alert h4 {
+        font-size: .95rem;
+        text-align: center;
+    }
+
+    .lab-patient-report .lab-pr-alert br {
+        display: none;
+    }
+
+    /* ---------- Handover row: one item per line ---------- */
+    .lab-patient-report .lab-pr-handover {
+        margin-left: 0;
+        margin-right: 0;
+        margin-bottom: .75rem !important;
+    }
+
+    .lab-patient-report .lab-pr-handover > div {
+        flex-direction: column;
+        align-items: stretch;
+        padding-left: 0;
+        padding-right: 0;
+    }
+
+    .lab-patient-report .lab-pr-handover > div > span,
+    .lab-patient-report .lab-pr-handover > div > div {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .lab-patient-report .lab-pr-handover .ui-autocomplete,
+    .lab-patient-report .lab-pr-handover .ui-autocomplete-input {
+        width: 100% !important;
+    }
+
+    .lab-patient-report .lab-pr-handover .ui-button {
+        float: none !important;
+        width: 100%;
+    }
+
+    /* ---------- Body: entry column above preview column ---------- */
+    .lab-patient-report .lab-pr-body {
+        margin-left: 0;
+        margin-right: 0;
+    }
+
+    .lab-patient-report .lab-pr-body > [class*="col-"] {
+        width: 100%;
+        flex: 0 0 100%;
+        max-width: 100%;
+        min-width: 0;
+        padding-left: 0;
+        padding-right: 0;
+    }
+
+    .lab-patient-report .lab-pr-side > .row {
+        width: 100% !important;
+        margin-left: 0;
+        margin-right: 0;
+    }
+
+    .lab-patient-report .lab-pr-side > .row > [class*="col-"] {
+        padding-left: 0;
+        padding-right: 0;
+        margin-bottom: .5rem;
+    }
+
+    /* ---------- Entry tables: label above its input ---------- */
+    .lab-patient-report table.lab-pr-entry-table,
+    .lab-patient-report table.lab-pr-entry-table > tbody,
+    .lab-patient-report table.lab-pr-entry-table > tbody > tr,
+    .lab-patient-report table.lab-pr-entry-table > tbody > tr > td,
+    .lab-patient-report table.lab-pr-entry-table > tbody > tr > th {
+        display: block;
+        width: 100% !important;
+        min-width: 0 !important;
+    }
+
+    .lab-patient-report table.lab-pr-entry-table > tbody > tr {
+        padding: .35rem 0;
+        border-bottom: 1px dashed #e5e7eb;
+    }
+
+    .lab-patient-report table.lab-pr-entry-table > tbody > tr:last-child {
+        border-bottom: 0 none;
+    }
+
+    .lab-patient-report table.lab-pr-entry-table > tbody > tr > td:first-child > label {
+        font-weight: 600;
+        margin-bottom: .2rem;
+    }
+
+    .lab-patient-report table.lab-pr-entry-table .ui-inputfield,
+    .lab-patient-report table.lab-pr-entry-table .ui-selectonemenu,
+    .lab-patient-report table.lab-pr-entry-table .ui-texteditor {
+        width: 100% !important;
+        min-width: 0 !important;
+        max-width: 100%;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+    }
+
+    /* Text editor toolbar wraps instead of overflowing */
+    .lab-patient-report .ql-toolbar.ql-snow {
+        display: flex;
+        flex-wrap: wrap;
+        padding: 4px;
+    }
+
+    .lab-patient-report .ql-toolbar.ql-snow .ql-formats {
+        margin-right: 6px;
+    }
+
+    /* ---------- Flex rows that wrap ---------- */
+    .lab-patient-report .lab-pr-wrap {
+        flex-wrap: wrap;
+        gap: .5rem !important;
+    }
+
+    .lab-patient-report .lab-pr-wrap > .ui-inputfield,
+    .lab-patient-report .lab-pr-wrap > .ui-autocomplete,
+    .lab-patient-report .lab-pr-wrap > div {
+        flex: 1 1 100%;
+        width: 100% !important;
+    }
+
+    .lab-patient-report .lab-pr-wrap .ui-autocomplete-input {
+        width: 100%;
+    }
+
+    .lab-patient-report .lab-pr-wrap > .ui-button {
+        margin: 0 !important;
+    }
+
+    /* ---------- Report Details grid ---------- */
+    .lab-patient-report .ui-panelgrid .ui-panelgrid-cell {
+        padding-top: .2rem;
+        padding-bottom: .2rem;
+    }
+
+    .lab-patient-report .ui-panelgrid .ui-autocomplete,
+    .lab-patient-report .ui-panelgrid .ui-calendar,
+    .lab-patient-report .ui-panelgrid .ui-calendar .ui-inputfield {
+        width: 100%;
+    }
+
+    /* ---------- Patient details warning ---------- */
+    .lab-patient-report .lab-pr-warning > div {
+        align-items: center;
+    }
+
+    .lab-patient-report .lab-pr-warning i {
+        font-size: 2rem !important;
+        padding: .25rem !important;
+    }
+
+    .lab-patient-report .lab-pr-warning .card-body {
+        font-size: .9rem !important;
+        padding: .25rem;
+    }
+
+    .lab-patient-report .lab-pr-warning br {
+        display: none;
+    }
+
+    /* ---------- Report preview card ---------- */
+    .lab-patient-report .lab-pr-preview-card .lab-pr-preview {
+        padding: 8px;
+    }
+
+    /* ---------- Dialog content ---------- */
+    .ui-dialog.lab-pr-dialog .ui-dialog-content {
+        overflow-x: auto;
+        padding: .5rem;
+    }
+
+    .ui-dialog.lab-pr-dialog table.lab-pr-form-grid,
+    .ui-dialog.lab-pr-dialog table.lab-pr-form-grid > tbody,
+    .ui-dialog.lab-pr-dialog table.lab-pr-form-grid > tbody > tr,
+    .ui-dialog.lab-pr-dialog table.lab-pr-form-grid > tbody > tr > td {
+        display: block;
+        width: 100% !important;
+    }
+
+    .ui-dialog.lab-pr-dialog table.lab-pr-form-grid label {
+        width: auto !important;
+        font-weight: 600;
+        margin-top: .35rem;
+    }
+}

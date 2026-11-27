@@ -1,0 +1,64 @@
+name: Entity migration guard
+
+# Warns (never blocks) on a PR that adds an @Entity field (column) or entity (table) that no
+# migration under src/main/resources/db/migrations/ creates and that is not in
+# the baseline src/test/resources/entity-migration-baseline.txt. Production has
+# no DDL generation, so a missing column breaks inserts and loads (see #26172).
+# The check is the JUnit test EntityMigrationCoverageTest; it needs no database,
+# secrets or network. Advisory only: the step never fails, so the job stays
+# green; each gap shows as a ::warning annotation and the job summary lists
+# them. A compile failure also stays green here (validate-compilation blocks it)
+# but prints "check did not run: compile failed". Fix with a migration
+# when the column must exist before first use; otherwise "Add Missing Fields"
+# stays the practice.
+
+on:
+  pull_request:
+    branches: [development]
+    types: [opened, synchronize, reopened, edited]
+
+permissions:
+  contents: read
+
+jobs:
+  entity-migration:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Set up JDK 11
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '11'
+          cache: 'maven'
+
+      - name: Warn when a mapped table or column has no migration
+        run: |
+          rm -f target/entity-migration-summary.txt
+          # Never fail this step: the check only warns. Maven -q hides the log,
+          # so the result is read from the summary file the test writes.
+          mvn -B -q test -Dtest=EntityMigrationCoverageTest -DfailIfNoTests=false -Dentity.migration.guard=true || true
+          if [ -f target/entity-migration-summary.txt ]; then
+            n=$(head -n 1 target/entity-migration-summary.txt)
+            if [ "$n" = "0" ]; then
+              echo "entity-migration: none (no new columns or tables without a migration)"
+              echo "### entity-migration: none" >> "$GITHUB_STEP_SUMMARY"
+            else
+              echo "entity-migration: $n new columns/tables without a migration"
+              {
+                echo "### entity-migration: $n new columns/tables without a migration"
+                echo
+                tail -n +2 target/entity-migration-summary.txt | sed 's/^/- /'
+              } >> "$GITHUB_STEP_SUMMARY"
+            fi
+          else
+            # No summary file: the build or the test did not run. A compile error
+            # is already blocked by validate-compilation, so this job stays green
+            # but says plainly that the check did not run.
+            echo "::warning title=entity-migration did not run::check did not run: compile failed (or the test did not start). See validate-compilation."
+            echo "entity-migration: check did not run: compile failed"
+            echo "### entity-migration: check did not run: compile failed" >> "$GITHUB_STEP_SUMMARY"
+          fi

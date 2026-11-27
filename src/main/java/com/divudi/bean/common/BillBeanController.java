@@ -1742,6 +1742,82 @@ public class BillBeanController implements Serializable {
 
     }
 
+    /**
+     * OPD batch bills (sale, cashier collection and cancellation). Each one
+     * holds the same payment as its individual bills, so a report that sums by
+     * payment method must skip them. The individual bills (sale, collection and
+     * "cancellation during batch bill cancellation") stay counted, so a sale
+     * and its cancellation net to zero.
+     */
+    public static List<BillTypeAtomic> batchBillsToSkipInPaymentTotals() {
+        return Arrays.asList(
+                BillTypeAtomic.OPD_BATCH_BILL_WITH_PAYMENT,
+                BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_WITH_PAYMENT,
+                BillTypeAtomic.OPD_BATCH_BILL_PAYMENT_COLLECTION_AT_CASHIER,
+                BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_PAYMENT_COLLECTION_AT_CASHIER,
+                BillTypeAtomic.OPD_BATCH_BILL_CANCELLATION,
+                BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_CANCELLATION);
+    }
+
+    /**
+     * JPQL for bills (or their net total) by payment method that skips the
+     * batch bills in {@link #batchBillsToSkipInPaymentTotals()}. Bills with no
+     * atomic type (old data) are kept.
+     */
+    static String paymentMethodBillsWithoutBatchJpql(boolean totalOnly) {
+        return paymentMethodBillsWithoutBatchJpql(totalOnly, false);
+    }
+
+    static String paymentMethodBillsWithoutBatchJpql(boolean totalOnly, boolean includeVat) {
+        return "select " + (totalOnly ? (includeVat ? "sum(b.netTotal+b.vat)" : "sum(b.netTotal)") : "b")
+                + " from Bill b "
+                + " where type(b)!=:type "
+                + " and b.institution=:ins "
+                + " and b.paymentMethod = :bTp "
+                + " and (b.billTypeAtomic is null or b.billTypeAtomic not in :skipAtomic) "
+                + " and b.createdAt between :fromDate and :toDate "
+                + " and b.retired=false"
+                + (totalOnly ? "" : " order by b.id desc ");
+    }
+
+    private Map<String, Object> paymentMethodBillsWithoutBatchParams(PaymentMethod paymentMethod, Date fromDate, Date toDate, Institution institution) {
+        Map<String, Object> temMap = new HashMap<>();
+        temMap.put("bTp", paymentMethod);
+        temMap.put("toDate", toDate);
+        temMap.put("fromDate", fromDate);
+        temMap.put("type", PreBill.class);
+        temMap.put("ins", institution);
+        temMap.put("skipAtomic", batchBillsToSkipInPaymentTotals());
+        return temMap;
+    }
+
+    /**
+     * Same as fetchBills(PaymentMethod, Date, Date, Institution) but without
+     * the OPD batch bills, so the batch is not counted on top of its bills.
+     */
+    public List<Bill> fetchBillsWithoutBatchBills(PaymentMethod paymentMethod, Date fromDate, Date toDate, Institution institution) {
+        return getBillFacade().findByJpql(paymentMethodBillsWithoutBatchJpql(false),
+                paymentMethodBillsWithoutBatchParams(paymentMethod, fromDate, toDate, institution), TemporalType.TIMESTAMP);
+    }
+
+    /**
+     * Same as calBillTotal(PaymentMethod, Date, Date, Institution) but without
+     * the OPD batch bills.
+     */
+    public double calBillTotalWithoutBatchBills(PaymentMethod paymentMethod, Date fromDate, Date toDate, Institution institution) {
+        return getBillFacade().findDoubleByJpql(paymentMethodBillsWithoutBatchJpql(true),
+                paymentMethodBillsWithoutBatchParams(paymentMethod, fromDate, toDate, institution), TemporalType.TIMESTAMP);
+    }
+
+    /**
+     * Same as calBillTotalWithVat(PaymentMethod, Date, Date, Institution) but
+     * without the OPD batch bills.
+     */
+    public double calBillTotalWithVatWithoutBatchBills(PaymentMethod paymentMethod, Date fromDate, Date toDate, Institution institution) {
+        return getBillFacade().findDoubleByJpql(paymentMethodBillsWithoutBatchJpql(true, true),
+                paymentMethodBillsWithoutBatchParams(paymentMethod, fromDate, toDate, institution), TemporalType.TIMESTAMP);
+    }
+
     public double calBillTotalWithVat(PaymentMethod paymentMethod, Date fromDate, Date toDate, Institution institution) {
 
         String sql;
@@ -4912,6 +4988,48 @@ public class BillBeanController implements Serializable {
 
         getBillItemFacade().edit(billItem);
 
+    }
+
+    /**
+     * As {@link #updateBillItemByBillFee}, for a bill item that was read earlier
+     * in the same run (not freshly): sets the sums on the in-memory item and
+     * writes only the item's own six columns. It does not merge the item, so
+     * the item's possibly stale BillFee collection (cascade ALL) cannot
+     * overwrite fee rows committed since the item was read (#17562).
+     */
+    public void updateBillItemByBillFeeColumnsOnly(BillItem billItem) {
+        String sql = "SELECT sum(b.feeGrossValue), sum(b.feeValue), sum(b.feeMargin), "
+                + " sum(b.feeDiscount), sum(b.feeVat) "
+                + " FROM BillFee b "
+                + " WHERE b.retired=false "
+                + " and b.billItem=:bItm ";
+        HashMap<String, Object> hm = new HashMap<>();
+        hm.put("bItm", billItem);
+        List<Object[]> rows = getBillFeeFacade().findRawResultsByJpql(sql, hm, TemporalType.DATE);
+        Object[] row = (rows == null || rows.isEmpty()) ? null : rows.get(0);
+        applyBillFeeSumsToBillItem(billItem, row);
+        if (billItem.getId() == null) {
+            getBillItemFacade().edit(billItem);
+            return;
+        }
+        getBillItemFacade().updateByJpql(BILL_ITEM_SUMS_UPDATE_JPQL, billItemSumsUpdateParameters(billItem));
+    }
+
+    /** The six BillItem columns {@link #applyBillFeeSumsToBillItem} sets, and no others. */
+    static final String BILL_ITEM_SUMS_UPDATE_JPQL = "UPDATE BillItem b SET b.grossValue=:gross, b.netValue=:net,"
+            + " b.marginValue=:margin, b.discount=:discount, b.vat=:vat, b.vatPlusNetValue=:vatPlusNet"
+            + " WHERE b.id=:id";
+
+    static Map<String, Object> billItemSumsUpdateParameters(BillItem billItem) {
+        Map<String, Object> params = new HashMap<>();
+        params.put("gross", billItem.getGrossValue());
+        params.put("net", billItem.getNetValue());
+        params.put("margin", billItem.getMarginValue());
+        params.put("discount", billItem.getDiscount());
+        params.put("vat", billItem.getVat());
+        params.put("vatPlusNet", billItem.getVatPlusNetValue());
+        params.put("id", billItem.getId());
+        return params;
     }
 
     /**

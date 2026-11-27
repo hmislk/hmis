@@ -706,6 +706,24 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
         return billService.fetchBillPayments(bill);
     }
 
+    /**
+     * Number of bills in the batch of an individual bill. The 5x5 Custom 4 OPD print
+     * shows the batch payment lines only when the batch has one bill. Cancellation
+     * and refund bills are not counted. Returns 0 for a bill without a batch.
+     */
+    public int batchBillCountOf(Bill individualBill) {
+        if (individualBill == null || individualBill.getBackwardReferenceBill() == null) {
+            return 0;
+        }
+        int count = 0;
+        for (Bill b : billService.fetchIndividualBillsOfBatchBill(individualBill.getBackwardReferenceBill())) {
+            if (!b.isRetired() && !(b instanceof CancelledBill) && !(b instanceof RefundBill)) {
+                count++;
+            }
+        }
+        return count;
+    }
+
     public List<BillItem> groupBillItemByNameFromBill(Bill b) {
         return groupBillItemByName(billService.fetchBillItems(b));
     }

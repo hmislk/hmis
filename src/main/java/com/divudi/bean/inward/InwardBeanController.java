@@ -1041,6 +1041,144 @@ public class InwardBeanController implements Serializable {
     }
 
     /**
+     * Everything the discount step of Create Final Bill reads per charge type,
+     * for all charge types of the admission at once: a handful of statements
+     * instead of the same reads once per charge type per admission-type period
+     * (#17562). Projections and id rows only where the step needs no entity.
+     * The rows are the ones the per-type methods
+     * ({@link #getServiceBillFeesByInwardChargeType},
+     * {@link #getServiceBillItemByInwardChargeType},
+     * {@link #fetchTimedPatientItemByInwardChargeType},
+     * {@link #fetchTimedServiceBillItemsByInwardChargeType}) return, in id order.
+     */
+    public InwardChargeTypeRunData loadChargeTypeRunData(PatientEncounter patientEncounter) {
+        InwardChargeTypeRunData data = new InwardChargeTypeRunData();
+
+        HashMap hm = new HashMap();
+        hm.put("btp", BillType.InwardBill);
+        hm.put("pe", patientEncounter);
+        hm.put("st", FeeType.Staff);
+        data.setServiceFees(getBillFeeFacade().findObjectArrayByJpql(
+                "Select s, s.billItem.item.inwardChargeType From BillFee s"
+                + " where s.retired=false"
+                + " and s.billItem.bill.billType=:btp"
+                + " and s.billItem.bill.patientEncounter=:pe"
+                + " and s.fee.feeType!=:st"
+                + " order by s.id", hm, TemporalType.TIMESTAMP));
+
+        hm = new HashMap();
+        hm.put("btp", BillType.InwardBill);
+        hm.put("pe", patientEncounter);
+        hm.put("cls", TimedItem.class);
+        data.setServiceItems(getBillItemFacade().findObjectArrayByJpql(
+                "Select s, s.item.inwardChargeType From BillItem s"
+                + " where s.retired=false"
+                + " and s.bill.billType=:btp"
+                + " and s.bill.patientEncounter=:pe"
+                + " and type(s.item)!=:cls"
+                + " order by s.id", hm, TemporalType.TIMESTAMP));
+
+        // id, gross, margin, bill time, charge type
+        data.setTimedItemRows(getBillItemFacade().findObjectArrayByJpql(
+                "Select s.id, COALESCE(s.grossValue, 0.0), COALESCE(s.marginValue, 0.0), b.createdAt, s.item.inwardChargeType"
+                + " From BillItem s join s.bill b"
+                + " where s.retired=false"
+                + " and b.billType=:btp"
+                + " and b.patientEncounter=:pe"
+                + " and type(s.item)=:cls"
+                + " order by s.id", hm, TemporalType.TIMESTAMP));
+
+        hm = new HashMap();
+        hm.put("pe", patientEncounter);
+        hm.put("cls", TimedItem.class);
+        data.setTimedPatientItems(getPatientItemFacade().findObjectArrayByJpql(
+                "Select i, i.item.inwardChargeType From PatientItem i"
+                + " where type(i.item)=:cls"
+                + " and i.retired=false"
+                + " and i.billItem is null"
+                + " and i.patientEncounter=:pe"
+                + " order by i.id", hm, TemporalType.TIMESTAMP));
+
+        // Charge types the "no matrix" clear steps would still reach.
+        hm = new HashMap();
+        hm.put("btp", BillType.InwardBill);
+        hm.put("pe", patientEncounter);
+        data.addOtherRowTypes(getBillItemFacade().findObjectArrayByJpql(
+                "Select s.item.inwardChargeType, count(s) From BillItem s"
+                + " where s.retired=false"
+                + " and s.bill.billType=:btp"
+                + " and s.bill.patientEncounter=:pe"
+                + " group by s.item.inwardChargeType", hm, TemporalType.TIMESTAMP));
+        hm = new HashMap();
+        hm.put("pe", patientEncounter);
+        hm.put("cls", TimedItem.class);
+        data.addOtherRowTypes(getPatientItemFacade().findObjectArrayByJpql(
+                "Select s.item.inwardChargeType, count(s) From PatientItem s"
+                + " where s.retired=false"
+                + " and type(s.item)=:cls"
+                + " and s.billItem is not null"
+                + " and s.patientEncounter=:pe"
+                + " group by s.item.inwardChargeType", hm, TemporalType.TIMESTAMP));
+        return data;
+    }
+
+    /**
+     * Id, gross, margin and bill time of the timed-service BillItems of one
+     * charge type, in id order. A projection, so no BillItem (with its fees and
+     * price matrix) is loaded per row. Same rows as
+     * {@link #fetchTimedServiceBillItemsByInwardChargeType}.
+     */
+    public List<Object[]> fetchTimedServiceBillItemRows(InwardChargeType inwardChargeType, PatientEncounter patientEncounter) {
+        String sql = "Select s.id, COALESCE(s.grossValue, 0.0), COALESCE(s.marginValue, 0.0), b.createdAt From BillItem s join s.bill b"
+                + " where s.retired=false "
+                + " and b.billType=:btp"
+                + " and b.patientEncounter=:pe"
+                + " and type(s.item)=:cls "
+                + " and s.item.inwardChargeType=:inw "
+                + " order by s.id";
+        HashMap hm = new HashMap();
+        hm.put("btp", BillType.InwardBill);
+        hm.put("pe", patientEncounter);
+        hm.put("cls", TimedItem.class);
+        hm.put("inw", inwardChargeType);
+        return getBillItemFacade().findObjectArrayByJpql(sql, hm, TemporalType.TIMESTAMP);
+    }
+
+    /**
+     * Sets the discount of the given timed-service BillItems to
+     * {@code (gross + margin) * percent / 100} and the net value to
+     * {@code gross + margin - discount}, in the database, in id chunks. Same
+     * arithmetic and order as the per-row Java version, so the values match.
+     */
+    public void applyDiscountPercentToBillItems(List<Long> billItemIds, double discountPercent) {
+        String sql = "UPDATE BillItem s SET"
+                + " s.discount = ((COALESCE(s.grossValue, 0.0) + COALESCE(s.marginValue, 0.0)) * :pct) / 100,"
+                + " s.netValue = (COALESCE(s.grossValue, 0.0) + COALESCE(s.marginValue, 0.0)) - (((COALESCE(s.grossValue, 0.0) + COALESCE(s.marginValue, 0.0)) * :pct) / 100)"
+                + " WHERE s.id IN :ids";
+        for (List<Long> chunk : chunkIds(billItemIds, BULK_UPDATE_ID_CHUNK)) {
+            HashMap hm = new HashMap();
+            hm.put("pct", discountPercent);
+            hm.put("ids", chunk);
+            getBillItemFacade().updateByJpql(sql, hm);
+        }
+    }
+
+    /**
+     * Mirrors a discount onto the PatientItems behind the given BillItems.
+     * One UPDATE per chunk of BillItems that share the same discount.
+     */
+    public void mirrorDiscountToPatientItems(List<Long> billItemIds, double discount) {
+        String sql = "UPDATE PatientItem p SET p.discount = :dis"
+                + " WHERE p.retired=false AND p.billItem.id IN :ids";
+        for (List<Long> chunk : chunkIds(billItemIds, BULK_UPDATE_ID_CHUNK)) {
+            HashMap hm = new HashMap();
+            hm.put("dis", discount);
+            hm.put("ids", chunk);
+            getPatientItemFacade().updateByJpql(sql, hm);
+        }
+    }
+
+    /**
      * The PatientItem carrying the timing behind a timed-service BillItem.
      * BillItem has no back-reference, so it is looked up from the owning side.
      */
@@ -1087,6 +1225,59 @@ public class InwardBeanController implements Serializable {
         return getPatientItemFacade().findByJpql(sql, hm);
     }
 
+    /** Largest id list bound to one bulk UPDATE. */
+    public static final int BULK_UPDATE_ID_CHUNK = 500;
+
+    /**
+     * Splits {@code ids} into consecutive lists of at most {@code size}. The
+     * lists are copies, so the source can change afterwards.
+     */
+    public static List<List<Long>> chunkIds(List<Long> ids, int size) {
+        if (size < 1) {
+            throw new IllegalArgumentException("size must be at least 1");
+        }
+        List<List<Long>> chunks = new ArrayList<>();
+        if (ids == null) {
+            return chunks;
+        }
+        for (int i = 0; i < ids.size(); i += size) {
+            chunks.add(new ArrayList<>(ids.subList(i, Math.min(ids.size(), i + size))));
+        }
+        return chunks;
+    }
+
+    /**
+     * Rewrites {@code UPDATE X s SET ... WHERE <path conditions>} so MySQL gets
+     * plain {@code UPDATE ... WHERE id IN (...)} statements. EclipseLink turns
+     * a bulk UPDATE whose WHERE walks a relationship into a temporary-table
+     * dance (CREATE / INSERT / UPDATE join / DELETE, issue #17562). Here the
+     * ids are read once with the same WHERE (a SELECT, no entities loaded),
+     * then updated by id in chunks. Nothing is sent when no row matches.
+     *
+     * @param updateJpql the original "UPDATE X alias SET ... WHERE ..." text
+     * @return rows matched by the WHERE
+     */
+    private <T> int bulkUpdateByIds(com.divudi.core.facade.AbstractFacade<T> facade, String entityName, String updateJpql, Map<String, Object> params) {
+        String lower = updateJpql.toLowerCase();
+        int whereAt = lower.indexOf(" where ");
+        int setAt = lower.indexOf(" set ");
+        String alias = updateJpql.substring(lower.indexOf(entityName.toLowerCase()) + entityName.length(), setAt).trim();
+        String selectJpql = "SELECT " + alias + ".id FROM " + entityName + " " + alias + updateJpql.substring(whereAt);
+        List<Long> ids = facade.findLongList(selectJpql, params);
+        if (ids == null) {
+            throw new RuntimeException("Failed to read the rows for bulk update: " + selectJpql);
+        }
+        int updated = 0;
+        String setClause = updateJpql.substring(setAt + 5, whereAt);
+        String byId = "UPDATE " + entityName + " " + alias + " SET " + setClause + " WHERE " + alias + ".id IN :ids";
+        for (List<Long> chunk : chunkIds(ids, BULK_UPDATE_ID_CHUNK)) {
+            Map<String, Object> idParams = new HashMap<>();
+            idParams.put("ids", chunk);
+            updated += facade.updateByJpql(byId, idParams);
+        }
+        return updated;
+    }
+
     /**
      * Clears any previously applied discount on timed-service BillItems when no
      * price matrix applies. Mirrors {@link #bulkClearPatientItemsWithOutMatrix}
@@ -1112,7 +1303,7 @@ public class InwardBeanController implements Serializable {
         hm.put("cls", TimedItem.class);
         hm.put("pe", patientEncounter);
         hm.put("inw", inwardChargeType);
-        getBillItemFacade().updateByJpql(sql, hm);
+        bulkUpdateByIds(getBillItemFacade(), "BillItem", sql, hm);
         String piSql = "UPDATE PatientItem s SET s.discount = 0.0"
                 + " WHERE s.retired = false"
                 + " AND type(s.item) = :cls"
@@ -1123,7 +1314,7 @@ public class InwardBeanController implements Serializable {
         piHm.put("cls", TimedItem.class);
         piHm.put("pe", patientEncounter);
         piHm.put("inw", inwardChargeType);
-        getPatientItemFacade().updateByJpql(piSql, piHm);
+        bulkUpdateByIds(getPatientItemFacade(), "PatientItem", piSql, piHm);
     }
 
     public List<BillFee> createDoctorAndNurseFee(PatientEncounter patientEncounter, List<PatientEncounter> cpts) {
@@ -1210,7 +1401,7 @@ public class InwardBeanController implements Serializable {
         hm.put("ftp", FeeType.Staff);
         hm.put("btp", BillType.InwardProfessional);
         hm.put("pe", pts);
-        getBillFeeFacade().updateByJpql(sql, hm);
+        bulkUpdateByIds(getBillFeeFacade(), "BillFee", sql, hm);
     }
 
     /**
@@ -1239,7 +1430,7 @@ public class InwardBeanController implements Serializable {
         hm.put("ftp", FeeType.Staff);
         hm.put("btp", BillType.InwardProfessional);
         hm.put("pe", pts);
-        getBillFeeFacade().updateByJpql(sql, hm);
+        bulkUpdateByIds(getBillFeeFacade(), "BillFee", sql, hm);
     }
 
     /**
@@ -1257,7 +1448,7 @@ public class InwardBeanController implements Serializable {
         hm.put("ftp", FeeType.Staff);
         hm.put("btp", BillType.InwardProfessional);
         hm.put("pe", encounterWithChildren(patientEncounter, cpts));
-        getBillFeeFacade().updateByJpql(sql, hm);
+        bulkUpdateByIds(getBillFeeFacade(), "BillFee", sql, hm);
     }
 
     public void bulkClearServiceBillFeesWithOutMatrix(InwardChargeType inwardChargeType, PatientEncounter patientEncounter) {
@@ -1272,7 +1463,7 @@ public class InwardBeanController implements Serializable {
         hm.put("pe", patientEncounter);
         hm.put("inw", inwardChargeType);
         hm.put("st", FeeType.Staff);
-        getBillFeeFacade().updateByJpql(sql, hm);
+        bulkUpdateByIds(getBillFeeFacade(), "BillFee", sql, hm);
 
         String biSql = "UPDATE BillItem s SET s.discount = 0.0, s.netValue = s.grossValue + s.marginValue"
                 + " WHERE s.retired = false"
@@ -1283,7 +1474,7 @@ public class InwardBeanController implements Serializable {
         biHm.put("btp", BillType.InwardBill);
         biHm.put("pe", patientEncounter);
         biHm.put("inw", inwardChargeType);
-        getBillItemFacade().updateByJpql(biSql, biHm);
+        bulkUpdateByIds(getBillItemFacade(), "BillItem", biSql, biHm);
     }
 
     public void bulkClearPatientItemsWithOutMatrix(InwardChargeType inwardChargeType, PatientEncounter patientEncounter) {
@@ -1297,7 +1488,7 @@ public class InwardBeanController implements Serializable {
         hm.put("cls", TimedItem.class);
         hm.put("pe", patientEncounter);
         hm.put("inw", inwardChargeType);
-        getPatientItemFacade().updateByJpql(sql, hm);
+        bulkUpdateByIds(getPatientItemFacade(), "PatientItem", sql, hm);
     }
 
     /**
@@ -4297,7 +4488,26 @@ public class InwardBeanController implements Serializable {
         if (billFee == null || item == null || billFee.getFee() == null) {
             return;
         }
-        com.divudi.core.entity.inward.AdmissionType typeAtBill = admissionTypeForFee(patientEncounter, billFee);
+        setBillFeeMargin(billFee, item, priceMatrix, patientEncounter,
+                admissionTypeForFee(patientEncounter, billFee), null, true);
+    }
+
+    /**
+     * As the four-argument form, for a caller that already knows the admission
+     * type in force on the fee's bill date and wants the lookups of one run
+     * remembered (#17562).
+     *
+     * @param typeAtBill the admission type to price the fee with
+     * @param cache values shared by the fees of one run, or null for none
+     * @param writeFee true to save the fee after the margin is set (the fee is
+     * already saved); false when the caller saves it later, so a fee that has
+     * no row yet is not merged into a second copy
+     */
+    public void setBillFeeMargin(BillFee billFee, Item item, PriceMatrix priceMatrix, PatientEncounter patientEncounter,
+            com.divudi.core.entity.inward.AdmissionType typeAtBill, DiscountRunCache cache, boolean writeFee) {
+        if (billFee == null || item == null || billFee.getFee() == null) {
+            return;
+        }
 
         double qty = (billFee.getBillItem() != null && billFee.getBillItem().getQty() != null && billFee.getBillItem().getQty() > 0)
                 ? billFee.getBillItem().getQty() : 1.0;
@@ -4317,13 +4527,26 @@ public class InwardBeanController implements Serializable {
         if (marginEligible) {
             // Try CC-specific priceMatrix first; fall back to the caller-provided one.
             PriceMatrix effectivePriceMatrix = priceMatrix;
-            com.divudi.core.entity.Institution cc = resolveSingleCreditCompany(patientEncounter);
+            com.divudi.core.entity.Institution cc = cache != null
+                    ? cache.creditCompany(() -> resolveSingleCreditCompany(patientEncounter))
+                    : resolveSingleCreditCompany(patientEncounter);
             if (cc != null && billFee.getBillItem() != null) {
                 BillItem bi = billFee.getBillItem();
                 double svcValue = bi.getRate() != 0.0 ? Math.abs(bi.getRate()) : unitGross;
                 Department dept = resolveFeeDepartment(patientEncounter);
-                PriceMatrix ccMatrix = priceMatrixController.fetchInwardMargin(bi, svcValue, dept,
-                        patientEncounter.getPaymentMethod(), cc, typeAtBill, resolveCurrentRoomCategory(patientEncounter));
+                com.divudi.core.entity.inward.RoomCategory roomCategory = resolveCurrentRoomCategory(patientEncounter);
+                PriceMatrix ccMatrix;
+                if (cache == null) {
+                    ccMatrix = priceMatrixController.fetchInwardMargin(bi, svcValue, dept,
+                            patientEncounter.getPaymentMethod(), cc, typeAtBill, roomCategory);
+                } else {
+                    final double value = svcValue;
+                    ccMatrix = cache.matrix(
+                            marginMatrixKey(priceMatrixController.resolveInwardMatrixCategory(bi.getItem(), dept),
+                                    value, dept, patientEncounter.getPaymentMethod(), cc, typeAtBill, roomCategory),
+                            () -> priceMatrixController.fetchInwardMargin(bi, value, dept,
+                                    patientEncounter.getPaymentMethod(), cc, typeAtBill, roomCategory));
+                }
                 if (ccMatrix != null) {
                     effectivePriceMatrix = ccMatrix;
                 }
@@ -4332,7 +4555,9 @@ public class InwardBeanController implements Serializable {
                 unitMargin = (unitGross * effectivePriceMatrix.getMargin()) / 100;
                 billFee.setFeeUnitMargin(unitMargin);
                 billFee.setFeeMargin(unitMargin * qty);
-                billFeeFacade.edit(billFee);
+                if (writeFee) {
+                    billFeeFacade.edit(billFee);
+                }
             }
         }
 
@@ -4342,7 +4567,7 @@ public class InwardBeanController implements Serializable {
 
         // Apply discount (has its own eligibility guards inside).
         if (patientEncounter != null && typeAtBill != null) {
-            applyInwardDiscountToBillFee(billFee, item, patientEncounter, typeAtBill);
+            applyInwardDiscountToBillFee(billFee, item, patientEncounter, typeAtBill, cache);
         } else {
             billFee.setFeeUnitValue(unitGross);
             billFee.setFeeValue(unitGross * qty);
@@ -4443,6 +4668,32 @@ public class InwardBeanController implements Serializable {
         private boolean creditCompanyRead;
         private com.divudi.core.entity.Institution creditCompany;
         private final Map<List<Object>, Double> percents = new HashMap<>();
+        private final Map<List<Object>, PriceMatrix> matrices = new HashMap<>();
+
+        /** The encounter's single credit company; read once per run. */
+        public com.divudi.core.entity.Institution creditCompany(java.util.function.Supplier<com.divudi.core.entity.Institution> loader) {
+            if (!creditCompanyRead) {
+                creditCompany = loader.get();
+                creditCompanyRead = true;
+            }
+            return creditCompany;
+        }
+
+        /**
+         * The margin row for a key; a lookup that found no row is remembered too.
+         * A null key (a part not saved yet) always loads.
+         */
+        public PriceMatrix matrix(List<Object> key, java.util.function.Supplier<PriceMatrix> loader) {
+            if (key == null) {
+                return loader.get();
+            }
+            if (matrices.containsKey(key)) {
+                return matrices.get(key);
+            }
+            PriceMatrix loaded = loader.get();
+            matrices.put(key, loaded);
+            return loaded;
+        }
 
         public Double percent(List<Object> key, java.util.function.DoubleSupplier loader) {
             if (key == null) {
@@ -4498,6 +4749,35 @@ public class InwardBeanController implements Serializable {
     }
 
     /**
+     * Memo key for one margin lookup: everything the lookup depends on. The item
+     * only matters through its matrix category, so two items of one category
+     * with the same value share a key. Null when a part is not saved yet.
+     */
+    public static List<Object> marginMatrixKey(com.divudi.core.entity.Category category, double serviceValue,
+            Department department, Object paymentMethod, com.divudi.core.entity.Institution creditCompany,
+            com.divudi.core.entity.inward.AdmissionType admissionType, com.divudi.core.entity.inward.RoomCategory roomCategory) {
+        Object[] ids = {
+            category == null ? null : category.getId(),
+            department == null ? null : department.getId(),
+            creditCompany == null ? null : creditCompany.getId(),
+            admissionType == null ? null : admissionType.getId(),
+            roomCategory == null ? null : roomCategory.getId()
+        };
+        Object[] saved = {category, department, creditCompany, admissionType, roomCategory};
+        List<Object> key = new ArrayList<>();
+        key.add("margin");
+        for (int i = 0; i < ids.length; i++) {
+            if (ids[i] == null && saved[i] != null) {
+                return null;
+            }
+            key.add(ids[i]);
+        }
+        key.add(Double.valueOf(serviceValue));
+        key.add(paymentMethod);
+        return key;
+    }
+
+    /**
      * As the four-argument form; a non-null cache supplies the credit company and
      * remembers discount percents for the rest of the run. A null cache behaves
      * exactly as before.
@@ -4531,11 +4811,7 @@ public class InwardBeanController implements Serializable {
                     item,
                     creditCompany);
         } else {
-            if (!cache.creditCompanyRead) {
-                cache.creditCompany = resolveSingleCreditCompany(patientEncounter);
-                cache.creditCompanyRead = true;
-            }
-            creditCompany = cache.creditCompany;
+            creditCompany = cache.creditCompany(() -> resolveSingleCreditCompany(patientEncounter));
             final com.divudi.core.entity.Institution cc = creditCompany;
             final Department dept = matrixDept;
             pct = cache.percent(
@@ -4616,8 +4892,11 @@ public class InwardBeanController implements Serializable {
 
     }
 
-    public void saveBillFee(BillFee bf, BillItem billItem, Bill b, WebUser wu) {
-
+    /**
+     * Sets the links and audit fields a bill fee carries when it is saved on a
+     * bill item, without saving it. {@link #saveBillFee} does this and then saves.
+     */
+    public void prepareBillFee(BillFee bf, BillItem billItem, Bill b, WebUser wu) {
         bf.setCreatedAt(Calendar.getInstance().getTime());
         bf.setCreater(wu);
         bf.setBillItem(billItem);
@@ -4625,6 +4904,11 @@ public class InwardBeanController implements Serializable {
         bf.setPatient(b.getPatient());
 
         bf.setBill(b);
+    }
+
+    public void saveBillFee(BillFee bf, BillItem billItem, Bill b, WebUser wu) {
+
+        prepareBillFee(bf, billItem, b, wu);
         if (bf.getId() == null) {
             getBillFeeFacade().create(bf);
         }

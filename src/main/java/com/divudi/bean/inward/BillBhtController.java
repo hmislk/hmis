@@ -811,7 +811,7 @@ public class BillBhtController implements Serializable {
      * {@link #settleBillSurgery()} still operates on the surgery bill
      * afterwards.</p>
      */
-    private void settleBill(Department matrixDepartment, PaymentMethod paymentMethod) {
+    private boolean settleBill(Department matrixDepartment, PaymentMethod paymentMethod) {
         InwardServiceBillRequest request = new InwardServiceBillRequest();
         request.setBillEntries(getLstBillEntries());
         request.setPatientEncounter(patientEncounter);
@@ -829,12 +829,44 @@ public class BillBhtController implements Serializable {
         request.setBillCollector(getBills());
         request.setApplyInwardMargin(true);
 
-        inwardServiceBillService.createServiceBills(request);
+        // One transaction: every bill, item, fee and the batch bill are saved
+        // together or not at all (#17562). On a failure nothing was saved and the
+        // page is as it was, so the user can settle again.
+        try {
+            inwardServiceBillService.createServiceBills(request);
+        } catch (RuntimeException e) {
+            // Not bills = null: the service has already taken the failed attempt's
+            // bills out of this list and kept the ones an earlier settle saved
+            // (a surgery settles many times on one list).
+            printPreview = false;
+            java.util.logging.Logger.getLogger(BillBhtController.class.getName())
+                    .log(java.util.logging.Level.SEVERE, "Inward service settle rolled back", e);
+            JsfUtil.addErrorMessage(serviceSettleFailureMessage(e));
+            return false;
+        }
 
         printPreview = true;
 
         JsfUtil.addSuccessMessage("Bill Saved");
+        return true;
 
+    }
+
+    /**
+     * A business error (an {@code @ApplicationException}) keeps its own message;
+     * any other failure gets one general message and no partial data.
+     */
+    private String serviceSettleFailureMessage(Throwable e) {
+        for (Throwable t = e; t != null; t = t.getCause()) {
+            if (t.getClass().isAnnotationPresent(javax.ejb.ApplicationException.class)
+                    && t.getMessage() != null && !t.getMessage().trim().isEmpty()) {
+                return t.getMessage();
+            }
+            if (t.getCause() == t) {
+                break;
+            }
+        }
+        return "The bill was not saved. Please try again.";
     }
 
     /**
@@ -889,7 +921,9 @@ public class BillBhtController implements Serializable {
             return;
         }
 
-        settleBill(getBatchBill().getFromDepartment(), getPatientEncounter().getPaymentMethod());
+        if (!settleBill(getBatchBill().getFromDepartment(), getPatientEncounter().getPaymentMethod())) {
+            return;
+        }
 
         getBillBean().saveEncounterComponents(getBills(), batchBill, getSessionController().getLoggedUser());
         getBillBean().updateBatchBill(getBatchBill());
