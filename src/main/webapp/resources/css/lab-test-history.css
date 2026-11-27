@@ -421,3 +421,197 @@ body {
         gap: 0.5rem;
     }
 }
+
+/* ---------- Mobile view (phones) ---------- */
+@media screen and (max-width: 767.98px) {
+
+    /* No horizontal scroll */
+    .container {
+        min-width: 0;
+        width: 100%;
+        max-width: 100%;
+        padding: 0.5rem;
+    }
+
+    .main-wrapper {
+        max-width: 100%;
+    }
+
+    /* Header: title left, close button stays top-right */
+    .header-content {
+        flex-direction: row;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.75rem;
+    }
+
+    .header-left {
+        min-width: 0;
+        gap: 0.5rem;
+    }
+
+    .header-title {
+        font-size: 1.05rem;
+        line-height: 1.3;
+    }
+
+    /* Patient and sample information */
+    .patient-info {
+        padding: 0.75rem;
+    }
+
+    .patient-grid {
+        gap: 0.75rem;
+    }
+
+    .patient-name {
+        font-size: 1.15rem;
+        align-items: flex-start;
+        word-break: break-word;
+    }
+
+    .patient-name i,
+    .meta-item i {
+        font-size: 1.1rem !important;
+        width: 1.25rem;
+        text-align: center;
+        flex-shrink: 0;
+        margin-top: 0.15rem;
+    }
+
+    .meta-item {
+        align-items: flex-start;
+        font-size: 0.9rem;
+        word-break: break-word;
+    }
+
+    .sample-card {
+        padding: 0.75rem;
+    }
+
+    .sample-row {
+        flex-wrap: wrap;
+        gap: 0 0.5rem;
+    }
+
+    .sample-value,
+    .sample-investigation {
+        word-break: break-word;
+        text-align: right;
+    }
+
+    /* Tracking table shown as cards */
+    .tracking-content {
+        padding: 0.5rem;
+    }
+
+    .table-container {
+        overflow-x: visible;
+    }
+
+    .tracking-table,
+    .tracking-table tbody {
+        display: block;
+        width: 100%;
+    }
+
+    /* Visually hidden, but kept for screen readers */
+    .tracking-table thead {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        margin: -1px;
+        padding: 0;
+        border: 0;
+        overflow: hidden;
+        clip: rect(0 0 0 0);
+        clip-path: inset(50%);
+        white-space: nowrap;
+    }
+
+    .tracking-table tr.table-row {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+        margin: 0 0 0.6rem 0;
+        border: 1px solid #e5e7eb;
+        border-left: 4px solid #2563eb;
+        border-radius: 0.5rem;
+        box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        overflow: hidden;
+    }
+
+    .tracking-table tr.table-row:hover {
+        background-color: white;
+    }
+
+    .tracking-table td.td-cell {
+        display: block;
+        grid-column: 1 / -1;
+        padding: 0.35rem 0.75rem;
+        border-top: 1px dashed #f3f4f6;
+        word-break: break-word;
+        font-size: 0.9rem;
+    }
+
+    .tracking-table td.td-cell::before {
+        content: attr(data-label);
+        display: block;
+        font-size: 0.7rem;
+        font-weight: 600;
+        color: #6b7280;
+        text-transform: uppercase;
+        letter-spacing: 0.02em;
+    }
+
+    /* Process stage = card title */
+    .tracking-table td.td-cell:first-child {
+        border-top: 0 none;
+        background-color: #eff6ff;
+        padding: 0.5rem 0.75rem;
+    }
+
+    .tracking-table td.td-cell:first-child::before {
+        display: none;
+    }
+
+    .tracking-table td.td-cell:first-child .stage-name {
+        font-size: 0.95rem;
+    }
+
+    /* Date and time side by side */
+    .tracking-table td.td-cell[data-label="Date"],
+    .tracking-table td.td-cell[data-label="Time"] {
+        grid-column: auto;
+    }
+
+    /* Hide an empty comment */
+    .tracking-table td.td-cell[data-label="Comment"]:has(.comment:empty) {
+        display: none;
+    }
+
+    /* Sample ID / report group headings */
+    .tracking-table tr.group-row {
+        display: block;
+        margin: 1rem 0 0.5rem 0;
+        border: 0 none;
+        box-shadow: none;
+        background: transparent;
+    }
+
+    .tracking-table tr.group-row > td {
+        display: block;
+        padding: 0;
+    }
+
+    .tracking-table tr.group-row .sample-card {
+        font-size: 1rem !important;
+        padding: 0.5rem 0.75rem;
+        background-color: #dbeafe;
+        border-color: #93c5fd;
+        word-break: break-word;
+    }
+
+    .tracking-table tr.group-row-end {
+        display: none;
+    }
+}

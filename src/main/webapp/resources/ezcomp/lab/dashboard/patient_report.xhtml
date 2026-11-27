@@ -21,7 +21,7 @@
 
         <h:panelGroup rendered="#{(webUserController.hasPrivilege('DashBoardMenu') and webUserController.hasPrivilege('DashBoardReportSearch'))}">
             <h3><h:outputText value="PATIENT REPORTS" class="d-flex justify-content-center mt-4"/> </h3>
-            <h:panelGrid columns="6" class="w-100" style="font-weight: bolder">
+            <h:panelGrid columns="6" class="w-100 lab-filter-grid" style="font-weight: bolder">
 
                 <h:panelGrid columns="1" class="w-100">
                     <h:outputLabel class="w-100" value="From Date"/>
@@ -188,7 +188,7 @@
                     </h:panelGroup>
                 </h:panelGrid>
 
-                <h:panelGrid columns="1" class="w-100">
+                <h:panelGrid columns="1" class="w-100 lab-filter-action">
                     <h:outputLabel class="w-100" value=""/>
                     <p:commandButton 
                         ajax="false" 
@@ -201,7 +201,7 @@
 
             </h:panelGrid>
             <p:dataTable  
-                class="w-100 mt-3"
+                reflow="true" class="w-100 mt-3 lab-card-table"
                 value="#{laboratoryManagementController.investigationDTO}" 
                 var="pi" 
                 paginator="true"
@@ -359,10 +359,10 @@
 
                         <h:panelGroup rendered="#{laboratoryManagementController.hasPatientReports(pi.investigationId)}">
                             <ui:repeat value="#{laboratoryManagementController.patientReports(pi.investigationId)}" var="dpr">
-                                <div class="d-flex justify-content-between">
+                                <div class="d-flex justify-content-between lab-report-row">
                                     <div class="d-flex gap-2 mb-2">
-                                        <p:commandButton 
-                                            id="cmdReportEdit" 
+                                        <p:commandButton
+                                            id="cmdReportEdit"
                                             ajax="false" 
                                             class="ui-button-warning"
                                             rendered="#{webUserController.hasPrivilege('LabDataentry') or webUserController.hasPrivilege('LabAutherizing')}"
@@ -462,7 +462,7 @@
                                         </p:graphicImage>
                                         
 
-                                        <p:dialog id="dlg" modal="true" widgetVar="dlg" header="Report Remove Comment" width="700" height="50">
+                                        <p:dialog id="dlg" modal="true" widgetVar="dlg" header="Report Remove Comment" width="700" height="50" styleClass="lab-dialog">
                                             <div class="d-flex gap-2">
                                                 <p:inputText value="#{laboratoryManagementController.comment}"  class="w-100"></p:inputText>
                                                 <p:commandButton 
