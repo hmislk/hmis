@@ -1041,6 +1041,144 @@ public class InwardBeanController implements Serializable {
     }
 
     /**
+     * Everything the discount step of Create Final Bill reads per charge type,
+     * for all charge types of the admission at once: a handful of statements
+     * instead of the same reads once per charge type per admission-type period
+     * (#17562). Projections and id rows only where the step needs no entity.
+     * The rows are the ones the per-type methods
+     * ({@link #getServiceBillFeesByInwardChargeType},
+     * {@link #getServiceBillItemByInwardChargeType},
+     * {@link #fetchTimedPatientItemByInwardChargeType},
+     * {@link #fetchTimedServiceBillItemsByInwardChargeType}) return, in id order.
+     */
+    public InwardChargeTypeRunData loadChargeTypeRunData(PatientEncounter patientEncounter) {
+        InwardChargeTypeRunData data = new InwardChargeTypeRunData();
+
+        HashMap hm = new HashMap();
+        hm.put("btp", BillType.InwardBill);
+        hm.put("pe", patientEncounter);
+        hm.put("st", FeeType.Staff);
+        data.setServiceFees(getBillFeeFacade().findObjectArrayByJpql(
+                "Select s, s.billItem.item.inwardChargeType From BillFee s"
+                + " where s.retired=false"
+                + " and s.billItem.bill.billType=:btp"
+                + " and s.billItem.bill.patientEncounter=:pe"
+                + " and s.fee.feeType!=:st"
+                + " order by s.id", hm, TemporalType.TIMESTAMP));
+
+        hm = new HashMap();
+        hm.put("btp", BillType.InwardBill);
+        hm.put("pe", patientEncounter);
+        hm.put("cls", TimedItem.class);
+        data.setServiceItems(getBillItemFacade().findObjectArrayByJpql(
+                "Select s, s.item.inwardChargeType From BillItem s"
+                + " where s.retired=false"
+                + " and s.bill.billType=:btp"
+                + " and s.bill.patientEncounter=:pe"
+                + " and type(s.item)!=:cls"
+                + " order by s.id", hm, TemporalType.TIMESTAMP));
+
+        // id, gross, margin, bill time, charge type
+        data.setTimedItemRows(getBillItemFacade().findObjectArrayByJpql(
+                "Select s.id, COALESCE(s.grossValue, 0.0), COALESCE(s.marginValue, 0.0), b.createdAt, s.item.inwardChargeType"
+                + " From BillItem s join s.bill b"
+                + " where s.retired=false"
+                + " and b.billType=:btp"
+                + " and b.patientEncounter=:pe"
+                + " and type(s.item)=:cls"
+                + " order by s.id", hm, TemporalType.TIMESTAMP));
+
+        hm = new HashMap();
+        hm.put("pe", patientEncounter);
+        hm.put("cls", TimedItem.class);
+        data.setTimedPatientItems(getPatientItemFacade().findObjectArrayByJpql(
+                "Select i, i.item.inwardChargeType From PatientItem i"
+                + " where type(i.item)=:cls"
+                + " and i.retired=false"
+                + " and i.billItem is null"
+                + " and i.patientEncounter=:pe"
+                + " order by i.id", hm, TemporalType.TIMESTAMP));
+
+        // Charge types the "no matrix" clear steps would still reach.
+        hm = new HashMap();
+        hm.put("btp", BillType.InwardBill);
+        hm.put("pe", patientEncounter);
+        data.addOtherRowTypes(getBillItemFacade().findObjectArrayByJpql(
+                "Select s.item.inwardChargeType, count(s) From BillItem s"
+                + " where s.retired=false"
+                + " and s.bill.billType=:btp"
+                + " and s.bill.patientEncounter=:pe"
+                + " group by s.item.inwardChargeType", hm, TemporalType.TIMESTAMP));
+        hm = new HashMap();
+        hm.put("pe", patientEncounter);
+        hm.put("cls", TimedItem.class);
+        data.addOtherRowTypes(getPatientItemFacade().findObjectArrayByJpql(
+                "Select s.item.inwardChargeType, count(s) From PatientItem s"
+                + " where s.retired=false"
+                + " and type(s.item)=:cls"
+                + " and s.billItem is not null"
+                + " and s.patientEncounter=:pe"
+                + " group by s.item.inwardChargeType", hm, TemporalType.TIMESTAMP));
+        return data;
+    }
+
+    /**
+     * Id, gross, margin and bill time of the timed-service BillItems of one
+     * charge type, in id order. A projection, so no BillItem (with its fees and
+     * price matrix) is loaded per row. Same rows as
+     * {@link #fetchTimedServiceBillItemsByInwardChargeType}.
+     */
+    public List<Object[]> fetchTimedServiceBillItemRows(InwardChargeType inwardChargeType, PatientEncounter patientEncounter) {
+        String sql = "Select s.id, COALESCE(s.grossValue, 0.0), COALESCE(s.marginValue, 0.0), b.createdAt From BillItem s join s.bill b"
+                + " where s.retired=false "
+                + " and b.billType=:btp"
+                + " and b.patientEncounter=:pe"
+                + " and type(s.item)=:cls "
+                + " and s.item.inwardChargeType=:inw "
+                + " order by s.id";
+        HashMap hm = new HashMap();
+        hm.put("btp", BillType.InwardBill);
+        hm.put("pe", patientEncounter);
+        hm.put("cls", TimedItem.class);
+        hm.put("inw", inwardChargeType);
+        return getBillItemFacade().findObjectArrayByJpql(sql, hm, TemporalType.TIMESTAMP);
+    }
+
+    /**
+     * Sets the discount of the given timed-service BillItems to
+     * {@code (gross + margin) * percent / 100} and the net value to
+     * {@code gross + margin - discount}, in the database, in id chunks. Same
+     * arithmetic and order as the per-row Java version, so the values match.
+     */
+    public void applyDiscountPercentToBillItems(List<Long> billItemIds, double discountPercent) {
+        String sql = "UPDATE BillItem s SET"
+                + " s.discount = ((COALESCE(s.grossValue, 0.0) + COALESCE(s.marginValue, 0.0)) * :pct) / 100,"
+                + " s.netValue = (COALESCE(s.grossValue, 0.0) + COALESCE(s.marginValue, 0.0)) - (((COALESCE(s.grossValue, 0.0) + COALESCE(s.marginValue, 0.0)) * :pct) / 100)"
+                + " WHERE s.id IN :ids";
+        for (List<Long> chunk : chunkIds(billItemIds, BULK_UPDATE_ID_CHUNK)) {
+            HashMap hm = new HashMap();
+            hm.put("pct", discountPercent);
+            hm.put("ids", chunk);
+            getBillItemFacade().updateByJpql(sql, hm);
+        }
+    }
+
+    /**
+     * Mirrors a discount onto the PatientItems behind the given BillItems.
+     * One UPDATE per chunk of BillItems that share the same discount.
+     */
+    public void mirrorDiscountToPatientItems(List<Long> billItemIds, double discount) {
+        String sql = "UPDATE PatientItem p SET p.discount = :dis"
+                + " WHERE p.retired=false AND p.billItem.id IN :ids";
+        for (List<Long> chunk : chunkIds(billItemIds, BULK_UPDATE_ID_CHUNK)) {
+            HashMap hm = new HashMap();
+            hm.put("dis", discount);
+            hm.put("ids", chunk);
+            getPatientItemFacade().updateByJpql(sql, hm);
+        }
+    }
+
+    /**
      * The PatientItem carrying the timing behind a timed-service BillItem.
      * BillItem has no back-reference, so it is looked up from the owning side.
      */
