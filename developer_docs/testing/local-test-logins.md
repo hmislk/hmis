@@ -9,5 +9,6 @@ Scope: databases on the developer's own machine only. Production rules do not ch
 4. Never change the password of the developer's own account. Other local accounts may be changed.
 5. Post every change to a local account (created user, privileges, QA password) on the team hub in one line, so the developer knows.
 6. After a local database restore or refresh, check that the QA user and the developer's login both work before you say the work is done.
+7. Never scan the credentials files, never loop over or mask their lines, and never print a password.
 
 Related: [security rules](../rules/security.md), [Playwright workflow, section 1](playwright-e2e-workflow.md#1-login-and-department-selection).
