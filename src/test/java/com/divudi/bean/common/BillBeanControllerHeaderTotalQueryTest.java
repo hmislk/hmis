@@ -12,15 +12,16 @@ class BillBeanControllerHeaderTotalQueryTest {
 
     @Test
     void childQueryNetsCancelledChildOnlyWhenCancellationIsNotLinked() {
-        String jpql = BillBeanController.HEADER_CHILD_TOTAL_JPQL;
+        String jpql = BillBeanController.SURGERY_HEADER_CHILD_TOTAL_JPQL;
         assertTrue(jpql.contains("bf.forwardReferenceBill=:bill"));
-        assertTrue(jpql.contains("bf.cancelled=false or exists"));
-        assertTrue(jpql.contains("c.forwardReferenceBill=:bill"));
+        assertTrue(jpql.contains("left join bf.cancelledBill cb"));
+        assertTrue(jpql.contains("bf.cancelled=false or"));
+        assertTrue(jpql.contains("cb.forwardReferenceBill=:bill"));
     }
 
     @Test
     void refundQuerySkipsRefundsAlreadyLinkedToTheHeader() {
-        String jpql = BillBeanController.HEADER_REFUND_TOTAL_JPQL;
+        String jpql = BillBeanController.SURGERY_HEADER_REFUND_TOTAL_JPQL;
         assertTrue(jpql.contains("from RefundBill r"));
         assertTrue(jpql.contains("r.forwardReferenceBill is null"));
         assertTrue(jpql.contains("r.billedBill.forwardReferenceBill=:bill"));

@@ -222,7 +222,7 @@ public class PharmacyRequestForBhtController implements Serializable {
         settleBhtIssue(BillType.PharmacyBhtPre, getBatchBill().getFromDepartment(), BillNumberSuffix.PHISSUE);
 
         getBillBean().saveEncounterComponents(getPrintBill(), getBatchBill(), getSessionController().getLoggedUser());
-        getBillBean().updateBatchBill(getBatchBill());
+        getBillBean().updateSurgeryServiceBatchBill(getBatchBill());
 
     }
 
@@ -238,7 +238,7 @@ public class PharmacyRequestForBhtController implements Serializable {
         settleBhtIssue(BillType.StoreBhtPre, getBatchBill().getFromDepartment(), BillNumberSuffix.PHISSUE);
 
         getBillBean().saveEncounterComponents(getPrintBill(), getBatchBill(), getSessionController().getLoggedUser());
-        getBillBean().updateBatchBill(getBatchBill());
+        getBillBean().updateSurgeryServiceBatchBill(getBatchBill());
 
     }
 

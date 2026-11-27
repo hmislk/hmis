@@ -277,7 +277,7 @@ public class InwardProfessionalBillController implements Serializable {
 
         updateBillItem(encounterComponent.getBillItem());
         updateBill(encounterComponent.getBillItem().getBill());
-        getBillBean().updateBatchBill(getBatchBill());
+        getBillBean().updateSurgeryServiceBatchBill(getBatchBill());
 
     }
 
@@ -407,7 +407,7 @@ public class InwardProfessionalBillController implements Serializable {
             saveProfessionalBill();
         }
 
-        getBillBean().updateBatchBill(getBatchBill());
+        getBillBean().updateSurgeryServiceBatchBill(getBatchBill());
 
         JsfUtil.addSuccessMessage("Surgery Detail Successfull Updated");
 
@@ -418,7 +418,7 @@ public class InwardProfessionalBillController implements Serializable {
         getBillFeeFacade().edit(bf);
         updateBillItem(bf.getBillItem());
         updateBill(bf.getBill());
-        getBillBean().updateBatchBill(getBatchBill());
+        getBillBean().updateSurgeryServiceBatchBill(getBatchBill());
     }
 
     public void addProfessionalFee() {

@@ -325,7 +325,7 @@ public class InwardTimedItemController implements Serializable {
         getBillFeeFacade().edit(bf);
         updateBillItem(bf.getBillItem());
         updateBill(bf.getBill());
-        getBillBean().updateBatchBill(getBatchBill());
+        getBillBean().updateSurgeryServiceBatchBill(getBatchBill());
     }
 
     private void updateBillItem(BillItem billItem) {
@@ -412,7 +412,7 @@ public class InwardTimedItemController implements Serializable {
 
         updateBillItem(encounterComponent.getBillItem());
         updateBill(encounterComponent.getBillItem().getBill());
-        getBillBean().updateBatchBill(getBatchBill());
+        getBillBean().updateSurgeryServiceBatchBill(getBatchBill());
         surgeryBillController.refreshTimedEncounterComponents();
     }
 
@@ -653,7 +653,7 @@ public class InwardTimedItemController implements Serializable {
             saveTimeServiceBill();
         }
 
-        getBillBean().updateBatchBill(getBatchBill());
+        getBillBean().updateSurgeryServiceBatchBill(getBatchBill());
         surgeryBillController.refreshTimedEncounterComponents();
 
         JsfUtil.addSuccessMessage("Surgery Detail Successfull Updated");

@@ -3275,33 +3275,66 @@ public class BillBeanController implements Serializable {
     }
 
     /**
-     * Child bills of a header, netted for cancellation. A cancelled child still
-     * counts when its cancellation bill is itself linked to the header (pharmacy
-     * and store flows do this, so the pair nets to zero). A cancelled child whose
-     * cancellation bill is NOT linked (inward service, timed service) is left out,
-     * or the header would keep the cancelled amount.
+     * Child bills of a surgery header, netted for cancellation. A cancelled
+     * child still counts when its cancellation bill is itself linked to the
+     * header (pharmacy and store flows do this, so the pair nets to zero). A
+     * cancelled child whose cancellation bill is NOT linked (inward service,
+     * timed service, professional fee) is left out, or the header would keep
+     * the cancelled amount.
      */
-    static final String HEADER_CHILD_TOTAL_JPQL = "Select sum(bf.netTotal) from Bill bf where "
+    static final String SURGERY_HEADER_CHILD_TOTAL_JPQL = "Select sum(bf.netTotal) from Bill bf "
+            + " left join bf.cancelledBill cb where "
             + " bf.retired=false and bf.forwardReferenceBill=:bill "
-            + " and (bf.cancelled=false or exists "
-            + " (select c.id from CancelledBill c where c.billedBill=bf "
-            + " and c.retired=false and c.forwardReferenceBill=:bill))";
+            + " and (bf.cancelled=false or cb.forwardReferenceBill=:bill)";
 
     /**
-     * Refund bills (negative netTotal) of the header's children that are not
-     * linked to the header themselves. Linked refunds are already in the child
-     * sum, so they are skipped here to avoid counting them twice.
+     * Refund bills (negative netTotal) of the surgery header's children that
+     * are not linked to the header themselves. Linked refunds are already in
+     * the child sum, so they are skipped here to avoid counting them twice.
      */
-    static final String HEADER_REFUND_TOTAL_JPQL = "Select sum(r.netTotal) from RefundBill r where "
+    static final String SURGERY_HEADER_REFUND_TOTAL_JPQL = "Select sum(r.netTotal) from RefundBill r where "
             + " r.retired=false and r.forwardReferenceBill is null "
             + " and r.billedBill.forwardReferenceBill=:bill";
 
+    /**
+     * Updates the total of a SURGERY header bill so that cancelled children and
+     * refunds are netted out. Every flow that recomputes a surgery header must
+     * call this method, or the total flips back to the old sum. For any other
+     * header type it does the same as {@link #updateBatchBill(Bill)}, which is
+     * left unchanged because other flows rely on its sum.
+     *
+     * <p>{@link #updateBatchBillExcludingCancelled(Bill)} is not reused: it
+     * drops a cancelled pharmacy child while keeping that child's linked
+     * negative cancellation bill (a double subtraction), and it ignores refunds.</p>
+     *
+     * <p>The sums use {@code findSingleResultByJpql}, which throws on a query
+     * error, so a bad query cannot set the header to 0.</p>
+     */
+    public void updateSurgeryServiceBatchBill(Bill header) {
+        if (header == null) {
+            return;
+        }
+        if (header.getBillType() != BillType.SurgeryBill) {
+            updateBatchBill(header);
+            return;
+        }
+        HashMap<String, Object> hm = new HashMap<>();
+        hm.put("bill", header);
+        Double children = getBillFacade().findSingleResultByJpql(SURGERY_HEADER_CHILD_TOTAL_JPQL, hm);
+        Double refunds = getBillFacade().findSingleResultByJpql(SURGERY_HEADER_REFUND_TOTAL_JPQL, hm);
+        header.setTotal((children == null ? 0.0 : children) + (refunds == null ? 0.0 : refunds));
+        getBillFacade().edit(header);
+    }
+
+    // WARNING: this sum intentionally includes cancelled child bills.
+    // Some billing flows depend on that behaviour for reconciliation purposes.
+    // If you need to exclude cancelled bills, use getTotalByBillExcludingCancelled().
     private double getTotalByBill(Bill b) {
+        String sql = "Select sum(bf.netTotal) from Bill bf where "
+                + " bf.retired=false and bf.forwardReferenceBill=:bill";
         HashMap hm = new HashMap();
         hm.put("bill", b);
-        double children = getBillFacade().findDoubleByJpql(HEADER_CHILD_TOTAL_JPQL, hm);
-        double refunds = getBillFacade().findDoubleByJpql(HEADER_REFUND_TOTAL_JPQL, hm);
-        return children + refunds;
+        return getBillFacade().findDoubleByJpql(sql, hm);
     }
 
     private double getTotalByBillExcludingCancelled(Bill b) {
