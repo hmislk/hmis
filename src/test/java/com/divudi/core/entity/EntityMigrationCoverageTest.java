@@ -35,7 +35,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 /**
- * Fails when an entity maps a table or column that no migration under
+ * Warns when an entity maps a table or column that no migration under
  * src/main/resources/db/migrations mentions and that is not in the checked-in
  * baseline (src/test/resources/entity-migration-baseline.txt). Issue #26178.
  *
@@ -63,6 +63,7 @@ public class EntityMigrationCoverageTest {
 
     private static final Path MIGRATIONS = Paths.get("src/main/resources/db/migrations");
     private static final Path BASELINE = Paths.get("src/test/resources/entity-migration-baseline.txt");
+    private static final Path SUMMARY = Paths.get("target/entity-migration-summary.txt");
     private static final Path CLASSES = Paths.get("target/classes");
     private static final Pattern IDENT = Pattern.compile("[A-Za-z0-9_]+");
 
@@ -129,6 +130,11 @@ public class EntityMigrationCoverageTest {
         for (String w : warnings) {
             System.out.println(w);
         }
+        List<String> summary = new ArrayList<>();
+        summary.add(String.valueOf(failures.size()));
+        summary.addAll(failures);
+        Files.createDirectories(SUMMARY.getParent());
+        Files.write(SUMMARY, summary, StandardCharsets.UTF_8);
         assertTrue(failures.isEmpty(), "\nMapped entity columns or tables with no migration:\n  "
                 + String.join("\n  ", failures)
                 + "\nFix: add a migration under src/main/resources/db/migrations/ that creates it"
