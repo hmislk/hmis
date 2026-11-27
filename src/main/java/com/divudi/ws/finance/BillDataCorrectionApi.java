@@ -145,7 +145,7 @@ public class BillDataCorrectionApi {
         }
 
         ApiKey apiKey = apiKeyController.findApiKey(key);
-        if (apiKey == null || apiKey.getDateOfExpiary() == null || apiKey.getDateOfExpiary().before(new java.util.Date())) {
+        if (apiKey == null || apiKey.isRetired() || apiKey.getDateOfExpiary() == null || apiKey.getDateOfExpiary().before(new java.util.Date())) {
             return null;
         }
 
