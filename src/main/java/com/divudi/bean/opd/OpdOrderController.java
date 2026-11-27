@@ -2038,6 +2038,7 @@ public class OpdOrderController implements Serializable, ControllerWithPatient, 
         }
 
         if (depositTake != null) {
+            setBatchBill(null);
             depositTake.markBillSaved();
         }
         saveBatchBill();
