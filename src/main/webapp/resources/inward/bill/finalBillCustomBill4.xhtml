@@ -1077,7 +1077,7 @@
                                                 <f:convertNumber pattern="#,##0.00" />
                                             </h:outputLabel>
 
-                                            <h:outputLabel rendered="#{!cc.attrs.showProfessional}" value="#{cc.attrs.bill.hospitalFee}" >
+                                            <h:outputLabel rendered="#{!cc.attrs.showProfessional}" value="#{bhtSummeryController.copyHospitalChargesTotal(cc.attrs.bill)}" >
                                                 <f:convertNumber pattern="#,##0.00" />
                                             </h:outputLabel>
 
@@ -1127,7 +1127,7 @@
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>
 
-                                        <h:outputLabel rendered="#{!cc.attrs.showProfessional}" value="#{cc.attrs.bill.hospitalFee-cc.attrs.bill.discount}" >
+                                        <h:outputLabel rendered="#{!cc.attrs.showProfessional}" value="#{bhtSummeryController.copyHospitalChargesTotal(cc.attrs.bill) - cc.attrs.bill.discount}" >
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>
 
@@ -1252,8 +1252,8 @@
                                 </h:panelGroup>
 
                                 <h:panelGroup rendered="#{cc.attrs.showProfessional or configOptionApplicationController.getBooleanValueByKey('Inward Final Bill - Custom Bill 4 - Show Payments And Due Amounts On Copies Without Professional Fees', false)}">
-                                <h:panelGroup rendered="#{not empty bhtSummeryController.creditCompanyDueBreakdownForPrint(cc.attrs.bill)}">
-                                    <ui:repeat value="#{bhtSummeryController.creditCompanyDueBreakdownForPrint(cc.attrs.bill)}" var="due">
+                                <h:panelGroup rendered="#{not empty bhtSummeryController.copyDueBreakdown(cc.attrs.bill, cc.attrs.showProfessional)}">
+                                    <ui:repeat value="#{bhtSummeryController.copyDueBreakdown(cc.attrs.bill, cc.attrs.showProfessional)}" var="due">
                                         <tr>
                                             <td style="text-align: left;font-size: 13px!important;font-weight: bold!important;">
                                                 <h:outputLabel value="Due from #{due.companyName}" />
@@ -1270,7 +1270,7 @@
                                     </ui:repeat>
                                 </h:panelGroup>
 
-                                <h:panelGroup rendered="#{empty bhtSummeryController.creditCompanyDueBreakdownForPrint(cc.attrs.bill)}">
+                                <h:panelGroup rendered="#{empty bhtSummeryController.copyDueBreakdown(cc.attrs.bill, cc.attrs.showProfessional)}">
                                     <tr>
                                         <td style="text-align: left;font-size: 13px!important;font-weight: bold!important;">
                                             <h:outputLabel   value="Due Amount" />
@@ -1279,7 +1279,7 @@
                                             &nbsp;
                                         </td>
                                         <td style="text-align: right;font-size: 13px!important;font-weight: bold!important;">
-                                            <h:outputLabel value="#{cc.attrs.bill.netTotal-(cc.attrs.bill.paidAmount)}">
+                                            <h:outputLabel value="#{bhtSummeryController.copyDueAmount(cc.attrs.bill, cc.attrs.showProfessional)}">
                                                 <f:convertNumber pattern="#,##0.00" />
                                             </h:outputLabel>
                                         </td>

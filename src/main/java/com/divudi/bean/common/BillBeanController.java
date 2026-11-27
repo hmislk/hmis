@@ -1742,6 +1742,82 @@ public class BillBeanController implements Serializable {
 
     }
 
+    /**
+     * OPD batch bills (sale, cashier collection and cancellation). Each one
+     * holds the same payment as its individual bills, so a report that sums by
+     * payment method must skip them. The individual bills (sale, collection and
+     * "cancellation during batch bill cancellation") stay counted, so a sale
+     * and its cancellation net to zero.
+     */
+    public static List<BillTypeAtomic> batchBillsToSkipInPaymentTotals() {
+        return Arrays.asList(
+                BillTypeAtomic.OPD_BATCH_BILL_WITH_PAYMENT,
+                BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_WITH_PAYMENT,
+                BillTypeAtomic.OPD_BATCH_BILL_PAYMENT_COLLECTION_AT_CASHIER,
+                BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_PAYMENT_COLLECTION_AT_CASHIER,
+                BillTypeAtomic.OPD_BATCH_BILL_CANCELLATION,
+                BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_CANCELLATION);
+    }
+
+    /**
+     * JPQL for bills (or their net total) by payment method that skips the
+     * batch bills in {@link #batchBillsToSkipInPaymentTotals()}. Bills with no
+     * atomic type (old data) are kept.
+     */
+    static String paymentMethodBillsWithoutBatchJpql(boolean totalOnly) {
+        return paymentMethodBillsWithoutBatchJpql(totalOnly, false);
+    }
+
+    static String paymentMethodBillsWithoutBatchJpql(boolean totalOnly, boolean includeVat) {
+        return "select " + (totalOnly ? (includeVat ? "sum(b.netTotal+b.vat)" : "sum(b.netTotal)") : "b")
+                + " from Bill b "
+                + " where type(b)!=:type "
+                + " and b.institution=:ins "
+                + " and b.paymentMethod = :bTp "
+                + " and (b.billTypeAtomic is null or b.billTypeAtomic not in :skipAtomic) "
+                + " and b.createdAt between :fromDate and :toDate "
+                + " and b.retired=false"
+                + (totalOnly ? "" : " order by b.id desc ");
+    }
+
+    private Map<String, Object> paymentMethodBillsWithoutBatchParams(PaymentMethod paymentMethod, Date fromDate, Date toDate, Institution institution) {
+        Map<String, Object> temMap = new HashMap<>();
+        temMap.put("bTp", paymentMethod);
+        temMap.put("toDate", toDate);
+        temMap.put("fromDate", fromDate);
+        temMap.put("type", PreBill.class);
+        temMap.put("ins", institution);
+        temMap.put("skipAtomic", batchBillsToSkipInPaymentTotals());
+        return temMap;
+    }
+
+    /**
+     * Same as fetchBills(PaymentMethod, Date, Date, Institution) but without
+     * the OPD batch bills, so the batch is not counted on top of its bills.
+     */
+    public List<Bill> fetchBillsWithoutBatchBills(PaymentMethod paymentMethod, Date fromDate, Date toDate, Institution institution) {
+        return getBillFacade().findByJpql(paymentMethodBillsWithoutBatchJpql(false),
+                paymentMethodBillsWithoutBatchParams(paymentMethod, fromDate, toDate, institution), TemporalType.TIMESTAMP);
+    }
+
+    /**
+     * Same as calBillTotal(PaymentMethod, Date, Date, Institution) but without
+     * the OPD batch bills.
+     */
+    public double calBillTotalWithoutBatchBills(PaymentMethod paymentMethod, Date fromDate, Date toDate, Institution institution) {
+        return getBillFacade().findDoubleByJpql(paymentMethodBillsWithoutBatchJpql(true),
+                paymentMethodBillsWithoutBatchParams(paymentMethod, fromDate, toDate, institution), TemporalType.TIMESTAMP);
+    }
+
+    /**
+     * Same as calBillTotalWithVat(PaymentMethod, Date, Date, Institution) but
+     * without the OPD batch bills.
+     */
+    public double calBillTotalWithVatWithoutBatchBills(PaymentMethod paymentMethod, Date fromDate, Date toDate, Institution institution) {
+        return getBillFacade().findDoubleByJpql(paymentMethodBillsWithoutBatchJpql(true, true),
+                paymentMethodBillsWithoutBatchParams(paymentMethod, fromDate, toDate, institution), TemporalType.TIMESTAMP);
+    }
+
     public double calBillTotalWithVat(PaymentMethod paymentMethod, Date fromDate, Date toDate, Institution institution) {
 
         String sql;
