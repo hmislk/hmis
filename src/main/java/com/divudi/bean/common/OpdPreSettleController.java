@@ -55,6 +55,7 @@ import com.divudi.core.facade.StaffFacade;
 import com.divudi.core.facade.TokenFacade;
 import com.divudi.service.BillService;
 import com.divudi.service.opd.OpdPreSettleException;
+import com.divudi.service.opd.OpdPreSettlePaymentRows;
 import com.divudi.service.opd.OpdPreSettleRequest;
 import com.divudi.service.opd.OpdPreSettleWriter;
 import java.util.logging.Level;
@@ -608,54 +609,7 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
                 p.setCreater(getSessionController().getLoggedUser());
                 p.setPaymentMethod(cd.getPaymentMethod());
 
-                switch (cd.getPaymentMethod()) {
-                    case Card:
-                        p.setBank(cd.getPaymentMethodData().getCreditCard().getInstitution());
-                        p.setCreditCardRefNo(cd.getPaymentMethodData().getCreditCard().getNo());
-                        p.setPaidValue(cd.getPaymentMethodData().getCreditCard().getTotalValue());
-                        p.setComments(cd.getPaymentMethodData().getCreditCard().getComment());
-                        break;
-                    case Cheque:
-                        p.setChequeDate(cd.getPaymentMethodData().getCheque().getDate());
-                        p.setChequeRefNo(cd.getPaymentMethodData().getCheque().getNo());
-                        p.setPaidValue(cd.getPaymentMethodData().getCheque().getTotalValue());
-                        p.setComments(cd.getPaymentMethodData().getCheque().getComment());
-                        break;
-                    case Cash:
-                        p.setPaidValue(cd.getPaymentMethodData().getCash().getTotalValue());
-                        break;
-                    case ewallet:
-
-                    case Agent:
-                    case Credit:
-                        p.setReferenceNo(cd.getPaymentMethodData().getCredit().getReferralNo());
-                        p.setComments(cd.getPaymentMethodData().getCredit().getComment());
-                    case PatientDeposit:
-                        final Patient depositPatient = getSaleBill().getPatient();
-                        final Double balanceBefore = depositPatient.getRunningBalance();
-                        request.addUndo(() -> depositPatient.setRunningBalance(balanceBefore));
-                        if (depositPatient.getRunningBalance() != null) {
-                            depositPatient.setRunningBalance(depositPatient.getRunningBalance() - cd.getPaymentMethodData().getPatient_deposit().getTotalValue());
-                        } else {
-                            depositPatient.setRunningBalance(0.0 - cd.getPaymentMethodData().getPatient_deposit().getTotalValue());
-                        }
-                        request.getPatientsToSave().add(depositPatient);
-                    case Slip:
-                        p.setPaidValue(cd.getPaymentMethodData().getSlip().getTotalValue());
-                        p.setBank(cd.getPaymentMethodData().getSlip().getInstitution());
-                        p.setRealizedAt(cd.getPaymentMethodData().getSlip().getDate());
-                        p.setComments(cd.getPaymentMethodData().getSlip().getComment());
-                    case OnCall:
-                    case OnlineSettlement:
-                    case Staff:
-                        p.setPaidValue(cd.getPaymentMethodData().getStaffCredit().getTotalValue());
-                        if (cd.getPaymentMethodData().getStaffCredit().getToStaff() != null) {
-                            final Staff creditStaff = cd.getPaymentMethodData().getStaffCredit().getToStaff();
-                            request.addStaffCredit(creditStaff, cd.getPaymentMethodData().getStaffCredit().getTotalValue());
-                        }
-                    case YouOweMe:
-                    case MultiplePaymentMethods:
-                }
+                OpdPreSettlePaymentRows.fillMultipleRow(p, cd, getSaleBill().getPatient(), request);
 
                 ps.add(p);
             }
@@ -673,35 +627,31 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
                 case Card:
                     p.setBank(getPaymentMethodData().getCreditCard().getInstitution());
                     p.setCreditCardRefNo(getPaymentMethodData().getCreditCard().getNo());
-                    p.setPaidValue(getPaymentMethodData().getCreditCard().getTotalValue());
                     p.setComments(getPaymentMethodData().getCreditCard().getComment());
                     break;
                 case Cheque:
                     p.setChequeDate(getPaymentMethodData().getCheque().getDate());
                     p.setChequeRefNo(getPaymentMethodData().getCheque().getNo());
-                    p.setPaidValue(getPaymentMethodData().getCheque().getTotalValue());
                     p.setComments(getPaymentMethodData().getCheque().getComment());
                     break;
-                case Cash:
-                    p.setPaidValue(getPaymentMethodData().getCash().getTotalValue());
-                    break;
                 case ewallet:
-
+                    p.setPolicyNo(getPaymentMethodData().getEwallet().getReferralNo());
+                    p.setReferenceNo(getPaymentMethodData().getEwallet().getReferenceNo());
+                    p.setCreditCompany(getPaymentMethodData().getEwallet().getInstitution());
+                    p.setComments(getPaymentMethodData().getEwallet().getComment());
+                    break;
                 case Agent:
                 case Credit:
                     p.setReferenceNo(getPaymentMethodData().getCredit().getReferralNo());
                     p.setComments(getPaymentMethodData().getCredit().getComment());
-                case PatientDeposit:
+                    break;
                 case Slip:
                     p.setBank(getPaymentMethodData().getSlip().getInstitution());
-                    p.setPaidValue(getPaymentMethodData().getSlip().getTotalValue());
                     p.setRealizedAt(getPaymentMethodData().getSlip().getDate());
                     p.setComments(getPaymentMethodData().getSlip().getComment());
-                case OnCall:
-                case OnlineSettlement:
-                case Staff:
-                case YouOweMe:
-                case MultiplePaymentMethods:
+                    break;
+                default:
+                    break;
             }
 
             p.setPaidValue(p.getBill().getNetTotal());
