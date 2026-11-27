@@ -507,6 +507,9 @@ public class Finance {
         if (k == null) {
             return false;
         }
+        if (k.isRetired()) {
+            return false;
+        }
         if (k.getWebUser() == null) {
             return false;
         }
