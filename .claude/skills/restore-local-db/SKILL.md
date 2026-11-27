@@ -345,7 +345,6 @@ mysql --host=127.0.0.1 --port=3306 --protocol=TCP -uroot -p<simple> <db> -e "
 - `total_bills` should be production-scale and `latest_bill` recent (close to
   when the dump was taken). A tiny count means the `bill` table did not finish.
 - The import `.err` file must contain nothing but the password warning.
-- Check that the shared local QA user can log in before you report done. If it fails, check the stored hash and clear the app cache; never reset another user's password ([rules](../../../developer_docs/testing/local-test-logins.md)).
 
 ### 2.6 — Table-name case
 
@@ -397,6 +396,7 @@ Then:
   machine awake".
 - Restart local Payara (`asadmin restart-domain`) so its connection pool
   reconnects to the fresh schema.
+- After the restart, check that the shared local QA user can log in. If it fails, check the stored hash and clear the app cache. Never reset another user's password ([rules](../../../developer_docs/testing/local-test-logins.md)).
 - Tell the user to confirm the app works against the restored DB **before**
   deleting the Phase 2.2 rollback copies.
 
