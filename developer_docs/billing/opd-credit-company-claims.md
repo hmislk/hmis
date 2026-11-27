@@ -35,6 +35,8 @@ Screens: Financial Transaction Manager → Payment Management → Credit Company
 
 - A bill in an open claim cannot be refunded, returned or cancelled. A Draft or Rejected claim can be cancelled, which frees its bills. A Submitted or Resubmitted claim keeps its bills locked until the claim is rejected (then cancelled) or settled.
 - A bill with an approved write-off cannot be refunded, returned or cancelled until the write-off is cancelled.
+- Create Claim and a refund, return or cancel of the same bill never run at the same moment. The one that starts second is refused with "try again in a moment"; nothing is saved by it.
+- On the claim page, every action works on the claim the page was opened for. It is refused, with "open the claim again", when another claim was opened since in the same login or the department was changed.
 
 ## Settlement
 
@@ -88,5 +90,7 @@ Under Credit Company Payments → Outpatient Credit Management, next to Credit C
 - Write-off rules: `CreditCompanyWriteOffService` (request, approve, reject, cancel, `approvedWriteOffRefusal`, which `openClaimRefusal` calls).
 - The OPD credit due is `netTotal - (refundAmount + paidAmount + writtenOffAmount)`. In JPQL write the sum grouped, with `coalesce(b.writtenOffAmount, 0)`: EclipseLink reads `a - b - c` as `a - (b - c)`.
 - Every refund, return and cancel path for a claimable bill calls `openClaimRefusal` before it saves.
+- `openClaimRefusal` and `createClaim` take each bill in `ClaimBillGuard` (through the request-scoped `ClaimBillRequestGuard`) before they check, and hold it until the request ends. The refund, return and cancel pages save in several transactions, so a database lock cannot cover the check and the save. The guard is in memory, so it covers one application server.
+- OPD Due Search lists a bill only when `dueDecimalOf` (2 places) is above `MIN_DUE`, the same test as Create Claim.
 
 Related: [cancellation-vs-return-policy.md](cancellation-vs-return-policy.md), [credit-company-balance-management.md](credit-company-balance-management.md).

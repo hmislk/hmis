@@ -38,7 +38,7 @@
                   header="BHT Issue Request - Print Format Settings"
                   widgetVar="bhtIssueRequestPrintConfigDialog"
                   modal="true" width="500" resizable="false" closeOnEscape="true">
-            <p:ajax event="open" listener="#{pharmacyConfigController.loadCurrentConfig}" update="bhtIssueRequestPrintConfigPanel"/>
+            <p:ajax event="open" listener="#{pharmacyConfigController.loadCurrentConfig}" update="bhtIssueRequestPrintConfigPanel" resetValues="true" />
             <h:panelGroup id="bhtIssueRequestPrintConfigPanel" layout="block">
                 <div class="mb-3">
                     <h:selectBooleanCheckbox id="cbBiqA4" value="#{pharmacyConfigController.bhtIssueRequestReceiptA4}"/>

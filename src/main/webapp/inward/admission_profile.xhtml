@@ -240,6 +240,7 @@
                                 <div class="col-12">
                                     <p:commandButton
                                         value="Edit Admission"
+                                        title="Edit the admission details"
                                         ajax="false"
                                         rendered="#{webUserController.hasPrivilege('InwardAdmissionsEditAdmission')}"
                                         action="#{admissionController.navigateToEditAdmission}"
@@ -253,6 +254,7 @@
                                 <div class="col-6">
                                     <p:commandButton
                                         value="Edit Patient Details"
+                                        title="Edit the patient's personal details"
                                         ajax="false"
                                         rendered="#{webUserController.hasPrivilege('InwardEditPatientDetailsFromAdmission')}"
                                         action="#{patientController.navigateToOpdPatientEdit()}"
@@ -266,6 +268,7 @@
                                 <div class="col-6">
                                     <p:commandButton
                                         value="Edit Payment Details"
+                                        title="Edit the payment method and credit details of this admission"
                                         ajax="false"
                                         rendered="#{webUserController.hasPrivilege('InwardEditPaymentDetails')}"
                                         action="#{bhtEditController.navigateToEditPaymentDetails()}"
@@ -278,7 +281,19 @@
                                 </div>
                                 <div class="col-6">
                                     <p:commandButton
+                                        value="Change Admission Type"
+                                        title="Change the admission type of this admitted patient. Past charges keep the old type."
+                                        ajax="false"
+                                        rendered="#{webUserController.hasPrivilege('InwardChangeAdmissionType')}"
+                                        disabled="#{admissionController.current.id eq null or admissionController.current.discharged eq true or admissionController.current.paymentFinalized eq true}"
+                                        action="#{admissionTypeChangeController.navigateToChangeAdmissionType(admissionController.current)}"
+                                        icon="fa fa-exchange-alt"
+                                        class="w-100 ui-button-warning"/>
+                                </div>
+                                <div class="col-6">
+                                    <p:commandButton
                                         value="Cancel Admission"
+                                        title="Cancel this admission"
                                         ajax="false"
                                         rendered="#{webUserController.hasPrivilege('InwardAdmissionCancel')}"
                                         action="#{bhtEditController.navigateToCancelAdmission()}"
@@ -292,6 +307,7 @@
                                 <h:panelGroup rendered="#{admissionController.current.parentEncounter != null}" layout="block" styleClass="col-12">
                                     <p:commandButton
                                         value="Mother's Inpatient Profile"
+                                        title="Open the mother's inpatient dashboard"
                                         action="#{admissionController.navigateToAdmissionProfileById(admissionController.current.parentEncounter.id)}"
                                         icon="fa fa-female"
                                         ajax="false"

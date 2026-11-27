@@ -1,0 +1,160 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:body>
+
+        <ui:composition template="/inward/inward_reports.xhtml">
+
+            <ui:define name="subcontent">
+                <h:form id="frm">
+
+                    <h:panelGroup rendered="#{not webUserController.hasPrivilege('InwardReport')}">
+                        You are NOT authorized
+                    </h:panelGroup>
+
+                    <p:panel class="m-1" rendered="#{webUserController.hasPrivilege('InwardReport')}">
+                        <f:facet name="header">
+                            <div class="d-flex align-items-center gap-2">
+                                <h:outputText styleClass="fa fa-ban"/>
+                                <h:outputText value="Cancelled Admissions"/>
+                            </div>
+                        </f:facet>
+
+                        <div class="row g-2 align-items-end">
+                            <div class="col-md-3">
+                                <p:outputLabel for="fromDate" value="From (cancelled)"/>
+                                <p:calendar id="fromDate" styleClass="w-100" inputStyleClass="w-100 form-control"
+                                            value="#{cancelledAdmissionReportController.fromDate}"
+                                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                            </div>
+                            <div class="col-md-3">
+                                <p:outputLabel for="toDate" value="To (cancelled)"/>
+                                <p:calendar id="toDate" styleClass="w-100" inputStyleClass="w-100 form-control"
+                                            value="#{cancelledAdmissionReportController.toDate}"
+                                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                            </div>
+                            <div class="col-md-3">
+                                <p:outputLabel for="admTypeMenu" value="Admission Type"/>
+                                <p:selectOneMenu id="admTypeMenu" styleClass="w-100"
+                                                 value="#{cancelledAdmissionReportController.admissionType}">
+                                    <f:selectItem itemLabel="All" itemValue="#{null}"/>
+                                    <f:selectItems value="#{admissionTypeController.items}" var="at"
+                                                   itemValue="#{at}" itemLabel="#{at.name}"/>
+                                </p:selectOneMenu>
+                            </div>
+                            <div class="col-md-3">
+                                <p:outputLabel for="reasonMenu" value="Cancellation Reason"/>
+                                <p:selectOneMenu id="reasonMenu" styleClass="w-100" filter="true" filterMatchMode="contains"
+                                                 value="#{cancelledAdmissionReportController.reason}">
+                                    <f:selectItem itemLabel="All" itemValue="#{null}"/>
+                                    <f:selectItems value="#{admissionCancellationReasonController.allReasonsForReport}" var="r"
+                                                   itemValue="#{r}" itemLabel="#{admissionCancellationReasonController.reportLabel(r)}"/>
+                                </p:selectOneMenu>
+                            </div>
+                            <div class="col-md-3">
+                                <p:outputLabel for="cmbIns" value="Institution"/>
+                                <p:selectOneMenu id="cmbIns" styleClass="w-100" filter="true"
+                                                 value="#{cancelledAdmissionReportController.institution}">
+                                    <f:selectItem itemLabel="All Institutions" itemValue="#{null}"/>
+                                    <f:selectItems value="#{institutionController.companies}" var="ins"
+                                                   itemLabel="#{ins.name}" itemValue="#{ins}"/>
+                                    <p:ajax process="cmbIns" update="cmbDept"
+                                            listener="#{cancelledAdmissionReportController.clearDepartment()}"/>
+                                </p:selectOneMenu>
+                            </div>
+                            <div class="col-md-3">
+                                <p:outputLabel for="siteMenu" value="Site"/>
+                                <p:selectOneMenu id="siteMenu" styleClass="w-100" filter="true"
+                                                 value="#{cancelledAdmissionReportController.site}">
+                                    <f:selectItem itemLabel="All Sites" itemValue="#{null}"/>
+                                    <f:selectItems value="#{institutionController.sites}" var="site"
+                                                   itemLabel="#{site.name}" itemValue="#{site}"/>
+                                    <p:ajax process="siteMenu" update="cmbDept"
+                                            listener="#{cancelledAdmissionReportController.clearDepartment()}"/>
+                                </p:selectOneMenu>
+                            </div>
+                            <div class="col-md-3">
+                                <p:outputLabel for="cmbDept" value="Department"/>
+                                <p:selectOneMenu id="cmbDept" styleClass="w-100" filter="true" filterMatchMode="contains"
+                                                 value="#{cancelledAdmissionReportController.department}">
+                                    <f:selectItem itemLabel="All Departments" itemValue="#{null}"/>
+                                    <f:selectItems
+                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite(cancelledAdmissionReportController.institution, cancelledAdmissionReportController.site)}"
+                                        var="d" itemLabel="#{d.name}" itemValue="#{d}"/>
+                                </p:selectOneMenu>
+                            </div>
+                        </div>
+
+                        <div class="d-flex align-items-center gap-2 mt-2">
+                            <p:commandButton id="btnProcess" value="Process" icon="fas fa-cogs"
+                                             title="List the admissions cancelled in this period"
+                                             action="#{cancelledAdmissionReportController.fill()}"
+                                             ajax="false" styleClass="ui-button-success"/>
+                            <p:commandButton id="btnExcel" value="Excel" icon="fas fa-file-excel"
+                                             title="Download the list as an Excel file"
+                                             ajax="false" styleClass="ui-button-warning"
+                                             disabled="#{cancelledAdmissionReportController.rows eq null}">
+                                <p:dataExporter type="xlsx" target="tblCancelled" fileName="cancelled_admissions"/>
+                            </p:commandButton>
+                        </div>
+                    </p:panel>
+
+                    <p:panel id="pnlResults" class="m-1"
+                             rendered="#{webUserController.hasPrivilege('InwardReport') and cancelledAdmissionReportController.rows ne null}">
+                        <p:dataTable id="tblCancelled" value="#{cancelledAdmissionReportController.rows}" var="r"
+                                     emptyMessage="No cancelled admissions in this period"
+                                     styleClass="p-datatable-sm w-100" stripedRows="true"
+                                     rows="50" paginator="true" paginatorPosition="bottom"
+                                     rowsPerPageTemplate="50,100,200">
+                            <p:column headerText="Cancelled Date" sortBy="#{r.cancelledAt}" styleClass="text-wrap">
+                                <h:outputText value="#{r.cancelledAt}">
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                </h:outputText>
+                            </p:column>
+                            <p:column headerText="BHT No" sortBy="#{r.bhtNo}" exportValue="#{r.bhtNo}">
+                                <h:outputText value="#{r.bhtNo}"/>
+                            </p:column>
+                            <p:column headerText="Patient Name" sortBy="#{r.patientName}">
+                                <h:outputText value="#{r.patientName}"/>
+                            </p:column>
+                            <p:column headerText="MRN / PHN">
+                                <h:outputText value="#{r.patientPhn}"/>
+                            </p:column>
+                            <p:column headerText="Admission Type" sortBy="#{r.admissionTypeName}">
+                                <h:outputText value="#{r.admissionTypeName}"/>
+                            </p:column>
+                            <p:column headerText="Date of Admission" styleClass="text-wrap">
+                                <h:outputText value="#{r.dateOfAdmission}">
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                </h:outputText>
+                            </p:column>
+                            <p:column headerText="Admission Decided By">
+                                <h:outputText value="#{r.admissionDecidedBy}"/>
+                            </p:column>
+                            <p:column headerText="Cancellation Reason" sortBy="#{r.cancellationReason}">
+                                <h:outputText value="#{r.cancellationReason}"/>
+                            </p:column>
+                            <p:column headerText="Notes">
+                                <h:outputText value="#{r.notes}"/>
+                            </p:column>
+                            <p:column headerText="Cancellation Decided By">
+                                <h:outputText value="#{r.cancellationDecidedBy}"/>
+                            </p:column>
+                            <p:column headerText="Cancelled By">
+                                <h:outputText value="#{r.cancelledBy}"/>
+                            </p:column>
+                        </p:dataTable>
+                    </p:panel>
+
+                </h:form>
+            </ui:define>
+
+        </ui:composition>
+
+    </h:body>
+</html>

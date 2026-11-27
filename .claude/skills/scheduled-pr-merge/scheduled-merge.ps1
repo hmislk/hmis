@@ -35,7 +35,7 @@ if (-not $DryRun) {
     }
 }
 
-$json = & $gh pr view $Pr --repo $Repo --json state,baseRefName,headRefOid,mergeable,mergeStateStatus,statusCheckRollup 2>&1
+$json = & $gh pr view $Pr --repo $Repo --json state,isDraft,baseRefName,headRefOid,mergeable,mergeStateStatus,statusCheckRollup 2>&1
 if ($LASTEXITCODE -ne 0) { Log "gh pr view failed (retry next minute): $json"; exit 0 }
 $p = $json | ConvertFrom-Json
 
@@ -77,6 +77,7 @@ $failed = @($checks | Where-Object { $waiting -notcontains $_.Result -and $passe
 if ($failed.Count -gt 0) { $n = ($failed | ForEach-Object { $_.Name }) -join ', '; Log "failed checks: $n; giving up"; Finish "⏰ Scheduled merge cancelled: check(s) failed: $n." }
 $pending = @($checks | Where-Object { $waiting -contains $_.Result })
 if ($p.mergeable -eq 'CONFLICTING') { Log 'conflicts; giving up'; Finish '⏰ Scheduled merge cancelled: the PR has merge conflicts.' }
+if ($p.isDraft) { Log 'PR is a draft; retry next minute'; exit 0 }
 if ($pending.Count -gt 0 -or $p.mergeable -ne 'MERGEABLE' -or $p.mergeStateStatus -ne 'CLEAN') {
     Log "not ready (mergeable=$($p.mergeable) state=$($p.mergeStateStatus) pending=$($pending.Count)); retry next minute"; exit 0
 }

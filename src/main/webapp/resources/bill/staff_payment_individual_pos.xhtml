@@ -67,17 +67,27 @@
                     <!-- Fee lines of this patient / BHT (narrow POS layout) -->
                     <table style="width: 100%;">
                         <tr>
-                            <td style="text-align: left; font-weight: bold;">Bill No</td>
-                            <td style="text-align: left; font-weight: bold;">Service</td>
+                            <!-- Inward staff payment: BHT No and Admission Type of the fee's admission -->
+                            <td style="text-align: left; font-weight: bold;">
+                                <h:outputText value="Bill No" rendered="#{not (cc.attrs.bill.billTypeAtomic eq 'PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_INWARD_SERVICE')}" />
+                                <h:outputText value="BHT No" rendered="#{cc.attrs.bill.billTypeAtomic eq 'PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_INWARD_SERVICE'}" />
+                            </td>
+                            <td style="text-align: left; font-weight: bold;">
+                                <h:outputText value="Service" rendered="#{not (cc.attrs.bill.billTypeAtomic eq 'PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_INWARD_SERVICE')}" />
+                                <h:outputText value="Admission Type" rendered="#{cc.attrs.bill.billTypeAtomic eq 'PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_INWARD_SERVICE'}" />
+                            </td>
                             <td style="text-align: right; font-weight: bold;">Value</td>
                         </tr>
                         <ui:repeat value="#{vg.billItems}" var="bip">
                             <tr>
                                 <td style="text-align: left;">
-                                    <h:outputText value="#{bip.paidForBillFee.bill.deptId}" />
+                                    <h:outputText value="#{bip.paidForBillFee.bill.deptId}" rendered="#{not (cc.attrs.bill.billTypeAtomic eq 'PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_INWARD_SERVICE')}" />
+                                    <h:outputText value="#{bip.paidForBillFee.bill.patientEncounter.bhtNo}" rendered="#{cc.attrs.bill.billTypeAtomic eq 'PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_INWARD_SERVICE'}" />
                                 </td>
                                 <td style="text-align: left;">
-                                    <h:outputText value="#{empty bip.referanceBillItem.item ? bip.paidForBillFee.bill.procedure.item.name : bip.referanceBillItem.item.name}" />
+                                    <h:outputText value="#{empty bip.referanceBillItem.item ? bip.paidForBillFee.bill.procedure.item.name : bip.referanceBillItem.item.name}" rendered="#{not (cc.attrs.bill.billTypeAtomic eq 'PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_INWARD_SERVICE')}" />
+                                    <h:outputText value="#{bip.paidForBillFee.bill.patientEncounter.admissionType.name}" title="#{bip.paidForBillFee.bill.patientEncounter.admissionType.name}" rendered="#{cc.attrs.bill.billTypeAtomic eq 'PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_INWARD_SERVICE'}"
+                                                  style="display: inline-block; max-width: 3cm; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; vertical-align: bottom;" />
                                 </td>
                                 <td style="text-align: right;">
                                     <h:outputText value="#{bip.netValue}">

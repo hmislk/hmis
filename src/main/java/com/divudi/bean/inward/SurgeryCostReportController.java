@@ -108,22 +108,9 @@ public class SurgeryCostReportController implements Serializable {
     private String surgeryCostBarChartModel;
 
     private static final int IN_CLAUSE_BATCH_SIZE = 1000;
-    private static final List<BillTypeAtomic> DRUG_CHARGE_BILL_TYPES = Arrays.asList(
-            BillTypeAtomic.PHARMACY_DIRECT_ISSUE,
-            BillTypeAtomic.PHARMACY_DIRECT_ISSUE_CANCELLED,
-            BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE,
-            BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN,
-            BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION,
-            BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE,
-            BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_RETURN,
-            BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_CANCELLATION,
-            BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD,
-            BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN,
-            BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_CANCELLATION,
-            BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE,
-            BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_RETURN,
-            BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_CANCELLATION
-    );
+    // Same list the interim bill's Medicine total uses, so the porter ward return
+    // (credited on pharmacy accept) is netted out here too (#26093).
+    private static final List<BillTypeAtomic> DRUG_CHARGE_BILL_TYPES = com.divudi.core.data.inward.InwardMedicineBillTypes.ALL;
 
     public TheatreOccupancyStatus[] getTheatreOccupancyStatusValues() {
         return TheatreOccupancyStatus.values();

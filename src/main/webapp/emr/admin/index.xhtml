@@ -18,35 +18,36 @@
                                                   >
                                     <p:tab title="Clinical Metadata">
                                         <div class="d-grid gap-2">
-                                            <p:commandButton class="w-100" ajax="false" value="Vocabularies" action="#{vocabularyController.navigateToManageVocabularies()}"  ></p:commandButton>
-                                            <p:commandButton class="w-100" ajax="false" value="Symptoms" action="#{symptomController.navigateToManageSymptoms()}"  ></p:commandButton>
-                                            <p:commandButton class="w-100" ajax="false" value="Signs" action="#{signController.navigateToManageSigns()}"  ></p:commandButton>
-                                            <p:commandButton class="w-100" ajax="false" value="Diagnosis" action="#{diagnosisController.navigateToManageDiagnoses()}"  ></p:commandButton>
-                                            <p:commandButton class="w-100" ajax="false" value="Investigations" action="#{investigationController.navigateToManageInvestigationForEmr}"  ></p:commandButton>
-                                            <p:commandButton class="w-100" ajax="false" value="Procedures" action="#{procedureController.navigateToManageProcedures()}"  ></p:commandButton>
-                                            <p:commandButton class="w-100" ajax="false" value="Plan of actions" action="#{planController.navigateToManagePlans()}"  ></p:commandButton>
-                                            <p:commandButton class="w-100" ajax="false" value="Clinical Entities" action="#{clinicalEntityController.navigateToManageClinicalEntities()}"  ></p:commandButton>
+                                            <p:commandButton class="w-100 ui-button-info ui-button-outlined" icon="fa fa-arrow-right" title="Open Vocabularies" ajax="false" value="Vocabularies" action="#{vocabularyController.navigateToManageVocabularies()}"  ></p:commandButton>
+                                            <p:commandButton class="w-100 ui-button-info ui-button-outlined" icon="fa fa-arrow-right" title="Open Symptoms" ajax="false" value="Symptoms" action="#{symptomController.navigateToManageSymptoms()}"  ></p:commandButton>
+                                            <p:commandButton class="w-100 ui-button-info ui-button-outlined" icon="fa fa-arrow-right" title="Open Signs" ajax="false" value="Signs" action="#{signController.navigateToManageSigns()}"  ></p:commandButton>
+                                            <p:commandButton class="w-100 ui-button-info ui-button-outlined" icon="fa fa-arrow-right" title="Open Diagnosis" ajax="false" value="Diagnosis" action="#{diagnosisController.navigateToManageDiagnoses()}"  ></p:commandButton>
+                                            <p:commandButton class="w-100 ui-button-info ui-button-outlined" icon="fa fa-arrow-right" title="Open Investigations" ajax="false" value="Investigations" action="#{investigationController.navigateToManageInvestigationForEmr}"  ></p:commandButton>
+                                            <p:commandButton class="w-100 ui-button-info ui-button-outlined" icon="fa fa-arrow-right" title="Open Procedures" ajax="false" value="Procedures" action="#{procedureController.navigateToManageProcedures()}"  ></p:commandButton>
+                                            <p:commandButton class="w-100 ui-button-info ui-button-outlined" icon="fa fa-arrow-right" title="Open Plan of actions" ajax="false" value="Plan of actions" action="#{planController.navigateToManagePlans()}"  ></p:commandButton>
+                                            <p:commandButton class="w-100 ui-button-info ui-button-outlined" icon="fa fa-arrow-right" title="Open Clinical Entities" ajax="false" value="Clinical Entities" action="#{clinicalEntityController.navigateToManageClinicalEntities()}"  ></p:commandButton>
+                                            <p:commandButton class="w-100 ui-button-info ui-button-outlined" icon="fa fa-arrow-right" title="Open Discharge Conditions" ajax="false" value="Discharge Conditions" action="#{dischargeConditionController.navigateToManageDischargeConditions()}"  ></p:commandButton>
                                         
                                         </div>
                                     </p:tab>
                                     <p:tab title="Favourite Medicines">
                                         <div class="d-grid gap-2">
-                                            <p:commandButton class="w-100" ajax="false" value="Favourite Medicines By Age" action="#{favouriteController.navigateToFavoriteMedicineByAge()}"  ></p:commandButton>
-                                            <p:commandButton class="w-100" ajax="false" value="Favourite Medicines By Weight" action="#{favouriteController.navigateToFavoriteMedicineByWeight()}"  ></p:commandButton>
+                                            <p:commandButton class="w-100 ui-button-info ui-button-outlined" icon="fa fa-arrow-right" title="Open Favourite Medicines By Age" ajax="false" value="Favourite Medicines By Age" action="#{favouriteController.navigateToFavoriteMedicineByAge()}"  ></p:commandButton>
+                                            <p:commandButton class="w-100 ui-button-info ui-button-outlined" icon="fa fa-arrow-right" title="Open Favourite Medicines By Weight" ajax="false" value="Favourite Medicines By Weight" action="#{favouriteController.navigateToFavoriteMedicineByWeight()}"  ></p:commandButton>
                                             <p:commandButton styleClass="linkButton" ajax="false"
                                              value="Medicines" action="/clinical/clinical_favourite_item?faces-redirect=true"  ></p:commandButton>
                                         </div>
                                     </p:tab>
                                     <p:tab title="Favourite Diagnosis">
                                         <div class="d-grid gap-2">
-                                            <p:commandButton class="w-100" ajax="false" value="Favourite Diagnosis By Age" action="#{favouriteController.toAddFavDig()}"  ></p:commandButton>
+                                            <p:commandButton class="w-100 ui-button-info ui-button-outlined" icon="fa fa-arrow-right" title="Open Favourite Diagnosis By Age" ajax="false" value="Favourite Diagnosis By Age" action="#{favouriteController.toAddFavDig()}"  ></p:commandButton>
                                         </div>
                                     </p:tab>
                                     <p:tab title="Upload">
                                         <div class="d-grid gap-2">
-                                            <p:commandButton class="w-100" ajax="false" value="Diagnosis" action="#{dataUploadController.navigateToUploadDiagnoses()}"  ></p:commandButton>
-                                            <p:commandButton class="w-100" ajax="false" value="Upload Patients" action="#{dataUploadController.toUploadPatients()}"  ></p:commandButton>
-                                            <p:commandButton class="w-100" ajax="false" value="Upload Visits" action="#{dataUploadController.navigateToUploadVisits()}"  ></p:commandButton>
+                                            <p:commandButton class="w-100 ui-button-info ui-button-outlined" icon="fa fa-arrow-right" title="Open Diagnosis" ajax="false" value="Diagnosis" action="#{dataUploadController.navigateToUploadDiagnoses()}"  ></p:commandButton>
+                                            <p:commandButton class="w-100 ui-button-info ui-button-outlined" icon="fa fa-arrow-right" title="Open Upload Patients" ajax="false" value="Upload Patients" action="#{dataUploadController.toUploadPatients()}"  ></p:commandButton>
+                                            <p:commandButton class="w-100 ui-button-info ui-button-outlined" icon="fa fa-arrow-right" title="Open Upload Visits" ajax="false" value="Upload Visits" action="#{dataUploadController.navigateToUploadVisits()}"  ></p:commandButton>
                                         </div>
                                     </p:tab>
                                 </p:accordionPanel>

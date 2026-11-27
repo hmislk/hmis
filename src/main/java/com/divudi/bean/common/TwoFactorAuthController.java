@@ -588,7 +588,13 @@ public class TwoFactorAuthController implements Serializable {
             cancelLogin();
             showLockedNotice(u.getName());
         } else {
-            JsfUtil.addErrorMessage(message + " " + (MAX_FAILED_ATTEMPTS - u.getTwoFactorFailedAttempts()) + " attempt(s) left.");
+            int attemptsLeft = MAX_FAILED_ATTEMPTS - u.getTwoFactorFailedAttempts();
+            if (attemptsLeft > 0) {
+                JsfUtil.addErrorMessage(message + " " + attemptsLeft + " attempt(s) left.");
+            } else {
+                // The user could not be re-read, so there is no count to show
+                JsfUtil.addErrorMessage(message);
+            }
         }
     }
 

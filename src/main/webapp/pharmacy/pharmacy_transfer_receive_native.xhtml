@@ -297,7 +297,7 @@
                       maximizable="true"
                       closeOnEscape="true">
 
-                <p:ajax event="open" listener="#{pharmacyConfigController.loadCurrentConfig}" update="transferReceiveNativeConfigForm" />
+                <p:ajax event="open" listener="#{pharmacyConfigController.loadCurrentConfig}" update="transferReceiveNativeConfigForm" resetValues="true" />
 
                 <h:panelGroup id="transferReceiveNativeConfigForm" layout="block">
                     <div class="row">

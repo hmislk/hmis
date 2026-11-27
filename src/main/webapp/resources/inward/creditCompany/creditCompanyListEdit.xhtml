@@ -56,10 +56,35 @@
                         icon="fa fa-plus"
                         class="w-100 ui-button-success"
                         process="gpAddForm"
-                        update="gpAddForm tblCom"
+                        update="gpAddForm gpUnlisted tblCom"
                         action="#{cc.attrs.controller.addNewCreditCompany()}" />
                 </div>
             </div>
+        </h:panelGroup>
+
+        <!-- Company on the admission that was never added to the list (#26077) -->
+        <h:panelGroup id="gpUnlisted" layout="block">
+            <h:panelGroup layout="block" styleClass="alert alert-warning d-flex align-items-center gap-2 mb-3"
+                          rendered="#{cc.attrs.controller.unlistedAdmissionCompany ne null}">
+                <h:outputText value="Company on the admission, not in the list: #{cc.attrs.controller.unlistedAdmissionCompany.name}"
+                              />
+                <p:commandButton value="Remove from admission"
+                                 icon="fa fa-trash"
+                                 class="ui-button-danger ms-auto"
+                                 process="@this"
+                                 update="gpUnlisted tblCom"
+                                 action="#{cc.attrs.controller.clearUnlistedAdmissionCompany()}">
+                    <p:confirm header="Confirm Remove"
+                               message="Remove this company from the admission?"
+                               icon="pi pi-exclamation-triangle" />
+                </p:commandButton>
+                <p:commandButton value="Add to list"
+                                 icon="fa fa-plus"
+                                 class="ui-button-success"
+                                 process="@this"
+                                 update="gpUnlisted tblCom"
+                                 action="#{cc.attrs.controller.addUnlistedAdmissionCompanyToList()}" />
+            </h:panelGroup>
         </h:panelGroup>
 
         <!-- Existing companies table -->
@@ -109,7 +134,7 @@
                         title="Remove"
                         class="ui-button-danger"
                         process="tblCom"
-                        update="tblCom"
+                        update="gpUnlisted tblCom"
                         action="#{cc.attrs.controller.removeCreditCompany(ecc)}">
                         <p:confirm header="Confirm Remove"
                                    message="Remove this credit company?"

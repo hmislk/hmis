@@ -1878,7 +1878,7 @@ public class BillService {
                 BillTypeAtomic.PHARMACY_RETAIL_SALE_REFUND,
                 BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS,
                 BillTypeAtomic.PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER,
-                BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_ONLY,
+                BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEM_PAYMENTS,
                 BillTypeAtomic.PHARMACY_SALE_WITHOUT_STOCK,
                 BillTypeAtomic.PHARMACY_SALE_WITHOUT_STOCK_CANCELLED,
                 BillTypeAtomic.PHARMACY_SALE_WITHOUT_STOCK_REFUND,
@@ -3870,6 +3870,35 @@ public class BillService {
         jpql += " order by b.createdAt, bi.id ";
         List<BillItem> fetchedBillItems = billItemFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
         return fetchedBillItems;
+    }
+
+    /**
+     * Bill items of the given bill types for a set of encounters (an admission
+     * plus its child admissions), bound as an id list.
+     */
+    public List<BillItem> fetchBillItemsOfEncounters(Department department,
+            List<BillTypeAtomic> billTypeAtomics,
+            List<Long> patientEncounterIds) {
+        if (patientEncounterIds == null || patientEncounterIds.isEmpty()) {
+            return new ArrayList<>();
+        }
+        Map<String, Object> params = new HashMap<>();
+        String jpql = "select bi "
+                + " from BillItem bi "
+                + " join bi.bill b"
+                + " where b.retired=:ret "
+                + " and bi.retired=:ret "
+                + " and b.billTypeAtomic in :billTypesAtomics "
+                + " and b.patientEncounter.id in :peIds ";
+        params.put("ret", false);
+        params.put("billTypesAtomics", billTypeAtomics);
+        params.put("peIds", patientEncounterIds);
+        if (department != null) {
+            jpql += " and b.department=:dep ";
+            params.put("dep", department);
+        }
+        jpql += " order by b.createdAt, bi.id ";
+        return billItemFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
     }
 
     public List<BillItem> fetchBillItemsWithoutCancellationsAndReturns(Date fromDate,

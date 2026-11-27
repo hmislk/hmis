@@ -212,13 +212,15 @@ When you plan or schedule several hotfix merges for one window:
   minutes apart. Apps on different VMs may share a slot. The staging VM
   counts too: its apps are live.
 - **One merge per deploy branch per window.** The second PR to the same
-  branch keeps a red `single-deploy-pr` status after the first merges, until
-  the `single_deploy_pr_sweep` workflow re-runs (every 15 minutes), and a
-  scheduled merge of it can stop on that status. Put both fixes in one PR
+  branch can keep a red `single-deploy-pr` status after the first merges,
+  until the `single_deploy_pr_sweep` workflow re-runs. It runs when the deploy
+  of the first PR starts (about a minute), with a 15-minute schedule as
+  fallback, and a scheduled merge of it can stop on that status. Put both fixes in one PR
   (Step 1a). If two PRs already exist, give the second a slot at least 20
   minutes after the first, and before it merges confirm its
   `single-deploy-pr` status is green; if not, run the sweep by hand
-  (`gh workflow run single_deploy_pr_sweep.yml`) and wait for green.
+  (`gh workflow run single_deploy_pr_sweep.yml --ref development`) and wait
+  for green.
 
 ## Step 7b — Verify the Deploy Run
 

@@ -97,7 +97,7 @@ else
 fi
 
 info=$(gh pr view "$PR" --repo "$REPO" \
-  --json state,baseRefName,headRefOid,mergeable,mergeStateStatus,statusCheckRollup 2>&1) \
+  --json state,isDraft,baseRefName,headRefOid,mergeable,mergeStateStatus,statusCheckRollup 2>&1) \
   || not_ready "GitHub API error: $(echo "$info" | head -1)"
 state=$(jq -r .state <<<"$info")
 base=$(jq -r .baseRefName <<<"$info")
@@ -110,7 +110,7 @@ checks=$(jq '[.statusCheckRollup[] | {n: (.name // .context), r: (.conclusion //
               | group_by(.n) | map(max_by(.t))' <<<"$info")
 pending=$(jq '[.[] | select(.r | IN("","PENDING","QUEUED","IN_PROGRESS","EXPECTED","WAITING","REQUESTED"))] | length' <<<"$checks")
 failed=$(jq -r '[.[] | select((.r | IN("SUCCESS","NEUTRAL","SKIPPED","","PENDING","QUEUED","IN_PROGRESS","EXPECTED","WAITING","REQUESTED")) | not) | .n] | join(", ")' <<<"$checks")
-log "state=$state base=$base head=${head:0:10} mergeable=$mergeable mergeState=$mstate pending=$pending failed=[$failed]"
+log "state=$state draft=$(jq -r .isDraft <<<"$info") base=$base head=${head:0:10} mergeable=$mergeable mergeState=$mstate pending=$pending failed=[$failed]"
 
 # Already done (e.g. someone merged by hand, or a previous minute did).
 if [ "$state" = "MERGED" ]; then
@@ -142,6 +142,7 @@ fi
 [ "$mergeable" = "CONFLICTING" ] && give_up "the PR has merge conflicts."
 
 # Temporarily not ready: retry next minute until the window ends.
+[ "$(jq -r .isDraft <<<"$info")" != "true" ] || not_ready "the PR is a draft"
 [ "$pending" -eq 0 ] || not_ready "$pending check(s) still running"
 [ "$mergeable" = "MERGEABLE" ] || not_ready "GitHub mergeability is $mergeable"
 case "$mstate" in

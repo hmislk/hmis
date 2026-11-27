@@ -45,6 +45,7 @@ Tools in this folder:
 | Checks still running, mergeability still computing, network or API error, merge call failed | Retry next minute |
 | `BLOCKED` by branch rules, e.g. unresolved review conversations | Retry next minute; the log and comment name the cause |
 | Merge accepted but not yet `MERGED`, e.g. a merge queue | Keep checking; success is reported only once GitHub shows `MERGED` |
+| PR is a draft | Retry next minute; merges only once marked ready within the window |
 | PR closed, base changed, **new commits pushed**, a check failed, conflicts | Give up now: retrying can't fix these |
 | Still not ready in the last minute of the window | Give up |
 | Machine was off for the whole window | Give up, from the first run that does happen |

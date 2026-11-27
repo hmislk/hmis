@@ -1,0 +1,16 @@
+{
+  "version": "v2.32.0",
+  "description": "Create ADMISSIONTYPEHISTORY (dated admission type of an admission) if missing",
+  "githubIssue": "25814",
+  "author": "Dr M H B Ariyaratne",
+  "date": "2026-11-24",
+  "requiresDowntime": false,
+  "estimatedDurationMinutes": 1,
+  "affectedTables": ["admissiontypehistory"],
+  "preRequisites": [
+    "Run migration.sql by hand on the database BEFORE deploying a build that maps AdmissionTypeHistory. The migration page only gets this file in that same build, so it cannot run this step first.",
+    "Without this table the interim and final bill of every admission fails to load.",
+    "Idempotent; changes no data. Existing admissions get no row and keep their current admission type for the whole stay."
+  ],
+  "rollbackNotes": ["rollback.sql drops ADMISSIONTYPEHISTORY. The dated history of changed admission types is lost; every admission then uses its current type for the whole stay."]
+}

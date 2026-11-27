@@ -4,12 +4,15 @@ name: Single deploy PR guard
 # while an older PR to the same branch is still open. Add a second fix to the
 # open PR's head branch instead (hotfix-deploy skill, Step 1a). The oldest open
 # PR always passes. Re-run this check, or push, once the older PR is merged or
-# closed. single_deploy_pr_sweep.yml sets the same result as a commit status on
-# deploy branches that do not carry this workflow yet.
+# closed. When a PR is closed or merged, the sweep-on-close job re-sets the
+# status on the remaining open PRs to this branch. single_deploy_pr_sweep.yml
+# sets the same result as a commit status on deploy branches that do not carry
+# this workflow yet. This workflow takes effect only on deploy branches that
+# carry this file.
 
 on:
   pull_request:
-    types: [opened, reopened, synchronize, edited]
+    types: [opened, reopened, synchronize, edited, closed]
     branches:
       - '*-production'
       - '*-staging'
@@ -20,6 +23,7 @@ permissions:
 
 jobs:
   single-deploy-pr:
+    if: github.event.action != 'closed'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -45,3 +49,24 @@ jobs:
           git show "$BASE_SHA:.github/scripts/check_single_deploy_pr.py" > "$GUARD" 2>/dev/null \
             || cp .github/scripts/check_single_deploy_pr.py "$GUARD"
           python3 "$GUARD" --pr "$PR_NUMBER" --base "$BASE_REF"
+
+  # Closed or merged: clear a stale failure on the next PR. Runs the deploy
+  # branch's own script (the PR head is not checked out). Same-repo PRs only;
+  # a fork token cannot write statuses, and deploy PRs come from this repo.
+  sweep-on-close:
+    if: github.event.action == 'closed' && github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+      statuses: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.base.ref }}
+          persist-credentials: false
+
+      - name: Re-set single-deploy-pr status on open PRs to this branch
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 .github/scripts/check_single_deploy_pr.py --sweep

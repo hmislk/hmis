@@ -65,6 +65,7 @@ import com.divudi.core.facade.StockFacade;
 import com.divudi.core.facade.TokenFacade;
 import com.divudi.core.util.CommonFunctions;
 import com.divudi.core.util.JsfUtil;
+import com.divudi.core.util.PharmacyItemRefundFlags;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CashTransactionBean;
 import com.divudi.ejb.PharmacyBean;
@@ -1533,6 +1534,25 @@ public class PharmacyRefundForItemReturnsController implements Serializable, Con
         }
     }
 
+    /**
+     * Flags the original sale items as refunded once the refund and the
+     * balances are saved. A failure is logged and never undoes the refund
+     * (#24485).
+     */
+    private void markOriginalItemsRefunded() {
+        try {
+            for (BillItem tbi : itemReturnBill.getBillItems()) {
+                BillItem originalBillItem = tbi.getReferanceBillItem();
+                if (PharmacyItemRefundFlags.markRefunded(originalBillItem)) {
+                    getBillItemFacade().editAndFlush(originalBillItem);
+                }
+            }
+        } catch (RuntimeException e) {
+            java.util.logging.Logger.getLogger(PharmacyRefundForItemReturnsController.class.getName())
+                    .log(java.util.logging.Level.SEVERE, "Could not mark the original items refunded", e);
+        }
+    }
+
     public boolean errorCheckOnPaymentMethod() {
         System.out.println("=== ERROR CHECK ON PAYMENT METHOD DEBUG ===");
         System.out.println("Payment Method: " + getRefundBill().getPaymentMethod());
@@ -2385,6 +2405,8 @@ public class PharmacyRefundForItemReturnsController implements Serializable, Con
 
 //        getBillFacade().edit(getRefundBill());
         paymentService.updateBalances(refundPayments);
+
+        markOriginalItemsRefunded();
 
         Long tmpBillId = getRefundBill().getId();
 
