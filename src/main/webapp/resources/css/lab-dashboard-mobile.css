@@ -331,25 +331,38 @@
         overflow-x: auto;
     }
 
+    /* p:panelGrid default layout="grid" renders divs; the table selectors
+       cover layout="tabular" if it is ever set. */
     .lab-dashboard .lab-barcode-panel table.ui-panelgrid,
     .lab-dashboard .lab-barcode-panel table.ui-panelgrid > tbody,
     .lab-dashboard .lab-barcode-panel table.ui-panelgrid > tbody > tr,
-    .lab-dashboard .lab-barcode-panel table.ui-panelgrid > tbody > tr > td {
+    .lab-dashboard .lab-barcode-panel table.ui-panelgrid > tbody > tr > td,
+    .lab-dashboard .lab-barcode-panel div.ui-panelgrid .ui-panelgrid-content,
+    .lab-dashboard .lab-barcode-panel div.ui-panelgrid .ui-grid-row,
+    .lab-dashboard .lab-barcode-panel div.ui-panelgrid .ui-g {
         display: block;
         width: 100%;
     }
 
-    .lab-dashboard .lab-barcode-panel table.ui-panelgrid {
+    .lab-dashboard .lab-barcode-panel div.ui-panelgrid .ui-panelgrid-cell {
+        display: block;
+        float: none !important;
+        flex: none !important;
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+
+    .lab-dashboard .lab-barcode-panel .ui-panelgrid {
         margin-bottom: .75rem;
         border: 1px solid #dee2e6;
         border-radius: .5rem;
     }
 
-    .lab-dashboard .lab-barcode-panel table.ui-panelgrid .mt-4 {
+    .lab-dashboard .lab-barcode-panel .ui-panelgrid .mt-4 {
         margin-top: .5rem !important;
     }
 
-    .lab-dashboard .lab-barcode-panel table.ui-panelgrid .ui-button {
+    .lab-dashboard .lab-barcode-panel .ui-panelgrid .ui-button {
         white-space: normal;
         max-width: 100%;
     }
