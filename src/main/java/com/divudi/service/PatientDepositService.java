@@ -10,6 +10,7 @@ import com.divudi.core.entity.Patient;
 import com.divudi.core.entity.PatientDeposit;
 import com.divudi.core.entity.PatientDepositHistory;
 import com.divudi.core.entity.Payment;
+import com.divudi.core.entity.WebUser;
 import com.divudi.core.facade.PatientDepositFacade;
 import com.divudi.core.facade.PatientDepositHistoryFacade;
 import com.divudi.core.facade.PatientFacade;
@@ -264,6 +265,118 @@ public class PatientDepositService {
         createPatientDepositHitory(HistoryType.PatientDepositUtilization, pd, b, beforeBalance, afterBalance, 0 - Math.abs(amount));
     }
 
+    static final double TOLERANCE = 0.01;
+
+    /**
+     * Hardening, tracked under #26265.
+     *
+     * @throws PatientDepositException when the balance does not cover the amount
+     */
+    public PatientDepositTake takeFromDepositLocked(Patient patient, Department department, double amount,
+            double creditLimit, WebUser creater, Institution institution) {
+        return takeLocked(getDepositOfThePatient(patient, department), amount, creditLimit, creater, department, institution);
+    }
+
+    PatientDepositTake takeLocked(PatientDeposit found, double amount, double creditLimit,
+            WebUser creater, Department department, Institution institution) {
+        PatientDeposit pd = lockedCopyOf(found);
+        double taken = Math.abs(amount);
+        requireCover(pd, taken, creditLimit);
+        double before = balanceOf(pd);
+        pd.setBalance(before - taken);
+        patientDepositFacade.edit(pd);
+        PatientDepositTake take = new PatientDepositTake(pd, taken, before, before - taken, creditLimit);
+        take.setWriter(creater, department, institution);
+        take.setHistoryRow(writeHistoryRow(HistoryType.PatientDepositUtilization, pd, null, creater, department,
+                institution, before, before - taken, 0 - taken));
+        return take;
+    }
+
+    /**
+     * Hardening, tracked under #26265.
+     */
+    public void linkTakeHistory(PatientDepositTake take, Bill bill) {
+        PatientDepositHistory row = take.getHistoryRow();
+        if (row == null) {
+            return;
+        }
+        row.setBill(bill);
+        patientDepositHistoryFacade.edit(row);
+        take.setHistoryBill(bill);
+    }
+
+    /**
+     * Hardening, tracked under #26265.
+     */
+    public double reconcileTake(PatientDepositTake take, double billTotal) {
+        double total = Math.abs(billTotal);
+        double delta = total - take.getAmount();
+        if (Math.abs(delta) <= TOLERANCE) {
+            return 0.0;
+        }
+        PatientDeposit pd = lockedCopyOf(take.getDeposit());
+        double shortfall = 0.0;
+        if (delta > 0) {
+            double room = Math.max(0.0, balanceOf(pd) + Math.abs(take.getCreditLimit()));
+            if (delta > room) {
+                shortfall = delta - room;
+                delta = room;
+            }
+        }
+        if (delta == 0.0) {
+            return shortfall;
+        }
+        pd.setBalance(balanceOf(pd) - delta);
+        patientDepositFacade.edit(pd);
+        take.setAmount(take.getAmount() + delta);
+        take.setBalanceAfter(take.getBalanceAfter() - delta);
+        PatientDepositHistory row = take.getHistoryRow();
+        if (row != null) {
+            row.setTransactionValue(0 - take.getAmount());
+            row.setBalanceAfterTransaction(take.getBalanceAfter());
+            patientDepositHistoryFacade.edit(row);
+        }
+        return shortfall;
+    }
+
+    /**
+     * Hardening, tracked under #26265.
+     */
+    public void giveBackLocked(PatientDepositTake take) {
+        if (take == null || !take.canGiveBack()) {
+            return;
+        }
+        PatientDeposit pd = lockedCopyOf(take.getDeposit());
+        double before = balanceOf(pd);
+        double after = before + take.getAmount();
+        pd.setBalance(after);
+        patientDepositFacade.edit(pd);
+        writeHistoryRow(HistoryType.PatientDepositUtilizationCancel, pd, take.getHistoryBill(), take.getCreater(),
+                take.getDepartment(), take.getInstitution(), before, after, take.getAmount());
+        take.setGivenBack(true);
+    }
+
+    private static double balanceOf(PatientDeposit pd) {
+        return pd.getBalance() == null ? 0.0 : pd.getBalance();
+    }
+
+    /**
+     * Loads the deposit record. Hardening, tracked under #26265.
+     */
+    public PatientDeposit lockedCopyOf(PatientDeposit found) {
+        if (found == null || found.getId() == null) {
+            return found;
+        }
+        PatientDeposit pd = patientDepositFacade.findWithLock(found.getId());
+        return pd == null ? found : pd;
+    }
+
+    void requireCover(PatientDeposit pd, double amount, double creditLimit) {
+        if (amount > balanceOf(pd) + Math.abs(creditLimit) + TOLERANCE) {
+            throw new PatientDepositException("No Sufficient Patient Deposit");
+        }
+    }
+
     public void handleInPayment(Payment p, PatientDeposit pd) {
         Double beforeBalance = pd.getBalance();
         Double afterBalance = beforeBalance + Math.abs(p.getPaidValue());
@@ -320,6 +433,12 @@ public class PatientDepositService {
     }
 
     public void createPatientDepositHitory(HistoryType ht, PatientDeposit pd, Bill b, Double beforeBalance, Double afterBalance, Double transactionValue) {
+        writeHistoryRow(ht, pd, b, b.getCreater(), b.getDepartment(), b.getInstitution(), beforeBalance, afterBalance, transactionValue);
+    }
+
+    PatientDepositHistory writeHistoryRow(HistoryType ht, PatientDeposit pd, Bill b, WebUser creater,
+            Department department, Institution institution,
+            Double beforeBalance, Double afterBalance, Double transactionValue) {
         PatientDepositHistory pdh = new PatientDepositHistory();
         pdh.setPatientDeposit(pd);
         pdh.setBill(b);
@@ -327,31 +446,32 @@ public class PatientDepositService {
         pdh.setBalanceBeforeTransaction(beforeBalance);
         pdh.setTransactionValue(transactionValue);
         pdh.setBalanceAfterTransaction(afterBalance);
-        pdh.setCreater(b.getCreater());
+        pdh.setCreater(creater);
         pdh.setCreatedAt(new Date());
-        pdh.setDepartment(b.getDepartment());
-        pdh.setInstitution(b.getInstitution());
+        pdh.setDepartment(department);
+        pdh.setInstitution(institution);
 
         // Set site from department
         Institution site = null;
-        if (b.getDepartment() != null && b.getDepartment().getSite() != null) {
-            site = b.getDepartment().getSite();
+        if (department != null && department.getSite() != null) {
+            site = department.getSite();
         }
         pdh.setSite(site);
 
         // Calculate and set this patient's aggregate balances
         Patient patient = pd.getPatient();
         pdh.setPatientDepositBalanceForSite(calculatePatientBalanceForSite(patient, site));
-        pdh.setPatientDepositBalanceForInstitution(calculatePatientBalanceForInstitution(patient, b.getInstitution()));
+        pdh.setPatientDepositBalanceForInstitution(calculatePatientBalanceForInstitution(patient, institution));
         pdh.setPatientDepositBalanceForAllInstitutions(calculatePatientBalanceGlobal(patient));
 
         // Calculate and set all patients' aggregate balances
-        pdh.setAllPatientsDepositBalanceForDepartment(calculateAllPatientsBalanceForDepartment(b.getDepartment()));
+        pdh.setAllPatientsDepositBalanceForDepartment(calculateAllPatientsBalanceForDepartment(department));
         pdh.setAllPatientsDepositBalanceForSite(calculateAllPatientsBalanceForSite(site));
-        pdh.setAllPatientsDepositBalanceForInstitution(calculateAllPatientsBalanceForInstitution(b.getInstitution()));
+        pdh.setAllPatientsDepositBalanceForInstitution(calculateAllPatientsBalanceForInstitution(institution));
         pdh.setAllPatientsDepositBalanceForAllInstitutions(calculateAllPatientsBalanceGlobal());
 
         patientDepositHistoryFacade.create(pdh);
+        return pdh;
     }
 
     // ============================================
