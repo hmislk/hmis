@@ -309,7 +309,7 @@
                                                    >
                                             <h:panelGroup rendered="#{pvv.investigationItem.ixItemType eq 'Value'}"  >
                                                 <tr >
-                                                    <td style="min-width: 200px!important;">
+                                                    <td class="lab-pr-minw-200">
                                                         <h:outputLabel value="#{pvv.investigationItem.name}"></h:outputLabel>
                                                     </td>
                                                     <td class="w-100">
@@ -323,12 +323,11 @@
                                                         </p:inputText>
 
                                                         <p:selectOneMenu 
-                                                            class="mx-2" 
+                                                            class="mx-2 lab-pr-minw-300" 
                                                             value="#{pvv.strValue}" 
                                                             disabled="#{patientReportController.currentPatientReport.approved}"
                                                             rendered="#{pvv.investigationItem.ixItemValueType eq 'Varchar' and !empty pvv.investigationItem.investigationItemValues}" 
-                                                            editable="true"  
-                                                            style="min-width: 300px!important;" >
+                                                            editable="true" >
                                                             <f:selectItems value="#{pvv.investigationItem.investigationItemValues}" var="iiv" itemLabel="#{iiv.name}" itemValue="#{iiv.name}" ></f:selectItems>
                                                             <p:ajax process="@this" event="change" listener="#{patientReportController.savePatientReportItemValues()}"></p:ajax>
                                                         </p:selectOneMenu>
@@ -428,7 +427,7 @@
 
                                                 <h:panelGroup   rendered="#{pvcal.investigationItem.ixItemType eq 'Calculation'}">
                                                     <tr>
-                                                        <td style="min-width: 200px!important;">
+                                                        <td class="lab-pr-minw-200">
                                                             <h:outputLabel value="#{pvcal.investigationItem.name}" ></h:outputLabel>
                                                         </td>
                                                         <td >
@@ -468,7 +467,7 @@
                                             <ui:repeat value="#{patientReportController.currentPatientReport.patientReportItemValues}" var="pvf" >
                                                 <h:panelGroup rendered="#{pvf.investigationItem.ixItemType eq 'Flag'}" >
                                                     <tr>
-                                                        <td  style="min-width: 200px!important;">
+                                                        <td class="lab-pr-minw-200">
                                                             <h:outputLabel value="#{pvf.investigationItem.name}" ></h:outputLabel>
                                                         </td>
                                                         <td>
@@ -648,7 +647,7 @@
                                                         <h:panelGroup 
                                                             rendered="#{pvm.investigationItem.ixItemType eq 'Value'  or pvm.investigationItem.ixItemType eq 'Antibiotic' }" >
                                                             <tr>
-                                                                <td  style="min-width: 280px!important;">
+                                                                <td class="lab-pr-minw-280">
                                                                     <h:outputLabel value="#{pvm.investigationItem.name}" ></h:outputLabel>
                                                                 </td>
                                                                 <td >
@@ -663,7 +662,7 @@
                                                                     </h:panelGroup>
                                                                     <h:panelGroup rendered="#{pvm.investigationItem.ixItemValueType eq 'Varchar'}">
                                                                         <p:selectOneMenu 
-                                                                            id="cmbMicStrValGrouped" class="mt-1" value="#{pvm.strValue}" editable="true"  style="min-width: 300px!important;" disabled="#{patientReportController.currentPatientReport.approved}">
+                                                                            id="cmbMicStrValGrouped" class="mt-1 lab-pr-minw-300" value="#{pvm.strValue}" editable="true" disabled="#{patientReportController.currentPatientReport.approved}">
                                                                             <f:selectItem itemLabel="SENSITIVE" itemValue="SENSITIVE" ></f:selectItem>
                                                                             <f:selectItem itemLabel="RESISTANT" itemValue="Resistant" ></f:selectItem>
                                                                             <f:selectItem itemLabel="INTERMEDIATE" itemValue="Intermediate" ></f:selectItem>
@@ -724,7 +723,7 @@
                                         </div>
                                     </div>
 
-                                    <p:dialog id="dlgPath" header="Pathology Report" widgetVar="dlgPath" modal="true" height="600" styleClass="lab-pr-dialog" >
+                                    <p:dialog id="dlgPath" header="Pathology Report" widgetVar="dlgPath" modal="true" height="600" fitViewport="true" styleClass="lab-pr-dialog" >
 
                                         <h:panelGroup rendered="#{patientReportController.investigationItem eq null}" >
                                             <p:outputLabel value="Please select a template first" ></p:outputLabel>

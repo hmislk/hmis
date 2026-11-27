@@ -28,6 +28,7 @@
  *                          .lab-pr-preview-outer / -inner it is scaled to
  *                          fit by lab-report-preview-fit.js (all sizes)
  *   .lab-pr-dialog       - a p:dialog that must fit the phone screen
+ *   .lab-pr-minw-200/280/300 - desktop minimum width; 0 on phones
  *   .lab-pr-form-grid    - a 2-column h:panelGrid shown as 1 column
  *
  * @author H.K. Damith Deshan | hkddrajapaksha@gmail.com
@@ -87,6 +88,19 @@
 .lab-pr-preview-card .labReport,
 .lab-pr-preview-card .labReport1 {
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* Desktop minimum widths for entry cells and selects (reset on phones) */
+.lab-patient-report .lab-pr-minw-200 {
+    min-width: 200px !important;
+}
+
+.lab-patient-report .lab-pr-minw-280 {
+    min-width: 280px !important;
+}
+
+.lab-patient-report .lab-pr-minw-300 {
+    min-width: 300px !important;
 }
 
 @media print {
@@ -299,6 +313,7 @@
     .lab-patient-report table.lab-pr-entry-table .ui-selectonemenu,
     .lab-patient-report table.lab-pr-entry-table .ui-texteditor {
         width: 100% !important;
+        min-width: 0 !important;
         max-width: 100%;
         margin-left: 0 !important;
         margin-right: 0 !important;
