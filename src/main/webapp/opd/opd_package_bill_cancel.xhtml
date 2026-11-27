@@ -323,7 +323,7 @@
                             <h:panelGroup id="groupPrint" >
                                 <!-- Bill Print Templates -->
                                 <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFiveCustom4'}" >
-                                    <prints:five_five_opd_bill_custom_4 bill="#{billPackageController.bill}" duplicate="#{billPackageController.duplicatePrint}"/>
+                                    <prints:five_five_opd_bill_custom_4 bill="#{billPackageController.bill.cancelledBill ne null ? billPackageController.bill.cancelledBill : billPackageController.bill}" duplicate="#{billPackageController.duplicatePrint}"/>
                                 </h:panelGroup>
                                 <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePaper'}" >       
                                     <prints:five_five_paper_with_headings bill="#{billPackageController.bill}"/>
