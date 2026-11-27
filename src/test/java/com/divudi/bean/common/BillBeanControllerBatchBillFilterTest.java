@@ -14,15 +14,47 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class BillBeanControllerBatchBillFilterTest {
 
     @Test
-    void skipListHasBothBatchBillsWithPayment() {
-        assertEquals(2, BillBeanController.batchBillsToSkipInPaymentTotals().size());
+    void skipListHasBatchSaleCollectionAndCancellationTypes() {
+        assertEquals(6, BillBeanController.batchBillsToSkipInPaymentTotals().size());
         assertTrue(BillBeanController.batchBillsToSkipInPaymentTotals().contains(BillTypeAtomic.OPD_BATCH_BILL_WITH_PAYMENT));
         assertTrue(BillBeanController.batchBillsToSkipInPaymentTotals().contains(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_WITH_PAYMENT));
+        assertTrue(BillBeanController.batchBillsToSkipInPaymentTotals().contains(BillTypeAtomic.OPD_BATCH_BILL_PAYMENT_COLLECTION_AT_CASHIER));
+        assertTrue(BillBeanController.batchBillsToSkipInPaymentTotals().contains(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_PAYMENT_COLLECTION_AT_CASHIER));
+        assertTrue(BillBeanController.batchBillsToSkipInPaymentTotals().contains(BillTypeAtomic.OPD_BATCH_BILL_CANCELLATION));
+        assertTrue(BillBeanController.batchBillsToSkipInPaymentTotals().contains(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_CANCELLATION));
     }
 
     @Test
-    void skipListKeepsIndividualBills() {
+    void skipListKeepsIndividualBillsAndTheirCancellations() {
         assertFalse(BillBeanController.batchBillsToSkipInPaymentTotals().contains(BillTypeAtomic.OPD_BILL_WITH_PAYMENT));
+        assertFalse(BillBeanController.batchBillsToSkipInPaymentTotals().contains(BillTypeAtomic.OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER));
+        assertFalse(BillBeanController.batchBillsToSkipInPaymentTotals().contains(BillTypeAtomic.OPD_BILL_CANCELLATION));
+        assertFalse(BillBeanController.batchBillsToSkipInPaymentTotals().contains(BillTypeAtomic.OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION));
+        assertFalse(BillBeanController.batchBillsToSkipInPaymentTotals().contains(BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION));
+    }
+
+    @Test
+    void cancelledCardBatchNetsToZero() {
+        // Card batch of 1000: batch +1000, bills +1000, batch cancel -1000, bill cancels -1000.
+        java.util.Map<BillTypeAtomic, Double> rows = new java.util.LinkedHashMap<>();
+        rows.put(BillTypeAtomic.OPD_BATCH_BILL_WITH_PAYMENT, 1000.0);
+        rows.put(BillTypeAtomic.OPD_BILL_WITH_PAYMENT, 1000.0);
+        rows.put(BillTypeAtomic.OPD_BATCH_BILL_CANCELLATION, -1000.0);
+        rows.put(BillTypeAtomic.OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION, -1000.0);
+        double sum = 0;
+        for (java.util.Map.Entry<BillTypeAtomic, Double> e : rows.entrySet()) {
+            if (!BillBeanController.batchBillsToSkipInPaymentTotals().contains(e.getKey())) {
+                sum += e.getValue();
+            }
+        }
+        assertEquals(0.0, sum, 0.0001);
+    }
+
+    @Test
+    void vatTotalQuerySumsNetTotalPlusVatWithSameFilter() {
+        String jpql = BillBeanController.paymentMethodBillsWithoutBatchJpql(true, true);
+        assertTrue(jpql.startsWith("select sum(b.netTotal+b.vat) from Bill b"));
+        assertTrue(jpql.contains("b.billTypeAtomic not in :skipAtomic"));
     }
 
     @Test

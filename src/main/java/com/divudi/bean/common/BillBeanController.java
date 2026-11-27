@@ -1743,13 +1743,20 @@ public class BillBeanController implements Serializable {
     }
 
     /**
-     * OPD batch bills with payment. Each one holds the same payment as its
-     * individual bills, so a report that sums by payment method must skip them.
+     * OPD batch bills (sale, cashier collection and cancellation). Each one
+     * holds the same payment as its individual bills, so a report that sums by
+     * payment method must skip them. The individual bills (sale, collection and
+     * "cancellation during batch bill cancellation") stay counted, so a sale
+     * and its cancellation net to zero.
      */
     public static List<BillTypeAtomic> batchBillsToSkipInPaymentTotals() {
         return Arrays.asList(
                 BillTypeAtomic.OPD_BATCH_BILL_WITH_PAYMENT,
-                BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_WITH_PAYMENT);
+                BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_WITH_PAYMENT,
+                BillTypeAtomic.OPD_BATCH_BILL_PAYMENT_COLLECTION_AT_CASHIER,
+                BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_PAYMENT_COLLECTION_AT_CASHIER,
+                BillTypeAtomic.OPD_BATCH_BILL_CANCELLATION,
+                BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_CANCELLATION);
     }
 
     /**
@@ -1758,7 +1765,11 @@ public class BillBeanController implements Serializable {
      * atomic type (old data) are kept.
      */
     static String paymentMethodBillsWithoutBatchJpql(boolean totalOnly) {
-        return "select " + (totalOnly ? "sum(b.netTotal)" : "b")
+        return paymentMethodBillsWithoutBatchJpql(totalOnly, false);
+    }
+
+    static String paymentMethodBillsWithoutBatchJpql(boolean totalOnly, boolean includeVat) {
+        return "select " + (totalOnly ? (includeVat ? "sum(b.netTotal+b.vat)" : "sum(b.netTotal)") : "b")
                 + " from Bill b "
                 + " where type(b)!=:type "
                 + " and b.institution=:ins "
@@ -1795,6 +1806,15 @@ public class BillBeanController implements Serializable {
      */
     public double calBillTotalWithoutBatchBills(PaymentMethod paymentMethod, Date fromDate, Date toDate, Institution institution) {
         return getBillFacade().findDoubleByJpql(paymentMethodBillsWithoutBatchJpql(true),
+                paymentMethodBillsWithoutBatchParams(paymentMethod, fromDate, toDate, institution), TemporalType.TIMESTAMP);
+    }
+
+    /**
+     * Same as calBillTotalWithVat(PaymentMethod, Date, Date, Institution) but
+     * without the OPD batch bills.
+     */
+    public double calBillTotalWithVatWithoutBatchBills(PaymentMethod paymentMethod, Date fromDate, Date toDate, Institution institution) {
+        return getBillFacade().findDoubleByJpql(paymentMethodBillsWithoutBatchJpql(true, true),
                 paymentMethodBillsWithoutBatchParams(paymentMethod, fromDate, toDate, institution), TemporalType.TIMESTAMP);
     }
 
