@@ -16,7 +16,9 @@
                                  rowKey="#{item.id}"
                                  rows="10"
                                  rowsPerPageTemplate="10,20,30,40,50"
-                                 emptyMessage="No Specialities">
+                                 emptyMessage="No Specialities"
+                                 styleClass="p-datatable-sm"
+                                 paginatorPosition="bottom">
                         <p:ajax event="rowSelect"   update="createButton viewButton editButton deleteButton"/>
                         <p:ajax event="rowUnselect" update="createButton viewButton editButton deleteButton"/>
                         <p:column>
@@ -38,11 +40,13 @@
                             </f:facet>
                             <h:outputText value="#{item.description}"/>
                         </p:column>
-                        <f:facet name="footer">
-                            <p:commandButton id="createButton" icon="ui-icon-plus"   value="Create" actionListener="#{doctorSpecialityController.prepareCreate}" update=":DoctorSpecialityCreateForm" oncomplete="PF('DoctorSpecialityCreateDialog').show()"/>
-                            <p:commandButton id="viewButton"   icon="ui-icon-search" value="View" update=":DoctorSpecialityViewForm" oncomplete="PF('DoctorSpecialityViewDialog').show()" disabled="#{empty doctorSpecialityController.selected}"/>
-                            <p:commandButton id="editButton"   icon="ui-icon-pencil" value="Edit" update=":DoctorSpecialityEditForm" oncomplete="PF('DoctorSpecialityEditDialog').show()" disabled="#{empty doctorSpecialityController.selected}"/>
-                            <p:commandButton id="deleteButton" icon="ui-icon-trash"  value="Delete" actionListener="#{doctorSpecialityController.deleteSelected()}" update="datalist" disabled="#{empty doctorSpecialityController.selected}"/>
+                        <f:facet name="header">
+                            <div class="d-flex flex-wrap gap-2">
+                                <p:commandButton id="createButton" icon="fa fa-plus" value="Create" styleClass="ui-button-success" title="Create a new speciality" actionListener="#{doctorSpecialityController.prepareCreate}" update=":DoctorSpecialityCreateForm" oncomplete="PF('DoctorSpecialityCreateDialog').show()"/>
+                                <p:commandButton id="viewButton" icon="fa fa-eye" value="View" styleClass="ui-button-info ui-button-outlined" title="View the selected speciality" update=":DoctorSpecialityViewForm" oncomplete="PF('DoctorSpecialityViewDialog').show()" disabled="#{empty doctorSpecialityController.selected}"/>
+                                <p:commandButton id="editButton" icon="fa fa-pencil-alt" value="Edit" styleClass="ui-button-warning" title="Edit the selected speciality" update=":DoctorSpecialityEditForm" oncomplete="PF('DoctorSpecialityEditDialog').show()" disabled="#{empty doctorSpecialityController.selected}"/>
+                                <p:commandButton id="deleteButton" icon="fa fa-trash" value="Delete" styleClass="ui-button-danger" title="Delete the selected speciality" actionListener="#{doctorSpecialityController.deleteSelected()}" update="datalist" disabled="#{empty doctorSpecialityController.selected}"/>
+                            </div>
                         </f:facet>
                     </p:dataTable>
                 </p:panel>
