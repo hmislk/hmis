@@ -1041,6 +1041,88 @@ public class InwardBeanController implements Serializable {
     }
 
     /**
+     * Everything the discount step of Create Final Bill reads per charge type,
+     * for all charge types of the admission at once: a handful of statements
+     * instead of the same reads once per charge type per admission-type period
+     * (#17562). Projections and id rows only where the step needs no entity.
+     * The rows are the ones the per-type methods
+     * ({@link #getServiceBillFeesByInwardChargeType},
+     * {@link #getServiceBillItemByInwardChargeType},
+     * {@link #fetchTimedPatientItemByInwardChargeType},
+     * {@link #fetchTimedServiceBillItemsByInwardChargeType}) return, in id order.
+     */
+    public InwardChargeTypeRunData loadChargeTypeRunData(PatientEncounter patientEncounter) {
+        InwardChargeTypeRunData data = new InwardChargeTypeRunData();
+
+        HashMap hm = new HashMap();
+        hm.put("btp", BillType.InwardBill);
+        hm.put("pe", patientEncounter);
+        hm.put("st", FeeType.Staff);
+        data.setServiceFees(getBillFeeFacade().findObjectArrayByJpql(
+                "Select s, s.billItem.item.inwardChargeType From BillFee s"
+                + " where s.retired=false"
+                + " and s.billItem.bill.billType=:btp"
+                + " and s.billItem.bill.patientEncounter=:pe"
+                + " and s.fee.feeType!=:st"
+                + " order by s.id", hm, TemporalType.TIMESTAMP));
+
+        hm = new HashMap();
+        hm.put("btp", BillType.InwardBill);
+        hm.put("pe", patientEncounter);
+        hm.put("cls", TimedItem.class);
+        data.setServiceItems(getBillItemFacade().findObjectArrayByJpql(
+                "Select s, s.item.inwardChargeType From BillItem s"
+                + " where s.retired=false"
+                + " and s.bill.billType=:btp"
+                + " and s.bill.patientEncounter=:pe"
+                + " and type(s.item)!=:cls"
+                + " order by s.id", hm, TemporalType.TIMESTAMP));
+
+        // id, gross, margin, bill time, charge type
+        data.setTimedItemRows(getBillItemFacade().findObjectArrayByJpql(
+                "Select s.id, COALESCE(s.grossValue, 0.0), COALESCE(s.marginValue, 0.0), b.createdAt, s.item.inwardChargeType"
+                + " From BillItem s join s.bill b"
+                + " where s.retired=false"
+                + " and b.billType=:btp"
+                + " and b.patientEncounter=:pe"
+                + " and type(s.item)=:cls"
+                + " order by s.id", hm, TemporalType.TIMESTAMP));
+
+        hm = new HashMap();
+        hm.put("pe", patientEncounter);
+        hm.put("cls", TimedItem.class);
+        data.setTimedPatientItems(getPatientItemFacade().findObjectArrayByJpql(
+                "Select i, i.item.inwardChargeType From PatientItem i"
+                + " where type(i.item)=:cls"
+                + " and i.retired=false"
+                + " and i.billItem is null"
+                + " and i.patientEncounter=:pe"
+                + " order by i.id", hm, TemporalType.TIMESTAMP));
+
+        // Charge types the "no matrix" clear steps would still reach.
+        hm = new HashMap();
+        hm.put("btp", BillType.InwardBill);
+        hm.put("pe", patientEncounter);
+        data.addOtherRowTypes(getBillItemFacade().findObjectArrayByJpql(
+                "Select s.item.inwardChargeType, count(s) From BillItem s"
+                + " where s.retired=false"
+                + " and s.bill.billType=:btp"
+                + " and s.bill.patientEncounter=:pe"
+                + " group by s.item.inwardChargeType", hm, TemporalType.TIMESTAMP));
+        hm = new HashMap();
+        hm.put("pe", patientEncounter);
+        hm.put("cls", TimedItem.class);
+        data.addOtherRowTypes(getPatientItemFacade().findObjectArrayByJpql(
+                "Select s.item.inwardChargeType, count(s) From PatientItem s"
+                + " where s.retired=false"
+                + " and type(s.item)=:cls"
+                + " and s.billItem is not null"
+                + " and s.patientEncounter=:pe"
+                + " group by s.item.inwardChargeType", hm, TemporalType.TIMESTAMP));
+        return data;
+    }
+
+    /**
      * Id, gross, margin and bill time of the timed-service BillItems of one
      * charge type, in id order. A projection, so no BillItem (with its fees and
      * price matrix) is loaded per row. Same rows as
