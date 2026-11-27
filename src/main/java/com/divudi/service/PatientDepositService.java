@@ -282,6 +282,25 @@ public class PatientDepositService {
         createPatientDepositHitory(HistoryType.PatientDepositUtilization, pd, p.getBill(), beforeBalance, afterBalance,  0 - Math.abs(p.getPaidValue()));
     }
 
+    /**
+     * Gives back to Patient.runningBalance what an OPD bill paid by a single
+     * Patient Deposit method took from it at settle (#26260). Call it with the
+     * cancellation bill, beside updateBalance, which restores the deposit record.
+     */
+    public void restoreRunningBalanceOnCancel(Bill cancellationBill) {
+        if (cancellationBill == null || cancellationBill.getPatient() == null || cancellationBill.getPatient().getId() == null) {
+            return;
+        }
+        Patient pt = patientFacade.findWithoutCache(cancellationBill.getPatient().getId());
+        if (pt == null) {
+            return;
+        }
+        double amount = Math.abs(cancellationBill.getNetTotal());
+        double before = pt.getRunningBalance() == null ? 0.0 : pt.getRunningBalance();
+        pt.setRunningBalance(before + amount);
+        patientFacade.edit(pt);
+    }
+
     public void handleOPDBillCancel(Bill b, PatientDeposit pd) {
         Double beforeBalance = pd.getBalance();
         Double afterBalance = beforeBalance + Math.abs(b.getNetTotal());

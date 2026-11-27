@@ -2873,6 +2873,7 @@ public class OpdBatchBillCancellationController implements Serializable, Control
         if (cancellationBatchBill.getPaymentMethod() == PaymentMethod.PatientDeposit) {
             PatientDeposit pd = patientDepositService.getDepositOfThePatient(cancellationBatchBill.getPatient(), sessionController.getDepartment());
             patientDepositService.updateBalance(cancellationBatchBill, pd);
+            patientDepositService.restoreRunningBalanceOnCancel(cancellationBatchBill);
         } else if (cancellationBatchBill.getPaymentMethod() == PaymentMethod.Staff) {
             Staff staffForCredit = cancellationBatchBill.getToStaff();
             if (staffForCredit == null) {
@@ -3054,6 +3055,7 @@ public class OpdBatchBillCancellationController implements Serializable, Control
         if (cancellationBatchBill.getPaymentMethod() == PaymentMethod.PatientDeposit) {
             PatientDeposit pd = patientDepositService.getDepositOfThePatient(cancellationBatchBill.getPatient(), sessionController.getDepartment());
             patientDepositService.updateBalance(cancellationBatchBill, pd);
+            patientDepositService.restoreRunningBalanceOnCancel(cancellationBatchBill);
         } else if (cancellationBatchBill.getPaymentMethod() == PaymentMethod.Staff) {
             Staff staffForCredit = cancellationBatchBill.getToStaff();
             if (staffForCredit == null) {
