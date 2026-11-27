@@ -1192,6 +1192,10 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
         return billSessions;
     }
 
+    public void fillBillSessions() {
+        fillBillSessions((SelectEvent) null);
+    }
+
     public void fillBillSessions(SelectEvent event) {
         ////// // System.out.println("event = " + event);
         ////// // System.out.println("this = filling bill sessions");
