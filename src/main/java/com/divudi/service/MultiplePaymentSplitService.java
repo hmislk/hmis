@@ -157,6 +157,41 @@ public class MultiplePaymentSplitService {
     }
 
     /**
+     * The part of a bill that was paid by the given payment methods, as a
+     * share from 0 to 1. Example: Cash 400 and Patient Deposit 600 with
+     * included = Cash gives 0.4.
+     */
+    public static double includedShare(Map<PaymentMethod, Double> splitOfOne, Set<PaymentMethod> included) {
+        double share = 0;
+        if (splitOfOne == null || included == null) {
+            return share;
+        }
+        for (Map.Entry<PaymentMethod, Double> e : splitOfOne.entrySet()) {
+            if (included.contains(e.getKey())) {
+                share += e.getValue();
+            }
+        }
+        return share;
+    }
+
+    /**
+     * Adds up value times share for every bill that has a share.
+     */
+    public static double scaledSum(Map<Long, Double> valueByBillId, Map<Long, Double> shareByBillId) {
+        double total = 0;
+        if (valueByBillId == null || shareByBillId == null) {
+            return total;
+        }
+        for (Map.Entry<Long, Double> e : valueByBillId.entrySet()) {
+            Double share = shareByBillId.get(e.getKey());
+            if (share != null && e.getValue() != null) {
+                total += e.getValue() * share;
+            }
+        }
+        return total;
+    }
+
+    /**
      * Net total of the non-retired bills of one bill type that were paid by
      * Multiple Payment Methods, split by the payment method of their payment
      * rows. Includes cancellation and refund bills as negative values.
@@ -168,6 +203,49 @@ public class MultiplePaymentSplitService {
      * @return net total for each payment method, empty when there are none
      */
     public Map<PaymentMethod, Double> fetchNetTotalByPaymentMethod(BillType billType, Date fromDate, Date toDate, Institution institution) {
+        List<Object[]> rows = fetchMultiplePaymentBillRows(billType, fromDate, toDate, institution);
+        return totalByMethod(splitBills(toBillValues(rows, false), fetchPaidForBatchesOf(rows)));
+    }
+
+    /**
+     * Share paid by the included payment methods, for each Multiple Payment
+     * Methods bill of one bill type in a date-time range. Bills with no share
+     * (nothing paid by an included method, or no payments found) are not in
+     * the result.
+     *
+     * @param billType the bill type of the individual bills, for example OpdBill
+     * @param fromDate start of the date-time range
+     * @param toDate end of the date-time range
+     * @param institution the institution of the bills
+     * @param included the payment methods the report counts
+     * @return share from 0 to 1 by bill id
+     */
+    public Map<Long, Double> fetchIncludedShares(BillType billType, Date fromDate, Date toDate, Institution institution, Set<PaymentMethod> included) {
+        return sharesOf(fetchMultiplePaymentBillRows(billType, fromDate, toDate, institution), included);
+    }
+
+    /**
+     * Same as the method above, for bills picked by id.
+     */
+    public Map<Long, Double> fetchIncludedShares(Collection<Long> billIds, Set<PaymentMethod> included) {
+        List<Object[]> rows = new ArrayList<>();
+        if (billIds == null || billIds.isEmpty()) {
+            return new HashMap<>();
+        }
+        for (List<Long> chunk : chunks(billIds)) {
+            Map<String, Object> m = new HashMap<>();
+            String jpql = "select b.id, b.netTotal, bb.id, fb.id "
+                    + " from Bill b "
+                    + " left join b.backwardReferenceBill bb "
+                    + " left join b.forwardReferenceBill fb "
+                    + " where b.id in :ids ";
+            m.put("ids", chunk);
+            rows.addAll(billFacade.findObjectArrayByJpql(jpql, m, TemporalType.TIMESTAMP));
+        }
+        return sharesOf(rows, included);
+    }
+
+    private List<Object[]> fetchMultiplePaymentBillRows(BillType billType, Date fromDate, Date toDate, Institution institution) {
         Map<String, Object> m = new HashMap<>();
         String jpql = "select b.id, b.netTotal, bb.id, fb.id "
                 + " from Bill b "
@@ -183,47 +261,84 @@ public class MultiplePaymentSplitService {
         m.put("ins", institution);
         m.put("fromDate", fromDate);
         m.put("toDate", toDate);
-        List<Object[]> rows = billFacade.findObjectArrayByJpql(jpql, m, TemporalType.TIMESTAMP);
+        return billFacade.findObjectArrayByJpql(jpql, m, TemporalType.TIMESTAMP);
+    }
 
+    private Map<Long, Double> sharesOf(List<Object[]> rows, Set<PaymentMethod> included) {
+        Map<Long, Double> shares = new HashMap<>();
+        if (rows.isEmpty()) {
+            return shares;
+        }
+        // Use 1 or -1 as the value, so the result is the share and not a money value.
+        Map<Long, Map<PaymentMethod, Double>> split = splitBills(toBillValues(rows, true), fetchPaidForBatchesOf(rows));
+        for (Map.Entry<Long, Map<PaymentMethod, Double>> e : split.entrySet()) {
+            double share = Math.abs(includedShare(e.getValue(), included));
+            if (share > 0) {
+                shares.put(e.getKey(), share);
+            }
+        }
+        return shares;
+    }
+
+    private static List<BillValue> toBillValues(List<Object[]> rows, boolean signOnly) {
         List<BillValue> bills = new ArrayList<>();
+        for (Object[] r : rows) {
+            double value = r[1] == null ? 0.0 : ((Number) r[1]).doubleValue();
+            if (signOnly) {
+                value = value < 0 ? -1.0 : 1.0;
+            }
+            bills.add(new BillValue((Long) r[0], value, (Long) r[2], (Long) r[3]));
+        }
+        return bills;
+    }
+
+    private Map<Long, Map<PaymentMethod, Double>> fetchPaidForBatchesOf(List<Object[]> rows) {
         Set<Long> batchIds = new HashSet<>();
         for (Object[] r : rows) {
-            Long billId = (Long) r[0];
-            double value = r[1] == null ? 0.0 : ((Number) r[1]).doubleValue();
-            Long backwardId = (Long) r[2];
-            Long forwardId = (Long) r[3];
-            bills.add(new BillValue(billId, value, backwardId, forwardId));
-            if (backwardId != null) {
-                batchIds.add(backwardId);
+            if (r[2] != null) {
+                batchIds.add((Long) r[2]);
             }
-            if (forwardId != null) {
-                batchIds.add(forwardId);
+            if (r[3] != null) {
+                batchIds.add((Long) r[3]);
             }
         }
-        if (bills.isEmpty() || batchIds.isEmpty()) {
-            return new EnumMap<>(PaymentMethod.class);
+        return fetchPaidByMethod(batchIds);
+    }
+
+    private static final int CHUNK_SIZE = 500;
+
+    private static List<List<Long>> chunks(Collection<Long> ids) {
+        List<List<Long>> result = new ArrayList<>();
+        List<Long> all = new ArrayList<>(ids);
+        for (int i = 0; i < all.size(); i += CHUNK_SIZE) {
+            result.add(new ArrayList<>(all.subList(i, Math.min(i + CHUNK_SIZE, all.size()))));
         }
-        return totalByMethod(splitBills(bills, fetchPaidByMethod(batchIds)));
+        return result;
     }
 
     private Map<Long, Map<PaymentMethod, Double>> fetchPaidByMethod(Collection<Long> batchIds) {
         Map<Long, Map<PaymentMethod, Double>> result = new HashMap<>();
-        Map<String, Object> m = new HashMap<>();
-        String jpql = "select p.bill.id, p.paymentMethod, sum(p.paidValue) "
-                + " from Payment p "
-                + " where p.retired=false "
-                + " and p.bill.id in :batchIds "
-                + " group by p.bill.id, p.paymentMethod ";
-        m.put("batchIds", batchIds);
-        List<Object[]> rows = paymentFacade.findObjectArrayByJpql(jpql, m, TemporalType.TIMESTAMP);
-        for (Object[] r : rows) {
-            Long batchId = (Long) r[0];
-            PaymentMethod pm = (PaymentMethod) r[1];
-            double paid = r[2] == null ? 0.0 : ((Number) r[2]).doubleValue();
-            if (batchId == null || pm == null) {
-                continue;
+        if (batchIds == null || batchIds.isEmpty()) {
+            return result;
+        }
+        for (List<Long> chunk : chunks(batchIds)) {
+            Map<String, Object> m = new HashMap<>();
+            String jpql = "select p.bill.id, p.paymentMethod, sum(p.paidValue) "
+                    + " from Payment p "
+                    + " where p.retired=false "
+                    + " and p.bill.id in :batchIds "
+                    + " group by p.bill.id, p.paymentMethod ";
+            m.put("batchIds", chunk);
+            List<Object[]> rows = paymentFacade.findObjectArrayByJpql(jpql, m, TemporalType.TIMESTAMP);
+            for (Object[] r : rows) {
+                Long batchId = (Long) r[0];
+                PaymentMethod pm = (PaymentMethod) r[1];
+                double paid = r[2] == null ? 0.0 : ((Number) r[2]).doubleValue();
+                if (batchId == null || pm == null) {
+                    continue;
+                }
+                result.computeIfAbsent(batchId, k -> new EnumMap<>(PaymentMethod.class)).merge(pm, paid, Double::sum);
             }
-            result.computeIfAbsent(batchId, k -> new EnumMap<>(PaymentMethod.class)).merge(pm, paid, Double::sum);
         }
         return result;
     }

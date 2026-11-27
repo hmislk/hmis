@@ -3,8 +3,10 @@ package com.divudi.service;
 import com.divudi.core.data.PaymentMethod;
 import java.util.Arrays;
 import java.util.EnumMap;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -104,5 +106,58 @@ class MultiplePaymentSplitServiceTest {
         assertFalse(r.containsKey(7L));
         assertNull(r.get(8L));
         assertTrue(MultiplePaymentSplitService.totalByMethod(r).isEmpty());
+    }
+
+    @Test
+    void nonCashNonCardPartIsSplitOut() {
+        Map<PaymentMethod, Double> p = new EnumMap<>(PaymentMethod.class);
+        p.put(PaymentMethod.Cash, 400.0);
+        p.put(PaymentMethod.PatientDeposit, 600.0);
+        Map<PaymentMethod, Double> r = MultiplePaymentSplitService.splitValue(1000, p);
+        assertEquals(400, r.get(PaymentMethod.Cash), EPS);
+        assertEquals(600, r.get(PaymentMethod.PatientDeposit), EPS);
+    }
+
+    @Test
+    void includedShareCountsOnlyIncludedMethods() {
+        Map<PaymentMethod, Double> p = new EnumMap<>(PaymentMethod.class);
+        p.put(PaymentMethod.Cash, 400.0);
+        p.put(PaymentMethod.PatientDeposit, 600.0);
+        Map<PaymentMethod, Double> oneUnit = MultiplePaymentSplitService.splitValue(1, p);
+        Set<PaymentMethod> included = EnumSet.of(PaymentMethod.Cash, PaymentMethod.Card, PaymentMethod.Cheque, PaymentMethod.Slip);
+        assertEquals(0.4, MultiplePaymentSplitService.includedShare(oneUnit, included), EPS);
+        assertEquals(0.0, MultiplePaymentSplitService.includedShare(oneUnit, EnumSet.of(PaymentMethod.Card)), EPS);
+    }
+
+    @Test
+    void scaledSumUsesShareOfEachBill() {
+        Map<Long, Double> values = new HashMap<>();
+        values.put(1L, 1000.0);
+        values.put(2L, 500.0);
+        values.put(3L, 700.0);
+        Map<Long, Double> shares = new HashMap<>();
+        shares.put(1L, 0.4);
+        shares.put(2L, 1.0);
+        // bill 3 has no share: nothing was paid by an included method
+        assertEquals(900.0, MultiplePaymentSplitService.scaledSum(values, shares), EPS);
+    }
+
+    @Test
+    void cancelRefundedByDifferentMethodsUsesCancellationBatch() {
+        Map<Long, Map<PaymentMethod, Double>> byBatch = new HashMap<>();
+        byBatch.put(10L, paid(1500, 1400));
+        Map<PaymentMethod, Double> refund = new EnumMap<>(PaymentMethod.class);
+        refund.put(PaymentMethod.Cash, -1000.0);
+        refund.put(PaymentMethod.PatientDeposit, -1900.0);
+        byBatch.put(20L, refund);
+        Map<Long, Map<PaymentMethod, Double>> r = MultiplePaymentSplitService.splitBills(Arrays.asList(
+                new MultiplePaymentSplitService.BillValue(5L, -2900, 10L, 20L)), byBatch);
+        assertEquals(-1000, r.get(5L).get(PaymentMethod.Cash), EPS);
+        assertEquals(-1900, r.get(5L).get(PaymentMethod.PatientDeposit), EPS);
+        assertNull(r.get(5L).get(PaymentMethod.Card));
+        Set<PaymentMethod> included = EnumSet.of(PaymentMethod.Cash, PaymentMethod.Card, PaymentMethod.Cheque, PaymentMethod.Slip);
+        // the share is the size of the included part, whatever the sign
+        Map<PaymentMethod, Double> oneUnit = MultiplePaymentSplitService.splitValue(-1, refund);
+        assertEquals(1000.0 / 2900.0, Math.abs(MultiplePaymentSplitService.includedShare(oneUnit, included)), EPS);
     }
 }

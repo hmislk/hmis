@@ -20,9 +20,12 @@ import com.divudi.core.entity.lab.PatientInvestigation;
 import com.divudi.core.facade.BillFacade;
 import com.divudi.core.facade.PatientInvestigationFacade;
 import com.divudi.core.util.CommonFunctions;
+import com.divudi.service.MultiplePaymentSplitService;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Set;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -61,6 +64,8 @@ public class InstitutionLabSumeryController implements Serializable {
     PaymentMethod paymentMethod;
     @EJB
     BillFacade billFacade;
+    @EJB
+    MultiplePaymentSplitService multiplePaymentSplitService;
     double hosTot;
     double disTot;
     double profTot;
@@ -246,6 +251,59 @@ public class InstitutionLabSumeryController implements Serializable {
 
     }
 
+    private static final Set<PaymentMethod> NON_CREDIT_INCLUDED = EnumSet.of(PaymentMethod.Cash, PaymentMethod.Card, PaymentMethod.Cheque, PaymentMethod.Slip);
+
+    /**
+     * Ids of the Multiple Payment Methods bills that have a part paid by Cash,
+     * Card, Cheque or Slip (#26211). A single-method bill paid by another
+     * method is not in this report, so the same part of a Multiple Payment
+     * Methods bill must not count either.
+     */
+    private List<Long> fetchMultiplePaymentBillIds() {
+        return new ArrayList<>(multiplePaymentSplitService.fetchIncludedShares(BillType.OpdBill, fromDate, toDate, getSessionController().getInstitution(), NON_CREDIT_INCLUDED).keySet());
+    }
+
+    /**
+     * The part of a value over the Multiple Payment Methods bills of one bill
+     * class that was paid by the included methods. Uses the same filters as
+     * the single-method queries.
+     *
+     * @param valueExpression a JPQL expression on f, for example f.staffFee
+     */
+    private double multiplePaymentPart(String valueExpression, Bill bill, Institution ins) {
+        String sql = "select f.id, (" + valueExpression + ") "
+                + " from Bill f "
+                + " where f.retired=false "
+                + " and type(f) = :billClass "
+                + " and f.billType = :billType "
+                + " and f.paymentMethod = :pmMultiple "
+                + " and f.institution=:billedIns "
+                + " and f.createdAt between :fromDate and :toDate "
+                + " and f.toInstitution=:ins ";
+        Map<String, Object> tm = new HashMap<>();
+        tm.put("fromDate", fromDate);
+        tm.put("toDate", toDate);
+        tm.put("billType", BillType.OpdBill);
+        tm.put("billClass", bill.getClass());
+        tm.put("ins", ins);
+        tm.put("pmMultiple", PaymentMethod.MultiplePaymentMethods);
+        tm.put("billedIns", getSessionController().getInstitution());
+        if (department != null) {
+            sql += " and f.toDepartment=:dep";
+            tm.put("dep", department);
+        }
+        List<Object[]> rows = getBillFacade().findObjectArrayByJpql(sql, tm, TemporalType.TIMESTAMP);
+        Map<Long, Double> valueByBill = new HashMap<>();
+        for (Object[] r : rows) {
+            valueByBill.put((Long) r[0], r[1] == null ? 0.0 : ((Number) r[1]).doubleValue());
+        }
+        if (valueByBill.isEmpty()) {
+            return 0;
+        }
+        Map<Long, Double> shares = multiplePaymentSplitService.fetchIncludedShares(valueByBill.keySet(), NON_CREDIT_INCLUDED);
+        return MultiplePaymentSplitService.scaledSum(valueByBill, shares);
+    }
+
     private double calHospitalFeeWithout(Bill bill, Institution ins) {
         String sql;
         Map tm;
@@ -258,8 +316,7 @@ public class InstitutionLabSumeryController implements Serializable {
                 + " (f.paymentMethod = :pm1 "
                 + " or f.paymentMethod = :pm2 "
                 + " or f.paymentMethod = :pm3 "
-                + " or f.paymentMethod = :pm4"
-                + " or f.paymentMethod = :pm5)"
+                + " or f.paymentMethod = :pm4)"
                 + " and f.institution=:billedIns "
                 + " and f.createdAt between :fromDate and :toDate "
                 + " and f.toInstitution=:ins ";
@@ -273,13 +330,13 @@ public class InstitutionLabSumeryController implements Serializable {
         tm.put("pm2", PaymentMethod.Card);
         tm.put("pm3", PaymentMethod.Cheque);
         tm.put("pm4", PaymentMethod.Slip);
-        tm.put("pm5", PaymentMethod.MultiplePaymentMethods);
         tm.put("billedIns", getSessionController().getInstitution());
         if (department!=null) {
             sql+=" and f.toDepartment=:dep";
             tm.put("dep", department);
         }
-        return getBillFacade().findDoubleByJpql(sql, tm, TemporalType.TIMESTAMP);
+        double single = getBillFacade().findDoubleByJpql(sql, tm, TemporalType.TIMESTAMP);
+        return single + multiplePaymentPart("f.total - f.staffFee", bill, ins);
     }
 
     private double calProfessionalFeeWithout(Bill bill, Institution ins) {
@@ -291,7 +348,7 @@ public class InstitutionLabSumeryController implements Serializable {
                 + "  and type(f) = :billClass "
                 + " and f.institution=:billedIns "
                 + " and (f.paymentMethod = :pm1 or f.paymentMethod = :pm2 "
-                + " or f.paymentMethod = :pm3  or f.paymentMethod = :pm4 or f.paymentMethod = :pm5) and"
+                + " or f.paymentMethod = :pm3  or f.paymentMethod = :pm4) and"
                 + " f.billType = :billType and f.createdAt between :fromDate and :toDate and f.toInstitution=:ins ";
         tm = new HashMap();
         tm.put("fromDate", fromDate);
@@ -303,13 +360,13 @@ public class InstitutionLabSumeryController implements Serializable {
         tm.put("pm2", PaymentMethod.Card);
         tm.put("pm3", PaymentMethod.Cheque);
         tm.put("pm4", PaymentMethod.Slip);
-        tm.put("pm5", PaymentMethod.MultiplePaymentMethods);
         tm.put("billedIns", getSessionController().getInstitution());
         if (department!=null) {
             sql+=" and f.toDepartment=:dep";
             tm.put("dep", department);
         }
-        return getBillFacade().findDoubleByJpql(sql, tm, TemporalType.TIMESTAMP);
+        double single = getBillFacade().findDoubleByJpql(sql, tm, TemporalType.TIMESTAMP);
+        return single + multiplePaymentPart("f.staffFee", bill, ins);
     }
 
     private double calDiscountFeeWithout(Bill bill, Institution ins) {
@@ -319,7 +376,7 @@ public class InstitutionLabSumeryController implements Serializable {
                 + " f.retired=false and type(f) = :billClass "
                 + " and f.institution=:billedIns "
                 + " and (f.paymentMethod = :pm1 or f.paymentMethod = :pm2 "
-                + " or f.paymentMethod = :pm3  or f.paymentMethod = :pm4 or f.paymentMethod = :pm5) and "
+                + " or f.paymentMethod = :pm3  or f.paymentMethod = :pm4) and "
                 + " f.billType = :billType and f.createdAt between :fromDate and :toDate "
                 + " and f.toInstitution=:ins";
         tm = new HashMap();
@@ -332,13 +389,13 @@ public class InstitutionLabSumeryController implements Serializable {
         tm.put("pm2", PaymentMethod.Card);
         tm.put("pm3", PaymentMethod.Cheque);
         tm.put("pm4", PaymentMethod.Slip);
-        tm.put("pm5", PaymentMethod.MultiplePaymentMethods);
         tm.put("billedIns", getSessionController().getInstitution());
         if (department!=null) {
             sql+=" and f.toDepartment=:dep";
             tm.put("dep", department);
         }
-        return getBillFacade().findDoubleByJpql(sql, tm, TemporalType.TIMESTAMP);
+        double single = getBillFacade().findDoubleByJpql(sql, tm, TemporalType.TIMESTAMP);
+        return single + multiplePaymentPart("f.discount", bill, ins);
 
     }
 
@@ -967,6 +1024,7 @@ public class InstitutionLabSumeryController implements Serializable {
         String sql;
         Map tm;
 
+        List<Long> multipleBillIds = fetchMultiplePaymentBillIds();
         sql = "select f from Bill f where "
                 + " f.retired=false "
                 + " and f.billType = :billType"
@@ -974,7 +1032,8 @@ public class InstitutionLabSumeryController implements Serializable {
                 + " or f.paymentMethod = :pm2 "
                 + " or f.paymentMethod = :pm3 "
                 + " or f.paymentMethod = :pm4 "
-                + " or f.paymentMethod = :pm5 ) "
+                + (multipleBillIds.isEmpty() ? "" : " or f.id in :multipleBillIds ")
+                + " ) "
                 + " and f.institution=:ins "
                 + " and f.toInstitution=:toIns "
                 + " and f.createdAt  between :fromDate and :toDate";
@@ -988,9 +1047,11 @@ public class InstitutionLabSumeryController implements Serializable {
         tm.put("pm2", PaymentMethod.Card);
         tm.put("pm3", PaymentMethod.Cheque);
         tm.put("pm4", PaymentMethod.Slip);
-        tm.put("pm5", PaymentMethod.MultiplePaymentMethods);
         tm.put("ins", getSessionController().getInstitution());
         tm.put("toIns", getInstitution());
+        if (!multipleBillIds.isEmpty()) {
+            tm.put("multipleBillIds", multipleBillIds);
+        }
         if (department!=null) {
             sql+=" and f.toDepartment=:dep";
             tm.put("dep", department);
@@ -1055,8 +1116,11 @@ public class InstitutionLabSumeryController implements Serializable {
             String sql;
             Map tm;
 
+            List<Long> multipleBillIds = fetchMultiplePaymentBillIds();
             sql = "select f from Bill f where f.retired=false and f.billType = :billType and "
-                    + "(f.paymentMethod = :pm1 or f.paymentMethod = :pm2 or f.paymentMethod = :pm3 or f.paymentMethod = :pm4 or f.paymentMethod = :pm5 ) "
+                    + "(f.paymentMethod = :pm1 or f.paymentMethod = :pm2 or f.paymentMethod = :pm3 or f.paymentMethod = :pm4 "
+                    + (multipleBillIds.isEmpty() ? "" : " or f.id in :multipleBillIds ")
+                    + " ) "
                     + "and f.institution=:ins and f.toInstitution=:toIns and f.createdAt between :fromDate and :toDate order by type(f), f.insId";
 
             tm = new HashMap();
@@ -1067,9 +1131,11 @@ public class InstitutionLabSumeryController implements Serializable {
             tm.put("pm2", PaymentMethod.Card);
             tm.put("pm3", PaymentMethod.Cheque);
             tm.put("pm4", PaymentMethod.Slip);
-            tm.put("pm5", PaymentMethod.MultiplePaymentMethods);
             tm.put("ins", getSessionController().getInstitution());
             tm.put("toIns", getInstitution());
+            if (!multipleBillIds.isEmpty()) {
+                tm.put("multipleBillIds", multipleBillIds);
+            }
             labBills = getBillFacade().findByJpql(sql, tm, TemporalType.TIMESTAMP);
             if (labBills != null) {
                 calTotalsWithout();

@@ -41,9 +41,12 @@ import com.divudi.core.facade.PaymentFacade;
 import com.divudi.core.facade.StaffFacade;
 import com.divudi.core.util.CommonFunctions;
 import com.divudi.service.BillService;
+import com.divudi.core.facade.AbstractFacade;
+import com.divudi.service.MultiplePaymentSplitService;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.EnumSet;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -68,6 +71,8 @@ public class ServiceSummery implements Serializable {
     // <editor-fold defaultstate="collapsed" desc="EJBs">
     @EJB
     private BillService billService;
+    @EJB
+    private MultiplePaymentSplitService multiplePaymentSplitService;
     @EJB
     private BillItemFacade billItemFacade;
     @EJB
@@ -195,6 +200,58 @@ public class ServiceSummery implements Serializable {
 
     }
 
+    private static final String NON_CREDIT_FILTER = " and ( bi.bill.paymentMethod = :pm1 "
+            + " or  bi.bill.paymentMethod = :pm2 "
+            + " or  bi.bill.paymentMethod = :pm3"
+            + " or  bi.bill.paymentMethod = :pm4) ";
+
+    private static final Set<PaymentMethod> NON_CREDIT_INCLUDED = EnumSet.of(PaymentMethod.Cash, PaymentMethod.Card, PaymentMethod.Cheque, PaymentMethod.Slip);
+
+    /**
+     * Part of a Multiple Payment Methods bill that was paid by Cash, Card,
+     * Cheque or Slip (#26211). A single-method bill paid by another method
+     * does not count in the non-credit view, so the same part of a Multiple
+     * Payment Methods bill must not count either.
+     *
+     * Runs the same query as the non-credit view, for Multiple Payment
+     * Methods bills only, with one row for each bill. Each row is scaled by
+     * the share of that bill paid by the included methods.
+     *
+     * @param sql the full non-credit query, with the non-credit filter in it
+     * @param selectPart the select expression in that query, for example
+     * "select sum(bi.feeValue)"
+     * @param orderByPart the order by text at the end of the query, or empty
+     */
+    private double multiplePaymentPart(AbstractFacade<?> facade, String sql, String selectPart, String orderByPart, BillType billType, Map<String, Object> params) {
+        if (credit || billType == BillType.InwardBill) {
+            return 0;
+        }
+        String selectWithBill = selectPart.replaceFirst("^select ", "select bi.bill.id, ");
+        String multipleSql = sql.replace(NON_CREDIT_FILTER, " and bi.bill.paymentMethod = :pmMultiple ")
+                .replace(selectPart, selectWithBill);
+        if (!orderByPart.isEmpty()) {
+            multipleSql = multipleSql.replace(orderByPart, " group by bi.bill.id ");
+        } else {
+            multipleSql += " group by bi.bill.id ";
+        }
+        Map<String, Object> multipleParams = new HashMap<>(params);
+        multipleParams.remove("pm1");
+        multipleParams.remove("pm2");
+        multipleParams.remove("pm3");
+        multipleParams.remove("pm4");
+        multipleParams.put("pmMultiple", PaymentMethod.MultiplePaymentMethods);
+        List<Object[]> rows = facade.findObjectArrayByJpql(multipleSql, multipleParams, TemporalType.TIMESTAMP);
+        Map<Long, Double> valueByBill = new HashMap<>();
+        for (Object[] r : rows) {
+            valueByBill.put((Long) r[0], r[1] == null ? 0.0 : ((Number) r[1]).doubleValue());
+        }
+        if (valueByBill.isEmpty()) {
+            return 0;
+        }
+        Map<Long, Double> shares = multiplePaymentSplitService.fetchIncludedShares(valueByBill.keySet(), NON_CREDIT_INCLUDED);
+        return MultiplePaymentSplitService.scaledSum(valueByBill, shares);
+    }
+
     public double calServiceTot(BillType billType, FeeType feeType, boolean discharged) {
         String sql;
         Map temMap = new HashMap();
@@ -218,17 +275,12 @@ public class ServiceSummery implements Serializable {
 
                 temMap.put("pm", PaymentMethod.Credit);
             } else {
-                sql += " and ( bi.bill.paymentMethod = :pm1 "
-                        + " or  bi.bill.paymentMethod = :pm2 "
-                        + " or  bi.bill.paymentMethod = :pm3"
-                        + " or  bi.bill.paymentMethod = :pm4"
-                        + " or  bi.bill.paymentMethod = :pm5) ";
+                sql += NON_CREDIT_FILTER;
 
                 temMap.put("pm1", PaymentMethod.Cash);
                 temMap.put("pm2", PaymentMethod.Card);
                 temMap.put("pm3", PaymentMethod.Cheque);
                 temMap.put("pm4", PaymentMethod.Slip);
-                temMap.put("pm5", PaymentMethod.MultiplePaymentMethods);
             }
 
         }
@@ -241,7 +293,8 @@ public class ServiceSummery implements Serializable {
         temMap.put("itm", getService());
         //     List<BillItem> tmp = getBillItemFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
-        return getBillFeeFacade().findDoubleByJpql(sql, temMap, TemporalType.TIMESTAMP);
+        double total = getBillFeeFacade().findDoubleByJpql(sql, temMap, TemporalType.TIMESTAMP);
+        return total + multiplePaymentPart(getBillFeeFacade(), sql, "select sum(bi.feeValue)", "", billType, temMap);
 
     }
 
@@ -267,17 +320,12 @@ public class ServiceSummery implements Serializable {
 
                 temMap.put("pm", PaymentMethod.Credit);
             } else {
-                sql += " and ( bi.bill.paymentMethod = :pm1 "
-                        + " or  bi.bill.paymentMethod = :pm2 "
-                        + " or  bi.bill.paymentMethod = :pm3"
-                        + " or  bi.bill.paymentMethod = :pm4"
-                        + " or  bi.bill.paymentMethod = :pm5) ";
+                sql += NON_CREDIT_FILTER;
 
                 temMap.put("pm1", PaymentMethod.Cash);
                 temMap.put("pm2", PaymentMethod.Card);
                 temMap.put("pm3", PaymentMethod.Cheque);
                 temMap.put("pm4", PaymentMethod.Slip);
-                temMap.put("pm5", PaymentMethod.MultiplePaymentMethods);
             }
 
         }
@@ -288,7 +336,8 @@ public class ServiceSummery implements Serializable {
         temMap.put("bTp", billType);
         temMap.put("itm", getService());
 
-        return getBillFeeFacade().findDoubleByJpql(sql, temMap, TemporalType.TIMESTAMP);
+        double total = getBillFeeFacade().findDoubleByJpql(sql, temMap, TemporalType.TIMESTAMP);
+        return total + multiplePaymentPart(getBillFeeFacade(), sql, "select sum(bi.feeVat)", "", billType, temMap);
 
     }
 
@@ -530,17 +579,12 @@ public class ServiceSummery implements Serializable {
 
                 temMap.put("pm", PaymentMethod.Credit);
             } else {
-                sql += " and ( bi.bill.paymentMethod = :pm1 "
-                        + " or  bi.bill.paymentMethod = :pm2 "
-                        + " or  bi.bill.paymentMethod = :pm3"
-                        + " or  bi.bill.paymentMethod = :pm4"
-                        + " or  bi.bill.paymentMethod = :pm5) ";
+                sql += NON_CREDIT_FILTER;
 
                 temMap.put("pm1", PaymentMethod.Cash);
                 temMap.put("pm2", PaymentMethod.Card);
                 temMap.put("pm3", PaymentMethod.Cheque);
                 temMap.put("pm4", PaymentMethod.Slip);
-                temMap.put("pm5", PaymentMethod.MultiplePaymentMethods);
             }
 
         }
@@ -559,7 +603,9 @@ public class ServiceSummery implements Serializable {
         temMap.put("bType", billType);
 
         temMap.put("ins", getSessionController().getInstitution());
-        return getBillItemFacade().countByJpql(sql, temMap, TemporalType.TIMESTAMP);
+        long count = getBillItemFacade().countByJpql(sql, temMap, TemporalType.TIMESTAMP);
+        // A bill paid partly by a non-included method counts only for its included share.
+        return count + Math.round(multiplePaymentPart(getBillItemFacade(), sql, "select count(bi)", " order by bi.item.name", billType, temMap));
 
     }
 
@@ -648,17 +694,12 @@ public class ServiceSummery implements Serializable {
 
                 temMap.put("pm", PaymentMethod.Credit);
             } else {
-                sql += " and ( bi.bill.paymentMethod = :pm1 "
-                        + " or  bi.bill.paymentMethod = :pm2 "
-                        + " or  bi.bill.paymentMethod = :pm3"
-                        + " or  bi.bill.paymentMethod = :pm4"
-                        + " or  bi.bill.paymentMethod = :pm5) ";
+                sql += NON_CREDIT_FILTER;
 
                 temMap.put("pm1", PaymentMethod.Cash);
                 temMap.put("pm2", PaymentMethod.Card);
                 temMap.put("pm3", PaymentMethod.Cheque);
                 temMap.put("pm4", PaymentMethod.Slip);
-                temMap.put("pm5", PaymentMethod.MultiplePaymentMethods);
             }
 
         }
@@ -674,6 +715,17 @@ public class ServiceSummery implements Serializable {
         temMap.put("ins", getSessionController().getInstitution());
         temMap.put("bTp", billType);
         temMap.put("itm", item);
+        if (!credit && billType != BillType.InwardBill) {
+            // Multiple Payment Methods bills with a part paid by an included method are listed (#26211).
+            Set<Long> multipleBillIds = multiplePaymentSplitService.fetchIncludedShares(billType, getFromDate(), getToDate(), getSessionController().getInstitution(), NON_CREDIT_INCLUDED).keySet();
+            if (!multipleBillIds.isEmpty()) {
+                sql = sql.replace(NON_CREDIT_FILTER, " and ( ( bi.bill.paymentMethod = :pm1 "
+                        + " or  bi.bill.paymentMethod = :pm2 "
+                        + " or  bi.bill.paymentMethod = :pm3"
+                        + " or  bi.bill.paymentMethod = :pm4) or bi.bill.id in :multipleBillIds ) ");
+                temMap.put("multipleBillIds", new ArrayList<>(multipleBillIds));
+            }
+        }
         List<BillItem> tmp = getBillItemFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
         return tmp;

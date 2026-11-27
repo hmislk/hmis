@@ -4359,12 +4359,21 @@ public class BookKeepingSummery implements Serializable {
         creditCardTotal = getBillBean().calBillTotal(PaymentMethod.Card, getFromDate(), getToDate(), getInstitution());
         chequeTotal = getBillBean().calBillTotal(PaymentMethod.Cheque, getFromDate(), getToDate(), getInstitution());
         slipTotal = getBillBean().calBillTotal(PaymentMethod.Slip, getFromDate(), getToDate(), getInstitution());
-        // The Card, Cheque and Slip parts of Multiple Payment Methods OPD bills come off Net Cash too (#26211).
+        // Every part of a Multiple Payment Methods OPD bill that was not paid in Cash comes off Net Cash (#26211).
+        // Card, Cheque and Slip go to their own totals. Other methods (Patient Deposit, e-Wallet and so on)
+        // go to otherNonCashMultiplePaymentTotal, as a single-method bill paid by them is not in Net Cash.
         Map<PaymentMethod, Double> multiplePaymentParts = multiplePaymentSplitService.fetchNetTotalByPaymentMethod(BillType.OpdBill, getFromDate(), getToDate(), getInstitution());
         creditCardTotal += multiplePaymentParts.getOrDefault(PaymentMethod.Card, 0.0);
         chequeTotal += multiplePaymentParts.getOrDefault(PaymentMethod.Cheque, 0.0);
         slipTotal += multiplePaymentParts.getOrDefault(PaymentMethod.Slip, 0.0);
-        createFinalSummery();
+        double otherNonCashMultiplePaymentTotal = 0;
+        for (Map.Entry<PaymentMethod, Double> part : multiplePaymentParts.entrySet()) {
+            PaymentMethod pm = part.getKey();
+            if (pm != PaymentMethod.Cash && pm != PaymentMethod.Card && pm != PaymentMethod.Cheque && pm != PaymentMethod.Slip) {
+                otherNonCashMultiplePaymentTotal += part.getValue();
+            }
+        }
+        createFinalSummery(otherNonCashMultiplePaymentTotal);
 
 
     }
@@ -5334,12 +5343,20 @@ public class BookKeepingSummery implements Serializable {
     }
 
     private void createFinalSummery() {
+        createFinalSummery(0);
+    }
+
+    /**
+     * @param otherNonCashDeduction parts of Multiple Payment Methods bills paid
+     * by methods other than Cash, Card, Cheque and Slip; they are not cash (#26211)
+     */
+    private void createFinalSummery(double otherNonCashDeduction) {
         finalValues = new ArrayList<>();
         String1Value2 dd;
         ////////
         dd = new String1Value2();
         dd.setString("Net Cash");
-        Double tmp = grantTotal - (creditCardTotal + slipTotal + chequeTotal + departmentProfessionalPaymentTotal + channellingProfessionalPaymentTotal + inwardProfessionalPaymentTotal);
+        Double tmp = grantTotal - (creditCardTotal + slipTotal + chequeTotal + otherNonCashDeduction + departmentProfessionalPaymentTotal + channellingProfessionalPaymentTotal + inwardProfessionalPaymentTotal);
         dd.setValue1(tmp);
         finalValues.add(dd);
 
