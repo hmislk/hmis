@@ -737,15 +737,31 @@ public class BillBhtController implements Serializable {
     private BillSearch billSearch;
 
     public void cancellAll() {
-        for (Bill b : getBills()) {
-            getBillSearch().setBill((BilledBill) b);
-            getBillSearch().setPaymentMethod(b.getPaymentMethod());
-            getBillSearch().setComment("Batch Cancell");
-            //////// // System.out.println("ggg : " + getBillSearch().getComment());
-            getBillSearch().cancelOpdBill();
+        // Inward service bills are charged to the admission, not paid, so they
+        // have no payment method. Each bill goes through the same cancel the
+        // Cancel Inward Service Bill screen runs (#26279).
+        List<Bill> toCancel = new ArrayList<>(getBills());
+        for (Bill b : toCancel) {
+            if (b == null || b.isCancelled()) {
+                continue;
+            }
+            inwardSearch.cancelBillServiceOf(b, "Batch Cancell");
         }
-
+        // Reload the bills so the page shows what was saved.
+        List<Bill> shown = getBills();
+        for (int i = 0; i < shown.size(); i++) {
+            Bill old = shown.get(i);
+            if (old != null && old.getId() != null) {
+                Bill fresh = billFacade.findWithoutCache(old.getId());
+                if (fresh != null) {
+                    shown.set(i, fresh);
+                }
+            }
+        }
     }
+
+    @Inject
+    private InwardSearch inwardSearch;
 
     @Inject
     PriceMatrixController priceMatrixController;

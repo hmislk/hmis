@@ -2128,6 +2128,33 @@ public class InwardSearch implements Serializable {
         });
     }
 
+    /**
+     * Cancels one inward service bill for a caller that holds the bill itself, such
+     * as the Batch Cancel button on the theatre surgery service page. It runs the
+     * same locked checks and the same reversal as {@link #cancelBillService()}, and
+     * it needs no payment method, because inward service bills are charged to the
+     * admission and not paid.
+     */
+    public void cancelBillServiceOf(Bill target, String comments) {
+        if (target == null || target.getId() == null || target.getId() == 0) {
+            JsfUtil.addErrorMessage("No Bill to cancel");
+            return;
+        }
+        if (refuseIfCancellationBill(target)) {
+            return;
+        }
+        final Long targetBillId = target.getId();
+        final PatientEncounter lockEncounter = target.getPatientEncounter();
+        final Long lockEncounterId = lockEncounter == null ? null : lockEncounter.getId();
+        if (lockEncounter == null || lockEncounterId == null) {
+            cancelBillServiceUnderLock(targetBillId, lockEncounterId, comments, null);
+            return;
+        }
+        getFinalBillLockBean().withFinalBillVersionLock(lockEncounter, () -> {
+            cancelBillServiceUnderLock(targetBillId, lockEncounterId, comments, null);
+        });
+    }
+
     private void cancelBillServiceUnderLock(Long billId, Long lockEncounterId, String c, PaymentMethod pm) {
         {
 
