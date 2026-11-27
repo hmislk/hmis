@@ -247,7 +247,7 @@
 
                                 <p:column headerText="#{bookKeepingSummery.finalValues[0].value1}" style="text-align: left; vertical-align: bottom;" >
                                     <f:facet name="header">
-                                        <h:outputLabel value="#{bookKeepingSummery.finalValues[0].value1}" rendered="#{bookKeepingSummery.finalValues[0].value1!=0}" style="text-align: left; vertical-align: bottom;"> 
+                                        <h:outputLabel value="#{bookKeepingSummery.finalValues[0].value1}" rendered="#{not empty bookKeepingSummery.finalValues}" style="text-align: left; vertical-align: bottom;"> 
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputLabel>
                                     </f:facet>
