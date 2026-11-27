@@ -75,7 +75,7 @@
                                         <div style="width: 150px;"></div>
                                         <div class="col-9">
                                             <h:panelGroup id="payDetails" class="mt-2">
-                                                <h:panelGroup id="creditCard" class="mt-2" style="display:#{opdPreSettleController.preBill.paymentMethod ne 'Card' ? 'none' : 'block'} ; ">
+                                                <h:panelGroup id="creditCard" class="mt-2" layout="block" rendered="#{opdPreSettleController.preBill.paymentMethod eq 'Card'}">
                                                     <pa:creditCard paymentMethodData="#{opdPreSettleController.paymentMethodData}"/>
                                                 </h:panelGroup>
 
@@ -86,15 +86,15 @@
                                                     <pa:patient_deposit paymentMethodData="#{opdPreSettleController.paymentMethodData}"/>
                                                 </h:panelGroup>
 
-                                                <h:panelGroup id="cheque" class="mt-2" style="display:#{opdPreSettleController.preBill.paymentMethod ne 'Cheque' ? 'none' : 'block'} ; " >
+                                                <h:panelGroup id="cheque" class="mt-2" layout="block" rendered="#{opdPreSettleController.preBill.paymentMethod eq 'Cheque'}" >
                                                     <pa:cheque paymentMethodData="#{opdPreSettleController.paymentMethodData}"/>
                                                 </h:panelGroup>
 
-                                                <h:panelGroup id="slip" class="mt-2" style="display:#{opdPreSettleController.preBill.paymentMethod ne 'Slip' ? 'none' : 'block'} ;">
+                                                <h:panelGroup id="slip" class="mt-2" layout="block" rendered="#{opdPreSettleController.preBill.paymentMethod eq 'Slip'}">
                                                     <pa:slip paymentMethodData="#{opdPreSettleController.paymentMethodData}"/>
                                                 </h:panelGroup>
 
-                                                <h:panelGroup id="eWallet" class="mt-2" style="display:#{opdPreSettleController.preBill.paymentMethod ne 'ewallet' ? 'none' : 'block'} ;">
+                                                <h:panelGroup id="eWallet" class="mt-2" layout="block" rendered="#{opdPreSettleController.preBill.paymentMethod eq 'ewallet'}">
                                                     <pa:ewallet paymentMethodData="#{opdPreSettleController.paymentMethodData}"/>
                                                 </h:panelGroup>
 
@@ -102,7 +102,7 @@
                                                     class="row mt-2"
                                                     layout="block"  
                                                     id="creditStaff"
-                                                    style="display:#{opdPreSettleController.preBill.paymentMethod ne 'Staff' ? 'none' : 'block'} ; " >
+                                                    rendered="#{opdPreSettleController.preBill.paymentMethod eq 'Staff'}" >
                                                     <div class="my-1" >
                                                         <div class="row">
                                                             <div class="col-12">
@@ -145,7 +145,7 @@
                                                     class="row mt-2"
                                                     layout="block"  
                                                     id="welfareStaff"
-                                                    style="display:#{opdPreSettleController.preBill.paymentMethod ne 'Staff_Welfare' ? 'none' : 'block'} ; " >
+                                                    rendered="#{opdPreSettleController.preBill.paymentMethod eq 'Staff_Welfare'}" >
                                                     <div class="my-1">
                                                         <div class="row">
                                                             <div class="col-12">
@@ -188,12 +188,12 @@
                                                     class="row mt-2"
                                                     layout="block"
                                                     id="credit"
-                                                    style="display:#{opdPreSettleController.preBill.paymentMethod ne 'Credit' ? 'none' : 'block'} ; "
+                                                    rendered="#{opdPreSettleController.preBill.paymentMethod eq 'Credit'}"
                                                     >
                                                     <pa:creditNew paymentMethodData="#{opdPreSettleController.paymentMethodData}"/>
                                                 </h:panelGroup>
 
-                                                <h:panelGroup class="w-100 mt-2" id="MultiplePaymentMethods" style="display:#{opdPreSettleController.preBill.paymentMethod ne 'MultiplePaymentMethods' ? 'none' : 'block'} ;">
+                                                <h:panelGroup class="w-100 mt-2" id="MultiplePaymentMethods" rendered="#{opdPreSettleController.preBill.paymentMethod eq 'MultiplePaymentMethods'}">
                                                     <pa:multiple_payment_methods controller="#{opdPreSettleController}" paymentMethods="#{configOptionController.paymentMethodsUnderMultipleForOpdBilling}" class="w-100"/>
                                                 </h:panelGroup>
                                             </h:panelGroup>

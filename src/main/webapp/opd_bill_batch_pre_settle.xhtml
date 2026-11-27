@@ -25,19 +25,21 @@
                             <h:outputLabel value="&nbsp;&nbsp;&nbsp;&nbsp;" style="min-width: 50px;" />
                             <p:selectOneMenu   id="cmbPs" value="#{opdPreSettleController.paymentMethod}"  >                                                                     
                                 <f:selectItems value="#{enumController.paymentMethodsWithoutCredit}" />
-                                <p:ajax process="cmbPs" update="creditCard cheque slip " event="change" />
+                                <p:ajax process="cmbPs" update="payDetails" event="change" />
                             </p:selectOneMenu>
 
-                            <h:panelGroup id="creditCard" style="display:#{opdPreSettleController.paymentMethod ne 'Card' ? 'none' : 'block'} ; ">
+                            <h:panelGroup id="payDetails">
+                            <h:panelGroup id="creditCard" rendered="#{opdPreSettleController.paymentMethod eq 'Card'}">
                                 <pa:creditCard paymentMethodData="#{opdPreSettleController.paymentMethodData}"/>
                             </h:panelGroup>
 
-                            <h:panelGroup id="cheque" style="display:#{opdPreSettleController.paymentMethod ne 'Cheque' ? 'none' : 'block'} ; " >
+                            <h:panelGroup id="cheque" rendered="#{opdPreSettleController.paymentMethod eq 'Cheque'}" >
                                 <pa:cheque paymentMethodData="#{opdPreSettleController.paymentMethodData}"/>
                             </h:panelGroup>
 
-                            <h:panelGroup id="slip" style="display:#{opdPreSettleController.paymentMethod ne 'Slip' ? 'none' : 'block'} ;">
+                            <h:panelGroup id="slip" rendered="#{opdPreSettleController.paymentMethod eq 'Slip'}">
                                 <pa:slip paymentMethodData="#{opdPreSettleController.paymentMethodData}"/>
+                            </h:panelGroup>
                             </h:panelGroup>
 
                             <p:commandButton ajax= "false"  
