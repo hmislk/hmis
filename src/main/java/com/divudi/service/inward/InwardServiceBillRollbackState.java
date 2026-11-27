@@ -52,7 +52,8 @@ final class InwardServiceBillRollbackState {
         if (item != null) {
             Long itemId = item.getId();
             Bill itemBill = item.getBill();
-            PharmaceuticalBillItem pbi = item.getPharmaceuticalBillItem();
+            // Read without creating: the getter would add a row the settle never writes.
+            PharmaceuticalBillItem pbi = item.getPharmaceuticalBillItemIfPresent();
             Long pbiId = pbi == null ? null : pbi.getId();
             BillItemFinanceDetails bifd = item.hasBillItemFinanceDetails() ? item.getBillItemFinanceDetails() : null;
             Long bifdId = bifd == null ? null : bifd.getId();

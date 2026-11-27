@@ -523,6 +523,11 @@ public class BillItem implements Serializable, RetirableEntity {
         return "com.divudi.core.entity.BillItem[ id=" + id + " ]";
     }
 
+    /** The pharmaceutical bill item if one exists; never creates one. */
+    public PharmaceuticalBillItem getPharmaceuticalBillItemIfPresent() {
+        return pharmaceuticalBillItem;
+    }
+
     public PharmaceuticalBillItem getPharmaceuticalBillItem() {
         if (pharmaceuticalBillItem == null) {
             pharmaceuticalBillItem = new PharmaceuticalBillItem();

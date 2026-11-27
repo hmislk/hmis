@@ -100,4 +100,20 @@ class InwardServiceBillRollbackStateTest {
         assertEquals(500.0, ((Number) sums[0]).doubleValue());
         assertEquals(12.5, ((Number) sums[3]).doubleValue());
     }
+
+    @Test
+    void captureAndRestoreDoNotCreateAPharmaceuticalBillItem() {
+        BillItem item = new BillItem();
+        BillEntry entry = new BillEntry();
+        entry.setBillItem(item);
+        InwardServiceBillRequest request = new InwardServiceBillRequest();
+        request.setBillEntries(new ArrayList<>(List.of(entry)));
+        request.setBillCollector(new ArrayList<>());
+
+        InwardServiceBillRollbackState state = new InwardServiceBillRollbackState(request);
+        assertNull(item.getPharmaceuticalBillItemIfPresent());
+
+        state.restore();
+        assertNull(item.getPharmaceuticalBillItemIfPresent());
+    }
 }
