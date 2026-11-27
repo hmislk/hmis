@@ -264,6 +264,49 @@ public class PatientDepositService {
         createPatientDepositHitory(HistoryType.PatientDepositUtilization, pd, b, beforeBalance, afterBalance, 0 - Math.abs(amount));
     }
 
+    /**
+     * Takes the bill total from the patient's deposit record in one
+     * transaction: the record is locked, the balance plus the credit limit is
+     * checked, and the record is lowered with its history row. Hardening,
+     * tracked under #26265.
+     *
+     * @throws PatientDepositException when the balance does not cover the total
+     */
+    public void takeBillTotalFromDepositLocked(Patient patient, Department department, Bill bill, double creditLimit) {
+        PatientDeposit found = getDepositOfThePatient(patient, department);
+        lowerLocked(bill, found, creditLimit);
+    }
+
+    /**
+     * Same as {@link #takeBillTotalFromDepositLocked} for a deposit record the
+     * caller has already found.
+     */
+    void lowerLocked(Bill bill, PatientDeposit found, double creditLimit) {
+        PatientDeposit pd = lockedCopyOf(found);
+        double amount = Math.abs(bill.getNetTotal());
+        requireCover(pd, amount, creditLimit);
+        handleUtilization(bill, pd, amount);
+    }
+
+    /**
+     * Gives the deposit record loaded again under a write lock, bypassing the
+     * shared cache. Use it where a deposit is checked and lowered.
+     */
+    public PatientDeposit lockedCopyOf(PatientDeposit found) {
+        if (found == null || found.getId() == null) {
+            return found;
+        }
+        PatientDeposit pd = patientDepositFacade.findWithLock(found.getId());
+        return pd == null ? found : pd;
+    }
+
+    void requireCover(PatientDeposit pd, double amount, double creditLimit) {
+        double balance = pd.getBalance() == null ? 0.0 : pd.getBalance();
+        if (amount > balance + Math.abs(creditLimit)) {
+            throw new PatientDepositException("No Sufficient Patient Deposit");
+        }
+    }
+
     public void handleInPayment(Payment p, PatientDeposit pd) {
         Double beforeBalance = pd.getBalance();
         Double afterBalance = beforeBalance + Math.abs(p.getPaidValue());

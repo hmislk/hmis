@@ -78,6 +78,7 @@ import com.divudi.core.util.CommonFunctions;
 import com.divudi.core.light.common.BillLight;
 import com.divudi.service.BillService;
 import com.divudi.service.PatientDepositService;
+import com.divudi.service.PatientDepositException;
 import com.divudi.service.PaymentService;
 import java.io.Serializable;
 import java.text.DecimalFormat;
@@ -1952,8 +1953,14 @@ public class OpdOrderController implements Serializable, ControllerWithPatient, 
                 getPatient().setRunningBalance(0.0 - netTotal);
             }
             getPatientFacade().edit(getPatient());
-            PatientDeposit pd = patientDepositService.getDepositOfThePatient(getPatient(), sessionController.getDepartment());
-            patientDepositService.updateBalance(getBatchBill(), pd);
+            try {
+                // Hardening, tracked under #26265: check and lower in one locked transaction.
+                patientDepositService.takeBillTotalFromDepositLocked(getPatient(), sessionController.getDepartment(), getBatchBill(), 0.0);
+            } catch (PatientDepositException e) {
+                JsfUtil.addErrorMessage(e.getMessage());
+                return false;
+            }
+            JsfUtil.addSuccessMessage("Balance Updated.");
         }
         if (paymentMethod == PaymentMethod.MultiplePaymentMethods) {
             paymentService.updateBalances(payments);
