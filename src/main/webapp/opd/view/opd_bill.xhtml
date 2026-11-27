@@ -45,7 +45,7 @@
                                                 </div>
 
                                                 <p:commandButton 
-                                                    value="Print Bill" 
+                                                    value="Print Bill" title="Print the bill shown below" 
                                                     class="ui-button-info m-1"
                                                     icon="fa fa-print"
                                                     style="float: right"
@@ -53,7 +53,7 @@
                                                     <p:printer target="groupPrint" />
                                                 </p:commandButton>
                                                 <p:commandButton 
-                                                    value="Print Refund Bill" 
+                                                    value="Print Refund Bill" title="Print the refund bill" 
                                                     class="ui-button-info m-1"
                                                     icon="fa fa-print"
                                                     rendered="#{billSearch.viewingBill.refunded}"
