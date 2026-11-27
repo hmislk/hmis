@@ -1909,11 +1909,20 @@ public class CashRecieveBillController implements Serializable {
     }
 
     private void updateSettlingCreditBillSettledValues(BillItem billItemWithReferanceToCreditBill) {
+        Bill commitment = billItemWithReferanceToCreditBill.getReferenceBill();
+        // An inpatient company commitment is read and saved under the final bill lock (#26159).
+        getBillBean().runUnderFinalBillLockOfCommitment(commitment,
+                () -> updateSettlingCreditBillSettledValuesLocked(billItemWithReferanceToCreditBill));
+        // After the receipt has committed, recount the final bill and company shares (#26159).
+        getBillBean().recountFinalBillAfterCompanyReceipt(billItemWithReferanceToCreditBill.getReferenceBill());
+    }
+
+    private void updateSettlingCreditBillSettledValuesLocked(BillItem billItemWithReferanceToCreditBill) {
         // Work on a fresh copy of the reference bill, not the copy held in this session bean
         // since the bill was selected, so other payments are never overwritten.
         Bill referenceBill = billItemWithReferanceToCreditBill.getReferenceBill();
         if (referenceBill != null && referenceBill.getId() != null) {
-            Bill fresh = getBillFacade().find(referenceBill.getId());
+            Bill fresh = getBillFacade().findWithoutCache(referenceBill.getId());
             if (fresh != null) {
                 referenceBill = fresh;
                 billItemWithReferanceToCreditBill.setReferenceBill(fresh);
@@ -1931,10 +1940,7 @@ public class CashRecieveBillController implements Serializable {
 
         // CRITICAL FIX: Update balance field to stay synchronized with paid amount
         // Calculate the accurate current balance using the same formula as calculateCurrentBalance
-        double netTotal = Math.abs(referenceBill.getNetTotal() + referenceBill.getVat());
-        double refundAmount = Math.abs(getCreditBean().getRefundAmount(referenceBill));
-        double currentBalance = netTotal - (settleCreditValueTotal + refundAmount + referenceBill.getWrittenOffAmount());
-        referenceBill.setBalance(Math.max(0, currentBalance)); // Ensure balance doesn't go negative
+        referenceBill.setBalance(getCreditBean().calculateOutstandingBalance(referenceBill));
 
         // Check if bill is fully paid and set paidAt timestamp
         double absBillAmount = Math.abs(referenceBill.getNetTotal());

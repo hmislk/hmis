@@ -11,6 +11,7 @@ import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.PatientEncounter;
 import com.divudi.core.entity.PaymentScheme;
 import com.divudi.core.entity.PriceMatrix;
+import com.divudi.core.data.inward.AdmissionTypeTimeline;
 import com.divudi.core.entity.inward.AdmissionType;
 import com.divudi.core.entity.inward.GuardianRoom;
 import com.divudi.core.entity.inward.PatientRoom;
@@ -57,6 +58,10 @@ import javax.inject.Inject;
 @Stateless
 @TransactionAttribute(TransactionAttributeType.SUPPORTS)
 public class InwardRoomChargeCalculationService {
+
+    /** Which admission type was in force when a room started (#25814). */
+    @EJB
+    private AdmissionTypeHistoryService admissionTypeHistoryService;
 
     /** When true, theatre stays (TheatreRoom) are billed under Operation Theatre Charges (#24723). */
     public static final String THEATRE_TIME_AS_OT_KEY = "Inward Bill - Bill Theatre Room Time Under Operation Theatre Charges";
@@ -110,6 +115,7 @@ public class InwardRoomChargeCalculationService {
             return timedCharges;
         }
         Context ctx = new Context();
+        ctx.timelines.putAll(admissionTypeHistoryService.timelinesFor(roomsByBillingEncounter.keySet()));
         Map<Long, Institution> creditCompanies = resolveSingleCreditCompanies(roomsByBillingEncounter.keySet());
         Map<Long, List<PatientRoomTimedItemCharge>> timedByRoom = fetchTimedItemCharges(roomsByBillingEncounter.values());
 
@@ -120,13 +126,18 @@ public class InwardRoomChargeCalculationService {
             }
             PaymentMethod pm = billingEncounter.getPaymentMethod();
             PaymentScheme scheme = billingEncounter.getPaymentScheme();
-            AdmissionType admType = billingEncounter.getAdmissionType();
             Institution creditCompany = creditCompanies.get(billingEncounter.getId());
 
             for (PatientRoom p : e.getValue()) {
+                // Remember the room's real start (admittedAt, else createdAt) before
+                // admittedAt is defaulted to now, so both entry points pick the same type.
+                ctx.effectiveStarts.put(p, p.getAdmittedAt() != null ? p.getAdmittedAt() : p.getCreatedAt());
                 if (p.getAdmittedAt() == null) {
                     p.setAdmittedAt(new Date());
                 }
+                // A room keeps the admission type in force when it started: a type
+                // change affects rooms started after it (#25814).
+                AdmissionType admType = admissionTypeFor(ctx, billingEncounter, p);
                 calculateComponents(p, billingEncounter, creditCompany, ctx);
                 timedCharges.addAll(calculateTimedItemCharges(p, timedByRoom.get(p.getId())));
 
@@ -161,8 +172,38 @@ public class InwardRoomChargeCalculationService {
     private static class Context {
 
         private final Map<List<Object>, double[]> discountPercents = new HashMap<>();
+        /** Admission type timeline per billing admission id, loaded once per pass. */
+        private final Map<Long, AdmissionTypeTimeline> timelines = new HashMap<>();
+        /** Room start before admittedAt was defaulted to now (#25814). */
+        private final Map<PatientRoom, Date> effectiveStarts = new java.util.IdentityHashMap<>();
         /** Departments that have any room-charge price-matrix row; loaded on first use. */
         private Set<Long> roomMatrixDepartmentIds;
+    }
+
+    /**
+     * The admission type in force when the room started. With no history
+     * (an admission never converted) this is the admission's current type.
+     */
+    private AdmissionType admissionTypeFor(Context ctx, PatientEncounter encounter, PatientRoom p) {
+        if (encounter == null) {
+            return null;
+        }
+        AdmissionTypeTimeline timeline = encounter.getId() == null ? null : ctx.timelines.get(encounter.getId());
+        if (timeline == null) {
+            timeline = admissionTypeHistoryService.timelineFor(encounter);
+            if (encounter.getId() != null) {
+                ctx.timelines.put(encounter.getId(), timeline);
+            }
+        }
+        Date started = null;
+        if (p != null) {
+            if (ctx.effectiveStarts.containsKey(p)) {
+                started = ctx.effectiveStarts.get(p);
+            } else {
+                started = p.getAdmittedAt() != null ? p.getAdmittedAt() : p.getCreatedAt();
+            }
+        }
+        return timeline.typeAt(started);
     }
 
     private static Long idOf(Object entity) {
@@ -347,7 +388,7 @@ public class InwardRoomChargeCalculationService {
         }
         RoomCategory roomCategory = p.getRoomFacilityCharge().getRoomCategory();
         PaymentMethod paymentMethod = encounter == null ? null : encounter.getPaymentMethod();
-        AdmissionType admissionType = encounter == null ? null : encounter.getAdmissionType();
+        AdmissionType admissionType = admissionTypeFor(ctx, encounter, p);
         PriceMatrix priceMatrix = priceMatrixController.fetchRoomChargeMargin(department, chargeValue, paymentMethod, creditCompany, admissionType, roomCategory);
         if (priceMatrix == null) {
             return 0.0;

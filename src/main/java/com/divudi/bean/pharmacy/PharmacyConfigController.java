@@ -1015,6 +1015,11 @@ public class PharmacyConfigController implements Serializable {
      * Save the paper types of the Inward Doctor Payment format tabs (issue #25999).
      */
     public void saveInwardDoctorPaymentTabsConfig() {
+        if (!inwardDoctorPaymentTabsA4Paper && !inwardDoctorPaymentTabsFiveFivePaper && !inwardDoctorPaymentTabsPosPaper) {
+            // Refuse: with no paper type every format tab prints nothing. Nothing is saved.
+            JsfUtil.addErrorMessage("Select at least one paper type.");
+            return;
+        }
         try {
             configOptionApplicationController.setBooleanValueByKey("Inward Doctor Payment Tabs - Paper is A4", inwardDoctorPaymentTabsA4Paper);
             configOptionApplicationController.setBooleanValueByKey("Inward Doctor Payment Tabs - Paper is Five Five", inwardDoctorPaymentTabsFiveFivePaper);

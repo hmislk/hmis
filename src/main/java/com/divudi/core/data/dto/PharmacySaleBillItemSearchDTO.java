@@ -49,6 +49,28 @@ public class PharmacySaleBillItemSearchDTO implements Serializable {
         this.refunded = refunded;
     }
 
+    /**
+     * Refunded label is on when the pre-bill item or its billed-bill copy is
+     * flagged refunded. The sale bill's own refunded flag is not used: it is set
+     * when items are returned, before any refund is paid (issue #24485).
+     */
+    public PharmacySaleBillItemSearchDTO(
+            Long billId,
+            String deptId,
+            Date billDate,
+            Long itemId,
+            String itemName,
+            String itemCode,
+            Double qty,
+            Double netValue,
+            String patientName,
+            Boolean cancelled,
+            Boolean itemRefunded,
+            Boolean linkedItemRefunded) {
+        this(billId, deptId, billDate, itemId, itemName, itemCode, qty, netValue, patientName, cancelled,
+                com.divudi.core.util.PharmacyItemRefundFlags.isShownRefunded(itemRefunded, linkedItemRefunded));
+    }
+
     public Long getBillId() { return billId; }
     public void setBillId(Long billId) { this.billId = billId; }
 

@@ -173,7 +173,7 @@
 
                 <!-- Print config dialog for cancel page -->
                 <p:dialog header="Print Settings" widgetVar="profFeeCancelConfigDialog" modal="true" responsive="true" style="width: 350px;">
-                    <p:ajax event="open" listener="#{inwardProfessionalBillController.loadProfFeeConfig}" update="profFeeCancelConfigForm"/>
+                    <p:ajax event="open" listener="#{inwardProfessionalBillController.loadProfFeeConfig}" update="profFeeCancelConfigForm" resetValues="true" />
                     <h:panelGroup id="profFeeCancelConfigForm" layout="block">
                         <h:panelGrid columns="2" cellpadding="5">
                             <h:selectBooleanCheckbox id="chkA4Cancel" value="#{inwardProfessionalBillController.profFeeA4}"/>

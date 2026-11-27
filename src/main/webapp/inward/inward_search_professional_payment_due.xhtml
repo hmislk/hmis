@@ -66,13 +66,13 @@
                                     completeMethod="#{searchController.completeStaffForSearchKeywordSpeciality}"
                                     var="dr" 
                                     itemLabel="#{dr.getClass().simpleName eq 'String' ? dr : dr.person.name}"
-                                    itemValue="#{dr.person.name}"
+                                    itemValue="#{dr.person.nameWithTitle}"
                                     minQueryLength="3" 
                                     maxResults="20"
                                     class="w-100 my-1" 
                                     inputStyleClass="w-100">
                                     <p:column headerText="Doctor Name" style="padding: 6px;">
-                                        <h:outputText value="#{dr.person.name}"/>
+                                        <h:outputText value="#{dr.person.nameWithTitle}"/>
                                     </p:column>
                                     <p:column headerText="Speciality" style="padding: 6px;">
                                         <h:outputText value="#{dr.speciality.name}"/>

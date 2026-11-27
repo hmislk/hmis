@@ -176,7 +176,10 @@ public class WebUserRoleUserController implements Serializable {
             if (userRolePrivilage == null) {
                 JsfUtil.addErrorMessage("There are No Permission to add!");
             } else {
-                userPrivilageController.saveWebUserPrivileges(current.getWebUser(), userRolePrivilage, department);
+                if (!userPrivilageController.saveWebUserPrivileges(current.getWebUser(), userRolePrivilage, department)) {
+                    JsfUtil.addErrorMessage("The user was not added to the role, because the privileges could not be saved.");
+                    return;
+                }
                 WebUserRoleUser ru = new WebUserRoleUser();
                 ru.setWebUserRole(current.getWebUserRole());
                 ru.setWebUser(current.getWebUser());

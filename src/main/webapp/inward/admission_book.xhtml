@@ -21,7 +21,7 @@
 
                                 <div class="row">
 
-                                    <div class="col-md-6 mb-3">
+                                    <div class="col-md-3 mb-2">
                                         <div class="row">
                                             <div class="col-md-3">
                                                 <p:outputLabel value="From Date" />
@@ -35,7 +35,7 @@
                                         </div>
                                     </div>
 
-                                    <div class="col-md-6 mb-3">
+                                    <div class="col-md-3 mb-2">
                                         <div class="row">
                                             <div class="col-md-3">
                                                 <p:outputLabel value="To Date" />
@@ -50,7 +50,7 @@
                                     </div>
 
 
-                                    <div class="col-md-6 mb-3">
+                                    <div class="col-md-3 mb-2">
                                         <div class="row">
                                             <div class="col-md-3">
                                                 <p:outputLabel value="Admission Type" />
@@ -67,7 +67,7 @@
                                         </div>
                                     </div>
 
-                                    <div class="col-md-6 mb-3">
+                                    <div class="col-md-3 mb-2">
                                         <div class="row">
                                             <div class="col-md-3">
                                                 <p:outputLabel value="Date Basis" for="admBookDateBasis" />
@@ -85,7 +85,7 @@
                                     </div>
 
 
-                                    <div class="col-md-6 mb-3">
+                                    <div class="col-md-3 mb-2">
                                         <div class="row">
                                             <div class="col-md-3">
                                                 <p:outputLabel value="Institution" for="admBookCmbIns" />
@@ -108,7 +108,7 @@
                                         </div>
                                     </div>
 
-                                    <div class="col-md-6 mb-3">
+                                    <div class="col-md-3 mb-2">
                                         <div class="row">
                                             <div class="col-md-3">
                                                 <p:outputLabel value="Site" for="admBookSiteMenu" />
@@ -132,7 +132,7 @@
                                     </div>
 
 
-                                    <div class="col-md-6 mb-3">
+                                    <div class="col-md-3 mb-2">
                                         <div class="row">
                                             <div class="col-md-3">
                                                 <p:outputLabel value="Department" for="admBookCmbDept" />
@@ -202,7 +202,7 @@
                                     </div>
 
 
-                                    <div class="col-md-6 mb-3">
+                                    <div class="col-md-3 mb-2">
                                         <div class="row">
                                             <div class="col-md-3">
                                                 <p:outputLabel value="Without Canceled BHT" />
@@ -242,17 +242,17 @@
                         <div class="row mb-3">
 
                             <div class="col-auto pr-1">
-                                <p:commandButton ajax="false" value="Process" action="#{inwardReportController.fillAdmissionBookNew()}"  ></p:commandButton>
+                                <p:commandButton ajax="false" value="Process" icon="fa fa-cogs" styleClass="ui-button-success" title="Process the admission book" action="#{inwardReportController.fillAdmissionBookNew()}"  ></p:commandButton>
                             </div>
 
                             <div class="col-auto px-1">
-                                <p:commandButton value="Print" ajax="false" action="#" >
+                                <p:commandButton value="Print" ajax="false" icon="fa fa-print" styleClass="ui-button-secondary" title="Print the admission book" action="#" >
                                     <p:printer target="gpBillPreview" ></p:printer>
                                 </p:commandButton>
                             </div>
 
                             <div class="col-auto pl-1">
-                                <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton">
+                                <p:commandButton ajax="false" value="Excel" icon="fa fa-file-excel" styleClass="noPrintButton ui-button-secondary" title="Export the admission book to Excel">
                                     <p:dataExporter type="xlsx" target="tbl" fileName="Admission_Detail_by_Admitted_Date"  />
                                 </p:commandButton>
                             </div>
@@ -368,7 +368,8 @@
 
                                 <p:dataTable id="tbl"
                                              rowStyleClass="#{i.retired ? 'crossLine':''}"
-                                             styleClass="noBorder normalFont text-nowrap admission-book-table"
+                                             styleClass="noBorder normalFont text-nowrap admission-book-table p-datatable-sm"
+                                             rowKey="#{i.id}"
                                              value="#{inwardReportController.patientEncounters}"
                                              var="i"
                                              rowIndexVar="a">
@@ -566,7 +567,7 @@
                                               headerText="Paid"
                                               width="100px"
                                               rendered="#{inwardReportController.finalBillTotal}">
-                                        <h:outputLabel value="#{i.paidByCreditCompany+i.finalBill.paidAmount}">
+                                        <h:outputLabel value="#{i.finalBill.paidAmount}">
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>
                                         <f:facet name="footer">
@@ -580,7 +581,7 @@
                                               headerText="Due"
                                               width="100px"
                                               rendered="#{inwardReportController.finalBillTotal}">
-                                        <h:outputLabel value="#{i.finalBill.netTotal-(i.paidByCreditCompany+i.finalBill.paidAmount)}">
+                                        <h:outputLabel value="#{i.finalBill.netTotal-i.finalBill.paidAmount}">
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>
                                         <f:facet name="footer">

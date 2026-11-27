@@ -56,6 +56,7 @@ import com.divudi.ejb.EmailManagerEjb;
 import com.divudi.core.entity.AppEmail;
 import com.divudi.core.data.MessageType;
 import com.divudi.core.util.JsfUtil;
+import com.divudi.core.util.PharmacyItemRefundFlags;
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.entity.BillFinanceDetails;
 import com.divudi.core.entity.BillItemFinanceDetails;
@@ -68,6 +69,8 @@ import com.divudi.service.BillService;
 import com.divudi.service.pharmacy.PharmacyPoCancellationException;
 import com.divudi.service.pharmacy.PharmacyPurchaseOrderApprovalCancellationService;
 import com.divudi.service.pharmacy.TransferIssueNativeSqlService;
+import com.divudi.service.pharmacy.BhtIssueReversalException;
+import com.divudi.service.pharmacy.BhtIssueReversalService;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
@@ -144,6 +147,8 @@ public class PharmacyBillSearch implements Serializable {
     private EmailFacade emailFacade;
     @EJB
     private EmailManagerEjb emailManagerEjb;
+    @EJB
+    private BhtIssueReversalService bhtIssueReversalService;
     @EJB
     private TransferIssueNativeSqlService transferIssueNativeSqlService;
     @EJB
@@ -240,6 +245,10 @@ public class PharmacyBillSearch implements Serializable {
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Navigation Methods">
     public String navigateToCancelPharmacyDirectIssueToInpatients() {
+        if (!webUserController.hasPrivilege(Privileges.PharmacySaleCancel.toString())) {
+            JsfUtil.addErrorMessage("You do not have the privilege to cancel a pharmacy BHT issue");
+            return null;
+        }
         if (com.divudi.core.util.CancellationBillCheck.refuse(bill)) {
             return null;
         }
@@ -255,14 +264,30 @@ public class PharmacyBillSearch implements Serializable {
     }
 
     public String navigateToReversePharmacyDirectIssueToInpatients() {
+        if (!webUserController.hasPrivilege(Privileges.ReversePharmacyBhtIssue.toString())) {
+            JsfUtil.addErrorMessage("You do not have the privilege to reverse a pharmacy BHT issue");
+            return null;
+        }
         if (bill == null) {
             JsfUtil.addErrorMessage("No Bill Selected");
+            return null;
+        }
+        if (!BhtIssueReversalService.isReversibleDirectIssue(bill)) {
+            JsfUtil.addErrorMessage(BhtIssueReversalService.REQUEST_ISSUE_MESSAGE);
+            return null;
+        }
+        if (BhtIssueReversalService.isReversal(bill)) {
+            JsfUtil.addErrorMessage(BhtIssueReversalService.REVERSAL_OF_REVERSAL_MESSAGE);
             return null;
         }
         return "/dataAdmin/pharmacy_bill_reverse_bht?faces-redirect=true";
     }
 
     public String navigateToReversePharmacyDirectIssueToInpatientsById(Long billId) {
+        if (!webUserController.hasPrivilege(Privileges.ReversePharmacyBhtIssue.toString())) {
+            JsfUtil.addErrorMessage("You do not have the privilege to reverse a pharmacy BHT issue");
+            return null;
+        }
         if (billId == null) {
             JsfUtil.addErrorMessage("No Bill ID Provided");
             return null;
@@ -276,6 +301,15 @@ public class PharmacyBillSearch implements Serializable {
 
         if (selectedBill.getBillType() != BillType.PharmacyBhtPre) {
             JsfUtil.addErrorMessage("Invalid Bill Type for Reversal");
+            return null;
+        }
+
+        if (!BhtIssueReversalService.isReversibleDirectIssue(selectedBill)) {
+            JsfUtil.addErrorMessage(BhtIssueReversalService.REQUEST_ISSUE_MESSAGE);
+            return null;
+        }
+        if (BhtIssueReversalService.isReversal(selectedBill)) {
+            JsfUtil.addErrorMessage(BhtIssueReversalService.REVERSAL_OF_REVERSAL_MESSAGE);
             return null;
         }
 
@@ -1019,6 +1053,10 @@ public class PharmacyBillSearch implements Serializable {
     }
 
     public String navigateToCancelBhtRequest() {
+        if (!webUserController.hasPrivilege(com.divudi.core.data.Privileges.PharmacySaleCancel.toString())) {
+            JsfUtil.addErrorMessage("You do not have the privilege to cancel a pharmacy BHT issue");
+            return "";
+        }
         if (com.divudi.core.util.CancellationBillCheck.refuse(bill)) {
             return "";
         }
@@ -2244,10 +2282,13 @@ public class PharmacyBillSearch implements Serializable {
                 + " and b.cancelled=false "
                 + " and b.billType=:bt "
                 + " and b.referenceBill=:ref "
-                + " and b.billedBill is null";
+                + " and b.billedBill is null"
+                + " and (b.billTypeAtomic is null or b.billTypeAtomic <> :cancelAtomic)";
         HashMap hm = new HashMap();
         hm.put("ref", getBill());
         hm.put("bt", BillType.PharmacySale);
+        // The cancellation bill of a refund also references the return bill; it is not an active refund.
+        hm.put("cancelAtomic", BillTypeAtomic.PHARMACY_RETURN_ITEMS_AND_PAYMENTS_CANCELLATION);
         Long count = getBillFacade().findLongByJpql(sql, hm);
         return count != null && count > 0;
     }
@@ -3549,6 +3590,10 @@ public class PharmacyBillSearch implements Serializable {
     }
 
     public void cancelPharmacyDirectIssueToBht() {
+        if (!webUserController.hasPrivilege(Privileges.PharmacySaleCancel.toString())) {
+            JsfUtil.addErrorMessage("You do not have the privilege to cancel a pharmacy BHT issue");
+            return;
+        }
         if (com.divudi.core.util.CancellationBillCheck.refuse(getBill())) {
             return;
         }
@@ -3637,90 +3682,43 @@ public class PharmacyBillSearch implements Serializable {
 
     }
 
-    private Bill createReversalBillWithCorrectStockAdjustment(Bill originalBill, WebUser user, Department department, BillNumberSuffix billNumberSuffix) {
-        // Create a new reversal bill using built-in copy method
-        Bill reversalBill = new Bill();
-        reversalBill.copy(originalBill);
-
-        // Set reversal-specific properties
-        reversalBill.setCreatedAt(new Date());
-        reversalBill.setCreater(user);
-        reversalBill.setDepartment(department);
-
-        // Set reference relationships
-        reversalBill.setReferenceBill(originalBill);
-        reversalBill.setBilledBill(originalBill);
-
-        // Initialize bill items collection
-        reversalBill.setBillItems(new ArrayList<>());
-
-        // Create reversal bill items using built-in methods
-        for (BillItem originalItem : originalBill.getBillItems()) {
-            // Create new bill item using copy method
-            BillItem reversalItem = new BillItem();
-            reversalItem.copy(originalItem);
-            reversalItem.setBill(reversalBill);
-            reversalItem.setCreatedAt(new Date());
-            reversalItem.setCreater(user);
-
-            // Use built-in invert method
-            reversalItem.invertValue(originalItem);
-
-            // Handle pharmaceutical bill item if it exists
-            if (originalItem.getPharmaceuticalBillItem() != null) {
-                PharmaceuticalBillItem originalPbi = originalItem.getPharmaceuticalBillItem();
-
-                // Create new PBI using copy method
-                PharmaceuticalBillItem reversalPbi = new PharmaceuticalBillItem();
-                reversalPbi.copy(originalPbi);
-                reversalPbi.setBillItem(reversalItem);
-                reversalPbi.setCreatedAt(new Date());
-                reversalPbi.setCreater(user);
-
-                // Use built-in invert method
-                reversalPbi.invertValue(originalPbi);
-
-                reversalItem.setPharmaceuticalBillItem(reversalPbi);
-
-                // Apply correct stock adjustment using the reversed quantity
-                if (reversalPbi.getQty() != 0 && reversalPbi.getStock() != null) {
-                    getPharmacyBean().addToStock(reversalPbi.getStock(), reversalPbi.getQty(), reversalPbi, department);
-                }
-            }
-
-            // Add the bill item to the reversal bill
-            reversalBill.getBillItems().add(reversalItem);
-        }
-
-        return reversalBill;
-    }
-
     public void reversePharmacyDirectIssueToBht() {
+        if (!webUserController.hasPrivilege(Privileges.ReversePharmacyBhtIssue.toString())) {
+            JsfUtil.addErrorMessage("You do not have the privilege to reverse a pharmacy BHT issue");
+            return;
+        }
         if (getBill() == null) {
             JsfUtil.addErrorMessage("No Bill Found");
             return;
         }
+        // Same once-only claim as the BHT issue cancel: a concurrent reverse or
+        // cancel of this bill waits, then finds it cancelled.
+        // The reason typed on the page sits on the page's bill; the once-only claim
+        // swaps that bill for the database copy, so read it first.
+        final Long typedBillId = getBill().getId();
+        final String typedComments = getBill().getComments();
+        cancelIssueToBhtOnce(() -> reversePharmacyDirectIssueToBhtUnderLock(typedComments));
+        if (!printPreview && getBill() != null && typedBillId != null && typedBillId.equals(getBill().getId())) {
+            // The reversal did not happen and the page bill may now be the database
+            // copy: put the typed reason back so a resubmit does not use the stored comment.
+            getBill().setComments(typedComments);
+        }
+    }
+
+    private void reversePharmacyDirectIssueToBhtUnderLock(String typedComments) {
         if (getBill().getBillType() != BillType.PharmacyBhtPre) {
             JsfUtil.addErrorMessage("Invalid Bill Type for Reversal");
             return;
         }
-        if (getBill().getPatientEncounter().isPaymentFinalized()) {
-            JsfUtil.addErrorMessage("This Bill Already Discharged");
+        if (!BhtIssueReversalService.isReversibleDirectIssue(getBill())) {
+            JsfUtil.addErrorMessage(BhtIssueReversalService.REQUEST_ISSUE_MESSAGE);
             return;
         }
-        if (getBill().getCheckedBy() != null) {
-            JsfUtil.addErrorMessage("Checked Bill. Can not reverse");
-            return;
-        }
-        if (getBill().checkActiveReturnBhtIssueBills()) {
-            JsfUtil.addErrorMessage("There are some return bills for this. Please cancel those bills first");
+        if (BhtIssueReversalService.isReversal(getBill())) {
+            JsfUtil.addErrorMessage(BhtIssueReversalService.REVERSAL_OF_REVERSAL_MESSAGE);
             return;
         }
         if (checkDepartment(getBill())) {
-            return;
-        }
-        if (getBill().isCancelled()) {
-            JsfUtil.addErrorMessage("Bill is already cancelled. Cannot reverse cancelled bills");
             return;
         }
 
@@ -3730,36 +3728,39 @@ public class PharmacyBillSearch implements Serializable {
                 getBill().getBillTypeAtomic() // Keep the same bill type atomic
         );
 
-        // Create reversal bill using custom logic to handle proper stock adjustments
-        Bill reversalBill = createReversalBillWithCorrectStockAdjustment(
-                getBill(),
-                getSessionController().getLoggedUser(),
-                getSessionController().getDepartment(),
-                BillNumberSuffix.PHISSCAN
-        );
-
-        // Set reversal bill properties - keep original bill type and bill type atomic
-        reversalBill.setForwardReferenceBill(getBill().getForwardReferenceBill());
-        reversalBill.setBillType(getBill().getBillType()); // Keep same bill type
-        reversalBill.setBillTypeAtomic(getBill().getBillTypeAtomic()); // Keep same bill type atomic
-        reversalBill.setDeptId(deptId);
-        reversalBill.setReferenceBill(getBill()); // Reference to original bill
-        reversalBill.setBilledBill(getBill()); // Reference as billedBill
-
-        // Save the reversal bill
-        getBillFacade().edit(reversalBill);
-        billService.createBillFinancialDetailsForPharmacyBill(reversalBill);
-
-        // Update original bill to mark as reversed
+        // One transaction: save the reversal, put the stock back, mark the original
+        // cancelled. A failure rolls everything back (#26109). The service checks
+        // the bill again from the database inside the transaction.
+        Bill reversalBill;
+        try {
+            final Long billId = getBill().getId();
+            reversalBill = pharmacyBean.runStockSave(() -> bhtIssueReversalService.reverse(
+                    billId,
+                    getSessionController().getLoggedUser(),
+                    getSessionController().getInstitution(),
+                    getSessionController().getDepartment(),
+                    deptId,
+                    typedComments));
+        } catch (BhtIssueReversalException e) {
+            JsfUtil.addErrorMessage(e.getMessage());
+            return;
+        } catch (RuntimeException e) {
+            JsfUtil.addErrorMessage("The bill could not be reversed. Nothing was changed.");
+            return;
+        }
+        // Show the page as reversed.
         getBill().setCancelled(true);
         getBill().setCancelledBill(reversalBill);
-        getBillFacade().edit(getBill());
 
         JsfUtil.addSuccessMessage("Bill Reversed Successfully. Reversal Bill No: " + reversalBill.getDeptId());
         printPreview = true;
     }
 
     public void cancelPharmacyRequestIssueToBht() {
+        if (!webUserController.hasPrivilege(com.divudi.core.data.Privileges.PharmacySaleCancel.toString())) {
+            JsfUtil.addErrorMessage("You do not have the privilege to cancel a pharmacy BHT issue");
+            return;
+        }
         if (com.divudi.core.util.CancellationBillCheck.refuse(getBill())) {
             return;
         }
@@ -4177,6 +4178,10 @@ public class PharmacyBillSearch implements Serializable {
 
                 getBill().setCancelledBill(cb);
                 getBillFacade().edit(getBill());
+                if (getBill().getBillTypeAtomic() == BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEM_PAYMENTS
+                        || getBill().getBillTypeAtomic() == BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS) {
+                    clearItemRefundFlagsIfNoActiveRefund(getBill());
+                }
 
                 getCashTransactionBean().saveBillCashInTransaction(cb, getSessionController().getLoggedUser());
 
@@ -4190,6 +4195,9 @@ public class PharmacyBillSearch implements Serializable {
                     }
                 }
 
+                // The refund took its amount out of the drawer; a cancelled refund puts it back (#26196).
+                drawerController.reverseDrawerEntriesOfBill(getBill(), cb, getSessionController().getLoggedUser());
+
                 printPreview = true;
             } catch (RuntimeException e) {
                 releaseReturnCancellationClaimAfterFailure(cb, reversalStarted, e);
@@ -4197,6 +4205,80 @@ public class PharmacyBillSearch implements Serializable {
 
         } else {
             JsfUtil.addErrorMessage("No Bill to cancel");
+        }
+    }
+
+    /**
+     * After the payment of an items-only return is cancelled, clears the refund
+     * flags this refund set on the original sale items, so Search Sale Bill
+     * Items stops showing "Refunded". An item keeps its flags when another
+     * refund payment that is not cancelled still covers it (#24485). A failure
+     * here is logged and never reported as a failed cancellation.
+     *
+     * @param cancelledRefundBill the refund payment bill that was just cancelled
+     */
+    private void clearItemRefundFlagsIfNoActiveRefund(Bill cancelledRefundBill) {
+        try {
+            if (cancelledRefundBill == null || cancelledRefundBill.getId() == null) {
+                return;
+            }
+            Map<String, Object> params = new HashMap<>();
+            params.put("refundId", cancelledRefundBill.getId());
+            // Fresh query, not the lazy bill item list: that list can be stale across requests.
+            // An items-only refund payment reaches the original through its return item; a
+            // "Return Items and Payments" bill keeps the pre return bill as its reference bill,
+            // and that bill's items point at the original.
+            List<BillItem> originals;
+            if (cancelledRefundBill.getBillTypeAtomic() == BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS) {
+                originals = getBillItemFacede().findByJpql(
+                        "SELECT DISTINCT o FROM Bill f, BillItem ri JOIN ri.referanceBillItem o "
+                        + "WHERE f.id = :refundId AND ri.bill.id = f.referenceBill.id AND ri.qty <> 0", params);
+            } else {
+                originals = getBillItemFacede().findByJpql(
+                        "SELECT DISTINCT o FROM BillItem sbi JOIN sbi.referanceBillItem tbi JOIN tbi.referanceBillItem o "
+                        + "WHERE sbi.bill.id = :refundId", params);
+            }
+            if (originals == null) {
+                return;
+            }
+            for (BillItem original : originals) {
+                // One parameter map per query: EclipseLink rejects a parameter the query does not use.
+                Map<String, Object> pWithItems = new HashMap<>();
+                pWithItems.put("refundId", cancelledRefundBill.getId());
+                pWithItems.put("originalId", original.getId());
+                pWithItems.put("btaWithItems", BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS);
+                Map<String, Object> pItemOnly = new HashMap<>();
+                pItemOnly.put("refundId", cancelledRefundBill.getId());
+                pItemOnly.put("originalId", original.getId());
+                pItemOnly.put("bta", BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEM_PAYMENTS);
+                Long othersWithItems = getBillItemFacede().countByJpql(
+                        "SELECT COUNT(ri) FROM Bill f, BillItem ri "
+                        + "WHERE ri.bill.id = f.referenceBill.id "
+                        + "AND ri.retired = false "
+                        + "AND ri.qty <> 0 "
+                        + "AND f.id <> :refundId "
+                        + "AND f.cancelled = false "
+                        + "AND f.retired = false "
+                        + "AND f.billTypeAtomic = :btaWithItems "
+                        + "AND ri.referanceBillItem.id = :originalId", pWithItems);
+                Long others = getBillItemFacede().countByJpql(
+                        "SELECT COUNT(sbi) FROM BillItem sbi "
+                        + "WHERE sbi.retired = false "
+                        + "AND sbi.bill.id <> :refundId "
+                        + "AND sbi.bill.cancelled = false "
+                        + "AND sbi.bill.retired = false "
+                        + "AND sbi.bill.billTypeAtomic = :bta "
+                        + "AND sbi.referanceBillItem.referanceBillItem.id = :originalId", pItemOnly);
+                if (others == null || othersWithItems == null) {
+                    continue;
+                }
+                if (PharmacyItemRefundFlags.clearAfterRefundCancelled(original, others + othersWithItems)) {
+                    getBillItemFacede().edit(original);
+                }
+            }
+        } catch (RuntimeException e) {
+            LOGGER.log(Level.SEVERE, "Could not clear the item refund flags after cancelling refund bill id "
+                    + (cancelledRefundBill == null ? null : cancelledRefundBill.getId()), e);
         }
     }
 
@@ -6282,10 +6364,11 @@ public class PharmacyBillSearch implements Serializable {
                 + "it.id, COALESCE(it.name, ''), COALESCE(it.code, ''), "
                 + "bi.qty, bi.netValue, "
                 + "COALESCE(pp.name, ''), "
-                + "rb.cancelled, rb.refunded) "
+                + "rb.cancelled, bi.refunded, lbi.refunded) "
                 + "FROM BillItem bi "
                 + "JOIN bi.bill b "
                 + "JOIN b.referenceBill rb "
+                + "LEFT JOIN bi.referanceBillItem lbi "
                 + "LEFT JOIN bi.item it "
                 + "LEFT JOIN b.patient p "
                 + "LEFT JOIN p.person pp "
@@ -6335,6 +6418,32 @@ public class PharmacyBillSearch implements Serializable {
         if (saleBillItemDtos == null) {
             saleBillItemDtos = new ArrayList<>();
         }
+        markRowsWhoseBilledItemIsRefunded();
+    }
+
+    /**
+     * The cashier settle flow copies a pre-bill item into the billed bill with no
+     * item level link, and the refund flags the billed item. So the label also
+     * shows when the billed bill holds a refunded item for the same item (#24485).
+     */
+    private void markRowsWhoseBilledItemIsRefunded() {
+        if (saleBillItemDtos.isEmpty()) {
+            return;
+        }
+        Map<String, Object> m = new HashMap<>();
+        m.put("rClass", com.divudi.core.entity.BilledBill.class);
+        m.put("rBType", com.divudi.core.data.BillType.PharmacySale);
+        m.put("fromDate", searchController.getFromDate());
+        m.put("toDate", searchController.getToDate());
+        m.put("ins", sessionController.getInstitution());
+        List<?> pairs = getBillItemFacade().findLightsByJpql(
+                "SELECT x.bill.id, x.item.id FROM BillItem x "
+                + "WHERE x.refunded = true AND x.retired = false "
+                + "AND type(x.bill) = :rClass "
+                + "AND x.bill.billType = :rBType "
+                + "AND x.bill.institution = :ins "
+                + "AND x.bill.createdAt BETWEEN :fromDate AND :toDate", m, TemporalType.TIMESTAMP);
+        PharmacyItemRefundFlags.applyBilledItemFlags(saleBillItemDtos, PharmacyItemRefundFlags.lineKeys(pairs));
     }
 
     // -----------------------------------------------------------------------

@@ -8,64 +8,138 @@
                 >
 
     <ui:define name="subcontent">
+        <style type="text/css">
+            .movement-print { display: none; }
+
+            @media print {
+                @page {
+                    size: A4 landscape;
+                    margin: 8mm 6mm 10mm 6mm;
+                    @bottom-right {
+                        content: "Page " counter(page) " of " counter(pages);
+                        font-family: Arial, sans-serif;
+                        font-size: 7pt;
+                    }
+                }
+
+                .movement-screen { display: none !important; }
+
+                body {
+                    margin: 0 !important;
+                    padding: 0 !important;
+                    background: #fff !important;
+                }
+
+                .movement-print {
+                    display: block;
+                    font-family: Arial, sans-serif;
+                    color: #000;
+                }
+
+                .mv-head { text-align: center; margin-bottom: 2mm; }
+                .mv-institution { font-size: 13pt; font-weight: bold; }
+                .mv-title { font-size: 11pt; font-weight: bold; }
+                .mv-filters { font-size: 8pt; }
+                .mv-filters span { display: inline-block; margin: 0 1mm; }
+
+                .mv-table { width: 99.8%; border-collapse: collapse; font-size: 6.5pt; line-height: 1.2; }
+                .mv-table th, .mv-table td { border: 1px solid #aaa; padding: 0.6mm 0.8mm; vertical-align: top; }
+                .mv-table th {
+                    background-color: #e9ecef;
+                    text-align: center;
+                    vertical-align: middle;
+                    font-weight: bold;
+                    -webkit-print-color-adjust: exact;
+                    print-color-adjust: exact;
+                }
+                .mv-table th.mv-text { text-align: left; }
+                .mv-table .mv-item { min-width: 34mm; }
+                .mv-table .mv-num { text-align: right; white-space: nowrap; }
+                /* thicker line where a new group of columns starts */
+                .mv-table .mv-first { border-left: 2px solid #666; }
+                .mv-table .mv-reversal td { font-style: italic; }
+                .mv-table .mv-empty { text-align: center; padding: 4mm; }
+
+                /* column headings on every page, no row cut in two, totals once at the end */
+                .mv-table thead { display: table-header-group; }
+                .mv-table tr { page-break-inside: avoid; break-inside: avoid; }
+                .mv-table tfoot { display: table-row-group; }
+                .mv-table tfoot td { font-weight: bold; border-top: 2px solid #666; }
+
+                .mv-generated { margin-top: 2mm; font-size: 7pt; }
+            }
+        </style>
         <h:form>
             <p:panel  header="Movement Report Stock By Date">
-                <h:panelGrid columns="4" class="w-100">
-                    <h:outputLabel value="From Date"/>
-                    <p:calendar value="#{pharmacySaleReportController.fromDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"   >
-                    </p:calendar>
-                    <h:outputLabel value="To Date"/>
-                    <p:calendar value="#{pharmacySaleReportController.toDate}" navigator="true" 
-                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
-                    <h:outputLabel  rendered="true" value="Department"/>
-                    <p:autoComplete rendered="true" 
-                                    value="#{pharmacySaleReportController.department}"  
-                                    style="text-align: left;" 
-                                    completeMethod="#{departmentController.completeDept}" 
-                                    var="dept" itemValue="#{dept}" required="false"
-                                    itemLabel="#{dept.name}" forceSelection="true"
-                                    requiredMessage="You must select a department" >
-                    </p:autoComplete>
+                <p:defaultCommand target="btnProcess"/>
+                <h:panelGrid columns="8" styleClass="w-100 form-grid"
+                             columnClasses="label-icon-column, input-column">
+                    <p:outputLabel value="From" for="fromDate"/>
+                    <p:calendar id="fromDate" styleClass="w-100" inputStyleClass="w-100 form-control"
+                                value="#{pharmacySaleReportController.fromDate}" navigator="true"
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                    <p:spacer width="50"/>
+                    <p:outputLabel value="To" for="toDate"/>
+                    <p:calendar id="toDate" styleClass="w-100" inputStyleClass="w-100 form-control"
+                                value="#{pharmacySaleReportController.toDate}" navigator="true"
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                    <p:spacer width="50"/>
+                    <p:spacer width="50"/>
+                    <p:spacer width="50"/>
 
-                    <h:outputLabel  rendered="true" value="Category"/>
-                    <p:autoComplete rendered="true" styleClass="noPrintButton" 
-                                    value="#{pharmacySaleReportController.category}"  
-                                    style="text-align: left;  "
+                    <p:outputLabel value="Department" for="department"/>
+                    <p:autoComplete id="department" styleClass="w-100" inputStyleClass="w-100 form-control"
+                                    value="#{pharmacySaleReportController.department}"
+                                    completeMethod="#{departmentController.completeDept}"
+                                    var="dept" itemValue="#{dept}" itemLabel="#{dept.name}"
+                                    required="false" forceSelection="true"
+                                    placeholder="All Departments"
+                                    requiredMessage="You must select a department"/>
+                    <p:spacer width="50"/>
+                    <p:outputLabel value="Category" for="category"/>
+                    <p:autoComplete id="category" styleClass="noPrintButton w-100" inputStyleClass="w-100 form-control"
+                                    value="#{pharmacySaleReportController.category}"
                                     completeMethod="#{pharmaceuticalItemCategoryController.completeCategory}"
                                     var="cat" itemValue="#{cat}" itemLabel="#{cat.name}"
-                                    forceSelection="true" 
-                                    requiredMessage="You must select a category" >
-                    </p:autoComplete>
+                                    forceSelection="true"
+                                    placeholder="All Categories"
+                                    requiredMessage="You must select a category"/>
+                    <p:spacer width="50"/>
+                    <p:spacer width="50"/>
+                    <p:spacer width="50"/>
                 </h:panelGrid>
 
-                <h:panelGrid columns="3" class="my-2">
-                    <!--<p:commandButton ajax="false" value="Process" action="#{pharmacySaleReportController.createCategoryMovementReport()}"/>-->
-                    <p:commandButton 
-                        ajax="false" 
+                <div class="my-2">
+                    <p:commandButton
+                        id="btnProcess"
+                        ajax="false"
                         value="Process"
+                        title="Process the report for the selected filters"
                         icon="fas fa-arrows-rotate"
-                        class="ui-button-warning"
+                        styleClass="ui-button-success m-1"
                         action="#{pharmacySaleReportController.createCategoryMovementReportNew()}"/>
-                    <p:commandButton 
-                        ajax="false" 
-                        value="Excel" 
+                    <p:commandButton
+                        ajax="false"
+                        value="Excel"
+                        title="Download the report as an Excel file"
                         icon="fas fa-file-excel"
-                        class="ui-button-success mx-2" >
-                        <p:dataExporter type="xlsx" target="sum1" fileName="report_pharmacy_sale_by_date_summery"  />
+                        styleClass="ui-button-info m-1">
+                        <p:dataExporter type="xlsx" target="sum1" fileName="report_pharmacy_sale_by_date_summery"/>
                     </p:commandButton>
-                    <p:commandButton 
-                        ajax="false" 
-                        value="Print" 
+                    <p:commandButton
+                        ajax="false"
+                        value="Print"
+                        title="Print the report on A4 landscape"
                         icon="fas fa-print"
-                        class="ui-button-info">
-                        <p:printer target="panelPrint" />
+                        styleClass="ui-button-warning m-1">
+                        <p:printer target="movementPrint"/>
                     </p:commandButton>
-                </h:panelGrid>
+                </div>
 
-
-
-                <p:panel  id="panelPrint">
-                    <p:dataTable id="sum1" value="#{pharmacySaleReportController.categoryMovementReportDtos}" var="i" rowKey="#{i.itemId}-#{i.rowType}" rowIndexVar="rowIndex" styleClass="p-datatable-sm">
+                <p:panel id="panelPrint" styleClass="movement-screen overflow-auto">
+                    <p:dataTable id="sum1" value="#{pharmacySaleReportController.categoryMovementReportDtos}" var="i" rowKey="#{i.itemId}-#{i.rowType}" rowIndexVar="rowIndex" styleClass="p-datatable-sm"
+                                 paginator="true" paginatorPosition="bottom" rows="25" rowsPerPageTemplate="25,50,100,500"
+                                 emptyMessage="No records found">
                         <f:facet name="header">
                             <p:outputLabel value="CATEGORY - WISE MOVEMENT REPORT" />
                             &#13;&nbsp;
@@ -270,10 +344,109 @@
                     </p:dataTable>
                 </p:panel>
 
+                <!-- Paper layout: hidden on screen, the only thing sent to the printer -->
+                <h:panelGroup id="movementPrint" layout="block" styleClass="movement-print">
+                    <div class="mv-head">
+                        <div class="mv-institution"><h:outputText value="#{sessionController.institution.name}"/></div>
+                        <div class="mv-title"><h:outputText value="Movement Report Stock By Date"/></div>
+                        <div class="mv-filters">
+                            <span><b>Department:</b>&#160;<h:outputText value="#{empty pharmacySaleReportController.department ? 'All Departments' : pharmacySaleReportController.department.name}"/></span>
+                            <span><b>Category:</b>&#160;<h:outputText value="#{empty pharmacySaleReportController.category ? 'All Categories' : pharmacySaleReportController.category.name}"/></span>
+                            <span><b>From:</b>&#160;<h:outputText value="#{pharmacySaleReportController.fromDate}"><f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/></h:outputText></span>
+                            <span><b>To:</b>&#160;<h:outputText value="#{pharmacySaleReportController.toDate}"><f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/></h:outputText></span>
+                        </div>
+                    </div>
 
-            </p:panel>         
+                    <table class="mv-table">
+                        <thead>
+                            <tr>
+                                <th rowspan="2">Serial</th>
+                                <th rowspan="2" class="mv-text mv-item">Item</th>
+                                <th rowspan="2" class="mv-text">Code</th>
+                                <th rowspan="2" class="mv-text">Type</th>
+                                <th colspan="8" class="mv-first">Sales and Issues</th>
+                                <th colspan="2" class="mv-first">Disposal</th>
+                                <th class="mv-first">Transfer Receive</th>
+                                <th colspan="2" class="mv-first">Direct Purchase</th>
+                                <th colspan="2" class="mv-first">Stock Adjustment</th>
+                            </tr>
+                            <tr>
+                                <th class="mv-first">Quantity</th>
+                                <th>Opd Sale</th>
+                                <th>Wholesale</th>
+                                <th>Inward Issue</th>
+                                <th>Department Issue</th>
+                                <th>Total</th>
+                                <th>Purchase Value</th>
+                                <th>Margin</th>
+                                <th class="mv-first">Quantity</th>
+                                <th>Purchase Value</th>
+                                <th class="mv-first">Purchase Value</th>
+                                <th class="mv-first">Qty</th>
+                                <th>Purchase Value</th>
+                                <th class="mv-first">Qty</th>
+                                <th>Purchase Value</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <h:panelGroup rendered="#{empty pharmacySaleReportController.categoryMovementReportDtos}">
+                                <tr>
+                                    <td colspan="19" class="mv-empty">No records found</td>
+                                </tr>
+                            </h:panelGroup>
+                            <ui:repeat value="#{pharmacySaleReportController.categoryMovementReportDtos}" var="i" varStatus="st">
+                                <tr class="#{i.rowType eq 'Movement' ? '' : 'mv-reversal'}">
+                                    <td class="mv-num"><h:outputText value="#{st.index + 1}"/></td>
+                                    <td class="mv-item"><h:outputText value="#{i.itemName}"/></td>
+                                    <td><h:outputText value="#{i.itemCode}"/></td>
+                                    <td><h:outputText value="#{i.rowType}"/></td>
+                                    <td class="mv-num mv-first"><h:outputText value="#{i.totalQty eq 0 ? '-' : i.totalQty}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td>
+                                    <td class="mv-num"><h:outputText value="#{i.opdSale eq 0 ? '-' : i.opdSale}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td>
+                                    <td class="mv-num"><h:outputText value="#{i.wholesale eq 0 ? '-' : i.wholesale}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td>
+                                    <td class="mv-num"><h:outputText value="#{i.inwardIssue eq 0 ? '-' : i.inwardIssue}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td>
+                                    <td class="mv-num"><h:outputText value="#{i.departmentIssue eq 0 ? '-' : i.departmentIssue}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td>
+                                    <td class="mv-num"><h:outputText value="#{i.total eq 0 ? '-' : i.total}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td>
+                                    <td class="mv-num"><h:outputText value="#{i.purchaseValue eq 0 ? '-' : i.purchaseValue}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td>
+                                    <td class="mv-num"><h:outputText value="#{i.marginValue eq 0 ? '-' : i.marginValue}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td>
+                                    <td class="mv-num mv-first"><h:outputText value="#{i.disposalQty eq 0 ? '-' : i.disposalQty}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td>
+                                    <td class="mv-num"><h:outputText value="#{i.disposal eq 0 ? '-' : i.disposal}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td>
+                                    <td class="mv-num mv-first"><h:outputText value="#{i.transferReceive eq 0 ? '-' : i.transferReceive}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td>
+                                    <td class="mv-num mv-first"><h:outputText value="#{i.directPurchaseQty eq 0 ? '-' : i.directPurchaseQty}"><f:convertNumber pattern="#,##0.##"/></h:outputText></td>
+                                    <td class="mv-num"><h:outputText value="#{i.directPurchase eq 0 ? '-' : i.directPurchase}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td>
+                                    <td class="mv-num mv-first"><h:outputText value="#{i.stockAdjustmentQty eq 0 ? '-' : i.stockAdjustmentQty}"><f:convertNumber pattern="#,##0.##"/></h:outputText></td>
+                                    <td class="mv-num"><h:outputText value="#{i.stockAdjustment eq 0 ? '-' : i.stockAdjustment}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td>
+                                </tr>
+                            </ui:repeat>
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <td colspan="4" title="Movements minus cancellations and returns">Net</td>
+                                <td class="mv-num mv-first"><h:outputText value="#{pharmacySaleReportController.totalQty}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td>
+                                <td class="mv-num"><h:outputText value="#{pharmacySaleReportController.totalOpdSale}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td>
+                                <td class="mv-num"><h:outputText value="#{pharmacySaleReportController.totalWholesale}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td>
+                                <td class="mv-num"><h:outputText value="#{pharmacySaleReportController.totalInwardIssue}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td>
+                                <td class="mv-num"><h:outputText value="#{pharmacySaleReportController.totalDepartmentIssue}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td>
+                                <td class="mv-num"><h:outputText value="#{pharmacySaleReportController.totalTatalValue}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td>
+                                <td class="mv-num"><h:outputText value="#{pharmacySaleReportController.totalPurchaseValue}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td>
+                                <td class="mv-num"><h:outputText value="#{pharmacySaleReportController.totalMargineValue}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td>
+                                <td class="mv-num mv-first"><h:outputText value="#{pharmacySaleReportController.totalDisposalQty}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td>
+                                <td class="mv-num"><h:outputText value="#{pharmacySaleReportController.totalDisposal}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td>
+                                <td class="mv-num mv-first"><h:outputText value="#{pharmacySaleReportController.totalTransferReceive}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td>
+                                <td class="mv-num mv-first"><h:outputText value="#{pharmacySaleReportController.totalDirectPurchaseQty}"><f:convertNumber pattern="#,##0.##"/></h:outputText></td>
+                                <td class="mv-num"><h:outputText value="#{pharmacySaleReportController.totalDirectPurchase}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td>
+                                <td class="mv-num mv-first"><h:outputText value="#{pharmacySaleReportController.totalStockAdjustmentQty}"><f:convertNumber pattern="#,##0.##"/></h:outputText></td>
+                                <td class="mv-num"><h:outputText value="#{pharmacySaleReportController.totalStockAdjustment}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td>
+                            </tr>
+                        </tfoot>
+                    </table>
 
+                    <div class="mv-generated">
+                        <h:outputText value="Generated by #{sessionController.loggedUser.webUserPerson.name} on "/>
+                        <h:outputText value="#{commonFunctionsProxy.currentDateTime}"><f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/></h:outputText>
+                    </div>
+                </h:panelGroup>
 
+            </p:panel>
         </h:form>
 
     </ui:define>

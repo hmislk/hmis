@@ -1253,6 +1253,25 @@ public class InwardSearch implements Serializable {
 
         relinkPaymentBillsToConfirmedVersion(pe, newConfirmed);
 
+        // The new version carries the admission's paid figures and company shares (#26163).
+        // Its own locked transaction after the switch has committed; a failure is logged
+        // and the next payment, receipt or admin reset recounts again.
+        try {
+            getFinalBillLockBean().withFinalBillVersionLock(pe, () -> {
+                Bill fresh = getBillFacade().findWithoutCache(newConfirmed.getId());
+                if (fresh == null || fresh.isRetired() || fresh.isCancelled() || !fresh.isConfirmedFinalBill()) {
+                    return null;
+                }
+                getInwardBean().recountFinalBillPaid(fresh);
+                getBillFacade().edit(fresh);
+                getInwardBean().recountCreditCompanyShares(fresh);
+                return null;
+            });
+        } catch (RuntimeException e) {
+            java.util.logging.Logger.getLogger(InwardSearch.class.getName())
+                    .log(java.util.logging.Level.WARNING, "Recount after confirming a final bill version failed", e);
+        }
+
         auditService.logEncounterAudit(pe, "Final Bill Version Confirmed",
                 previousFinalBillId, newConfirmed.getId(), sessionController.getLoggedUser(),
                 "Bill", newConfirmed.getId());

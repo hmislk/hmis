@@ -15,33 +15,38 @@
             <p:growl id="inpatientDashboardGrowl" ></p:growl>
             <p:panel >
                 <f:facet name="header" >
-                    <h:outputText styleClass="fa fa-id-card"></h:outputText>
-                    <p:outputLabel value="&nbsp;&nbsp;&nbsp;Inpatient Dashboard (DTO - Optimized)" class="m-2" ></p:outputLabel>
-
-                    <p:commandButton 
-                        value="Download" 
-                        ajax="false"
-                        class="ui-button-primary m-1"
-                        icon="fa fa-download">
-                        <p:dataExporter fileName="Inpatient Medicine Issue" target="tbl1" type="xlsx"></p:dataExporter>
-                    </p:commandButton>
-
-                    <p:commandButton 
-                        value="Print" 
-                        ajax="false"
-                        class="ui-button-primary m-1"
-                        icon="fa fa-print">
-                        <p:printer target="tbl1"></p:printer>
-                    </p:commandButton>
-
-                    <p:commandButton
-                        value="Inpatient Dashboard"
-                        action="#{inwardReportControllerBht.navigateToAdmissionProfile()}"
-                        style="float: right;"
-                        ajax="false"
-                        class="ui-button-secondary m-1"
-                        icon="fa fa-arrow-circle-left">
-                    </p:commandButton>
+                    <div class="d-flex justify-content-between align-items-center w-100">
+                        <div class="d-flex align-items-center gap-2">
+                            <h:outputText styleClass="fa fa-id-card"></h:outputText>
+                            <p:outputLabel value="Inpatient Dashboard (DTO - Optimized)"></p:outputLabel>
+                        </div>
+                        <div class="d-flex align-items-center gap-2">
+                            <p:commandButton
+                                value="Inpatient Dashboard"
+                                action="#{inwardReportControllerBht.navigateToAdmissionProfile()}"
+                                ajax="false"
+                                class="ui-button-info ui-button-outlined"
+                                icon="fa fa-arrow-circle-left">
+                            </p:commandButton>
+                        </div>
+                        <div class="d-flex align-items-center gap-2">
+                            <p:commandButton
+                                value="Print"
+                                ajax="false"
+                                class="ui-button-secondary"
+                                icon="fa fa-print">
+                                <p:printer target="tbl1"></p:printer>
+                            </p:commandButton>
+                            <p:commandButton
+                                value="Download"
+                                ajax="false"
+                                class="ui-button-success"
+                                style="min-width:120px"
+                                icon="fa fa-download">
+                                <p:dataExporter fileName="Inpatient Medicine Issue" target="tbl1" type="xlsx"></p:dataExporter>
+                            </p:commandButton>
+                        </div>
+                    </div>
 
                 </f:facet>
 
@@ -121,6 +126,7 @@
                             <p:dataTable 
                                 id="tbl1" 
                                 rowIndexVar="rowIndex" 
+                                styleClass="p-datatable-sm"
                                 value="#{inwardReportControllerBht.pharmacyIssueDtosToPatientEncounter}"  
                                 var="dto">
 
@@ -207,7 +213,7 @@
                                     <f:facet name="header">
                                         <h:outputLabel value="Gross Value" />
                                     </f:facet>
-                                    <h:outputLabel value="#{dto.cancellationOrReturn ? (dto.grossValue lt 0 ? -dto.grossValue : dto.grossValue) : dto.grossValue}">
+                                    <h:outputLabel value="#{inwardReportControllerBht.pharmacyItemListDtoRowValue(dto, dto.grossValue)}">
                                         <f:convertNumber pattern="#0.00" />
                                     </h:outputLabel>
                                     <f:facet name="footer">
@@ -235,7 +241,7 @@
                                     <f:facet name="header">
                                         <h:outputLabel value="Service Charge" />
                                     </f:facet>
-                                    <h:outputLabel value="#{dto.cancellationOrReturn ? (dto.marginValue lt 0 ? -dto.marginValue : dto.marginValue) : dto.marginValue}">
+                                    <h:outputLabel value="#{inwardReportControllerBht.pharmacyItemListDtoRowValue(dto, dto.marginValue)}">
                                         <f:convertNumber pattern="#0.00" />
                                     </h:outputLabel>
                                     <f:facet name="footer">
@@ -249,7 +255,7 @@
                                     <f:facet name="header">
                                         <h:outputLabel value="Net Value" />
                                     </f:facet>
-                                    <h:outputLabel value="#{dto.cancellationOrReturn ? (dto.netValue lt 0 ? -dto.netValue : dto.netValue) : dto.netValue}">
+                                    <h:outputLabel value="#{inwardReportControllerBht.pharmacyItemListDtoRowValue(dto, dto.netValue)}">
                                         <f:convertNumber pattern="#0.00" />
                                     </h:outputLabel>
                                     <f:facet name="footer">

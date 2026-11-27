@@ -96,18 +96,34 @@
                                 <h:dataTable value="#{vg.billItems}" var="bip"
                                              styleClass="paymentTable">
 
-                                    <h:column>
+                                    <h:column rendered="#{not (cc.attrs.bill.billTypeAtomic eq 'PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_INWARD_SERVICE')}">
                                         <f:facet name="header">
                                             <h:outputText value="Bill No"/>
                                         </f:facet>
                                         <h:outputText value="#{bip.paidForBillFee.bill.deptId}" />
                                     </h:column>
 
-                                    <h:column>
+                                    <h:column rendered="#{not (cc.attrs.bill.billTypeAtomic eq 'PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_INWARD_SERVICE')}">
                                         <f:facet name="header">
                                             <h:outputText value="Service"/>
                                         </f:facet>
                                         <h:outputText value="#{empty bip.referanceBillItem.item ? bip.paidForBillFee.bill.procedure.item.name : bip.referanceBillItem.item.name}" />
+                                    </h:column>
+
+                                    <!-- Inward staff payment: BHT and admission type of the fee's admission -->
+                                    <h:column rendered="#{cc.attrs.bill.billTypeAtomic eq 'PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_INWARD_SERVICE'}">
+                                        <f:facet name="header">
+                                            <h:outputText value="BHT No"/>
+                                        </f:facet>
+                                        <h:outputText value="#{bip.paidForBillFee.bill.patientEncounter.bhtNo}" />
+                                    </h:column>
+
+                                    <h:column rendered="#{cc.attrs.bill.billTypeAtomic eq 'PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_INWARD_SERVICE'}">
+                                        <f:facet name="header">
+                                            <h:outputText value="Admission Type"/>
+                                        </f:facet>
+                                        <h:outputText value="#{bip.paidForBillFee.bill.patientEncounter.admissionType.name}" title="#{bip.paidForBillFee.bill.patientEncounter.admissionType.name}"
+                                                      style="display: inline-block; max-width: 3.5cm; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; vertical-align: bottom;" />
                                     </h:column>
 
                                     <h:column>

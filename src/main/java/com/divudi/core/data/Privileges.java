@@ -175,6 +175,7 @@ public enum Privileges {
     InwardPackageChange("Inward Package Change"),
     InwardEditPatientDetailsFromAdmission("Inward Edit Patient Details From Admission"),
     InwardEditPaymentDetails("Inward Edit Payment Details"),
+    InwardChangeAdmissionType("Inward Change Admission Type"),
     InwardManageAllergies("Inward Manage Allergies"),
     InwardDoctorPaymentAccess("Inward Doctor Payment Access"),
     InwardMakeDepositAccess("Inward Make Deposit Access"),
@@ -851,6 +852,7 @@ public enum Privileges {
     MergePatients("Merge Patients"),
     ManageCreditCompany("Manage Credit Company"),
     AdminFilterWithoutDepartment("Admin Filter Without Department"),
+    ReversePharmacyBhtIssue("Reverse Pharmacy BHT Issue"),
     //</editor-fold>
     
     //<editor-fold defaultstate="collapsed" desc="Approval">
@@ -1794,6 +1796,7 @@ public enum Privileges {
             case InwardReportPharmacyIssueSummaryLegacy:
             case InwardEditPatientDetailsFromAdmission:
             case InwardEditPaymentDetails:
+            case InwardChangeAdmissionType:
             case InwardManageAllergies:
             case InwardDoctorPaymentAccess:
             case InwardMakeDepositAccess:

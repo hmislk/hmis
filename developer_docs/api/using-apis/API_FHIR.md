@@ -29,6 +29,10 @@ Finance: <your-api-key>
 
 `application/json`
 
+### Fees collected by the doctor
+
+A fee with `BillFee.collectedByDoctorAtBilling` set is paid to the doctor directly and is excluded from hospital income figures; invoice lines still carry it, flagged `collectedByDoctor: true`.
+
 ### Endpoints
 
 #### GET `/api/fhir/cash_invoice/{institution_code}/{last_invoice_id}`

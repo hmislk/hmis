@@ -430,10 +430,8 @@ public class ConfigResource {
     private ApiKey validateConfigKey(HttpHeaders headers) {
         String apiKeyValue = headers.getHeaderString("Config");
         ApiKey apiKey = apiKeyController.findApiKey(apiKeyValue);
-        if (apiKey == null || apiKey.isRetired()
-                || apiKey.getKeyType() != ApiKeyType.Config
-                || apiKey.getDateOfExpiary() == null
-                || apiKey.getDateOfExpiary().before(new java.util.Date())) {
+        // API key hardening
+        if (apiKeyController.resolveConfigKeyOwner(apiKey) == null) {
             return null;
         }
         return apiKey;

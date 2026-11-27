@@ -52,7 +52,7 @@
                                     <f:selectItems value="#{diagnosisController.items}" 
                                                    var="myItem" 
                                                    itemValue="#{myItem}" 
-                                                   itemLabel="#{myItem.name}"></f:selectItems>
+                                                   itemLabel="#{empty myItem.name ? '(no name)' : myItem.name}"></f:selectItems>
                                     <f:ajax render="gpDetail" execute="lstSelect">
                                     </f:ajax>
                                 </p:selectOneListbox>
@@ -86,7 +86,7 @@
                                     <div class="col-sm-10">
                                         <p:commandButton id="btnSave" 
                                                          value="Save"
-                                                         class="m-1"
+                                                         class="m-1 ui-button-success"
                                                          icon="fas fa-save"
                                                          process="gpDetail" 
                                                          update="growlMsg lstSelect selectFocus gpDetail" 

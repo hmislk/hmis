@@ -683,6 +683,43 @@ public class CreditBean {
         return getBillItemFacade().findDoubleByJpql(sql, hm);
     }
 
+    /**
+     * What has been settled against a set of credit commitment bills: the
+     * receipt items that point at any of them, of the given counted service
+     * type (company or patient settlement), net of cancels (a cancel item
+     * carries the negative). Used to count what one credit company has paid
+     * across every version of an admission's final bill (#26163).
+     */
+    public double getSettledAmountOnCommitments(List<Long> commitmentIds, CountedServiceType type) {
+        if (commitmentIds == null || commitmentIds.isEmpty() || type == null) {
+            return 0.0;
+        }
+        String sql = "Select sum(b.netValue)"
+                + " from BillItem b "
+                + " where b.retired=false "
+                + " and b.referenceBill.id in :ids "
+                + " and b.bill.billTypeAtomic in :btas ";
+        HashMap<String, Object> hm = new HashMap<>();
+        hm.put("ids", commitmentIds);
+        hm.put("btas", BillTypeAtomic.findByCountedServiceType(type));
+        return getBillItemFacade().findDoubleByJpql(sql, hm, TemporalType.TIMESTAMP);
+    }
+
+    /**
+     * The outstanding balance of a credit bill, computed from scratch so it
+     * never depends on earlier values: |netTotal + vat| less paid, refunded
+     * and written off, never below 0. The one formula for the company receipt,
+     * its cancel and the post final share recount (#26159).
+     */
+    public double calculateOutstandingBalance(Bill b) {
+        if (b == null) {
+            return 0.0;
+        }
+        double billTotal = Math.abs(b.getNetTotal() + b.getVat());
+        double refund = Math.abs(getRefundAmount(b));
+        return Math.max(0.0, billTotal - (b.getPaidAmount() + refund + b.getWrittenOffAmount()));
+    }
+
     public double getRefundAmount(Bill b) {
         // Finds the refund/cancellation bills linked to a bill, handling different structures:
         // 1. Direct refunds: rb.billedBill = b

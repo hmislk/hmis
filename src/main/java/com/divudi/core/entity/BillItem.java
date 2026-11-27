@@ -1310,6 +1310,11 @@ public class BillItem implements Serializable, RetirableEntity {
         return prescription != null && prescription.getId() != null;
     }
 
+    /** The prescription as set, or null; unlike getPrescription() it never creates one. */
+    public Prescription peekPrescription() {
+        return prescription;
+    }
+
     public void setPrescription(Prescription prescription) {
         this.prescription = prescription;
     }
@@ -1320,6 +1325,11 @@ public class BillItem implements Serializable, RetirableEntity {
 
     public void setReagentFee(double reagentFee) {
         this.reagentFee = reagentFee;
+    }
+
+    /** True when finance details exist, without creating them. */
+    public boolean hasBillItemFinanceDetails() {
+        return billItemFinanceDetails != null;
     }
 
     /**
