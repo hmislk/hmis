@@ -32,6 +32,7 @@ import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.Item;
 import com.divudi.core.entity.Patient;
+import com.divudi.core.entity.PatientDeposit;
 import com.divudi.core.entity.Payment;
 import com.divudi.core.entity.PaymentScheme;
 import com.divudi.core.entity.Person;
@@ -134,6 +135,8 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
     BillService billService;
     @EJB
     OpdPreSettleWriter opdPreSettleWriter;
+    @Inject
+    PatientDepositController patientDepositController;
 
     private static final Logger LOGGER = Logger.getLogger(OpdPreSettleController.class.getName());
 
@@ -378,6 +381,18 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
     @Inject
     private PaymentSchemeController paymentSchemeController;
 
+    /**
+     * What the patient can pay with Patient Deposit: the balance of the patient's
+     * deposit record (the one the Patient Deposit receipt raises) plus the credit
+     * limit, as the normal OPD bill checks it (#26260).
+     */
+    private double depositAvailableForPurchase(Patient patient) {
+        PatientDeposit pd = patientDepositController.checkDepositOfThePatient(patient, getSessionController().getDepartment());
+        double balance = (pd == null || pd.getBalance() == null) ? 0.0 : pd.getBalance();
+        double creditLimitAbsolute = patient.getCreditLimit() == null ? 0.0 : Math.abs(patient.getCreditLimit());
+        return balance + creditLimitAbsolute;
+    }
+
     private boolean errorCheckForSaleBill() {
         if (getPaymentSchemeController().checkPaymentMethodError(paymentMethod, getPaymentMethodData())) {
             return true;
@@ -387,14 +402,7 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
                 JsfUtil.addErrorMessage("Patient has not account. Can't proceed with Patient Deposits");
                 return true;
             }
-            double creditLimitAbsolute = Math.abs(preBill.getPatient().getCreditLimit());
-            double runningBalance;
-            if (preBill.getPatient().getRunningBalance() != null) {
-                runningBalance = preBill.getPatient().getRunningBalance();
-            } else {
-                runningBalance = 0.0;
-            }
-            double availableForPurchase = runningBalance + creditLimitAbsolute;
+            double availableForPurchase = depositAvailableForPurchase(preBill.getPatient());
 
             if (netTotal > availableForPurchase) {
                 JsfUtil.addErrorMessage("No Sufficient Patient Deposit");
@@ -444,14 +452,7 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
                         JsfUtil.addErrorMessage("Patient has not account. Can't proceed with Patient Deposits");
                         return true;
                     }
-                    double creditLimitAbsolute = Math.abs(getPreBill().getPatient().getCreditLimit());
-                    double runningBalance;
-                    if (getPreBill().getPatient().getRunningBalance() != null) {
-                        runningBalance = getPreBill().getPatient().getRunningBalance();
-                    } else {
-                        runningBalance = 0.0;
-                    }
-                    double availableForPurchase = runningBalance + creditLimitAbsolute;
+                    double availableForPurchase = depositAvailableForPurchase(getPreBill().getPatient());
 
                     if (cd.getPaymentMethodData().getPatient_deposit().getTotalValue() > availableForPurchase) {
                         JsfUtil.addErrorMessage("No Sufficient Patient Deposit");
@@ -513,6 +514,10 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
             }
 
             getPaymentMethodData().getPatient_deposit().setTotalValue(netTotal);
+            PatientDeposit pd = patientDepositController.checkDepositOfThePatient(preBill.getPatient(), getSessionController().getDepartment());
+            if (pd != null && pd.getId() != null) {
+                getPaymentMethodData().getPatient_deposit().setPatientDepost(pd);
+            }
         }
         if (paymentMethod == PaymentMethod.Card) {
             getPaymentMethodData().getCreditCard().setTotalValue(netTotal);
@@ -571,6 +576,15 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
                 // Single Staff method: the credit is saved by the writer, in the same transaction.
                 request.addStaffCredit(toStaff, netTotal);
             }
+            if (paymentMethod == PaymentMethod.PatientDeposit) {
+                // Single Patient Deposit method: lower the patient balance and the deposit record, as the normal OPD bill does (#26260).
+                final Patient depositPatient = getSaleBill().getPatient();
+                final Double balanceBefore = depositPatient.getRunningBalance();
+                request.addUndo(() -> depositPatient.setRunningBalance(balanceBefore));
+                depositPatient.setRunningBalance((balanceBefore == null ? 0.0 : balanceBefore) - getSaleBill().getNetTotal());
+                request.getPatientsToSave().add(depositPatient);
+                request.addDepositUse(depositPatient, getSaleBill().getNetTotal());
+            }
             billsOfBatchBilledBill = opdPreSettleWriter.settle(request);
         } catch (RuntimeException e) {
             request.restore();
@@ -607,6 +621,10 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
                 p.setCreatedAt(new Date());
                 p.setCreater(getSessionController().getLoggedUser());
                 p.setPaymentMethod(cd.getPaymentMethod());
+                if (cd.getPaymentMethod() == PaymentMethod.PatientDeposit) {
+                    // The deposit record is lowered by the amount of this row, in the writer's transaction (#26260).
+                    request.addDepositUse(bill.getPatient(), cd.getPaymentMethodData().getPatient_deposit().getTotalValue());
+                }
 
                 switch (cd.getPaymentMethod()) {
                     case Card:
@@ -889,14 +907,7 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
                 JsfUtil.addErrorMessage("Patient has not account. Can't proceed with Patient Deposits");
                 return true;
             }
-            double creditLimitAbsolute = Math.abs(preBill.getPatient().getCreditLimit());
-            double runningBalance;
-            if (preBill.getPatient().getRunningBalance() != null) {
-                runningBalance = preBill.getPatient().getRunningBalance();
-            } else {
-                runningBalance = 0.0;
-            }
-            double availableForPurchase = runningBalance + creditLimitAbsolute;
+            double availableForPurchase = depositAvailableForPurchase(preBill.getPatient());
 
             if (netTotal > availableForPurchase) {
                 JsfUtil.addErrorMessage("No Sufficient Patient Deposit");
@@ -942,14 +953,7 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
                         JsfUtil.addErrorMessage("Patient has not account. Can't proceed with Patient Deposits");
                         return true;
                     }
-                    double creditLimitAbsolute = Math.abs(getPreBill().getPatient().getCreditLimit());
-                    double runningBalance;
-                    if (getPreBill().getPatient().getRunningBalance() != null) {
-                        runningBalance = getPreBill().getPatient().getRunningBalance();
-                    } else {
-                        runningBalance = 0.0;
-                    }
-                    double availableForPurchase = runningBalance + creditLimitAbsolute;
+                    double availableForPurchase = depositAvailableForPurchase(getPreBill().getPatient());
 
                     if (cd.getPaymentMethodData().getPatient_deposit().getTotalValue() > availableForPurchase) {
                         JsfUtil.addErrorMessage("No Sufficient Patient Deposit");

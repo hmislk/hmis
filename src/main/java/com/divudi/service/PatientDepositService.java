@@ -251,6 +251,19 @@ public class PatientDepositService {
         createPatientDepositHitory(HistoryType.PatientDepositUtilization, pd, b, beforeBalance, afterBalance, 0 - Math.abs(b.getNetTotal()));
     }
 
+    /**
+     * Takes an amount of the stated size from the deposit and writes the history
+     * row. Used where the amount is known from the payment screen, not from the
+     * bill total (OPD pre-bill settle, #26260).
+     */
+    public void handleUtilization(Bill b, PatientDeposit pd, double amount) {
+        Double beforeBalance = pd.getBalance() == null ? 0.0 : pd.getBalance();
+        Double afterBalance = beforeBalance - Math.abs(amount);
+        pd.setBalance(afterBalance);
+        patientDepositFacade.edit(pd);
+        createPatientDepositHitory(HistoryType.PatientDepositUtilization, pd, b, beforeBalance, afterBalance, 0 - Math.abs(amount));
+    }
+
     public void handleInPayment(Payment p, PatientDeposit pd) {
         Double beforeBalance = pd.getBalance();
         Double afterBalance = beforeBalance + Math.abs(p.getPaidValue());
