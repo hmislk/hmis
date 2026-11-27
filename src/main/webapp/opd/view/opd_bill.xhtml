@@ -45,7 +45,7 @@
                                                 </div>
 
                                                 <p:commandButton 
-                                                    value="Print Bill" 
+                                                    value="Print Bill" title="Print the bill shown below" 
                                                     class="ui-button-info m-1"
                                                     icon="fa fa-print"
                                                     style="float: right"
@@ -53,7 +53,7 @@
                                                     <p:printer target="groupPrint" />
                                                 </p:commandButton>
                                                 <p:commandButton 
-                                                    value="Print Refund Bill" 
+                                                    value="Print Refund Bill" title="Print the refund bill" 
                                                     class="ui-button-info m-1"
                                                     icon="fa fa-print"
                                                     rendered="#{billSearch.viewingBill.refunded}"
@@ -66,6 +66,11 @@
                                             <div class="d-flex gap-2">
                                                 <div class="col-6">
                                                     <h:panelGroup id="groupPrint" >
+                                                        <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFiveCustom4'}" >
+                                                            <ui:repeat value="#{billSearch.viewingBill}" var="c4b">
+                                                                <prints:five_five_opd_bill_custom_4 bill="#{c4b}" duplicate="true" billCount="#{billSearch.batchBillCountOf(c4b)}"/>
+                                                            </ui:repeat>
+                                                        </h:panelGroup>
                                                         <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePaper'}" >
                                                             <ui:repeat value="#{billSearch.viewingBill}" var="ffb">
                                                                 <prints:five_five_paper_with_headings bill="#{ffb}" duplicate="true"/>                        
