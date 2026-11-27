@@ -1,7 +1,21 @@
 # Writing Style: Short, Plain, To the Point
 
-Applies to everything a person reads: chat replies, hub messages and asks,
-issues, PR bodies, comments and docs.
+Applies to everything a person reads: chat replies, asks to the user,
+Telegram messages and emails, GitHub issues, PR titles and bodies, comments and
+reviews, wiki pages and docs.
+
+## Text between agents
+
+Text that only agents read can use any format that works best. This includes
+hub messages between sessions, worker briefs, agent notes on tasks and agent
+memory files. This page does not apply to it.
+
+If a person will read the text, this page applies, even when an agent sends or
+relays it. Examples: a hub message to the user, a message on a channel that a
+person reads, a Telegram reply, an ask, and a task or work title on the hub
+dashboard.
+
+The security rules apply to all text, between agents too.
 
 ## Rules
 
@@ -23,8 +37,7 @@ issues, PR bodies, comments and docs.
 
 ## Simplified Technical English (ASD-STE100)
 
-Replies to the user, hub messages, asks to the user and Telegram replies follow
-ASD-STE100. Target: 80% of sentences obey all rules.
+All text for people follows ASD-STE100. Target: 80% of sentences obey all rules.
 
 1. An instruction has 20 words or fewer. A description has 25 words or fewer.
 2. Write one instruction or one fact in one sentence.
@@ -41,9 +54,10 @@ ASD-STE100. Target: 80% of sentences obey all rules.
 
 Fixed gate words such as "REV OK <sha>" on a PR stay exactly as written.
 
-Measure: once a week one session scores 10 random hub messages (sentences
-that obey all rules / all sentences) and reports the score to the user. If
-the user replies "unclear", the sender rewrites the message.
+Measure: once a week one session scores 10 random texts for people, for example
+GitHub comments, asks and Telegram replies (sentences that obey all rules / all
+sentences). It reports the score to the user. If the reader replies "unclear",
+the sender rewrites the text.
 
 ### Agreed short words
 
@@ -73,7 +87,7 @@ The user agreed this list on 24 Nov 2026. The team adds a word when it needs one
 
 | Where | Aim |
 |---|---|
-| Hub message or ask | 3 lines or less |
+| Short message to a person | 3 lines or less |
 | Question to the user | Up to 3 short lines of context, then one question with options |
 | Issue body | Problem, expected, fix: 10 lines or less. Then "For developers" |
 | PR summary | 5 lines or less above the Changes section |
@@ -105,4 +119,4 @@ from the Revert button and never finished. Should we remove it or make it work?"
 
 ## From CLAUDE.md (moved detail)
 
-applies to replies, hub messages, issues, PRs and docs. Lead with the point. Use the words on screen (menu, page, button), not code names; put code names in a "For developers" section. Ask one question at a time, with options and a recommendation.
+applies to all text that a person reads. Lead with the point. Use the words on screen (menu, page, button), not code names; put code names in a "For developers" section. Ask one question at a time, with options and a recommendation.
