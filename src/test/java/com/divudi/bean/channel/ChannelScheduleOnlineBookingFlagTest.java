@@ -36,34 +36,87 @@ public class ChannelScheduleOnlineBookingFlagTest {
         return si;
     }
 
-    @Test
-    public void savingScheduleWithOnlineBookingsOn_opensExistingSessions() {
-        TestController c = new TestController();
-        RecordingFacade f = new RecordingFacade();
-        c.setSessionInstanceFacade(f);
-        SessionInstance si = existingInstance(false);
-        c.instances.add(si);
+    private static ServiceSession schedule(boolean online) {
         ServiceSession ss = new ServiceSession();
-        ss.setAcceptOnlineBookings(true);
-
-        c.updateCreatedServicesesions(ss);
-
-        assertTrue(si.isAcceptOnlineBookings());
-        assertEquals(1, f.edited.size());
+        ss.setAcceptOnlineBookings(online);
+        return ss;
     }
 
     @Test
-    public void savingScheduleWithOnlineBookingsOff_closesExistingSessions() {
+    public void unrelatedSave_keepsHandClosedSessionClosed() {
+        TestController c = new TestController();
+        c.setSessionInstanceFacade(new RecordingFacade());
+        SessionInstance closedByHand = existingInstance(false);
+        c.instances.add(closedByHand);
+
+        c.updateCreatedServicesesions(schedule(true), Boolean.TRUE);
+
+        assertFalse(closedByHand.isAcceptOnlineBookings());
+    }
+
+    @Test
+    public void unknownPreviousValue_changesNothing() {
+        TestController c = new TestController();
+        c.setSessionInstanceFacade(new RecordingFacade());
+        SessionInstance closed = existingInstance(false);
+        SessionInstance open = existingInstance(true);
+        c.instances.add(closed);
+        c.instances.add(open);
+
+        c.updateCreatedServicesesions(schedule(true), null);
+        assertFalse(closed.isAcceptOnlineBookings());
+
+        c.updateCreatedServicesesions(schedule(false), null);
+        assertTrue(open.isAcceptOnlineBookings());
+    }
+
+    @Test
+    public void turnedOn_opensNormalSessionsAndSkipsStartedCompletedCancelledHoliday() {
         TestController c = new TestController();
         RecordingFacade f = new RecordingFacade();
         c.setSessionInstanceFacade(f);
-        SessionInstance si = existingInstance(true);
-        c.instances.add(si);
-        ServiceSession ss = new ServiceSession();
-        ss.setAcceptOnlineBookings(false);
+        SessionInstance normal = existingInstance(false);
+        SessionInstance started = existingInstance(false);
+        started.setStarted(true);
+        SessionInstance completed = existingInstance(false);
+        completed.setCompleted(true);
+        SessionInstance cancelled = existingInstance(false);
+        cancelled.setCancelled(true);
+        SessionInstance holiday = existingInstance(false);
+        holiday.setDoctorHoliday(true);
+        c.instances.add(normal);
+        c.instances.add(started);
+        c.instances.add(completed);
+        c.instances.add(cancelled);
+        c.instances.add(holiday);
 
-        c.updateCreatedServicesesions(ss);
+        c.updateCreatedServicesesions(schedule(true), Boolean.FALSE);
 
-        assertFalse(si.isAcceptOnlineBookings());
+        assertTrue(normal.isAcceptOnlineBookings());
+        assertFalse(started.isAcceptOnlineBookings());
+        assertFalse(completed.isAcceptOnlineBookings());
+        assertFalse(cancelled.isAcceptOnlineBookings());
+        assertFalse(holiday.isAcceptOnlineBookings());
+        assertEquals(5, f.edited.size());
+    }
+
+    @Test
+    public void turnedOff_closesAllFutureSessions() {
+        TestController c = new TestController();
+        c.setSessionInstanceFacade(new RecordingFacade());
+        SessionInstance normal = existingInstance(true);
+        SessionInstance started = existingInstance(true);
+        started.setStarted(true);
+        SessionInstance holiday = existingInstance(true);
+        holiday.setDoctorHoliday(true);
+        c.instances.add(normal);
+        c.instances.add(started);
+        c.instances.add(holiday);
+
+        c.updateCreatedServicesesions(schedule(false), Boolean.TRUE);
+
+        assertFalse(normal.isAcceptOnlineBookings());
+        assertFalse(started.isAcceptOnlineBookings());
+        assertFalse(holiday.isAcceptOnlineBookings());
     }
 }
