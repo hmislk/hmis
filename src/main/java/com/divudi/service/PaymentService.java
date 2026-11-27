@@ -803,7 +803,7 @@ public class PaymentService {
             pt.setRunningBalance(0.0 - p.getPaidValue());
         }
         patientFacade.editAndFlush(pt);
-        // Hardening, tracked under #26265: lower the locked copy of the record.
+        // Hardening, tracked under #26265.
         PatientDeposit pd = patientDepositService.lockedCopyOf(patientDepositService.getDepositOfThePatient(pt, p.getDepartment()));
         patientDepositService.updateBalance(p, pd);
 

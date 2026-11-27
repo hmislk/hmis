@@ -264,33 +264,82 @@ public class PatientDepositService {
         createPatientDepositHitory(HistoryType.PatientDepositUtilization, pd, b, beforeBalance, afterBalance, 0 - Math.abs(amount));
     }
 
+    static final double TOLERANCE = 0.01;
+
     /**
-     * Takes the bill total from the patient's deposit record in one
-     * transaction: the record is locked, the balance plus the credit limit is
-     * checked, and the record is lowered with its history row. Hardening,
-     * tracked under #26265.
+     * Hardening, tracked under #26265.
      *
-     * @throws PatientDepositException when the balance does not cover the total
+     * @throws PatientDepositException when the balance does not cover the amount
      */
-    public void takeBillTotalFromDepositLocked(Patient patient, Department department, Bill bill, double creditLimit) {
-        PatientDeposit found = getDepositOfThePatient(patient, department);
-        lowerLocked(bill, found, creditLimit);
+    public PatientDepositTake takeFromDepositLocked(Patient patient, Department department, double amount, double creditLimit) {
+        return takeLocked(getDepositOfThePatient(patient, department), amount, creditLimit);
     }
 
-    /**
-     * Same as {@link #takeBillTotalFromDepositLocked}, for a caller that
-     * passes in a deposit record.
-     */
-    void lowerLocked(Bill bill, PatientDeposit found, double creditLimit) {
+    PatientDepositTake takeLocked(PatientDeposit found, double amount, double creditLimit) {
         PatientDeposit pd = lockedCopyOf(found);
-        double amount = Math.abs(bill.getNetTotal());
-        requireCover(pd, amount, creditLimit);
-        handleUtilization(bill, pd, amount);
+        double taken = Math.abs(amount);
+        requireCover(pd, taken, creditLimit);
+        double before = balanceOf(pd);
+        pd.setBalance(before - taken);
+        patientDepositFacade.edit(pd);
+        return new PatientDepositTake(pd, taken, before, before - taken, creditLimit);
     }
 
     /**
-     * Loads the deposit record fresh under a write lock. Use it wherever a
-     * deposit is checked and lowered.
+     * Hardening, tracked under #26265.
+     */
+    public void writeTakeHistory(PatientDepositTake take, Bill bill) {
+        createPatientDepositHitory(HistoryType.PatientDepositUtilization, take.getDeposit(), bill,
+                take.getBalanceBefore(), take.getBalanceAfter(), 0 - take.getAmount());
+        take.setHistoryBill(bill);
+    }
+
+    /**
+     * Hardening, tracked under #26265.
+     *
+     * @throws PatientDepositException when the balance does not cover the difference
+     */
+    public void reconcileTake(PatientDepositTake take, double billTotal) {
+        double total = Math.abs(billTotal);
+        double delta = total - take.getAmount();
+        if (Math.abs(delta) <= TOLERANCE) {
+            return;
+        }
+        PatientDeposit pd = lockedCopyOf(take.getDeposit());
+        if (delta > 0) {
+            requireCover(pd, delta, take.getCreditLimit());
+        }
+        pd.setBalance(balanceOf(pd) - delta);
+        patientDepositFacade.edit(pd);
+        take.setAmount(total);
+        take.setBalanceAfter(take.getBalanceAfter() - delta);
+    }
+
+    /**
+     * Hardening, tracked under #26265.
+     */
+    public void giveBackLocked(PatientDepositTake take) {
+        if (take == null || take.isGivenBack()) {
+            return;
+        }
+        PatientDeposit pd = lockedCopyOf(take.getDeposit());
+        double before = balanceOf(pd);
+        double after = before + take.getAmount();
+        pd.setBalance(after);
+        patientDepositFacade.edit(pd);
+        take.setGivenBack(true);
+        if (take.getHistoryBill() != null) {
+            createPatientDepositHitory(HistoryType.PatientDepositUtilizationCancel, pd, take.getHistoryBill(),
+                    before, after, take.getAmount());
+        }
+    }
+
+    private static double balanceOf(PatientDeposit pd) {
+        return pd.getBalance() == null ? 0.0 : pd.getBalance();
+    }
+
+    /**
+     * Loads the deposit record fresh under a write lock.
      */
     public PatientDeposit lockedCopyOf(PatientDeposit found) {
         if (found == null || found.getId() == null) {
@@ -301,8 +350,7 @@ public class PatientDepositService {
     }
 
     void requireCover(PatientDeposit pd, double amount, double creditLimit) {
-        double balance = pd.getBalance() == null ? 0.0 : pd.getBalance();
-        if (amount > balance + Math.abs(creditLimit)) {
+        if (amount > balanceOf(pd) + Math.abs(creditLimit) + TOLERANCE) {
             throw new PatientDepositException("No Sufficient Patient Deposit");
         }
     }

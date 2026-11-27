@@ -66,8 +66,10 @@ import com.divudi.service.DepartmentResolver;
 import com.divudi.service.DiscountSchemeValidationService;
 import com.divudi.service.PatientDepositService;
 import com.divudi.service.PatientDepositException;
+import com.divudi.service.PatientDepositTake;
 import com.divudi.service.PaymentService;
 import java.io.Serializable;
+import javax.ejb.EJBException;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -2605,6 +2607,52 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         if (errorCheck()) {
             return false;
         }
+        PatientDepositTake depositTake = null;
+        if (paymentMethod == PaymentMethod.PatientDeposit) {
+            depositTake = takeSettleAmountFromDeposit();
+            if (depositTake == null) {
+                return false;
+            }
+        }
+        boolean settled = false;
+        try {
+            settled = settleBillAfterDeposit(depositTake);
+        } finally {
+            if (!settled && depositTake != null) {
+                giveBackDeposit(depositTake);
+            }
+        }
+        return settled;
+    }
+
+    // Hardening, tracked under #26265.
+    private PatientDepositTake takeSettleAmountFromDeposit() {
+        try {
+            return patientDepositService.takeFromDepositLocked(getPatient(), sessionController.getDepartment(), netTotal, 0.0);
+        } catch (PatientDepositException e) {
+            JsfUtil.addErrorMessage(e.getMessage());
+        } catch (EJBException e) {
+            JsfUtil.addErrorMessage("The patient deposit is busy. Nothing was saved. Please try again.");
+        }
+        return null;
+    }
+
+    // Hardening, tracked under #26265.
+    private void giveBackDeposit(PatientDepositTake depositTake) {
+        try {
+            patientDepositService.giveBackLocked(depositTake);
+            if (depositTake.isPatientBalanceLowered() && getPatient().getRunningBalance() != null) {
+                getPatient().setRunningBalance(getPatient().getRunningBalance() + netTotal);
+                getPatientFacade().edit(getPatient());
+                depositTake.setPatientBalanceLowered(false);
+            }
+        } catch (RuntimeException e) {
+            java.util.logging.Logger.getLogger(getClass().getName()).log(java.util.logging.Level.SEVERE, "Patient deposit give-back failed", e);
+            JsfUtil.addErrorMessage("The patient deposit could not be restored. Please inform the administrator.");
+        }
+    }
+
+    private boolean settleBillAfterDeposit(PatientDepositTake depositTake) {
         savePatient();
         bills = new ArrayList<>();
         boolean oneOpdBillForAllDepartments = configOptionApplicationController.getBooleanValueByKey("One OPD Bill For All Departments and Categories", true);
@@ -2709,9 +2757,10 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
                 getPatient().setRunningBalance(0.0 - netTotal);
             }
             getPatientFacade().edit(getPatient());
+            depositTake.setPatientBalanceLowered(true);
             try {
-                // Hardening, tracked under #26265: check and lower under one lock.
-                patientDepositService.takeBillTotalFromDepositLocked(getPatient(), sessionController.getDepartment(), getBatchBill(), 0.0);
+                patientDepositService.reconcileTake(depositTake, getBatchBill().getNetTotal());
+                patientDepositService.writeTakeHistory(depositTake, getBatchBill());
             } catch (PatientDepositException e) {
                 JsfUtil.addErrorMessage(e.getMessage());
                 return false;
