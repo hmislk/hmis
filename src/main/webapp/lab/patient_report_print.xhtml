@@ -120,14 +120,24 @@
                                 </div>
                             </h:panelGroup>
 
-                            <div class="d-flex justify-content-end lab-pr-background">
-                                <h:outputLabel value="Show Background" class="mx-1 my-1" style="font-weight: bold; font-size: 20px;"></h:outputLabel>
-                                <p:selectBooleanButton class="mt-1 mx-4 my-1" offLabel="No" onLabel="Yes"  value="#{patientReportController.showBackground}" >
-                                    <p:ajax process="@this" update="divPrint" event="change"/>
-                                </p:selectBooleanButton>
+                            <!-- Report preview card. lab-report-preview-fit.js scales the
+                                 A4 page down to fit the box (screen only); print / PDF use
+                                 the real size. -->
+                            <div class="lab-pr-preview-card">
+                            <div class="lab-pr-preview-toolbar">
+                                <div class="d-flex align-items-center gap-2">
+                                    <i class="fa-solid fa-file-medical"></i>
+                                    <h:outputText value="Report Preview" style="font-weight: 700;"/>
+                                </div>
+                                <div class="d-flex align-items-center gap-2">
+                                    <h:outputLabel value="Show Background" style="font-weight: 600;"></h:outputLabel>
+                                    <p:selectBooleanButton offLabel="No" onLabel="Yes" onIcon="fa fa-check" offIcon="fa fa-times" value="#{patientReportController.showBackground}" >
+                                        <p:ajax process="@this" update="divPrint" event="change"/>
+                                    </p:selectBooleanButton>
+                                </div>
                             </div>
 
-                            <div class="d-flex justify-content-center lab-pr-preview">
+                            <div class="lab-pr-preview">
 
                                 <style>
                                     @media print {
@@ -188,25 +198,31 @@
                                     }
                                 </script>
 
-                                <h:panelGroup  id="divPrint" >
+                                <div class="lab-pr-preview-outer">
+                                    <div class="lab-pr-preview-inner">
+                                        <h:panelGroup  id="divPrint" >
 
-                                    <div id="pdf">
-                                        <!--HtmlTemplate-->
-                                        <lab:html_patient_report/>
+                                            <div id="pdf">
+                                                <!--HtmlTemplate-->
+                                                <lab:html_patient_report/>
 
-                                        <!--General-->
-                                        <lab:general_patient_report/>
+                                                <!--General-->
+                                                <lab:general_patient_report/>
 
-                                        <!--Microbiology-->
-                                        <lab:microbiology_patient_report/>
+                                                <!--Microbiology-->
+                                                <lab:microbiology_patient_report/>
 
-                                        <!--PathologyOrHaematology-->
-                                        <lab:pathology_patient_report/>
+                                                <!--PathologyOrHaematology-->
+                                                <lab:pathology_patient_report/>
+                                            </div>
+
+                                        </h:panelGroup>
                                     </div>
-
-                                </h:panelGroup>
+                                </div>
 
                             </div>
+                            </div>
+                            <h:outputScript library="js" name="lab-report-preview-fit.js" target="body"/>
 
                         </p:panel>
 
