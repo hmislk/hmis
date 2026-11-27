@@ -1189,6 +1189,7 @@ public class ChannelScheduleController implements Serializable {
             i.setDisplayCount(ss.getDisplayCount());
             i.setDisplayPercent(ss.getDisplayPercent());
             i.setRefundable(ss.isRefundable());
+            i.setAcceptOnlineBookings(ss.isAcceptOnlineBookings());
             i.setCreditNumbers(ss.getCreditNumbers());
             i.setCashNumbers(ss.getCashNumbers());
             i.setAgencyNumbers(ss.getAgencyNumbers());
