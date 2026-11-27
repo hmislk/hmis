@@ -80,6 +80,7 @@
                                         <th style="text-align: center; width: 50mm;">Bill No</th>
                                         <th style="text-align: center; width: 23mm;">Bill Type</th>
                                         <th style="text-align: center; width: 35mm;">Patient</th>
+                                        <th style="text-align: center; width: 35mm;">Consultant</th>
                                         <th style="text-align: center; width: 30mm;">Agent</th>
                                         <th style="text-align: center; width: 25mm;">Ref No</th>
                                         <th style="text-align: center; width: 20mm;">Cashier</th>
@@ -111,6 +112,9 @@
                                             </td>
                                             <td>
                                                 <h:outputText value="#{row.bill.patient.person.nameWithTitle}"/>
+                                            </td>
+                                            <td>
+                                                <h:outputText value="#{row.bill.staff.person.nameWithTitle}"/>
                                             </td>
                                             <td>
                                                 <h:outputText value="#{row.bill.creditCompany.name}"/>
