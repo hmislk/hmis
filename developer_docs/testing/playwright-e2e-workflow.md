@@ -108,7 +108,7 @@ $env:JAVA_HOME="<path-to-jdk>"
 The HMIS login + landing flow has a fixed shape:
 
 1. `browser_navigate` to the deployment URL.
-2. Fill username/password and submit. Use real key events (see §3) if a plain
+2. Log in as the shared local QA user, never the developer's own login ([rules](local-test-logins.md)). Fill username/password and submit. Use real key events (see §3) if a plain
    fill doesn't register.
 3. After login the app lands on an **index/landing** page. The main menu bar
    (Pharmacy, Inward, etc.) **only appears on inner pages**, not on the
