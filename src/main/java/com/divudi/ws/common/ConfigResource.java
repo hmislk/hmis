@@ -1,6 +1,7 @@
 package com.divudi.ws.common;
 
 import com.divudi.bean.common.ApiKeyController;
+import com.divudi.core.entity.ApiKey;
 import com.divudi.bean.common.ConfigOptionApplicationController;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
@@ -47,13 +48,7 @@ public class ConfigResource {
     public Response setBooleanValue(@PathParam("key") String key,
             @PathParam("value") boolean value,
             @Context HttpHeaders headers) {
-        System.out.println("setBooleanValue" );
-        System.out.println("headers = " + headers);
-        System.out.println("key = " + key);
-        System.out.println("value = " + value);
-        String apiKey = headers.getHeaderString("Config");
-        System.out.println("apiKey = " + apiKey);
-        if (!apiKeyController.isValidKey(apiKey)) {
+        if (validateConfigKey(headers) == null) {
             return unauthorizedResponse();
         }
         configOptionApplicationController.setBooleanValueByKey(key, value);
@@ -66,12 +61,25 @@ public class ConfigResource {
     public Response setLongTextValue(@PathParam("key") String key,
             @PathParam("value") String value,
             @Context HttpHeaders headers) {
-        String apiKey = headers.getHeaderString("Config");
-        if (!apiKeyController.isValidKey(apiKey)) {
+        if (validateConfigKey(headers) == null) {
             return unauthorizedResponse();
         }
         configOptionApplicationController.setLongTextValueByKey(key, value);
         return successResponse();
+    }
+
+    /**
+     * Validate the Config API key from the request headers, returning the
+     * ApiKey when valid or null otherwise.
+     */
+    private ApiKey validateConfigKey(HttpHeaders headers) {
+        String apiKeyValue = headers.getHeaderString("Config");
+        ApiKey apiKey = apiKeyController.findApiKey(apiKeyValue);
+        // API key hardening
+        if (apiKeyController.resolveConfigKeyOwner(apiKey) == null) {
+            return null;
+        }
+        return apiKey;
     }
 
     private Response successResponse() {
