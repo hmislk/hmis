@@ -3245,6 +3245,9 @@ public class BhtSummeryController implements Serializable {
         return "Final bill was not saved. Please try again.";
     }
 
+    /** Counts Saves of a final bill that reached commit on this page; read and written under the admission lock. */
+    private int committedFinalBillSaves;
+
     public void settle() {
         // A bill-level discount typed but not yet blurred is already bound; apply it to the VAT first.
         recalculateAfterBillLevelDiscountChange();
@@ -3277,6 +3280,7 @@ public class BhtSummeryController implements Serializable {
         boolean saved;
         try {
             saved = getFinalBillLockBean().withFinalBillVersionLock(getPatientEncounter(), () -> {
+                rollbackState.markLocked(committedFinalBillSaves);
                 if (getCurrent().getId() != null || (!creatingNewVersion && isFinalizedInDatabase())) {
                     return false;
                 }
@@ -3318,14 +3322,28 @@ public class BhtSummeryController implements Serializable {
                 if (getPatientEncounter().getPaymentMethod() == PaymentMethod.Credit) {
                     getInwardBean().updateCreditDetail(getPatientEncounter(), getCurrent().getNetTotal());
                 }
+                // Counted before the commit, which still runs under the lock. This Save's
+                // own restore, if the commit fails, must not see its own count as another Save's.
+                committedFinalBillSaves++;
+                rollbackState.markLocked(committedFinalBillSaves);
                 return true;
             });
         } catch (RuntimeException e) {
             // The locked transaction rolled back: the final bill it created is gone, and so
             // is an original bill it created. Put the page back as it was, including an
             // original bill that existed before Save, so the next Settle starts clean.
-            rollbackState.restore();
-            originalBill = rollbackState.getOriginalBillBeforeSave();
+            // The restore runs under the admission lock again, and is skipped when a
+            // concurrent Save on this page committed meanwhile: that Save's page state
+            // (bill id, items, admission fields) must not be undone.
+            try {
+                getFinalBillLockBean().withFinalBillVersionLock(getPatientEncounter(), () -> {
+                    if (rollbackState.restoreUnlessSuperseded(committedFinalBillSaves)) {
+                        originalBill = rollbackState.getOriginalBillBeforeSave();
+                    }
+                });
+            } catch (RuntimeException restoreFailure) {
+                e.addSuppressed(restoreFailure);
+            }
             java.util.logging.Logger.getLogger(BhtSummeryController.class.getName())
                     .log(java.util.logging.Level.SEVERE, "Save Final Bill rolled back", e);
             JsfUtil.addErrorMessage(finalBillSaveFailureMessage(e));

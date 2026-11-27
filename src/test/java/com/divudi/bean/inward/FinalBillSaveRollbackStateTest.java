@@ -200,4 +200,40 @@ class FinalBillSaveRollbackStateTest {
         assertNull(fee.getId());
         assertEquals(3L, savedFee.getId());
     }
+
+    @Test
+    void restoreIsSkippedWhenAnotherSaveCommittedAfterThisOneGotTheLock() {
+        Bill current = new BilledBill();
+        current.setBillItems(new ArrayList<>());
+        PatientEncounter pe = new PatientEncounter();
+        FinalBillSaveRollbackState state = new FinalBillSaveRollbackState(current, pe);
+        state.markLocked(3);
+
+        // A second Save on the same page commits between this Save's lock release and its restore.
+        current.setId(88L);
+        current.getBillItems().add(new BillItem());
+        pe.setFinalBill(current);
+        pe.setPaymentFinalized(true);
+
+        assertFalse(state.restoreUnlessSuperseded(4));
+
+        assertEquals(88L, current.getId());
+        assertEquals(1, current.getBillItems().size());
+        assertSame(current, pe.getFinalBill());
+        assertEquals(true, pe.isPaymentFinalized());
+    }
+
+    @Test
+    void restoreRunsWhenNoOtherSaveCommitted() {
+        Bill current = new BilledBill();
+        current.setBillItems(new ArrayList<>());
+        PatientEncounter pe = new PatientEncounter();
+        FinalBillSaveRollbackState state = new FinalBillSaveRollbackState(current, pe);
+        state.markLocked(3);
+        current.setId(77L);
+
+        assertEquals(true, state.restoreUnlessSuperseded(3));
+
+        assertNull(current.getId());
+    }
 }

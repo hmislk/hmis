@@ -46,6 +46,8 @@ final class FinalBillSaveRollbackState {
      * that does not exist.
      */
     private final List<Runnable> childIdResets = new ArrayList<>();
+    /** -1 until the Save has the lock. */
+    private int committedSavesWhenLocked = -1;
 
     FinalBillSaveRollbackState(Bill current, PatientEncounter encounter) {
         this(current, encounter, null);
@@ -131,6 +133,29 @@ final class FinalBillSaveRollbackState {
      */
     Bill getOriginalBillBeforeSave() {
         return originalBill;
+    }
+
+    /**
+     * Records the count of committed Saves that the page had seen when this Save
+     * got the admission lock. Call it under that lock.
+     */
+    void markLocked(int committedSavesWhenLocked) {
+        this.committedSavesWhenLocked = committedSavesWhenLocked;
+    }
+
+    /**
+     * Restores the page, unless another Save committed a final bill after this
+     * Save got the lock: its page state must stay. Call it under the admission
+     * lock, so no Save can commit between the check and the restore.
+     *
+     * @return true if the page was restored
+     */
+    boolean restoreUnlessSuperseded(int committedSavesNow) {
+        if (committedSavesWhenLocked >= 0 && committedSavesNow != committedSavesWhenLocked) {
+            return false;
+        }
+        restore();
+        return true;
     }
 
     /** Puts the page copies back as they were before the save started. */
