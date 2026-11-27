@@ -316,6 +316,13 @@ public class InwardServiceBillWriter {
             // Cascades to the fees in its list.
             billItemFacade.create(billItem);
         } else {
+            // A merge stores a copy of a fee that has no id and leaves this object
+            // without one, so the loop below would insert it again: save new fees first.
+            for (BillFee bf : billItem.getBillFees()) {
+                if (bf.getId() == null) {
+                    billFeeFacade.create(bf);
+                }
+            }
             billItemFacade.edit(billItem);
         }
         for (BillFee bf : billItem.getBillFees()) {

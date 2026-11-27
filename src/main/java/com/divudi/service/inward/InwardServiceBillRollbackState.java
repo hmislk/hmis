@@ -90,10 +90,24 @@ final class InwardServiceBillRollbackState {
             Long id = fee.getId();
             Bill bill = fee.getBill();
             BillItem billItem = fee.getBillItem();
+            // The inward margin and discount rewrite these; the item's sums read
+            // feeValue before the margin, so a retry needs the first-attempt figures.
+            double feeValue = fee.getFeeValue();
+            double feeMargin = fee.getFeeMargin();
+            double feeDiscount = fee.getFeeDiscount();
+            Double feeUnitValue = fee.getFeeUnitValue();
+            Double feeUnitMargin = fee.getFeeUnitMargin();
+            Double feeUnitDiscount = fee.getFeeUnitDiscount();
             undo.add(() -> {
                 fee.setId(id);
                 fee.setBill(bill);
                 fee.setBillItem(billItem);
+                fee.setFeeValue(feeValue);
+                fee.setFeeMargin(feeMargin);
+                fee.setFeeDiscount(feeDiscount);
+                fee.setFeeUnitValue(feeUnitValue);
+                fee.setFeeUnitMargin(feeUnitMargin);
+                fee.setFeeUnitDiscount(feeUnitDiscount);
             });
         }
         if (entry.getLstBillComponents() != null) {
@@ -106,6 +120,11 @@ final class InwardServiceBillRollbackState {
                 });
             }
         }
+    }
+
+    /** Adds a step to run on restore, for state held outside the request (for example a session balance). */
+    void addUndo(Runnable step) {
+        undo.add(step);
     }
 
     /** Puts the caller's objects back as they were before the settle started. */

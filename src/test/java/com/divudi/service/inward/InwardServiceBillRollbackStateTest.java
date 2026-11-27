@@ -116,4 +116,51 @@ class InwardServiceBillRollbackStateTest {
         state.restore();
         assertNull(item.getPharmaceuticalBillItemIfPresent());
     }
+
+    @Test
+    void restoreBringsBackTheFeeFiguresTheMarginChanged() {
+        BillFee fee = new BillFee();
+        fee.setFeeGrossValue(100.0);
+        fee.setFeeValue(100.0);
+        fee.setFeeUnitValue(100.0);
+        BillEntry entry = new BillEntry();
+        entry.setBillItem(new BillItem());
+        entry.setLstBillFees(new ArrayList<>(List.of(fee)));
+        InwardServiceBillRequest request = new InwardServiceBillRequest();
+        request.setBillEntries(new ArrayList<>(List.of(entry)));
+        request.setBillCollector(new ArrayList<>());
+
+        InwardServiceBillRollbackState state = new InwardServiceBillRollbackState(request);
+        // What a 10 percent margin and a discount do before the settle fails.
+        fee.setFeeMargin(10.0);
+        fee.setFeeUnitMargin(10.0);
+        fee.setFeeDiscount(5.0);
+        fee.setFeeUnitDiscount(5.0);
+        fee.setFeeValue(105.0);
+        fee.setFeeUnitValue(105.0);
+        state.restore();
+
+        assertEquals(100.0, fee.getFeeValue());
+        assertEquals(0.0, fee.getFeeMargin());
+        assertEquals(0.0, fee.getFeeDiscount());
+        assertEquals(100.0, fee.getFeeUnitValue());
+        assertNull(fee.getFeeUnitMargin());
+        assertNull(fee.getFeeUnitDiscount());
+        // The retry sums as the first attempt did.
+        assertEquals(100.0, ((Number) InwardServiceBillSums.itemSums(new ArrayList<>(List.of(fee)))[1]).doubleValue());
+    }
+
+    @Test
+    void restoreRunsExtraUndoSteps() {
+        InwardServiceBillRequest request = new InwardServiceBillRequest();
+        request.setBillEntries(new ArrayList<>());
+        request.setBillCollector(new ArrayList<>());
+        double[] balance = {60.0};
+        InwardServiceBillRollbackState state = new InwardServiceBillRollbackState(request);
+        final double before = balance[0];
+        state.addUndo(() -> balance[0] = before);
+        balance[0] = 0.0;
+        state.restore();
+        assertEquals(60.0, balance[0]);
+    }
 }

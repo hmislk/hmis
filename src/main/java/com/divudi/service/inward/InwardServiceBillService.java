@@ -5,10 +5,12 @@
  */
 package com.divudi.service.inward;
 
+import com.divudi.bean.common.BillController;
 import com.divudi.core.entity.BillEntry;
 import java.io.Serializable;
 import javax.ejb.EJB;
 import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
 import javax.inject.Named;
 
 
@@ -52,6 +54,8 @@ public class InwardServiceBillService implements Serializable {
 
     @EJB
     private InwardServiceBillWriter writer;
+    @Inject
+    private BillController billController;
 
     /**
      * Creates the inward service bills for the given entries and links them
@@ -66,6 +70,10 @@ public class InwardServiceBillService implements Serializable {
      */
     public InwardServiceBillResult createServiceBills(InwardServiceBillRequest request) {
         InwardServiceBillRollbackState rollbackState = new InwardServiceBillRollbackState(request);
+        // The settle uses up the session's part-payment balance as it totals each bill;
+        // if the transaction rolls back, that balance goes back too.
+        final double cashRemain = billController.getCashRemain();
+        rollbackState.addUndo(() -> billController.setCashRemain(cashRemain));
         try {
             return writer.createServiceBills(request);
         } catch (RuntimeException e) {

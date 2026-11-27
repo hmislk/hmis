@@ -835,7 +835,9 @@ public class BillBhtController implements Serializable {
         try {
             inwardServiceBillService.createServiceBills(request);
         } catch (RuntimeException e) {
-            bills = null;
+            // Not bills = null: the service has already taken the failed attempt's
+            // bills out of this list and kept the ones an earlier settle saved
+            // (a surgery settles many times on one list).
             printPreview = false;
             java.util.logging.Logger.getLogger(BillBhtController.class.getName())
                     .log(java.util.logging.Level.SEVERE, "Inward service settle rolled back", e);
