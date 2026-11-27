@@ -132,4 +132,65 @@ class InwardServiceBillSumsTest {
         assertEquals(true, InwardServiceBillSums.appendOnce(list, b));
         assertEquals(4, list.size());
     }
+
+    // Issue #26273: the earlier bill is set again from the fees left on it.
+    private static Bill staleBill() {
+        Bill bill = new BilledBill();
+        bill.setTotal(500.0);
+        bill.setNetTotal(450.0);
+        bill.setGrantTotal(500.0);
+        bill.setBillTotal(450.0);
+        bill.setMargin(30.0);
+        bill.setServiceCharge(30.0);
+        bill.setDiscount(50.0);
+        bill.setVat(7.0);
+        bill.setVatPlusNetTotal(457.0);
+        bill.setStaffFee(100.0);
+        bill.setPerformInstitutionFee(350.0);
+        return bill;
+    }
+
+    @Test
+    void earlierBillWithNoFeesLeftGoesToZero() {
+        Bill bill = staleBill();
+
+        InwardServiceBillSums.applyAllToBillFromFees(bill, new ArrayList<>());
+
+        assertEquals(0.0, bill.getTotal(), 0.0001);
+        assertEquals(0.0, bill.getNetTotal(), 0.0001);
+        assertEquals(0.0, bill.getGrantTotal(), 0.0001);
+        assertEquals(0.0, bill.getBillTotal(), 0.0001);
+        assertEquals(0.0, bill.getMargin(), 0.0001);
+        assertEquals(0.0, bill.getServiceCharge(), 0.0001);
+        assertEquals(0.0, bill.getDiscount(), 0.0001);
+        assertEquals(0.0, bill.getVat(), 0.0001);
+        assertEquals(0.0, bill.getVatPlusNetTotal(), 0.0001);
+        assertEquals(0.0, bill.getStaffFee(), 0.0001);
+        assertEquals(0.0, bill.getPerformInstitutionFee(), 0.0001);
+    }
+
+    @Test
+    void earlierBillKeepsTheSumsOfTheFeesLeftAndSkipsRetiredOnes() {
+        Bill bill = staleBill();
+        List<BillFee> fees = new ArrayList<>();
+        fees.add(fee(100.0, 90.0, 10.0, 20.0, 5.0));
+        fees.add(fee(null, 10.0, 0.0, 0.0, 0.0));
+        BillFee retired = fee(999.0, 999.0, 9.0, 9.0, 9.0);
+        retired.setRetired(true);
+        fees.add(retired);
+
+        InwardServiceBillSums.applyAllToBillFromFees(bill, fees);
+
+        assertEquals(100.0, bill.getTotal(), 0.0001);
+        assertEquals(100.0, bill.getGrantTotal(), 0.0001);
+        assertEquals(100.0, bill.getNetTotal(), 0.0001);
+        assertEquals(100.0, bill.getBillTotal(), 0.0001);
+        assertEquals(10.0, bill.getMargin(), 0.0001);
+        assertEquals(10.0, bill.getServiceCharge(), 0.0001);
+        assertEquals(20.0, bill.getDiscount(), 0.0001);
+        assertEquals(5.0, bill.getVat(), 0.0001);
+        assertEquals(105.0, bill.getVatPlusNetTotal(), 0.0001);
+        assertEquals(0.0, bill.getStaffFee(), 0.0001);
+        assertEquals(100.0, bill.getPerformInstitutionFee(), 0.0001);
+    }
 }

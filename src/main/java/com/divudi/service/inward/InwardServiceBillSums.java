@@ -1,5 +1,6 @@
 package com.divudi.service.inward;
 
+import com.divudi.core.data.FeeType;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.BillFee;
 import java.util.ArrayList;
@@ -116,6 +117,52 @@ final class InwardServiceBillSums {
         bill.setNetTotal(sumAt(sums, 1));
         bill.setVat(sumAt(sums, 4));
         bill.setVatPlusNetTotal(bill.getNetTotal() + bill.getVat());
+    }
+
+    /**
+     * Sets the bill-level figures of a service bill from the fees it still holds,
+     * the way {@code BillBeanController.calculateBillItems} sets them for a new
+     * bill (its non-partial-payment branch): staff fee, performing institution
+     * fee, margin, service charge, gross and grant total, net total, bill total,
+     * discount, vat and vat plus net total. Used for the earlier bill of a
+     * surgery after its items moved to a new bill, so the money is counted on one
+     * bill only (#26273). No fees gives zero in every figure. Retired fees do not
+     * count; a null gross value counts as zero.
+     */
+    static void applyAllToBillFromFees(Bill bill, List<BillFee> fees) {
+        double staff = 0.0;
+        double institution = 0.0;
+        double gross = 0.0;
+        double discount = 0.0;
+        double net = 0.0;
+        double vat = 0.0;
+        double margin = 0.0;
+        for (BillFee bf : distinct(fees)) {
+            if (bf.isRetired()) {
+                continue;
+            }
+            gross += bf.getFeeGrossValue() == null ? 0.0 : bf.getFeeGrossValue();
+            net += bf.getFeeValue();
+            discount += bf.getFeeDiscount();
+            vat += bf.getFeeVat();
+            margin += bf.getFeeMargin();
+            if (bf.getFee() != null && bf.getFee().getFeeType() == FeeType.Staff) {
+                staff += bf.getFeeValue();
+            } else {
+                institution += bf.getFeeValue();
+            }
+        }
+        bill.setStaffFee(staff);
+        bill.setPerformInstitutionFee(institution);
+        bill.setMargin(margin);
+        bill.setServiceCharge(margin);
+        bill.setGrantTotal(gross);
+        bill.setTotal(gross);
+        bill.setNetTotal(net);
+        bill.setBillTotal(net);
+        bill.setDiscount(discount);
+        bill.setVat(vat);
+        bill.setVatPlusNetTotal(vat + net);
     }
 
     private static double sumAt(Object[] sums, int index) {
