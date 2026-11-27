@@ -396,7 +396,7 @@ Then:
   machine awake".
 - Restart local Payara (`asadmin restart-domain`) so its connection pool
   reconnects to the fresh schema.
-- After the restart, check that the shared local QA user can log in. If it fails, check the stored hash and clear the app cache. Never reset another user's password ([rules](../../../developer_docs/testing/local-test-logins.md)).
+- After the restart, check that the shared local QA user and the developer's own login can both log in. If one fails, check the stored hash and clear the app cache. Never change the developer's own password ([rules](../../../developer_docs/testing/local-test-logins.md)).
 - Tell the user to confirm the app works against the restored DB **before**
   deleting the Phase 2.2 rollback copies.
 

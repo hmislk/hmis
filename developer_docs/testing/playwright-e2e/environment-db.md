@@ -11,7 +11,7 @@ Part of the [Playwright E2E Workflow](../playwright-e2e-workflow.md). Read only 
 - [63. `STAFF.ID` is not `PERSON.ID` — joining `billfee.staff_id` straight to `PERSON.ID` silently returns the wrong person's name](#63-staffid-is-not-personid--joining-billfeestaff_id-straight-to-personid-silently-returns-the-wrong-persons-name)
 - [73. `asadmin deploy --contextroot /` from Git Bash gets mangled by MSYS path conversion — set `MSYS_NO_PATHCONV=1`](#73-asadmin-deploy---contextroot--from-git-bash-gets-mangled-by-msys-path-conversion--set-msys_no_pathconv1)
 - [74. Exploded Payara deployment lets you hot-swap a single XHTML file for a fast test/fix loop — real redeploy still required before commit](#74-exploded-payara-deployment-lets-you-hot-swap-a-single-xhtml-file-for-a-fast-testfix-loop--real-redeploy-still-required-before-commit)
-- [87. Local login fails with "Invalid User": use the shared local QA user, never reset a password](#87-local-login-fails-with-invalid-user-use-the-shared-local-qa-user-never-reset-a-password)
+- [87. Local login fails with "Invalid User": use the shared local QA user, never change the developer's password](#87-local-login-fails-with-invalid-user-use-the-shared-local-qa-user-never-change-the-developers-password)
 - [102. A local "Unknown column" 500 is schema drift — use the app's own migration page](#102-a-local-unknown-column-500-is-schema-drift--use-the-apps-own-migration-page)
 - [104. A department/room created by direct SQL needs more than the FK columns](#104-a-departmentroom-created-by-direct-sql-needs-more-than-the-fk-columns)
 - [111. The local `coop` DB can have **zero** vacant rooms — free some by SQL before testing any admission flow](#111-the-local-coop-db-can-have-zero-vacant-rooms--free-some-by-sql-before-testing-any-admission-flow)
@@ -278,13 +278,13 @@ browser reuses its cached copy. Force it with
 then reopen the page through the menu.
 
 
-## 87. Local login fails with "Invalid User": use the shared local QA user, never reset a password
+## 87. Local login fails with "Invalid User": use the shared local QA user, never change the developer's password
 
 Logging into the local app with a production login fails with "Invalid User! Login Failure". The local database is a data snapshot. Its stored password hashes do not match any known password.
 
-Do not reset a password to fix this. Do not generate a hash or run an SQL `UPDATE` on `WEBUSER` for any existing user. Use the shared local QA user instead. See [Local test logins](../local-test-logins.md).
+Never change the password of the developer's own account to fix this. Use the shared local QA user instead. See [Local test logins](../local-test-logins.md).
 
-If the QA user cannot log in, check its stored hash first. Then clear the app cache: disable and enable the app. The app keeps `WebUser` in its EclipseLink L2 cache, and a direct SQL write does not clear that cache. If it still fails, ask the user. Setting up the QA user is a user step.
+If the QA user cannot log in, check its stored hash first. Then clear the app cache: disable and enable the app. The app keeps `WebUser` in its EclipseLink L2 cache, and a direct SQL write does not clear that cache. If it still fails, create or fix the QA user yourself and post the change on the team hub.
 
 
 ## 102. A local "Unknown column" 500 is schema drift — use the app's own migration page
