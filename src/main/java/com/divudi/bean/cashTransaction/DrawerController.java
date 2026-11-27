@@ -261,7 +261,14 @@ public class DrawerController implements Serializable {
      */
     public void reverseDrawerEntriesOfBill(Bill originalBill, Bill cancellationBill, WebUser webUser) {
         try {
-            drawerService.reverseDrawerEntriesOfBill(originalBill, cancellationBill, webUser);
+            boolean reversed = drawerService.reverseDrawerEntriesOfBill(originalBill, cancellationBill, webUser);
+            if (!reversed && originalBill != null && originalBill.getPaymentMethod() == PaymentMethod.Cash
+                    && originalBill.getNetTotal() != 0) {
+                LOGGER.log(Level.WARNING, "Cash drawer NOT updated (no drawer rows found to reverse): bill id {0}, cancellation bill id {1}, drawer user {2}. Apply it with a drawer adjustment if cash was paid out.",
+                        new Object[]{String.valueOf(originalBill.getId()),
+                            String.valueOf(cancellationBill == null ? null : cancellationBill.getId()), userName(webUser)});
+                JsfUtil.addWarningMessage("No cash drawer entries were found for this bill, so the drawer was not changed. Check the drawer.");
+            }
         } catch (DrawerBusyException e) {
             LOGGER.log(Level.SEVERE, "Cash drawer NOT updated (drawer busy): reversal of bill id {0}, cancellation bill id {1}, drawer user {2}. Apply it with a drawer adjustment.",
                     new Object[]{String.valueOf(originalBill == null ? null : originalBill.getId()),

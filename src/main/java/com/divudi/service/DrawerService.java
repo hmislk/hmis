@@ -466,17 +466,19 @@ public class DrawerService {
      * {@code cancellationBill} in {@code webUser}'s drawer. An original with no
      * drawer history rows changes nothing. All rows run in one transaction under
      * one drawer row lock; a busy drawer throws DrawerBusyException and applies none.
+     *
+     * @return true when at least one row was reversed
      */
-    public void reverseDrawerEntriesOfBill(Bill originalBill, Bill cancellationBill, WebUser webUser) {
+    public boolean reverseDrawerEntriesOfBill(Bill originalBill, Bill cancellationBill, WebUser webUser) {
         if (originalBill == null || originalBill.getId() == null || cancellationBill == null || webUser == null) {
-            return;
+            return false;
         }
         HashMap<String, Object> params = new HashMap<>();
         params.put("billId", originalBill.getId());
         List<DrawerEntry> entries = ejbFacade.findByJpql(
                 "select de from DrawerEntry de where de.bill.id = :billId and de.retired = false order by de.id", params);
         if (entries == null || entries.isEmpty()) {
-            return;
+            return false;
         }
         Drawer drawer = null;
         for (DrawerEntry entry : entries) {
@@ -487,7 +489,7 @@ public class DrawerService {
                 drawer = lockUsersDrawer(webUser);
                 if (drawer == null) {
                     System.err.println("No drawer found for the user.");
-                    return;
+                    return false;
                 }
             }
             double value = reversalValue(entry);
@@ -497,6 +499,7 @@ public class DrawerService {
         if (drawer != null) {
             drawerFacade.editAndCommit(drawer);
         }
+        return drawer != null;
     }
 
     /**
