@@ -2282,10 +2282,13 @@ public class PharmacyBillSearch implements Serializable {
                 + " and b.cancelled=false "
                 + " and b.billType=:bt "
                 + " and b.referenceBill=:ref "
-                + " and b.billedBill is null";
+                + " and b.billedBill is null"
+                + " and (b.billTypeAtomic is null or b.billTypeAtomic <> :cancelAtomic)";
         HashMap hm = new HashMap();
         hm.put("ref", getBill());
         hm.put("bt", BillType.PharmacySale);
+        // The cancellation bill of a refund also references the return bill; it is not an active refund.
+        hm.put("cancelAtomic", BillTypeAtomic.PHARMACY_RETURN_ITEMS_AND_PAYMENTS_CANCELLATION);
         Long count = getBillFacade().findLongByJpql(sql, hm);
         return count != null && count > 0;
     }
