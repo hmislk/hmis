@@ -11,7 +11,7 @@ Part of the [Playwright E2E Workflow](../playwright-e2e-workflow.md). Read only 
 - [63. `STAFF.ID` is not `PERSON.ID` — joining `billfee.staff_id` straight to `PERSON.ID` silently returns the wrong person's name](#63-staffid-is-not-personid--joining-billfeestaff_id-straight-to-personid-silently-returns-the-wrong-persons-name)
 - [73. `asadmin deploy --contextroot /` from Git Bash gets mangled by MSYS path conversion — set `MSYS_NO_PATHCONV=1`](#73-asadmin-deploy---contextroot--from-git-bash-gets-mangled-by-msys-path-conversion--set-msys_no_pathconv1)
 - [74. Exploded Payara deployment lets you hot-swap a single XHTML file for a fast test/fix loop — real redeploy still required before commit](#74-exploded-payara-deployment-lets-you-hot-swap-a-single-xhtml-file-for-a-fast-testfix-loop--real-redeploy-still-required-before-commit)
-- [87. The local `coop` DB's `WEBUSER` rows carry stale password hashes from whatever environment they were synced from — production login credentials will not work locally, and even a direct SQL password reset needs a domain restart to take effect](#87-the-local-coop-dbs-webuser-rows-carry-stale-password-hashes-from-whatever-environment-they-were-synced-from--production-login-credentials-will-not-work-locally-and-even-a-direct-sql-password-reset-needs-a-domain-restart-to-take-effect)
+- [87. Local login fails with "Invalid User": use the shared local QA user, never reset a password](#87-local-login-fails-with-invalid-user-use-the-shared-local-qa-user-never-reset-a-password)
 - [102. A local "Unknown column" 500 is schema drift — use the app's own migration page](#102-a-local-unknown-column-500-is-schema-drift--use-the-apps-own-migration-page)
 - [104. A department/room created by direct SQL needs more than the FK columns](#104-a-departmentroom-created-by-direct-sql-needs-more-than-the-fk-columns)
 - [111. The local `coop` DB can have **zero** vacant rooms — free some by SQL before testing any admission flow](#111-the-local-coop-db-can-have-zero-vacant-rooms--free-some-by-sql-before-testing-any-admission-flow)
@@ -278,15 +278,13 @@ browser reuses its cached copy. Force it with
 then reopen the page through the menu.
 
 
-## 87. The local `coop` DB's `WEBUSER` rows carry stale password hashes from whatever environment they were synced from — production login credentials will not work locally, and even a direct SQL password reset needs a domain restart to take effect
+## 87. Local login fails with "Invalid User": use the shared local QA user, never reset a password
 
-Logging into `http://localhost:8080/rh` with the production app-login credentials from the external credentials file (see `developer_docs/deployment/persistence-verification.md`) fails locally with "Invalid User! Login Failure" even though a `WEBUSER` row with that username exists. The local `coop` database is a data snapshot, not a fresh seed — its `WEBUSERPASSWORD` hash predates whatever the current production password is, and there's no way to know it from the codebase.
+Logging into the local app with a production login fails with "Invalid User! Login Failure". The local database is a data snapshot. Its stored password hashes do not match any known password.
 
-`SessionController.checkUsersWithoutDepartment()` calls `SecurityController.matchPassword(password, u.getWebUserPassword())`, which uses jasypt's `BasicPasswordEncryptor` (salted digest, not a fixed hash you can look up) — `SecurityController.java`'s `hashAndCheck()`/`matchPassword()`. To log in locally: generate a compatible hash with the same class (the jar is already on the classpath at `~/.m2/repository/org/jasypt/jasypt/1.9.3/jasypt-1.9.3.jar` — compile and run a two-line `BasicPasswordEncryptor().encryptPassword("SomeTestPassword")` snippet), then `UPDATE WEBUSER SET WEBUSERPASSWORD='<hash>' WHERE ID=<id>` directly against the local `coop` DB (safe — local test data, no schema change, see the `dev-issue-unattended` skill's hard limits on this point).
+Do not reset a password to fix this. Do not generate a hash or run an SQL `UPDATE` on `WEBUSER` for any existing user. Use the shared local QA user instead. See [Local test logins](../local-test-logins.md).
 
-**The password won't take effect until Payara restarts.** `WebUser` is one of the reference entities EclipseLink L2-caches (`eclipselink.cache.size.default=1000` in `persistence_for_local_testing.xml`, explicitly called out for "departments, items, users"), and a plain SQL `UPDATE` doesn't invalidate that cache — the already-running app keeps serving the old hash to every subsequent login attempt from its in-memory copy, so retrying with the new password fails identically. `asadmin restart-domain domain1` (not just redeploying the WAR) clears it. This is the same L2-cache-staleness class of gotcha noted for the COGS report (`feedback_cogs_report_testing_gotcha` memory) — always double-confirm a direct SQL write against a running local Payara actually took effect, rather than assuming it did because the `UPDATE` succeeded.
-
-Found while verifying issue #22990.
+If the QA user cannot log in, check its stored hash first. Then clear the app cache: disable and enable the app. The app keeps `WebUser` in its EclipseLink L2 cache, and a direct SQL write does not clear that cache. If it still fails, ask the user. Setting up the QA user is a user step.
 
 
 ## 102. A local "Unknown column" 500 is schema drift — use the app's own migration page

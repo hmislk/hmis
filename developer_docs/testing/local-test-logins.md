@@ -8,5 +8,6 @@ Scope: LOCAL test databases only. Production rules do not change.
 4. Never reset the password of any existing user. Only the QA user may be re-set.
 5. Throwaway passwords, loops over or masking of secret-file lines, and secret-file scans stay forbidden.
 6. After a local database restore or refresh, check that the QA user can log in before you say the work is done.
+7. Setting up the QA user is a user step. The user approves the QA account and adds its line to the credentials file. No agent creates the QA user or its password without the user's approval.
 
 Related: [security rules](../rules/security.md), [Playwright workflow, section 1](playwright-e2e-workflow.md#1-login-and-department-selection).
