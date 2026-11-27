@@ -448,18 +448,19 @@
                                             <p:focus id="focusItem" for="acMedicine" ></p:focus>
                                             <p:panel class="w-100 m-0 p-0" id="medicines">
                                                 <f:facet name="header">
-                                                    <h:outputText styleClass="fas fa-pills"/>
-                                                    <p:outputLabel class="mx-4" value="Medicines" />
-
-
-                                                    <p:commandButton value="Refill" process="@this" class='ui-button-warning' icon='fas fa-fill' style="float: right;" update="#{p:resolveFirstComponentWithId('medicines',view).clientId} #{p:resolveFirstComponentWithId('msg',view).clientId}" action="#{patientEncounterController.fillMedicines(patientController.current)}"/>
-
+                                                    <div class="d-flex align-items-center justify-content-between w-100">
+                                                        <div>
+                                                            <h:outputText styleClass="fas fa-pills"/>
+                                                            <p:outputLabel class="mx-4" value="Medicines" />
+                                                        </div>
+                                                        <p:commandButton value="Refill" title="Refill medicines from the last visit" process="@this" class='ui-button-warning' icon='fas fa-fill' update="#{p:resolveFirstComponentWithId('medicines',view).clientId} #{p:resolveFirstComponentWithId('msg',view).clientId}" action="#{patientEncounterController.fillMedicines(patientController.current)}"/>
+                                                    </div>
                                                 </f:facet>
                                                 <div class="container-fluid m-0 p-0 w-100">
                                                     <div class="d-flex flex-wrap w-100">
                                                         <!-- Medicine Selection -->
                                                         <div class="m-1">
-                                                            <label for="acMedicine" class="w-100">Medicine:</label>
+                                                            <p:outputLabel for="acMedicine" value="Medicine:" class="w-100" />
                                                             <p:autoComplete id="acMedicine"
                                                                             completeMethod="#{pharmaceuticalItemController.completeItem}"
                                                                             value="#{patientEncounterController.encounterMedicine.prescription.item}"
@@ -475,7 +476,7 @@
 
                                                         <!-- Dose Group -->
                                                         <div class="m-1 d-flex flex-column">
-                                                            <label>Dose:</label>
+                                                            <p:outputLabel for="txtDose" value="Dose:" />
                                                             <div class="d-flex">
                                                                 <p:inputText style="width: 6em;"
                                                                              id="txtDose"
@@ -492,7 +493,7 @@
 
                                                         <!-- Frequency Selection -->
                                                         <div class="m-1 d-flex flex-column">
-                                                            <label for="cmbFrequency">Frequency:</label>
+                                                            <p:outputLabel for="cmbFrequency" value="Frequency:" />
                                                             <p:selectOneMenu id="cmbFrequency" 
                                                                              value="#{patientEncounterController.encounterMedicine.prescription.frequencyUnit}">
                                                                 <f:selectItem itemLabel="Select" />
@@ -505,7 +506,7 @@
 
                                                         <!-- Duration Group -->
                                                         <div class="m-1 d-flex flex-column">
-                                                            <label>Duration:</label>
+                                                            <p:outputLabel for="txtDuration" value="Duration:" />
                                                             <div class="d-flex">
                                                                 <p:inputText style="width: 6em;"
                                                                              id="txtDuration"
@@ -521,7 +522,7 @@
 
                                                         <!-- Indoor/Outdoor Selection -->
                                                         <div class="m-1 d-flex flex-column">
-                                                            <label for="chkIndoor">Location:</label>
+                                                            <p:outputLabel for="chkIndoor" value="Location:" />
                                                             <p:selectBooleanButton id="chkIndoor"
                                                                                    onLabel="Indoor"
                                                                                    offLabel="Outdoor"
@@ -533,9 +534,10 @@
                                                             <label for="chkIndoor" class="w-100"></label>
                                                             <p:commandButton
                                                                 value="Add"
+                                                                title="Add this medicine to the prescription"
                                                                 class="ui-button-success"
                                                                 id="btnAddRx"
-                                                                icon="pi pi-plus"
+                                                                icon="fas fa-plus"
                                                                 process="btnAddRx chkIndoor acMedicine txtDose cmbDose cmbFrequency txtDuration cmbDuration"
                                                                 update="tblRxx pnlIssuableSuggestions chkIndoor acMedicine txtDose cmbDose cmbFrequency txtDuration cmbDuration focusItem :#{p:resolveFirstComponentWithId('txtPrescriptionDoc',view).clientId} :#{p:resolveFirstComponentWithId('msg',view).clientId}"
                                                                 action="#{patientEncounterController.addEncounterMedicine}" />
@@ -543,6 +545,7 @@
                                                             <p:commandButton
                                                                 id="btnAddRxFav"
                                                                 value="Add Favourite"
+                                                                title="Add this medicine to your favourites"
                                                                 process="@this acMedicine txtDose cmbDose cmbFrequency txtDuration cmbDuration chkIndoor"
                                                                 class='ui-button-success'
                                                                 icon='fas fa-star'
@@ -556,6 +559,7 @@
 
                                                 <p:dataTable id="tblRxx"
                                                              value="#{patientEncounterController.encounterMedicines}"
+                                                             styleClass="p-datatable-sm"
                                                              var="rx">
                                                     <p:column>
                                                         <p:outputLabel value="#{rx.prescription.item.name} #{rx.prescription.dose % 1 == 0 ? rx.prescription.dose.intValue() : rx.prescription.dose} #{rx.prescription.doseUnit.name} #{rx.prescription.frequencyUnit.name} for #{rx.prescription.duration % 1 == 0 ? rx.prescription.duration.intValue() : rx.prescription.duration} #{rx.prescription.durationUnit.name} #{rx.prescription.indoor ? 'Indoor' : 'Outdoor'}" />
@@ -563,6 +567,7 @@
                                                     <p:column>
                                                         <p:commandButton icon="fas fa-trash"
                                                                          id="btnRemove"
+                                                                         title="Remove this medicine"
                                                                          process="btnRemove"
                                                                          update="tblRxx pnlIssuableSuggestions :#{p:resolveFirstComponentWithId('msg',view).clientId}"
                                                                          class="ui-button-danger"
