@@ -20,7 +20,7 @@
 
         <h:panelGroup rendered="#{(webUserController.hasPrivilege('DashBoardMenu') and webUserController.hasPrivilege('DashBoardWorksheet'))}">
             <h3><h:outputText value="WORK SHEETS" class="d-flex justify-content-center mt-4"/> </h3>
-            <h:panelGrid columns="6" class="w-100 mt-2" style="font-weight: bolder">
+            <h:panelGrid columns="6" class="w-100 lab-filter-grid mt-2" style="font-weight: bolder">
                 <h:panelGrid columns="1" class="w-100">
                     <h:outputLabel class="w-100" value="From Date"/>
                     <p:datePicker 
@@ -190,9 +190,9 @@
                     </h:panelGroup>
                 </h:panelGrid>
 
-                <h:panelGrid columns="1" class="w-100"/>
-                <h:panelGrid columns="1" class="w-100"/>
-                <h:panelGrid columns="1" class="w-100">
+                <h:panelGrid columns="1" class="w-100 lab-filter-spacer"/>
+                <h:panelGrid columns="1" class="w-100 lab-filter-spacer"/>
+                <h:panelGrid columns="1" class="w-100 lab-filter-action">
                     <h:outputLabel class="w-100" value=""/>
                     <p:commandButton 
                         ajax="false" 
@@ -205,7 +205,7 @@
 
             </h:panelGrid>
             <p:dataTable  
-                class="w-100 mt-2"
+                reflow="true" class="w-100 mt-2 lab-card-table"
                 value="#{laboratoryManagementController.bills}" 
                 var="b" 
                 paginator="true"
