@@ -2710,7 +2710,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
             }
             getPatientFacade().edit(getPatient());
             try {
-                // Hardening, tracked under #26265: check and lower in one locked transaction.
+                // Hardening, tracked under #26265: check and lower under one lock.
                 patientDepositService.takeBillTotalFromDepositLocked(getPatient(), sessionController.getDepartment(), getBatchBill(), 0.0);
             } catch (PatientDepositException e) {
                 JsfUtil.addErrorMessage(e.getMessage());

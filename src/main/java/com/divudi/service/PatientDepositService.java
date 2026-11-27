@@ -278,8 +278,8 @@ public class PatientDepositService {
     }
 
     /**
-     * Same as {@link #takeBillTotalFromDepositLocked} for a deposit record the
-     * caller has already found.
+     * Same as {@link #takeBillTotalFromDepositLocked}, for a caller that
+     * passes in a deposit record.
      */
     void lowerLocked(Bill bill, PatientDeposit found, double creditLimit) {
         PatientDeposit pd = lockedCopyOf(found);
@@ -289,8 +289,8 @@ public class PatientDepositService {
     }
 
     /**
-     * Gives the deposit record loaded again under a write lock, bypassing the
-     * shared cache. Use it where a deposit is checked and lowered.
+     * Loads the deposit record fresh under a write lock. Use it wherever a
+     * deposit is checked and lowered.
      */
     public PatientDeposit lockedCopyOf(PatientDeposit found) {
         if (found == null || found.getId() == null) {

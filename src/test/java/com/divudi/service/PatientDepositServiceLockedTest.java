@@ -16,8 +16,8 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
- * Issue #26265: the deposit record is checked and lowered on the copy loaded
- * under a lock, not on the copy the caller found earlier.
+ * Issue #26265: the deposit record is checked and lowered on a copy loaded
+ * under a lock.
  */
 class PatientDepositServiceLockedTest {
 
