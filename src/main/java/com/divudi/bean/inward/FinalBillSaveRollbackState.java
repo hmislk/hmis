@@ -1,8 +1,13 @@
 package com.divudi.bean.inward;
 
 import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.BillFee;
+import com.divudi.core.entity.BillFinanceDetails;
 import com.divudi.core.entity.BillItem;
+import com.divudi.core.entity.BillItemFinanceDetails;
 import com.divudi.core.entity.PatientEncounter;
+import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -34,6 +39,13 @@ final class FinalBillSaveRollbackState {
     private final int originalBillItemCount;
     private final double originalBillDiscount;
     private final double originalBillNetTotal;
+    /**
+     * One entry per child row that had no id before the save. A cascade from the
+     * bill or a bill item gives such a child an id inside the failed transaction;
+     * the row is rolled back, so the id must go too, or the retry merges a row
+     * that does not exist.
+     */
+    private final List<Runnable> childIdResets = new ArrayList<>();
 
     FinalBillSaveRollbackState(Bill current, PatientEncounter encounter) {
         this(current, encounter, null);
@@ -68,6 +80,49 @@ final class FinalBillSaveRollbackState {
             this.originalBillDiscount = 0;
             this.originalBillNetTotal = 0;
         }
+        captureChildren(current);
+        if (originalBill != null) {
+            captureChildren(originalBill);
+        }
+    }
+
+    /**
+     * Remembers which cascade-persisted children of the bill, and of the bill
+     * items it holds now, have no id yet. Items added by the save itself are
+     * dropped on restore, so only the items present now matter.
+     */
+    private void captureChildren(Bill bill) {
+        if (bill.hasBillFinanceDetails()) {
+            BillFinanceDetails bfd = bill.getBillFinanceDetails();
+            if (bfd.getId() == null) {
+                childIdResets.add(() -> bfd.setId(null));
+            }
+        } else {
+            // Created by the save (writeDiscountBreakdownToFinanceDetails); remove it so the
+            // retry builds a fresh one instead of reusing one that has an id.
+            childIdResets.add(() -> bill.setBillFinanceDetails(null));
+        }
+        List<BillItem> items = bill.getBillItems();
+        if (items == null) {
+            return;
+        }
+        for (BillItem item : new ArrayList<>(items)) {
+            if (item.hasBillItemFinanceDetails()) {
+                BillItemFinanceDetails bifd = item.getBillItemFinanceDetails();
+                if (bifd.getId() == null) {
+                    childIdResets.add(() -> bifd.setId(null));
+                }
+            }
+            PharmaceuticalBillItem pbi = item.getPharmaceuticalBillItem();
+            if (pbi != null && pbi.getId() == null) {
+                childIdResets.add(() -> pbi.setId(null));
+            }
+            for (BillFee fee : new ArrayList<>(item.getBillFees())) {
+                if (fee.getId() == null) {
+                    childIdResets.add(() -> fee.setId(null));
+                }
+            }
+        }
     }
 
     /**
@@ -95,6 +150,9 @@ final class FinalBillSaveRollbackState {
             }
             originalBill.setDiscount(originalBillDiscount);
             originalBill.setNetTotal(originalBillNetTotal);
+        }
+        for (Runnable reset : childIdResets) {
+            reset.run();
         }
         encounter.setFinalBill(encounterFinalBill);
         encounter.setGrantTotal(encounterGrantTotal);
