@@ -17,52 +17,39 @@
 
                     <p:panel rendered="#{!opdPreSettleController.billPreview}">
                         <f:facet name="header" >
-                            <div class="d-flex align-items-center justify-content-between w-100">
-                                <div>
-                                    <h:outputLabel value="OPD Bill Accept Payment" ></h:outputLabel>
-                                </div>
-                                <div>
-                                    <p:commandButton ajax="false" value="Back To Search"
-                                                     title="Back to the pre-bill search"
-                                                     class="ui-button-info ui-button-outlined mx-2"
-                                                     icon="fa fa-arrow-left"
-                                                     action="opd_search_pre_batch_bill"/>
-                                    <p:commandButton ajax= "false"  
-                                                     value="Settle and Accept Payment" 
-                                                     title="Accept the payment and settle the bill"
-                                                     class="ui-button-success mx-2"
-                                                     icon="fa fa-check"
-                                                     id="settle"
-                                                     action="#{opdPreSettleController.settle()}" />
-                                </div>
-                            </div>
-                            <p:defaultCommand target="settle"/>
+                            <h:outputLabel value="OPD Bill Accept Payment" ></h:outputLabel>                        
                         </f:facet>
 
-                        <div class="d-flex align-items-start mb-2">
-                            <div style="width: 150px;">
-                                <h:outputLabel for="cmbPs" value="Payment Method" class="mt-2"/>
-                            </div>
-                            <div class="col-9">
-                                <p:selectOneMenu   id="cmbPs" value="#{opdPreSettleController.paymentMethod}"  >                                                                     
-                                    <f:selectItems value="#{enumController.paymentMethodsWithoutCredit}" />
-                                    <p:ajax process="cmbPs" update="payDetails" event="change" />
-                                </p:selectOneMenu>
-                                <h:panelGroup id="payDetails" layout="block" class="mt-2">
-                                    <h:panelGroup id="creditCard" rendered="#{opdPreSettleController.paymentMethod eq 'Card'}">
-                                        <pa:creditCard paymentMethodData="#{opdPreSettleController.paymentMethodData}"/>
-                                    </h:panelGroup>
+                        <h:panelGrid columns="20"  >
+                            <h:outputLabel value="OPD Bill" />
+                            <h:outputLabel value="&nbsp;&nbsp;&nbsp;&nbsp;" style="min-width: 50px;" />
+                            <p:selectOneMenu   id="cmbPs" value="#{opdPreSettleController.paymentMethod}"  >                                                                     
+                                <f:selectItems value="#{enumController.paymentMethodsWithoutCredit}" />
+                                <p:ajax process="cmbPs" update="creditCard cheque slip " event="change" />
+                            </p:selectOneMenu>
 
-                                    <h:panelGroup id="cheque" rendered="#{opdPreSettleController.paymentMethod eq 'Cheque'}" >
-                                        <pa:cheque paymentMethodData="#{opdPreSettleController.paymentMethodData}"/>
-                                    </h:panelGroup>
+                            <h:panelGroup id="creditCard" style="display:#{opdPreSettleController.paymentMethod ne 'Card' ? 'none' : 'block'} ; ">
+                                <pa:creditCard paymentMethodData="#{opdPreSettleController.paymentMethodData}"/>
+                            </h:panelGroup>
 
-                                    <h:panelGroup id="slip" rendered="#{opdPreSettleController.paymentMethod eq 'Slip'}">
-                                        <pa:slip paymentMethodData="#{opdPreSettleController.paymentMethodData}"/>
-                                    </h:panelGroup>
-                                </h:panelGroup>
-                            </div>
-                        </div>
+                            <h:panelGroup id="cheque" style="display:#{opdPreSettleController.paymentMethod ne 'Cheque' ? 'none' : 'block'} ; " >
+                                <pa:cheque paymentMethodData="#{opdPreSettleController.paymentMethodData}"/>
+                            </h:panelGroup>
+
+                            <h:panelGroup id="slip" style="display:#{opdPreSettleController.paymentMethod ne 'Slip' ? 'none' : 'block'} ;">
+                                <pa:slip paymentMethodData="#{opdPreSettleController.paymentMethodData}"/>
+                            </h:panelGroup>
+
+                            <p:commandButton ajax= "false"  
+                                             value="Settle and Accept Payment" 
+                                             id="settle"
+                                             
+                                             action="#{opdPreSettleController.settle()}" />
+
+                            <p:commandButton ajax="false" value="Back To Search"
+                                             action="opd_search_pre_batch_bill"/>
+                            <p:defaultCommand target="settle"/>
+                        </h:panelGrid>
 
                         <p:panel>
                             <p:panelGrid columns="3" style="width: 100%;">
@@ -120,7 +107,7 @@
                                 </p:panel>
                             </p:panelGrid>
                             <p:panel header="Bill Details">
-                                <p:dataTable styleClass="p-datatable-sm" value="#{opdPreSettleController.billedBill.forwardReferenceBills}" var="rb">
+                                <p:dataTable value="#{opdPreSettleController.billedBill.forwardReferenceBills}" var="rb">
                                     <p:column  headerText="Bill No" >                                                               
                                         <h:outputLabel  value="#{rb.deptId}"/>                                   
                                     </p:column>
