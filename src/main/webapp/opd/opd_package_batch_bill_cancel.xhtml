@@ -350,16 +350,24 @@
                         </div>
                         <h:panelGroup id="groupPrint" >
                             <!-- Bill Print Templates -->
-                            <prints:five_five_paper_with_headings bill="#{billSearch.bill.cancelledBill}"/>
-                            <prints:five_five_paper_without_headings 
-                                bill="#{billSearch.bill.cancelledBill}" 
-                                duplicate="#{billPackageController.duplicatePrint}"
-                                payments="#{billPackageController.payments}"/>
-                            <prints:posOpdBillWithoutLogo bill="#{billSearch.bill.cancelledBill}" duplicate="#{billPackageController.duplicatePrint}"/>
-                            <prints:posOpdBill bill="#{billSearch.bill.cancelledBill}" duplicate="#{billPackageController.duplicatePrint}"/>
-                            <prints:A4_paper_with_headings bill="#{billSearch.bill.cancelledBill}" duplicate="#{billPackageController.duplicatePrint}"/>
-                            <prints:A4_paper_without_headings bill="#{billSearch.bill.cancelledBill}" duplicate="#{billPackageController.duplicatePrint}"/>
+                            <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFiveCustom4'}" >
+                                <ui:repeat value="#{billSearch.individualBillsOfBatchBill(billSearch.bill.cancelledBill)}" var="c4b">
+                                    <prints:five_five_opd_bill_custom_4 bill="#{c4b}" duplicate="#{billPackageController.duplicatePrint}"/>
+                                </ui:repeat>
+                            </h:panelGroup>
+                            <!-- Older formats print together on this page. Custom 4 is chosen by paper type, so they are hidden for it. -->
+                            <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType ne 'FiveFiveCustom4'}" >
+                                <prints:five_five_paper_with_headings bill="#{billSearch.bill.cancelledBill}"/>
+                                <prints:five_five_paper_without_headings 
+                                    bill="#{billSearch.bill.cancelledBill}" 
+                                    duplicate="#{billPackageController.duplicatePrint}"
+                                    payments="#{billPackageController.payments}"/>
+                                <prints:posOpdBillWithoutLogo bill="#{billSearch.bill.cancelledBill}" duplicate="#{billPackageController.duplicatePrint}"/>
+                                <prints:posOpdBill bill="#{billSearch.bill.cancelledBill}" duplicate="#{billPackageController.duplicatePrint}"/>
+                                <prints:A4_paper_with_headings bill="#{billSearch.bill.cancelledBill}" duplicate="#{billPackageController.duplicatePrint}"/>
+                                <prints:A4_paper_without_headings bill="#{billSearch.bill.cancelledBill}" duplicate="#{billPackageController.duplicatePrint}"/>
 
+                            </h:panelGroup>
                         </h:panelGroup>
                     </h:panelGroup>
                 </h:form>                

@@ -685,6 +685,9 @@
                         </div>
                         <h:panelGroup id="groupPrint" >
                             <!-- Bill Print Templates -->
+                            <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFiveCustom4'}" >
+                                <prints:five_five_opd_bill_custom_4 bill="#{opdBillCancellationController.bill}" duplicate="#{opdBillCancellationController.duplicate}"/>
+                            </h:panelGroup>
                             <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePaper'}" >       
                                 <prints:five_five_paper_with_headings bill="#{opdBillCancellationController.bill}"/>
                             </h:panelGroup>

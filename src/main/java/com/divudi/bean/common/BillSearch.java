@@ -724,6 +724,29 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
         return count;
     }
 
+    /**
+     * Individual bills of a batch bill, for the 5x5 Custom 4 print of a batch.
+     * For a batch cancellation bill these are its individual cancellation bills;
+     * for any other batch bill they are its individual bills.
+     */
+    public List<Bill> individualBillsOfBatchBill(Bill batchBill) {
+        List<Bill> result = new ArrayList<>();
+        if (batchBill == null || batchBill.getId() == null) {
+            return result;
+        }
+        String j = "select b from Bill b "
+                + " where b.retired=false "
+                + " and (b.forwardReferenceBill.id=:id or b.backwardReferenceBill.id=:id) "
+                + " order by b.id";
+        Map m = new HashMap();
+        m.put("id", batchBill.getId());
+        List<Bill> found = getBillFacade().findByJpql(j, m);
+        if (found != null) {
+            result.addAll(found);
+        }
+        return result;
+    }
+
     public List<BillItem> groupBillItemByNameFromBill(Bill b) {
         return groupBillItemByName(billService.fetchBillItems(b));
     }

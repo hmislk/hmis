@@ -77,6 +77,9 @@
                     <br/>
                     <h:outputLabel value="**Duplicate**"  rendered="#{cc.attrs.duplicate eq true}" />
                     <h:outputLabel value="**Cancelled**"  rendered="#{cc.attrs.bill.cancelled eq true}" />
+                    <!-- Cancellation and refund bills carry their own title. Their stored values are already negative. -->
+                    <h:outputLabel value="OPD BILL CANCELLATION"  rendered="#{cc.attrs.bill.billTypeAtomic.billCategory eq 'CANCELLATION'}" />
+                    <h:outputLabel value="OPD BILL REFUND"  rendered="#{cc.attrs.bill.billTypeAtomic.billCategory eq 'REFUND'}" />
                 </div>
 
                 <!-- Patient and Bill Information Table -->
@@ -99,6 +102,15 @@
                             </td>
                         </h:panelGroup>
                     </tr>
+
+                    <h:panelGroup rendered="#{cc.attrs.bill.billTypeAtomic.billCategory eq 'CANCELLATION' or cc.attrs.bill.billTypeAtomic.billCategory eq 'REFUND'}" >
+                        <tr>
+                            <td style="padding: 2px;">Original Bill No</td>
+                            <td style="padding: 2px;" colspan="4">
+                                <h:outputLabel value="#{cc.attrs.bill.referenceBill ne null ? cc.attrs.bill.referenceBill.deptId : cc.attrs.bill.billedBill.deptId}"/>
+                            </td>
+                        </tr>
+                    </h:panelGroup>
 
                     <tr>
                         <td  style="padding: 2px;">Bill Date</td>
