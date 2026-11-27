@@ -1109,6 +1109,49 @@ public class OpdBillCancellationController implements Serializable, ControllerWi
     }
 
     /**
+     * One line of the read-only refund shown for a Multiple Payment Methods
+     * bill: the method and the amount refunded by it.
+     */
+    public static class RefundLine implements Serializable {
+
+        private final PaymentMethod paymentMethod;
+        private final double amount;
+
+        public RefundLine(PaymentMethod paymentMethod, double amount) {
+            this.paymentMethod = paymentMethod;
+            this.amount = amount;
+        }
+
+        public PaymentMethod getPaymentMethod() {
+            return paymentMethod;
+        }
+
+        public double getAmount() {
+            return amount;
+        }
+    }
+
+    /**
+     * The methods and amounts that will be refunded when a Multiple Payment
+     * Methods bill is cancelled. Same shares as the original payments.
+     */
+    public List<RefundLine> getMultiplePaymentRefundLines() {
+        List<RefundLine> lines = new ArrayList<>();
+        if (!isMultiplePaymentCancellation() || billPayments == null || billPayments.isEmpty()) {
+            return lines;
+        }
+        List<Double> paidValues = new ArrayList<>();
+        for (Payment p : billPayments) {
+            paidValues.add(p.getPaidValue());
+        }
+        List<Double> amounts = MultiplePaymentSplitService.amountsByShare(Math.abs(bill.getNetTotal()), paidValues);
+        for (int i = 0; i < billPayments.size(); i++) {
+            lines.add(new RefundLine(billPayments.get(i).getPaymentMethod(), amounts.get(i)));
+        }
+        return lines;
+    }
+
+    /**
      * Sets the cancellation method and amounts from the original payments of
      * the batch, by the share of this bill. Does nothing for other bills.
      */
