@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
 
 class FinalBillSaveRollbackStateTest {
 
@@ -62,5 +63,69 @@ class FinalBillSaveRollbackStateTest {
 
         assertEquals(1, current.getBillItems().size());
         assertEquals(before, current.getBillItems().get(0));
+    }
+
+    @Test
+    void restoreBringsBackTheReferenceBillAndConfirmedFlag() {
+        Bill current = new BilledBill();
+        current.setBillItems(new ArrayList<>());
+        Bill earlierReference = new BilledBill();
+        current.setReferenceBill(earlierReference);
+        PatientEncounter pe = new PatientEncounter();
+
+        FinalBillSaveRollbackState state = new FinalBillSaveRollbackState(current, pe);
+        current.setReferenceBill(new BilledBill());
+        current.setConfirmedFinalBill(true);
+        state.restore();
+
+        assertSame(earlierReference, current.getReferenceBill());
+        assertFalse(current.isConfirmedFinalBill());
+    }
+
+    @Test
+    void restoreKeepsAnOriginalBillThatExistedBeforeTheSave() {
+        Bill current = new BilledBill();
+        current.setBillItems(new ArrayList<>());
+        Bill original = new BilledBill();
+        original.setId(5L);
+        original.setDiscount(3.0);
+        original.setNetTotal(97.0);
+        original.setBillItems(new ArrayList<>());
+        PatientEncounter pe = new PatientEncounter();
+
+        FinalBillSaveRollbackState state = new FinalBillSaveRollbackState(current, pe, original);
+        original.setDiscount(20.0);
+        original.setNetTotal(80.0);
+        original.getBillItems().add(new BillItem());
+        state.restore();
+
+        assertSame(original, state.getOriginalBillBeforeSave());
+        assertEquals(5L, original.getId());
+        assertEquals(3.0, original.getDiscount());
+        assertEquals(97.0, original.getNetTotal());
+        assertEquals(0, original.getBillItems().size());
+    }
+
+    @Test
+    void restoreGivesNoOriginalBillWhenThePageHadNone() {
+        Bill current = new BilledBill();
+        current.setBillItems(new ArrayList<>());
+        FinalBillSaveRollbackState state = new FinalBillSaveRollbackState(current, new PatientEncounter(), null);
+        state.restore();
+        assertNull(state.getOriginalBillBeforeSave());
+    }
+
+    @Test
+    void restoreResetsAnUnsavedOriginalBillThatTheSaveGaveAnId() {
+        Bill current = new BilledBill();
+        current.setBillItems(new ArrayList<>());
+        Bill original = new BilledBill();
+        original.setBillItems(new ArrayList<>());
+        FinalBillSaveRollbackState state = new FinalBillSaveRollbackState(current, new PatientEncounter(), original);
+        original.setId(9L);
+        original.getBillItems().add(new BillItem());
+        state.restore();
+        assertNull(original.getId());
+        assertEquals(0, original.getBillItems().size());
     }
 }

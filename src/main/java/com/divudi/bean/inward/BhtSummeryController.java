@@ -3228,6 +3228,23 @@ public class BhtSummeryController implements Serializable {
         originalBill = null;
     }
 
+    /**
+     * A business error (an {@code @ApplicationException}) keeps its own message;
+     * any other failure gets one general message and no partial data.
+     */
+    private String finalBillSaveFailureMessage(Throwable e) {
+        for (Throwable t = e; t != null; t = t.getCause()) {
+            if (t.getClass().isAnnotationPresent(javax.ejb.ApplicationException.class)
+                    && t.getMessage() != null && !t.getMessage().trim().isEmpty()) {
+                return t.getMessage();
+            }
+            if (t.getCause() == t) {
+                break;
+            }
+        }
+        return "Final bill was not saved. Please try again.";
+    }
+
     public void settle() {
         // A bill-level discount typed but not yet blurred is already bound; apply it to the VAT first.
         recalculateAfterBillLevelDiscountChange();
@@ -3256,7 +3273,7 @@ public class BhtSummeryController implements Serializable {
         // counters still commit in their own transactions before the bill is written,
         // so a rolled-back save can leave a gap in the numbers but never a duplicate.
         // The transaction commits before the lock is released (FinalBillLockBean).
-        FinalBillSaveRollbackState rollbackState = new FinalBillSaveRollbackState(getCurrent(), getPatientEncounter());
+        FinalBillSaveRollbackState rollbackState = new FinalBillSaveRollbackState(getCurrent(), getPatientEncounter(), originalBill);
         boolean saved;
         try {
             saved = getFinalBillLockBean().withFinalBillVersionLock(getPatientEncounter(), () -> {
@@ -3304,12 +3321,15 @@ public class BhtSummeryController implements Serializable {
                 return true;
             });
         } catch (RuntimeException e) {
-            // The locked transaction rolled back: the original bill and the final bill it
-            // created are gone, so the next Settle must create them again rather than
-            // reference them.
-            originalBill = null;
+            // The locked transaction rolled back: the final bill it created is gone, and so
+            // is an original bill it created. Put the page back as it was, including an
+            // original bill that existed before Save, so the next Settle starts clean.
             rollbackState.restore();
-            throw e;
+            originalBill = rollbackState.getOriginalBillBeforeSave();
+            java.util.logging.Logger.getLogger(BhtSummeryController.class.getName())
+                    .log(java.util.logging.Level.SEVERE, "Save Final Bill rolled back", e);
+            JsfUtil.addErrorMessage(finalBillSaveFailureMessage(e));
+            return;
         }
         if (!saved) {
             JsfUtil.addErrorMessage(getCurrent().getId() != null ? "This Final Bill is already saved" : PAYMENT_FINALIZED_MESSAGE);
