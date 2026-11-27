@@ -58,7 +58,7 @@
 
                                 <p:dataTable id="tblSs" value="#{opdPreBillController.billSessions}" var="bs" emptyMessage="No Numbers Yet">
                                     <f:facet name="header">
-                                        <h:outputText value="#{opdPreBillController.lastBillItem.item.name}" />
+                                        <h:outputText value="#{opdPreBillController.currentBillItem.item ne null ? opdPreBillController.currentBillItem.item.name : opdPreBillController.lastBillItem.item.name}" />
 
                                         <h:outputText id="lblTemS" value="#{opdPreBillController.sessionDate}" style="float: right;" >
                                             <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateFormat}" ></f:convertDateTime>
@@ -157,7 +157,6 @@
                                             <p:commandButton 
                                                 id="btnAddIx" 
                                                 value="Add" 
-                                                onerror="Please Select Item"
                                                 icon="fa fa-plus"
                                                 class="w-100 mx-1 my-1 ui-button-success"
                                                 action="#{opdPreBillController.addToBill()}" 
