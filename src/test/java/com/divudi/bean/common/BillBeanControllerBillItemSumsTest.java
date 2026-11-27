@@ -8,6 +8,7 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Issue #17562: the five BillFee sums behind a BillItem now come from one query
@@ -108,5 +109,34 @@ class BillBeanControllerBillItemSumsTest {
         assertEquals(0.0, bi.getDiscount(), 0.0);
         assertEquals(1.0, bi.getVat(), 0.0);
         assertEquals(1.0, bi.getVatPlusNetValue(), 0.0);
+    }
+
+    @Test
+    void runUpdateWritesExactlyTheColumnsTheSumsSet() {
+        String jpql = BillBeanController.BILL_ITEM_SUMS_UPDATE_JPQL;
+        String setPart = jpql.substring(jpql.indexOf("SET ") + 4, jpql.indexOf(" WHERE"));
+        java.util.Set<String> columns = new java.util.TreeSet<>();
+        for (String assignment : setPart.split(",")) {
+            columns.add(assignment.trim().split("=")[0]);
+        }
+        assertEquals(new java.util.TreeSet<>(Arrays.asList("b.grossValue", "b.netValue", "b.marginValue",
+                "b.discount", "b.vat", "b.vatPlusNetValue")), columns);
+        assertTrue(jpql.endsWith("WHERE b.id=:id"));
+    }
+
+    @Test
+    void runUpdateParametersCarryTheAppliedSums() {
+        BillItem bi = new BillItem();
+        bi.setId(42L);
+        BillBeanController.applyBillFeeSumsToBillItem(bi, new Object[]{1000.0, 800.0, 50.0, 250.0, 20.0});
+        java.util.Map<String, Object> p = BillBeanController.billItemSumsUpdateParameters(bi);
+        assertEquals(1000.0, (double) p.get("gross"), 0.0);
+        assertEquals(800.0, (double) p.get("net"), 0.0);
+        assertEquals(50.0, (double) p.get("margin"), 0.0);
+        assertEquals(250.0, (double) p.get("discount"), 0.0);
+        assertEquals(20.0, (double) p.get("vat"), 0.0);
+        assertEquals(820.0, (double) p.get("vatPlusNet"), 0.0);
+        assertEquals(42L, p.get("id"));
+        assertEquals(7, p.size());
     }
 }

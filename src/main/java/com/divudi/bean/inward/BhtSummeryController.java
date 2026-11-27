@@ -1977,7 +1977,7 @@ public class BhtSummeryController implements Serializable {
         List<BillItem> listBillItems = serviceBillItemsForRun(inwardChargeType);
 
         for (BillItem b : listBillItems) {
-            getBillBean().updateBillItemByBillFee(b);
+            getBillBean().updateBillItemByBillFeeColumnsOnly(b);
         }
 
         return disTot;
@@ -2024,7 +2024,7 @@ public class BhtSummeryController implements Serializable {
             disTot += dis;
         }
         for (BillItem b : serviceBillItemsForRun(inwardChargeType)) {
-            getBillBean().updateBillItemByBillFee(b);
+            getBillBean().updateBillItemByBillFeeColumnsOnly(b);
         }
         return disTot;
     }

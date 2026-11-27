@@ -4915,6 +4915,48 @@ public class BillBeanController implements Serializable {
     }
 
     /**
+     * As {@link #updateBillItemByBillFee}, for a bill item that was read earlier
+     * in the same run (not freshly): sets the sums on the in-memory item and
+     * writes only the item's own six columns. It does not merge the item, so
+     * the item's possibly stale BillFee collection (cascade ALL) cannot
+     * overwrite fee rows committed since the item was read (#17562).
+     */
+    public void updateBillItemByBillFeeColumnsOnly(BillItem billItem) {
+        String sql = "SELECT sum(b.feeGrossValue), sum(b.feeValue), sum(b.feeMargin), "
+                + " sum(b.feeDiscount), sum(b.feeVat) "
+                + " FROM BillFee b "
+                + " WHERE b.retired=false "
+                + " and b.billItem=:bItm ";
+        HashMap<String, Object> hm = new HashMap<>();
+        hm.put("bItm", billItem);
+        List<Object[]> rows = getBillFeeFacade().findRawResultsByJpql(sql, hm, TemporalType.DATE);
+        Object[] row = (rows == null || rows.isEmpty()) ? null : rows.get(0);
+        applyBillFeeSumsToBillItem(billItem, row);
+        if (billItem.getId() == null) {
+            getBillItemFacade().edit(billItem);
+            return;
+        }
+        getBillItemFacade().updateByJpql(BILL_ITEM_SUMS_UPDATE_JPQL, billItemSumsUpdateParameters(billItem));
+    }
+
+    /** The six BillItem columns {@link #applyBillFeeSumsToBillItem} sets, and no others. */
+    static final String BILL_ITEM_SUMS_UPDATE_JPQL = "UPDATE BillItem b SET b.grossValue=:gross, b.netValue=:net,"
+            + " b.marginValue=:margin, b.discount=:discount, b.vat=:vat, b.vatPlusNetValue=:vatPlusNet"
+            + " WHERE b.id=:id";
+
+    static Map<String, Object> billItemSumsUpdateParameters(BillItem billItem) {
+        Map<String, Object> params = new HashMap<>();
+        params.put("gross", billItem.getGrossValue());
+        params.put("net", billItem.getNetValue());
+        params.put("margin", billItem.getMarginValue());
+        params.put("discount", billItem.getDiscount());
+        params.put("vat", billItem.getVat());
+        params.put("vatPlusNet", billItem.getVatPlusNetValue());
+        params.put("id", billItem.getId());
+        return params;
+    }
+
+    /**
      * Copies the five BillFee sums (gross, net, margin, discount, vat; in that
      * order) onto the bill item. A missing row or a null sum counts as zero,
      * as the former one-query-per-sum code did.
