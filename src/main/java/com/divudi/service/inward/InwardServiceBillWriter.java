@@ -25,7 +25,9 @@ import com.divudi.core.entity.Department;
 import com.divudi.core.entity.PatientEncounter;
 import com.divudi.core.entity.PriceMatrix;
 import com.divudi.core.entity.WebUser;
+import com.divudi.core.entity.inward.AdmissionType;
 import com.divudi.core.entity.inward.RoomCategory;
+import com.divudi.core.data.inward.AdmissionTypeTimeline;
 import com.divudi.core.facade.BillFacade;
 import com.divudi.core.facade.BillFeeFacade;
 import com.divudi.core.facade.BillItemFacade;
@@ -95,12 +97,18 @@ public class InwardServiceBillWriter {
      * @return the bills created by this call and the batch bill they sit under
      */
     public InwardServiceBillResult createServiceBills(InwardServiceBillRequest request) {
+        if (request.getBillEntries() == null || request.getBillEntries().isEmpty()) {
+            throw new InwardServiceBillException("There is nothing to bill.");
+        }
+        RunContext ctx = new RunContext(
+                admissionTypeHistoryService.timelineFor(request.getPatientEncounter()),
+                new InwardBeanController.DiscountRunCache());
         InwardServiceBillResult result = new InwardServiceBillResult();
         List<Bill> created = new ArrayList<>();
 
         if (billBean.calculateNumberOfBillsPerOrder(request.getBillEntries()) == 1) {
             BilledBill temp = new BilledBill();
-            Bill b = saveBill(request.getBillEntries().get(0).getBillItem().getItem().getDepartment(), temp, request);
+            Bill b = saveBill(departmentOf(request.getBillEntries().get(0)), temp, request);
             // Collected the moment it exists, not at the end: these facades are
             // stateless, so the row is already committed and a later failure has
             // to be able to find it in order to retire it.
@@ -108,7 +116,7 @@ public class InwardServiceBillWriter {
             request.getBillCollector().add(b);
             applyItemRequestReference(b, request.getBillEntries());
 
-            List<BillItem> list = saveBillItems(b, request.getBillEntries(), request.getLoggedUser(), request);
+            List<BillItem> list = saveBillItems(b, request.getBillEntries(), request.getLoggedUser(), request, ctx);
             b.setBillItems(list);
 
             Priority highestPriority = Optional
@@ -122,10 +130,9 @@ public class InwardServiceBillWriter {
 
             b.setPriority(highestPriority);
 
-            billFacade.edit(b);
             billBean.calculateBillItems(b, request.getBillEntries());
         } else {
-            created.addAll(putToBills(request));
+            created.addAll(putToBills(request, ctx));
         }
 
         result.setBills(created);
@@ -137,12 +144,12 @@ public class InwardServiceBillWriter {
      * One bill per distinct {@code item.getDepartment()}, each carrying only
      * that department's entries.
      */
-    private List<Bill> putToBills(InwardServiceBillRequest request) {
+    private List<Bill> putToBills(InwardServiceBillRequest request, RunContext ctx) {
         List<Bill> created = new ArrayList<>();
 
         Set<Department> billDepts = new HashSet<>();
         for (BillEntry e : request.getBillEntries()) {
-            billDepts.add(e.getBillItem().getItem().getDepartment());
+            billDepts.add(departmentOf(e));
         }
         for (Department d : billDepts) {
             BilledBill myBill = new BilledBill();
@@ -152,12 +159,12 @@ public class InwardServiceBillWriter {
             request.getBillCollector().add(myBill);
             List<BillEntry> tmp = new ArrayList<>();
             for (BillEntry e : request.getBillEntries()) {
-                if (e.getBillItem().getItem().getDepartment().equals(d)) {
+                if (d.equals(departmentOf(e))) {
                     tmp.add(e);
                 }
             }
             applyItemRequestReference(myBill, tmp);
-            List<BillItem> tmpBis = saveBillItems(myBill, tmp, request.getLoggedUser(), request);
+            List<BillItem> tmpBis = saveBillItems(myBill, tmp, request.getLoggedUser(), request, ctx);
             for (int i = 0; i < tmpBis.size(); i++) {
                 tmpBis.get(i).setSearialNo(i);
             }
@@ -197,12 +204,38 @@ public class InwardServiceBillWriter {
         return encounter.getCurrentPatientRoom().getRoomFacilityCharge().getRoomCategory();
     }
 
+    /** What one settle reads once and shares between its fees. */
+    private static final class RunContext {
+
+        final AdmissionTypeTimeline timeline;
+        final InwardBeanController.DiscountRunCache cache;
+
+        RunContext(AdmissionTypeTimeline timeline, InwardBeanController.DiscountRunCache cache) {
+            this.timeline = timeline;
+            this.cache = cache;
+        }
+    }
+
+    private static Department departmentOf(BillEntry entry) {
+        Department d = entry.getBillItem().getItem().getDepartment();
+        if (d == null) {
+            throw new InwardServiceBillException("An item on the bill has no department, so it cannot be billed.");
+        }
+        return d;
+    }
+
     /**
-     * Persists one BillItem and its BillFees onto the bill. Sets
+     * Saves one BillItem and its BillFees onto the bill. Sets
      * {@code inwardChargeType} from the item when it is null - that is what
      * gives the interim bill its per-charge-type breakdown.
+     *
+     * <p>The item and its fees are complete in memory before they are saved: the
+     * links are set, the inward margin and discount are applied to each fee, and
+     * the item's own figures are set. The item is then one insert, and each fee
+     * one insert, whatever the margin did.</p>
      */
-    private BillItem saveBillItem(Bill bill, BillItem billItem, BillEntry billEntry, List<BillFee> billFees, WebUser wu) {
+    private BillItem saveBillItem(Bill bill, BillItem billItem, BillEntry billEntry, List<BillFee> billFees,
+            WebUser wu, InwardServiceBillRequest request, RunContext ctx) {
 
         billItem.setCreatedAt(new Date());
         billItem.setCreater(wu);
@@ -217,75 +250,98 @@ public class InwardServiceBillWriter {
             billItem.setReferanceBillItem(billEntry.getSourceRequestBillItem());
         }
 
-        if (billItem.getId() == null) {
-            billItemFacade.create(billItem);
-        }
-
         billBean.saveBillComponent(billEntry, bill, wu);
 
         for (BillFee bf : billFees) {
-            inwardBean.saveBillFee(bf, billItem, bill, wu);
+            inwardBean.prepareBillFee(bf, billItem, bill, wu);
             billItem.getBillFees().add(bf);
         }
 
-        billBean.updateBillItemByBillFee(billItem);
+        // The item's gross, net, margin, discount and vat are the sums of its fees as
+        // they were when saved, before the margin below is applied; the settle always
+        // took them at that point, so they are taken here, from the fees in memory.
+        BillBeanController.applyBillFeeSumsToBillItem(billItem, InwardServiceBillSums.itemSums(billItem.getBillFees()));
+
+        double staffFee = 0.0;
+        double collectingCentreFee = 0.0;
+        double hospitalFee = 0.0;
+        double reagentFee = 0.0;
+        double otherFee = 0.0;
+        double marginFee = 0.0;
+
+        AdmissionType typeAtBill = ctx.timeline.typeAt(bill.getCreatedAt());
+
+        for (BillFee bf : billItem.getBillFees()) {
+            // Automatic admission charges carry their price in the configuration,
+            // so no inward margin is applied - and therefore no inward discount
+            // matrix either, since setBillFeeMargin(...) applies both. The billed
+            // amount is exactly the configured price. (Issue #23594)
+            if (request.isApplyInwardMargin()) {
+                PatientEncounter encounter = bill.getPatientEncounter();
+                AdmissionType currentType = encounter != null ? encounter.getAdmissionType() : null;
+                RoomCategory roomCategory = resolveCurrentRoomCategory(encounter);
+                final double serviceValue = bf.getFeeUnitGrossValue() != null ? bf.getFeeUnitGrossValue() : bf.getFeeGrossValue();
+                PriceMatrix priceMatrix = ctx.cache.matrix(
+                        InwardBeanController.marginMatrixKey(
+                                priceMatrixController.resolveInwardMatrixCategory(billItem.getItem(), request.getMatrixDepartment()),
+                                serviceValue, request.getMatrixDepartment(), request.getMarginPaymentMethod(), null,
+                                currentType, roomCategory),
+                        () -> priceMatrixController.fetchInwardMargin(billItem, serviceValue, request.getMatrixDepartment(),
+                                request.getMarginPaymentMethod(), null, currentType, roomCategory));
+                inwardBean.setBillFeeMargin(bf, bf.getBillItem().getItem(), priceMatrix, encounter,
+                        typeAtBill, ctx.cache, false);
+            }
+
+            if (bf.getFee().getFeeType() == FeeType.CollectingCentre) {
+                collectingCentreFee += bf.getFeeValue();
+            } else if (bf.getFee().getFeeType() == FeeType.Staff) {
+                staffFee += bf.getFeeValue();
+            } else if (bf.getFee().getFeeType() == FeeType.Chemical) {
+                reagentFee += bf.getFeeValue();
+            } else if (bf.getFee().getFeeType() == FeeType.Additional) {
+                otherFee += bf.getFeeValue();
+            } else {
+                hospitalFee += bf.getFeeValue();
+            }
+
+            marginFee += bf.getFeeMargin();
+        }
+
+        billItem.setHospitalFee(hospitalFee);
+        billItem.setCollectingCentreFee(collectingCentreFee);
+        billItem.setReagentFee(reagentFee);
+        billItem.setOtherFee(otherFee);
+        billItem.setStaffFee(staffFee);
+        billItem.setMarginValue(marginFee);
+
+        if (billItem.getId() == null) {
+            // Cascades to the fees in its list.
+            billItemFacade.create(billItem);
+        } else {
+            billItemFacade.edit(billItem);
+        }
+        for (BillFee bf : billItem.getBillFees()) {
+            if (bf.getId() == null) {
+                billFeeFacade.create(bf);
+            }
+        }
 
         return billItem;
     }
 
-    private List<BillItem> saveBillItems(Bill bill, List<BillEntry> billEntries, WebUser webUser, InwardServiceBillRequest request) {
+    private List<BillItem> saveBillItems(Bill bill, List<BillEntry> billEntries, WebUser webUser,
+            InwardServiceBillRequest request, RunContext ctx) {
         List<BillItem> list = new ArrayList<>();
+        List<BillFee> allFees = new ArrayList<>();
         for (BillEntry e : billEntries) {
-            double staffFee = 0.0;
-            double collectingCentreFee = 0.0;
-            double hospitalFee = 0.0;
-            double reagentFee = 0.0;
-            double otherFee = 0.0;
-            double marginFee = 0.0;
-
-            BillItem billItem = saveBillItem(bill, e.getBillItem(), e, e.getLstBillFees(), webUser);
+            BillItem billItem = saveBillItem(bill, e.getBillItem(), e, e.getLstBillFees(), webUser, request, ctx);
             billItem.setSearialNo(list.size());
-
-            for (BillFee bf : billItem.getBillFees()) {
-                // Automatic admission charges carry their price in the configuration,
-                // so no inward margin is applied - and therefore no inward discount
-                // matrix either, since setBillFeeMargin(...) applies both. The billed
-                // amount is exactly the configured price. (Issue #23594)
-                if (request.isApplyInwardMargin()) {
-                    PriceMatrix priceMatrix = priceMatrixController.fetchInwardMargin(billItem, bf.getFeeUnitGrossValue() != null ? bf.getFeeUnitGrossValue() : bf.getFeeGrossValue(), request.getMatrixDepartment(), request.getMarginPaymentMethod(), null, bill.getPatientEncounter() != null ? bill.getPatientEncounter().getAdmissionType() : null, resolveCurrentRoomCategory(bill.getPatientEncounter()));
-                    inwardBean.setBillFeeMargin(bf, bf.getBillItem().getItem(), priceMatrix, bill.getPatientEncounter());
-                    billFeeFacade.edit(bf);
-                }
-
-                if (bf.getFee().getFeeType() == FeeType.CollectingCentre) {
-                    collectingCentreFee += bf.getFeeValue();
-                } else if (bf.getFee().getFeeType() == FeeType.Staff) {
-                    staffFee += bf.getFeeValue();
-                } else if (bf.getFee().getFeeType() == FeeType.Chemical) {
-                    reagentFee += bf.getFeeValue();
-                } else if (bf.getFee().getFeeType() == FeeType.Additional) {
-                    otherFee += bf.getFeeValue();
-                } else {
-                    hospitalFee += bf.getFeeValue();
-                }
-
-                marginFee += bf.getFeeMargin();
-            }
-
-            billItem.setHospitalFee(hospitalFee);
-            billItem.setCollectingCentreFee(collectingCentreFee);
-            billItem.setReagentFee(reagentFee);
-            billItem.setOtherFee(otherFee);
-            billItem.setStaffFee(staffFee);
-            billItem.setMarginValue(marginFee);
-
-            billItemFacade.editAndCommit(billItem);
-
+            allFees.addAll(billItem.getBillFees());
             list.add(billItem);
-
         }
 
-        billBean.updateBillByBillFee(bill);
+        // The bill's totals are the sums of its fees, as the database summed them.
+        InwardServiceBillSums.applyToBill(bill, allFees);
 
         return list;
     }
@@ -329,19 +385,19 @@ public class InwardServiceBillWriter {
         String insId;
 
         if (inpatientServiceBillNumberGenerateStrategyForFromDepartmentAndToDepartmentCombination) {
-            deptId = billNumberBean.departmentBillNumberGeneratorYearlyByFromDepartmentAndToDepartment(
+            deptId = billNumberBean.departmentBillNumberGeneratorYearlyByFromDepartmentAndToDepartmentInNewTransaction(
                     bt, request.getLoggedDepartment(), BillTypeAtomic.INWARD_SERVICE_BILL);
             insId = deptId;
         } else if (inpatientServiceBillNumberGenerateStrategySingleNumberForOpdAndInpatientInvestigationsAndServices) {
             List<BillTypeAtomic> opdAndInpatientBills = BillTypeAtomic.findOpdAndInpatientServiceAndInvestigationIndividualBillTypes();
-            deptId = billNumberBean.departmentBillNumberGeneratorYearly(request.getLoggedDepartment(), opdAndInpatientBills);
+            deptId = billNumberBean.departmentBillNumberGeneratorYearlyInNewTransaction(request.getLoggedDepartment(), opdAndInpatientBills);
             insId = deptId;
         } else if (inpatientServiceBillNumberGenerateStrategyDefault) {
-            deptId = billNumberBean.departmentBillNumberGeneratorYearly(bt, BillTypeAtomic.INWARD_SERVICE_BILL);
+            deptId = billNumberBean.departmentBillNumberGeneratorYearlyInNewTransaction(bt, BillTypeAtomic.INWARD_SERVICE_BILL);
             insId = deptId;
         } else {
-            deptId = billNumberBean.departmentBillNumberGenerator(temp.getDepartment(), temp.getToDepartment(), temp.getBillType(), BillClassType.BilledBill);
-            insId = billNumberBean.institutionBillNumberGenerator(temp.getInstitution(), temp.getToDepartment(), temp.getBillType(), BillClassType.BilledBill, BillNumberSuffix.INWSER);
+            deptId = billNumberBean.departmentBillNumberGeneratorInNewTransaction(temp.getDepartment(), temp.getToDepartment(), temp.getBillType(), BillClassType.BilledBill);
+            insId = billNumberBean.institutionBillNumberGeneratorInNewTransaction(temp.getInstitution(), temp.getToDepartment(), temp.getBillType(), BillClassType.BilledBill, BillNumberSuffix.INWSER);
         }
 
         temp.setDeptId(deptId);
@@ -374,9 +430,9 @@ public class InwardServiceBillWriter {
 
         if (opdBillNumberGenerateStrategySingleNumberForOpdAndInpatientInvestigationsAndServices) {
             List<BillTypeAtomic> opdAndInpatientBills = BillTypeAtomic.findOpdAndInpatientServiceAndInvestigationBatchBillTypes();
-            batchBillId = billNumberBean.departmentBatchBillNumberGeneratorYearlyForInpatientAndOpdServices(request.getLoggedDepartment(), opdAndInpatientBills);
+            batchBillId = billNumberBean.departmentBatchBillNumberGeneratorYearlyForInpatientAndOpdServicesInNewTransaction(request.getLoggedDepartment(), opdAndInpatientBills);
         } else {
-            batchBillId = billNumberBean.departmentBillNumberGeneratorYearly(request.getLoggedDepartment(), BillTypeAtomic.INWARD_SERVICE_BATCH_BILL);
+            batchBillId = billNumberBean.departmentBillNumberGeneratorYearlyInNewTransaction(request.getLoggedDepartment(), BillTypeAtomic.INWARD_SERVICE_BATCH_BILL);
         }
 
         tmp.setDeptId(batchBillId);
@@ -385,6 +441,9 @@ public class InwardServiceBillWriter {
         if (tmp.getId() == null) {
             billFacade.create(tmp);
         }
+        // The bills below point at the batch bill, a row of the same table: write
+        // all the rows first so no bill is inserted ahead of the row it points to.
+        billFacade.flush();
         // Published before the linking below, which can throw: without this a
         // committed batch bill would never reach the caller and so could never be
         // retired. Kept off the collector on purpose - see the field's javadoc.
