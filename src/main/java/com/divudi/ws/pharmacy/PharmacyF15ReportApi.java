@@ -128,6 +128,9 @@ public class PharmacyF15ReportApi {
         if (k == null || k.getWebUser() == null) {
             return false;
         }
+        if (k.isRetired()) {
+            return false;
+        }
         if (k.getWebUser().isRetired() || !k.getWebUser().isActivated()) {
             return false;
         }

@@ -64,12 +64,7 @@ public class ConfigResource {
     public Response setBooleanValue(@PathParam("key") String key,
             @PathParam("value") boolean value,
             @Context HttpHeaders headers) {
-        System.out.println("setBooleanValue" );
-        System.out.println("headers = " + headers);
-        System.out.println("key = " + key);
-        System.out.println("value = " + value);
-        String apiKey = headers.getHeaderString("Config");
-        if (!apiKeyController.isValidKey(apiKey)) {
+        if (validateConfigKey(headers) == null) {
             return unauthorizedResponse();
         }
         configOptionApplicationController.setBooleanValueByKey(key, value);
@@ -82,8 +77,7 @@ public class ConfigResource {
     public Response setLongTextValue(@PathParam("key") String key,
             @PathParam("value") String value,
             @Context HttpHeaders headers) {
-        String apiKey = headers.getHeaderString("Config");
-        if (!apiKeyController.isValidKey(apiKey)) {
+        if (validateConfigKey(headers) == null) {
             return unauthorizedResponse();
         }
         configOptionApplicationController.setLongTextValueByKey(key, value);
@@ -96,8 +90,7 @@ public class ConfigResource {
     public Response setIntegerValue(@PathParam("key") String key,
             @PathParam("value") int value,
             @Context HttpHeaders headers) {
-        String apiKey = headers.getHeaderString("Config");
-        if (!apiKeyController.isValidKey(apiKey)) {
+        if (validateConfigKey(headers) == null) {
             return unauthorizedResponse();
         }
         configOptionApplicationController.setIntegerValueByKey(key, value);
@@ -109,10 +102,7 @@ public class ConfigResource {
     @Produces(MediaType.APPLICATION_JSON)
     public Response searchConfigOptions(@QueryParam("keyword") String keyword,
             @Context HttpHeaders headers) {
-        String apiKeyValue = headers.getHeaderString("Config");
-        ApiKey apiKey = apiKeyController.findApiKey(apiKeyValue);
-        if (apiKey == null || apiKey.getKeyType() != ApiKeyType.Config
-                || apiKey.getDateOfExpiary().before(new java.util.Date())) {
+        if (validateConfigKey(headers) == null) {
             return unauthorizedResponse();
         }
         if (keyword == null || keyword.trim().isEmpty()) {
@@ -154,6 +144,20 @@ public class ConfigResource {
             return "***masked***";
         }
         return value;
+    }
+
+    /**
+     * Validate the Config API key from the request headers, returning the
+     * ApiKey when valid or null otherwise.
+     */
+    private ApiKey validateConfigKey(HttpHeaders headers) {
+        String apiKeyValue = headers.getHeaderString("Config");
+        ApiKey apiKey = apiKeyController.findApiKey(apiKeyValue);
+        // API key hardening
+        if (apiKeyController.resolveConfigKeyOwner(apiKey) == null) {
+            return null;
+        }
+        return apiKey;
     }
 
     private Response successResponse() {
