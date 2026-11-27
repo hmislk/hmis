@@ -76,12 +76,7 @@ public class ConfigResource {
     public Response setBooleanValue(@PathParam("key") String key,
             @PathParam("value") boolean value,
             @Context HttpHeaders headers) {
-        System.out.println("setBooleanValue" );
-        System.out.println("headers = " + headers);
-        System.out.println("key = " + key);
-        System.out.println("value = " + value);
-        String apiKey = headers.getHeaderString("Config");
-        if (!apiKeyController.isValidKey(apiKey)) {
+        if (validateConfigKey(headers) == null) {
             return unauthorizedResponse();
         }
         configOptionApplicationController.setBooleanValueByKey(key, value);
@@ -94,8 +89,7 @@ public class ConfigResource {
     public Response setLongTextValue(@PathParam("key") String key,
             @PathParam("value") String value,
             @Context HttpHeaders headers) {
-        String apiKey = headers.getHeaderString("Config");
-        if (!apiKeyController.isValidKey(apiKey)) {
+        if (validateConfigKey(headers) == null) {
             return unauthorizedResponse();
         }
         configOptionApplicationController.setLongTextValueByKey(key, value);
@@ -108,8 +102,7 @@ public class ConfigResource {
     public Response setIntegerValue(@PathParam("key") String key,
             @PathParam("value") int value,
             @Context HttpHeaders headers) {
-        String apiKey = headers.getHeaderString("Config");
-        if (!apiKeyController.isValidKey(apiKey)) {
+        if (validateConfigKey(headers) == null) {
             return unauthorizedResponse();
         }
         configOptionApplicationController.setIntegerValueByKey(key, value);

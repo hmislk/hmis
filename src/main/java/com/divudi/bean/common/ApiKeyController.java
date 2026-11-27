@@ -150,6 +150,9 @@ public class ApiKeyController implements Serializable {
         if (k == null) {
             return false;
         }
+        if (k.isRetired()) {
+            return false;
+        }
         if (k.getDateOfExpiary().before(new Date())) {
             return false;
         }
@@ -170,7 +173,8 @@ public class ApiKeyController implements Serializable {
         String j;
         j = "select a "
                 + " from ApiKey a "
-                + " where a.keyValue=:kv";
+                + " where a.keyValue=:kv"
+                + " and a.retired=false";
         Map m = new HashMap();
         m.put("kv", keyValue);
         return getFacade().findFirstByJpql(j, m);

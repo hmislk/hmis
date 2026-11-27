@@ -604,6 +604,9 @@ public class ItemMappingApi {
         if (apiKey == null) {
             return null;
         }
+        if (apiKey.isRetired()) {
+            return null;
+        }
         WebUser user = apiKey.getWebUser();
         if (user == null) {
             return null;
