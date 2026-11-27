@@ -13,6 +13,7 @@ import com.divudi.core.entity.Payment;
 import com.divudi.core.facade.BillFacade;
 import com.divudi.core.facade.BillFeeFacade;
 import com.divudi.core.facade.BillItemFacade;
+import com.divudi.core.facade.PatientDepositFacade;
 import com.divudi.core.facade.PatientFacade;
 import com.divudi.core.facade.PaymentFacade;
 import com.divudi.core.entity.PatientDeposit;
@@ -56,6 +57,8 @@ public class OpdPreSettleWriter {
     StaffService staffService;
     @EJB
     PatientDepositService patientDepositService;
+    @EJB
+    PatientDepositFacade patientDepositFacade;
 
     /**
      * Saves everything of the settle.
@@ -107,7 +110,12 @@ public class OpdPreSettleWriter {
      * balance plus the credit limit must cover the amount.
      */
     private void takeFromDeposit(Bill saleBill, OpdPreSettleRequest.DepositUse use) {
-        PatientDeposit pd = patientDepositService.getDepositOfThePatient(use.getPatient(), saleBill.getDepartment());
+        PatientDeposit found = patientDepositService.getDepositOfThePatient(use.getPatient(), saleBill.getDepartment());
+        // Hardening: lock the deposit record while it is checked and lowered.
+        PatientDeposit pd = patientDepositFacade.findWithLock(found.getId());
+        if (pd == null) {
+            pd = found;
+        }
         double balance = pd.getBalance() == null ? 0.0 : pd.getBalance();
         double creditLimit = use.getPatient().getCreditLimit() == null ? 0.0 : Math.abs(use.getPatient().getCreditLimit());
         if (use.getAmount() > balance + creditLimit) {
