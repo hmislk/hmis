@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import org.junit.jupiter.api.Test;
@@ -159,5 +160,50 @@ class MultiplePaymentSplitServiceTest {
         // the share is the size of the included part, whatever the sign
         Map<PaymentMethod, Double> oneUnit = MultiplePaymentSplitService.splitValue(-1, refund);
         assertEquals(1000.0 / 2900.0, Math.abs(MultiplePaymentSplitService.includedShare(oneUnit, included)), EPS);
+    }
+
+    @Test
+    void singleBillCancelNetsToZeroPerMethod() {
+        // Original bill 1750 paid Cash 700 + Card 1050 (rows on the batch bill 10).
+        // Its cancel bill 5 has its own rows, refunded by the same methods.
+        Map<Long, Map<PaymentMethod, Double>> byBill = new HashMap<>();
+        byBill.put(10L, paid(700, 1050));
+        byBill.put(5L, paid(-700, -1050));
+        Map<Long, Map<PaymentMethod, Double>> r = MultiplePaymentSplitService.splitBills(Arrays.asList(
+                new MultiplePaymentSplitService.BillValue(1L, 1750, 10L, null),
+                new MultiplePaymentSplitService.BillValue(5L, -1750, 10L, null)), byBill);
+        Map<PaymentMethod, Double> totals = MultiplePaymentSplitService.totalByMethod(r);
+        assertEquals(0, totals.get(PaymentMethod.Cash), EPS);
+        assertEquals(0, totals.get(PaymentMethod.Card), EPS);
+        assertEquals(-700, r.get(5L).get(PaymentMethod.Cash), EPS);
+        assertEquals(-1050, r.get(5L).get(PaymentMethod.Card), EPS);
+    }
+
+    @Test
+    void amountsByShareGiveEachRowItsShare() {
+        List<Double> a = MultiplePaymentSplitService.amountsByShare(1750, Arrays.asList(700.0, 1050.0));
+        assertEquals(700, a.get(0), EPS);
+        assertEquals(1050, a.get(1), EPS);
+    }
+
+    @Test
+    void amountsByShareSplitOneBillOfABatch() {
+        // Batch paid Cash 1500 + Card 1400 for two bills; the bill of 1000 gets its part of each row.
+        List<Double> a = MultiplePaymentSplitService.amountsByShare(1000, Arrays.asList(1500.0, 1400.0));
+        assertEquals(1000, a.get(0) + a.get(1), EPS);
+        assertEquals(517.24, a.get(0), EPS);
+    }
+
+    @Test
+    void amountsByShareAddUpAfterRounding() {
+        List<Double> a = MultiplePaymentSplitService.amountsByShare(100, Arrays.asList(1.0, 1.0, 1.0));
+        assertEquals(100, a.get(0) + a.get(1) + a.get(2), EPS);
+    }
+
+    @Test
+    void amountsByShareUseAbsoluteValues() {
+        List<Double> a = MultiplePaymentSplitService.amountsByShare(-1000, Arrays.asList(-400.0, -600.0));
+        assertEquals(400, a.get(0), EPS);
+        assertEquals(600, a.get(1), EPS);
     }
 }

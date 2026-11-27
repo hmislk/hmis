@@ -109,10 +109,12 @@ public class MultiplePaymentSplitService {
     }
 
     /**
-     * Splits each bill by the payments of its batch bill. A negative bill
-     * (cancellation or refund) looks at its forward batch first, then at its
-     * backward batch. Other bills look at the backward batch first. A bill
-     * with no payments on either batch is left out of the result.
+     * Splits each bill by its own Payment rows when it has them (the
+     * cancellation of one bill has them), else by the payments of its batch
+     * bill. A negative bill (cancellation or refund) looks at its forward
+     * batch first, then at its backward batch. Other bills look at the
+     * backward batch first. A bill with no payments anywhere is left out of
+     * the result.
      *
      * @param bills the bills to split
      * @param paymentsByBatchId paid amounts by payment method, by batch bill id
@@ -125,9 +127,13 @@ public class MultiplePaymentSplitService {
             return result;
         }
         for (BillValue b : bills) {
+            // A cancellation of one bill has its own Payment rows (one for each original method).
+            Map<PaymentMethod, Double> paid = b.getBillId() == null ? null : paymentsByBatchId.get(b.getBillId());
             Long first = b.getValue() < 0 ? b.getForwardBatchId() : b.getBackwardBatchId();
             Long second = b.getValue() < 0 ? b.getBackwardBatchId() : b.getForwardBatchId();
-            Map<PaymentMethod, Double> paid = first == null ? null : paymentsByBatchId.get(first);
+            if (paid == null || paid.isEmpty()) {
+                paid = first == null ? null : paymentsByBatchId.get(first);
+            }
             if (paid == null || paid.isEmpty()) {
                 paid = second == null ? null : paymentsByBatchId.get(second);
             }
@@ -154,6 +160,46 @@ public class MultiplePaymentSplitService {
             }
         }
         return totals;
+    }
+
+    /**
+     * Amounts to refund for one bill of a batch, one for each original payment
+     * row. Each row gets the bill value times its share of the batch payments.
+     * Amounts are rounded to 2 decimals and the last row takes the rounding
+     * remainder, so the amounts add up to the bill value.
+     *
+     * Example: value 1750, rows Cash 700 and Card 1050 give 700 and 1050. If
+     * the batch has two bills, each bill gets its own part of every row.
+     *
+     * @param billValue the value to refund, as a positive number
+     * @param paidValues the paid value of each original payment row
+     * @return one amount for each row, in the same order, as positive numbers
+     */
+    public static List<Double> amountsByShare(double billValue, List<Double> paidValues) {
+        List<Double> amounts = new ArrayList<>();
+        if (paidValues == null || paidValues.isEmpty()) {
+            return amounts;
+        }
+        double paidTotal = 0;
+        for (Double d : paidValues) {
+            paidTotal += d == null ? 0 : Math.abs(d);
+        }
+        double target = Math.abs(billValue);
+        double used = 0;
+        for (int i = 0; i < paidValues.size(); i++) {
+            double amount;
+            if (i == paidValues.size() - 1) {
+                amount = Math.round((target - used) * 100.0) / 100.0;
+            } else if (paidTotal == 0) {
+                amount = 0;
+            } else {
+                double paid = paidValues.get(i) == null ? 0 : Math.abs(paidValues.get(i));
+                amount = Math.round(target * (paid / paidTotal) * 100.0) / 100.0;
+            }
+            used += amount;
+            amounts.add(amount);
+        }
+        return amounts;
     }
 
     /**
@@ -295,6 +341,9 @@ public class MultiplePaymentSplitService {
     private Map<Long, Map<PaymentMethod, Double>> fetchPaidForBatchesOf(List<Object[]> rows) {
         Set<Long> batchIds = new HashSet<>();
         for (Object[] r : rows) {
+            if (r[0] != null) {
+                batchIds.add((Long) r[0]);
+            }
             if (r[2] != null) {
                 batchIds.add((Long) r[2]);
             }
