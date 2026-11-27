@@ -65,8 +65,11 @@ import com.divudi.service.BillService;
 import com.divudi.service.DepartmentResolver;
 import com.divudi.service.DiscountSchemeValidationService;
 import com.divudi.service.PatientDepositService;
+import com.divudi.service.PatientDepositException;
+import com.divudi.service.PatientDepositTake;
 import com.divudi.service.PaymentService;
 import java.io.Serializable;
+import javax.ejb.EJBException;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -2467,6 +2470,108 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         if (errorCheck()) {
             return false;
         }
+        PatientDepositTake depositTake = null;
+        if (paymentMethod == PaymentMethod.PatientDeposit) {
+            depositTake = takeSettleAmountFromDeposit();
+            if (depositTake == null) {
+                return false;
+            }
+        }
+        boolean settled = false;
+        try {
+            settled = settleBillAfterDeposit(depositTake);
+        } finally {
+            if (depositTake != null) {
+                if (depositTake.isBillSaved()) {
+                    finishDepositAfterSave(depositTake);
+                } else if (!settled) {
+                    giveBackDeposit(depositTake);
+                }
+            }
+        }
+        return settled;
+    }
+
+    // Hardening, tracked under #26265.
+    private PatientDepositTake takeSettleAmountFromDeposit() {
+        try {
+            return patientDepositService.takeFromDepositLocked(getPatient(), sessionController.getDepartment(), netTotal, 0.0,
+                    sessionController.getLoggedUser(), sessionController.getInstitution());
+        } catch (PatientDepositException e) {
+            JsfUtil.addErrorMessage(e.getMessage());
+        } catch (EJBException e) {
+            JsfUtil.addErrorMessage("The patient deposit is busy. Nothing was saved. Please try again.");
+        }
+        return null;
+    }
+
+    // Hardening, tracked under #26265.
+    private void giveBackDeposit(PatientDepositTake depositTake) {
+        try {
+            patientDepositService.giveBackLocked(depositTake);
+        } catch (RuntimeException e) {
+            java.util.logging.Logger.getLogger(getClass().getName()).log(java.util.logging.Level.SEVERE,
+                    "Patient deposit give-back failed. Deposit " + depositTakeDepositId(depositTake)
+                    + ", amount " + depositTake.getAmount() + ", bill " + batchBillIdForLog(), e);
+            JsfUtil.addErrorMessage("The patient deposit could not be restored. Please inform the administrator.");
+        }
+    }
+
+    private Long batchBillIdForLog() {
+        return getBatchBill() == null ? null : getBatchBill().getId();
+    }
+
+    private Long depositTakeDepositId(PatientDepositTake depositTake) {
+        return depositTake.getDeposit() == null ? null : depositTake.getDeposit().getId();
+    }
+
+    // Hardening, tracked under #26265.
+    private void finishDepositAfterSave(PatientDepositTake depositTake) {
+        if (depositTake == null || depositTake.isFinished()) {
+            return;
+        }
+        depositTake.markFinished();
+        java.util.logging.Logger log = java.util.logging.Logger.getLogger(getClass().getName());
+        Bill saved = getBatchBill();
+        Long billId = batchBillIdForLog();
+        Long depositId = depositTakeDepositId(depositTake);
+        try {
+            if (getPatient().getRunningBalance() != null) {
+                getPatient().setRunningBalance(getPatient().getRunningBalance() - netTotal);
+            } else {
+                getPatient().setRunningBalance(0.0 - netTotal);
+            }
+            getPatientFacade().edit(getPatient());
+        } catch (RuntimeException e) {
+            log.log(java.util.logging.Level.WARNING, "Patient balance update failed. Bill " + billId + ", deposit " + depositId, e);
+        }
+        if (saved == null || saved.getId() == null) {
+            log.log(java.util.logging.Level.WARNING, "Deposit step skipped, bill not saved. Deposit " + depositId
+                    + ", amount " + depositTake.getAmount());
+            JsfUtil.addErrorMessage("The patient deposit needs a check. Please inform the administrator.");
+            return;
+        }
+        try {
+            double shortfall = patientDepositService.reconcileTake(depositTake, saved.getNetTotal());
+            if (shortfall > 0) {
+                log.log(java.util.logging.Level.WARNING, "Deposit did not cover the bill. Bill " + billId
+                        + ", shortfall " + shortfall + ", deposit " + depositId);
+                JsfUtil.addErrorMessage("The patient deposit needs a check. The bill is saved. Please inform the administrator.");
+            } else {
+                JsfUtil.addSuccessMessage("Balance Updated.");
+            }
+        } catch (RuntimeException e) {
+            log.log(java.util.logging.Level.WARNING, "Deposit reconcile failed. Bill " + billId + ", deposit " + depositId, e);
+            JsfUtil.addErrorMessage("The patient deposit needs a check. The bill is saved. Please inform the administrator.");
+        }
+        try {
+            patientDepositService.linkTakeHistory(depositTake, saved);
+        } catch (RuntimeException e) {
+            log.log(java.util.logging.Level.WARNING, "Deposit history link failed. Bill " + billId + ", deposit " + depositId, e);
+        }
+    }
+
+    private boolean settleBillAfterDeposit(PatientDepositTake depositTake) {
         savePatient();
         bills = new ArrayList<>();
         boolean oneOpdBillForAllDepartments = configOptionApplicationController.getBooleanValueByKey("One OPD Bill For All Departments and Categories", true);
@@ -2536,6 +2641,9 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
             return false;
         }
 
+        if (depositTake != null) {
+            depositTake.markBillSaved();
+        }
         saveBatchBill();
         if (patientEncounter != null) {
             getBatchBill().setIpOpOrCc("IP");
@@ -2554,15 +2662,8 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
             JsfUtil.addSuccessMessage("Staff Credit Updated");
         }
 
-        if (paymentMethod == PaymentMethod.PatientDeposit) {
-            if (getPatient().getRunningBalance() != null) {
-                getPatient().setRunningBalance(getPatient().getRunningBalance() - netTotal);
-            } else {
-                getPatient().setRunningBalance(0.0 - netTotal);
-            }
-            getPatientFacade().edit(getPatient());
-            PatientDeposit pd = patientDepositService.getDepositOfThePatient(getPatient(), sessionController.getDepartment());
-            patientDepositService.updateBalance(getBatchBill(), pd);
+        if (depositTake != null) {
+            finishDepositAfterSave(depositTake);
         }
         if (paymentMethod == PaymentMethod.MultiplePaymentMethods) {
             paymentService.updateBalances(payments);
