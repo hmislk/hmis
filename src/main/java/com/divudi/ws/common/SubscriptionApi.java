@@ -405,12 +405,8 @@ public class SubscriptionApi {
         if (key == null || key.trim().isEmpty()) return null;
         ApiKey apiKey = apiKeyController.findApiKey(key);
         if (apiKey == null) return null;
-        if (apiKey.getDateOfExpiary() == null || apiKey.getDateOfExpiary().before(new Date())) return null;
-        if (apiKey.isRetired()) return null;
-        if (apiKey.getKeyType() == ApiKeyType.Config) return new WebUser();
-        WebUser user = apiKey.getWebUser();
-        if (user == null || user.isRetired() || !user.isActivated()) return null;
-        return user;
+        // API key hardening
+        return apiKeyController.resolveAdminKeyOwner(apiKey);
     }
 
     private Response errorResponse(String message, int code) {

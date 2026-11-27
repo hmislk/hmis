@@ -109,6 +109,25 @@ public class ApiKeyController implements Serializable {
         return !webUserPrivilegeFacade.findByJpql("select wp from WebUserPrivilege wp where wp.retired=false and wp.webUser=:u and wp.privilege=:p", m).isEmpty();
     }
 
+    // API key hardening
+    public WebUser resolveAdminKeyOwner(ApiKey apiKey) {
+        if (apiKey == null || apiKey.isRetired()
+                || apiKey.getDateOfExpiary() == null
+                || apiKey.getDateOfExpiary().before(new Date())) {
+            return null;
+        }
+        WebUser owner = apiKey.getWebUser();
+        return isActiveAdminUser(owner) ? owner : null;
+    }
+
+    // API key hardening
+    public WebUser resolveConfigKeyOwner(ApiKey apiKey) {
+        if (apiKey == null || apiKey.getKeyType() != ApiKeyType.Config) {
+            return null;
+        }
+        return resolveAdminKeyOwner(apiKey);
+    }
+
     public void listMyApiKeys() {
         String j;
         j = "select a "
