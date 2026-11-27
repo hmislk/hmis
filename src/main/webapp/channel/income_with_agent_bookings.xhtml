@@ -179,6 +179,10 @@
                                     <h:outputText value="#{row.bill.patient.person.nameWithTitle}"/>
                                 </p:column>
 
+                                <p:column headerText="Consultant" style=" text-align: center; font-weight: bold" filterMatchMode="contains" filterBy="#{row.bill.staff.person.name}">
+                                    <h:outputText value="#{row.bill.staff.person.nameWithTitle}"/>
+                                </p:column>
+
                                 <p:column width="8em" headerText="Agent" style=" text-align: center; font-weight: bold" filterMatchMode="contains" filterBy="#{row.bill.creditCompany.name}">
                                     <h:outputText value="#{row.bill.creditCompany.name}"/>
                                 </p:column>
