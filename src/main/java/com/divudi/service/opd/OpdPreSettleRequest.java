@@ -54,6 +54,19 @@ public class OpdPreSettleRequest {
         undo.add(step);
     }
 
+    /**
+     * Queues a staff credit for the writer and records the staff member's
+     * current credit, so {@link #restore()} puts it back if the settle fails.
+     */
+    public void addStaffCredit(Staff staff, double value) {
+        if (staff == null) {
+            return;
+        }
+        final double before = staff.getCurrentCreditValue();
+        addUndo(() -> staff.setCurrentCreditValue(before));
+        staffCredits.add(new StaffCredit(staff, value));
+    }
+
     /** Puts the caller's objects back as they were before the settle started. */
     public void restore() {
         for (int i = undo.size() - 1; i >= 0; i--) {

@@ -409,11 +409,6 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
                 return true;
             }
         }
-        if (toStaff != null && getPaymentMethod() == PaymentMethod.Staff) {
-            staffBean.updateStaffCredit(toStaff, netTotal);
-            JsfUtil.addSuccessMessage("Staff Welfare Balance Updated");
-        }
-
         if (paymentMethod == PaymentMethod.Staff_Welfare) {
             if (toStaff == null) {
                 JsfUtil.addErrorMessage("Please select Staff Member under welfare.");
@@ -566,11 +561,16 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
         request.setPreBillPaymentMethod(getPreBill().getPaymentMethod());
         request.setPaymentMethodData(getPaymentMethodData());
         request.captureBillState();
-        List<Payment> payments = buildPayments(getSaleBill(), getSaleBill().getPaymentMethod(), request);
-        request.setPayments(payments);
+        List<Payment> payments;
 
         // One transaction: the bill, its payments and the links commit together or not at all (#26246).
         try {
+            payments = buildPayments(getSaleBill(), getSaleBill().getPaymentMethod(), request);
+            request.setPayments(payments);
+            if (toStaff != null && paymentMethod == PaymentMethod.Staff) {
+                // Single Staff method: the credit is saved by the writer, in the same transaction.
+                request.addStaffCredit(toStaff, netTotal);
+            }
             billsOfBatchBilledBill = opdPreSettleWriter.settle(request);
         } catch (RuntimeException e) {
             request.restore();
@@ -583,6 +583,11 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
             return false;
         }
         // The bill is committed; a busy drawer must not undo it, so the drawer is updated after.
+        // The writer saved the pre-bills with edit(); drop them from the shared cache as editAndCommit did.
+        getBillFacade().evictFromSharedCache(getPreBill().getId());
+        for (Bill individualPreBill : request.getPreIndividualBills()) {
+            getBillFacade().evictFromSharedCache(individualPreBill.getId());
+        }
         drawerController.updateDrawerForIns(payments);
         for (int i = 0; i < request.getStaffCredits().size(); i++) {
             JsfUtil.addSuccessMessage("Staff Welfare Balance Updated");
@@ -646,9 +651,7 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
                         p.setPaidValue(cd.getPaymentMethodData().getStaffCredit().getTotalValue());
                         if (cd.getPaymentMethodData().getStaffCredit().getToStaff() != null) {
                             final Staff creditStaff = cd.getPaymentMethodData().getStaffCredit().getToStaff();
-                            final double creditBefore = creditStaff.getCurrentCreditValue();
-                            request.addUndo(() -> creditStaff.setCurrentCreditValue(creditBefore));
-                            request.getStaffCredits().add(new OpdPreSettleRequest.StaffCredit(creditStaff, cd.getPaymentMethodData().getStaffCredit().getTotalValue()));
+                            request.addStaffCredit(creditStaff, cd.getPaymentMethodData().getStaffCredit().getTotalValue());
                         }
                     case YouOweMe:
                     case MultiplePaymentMethods:
@@ -905,8 +908,6 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
                 JsfUtil.addSuccessMessage("Select the Staff");
                 return true;
             }
-            staffBean.updateStaffCredit(toStaff, netTotal);
-            JsfUtil.addSuccessMessage("Staff Welfare Balance Updated");
             return false;
         } else if (paymentMethod == PaymentMethod.Staff_Welfare) {
             if (toStaff == null) {
@@ -1720,6 +1721,7 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
                 p.setDepartment(getSessionController().getDepartment());
                 p.setCreatedAt(new Date());
                 p.setCreater(getSessionController().getLoggedUser());
+                paymentFacade.create(p);
                 ps.add(p);
             }
             bill.setPaymentMethod(PaymentMethod.MultiplePaymentMethods);

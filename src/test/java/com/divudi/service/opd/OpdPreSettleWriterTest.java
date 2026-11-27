@@ -6,9 +6,11 @@ import com.divudi.core.entity.BilledBill;
 import com.divudi.core.entity.Patient;
 import com.divudi.core.entity.Payment;
 import com.divudi.core.entity.PreBill;
+import com.divudi.core.entity.Staff;
 import com.divudi.core.facade.BillFacade;
 import com.divudi.core.facade.PatientFacade;
 import com.divudi.core.facade.PaymentFacade;
+import com.divudi.service.StaffService;
 import java.util.ArrayList;
 import java.util.List;
 import org.junit.jupiter.api.Test;
@@ -114,6 +116,56 @@ class OpdPreSettleWriterTest {
         assertNull(sale.getId());
         assertNull(pre.getReferenceBill());
         assertEquals(500.0, patient.getRunningBalance());
+    }
+
+    @Test
+    void failedSettleWithStaffMethodThenRetryAddsTheStaffCreditOnce() {
+        Staff staff = new Staff();
+        staff.setCurrentCreditValue(100.0);
+        Bill sale = new BilledBill();
+        Bill pre = new PreBill();
+
+        // The stub adds the credit as StaffService does; the database rollback does not undo the object.
+        StaffService staffService = new StaffService() {
+            @Override
+            public void updateStaffCredit(Staff s, double value) {
+                s.setCurrentCreditValue(s.getCurrentCreditValue() + value);
+            }
+        };
+        final boolean[] fail = {true};
+        RecordingBillFacade billFacade = new RecordingBillFacade() {
+            @Override
+            public void edit(Bill b) {
+                if (fail[0]) {
+                    throw new IllegalStateException("forced failure after the staff credit");
+                }
+                super.edit(b);
+            }
+        };
+        OpdPreSettleWriter writer = new OpdPreSettleWriter();
+        writer.billFacade = billFacade;
+        writer.paymentFacade = new PaymentFacade() {
+            @Override
+            public void create(Payment p) {
+            }
+        };
+        writer.patientFacade = new RecordingPatientFacade();
+        writer.staffService = staffService;
+
+        OpdPreSettleRequest first = request(sale, pre, null);
+        first.captureBillState();
+        first.addStaffCredit(staff, 40.0);
+        assertThrows(IllegalStateException.class, () -> writer.settle(first));
+        first.restore();
+        assertEquals(100.0, staff.getCurrentCreditValue());
+
+        // The cashier settles again.
+        fail[0] = false;
+        OpdPreSettleRequest second = request(sale, pre, null);
+        second.captureBillState();
+        second.addStaffCredit(staff, 40.0);
+        writer.settle(second);
+        assertEquals(140.0, staff.getCurrentCreditValue());
     }
 
     @Test
