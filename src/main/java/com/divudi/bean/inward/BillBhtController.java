@@ -464,6 +464,16 @@ public class BillBhtController implements Serializable {
         return "/theater/inward_bill_surgery_service?faces-redirect=true";
     }
 
+    /** Items of retired, cancelled or refunded service bills are not loaded (#26277). */
+    static final String EXISTING_SURGERY_SERVICE_ITEMS_JPQL = "select bi from BillItem bi "
+            + "where bi.bill.forwardReferenceBill = :surgeryBill "
+            + "and bi.bill.surgeryBillType = :surgeryBillType "
+            + "and bi.retired = false "
+            + "and bi.bill.retired = false "
+            + "and bi.bill.cancelled = false "
+            + "and bi.bill.refunded = false "
+            + "order by bi.id";
+
     /**
      * Rebuilds {@link #lstBillEntries} (the "Item Requests" / Bill Items cart
      * shown in inward_bill_surgery_service.xhtml) from the surgery service
@@ -484,13 +494,7 @@ public class BillBhtController implements Serializable {
         Map<String, Object> params = new HashMap<>();
         params.put("surgeryBill", surgeryBill);
         params.put("surgeryBillType", SurgeryBillType.Service);
-        String jpql = "select bi from BillItem bi "
-                + "where bi.bill.forwardReferenceBill = :surgeryBill "
-                + "and bi.bill.surgeryBillType = :surgeryBillType "
-                + "and bi.retired = false "
-                + "and bi.bill.retired = false "
-                + "order by bi.id";
-        List<BillItem> existingBillItems = billItemFacade.findByJpql(jpql, params);
+        List<BillItem> existingBillItems = billItemFacade.findByJpql(EXISTING_SURGERY_SERVICE_ITEMS_JPQL, params);
         if (existingBillItems == null) {
             return;
         }
