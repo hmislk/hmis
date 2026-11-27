@@ -157,7 +157,7 @@ public class PharmacyBfdBackfillApi {
             return null;
         }
         ApiKey apiKey = apiKeyController.findApiKey(key);
-        if (apiKey == null || apiKey.getDateOfExpiary() == null
+        if (apiKey == null || apiKey.isRetired() || apiKey.getDateOfExpiary() == null
                 || apiKey.getDateOfExpiary().before(new Date())) {
             return null;
         }
