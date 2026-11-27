@@ -4488,7 +4488,26 @@ public class InwardBeanController implements Serializable {
         if (billFee == null || item == null || billFee.getFee() == null) {
             return;
         }
-        com.divudi.core.entity.inward.AdmissionType typeAtBill = admissionTypeForFee(patientEncounter, billFee);
+        setBillFeeMargin(billFee, item, priceMatrix, patientEncounter,
+                admissionTypeForFee(patientEncounter, billFee), null, true);
+    }
+
+    /**
+     * As the four-argument form, for a caller that already knows the admission
+     * type in force on the fee's bill date and wants the lookups of one run
+     * remembered (#17562).
+     *
+     * @param typeAtBill the admission type to price the fee with
+     * @param cache values shared by the fees of one run, or null for none
+     * @param writeFee true to save the fee after the margin is set (the fee is
+     * already saved); false when the caller saves it later, so a fee that has
+     * no row yet is not merged into a second copy
+     */
+    public void setBillFeeMargin(BillFee billFee, Item item, PriceMatrix priceMatrix, PatientEncounter patientEncounter,
+            com.divudi.core.entity.inward.AdmissionType typeAtBill, DiscountRunCache cache, boolean writeFee) {
+        if (billFee == null || item == null || billFee.getFee() == null) {
+            return;
+        }
 
         double qty = (billFee.getBillItem() != null && billFee.getBillItem().getQty() != null && billFee.getBillItem().getQty() > 0)
                 ? billFee.getBillItem().getQty() : 1.0;
@@ -4508,13 +4527,26 @@ public class InwardBeanController implements Serializable {
         if (marginEligible) {
             // Try CC-specific priceMatrix first; fall back to the caller-provided one.
             PriceMatrix effectivePriceMatrix = priceMatrix;
-            com.divudi.core.entity.Institution cc = resolveSingleCreditCompany(patientEncounter);
+            com.divudi.core.entity.Institution cc = cache != null
+                    ? cache.creditCompany(() -> resolveSingleCreditCompany(patientEncounter))
+                    : resolveSingleCreditCompany(patientEncounter);
             if (cc != null && billFee.getBillItem() != null) {
                 BillItem bi = billFee.getBillItem();
                 double svcValue = bi.getRate() != 0.0 ? Math.abs(bi.getRate()) : unitGross;
                 Department dept = resolveFeeDepartment(patientEncounter);
-                PriceMatrix ccMatrix = priceMatrixController.fetchInwardMargin(bi, svcValue, dept,
-                        patientEncounter.getPaymentMethod(), cc, typeAtBill, resolveCurrentRoomCategory(patientEncounter));
+                com.divudi.core.entity.inward.RoomCategory roomCategory = resolveCurrentRoomCategory(patientEncounter);
+                PriceMatrix ccMatrix;
+                if (cache == null) {
+                    ccMatrix = priceMatrixController.fetchInwardMargin(bi, svcValue, dept,
+                            patientEncounter.getPaymentMethod(), cc, typeAtBill, roomCategory);
+                } else {
+                    final double value = svcValue;
+                    ccMatrix = cache.matrix(
+                            marginMatrixKey(priceMatrixController.resolveInwardMatrixCategory(bi.getItem(), dept),
+                                    value, dept, patientEncounter.getPaymentMethod(), cc, typeAtBill, roomCategory),
+                            () -> priceMatrixController.fetchInwardMargin(bi, value, dept,
+                                    patientEncounter.getPaymentMethod(), cc, typeAtBill, roomCategory));
+                }
                 if (ccMatrix != null) {
                     effectivePriceMatrix = ccMatrix;
                 }
@@ -4523,7 +4555,9 @@ public class InwardBeanController implements Serializable {
                 unitMargin = (unitGross * effectivePriceMatrix.getMargin()) / 100;
                 billFee.setFeeUnitMargin(unitMargin);
                 billFee.setFeeMargin(unitMargin * qty);
-                billFeeFacade.edit(billFee);
+                if (writeFee) {
+                    billFeeFacade.edit(billFee);
+                }
             }
         }
 
@@ -4533,7 +4567,7 @@ public class InwardBeanController implements Serializable {
 
         // Apply discount (has its own eligibility guards inside).
         if (patientEncounter != null && typeAtBill != null) {
-            applyInwardDiscountToBillFee(billFee, item, patientEncounter, typeAtBill);
+            applyInwardDiscountToBillFee(billFee, item, patientEncounter, typeAtBill, cache);
         } else {
             billFee.setFeeUnitValue(unitGross);
             billFee.setFeeValue(unitGross * qty);
@@ -4634,6 +4668,32 @@ public class InwardBeanController implements Serializable {
         private boolean creditCompanyRead;
         private com.divudi.core.entity.Institution creditCompany;
         private final Map<List<Object>, Double> percents = new HashMap<>();
+        private final Map<List<Object>, PriceMatrix> matrices = new HashMap<>();
+
+        /** The encounter's single credit company; read once per run. */
+        public com.divudi.core.entity.Institution creditCompany(java.util.function.Supplier<com.divudi.core.entity.Institution> loader) {
+            if (!creditCompanyRead) {
+                creditCompany = loader.get();
+                creditCompanyRead = true;
+            }
+            return creditCompany;
+        }
+
+        /**
+         * The margin row for a key; a lookup that found no row is remembered too.
+         * A null key (a part not saved yet) always loads.
+         */
+        public PriceMatrix matrix(List<Object> key, java.util.function.Supplier<PriceMatrix> loader) {
+            if (key == null) {
+                return loader.get();
+            }
+            if (matrices.containsKey(key)) {
+                return matrices.get(key);
+            }
+            PriceMatrix loaded = loader.get();
+            matrices.put(key, loaded);
+            return loaded;
+        }
 
         public Double percent(List<Object> key, java.util.function.DoubleSupplier loader) {
             if (key == null) {
@@ -4689,6 +4749,35 @@ public class InwardBeanController implements Serializable {
     }
 
     /**
+     * Memo key for one margin lookup: everything the lookup depends on. The item
+     * only matters through its matrix category, so two items of one category
+     * with the same value share a key. Null when a part is not saved yet.
+     */
+    public static List<Object> marginMatrixKey(com.divudi.core.entity.Category category, double serviceValue,
+            Department department, Object paymentMethod, com.divudi.core.entity.Institution creditCompany,
+            com.divudi.core.entity.inward.AdmissionType admissionType, com.divudi.core.entity.inward.RoomCategory roomCategory) {
+        Object[] ids = {
+            category == null ? null : category.getId(),
+            department == null ? null : department.getId(),
+            creditCompany == null ? null : creditCompany.getId(),
+            admissionType == null ? null : admissionType.getId(),
+            roomCategory == null ? null : roomCategory.getId()
+        };
+        Object[] saved = {category, department, creditCompany, admissionType, roomCategory};
+        List<Object> key = new ArrayList<>();
+        key.add("margin");
+        for (int i = 0; i < ids.length; i++) {
+            if (ids[i] == null && saved[i] != null) {
+                return null;
+            }
+            key.add(ids[i]);
+        }
+        key.add(Double.valueOf(serviceValue));
+        key.add(paymentMethod);
+        return key;
+    }
+
+    /**
      * As the four-argument form; a non-null cache supplies the credit company and
      * remembers discount percents for the rest of the run. A null cache behaves
      * exactly as before.
@@ -4722,11 +4811,7 @@ public class InwardBeanController implements Serializable {
                     item,
                     creditCompany);
         } else {
-            if (!cache.creditCompanyRead) {
-                cache.creditCompany = resolveSingleCreditCompany(patientEncounter);
-                cache.creditCompanyRead = true;
-            }
-            creditCompany = cache.creditCompany;
+            creditCompany = cache.creditCompany(() -> resolveSingleCreditCompany(patientEncounter));
             final com.divudi.core.entity.Institution cc = creditCompany;
             final Department dept = matrixDept;
             pct = cache.percent(
@@ -4807,8 +4892,11 @@ public class InwardBeanController implements Serializable {
 
     }
 
-    public void saveBillFee(BillFee bf, BillItem billItem, Bill b, WebUser wu) {
-
+    /**
+     * Sets the links and audit fields a bill fee carries when it is saved on a
+     * bill item, without saving it. {@link #saveBillFee} does this and then saves.
+     */
+    public void prepareBillFee(BillFee bf, BillItem billItem, Bill b, WebUser wu) {
         bf.setCreatedAt(Calendar.getInstance().getTime());
         bf.setCreater(wu);
         bf.setBillItem(billItem);
@@ -4816,6 +4904,11 @@ public class InwardBeanController implements Serializable {
         bf.setPatient(b.getPatient());
 
         bf.setBill(b);
+    }
+
+    public void saveBillFee(BillFee bf, BillItem billItem, Bill b, WebUser wu) {
+
+        prepareBillFee(bf, billItem, b, wu);
         if (bf.getId() == null) {
             getBillFeeFacade().create(bf);
         }
