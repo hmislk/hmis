@@ -3248,6 +3248,15 @@ public class BhtSummeryController implements Serializable {
         // saveProvisionalBill() for a bill that is about to become BillType.InwardProvisionalBill,
         // not a final bill — flipping confirmedFinalBill there would wrongly unconfirm the real
         // confirmed version on every provisional save.
+        // Everything this save writes (original bill, final bill, its bill items and
+        // fees, credit company commitment bills, the admission's final-bill fields)
+        // runs in this ONE locked transaction (#17562). Before, only the bills were
+        // inside it; each bill item was saved in its own transaction after it, so a
+        // failure part-way left a final bill with some or no items. The bill number
+        // counters still commit in their own transactions before the bill is written,
+        // so a rolled-back save can leave a gap in the numbers but never a duplicate.
+        // The transaction commits before the lock is released (FinalBillLockBean).
+        FinalBillSaveRollbackState rollbackState = new FinalBillSaveRollbackState(getCurrent(), getPatientEncounter());
         boolean saved;
         try {
             saved = getFinalBillLockBean().withFinalBillVersionLock(getPatientEncounter(), () -> {
@@ -3263,49 +3272,49 @@ public class BhtSummeryController implements Serializable {
                 saveBill();
                 getCurrent().setConfirmedFinalBill(true);
                 getBillFacade().edit(getCurrent());
+
+                saveBillItem();
+
+                if (getPatientEncounter().getPaymentMethod() == PaymentMethod.Credit) {
+                    for (CreditCompanyAllocation alloc : creditCompanyAllocations) {
+                        if (alloc.getAllocatedAmount() > 0) {
+                            saveCCBillForAllocation(getPatientEncounter(), alloc);
+                        }
+                    }
+                }
+
+                // The last write of this bill: every edit(getCurrent()) re-saves the
+                // session's confirmed flag, so a later one could undo the unconfirming
+                // done by a concurrent save of another version.
+                getCurrent().setReferenceBill(originalBill);
+                getInwardBean().unconfirmOtherFinalBills(getPatientEncounter(), getCurrent());
+                getBillFacade().edit(getCurrent());
+
+                getPatientEncounter().setFinalBill(getCurrent());
+                getPatientEncounter().setGrantTotal(getCurrent().getGrantTotal());
+                getPatientEncounter().setDiscount(getCurrent().getDiscount());
+                getPatientEncounter().setNetTotal(getCurrent().getNetTotal());
+                getPatientEncounter().setPaymentFinalized(true);
+                getPatientEncounterFacade().edit(getPatientEncounter());
+                // After the commitment bills exist and this bill is the encounter's final
+                // bill, so creditUsedAmount is taken from the cashier's allocation.
+                if (getPatientEncounter().getPaymentMethod() == PaymentMethod.Credit) {
+                    getInwardBean().updateCreditDetail(getPatientEncounter(), getCurrent().getNetTotal());
+                }
                 return true;
             });
         } catch (RuntimeException e) {
-            // The locked transaction rolled back: the original bill it created is gone, so
-            // the next Settle must create it again rather than reference it.
+            // The locked transaction rolled back: the original bill and the final bill it
+            // created are gone, so the next Settle must create them again rather than
+            // reference them.
             originalBill = null;
+            rollbackState.restore();
             throw e;
         }
         if (!saved) {
             JsfUtil.addErrorMessage(getCurrent().getId() != null ? "This Final Bill is already saved" : PAYMENT_FINALIZED_MESSAGE);
             return;
         }
-        saveBillItem();
-
-        if (getPatientEncounter().getPaymentMethod() == PaymentMethod.Credit) {
-            for (CreditCompanyAllocation alloc : creditCompanyAllocations) {
-                if (alloc.getAllocatedAmount() > 0) {
-                    saveCCBillForAllocation(getPatientEncounter(), alloc);
-                }
-            }
-        }
-
-        // The last write of this bill, under the lock: every edit(getCurrent())
-        // re-saves the session's confirmed flag, so a later one could undo the
-        // unconfirming done by a concurrent save of another version.
-        getFinalBillLockBean().withFinalBillVersionLock(getPatientEncounter(), () -> {
-            getCurrent().setReferenceBill(originalBill);
-            getInwardBean().unconfirmOtherFinalBills(getPatientEncounter(), getCurrent());
-            getBillFacade().edit(getCurrent());
-
-            getPatientEncounter().setFinalBill(getCurrent());
-            getPatientEncounter().setGrantTotal(getCurrent().getGrantTotal());
-            getPatientEncounter().setDiscount(getCurrent().getDiscount());
-            getPatientEncounter().setNetTotal(getCurrent().getNetTotal());
-            getPatientEncounter().setPaymentFinalized(true);
-            getPatientEncounterFacade().edit(getPatientEncounter());
-            // After the commitment bills exist and this bill is the encounter's final
-            // bill, so creditUsedAmount is taken from the cashier's allocation.
-            if (getPatientEncounter().getPaymentMethod() == PaymentMethod.Credit) {
-                getInwardBean().updateCreditDetail(getPatientEncounter(), getCurrent().getNetTotal());
-            }
-            return null;
-        });
 
         // The paid and settled figures use the same recount as every later payment,
         // refund and receipt (#26152). It runs in its own locked transaction after the
