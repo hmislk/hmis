@@ -17,31 +17,30 @@
                 <f:facet name="header" >
                     <h:outputLabel value="Book Keeping Summary (With Professional)"  styleClass="noPrintButton" />
                     </f:facet>
-                    <h:panelGrid columns="2" class="my-2" >
-                        <h:outputLabel value="From Date"/>
-                        <p:calendar class="w-100 mx-4" inputStyleClass="w-100" id="frmDate" value="#{bookKeepingSummery.fromDate}" pattern="dd MM yyyy HH:mm:ss" >
+                    <p:panelGrid columns="6" layout="tabular" styleClass="w-100 my-2">
+                        <p:outputLabel for="frmDate" value="From Date"/>
+                        <p:calendar class="w-100" inputStyleClass="w-100" id="frmDate" value="#{bookKeepingSummery.fromDate}" pattern="dd MM yyyy HH:mm:ss" title="Start of the day end period">
                         </p:calendar>
 
-                        <h:outputLabel value="To Date"/>
-                        <p:calendar class="w-100 mx-4" inputStyleClass="w-100 my-1" id="toDate" value="#{bookKeepingSummery.toDate}" pattern="dd MM yyyy HH:mm:ss" >
+                        <p:outputLabel for="toDate" value="To Date"/>
+                        <p:calendar class="w-100" inputStyleClass="w-100" id="toDate" value="#{bookKeepingSummery.toDate}" pattern="dd MM yyyy HH:mm:ss" title="End of the day end period">
                         </p:calendar>
 
-                        <h:outputLabel value="Select Institution"/>
-
-                        <p:autoComplete class="w-100 mx-4" inputStyleClass="w-100" completeMethod="#{institutionController.completeCompany}" required="true" 
+                        <p:outputLabel value="Institution"/>
+                        <p:autoComplete class="w-100" inputStyleClass="w-100" completeMethod="#{institutionController.completeCompany}" required="true"
                                         forceSelection="true"
                                         requiredMessage="Please Select Institution" value="#{bookKeepingSummery.institution}"
-                                        var="pta" itemLabel="#{pta.name}" itemValue="#{pta}" />
-                    </h:panelGrid>
+                                        var="pta" itemLabel="#{pta.name}" itemValue="#{pta}" title="Select the institution" />
+                    </p:panelGrid>
 
-                    <h:panelGrid columns="6" class="my-2">
+                    <h:panelGrid columns="4" columnClasses="pe-2,pe-2,pe-2,pe-2" class="my-2">
                         
-                        <p:commandButton value="Process" ajax="false" class="ui-button-warning" icon="fas fa-cogs"
+                        <p:commandButton value="Process" ajax="false" class="ui-button-warning" icon="fas fa-cogs" title="Create the report"
                                          action="#{bookKeepingSummery.createCashCategoryWithProDay}"/>
-                        <p:commandButton ajax="false" value="Print"  class="ui-button-info mx-2" icon="fas fa-print" >
+                        <p:commandButton ajax="false" value="Print"  class="ui-button-info" icon="fas fa-print" title="Print the report" >
                             <p:printer target="panelPrint" />
                         </p:commandButton>
-                        <p:commandButton value="Excel" ajax="false" class="ui-button-success" icon="fas fa-file-excel" >
+                        <p:commandButton value="Excel" ajax="false" class="ui-button-success" icon="fas fa-file-excel" title="Download as Excel" >
                             <p:dataExporter type="xlsx" target="opd_new:opd_new,
                                             colCash,
                                             colCredit,
@@ -69,7 +68,7 @@
 
                                             />
                         </p:commandButton>
-                        <p:commandButton value="PDF" ajax="false" class="ui-button-danger mx-1" icon="fas fa-file-pdf" >
+                        <p:commandButton value="PDF" ajax="false" class="ui-button-danger" icon="fas fa-file-pdf" title="Download as PDF" >
                             <p:dataExporter type="pdf" target="opd_new:opd_new,
                                             colCash,
                                             colCredit,
