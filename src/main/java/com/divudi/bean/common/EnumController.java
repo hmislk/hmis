@@ -163,27 +163,32 @@ public class EnumController implements Serializable {
     }
 
     public void fillPaymentMethodsForPatientDeposit() {
-        paymentMethodsForPatientDeposit = new ArrayList<>();
+        // Build into a local list: loading config options can reset the shared field mid-loop (#26262).
+        List<PaymentMethod> built = new ArrayList<>();
         for (PaymentMethod pm : PaymentMethod.values()) {
             boolean include = configOptionApplicationController.getBooleanValueByKey(pm.getLabel() + " is available for Patient Deposit", true);
             if (include) {
-                paymentMethodsForPatientDeposit.add(pm);
+                built.add(pm);
             }
         }
+        paymentMethodsForPatientDeposit = built;
     }
 
     public void fillPaymentMethodsForOpdBilling() {
-        paymentMethodsForOpdBilling = new ArrayList<>();
+        // Build into a local list: loading config options can reset the shared field mid-loop (#26262).
+        List<PaymentMethod> built = new ArrayList<>();
         for (PaymentMethod pm : PaymentMethod.values()) {
             boolean include = configOptionApplicationController.getBooleanValueByKey(pm.getLabel() + " is available for OPD Billing", true);
             if (include) {
-                paymentMethodsForOpdBilling.add(pm);
+                built.add(pm);
             }
         }
+        paymentMethodsForOpdBilling = built;
     }
 
     public void fillPaymentMethodsForGrn() {
-        paymentMethodsForGrn = new ArrayList<>();
+        // Build into a local list: loading config options can reset the shared field mid-loop (#26262).
+        List<PaymentMethod> built = new ArrayList<>();
         for (PaymentMethod pm : PaymentMethod.values()) {
             boolean include;
             if (pm == PaymentMethod.Cash || pm == PaymentMethod.Credit) {
@@ -192,9 +197,10 @@ public class EnumController implements Serializable {
                 include = configOptionApplicationController.getBooleanValueByKey(pm.getLabel() + " is available for GRN", false);
             }
             if (include) {
-                paymentMethodsForGrn.add(pm);
+                built.add(pm);
             }
         }
+        paymentMethodsForGrn = built;
     }
 
     public void fillPaymentMethodsForDirectPurchase() {
@@ -215,13 +221,15 @@ public class EnumController implements Serializable {
     }
 
     public void fillPaymentMethodsForPackageBilling() {
-        paymentMethodsForOpdBilling = new ArrayList<>();
+        // Build into a local list: loading config options can reset the shared field mid-loop (#26262).
+        List<PaymentMethod> built = new ArrayList<>();
         for (PaymentMethod pm : PaymentMethod.values()) {
             boolean include = configOptionApplicationController.getBooleanValueByKey(pm.getLabel() + " is available for Package Billing", true);
             if (include) {
-                paymentMethodsForOpdBilling.add(pm);
+                built.add(pm);
             }
         }
+        paymentMethodsForOpdBilling = built;
     }
 
     public List<PaymentMethod> getPaymentMethodsForChanneling() {
@@ -243,25 +251,29 @@ public class EnumController implements Serializable {
     }
 
     public void fillPaymentMethodsForChanneling() {
-        paymentMethodsForChanneling = new ArrayList<>();
+        // Build into a local list: loading config options can reset the shared field mid-loop (#26262).
+        List<PaymentMethod> built = new ArrayList<>();
         for (PaymentMethod pm : PaymentMethod.values()) {
             boolean include = configOptionApplicationController.getBooleanValueByKey(pm.getLabel() + " is available for Channeling", true);
             if (include) {
-                paymentMethodsForChanneling.add(pm);
+                built.add(pm);
             }
         }
+        paymentMethodsForChanneling = built;
     }
 
     public void fillPaymentMethodsForChannelSettling() {
-        paymentMethodsForChannelSettling = new ArrayList<>();
+        // Build into a local list: loading config options can reset the shared field mid-loop (#26262).
+        List<PaymentMethod> built = new ArrayList<>();
         for (PaymentMethod pm : PaymentMethod.values()) {
             if (!pm.equals(PaymentMethod.OnCall)) {
                 boolean include = configOptionApplicationController.getBooleanValueByKey(pm.getLabel() + " is available for Channeling", true);
                 if (include) {
-                    paymentMethodsForChannelSettling.add(pm);
+                    built.add(pm);
                 }
             }
         }
+        paymentMethodsForChannelSettling = built;
     }
 
     public List<PaymentMethod> getPaymentMethodsForPharmacyBilling() {
@@ -299,17 +311,20 @@ public class EnumController implements Serializable {
     }
 
     public void fillPaymentMethodsForPharmacyBilling() {
-        paymentMethodsForPharmacyBilling = new ArrayList<>();
+        // Build into a local list: loading config options can reset the shared field mid-loop (#26262).
+        List<PaymentMethod> built = new ArrayList<>();
         for (PaymentMethod pm : PaymentMethod.values()) {
             boolean include = configOptionApplicationController.getBooleanValueByKey(pm.getLabel() + " is available for Pharmacy Billing", true);
             if (include) {
-                paymentMethodsForPharmacyBilling.add(pm);
+                built.add(pm);
             }
         }
+        paymentMethodsForPharmacyBilling = built;
     }
 
     public void fillPaymentMethodsForPettyCashBilling() {
-        paymentMethodsForPettyCashBilling = new ArrayList<>();
+        // Build into a local list: loading config options can reset the shared field mid-loop (#26262).
+        List<PaymentMethod> built = new ArrayList<>();
         for (PaymentMethod pm : PaymentMethod.values()) {
             boolean include = false;
             if (pm == PaymentMethod.Cash) {
@@ -320,13 +335,15 @@ public class EnumController implements Serializable {
                         pm.getLabel() + " is available for Petty Cash Billing", false); // DEFAULT FALSE
             }
             if (include) {
-                paymentMethodsForPettyCashBilling.add(pm);
+                built.add(pm);
             }
         }
+        paymentMethodsForPettyCashBilling = built;
     }
 
     public void fillPaymentMethodsUnderMultipleForPharmacyBilling() {
-        paymentMethodsUnderMultipleForPharmacyBilling = new ArrayList<>();
+        // Build into a local list: loading config options can reset the shared field mid-loop (#26262).
+        List<PaymentMethod> built = new ArrayList<>();
         for (PaymentMethod pm : PaymentMethod.values()) {
             if (pm == PaymentMethod.MultiplePaymentMethods) {
                 continue;
@@ -339,9 +356,10 @@ public class EnumController implements Serializable {
             }
             boolean include = configOptionApplicationController.getBooleanValueByKey(pm.getLabel() + " is available for Pharmacy Billing", true);
             if (include) {
-                paymentMethodsUnderMultipleForPharmacyBilling.add(pm);
+                built.add(pm);
             }
         }
+        paymentMethodsUnderMultipleForPharmacyBilling = built;
     }
 
     public List<PaymentMethod> getPaymentTypeOfPaymentMethods(PaymentType paymentType) {
@@ -1254,13 +1272,15 @@ public class EnumController implements Serializable {
 
     // PaymentScheme getters/setters removed - use local variables or session-scoped beans for user-specific state
     public List<PaymentMethod> getPaymentMethodsForPatientDeposit() {
-        paymentMethodsForPatientDeposit = new ArrayList<>();
+        // Build into a local list: loading config options can reset the shared field mid-loop (#26262).
+        List<PaymentMethod> built = new ArrayList<>();
         for (PaymentMethod pm : PaymentMethod.values()) {
             boolean include = configOptionApplicationController.getBooleanValueByKey(pm.getLabel() + " is available for Patient Deposit", true);
             if (include) {
-                paymentMethodsForPatientDeposit.add(pm);
+                built.add(pm);
             }
         }
+        paymentMethodsForPatientDeposit = built;
         return paymentMethodsForPatientDeposit;
     }
 
@@ -1269,13 +1289,15 @@ public class EnumController implements Serializable {
     }
 
     public List<PaymentMethod> getPaymentMethodsForStaffCreditSettle() {
-        paymentMethodsForStaffCreditSettle = new ArrayList<>();
+        // Build into a local list: loading config options can reset the shared field mid-loop (#26262).
+        List<PaymentMethod> built = new ArrayList<>();
         for (PaymentMethod pm : PaymentMethod.values()) {
             boolean include = configOptionApplicationController.getBooleanValueByKey(pm.getLabel() + " is available for Staff Credit Settle", true);
             if (include) {
-                paymentMethodsForStaffCreditSettle.add(pm);
+                built.add(pm);
             }
         }
+        paymentMethodsForStaffCreditSettle = built;
         return paymentMethodsForStaffCreditSettle;
     }
 
@@ -1284,13 +1306,15 @@ public class EnumController implements Serializable {
     }
 
     public List<PaymentMethod> getPaymentMethodsForPatientDepositRefund() {
-        paymentMethodsForPatientDepositRefund = new ArrayList<>();
+        // Build into a local list: loading config options can reset the shared field mid-loop (#26262).
+        List<PaymentMethod> built = new ArrayList<>();
         for (PaymentMethod pm : PaymentMethod.values()) {
             boolean include = configOptionApplicationController.getBooleanValueByKey(pm.getLabel() + " is available for Patient Deposit Return", true);
             if (include) {
-                paymentMethodsForPatientDepositRefund.add(pm);
+                built.add(pm);
             }
         }
+        paymentMethodsForPatientDepositRefund = built;
         return paymentMethodsForPatientDepositRefund;
     }
 
@@ -1299,15 +1323,17 @@ public class EnumController implements Serializable {
     }
 
     public List<PaymentMethod> getPaymentMethodsForOpdBillCanceling() {
-        paymentMethodsForOpdBillCanceling = new ArrayList<>();
+        // Build into a local list: loading config options can reset the shared field mid-loop (#26262).
+        List<PaymentMethod> built = new ArrayList<>();
         for (PaymentMethod pm : PaymentMethod.values()) {
             boolean include = configOptionApplicationController.getBooleanValueByKey(pm.getLabel() + " is available for OPD Bill Cancel", true);
             if (include) {
                 if (pm != PaymentMethod.MultiplePaymentMethods) {
-                    paymentMethodsForOpdBillCanceling.add(pm);
+                    built.add(pm);
                 }
             }
         }
+        paymentMethodsForOpdBillCanceling = built;
         return paymentMethodsForOpdBillCanceling;
     }
 
@@ -1316,13 +1342,15 @@ public class EnumController implements Serializable {
     }
 
     public List<PaymentMethod> getPaymentMethodsForPatientDepositCancel() {
-        paymentMethodsForPatientDepositCancel = new ArrayList<>();
+        // Build into a local list: loading config options can reset the shared field mid-loop (#26262).
+        List<PaymentMethod> built = new ArrayList<>();
         for (PaymentMethod pm : PaymentMethod.values()) {
             boolean include = configOptionApplicationController.getBooleanValueByKey(pm.getLabel() + " is available for Patient Deposit Cancel", true);
             if (include) {
-                paymentMethodsForPatientDepositCancel.add(pm);
+                built.add(pm);
             }
         }
+        paymentMethodsForPatientDepositCancel = built;
         return paymentMethodsForPatientDepositCancel;
     }
 
