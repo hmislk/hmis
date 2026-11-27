@@ -76,11 +76,11 @@
                                     <thead>
                                     <tr>
                                         <th style="text-align: center; width: 10mm;">Serial No</th>
-                                        <th style="text-align: center; width: 15mm;">Bill ID</th>
                                         <th style="text-align: center; width: 25mm;">Created At</th>
                                         <th style="text-align: center; width: 50mm;">Bill No</th>
                                         <th style="text-align: center; width: 23mm;">Bill Type</th>
                                         <th style="text-align: center; width: 35mm;">Patient</th>
+                                        <th style="text-align: center; width: 35mm;">Consultant</th>
                                         <th style="text-align: center; width: 30mm;">Agent</th>
                                         <th style="text-align: center; width: 25mm;">Ref No</th>
                                         <th style="text-align: center; width: 20mm;">Cashier</th>
@@ -93,9 +93,6 @@
                                     <ui:repeat value="#{channelReportController.dataBundle.reportTemplateRows}" var="row" varStatus="status">
                                         <tr>
                                             <td style="text-align: center;"><h:outputText value="#{status.index + 1}"/></td>
-                                            <td>
-                                                <h:outputText value="#{row.bill.id}"/>
-                                            </td>
                                             <td>
                                                 <h:outputText value="#{row.bill.createdAt}">
                                                     <f:convertDateTime
@@ -114,7 +111,10 @@
                                                 <h:outputText value="#{row.bill.billType}"/>
                                             </td>
                                             <td>
-                                                <h:outputText value="#{row.bill.patient.person.name}"/>
+                                                <h:outputText value="#{row.bill.patient.person.nameWithTitle}"/>
+                                            </td>
+                                            <td>
+                                                <h:outputText value="#{row.bill.staff.person.nameWithTitle}"/>
                                             </td>
                                             <td>
                                                 <h:outputText value="#{row.bill.creditCompany.name}"/>
