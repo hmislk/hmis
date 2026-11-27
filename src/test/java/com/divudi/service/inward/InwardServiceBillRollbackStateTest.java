@@ -65,4 +65,39 @@ class InwardServiceBillRollbackStateTest {
         assertNull(component.getId());
         assertNull(component.getBill());
     }
+
+    @Test
+    void restoreResetsIdsOfFeesHeldOnlyByTheItem() {
+        BillItem item = new BillItem();
+        BillFee itemOnly = new BillFee();
+        BillFee saved = new BillFee();
+        saved.setId(5L);
+        item.getBillFees().add(itemOnly);
+        item.getBillFees().add(saved);
+        BillEntry entry = new BillEntry();
+        entry.setBillItem(item);
+        entry.setLstBillFees(new ArrayList<>());
+        InwardServiceBillRequest request = new InwardServiceBillRequest();
+        request.setBillEntries(new ArrayList<>(List.of(entry)));
+        request.setBillCollector(new ArrayList<>());
+
+        InwardServiceBillRollbackState state = new InwardServiceBillRollbackState(request);
+        itemOnly.setId(21L);
+        saved.setId(5L);
+        state.restore();
+
+        assertNull(itemOnly.getId());
+        assertEquals(Long.valueOf(5L), saved.getId());
+    }
+
+    @Test
+    void sumsCountAFeeOnceWhenTheItemListHoldsItTwice() {
+        BillFee fee = new BillFee();
+        fee.setFeeGrossValue(500.0);
+        fee.setFeeValue(487.5);
+        fee.setFeeDiscount(12.5);
+        Object[] sums = InwardServiceBillSums.itemSums(new ArrayList<>(List.of(fee, fee)));
+        assertEquals(500.0, ((Number) sums[0]).doubleValue());
+        assertEquals(12.5, ((Number) sums[3]).doubleValue());
+    }
 }

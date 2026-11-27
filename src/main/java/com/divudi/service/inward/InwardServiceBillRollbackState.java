@@ -5,6 +5,8 @@ import com.divudi.core.entity.BillComponent;
 import com.divudi.core.entity.BillEntry;
 import com.divudi.core.entity.BillFee;
 import com.divudi.core.entity.BillItem;
+import com.divudi.core.entity.BillItemFinanceDetails;
+import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -50,27 +52,48 @@ final class InwardServiceBillRollbackState {
         if (item != null) {
             Long itemId = item.getId();
             Bill itemBill = item.getBill();
+            PharmaceuticalBillItem pbi = item.getPharmaceuticalBillItem();
+            Long pbiId = pbi == null ? null : pbi.getId();
+            BillItemFinanceDetails bifd = item.hasBillItemFinanceDetails() ? item.getBillItemFinanceDetails() : null;
+            Long bifdId = bifd == null ? null : bifd.getId();
             int feeCount = item.getBillFees() == null ? 0 : item.getBillFees().size();
             undo.add(() -> {
                 item.setId(itemId);
                 item.setBill(itemBill);
+                if (pbi != null) {
+                    pbi.setId(pbiId);
+                }
+                if (bifd != null) {
+                    bifd.setId(bifdId);
+                }
                 List<BillFee> held = item.getBillFees();
                 if (held != null && held.size() > feeCount) {
                     held.subList(feeCount, held.size()).clear();
                 }
             });
         }
+        // The fees the entry carries and the fees the item already holds: a fee in
+        // either list gets its id from the insert, and the rollback removes the row.
+        List<BillFee> fees = new ArrayList<>();
         if (entry.getLstBillFees() != null) {
-            for (BillFee fee : new ArrayList<>(entry.getLstBillFees())) {
-                Long id = fee.getId();
-                Bill bill = fee.getBill();
-                BillItem billItem = fee.getBillItem();
-                undo.add(() -> {
-                    fee.setId(id);
-                    fee.setBill(bill);
-                    fee.setBillItem(billItem);
-                });
+            fees.addAll(entry.getLstBillFees());
+        }
+        if (item != null && item.getBillFees() != null) {
+            fees.addAll(item.getBillFees());
+        }
+        java.util.Set<BillFee> seen = java.util.Collections.newSetFromMap(new java.util.IdentityHashMap<>());
+        for (BillFee fee : fees) {
+            if (fee == null || !seen.add(fee)) {
+                continue;
             }
+            Long id = fee.getId();
+            Bill bill = fee.getBill();
+            BillItem billItem = fee.getBillItem();
+            undo.add(() -> {
+                fee.setId(id);
+                fee.setBill(bill);
+                fee.setBillItem(billItem);
+            });
         }
         if (entry.getLstBillComponents() != null) {
             for (BillComponent component : new ArrayList<>(entry.getLstBillComponents())) {

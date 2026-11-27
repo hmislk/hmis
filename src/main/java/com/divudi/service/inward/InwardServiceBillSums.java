@@ -2,7 +2,11 @@ package com.divudi.service.inward;
 
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.BillFee;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.IdentityHashMap;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Sums of the bill fees of one settle, taken from the fees in memory (#17562).
@@ -29,7 +33,7 @@ final class InwardServiceBillSums {
         double vat = 0;
         boolean any = false;
         if (fees != null) {
-            for (BillFee bf : fees) {
+            for (BillFee bf : distinct(fees)) {
                 if (bf == null || bf.isRetired()) {
                     continue;
                 }
@@ -47,6 +51,32 @@ final class InwardServiceBillSums {
             return new Object[]{null, null, null, null, null};
         }
         return new Object[]{gross, net, margin, discount, vat};
+    }
+
+    /**
+     * The fees with each one once. A bill item reused from an earlier visit (a
+     * surgery's second visit) already holds the fees the entry brings, so the list
+     * can hold the same fee, or the same saved row, twice. The database summed each
+     * row once, so the sums do the same: a fee counts once by identity, and once by
+     * id when it has one.
+     */
+    static List<BillFee> distinct(List<BillFee> fees) {
+        List<BillFee> out = new ArrayList<>();
+        if (fees == null) {
+            return out;
+        }
+        Set<BillFee> seen = java.util.Collections.newSetFromMap(new IdentityHashMap<>());
+        Set<Long> seenIds = new HashSet<>();
+        for (BillFee bf : fees) {
+            if (bf == null || !seen.add(bf)) {
+                continue;
+            }
+            if (bf.getId() != null && !seenIds.add(bf.getId())) {
+                continue;
+            }
+            out.add(bf);
+        }
+        return out;
     }
 
     /**
