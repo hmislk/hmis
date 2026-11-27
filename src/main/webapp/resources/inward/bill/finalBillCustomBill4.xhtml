@@ -1077,7 +1077,7 @@
                                                 <f:convertNumber pattern="#,##0.00" />
                                             </h:outputLabel>
 
-                                            <h:outputLabel rendered="#{!cc.attrs.showProfessional}" value="#{cc.attrs.bill.hospitalFee}" >
+                                            <h:outputLabel rendered="#{!cc.attrs.showProfessional}" value="#{bhtSummeryController.copyHospitalChargesTotal(cc.attrs.bill)}" >
                                                 <f:convertNumber pattern="#,##0.00" />
                                             </h:outputLabel>
 
@@ -1127,7 +1127,7 @@
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>
 
-                                        <h:outputLabel rendered="#{!cc.attrs.showProfessional}" value="#{cc.attrs.bill.hospitalFee-cc.attrs.bill.discount}" >
+                                        <h:outputLabel rendered="#{!cc.attrs.showProfessional}" value="#{bhtSummeryController.copyHospitalChargesTotal(cc.attrs.bill) - cc.attrs.bill.discount}" >
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>
 
@@ -1279,7 +1279,7 @@
                                             &nbsp;
                                         </td>
                                         <td style="text-align: right;font-size: 13px!important;font-weight: bold!important;">
-                                            <h:outputLabel value="#{cc.attrs.bill.netTotal-(cc.attrs.bill.paidAmount)}">
+                                            <h:outputLabel value="#{bhtSummeryController.copyDueAmount(cc.attrs.bill, cc.attrs.showProfessional)}">
                                                 <f:convertNumber pattern="#,##0.00" />
                                             </h:outputLabel>
                                         </td>

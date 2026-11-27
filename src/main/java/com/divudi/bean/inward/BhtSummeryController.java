@@ -3754,6 +3754,47 @@ public class BhtSummeryController implements Serializable {
         return String.join(", ", names);
     }
 
+    private static final String CB4_HOSPITAL_CHARGES_ONLY_KEY = "Inward Final Bill - Custom Bill 4 - Calculate Totals And Due From Hospital Charges On Copies Without Professional Fees";
+
+    /**
+     * Total for a final bill copy printed without professional fees. With the
+     * option off this is the saved hospital fee. With it on, the saved charge
+     * lines other than professional charges are added up, which is the same
+     * definition as the hospital fee and keeps the cents (#26243).
+     */
+    public double copyHospitalChargesTotal(Bill bill) {
+        if (bill == null) {
+            return 0.0;
+        }
+        if (!configOptionApplicationController.getBooleanValueByKey(CB4_HOSPITAL_CHARGES_ONLY_KEY, false)
+                || bill.getBillItems() == null || bill.getBillItems().isEmpty()) {
+            return bill.getHospitalFee();
+        }
+        double total = 0.0;
+        for (BillItem bi : bill.getBillItems()) {
+            if (!bi.isRetired() && bi.getInwardChargeType() != InwardChargeType.ProfessionalCharge) {
+                total += bi.getGrossValue();
+            }
+        }
+        return Math.round(total * 100.0) / 100.0;
+    }
+
+    /**
+     * Due Amount printed on Custom Bill 4. It is the due of the whole bill,
+     * except on a copy without professional fees with the option on: there it is
+     * the net total of that copy less everything paid, and may be negative.
+     */
+    public double copyDueAmount(Bill bill, boolean showProfessional) {
+        if (bill == null) {
+            return 0.0;
+        }
+        if (showProfessional || !configOptionApplicationController.getBooleanValueByKey(CB4_HOSPITAL_CHARGES_ONLY_KEY, false)) {
+            return bill.getNetTotal() - bill.getPaidAmount();
+        }
+        double due = copyHospitalChargesTotal(bill) - bill.getDiscount() - bill.getPaidAmount();
+        return Math.round(due * 100.0) / 100.0;
+    }
+
     /**
      * Per-credit-company + patient due breakdown for Custom Bill 3. Only rows
      * with a due greater than zero are included.
