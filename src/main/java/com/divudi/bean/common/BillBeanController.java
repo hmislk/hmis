@@ -3274,15 +3274,34 @@ public class BillBeanController implements Serializable {
         getBillFacade().edit(b);
     }
 
-    // WARNING: this sum intentionally includes cancelled child bills.
-    // Some billing flows depend on that behaviour for reconciliation purposes.
-    // If you need to exclude cancelled bills, use getTotalByBillExcludingCancelled().
+    /**
+     * Child bills of a header, netted for cancellation. A cancelled child still
+     * counts when its cancellation bill is itself linked to the header (pharmacy
+     * and store flows do this, so the pair nets to zero). A cancelled child whose
+     * cancellation bill is NOT linked (inward service, timed service) is left out,
+     * or the header would keep the cancelled amount.
+     */
+    static final String HEADER_CHILD_TOTAL_JPQL = "Select sum(bf.netTotal) from Bill bf where "
+            + " bf.retired=false and bf.forwardReferenceBill=:bill "
+            + " and (bf.cancelled=false or exists "
+            + " (select c.id from CancelledBill c where c.billedBill=bf "
+            + " and c.retired=false and c.forwardReferenceBill=:bill))";
+
+    /**
+     * Refund bills (negative netTotal) of the header's children that are not
+     * linked to the header themselves. Linked refunds are already in the child
+     * sum, so they are skipped here to avoid counting them twice.
+     */
+    static final String HEADER_REFUND_TOTAL_JPQL = "Select sum(r.netTotal) from RefundBill r where "
+            + " r.retired=false and r.forwardReferenceBill is null "
+            + " and r.billedBill.forwardReferenceBill=:bill";
+
     private double getTotalByBill(Bill b) {
-        String sql = "Select sum(bf.netTotal) from Bill bf where "
-                + " bf.retired=false and bf.forwardReferenceBill=:bill";
         HashMap hm = new HashMap();
         hm.put("bill", b);
-        return getBillFacade().findDoubleByJpql(sql, hm);
+        double children = getBillFacade().findDoubleByJpql(HEADER_CHILD_TOTAL_JPQL, hm);
+        double refunds = getBillFacade().findDoubleByJpql(HEADER_REFUND_TOTAL_JPQL, hm);
+        return children + refunds;
     }
 
     private double getTotalByBillExcludingCancelled(Bill b) {
