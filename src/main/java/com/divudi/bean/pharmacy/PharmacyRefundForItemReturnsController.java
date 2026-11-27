@@ -2365,7 +2365,7 @@ public class PharmacyRefundForItemReturnsController implements Serializable, Con
     public void settleRefundForReturnItems() {
         editingQty = null;
 
-        if (refundComment == null || refundComment.trim().isEmpty()) {
+        if (refundComment == null || refundComment.isBlank()) {
             JsfUtil.addErrorMessage("Enter Refund Comment");
             return;
         }
