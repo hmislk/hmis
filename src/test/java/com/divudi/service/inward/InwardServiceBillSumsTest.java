@@ -105,16 +105,18 @@ class InwardServiceBillSumsTest {
     }
 
     @Test
-    void appendOnceKeepsASavedFeeOnceById() {
-        BillFee saved = fee(100.0, 90.0, 10.0, 0.0, 0.0);
-        saved.setId(7L);
-        BillFee sameRow = fee(100.0, 90.0, 10.0, 0.0, 0.0);
-        sameRow.setId(7L);
+    void appendOnceReplacesTheHeldCopyWithThePreparedOneOnTheSameId() {
+        BillFee held = fee(100.0, 90.0, 10.0, 0.0, 0.0);
+        held.setId(7L);
+        BillFee prepared = fee(100.0, 90.0, 10.0, 0.0, 0.0);
+        prepared.setId(7L);
         List<BillFee> list = new ArrayList<>();
-        list.add(saved);
+        list.add(held);
 
-        assertEquals(false, InwardServiceBillSums.appendOnce(list, sameRow));
+        assertEquals(true, InwardServiceBillSums.appendOnce(list, prepared));
+
         assertEquals(1, list.size());
+        org.junit.jupiter.api.Assertions.assertSame(prepared, list.get(0));
     }
 
     @Test

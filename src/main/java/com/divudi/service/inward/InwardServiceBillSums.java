@@ -80,18 +80,25 @@ final class InwardServiceBillSums {
     }
 
     /**
-     * Adds the fee to the list only when the list does not hold it yet, by
-     * identity or by the same non-null id. A bill item reused from an earlier
-     * visit already holds the fee the entry brings; adding it again made the
-     * loops that sum the list (hospital fee, margin) count it twice (#26242).
+     * Puts the fee in the list once. The same object already in the list stays as
+     * it is. A different object with the same non-null id (a reused item holds a
+     * copy of the saved fee; the entry brings the copy the writer has prepared
+     * for the new bill) replaces the held copy, so the list keeps the prepared
+     * one, as it did when both were listed and the prepared one was saved last.
+     * Counting the fee twice made the loops that sum the list (hospital fee,
+     * margin) double it (#26242).
      *
-     * @return true when the fee was added
+     * @return true when the list changed
      */
     static boolean appendOnce(List<BillFee> list, BillFee bf) {
-        for (BillFee existing : list) {
-            if (existing == bf
-                    || (existing != null && bf.getId() != null && bf.getId().equals(existing.getId()))) {
+        for (int i = 0; i < list.size(); i++) {
+            BillFee existing = list.get(i);
+            if (existing == bf) {
                 return false;
+            }
+            if (existing != null && bf.getId() != null && bf.getId().equals(existing.getId())) {
+                list.set(i, bf);
+                return true;
             }
         }
         list.add(bf);
