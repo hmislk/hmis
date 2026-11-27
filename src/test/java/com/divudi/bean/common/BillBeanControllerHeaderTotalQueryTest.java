@@ -25,5 +25,6 @@ class BillBeanControllerHeaderTotalQueryTest {
         assertTrue(jpql.contains("from RefundBill r"));
         assertTrue(jpql.contains("r.forwardReferenceBill is null"));
         assertTrue(jpql.contains("r.billedBill.forwardReferenceBill=:bill"));
+        assertTrue(jpql.contains("r.billedBill.retired=false"));
     }
 }

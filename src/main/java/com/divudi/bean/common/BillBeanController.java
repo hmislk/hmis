@@ -3294,6 +3294,7 @@ public class BillBeanController implements Serializable {
      */
     static final String SURGERY_HEADER_REFUND_TOTAL_JPQL = "Select sum(r.netTotal) from RefundBill r where "
             + " r.retired=false and r.forwardReferenceBill is null "
+            + " and r.billedBill.retired=false "
             + " and r.billedBill.forwardReferenceBill=:bill";
 
     /**
