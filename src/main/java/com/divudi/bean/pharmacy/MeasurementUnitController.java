@@ -17,6 +17,7 @@ import com.divudi.core.entity.pharmacy.Vmp;
 import com.divudi.core.facade.MeasurementUnitFacade;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.util.CommonFunctions;
+import com.divudi.core.util.MeasurementUnitLists;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -32,6 +33,8 @@ import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
+import javax.faces.model.SelectItem;
+import javax.faces.model.SelectItemGroup;
 import javax.inject.Inject;
 import javax.inject.Named;
 
@@ -307,6 +310,62 @@ public class MeasurementUnitController implements Serializable {
         } else {
             return getDoseUnits();
         }
+    }
+
+    /**
+     * Dose units for the EMR prescribing form: the medicine's own units first,
+     * then every strength unit, no duplicates, each part sorted by name.
+     */
+    public List<MeasurementUnit> getDoseUnitsWithStrengthUnitsForMedicine(Item medicine) {
+        List<MeasurementUnit> own = new ArrayList<>();
+        if (medicine instanceof Amp) {
+            Amp amp = (Amp) medicine;
+            own.add(amp.getIssueUnit());
+            own.add(amp.getStrengthUnit());
+            if (amp.getVmp() != null) {
+                own.add(amp.getVmp().getMeasurementUnit());
+                own.add(amp.getVmp().getStrengthUnit());
+            }
+        } else if (medicine instanceof Vmp) {
+            Vmp vmp = (Vmp) medicine;
+            own.add(vmp.getIssueUnit());
+            own.add(vmp.getStrengthUnit());
+        } else {
+            own.addAll(getDoseUnits());
+        }
+        return MeasurementUnitLists.doseUnits(own, getStrengthUnits());
+    }
+
+    /**
+     * Duration choices for the EMR prescribing form as two groups: time units
+     * first, then dose forms (issue and pack units), each sorted by name.
+     */
+    public List<SelectItem> getGroupedDurationUnits() {
+        List<MeasurementUnit> timeUnits = new ArrayList<>();
+        List<MeasurementUnit> doseForms = new ArrayList<>();
+        for (MeasurementUnit mu : getAllUnits()) {
+            if (mu.isDurationUnit()) {
+                timeUnits.add(mu);
+            }
+            if (mu.isIssueUnit() || mu.isPackUnit()) {
+                doseForms.add(mu);
+            }
+        }
+        List<List<MeasurementUnit>> groups = MeasurementUnitLists.durationGroups(timeUnits, doseForms);
+        String[] labels = {"Time units", "Dose forms"};
+        List<SelectItem> result = new ArrayList<>();
+        for (int i = 0; i < groups.size(); i++) {
+            if (groups.get(i).isEmpty()) {
+                continue;
+            }
+            SelectItem[] options = new SelectItem[groups.get(i).size()];
+            for (int j = 0; j < options.length; j++) {
+                MeasurementUnit mu = groups.get(i).get(j);
+                options[j] = new SelectItem(mu, mu.getName());
+            }
+            result.add(new SelectItemGroup(labels[i], null, false, options));
+        }
+        return result;
     }
 
     public List<MeasurementUnit> getIssueUnits() {
