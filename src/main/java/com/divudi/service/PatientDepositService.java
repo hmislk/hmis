@@ -251,6 +251,19 @@ public class PatientDepositService {
         createPatientDepositHitory(HistoryType.PatientDepositUtilization, pd, b, beforeBalance, afterBalance, 0 - Math.abs(b.getNetTotal()));
     }
 
+    /**
+     * Takes an amount of the stated size from the deposit and writes the history
+     * row. Used where the amount is known from the payment screen, not from the
+     * bill total (OPD pre-bill settle, #26260).
+     */
+    public void handleUtilization(Bill b, PatientDeposit pd, double amount) {
+        Double beforeBalance = pd.getBalance() == null ? 0.0 : pd.getBalance();
+        Double afterBalance = beforeBalance - Math.abs(amount);
+        pd.setBalance(afterBalance);
+        patientDepositFacade.edit(pd);
+        createPatientDepositHitory(HistoryType.PatientDepositUtilization, pd, b, beforeBalance, afterBalance, 0 - Math.abs(amount));
+    }
+
     public void handleInPayment(Payment p, PatientDeposit pd) {
         Double beforeBalance = pd.getBalance();
         Double afterBalance = beforeBalance + Math.abs(p.getPaidValue());
@@ -267,6 +280,25 @@ public class PatientDepositService {
         patientDepositFacade.edit(pd);
         JsfUtil.addSuccessMessage("Balance Updated.");
         createPatientDepositHitory(HistoryType.PatientDepositUtilization, pd, p.getBill(), beforeBalance, afterBalance,  0 - Math.abs(p.getPaidValue()));
+    }
+
+    /**
+     * Gives back to Patient.runningBalance what an OPD bill paid by a single
+     * Patient Deposit method took from it at settle (#26260). Call it with the
+     * cancellation bill, beside updateBalance, which restores the deposit record.
+     */
+    public void restoreRunningBalanceOnCancel(Bill cancellationBill) {
+        if (cancellationBill == null || cancellationBill.getPatient() == null || cancellationBill.getPatient().getId() == null) {
+            return;
+        }
+        Patient pt = patientFacade.findWithoutCache(cancellationBill.getPatient().getId());
+        if (pt == null) {
+            return;
+        }
+        double amount = Math.abs(cancellationBill.getNetTotal());
+        double before = pt.getRunningBalance() == null ? 0.0 : pt.getRunningBalance();
+        pt.setRunningBalance(before + amount);
+        patientFacade.edit(pt);
     }
 
     public void handleOPDBillCancel(Bill b, PatientDeposit pd) {
