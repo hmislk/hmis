@@ -49,7 +49,7 @@
                                         <ui:repeat value="#{sessionController.departmentPreference.OPDBillCopiesList}" var="copy">
                                             <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFiveCustom4'}" >
                                                 <ui:repeat value="#{billSearch.viewingIndividualBillsOfBatchBill}" var="c4b">
-                                                    <prints:five_five_opd_bill_custom_4 bill="#{c4b}" duplicate="#{opdBillController.duplicatePrint}" billCount="#{billSearch.viewingIndividualBillsOfBatchBill.size()}"/>
+                                                    <prints:five_five_opd_bill_custom_4 bill="#{c4b}" duplicate="#{opdBillController.duplicatePrint}" billCount="#{billSearch.batchBillCountOf(c4b)}"/>
                                                 </ui:repeat>
                                             </h:panelGroup>
                                             <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePaper'}" >
