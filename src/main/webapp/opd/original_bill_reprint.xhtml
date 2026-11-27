@@ -59,6 +59,11 @@
                             </div>
 
                             <h:panelGroup id="groupPrint">
+                                <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFiveCustom4'}" >
+                                    <ui:repeat value="#{billSearch.bill}" var="c4b">
+                                        <prints:five_five_opd_bill_custom_4 bill="#{c4b}" duplicate="false" billCount="#{billSearch.batchBillCountOf(c4b)}"/>
+                                    </ui:repeat>
+                                </h:panelGroup>
                                 <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePaper'}" >
                                     <ui:repeat value="#{billSearch.bill}" var="ffb">
                                         <prints:five_five_paper_with_headings bill="#{ffb}" duplicate="false"/>                        
