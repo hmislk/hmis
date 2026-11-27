@@ -165,6 +165,53 @@ final class InwardServiceBillSums {
         bill.setVatPlusNetTotal(vat + net);
     }
 
+    /**
+     * Copies the figures {@link #applyAllToBillFromFees} sets from one bill to
+     * another. Used to give the caller's own copy of an earlier bill the figures
+     * of the managed one, so the later {@code edit()} of the caller's copy does
+     * not merge the old figures back (#26273).
+     */
+    static void copyFigures(Bill from, Bill to) {
+        to.setStaffFee(from.getStaffFee());
+        to.setPerformInstitutionFee(from.getPerformInstitutionFee());
+        to.setMargin(from.getMargin());
+        to.setServiceCharge(from.getServiceCharge());
+        to.setGrantTotal(from.getGrantTotal());
+        to.setTotal(from.getTotal());
+        to.setNetTotal(from.getNetTotal());
+        to.setBillTotal(from.getBillTotal());
+        to.setDiscount(from.getDiscount());
+        to.setVat(from.getVat());
+        to.setVatPlusNetTotal(from.getVatPlusNetTotal());
+    }
+
+    /**
+     * Gives every other copy of the same saved bill in the list (same id, not the
+     * same object) the figures of {@code managed}.
+     */
+    static void copyFiguresToCopies(Bill managed, List<Bill> copies) {
+        if (copies == null || managed == null || managed.getId() == null) {
+            return;
+        }
+        for (Bill copy : new ArrayList<>(copies)) {
+            if (copy != null && copy != managed && managed.getId().equals(copy.getId())) {
+                copyFigures(managed, copy);
+            }
+        }
+    }
+
+    /** Takes the figures of the bill now; the returned step puts them back. */
+    static Runnable snapshotFigures(Bill bill) {
+        Bill saved = new Bill();
+        copyFigures(bill, saved);
+        return () -> copyFigures(saved, bill);
+    }
+
+    /** True when an earlier bill must not be set again: retired, cancelled or refunded. */
+    static boolean isClosed(Bill bill) {
+        return bill.isRetired() || bill.isCancelled() || bill.isRefunded();
+    }
+
     private static double sumAt(Object[] sums, int index) {
         return sums[index] == null ? 0.0 : ((Number) sums[index]).doubleValue();
     }

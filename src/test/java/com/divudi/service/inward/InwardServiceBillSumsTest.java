@@ -193,4 +193,45 @@ class InwardServiceBillSumsTest {
         assertEquals(0.0, bill.getStaffFee(), 0.0001);
         assertEquals(100.0, bill.getPerformInstitutionFee(), 0.0001);
     }
+
+    @Test
+    void settleAddSettleOnOnePageDoesNotPutTheOldTotalsBack() {
+        // Page copy of the earlier bill, held in the collector, with the old totals.
+        Bill pageCopy = staleBill();
+        pageCopy.setId(5L);
+        List<Bill> collector = new ArrayList<>(List.of(pageCopy));
+        Runnable undo = InwardServiceBillSums.snapshotFigures(pageCopy);
+
+        // The managed bill of the second settle, set again from no remaining fees.
+        Bill managed = staleBill();
+        managed.setId(5L);
+        InwardServiceBillSums.applyAllToBillFromFees(managed, new ArrayList<>());
+        InwardServiceBillSums.copyFiguresToCopies(managed, collector);
+
+        // saveBatchBill edits the page copy: it must now carry the new figures.
+        assertEquals(0.0, pageCopy.getNetTotal(), 0.0001);
+        assertEquals(0.0, pageCopy.getTotal(), 0.0001);
+        assertEquals(0.0, pageCopy.getMargin(), 0.0001);
+        assertEquals(0.0, pageCopy.getVatPlusNetTotal(), 0.0001);
+
+        // A failed settle puts the old figures back on the page copy.
+        undo.run();
+        assertEquals(staleBill().getNetTotal(), pageCopy.getNetTotal(), 0.0001);
+        assertEquals(staleBill().getDiscount(), pageCopy.getDiscount(), 0.0001);
+    }
+
+    @Test
+    void retiredCancelledOrRefundedEarlierBillIsClosed() {
+        Bill open = staleBill();
+        assertEquals(false, InwardServiceBillSums.isClosed(open));
+        Bill retired = staleBill();
+        retired.setRetired(true);
+        Bill cancelled = staleBill();
+        cancelled.setCancelled(true);
+        Bill refunded = staleBill();
+        refunded.setRefunded(true);
+        assertEquals(true, InwardServiceBillSums.isClosed(retired));
+        assertEquals(true, InwardServiceBillSums.isClosed(cancelled));
+        assertEquals(true, InwardServiceBillSums.isClosed(refunded));
+    }
 }

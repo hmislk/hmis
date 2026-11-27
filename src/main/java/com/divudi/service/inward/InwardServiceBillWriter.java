@@ -31,7 +31,6 @@ import com.divudi.core.data.inward.AdmissionTypeTimeline;
 import com.divudi.core.facade.BillFacade;
 import com.divudi.core.facade.BillFeeFacade;
 import com.divudi.core.facade.BillItemFacade;
-import com.divudi.core.facade.PaymentFacade;
 import com.divudi.ejb.BillNumberGenerator;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -47,6 +46,7 @@ import java.util.Set;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.inject.Inject;
+import javax.persistence.TemporalType;
 
 /**
  * Writes the inward service bills of one settle in ONE container transaction
@@ -89,8 +89,6 @@ public class InwardServiceBillWriter {
     private BillItemFacade billItemFacade;
     @EJB
     private BillFeeFacade billFeeFacade;
-    @EJB
-    private PaymentFacade paymentFacade;
     @EJB
     private BillNumberGenerator billNumberBean;
     @EJB
@@ -141,7 +139,7 @@ public class InwardServiceBillWriter {
             created.addAll(putToBills(request, ctx));
         }
 
-        recomputeEarlierBills(ctx, created);
+        recomputeEarlierBills(ctx, created, request);
 
         result.setBills(created);
         result.setBatchBill(saveBatchBill(request));
@@ -152,9 +150,11 @@ public class InwardServiceBillWriter {
      * A bill that gave items to a new bill of this settle keeps only what is
      * left on it: its figures are set again from its remaining fees (zero when
      * none are left), in this transaction. The bill is not retired or cancelled.
-     * Inward service bills carry no payment; a bill with one is left as it is.
+     * A bill that is retired, cancelled or refunded is left as it is. The
+     * caller's own copy of the bill gets the same figures: {@code saveBatchBill}
+     * edits that copy, and its old figures would be merged back.
      */
-    private void recomputeEarlierBills(RunContext ctx, List<Bill> created) {
+    private void recomputeEarlierBills(RunContext ctx, List<Bill> created, InwardServiceBillRequest request) {
         for (Long id : ctx.earlierBills.keySet()) {
             boolean isNew = false;
             for (Bill c : created) {
@@ -166,22 +166,21 @@ public class InwardServiceBillWriter {
             if (isNew) {
                 continue;
             }
+            Bill earlier = billFacade.find(id);
+            if (earlier == null || InwardServiceBillSums.isClosed(earlier)) {
+                continue;
+            }
             Map<String, Object> params = new HashMap<>();
             params.put("billId", id);
-            long payments = paymentFacade.findLongByJpql(
-                    "select count(p) from Payment p where p.bill.id = :billId", params);
-            if (payments > 0) {
-                continue;
-            }
-            Bill earlier = billFacade.find(id);
-            if (earlier == null) {
-                continue;
-            }
+            // The overload with a temporal-type map throws on a query error; the
+            // two-argument one returns an empty list, which would set the bill to 0.
             List<BillFee> remaining = billFeeFacade.findByJpql(
                     "select bf from BillFee bf where bf.bill.id = :billId and bf.retired = false"
-                    + " and bf.billItem.retired = false", params);
+                    + " and bf.billItem.retired = false and bf.billItem.bill.id = :billId",
+                    params, new HashMap<String, TemporalType>());
             InwardServiceBillSums.applyAllToBillFromFees(earlier, remaining);
             billFacade.edit(earlier);
+            InwardServiceBillSums.copyFiguresToCopies(earlier, request.getBillCollector());
         }
     }
 
