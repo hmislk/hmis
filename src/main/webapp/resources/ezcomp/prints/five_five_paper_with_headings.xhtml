@@ -326,7 +326,7 @@
                                         <tr>
                                             <td style="padding-left: 12px;">
                                                 <h:outputLabel class="itemsBlockRightFiveFive"
-                                                    value="  #{bf.staff ne null and bf.staff.person ne null ? bf.staff.person.nameWithTitle : bf.fee.name}"
+                                                    value="  #{bf.staff ne null and bf.staff.person ne null and configOptionApplicationController.getBooleanValueByKey('OPD Bill Print - Show Doctor Name on Fee Lines', true) ? bf.staff.person.nameWithTitle : bf.fee.name}"
                                                     style="font-style: italic;"/>
                                             </td>
                                             <td style="text-align: right; padding-right: 30px;">
