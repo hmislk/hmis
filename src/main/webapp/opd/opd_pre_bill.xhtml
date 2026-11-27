@@ -161,7 +161,7 @@
                                                 class="w-100 mx-1 my-1 ui-button-success"
                                                 action="#{opdPreBillController.addToBill()}" 
                                                 process="acIx btnAddIx txtQty panelBillItems"
-                                                update="focusIx tblBillItem :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}  pIxAdd">
+                                                update="focusIx tblBillItem :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}  pIxAdd :#{p:resolveFirstComponentWithId('growl',view).clientId}">
                                             </p:commandButton>
                                             <p:defaultCommand target="btnAddIx" />
                                         </div>
