@@ -83,4 +83,51 @@ class InwardServiceBillSumsTest {
         assertEquals(5.0, bill.getVat(), 0.0001);
         assertEquals(135.0, bill.getVatPlusNetTotal(), 0.0001);
     }
+
+    // Issue #26242: a reused item already holds the fee; the append adds it once.
+    @Test
+    void appendOnceKeepsTheFeeOnceWhenTheItemAlreadyHoldsIt() {
+        BillFee f = fee(100.0, 90.0, 10.0, 20.0, 0.0);
+        List<BillFee> list = new ArrayList<>();
+        list.add(f);
+
+        assertEquals(false, InwardServiceBillSums.appendOnce(list, f));
+
+        assertEquals(1, list.size());
+        double hospitalFee = 0;
+        double margin = 0;
+        for (BillFee bf : list) {
+            hospitalFee += bf.getFeeValue();
+            margin += bf.getFeeMargin();
+        }
+        assertEquals(90.0, hospitalFee, 0.0001);
+        assertEquals(10.0, margin, 0.0001);
+    }
+
+    @Test
+    void appendOnceKeepsASavedFeeOnceById() {
+        BillFee saved = fee(100.0, 90.0, 10.0, 0.0, 0.0);
+        saved.setId(7L);
+        BillFee sameRow = fee(100.0, 90.0, 10.0, 0.0, 0.0);
+        sameRow.setId(7L);
+        List<BillFee> list = new ArrayList<>();
+        list.add(saved);
+
+        assertEquals(false, InwardServiceBillSums.appendOnce(list, sameRow));
+        assertEquals(1, list.size());
+    }
+
+    @Test
+    void appendOnceAddsNewAndDifferentFees() {
+        List<BillFee> list = new ArrayList<>();
+        assertEquals(true, InwardServiceBillSums.appendOnce(list, fee(1.0, 1.0, 0, 0, 0)));
+        assertEquals(true, InwardServiceBillSums.appendOnce(list, fee(1.0, 1.0, 0, 0, 0)));
+        BillFee a = fee(1.0, 1.0, 0, 0, 0);
+        a.setId(1L);
+        BillFee b = fee(1.0, 1.0, 0, 0, 0);
+        b.setId(2L);
+        assertEquals(true, InwardServiceBillSums.appendOnce(list, a));
+        assertEquals(true, InwardServiceBillSums.appendOnce(list, b));
+        assertEquals(4, list.size());
+    }
 }

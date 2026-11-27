@@ -80,6 +80,25 @@ final class InwardServiceBillSums {
     }
 
     /**
+     * Adds the fee to the list only when the list does not hold it yet, by
+     * identity or by the same non-null id. A bill item reused from an earlier
+     * visit already holds the fee the entry brings; adding it again made the
+     * loops that sum the list (hospital fee, margin) count it twice (#26242).
+     *
+     * @return true when the fee was added
+     */
+    static boolean appendOnce(List<BillFee> list, BillFee bf) {
+        for (BillFee existing : list) {
+            if (existing == bf
+                    || (existing != null && bf.getId() != null && bf.getId().equals(existing.getId()))) {
+                return false;
+            }
+        }
+        list.add(bf);
+        return true;
+    }
+
+    /**
      * Sets total, net total, vat and vat plus net total on the bill from its
      * fees, as {@code BillBeanController.updateBillByBillFee} does from the
      * database. A missing sum is zero.
