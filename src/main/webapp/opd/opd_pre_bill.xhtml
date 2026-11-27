@@ -56,9 +56,9 @@
 
 
 
-                                <p:dataTable id="tblSs" value="#{opdPreBillController.billSessions}" var="bs" emptyMessage="No Numbers Yet">
+                                <p:dataTable id="tblSs" styleClass="p-datatable-sm" value="#{opdPreBillController.billSessions}" var="bs" emptyMessage="No Numbers Yet">
                                     <f:facet name="header">
-                                        <h:outputText value="#{opdPreBillController.lastBillItem.item.name}" />
+                                        <h:outputText value="#{opdPreBillController.currentBillItem.item ne null ? opdPreBillController.currentBillItem.item.name : opdPreBillController.lastBillItem.item.name}" />
 
                                         <h:outputText id="lblTemS" value="#{opdPreBillController.sessionDate}" style="float: right;" >
                                             <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateFormat}" ></f:convertDateTime>
@@ -157,12 +157,11 @@
                                             <p:commandButton 
                                                 id="btnAddIx" 
                                                 value="Add" 
-                                                onerror="Please Select Item"
                                                 icon="fa fa-plus"
                                                 class="w-100 mx-1 my-1 ui-button-success"
                                                 action="#{opdPreBillController.addToBill()}" 
                                                 process="acIx btnAddIx txtQty panelBillItems"
-                                                update="focusIx tblBillItem :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}  pIxAdd">
+                                                update="focusIx tblBillItem :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}  pIxAdd :#{p:resolveFirstComponentWithId('growl',view).clientId}">
                                             </p:commandButton>
                                             <p:defaultCommand target="btnAddIx" />
                                         </div>
@@ -212,7 +211,7 @@
                                         <h:panelGroup id="panelBillItems" >
                                             <p:tabView id="tblBillItem" >
                                                 <p:tab id="tabBillItems" title="Bill Items" >
-                                                    <p:dataTable id="tblRequests" rowIndexVar="rowIndex" value="#{opdPreBillController.lstBillEntries}" var="bi" >
+                                                    <p:dataTable id="tblRequests" styleClass="p-datatable-sm" rowIndexVar="rowIndex" value="#{opdPreBillController.lstBillEntries}" var="bi" >
 
                                                         <p:column>
                                                             <f:facet name="header">No</f:facet>
@@ -237,6 +236,9 @@
                                                             <p:commandButton 
                                                                 id="btnRemove"
                                                                 value="X"
+                                                                icon="fa fa-trash"
+                                                                class="ui-button-danger"
+                                                                title="Remove this item"
                                                                 action="#{opdPreBillController.removeBillItem}"
                                                                 process="btnRemove"
                                                                 update=":#{p:resolveFirstComponentWithId('tblBillItem',view).clientId} :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}">
@@ -246,7 +248,7 @@
                                                     </p:dataTable>
                                                 </p:tab>
                                                 <p:tab id="tabBillIx" title="Tests" >
-                                                    <p:dataTable rowIndexVar="rowIndex" value="#{opdPreBillController.lstBillComponents}" var="bix" >
+                                                    <p:dataTable styleClass="p-datatable-sm" rowIndexVar="rowIndex" value="#{opdPreBillController.lstBillComponents}" var="bix" >
                                                         <p:column>
                                                             <f:facet name="header">No</f:facet>
                                                                 #{rowIndex+1}
@@ -260,7 +262,7 @@
                                                 </p:tab>
 
                                                 <p:tab id="tabBillFee" title="Fees" >
-                                                    <p:dataTable rowIndexVar="rowIndex" value="#{opdPreBillController.lstBillFees}" var="bif" >
+                                                    <p:dataTable styleClass="p-datatable-sm" rowIndexVar="rowIndex" value="#{opdPreBillController.lstBillFees}" var="bif" >
                                                         <p:column>
                                                             <f:facet name="header">Item Name</f:facet>
                                                             <h:outputLabel value="#{bif.billItem.item.name}" />
@@ -281,7 +283,7 @@
                                                             </h:inputText>
                                                         </p:column>
                                                         <p:column>
-                                                            <p:commandButton ajax="false" value="Update" action="#{opdPreBillController.feeChangeListener(bif)}" />
+                                                            <p:commandButton ajax="false" value="Update" icon="fa fa-save" class="ui-button-success" title="Update fee" action="#{opdPreBillController.feeChangeListener(bif)}" />
                                                         </p:column>
                                                         <p:column>
                                                             <f:facet name="header">Fee Name</f:facet>
