@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * Pure ordering and grouping rules for the dose and duration unit lists of the
@@ -13,7 +14,7 @@ import java.util.List;
 public final class MeasurementUnitLists {
 
     private static final Comparator<MeasurementUnit> BY_NAME = Comparator.comparing(
-            (MeasurementUnit u) -> u.getName() == null ? "" : u.getName().toLowerCase());
+            (MeasurementUnit u) -> u.getName() == null ? "" : u.getName().toLowerCase(Locale.ROOT));
 
     private MeasurementUnitLists() {
     }
