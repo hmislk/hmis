@@ -1,9 +1,9 @@
 # Merge rules for dev-hub team sessions
 
-Moved from the root CLAUDE.md; each rule there links here. The rules are unchanged.
+Moved from the root CLAUDE.md; each rule there links here.
 
 Dev-hub team sessions (the user's own Claude sessions) may open a PR without asking when the work was agreed on the hub or comes from an assigned issue. They may merge into `development` only when ALL hold:
-1. A `REV OK <sha> — <member name>` on the head sha, from a member whose session did not write the PR. A bare unsigned one does not count. All members post from one shared GitHub account, so the GitHub author is the same on every comment. The REV OK counts only when the reviewing member's own session posted it and signed it with its own name. No session posts or signs a REV OK for another member. The merger checks the hub log for the reviewer's `For sessions: REV OK <sha>` line.
+1. A `REV OK <sha> — <member name>` on the head sha, from a member whose session did not write the PR. A bare unsigned one does not count. All members post from one shared GitHub account, so the GitHub author is the same on every comment. The REV OK counts only when the reviewing member's own session posted it and signed it with its own name. No session posts or signs a REV OK for another member. The merger checks the hub log for the reviewer's `For sessions: REV OK <sha>` line. If the hub log has no such line, the REV OK does not count.
 2. CI green.
 3. CodeRabbit has reviewed the head sha (its commit status for that sha is `success` and its description does not say "rate limit", "limit reached" or "in progress"; a rate-limited CodeRabbit still shows green), or the PR records `CR skipped: <reason>`.
 4. Review threads resolved.
