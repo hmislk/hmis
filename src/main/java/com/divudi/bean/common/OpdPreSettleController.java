@@ -431,7 +431,7 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
                 return true;
             }
             double multiplePaymentMethodTotalValue = 0.0;
-            for (ComponentDetail cd : paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {
+            for (ComponentDetail cd : getPaymentMethodData().getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {
                 if (paymentSchemeController.checkPaymentMethodError(cd.getPaymentMethod(), cd.getPaymentMethodData())) {
                     return true;
                 }
@@ -534,7 +534,7 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
         getSaleBill().setDepartment(getSessionController().getLoggedUser().getDepartment());
         getSaleBill().setInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
 
-        getBillBean().setPaymentMethodData(getSaleBill(), getSaleBill().getPaymentMethod(), paymentMethodData);
+        getBillBean().setPaymentMethodData(getSaleBill(), getSaleBill().getPaymentMethod(), getPaymentMethodData());
         getBillBean().setBills(billsOfBatchBillPre);
 
         getSaleBill().setBillDate(new Date());
@@ -605,7 +605,7 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
     public List<Payment> createPayment(Bill bill, PaymentMethod pm) {
         List<Payment> ps = new ArrayList<>();
         if (paymentMethod == PaymentMethod.MultiplePaymentMethods) {
-            for (ComponentDetail cd : paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {
+            for (ComponentDetail cd : getPaymentMethodData().getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {
                 Payment p = new Payment();
                 p.setBill(bill);
                 p.setInstitution(getSessionController().getInstitution());
@@ -675,32 +675,32 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
 
             switch (pm) {
                 case Card:
-                    p.setBank(paymentMethodData.getCreditCard().getInstitution());
-                    p.setCreditCardRefNo(paymentMethodData.getCreditCard().getNo());
-                    p.setPaidValue(paymentMethodData.getCreditCard().getTotalValue());
-                    p.setComments(paymentMethodData.getCreditCard().getComment());
+                    p.setBank(getPaymentMethodData().getCreditCard().getInstitution());
+                    p.setCreditCardRefNo(getPaymentMethodData().getCreditCard().getNo());
+                    p.setPaidValue(getPaymentMethodData().getCreditCard().getTotalValue());
+                    p.setComments(getPaymentMethodData().getCreditCard().getComment());
                     break;
                 case Cheque:
-                    p.setChequeDate(paymentMethodData.getCheque().getDate());
-                    p.setChequeRefNo(paymentMethodData.getCheque().getNo());
-                    p.setPaidValue(paymentMethodData.getCheque().getTotalValue());
-                    p.setComments(paymentMethodData.getCheque().getComment());
+                    p.setChequeDate(getPaymentMethodData().getCheque().getDate());
+                    p.setChequeRefNo(getPaymentMethodData().getCheque().getNo());
+                    p.setPaidValue(getPaymentMethodData().getCheque().getTotalValue());
+                    p.setComments(getPaymentMethodData().getCheque().getComment());
                     break;
                 case Cash:
-                    p.setPaidValue(paymentMethodData.getCash().getTotalValue());
+                    p.setPaidValue(getPaymentMethodData().getCash().getTotalValue());
                     break;
                 case ewallet:
 
                 case Agent:
                 case Credit:
-                    p.setReferenceNo(paymentMethodData.getCredit().getReferralNo());
-                    p.setComments(paymentMethodData.getCredit().getComment());
+                    p.setReferenceNo(getPaymentMethodData().getCredit().getReferralNo());
+                    p.setComments(getPaymentMethodData().getCredit().getComment());
                 case PatientDeposit:
                 case Slip:
-                    p.setBank(paymentMethodData.getSlip().getInstitution());
-                    p.setPaidValue(paymentMethodData.getSlip().getTotalValue());
-                    p.setRealizedAt(paymentMethodData.getSlip().getDate());
-                    p.setComments(paymentMethodData.getSlip().getComment());
+                    p.setBank(getPaymentMethodData().getSlip().getInstitution());
+                    p.setPaidValue(getPaymentMethodData().getSlip().getTotalValue());
+                    p.setRealizedAt(getPaymentMethodData().getSlip().getDate());
+                    p.setComments(getPaymentMethodData().getSlip().getComment());
                 case OnCall:
                 case OnlineSettlement:
                 case Staff:
@@ -782,7 +782,7 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
 
             newlyCreatedIndividualBilledBillOfBilledBatchBill.setPaymentMethod(getSaleBill().getPaymentMethod());
 
-            getBillBean().setPaymentMethodData(newlyCreatedIndividualBilledBillOfBilledBatchBill, getPreBill().getPaymentMethod(), paymentMethodData);
+            getBillBean().setPaymentMethodData(newlyCreatedIndividualBilledBillOfBilledBatchBill, getPreBill().getPaymentMethod(), getPaymentMethodData());
 
             getBillFacade().editAndCommit(newlyCreatedIndividualBilledBillOfBilledBatchBill);
             getBillFacade().editAndCommit(preBill);
@@ -1000,7 +1000,7 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
                 return true;
             }
             double multiplePaymentMethodTotalValue = 0.0;
-            for (ComponentDetail cd : paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {
+            for (ComponentDetail cd : getPaymentMethodData().getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {
                 if (paymentSchemeController.checkPaymentMethodError(cd.getPaymentMethod(), cd.getPaymentMethodData())) {
                     return true;
                 }
@@ -1111,7 +1111,7 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
         total = getPreBill().getNetTotal();
         if (getPreBill().getPaymentMethod() == PaymentMethod.MultiplePaymentMethods) {
             double multiplePaymentMethodTotalValue = 0.0;
-            for (ComponentDetail cd : paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {
+            for (ComponentDetail cd : getPaymentMethodData().getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {
                 multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCash().getTotalValue();
                 multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCreditCard().getTotalValue();
                 multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCheque().getTotalValue();
@@ -1128,8 +1128,8 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
     public void recieveRemainAmountAutomatically() {
         double remainAmount = calculatRemainForMultiplePaymentTotal();
         if (getPreBill().getPaymentMethod() == PaymentMethod.MultiplePaymentMethods) {
-            int arrSize = paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().size();
-            ComponentDetail pm = paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().get(arrSize - 1);
+            int arrSize = getPaymentMethodData().getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().size();
+            ComponentDetail pm = getPaymentMethodData().getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().get(arrSize - 1);
             if (pm.getPaymentMethod() == PaymentMethod.Cash) {
                 pm.getPaymentMethodData().getCash().setTotalValue(remainAmount);
             } else if (pm.getPaymentMethod() == PaymentMethod.Card) {
@@ -1159,14 +1159,14 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
     @Override
     public boolean isLastPaymentEntry(ComponentDetail cd) {
         if (cd == null ||
-            paymentMethodData == null ||
-            paymentMethodData.getPaymentMethodMultiple() == null ||
-            paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails() == null ||
-            paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().isEmpty()) {
+            getPaymentMethodData() == null ||
+            getPaymentMethodData().getPaymentMethodMultiple() == null ||
+            getPaymentMethodData().getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails() == null ||
+            getPaymentMethodData().getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().isEmpty()) {
             return false;
         }
 
-        List<ComponentDetail> details = paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails();
+        List<ComponentDetail> details = getPaymentMethodData().getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails();
         int lastIndex = details.size() - 1;
         int currentIndex = details.indexOf(cd);
         return currentIndex != -1 && currentIndex == lastIndex;
@@ -1508,7 +1508,7 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
         reminingCashPaid = cashPaid;
         Payment p = new Payment();
         p.setBill(getBilledBill());
-        setPaymentMethodData(p, paymentMethod, paymentMethodData);
+        setPaymentMethodData(p, paymentMethod, getPaymentMethodData());
 
         for (Bill b : getBilledBill().getForwardReferenceBills()) {
             //// // System.out.println("dbl = " + dbl);
