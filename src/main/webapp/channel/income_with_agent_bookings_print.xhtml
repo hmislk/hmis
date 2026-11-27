@@ -76,7 +76,6 @@
                                     <thead>
                                     <tr>
                                         <th style="text-align: center; width: 10mm;">Serial No</th>
-                                        <th style="text-align: center; width: 15mm;">Bill ID</th>
                                         <th style="text-align: center; width: 25mm;">Created At</th>
                                         <th style="text-align: center; width: 50mm;">Bill No</th>
                                         <th style="text-align: center; width: 23mm;">Bill Type</th>
@@ -93,9 +92,6 @@
                                     <ui:repeat value="#{channelReportController.dataBundle.reportTemplateRows}" var="row" varStatus="status">
                                         <tr>
                                             <td style="text-align: center;"><h:outputText value="#{status.index + 1}"/></td>
-                                            <td>
-                                                <h:outputText value="#{row.bill.id}"/>
-                                            </td>
                                             <td>
                                                 <h:outputText value="#{row.bill.createdAt}">
                                                     <f:convertDateTime
