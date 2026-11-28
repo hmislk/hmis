@@ -1,0 +1,238 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+    <h:head>
+        <title>Doctor View - Print</title>
+    </h:head>
+    <h:body>
+        <ui:composition template="/resources/template/template.xhtml">
+            <ui:define name="content">
+                <h:form>
+                    <p:panel styleClass="w-100">
+                        <f:facet name="header">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <p:commandButton
+                                        ajax="false"
+                                        value="Back to Session"
+                                        icon="fa fa-arrow-left"
+                                        class="ui-button-info ui-button-outlined"
+                                        title="Go back to the session"
+                                        action="#{bookingControllerViewScope.navigateToManageSessionInstance(bookingControllerViewScope.selectedSessionInstance)}">
+                                    </p:commandButton>
+                                </div>
+                                <h:outputText value="Doctor View - Print View" styleClass="fw-bold"/>
+                                <div>
+                                    <p:commandButton
+                                        ajax="false"
+                                        value="Print"
+                                        icon="fa fa-print"
+                                        class="ui-button-info"
+                                        title="Print the Doctor View on A4 landscape">
+                                        <p:printer target="doctorViewPaper"/>
+                                    </p:commandButton>
+                                </div>
+                            </div>
+                        </f:facet>
+
+                        <style>
+                            .doctor-view-paper {
+                                width: 297mm;
+                                margin: 0 auto;
+                                padding: 8mm;
+                                background: #fff;
+                                font-family: Arial, sans-serif;
+                                color: #000;
+                            }
+                            .doctor-view-paper .dv-heading {
+                                text-align: center;
+                                line-height: 1.3;
+                            }
+                            .doctor-view-paper .dv-title {
+                                font-size: 18px;
+                                font-weight: 700;
+                            }
+                            .doctor-view-paper .dv-details {
+                                display: flex;
+                                justify-content: space-between;
+                                margin: 3mm 0 2mm 0;
+                                font-size: 12px;
+                            }
+                            .doctor-view-paper table {
+                                width: 100%;
+                                border-collapse: collapse;
+                                font-size: 11px;
+                            }
+                            .doctor-view-paper th,
+                            .doctor-view-paper td {
+                                border: 1px solid #000;
+                                padding: 2px 4px;
+                                text-align: left;
+                                vertical-align: middle;
+                            }
+                            .doctor-view-paper th {
+                                background: #f0f0f0;
+                            }
+                            .doctor-view-paper .dv-center {
+                                text-align: center;
+                            }
+                            .doctor-view-paper .dv-number {
+                                text-align: right;
+                                white-space: nowrap;
+                            }
+                            .doctor-view-paper tfoot td {
+                                font-weight: 700;
+                            }
+                            .doctor-view-paper .dv-red {
+                                color: #c00;
+                                font-weight: 700;
+                            }
+                            .doctor-view-paper .dv-green {
+                                color: #080;
+                                font-weight: 700;
+                            }
+                            .doctor-view-paper .dv-footer-note {
+                                margin-top: 2mm;
+                                font-size: 10px;
+                            }
+
+                            @media print {
+                                @page {
+                                    size: A4 landscape;
+                                    margin: 8mm;
+                                }
+                                .doctor-view-paper {
+                                    width: 100%;
+                                    padding: 0;
+                                }
+                                .doctor-view-paper thead {
+                                    display: table-header-group;
+                                }
+                                .doctor-view-paper tr {
+                                    page-break-inside: avoid;
+                                }
+                                .doctor-view-paper th {
+                                    -webkit-print-color-adjust: exact;
+                                    print-color-adjust: exact;
+                                }
+                            }
+                        </style>
+
+                        <h:panelGroup id="doctorViewPaper" layout="block" styleClass="doctor-view-paper">
+                            <div class="dv-heading">
+                                <h:outputText value="#{sessionController.loggedUser.institution.name}" style="font-size: 14px; font-weight: 700;"/>
+                                <br/>
+                                <h:outputText value="#{sessionController.loggedUser.institution.address}" style="font-size: 11px;"/>
+                                <br/>
+                                <h:outputText value="Doctor View" styleClass="dv-title"/>
+                            </div>
+
+                            <div class="dv-details">
+                                <div>
+                                    <h:outputText value="Consultant : " style="font-weight: 700;"/>
+                                    <h:outputText value="#{bookingControllerViewScope.selectedSessionInstance.staff.person.nameWithTitle}"/>
+                                    <br/>
+                                    <h:outputText value="Session Name : " style="font-weight: 700;"/>
+                                    <h:outputText value="#{bookingControllerViewScope.selectedSessionInstance.name}"/>
+                                </div>
+                                <div style="text-align: right;">
+                                    <h:outputText value="Date : " style="font-weight: 700;"/>
+                                    <h:outputText value="#{bookingControllerViewScope.selectedSessionInstance.sessionDate}">
+                                        <f:convertDateTime pattern="dd-MM-yyyy"/>
+                                    </h:outputText>
+                                    <br/>
+                                    <h:outputText value="Time : " style="font-weight: 700;"/>
+                                    <h:outputText value="#{bookingControllerViewScope.selectedSessionInstance.startingTime}">
+                                        <f:convertDateTime pattern="hh:mm a" timeZone="#{bookingControllerViewScope.serverTimeZone}"/>
+                                    </h:outputText>
+                                </div>
+                            </div>
+
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th class="dv-center" style="width: 4%;">No</th>
+                                        <th style="width: 20%;">Patient Name</th>
+                                        <th style="width: 12%;">Bill No</th>
+                                        <th style="width: 16%;">Agent</th>
+                                        <th class="dv-center" style="width: 7%;">Paid / Not</th>
+                                        <th class="dv-center" style="width: 9%;">C / R<br/>(Cancel / Refund)</th>
+                                        <th class="dv-center" style="width: 9%;">P / A<br/>(Present / Absent)</th>
+                                        <th style="width: 11%;">Payment Method</th>
+                                        <th class="dv-number" style="width: 12%;">Doctor Fee</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <ui:repeat value="#{bookingControllerViewScope.billSessions}" var="bs">
+                                        <tr>
+                                            <td class="dv-center">
+                                                <h:outputText value="#{bs.serialNo}"/>
+                                            </td>
+                                            <td>
+                                                <h:outputText rendered="#{bs.bill.billTypeAtomic ne 'CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT'}" value="#{bs.bill.patient.person.nameWithTitle}"/>
+                                                <h:outputText rendered="#{bs.bill.billTypeAtomic eq 'CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT'}" value="#{bs.bill.referenceBill.onlineBooking.title}. #{bs.bill.referenceBill.onlineBooking.patientName}"/>
+                                            </td>
+                                            <td>
+                                                <h:outputText value="#{bs.bill.deptId}" rendered="#{bs.bill.paidBill eq null}"/>
+                                                <h:outputText value="#{bs.bill.paidBill.deptId}" rendered="#{bs.bill.paidBill ne null}"/>
+                                            </td>
+                                            <td>
+                                                <h:outputText value="#{bs.bill.creditCompany.name}" rendered="#{bs.bill.creditCompany ne null}"/>
+                                                <h:outputText value="-" rendered="#{bs.bill.creditCompany eq null}"/>
+                                            </td>
+                                            <td class="dv-center">
+                                                <h:outputText rendered="#{bs.bill.balance ne 0.0}" value="Credit" styleClass="dv-red"/>
+                                                <h:outputText rendered="#{bs.bill.balance eq 0.0}" value="Paid" styleClass="dv-green"/>
+                                            </td>
+                                            <td class="dv-center">
+                                                <h:outputText value="C" rendered="#{bs.bill.cancelled}" styleClass="dv-red"/>
+                                                <h:outputText value="R" rendered="#{bs.bill.refunded}" styleClass="dv-red"/>
+                                                <h:outputText value="-" rendered="#{!bs.bill.cancelled and !bs.bill.refunded}"/>
+                                            </td>
+                                            <td class="dv-center">
+                                                <h:outputText value="A" rendered="#{bs.absent and !bs.bill.cancelled and !bs.bill.refunded}" styleClass="dv-red"/>
+                                                <h:outputText value="P" rendered="#{!bs.absent and !bs.bill.cancelled and !bs.bill.refunded}" styleClass="dv-green"/>
+                                                <h:outputText value="-" rendered="#{bs.bill.cancelled or bs.bill.refunded}"/>
+                                            </td>
+                                            <td>
+                                                <h:outputText value="#{bs.bill.paymentMethod.label}"/>
+                                            </td>
+                                            <td class="dv-number">
+                                                <h:outputText value="#{bookingControllerViewScope.doctorViewStaffFee(bs)}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputText>
+                                            </td>
+                                        </tr>
+                                    </ui:repeat>
+                                </tbody>
+                                <tfoot>
+                                    <tr>
+                                        <td colspan="8" class="dv-number">Total Doctor Fee</td>
+                                        <td class="dv-number">
+                                            <h:outputText value="#{bookingControllerViewScope.doctorViewStaffFeeTotal}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
+                                        </td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+
+                            <div class="dv-footer-note">
+                                <h:outputText value="Cancelled, refunded and unpaid bookings, and absent patients in a refundable session, are shown with 0.00 and are not in the total."/>
+                                <br/>
+                                <h:outputText value="Printed by #{sessionController.loggedUser.webUserPerson.name} on "/>
+                                <h:outputText value="#{sessionController.currentDate}">
+                                    <f:convertDateTime pattern="dd-MM-yyyy hh:mm a" timeZone="#{bookingControllerViewScope.serverTimeZone}"/>
+                                </h:outputText>
+                            </div>
+                        </h:panelGroup>
+                    </p:panel>
+                </h:form>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>
