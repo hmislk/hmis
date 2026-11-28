@@ -3328,6 +3328,21 @@ public class BillBeanController implements Serializable {
     }
 
     /**
+     * Same as {@link #updateSurgeryServiceBatchBill(Bill)} (including the
+     * fallback to {@link #updateBatchBill(Bill)} for a non-surgery header), for
+     * a flow whose own save is already committed. A header query error is logged,
+     * not thrown, so it cannot skip the success message or audit of the save.
+     */
+    public void updateSurgeryServiceBatchBillAfterSave(Bill header) {
+        try {
+            updateSurgeryServiceBatchBill(header);
+        } catch (RuntimeException e) {
+            java.util.logging.Logger.getLogger(BillBeanController.class.getName())
+                    .log(java.util.logging.Level.SEVERE, "Surgery header total update failed", e);
+        }
+    }
+
+    /**
      * Recomputes the header after a cancel or return of one of its children,
      * only when the header is a surgery bill. Capture the header BEFORE the
      * cancel runs: some cancels move the original bill off the header.

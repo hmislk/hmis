@@ -423,7 +423,7 @@ public class PharmacySaleBhtController implements Serializable {
             return;
         }
         getBillBean().saveEncounterComponents(committed, getBatchBill(), getSessionController().getLoggedUser());
-        getBillBean().updateSurgeryServiceBatchBill(getBatchBill());
+        getBillBean().updateSurgeryServiceBatchBillAfterSave(getBatchBill());
     }
 
 //    public void settleSurgeryBhtIssueStore() {
