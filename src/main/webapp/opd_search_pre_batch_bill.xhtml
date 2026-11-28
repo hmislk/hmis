@@ -134,15 +134,6 @@
                                         </h:outputLabel>
                                     </p:column>
 
-                                    <p:column headerText="Accept">
-                                        <p:commandButton
-                                            ajax="false"
-                                            value="Accept Payment"
-                                            action="#{opdPreSettleController.toSettleBatch(bill)}"
-                                            disabled="#{(bill.referenceBill.balance le 0.0 )or bill.cancelled}" >
-                                        </p:commandButton>
-                                    </p:column>
-
                                     <p:column headerText="Reprint">
                                         <p:commandButton
                                             ajax="false"
