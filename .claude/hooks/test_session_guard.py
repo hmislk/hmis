@@ -28,13 +28,13 @@ GH_FAIL = fake_gh("gh_fail", 'echo "boom" >&2; exit 1')
 GH_EMPTY = fake_gh("gh_empty", "exit 0")
 
 
-def run(cmd, gh=GH_OK, base="development", extra_env=None):
+def run(cmd, gh=GH_OK, base="development", extra_env=None, tool="Bash"):
     env = dict(os.environ)
     env.update({"HMIS_SESSION_GUARD_GH": gh, "BASE": base,
                 "GH_LOG": os.path.join(TMP, "gh.log")})
     env.update(extra_env or {})
     p = subprocess.run([sys.executable, HOOK], input=json.dumps(
-        {"tool_name": "Bash", "tool_input": {"command": cmd}, "cwd": TMP}),
+        {"tool_name": tool, "tool_input": {"command": cmd}, "cwd": TMP}),
         capture_output=True, text=True, env=env, timeout=30)
     return p.returncode, p.stderr
 
@@ -49,6 +49,43 @@ class Base(unittest.TestCase):
     def allow(self, cmd, **kw):
         rc, err = run(cmd, **kw)
         self.assertEqual(rc, 0, "should allow: %s (%s)" % (cmd, err))
+
+
+class PowerShellTests(Base):
+    PS = {"tool": "PowerShell"}
+
+    def test_merge(self):
+        for c in ("gh pr merge 12", "gh.exe pr merge 12 --squash", "& gh pr merge 12",
+                  "cd x; gh pr merge 12", "git status; & 'gh' pr merge 12",
+                  'pwsh -Command "gh pr merge 12"', "powershell -c 'gh pr merge 12'",
+                  'cmd /c "gh pr merge 12"', "iex 'gh pr merge 12'",
+                  "gh api -X PUT repos/hmislk/hmis/pulls/12/merge"):
+            self.deny(c, base="master", **self.PS)
+            self.allow(c, base="development", **self.PS)
+            self.deny(c, gh=GH_FAIL, **self.PS)
+
+    def test_add(self):
+        for c in ("git add -A", "git add .", "git.exe add --all", "& git add .", "git status; git add -A",
+                  'pwsh -NoProfile -Command "git add -A"', 'cmd /c "git add ."', "git -C C:\\x add .",
+                  "git add `\n-A", "git add *", "git add ':/'"):
+            self.deny(c, **self.PS)
+        for c in ("git add src\\x.java", "git add src/x.java", "git log --all", "echo `git add -A`"):
+            self.allow(c, **self.PS)
+
+    def test_push(self):
+        for c in ("git push --force", "git push origin +branch", "& git push -f", "git status; git push --force-with-lease",
+                  'pwsh -Command "git push -f"', 'cmd /c git push --force'):
+            self.deny(c, **self.PS)
+        for c in ("git push origin branch", "git push -u origin x"):
+            self.allow(c, **self.PS)
+
+    def test_ssh(self):
+        for c in ("ssh app1 cat /opt/example/app/config/domain.xml",
+                  "ssh.exe app1 'asadmin list-jdbc-connection-pools'", "& ssh app1 'cat domain.xml'",
+                  "scp app1:/x/domain.xml .", 'pwsh -c "ssh app1 cat domain.xml"'):
+            self.deny(c, **self.PS)
+        for c in ("ssh app1 uptime", "ssh.exe app1 'df -h'"):
+            self.allow(c, **self.PS)
 
 
 class MergeTests(Base):
@@ -119,6 +156,13 @@ class AddTests(Base):
                   "echo a | git add -A", "(git add .)", 'bash -c "git add -A"', "sh -c 'git add .'",
                   "echo $(git add -A)", "/usr/bin/git add .", "sudo git add -A", "git add ./"):
             self.deny(c)
+
+    def test_all_files_pathspecs_and_alias(self):
+        for c in ("git add :/", "git add '*'", "git add *", "git add ':/*'", "git -c alias.x=push x --force",
+                  "git -c alias.p=add p .", "git -calias.x=status x", "git -c ALIAS.x=status x"):
+            self.deny(c)
+        for c in ("git add src/*.java", "git -c core.x=1 status", "git -c user.name=a commit -m x"):
+            self.allow(c)
 
     def test_allowed(self):
         for c in ("git add src/x.java", "git add src/a.java src/b.java", "git add -- src/x.java",

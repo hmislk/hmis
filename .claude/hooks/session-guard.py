@@ -17,7 +17,7 @@ Refused:
 Deny = exit 2 with the reason on stderr (same as public-guard.py). The message
 never echoes the command. A failed merge-base lookup is refused (fail closed).
 
-Applies to Claude Code Bash calls.
+Applies to Claude Code Bash and PowerShell calls.
 Env for tests: HMIS_SESSION_GUARD_GH = path of the gh binary (default gh).
 Tests: .claude/hooks/test_session_guard.py. Policy: developer_docs/rules/git.md
 """
@@ -33,6 +33,8 @@ WRAPPERS = {"sudo", "env", "command", "exec", "time", "nice", "nohup", "builtin"
 WRAPPER_ARG_OPTS = {"sudo": {"-u", "-g", "-C", "-h", "-p", "-r", "-t", "-U"}, "env": {"-u", "-C"},
                     "nice": {"-n"}, "xargs": {"-I", "-n", "-P", "-L", "-d", "-s"}}
 SHELLS = {"bash", "sh", "zsh", "dash", "ksh"}
+PS_SHELLS = {"pwsh", "powershell"}
+EVALS = {"eval", "iex", "invoke-expression"}
 REMOTE = {"ssh", "scp", "sftp", "rsync"}
 GIT_OPT_ARG = {"-C", "-c", "--git-dir", "--work-tree", "--namespace", "--exec-path", "--super-prefix"}
 PUNCT = set(";&|()<>")
@@ -45,6 +47,7 @@ MSG_BASE = ("session-guard hook: could not check the base branch of this merge (
             "so it is refused. Retry the command. If it keeps failing, check gh auth and network.")
 MSG_ADD = ("session-guard hook: `git add -A`, `--all` and `.` are refused. "
            "Stage explicit paths: `git add path/one path/two`. See developer_docs/rules/git.md.")
+MSG_ALIAS = "session-guard hook: git -c alias.* is refused. Use the git command itself."
 MSG_FORCE = ("session-guard hook: force push is refused. Push normally, or ask the user.")
 MSG_SSH = ("session-guard hook: reading app-server DB pool settings over ssh is refused. "
            "Do not read domain.xml or asadmin pool/property/password values. Ask the user.")
@@ -54,10 +57,15 @@ class Deny(Exception):
     pass
 
 
-def tokenize(cmd):
-    """Return a list of segments, each a list of tokens. Raises ValueError if unparsable."""
+def tokenize(cmd, ps=False):
+    """Return a list of segments, each a list of tokens. Raises ValueError if unparsable.
+    ps=True reads PowerShell syntax: the backtick is an escape, not command substitution."""
     cmd = cmd.replace("\\\n", " ")
-    cmd = cmd.replace("$(", " ; ( ").replace("`", " ; ").replace("<(", " ; ( ")
+    if ps:
+        cmd = re.sub(r"`(.)", r"\1", cmd, flags=re.S)
+        cmd = cmd.replace("$(", " ; ( ")
+    else:
+        cmd = cmd.replace("$(", " ; ( ").replace("`", " ; ").replace("<(", " ; ( ")
     lex = shlex.shlex(cmd, posix=True, punctuation_chars=True)
     lex.whitespace_split = True
     lex.commenters = ""
@@ -101,6 +109,10 @@ def git_parts(args):
     """args after `git`. Return (subcommand, rest)."""
     i = 0
     while i < len(args) and args[i].startswith("-"):
+        if args[i] == "-c" and i + 1 < len(args) and args[i + 1].lower().startswith("alias."):
+            raise Deny(MSG_ALIAS)
+        if args[i].lower().startswith("-calias."):
+            raise Deny(MSG_ALIAS)
         i += 2 if args[i] in GIT_OPT_ARG else 1
     if i >= len(args):
         return None, []
@@ -109,7 +121,7 @@ def git_parts(args):
 
 def check_add(rest):
     for a in rest:
-        if a in ("--all", ".", "./", "-A"):
+        if a in ("--all", ".", "./", "-A", "*", "./*", ":/", ":/*", ":/."):
             raise Deny(MSG_ADD)
         if a.startswith("-") and not a.startswith("--") and "A" in a:
             raise Deny(MSG_ADD)
@@ -227,19 +239,29 @@ def check_remote(raw):
         raise Deny(MSG_SSH)
 
 
-def check_segment(seg, raw, cwd, depth):
+def check_segment(seg, raw, cwd, depth, ps=False):
     env, toks = split_prefix(seg)
     if not toks:
         return
-    prog = os.path.basename(toks[0])
+    prog = re.sub(r"\.(?:exe|cmd|bat)$", "", os.path.basename(toks[0].replace("\\", "/")).lower())
     rest = toks[1:]
     if prog in SHELLS:
         for i, a in enumerate(rest):
             if re.match(r"^-[a-z]*c[a-z]*$", a) and i + 1 < len(rest):
                 analyse(rest[i + 1], cwd, depth + 1)
                 break
-    elif prog == "eval":
-        analyse(" ".join(rest), cwd, depth + 1)
+    elif prog in PS_SHELLS:
+        for i, a in enumerate(rest):
+            if re.match(r"^-(?:c|co|com|comm|comma|comman|command)$", a, re.I) and i + 1 < len(rest):
+                analyse(" ".join(rest[i + 1:]), cwd, depth + 1, ps=True)
+                break
+    elif prog == "cmd":
+        for i, a in enumerate(rest):
+            if a.lower() in ("/c", "/k", "/r") and i + 1 < len(rest):
+                analyse(" ".join(rest[i + 1:]), cwd, depth + 1)
+                break
+    elif prog in EVALS:
+        analyse(" ".join(rest), cwd, depth + 1, ps=ps)
     elif prog == "git":
         sub, args = git_parts(rest)
         if sub == "add":
@@ -267,16 +289,16 @@ def raw_fallback(cmd):
         check_remote(cmd)
 
 
-def analyse(cmd, cwd, depth=0):
+def analyse(cmd, cwd, depth=0, ps=False):
     if depth > 4:
         return
     try:
-        segs = tokenize(cmd)
+        segs = tokenize(cmd, ps)
     except ValueError:
         raw_fallback(cmd)
         return
     for seg in segs:
-        check_segment(seg, cmd, cwd, depth)
+        check_segment(seg, cmd, cwd, depth, ps)
 
 
 def main():
@@ -284,14 +306,15 @@ def main():
         data = json.load(sys.stdin)
     except ValueError:
         return 0
-    if data.get("tool_name") != "Bash":
+    tool = data.get("tool_name")
+    if tool not in ("Bash", "PowerShell"):
         return 0
     command = (data.get("tool_input") or {}).get("command") or ""
     cwd = data.get("cwd") or os.getcwd()
-    if not re.search(r"\b(?:git|gh|ssh|scp|sftp|rsync|eval)\b", command):
+    if not re.search(r"\b(?:git|gh|ssh|scp|sftp|rsync|eval|iex|Invoke-Expression)\b", command):
         return 0
     try:
-        analyse(command, cwd)
+        analyse(command, cwd, ps=(tool == "PowerShell"))
     except Deny as d:
         sys.stderr.write(str(d) + "\n")
         return 2
