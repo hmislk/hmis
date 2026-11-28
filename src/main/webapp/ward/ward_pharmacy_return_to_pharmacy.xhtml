@@ -314,6 +314,16 @@
                         <div class="d-flex align-items-center gap-2">
                             <p:outputLabel value="Returned to Pharmacy - Bill #{wardPharmacyReturnToPharmacyController.returnBill.deptId}"/>
                         </div>
+                        <!-- CENTER: navigation -->
+                        <div class="d-flex gap-2 flex-wrap">
+                            <p:commandButton
+                                id="btnBackAfterReturn"
+                                value="New Return"
+                                icon="fas fa-arrow-left"
+                                ajax="false"
+                                class="ui-button-info ui-button-outlined"
+                                action="#{wardPharmacyReturnToPharmacyController.navigateToNewReturn}"/>
+                        </div>
                         <!-- RIGHT: actions -->
                         <div class="d-flex gap-2 flex-wrap align-items-center">
                             <p:commandButton
@@ -371,14 +381,6 @@
                     </p:column>
 
                 </p:dataTable>
-
-                <p:commandButton
-                    id="btnBackAfterReturn"
-                    value="New Return"
-                    icon="fas fa-arrow-left"
-                    ajax="false"
-                    class="ui-button-secondary mt-3"
-                    action="#{wardPharmacyReturnToPharmacyController.navigateToNewReturn}"/>
 
             </p:panel>
         </h:form>
