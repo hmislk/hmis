@@ -55,6 +55,7 @@ import com.divudi.core.facade.PharmaceuticalBillItemFacade;
 import com.divudi.core.facade.StaffFacade;
 import com.divudi.core.facade.TokenFacade;
 import com.divudi.service.BillService;
+import com.divudi.service.opd.OpdPreSettleAmounts;
 import com.divudi.service.opd.OpdPreSettleException;
 import com.divudi.service.opd.OpdPreSettlePaymentRows;
 import com.divudi.service.opd.OpdPreSettleRequest;
@@ -535,8 +536,8 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
     private boolean saveSettlingBatchBill() {
         getSaleBill().copy(getPreBill());
         getSaleBill().copyValue(getPreBill());
-        getSaleBill().setBalance(getSaleBill().getNetTotal());
-        getSaleBill().setCashPaid(cashPaid);
+        // Same as the normal OPD bill: balance 0 when paid in full (Credit and Staff keep the total), cash paid and change stored (#26324).
+        OpdPreSettleAmounts.apply(getSaleBill(), getPreBill().getPaymentMethod(), cashPaid);
         getSaleBill().setBillClassType(BillClassType.BilledBill);
         getSaleBill().setBillType(BillType.OpdBill);
         getSaleBill().setBillTypeAtomic(BillTypeAtomic.OPD_BATCH_BILL_PAYMENT_COLLECTION_AT_CASHIER);
@@ -946,6 +947,16 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
 
     public void settleOpdBatchBill() {
         editingQty = null;
+        if (getPreBill().getPaymentMethod() == null) {
+            JsfUtil.addErrorMessage("Please select the payment method");
+            return;
+        }
+        // The page binds the method to the pre-bill; the change event may not have run, so read it here (#26324).
+        paymentMethod = getPreBill().getPaymentMethod();
+        if (paymentMethod != PaymentMethod.Cash
+                && !sessionController.getDepartmentPreference().isPartialPaymentOfOpdBillsAllowed()) {
+            setCashPaid(getPreBill().getNetTotal());
+        }
         if (paymentMethodDataErrorCheck()) {
             return;
         }
@@ -1223,6 +1234,8 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
             }
         }
         getPreBill().setPaymentMethod(null);
+        paymentMethod = null;
+        cashPaid = 0;
         paymentScheme = new PaymentScheme();
         creditCompany = null;
         toStaff = null;
