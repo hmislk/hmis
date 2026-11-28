@@ -210,7 +210,7 @@
                         </td>
                         <td class="totalsBlock" style="text-align: right!important; padding-right: 30px;">
                             <h:outputLabel value="#{empty cc.attrs.bill.creater.staff.person.name ? cc.attrs.bill.creater.webUserPerson.name : cc.attrs.bill.creater.staff.person.name}" ></h:outputLabel>
-                            <h:outputLabel value=" (#{cc.attrs.bill.creater.staff.code})" rendered="#{not empty cc.attrs.bill.creater.staff.code}" ></h:outputLabel>
+                            <h:outputLabel value=" (#{cc.attrs.bill.creater.staff.codeRaw})" rendered="#{not empty cc.attrs.bill.creater.staff.codeRaw}" ></h:outputLabel>
                         </td>
                     </tr>
                 </table>
