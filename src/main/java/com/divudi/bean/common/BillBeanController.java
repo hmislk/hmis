@@ -1742,6 +1742,82 @@ public class BillBeanController implements Serializable {
 
     }
 
+    /**
+     * OPD batch bills (sale, cashier collection and cancellation). Each one
+     * holds the same payment as its individual bills, so a report that sums by
+     * payment method must skip them. The individual bills (sale, collection and
+     * "cancellation during batch bill cancellation") stay counted, so a sale
+     * and its cancellation net to zero.
+     */
+    public static List<BillTypeAtomic> batchBillsToSkipInPaymentTotals() {
+        return Arrays.asList(
+                BillTypeAtomic.OPD_BATCH_BILL_WITH_PAYMENT,
+                BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_WITH_PAYMENT,
+                BillTypeAtomic.OPD_BATCH_BILL_PAYMENT_COLLECTION_AT_CASHIER,
+                BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_PAYMENT_COLLECTION_AT_CASHIER,
+                BillTypeAtomic.OPD_BATCH_BILL_CANCELLATION,
+                BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_CANCELLATION);
+    }
+
+    /**
+     * JPQL for bills (or their net total) by payment method that skips the
+     * batch bills in {@link #batchBillsToSkipInPaymentTotals()}. Bills with no
+     * atomic type (old data) are kept.
+     */
+    static String paymentMethodBillsWithoutBatchJpql(boolean totalOnly) {
+        return paymentMethodBillsWithoutBatchJpql(totalOnly, false);
+    }
+
+    static String paymentMethodBillsWithoutBatchJpql(boolean totalOnly, boolean includeVat) {
+        return "select " + (totalOnly ? (includeVat ? "sum(b.netTotal+b.vat)" : "sum(b.netTotal)") : "b")
+                + " from Bill b "
+                + " where type(b)!=:type "
+                + " and b.institution=:ins "
+                + " and b.paymentMethod = :bTp "
+                + " and (b.billTypeAtomic is null or b.billTypeAtomic not in :skipAtomic) "
+                + " and b.createdAt between :fromDate and :toDate "
+                + " and b.retired=false"
+                + (totalOnly ? "" : " order by b.id desc ");
+    }
+
+    private Map<String, Object> paymentMethodBillsWithoutBatchParams(PaymentMethod paymentMethod, Date fromDate, Date toDate, Institution institution) {
+        Map<String, Object> temMap = new HashMap<>();
+        temMap.put("bTp", paymentMethod);
+        temMap.put("toDate", toDate);
+        temMap.put("fromDate", fromDate);
+        temMap.put("type", PreBill.class);
+        temMap.put("ins", institution);
+        temMap.put("skipAtomic", batchBillsToSkipInPaymentTotals());
+        return temMap;
+    }
+
+    /**
+     * Same as fetchBills(PaymentMethod, Date, Date, Institution) but without
+     * the OPD batch bills, so the batch is not counted on top of its bills.
+     */
+    public List<Bill> fetchBillsWithoutBatchBills(PaymentMethod paymentMethod, Date fromDate, Date toDate, Institution institution) {
+        return getBillFacade().findByJpql(paymentMethodBillsWithoutBatchJpql(false),
+                paymentMethodBillsWithoutBatchParams(paymentMethod, fromDate, toDate, institution), TemporalType.TIMESTAMP);
+    }
+
+    /**
+     * Same as calBillTotal(PaymentMethod, Date, Date, Institution) but without
+     * the OPD batch bills.
+     */
+    public double calBillTotalWithoutBatchBills(PaymentMethod paymentMethod, Date fromDate, Date toDate, Institution institution) {
+        return getBillFacade().findDoubleByJpql(paymentMethodBillsWithoutBatchJpql(true),
+                paymentMethodBillsWithoutBatchParams(paymentMethod, fromDate, toDate, institution), TemporalType.TIMESTAMP);
+    }
+
+    /**
+     * Same as calBillTotalWithVat(PaymentMethod, Date, Date, Institution) but
+     * without the OPD batch bills.
+     */
+    public double calBillTotalWithVatWithoutBatchBills(PaymentMethod paymentMethod, Date fromDate, Date toDate, Institution institution) {
+        return getBillFacade().findDoubleByJpql(paymentMethodBillsWithoutBatchJpql(true, true),
+                paymentMethodBillsWithoutBatchParams(paymentMethod, fromDate, toDate, institution), TemporalType.TIMESTAMP);
+    }
+
     public double calBillTotalWithVat(PaymentMethod paymentMethod, Date fromDate, Date toDate, Institution institution) {
 
         String sql;
@@ -2551,6 +2627,8 @@ public class BillBeanController implements Serializable {
      * final bill changes by {@code amount} (same sign as the bill's netTotal)
      * instead of the bill's whole netTotal. Used when one payment covers more
      * than one admission, so each final bill takes only its own share (#25547).
+     * Since #26152 the amount is not used: the final bill's figures are
+     * recounted from the bills.
      */
     public boolean updateInwardDipositList(PatientEncounter patientEncounter, Bill bill, double amount) {
         if (patientEncounter != null && bill != null) {
@@ -2564,25 +2642,30 @@ public class BillBeanController implements Serializable {
                     return false;
                 }
                 bill.setForwardReferenceBill(finalBill);
-                getBillFacade().edit(bill);
-                if (!finalBill.getBackwardReferenceBills().contains(bill)) {
-                    finalBill.getBackwardReferenceBills().add(bill);
-                    finalBill.setPaidAmount(finalBill.getPaidAmount() + amount);
-                    // Balance is derived from net - paid (#25570). The old "balance <= 0 means
-                    // not set" reset could not tell a settled bill from a new one, so a
-                    // cancel of a receipt that cleared the balance doubled it, and it also
-                    // ignored payments taken at finalization.
-                    finalBill.setBalance(finalBill.getNetTotal() - finalBill.getPaidAmount());
-
-                    if (bill.getBillTypeAtomic() == BillTypeAtomic.INWARD_PAYMENT
-                            || bill.getBillTypeAtomic() == BillTypeAtomic.INWARD_DEPOSIT) {
-                        finalBill.setSettledAmountByPatient(finalBill.getSettledAmountByPatient() + amount);
-                    } else if (bill.getBillTypeAtomic() == BillTypeAtomic.INPATIENT_CREDIT_COMPANY_PAYMENT_RECEIVED) {
-                        finalBill.setSettledAmountBySponsor(finalBill.getSettledAmountBySponsor() + amount);
-                    } else if (bill.getBillTypeAtomic() == BillTypeAtomic.INPATIENT_CREDIT_COMPANY_PAYMENT_CANCELLATION) {
-                        finalBill.setSettledAmountBySponsor(finalBill.getSettledAmountBySponsor() - Math.abs(amount));
-                    }
+                // Never merge the caller's payment bill here: it is a detached copy whose
+                // payments and billItems lists may predate rows saved after it was read.
+                // Bill.payments is cascade ALL with orphanRemoval, so the merge would
+                // schedule a DELETE of the saved Payment, and the recount's first query
+                // would flush it (FK from DRAWERENTRY, rollback). Set the link on the
+                // copy this transaction reads, which carries the real collections.
+                Bill linkedBill = bill.getId() == null ? null : getBillFacade().findWithoutCache(bill.getId());
+                if (linkedBill != null) {
+                    linkedBill.setForwardReferenceBill(finalBill);
+                    getBillFacade().edit(linkedBill);
+                } else {
+                    getBillFacade().edit(bill);
                 }
+                Bill linked = linkedBill != null ? linkedBill : bill;
+                if (!finalBill.getBackwardReferenceBills().contains(linked)) {
+                    finalBill.getBackwardReferenceBills().add(linked);
+                }
+                // The paid amount, balance and settled amounts are recounted from the
+                // bills, not added to: the same figures whatever happened before and
+                // however many times this runs (#26152). The amount is not used. A
+                // company receipt for several admissions is split per admission
+                // because the recount reads its items; inward payments, deposits
+                // and refunds belong to one admission.
+                getInwardBean().recountFinalBillPaid(finalBill);
                 getBillFacade().edit(finalBill);
                 patientEncounter.setFinalBill(finalBill);
             }
@@ -2687,6 +2770,110 @@ public class BillBeanController implements Serializable {
         return allLinked;
     }
 
+    /**
+     * Updates the final bill after one saved Post Final Bill Payment row, or
+     * its cancellation or refund row (negative netTotal) (#26125). Same
+     * recount as {@link #updateInwardDipositList(PatientEncounter, Bill, double)}
+     * (#26152), but the row is NOT linked as a backward reference bill: those
+     * rows print as the "paid by" lines of the final bill, and the settle and
+     * confirm paths rebuild them from inward payments only. An approved final
+     * bill is frozen (#23848): a row created after its approval time changes
+     * nothing, and the recount itself leaves such rows out, the same rule as
+     * {@link InwardBeanController#getPostFinalPaymentTotalIncludedIn}. Same
+     * per-admission lock as the other final bill updates.
+     */
+    public void addPostFinalPaymentToFinalBill(PatientEncounter patientEncounter, Bill postFinalRow) {
+        if (patientEncounter == null || patientEncounter.getId() == null || postFinalRow == null) {
+            return;
+        }
+        finalBillLockBean.withFinalBillVersionLock(patientEncounter, () -> {
+            PatientEncounter fresh = finalBillPatientEncounterFacade.findWithoutCache(patientEncounter.getId());
+            if (fresh == null || !fresh.isPaymentFinalized() || fresh.getFinalBill() == null
+                    || fresh.getFinalBill().getId() == null) {
+                return null;
+            }
+            Bill finalBill = getBillFacade().findWithoutCache(fresh.getFinalBill().getId());
+            if (finalBill == null || finalBill.isCancelled() || finalBill.isRetired()) {
+                return null;
+            }
+            if (finalBill.getApproveAt() != null
+                    && (postFinalRow.getCreatedAt() == null
+                    || postFinalRow.getCreatedAt().after(finalBill.getApproveAt()))) {
+                return null;
+            }
+            getInwardBean().recountFinalBillPaid(finalBill);
+            getBillFacade().edit(finalBill);
+            // The payment lowers what the credit companies still owe (#26159).
+            getInwardBean().recountCreditCompanyShares(finalBill);
+            return null;
+        });
+    }
+
+    /**
+     * True when {@code bill} is the amount committed to a credit company when
+     * an inpatient final bill was settled, and it points at that final bill (#26159).
+     */
+    public boolean isInwardFinalBillCompanyCommitment(Bill bill) {
+        return bill != null
+                && bill.getBillTypeAtomic() == BillTypeAtomic.INWARD_FINAL_BILL_PAYMENT_BY_CREDIT_COMPANY
+                && bill.getPatientEncounter() != null && bill.getPatientEncounter().getId() != null
+                && bill.getReferenceBill() != null && bill.getReferenceBill().getId() != null;
+    }
+
+    /**
+     * Runs a company receipt or cancel update of a commitment bill under the
+     * per-admission final bill lock when it is an inpatient commitment, so the
+     * read-modify-write cannot interleave with a final bill recount; any other
+     * bill runs the action directly (#26159).
+     */
+    public void runUnderFinalBillLockOfCommitment(Bill commitment, Runnable action) {
+        if (isInwardFinalBillCompanyCommitment(commitment)) {
+            finalBillLockBean.withFinalBillVersionLock(commitment.getPatientEncounter(), action);
+        } else {
+            action.run();
+        }
+    }
+
+    /**
+     * After a credit company receipt or its cancel has been saved on a
+     * commitment bill, recounts the final bill's paid figures and the company
+     * shares, whose floor is what each company has paid (#26159). Reloads the
+     * final bill inside the per-admission lock. Runs after the receipt save has
+     * committed; a failure is logged and never undoes the receipt, and the next
+     * payment, receipt or admin reset recounts again. Does nothing for a bill
+     * that is not an inpatient commitment.
+     */
+    public void recountFinalBillAfterCompanyReceipt(Bill commitmentOrFinalBill) {
+        if (commitmentOrFinalBill == null) {
+            return;
+        }
+        try {
+            if (!isInwardFinalBillCompanyCommitment(commitmentOrFinalBill)) {
+                return;
+            }
+            // The receipt may sit on a commitment of an older version; the admission's
+            // confirmed final bill is the one that carries the paid figures (#26163).
+            Long encounterId = commitmentOrFinalBill.getPatientEncounter().getId();
+            finalBillLockBean.withFinalBillVersionLock(commitmentOrFinalBill.getPatientEncounter(), () -> {
+                PatientEncounter freshPe = finalBillPatientEncounterFacade.findWithoutCache(encounterId);
+                if (freshPe == null || freshPe.getFinalBill() == null || freshPe.getFinalBill().getId() == null) {
+                    return null;
+                }
+                Bill fresh = getBillFacade().findWithoutCache(freshPe.getFinalBill().getId());
+                if (fresh == null || fresh.isRetired() || fresh.isCancelled()) {
+                    return null;
+                }
+                getInwardBean().recountFinalBillPaid(fresh);
+                getInwardBean().recountCreditCompanyShares(fresh);
+                getBillFacade().edit(fresh);
+                return null;
+            });
+        } catch (RuntimeException e) {
+            java.util.logging.Logger.getLogger(BillBeanController.class.getName())
+                    .log(java.util.logging.Level.WARNING, "Recount after a credit company receipt failed", e);
+        }
+    }
+
     private FinalBillLinkResult linkToFreshFinalBill(PatientEncounter patientEncounter, Bill bill, boolean refresh) {
         return linkToFreshFinalBill(patientEncounter, bill, refresh, bill == null ? 0 : bill.getNetTotal());
     }
@@ -2702,7 +2889,7 @@ public class BillBeanController implements Serializable {
             }
             boolean ok = updateInwardDipositList(fresh, bill, amount);
             if (refresh && ok && fresh.isPaymentFinalized() && fresh.getFinalBill() != null) {
-                getInwardBean().updateFinalFill(fresh);
+                // updateInwardDipositList has just recounted the final bill (#26152).
                 if (fresh.getPaymentMethod() == PaymentMethod.Credit) {
                     getInwardBean().updateCreditDetail(fresh, fresh.getFinalBill().getNetTotal());
                 }
@@ -3085,6 +3272,92 @@ public class BillBeanController implements Serializable {
         b.setTotal(value);
 
         getBillFacade().edit(b);
+    }
+
+    /**
+     * LIVE children of a surgery header: linked, not cancelled, and not the
+     * cancellation bill of another bill. A cancelled original and its
+     * cancellation bill are both left out, wherever the original now points
+     * (some pharmacy cancels move the original off the header and keep only the
+     * cancellation bill linked). A return or refund bill that is not a
+     * cancellation stays in, once, with its negative amount.
+     */
+    static final String SURGERY_HEADER_CHILD_TOTAL_JPQL = "Select sum(bf.netTotal) from Bill bf where "
+            + " bf.retired=false and bf.forwardReferenceBill=:bill "
+            + " and bf.cancelled=false "
+            + " and not exists (select o.id from Bill o where o.cancelledBill=bf)";
+
+    /**
+     * Refund bills (negative netTotal) of the surgery header's live children that
+     * are not linked to the header themselves. Linked refunds are already in
+     * the child sum, so they are skipped here to avoid counting them twice.
+     */
+    static final String SURGERY_HEADER_REFUND_TOTAL_JPQL = "Select sum(r.netTotal) from RefundBill r where "
+            + " r.retired=false and r.forwardReferenceBill is null "
+            + " and r.billedBill.retired=false and r.billedBill.cancelled=false "
+            + " and r.billedBill.forwardReferenceBill=:bill";
+
+    /**
+     * Updates the total of a SURGERY header bill so that cancelled children and
+     * refunds are netted out. Every flow that recomputes a surgery header must
+     * call this method, or the total flips back to the old sum. For any other
+     * header type it does the same as {@link #updateBatchBill(Bill)}, which is
+     * left unchanged because other flows rely on its sum.
+     *
+     * <p>{@link #updateBatchBillExcludingCancelled(Bill)} is not reused: it
+     * drops a cancelled pharmacy child while keeping that child's linked
+     * negative cancellation bill (a double subtraction), and it ignores refunds.</p>
+     *
+     * <p>The sums use {@code findSingleResultByJpql}, which throws on a query
+     * error, so a bad query cannot set the header to 0.</p>
+     */
+    public void updateSurgeryServiceBatchBill(Bill header) {
+        if (header == null) {
+            return;
+        }
+        if (header.getBillType() != BillType.SurgeryBill) {
+            updateBatchBill(header);
+            return;
+        }
+        HashMap<String, Object> hm = new HashMap<>();
+        hm.put("bill", header);
+        Double children = getBillFacade().findSingleResultByJpql(SURGERY_HEADER_CHILD_TOTAL_JPQL, hm);
+        Double refunds = getBillFacade().findSingleResultByJpql(SURGERY_HEADER_REFUND_TOTAL_JPQL, hm);
+        header.setTotal((children == null ? 0.0 : children) + (refunds == null ? 0.0 : refunds));
+        getBillFacade().edit(header);
+    }
+
+    /**
+     * Same as {@link #updateSurgeryServiceBatchBill(Bill)} (including the
+     * fallback to {@link #updateBatchBill(Bill)} for a non-surgery header), for
+     * a flow whose own save is already committed. A header query error is logged,
+     * not thrown, so it cannot skip the success message or audit of the save.
+     */
+    public void updateSurgeryServiceBatchBillAfterSave(Bill header) {
+        try {
+            updateSurgeryServiceBatchBill(header);
+        } catch (RuntimeException e) {
+            java.util.logging.Logger.getLogger(BillBeanController.class.getName())
+                    .log(java.util.logging.Level.SEVERE, "Surgery header total update failed", e);
+        }
+    }
+
+    /**
+     * Recomputes the header after a cancel or return of one of its children,
+     * only when the header is a surgery bill. Capture the header BEFORE the
+     * cancel runs: some cancels move the original bill off the header.
+     * A failure here is logged and never thrown: the cancel or return is
+     * already saved, and the caller must not report it as failed.
+     */
+    public void refreshSurgeryHeaderAfterChildChange(Bill header) {
+        try {
+            if (header != null && header.getBillType() == BillType.SurgeryBill) {
+                updateSurgeryServiceBatchBill(header);
+            }
+        } catch (RuntimeException e) {
+            java.util.logging.Logger.getLogger(BillBeanController.class.getName())
+                    .log(java.util.logging.Level.SEVERE, "Surgery header total refresh failed", e);
+        }
     }
 
     // WARNING: this sum intentionally includes cancelled child bills.
@@ -4787,62 +5060,83 @@ public class BillBeanController implements Serializable {
     }
 
     public void updateBillItemByBillFee(BillItem billItem) {
-        String sql = "SELECT sum(b.feeGrossValue) "
+        // One query returns all five sums (was five separate queries); same filter, same values.
+        String sql = "SELECT sum(b.feeGrossValue), sum(b.feeValue), sum(b.feeMargin), "
+                + " sum(b.feeDiscount), sum(b.feeVat) "
                 + " FROM BillFee b "
                 + " WHERE b.retired=false "
                 + " and b.billItem=:bItm ";
-        HashMap hm = new HashMap();
+        HashMap<String, Object> hm = new HashMap<>();
         hm.put("bItm", billItem);
-        double val = getBillFeeFacade().findDoubleByJpql(sql, hm);
-
-        billItem.setGrossValue(val);
-
-        sql = "SELECT sum(b.feeValue) "
-                + " FROM BillFee b "
-                + " WHERE b.retired=false "
-                + " and b.billItem=:bItm ";
-        hm = new HashMap();
-        hm.put("bItm", billItem);
-        val = getBillFeeFacade().findDoubleByJpql(sql, hm);
-
-        billItem.setNetValue(val);
-
-        sql = "SELECT sum(b.feeMargin) "
-                + " FROM BillFee b "
-                + " WHERE b.retired=false "
-                + " and b.billItem=:bItm ";
-        hm = new HashMap();
-        hm.put("bItm", billItem);
-        val = getBillFeeFacade().findDoubleByJpql(sql, hm);
-
-        billItem.setMarginValue(val);
-
-        sql = "SELECT sum(b.feeDiscount) "
-                + " FROM BillFee b "
-                + " WHERE b.retired=false "
-                + " and b.billItem=:bItm ";
-        hm = new HashMap();
-        hm.put("bItm", billItem);
-        val = getBillFeeFacade().findDoubleByJpql(sql, hm);
-
-        billItem.setDiscount(val);
-
-        sql = "SELECT sum(b.feeVat) "
-                + " FROM BillFee b "
-                + " WHERE b.retired=false "
-                + " and b.billItem=:bItm ";
-        hm = new HashMap();
-        hm.put("bItm", billItem);
-        val = getBillFeeFacade().findDoubleByJpql(sql, hm);
-
-        billItem.setVat(val);
-        billItem.setVatPlusNetValue(billItem.getNetValue() + billItem.getVat());
-//
-//        billItem.setEditedAt(new Date());
-//        billItem.setEditor(webUser);
+        List<Object[]> rows = getBillFeeFacade().findRawResultsByJpql(sql, hm, TemporalType.DATE);
+        Object[] row = (rows == null || rows.isEmpty()) ? null : rows.get(0);
+        applyBillFeeSumsToBillItem(billItem, row);
 
         getBillItemFacade().edit(billItem);
 
+    }
+
+    /**
+     * As {@link #updateBillItemByBillFee}, for a bill item that was read earlier
+     * in the same run (not freshly): sets the sums on the in-memory item and
+     * writes only the item's own six columns. It does not merge the item, so
+     * the item's possibly stale BillFee collection (cascade ALL) cannot
+     * overwrite fee rows committed since the item was read (#17562).
+     */
+    public void updateBillItemByBillFeeColumnsOnly(BillItem billItem) {
+        String sql = "SELECT sum(b.feeGrossValue), sum(b.feeValue), sum(b.feeMargin), "
+                + " sum(b.feeDiscount), sum(b.feeVat) "
+                + " FROM BillFee b "
+                + " WHERE b.retired=false "
+                + " and b.billItem=:bItm ";
+        HashMap<String, Object> hm = new HashMap<>();
+        hm.put("bItm", billItem);
+        List<Object[]> rows = getBillFeeFacade().findRawResultsByJpql(sql, hm, TemporalType.DATE);
+        Object[] row = (rows == null || rows.isEmpty()) ? null : rows.get(0);
+        applyBillFeeSumsToBillItem(billItem, row);
+        if (billItem.getId() == null) {
+            getBillItemFacade().edit(billItem);
+            return;
+        }
+        getBillItemFacade().updateByJpql(BILL_ITEM_SUMS_UPDATE_JPQL, billItemSumsUpdateParameters(billItem));
+    }
+
+    /** The six BillItem columns {@link #applyBillFeeSumsToBillItem} sets, and no others. */
+    static final String BILL_ITEM_SUMS_UPDATE_JPQL = "UPDATE BillItem b SET b.grossValue=:gross, b.netValue=:net,"
+            + " b.marginValue=:margin, b.discount=:discount, b.vat=:vat, b.vatPlusNetValue=:vatPlusNet"
+            + " WHERE b.id=:id";
+
+    static Map<String, Object> billItemSumsUpdateParameters(BillItem billItem) {
+        Map<String, Object> params = new HashMap<>();
+        params.put("gross", billItem.getGrossValue());
+        params.put("net", billItem.getNetValue());
+        params.put("margin", billItem.getMarginValue());
+        params.put("discount", billItem.getDiscount());
+        params.put("vat", billItem.getVat());
+        params.put("vatPlusNet", billItem.getVatPlusNetValue());
+        params.put("id", billItem.getId());
+        return params;
+    }
+
+    /**
+     * Copies the five BillFee sums (gross, net, margin, discount, vat; in that
+     * order) onto the bill item. A missing row or a null sum counts as zero,
+     * as the former one-query-per-sum code did.
+     */
+    public static void applyBillFeeSumsToBillItem(BillItem billItem, Object[] sums) {
+        billItem.setGrossValue(sumAt(sums, 0));
+        billItem.setNetValue(sumAt(sums, 1));
+        billItem.setMarginValue(sumAt(sums, 2));
+        billItem.setDiscount(sumAt(sums, 3));
+        billItem.setVat(sumAt(sums, 4));
+        billItem.setVatPlusNetValue(billItem.getNetValue() + billItem.getVat());
+    }
+
+    private static double sumAt(Object[] sums, int index) {
+        if (sums == null || sums.length <= index || sums[index] == null) {
+            return 0.0;
+        }
+        return ((Number) sums[index]).doubleValue();
     }
 
     private void savePatientInvestigation(BillEntry billEntry, BillComponent bc, WebUser wu) {

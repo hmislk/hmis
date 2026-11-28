@@ -326,7 +326,7 @@
                                         <tr>
                                             <td style="padding-left: 12px;">
                                                 <h:outputLabel class="itemsBlockRightFiveFive"
-                                                    value="  #{bf.staff ne null and bf.staff.person ne null ? bf.staff.person.nameWithTitle : bf.fee.name}"
+                                                    value="  #{bf.staff ne null and bf.staff.person ne null and (configOptionApplicationController.getBooleanValueByKey('OPD Bill Print - Show Doctor Name on Fee Lines', true) or not (bf.billItem.bill.billTypeAtomic ne null and bf.billItem.bill.billTypeAtomic.serviceType eq 'OPD')) ? bf.staff.person.nameWithTitle : ((not configOptionApplicationController.getBooleanValueByKey('OPD Bill Print - Show Doctor Name on Fee Lines', true) and (bf.billItem.bill.billTypeAtomic ne null and bf.billItem.bill.billTypeAtomic.serviceType eq 'OPD')) ? (not empty bf.fee.name ? bf.fee.name : 'Fee') : bf.fee.name)}"
                                                     style="font-style: italic;"/>
                                             </td>
                                             <td style="text-align: right; padding-right: 30px;">

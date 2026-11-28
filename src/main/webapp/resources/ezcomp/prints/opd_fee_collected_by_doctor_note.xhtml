@@ -12,6 +12,8 @@
         asRow=false: a block line, for use inside the item name cell.
         asRow=true: a table row (used under the item in fee-breakdown prints).
         breakdown=true: "[doctor] - Collected by the Doctor"; otherwise "[doctor] fee: collected by the doctor".
+        Option 'OPD Bill Print - Show Doctor Name on Fee Lines' (default true): when false, the doctor name is
+        replaced by the fee name (OPD bills only; other bill types always show the name): "[fee name] - Collected by the Doctor" / "[fee name]: collected by the doctor".
     -->
 
     <!-- INTERFACE -->
@@ -29,16 +31,18 @@
                     <tr>
                         <td colspan="2" style="padding-left: 12px;">
                             <h:outputLabel class="itemsBlockRightFiveFive" style="font-style: italic;"
-                                           value="#{cbf.staff ne null and cbf.staff.person ne null ? cbf.staff.person.nameWithTitle : 'Doctor'} &#8212; Collected by the Doctor"/>
+                                           value="#{(configOptionApplicationController.getBooleanValueByKey('OPD Bill Print - Show Doctor Name on Fee Lines', true) or not (cc.attrs.billItem.bill.billTypeAtomic ne null and cc.attrs.billItem.bill.billTypeAtomic.serviceType eq 'OPD')) ? (cbf.staff ne null and cbf.staff.person ne null ? cbf.staff.person.nameWithTitle : 'Doctor') : (cbf.fee ne null and not empty cbf.fee.name ? cbf.fee.name : 'Doctor fee')} &#8212; Collected by the Doctor"/>
                         </td>
                     </tr>
                 </h:panelGroup>
                 <h:panelGroup rendered="#{not cc.attrs.asRow}">
                     <div style="font-size: 0.9em; font-style: italic;">
                         <h:outputText rendered="#{cc.attrs.breakdown}"
-                                      value="#{cbf.staff ne null and cbf.staff.person ne null ? cbf.staff.person.nameWithTitle : 'Doctor'} &#8212; Collected by the Doctor"/>
-                        <h:outputText rendered="#{not cc.attrs.breakdown}"
+                                      value="#{(configOptionApplicationController.getBooleanValueByKey('OPD Bill Print - Show Doctor Name on Fee Lines', true) or not (cc.attrs.billItem.bill.billTypeAtomic ne null and cc.attrs.billItem.bill.billTypeAtomic.serviceType eq 'OPD')) ? (cbf.staff ne null and cbf.staff.person ne null ? cbf.staff.person.nameWithTitle : 'Doctor') : (cbf.fee ne null and not empty cbf.fee.name ? cbf.fee.name : 'Doctor fee')} &#8212; Collected by the Doctor"/>
+                        <h:outputText rendered="#{not cc.attrs.breakdown and (configOptionApplicationController.getBooleanValueByKey('OPD Bill Print - Show Doctor Name on Fee Lines', true) or not (cc.attrs.billItem.bill.billTypeAtomic ne null and cc.attrs.billItem.bill.billTypeAtomic.serviceType eq 'OPD'))}"
                                       value="#{cbf.staff ne null and cbf.staff.person ne null ? cbf.staff.person.nameWithTitle : 'Doctor'} fee: collected by the doctor"/>
+                        <h:outputText rendered="#{not cc.attrs.breakdown and (not configOptionApplicationController.getBooleanValueByKey('OPD Bill Print - Show Doctor Name on Fee Lines', true) and (cc.attrs.billItem.bill.billTypeAtomic ne null and cc.attrs.billItem.bill.billTypeAtomic.serviceType eq 'OPD'))}"
+                                      value="#{cbf.fee ne null and not empty cbf.fee.name ? cbf.fee.name : 'Doctor fee'}: collected by the doctor"/>
                     </div>
                 </h:panelGroup>
             </h:panelGroup>

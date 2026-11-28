@@ -48,7 +48,7 @@
                                         <div class="d-flex justify-content-between">
                                             <p:outputLabel value="Individual Bills" class="mt-2"></p:outputLabel>
                                             <p:commandButton 
-                                                value="Print" 
+                                                value="Print" title="Print the bill shown below" 
                                                 class="ui-button-info"
                                                 icon="fa fa-print"
                                                 ajax="false">
@@ -78,12 +78,17 @@
 
                                             <h:panelGroup
                                                 id="gpBillPreviewFiveFiveCustom3" 
-                                                rendered="#{configOptionApplicationController.getBooleanValueByKey('OPD Sale Bill is FiveFiveCustom3',false)}"> 
+                                                rendered="#{configOptionApplicationController.getBooleanValueByKey('OPD Sale Bill is FiveFiveCustom3',false) and sessionController.departmentPreference.opdBillPaperType ne 'FiveFiveCustom4'}"> 
                                                 <ui:repeat value="#{opdBillController.bills}" var="bc3" >
                                                     <ph:sale_bill_five_five_custom_3 bill="#{bc3}" duplicate="false"/>
                                                 </ui:repeat>
                                             </h:panelGroup>
 
+                                            <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFiveCustom4'}" >
+                                                <ui:repeat value="#{opdBillController.bills}" var="c4b" >
+                                                    <prints:five_five_opd_bill_custom_4 bill="#{c4b}" duplicate="#{opdBillController.duplicatePrint}"/>
+                                                </ui:repeat>
+                                            </h:panelGroup>
                                             <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePaper'}" >
                                                 <ui:repeat value="#{opdBillController.bills}" var="ffb" >
                                                     <prints:five_five_paper_with_headings bill="#{ffb}" duplicate="#{opdBillController.duplicatePrint}" payments="#{opdBillController.payments}"/>                        
@@ -151,7 +156,7 @@
                                         <div class="d-flex justify-content-between">
                                             <p:outputLabel value="Batch Bill" class="mt-2"></p:outputLabel>
                                             <p:commandButton
-                                                value="Print" 
+                                                value="Print" title="Print the bill shown below" 
                                                 class="ui-button-info"
                                                 icon="fa fa-print"
                                                 ajax="false">

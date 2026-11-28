@@ -75,6 +75,7 @@ import com.divudi.bean.pharmacy.PurchaseReturnController;
 import com.divudi.bean.pharmacy.TransferIssueController;
 import com.divudi.bean.pharmacy.TransferReceiveController;
 import com.divudi.bean.pharmacy.TransferRequestController;
+import com.divudi.core.data.BillCategory;
 import com.divudi.core.data.BillTypeAtomic;
 
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -704,6 +705,70 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
 
     public List<Payment> fetchBillPayments(Bill bill) {
         return billService.fetchBillPayments(bill);
+    }
+
+    /**
+     * Number of bills in the batch of an individual bill. The 5x5 Custom 4 OPD print
+     * shows the batch payment lines only when the batch has one bill. Cancellation
+     * and refund bills are not counted. Returns 0 for a bill without a batch.
+     */
+    public int batchBillCountOf(Bill individualBill) {
+        if (individualBill == null || individualBill.getBackwardReferenceBill() == null) {
+            return 0;
+        }
+        int count = 0;
+        for (Bill b : billService.fetchIndividualBillsOfBatchBill(individualBill.getBackwardReferenceBill())) {
+            if (!b.isRetired() && !(b instanceof CancelledBill) && !(b instanceof RefundBill)) {
+                count++;
+            }
+        }
+        return count;
+    }
+
+    /**
+     * Individual bills of a batch bill, for the 5x5 Custom 4 print of a batch.
+     * A batch cancellation bill and the original batch bill are linked to their
+     * individual bills through different references, and the batch cancellation bill
+     * itself points at the original batch through the forward reference. So only
+     * one link is used for each case:
+     * - batch cancellation bill: its individual cancellation bills point to it
+     *   with the forward reference (OpdBatchBillCancellationController and
+     *   BillPackageController, individualCancelltionBill.setForwardReferenceBill);
+     * - any other batch bill: its individual bills point to it with the backward
+     *   reference (for example OpdBillController, b.setBackwardReferenceBill).
+     */
+    public List<Bill> individualBillsOfBatchBill(Bill batchBill) {
+        List<Bill> result = new ArrayList<>();
+        if (batchBill == null || batchBill.getId() == null) {
+            return result;
+        }
+        Map m = new HashMap();
+        m.put("id", batchBill.getId());
+        String j;
+        if (batchBill.getBillTypeAtomic() != null
+                && batchBill.getBillTypeAtomic().getBillCategory() == BillCategory.CANCELLATION) {
+            j = "select b from Bill b "
+                    + " left join b.forwardReferenceBill f "
+                    + " where b.retired=false "
+                    + " and f.id=:id "
+                    + " and b.billTypeAtomic in :types "
+                    + " order by b.id";
+            List<BillTypeAtomic> types = new ArrayList<>();
+            types.add(BillTypeAtomic.OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
+            types.add(BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
+            m.put("types", types);
+        } else {
+            j = "select b from Bill b "
+                    + " left join b.backwardReferenceBill bk "
+                    + " where b.retired=false "
+                    + " and bk.id=:id "
+                    + " order by b.id";
+        }
+        List<Bill> found = getBillFacade().findByJpql(j, m);
+        if (found != null) {
+            result.addAll(found);
+        }
+        return result;
     }
 
     public List<BillItem> groupBillItemByNameFromBill(Bill b) {
@@ -1848,8 +1913,9 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
         double billHospitalTotal = 0.0;
         double billNetTotal = 0.0;
 
-        // We will collect items to remove after processing.
-        List<BillItem> itemsToRemove = new ArrayList<>();
+        // Items with a refund value to keep. Unsaved BillItems with the same serial number
+        // are equal(), so items are kept by identity and never removed with removeAll().
+        List<BillItem> itemsToKeep = new ArrayList<>();
 
         for (BillItem bi : refundingBill.getBillItems()) {
             double billItemStaffTotal = 0.0;
@@ -1858,7 +1924,6 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
             double billItemNetTotal = 0.0;
 
             if (bi.getBillFees() == null) {
-                itemsToRemove.add(bi);
                 continue;
             }
 
@@ -1881,9 +1946,9 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
 
             // If net total is zero, mark for removal
             if (billItemNetTotal == 0) {
-                itemsToRemove.add(bi);
                 continue;
             }
+            itemsToKeep.add(bi);
 
             bi.setCollectingCentreFee(billItemCcTotal);
             bi.setStaffFee(billItemStaffTotal);
@@ -1901,7 +1966,7 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
         }
 
         // Remove items with zero value from the list
-        refundingBill.getBillItems().removeAll(itemsToRemove);
+        refundingBill.setBillItems(itemsToKeep);
 
         // Set bill totals
         refundingBill.setHospitalFee(billHospitalTotal);
@@ -2373,9 +2438,7 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
     public boolean sampleHasBeenCollected(Bill rf) {
         boolean oneItemIsSampled = false;
         for (BillItem bi : rf.getBillItems()) {
-            double refVal = bi.getNetValue();
-            refVal = Math.abs(refVal);
-            if (refVal > 0.0) {
+            if (isItemBeingRefunded(bi)) {
                 boolean sampled = patientInvestigationController.sampledForBillItem(bi.getReferanceBillItem());
                 if (sampled) {
                     oneItemIsSampled = true;
@@ -2385,13 +2448,31 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
         return oneItemIsSampled;
     }
 
+    // Refund values are entered per fee. The item net value is totalled later,
+    // so the refund checks read the fee values and do not depend on the totals step.
+    private boolean isFeeBeingRefunded(BillFee bf) {
+        return bf != null && Math.abs(bf.getFeeValue()) > 0.0;
+    }
+
+    private boolean isItemBeingRefunded(BillItem bi) {
+        if (Math.abs(bi.getNetValue()) > 0.0) {
+            return true;
+        }
+        if (bi.getBillFees() != null) {
+            for (BillFee bf : bi.getBillFees()) {
+                if (isFeeBeingRefunded(bf)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     public boolean billFeeIsAlreadyRefunded(Bill rf) {
         boolean oneItemIsAlreadyRefunded = false;
         for (BillItem bi : rf.getBillItems()) {
             for (BillFee bf : bi.getBillFees()) {
-                double refVal = bi.getNetValue();
-                refVal = Math.abs(refVal);
-                if (refVal > 0.0) {
+                if (isFeeBeingRefunded(bf)) {
                     boolean refunded = billController.hasRefunded(bf.getReferenceBillFee());
                     if (refunded) {
                         oneItemIsAlreadyRefunded = true;
@@ -2406,9 +2487,7 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
         boolean oneItemIsAlreadyPaid = false;
         for (BillItem bi : rf.getBillItems()) {
             for (BillFee bf : bi.getBillFees()) {
-                double refVal = bi.getNetValue();
-                refVal = Math.abs(refVal);
-                if (refVal > 0.0) {
+                if (isFeeBeingRefunded(bf)) {
                     boolean refunded = billController.hasPaidToStaff(bf.getReferenceBillFee());
                     if (refunded) {
                         oneItemIsAlreadyPaid = true;
@@ -5924,6 +6003,10 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
     }
 
     public String navigateToPharmacyBhtIssueCancellationBillView() {
+        if (!webUserController.hasPrivilege(com.divudi.core.data.Privileges.PharmacySaleCancel.toString())) {
+            JsfUtil.addErrorMessage("You do not have the privilege to cancel a pharmacy BHT issue");
+            return null;
+        }
         prepareToPharmacyCancellationBill();
         return "/inward/bht_bill_cancel?faces-redirect=true";
     }
@@ -6606,6 +6689,8 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
         refundingBill.setBillClassType(BillClassType.RefundBill);
         refundingBill.setBillDate(new Date());
         refundingBill.setBillTime(new Date());
+        refundingBill.setToDepartment(bill.getToDepartment());
+        refundingBill.setToInstitution(bill.getToInstitution());
         refundingBill.setBilledBill(bill);
         refundingBill.setReferenceBill(bill);
         refundingBill.setForwardReferenceBill(bill);

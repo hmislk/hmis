@@ -140,8 +140,7 @@ public class InwardPaymentService {
 
     /**
      * After a rolled-back save, reloads the PatientDeposit objects held in the
-     * payment data: PatientDepositService lowered their balance in memory, but
-     * the rollback restored only the rows.
+     * payment data from the database.
      */
     public void reloadPatientDeposits(PaymentMethodData paymentMethodData) {
         if (paymentMethodData == null) {

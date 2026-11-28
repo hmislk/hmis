@@ -55,6 +55,9 @@ public class InwardChargeTypeBreakdownController implements Serializable {
     // EJBs / CDI
     // -------------------------------------------------------------------------
     @EJB
+    private com.divudi.service.inward.InwardServiceItemChargeTypeService serviceItemChargeTypeService;
+
+    @EJB
     private BillItemFacade billItemFacade;
     @EJB
     private PatientItemFacade patientItemFacade;
@@ -328,6 +331,16 @@ public class InwardChargeTypeBreakdownController implements Serializable {
     // BILL_ITEM — services, outside charges, and timed services
     // -------------------------------------------------------------------------
 
+    /**
+     * True when the selected charge type is the one that counts inward service
+     * items having no charge type of their own (issue #26272), so saved bills
+     * whose bill item has no stored type still list under it.
+     */
+    private boolean isDefaultForItemsWithoutOne() {
+        return serviceItemChargeTypeService != null && selectedChargeType != null
+                && selectedChargeType == serviceItemChargeTypeService.getDefaultChargeType();
+    }
+
     private void buildFromBillItems() {
         // --- Service / outside-charge BillItems ---
         // LEFT JOIN bi.item so that InwardOutSideBill items (bi.item = null) are
@@ -340,7 +353,11 @@ public class InwardChargeTypeBreakdownController implements Serializable {
                 + " and b.retired = false"
                 + " and b.cancelled = false"
                 + " and b.billType in :btps"
-                + " and (bi.inwardChargeType = :ct or i.inwardChargeType = :ct)");
+                + " and (bi.inwardChargeType = :ct or i.inwardChargeType = :ct"
+                + (isDefaultForItemsWithoutOne()
+                        ? " or (b.billType = :noTypeBtp and bi.inwardChargeType is null and i.inwardChargeType is null and i.id is not null)"
+                        : "")
+                + ")");
 
         Map<String, Object> params = new HashMap<>();
         List<BillType> btps = new ArrayList<>();
@@ -348,6 +365,9 @@ public class InwardChargeTypeBreakdownController implements Serializable {
         btps.add(BillType.InwardOutSideBill);
         params.put("btps", btps);
         params.put("ct", selectedChargeType);
+        if (isDefaultForItemsWithoutOne()) {
+            params.put("noTypeBtp", BillType.InwardBill);
+        }
         appendEncounterFilters(jpql, params, "enc");
 
         List<BillItem> rawBillItems = billItemFacade.findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);

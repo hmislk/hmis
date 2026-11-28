@@ -21,7 +21,7 @@
 
         <h:panelGroup rendered="#{(webUserController.hasPrivilege('DashBoardMenu') and webUserController.hasPrivilege('DashBoardInvestigationSearch'))}">
             <h3><h:outputText value="INVESTIGATIONS" class="d-flex justify-content-center mt-4"/> </h3>
-            <h:panelGrid columns="6" class="w-100" style="font-weight: bolder">
+            <h:panelGrid columns="6" class="w-100 lab-filter-grid" style="font-weight: bolder">
 
                 <h:panelGrid columns="1" class="w-100">
                     <h:outputLabel class="w-100" value="From Date"/>
@@ -191,7 +191,7 @@
                     </h:panelGroup>
                 </h:panelGrid>
 
-                <h:panelGrid columns="1" class="w-100">
+                <h:panelGrid columns="1" class="w-100 lab-filter-action">
                     <h:outputLabel class="w-100" value=""/>
                     <p:commandButton 
                         ajax="false" 
@@ -207,7 +207,7 @@
 
 
             <p:dataTable  
-                class="w-100 mt-3"
+                reflow="true" class="w-100 mt-3 lab-card-table"
                 value="#{laboratoryManagementController.investigationDTO}" 
                 var="pi" 
                 paginator="true"

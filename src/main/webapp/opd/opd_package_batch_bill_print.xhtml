@@ -67,6 +67,12 @@
                                         </f:facet>
                                         <h:panelGroup id="printView">
 
+                                            <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFiveCustom4'}" >
+                                                <ui:repeat value="#{billSearch.individualBillsOfBatchBill(billPackageController.batchBill.cancelledBill)}" var="c4b">
+                                                    <prints:five_five_opd_bill_custom_4 bill="#{c4b}" duplicate="false"/>
+                                                </ui:repeat>
+                                            </h:panelGroup>
+
                                             <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'PosPaper'}" >
                                                 <ui:repeat value="#{billPackageController.bills}" var="b">
                                                     <bi:opdPackegePosBill bill="#{b}"/>

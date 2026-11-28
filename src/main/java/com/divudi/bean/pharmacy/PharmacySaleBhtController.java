@@ -423,7 +423,7 @@ public class PharmacySaleBhtController implements Serializable {
             return;
         }
         getBillBean().saveEncounterComponents(committed, getBatchBill(), getSessionController().getLoggedUser());
-        getBillBean().updateBatchBill(getBatchBill());
+        getBillBean().updateSurgeryServiceBatchBillAfterSave(getBatchBill());
     }
 
 //    public void settleSurgeryBhtIssueStore() {
@@ -480,6 +480,10 @@ public class PharmacySaleBhtController implements Serializable {
     }
 
     public String navigateToCancelBhtRequest() {
+        if (!webUserController.hasPrivilege(com.divudi.core.data.Privileges.PharmacySaleCancel.toString())) {
+            JsfUtil.addErrorMessage("You do not have the privilege to cancel a pharmacy BHT issue");
+            return "";
+        }
         if (com.divudi.core.util.CancellationBillCheck.refuse(bill)) {
             return "";
         }

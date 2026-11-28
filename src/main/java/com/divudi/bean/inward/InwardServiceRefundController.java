@@ -16,6 +16,7 @@
  */
 package com.divudi.bean.inward;
 
+import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.BillController;
 import com.divudi.bean.common.ConfigOptionController;
 import com.divudi.bean.common.EnumController;
@@ -81,6 +82,8 @@ public class InwardServiceRefundController implements Serializable {
     private EnumController enumController;
     @Inject
     private ConfigOptionController configOptionController;
+    @Inject
+    private BillBeanController billBean;
 
     private List<BillItem> refundingItems;
     private String comment;
@@ -349,6 +352,10 @@ public class InwardServiceRefundController implements Serializable {
         bill.getForwardReferenceBills().add(rb);
         bill.setRefunded(true);
         billFacade.editAndCommit(bill);
+
+        // A surgery service bill sits under a surgery header whose total must
+        // drop by the returned amount (no header: the call does nothing).
+        billBean.updateSurgeryServiceBatchBillAfterSave(bill.getForwardReferenceBill());
 
         // Reload into session so the print-preview (which reads getBill()) and
         // the item list reflect the persisted refunded state.

@@ -5,6 +5,7 @@
 package com.divudi.bean.store;
 
 import com.divudi.bean.common.PriceMatrixController;
+import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.bean.inward.InwardBeanController;
@@ -57,6 +58,8 @@ public class StoreBhtIssueReturnController implements Serializable {
     private PharmacyController pharmacyController;
     @Inject
     private SessionController sessionController;
+    @Inject
+    private BillBeanController billBean;
     @EJB
     private BillNumberGenerator billNumberBean;
     @EJB
@@ -259,6 +262,8 @@ public class StoreBhtIssueReturnController implements Serializable {
             getBill().getReturnBhtIssueBills().add(getReturnBill());
         }
         getBillFacade().edit(getBill());
+        // The return is saved: recompute the surgery header (acts only on a surgery header).
+        billBean.refreshSurgeryHeaderAfterChildChange(getReturnBill().getForwardReferenceBill());
 
         /// setOnlyReturnValue();
         printPreview = true;

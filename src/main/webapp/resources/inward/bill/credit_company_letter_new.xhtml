@@ -214,7 +214,7 @@
                                 I wish to inform you that the above person has received treatment at this Hospital.
                                 Enclosed please find our bill total for Rs.
                                 <h:outputLabel value="&nbsp;&nbsp;"/>
-                                <b> <h:outputLabel value="#{cc.attrs.bill.netTotal-(cc.attrs.bill.paidAmount+cc.attrs.bill.patientEncounter.paidByCreditCompany)}" >
+                                <b> <h:outputLabel value="#{cc.attrs.bill.netTotal-(cc.attrs.bill.paidAmount)}" >
                                         <f:convertNumber pattern="#,###.##" ></f:convertNumber>
                                     </h:outputLabel> </b>
                                 <h:outputLabel value="&nbsp;&nbsp;  "/>

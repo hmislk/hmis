@@ -235,7 +235,7 @@ public class SurgeryBillController implements Serializable {
 
         // Safe to retire
         retireSurgeryBill(surgery);
-        getBillBean().updateBatchBill(surgery);
+        getBillBean().updateSurgeryServiceBatchBillAfterSave(surgery);
         logSurgeryDeletionAudit(surgery);
         surgeryList = null; // refresh list
         JsfUtil.addSuccessMessage("Surgery removed successfully.");
@@ -439,7 +439,7 @@ public class SurgeryBillController implements Serializable {
         getBillFeeFacade().edit(bf);
         updateBillItem(bf.getBillItem());
         updateBill(bf.getBill());
-        getBillBean().updateBatchBill(getSurgeryBill());
+        getBillBean().updateSurgeryServiceBatchBillAfterSave(getSurgeryBill());
     }
 
     public void removeTimeService(PatientItem patientItem) {
@@ -484,7 +484,7 @@ public class SurgeryBillController implements Serializable {
             if (timedServiceBillFee.getBill() != null) {
                 updateBill(timedServiceBillFee.getBill());
             }
-            getBillBean().updateBatchBill(surgeryBill);
+            getBillBean().updateSurgeryServiceBatchBillAfterSave(surgeryBill);
         }
         refreshTimedEncounterComponents();
     }
@@ -540,7 +540,7 @@ public class SurgeryBillController implements Serializable {
 
         updateBillItem(encounterComponent.getBillItem());
         updateBill(encounterComponent.getBillItem().getBill());
-        getBillBean().updateBatchBill(getSurgeryBill());
+        getBillBean().updateSurgeryServiceBatchBillAfterSave(getSurgeryBill());
 
     }
 
@@ -595,7 +595,7 @@ public class SurgeryBillController implements Serializable {
 
         updateBillItem(encounterComponent.getBillItem());
         updateBill(encounterComponent.getBillItem().getBill());
-        getBillBean().updateBatchBill(getSurgeryBill());
+        getBillBean().updateSurgeryServiceBatchBillAfterSave(getSurgeryBill());
 
     }
 
@@ -857,7 +857,7 @@ public class SurgeryBillController implements Serializable {
 
         saveProcedure();
         saveSurgeryBill();
-        getBillBean().updateBatchBill(getSurgeryBill());
+        getBillBean().updateSurgeryServiceBatchBillAfterSave(getSurgeryBill());
 
         String afterName = (surgeryBill != null && surgeryBill.getProcedure() != null
                 && surgeryBill.getProcedure().getItem() != null)
@@ -1180,6 +1180,7 @@ public class SurgeryBillController implements Serializable {
         String jpql = "SELECT COUNT(b) FROM Bill b WHERE b.retired=false "
                 + " and b.cancelled=false "
                 + " and b.forwardReferenceBill=:surg "
+                + " and not exists (select o.id from Bill o where o.cancelledBill=b) "
                 + " and b.checkeAt IS NULL";
         HashMap<String, Object> hm = new HashMap<>();
         hm.put("surg", getSurgeryBill());
@@ -1381,7 +1382,7 @@ public class SurgeryBillController implements Serializable {
         if (!getProEncounterComponents().isEmpty()) {
             saveProfessionalBill();
         }
-        getBillBean().updateBatchBill(getSurgeryBill());
+        getBillBean().updateSurgeryServiceBatchBillAfterSave(getSurgeryBill());
         JsfUtil.addSuccessMessage("Surgery Detail Added");
         PatientEncounter pe = getSurgeryBill().getPatientEncounter();
         resetSurgeryBillValues();
@@ -1405,7 +1406,7 @@ public class SurgeryBillController implements Serializable {
         if (!getProEncounterComponents().isEmpty()) {
             saveProfessionalBill();
         }
-        getBillBean().updateBatchBill(getSurgeryBill());
+        getBillBean().updateSurgeryServiceBatchBillAfterSave(getSurgeryBill());
         JsfUtil.addSuccessMessage("Surgery Detail Added");
         PatientEncounter pe = getSurgeryBill().getPatientEncounter();
         resetSurgeryBillValues();

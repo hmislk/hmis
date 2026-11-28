@@ -448,13 +448,14 @@ public class BhtPaymentSummaryReportController implements Serializable {
      * bills.
      */
     private List<Bill> fetchCreditCompanyBills(PatientEncounter enc) {
-        String jpql = "select b from Bill b"
+        String jpql = "select b from Bill b left join b.referenceBill fb"
                 + " where b.retired = false"
                 + " and b.billTypeAtomic = :bta"
                 + " and b.paymentMethod = :pm"
                 + " and b.cancelled = false"
                 + " and b.cancelledBill is null"
                 + " and b.refundedBill is null"
+                + " and (fb is null or fb.confirmedFinalBill = true)"
                 + " and b.patientEncounter = :enc";
         Map<String, Object> params = new HashMap<>();
         params.put("bta", BillTypeAtomic.INWARD_FINAL_BILL_PAYMENT_BY_CREDIT_COMPANY);

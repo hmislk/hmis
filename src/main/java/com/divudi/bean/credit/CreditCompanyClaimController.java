@@ -10,6 +10,7 @@ import com.divudi.core.entity.CreditCompanyClaim;
 import com.divudi.core.entity.CreditCompanyClaimItem;
 import com.divudi.core.entity.CreditCompanyClaimSettlement;
 import com.divudi.core.entity.CreditCompanyWriteOff;
+import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Institution;
 import com.divudi.core.facade.CreditCompanyClaimFacade;
 import com.divudi.core.facade.CreditCompanyClaimItemFacade;
@@ -28,6 +29,7 @@ import java.util.List;
 import java.util.Map;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
+import javax.faces.context.FacesContext;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
@@ -73,6 +75,8 @@ public class CreditCompanyClaimController implements Serializable {
     private CreditCompanyClaim claim;
     /** Id of the claim the page was rendered for; posted back with every action (the bean is shared by browser tabs). */
     private Long claimIdOnPage;
+    /** Department the claim page was opened in; actions are refused after a department change (#25873). */
+    private Long openedInDepartmentId;
     private List<CreditCompanyClaimItem> claimItems = new ArrayList<>();
     private List<CreditCompanyClaimSettlement> settlements = new ArrayList<>();
     private double settledAmount;
@@ -107,14 +111,47 @@ public class CreditCompanyClaimController implements Serializable {
         return true;
     }
 
-    /** True (with a message) when the posted page is not for the claim now held in the session. */
-    private boolean pageOutOfDate() {
-        if (claim == null || claim.getId() == null || claimIdOnPage == null
-                || !claim.getId().equals(claimIdOnPage)) {
+    /**
+     * The claim this request was posted for, read fresh by the id posted with this
+     * request, not by the session copy that another tab of the same login may have
+     * changed meanwhile (#25873). Null, with a message, when the page is out of date
+     * or the department was changed after the claim was opened.
+     */
+    private CreditCompanyClaim claimForAction() {
+        Long posted = postedClaimId();
+        CreditCompanyClaim held = claim;
+        if (held == null || held.getId() == null || posted == null || !held.getId().equals(posted)) {
             JsfUtil.addErrorMessage("This page is out of date. Open the claim again.");
-            return true;
+            return null;
         }
-        return false;
+        Department current = sessionController.getDepartment();
+        Long currentDepartmentId = current == null ? null : current.getId();
+        if (!java.util.Objects.equals(openedInDepartmentId, currentDepartmentId)) {
+            JsfUtil.addErrorMessage("The department was changed after this claim was opened. Open the claim again.");
+            return null;
+        }
+        CreditCompanyClaim c = claimFacade.find(posted);
+        if (c == null) {
+            JsfUtil.addErrorMessage("Claim not found.");
+            return null;
+        }
+        return c;
+    }
+
+    /** The claim id posted by this request's form, or the held one when the form did not post it. */
+    private Long postedClaimId() {
+        FacesContext fc = FacesContext.getCurrentInstance();
+        if (fc != null) {
+            String value = fc.getExternalContext().getRequestParameterMap().get("claimForm:claimIdOnPage");
+            if (value != null) {
+                try {
+                    return Long.valueOf(value.trim());
+                } catch (NumberFormatException e) {
+                    return null;
+                }
+            }
+        }
+        return claimIdOnPage;
     }
 
     /** Claim numbers of open claims that hold the given bills, keyed by bill id. */
@@ -166,8 +203,10 @@ public class CreditCompanyClaimController implements Serializable {
         rows = new ArrayList<>();
         claim = null;
         claimIdOnPage = null;
+        openedInDepartmentId = null;
         claimItems = new ArrayList<>();
         settlements = new ArrayList<>();
+        clearWriteOffForm();
         return "/credit/credit_company_claims?faces-redirect=true";
     }
 
@@ -228,6 +267,8 @@ public class CreditCompanyClaimController implements Serializable {
     private String openClaim(CreditCompanyClaim c) {
         claim = c;
         claimIdOnPage = c.getId();
+        Department current = sessionController.getDepartment();
+        openedInDepartmentId = current == null ? null : current.getId();
         submittedOn = new Date();
         companyReference = c.getCompanyReference();
         rejectReason = null;
@@ -279,10 +320,11 @@ public class CreditCompanyClaimController implements Serializable {
         if (deny("OpdCreditWriteOffRequest")) {
             return;
         }
-        if (pageOutOfDate()) {
+        CreditCompanyClaim c = claimForAction();
+        if (c == null) {
             return;
         }
-        reloadClaim();
+        reloadClaim(c);
         clearWriteOffForm();
         if (!CreditCompanyWriteOffService.claimAllowsRequest(claim.getStatus())) {
             JsfUtil.addErrorMessage("A write-off can be requested only for a claim that is submitted, resubmitted or partially settled.");
@@ -312,11 +354,16 @@ public class CreditCompanyClaimController implements Serializable {
         if (deny("OpdCreditWriteOffRequest")) {
             return;
         }
-        if (pageOutOfDate()) {
+        CreditCompanyClaim c = claimForAction();
+        if (c == null) {
             return;
         }
         if (writeOffItem == null || writeOffItem.getBill() == null) {
             JsfUtil.addErrorMessage("Choose the bill to write off.");
+            return;
+        }
+        if (writeOffItem.getClaim() == null || !c.getId().equals(writeOffItem.getClaim().getId())) {
+            JsfUtil.addErrorMessage("This form is out of date. Open the write-off request again.");
             return;
         }
         if (writeOffItemIdOnPage == null || !writeOffItemIdOnPage.equals(writeOffItem.getId())) {
@@ -331,7 +378,7 @@ public class CreditCompanyClaimController implements Serializable {
         } catch (CreditCompanyClaimException e) {
             JsfUtil.addErrorMessage(e.getMessage());
         }
-        reloadClaim();
+        reloadClaim(c);
     }
 
     public List<CreditCompanyWriteOff> getClaimWriteOffs() {
@@ -371,10 +418,11 @@ public class CreditCompanyClaimController implements Serializable {
         if (deny("OpdCreditClaimSettle")) {
             return null;
         }
-        if (pageOutOfDate()) {
+        CreditCompanyClaim c = claimForAction();
+        if (c == null) {
             return null;
         }
-        reloadClaim();
+        reloadClaim(c);
         if (!isSettleable()) {
             JsfUtil.addErrorMessage("Only a submitted, resubmitted or partially settled claim can be settled.");
             return null;
@@ -411,8 +459,10 @@ public class CreditCompanyClaimController implements Serializable {
         return outstandingAmount;
     }
 
-    private void reloadClaim() {
-        claim = claimFacade.find(claim.getId());
+    private void reloadClaim(CreditCompanyClaim c) {
+        CreditCompanyClaim fresh = claimFacade.find(c.getId());
+        claim = fresh == null ? c : fresh;
+        claimIdOnPage = claim.getId();
         loadItems();
     }
 
@@ -420,16 +470,17 @@ public class CreditCompanyClaimController implements Serializable {
         if (deny("OpdCreditClaimSubmit")) {
             return;
         }
-        if (pageOutOfDate()) {
+        CreditCompanyClaim c = claimForAction();
+        if (c == null) {
             return;
         }
         try {
-            claimService.submit(claim, submittedOn, companyReference, sessionController.getLoggedUser());
+            claimService.submit(c, submittedOn, companyReference, sessionController.getLoggedUser());
             JsfUtil.addSuccessMessage("Claim submitted.");
         } catch (CreditCompanyClaimException e) {
             JsfUtil.addErrorMessage(e.getMessage());
         }
-        reloadClaim();
+        reloadClaim(c);
     }
 
     public boolean isCancellable() {
@@ -440,50 +491,53 @@ public class CreditCompanyClaimController implements Serializable {
         if (deny("OpdCreditClaimCreate")) {
             return;
         }
-        if (pageOutOfDate()) {
+        CreditCompanyClaim c = claimForAction();
+        if (c == null) {
             return;
         }
         try {
-            claimService.cancel(claim, sessionController.getLoggedUser());
+            claimService.cancel(c, sessionController.getLoggedUser());
             JsfUtil.addSuccessMessage("Claim cancelled. Its bills are free again.");
         } catch (CreditCompanyClaimException e) {
             JsfUtil.addErrorMessage(e.getMessage());
         }
-        reloadClaim();
+        reloadClaim(c);
     }
 
     public void reject() {
         if (deny("OpdCreditClaimReject")) {
             return;
         }
-        if (pageOutOfDate()) {
+        CreditCompanyClaim c = claimForAction();
+        if (c == null) {
             return;
         }
         try {
-            claimService.reject(claim, rejectReason, sessionController.getLoggedUser());
+            claimService.reject(c, rejectReason, sessionController.getLoggedUser());
             rejectReason = null;
             JsfUtil.addSuccessMessage("Rejection recorded.");
         } catch (CreditCompanyClaimException e) {
             JsfUtil.addErrorMessage(e.getMessage());
         }
-        reloadClaim();
+        reloadClaim(c);
     }
 
     public void closePartial() {
         if (deny("OpdCreditClaimCreate")) {
             return;
         }
-        if (pageOutOfDate()) {
+        CreditCompanyClaim c = claimForAction();
+        if (c == null) {
             return;
         }
         try {
-            claimService.closePartiallySettled(claim, closeReason, sessionController.getLoggedUser());
+            claimService.closePartiallySettled(c, closeReason, sessionController.getLoggedUser());
             closeReason = null;
             JsfUtil.addSuccessMessage("Claim closed. Its bills are free; what is unpaid stays due.");
         } catch (CreditCompanyClaimException e) {
             JsfUtil.addErrorMessage(e.getMessage());
         }
-        reloadClaim();
+        reloadClaim(c);
     }
 
     public boolean isPartiallySettled() {
@@ -502,16 +556,17 @@ public class CreditCompanyClaimController implements Serializable {
         if (deny("OpdCreditClaimResubmit")) {
             return;
         }
-        if (pageOutOfDate()) {
+        CreditCompanyClaim c = claimForAction();
+        if (c == null) {
             return;
         }
         try {
-            claimService.resubmit(claim, submittedOn, companyReference, sessionController.getLoggedUser());
+            claimService.resubmit(c, submittedOn, companyReference, sessionController.getLoggedUser());
             JsfUtil.addSuccessMessage("Claim resubmitted.");
         } catch (CreditCompanyClaimException e) {
             JsfUtil.addErrorMessage(e.getMessage());
         }
-        reloadClaim();
+        reloadClaim(c);
     }
 
     public CreditCompanyClaimStatus[] getStatuses() {
