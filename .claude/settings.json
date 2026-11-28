@@ -28,6 +28,11 @@
             "type": "command",
             "command": "command -v python3 >/dev/null 2>&1 && exec python3 \"$CLAUDE_PROJECT_DIR/.claude/hooks/public-guard.py\" || exec python \"$CLAUDE_PROJECT_DIR/.claude/hooks/public-guard.py\"",
             "timeout": 10
+          },
+          {
+            "type": "command",
+            "command": "command -v python3 >/dev/null 2>&1 && exec python3 \"$CLAUDE_PROJECT_DIR/.claude/hooks/session-guard.py\" || exec python \"$CLAUDE_PROJECT_DIR/.claude/hooks/session-guard.py\"",
+            "timeout": 20
           }
         ]
       }
