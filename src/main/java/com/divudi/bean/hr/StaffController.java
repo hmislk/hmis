@@ -1018,7 +1018,7 @@ public class StaffController implements Serializable {
         // name/code/staffCode, so a full name like "Dulmin Perera" matches reliably.
         String[] tokens = query.trim().split("\\s+");
         StringBuilder sql = new StringBuilder(
-                "select p from Staff p where p.retired=false and type(p) != Doctor");
+                "select p from Staff p where p.retired=false and type(p) != Doctor and type(p) != Consultant");
         HashMap hm = new HashMap();
         for (int i = 0; i < tokens.length; i++) {
             String paramName = "q" + i;
