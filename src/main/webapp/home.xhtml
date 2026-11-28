@@ -274,7 +274,7 @@
 
                 <h:panelGroup rendered="#{ui.icon eq 'Accept_Payments_For_OPD_Batch_Bills'}" layout="block" class="col-1 p-1" >
                     <h:form >
-                        <p:tooltip for="Accept_Payments_For_OPD_Batch_Bills" value="Accept Payments For OPD Batch Bills"  showDelay="0" hideDelay="0"></p:tooltip>
+                        <p:tooltip for="Accept_Payments_For_OPD_Batch_Bills" value="Search OPD Batch Bills (Pre-Settle)"  showDelay="0" hideDelay="0"></p:tooltip>
                         <p:commandLink 
                             id="Accept_Payments_For_OPD_Batch_Bills"
                             ajax="false"
@@ -282,7 +282,7 @@
                             actionListener="#{searchController.makeListNull}" 
                             styleClass="svg-link" >
                             <p:graphicImage class="img-thumbnail" cache="true" library="icons" name="Accept_Payments_For_OPD_Batch_Bills.svg" style="cursor: pointer;" width="80" height="80"/>
-                            <h:outputText style="display: none;" value="Accept Payment for OPD Batch Bills"/>
+                            <h:outputText style="display: none;" value="Search OPD Batch Bills (Pre-Settle)"/>
                         </p:commandLink>
                     </h:form >
                 </h:panelGroup>

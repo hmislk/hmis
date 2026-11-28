@@ -11,17 +11,55 @@
             <ui:define name="content">
                 <h:form>
                     <p:panel style="height: 100vh">
-                        <f:facet name="header" >
-                            <h:outputText styleClass="fas fa-search" />
-                            <h:outputLabel class="mx-4" value="OPD Bill Search To Pay "/>
+                        <f:facet name="header">
+                            <div class="d-flex justify-content-between align-items-center w-100">
+                                <div class="d-flex align-items-center gap-2">
+                                    <h:outputText styleClass="fas fa-search" />
+                                    <h:outputText value="Search OPD Batch Bills (Pre-Settle)"/>
+                                </div>
+                                <div class="d-flex align-items-center gap-2">
+                                    <p:commandButton
+                                        class="ui-button-info ui-button-outlined"
+                                        icon="fas fa-prescription-bottle-alt"
+                                        ajax="false"
+                                        value="Pharmacy Payment"
+                                        title="Go to pharmacy payment search"
+                                        action="/pharmacy/pharmacy_search_pre_bill.xhtml"/>
+                                </div>
+                                <div class="d-flex align-items-center gap-2">
+                                    <p:commandButton
+                                        class="ui-button-warning"
+                                        icon="fas fa-search"
+                                        id="btnSearch3"
+                                        ajax="false"
+                                        value="Search Not Paid Only"
+                                        title="Search bills not yet paid"
+                                        action="#{searchController.createOpdBathcBillPreTableNotPaidOly}"/>
+                                    <p:commandButton
+                                        class="ui-button-warning"
+                                        icon="fas fa-search" id="btnSearch2"
+                                        ajax="false"
+                                        value="Search Paid Only"
+                                        title="Search bills already paid"
+                                        action="#{searchController.createOpdBathcBillPreTablePaidOnly}"/>
+                                    <p:commandButton
+                                        class="ui-button-success"
+                                        style="min-width:120px"
+                                        icon="fas fa-search"
+                                        id="btnSearch"
+                                        ajax="false"
+                                        value="Search All"
+                                        title="Search all bills"
+                                        action="#{searchController.createOpdBathcBillPreTable}"/>
+                                </div>
+                            </div>
                         </f:facet>
 
-                        <div class="row">
-                            <div class="col-2">
-
-                                <h:outputLabel class="my-1"  value="From Date"/>
+                        <div class="row g-2 align-items-end">
+                            <div class="col-md-2">
+                                <h:outputLabel value="From Date"/>
                                 <p:calendar
-                                    class="my-1 w-100"
+                                    class="w-100"
                                     id="fromDate"
                                     value="#{searchController.fromDate}"
                                     navigator="false"
@@ -29,9 +67,11 @@
                                     pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
                                     maxdate="#{commonFunctionsProxy.endOfDay}">
                                 </p:calendar>
+                            </div>
+                            <div class="col-md-2">
                                 <h:outputLabel value="To Date"/>
                                 <p:calendar
-                                    class="my-1 w-100"
+                                    class="w-100"
                                     id="toDate"
                                     value="#{searchController.toDate}"
                                     inputStyleClass="form-control"
@@ -39,48 +79,27 @@
                                     pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
                                     maxdate="#{commonFunctionsProxy.endOfDay}">
                                 </p:calendar>
-
-                                <h:outputLabel value="Bill No" class="mt-2"/>
+                            </div>
+                            <div class="col-md-2">
+                                <h:outputLabel value="Bill No"/>
                                 <p:inputText autocomplete="off" class="w-100"  value="#{searchController.searchKeyword.billNo}" />
+                            </div>
+                            <div class="col-md-2">
                                 <h:outputLabel value="Patient Name"/>
                                 <p:inputText autocomplete="off" class="w-100" value="#{searchController.searchKeyword.patientName}" />
+                            </div>
+                            <div class="col-md-2">
                                 <h:outputLabel value="Total"/>
                                 <p:inputText autocomplete="off" class="w-100" value="#{searchController.searchKeyword.total}" />
+                            </div>
+                            <div class="col-md-2">
                                 <h:outputLabel value="Net Total"/>
                                 <p:inputText autocomplete="off" class="w-100" value="#{searchController.searchKeyword.netTotal}"/>
-
-                                <p:commandButton
-                                    class="ui-button-success w-100 mt-3"
-                                    icon="fas fa-search"
-                                    id="btnSearch"
-                                    ajax="false"
-                                    value="Search All"
-                                    action="#{searchController.createOpdBathcBillPreTable}"/>
-                                <p:commandButton
-                                    class="ui-button-warning w-100 my-1"
-                                    icon="fas fa-search" id="btnSearch2"
-                                    ajax="false"
-                                    value="Search Paid Only"
-                                    action="#{searchController.createOpdBathcBillPreTablePaidOnly}"/>
-                                <p:commandButton
-                                    class="ui-button-warning w-100"
-                                    icon="fas fa-search"
-                                    id="btnSearch3"
-                                    ajax="false"
-                                    value="Search Not Paid Only"
-                                    action="#{searchController.createOpdBathcBillPreTableNotPaidOly}"/>
-
-                                <p:commandButton
-                                    class="ui-button-info w-100 my-1"
-                                    icon="fas fa-search"
-                                    ajax="false"
-                                    value="Pharmacy Payment"
-                                    action="/pharmacy/pharmacy_search_pre_bill.xhtml"/>
                                 <p:defaultCommand target="btnSearch"/>
-
-
                             </div>
-                            <div class="col-10">
+                        </div>
+                        <div class="row">
+                            <div class="col-12">
                                 <p:dataTable
                                     rowIndexVar="i"
                                     id="tblBills"
@@ -91,15 +110,15 @@
                                     paginatorPosition="bottom"
                                     paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                     rowsPerPageTemplate="10,20,50"
-                                    styleClass="my-4 p-datatable-sm"
+                                    styleClass="my-2 p-datatable-sm"
                                     stickyHeader="true"
                                     >
 
-                                    <p:column headerText="No" styleClass="alignTop">
+                                    <p:column headerText="No" styleClass="alignTop" style="width: 3rem;">
                                         <h:outputLabel value="#{i+1}"/>
                                     </p:column>
 
-                                    <p:column headerText="Bill No" >
+                                    <p:column headerText="Bill No" style="width: 18rem; white-space: nowrap;">
                                         <h:outputLabel value="#{bill.deptId}"  ></h:outputLabel>
                                     </p:column>
                                     <p:column headerText="Name" >
