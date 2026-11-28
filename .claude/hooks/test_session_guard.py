@@ -1,10 +1,9 @@
 #!/usr/bin/env python3
 """Tests for session-guard.py. Run: python3 .claude/hooks/test_session_guard.py
-(also works with pytest). gh is replaced by a fake script, so no network is used.
+(also works with pytest). gh is replaced by a Python stub run with sys.executable, so no network is used.
 """
 import json
 import os
-import stat
 import subprocess
 import sys
 import tempfile
@@ -14,18 +13,30 @@ HOOK = os.path.join(os.path.dirname(os.path.abspath(__file__)), "session-guard.p
 TMP = tempfile.mkdtemp(prefix="session-guard-test-")
 
 
-def fake_gh(name, script):
-    path = os.path.join(TMP, name)
-    with open(path, "w") as f:
-        f.write("#!/bin/sh\n" + script + "\n")
-    os.chmod(path, os.stat(path).st_mode | stat.S_IEXEC)
-    return path
+FAKE = os.path.join(TMP, "fake_gh.py")
+with open(FAKE, "w") as f:
+    f.write("""import os, sys
+mode = sys.argv[1]
+if mode == "fail":
+    sys.stderr.write("boom\\n")
+    sys.exit(1)
+if mode == "empty":
+    sys.exit(0)
+with open(os.environ["GH_LOG"], "a") as log:
+    log.write(" ".join(sys.argv[2:]) + "\\n")
+print(os.environ["BASE"])
+""")
+
+
+def fake_gh(mode):
+    # A command line: the guard parses it and runs it without a shell.
+    return '"%s" "%s" %s' % (sys.executable, FAKE, mode)
 
 
 # Prints the base named in $BASE; logs its arguments to $GH_LOG.
-GH_OK = fake_gh("gh_ok", 'echo "$@" >> "$GH_LOG"; echo "$BASE"')
-GH_FAIL = fake_gh("gh_fail", 'echo "boom" >&2; exit 1')
-GH_EMPTY = fake_gh("gh_empty", "exit 0")
+GH_OK = fake_gh("ok")
+GH_FAIL = fake_gh("fail")
+GH_EMPTY = fake_gh("empty")
 
 
 def run(cmd, gh=GH_OK, base="development", extra_env=None, tool="Bash"):
@@ -120,9 +131,13 @@ class MergeTests(Base):
             self.deny(c, base="master")
 
     def test_lookup_failure_fails_closed(self):
-        for gh in (GH_FAIL, GH_EMPTY, os.path.join(TMP, "does-not-exist")):
+        for gh in (GH_FAIL, GH_EMPTY):
             err = self.deny("gh pr merge 12", gh=gh)
             self.assertIn("could not check", err)
+
+    def test_gh_not_found_message(self):
+        err = self.deny("gh pr merge 12", gh=os.path.join(TMP, "does-not-exist"))
+        self.assertIn("gh not found; merges cannot be checked", err)
 
     def test_api_merge_path(self):
         for c in ("gh api -X PUT repos/hmislk/hmis/pulls/12/merge",
