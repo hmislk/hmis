@@ -74,6 +74,9 @@ import javax.persistence.TemporalType;
 @Stateless
 public class InwardServiceBillWriter {
 
+    @EJB
+    private InwardServiceItemChargeTypeService serviceItemChargeTypeService;
+
     @Inject
     private BillBeanController billBean;
     @Inject
@@ -294,6 +297,12 @@ public class InwardServiceBillWriter {
         if (billItem.getInwardChargeType() == null && billItem.getItem() != null
                 && billItem.getItem().getInwardChargeType() != null) {
             billItem.setInwardChargeType(billItem.getItem().getInwardChargeType());
+        } else if (billItem.getInwardChargeType() == null && billItem.getItem() != null
+                && bill.getBillType() == BillType.InwardBill) {
+            // An OPD service or investigation with no charge type of its own
+            // (theatre item list) is stored under the configured default so the
+            // interim and final bill count it (issue #26272).
+            billItem.setInwardChargeType(serviceItemChargeTypeService.getDefaultChargeType());
         }
 
         if (billEntry != null && billEntry.getSourceRequestBillItem() != null) {

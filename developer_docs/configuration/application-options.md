@@ -21,6 +21,12 @@ The CI workflow `config-semantics-guard` (`.github/scripts/check_config_semantic
 
 A print or settings dialog must use the **same** controller as the page or template that reads the key. If a dialog saves through `ConfigOptionController` but the template reads through `ConfigOptionApplicationController`, the saved department-prefixed row is never read and the checkbox appears to do nothing. Check how the template reads the key before binding a dialog checkbox to it. Keys that other pages also read with a different default (for example the `Pharmacy Disbursement Reports - Display ...` keys, which transfer issue reports treat as true when unset) should be written only when the user changes them.
 
+## Inpatient Service Bills
+
+| Key | Type | Default | Description |
+| --- | --- | --- | --- |
+| `Inward Charge Type for Service Items Without One` | Text (an `InwardChargeType` name) | `OperationTheatreCharges` | An inpatient service or investigation line whose item has no inward charge type (for example an OPD service billed from the theatre item list) counts in the interim and final bill under the bill item's own charge type if it has one, else under the charge type named here. Items that have a charge type are not moved. A blank or unknown name gives the default. New service bill items without a type store this type when settled. See issue #26272. |
+
 ## Pharmacy Transfer Issue
 
 | Key                                                              | Type      | Default | Description                                                                                             |

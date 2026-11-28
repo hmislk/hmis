@@ -76,6 +76,8 @@ public class InwardBhtChargeAggregationService implements Serializable {
     @EJB
     private InwardProfessionalFeeClassificationService professionalFeeClassificationService;
     @EJB
+    private InwardServiceItemChargeTypeService serviceItemChargeTypeService;
+    @EJB
     private InwardRoomChargeCalculationService roomChargeCalculationService;
     /** The admission fee follows the type the admission started with (#25814). */
     @EJB
@@ -440,6 +442,33 @@ public class InwardBhtChargeAggregationService implements Serializable {
     }
 
     /**
+     * Rows of {encounter id, item charge type, bill item charge type, values...}
+     * to rows of {encounter id, resolved charge type, values...}, where an item
+     * with no charge type counts under the bill item's type or the configured
+     * default (issue #26272).
+     */
+    private List<Object[]> resolveItemChargeTypes(List<Object[]> rows) {
+        List<Object[]> out = new ArrayList<>();
+        if (rows == null) {
+            return out;
+        }
+        InwardChargeType dflt = null;
+        for (Object[] r : rows) {
+            InwardChargeType type = (InwardChargeType) r[1];
+            if (type == null && r[2] == null && dflt == null) {
+                dflt = serviceItemChargeTypeService.getDefaultChargeType();
+            }
+            InwardChargeType resolved = InwardServiceItemChargeTypeService.resolve(type, (InwardChargeType) r[2], dflt);
+            Object[] o = new Object[r.length - 1];
+            o[0] = r[0];
+            o[1] = resolved;
+            System.arraycopy(r, 3, o, 2, r.length - 3);
+            out.add(o);
+        }
+        return out;
+    }
+
+    /**
      * Service and investigation items on InwardBill, grouped by the item's own
      * charge type as the interim bill does
      * (InwardBeanController.calServiceBillItemsTotalByInwardChargeTypeBulk).
@@ -449,21 +478,22 @@ public class InwardBhtChargeAggregationService implements Serializable {
      * leaves out the discharge-snapshot final bills (bug #6 fix).
      */
     private Map<Long, Map<InwardChargeType, Double>> fetchInwardBillItemCharges(List<PatientEncounter> encounters) {
-        String jpql = "select enc.id, i.inwardChargeType, sum(bi.grossValue)"
+        // An item with no charge type counts under the bill item's own type, else
+        // the configured default (issue #26272).
+        String jpql = "select enc.id, i.inwardChargeType, bi.inwardChargeType, sum(bi.grossValue)"
                 + " from BillItem bi join bi.bill b join b.patientEncounter enc join bi.item i"
                 + " where bi.retired = false"
                 + " and b.retired = false"
                 + " and b.billType = :btp"
                 + " and enc in :encs"
-                + " and i.inwardChargeType is not null"
-                + " group by enc.id, i.inwardChargeType";
+                + " group by enc.id, i.inwardChargeType, bi.inwardChargeType";
 
         Map<String, Object> params = new HashMap<>();
         params.put("btp", BillType.InwardBill);
         params.put("encs", encounters);
 
         List<Object[]> rows = patientEncounterFacade.findObjectArrayByJpql(jpql, params, TemporalType.TIMESTAMP);
-        return collectChargeTypeRows(rows);
+        return collectChargeTypeRows(resolveItemChargeTypes(rows));
     }
 
     /**
@@ -901,7 +931,6 @@ public class InwardBhtChargeAggregationService implements Serializable {
                 + " and b.retired = false"
                 + " and b.billType = :btp"
                 + " and enc in :encs"
-                + " and i.inwardChargeType is not null"
                 + " group by enc.id";
         Map<String, Object> serviceParams = new HashMap<>();
         serviceParams.put("btp", BillType.InwardBill);
@@ -1018,15 +1047,15 @@ public class InwardBhtChargeAggregationService implements Serializable {
         params.put("btp", BillType.InwardBill);
         params.put("encs", family.all);
         List<Object[]> rows = patientEncounterFacade.findObjectArrayByJpql(
-                "select enc.id, i.inwardChargeType, sum(bi.marginValue), sum(bi.discount)"
+                "select enc.id, i.inwardChargeType, bi.inwardChargeType, sum(bi.marginValue), sum(bi.discount)"
                 + " from BillItem bi join bi.bill b join b.patientEncounter enc join bi.item i"
                 + " where bi.retired = false"
                 + " and b.retired = false"
                 + " and b.billType = :btp"
                 + " and enc in :encs"
-                + " and i.inwardChargeType is not null"
-                + " group by enc.id, i.inwardChargeType",
+                + " group by enc.id, i.inwardChargeType, bi.inwardChargeType",
                 params, TemporalType.TIMESTAMP);
+        rows = resolveItemChargeTypes(rows);
         if (rows != null) {
             for (Object[] r : rows) {
                 Long encId = (Long) r[0];
