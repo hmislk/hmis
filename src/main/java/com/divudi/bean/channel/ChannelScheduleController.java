@@ -1146,11 +1146,13 @@ public class ChannelScheduleController implements Serializable {
         }
 
         getCurrent().setStaff(currentStaff);
+        Boolean previousAcceptOnlineBookings = null;
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             if (current.getEndingTime().equals(current.getStartingTime()) || current.getEndingTime().before(current.getStartingTime())) {
                 JsfUtil.addErrorMessage("Starting Time and Endtime are the same or Endtime is before Starting Time");
                 return;
             }
+            previousAcceptOnlineBookings = fetchStoredAcceptOnlineBookings(getCurrent());
             getFacade().edit(getCurrent());
             channelScheduleController.channelSheduleForAllDoctor(getCurrent().getStaff());
             JsfUtil.addSuccessMessage("Updated Successfully.");
@@ -1170,12 +1172,45 @@ public class ChannelScheduleController implements Serializable {
         getCurrent().setTotal(calTot());
         getCurrent().setTotalForForeigner(calFTot());
         facade.edit(getCurrent());
-        updateCreatedServicesesions(getCurrent());
+        updateCreatedServicesesions(getCurrent(), previousAcceptOnlineBookings);
         //prepareAdd();
         getItems();
     }
 
+    /**
+     * Reads the Accept Online Bookings value stored in the database for a
+     * schedule, bypassing the cache. Call it before the schedule is saved.
+     * Returns null when the value cannot be read.
+     */
+    public Boolean fetchStoredAcceptOnlineBookings(ServiceSession ss) {
+        if (ss == null || ss.getId() == null) {
+            return null;
+        }
+        String jpql = "select s.acceptOnlineBookings from ServiceSession s where s.id=:id";
+        Map<String, Object> m = new HashMap<>();
+        m.put("id", ss.getId());
+        List<?> l = getFacade().findLightsByJpqlWithoutCache(jpql, m, TemporalType.TIMESTAMP);
+        if (l == null || l.isEmpty() || !(l.get(0) instanceof Boolean)) {
+            return null;
+        }
+        return (Boolean) l.get(0);
+    }
+
     public void updateCreatedServicesesions(ServiceSession ss) {
+        updateCreatedServicesesions(ss, null);
+    }
+
+    /**
+     * Copies the schedule values to its future sessions. The Accept Online
+     * Bookings flag is copied only when the schedule value changed in this
+     * save (previousAcceptOnlineBookings differs from the new value). Turning
+     * it on skips sessions that are started, completed, cancelled or on
+     * doctor holiday. Turning it off closes all of them. A null previous
+     * value means no known change, so the sessions keep their own flag.
+     */
+    public void updateCreatedServicesesions(ServiceSession ss, Boolean previousAcceptOnlineBookings) {
+        boolean flagChanged = previousAcceptOnlineBookings != null
+                && previousAcceptOnlineBookings != ss.isAcceptOnlineBookings();
         for (SessionInstance i : fetchCreatedSessionsInstances(ss)) {
             i.setName(ss.getName());
             i.setInstitution(ss.getInstitution());
@@ -1189,6 +1224,13 @@ public class ChannelScheduleController implements Serializable {
             i.setDisplayCount(ss.getDisplayCount());
             i.setDisplayPercent(ss.getDisplayPercent());
             i.setRefundable(ss.isRefundable());
+            if (flagChanged) {
+                if (!ss.isAcceptOnlineBookings()) {
+                    i.setAcceptOnlineBookings(false);
+                } else if (!i.isStarted() && !i.isCompleted() && !i.isCancelled() && !i.isDoctorHoliday()) {
+                    i.setAcceptOnlineBookings(true);
+                }
+            }
             i.setCreditNumbers(ss.getCreditNumbers());
             i.setCashNumbers(ss.getCashNumbers());
             i.setAgencyNumbers(ss.getAgencyNumbers());

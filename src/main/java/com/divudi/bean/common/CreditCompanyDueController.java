@@ -4,6 +4,7 @@
  */
 package com.divudi.bean.common;
 
+import com.divudi.service.CreditCompanyClaimService;
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.PaymentMethod;
@@ -1377,7 +1378,11 @@ public class CreditCompanyDueController implements Serializable {
             items = new ArrayList<>();
             paymentSelectionMap = new HashMap<>();
             for (Institution ins : setIns) {
-                List<Payment> payments = getCreditBean().getCreditPayments(ins, btas, getFromDate(), getToDate(), true);
+                List<Payment> payments = new ArrayList<>(getCreditBean().getCreditPayments(ins, btas, getFromDate(), getToDate(), true));
+                // Same cut-off as Create Claim: due to 2 decimal places, above 0.10 (#25873).
+                payments.removeIf(p -> p.getBill() != null
+                        && CreditCompanyClaimService.dueDecimalOf(p.getBill())
+                                .compareTo(java.math.BigDecimal.valueOf(CreditCompanyClaimService.MIN_DUE)) <= 0);
                 InstitutionBills newIns = new InstitutionBills();
                 newIns.setInstitution(ins);
                 newIns.setPayments(payments);
@@ -4537,9 +4542,9 @@ public class CreditCompanyDueController implements Serializable {
     //
     // Company receipts and cancels recalculate each commitment bill
     // (INWARD_FINAL_BILL_PAYMENT_BY_CREDIT_COMPANY, referenceBill = final bill)
-    // from the database. finalBill.paidAmount is not used: company receipts add
-    // to it, but the next patient payment resets it to patient money only
-    // (InwardBeanController.updateFinalFill). Patient money is read from the
+    // from the database. finalBill.paidAmount is not used here because it holds
+    // patient and company money together (InwardBeanController.recountFinalBillPaid,
+    // #26152); these figures need them apart. Patient money is read from the
     // InwardPaymentBill bills instead, and the encounter's creditPaidAmount
     // (no longer written) must not be read.
     // -------------------------------------------------------------------------
@@ -4954,7 +4959,7 @@ public class CreditCompanyDueController implements Serializable {
     /**
      * Returns the outstanding patient co-payment for a given encounter.
      * Formula: max(0, finalBill.netTotal − ccCommitted − patientPaid), where
-     * patientPaid is finalBill.paidAmount less the companies' payments (#25601).
+     * patientPaid is the patient's own payments, read from the payment bills (#25601).
      */
     public double getPatientCopaymentDue(PatientEncounter pe) {
         if (pe == null || pe.getFinalBill() == null) {

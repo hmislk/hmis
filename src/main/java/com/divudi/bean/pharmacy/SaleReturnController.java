@@ -38,6 +38,7 @@ import java.math.BigDecimal;
 import com.divudi.core.facade.BillFacade;
 import com.divudi.core.facade.BillFeeFacade;
 import com.divudi.core.facade.BillItemFacade;
+import com.divudi.core.util.PharmacyItemRefundFlags;
 import com.divudi.core.facade.PaymentFacade;
 import com.divudi.core.facade.PharmaceuticalBillItemFacade;
 import com.divudi.service.BillService;
@@ -864,6 +865,8 @@ public class SaleReturnController implements Serializable, com.divudi.bean.commo
         // Update patient deposit balances and create history records
         paymentService.updateBalances(payments);
 
+        markReturnedItemsRefunded();
+
         getReturnBill().setReferenceBill(getBill());
         // The lazy inverse list may already hold the just-persisted return; adding it again duplicated the row (issue #24483, #24109).
         if (!getReturnBill().getReturnCashBills().contains(finalReturnBill)) {
@@ -878,6 +881,29 @@ public class SaleReturnController implements Serializable, com.divudi.bean.commo
         JsfUtil.addSuccessMessage("Successfully Returned");
         returnBillcomment = null;
 
+    }
+
+    /**
+     * Flags the original sale items as refunded once the return, its payment
+     * and the balances are saved, as the items-only refund does, so Search Sale
+     * Bill Items shows "Refunded" (#24485). A failure is logged and never
+     * undoes the return.
+     */
+    private void markReturnedItemsRefunded() {
+        try {
+            for (BillItem returnedItem : getReturnBill().getBillItems()) {
+                if (returnedItem == null || returnedItem.getQty() == 0.0) {
+                    continue;
+                }
+                BillItem originalItem = returnedItem.getReferanceBillItem();
+                if (PharmacyItemRefundFlags.markRefunded(originalItem)) {
+                    getBillItemFacade().editAndFlush(originalItem);
+                }
+            }
+        } catch (RuntimeException e) {
+            java.util.logging.Logger.getLogger(SaleReturnController.class.getName())
+                    .log(java.util.logging.Level.SEVERE, "Could not mark the original items refunded", e);
+        }
     }
 
     /**

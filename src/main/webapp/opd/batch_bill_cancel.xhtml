@@ -549,7 +549,7 @@
                                 <f:selectItems value="#{enumController.paperTypes}" />
                             </p:selectOneMenu>
                             <p:commandButton ajax="false" icon="fa fa-sync-alt" class="ui-button m-1" title="Redraw Bill"></p:commandButton>
-                            <p:commandButton value="Print" 
+                            <p:commandButton value="Print" title="Print the bill shown below" 
                                              class="ui-button-info m-1"
                                              icon="fa fa-print"
                                              ajax="false">
@@ -576,18 +576,24 @@
                         </div>
                         <h:panelGroup id="groupPrint" >
                             <!-- Bill Print Templates -->
-                            <prints:five_five_paper_with_headings bill="#{billSearch.bill.cancelledBill}"/>
-                            <prints:five_five_paper_without_headings 
-                                bill="#{billSearch.bill.cancelledBill}" 
-                                duplicate="#{opdBatchBillCancellationController.duplicatePrint}"
-                                payments="#{opdBatchBillCancellationController.payments}"/>
-                            <prints:posOpdBillWithoutLogo bill="#{billSearch.bill.cancelledBill}" duplicate="#{opdBatchBillCancellationController.duplicatePrint}"/>
-                            <prints:posOpdBill bill="#{billSearch.bill.cancelledBill}" duplicate="#{opdBatchBillCancellationController.duplicatePrint}"/>
-                            <prints:A4_paper_with_headings bill="#{billSearch.bill.cancelledBill}" duplicate="#{opdBatchBillCancellationController.duplicatePrint}"/>
-                            <prints:A4_paper_without_headings bill="#{billSearch.bill.cancelledBill}" duplicate="#{opdBatchBillCancellationController.duplicatePrint}"/>
+                            <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFiveCustom4'}" >
+                                <ui:repeat value="#{billSearch.individualBillsOfBatchBill(billSearch.bill.cancelledBill)}" var="c4b">
+                                    <prints:five_five_opd_bill_custom_4 bill="#{c4b}" duplicate="#{opdBatchBillCancellationController.duplicatePrint}"/>
+                                </ui:repeat>
+                            </h:panelGroup>
+                            <!-- Older formats print together on this page. Custom 4 is chosen by paper type, so they are hidden for it. -->
+                            <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType ne 'FiveFiveCustom4'}" >
+                                <prints:five_five_paper_with_headings bill="#{billSearch.bill.cancelledBill}"/>
+                                <prints:five_five_paper_without_headings 
+                                    bill="#{billSearch.bill.cancelledBill}" 
+                                    duplicate="#{opdBatchBillCancellationController.duplicatePrint}"
+                                    payments="#{opdBatchBillCancellationController.payments}"/>
+                                <prints:posOpdBillWithoutLogo bill="#{billSearch.bill.cancelledBill}" duplicate="#{opdBatchBillCancellationController.duplicatePrint}"/>
+                                <prints:posOpdBill bill="#{billSearch.bill.cancelledBill}" duplicate="#{opdBatchBillCancellationController.duplicatePrint}"/>
+                                <prints:A4_paper_with_headings bill="#{billSearch.bill.cancelledBill}" duplicate="#{opdBatchBillCancellationController.duplicatePrint}"/>
+                                <prints:A4_paper_without_headings bill="#{billSearch.bill.cancelledBill}" duplicate="#{opdBatchBillCancellationController.duplicatePrint}"/>
 
-
-
+                            </h:panelGroup>
                         </h:panelGroup>
                     </h:panelGroup>
                 </h:form>                

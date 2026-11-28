@@ -2875,6 +2875,40 @@ public class BillNumberGenerator {
     }
 
     /**
+     * The counters below are incremented and committed in their own transaction,
+     * for callers that run inside one container transaction (#17562). Inside the
+     * caller's transaction the incremented counter would stay uncommitted until
+     * that transaction ends, and a concurrent caller would read the old value and
+     * get a duplicate number (#24922). A rollback of the caller may leave a gap in
+     * the numbers; it never repeats one. Each one runs the method of the same name
+     * without the suffix, unchanged.
+     */
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+    public String departmentBillNumberGeneratorYearlyByFromDepartmentAndToDepartmentInNewTransaction(Department dep, Department billingDepartment, BillTypeAtomic billType) {
+        return departmentBillNumberGeneratorYearlyByFromDepartmentAndToDepartment(dep, billingDepartment, billType);
+    }
+
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+    public String departmentBillNumberGeneratorYearlyInNewTransaction(Department dep, List<BillTypeAtomic> billTypes) {
+        return departmentBillNumberGeneratorYearly(dep, billTypes);
+    }
+
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+    public String departmentBillNumberGeneratorInNewTransaction(Department dep, Department toDept, BillType billType, BillClassType billClassType) {
+        return departmentBillNumberGenerator(dep, toDept, billType, billClassType);
+    }
+
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+    public String institutionBillNumberGeneratorInNewTransaction(Institution institution, Department toDepartment, BillType billType, BillClassType billClassType, BillNumberSuffix billNumberSuffix) {
+        return institutionBillNumberGenerator(institution, toDepartment, billType, billClassType, billNumberSuffix);
+    }
+
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+    public String departmentBatchBillNumberGeneratorYearlyForInpatientAndOpdServicesInNewTransaction(Department dep, List<BillTypeAtomic> billTypes) {
+        return departmentBatchBillNumberGeneratorYearlyForInpatientAndOpdServices(dep, billTypes);
+    }
+
+    /**
      * Number for a credit company claim (#25847). Always its own counter per
      * institution, department, year and bill type, whatever the "Bill Number
      * Generation Strategy" options say, so claims never use up bill serials.

@@ -57,6 +57,7 @@ import java.io.Serializable;
 import java.text.DateFormat;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
+import com.divudi.service.MultiplePaymentSplitService;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -107,6 +108,8 @@ public class BookKeepingSummery implements Serializable {
     BillFacade billFacade;
     @EJB
     BillFeeFacade billFeeFacade;
+    @EJB
+    MultiplePaymentSplitService multiplePaymentSplitService;
     @EJB
     CategoryFacade categoryFacade;
     //List
@@ -3960,17 +3963,17 @@ public class BookKeepingSummery implements Serializable {
         departmentProfessionalPaymentsCredit = createDoctorPaymentOpdBySpecility(Arrays.asList(PaymentMethod.Credit), null);
         createDoctorPaymentInwardByCategoryAndSpeciality();
 
-        creditCardBill = getBillBean().fetchBills(PaymentMethod.Card, getFromDate(), getToDate(), getInstitution());
-        onlineSettlementBill = getBillBean().fetchBills(PaymentMethod.OnlineSettlement, getFromDate(), getToDate(), getInstitution());
-        chequeBill = getBillBean().fetchBills(PaymentMethod.Cheque, getFromDate(), getToDate(), getInstitution());
-        slipBill = getBillBean().fetchBills(PaymentMethod.Slip, getFromDate(), getToDate(), getInstitution());
+        creditCardBill = getBillBean().fetchBillsWithoutBatchBills(PaymentMethod.Card, getFromDate(), getToDate(), getInstitution());
+        onlineSettlementBill = getBillBean().fetchBillsWithoutBatchBills(PaymentMethod.OnlineSettlement, getFromDate(), getToDate(), getInstitution());
+        chequeBill = getBillBean().fetchBillsWithoutBatchBills(PaymentMethod.Cheque, getFromDate(), getToDate(), getInstitution());
+        slipBill = getBillBean().fetchBillsWithoutBatchBills(PaymentMethod.Slip, getFromDate(), getToDate(), getInstitution());
         /////////////////
         departmentProfessionalPaymentTotalCredit = getBillBean().calDoctorPayment(fromDate, toDate, BillType.OpdBill, institution, Arrays.asList(PaymentMethod.Credit), null);
         inwardProfessionalPaymentTotal = getBillBean().calDoctorPaymentInward(fromDate, toDate, institution);
-        creditCardTotal = getBillBean().calBillTotalWithVat(PaymentMethod.Card, getFromDate(), getToDate(), getInstitution());
-        onlineSettlementTotal = getBillBean().calBillTotalWithVat(PaymentMethod.OnlineSettlement, getFromDate(), getToDate(), getInstitution());
-        chequeTotal = getBillBean().calBillTotal(PaymentMethod.Cheque, getFromDate(), getToDate(), getInstitution());
-        slipTotal = getBillBean().calBillTotal(PaymentMethod.Slip, getFromDate(), getToDate(), getInstitution());
+        creditCardTotal = getBillBean().calBillTotalWithVatWithoutBatchBills(PaymentMethod.Card, getFromDate(), getToDate(), getInstitution());
+        onlineSettlementTotal = getBillBean().calBillTotalWithVatWithoutBatchBills(PaymentMethod.OnlineSettlement, getFromDate(), getToDate(), getInstitution());
+        chequeTotal = getBillBean().calBillTotalWithoutBatchBills(PaymentMethod.Cheque, getFromDate(), getToDate(), getInstitution());
+        slipTotal = getBillBean().calBillTotalWithoutBatchBills(PaymentMethod.Slip, getFromDate(), getToDate(), getInstitution());
         createFinalSummery();
 
 
@@ -4292,7 +4295,8 @@ public class BookKeepingSummery implements Serializable {
             return;
         }
 
-        PaymentMethod[] paymentMethods = {PaymentMethod.Cash, PaymentMethod.Cheque, PaymentMethod.Slip, PaymentMethod.Card};
+        // Multiple Payment Methods bills never include credit, so they belong in the cash side (#26211).
+        PaymentMethod[] paymentMethods = {PaymentMethod.Cash, PaymentMethod.Cheque, PaymentMethod.Slip, PaymentMethod.Card, PaymentMethod.MultiplePaymentMethods};
         createOPdListWithProDayEndTable(Arrays.asList(paymentMethods));
         createOPdListWithProDayEndTableCredit(Arrays.asList(PaymentMethod.Credit));
         opdCashVatTotal = createOPdListWithProDayEndTableTotal(Arrays.asList(paymentMethods));
@@ -4348,14 +4352,28 @@ public class BookKeepingSummery implements Serializable {
         channellingProfessionalPaymentTotal = getBillBean().calDoctorPayment(fromDate, toDate, bts);
 
         createDoctorPaymentInwardByCategoryAndSpeciality();
-        creditCardBill = getBillBean().fetchBills(PaymentMethod.Card, getFromDate(), getToDate(), getInstitution());
-        chequeBill = getBillBean().fetchBills(PaymentMethod.Cheque, getFromDate(), getToDate(), getInstitution());
-        slipBill = getBillBean().fetchBills(PaymentMethod.Slip, getFromDate(), getToDate(), getInstitution());
+        creditCardBill = getBillBean().fetchBillsWithoutBatchBills(PaymentMethod.Card, getFromDate(), getToDate(), getInstitution());
+        chequeBill = getBillBean().fetchBillsWithoutBatchBills(PaymentMethod.Cheque, getFromDate(), getToDate(), getInstitution());
+        slipBill = getBillBean().fetchBillsWithoutBatchBills(PaymentMethod.Slip, getFromDate(), getToDate(), getInstitution());
         /////////////////
-        creditCardTotal = getBillBean().calBillTotal(PaymentMethod.Card, getFromDate(), getToDate(), getInstitution());
-        chequeTotal = getBillBean().calBillTotal(PaymentMethod.Cheque, getFromDate(), getToDate(), getInstitution());
-        slipTotal = getBillBean().calBillTotal(PaymentMethod.Slip, getFromDate(), getToDate(), getInstitution());
-        createFinalSummery();
+        creditCardTotal = getBillBean().calBillTotalWithoutBatchBills(PaymentMethod.Card, getFromDate(), getToDate(), getInstitution());
+        chequeTotal = getBillBean().calBillTotalWithoutBatchBills(PaymentMethod.Cheque, getFromDate(), getToDate(), getInstitution());
+        slipTotal = getBillBean().calBillTotalWithoutBatchBills(PaymentMethod.Slip, getFromDate(), getToDate(), getInstitution());
+        // Every part of a Multiple Payment Methods OPD bill that was not paid in Cash comes off Net Cash (#26211).
+        // Card, Cheque and Slip go to their own totals. Other methods (Patient Deposit, e-Wallet and so on)
+        // go to otherNonCashMultiplePaymentTotal, as a single-method bill paid by them is not in Net Cash.
+        Map<PaymentMethod, Double> multiplePaymentParts = multiplePaymentSplitService.fetchNetTotalByPaymentMethod(BillType.OpdBill, getFromDate(), getToDate(), getInstitution());
+        creditCardTotal += multiplePaymentParts.getOrDefault(PaymentMethod.Card, 0.0);
+        chequeTotal += multiplePaymentParts.getOrDefault(PaymentMethod.Cheque, 0.0);
+        slipTotal += multiplePaymentParts.getOrDefault(PaymentMethod.Slip, 0.0);
+        double otherNonCashMultiplePaymentTotal = 0;
+        for (Map.Entry<PaymentMethod, Double> part : multiplePaymentParts.entrySet()) {
+            PaymentMethod pm = part.getKey();
+            if (pm != PaymentMethod.Cash && pm != PaymentMethod.Card && pm != PaymentMethod.Cheque && pm != PaymentMethod.Slip) {
+                otherNonCashMultiplePaymentTotal += part.getValue();
+            }
+        }
+        createFinalSummery(otherNonCashMultiplePaymentTotal);
 
 
     }
@@ -4422,9 +4440,9 @@ public class BookKeepingSummery implements Serializable {
         createDoctorPaymentInward();
 
         // Payment method specific bills
-        creditCardBill = getBillBean().fetchBills(PaymentMethod.Card, getFromDate(), getToDate(), getInstitution());
-        chequeBill = getBillBean().fetchBills(PaymentMethod.Cheque, getFromDate(), getToDate(), getInstitution());
-        slipBill = getBillBean().fetchBills(PaymentMethod.Slip, getFromDate(), getToDate(), getInstitution());
+        creditCardBill = getBillBean().fetchBillsWithoutBatchBills(PaymentMethod.Card, getFromDate(), getToDate(), getInstitution());
+        chequeBill = getBillBean().fetchBillsWithoutBatchBills(PaymentMethod.Cheque, getFromDate(), getToDate(), getInstitution());
+        slipBill = getBillBean().fetchBillsWithoutBatchBills(PaymentMethod.Slip, getFromDate(), getToDate(), getInstitution());
 
         // Calculate totals
         agentPaymentTotal = getBillBean().calBillTotal(BillType.AgentPaymentReceiveBill, fromDate, toDate, institution);
@@ -4452,9 +4470,9 @@ public class BookKeepingSummery implements Serializable {
 
         createDoctorPaymentInwardByCategoryAndSpeciality();
 
-        creditCardTotal = getBillBean().calBillTotal(PaymentMethod.Card, getFromDate(), getToDate(), getInstitution());
-        chequeTotal = getBillBean().calBillTotal(PaymentMethod.Cheque, getFromDate(), getToDate(), getInstitution());
-        slipTotal = getBillBean().calBillTotal(PaymentMethod.Slip, getFromDate(), getToDate(), getInstitution());
+        creditCardTotal = getBillBean().calBillTotalWithoutBatchBills(PaymentMethod.Card, getFromDate(), getToDate(), getInstitution());
+        chequeTotal = getBillBean().calBillTotalWithoutBatchBills(PaymentMethod.Cheque, getFromDate(), getToDate(), getInstitution());
+        slipTotal = getBillBean().calBillTotalWithoutBatchBills(PaymentMethod.Slip, getFromDate(), getToDate(), getInstitution());
 
         createFinalSummery();
     }
@@ -5252,9 +5270,9 @@ public class BookKeepingSummery implements Serializable {
         departmentProfessionalPaymentsCredit = createDoctorPaymentOpdBySpecility(Arrays.asList(PaymentMethod.Credit), null);
         createDoctorPaymentInwardByCategoryAndSpeciality();
         departmentProfessionalPaymentTotalCredit = getBillBean().calDoctorPayment(fromDate, toDate, BillType.OpdBill, institution, Arrays.asList(PaymentMethod.Credit), null);
-        creditCardTotal = getBillBean().calBillTotal(PaymentMethod.Card, getFromDate(), getToDate(), getInstitution());
-        chequeTotal = getBillBean().calBillTotal(PaymentMethod.Cheque, getFromDate(), getToDate(), getInstitution());
-        slipTotal = getBillBean().calBillTotal(PaymentMethod.Slip, getFromDate(), getToDate(), getInstitution());
+        creditCardTotal = getBillBean().calBillTotalWithoutBatchBills(PaymentMethod.Card, getFromDate(), getToDate(), getInstitution());
+        chequeTotal = getBillBean().calBillTotalWithoutBatchBills(PaymentMethod.Cheque, getFromDate(), getToDate(), getInstitution());
+        slipTotal = getBillBean().calBillTotalWithoutBatchBills(PaymentMethod.Slip, getFromDate(), getToDate(), getInstitution());
         createFinalSummeryMonth();
 
 
@@ -5309,9 +5327,9 @@ public class BookKeepingSummery implements Serializable {
 //        chequeBill = getBillBean().fetchBills(PaymentMethod.Cheque, getFromDate(), getToDate(), getInstitution());
 //        slipBill = getBillBean().fetchBills(PaymentMethod.Slip, getFromDate(), getToDate(), getInstitution());
         /////////////////
-        creditCardTotal = getBillBean().calBillTotal(PaymentMethod.Card, getFromDate(), getToDate(), getInstitution());
-        chequeTotal = getBillBean().calBillTotal(PaymentMethod.Cheque, getFromDate(), getToDate(), getInstitution());
-        slipTotal = getBillBean().calBillTotal(PaymentMethod.Slip, getFromDate(), getToDate(), getInstitution());
+        creditCardTotal = getBillBean().calBillTotalWithoutBatchBills(PaymentMethod.Card, getFromDate(), getToDate(), getInstitution());
+        chequeTotal = getBillBean().calBillTotalWithoutBatchBills(PaymentMethod.Cheque, getFromDate(), getToDate(), getInstitution());
+        slipTotal = getBillBean().calBillTotalWithoutBatchBills(PaymentMethod.Slip, getFromDate(), getToDate(), getInstitution());
         createFinalSummeryMonth();
 
 
@@ -5325,12 +5343,20 @@ public class BookKeepingSummery implements Serializable {
     }
 
     private void createFinalSummery() {
+        createFinalSummery(0);
+    }
+
+    /**
+     * @param otherNonCashDeduction parts of Multiple Payment Methods bills paid
+     * by methods other than Cash, Card, Cheque and Slip; they are not cash (#26211)
+     */
+    private void createFinalSummery(double otherNonCashDeduction) {
         finalValues = new ArrayList<>();
         String1Value2 dd;
         ////////
         dd = new String1Value2();
         dd.setString("Net Cash");
-        Double tmp = grantTotal - (creditCardTotal + slipTotal + chequeTotal + departmentProfessionalPaymentTotal + channellingProfessionalPaymentTotal + inwardProfessionalPaymentTotal);
+        Double tmp = grantTotal - (creditCardTotal + slipTotal + chequeTotal + otherNonCashDeduction + departmentProfessionalPaymentTotal + channellingProfessionalPaymentTotal + inwardProfessionalPaymentTotal);
         dd.setValue1(tmp);
         finalValues.add(dd);
 

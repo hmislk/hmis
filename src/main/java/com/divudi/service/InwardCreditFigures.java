@@ -27,11 +27,11 @@ import java.util.Set;
  *
  * Company receipts and cancels recalculate each commitment bill
  * (INWARD_FINAL_BILL_PAYMENT_BY_CREDIT_COMPANY, referenceBill = the admission's
- * current final bill) from the database. finalBill.paidAmount is not used:
- * company receipts add to it, but the next patient payment resets it to
- * patient money only (InwardBeanController.updateFinalFill). Patient money is
- * read from the InwardPaymentBill bills instead, and the encounter's
- * creditPaidAmount (no longer written) must not be read.
+ * current final bill) from the database. finalBill.paidAmount is not used
+ * here because it holds patient and company money together (recounted by
+ * InwardBeanController.recountFinalBillPaid, #26152); these figures need them
+ * apart. Patient money is read from the InwardPaymentBill bills instead, and
+ * the encounter's creditPaidAmount (no longer written) must not be read.
  *
  * A plain class (not a bean): each caller keeps its own instance, which caches
  * what it has loaded. Not thread safe, like the session beans that hold it.

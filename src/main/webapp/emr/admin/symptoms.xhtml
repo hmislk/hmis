@@ -58,7 +58,7 @@
                                     filterMatchMode="contains"
                                     scrollHeight="500"
                                     >
-                                    <f:selectItems  value="#{symptomController.items}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" ></f:selectItems>
+                                    <f:selectItems  value="#{symptomController.items}" var="myItem" itemValue="#{myItem}" itemLabel="#{empty myItem.name ? '(no name)' : myItem.name}" ></f:selectItems>
                                     <f:ajax render="gpDetail" execute="lstSelect" >
                                     </f:ajax>
                                 </p:selectOneListbox>
@@ -93,7 +93,7 @@
                                 <p:commandButton id="btnSave" 
                                                  value="Save" 
                                                  action="#{symptomController.saveSelected()}" 
-                                                 class="m-1"
+                                                 class="m-1 ui-button-success"
                                                  icon="fas fa-save"
                                                  update="growlMsg btnAdd  btnDelete btnSave   lstSelect gpDetail selectFocus gpDetail"  
                                                  process="gpDetail">

@@ -254,6 +254,29 @@ public class DrawerController implements Serializable {
         }
     }
 
+    /**
+     * Undoes the drawer rows of a cancelled bill (#26196). The caller has already
+     * committed the cancellation, so a busy drawer must not undo it: it is logged
+     * for an admin to apply by a drawer adjustment, and the cashier is told.
+     */
+    public void reverseDrawerEntriesOfBill(Bill originalBill, Bill cancellationBill, WebUser webUser) {
+        try {
+            boolean reversed = drawerService.reverseDrawerEntriesOfBill(originalBill, cancellationBill, webUser);
+            if (!reversed && originalBill != null && originalBill.getPaymentMethod() == PaymentMethod.Cash
+                    && originalBill.getNetTotal() != 0) {
+                LOGGER.log(Level.WARNING, "Cash drawer NOT updated (no drawer rows found to reverse): bill id {0}, cancellation bill id {1}, drawer user {2}. Apply it with a drawer adjustment if cash was paid out.",
+                        new Object[]{String.valueOf(originalBill.getId()),
+                            String.valueOf(cancellationBill == null ? null : cancellationBill.getId()), userName(webUser)});
+                JsfUtil.addWarningMessage("No cash drawer entries were found for this bill, so the drawer was not changed. Check the drawer.");
+            }
+        } catch (DrawerBusyException e) {
+            LOGGER.log(Level.SEVERE, "Cash drawer NOT updated (drawer busy): reversal of bill id {0}, cancellation bill id {1}, drawer user {2}. Apply it with a drawer adjustment.",
+                    new Object[]{String.valueOf(originalBill == null ? null : originalBill.getId()),
+                        String.valueOf(cancellationBill == null ? null : cancellationBill.getId()), userName(webUser)});
+            tellCashier();
+        }
+    }
+
     public void updateDrawerForIns(Payment payment) {
         updateCreatorsDrawerOrReport(payment, Math.abs(payment.getPaidValue()));
     }

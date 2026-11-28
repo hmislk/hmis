@@ -68,6 +68,7 @@ import com.divudi.core.data.admin.PrivilegeInfo;
 import javax.annotation.PostConstruct;
 
 import java.io.Serializable;
+import com.divudi.service.MultiplePaymentSplitService;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -438,6 +439,11 @@ public class OpdBillCancellationController implements Serializable, ControllerWi
      * method.
      */
     public void onPaymentMethodChange() {
+        if (isMultiplePaymentCancellation()) {
+            // The method is fixed for a Multiple Payment Methods bill (#26211)
+            applyOriginalMethodsOfMultiplePaymentBill();
+            return;
+        }
         try {
             System.out.println("onPaymentMethodChange: Method started");
             System.out.println("onPaymentMethodChange: Payment method changed to " + this.paymentMethod);
@@ -730,6 +736,8 @@ public class OpdBillCancellationController implements Serializable, ControllerWi
             JsfUtil.addErrorMessage("The batch bill " + batchBillForCheck.getDeptId() + " has already been cancelled. Cannot cancel individual bills separately.");
             return;
         }
+        // Do not trust the page: a Multiple Payment Methods bill is always refunded by its original methods (#26211)
+        applyOriginalMethodsOfMultiplePaymentBill();
         if (paymentMethod == null) {
             JsfUtil.addErrorMessage("Select a Payment Method");
             return;
@@ -865,6 +873,7 @@ public class OpdBillCancellationController implements Serializable, ControllerWi
         if (cancellationBill.getPaymentMethod() == PaymentMethod.PatientDeposit) {
             PatientDeposit pd = patientDepositService.getDepositOfThePatient(cancellationBill.getPatient(), sessionController.getDepartment());
             patientDepositService.updateBalance(cancellationBill, pd);
+            patientDepositService.restoreRunningBalanceOnCancel(cancellationBill);
         }
 
         notificationController.createNotification(cancellationBill);
@@ -1089,6 +1098,77 @@ public class OpdBillCancellationController implements Serializable, ControllerWi
         this.selectedBillId = selectedBillId;
     }
 
+    /**
+     * True when the bill being cancelled was paid by Multiple Payment Methods.
+     * Such a bill is refunded by the same methods as the original, so the
+     * cashier does not pick a method (#26211).
+     */
+    public boolean isMultiplePaymentCancellation() {
+        return bill != null
+                && bill.getBackwardReferenceBill() != null
+                && bill.getBackwardReferenceBill().getPaymentMethod() == PaymentMethod.MultiplePaymentMethods;
+    }
+
+    /**
+     * One line of the read-only refund shown for a Multiple Payment Methods
+     * bill: the method and the amount refunded by it.
+     */
+    public static class RefundLine implements Serializable {
+
+        private final PaymentMethod paymentMethod;
+        private final double amount;
+
+        public RefundLine(PaymentMethod paymentMethod, double amount) {
+            this.paymentMethod = paymentMethod;
+            this.amount = amount;
+        }
+
+        public PaymentMethod getPaymentMethod() {
+            return paymentMethod;
+        }
+
+        public double getAmount() {
+            return amount;
+        }
+    }
+
+    /**
+     * The methods and amounts that will be refunded when a Multiple Payment
+     * Methods bill is cancelled. Same shares as the original payments.
+     */
+    public List<RefundLine> getMultiplePaymentRefundLines() {
+        List<RefundLine> lines = new ArrayList<>();
+        if (!isMultiplePaymentCancellation() || billPayments == null || billPayments.isEmpty()) {
+            return lines;
+        }
+        List<Double> paidValues = new ArrayList<>();
+        for (Payment p : billPayments) {
+            paidValues.add(p.getPaidValue());
+        }
+        List<Double> amounts = MultiplePaymentSplitService.amountsByShare(Math.abs(bill.getNetTotal()), paidValues);
+        for (int i = 0; i < billPayments.size(); i++) {
+            lines.add(new RefundLine(billPayments.get(i).getPaymentMethod(), amounts.get(i)));
+        }
+        return lines;
+    }
+
+    /**
+     * Sets the cancellation method and amounts from the original payments of
+     * the batch, by the share of this bill. Does nothing for other bills.
+     */
+    private void applyOriginalMethodsOfMultiplePaymentBill() {
+        if (!isMultiplePaymentCancellation()) {
+            return;
+        }
+        Bill batchBill = bill.getBackwardReferenceBill();
+        billPayments = billBean.fetchBillPayments(batchBill);
+        paymentMethod = PaymentMethod.MultiplePaymentMethods;
+        paymentMethodData = new PaymentMethodData();
+        if (billPayments != null && !billPayments.isEmpty()) {
+            initializePaymentDataFromOriginalPayments(billPayments);
+        }
+    }
+
     public String navigateToCancelOpdBill() {
         if (com.divudi.core.util.CancellationBillCheck.refuse(getBill())) {
             return "";
@@ -1124,6 +1204,9 @@ public class OpdBillCancellationController implements Serializable, ControllerWi
             if (billPayments != null && !billPayments.isEmpty()) {
                 initializePaymentDataFromOriginalPayments(billPayments);
             }
+
+            // Multiple Payment Methods: refund the same methods as the original (#26211)
+            applyOriginalMethodsOfMultiplePaymentBill();
 
             // Load and store original payment details for UI compatibility (card picker, etc.)
             loadOriginalPaymentDetails();
@@ -1294,12 +1377,21 @@ public class OpdBillCancellationController implements Serializable, ControllerWi
             // Initialize multiple payment method structure with original payment details
             getPaymentMethodData().getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().clear();
 
+            // Refund each original method by this bill's share of the batch payments (#26211).
+            // A batch can hold more than one bill, so the original amounts are for the whole batch.
+            List<Double> originalPaidValues = new ArrayList<>();
+            for (Payment originalPayment : originalPayments) {
+                originalPaidValues.add(originalPayment.getPaidValue());
+            }
+            List<Double> refundAmounts = MultiplePaymentSplitService.amountsByShare(Math.abs(bill.getNetTotal()), originalPaidValues);
+            int refundAmountIndex = 0;
+
             for (Payment originalPayment : originalPayments) {
                 ComponentDetail cd = new ComponentDetail();
                 cd.setPaymentMethod(originalPayment.getPaymentMethod());
 
                 // Set payment details based on method - use absolute value for UI display
-                double refundAmount = Math.abs(originalPayment.getPaidValue());
+                double refundAmount = refundAmounts.get(refundAmountIndex++);
 
                 switch (originalPayment.getPaymentMethod()) {
                     case Cash:

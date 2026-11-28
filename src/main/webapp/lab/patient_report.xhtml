@@ -13,8 +13,9 @@
         <ui:composition template="/resources/template/template.xhtml" >
 
             <ui:define name="content" rendered="#{webUserController.hasPrivilege('LabAutherizing') eq true or webUserController.hasPrivilege('LabDataentry') eq true or webUserController.hasPrivilege('LabPrinting') eq true   }" >
-                <h:form>
+                <h:form styleClass="lab-patient-report">
                     <h:outputStylesheet library="css" name="lab.css" ></h:outputStylesheet>
+                    <h:outputStylesheet library="css" name="lab-patient-report-mobile.css" ></h:outputStylesheet>
 
                     <style>
                         /* Preserve consecutive spaces typed into the microbiology
@@ -30,12 +31,12 @@
 
                     <p:panel>
                         <f:facet  name="header" >
-                            <div class="row d-flex align-items-center">
+                            <div class="row d-flex align-items-center lab-pr-header">
                                 <div class="col-1">
                                     <h4 class="mt-2 font-bold">Patient Report</h4>
                                 </div>
                                 <div class="col-3 d-flex justify-content-end">
-                                    <h:panelGrid columns="2" >
+                                    <h:panelGrid columns="2" styleClass="lab-pr-format" >
                                         <p:outputLabel value="Report Format" class="mx-2"></p:outputLabel>
                                         <p:selectOneMenu  
                                             disabled="#{patientReportController.currentPatientReport.approved or not configOptionApplicationController.getBooleanValueByKey('Change Report Template in Patient Report')}"
@@ -48,8 +49,8 @@
                                     </h:panelGrid>
                                 </div>
                                 <div class="col-8">
-                                    <div class="d-flex justify-content-between">
-                                        <div class="d-flex gap-2">
+                                    <div class="d-flex justify-content-between lab-pr-toolbar">
+                                        <div class="d-flex gap-2 lab-pr-actions">
                                             <p:commandButton 
                                                 rendered="#{webUserController.hasPrivilege('LabDataentry') eq true and patientReportController.currentPatientReport.approved ne true}"  
                                                 value="Save" 
@@ -117,7 +118,7 @@
                                             </p:commandButton>
                                         </div>
 
-                                        <div class="d-flex gap-2">
+                                        <div class="d-flex gap-2 lab-pr-actions">
 
                                             <p:remoteCommand 
                                                 name="recordExportHistory"
@@ -224,7 +225,7 @@
                         <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Display the priority Alert Note in Patient Report View',false)}">
 
                             <h:panelGroup rendered="#{patientReportController.currentPatientReport.patientInvestigation.billItem.priority eq 'HIGH'}">
-                                <div class="alert alert-link" role="alert" style="filter: brightness(0.8); background-color: #{patientReportController.currentPatientReport.patientInvestigation.billItem.priority.priorityColor}">
+                                <div class="alert alert-link lab-pr-alert" role="alert" style="filter: brightness(0.8); background-color: #{patientReportController.currentPatientReport.patientInvestigation.billItem.priority.priorityColor}">
                                     <div class="d-grid justify-content-center" style="line-height: 0.8; z-index: 10000">
                                         <h2 class="alert-heading"><b>⚠ #{patientReportController.currentPatientReport.patientInvestigation.billItem.priority.displayName} Priority Report. </b></h2>
                                         <br/>
@@ -234,7 +235,7 @@
                             </h:panelGroup>
 
                             <h:panelGroup rendered="#{patientReportController.currentPatientReport.patientInvestigation.billItem.priority eq 'URGENT'}">
-                                <div class="alert alert-warning" role="alert" style="filter: brightness(0.8); background-color: #{patientReportController.currentPatientReport.patientInvestigation.billItem.priority.priorityColor}">
+                                <div class="alert alert-warning lab-pr-alert" role="alert" style="filter: brightness(0.8); background-color: #{patientReportController.currentPatientReport.patientInvestigation.billItem.priority.priorityColor}">
                                     <div class="d-grid justify-content-center" style="line-height: 0.8; z-index: 10000">
                                         <h2 class="alert-heading"><b>🚨 #{patientReportController.currentPatientReport.patientInvestigation.billItem.priority.displayName} Priority Report. </b></h2>
                                         <br/>
@@ -244,7 +245,7 @@
                             </h:panelGroup>
 
                             <h:panelGroup rendered="#{patientReportController.currentPatientReport.patientInvestigation.billItem.priority eq 'CRITICAL'}">
-                                <div class="alert alert-danger" role="alert" style="filter: brightness(0.8); background-color: #{patientReportController.currentPatientReport.patientInvestigation.billItem.priority.priorityColor}">
+                                <div class="alert alert-danger lab-pr-alert" role="alert" style="filter: brightness(0.8); background-color: #{patientReportController.currentPatientReport.patientInvestigation.billItem.priority.priorityColor}">
                                     <div class="d-grid justify-content-center" style="line-height: 0.8; z-index: 10000">
                                         <h2 class="alert-heading"><b>🔥 #{patientReportController.currentPatientReport.patientInvestigation.billItem.priority.displayName} Priority Report. </b></h2>
                                         <br/>
@@ -256,7 +257,7 @@
                         </h:panelGroup>
 
                         <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Need to record the history of issuing lab reports.',true) and patientReportController.currentPatientReport.approved}">
-                            <div class="row mb-4">
+                            <div class="row mb-4 lab-pr-handover">
                                 <div class="d-flex gap-2 justify-content-end">
                                     <h:panelGroup rendered="#{patientReportController.currentPatientReport.patientInvestigation.billItem.bill.patientEncounter ne null}" class="d-flex gap-2">
                                         <p:autoComplete 
@@ -296,19 +297,19 @@
                             </div>
                         </h:panelGroup>
 
-                        <div class="row">
+                        <div class="row lab-pr-body">
 
                             <div class="col-5">
                                 <!--                            Enter Values                        -->
                                 <p:panel header="Enter Values"  
                                          rendered="#{patientReportController.currentPatientReport.transInvestigation.reportType ne 'Microbiology' and patientReportController.currentPatientReport.containValues eq true}" >
-                                    <table >
+                                    <table class="lab-pr-entry-table">
                                         <ui:repeat id="tblVals" value="#{patientReportController.currentPatientReport.patientReportItemValues}"  
                                                    var="pvv"  
                                                    >
                                             <h:panelGroup rendered="#{pvv.investigationItem.ixItemType eq 'Value'}"  >
                                                 <tr >
-                                                    <td style="min-width: 200px!important;">
+                                                    <td class="lab-pr-minw-200">
                                                         <h:outputLabel value="#{pvv.investigationItem.name}"></h:outputLabel>
                                                     </td>
                                                     <td class="w-100">
@@ -322,12 +323,11 @@
                                                         </p:inputText>
 
                                                         <p:selectOneMenu 
-                                                            class="mx-2" 
+                                                            class="mx-2 lab-pr-minw-300" 
                                                             value="#{pvv.strValue}" 
                                                             disabled="#{patientReportController.currentPatientReport.approved}"
                                                             rendered="#{pvv.investigationItem.ixItemValueType eq 'Varchar' and !empty pvv.investigationItem.investigationItemValues}" 
-                                                            editable="true"  
-                                                            style="min-width: 300px!important;" >
+                                                            editable="true" >
                                                             <f:selectItems value="#{pvv.investigationItem.investigationItemValues}" var="iiv" itemLabel="#{iiv.name}" itemValue="#{iiv.name}" ></f:selectItems>
                                                             <p:ajax process="@this" event="change" listener="#{patientReportController.savePatientReportItemValues()}"></p:ajax>
                                                         </p:selectOneMenu>
@@ -419,7 +419,7 @@
                                 <!--                            Calculations                        -->
                                 <h:panelGroup rendered="#{patientReportController.currentPatientReport.transInvestigation.reportType ne 'Microbiology'  and patientReportController.currentPatientReport.containCalculations eq true }">
                                     <p:panel class="my-2" header="Calculations " id="tblCals">
-                                        <table >               
+                                        <table class="lab-pr-entry-table">
                                             <ui:repeat  
                                                 value="#{patientReportController.currentPatientReport.patientReportItemValues}" 
                                                 var="pvcal"  
@@ -427,7 +427,7 @@
 
                                                 <h:panelGroup   rendered="#{pvcal.investigationItem.ixItemType eq 'Calculation'}">
                                                     <tr>
-                                                        <td style="min-width: 200px!important;">
+                                                        <td class="lab-pr-minw-200">
                                                             <h:outputLabel value="#{pvcal.investigationItem.name}" ></h:outputLabel>
                                                         </td>
                                                         <td >
@@ -463,11 +463,11 @@
                                     rendered="#{patientReportController.currentPatientReport.transInvestigation.reportType ne 'Microbiology'  and patientReportController.currentPatientReport.containFlags eq true}" >
 
                                     <h:panelGroup rendered="true" >
-                                        <table >
+                                        <table class="lab-pr-entry-table">
                                             <ui:repeat value="#{patientReportController.currentPatientReport.patientReportItemValues}" var="pvf" >
                                                 <h:panelGroup rendered="#{pvf.investigationItem.ixItemType eq 'Flag'}" >
                                                     <tr>
-                                                        <td  style="min-width: 200px!important;">
+                                                        <td class="lab-pr-minw-200">
                                                             <h:outputLabel value="#{pvf.investigationItem.name}" ></h:outputLabel>
                                                         </td>
                                                         <td>
@@ -491,7 +491,7 @@
 
                                 <!--                            Dynamic Labels                      -->
                                 <p:panel header="Dynamic Labels" rendered="#{patientReportController.currentPatientReport.containDynamicLabels eq true }"  >
-                                    <table >
+                                    <table class="lab-pr-entry-table">
                                         <ui:repeat 
                                             id="tblDls" 
                                             value="#{patientReportController.currentPatientReport.patientReportItemValues}"  
@@ -529,7 +529,7 @@
                                     id="panelDataEntryForMicrobiology"
                                     rendered="#{patientReportController.currentPatientReport.transInvestigation.reportType eq 'Microbiology'}" >
                                     <h:panelGroup >
-                                        <table class="w-100">
+                                        <table class="w-100 lab-pr-entry-table">
                                             <ui:repeat id="tblMicValsExceptAntibiotics"
                                                        value="#{patientReportController.currentPatientReport.patientReportItemValues}"  
                                                        var="pvm"   
@@ -595,7 +595,7 @@
                                             <b>Add Antibiotic Group</b>
                                         </div>
                                     </p:divider>
-                                    <div class="d-flex gap-3 justify-content-between">
+                                    <div class="d-flex gap-3 justify-content-between lab-pr-wrap">
                                         <p:outputLabel 
                                             for="txtGroupName"
                                             class="mt-2"
@@ -620,7 +620,7 @@
                                     <p:divider />
 
                                     <h:panelGroup rendered="#{not empty patientReportController.currentPatientReport.patientReportGroups}">
-                                        <table >
+                                        <table class="lab-pr-entry-table">
 
                                             <ui:repeat 
                                                 id="tblMicValsGroupes" 
@@ -647,7 +647,7 @@
                                                         <h:panelGroup 
                                                             rendered="#{pvm.investigationItem.ixItemType eq 'Value'  or pvm.investigationItem.ixItemType eq 'Antibiotic' }" >
                                                             <tr>
-                                                                <td  style="min-width: 280px!important;">
+                                                                <td class="lab-pr-minw-280">
                                                                     <h:outputLabel value="#{pvm.investigationItem.name}" ></h:outputLabel>
                                                                 </td>
                                                                 <td >
@@ -662,7 +662,7 @@
                                                                     </h:panelGroup>
                                                                     <h:panelGroup rendered="#{pvm.investigationItem.ixItemValueType eq 'Varchar'}">
                                                                         <p:selectOneMenu 
-                                                                            id="cmbMicStrValGrouped" class="mt-1" value="#{pvm.strValue}" editable="true"  style="min-width: 300px!important;" disabled="#{patientReportController.currentPatientReport.approved}">
+                                                                            id="cmbMicStrValGrouped" class="mt-1 lab-pr-minw-300" value="#{pvm.strValue}" editable="true" disabled="#{patientReportController.currentPatientReport.approved}">
                                                                             <f:selectItem itemLabel="SENSITIVE" itemValue="SENSITIVE" ></f:selectItem>
                                                                             <f:selectItem itemLabel="RESISTANT" itemValue="Resistant" ></f:selectItem>
                                                                             <f:selectItem itemLabel="INTERMEDIATE" itemValue="Intermediate" ></f:selectItem>
@@ -696,8 +696,8 @@
                                     header="Pathology or Haematology Report"    
                                     rendered="#{patientReportController.currentPatientReport.transInvestigation.reportType eq 'PathologyOrHaematology'}" >
 
-                                    <div class="d-flex justify-content-between">
-                                        <div class="d-flex gap-2">
+                                    <div class="d-flex justify-content-between lab-pr-wrap">
+                                        <div class="d-flex gap-2 lab-pr-wrap">
                                             <p:outputLabel value="Search a Template" class="mt-2"></p:outputLabel>
                                             <p:autoComplete 
                                                 id="acTemplate" 
@@ -723,7 +723,7 @@
                                         </div>
                                     </div>
 
-                                    <p:dialog id="dlgPath" header="Pathology Report" widgetVar="dlgPath" modal="true" height="600" >
+                                    <p:dialog id="dlgPath" header="Pathology Report" widgetVar="dlgPath" modal="true" height="600" fitViewport="true" styleClass="lab-pr-dialog" >
 
                                         <h:panelGroup rendered="#{patientReportController.investigationItem eq null}" >
                                             <p:outputLabel value="Please select a template first" ></p:outputLabel>
@@ -738,7 +738,7 @@
 
                                         <h:panelGroup rendered="#{patientReportController.investigationItem ne null}" >
 
-                                            <table >
+                                            <table class="lab-pr-entry-table">
                                                 <tr style="padding-top: 3px; padding-bottom: 3px;">
                                                     <th style="width: 150px;">
                                                         <p:outputLabel value="Variable" ></p:outputLabel>
@@ -860,8 +860,8 @@
                                                 update="#{p:resolveFirstComponentWithId('panDoc',view).clientId}" > 
                                             </p:commandButton>
 
-                                            <p:dialog id="panDoc" header="Add New Doctor" widgetVar="dlg" resizable="false" modal="true" class="p-2" showEffect="fade"  width="650">  
-                                                <h:panelGrid columns="2" > 
+                                            <p:dialog id="panDoc" styleClass="lab-pr-dialog" header="Add New Doctor" widgetVar="dlg" resizable="false" modal="true" class="p-2" showEffect="fade"  width="650">  
+                                                <h:panelGrid columns="2" styleClass="lab-pr-form-grid" > 
                                                     <p:outputLabel id="lblTitleD" value="Title" style="width: 200px;"></p:outputLabel>
                                                     <p:selectOneMenu 
                                                         id="cmbTitle1"
@@ -985,8 +985,8 @@
 
                             </div>
 
-                            <div class="col-7 ">
-                                <h:panelGroup class="mb-3 gap-2 d-flex justify-content-end" rendered="#{configOptionApplicationController.getBooleanValueByKey('The system uses the Laboratory Dashboard as its default interface', false)}">
+                            <div class="col-7 lab-pr-side">
+                                <h:panelGroup class="mb-3 gap-2 d-flex justify-content-end lab-pr-wrap" rendered="#{configOptionApplicationController.getBooleanValueByKey('The system uses the Laboratory Dashboard as its default interface', false)}">
                                     <p:commandButton 
                                         value="Back to Other patient Investigations" 
                                         icon="fa-solid fa-circle-left"
@@ -1013,7 +1013,7 @@
                                     <div class="col-md-7">
                                         <p:panel >
                                             <f:facet name="header">
-                                                <div class="d-flex justify-content-between">
+                                                <div class="d-flex justify-content-between lab-pr-toolbar">
                                                     <p:outputLabel value="Patient Details (Report Header)" class="mt-2"></p:outputLabel>
                                                     <p:commandButton
                                                         ajax="false"
@@ -1069,7 +1069,7 @@
                                                 </div>
                                             </div>
                                             <f:facet name="footer">
-                                                <div class="alert alert-warning" role="alert" style="padding: 5px;">
+                                                <div class="alert alert-warning lab-pr-warning" role="alert" style="padding: 5px;">
                                                     <div class="d-flex gap-2">
                                                         <i class="fa fa-exclamation-triangle" aria-hidden="true" style="font-size: 70px;  padding: 10px; color: #f39c12;"></i>
                                                         <div class="card-body d-flex justify-content-center text-center" style="font-weight: 700; font-size: 18px;">
@@ -1174,33 +1174,49 @@
                                     }
                                 </script>
 
-                                <div class="d-flex justify-content-end m-3">
-                                    <h:outputLabel value="Show Background" class="mt-2" style="font-weight: bold; font-size: 20px;"></h:outputLabel>
-                                    <p:selectBooleanButton class="mt-1 mx-4" offLabel="No" onLabel="Yes"  value="#{patientReportController.showBackground}" >
-                                        <p:ajax process="@this" update="divPrint" event="change"/>
-                                    </p:selectBooleanButton>
-                                </div>
-
-                                <div class="d-flex justify-content-center">
-                                    <h:panelGroup  id="divPrint" >
-
-                                        <div id="pdf">
-                                            <!--HtmlTemplate-->
-                                            <lab:html_patient_report/>
-
-                                            <!--General-->
-                                            <lab:general_patient_report/>
-
-                                            <!--Microbiology-->
-                                            <lab:microbiology_patient_report/>
-
-                                            <!--PathologyOrHaematology-->
-                                            <lab:pathology_patient_report/>
+                                <!-- Report preview card. lab-report-preview-fit.js scales the
+                                     A4 page down to fit the box (screen only); print / PDF use
+                                     the real size. -->
+                                <div class="lab-pr-preview-card">
+                                    <div class="lab-pr-preview-toolbar">
+                                        <div class="d-flex align-items-center gap-2">
+                                            <i class="fa-solid fa-file-medical"></i>
+                                            <h:outputText value="Report Preview" style="font-weight: 700;"/>
                                         </div>
+                                        <div class="d-flex align-items-center gap-2">
+                                            <h:outputLabel value="Show Background" style="font-weight: 600;"></h:outputLabel>
+                                            <p:selectBooleanButton offLabel="No" onLabel="Yes" onIcon="fa fa-check" offIcon="fa fa-times" value="#{patientReportController.showBackground}" >
+                                                <p:ajax process="@this" update="divPrint" event="change"/>
+                                            </p:selectBooleanButton>
+                                        </div>
+                                    </div>
+
+                                    <div class="lab-pr-preview">
+                                        <div class="lab-pr-preview-outer">
+                                            <div class="lab-pr-preview-inner">
+                                                <h:panelGroup  id="divPrint" >
+
+                                                    <div id="pdf">
+                                                        <!--HtmlTemplate-->
+                                                        <lab:html_patient_report/>
+
+                                                        <!--General-->
+                                                        <lab:general_patient_report/>
+
+                                                        <!--Microbiology-->
+                                                        <lab:microbiology_patient_report/>
+
+                                                        <!--PathologyOrHaematology-->
+                                                        <lab:pathology_patient_report/>
+                                                    </div>
 
 
-                                    </h:panelGroup>
+                                                </h:panelGroup>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
+                                <h:outputScript library="js" name="lab-report-preview-fit.js" target="body"/>
 
                             </div>
                         </div>
@@ -1278,9 +1294,10 @@
                     resizable="false"
                     appendTo="@(body)"
                     width="450"
+                    styleClass="lab-pr-dialog"
                     >
                     <h:form id="formEmailForApprovedReport">
-                        <h:panelGrid columns="2" styleClass="w-100" columnClasses="w-30,w-70">
+                        <h:panelGrid columns="2" styleClass="w-100 lab-pr-form-grid" columnClasses="w-30,w-70">
                             <p:outputLabel for="inpEmailForApprovedReport" value="Email" />
                             <p:inputText id="inpEmailForApprovedReport" value="#{patientReportController.receipientEmail}" styleClass="w-100" />
                             <p:spacer ></p:spacer>

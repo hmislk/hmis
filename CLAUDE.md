@@ -13,9 +13,10 @@
 - **🚨 Discuss with the user only** decisions about PRODUCTION (merges, live data, live config), MONEY, CLINICAL meaning, and FLOW, DESIGN or BUSINESS-PROCESS changes. Decide every other (non-production, implementation-level) choice yourself, say so, and keep working. [+](developer_docs/rules/working.md)
 - **🚨 Finish everything the request covers before stopping.** Never end a turn asking whether to do the next in-scope item. [+](developer_docs/rules/working.md)
 - **🚨 Removing or hiding a feature? Query production usage on every production DB first,** before coding. [+](developer_docs/rules/working.md)
+- **🚨 Before calling a long task done,** re-read the request, recount every number you report, and check no stale entity copy is saved after a recount or lock. [+](developer_docs/rules/working.md)
 - **🚨 Live config: apply agreed values exactly,** check the deployed branch has the code, verify a new record. [+](.claude/skills/app-configuration/SKILL.md)
 - **🚨 Retrospect after nontrivial work.** Propose the CLAUDE.md/doc/skill fix as a short rule and open the PR. [+](developer_docs/process/continuous-improvement-retrospective.md)
-- **🚨 Write short and plain,** lead with the point, use screen words, ask one question at a time. Business-rule docs state current practice only; history and decisions go in issues/PRs. [+](developer_docs/process/writing-style.md)
+- **🚨 Write short and plain, in Simplified Technical English (ASD-STE100):** replies to the user, hub messages, asks and Telegram replies. Technical terms the team normally uses are OK. Lead with the point, use screen words, ask one question at a time. Business-rule docs state current practice only; history and decisions go in issues/PRs. [+](developer_docs/process/writing-style.md)
 
 ### Code
 - Line endings differ by machine (CRLF on Windows): edit with the Edit tool and check the diff for whole-file changes. [+](developer_docs/rules/code.md)
@@ -49,7 +50,8 @@
 ### Testing
 - XHTML-only changes need no compile or test.
 - **🚨 Never navigate to an inner page by URL;** open the app root and click through the menus. [+](developer_docs/testing/playwright-e2e-workflow.md)
-- **🚨 Never clean up test data unasked;** list what you created; never write test data to production. [+](developer_docs/testing/playwright-e2e-workflow.md)
+- **🚨 No ask for a SELECT-only production read, or for any QA or local database read, or write and delete through `db-guard` (test-data cleanup included).** Never write test data to production; prove the target is not production before a write; staging counts as production; a production write needs the user; after a block, stop and tell the user. [+](developer_docs/rules/database-access.md)
+- **🚨 Local test DBs: never change the developer's own login; agents use the shared local QA user and post account changes on the hub.** [+](developer_docs/testing/local-test-logins.md)
 
 ### Git and deployment
 - **🚨 After every `git push`,** without being asked, restore local JNDI in `persistence.xml` and leave it unstaged: `${JDBC_DATASOURCE}` → `jdbc/coop`, `${JDBC_AUDIT_DATASOURCE}` → `jdbc/ruhunuAudit`. [+](developer_docs/deployment/persistence-verification.md)
@@ -62,11 +64,10 @@
 - Commit messages include `Closes #N`. [+](developer_docs/git/commit-conventions.md)
 - **🚨 Branch from `origin/development`** and target PRs at `development`, never `master` (hotfixes: `/hotfix-deploy`). [+](developer_docs/rules/git.md)
 - **🚨 Before opening a PR for issue #N, run `gh pr list --state all --search N`;** never open a second PR for it. [+](developer_docs/rules/git.md)
-- **🚨 Deploy branches are `<hospital>-production` / `<hospital>-staging`;** never target `*-prod`, `*-stg` or `*-migrated`. [+](developer_docs/deployment/ci-cd-pipeline-overview.md)
-- **🚨 Branches targeting a production/staging branch end in `-hotfix`.** [+](developer_docs/rules/git.md)
+- **🚨 Deploy branches are `<hospital>-production` / `<hospital>-staging`;** never target `*-prod`, `*-stg` or `*-migrated`. A branch that targets one ends in `-hotfix`. [+](developer_docs/deployment/ci-cd-pipeline-overview.md) [+](developer_docs/rules/git.md)
 - **🚨 One open PR per production/staging branch;** add to its branch instead of opening another. [+](developer_docs/rules/git.md)
 - **🚨 Before pushing to an existing PR's branch, run `gh pr view <N> --json state`;** if MERGED, use a new branch. [+](developer_docs/rules/git.md)
-- **🚨 Dev-hub team sessions may open a PR unasked; merge into `development` only under the merge gate** (non-author `REV OK <sha> — <member>`, CI green, CodeRabbit on the head sha or `CR skipped`, threads resolved, `--match-head-commit`, never `--admin`). [+](developer_docs/git/merge-rules.md)
+- **🚨 Dev-hub team sessions may open a PR unasked; merge into `development` only under the merge gate** (non-author `REV OK <sha> — <member>`, CI green, CodeRabbit on the head sha or `CR skipped`, threads resolved, `--match-head-commit`, never `--admin`). Agree pass/fail "done" criteria before the code; one failed criterion fails the e2e. [+](developer_docs/git/merge-rules.md)
 - **🚨 Never merge into `master` or any `*-production` / `*-staging` branch;** merging deploys, the user decides. Opening hotfix PRs is fine.
 - **🚨 Mirror every merged hotfix into `development`** unless cherry-picked from it. [+](.claude/skills/hotfix-deploy/SKILL.md)
 - **🚨 Dependabot PRs: green CI isn't enough;** triage with the dependabot-triage skill. [+](.claude/skills/dependabot-triage/SKILL.md)

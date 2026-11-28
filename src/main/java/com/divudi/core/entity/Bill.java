@@ -2270,7 +2270,10 @@ public class Bill implements Serializable, RetirableEntity {
         List<Bill> bills = new ArrayList<>();
         for (Bill b : returnCashBills) {
             // Skip duplicates (issue #24483).
-            if (b instanceof RefundBill
+            // The items-only refund payment is saved as a plain Bill, not a RefundBill (#26183).
+            boolean refundPaymentBill = b instanceof RefundBill
+                    || b.getBillTypeAtomic() == BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEM_PAYMENTS;
+            if (refundPaymentBill
                     && b.getBillType() == BillType.PharmacySale
                     && b.getBilledBill() == null
                     && !bills.contains(b)) {
