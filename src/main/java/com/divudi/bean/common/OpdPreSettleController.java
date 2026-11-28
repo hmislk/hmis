@@ -507,6 +507,8 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
 
     @Inject
     private BillBeanController billBean;
+    @Inject
+    private ConfigOptionController configOptionController;
 
     public void listnerForPaymentMethodChange() {
         paymentMethod = preBill.getPaymentMethod();
@@ -1241,6 +1243,12 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
         toStaff = null;
         //fillPaymentMethodDetails();
         netTotal = getPreBill().getNetTotal();
+        // The page shows the first method as selected; make the model match so Tendered shows for Cash on first load (#26324).
+        List<PaymentMethod> offeredMethods = configOptionController.getPaymentMethodsForOpdBilling();
+        if (offeredMethods != null && !offeredMethods.isEmpty()) {
+            getPreBill().setPaymentMethod(offeredMethods.get(0));
+            listnerForPaymentMethodChange();
+        }
         //calculateDiscount();
         return "/opd/opd_bill_pre_settle?faces-redirect=true";
 
