@@ -559,6 +559,22 @@ public class WardPharmacyReturnToPharmacyController implements Serializable {
     }
 
     /**
+     * Builds the cancel bill for a return: values inverted, no items. The stock is
+     * reversed directly on the Stock table, so the cancel bill has no items of its own.
+     * Do not share the return bill's item list with it: Bill.billItems cascades ALL, so
+     * creating the cancel bill would insert a second copy of every return item.
+     */
+    static CancelledBill newCancelBillFor(Bill returnBill) {
+        CancelledBill cb = new CancelledBill();
+        cb.setBilledBill(returnBill);
+        cb.copy(returnBill);
+        cb.setReferenceBill(returnBill.getReferenceBill());
+        cb.invertAndAssignValuesFromOtherBill(returnBill);
+        cb.setBillTypeAtomic(BillTypeAtomic.RETURN_MEDICINE_INWARD_CANCELLATION);
+        return cb;
+    }
+
+    /**
      * Cancels this ward-to-pharmacy return, provided the pharmacy has not yet
      * started accepting it (#21516). Mirrors
      * {@code PharmacyBillSearch.cancelInwardPharmacyRequestBill} - flags the
@@ -596,13 +612,7 @@ public class WardPharmacyReturnToPharmacyController implements Serializable {
 
         reverseReturnStockMovements(returnBill);
 
-        CancelledBill cb = new CancelledBill();
-        cb.setBilledBill(returnBill);
-        cb.copy(returnBill);
-        cb.setReferenceBill(returnBill.getReferenceBill());
-        cb.invertAndAssignValuesFromOtherBill(returnBill);
-        cb.setBillItems(returnBill.getBillItems());
-        cb.setBillTypeAtomic(BillTypeAtomic.RETURN_MEDICINE_INWARD_CANCELLATION);
+        CancelledBill cb = newCancelBillFor(returnBill);
         cb.setComments(comment);
         cb.setCreatedAt(new Date());
         cb.setCreater(sessionController.getLoggedUser());
