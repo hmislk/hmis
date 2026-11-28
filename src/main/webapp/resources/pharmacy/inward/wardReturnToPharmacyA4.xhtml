@@ -18,17 +18,23 @@
         <h:outputStylesheet library="css" name="pharmacypos.css" ></h:outputStylesheet>
         <div class="a4bill" style="align-content: center">
 
+            <!-- Header: department values first, institution values when the department has none -->
             <div class="institutionName">
-                <h:outputLabel value="#{cc.attrs.bill.department.printingName}" />
+                <h:outputLabel value="#{empty cc.attrs.bill.department.printingName ? cc.attrs.bill.institution.name : cc.attrs.bill.department.printingName}" />
             </div>
             <div class="institutionContact" >
                 <div>
-                    <h:outputLabel value="#{cc.attrs.bill.department.address}"/>
+                    <h:outputLabel value="#{empty cc.attrs.bill.department.address ? cc.attrs.bill.institution.address : cc.attrs.bill.department.address}"/>
                 </div>
                 <div >
-                    <h:outputLabel value="#{cc.attrs.bill.department.telephone1} "/>
-                    <h:outputLabel value=" /" style="width: 20px; text-align: center;"/>
-                    <h:outputLabel value="#{cc.attrs.bill.department.telephone2}"/>
+                    <h:panelGroup rendered="#{not empty cc.attrs.bill.department.telephone1 or not empty cc.attrs.bill.department.telephone2}">
+                        <h:outputLabel value="#{cc.attrs.bill.department.telephone1} "/>
+                        <h:outputLabel value=" /" style="width: 20px; text-align: center;"
+                                       rendered="#{not empty cc.attrs.bill.department.telephone1 and not empty cc.attrs.bill.department.telephone2}"/>
+                        <h:outputLabel value="#{cc.attrs.bill.department.telephone2}"/>
+                    </h:panelGroup>
+                    <h:outputLabel value="#{cc.attrs.bill.institution.phone}"
+                                   rendered="#{empty cc.attrs.bill.department.telephone1 and empty cc.attrs.bill.department.telephone2}"/>
                 </div>
             </div>
 
@@ -194,7 +200,7 @@
                         </td>
                         <td  class="totalsBlock" style="text-align: right!important; padding-right: 30px;">
                             <h:outputLabel value="#{cc.attrs.bill.billItems.size()}" >
-                                <f:convertNumber pattern="#,##0.00" />
+                                <f:convertNumber pattern="#,##0" />
                             </h:outputLabel>
                         </td>
                     </tr>
@@ -203,7 +209,8 @@
                             <h:outputLabel value="Returned By : " />
                         </td>
                         <td class="totalsBlock" style="text-align: right!important; padding-right: 30px;">
-                            <h:outputLabel value="#{cc.attrs.bill.creater.staff.code}" ></h:outputLabel>
+                            <h:outputLabel value="#{empty cc.attrs.bill.creater.staff.person.name ? cc.attrs.bill.creater.webUserPerson.name : cc.attrs.bill.creater.staff.person.name}" ></h:outputLabel>
+                            <h:outputLabel value=" (#{cc.attrs.bill.creater.staff.codeRaw})" rendered="#{not empty cc.attrs.bill.creater.staff.codeRaw}" ></h:outputLabel>
                         </td>
                     </tr>
                 </table>
