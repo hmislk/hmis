@@ -15,12 +15,27 @@ public final class OpdPreSettleAmounts {
     }
 
     public static void apply(Bill bill, PaymentMethod pm, double cashPaid) {
-        double remaining = cashPaid - bill.getNetTotal();
-        bill.setCashPaid(cashPaid);
-        bill.setCashBalance(remaining);
-        bill.setBalance(remaining < 0 ? Math.abs(remaining) : 0.0);
-        if ((pm == PaymentMethod.Credit || pm == PaymentMethod.Staff) && bill.getBalance() <= 0.0) {
-            bill.setBalance(Math.abs(bill.getNetTotal()));
+        double net = bill.getNetTotal();
+        if (pm == PaymentMethod.Credit || pm == PaymentMethod.Staff) {
+            // Credit and Staff Credit: the whole net total is still owed.
+            bill.setCashPaid(cashPaid);
+            bill.setCashBalance(round2(cashPaid - net));
+            bill.setBalance(Math.abs(net));
+        } else if (pm == PaymentMethod.Cash) {
+            // The settle action blocks Cash when the tendered amount is lower than the net total.
+            double change = round2(cashPaid - net);
+            bill.setCashPaid(cashPaid);
+            bill.setCashBalance(change);
+            bill.setBalance(change < 0 ? Math.abs(change) : 0.0);
+        } else {
+            // Every other method is paid in full; a stale cash paid value is ignored.
+            bill.setCashPaid(net);
+            bill.setCashBalance(0.0);
+            bill.setBalance(0.0);
         }
+    }
+
+    private static double round2(double value) {
+        return Math.round(value * 100) / 100.0;
     }
 }

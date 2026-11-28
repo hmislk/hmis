@@ -49,4 +49,28 @@ class OpdPreSettleAmountsTest {
         OpdPreSettleAmounts.apply(b, PaymentMethod.Cash, 400);
         assertEquals(600, b.getBalance(), 0.001);
     }
+
+    @Test
+    void creditWithPartialCashPaidStillOwesFullTotal() {
+        Bill b = bill(1000);
+        OpdPreSettleAmounts.apply(b, PaymentMethod.Credit, 300);
+        assertEquals(1000, b.getBalance(), 0.001);
+    }
+
+    @Test
+    void cardIgnoresStaleCashPaid() {
+        Bill b = bill(1000);
+        OpdPreSettleAmounts.apply(b, PaymentMethod.Card, 0);
+        assertEquals(1000, b.getCashPaid(), 0.001);
+        assertEquals(0, b.getCashBalance(), 0.001);
+        assertEquals(0, b.getBalance(), 0.001);
+    }
+
+    @Test
+    void roundingNoiseGivesZeroBalance() {
+        Bill b = bill(0.3);
+        OpdPreSettleAmounts.apply(b, PaymentMethod.Cash, 0.1 + 0.2);
+        assertEquals(0, b.getBalance(), 0.0);
+        assertEquals(0, b.getCashBalance(), 0.0);
+    }
 }
