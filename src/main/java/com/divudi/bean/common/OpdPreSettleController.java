@@ -667,6 +667,7 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
                 case Agent:
                 case Credit:
                     p.setReferenceNo(getPaymentMethodData().getCredit().getReferralNo());
+                    p.setCreditCompany(getPaymentMethodData().getCredit().getInstitution());
                     p.setComments(getPaymentMethodData().getCredit().getComment());
                     break;
                 case Slip:
