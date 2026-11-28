@@ -3672,6 +3672,8 @@ public class PharmacyBillSearch implements Serializable {
         billToCancel.setCancelledBill(newlyCreatedCancellationBill);
         getBillFacade().edit(billToCancel);
         setBill(billToCancel);
+        // The cancel moved the original off the surgery header: recompute it from the captured link.
+        billBean.refreshSurgeryHeaderAfterChildChange(originalForwardReferenceBill);
         if (billToCancel.getBillTypeAtomic() == BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD
                 && billToCancel.getReferenceBill() != null) {
             reopenPharmacyRequestAfterIssueCancellation(billToCancel.getReferenceBill());
@@ -3751,6 +3753,7 @@ public class PharmacyBillSearch implements Serializable {
         // Show the page as reversed.
         getBill().setCancelled(true);
         getBill().setCancelledBill(reversalBill);
+        billBean.refreshSurgeryHeaderAfterChildChange(getBill().getForwardReferenceBill());
 
         JsfUtil.addSuccessMessage("Bill Reversed Successfully. Reversal Bill No: " + reversalBill.getDeptId());
         printPreview = true;
@@ -3809,6 +3812,8 @@ public class PharmacyBillSearch implements Serializable {
             }
         }
         String deptId = billNumberBean.departmentBillNumberGeneratorYearly(sessionController.getDepartment(), BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_CANCELLATION);
+        // reAddToStock moves the original's link; keep the surgery header to recompute it after.
+        final Bill headerBeforeCancel = getBill().getForwardReferenceBill();
         Bill newlyCreatedCancellationBill = getPharmacyBean().reAddToStock(getBill(), getSessionController().getLoggedUser(), getSessionController().getDepartment(), BillNumberSuffix.PHISSCAN);
         newlyCreatedCancellationBill.setForwardReferenceBill(getBill().getForwardReferenceBill());
         newlyCreatedCancellationBill.setBillTypeAtomic(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_CANCELLATION);
@@ -3820,6 +3825,7 @@ public class PharmacyBillSearch implements Serializable {
         getBill().setCancelled(true);
         getBill().setCancelledBill(newlyCreatedCancellationBill);
         getBillFacade().edit(getBill());
+        billBean.refreshSurgeryHeaderAfterChildChange(headerBeforeCancel);
         if (getBill().getBillTypeAtomic() == BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD
                 && getBill().getReferenceBill() != null) {
             reopenPharmacyRequestAfterIssueCancellation(getBill().getReferenceBill());
@@ -4040,6 +4046,8 @@ public class PharmacyBillSearch implements Serializable {
     //            }
                 getBill().setCancelledBill(cb);
                 getBillFacade().edit(getBill());
+                // The return is cancelled: recompute its surgery header (acts only on a surgery header).
+                billBean.refreshSurgeryHeaderAfterChildChange(getBill().getForwardReferenceBill());
                 clearSaleBillRefundedFlagIfNoActiveReturns(getBill());
                 JsfUtil.addSuccessMessage("Cancelled");
 
@@ -4137,6 +4145,8 @@ public class PharmacyBillSearch implements Serializable {
                 // cancelPreBillFees(cb.getBillItems());
                 getBill().setCancelledBill(cb);
                 getBillFacade().edit(getBill());
+                // The return is cancelled: recompute its surgery header (acts only on a surgery header).
+                billBean.refreshSurgeryHeaderAfterChildChange(getBill().getForwardReferenceBill());
                 JsfUtil.addSuccessMessage("Cancelled");
 
                 printPreview = true;
@@ -4178,6 +4188,8 @@ public class PharmacyBillSearch implements Serializable {
 
                 getBill().setCancelledBill(cb);
                 getBillFacade().edit(getBill());
+                // The return is cancelled: recompute its surgery header (acts only on a surgery header).
+                billBean.refreshSurgeryHeaderAfterChildChange(getBill().getForwardReferenceBill());
                 if (getBill().getBillTypeAtomic() == BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEM_PAYMENTS
                         || getBill().getBillTypeAtomic() == BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS) {
                     clearItemRefundFlagsIfNoActiveRefund(getBill());

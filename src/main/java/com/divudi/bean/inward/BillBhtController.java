@@ -930,7 +930,7 @@ public class BillBhtController implements Serializable {
         }
 
         getBillBean().saveEncounterComponents(getBills(), batchBill, getSessionController().getLoggedUser());
-        getBillBean().updateBatchBill(getBatchBill());
+        getBillBean().updateSurgeryServiceBatchBillAfterSave(getBatchBill());
 
         if (batchBill.getBillType() == BillType.SurgeryBill) {
             surgeryBillController.refreshSurgeryServiceDepartmentItems();

@@ -10803,11 +10803,14 @@ public class SearchController implements Serializable {
             return;
         }
         if (b instanceof PreBill) {
+            // The cancel moves the original off its header: keep the header to recompute it after.
+            final Bill headerBeforeCancel = b.getForwardReferenceBill();
             Bill prebill = getPharmacyBean().readdStockForIssueBills((PreBill) b, getSessionController().getLoggedUser(),
                     getSessionController().getDepartment(), BillNumberSuffix.DIC);
             b.setCancelled(true);
             b.setCancelledBill(prebill);
             getBillFacade().edit(b);
+            getBillBean().refreshSurgeryHeaderAfterChildChange(headerBeforeCancel);
             JsfUtil.addSuccessMessage("Cancelled");
         } else {
             JsfUtil.addErrorMessage("Not an Issue Bill. Can not cancell");
