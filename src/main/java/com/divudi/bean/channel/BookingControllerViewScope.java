@@ -2989,6 +2989,66 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         }
     }
 
+    /**
+     * Doctor fee the Doctor View counts for a booking: the fee of a paid booking
+     * that is not cancelled or refunded, and not absent unless the session is
+     * non-refundable. Any other booking shows only its status, so it counts 0.
+     */
+    public double doctorViewStaffFee(BillSession bs) {
+        if (!isPayableInDoctorView(bs)) {
+            return 0.0;
+        }
+        return bs.getBill().getStaffFee();
+    }
+
+    private boolean isPayableInDoctorView(BillSession bs) {
+        if (bs == null || bs.getBill() == null) {
+            return false;
+        }
+        Bill b = bs.getBill();
+        if (b.getBalance() != 0.0 || b.isCancelled() || b.isRefunded()) {
+            return false;
+        }
+        boolean nonRefundableSession = bs.getServiceSession() != null
+                && bs.getServiceSession().getOriginatingSession() != null
+                && !bs.getServiceSession().getOriginatingSession().isRefundable();
+        return nonRefundableSession || !bs.isAbsent();
+    }
+
+    public double getDoctorViewStaffFeeTotal() {
+        double total = 0.0;
+        if (billSessions != null) {
+            for (BillSession bs : billSessions) {
+                total += doctorViewStaffFee(bs);
+            }
+        }
+        return total;
+    }
+
+    /**
+     * Opens the A4 landscape print view of the Doctor View for the selected
+     * session. The print page reloads the session's bookings itself.
+     */
+    public String navigateToDoctorViewPrint() {
+        if (selectedSessionInstance == null) {
+            JsfUtil.addErrorMessage("No session selected");
+            return null;
+        }
+        viewScopeDataTransferController.setSelectedSessionInstance(selectedSessionInstance);
+        viewScopeDataTransferController.setSessionInstanceFilter(sessionInstanceFilter);
+        viewScopeDataTransferController.setFromDate(fromDate);
+        viewScopeDataTransferController.setToDate(toDate);
+        viewScopeDataTransferController.setSessionsFiltered(sessionInstancesFiltered);
+        viewScopeDataTransferController.setNeedToFillSessionInstances(false);
+        viewScopeDataTransferController.setNeedToFillSessionInstanceDetails(false);
+        viewScopeDataTransferController.setNeedToFillBillSessions(true);
+        viewScopeDataTransferController.setSelectedBillSession(null);
+        viewScopeDataTransferController.setNeedToFillBillSessionDetails(false);
+        viewScopeDataTransferController.setNeedToFillMembershipDetails(false);
+        viewScopeDataTransferController.setNeedToPrepareForNewBooking(false);
+        return "/channel/channel_views/session_doctor_view_print?faces-redirect=true";
+    }
+
     public String navigateToSessionView() {
         if (preSet()) {
             getChannelReportController().fillNurseView();
