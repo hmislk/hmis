@@ -25,7 +25,7 @@ A print or settings dialog must use the **same** controller as the page or templ
 
 | Key | Type | Default | Description |
 | --- | --- | --- | --- |
-| `Inward Charge Type for Service Items Without One` | Text (an `InwardChargeType` name) | `OperationTheatreCharges` | An inpatient service or investigation line whose item has no inward charge type (for example an OPD service billed from the theatre item list) counts in the interim and final bill under the bill item's own charge type if it has one, else under the charge type named here. Items that have a charge type are not moved. A blank or unknown name gives the default. New service bill items without a type store this type when settled. See issue #26272. |
+| `Inward Charge Type for Service Items Without One` | Text (an `InwardChargeType` name) | `OperationTheatreCharges` | An inpatient service or investigation line whose item has no inward charge type (for example an OPD service billed from the theatre item list) counts in the interim and final bill under the bill item's own charge type if it has one, else under the charge type named here. Items that have a charge type are not moved. A blank or unknown name gives the default. New service bill items without a type store this type when settled. If you change the default later, old lines that have no stored type move to the new type, because they are resolved when read; lines stored at settle keep their stored type. See issue #26272. |
 
 ## Pharmacy Transfer Issue
 

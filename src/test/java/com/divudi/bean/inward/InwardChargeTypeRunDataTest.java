@@ -105,4 +105,76 @@ class InwardChargeTypeRunDataTest {
                 BhtSummeryController.planTimedServiceDiscount(data.timedItemRows(InwardChargeType.MOCharges), 10, null, null).ids);
         assertTrue(BhtSummeryController.planTimedServiceDiscount(data.timedItemRows(InwardChargeType.Medicine), 10, null, null).ids.isEmpty());
     }
+
+    // Issue #26272: the final-bill discount step must see no-type lines under the
+    // same charge type the interim bill counts them under.
+    private static final InwardChargeType DEFAULT = InwardChargeType.OperationTheatreCharges;
+
+    private static Object[] row3(Object value, Object itemType, Object billItemType) {
+        return new Object[]{value, itemType, billItemType};
+    }
+
+    @Test
+    void lineWithNoItemTypeCountsUnderStoredTypeElseDefault() {
+        BillItem noType = new BillItem();
+        BillItem stored = new BillItem();
+        BillItem typed = new BillItem();
+        InwardChargeTypeRunData data = new InwardChargeTypeRunData();
+        data.setServiceItems(Arrays.asList(
+                row3(noType, null, null),
+                row3(stored, null, InwardChargeType.RoomCharges),
+                row3(typed, InwardChargeType.Medicine, InwardChargeType.RoomCharges)), DEFAULT);
+        assertSame(noType, data.serviceItems(DEFAULT).get(0));
+        assertSame(stored, data.serviceItems(InwardChargeType.RoomCharges).get(0));
+        assertSame(typed, data.serviceItems(InwardChargeType.Medicine).get(0));
+        assertEquals(1, data.serviceItems(DEFAULT).size());
+        assertFalse(data.isEmpty(DEFAULT));
+    }
+
+    @Test
+    void noTypeLineIsFoundWithTypedLinesOfTheSameChargeType() {
+        BillItem typed = new BillItem();
+        BillItem noType = new BillItem();
+        InwardChargeTypeRunData data = new InwardChargeTypeRunData();
+        data.setServiceItems(Arrays.asList(
+                row3(typed, DEFAULT, null),
+                row3(noType, null, null)), DEFAULT);
+        assertEquals(Arrays.asList(typed, noType), data.serviceItems(DEFAULT));
+    }
+
+    @Test
+    void noTypeFeeIsFoundAndChargeTypeIsNotEmpty() {
+        BillFee fee = new BillFee();
+        InwardChargeTypeRunData data = new InwardChargeTypeRunData();
+        data.setServiceFees(Collections.singletonList(row3(fee, null, null)), DEFAULT);
+        data.addBillItemRowTypes(Collections.singletonList(new Object[]{null, null, 1L}), DEFAULT);
+        assertSame(fee, data.serviceFees(DEFAULT).get(0));
+        assertFalse(data.isEmpty(DEFAULT));
+        assertTrue(data.isEmpty(InwardChargeType.RoomCharges));
+    }
+
+    @Test
+    void discountOfNoTypeLineIsSeenByTheDiscountStep() {
+        // gross 1000, settle discount 100: the discount step reads the line from the
+        // run data, so the interim net 900 and the final net agree.
+        BillItem line = new BillItem();
+        line.setGrossValue(1000.0);
+        line.setDiscount(100.0);
+        InwardChargeTypeRunData data = new InwardChargeTypeRunData();
+        data.setServiceItems(Collections.singletonList(row3(line, null, null)), DEFAULT);
+        double discount = 0;
+        for (BillItem b : data.serviceItems(DEFAULT)) {
+            discount += b.getDiscount();
+        }
+        assertEquals(100.0, discount, 0.0001);
+    }
+
+    @Test
+    void withoutADefaultAnUntypedRowIsStillDropped() {
+        InwardChargeTypeRunData data = new InwardChargeTypeRunData();
+        data.setServiceItems(Collections.singletonList(row3(new BillItem(), null, null)), null);
+        for (InwardChargeType t : InwardChargeType.values()) {
+            assertTrue(data.serviceItems(t).isEmpty());
+        }
+    }
 }

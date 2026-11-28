@@ -44,4 +44,11 @@ class InwardServiceItemChargeTypeServiceTest {
         assertEquals("(s.item.inwardChargeType = :inw or (s.item.inwardChargeType is null and"
                 + " s.inwardChargeType = :inw))", other);
     }
+
+    @Test
+    void jpqlConditionWorksOnAPathAlias() {
+        assertEquals("(s.billItem.item.inwardChargeType = :inw or (s.billItem.item.inwardChargeType is null and"
+                + " (s.billItem.inwardChargeType is null or s.billItem.inwardChargeType = :inw)))",
+                InwardServiceItemChargeTypeService.lineCountsUnderJpql("s.billItem", "inw", true));
+    }
 }
