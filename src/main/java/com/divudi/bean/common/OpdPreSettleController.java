@@ -32,6 +32,7 @@ import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.Item;
 import com.divudi.core.entity.Patient;
+import com.divudi.core.entity.PatientDeposit;
 import com.divudi.core.entity.Payment;
 import com.divudi.core.entity.PaymentScheme;
 import com.divudi.core.entity.Person;
@@ -54,7 +55,10 @@ import com.divudi.core.facade.PharmaceuticalBillItemFacade;
 import com.divudi.core.facade.StaffFacade;
 import com.divudi.core.facade.TokenFacade;
 import com.divudi.service.BillService;
+import com.divudi.service.opd.OpdPreSettleCredit;
+import com.divudi.service.opd.OpdPreSettleAmounts;
 import com.divudi.service.opd.OpdPreSettleException;
+import com.divudi.service.opd.OpdPreSettlePaymentRows;
 import com.divudi.service.opd.OpdPreSettleRequest;
 import com.divudi.service.opd.OpdPreSettleWriter;
 import java.util.logging.Level;
@@ -134,6 +138,8 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
     BillService billService;
     @EJB
     OpdPreSettleWriter opdPreSettleWriter;
+    @Inject
+    PatientDepositController patientDepositController;
 
     private static final Logger LOGGER = Logger.getLogger(OpdPreSettleController.class.getName());
 
@@ -378,6 +384,18 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
     @Inject
     private PaymentSchemeController paymentSchemeController;
 
+    /**
+     * What the patient can pay with Patient Deposit: the balance of the patient's
+     * deposit record (the one the Patient Deposit receipt raises) plus the credit
+     * limit, as the normal OPD bill checks it (#26260).
+     */
+    private double depositAvailableForPurchase(Patient patient) {
+        PatientDeposit pd = patientDepositController.checkDepositOfThePatient(patient, getSessionController().getDepartment());
+        double balance = (pd == null || pd.getBalance() == null) ? 0.0 : pd.getBalance();
+        double creditLimitAbsolute = patient.getCreditLimit() == null ? 0.0 : Math.abs(patient.getCreditLimit());
+        return balance + creditLimitAbsolute;
+    }
+
     private boolean errorCheckForSaleBill() {
         if (getPaymentSchemeController().checkPaymentMethodError(paymentMethod, getPaymentMethodData())) {
             return true;
@@ -387,14 +405,7 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
                 JsfUtil.addErrorMessage("Patient has not account. Can't proceed with Patient Deposits");
                 return true;
             }
-            double creditLimitAbsolute = Math.abs(preBill.getPatient().getCreditLimit());
-            double runningBalance;
-            if (preBill.getPatient().getRunningBalance() != null) {
-                runningBalance = preBill.getPatient().getRunningBalance();
-            } else {
-                runningBalance = 0.0;
-            }
-            double availableForPurchase = runningBalance + creditLimitAbsolute;
+            double availableForPurchase = depositAvailableForPurchase(preBill.getPatient());
 
             if (netTotal > availableForPurchase) {
                 JsfUtil.addErrorMessage("No Sufficient Patient Deposit");
@@ -444,14 +455,7 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
                         JsfUtil.addErrorMessage("Patient has not account. Can't proceed with Patient Deposits");
                         return true;
                     }
-                    double creditLimitAbsolute = Math.abs(getPreBill().getPatient().getCreditLimit());
-                    double runningBalance;
-                    if (getPreBill().getPatient().getRunningBalance() != null) {
-                        runningBalance = getPreBill().getPatient().getRunningBalance();
-                    } else {
-                        runningBalance = 0.0;
-                    }
-                    double availableForPurchase = runningBalance + creditLimitAbsolute;
+                    double availableForPurchase = depositAvailableForPurchase(getPreBill().getPatient());
 
                     if (cd.getPaymentMethodData().getPatient_deposit().getTotalValue() > availableForPurchase) {
                         JsfUtil.addErrorMessage("No Sufficient Patient Deposit");
@@ -504,6 +508,8 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
 
     @Inject
     private BillBeanController billBean;
+    @Inject
+    private ConfigOptionController configOptionController;
 
     public void listnerForPaymentMethodChange() {
         paymentMethod = preBill.getPaymentMethod();
@@ -513,6 +519,10 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
             }
 
             getPaymentMethodData().getPatient_deposit().setTotalValue(netTotal);
+            PatientDeposit pd = patientDepositController.checkDepositOfThePatient(preBill.getPatient(), getSessionController().getDepartment());
+            if (pd != null && pd.getId() != null) {
+                getPaymentMethodData().getPatient_deposit().setPatientDepost(pd);
+            }
         }
         if (paymentMethod == PaymentMethod.Card) {
             getPaymentMethodData().getCreditCard().setTotalValue(netTotal);
@@ -529,8 +539,8 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
     private boolean saveSettlingBatchBill() {
         getSaleBill().copy(getPreBill());
         getSaleBill().copyValue(getPreBill());
-        getSaleBill().setBalance(getSaleBill().getNetTotal());
-        getSaleBill().setCashPaid(cashPaid);
+        // Same as the normal OPD bill: balance 0 when paid in full (Credit and Staff keep the total), cash paid and change stored (#26324).
+        OpdPreSettleAmounts.apply(getSaleBill(), getPreBill().getPaymentMethod(), cashPaid);
         getSaleBill().setBillClassType(BillClassType.BilledBill);
         getSaleBill().setBillType(BillType.OpdBill);
         getSaleBill().setBillTypeAtomic(BillTypeAtomic.OPD_BATCH_BILL_PAYMENT_COLLECTION_AT_CASHIER);
@@ -539,6 +549,8 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
         getSaleBill().setInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
 
         getBillBean().setPaymentMethodData(getSaleBill(), getSaleBill().getPaymentMethod(), getPaymentMethodData());
+        // Same as the normal OPD bill: store the credit company so Outpatient Credit Collection finds the bill (#26326).
+        OpdPreSettleCredit.apply(getSaleBill(), getSaleBill().getPaymentMethod(), getPaymentMethodData());
         getBillBean().setBills(billsOfBatchBillPre);
 
         getSaleBill().setBillDate(new Date());
@@ -570,6 +582,15 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
             if (toStaff != null && paymentMethod == PaymentMethod.Staff) {
                 // Single Staff method: the credit is saved by the writer, in the same transaction.
                 request.addStaffCredit(toStaff, netTotal);
+            }
+            if (paymentMethod == PaymentMethod.PatientDeposit) {
+                // Single Patient Deposit method: lower the patient balance and the deposit record, as the normal OPD bill does (#26260).
+                final Patient depositPatient = getSaleBill().getPatient();
+                final Double balanceBefore = depositPatient.getRunningBalance();
+                request.addUndo(() -> depositPatient.setRunningBalance(balanceBefore));
+                depositPatient.setRunningBalance((balanceBefore == null ? 0.0 : balanceBefore) - getSaleBill().getNetTotal());
+                request.getPatientsToSave().add(depositPatient);
+                request.addDepositUse(depositPatient, getSaleBill().getNetTotal());
             }
             billsOfBatchBilledBill = opdPreSettleWriter.settle(request);
         } catch (RuntimeException e) {
@@ -607,55 +628,12 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
                 p.setCreatedAt(new Date());
                 p.setCreater(getSessionController().getLoggedUser());
                 p.setPaymentMethod(cd.getPaymentMethod());
-
-                switch (cd.getPaymentMethod()) {
-                    case Card:
-                        p.setBank(cd.getPaymentMethodData().getCreditCard().getInstitution());
-                        p.setCreditCardRefNo(cd.getPaymentMethodData().getCreditCard().getNo());
-                        p.setPaidValue(cd.getPaymentMethodData().getCreditCard().getTotalValue());
-                        p.setComments(cd.getPaymentMethodData().getCreditCard().getComment());
-                        break;
-                    case Cheque:
-                        p.setChequeDate(cd.getPaymentMethodData().getCheque().getDate());
-                        p.setChequeRefNo(cd.getPaymentMethodData().getCheque().getNo());
-                        p.setPaidValue(cd.getPaymentMethodData().getCheque().getTotalValue());
-                        p.setComments(cd.getPaymentMethodData().getCheque().getComment());
-                        break;
-                    case Cash:
-                        p.setPaidValue(cd.getPaymentMethodData().getCash().getTotalValue());
-                        break;
-                    case ewallet:
-
-                    case Agent:
-                    case Credit:
-                        p.setReferenceNo(cd.getPaymentMethodData().getCredit().getReferralNo());
-                        p.setComments(cd.getPaymentMethodData().getCredit().getComment());
-                    case PatientDeposit:
-                        final Patient depositPatient = getSaleBill().getPatient();
-                        final Double balanceBefore = depositPatient.getRunningBalance();
-                        request.addUndo(() -> depositPatient.setRunningBalance(balanceBefore));
-                        if (depositPatient.getRunningBalance() != null) {
-                            depositPatient.setRunningBalance(depositPatient.getRunningBalance() - cd.getPaymentMethodData().getPatient_deposit().getTotalValue());
-                        } else {
-                            depositPatient.setRunningBalance(0.0 - cd.getPaymentMethodData().getPatient_deposit().getTotalValue());
-                        }
-                        request.getPatientsToSave().add(depositPatient);
-                    case Slip:
-                        p.setPaidValue(cd.getPaymentMethodData().getSlip().getTotalValue());
-                        p.setBank(cd.getPaymentMethodData().getSlip().getInstitution());
-                        p.setRealizedAt(cd.getPaymentMethodData().getSlip().getDate());
-                        p.setComments(cd.getPaymentMethodData().getSlip().getComment());
-                    case OnCall:
-                    case OnlineSettlement:
-                    case Staff:
-                        p.setPaidValue(cd.getPaymentMethodData().getStaffCredit().getTotalValue());
-                        if (cd.getPaymentMethodData().getStaffCredit().getToStaff() != null) {
-                            final Staff creditStaff = cd.getPaymentMethodData().getStaffCredit().getToStaff();
-                            request.addStaffCredit(creditStaff, cd.getPaymentMethodData().getStaffCredit().getTotalValue());
-                        }
-                    case YouOweMe:
-                    case MultiplePaymentMethods:
+                if (cd.getPaymentMethod() == PaymentMethod.PatientDeposit) {
+                    // The deposit record is lowered by the amount of this row, in the writer's transaction (#26260).
+                    request.addDepositUse(bill.getPatient(), cd.getPaymentMethodData().getPatient_deposit().getTotalValue());
                 }
+
+                OpdPreSettlePaymentRows.fillMultipleRow(p, cd, getSaleBill().getPatient(), request);
 
                 ps.add(p);
             }
@@ -673,35 +651,32 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
                 case Card:
                     p.setBank(getPaymentMethodData().getCreditCard().getInstitution());
                     p.setCreditCardRefNo(getPaymentMethodData().getCreditCard().getNo());
-                    p.setPaidValue(getPaymentMethodData().getCreditCard().getTotalValue());
                     p.setComments(getPaymentMethodData().getCreditCard().getComment());
                     break;
                 case Cheque:
                     p.setChequeDate(getPaymentMethodData().getCheque().getDate());
                     p.setChequeRefNo(getPaymentMethodData().getCheque().getNo());
-                    p.setPaidValue(getPaymentMethodData().getCheque().getTotalValue());
                     p.setComments(getPaymentMethodData().getCheque().getComment());
                     break;
-                case Cash:
-                    p.setPaidValue(getPaymentMethodData().getCash().getTotalValue());
-                    break;
                 case ewallet:
-
+                    p.setPolicyNo(getPaymentMethodData().getEwallet().getReferralNo());
+                    p.setReferenceNo(getPaymentMethodData().getEwallet().getReferenceNo());
+                    p.setCreditCompany(getPaymentMethodData().getEwallet().getInstitution());
+                    p.setComments(getPaymentMethodData().getEwallet().getComment());
+                    break;
                 case Agent:
                 case Credit:
                     p.setReferenceNo(getPaymentMethodData().getCredit().getReferralNo());
+                    p.setCreditCompany(getPaymentMethodData().getCredit().getInstitution());
                     p.setComments(getPaymentMethodData().getCredit().getComment());
-                case PatientDeposit:
+                    break;
                 case Slip:
                     p.setBank(getPaymentMethodData().getSlip().getInstitution());
-                    p.setPaidValue(getPaymentMethodData().getSlip().getTotalValue());
                     p.setRealizedAt(getPaymentMethodData().getSlip().getDate());
                     p.setComments(getPaymentMethodData().getSlip().getComment());
-                case OnCall:
-                case OnlineSettlement:
-                case Staff:
-                case YouOweMe:
-                case MultiplePaymentMethods:
+                    break;
+                default:
+                    break;
             }
 
             p.setPaidValue(p.getBill().getNetTotal());
@@ -889,14 +864,7 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
                 JsfUtil.addErrorMessage("Patient has not account. Can't proceed with Patient Deposits");
                 return true;
             }
-            double creditLimitAbsolute = Math.abs(preBill.getPatient().getCreditLimit());
-            double runningBalance;
-            if (preBill.getPatient().getRunningBalance() != null) {
-                runningBalance = preBill.getPatient().getRunningBalance();
-            } else {
-                runningBalance = 0.0;
-            }
-            double availableForPurchase = runningBalance + creditLimitAbsolute;
+            double availableForPurchase = depositAvailableForPurchase(preBill.getPatient());
 
             if (netTotal > availableForPurchase) {
                 JsfUtil.addErrorMessage("No Sufficient Patient Deposit");
@@ -942,14 +910,7 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
                         JsfUtil.addErrorMessage("Patient has not account. Can't proceed with Patient Deposits");
                         return true;
                     }
-                    double creditLimitAbsolute = Math.abs(getPreBill().getPatient().getCreditLimit());
-                    double runningBalance;
-                    if (getPreBill().getPatient().getRunningBalance() != null) {
-                        runningBalance = getPreBill().getPatient().getRunningBalance();
-                    } else {
-                        runningBalance = 0.0;
-                    }
-                    double availableForPurchase = runningBalance + creditLimitAbsolute;
+                    double availableForPurchase = depositAvailableForPurchase(getPreBill().getPatient());
 
                     if (cd.getPaymentMethodData().getPatient_deposit().getTotalValue() > availableForPurchase) {
                         JsfUtil.addErrorMessage("No Sufficient Patient Deposit");
@@ -992,6 +953,16 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
 
     public void settleOpdBatchBill() {
         editingQty = null;
+        if (getPreBill().getPaymentMethod() == null) {
+            JsfUtil.addErrorMessage("Please select the payment method");
+            return;
+        }
+        // The page binds the method to the pre-bill; the change event may not have run, so read it here (#26324).
+        paymentMethod = getPreBill().getPaymentMethod();
+        if (paymentMethod != PaymentMethod.Cash
+                && !sessionController.getDepartmentPreference().isPartialPaymentOfOpdBillsAllowed()) {
+            setCashPaid(getPreBill().getNetTotal());
+        }
         if (paymentMethodDataErrorCheck()) {
             return;
         }
@@ -1269,11 +1240,19 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
             }
         }
         getPreBill().setPaymentMethod(null);
+        paymentMethod = null;
+        cashPaid = 0;
         paymentScheme = new PaymentScheme();
         creditCompany = null;
         toStaff = null;
         //fillPaymentMethodDetails();
         netTotal = getPreBill().getNetTotal();
+        // The page shows the first method as selected; make the model match so Tendered shows for Cash on first load (#26324).
+        List<PaymentMethod> offeredMethods = configOptionController.getPaymentMethodsForOpdBilling();
+        if (offeredMethods != null && !offeredMethods.isEmpty()) {
+            getPreBill().setPaymentMethod(offeredMethods.get(0));
+            listnerForPaymentMethodChange();
+        }
         //calculateDiscount();
         return "/opd/opd_bill_pre_settle?faces-redirect=true";
 
@@ -1296,229 +1275,6 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
             }
         }
         paymentMethod = getPreBill().getPaymentMethod();
-    }
-
-    public String toSettleBatch(Bill preBatchBill) {
-        setPreBill(preBatchBill);
-//        if (getPreBill().getReferenceBill() == null) {
-//            //billed bill create for pre bills
-//            BilledBill tmp = createBatchBilledBill(getPreBill());
-//
-//            for (Bill pb : getPreBill().getForwardReferenceBills()) {
-//                //create BilledBills For PreBills
-//                BilledBill bb = createIndividualBilledBillFormIndividualPreBill(pb);
-//                bb.setBackwardReferenceBill(tmp);
-//                //// // System.out.println("bb.getCashPaid = " + bb.getCashPaid());
-//                getBillFacade().edit(bb);
-//                tmp.getForwardReferenceBills().add(bb);
-//            }
-//            //// // System.out.println("tmp.getCashPaid = " + tmp.getCashPaid());
-//            tmp.setBalance(tmp.getNetTotal());
-//            getBillFacade().edit(tmp);
-//            //set batch billed bill
-//            setBilledBill(tmp);
-//        } else {
-//            //billed bills alredy saved
-//            setBilledBill(getPreBill().getReferenceBill());
-//        }
-
-        return "/opd_bill_batch_pre_settle?faces-redirect=true";
-    }
-
-    @Deprecated
-    public String toSettleBatchOldMetgod(Bill preBatchBill) {
-        setPreBill(preBatchBill);
-        if (getPreBill().getReferenceBill() == null) {
-            //billed bill create for pre bills
-            BilledBill tmp = createBatchBilledBill(getPreBill());
-
-            for (Bill pb : getPreBill().getForwardReferenceBills()) {
-                //create BilledBills For PreBills
-                BilledBill bb = createIndividualBilledBillFormIndividualPreBill(pb);
-                bb.setBackwardReferenceBill(tmp);
-                //// // System.out.println("bb.getCashPaid = " + bb.getCashPaid());
-                getBillFacade().edit(bb);
-                tmp.getForwardReferenceBills().add(bb);
-            }
-            //// // System.out.println("tmp.getCashPaid = " + tmp.getCashPaid());
-            tmp.setBalance(tmp.getNetTotal());
-            getBillFacade().edit(tmp);
-            //set batch billed bill
-            setBilledBill(tmp);
-        } else {
-            //billed bills alredy saved
-            setBilledBill(getPreBill().getReferenceBill());
-        }
-
-        return "/opd_bill_batch_pre_settle?faces-redirect=true";
-    }
-
-    public String settle() {
-
-        if (cashPaid < 1) {
-            JsfUtil.addErrorMessage("Please enter a valid amount");
-            return "";
-        }
-
-        if (errorCheck()) {
-            return "";
-        }
-
-        String str = settleBatchBillAfterFiistTime();
-        cashPaid = 0.0;
-
-        return str;
-    }
-
-    public boolean errorCheck() {
-        if (cashPaid == 0.0 && getSessionController().getApplicationPreference().isPartialPaymentOfOpdPreBillsAllowed()) {
-            JsfUtil.addErrorMessage("Please Enter Correct Amount");
-            return true;
-        }
-        if (getBilledBill() == null) {
-            JsfUtil.addErrorMessage("Nothing To Pay");
-            return true;
-        }
-        return false;
-    }
-
-//    public void settleBatchBillFiistTime(Bill bill) {
-//        //create Batch BilledBill
-//        BilledBill tmp = createBatchBilledBill(bill);
-//
-//        double dbl = 0;
-//        double pid = 0;
-//        reminingCashPaid = cashPaid;
-//        Payment p = new Payment();
-//        p.setBill(tmp);
-//        setPaymentMethodData(p, paymentMethod, paymentMethodData);
-//        for (Bill b : bill.getForwardReferenceBills()) {
-//            //create BilledBills For PreBills
-//            BilledBill bb = createIndividualBilledBillFormIndividualPreBill(b);
-//            bb.setBackwardReferenceBill(tmp);
-//
-//            //// // System.out.println("dbl = " + dbl);
-//            //// // System.out.println("reminingCashPaid = " + reminingCashPaid);
-//            //// // System.out.println("cashPaid = " + cashPaid);
-//
-//            for (BillItem bi : bb.getBillItems()) {
-//
-//                //// // System.out.println("bi = " + bi);
-//                String sql = "Select bf From BillFee bf where bf.retired=false and bf.billItem.id=" + bi.getId();
-//
-//                List<BillFee> billFees = getBillFeeFacade().findByJpql(sql);
-//                //// // System.out.println("billFees = " + billFees.size());
-//                //for payments for billfees
-//
-//                calculateBillfeePayments(billFees, p);
-//            }
-//
-//            bb.setCashPaid(calBillPaidValue(bb));
-//            bb.setBalance(bb.getNetTotal() - bb.getCashPaid());
-//            getBillFacade().edit(bb);
-//            //for update Batch Bill
-//            dbl += bb.getNetTotal();
-//            pid += bb.getCashPaid();
-//
-//            tmp.getForwardReferenceBills().add(bb);
-//        }
-//
-//        tmp.setCashPaid(pid);
-//        tmp.setBalance(dbl - pid);
-//        tmp.setNetTotal(dbl);
-//        getBillFacade().edit(tmp);
-//        JsfUtil.addSuccessMessage("Sucessfully Paid");
-//    }
-    public String settleBatchBillAfterFiistTime() {
-
-        double dbl = 0;
-        double pid = 0;
-        reminingCashPaid = cashPaid;
-        Payment p = new Payment();
-        p.setBill(getBilledBill());
-        setPaymentMethodData(p, paymentMethod, getPaymentMethodData());
-
-        for (Bill b : getBilledBill().getForwardReferenceBills()) {
-            //// // System.out.println("dbl = " + dbl);
-            if (b.isCancelled()) {
-                if (getBilledBill().getForwardReferenceBills().size() == 1) {
-
-                    JsfUtil.addErrorMessage("Can't Pay,This Bill Cancelled");
-
-                } else {
-                    JsfUtil.addErrorMessage("Some Bill cancelled This Batch Bill");
-                }
-                continue;
-            }
-
-            if ((reminingCashPaid != 0.0) || !getSessionController().getApplicationPreference().isPartialPaymentOfOpdPreBillsAllowed()) {
-                for (BillItem bi : b.getBillItems()) {
-
-                    String sql = "SELECT bi FROM BillItem bi where bi.retired=false and bi.referanceBillItem.id=" + bi.getId();
-                    BillItem rbi = getBillItemFacade().findFirstByJpql(sql);
-
-                    if (rbi != null) {
-                        JsfUtil.addErrorMessage("Some Bill Item Already Refunded");
-                        continue;
-                    }
-
-                    sql = "Select bf From BillFee bf where bf.retired=false and bf.billItem.id=" + bi.getId();
-
-                    List<BillFee> billFees = getBillFeeFacade().findByJpql(sql);
-
-                    calculateBillfeePayments(billFees, p);
-                }
-            }
-
-            b.setCashPaid(calBillPaidValue(b));
-            b.setBalance(b.getNetTotal() - b.getCashPaid());
-            getBillFacade().edit(b);
-            dbl += b.getNetTotal();
-            pid += b.getCashPaid();
-        }
-
-        getBilledBill().setCashPaid(pid);
-        getBilledBill().setBalance(dbl - pid);
-        getBilledBill().setNetTotal(dbl);
-        getBillFacade().edit(getBilledBill());
-        if (getBilledBill().getCashPaid() >= getBilledBill().getNetTotal()) {
-            getOpdPreBillController().setBills(getBilledBill().getForwardReferenceBills());
-            JsfUtil.addSuccessMessage("Sucessfully Fully Paid");
-            return "/bill_print?faces-redirect=true";
-        } else {
-            JsfUtil.addSuccessMessage("Sucessfully Paid");
-            getOpdPreBillController().setBills(getBilledBill().getForwardReferenceBills());
-            return "/bill_print_advance?faces-redirect=true";
-        }
-    }
-
-    public BilledBill createBatchBilledBill(Bill b) {
-        BilledBill tmp = new BilledBill();
-        tmp.copy(b);
-        tmp.copyValue(b);
-        tmp.setReferenceBill(b);
-        tmp.setBillType(BillType.OpdBathcBill);
-        tmp.setBillTypeAtomic(BillTypeAtomic.OPD_BATCH_BILL_PAYMENT_COLLECTION_AT_CASHIER);
-        tmp.setBillClassType(BillClassType.BilledBill);
-        tmp.setInstitution(getSessionController().getInstitution());
-        tmp.setDepartment(getSessionController().getDepartment());
-        tmp.setPaymentScheme(b.getPaymentScheme());
-        tmp.setPaymentMethod(b.getPaymentMethod());
-        tmp.setCreatedAt(new Date());
-        tmp.setCreater(getSessionController().getLoggedUser());
-        //Institution ID (INS ID)
-        String insId = getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), getSessionController().getDepartment(), tmp.getBillType(), tmp.getBillClassType(), BillNumberSuffix.NONE);
-        tmp.setInsId(insId);
-
-        //Department ID (DEPT ID)
-        String deptId = getBillNumberBean().departmentBillNumberGenerator(getSessionController().getDepartment(), getSessionController().getDepartment(), tmp.getBillType(), tmp.getBillClassType());
-        tmp.setDeptId(deptId);
-
-        getBillFacade().create(tmp);
-        b.setReferenceBill(tmp);
-        getBillFacade().edit(b);
-
-        return tmp;
     }
 
     public void setPaymentMethodData(Payment p, PaymentMethod paymentMethod, PaymentMethodData paymentMethodData) {

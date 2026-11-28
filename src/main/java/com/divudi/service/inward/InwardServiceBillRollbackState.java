@@ -38,6 +38,9 @@ final class InwardServiceBillRollbackState {
             for (Bill held : new ArrayList<>(collector)) {
                 Bill backward = held.getBackwardReferenceBill();
                 undo.add(() -> held.setBackwardReferenceBill(backward));
+                // An earlier bill that gave items to a new bill gets its figures set
+                // again, on the managed bill and on the caller's copy (#26273).
+                undo.add(InwardServiceBillSums.snapshotFigures(held));
             }
         }
         if (request.getBillEntries() != null) {

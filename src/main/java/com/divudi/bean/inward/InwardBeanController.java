@@ -148,6 +148,8 @@ public class InwardBeanController implements Serializable {
     com.divudi.bean.common.PriceMatrixController priceMatrixController;
     @Inject
     com.divudi.service.inward.InwardProfessionalFeeClassificationService professionalFeeClassificationService;
+    @javax.inject.Inject
+    com.divudi.service.inward.InwardServiceItemChargeTypeService serviceItemChargeTypeService;
     /** Which admission type was in force at a date (#25814). */
     @javax.ejb.EJB
     com.divudi.service.inward.AdmissionTypeHistoryService admissionTypeHistoryService;
@@ -229,7 +231,7 @@ public class InwardBeanController implements Serializable {
     public List<BillItem> fetchBillItems(PatientEncounter patientEncounter, InwardChargeType inwardChargeType) {
         String sql = "SELECT  b FROM BillItem b "
                 + " WHERE b.retired=false "
-                + " and b.item.inwardChargeType=:inw"
+                + " and " + serviceItemChargeTypeService.lineCountsUnderJpql("b", "inw", inwardChargeType)
                 + " and b.bill.billType=:btp "
                 + " and b.bill.patientEncounter=:pe ";
         HashMap hm = new HashMap();
@@ -667,7 +669,7 @@ public class InwardBeanController implements Serializable {
                 + " where s.retired=false "
                 + " and s.bill.billType=:btp "
                 + " and s.bill.patientEncounter IN :pe"
-                + " and s.item.inwardChargeType=:inw ";
+                + " and " + serviceItemChargeTypeService.lineCountsUnderJpql("s", "inw", inwardChargeType);
         HashMap hm = new HashMap();
         hm.put("btp", BillType.InwardBill);
         List<PatientEncounter> pts = new ArrayList<>();
@@ -694,12 +696,12 @@ public class InwardBeanController implements Serializable {
      * {@link #calServiceBillItemsTotalByInwardChargeTypeBulk} (issue #24011).
      */
     public Map<InwardChargeType, Double> calServiceBillItemsDiscountByInwardChargeTypeBulk(PatientEncounter patientEncounter, List<PatientEncounter> cpts) {
-        String sql = "SELECT s.item.inwardChargeType, sum(s.discount) "
+        String sql = "SELECT s.item.inwardChargeType, s.inwardChargeType, sum(s.discount) "
                 + " FROM BillItem s"
                 + " WHERE s.retired=false "
                 + " AND s.bill.billType=:btp "
                 + " AND s.bill.patientEncounter IN :pe"
-                + " GROUP BY s.item.inwardChargeType";
+                + " GROUP BY s.item.inwardChargeType, s.inwardChargeType";
         HashMap hm = new HashMap();
         hm.put("btp", BillType.InwardBill);
         List<PatientEncounter> pts = new ArrayList<>();
@@ -710,10 +712,12 @@ public class InwardBeanController implements Serializable {
         hm.put("pe", pts);
         List<Object[]> results = getBillItemFacade().findObjectsArrayByJpql(sql, hm, TemporalType.TIMESTAMP);
         Map<InwardChargeType, Double> map = new HashMap<>();
+        InwardChargeType defaultType = serviceItemChargeTypeService.getDefaultChargeType();
         if (results != null) {
             for (Object[] row : results) {
-                if (row[0] != null && row[1] != null) {
-                    map.merge(professionalFeeClassificationService.rowTypeFor((InwardChargeType) row[0]), ((Number) row[1]).doubleValue(), Double::sum);
+                InwardChargeType type = com.divudi.service.inward.InwardServiceItemChargeTypeService.resolve((InwardChargeType) row[0], (InwardChargeType) row[1], defaultType);
+                if (type != null && row[2] != null) {
+                    map.merge(professionalFeeClassificationService.rowTypeFor(type), ((Number) row[2]).doubleValue(), Double::sum);
                 }
             }
         }
@@ -721,12 +725,14 @@ public class InwardBeanController implements Serializable {
     }
 
     public Map<InwardChargeType, Double> calServiceBillItemsTotalByInwardChargeTypeBulk(PatientEncounter patientEncounter, List<PatientEncounter> cpts) {
-        String sql = "SELECT s.item.inwardChargeType, sum(s.grossValue+s.marginValue) "
+        // An item with no charge type counts under the bill item's own type, else
+        // the configured default (issue #26272).
+        String sql = "SELECT s.item.inwardChargeType, s.inwardChargeType, sum(s.grossValue+s.marginValue) "
                 + " FROM BillItem s"
                 + " WHERE s.retired=false "
                 + " AND s.bill.billType=:btp "
                 + " AND s.bill.patientEncounter IN :pe"
-                + " GROUP BY s.item.inwardChargeType";
+                + " GROUP BY s.item.inwardChargeType, s.inwardChargeType";
 
         HashMap hm = new HashMap();
         hm.put("btp", BillType.InwardBill);
@@ -740,10 +746,11 @@ public class InwardBeanController implements Serializable {
         List<Object[]> results = getBillItemFacade().findObjectsArrayByJpql(sql, hm, TemporalType.TIMESTAMP);
 
         Map<InwardChargeType, Double> totalsMap = new HashMap<>();
+        InwardChargeType defaultType = serviceItemChargeTypeService.getDefaultChargeType();
         if (results != null) {
             for (Object[] row : results) {
-                InwardChargeType chargeType = (InwardChargeType) row[0];
-                Double total = row[1] != null ? ((Number) row[1]).doubleValue() : 0.0;
+                InwardChargeType chargeType = com.divudi.service.inward.InwardServiceItemChargeTypeService.resolve((InwardChargeType) row[0], (InwardChargeType) row[1], defaultType);
+                Double total = row[2] != null ? ((Number) row[2]).doubleValue() : 0.0;
                 totalsMap.merge(professionalFeeClassificationService.rowTypeFor(chargeType), total, Double::sum);
             }
         }
@@ -758,12 +765,12 @@ public class InwardBeanController implements Serializable {
      * InwardChargeType -> {gross, margin, vat}.
      */
     public Map<InwardChargeType, double[]> calServiceBillItemsGrossMarginVatByInwardChargeTypeBulk(PatientEncounter patientEncounter, List<PatientEncounter> cpts) {
-        String sql = "SELECT s.item.inwardChargeType, sum(s.grossValue), sum(s.marginValue), sum(s.vat) "
+        String sql = "SELECT s.item.inwardChargeType, s.inwardChargeType, sum(s.grossValue), sum(s.marginValue), sum(s.vat) "
                 + " FROM BillItem s"
                 + " WHERE s.retired=false "
                 + " AND s.bill.billType=:btp "
                 + " AND s.bill.patientEncounter IN :pe"
-                + " GROUP BY s.item.inwardChargeType";
+                + " GROUP BY s.item.inwardChargeType, s.inwardChargeType";
 
         HashMap hm = new HashMap();
         hm.put("btp", BillType.InwardBill);
@@ -777,12 +784,13 @@ public class InwardBeanController implements Serializable {
         List<Object[]> results = getBillItemFacade().findObjectsArrayByJpql(sql, hm, TemporalType.TIMESTAMP);
 
         Map<InwardChargeType, double[]> totalsMap = new HashMap<>();
+        InwardChargeType defaultType = serviceItemChargeTypeService.getDefaultChargeType();
         if (results != null) {
             for (Object[] row : results) {
-                InwardChargeType chargeType = (InwardChargeType) row[0];
-                double gross = row[1] != null ? ((Number) row[1]).doubleValue() : 0.0;
-                double margin = row[2] != null ? ((Number) row[2]).doubleValue() : 0.0;
-                double vat = row[3] != null ? ((Number) row[3]).doubleValue() : 0.0;
+                InwardChargeType chargeType = com.divudi.service.inward.InwardServiceItemChargeTypeService.resolve((InwardChargeType) row[0], (InwardChargeType) row[1], defaultType);
+                double gross = row[2] != null ? ((Number) row[2]).doubleValue() : 0.0;
+                double margin = row[3] != null ? ((Number) row[3]).doubleValue() : 0.0;
+                double vat = row[4] != null ? ((Number) row[4]).doubleValue() : 0.0;
                 double[] sums = totalsMap.computeIfAbsent(professionalFeeClassificationService.rowTypeFor(chargeType), k -> new double[3]);
                 sums[0] += gross;
                 sums[1] += margin;
@@ -834,13 +842,13 @@ public class InwardBeanController implements Serializable {
      * row net leaves exactly the items without their own VAT.
      */
     public Map<InwardChargeType, Double> calServiceBillItemsOwnVatNetByInwardChargeTypeBulk(PatientEncounter patientEncounter, List<PatientEncounter> cpts) {
-        String sql = "SELECT s.item.inwardChargeType, sum(s.grossValue + s.marginValue - s.discount) "
+        String sql = "SELECT s.item.inwardChargeType, s.inwardChargeType, sum(s.grossValue + s.marginValue - s.discount) "
                 + " FROM BillItem s"
                 + " WHERE s.retired=false "
                 + " AND s.vat <> 0 "
                 + " AND s.bill.billType=:btp "
                 + " AND s.bill.patientEncounter IN :pe"
-                + " GROUP BY s.item.inwardChargeType";
+                + " GROUP BY s.item.inwardChargeType, s.inwardChargeType";
 
         HashMap hm = new HashMap();
         hm.put("btp", BillType.InwardBill);
@@ -854,10 +862,12 @@ public class InwardBeanController implements Serializable {
         List<Object[]> results = getBillItemFacade().findObjectsArrayByJpql(sql, hm, TemporalType.TIMESTAMP);
 
         Map<InwardChargeType, Double> map = new HashMap<>();
+        InwardChargeType defaultType = serviceItemChargeTypeService.getDefaultChargeType();
         if (results != null) {
             for (Object[] row : results) {
-                if (row[0] != null && row[1] != null) {
-                    map.merge(professionalFeeClassificationService.rowTypeFor((InwardChargeType) row[0]), ((Number) row[1]).doubleValue(), Double::sum);
+                InwardChargeType type = com.divudi.service.inward.InwardServiceItemChargeTypeService.resolve((InwardChargeType) row[0], (InwardChargeType) row[1], defaultType);
+                if (type != null && row[2] != null) {
+                    map.merge(professionalFeeClassificationService.rowTypeFor(type), ((Number) row[2]).doubleValue(), Double::sum);
                 }
             }
         }
@@ -979,7 +989,7 @@ public class InwardBeanController implements Serializable {
                 // + " and type(s.bill)=:billedClass "
                 + " and s.billItem.bill.billType=:btp "
                 + " and s.billItem.bill.patientEncounter=:pe"
-                + " and s.billItem.item.inwardChargeType=:inw "
+                + " and " + serviceItemChargeTypeService.lineCountsUnderJpql("s.billItem", "inw", inwardChargeType)
                 + " and s.fee.feeType!=:st ";
         HashMap hm = new HashMap();
         hm.put("btp", BillType.InwardBill);
@@ -1008,7 +1018,7 @@ public class InwardBeanController implements Serializable {
                 + " and s.bill.billType=:btp "
                 + " and s.bill.patientEncounter=:pe"
                 + " and type(s.item)!=:cls "
-                + " and s.item.inwardChargeType=:inw ";
+                + " and " + serviceItemChargeTypeService.lineCountsUnderJpql("s", "inw", inwardChargeType);
         HashMap hm = new HashMap();
         hm.put("btp", BillType.InwardBill);
         hm.put("pe", patientEncounter);
@@ -1058,25 +1068,28 @@ public class InwardBeanController implements Serializable {
         hm.put("btp", BillType.InwardBill);
         hm.put("pe", patientEncounter);
         hm.put("st", FeeType.Staff);
+        // A line with no item charge type counts under its stored type, else the
+        // configured default, as the interim bill does (issue #26272).
+        InwardChargeType defaultType = serviceItemChargeTypeService.getDefaultChargeType();
         data.setServiceFees(getBillFeeFacade().findObjectArrayByJpql(
-                "Select s, s.billItem.item.inwardChargeType From BillFee s"
+                "Select s, s.billItem.item.inwardChargeType, s.billItem.inwardChargeType From BillFee s"
                 + " where s.retired=false"
                 + " and s.billItem.bill.billType=:btp"
                 + " and s.billItem.bill.patientEncounter=:pe"
                 + " and s.fee.feeType!=:st"
-                + " order by s.id", hm, TemporalType.TIMESTAMP));
+                + " order by s.id", hm, TemporalType.TIMESTAMP), defaultType);
 
         hm = new HashMap();
         hm.put("btp", BillType.InwardBill);
         hm.put("pe", patientEncounter);
         hm.put("cls", TimedItem.class);
         data.setServiceItems(getBillItemFacade().findObjectArrayByJpql(
-                "Select s, s.item.inwardChargeType From BillItem s"
+                "Select s, s.item.inwardChargeType, s.inwardChargeType From BillItem s"
                 + " where s.retired=false"
                 + " and s.bill.billType=:btp"
                 + " and s.bill.patientEncounter=:pe"
                 + " and type(s.item)!=:cls"
-                + " order by s.id", hm, TemporalType.TIMESTAMP));
+                + " order by s.id", hm, TemporalType.TIMESTAMP), defaultType);
 
         // id, gross, margin, bill time, charge type
         data.setTimedItemRows(getBillItemFacade().findObjectArrayByJpql(
@@ -1103,12 +1116,12 @@ public class InwardBeanController implements Serializable {
         hm = new HashMap();
         hm.put("btp", BillType.InwardBill);
         hm.put("pe", patientEncounter);
-        data.addOtherRowTypes(getBillItemFacade().findObjectArrayByJpql(
-                "Select s.item.inwardChargeType, count(s) From BillItem s"
+        data.addBillItemRowTypes(getBillItemFacade().findObjectArrayByJpql(
+                "Select s.item.inwardChargeType, s.inwardChargeType, count(s) From BillItem s"
                 + " where s.retired=false"
                 + " and s.bill.billType=:btp"
                 + " and s.bill.patientEncounter=:pe"
-                + " group by s.item.inwardChargeType", hm, TemporalType.TIMESTAMP));
+                + " group by s.item.inwardChargeType, s.inwardChargeType", hm, TemporalType.TIMESTAMP), defaultType);
         hm = new HashMap();
         hm.put("pe", patientEncounter);
         hm.put("cls", TimedItem.class);
@@ -1456,7 +1469,7 @@ public class InwardBeanController implements Serializable {
                 + " WHERE s.retired = false"
                 + " AND s.billItem.bill.billType = :btp"
                 + " AND s.billItem.bill.patientEncounter = :pe"
-                + " AND s.billItem.item.inwardChargeType = :inw"
+                + " AND " + serviceItemChargeTypeService.lineCountsUnderJpql("s.billItem", "inw", inwardChargeType)
                 + " AND s.fee.feeType != :st";
         HashMap hm = new HashMap();
         hm.put("btp", BillType.InwardBill);
@@ -1469,7 +1482,7 @@ public class InwardBeanController implements Serializable {
                 + " WHERE s.retired = false"
                 + " AND s.bill.billType = :btp"
                 + " AND s.bill.patientEncounter = :pe"
-                + " AND s.item.inwardChargeType = :inw";
+                + " AND " + serviceItemChargeTypeService.lineCountsUnderJpql("s", "inw", inwardChargeType);
         HashMap biHm = new HashMap();
         biHm.put("btp", BillType.InwardBill);
         biHm.put("pe", patientEncounter);
@@ -1909,7 +1922,7 @@ public class InwardBeanController implements Serializable {
                 + " and Type(b.item)!=TimedItem  "
                 + " and b.bill.patientEncounter=:pe "
                 + " and b.bill.cancelled=false"
-                + " and b.item.inwardChargeType=:inw ";
+                + " and " + serviceItemChargeTypeService.lineCountsUnderJpql("b", "inw", inwardChargeType);
         HashMap hm = new HashMap();
         hm.put("btp", BillType.InwardBill);
         hm.put("pe", patientEncounter);

@@ -13,8 +13,11 @@ import com.divudi.core.entity.Payment;
 import com.divudi.core.facade.BillFacade;
 import com.divudi.core.facade.BillFeeFacade;
 import com.divudi.core.facade.BillItemFacade;
+import com.divudi.core.facade.PatientDepositFacade;
 import com.divudi.core.facade.PatientFacade;
 import com.divudi.core.facade.PaymentFacade;
+import com.divudi.core.entity.PatientDeposit;
+import com.divudi.service.PatientDepositService;
 import com.divudi.service.StaffService;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -52,6 +55,10 @@ public class OpdPreSettleWriter {
     PatientFacade patientFacade;
     @EJB
     StaffService staffService;
+    @EJB
+    PatientDepositService patientDepositService;
+    @EJB
+    PatientDepositFacade patientDepositFacade;
 
     /**
      * Saves everything of the settle.
@@ -77,6 +84,9 @@ public class OpdPreSettleWriter {
         for (Patient patient : request.getPatientsToSave()) {
             patientFacade.edit(patient);
         }
+        for (OpdPreSettleRequest.DepositUse use : request.getDepositUses()) {
+            takeFromDeposit(saleBill, use);
+        }
         for (OpdPreSettleRequest.StaffCredit credit : request.getStaffCredits()) {
             staffService.updateStaffCredit(credit.getStaff(), credit.getValue());
         }
@@ -92,6 +102,26 @@ public class OpdPreSettleWriter {
         }
         billFacade.edit(preBill);
         return created;
+    }
+
+    /**
+     * Takes the amount from the patient's deposit record, the one the deposit
+     * receipt raises, and checks it again inside the transaction (#26260): the
+     * balance plus the credit limit must cover the amount.
+     */
+    private void takeFromDeposit(Bill saleBill, OpdPreSettleRequest.DepositUse use) {
+        PatientDeposit found = patientDepositService.getDepositOfThePatient(use.getPatient(), saleBill.getDepartment());
+        // Hardening: lock the deposit record while it is checked and lowered.
+        PatientDeposit pd = patientDepositFacade.findWithLock(found.getId());
+        if (pd == null) {
+            pd = found;
+        }
+        double balance = pd.getBalance() == null ? 0.0 : pd.getBalance();
+        double creditLimit = use.getPatient().getCreditLimit() == null ? 0.0 : Math.abs(use.getPatient().getCreditLimit());
+        if (use.getAmount() > balance + creditLimit) {
+            throw new OpdPreSettleException("No Sufficient Patient Deposit");
+        }
+        patientDepositService.handleUtilization(saleBill, pd, use.getAmount());
     }
 
     private Bill saveIndividualBilledBill(OpdPreSettleRequest request, Bill individualPreBill) {
@@ -145,6 +175,7 @@ public class OpdPreSettleWriter {
 
         out.setPaymentMethod(saleBill.getPaymentMethod());
         applyPaymentMethodData(out, request);
+        OpdPreSettleCredit.apply(out, out.getPaymentMethod(), request.getPaymentMethodData());
         billFacade.edit(out);
         return out;
     }

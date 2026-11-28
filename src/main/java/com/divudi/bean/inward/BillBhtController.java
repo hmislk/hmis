@@ -464,6 +464,16 @@ public class BillBhtController implements Serializable {
         return "/theater/inward_bill_surgery_service?faces-redirect=true";
     }
 
+    /** Items of retired, cancelled or refunded service bills are not loaded (#26277). */
+    static final String EXISTING_SURGERY_SERVICE_ITEMS_JPQL = "select bi from BillItem bi "
+            + "where bi.bill.forwardReferenceBill = :surgeryBill "
+            + "and bi.bill.surgeryBillType = :surgeryBillType "
+            + "and bi.retired = false "
+            + "and bi.bill.retired = false "
+            + "and bi.bill.cancelled = false "
+            + "and bi.bill.refunded = false "
+            + "order by bi.id";
+
     /**
      * Rebuilds {@link #lstBillEntries} (the "Item Requests" / Bill Items cart
      * shown in inward_bill_surgery_service.xhtml) from the surgery service
@@ -484,13 +494,7 @@ public class BillBhtController implements Serializable {
         Map<String, Object> params = new HashMap<>();
         params.put("surgeryBill", surgeryBill);
         params.put("surgeryBillType", SurgeryBillType.Service);
-        String jpql = "select bi from BillItem bi "
-                + "where bi.bill.forwardReferenceBill = :surgeryBill "
-                + "and bi.bill.surgeryBillType = :surgeryBillType "
-                + "and bi.retired = false "
-                + "and bi.bill.retired = false "
-                + "order by bi.id";
-        List<BillItem> existingBillItems = billItemFacade.findByJpql(jpql, params);
+        List<BillItem> existingBillItems = billItemFacade.findByJpql(EXISTING_SURGERY_SERVICE_ITEMS_JPQL, params);
         if (existingBillItems == null) {
             return;
         }
@@ -737,15 +741,38 @@ public class BillBhtController implements Serializable {
     private BillSearch billSearch;
 
     public void cancellAll() {
-        for (Bill b : getBills()) {
-            getBillSearch().setBill((BilledBill) b);
-            getBillSearch().setPaymentMethod(b.getPaymentMethod());
-            getBillSearch().setComment("Batch Cancell");
-            //////// // System.out.println("ggg : " + getBillSearch().getComment());
-            getBillSearch().cancelOpdBill();
+        // Inward service bills are charged to the admission, not paid, so they
+        // have no payment method. Each bill goes through the same checks as the
+        // single cancel, including cancel approval when it is required (#26279).
+        List<Bill> toCancel = new ArrayList<>(getBills());
+        try {
+            for (Bill b : toCancel) {
+                if (b == null || b.isCancelled()) {
+                    continue;
+                }
+                try {
+                    inwardSearch.cancelBillServiceOf(b, "Batch Cancell");
+                } catch (Exception e) {
+                    JsfUtil.addErrorMessage("Bill " + b.getDeptId() + " was not cancelled: " + e.getMessage());
+                }
+            }
+        } finally {
+            // Reload the bills so the page shows what was saved.
+            List<Bill> shown = getBills();
+            for (int i = 0; i < shown.size(); i++) {
+                Bill old = shown.get(i);
+                if (old != null && old.getId() != null) {
+                    Bill fresh = billFacade.findWithoutCache(old.getId());
+                    if (fresh != null) {
+                        shown.set(i, fresh);
+                    }
+                }
+            }
         }
-
     }
+
+    @Inject
+    private InwardSearch inwardSearch;
 
     @Inject
     PriceMatrixController priceMatrixController;
@@ -926,7 +953,7 @@ public class BillBhtController implements Serializable {
         }
 
         getBillBean().saveEncounterComponents(getBills(), batchBill, getSessionController().getLoggedUser());
-        getBillBean().updateBatchBill(getBatchBill());
+        getBillBean().updateSurgeryServiceBatchBillAfterSave(getBatchBill());
 
         if (batchBill.getBillType() == BillType.SurgeryBill) {
             surgeryBillController.refreshSurgeryServiceDepartmentItems();

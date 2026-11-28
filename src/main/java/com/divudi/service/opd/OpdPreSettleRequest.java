@@ -38,6 +38,26 @@ public class OpdPreSettleRequest {
         }
     }
 
+    /** An amount to take from the patient's deposit record in the same transaction (#26260). */
+    public static final class DepositUse {
+
+        private final Patient patient;
+        private final double amount;
+
+        public DepositUse(Patient patient, double amount) {
+            this.patient = patient;
+            this.amount = amount;
+        }
+
+        public Patient getPatient() {
+            return patient;
+        }
+
+        public double getAmount() {
+            return amount;
+        }
+    }
+
     private Bill saleBill;
     private Bill preBill;
     private List<Bill> preIndividualBills = new ArrayList<>();
@@ -47,6 +67,7 @@ public class OpdPreSettleRequest {
     private WebUser loggedUser;
     private PaymentMethod preBillPaymentMethod;
     private PaymentMethodData paymentMethodData;
+    private final List<DepositUse> depositUses = new ArrayList<>();
     private final List<Runnable> undo = new ArrayList<>();
 
     /** Adds a step to run, in reverse order, when the settle is rolled back. */
@@ -65,6 +86,18 @@ public class OpdPreSettleRequest {
         final double before = staff.getCurrentCreditValue();
         addUndo(() -> staff.setCurrentCreditValue(before));
         staffCredits.add(new StaffCredit(staff, value));
+    }
+
+    /** Queues an amount to take from the patient's deposit record. A zero or negative amount is ignored. */
+    public void addDepositUse(Patient patient, double amount) {
+        if (patient == null || amount <= 0) {
+            return;
+        }
+        depositUses.add(new DepositUse(patient, amount));
+    }
+
+    public List<DepositUse> getDepositUses() {
+        return depositUses;
     }
 
     /** Puts the caller's objects back as they were before the settle started. */

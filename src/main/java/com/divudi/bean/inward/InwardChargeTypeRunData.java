@@ -54,6 +54,59 @@ public class InwardChargeTypeRunData {
         return grouped;
     }
 
+    /**
+     * Like {@link #groupByChargeType} for rows {@code [value, itemType, billItemType]}:
+     * a row whose item has no type counts under the bill item's stored type, else
+     * {@code defaultType} (issue #26272), the same rule the interim bill uses.
+     */
+    @SuppressWarnings("unchecked")
+    static <T> Map<InwardChargeType, List<T>> groupByResolvedChargeType(List<Object[]> rows, int valueColumn,
+            int itemTypeColumn, int billItemTypeColumn, InwardChargeType defaultType) {
+        Map<InwardChargeType, List<T>> grouped = new EnumMap<>(InwardChargeType.class);
+        if (rows == null) {
+            return grouped;
+        }
+        for (Object[] row : rows) {
+            InwardChargeType type = com.divudi.service.inward.InwardServiceItemChargeTypeService.resolve(
+                    asType(row[itemTypeColumn]), asType(row[billItemTypeColumn]), defaultType);
+            if (type == null) {
+                continue;
+            }
+            grouped.computeIfAbsent(type, k -> new ArrayList<>()).add((T) row[valueColumn]);
+        }
+        return grouped;
+    }
+
+    private static InwardChargeType asType(Object o) {
+        return o instanceof InwardChargeType ? (InwardChargeType) o : null;
+    }
+
+    /** Rows are {@code [BillFee, itemType, billItemType]}; see {@link #groupByResolvedChargeType}. */
+    public void setServiceFees(List<Object[]> rows, InwardChargeType defaultType) {
+        serviceFees.clear();
+        serviceFees.putAll(InwardChargeTypeRunData.<BillFee>groupByResolvedChargeType(rows, 0, 1, 2, defaultType));
+    }
+
+    /** Rows are {@code [BillItem, itemType, billItemType]}; see {@link #groupByResolvedChargeType}. */
+    public void setServiceItems(List<Object[]> rows, InwardChargeType defaultType) {
+        serviceItems.clear();
+        serviceItems.putAll(InwardChargeTypeRunData.<BillItem>groupByResolvedChargeType(rows, 0, 1, 2, defaultType));
+    }
+
+    /** Rows are {@code [itemType, billItemType, count]}: charge types the "no matrix" clear step reaches. */
+    public void addBillItemRowTypes(List<Object[]> rows, InwardChargeType defaultType) {
+        if (rows == null) {
+            return;
+        }
+        for (Object[] row : rows) {
+            InwardChargeType type = com.divudi.service.inward.InwardServiceItemChargeTypeService.resolve(
+                    asType(row[0]), asType(row[1]), defaultType);
+            if (type != null) {
+                withOtherRows.add(type);
+            }
+        }
+    }
+
     /** Rows are {@code [BillFee, chargeType]}. */
     public void setServiceFees(List<Object[]> rows) {
         serviceFees.clear();

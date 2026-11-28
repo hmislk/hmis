@@ -50,7 +50,7 @@
 ### Testing
 - XHTML-only changes need no compile or test.
 - **🚨 Never navigate to an inner page by URL;** open the app root and click through the menus. [+](developer_docs/testing/playwright-e2e-workflow.md)
-- **🚨 Never clean up test data unasked;** list what you created; never write test data to production. [+](developer_docs/testing/playwright-e2e-workflow.md)
+- **🚨 No ask for a SELECT-only production read, or for any QA or local database read, or write and delete through `db-guard` (test-data cleanup included).** Never write test data to production; prove the target is not production before a write; staging counts as production; a production write needs the user; after a block, stop and tell the user. [+](developer_docs/rules/database-access.md)
 - **🚨 Local test DBs: never change the developer's own login; agents use the shared local QA user and post account changes on the hub.** [+](developer_docs/testing/local-test-logins.md)
 
 ### Git and deployment
@@ -64,8 +64,7 @@
 - Commit messages include `Closes #N`. [+](developer_docs/git/commit-conventions.md)
 - **🚨 Branch from `origin/development`** and target PRs at `development`, never `master` (hotfixes: `/hotfix-deploy`). [+](developer_docs/rules/git.md)
 - **🚨 Before opening a PR for issue #N, run `gh pr list --state all --search N`;** never open a second PR for it. [+](developer_docs/rules/git.md)
-- **🚨 Deploy branches are `<hospital>-production` / `<hospital>-staging`;** never target `*-prod`, `*-stg` or `*-migrated`. [+](developer_docs/deployment/ci-cd-pipeline-overview.md)
-- **🚨 Branches targeting a production/staging branch end in `-hotfix`.** [+](developer_docs/rules/git.md)
+- **🚨 Deploy branches are `<hospital>-production` / `<hospital>-staging`;** never target `*-prod`, `*-stg` or `*-migrated`. A branch that targets one ends in `-hotfix`. [+](developer_docs/deployment/ci-cd-pipeline-overview.md) [+](developer_docs/rules/git.md)
 - **🚨 One open PR per production/staging branch;** add to its branch instead of opening another. [+](developer_docs/rules/git.md)
 - **🚨 Before pushing to an existing PR's branch, run `gh pr view <N> --json state`;** if MERGED, use a new branch. [+](developer_docs/rules/git.md)
 - **🚨 Dev-hub team sessions may open a PR unasked; merge into `development` only under the merge gate** (non-author `REV OK <sha> — <member>`, CI green, CodeRabbit on the head sha or `CR skipped`, threads resolved, `--match-head-commit`, never `--admin`). Agree pass/fail "done" criteria before the code; one failed criterion fails the e2e. [+](developer_docs/git/merge-rules.md)

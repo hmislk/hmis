@@ -873,6 +873,7 @@ public class OpdBillCancellationController implements Serializable, ControllerWi
         if (cancellationBill.getPaymentMethod() == PaymentMethod.PatientDeposit) {
             PatientDeposit pd = patientDepositService.getDepositOfThePatient(cancellationBill.getPatient(), sessionController.getDepartment());
             patientDepositService.updateBalance(cancellationBill, pd);
+            patientDepositService.restoreRunningBalanceOnCancel(cancellationBill);
         }
 
         notificationController.createNotification(cancellationBill);

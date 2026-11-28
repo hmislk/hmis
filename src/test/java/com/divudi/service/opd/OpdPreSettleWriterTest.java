@@ -4,12 +4,15 @@ import com.divudi.core.data.PaymentMethod;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.BilledBill;
 import com.divudi.core.entity.Patient;
+import com.divudi.core.entity.PatientDeposit;
 import com.divudi.core.entity.Payment;
 import com.divudi.core.entity.PreBill;
 import com.divudi.core.entity.Staff;
 import com.divudi.core.facade.BillFacade;
+import com.divudi.core.facade.PatientDepositFacade;
 import com.divudi.core.facade.PatientFacade;
 import com.divudi.core.facade.PaymentFacade;
+import com.divudi.service.PatientDepositService;
 import com.divudi.service.StaffService;
 import java.util.ArrayList;
 import java.util.List;
@@ -194,5 +197,119 @@ class OpdPreSettleWriterTest {
     void settleWithoutABillIsABusinessError() {
         OpdPreSettleWriter writer = new OpdPreSettleWriter();
         assertThrows(OpdPreSettleException.class, () -> writer.settle(new OpdPreSettleRequest()));
+    }
+
+    /** Stub deposit service: one deposit record, and a record of what was taken from it. */
+    private static class StubDepositService extends PatientDepositService {
+
+        final PatientDeposit deposit = new PatientDeposit();
+        final PatientDeposit locked = new PatientDeposit();
+        PatientDeposit loweredCopy;
+        final List<Double> taken = new ArrayList<>();
+
+        StubDepositService(double balance) {
+            deposit.setId(5L);
+            deposit.setBalance(balance);
+            locked.setId(5L);
+            locked.setBalance(balance);
+        }
+
+        @Override
+        public PatientDeposit getDepositOfThePatient(Patient p, com.divudi.core.entity.Department d) {
+            return deposit;
+        }
+
+        @Override
+        public void handleUtilization(Bill b, PatientDeposit pd, double amount) {
+            taken.add(amount);
+            loweredCopy = pd;
+            pd.setBalance(pd.getBalance() - amount);
+        }
+    }
+
+    private OpdPreSettleWriter writerWithDeposit(StubDepositService deposits) {
+        OpdPreSettleWriter writer = new OpdPreSettleWriter();
+        writer.billFacade = new RecordingBillFacade();
+        writer.paymentFacade = new PaymentFacade() {
+            @Override
+            public void create(Payment p) {
+            }
+        };
+        writer.patientFacade = new RecordingPatientFacade();
+        writer.patientDepositService = deposits;
+        writer.patientDepositFacade = new PatientDepositFacade() {
+            @Override
+            public PatientDeposit findWithLock(Object id) {
+                return id.equals(5L) ? deposits.locked : null;
+            }
+        };
+        return writer;
+    }
+
+    @Test
+    void depositUseLowersTheDepositRecordByTheAmountOfTheRow() {
+        Patient patient = new Patient();
+        StubDepositService deposits = new StubDepositService(1000.0);
+        OpdPreSettleRequest request = request(new BilledBill(), new PreBill(), patient);
+        request.addDepositUse(patient, 400.0);
+
+        writerWithDeposit(deposits).settle(request);
+
+        assertEquals(List.of(400.0), deposits.taken);
+        assertEquals(600.0, deposits.locked.getBalance());
+    }
+
+    @Test
+    void theLockedCopyIsTheOneCheckedAndLowered() {
+        Patient patient = new Patient();
+        StubDepositService deposits = new StubDepositService(1000.0);
+        // The plain lookup shows a stale high balance; the locked copy is the truth.
+        deposits.deposit.setBalance(5000.0);
+        deposits.locked.setBalance(100.0);
+        OpdPreSettleRequest request = request(new BilledBill(), new PreBill(), patient);
+        request.addDepositUse(patient, 400.0);
+        assertThrows(OpdPreSettleException.class, () -> writerWithDeposit(deposits).settle(request));
+        assertTrue(deposits.taken.isEmpty());
+
+        deposits.locked.setBalance(1000.0);
+        OpdPreSettleRequest again = request(new BilledBill(), new PreBill(), patient);
+        again.addDepositUse(patient, 400.0);
+        writerWithDeposit(deposits).settle(again);
+        assertSame(deposits.locked, deposits.loweredCopy);
+        assertEquals(600.0, deposits.locked.getBalance());
+        assertEquals(5000.0, deposits.deposit.getBalance());
+    }
+
+    @Test
+    void depositUseWithTooLittleBalanceIsRefusedAndNothingIsTaken() {
+        Patient patient = new Patient();
+        StubDepositService deposits = new StubDepositService(100.0);
+        OpdPreSettleRequest request = request(new BilledBill(), new PreBill(), patient);
+        request.addDepositUse(patient, 400.0);
+
+        assertThrows(OpdPreSettleException.class, () -> writerWithDeposit(deposits).settle(request));
+
+        assertTrue(deposits.taken.isEmpty());
+        assertEquals(100.0, deposits.locked.getBalance());
+    }
+
+    @Test
+    void creditLimitCountsAsAvailableForTheDeposit() {
+        Patient patient = new Patient();
+        patient.setCreditLimit(500.0);
+        StubDepositService deposits = new StubDepositService(100.0);
+        OpdPreSettleRequest request = request(new BilledBill(), new PreBill(), patient);
+        request.addDepositUse(patient, 400.0);
+
+        writerWithDeposit(deposits).settle(request);
+
+        assertEquals(List.of(400.0), deposits.taken);
+    }
+
+    @Test
+    void zeroDepositUseIsIgnored() {
+        OpdPreSettleRequest request = new OpdPreSettleRequest();
+        request.addDepositUse(new Patient(), 0.0);
+        assertTrue(request.getDepositUses().isEmpty());
     }
 }

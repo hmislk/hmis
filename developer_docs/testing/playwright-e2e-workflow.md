@@ -526,47 +526,48 @@ because it exercises the same validation and business logic the fix has to
 survive, so a hand-built fixture that bypasses that validation proves less —
 weigh that when it matters, and note in the PR how the data was made.
 
-**This applies to local databases only.** A remote or SSH-tunnelled database
-(production, staging) is read-only, always. No development environment is ever
+**This applies to local and QA databases only.** A remote or SSH-tunnelled
+production or staging database is never written to. Staging counts as
+production, because it uses a production database. Prove the target is not
+production before any write ([database access](../rules/database-access.md)). No development environment is ever
 set up on a hosting server, so "localhost, no tunnel" is a reliable proxy for
 "safe to modify freely".
 
 ---
 
-## 15a. Leave test data where it is — never clean up unasked
+## 15a. Test data: list what you created; cleanup on QA and local needs no ask
 
-Test records you create while verifying a fix — patients, admissions, bills,
-surgeries, config rows — **stay**. Do not offer to remove them, and do not
-remove them on your own initiative after a test passes.
+Test records you create while verifying a fix (patients, admissions, bills,
+surgeries, config rows) may stay. A test environment exists to hold test data.
+Records left behind are a worked example the next person can pick up.
 
-A testing environment exists to hold test data. Records left behind are a
-worked example the next person can pick up, and deleting them costs the setup
-effort again. Cancelling a bill or discharging a test patient to "tidy up" is
-also not free: it writes further rows (contra-bills, room-change history) and
-can leave the data in a stranger state than just leaving it alone.
+On a QA or local database you may also clean up test data without asking the
+user. Cancelling a bill or discharging a test patient writes more rows
+(contra-bills, room-change history), so delete the rows only when that is
+simpler and safe. Before destructive work on a database that other members
+share, make a backup or restore point.
 
-Clean up **only when explicitly asked**, and only what was asked for.
+This never applies to production. Never write test data to production.
 
 ### The environment tells you whether you should be writing at all
 
 | Environment | Create test data? | Clean up afterwards? |
 |---|---|---|
-| Local (`localhost`, no tunnel) | Yes, freely | No — and the DB is disposable anyway (§15) |
-| Hospital test/staging box (e.g. `<env-name>`) | Yes | No, unless explicitly asked |
-| Production on Azure | You should not be testing here | n/a — if you are about to write, stop and ask |
+| Local (`localhost`, no tunnel) | Yes, freely | Optional, no ask needed (§15) |
+| QA box (e.g. `<env-name>`) | Yes | Optional, no ask needed |
+| Staging app or production | No: staging uses a production database | Never; a production write needs the user |
 
 Production is the real signal: a request to *test* a workflow is essentially
 never a request to test it in production. If a verification step is about to
 write to a production environment, that is a sign the target is wrong — stop
 and confirm which environment is meant, rather than proceeding carefully.
 
-Say what you created, so the user can decide:
+Say what you created:
 
 > Test data created on <env-name>: patient ZZ TEST THEATRE PATIENT, admission
 > `<type>/<n>`, a ZZ TEST settled service bill.
 
-That sentence is the whole obligation. Naming records with an obvious test
-prefix (`ZZ TEST ...`) is what makes them harmless to leave.
+Name test records with an obvious test prefix (`ZZ TEST ...`).
 
 ---
 
@@ -603,4 +604,4 @@ prefix (`ZZ TEST ...`) is what makes them harmless to leave.
 
 never navigate to an inner page by URL; open only the app root, then click through the menus. A URL-loaded page shows artifacts, not defects; a page with no menu path is itself the finding. Record the menu path in the issue/PR.
 
-See also §15a above:  never clean up test data unasked; leave records in place and list what you created; never write test data to production without confirming the environment.
+See also §15a above: list what you created; cleanup on QA and local needs no ask; never write test data to production.
