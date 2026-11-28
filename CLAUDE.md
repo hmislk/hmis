@@ -50,7 +50,7 @@
 ### Testing
 - XHTML-only changes need no compile or test.
 - **🚨 Never navigate to an inner page by URL;** open the app root and click through the menus. [+](developer_docs/testing/playwright-e2e-workflow.md)
-- **🚨 Never clean up test data unasked;** list what you created; never write test data to production. [+](developer_docs/testing/playwright-e2e-workflow.md)
+- **🚨 No ask for a SELECT-only production read, or for any QA or local database read, or write and delete through `db-guard` (test-data cleanup included).** Never write test data to production; prove the target is not production before a write; staging counts as production; a production write needs the user; after a block, stop and tell the user. [+](developer_docs/rules/database-access.md)
 - **🚨 Local test DBs: never change the developer's own login; agents use the shared local QA user and post account changes on the hub.** [+](developer_docs/testing/local-test-logins.md)
 
 ### Git and deployment
