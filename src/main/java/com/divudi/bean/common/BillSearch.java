@@ -2438,9 +2438,7 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
     public boolean sampleHasBeenCollected(Bill rf) {
         boolean oneItemIsSampled = false;
         for (BillItem bi : rf.getBillItems()) {
-            double refVal = bi.getNetValue();
-            refVal = Math.abs(refVal);
-            if (refVal > 0.0) {
+            if (isItemBeingRefunded(bi)) {
                 boolean sampled = patientInvestigationController.sampledForBillItem(bi.getReferanceBillItem());
                 if (sampled) {
                     oneItemIsSampled = true;
@@ -2450,13 +2448,31 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
         return oneItemIsSampled;
     }
 
+    // Refund values are entered per fee. The item net value is totalled later,
+    // so the refund checks read the fee values and do not depend on the totals step.
+    private boolean isFeeBeingRefunded(BillFee bf) {
+        return bf != null && Math.abs(bf.getFeeValue()) > 0.0;
+    }
+
+    private boolean isItemBeingRefunded(BillItem bi) {
+        if (Math.abs(bi.getNetValue()) > 0.0) {
+            return true;
+        }
+        if (bi.getBillFees() != null) {
+            for (BillFee bf : bi.getBillFees()) {
+                if (isFeeBeingRefunded(bf)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     public boolean billFeeIsAlreadyRefunded(Bill rf) {
         boolean oneItemIsAlreadyRefunded = false;
         for (BillItem bi : rf.getBillItems()) {
             for (BillFee bf : bi.getBillFees()) {
-                double refVal = bi.getNetValue();
-                refVal = Math.abs(refVal);
-                if (refVal > 0.0) {
+                if (isFeeBeingRefunded(bf)) {
                     boolean refunded = billController.hasRefunded(bf.getReferenceBillFee());
                     if (refunded) {
                         oneItemIsAlreadyRefunded = true;
@@ -2471,9 +2487,7 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
         boolean oneItemIsAlreadyPaid = false;
         for (BillItem bi : rf.getBillItems()) {
             for (BillFee bf : bi.getBillFees()) {
-                double refVal = bi.getNetValue();
-                refVal = Math.abs(refVal);
-                if (refVal > 0.0) {
+                if (isFeeBeingRefunded(bf)) {
                     boolean refunded = billController.hasPaidToStaff(bf.getReferenceBillFee());
                     if (refunded) {
                         oneItemIsAlreadyPaid = true;
