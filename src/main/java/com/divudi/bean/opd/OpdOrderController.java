@@ -1852,8 +1852,16 @@ public class OpdOrderController implements Serializable, ControllerWithPatient, 
         return error;
     }
 
-    public String settleOpdBill() {
+    // synchronized: two overlapping Settle requests from the same session must not both pass the
+    // billSettlingStarted check before either sets it.
+    public synchronized String settleOpdBill() {
         if (billSettlingStarted) {
+            return null;
+        }
+        // billSettlingStarted is reset when the first settle finishes, so a second Settle request
+        // arriving just after it would otherwise settle the same, already-saved bill items again.
+        if (billEntriesAlreadySettled()) {
+            JsfUtil.addErrorMessage("This bill has already been settled. Please start a new bill.");
             return null;
         }
         billSettlingStarted = true;
@@ -1877,6 +1885,19 @@ public class OpdOrderController implements Serializable, ControllerWithPatient, 
         auditEventController.updateAuditEvent(eventUuid);
         billSettlingStarted = false;
         return "/opd/opd_batch_bill_print?faces-redirect=true";
+    }
+
+    static boolean isPersistedBillItem(BillItem bi) {
+        return bi != null && bi.getId() != null && !bi.isRetired();
+    }
+
+    private boolean billEntriesAlreadySettled() {
+        for (BillEntry be : getLstBillEntries()) {
+            if (be != null && isPersistedBillItem(be.getBillItem())) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private boolean executeSettleBillActions() {
