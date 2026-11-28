@@ -24,7 +24,7 @@ public enum Icon {
     Scan_to_Pay("Scan to Pay", PAYMENTS_AND_REFUNDS),
     Accept_Payments("Accept Payments", PAYMENTS_AND_REFUNDS),
     Accept_Payments_For_OPD_Bills("Accept Payments for OPD Bills", PAYMENTS_AND_REFUNDS),
-    Accept_Payments_For_OPD_Batch_Bills("Accept Payments for OPD Batch Bills", PAYMENTS_AND_REFUNDS),
+    Accept_Payments_For_OPD_Batch_Bills("Search OPD Batch Bills (Pre-Settle)", PAYMENTS_AND_REFUNDS),
     Accept_Payments_For_Pharmacy_Bills("Accept Payments for Pharmacy Bills", PAYMENTS_AND_REFUNDS),
     Refunds("Refunds", PAYMENTS_AND_REFUNDS),
     RefundsforOPDBills("Refunds for OPD Bills", PAYMENTS_AND_REFUNDS),

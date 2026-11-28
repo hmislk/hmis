@@ -13,7 +13,7 @@
                     <p:panel style="height: 100vh">
                         <f:facet name="header" >
                             <h:outputText styleClass="fas fa-search" />
-                            <h:outputLabel class="mx-4" value="OPD Bill Search To Pay "/>
+                            <h:outputLabel class="mx-4" value="Search OPD Batch Bills (Pre-Settle)"/>
                         </f:facet>
 
                         <div class="row">
@@ -99,7 +99,7 @@
                                         <h:outputLabel value="#{i+1}"/>
                                     </p:column>
 
-                                    <p:column headerText="Bill No" >
+                                    <p:column headerText="Bill No" style="white-space: nowrap; min-width: 12rem;">
                                         <h:outputLabel value="#{bill.deptId}"  ></h:outputLabel>
                                     </p:column>
                                     <p:column headerText="Name" >
