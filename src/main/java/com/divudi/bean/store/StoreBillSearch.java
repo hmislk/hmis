@@ -1299,8 +1299,10 @@ public class StoreBillSearch implements Serializable {
                 return;
             }
 
+            // reAddToStock moves the original off its header: keep the header to recompute it after.
+            final Bill headerBeforeCancel = getBill().getForwardReferenceBill();
             Bill cb = getStoreBean().reAddToStock(getBill(), getSessionController().getLoggedUser(), getSessionController().getDepartment(), billNumberSuffix);
-            cb.setForwardReferenceBill(getBill().getForwardReferenceBill());
+            cb.setForwardReferenceBill(headerBeforeCancel);
             getBillFacade().edit(cb);
 
             cancelPreBillFees(cb.getBillItems());
@@ -1308,6 +1310,7 @@ public class StoreBillSearch implements Serializable {
             getBill().setCancelled(true);
             getBill().setCancelledBill(cb);
             getBillFacade().edit(getBill());
+            billBean.refreshSurgeryHeaderAfterChildChange(headerBeforeCancel);
             //   //System.out.print(getBill().isCancelled());
 
 //            if (getBill().getReferenceBill() != null) {

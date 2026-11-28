@@ -4046,6 +4046,8 @@ public class PharmacyBillSearch implements Serializable {
     //            }
                 getBill().setCancelledBill(cb);
                 getBillFacade().edit(getBill());
+                // The return is cancelled: recompute its surgery header (acts only on a surgery header).
+                billBean.refreshSurgeryHeaderAfterChildChange(getBill().getForwardReferenceBill());
                 clearSaleBillRefundedFlagIfNoActiveReturns(getBill());
                 JsfUtil.addSuccessMessage("Cancelled");
 
@@ -4143,6 +4145,8 @@ public class PharmacyBillSearch implements Serializable {
                 // cancelPreBillFees(cb.getBillItems());
                 getBill().setCancelledBill(cb);
                 getBillFacade().edit(getBill());
+                // The return is cancelled: recompute its surgery header (acts only on a surgery header).
+                billBean.refreshSurgeryHeaderAfterChildChange(getBill().getForwardReferenceBill());
                 JsfUtil.addSuccessMessage("Cancelled");
 
                 printPreview = true;
@@ -4184,6 +4188,8 @@ public class PharmacyBillSearch implements Serializable {
 
                 getBill().setCancelledBill(cb);
                 getBillFacade().edit(getBill());
+                // The return is cancelled: recompute its surgery header (acts only on a surgery header).
+                billBean.refreshSurgeryHeaderAfterChildChange(getBill().getForwardReferenceBill());
                 if (getBill().getBillTypeAtomic() == BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEM_PAYMENTS
                         || getBill().getBillTypeAtomic() == BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS) {
                     clearItemRefundFlagsIfNoActiveRefund(getBill());
