@@ -3275,26 +3275,26 @@ public class BillBeanController implements Serializable {
     }
 
     /**
-     * Child bills of a surgery header, netted for cancellation. A cancelled
-     * child still counts when its cancellation bill is itself linked to the
-     * header (pharmacy and store flows do this, so the pair nets to zero). A
-     * cancelled child whose cancellation bill is NOT linked (inward service,
-     * timed service, professional fee) is left out, or the header would keep
-     * the cancelled amount.
+     * LIVE children of a surgery header: linked, not cancelled, and not the
+     * cancellation bill of another bill. A cancelled original and its
+     * cancellation bill are both left out, wherever the original now points
+     * (some pharmacy cancels move the original off the header and keep only the
+     * cancellation bill linked). A return or refund bill that is not a
+     * cancellation stays in, once, with its negative amount.
      */
-    static final String SURGERY_HEADER_CHILD_TOTAL_JPQL = "Select sum(bf.netTotal) from Bill bf "
-            + " left join bf.cancelledBill cb where "
+    static final String SURGERY_HEADER_CHILD_TOTAL_JPQL = "Select sum(bf.netTotal) from Bill bf where "
             + " bf.retired=false and bf.forwardReferenceBill=:bill "
-            + " and (bf.cancelled=false or cb.forwardReferenceBill=:bill)";
+            + " and bf.cancelled=false "
+            + " and not exists (select o.id from Bill o where o.cancelledBill=bf)";
 
     /**
-     * Refund bills (negative netTotal) of the surgery header's children that
+     * Refund bills (negative netTotal) of the surgery header's live children that
      * are not linked to the header themselves. Linked refunds are already in
      * the child sum, so they are skipped here to avoid counting them twice.
      */
     static final String SURGERY_HEADER_REFUND_TOTAL_JPQL = "Select sum(r.netTotal) from RefundBill r where "
             + " r.retired=false and r.forwardReferenceBill is null "
-            + " and r.billedBill.retired=false "
+            + " and r.billedBill.retired=false and r.billedBill.cancelled=false "
             + " and r.billedBill.forwardReferenceBill=:bill";
 
     /**
@@ -3325,6 +3325,17 @@ public class BillBeanController implements Serializable {
         Double refunds = getBillFacade().findSingleResultByJpql(SURGERY_HEADER_REFUND_TOTAL_JPQL, hm);
         header.setTotal((children == null ? 0.0 : children) + (refunds == null ? 0.0 : refunds));
         getBillFacade().edit(header);
+    }
+
+    /**
+     * Recomputes the header after a cancel or return of one of its children,
+     * only when the header is a surgery bill. Capture the header BEFORE the
+     * cancel runs: some cancels move the original bill off the header.
+     */
+    public void refreshSurgeryHeaderAfterChildChange(Bill header) {
+        if (header != null && header.getBillType() == BillType.SurgeryBill) {
+            updateSurgeryServiceBatchBill(header);
+        }
     }
 
     // WARNING: this sum intentionally includes cancelled child bills.

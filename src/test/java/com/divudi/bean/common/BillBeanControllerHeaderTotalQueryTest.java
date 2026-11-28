@@ -5,18 +5,17 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
- * Issue #26283: the surgery header total must leave out a cancelled child whose
- * cancellation bill is not linked to the header, and must add unlinked refunds.
+ * Issue #26283: the surgery header total counts live children only (a cancelled
+ * bill and any cancellation bill are both left out) and adds unlinked refunds.
  */
 class BillBeanControllerHeaderTotalQueryTest {
 
     @Test
-    void childQueryNetsCancelledChildOnlyWhenCancellationIsNotLinked() {
+    void childQueryCountsOnlyLiveChildrenAndLeavesOutCancellationBills() {
         String jpql = BillBeanController.SURGERY_HEADER_CHILD_TOTAL_JPQL;
         assertTrue(jpql.contains("bf.forwardReferenceBill=:bill"));
-        assertTrue(jpql.contains("left join bf.cancelledBill cb"));
-        assertTrue(jpql.contains("bf.cancelled=false or"));
-        assertTrue(jpql.contains("cb.forwardReferenceBill=:bill"));
+        assertTrue(jpql.contains("bf.cancelled=false"));
+        assertTrue(jpql.contains("not exists (select o.id from Bill o where o.cancelledBill=bf)"));
     }
 
     @Test
@@ -26,5 +25,6 @@ class BillBeanControllerHeaderTotalQueryTest {
         assertTrue(jpql.contains("r.forwardReferenceBill is null"));
         assertTrue(jpql.contains("r.billedBill.forwardReferenceBill=:bill"));
         assertTrue(jpql.contains("r.billedBill.retired=false"));
+        assertTrue(jpql.contains("r.billedBill.cancelled=false"));
     }
 }
