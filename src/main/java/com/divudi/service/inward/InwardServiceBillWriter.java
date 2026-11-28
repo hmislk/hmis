@@ -212,8 +212,12 @@ public class InwardServiceBillWriter {
             for (int i = 0; i < tmpBis.size(); i++) {
                 tmpBis.get(i).setSearialNo(i);
             }
-            billBean.calculateBillItems(myBill, tmp);
+            // Set the items before calculateBillItems, as the single-bill path does:
+            // its edit(bill) merges the list, so an item saved by an earlier settle
+            // (detached, has an id) is merged to its managed row. Set after, the commit
+            // persists the detached item again as a new row (#26288).
             myBill.setBillItems(tmpBis);
+            billBean.calculateBillItems(myBill, tmp);
         }
 
         return created;
