@@ -3331,10 +3331,17 @@ public class BillBeanController implements Serializable {
      * Recomputes the header after a cancel or return of one of its children,
      * only when the header is a surgery bill. Capture the header BEFORE the
      * cancel runs: some cancels move the original bill off the header.
+     * A failure here is logged and never thrown: the cancel or return is
+     * already saved, and the caller must not report it as failed.
      */
     public void refreshSurgeryHeaderAfterChildChange(Bill header) {
-        if (header != null && header.getBillType() == BillType.SurgeryBill) {
-            updateSurgeryServiceBatchBill(header);
+        try {
+            if (header != null && header.getBillType() == BillType.SurgeryBill) {
+                updateSurgeryServiceBatchBill(header);
+            }
+        } catch (RuntimeException e) {
+            java.util.logging.Logger.getLogger(BillBeanController.class.getName())
+                    .log(java.util.logging.Level.SEVERE, "Surgery header total refresh failed", e);
         }
     }
 

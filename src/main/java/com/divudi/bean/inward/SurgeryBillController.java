@@ -1180,6 +1180,7 @@ public class SurgeryBillController implements Serializable {
         String jpql = "SELECT COUNT(b) FROM Bill b WHERE b.retired=false "
                 + " and b.cancelled=false "
                 + " and b.forwardReferenceBill=:surg "
+                + " and not exists (select o.id from Bill o where o.cancelledBill=b) "
                 + " and b.checkeAt IS NULL";
         HashMap<String, Object> hm = new HashMap<>();
         hm.put("surg", getSurgeryBill());

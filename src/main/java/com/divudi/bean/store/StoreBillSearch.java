@@ -1454,6 +1454,7 @@ public class StoreBillSearch implements Serializable {
             getBill().setCancelled(true);
             getBill().setCancelledBill(cb);
             getBillFacade().edit(getBill());
+            billBean.refreshSurgeryHeaderAfterChildChange(getBill().getForwardReferenceBill());
             JsfUtil.addSuccessMessage("Cancelled");
 
             printPreview = true;
