@@ -285,6 +285,7 @@ Both keys are application-wide Booleans, default `false`. With both off, neither
 
 | Key | Type | Default | Description |
 | --- | --- | --- | --- |
+| `Inward Final Bill - Custom Bill 4 - Show Guardian` | Boolean | `true` | Shows the Guardian row on the Custom Bill 4 final bill print ("N/A" when no guardian). Set `false` to hide the row. |
 | `Inward Final Bill - Custom Bill 4 - Show Claimable Copies` | Boolean | `false` | Adds Claimable Patient, Hospital and Duplicate copy buttons (Custom Bill 4 layout, professional fees included) to the Final Bill and Final Bill Reprint pages. |
 | `Inward Final Bill - Custom Bill 4 - Show Not Claimable Copies` | Boolean | `false` | Adds Not Claimable Patient, Hospital and Duplicate copy buttons (Custom Bill 4 layout, without professional fees) and a Professional Fees copy button to the Final Bill and Final Bill Reprint pages. |
 
