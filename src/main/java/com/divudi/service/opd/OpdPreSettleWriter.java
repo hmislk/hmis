@@ -175,6 +175,7 @@ public class OpdPreSettleWriter {
 
         out.setPaymentMethod(saleBill.getPaymentMethod());
         applyPaymentMethodData(out, request);
+        OpdPreSettleCredit.apply(out, out.getPaymentMethod(), request.getPaymentMethodData());
         billFacade.edit(out);
         return out;
     }

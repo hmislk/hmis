@@ -55,6 +55,7 @@ import com.divudi.core.facade.PharmaceuticalBillItemFacade;
 import com.divudi.core.facade.StaffFacade;
 import com.divudi.core.facade.TokenFacade;
 import com.divudi.service.BillService;
+import com.divudi.service.opd.OpdPreSettleCredit;
 import com.divudi.service.opd.OpdPreSettleAmounts;
 import com.divudi.service.opd.OpdPreSettleException;
 import com.divudi.service.opd.OpdPreSettlePaymentRows;
@@ -548,6 +549,8 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
         getSaleBill().setInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
 
         getBillBean().setPaymentMethodData(getSaleBill(), getSaleBill().getPaymentMethod(), getPaymentMethodData());
+        // Same as the normal OPD bill: store the credit company so Outpatient Credit Collection finds the bill (#26326).
+        OpdPreSettleCredit.apply(getSaleBill(), getSaleBill().getPaymentMethod(), getPaymentMethodData());
         getBillBean().setBills(billsOfBatchBillPre);
 
         getSaleBill().setBillDate(new Date());
