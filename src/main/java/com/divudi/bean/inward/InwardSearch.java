@@ -49,6 +49,7 @@ import com.divudi.core.util.JsfUtil;
 import com.divudi.core.data.BillCategory;
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.DepartmentType;
+import com.divudi.core.data.RequestStatus;
 import com.divudi.core.data.lab.PatientInvestigationStatus;
 import com.divudi.core.facade.PaymentFacade;
 import com.divudi.core.util.CommonFunctions;
@@ -622,37 +623,75 @@ public class InwardSearch implements Serializable {
             return "";
         }
 
+        CancelApprovalGate gate = cancelApprovalGateOf(bill);
+        if (gate.state != CancelApprovalState.NOT_REQUIRED) {
+            currentRequest = gate.request;
+        }
+        switch (gate.state) {
+            case NOT_REQUIRED:
+                return "/inward/inward_cancel_bill_service?faces-redirect=true";
+            case NO_REQUEST:
+                return requestController.navigateToCreateRequest(bill);
+            case PENDING:
+            case UNDER_REVIEW:
+                requestController.setCurrentRequest(currentRequest);
+                return "/common/request/request_status?faces-redirect=true";
+            case APPROVED:
+                requestController.getBills().add(currentRequest.getBill());
+                setComment(currentRequest.getRequestReason());
+                return "/inward/inward_cancel_bill_service?faces-redirect=true";
+            default:
+                return "";
+        }
+    }
+
+    /** Where a bill stands against the cancel-approval rule. */
+    public enum CancelApprovalState {
+        NOT_REQUIRED, NO_REQUEST, PENDING, UNDER_REVIEW, APPROVED, OTHER
+    }
+
+    /** The cancel-approval state of a bill, with the request found for it, if any. */
+    public static class CancelApprovalGate {
+
+        public final CancelApprovalState state;
+        public final Request request;
+
+        CancelApprovalGate(CancelApprovalState state, Request request) {
+            this.state = state;
+            this.request = request;
+        }
+    }
+
+    /**
+     * The one place that decides whether cancelling an inward service bill needs
+     * an approved request. The single cancel and Batch Cancel both use it, so they
+     * apply the same options and the same department type rule.
+     */
+    public CancelApprovalGate cancelApprovalGateOf(Bill b) {
         DepartmentType toBillDepartmentType = DepartmentType.Other;
 
-        if (bill.getToDepartment() != null && bill.getToDepartment().getDepartmentType() != null) {
-            toBillDepartmentType = bill.getToDepartment().getDepartmentType();
+        if (b.getToDepartment() != null && b.getToDepartment().getDepartmentType() != null) {
+            toBillDepartmentType = b.getToDepartment().getDepartmentType();
         }
 
         boolean allowType = configOptionApplicationController.getBooleanValueByKey("Inward Billing - Mandatory permission to cancel " + toBillDepartmentType.getLabel() + " type bills", false);
 
-        if (configOptionApplicationController.getBooleanValueByKey("Mandatory permission to cancel bills.", false) && allowType) {
-            currentRequest = requestService.findRequest(bill);
-
-            if (currentRequest == null) {
-                return requestController.navigateToCreateRequest(bill);
-            } else {
-                switch (currentRequest.getStatus()) {
-                    case PENDING:
-                        requestController.setCurrentRequest(currentRequest);
-                        return "/common/request/request_status?faces-redirect=true";
-                    case UNDER_REVIEW:
-                        requestController.setCurrentRequest(currentRequest);
-                        return "/common/request/request_status?faces-redirect=true";
-                    case APPROVED:
-                        requestController.getBills().add(currentRequest.getBill());
-                        setComment(currentRequest.getRequestReason());
-                        return "/inward/inward_cancel_bill_service?faces-redirect=true";
-                    default:
-                        return "";
-                }
-            }
-        } else {
-            return "/inward/inward_cancel_bill_service?faces-redirect=true";
+        if (!(configOptionApplicationController.getBooleanValueByKey("Mandatory permission to cancel bills.", false) && allowType)) {
+            return new CancelApprovalGate(CancelApprovalState.NOT_REQUIRED, null);
+        }
+        Request found = requestService.findRequest(b);
+        if (found == null) {
+            return new CancelApprovalGate(CancelApprovalState.NO_REQUEST, null);
+        }
+        switch (found.getStatus()) {
+            case PENDING:
+                return new CancelApprovalGate(CancelApprovalState.PENDING, found);
+            case UNDER_REVIEW:
+                return new CancelApprovalGate(CancelApprovalState.UNDER_REVIEW, found);
+            case APPROVED:
+                return new CancelApprovalGate(CancelApprovalState.APPROVED, found);
+            default:
+                return new CancelApprovalGate(CancelApprovalState.OTHER, found);
         }
     }
 
@@ -2120,15 +2159,64 @@ public class InwardSearch implements Serializable {
         // Check and cancellation writes run under the admission's lock and commit before it
         // is released, so two sessions cancelling the same bill cannot both pass the check.
         if (lockEncounter == null || lockEncounterId == null) {
-            cancelBillServiceUnderLock(targetBillId, lockEncounterId, targetComment, targetPaymentMethod);
+            cancelBillServiceUnderLock(targetBillId, lockEncounterId, targetComment, targetPaymentMethod, false);
             return;
         }
         getFinalBillLockBean().withFinalBillVersionLock(lockEncounter, () -> {
-            cancelBillServiceUnderLock(targetBillId, lockEncounterId, targetComment, targetPaymentMethod);
+            cancelBillServiceUnderLock(targetBillId, lockEncounterId, targetComment, targetPaymentMethod, false);
         });
     }
 
-    private void cancelBillServiceUnderLock(Long billId, Long lockEncounterId, String c, PaymentMethod pm) {
+    /**
+     * Cancels one inward service bill for a caller that holds the bill itself, such
+     * as the Batch Cancel button on the theatre surgery service page. It runs the
+     * same locked checks and the same reversal as {@link #cancelBillService()}, and
+     * it needs no payment method, because inward service bills are charged to the
+     * admission and not paid.
+     *
+     * <p>It also applies the cancel-approval rule of
+     * {@link #cancelApprovalGateOf(Bill)}. A bill that needs an approved request
+     * and has none is skipped with a message naming it. This path never creates a
+     * request and never navigates.</p>
+     */
+    public boolean cancelBillServiceOf(Bill target, String comments) {
+        if (target == null || target.getId() == null || target.getId() == 0) {
+            JsfUtil.addErrorMessage("No Bill to cancel");
+            return false;
+        }
+        if (refuseIfCancellationBill(target)) {
+            return false;
+        }
+        CancelApprovalGate gate = cancelApprovalGateOf(target);
+        if (gate.state != CancelApprovalState.NOT_REQUIRED && gate.state != CancelApprovalState.APPROVED) {
+            JsfUtil.addErrorMessage("Bill " + target.getDeptId() + " was not cancelled. It needs an approved cancel request. Cancel it with the single cancel.");
+            return false;
+        }
+        final Long targetBillId = target.getId();
+        final PatientEncounter lockEncounter = target.getPatientEncounter();
+        final Long lockEncounterId = lockEncounter == null ? null : lockEncounter.getId();
+        // The locked cancel opens the print preview of this page; a batch must not.
+        final boolean printPreviewBefore = printPreview;
+        try {
+            if (lockEncounter == null || lockEncounterId == null) {
+                cancelBillServiceUnderLock(targetBillId, lockEncounterId, comments, null, true);
+            } else {
+                getFinalBillLockBean().withFinalBillVersionLock(lockEncounter, () -> {
+                    cancelBillServiceUnderLock(targetBillId, lockEncounterId, comments, null, true);
+                });
+            }
+        } finally {
+            printPreview = printPreviewBefore;
+        }
+        Bill after = getBillFacade().findWithoutCache(targetBillId);
+        boolean cancelled = after != null && after.isCancelled();
+        if (!cancelled) {
+            JsfUtil.addErrorMessage("Bill " + target.getDeptId() + " was not cancelled.");
+        }
+        return cancelled;
+    }
+
+    private void cancelBillServiceUnderLock(Long billId, Long lockEncounterId, String c, PaymentMethod pm, boolean completeApprovedRequestOnly) {
         {
 
             Bill b = loadFreshBillOrRefuse(billId, lockEncounterId);
@@ -2209,7 +2297,8 @@ public class InwardSearch implements Serializable {
 
             if (configOptionApplicationController.getBooleanValueByKey("Mandatory permission to cancel bills.", false)) {
                 Request billRequest = requestService.findRequest(b);
-                if (billRequest != null) {
+                if (billRequest != null
+                        && (!completeApprovedRequestOnly || billRequest.getStatus() == RequestStatus.APPROVED)) {
 
                     List<Bill> requestBills = new ArrayList<>();
                     requestBills.add(b);
