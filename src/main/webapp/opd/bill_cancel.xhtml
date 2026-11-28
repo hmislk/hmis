@@ -675,7 +675,7 @@
                             </p:selectOneMenu>
                             <p:commandButton ajax="false" icon="fa fa-sync-alt" class="ui-button m-1" title="Redraw Bill"></p:commandButton>
                             <p:commandButton 
-                                value="Print" 
+                                value="Print" title="Print the bill shown below" 
                                 class="ui-button-info m-1"
                                 icon="fa fa-print"
                                 ajax="false">
@@ -685,6 +685,9 @@
                         </div>
                         <h:panelGroup id="groupPrint" >
                             <!-- Bill Print Templates -->
+                            <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFiveCustom4'}" >
+                                <prints:five_five_opd_bill_custom_4 bill="#{opdBillCancellationController.bill}" duplicate="#{opdBillCancellationController.duplicate}"/>
+                            </h:panelGroup>
                             <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePaper'}" >       
                                 <prints:five_five_paper_with_headings bill="#{opdBillCancellationController.bill}"/>
                             </h:panelGroup>

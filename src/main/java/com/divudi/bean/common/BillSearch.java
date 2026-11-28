@@ -75,6 +75,7 @@ import com.divudi.bean.pharmacy.PurchaseReturnController;
 import com.divudi.bean.pharmacy.TransferIssueController;
 import com.divudi.bean.pharmacy.TransferReceiveController;
 import com.divudi.bean.pharmacy.TransferRequestController;
+import com.divudi.core.data.BillCategory;
 import com.divudi.core.data.BillTypeAtomic;
 
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -722,6 +723,52 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
             }
         }
         return count;
+    }
+
+    /**
+     * Individual bills of a batch bill, for the 5x5 Custom 4 print of a batch.
+     * A batch cancellation bill and the original batch bill are linked to their
+     * individual bills through different references, and the batch cancellation bill
+     * itself points at the original batch through the forward reference. So only
+     * one link is used for each case:
+     * - batch cancellation bill: its individual cancellation bills point to it
+     *   with the forward reference (OpdBatchBillCancellationController and
+     *   BillPackageController, individualCancelltionBill.setForwardReferenceBill);
+     * - any other batch bill: its individual bills point to it with the backward
+     *   reference (for example OpdBillController, b.setBackwardReferenceBill).
+     */
+    public List<Bill> individualBillsOfBatchBill(Bill batchBill) {
+        List<Bill> result = new ArrayList<>();
+        if (batchBill == null || batchBill.getId() == null) {
+            return result;
+        }
+        Map m = new HashMap();
+        m.put("id", batchBill.getId());
+        String j;
+        if (batchBill.getBillTypeAtomic() != null
+                && batchBill.getBillTypeAtomic().getBillCategory() == BillCategory.CANCELLATION) {
+            j = "select b from Bill b "
+                    + " left join b.forwardReferenceBill f "
+                    + " where b.retired=false "
+                    + " and f.id=:id "
+                    + " and b.billTypeAtomic in :types "
+                    + " order by b.id";
+            List<BillTypeAtomic> types = new ArrayList<>();
+            types.add(BillTypeAtomic.OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
+            types.add(BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
+            m.put("types", types);
+        } else {
+            j = "select b from Bill b "
+                    + " left join b.backwardReferenceBill bk "
+                    + " where b.retired=false "
+                    + " and bk.id=:id "
+                    + " order by b.id";
+        }
+        List<Bill> found = getBillFacade().findByJpql(j, m);
+        if (found != null) {
+            result.addAll(found);
+        }
+        return result;
     }
 
     public List<BillItem> groupBillItemByNameFromBill(Bill b) {
