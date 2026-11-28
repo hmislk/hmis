@@ -18,13 +18,14 @@ Deny = exit 2 with the reason on stderr (same as public-guard.py). The message
 never echoes the command. A failed merge-base lookup is refused (fail closed).
 
 Applies to Claude Code Bash and PowerShell calls.
-Env for tests: HMIS_SESSION_GUARD_GH = path of the gh binary (default gh).
+Env for tests: HMIS_SESSION_GUARD_GH = gh binary or command line (default gh).
 Tests: .claude/hooks/test_session_guard.py. Policy: developer_docs/rules/git.md
 """
 import json
 import os
 import re
 import shlex
+import shutil
 import subprocess
 import sys
 
@@ -45,6 +46,7 @@ MSG_MERGE = ("Merges to deploy branches (master, *-production, *-staging) are th
              "Merges into development follow the merge gate.")
 MSG_BASE = ("session-guard hook: could not check the base branch of this merge (lookup failed), "
             "so it is refused. Retry the command. If it keeps failing, check gh auth and network.")
+MSG_NO_GH = "session-guard hook: gh not found; merges cannot be checked, so this merge is refused. Install gh or fix PATH."
 MSG_ADD = ("session-guard hook: `git add -A`, `--all` and `.` are refused. "
            "Stage explicit paths: `git add path/one path/two`. See developer_docs/rules/git.md.")
 MSG_ALIAS = "session-guard hook: git -c alias.* is refused. Use the git command itself."
@@ -141,12 +143,31 @@ def check_push(rest):
         raise Deny(MSG_FORCE)
 
 
+def gh_command():
+    """argv prefix for gh. The env value may be a command line (tests use it).
+    shutil.which honours PATHEXT on Windows, so gh.exe / gh.cmd are found."""
+    raw = os.environ.get("HMIS_SESSION_GUARD_GH", "gh")
+    try:
+        parts = shlex.split(raw, posix=(os.name != "nt"))
+    except ValueError:
+        parts = []
+    parts = [p[1:-1] if len(p) > 1 and p[0] == p[-1] and p[0] in "\"'" else p for p in parts]
+    if not parts:
+        return None
+    exe = shutil.which(parts[0])
+    if exe is None:
+        return None
+    return [exe] + parts[1:]
+
+
 def run_gh(args, env, cwd):
-    exe = os.environ.get("HMIS_SESSION_GUARD_GH", "gh")
+    cmd = gh_command()
+    if cmd is None:
+        raise Deny(MSG_NO_GH)
     full = dict(os.environ)
     full.update(env)
     try:
-        out = subprocess.run([exe] + args, capture_output=True, text=True, timeout=12, env=full, cwd=cwd)
+        out = subprocess.run(cmd + args, capture_output=True, text=True, timeout=12, env=full, cwd=cwd)
     except Exception:
         return None
     if out.returncode != 0:
