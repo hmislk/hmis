@@ -24,16 +24,22 @@
 
                             <p:inputText value="#{agentAndCcPaymentController.comment}" id="comment"/>
                             
-                            <h:panelGroup id="creditCard" style="display: #{agentAndCcPaymentController.current.paymentMethod ne 'Card' ? 'none' : 'block'} ; ">
-                                <pa:creditCard paymentMethodData="#{agentAndCcPaymentController.paymentMethodData}"/>
+                            <h:panelGroup id="creditCard">
+                                <h:panelGroup layout="block" rendered="#{agentAndCcPaymentController.current.paymentMethod eq 'Card'}">
+                                    <pa:creditCard paymentMethodData="#{agentAndCcPaymentController.paymentMethodData}"/>
+                                </h:panelGroup>
                             </h:panelGroup>
 
-                            <h:panelGroup id="cheque" style="display: #{agentAndCcPaymentController.current.paymentMethod ne 'Cheque' ? 'none' : 'block'} ; " >
-                                <pa:cheque paymentMethodData="#{agentAndCcPaymentController.paymentMethodData}"/>
+                            <h:panelGroup id="cheque">
+                                <h:panelGroup layout="block" rendered="#{agentAndCcPaymentController.current.paymentMethod eq 'Cheque'}">
+                                    <pa:cheque paymentMethodData="#{agentAndCcPaymentController.paymentMethodData}"/>
+                                </h:panelGroup>
                             </h:panelGroup>
 
-                            <h:panelGroup id="slip" style="display: #{agentAndCcPaymentController.current.paymentMethod ne 'Slip' ? 'none' : 'block'} ;">
-                                <pa:slip paymentMethodData="#{agentAndCcPaymentController.paymentMethodData}"/>
+                            <h:panelGroup id="slip">
+                                <h:panelGroup layout="block" rendered="#{agentAndCcPaymentController.current.paymentMethod eq 'Slip'}">
+                                    <pa:slip paymentMethodData="#{agentAndCcPaymentController.paymentMethodData}"/>
+                                </h:panelGroup>
                             </h:panelGroup>
 
                             <p:commandButton id="btnSettle" value="Settle" action="#{agentAndCcPaymentController.channellAgencyPaymentRecieveSettleBill}" ajax="false"  style="width: 150px; padding: 1px;border: 1px solid ; margin: auto;" >
